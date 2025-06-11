@@ -1,22 +1,28 @@
 #nullable disable
 using System;
-using System.ComponentModel;
-using Microsoft.Maui.Controls.Internals;
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPresenter']/Docs/*" />
-#pragma warning disable CS0618 // Type or member is obsolete
-	public class ContentPresenter : Compatibility.Layout, IContentView
-#pragma warning restore CS0618 // Type or member is obsolete
+	/// <summary>
+	/// Layout manager for templated views.
+	/// </summary>
+	public class ContentPresenter : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IContentView
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='ContentProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
 			typeof(ContentPresenter), null, propertyChanged: OnContentChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+#pragma warning disable CS0067
+		[Obsolete("Use SizeChanged.")]
+		public event EventHandler LayoutChanged;
+#pragma warning restore CS0067
+
+		/// <summary>
+		/// Creates a new empty <see cref="ContentPresenter"/> with default values.
+		/// </summary>
 		public ContentPresenter()
 		{
 			this.SetBinding(
@@ -27,7 +33,19 @@ namespace Microsoft.Maui.Controls
 				converterParameter: this);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='Content']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
+		public static readonly BindableProperty CascadeInputTransparentProperty = InputTransparentContainerElement.CascadeInputTransparentProperty;
+
+		/// <inheritdoc cref="IInputTransparentContainerElement.CascadeInputTransparent"/>
+		public bool CascadeInputTransparent
+		{
+			get => (bool)GetValue(InputTransparentContainerElement.CascadeInputTransparentProperty);
+			set => SetValue(InputTransparentContainerElement.CascadeInputTransparentProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets the view whose layout is managed by this <see cref="ContentPresenter"/>.
+		/// </summary>
 		public View Content
 		{
 			get { return (View)GetValue(ContentProperty); }
@@ -35,36 +53,24 @@ namespace Microsoft.Maui.Controls
 		}
 
 		object IContentView.Content => Content;
+
 		IView IContentView.PresentedContent => Content;
 
-		[Obsolete("Use InvalidateArrange if you need to trigger a new arrange and then put your arrange logic inside ArrangeOverride instead")]
-		protected override void LayoutChildren(double x, double y, double width, double height)
+		IReadOnlyList<Element> ILayoutController.Children => LogicalChildrenInternal;
+
+		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
+		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
+
+		/// <inheritdoc cref="IPaddingElement.Padding"/>
+		public Thickness Padding
 		{
-			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
-			{
-				Element element = LogicalChildrenInternal[i];
-				var child = element as View;
-				child?.Arrange(new Rect(x, y, width, height));
-			}
+			get => (Thickness)GetValue(PaddingProperty);
+			set => SetValue(PaddingProperty, value);
 		}
 
-		[Obsolete("Use MeasureOverride instead")]
-		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
-		{
-			double widthRequest = WidthRequest;
-			double heightRequest = HeightRequest;
-			var childRequest = new SizeRequest();
-			if ((widthRequest == -1 || heightRequest == -1) && Content != null)
-			{
-				childRequest = Content.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins);
-			}
+		Thickness IPaddingElement.PaddingDefaultValueCreator() => default(Thickness);
 
-			return new SizeRequest
-			{
-				Request = new Size { Width = widthRequest != -1 ? widthRequest : childRequest.Request.Width, Height = heightRequest != -1 ? heightRequest : childRequest.Request.Height },
-				Minimum = childRequest.Minimum
-			};
-		}
+		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue) => InvalidateMeasure();
 
 		internal virtual void Clear()
 		{
@@ -78,9 +84,15 @@ namespace Microsoft.Maui.Controls
 
 			var result = LayoutConstraint.None;
 			if (isFixedVertically && view.VerticalOptions.Alignment == LayoutAlignment.Fill)
+			{
 				result |= LayoutConstraint.VerticallyFixed;
+			}
+
 			if (isFixedHorizontally && view.HorizontalOptions.Alignment == LayoutAlignment.Fill)
+			{
 				result |= LayoutConstraint.HorizontallyFixed;
+			}
+
 			view.ComputedConstraint = result;
 		}
 
@@ -95,15 +107,15 @@ namespace Microsoft.Maui.Controls
 
 			var oldView = (View)oldValue;
 			var newView = (View)newValue;
-			if (oldView != null)
+			if (oldView is not null)
 			{
-				self.InternalChildren.Remove(oldView);
+				self.RemoveLogicalChild(oldView);
 				oldView.ParentOverride = null;
 			}
 
-			if (newView != null)
+			if (newView is not null)
 			{
-				self.InternalChildren.Add(newView);
+				self.AddLogicalChild(newView);
 				newView.ParentOverride = await TemplateUtilities.FindTemplatedParentAsync((Element)bindable);
 			}
 		}
@@ -130,5 +142,10 @@ namespace Microsoft.Maui.Controls
 			this.ArrangeContent(bounds);
 			return bounds.Size;
 		}
+
+		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint) => ((ICrossPlatformLayout)this).CrossPlatformMeasure(widthConstraint, heightConstraint);
+
+		Size IContentView.CrossPlatformArrange(Rect bounds) =>
+			((ICrossPlatformLayout)this).CrossPlatformArrange(bounds);
 	}
 }

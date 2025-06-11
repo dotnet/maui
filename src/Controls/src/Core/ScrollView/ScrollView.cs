@@ -1,10 +1,9 @@
 ﻿#nullable disable
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Internals;
-
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -12,17 +11,15 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
-#pragma warning disable CS0618 // Type or member is obsolete
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView
-#pragma warning restore CS0618 // Type or member is obsolete
+	public partial class ScrollView : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView
 	{
 		#region IScrollViewController
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='LayoutAreaOverride']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		[Obsolete]
-		public Rect LayoutAreaOverride
+		Rect IScrollViewController.LayoutAreaOverride
 		{
 			get => _layoutAreaOverride;
 			set
@@ -31,7 +28,7 @@ namespace Microsoft.Maui.Controls
 					return;
 				_layoutAreaOverride = value;
 				// Dont invalidate here, we can relayout immediately since this only impacts our innards
-				UpdateChildrenLayout();
+				InvalidateMeasure();
 			}
 		}
 
@@ -143,6 +140,7 @@ namespace Microsoft.Maui.Controls
 		View _content;
 		TaskCompletionSource<bool> _scrollCompletionSource;
 		Rect _layoutAreaOverride;
+		IReadOnlyList<Element> ILayoutController.Children => LogicalChildrenInternal;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='Content']/Docs/*" />
 		public View Content
@@ -154,15 +152,15 @@ namespace Microsoft.Maui.Controls
 					return;
 
 				OnPropertyChanging();
-				if (_content != null)
+				if (_content is not null)
 				{
 					_content.SizeChanged -= ContentSizeChanged;
-					InternalChildren.Remove(_content);
+					RemoveLogicalChild(_content);
 				}
 				_content = value;
-				if (_content != null)
+				if (_content is not null)
 				{
-					InternalChildren.Add(_content);
+					AddLogicalChild(_content);
 					_content.SizeChanged += ContentSizeChanged;
 				}
 
@@ -171,10 +169,39 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
+		public static readonly BindableProperty CascadeInputTransparentProperty = InputTransparentContainerElement.CascadeInputTransparentProperty;
+
+		/// <inheritdoc cref="IInputTransparentContainerElement.CascadeInputTransparent"/>
+		public bool CascadeInputTransparent
+		{
+			get => (bool)GetValue(InputTransparentContainerElement.CascadeInputTransparentProperty);
+			set => SetValue(InputTransparentContainerElement.CascadeInputTransparentProperty, value);
+		}
+
+#pragma warning disable CS0067
+		[Obsolete("Use SizeChanged.")]
+		public event EventHandler LayoutChanged;
+#pragma warning restore CS0067
+
+		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
+		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
+
+		/// <inheritdoc cref="IPaddingElement.Padding"/>
+		public Thickness Padding
+		{
+			get => (Thickness)GetValue(PaddingProperty);
+			set => SetValue(PaddingProperty, value);
+		}
+
+		Thickness IPaddingElement.PaddingDefaultValueCreator() => default(Thickness);
+
+		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue) => InvalidateMeasure();
+
 		void ContentSizeChanged(object sender, EventArgs e)
 		{
 			var view = (sender as IView);
-			if (view == null)
+			if (view is null)
 			{
 				ContentSize = Size.Zero;
 				return;
@@ -248,7 +275,9 @@ namespace Microsoft.Maui.Controls
 		public Task ScrollToAsync(double x, double y, bool animated)
 		{
 			if (Orientation == ScrollOrientation.Neither)
+			{
 				return Task.FromResult(false);
+			}
 
 			var args = new ScrollToRequestedEventArgs(x, y, animated);
 			OnScrollToRequested(args);
@@ -259,16 +288,24 @@ namespace Microsoft.Maui.Controls
 		public Task ScrollToAsync(Element element, ScrollToPosition position, bool animated)
 		{
 			if (Orientation == ScrollOrientation.Neither)
+			{
 				return Task.FromResult(false);
+			}
 
 			if (!Enum.IsDefined(typeof(ScrollToPosition), position))
+			{
 				throw new ArgumentException("position is not a valid ScrollToPosition", nameof(position));
+			}
 
-			if (element == null)
+			if (element is null)
+			{
 				throw new ArgumentNullException(nameof(element));
+			}
 
 			if (!CheckElementBelongsToScrollViewer(element))
+			{
 				throw new ArgumentException("element does not belong to this ScrollView", nameof(element));
+			}
 
 			var args = new ScrollToRequestedEventArgs(element, position, animated);
 			OnScrollToRequested(args);
@@ -276,51 +313,6 @@ namespace Microsoft.Maui.Controls
 		}
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => false;
-
-		[Obsolete("Use ArrangeOverride instead")]
-		protected override void LayoutChildren(double x, double y, double width, double height)
-		{
-		}
-
-		[Obsolete("Use MeasureOverride instead")]
-		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
-		{
-			if (Content == null)
-				return new SizeRequest();
-
-			switch (Orientation)
-			{
-				case ScrollOrientation.Horizontal:
-					widthConstraint = double.PositiveInfinity;
-					break;
-				case ScrollOrientation.Vertical:
-					heightConstraint = double.PositiveInfinity;
-					break;
-				case ScrollOrientation.Both:
-					widthConstraint = double.PositiveInfinity;
-					heightConstraint = double.PositiveInfinity;
-					break;
-				case ScrollOrientation.Neither:
-					widthConstraint = Width;
-					heightConstraint = Height;
-					break;
-			}
-
-			SizeRequest contentRequest;
-
-			if (Content is IView fe && fe.Handler != null)
-			{
-				contentRequest = fe.Measure(widthConstraint, heightConstraint);
-			}
-			else
-			{
-				contentRequest = Content.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins);
-			}
-
-			contentRequest.Minimum = new Size(Math.Min(40, contentRequest.Minimum.Width), Math.Min(40, contentRequest.Minimum.Height));
-
-			return contentRequest;
-		}
 
 		protected override void ComputeConstraintForView(View view)
 		{
@@ -348,12 +340,12 @@ namespace Microsoft.Maui.Controls
 
 		bool CheckElementBelongsToScrollViewer(Element element)
 		{
-			return Equals(element, this) || element.RealParent != null && CheckElementBelongsToScrollViewer(element.RealParent);
+			return Equals(element, this) || element.RealParent is not null && CheckElementBelongsToScrollViewer(element.RealParent);
 		}
 
 		void CheckTaskCompletionSource()
 		{
-			if (_scrollCompletionSource != null && _scrollCompletionSource.Task.Status == TaskStatus.Running)
+			if (_scrollCompletionSource is not null && _scrollCompletionSource.Task.Status == TaskStatus.Running)
 			{
 				_scrollCompletionSource.TrySetCanceled();
 			}
@@ -363,10 +355,13 @@ namespace Microsoft.Maui.Controls
 		double GetCoordinate(Element item, string coordinateName, double coordinate)
 		{
 			if (item == this)
+			{
 				return coordinate;
+			}
+
 			coordinate += (double)typeof(VisualElement).GetProperty(coordinateName).GetValue(item, null);
 			var visualParentElement = item.RealParent as VisualElement;
-			return visualParentElement != null ? GetCoordinate(visualParentElement, coordinateName, coordinate) : coordinate;
+			return visualParentElement is not null ? GetCoordinate(visualParentElement, coordinateName, coordinate) : coordinate;
 		}
 
 		void OnScrollToRequested(ScrollToRequestedEventArgs e)
@@ -375,9 +370,13 @@ namespace Microsoft.Maui.Controls
 			ScrollToRequested?.Invoke(this, e);
 
 			if (Handler is null)
+			{
 				_pendingScrollToRequested = e;
+			}
 			else
+			{
 				Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(e).ToRequest());
+			}
 		}
 
 		ScrollToRequestedEventArgs ConvertRequestMode(ScrollToRequestedEventArgs args)
@@ -393,6 +392,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		object IContentView.Content => Content;
+
 		IView IContentView.PresentedContent => Content;
 
 		double IScrollView.HorizontalOffset
@@ -477,6 +477,11 @@ namespace Microsoft.Maui.Controls
 
 			return bounds.Size;
 		}
+
+		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint) => ((ICrossPlatformLayout)this).CrossPlatformMeasure(widthConstraint, heightConstraint);
+
+		Size IContentView.CrossPlatformArrange(Rect bounds) =>
+			((ICrossPlatformLayout)this).CrossPlatformArrange(bounds);
 
 		private protected override string GetDebuggerDisplay()
 		{

@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/Frame.xml" path="Type[@FullName='Microsoft.Maui.Controls.Frame']/Docs/*" />
 	[ContentProperty(nameof(Content))]
 	[Obsolete("Frame is obsolete as of .NET 9. Please use Border instead.")]
-	public partial class Frame : ContentView, IElementConfiguration<Frame>, IPaddingElement, IBorderElement, IView, IContentView
+	public partial class Frame : ContentView, IElementConfiguration<Frame>, IPaddingElement, IBorderElement, IView, IContentView, IClippedToBoundsElement
 	{
 		/// <summary>Bindable property for <see cref="BorderColor"/>.</summary>
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
@@ -28,10 +28,7 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Frame>>(() => new PlatformConfigurationRegistry<Frame>(this));
 		}
 
-		Thickness IPaddingElement.PaddingDefaultValueCreator()
-		{
-			return 20d;
-		}
+		Thickness IPaddingElement.PaddingDefaultValueCreator() => 20d;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Frame.xml" path="//Member[@MemberName='HasShadow']/Docs/*" />
 		public bool HasShadow

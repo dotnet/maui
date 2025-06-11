@@ -345,3 +345,14 @@ Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.Al
 Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.AllowImplicitXmlnsDeclarationAttribute(bool allow = true) -> void
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.Target.get -> string
 *REMOVED*~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.XmlnsDefinitionAttribute(string xmlNamespace, string clrNamespace) -> void
+*REMOVED*Microsoft.Maui.Controls.ScrollView.LayoutAreaOverride.get -> Microsoft.Maui.Graphics.Rect
+*REMOVED*Microsoft.Maui.Controls.ScrollView.LayoutAreaOverride.set -> void
+~static readonly Microsoft.Maui.Controls.TemplatedView.IsClippedToBoundsProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.TemplatedView.IsClippedToBounds.get -> bool
+Microsoft.Maui.Controls.TemplatedView.IsClippedToBounds.set -> void
+~static readonly Microsoft.Maui.Controls.TemplatedView.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ScrollView.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ContentPresenter.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ScrollView.CascadeInputTransparentProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.TemplatedView.CascadeInputTransparentProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparentProperty -> Microsoft.Maui.Controls.BindableProperty

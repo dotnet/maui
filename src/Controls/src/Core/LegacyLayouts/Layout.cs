@@ -98,9 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				propertyChanged: IsClippedToBoundsPropertyChanged);
 
 		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
-		public static readonly BindableProperty CascadeInputTransparentProperty =
-			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true,
-				propertyChanged: OnCascadeInputTransparentPropertyChanged);
+		public static readonly BindableProperty CascadeInputTransparentProperty = InputTransparentContainerElement.CascadeInputTransparentProperty;
 
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
@@ -152,8 +150,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// </value>
 		public bool CascadeInputTransparent
 		{
-			get => (bool)GetValue(CascadeInputTransparentProperty);
-			set => SetValue(CascadeInputTransparentProperty, value);
+			get => (bool)GetValue(InputTransparentContainerElement.CascadeInputTransparentProperty);
+			set => SetValue(InputTransparentContainerElement.CascadeInputTransparentProperty, value);
 		}
 
 		Thickness IPaddingElement.PaddingDefaultValueCreator() => default(Thickness);
@@ -693,16 +691,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			UpdateChildrenLayout();
 
 			return Frame.Size;
-		}
-
-		static void OnCascadeInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			// We only need to update if the cascade changes anything, namely when InputTransparent=true.
-			// When InputTransparent=false, then the cascade property has no effect.
-			if (bindable is Layout layout && layout.InputTransparent)
-			{
-				layout.RefreshInputTransparentProperty();
-			}
 		}
 	}
 }
