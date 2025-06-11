@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 29882, "[iOS] Crash occurs when ItemsSource is set to null in the SelectionChanged handler",PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 29882, "[iOS] Crash occurs when ItemsSource is set to null in the SelectionChanged handler", PlatformAffected.iOS)]
 public partial class Issue29882 : ContentPage
 {
 	private ObservableCollection<string> items;
