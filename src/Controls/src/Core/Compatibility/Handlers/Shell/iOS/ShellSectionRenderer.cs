@@ -36,18 +36,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		IShellSectionController ShellSectionController => ShellSection;
 
+		UINavigationController MoreNavigationController => ((UITabBarController)ParentViewController)?.MoreNavigationController;
+
 		public UIViewController ViewController => this;
 
 		#endregion IShellContentRenderer
 
 		#region IAppearanceObserver
 
+		ShellAppearance _shellAppearance;
+
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
+			_shellAppearance = appearance;
 			if (appearance == null)
+			{
 				_appearanceTracker.ResetAppearance(this);
+				if (MoreNavigationController is not null)
+				{
+					_appearanceTracker.ResetAppearance(MoreNavigationController);
+				}
+			}
 			else
+			{
 				_appearanceTracker.SetAppearance(this, appearance);
+				if (MoreNavigationController is not null)
+				{
+					_appearanceTracker.SetAppearance(MoreNavigationController, appearance);
+				}
+			}
 		}
 
 		#endregion IAppearanceObserver
@@ -216,6 +233,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateShadowImages();
 				_firstLayoutCompleted = true;
 			}
+		}
+
+		public override void DidMoveToParentViewController(UIViewController parent)
+		{
+			if (_shellAppearance is not null)
+			{
+				_appearanceTracker?.SetAppearance(MoreNavigationController, _shellAppearance);
+			}
+			base.DidMoveToParentViewController(parent);
 		}
 
 		public override void ViewDidLoad()

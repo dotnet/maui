@@ -118,6 +118,7 @@ Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) ->
 ~override Microsoft.Maui.Controls.Handlers.Items2.SelectableItemsViewDelegator2<TItemsView, TViewController>.ItemSelected(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.GetViewForSupplementaryElement(UIKit.UICollectionView collectionView, Foundation.NSString elementKind, Foundation.NSIndexPath indexPath) -> UIKit.UICollectionReusableView
 ~override Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.PreferredLayoutAttributesFittingAttributes(UIKit.UICollectionViewLayoutAttributes layoutAttributes) -> UIKit.UICollectionViewLayoutAttributes
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.DidMoveToParentViewController(UIKit.UIViewController parent) -> void
 ~override Microsoft.Maui.Controls.ShellContent.OnPropertyChanged(string propertyName = null) -> void
 *REMOVED*~static Microsoft.Maui.Controls.Application.ControlsApplicationMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IApplication, Microsoft.Maui.Handlers.ApplicationHandler>
 ~static Microsoft.Maui.Controls.Brush.DarkGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
