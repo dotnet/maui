@@ -965,7 +965,6 @@ namespace Microsoft.Maui.Controls
 
 		internal void WireUpAsIncomingPage(Page? oldPage)
 		{
-
 			_handleNavigatedEventsForRootPage?.Dispose();
 			_handleNavigatedEventsForRootPage = null;
 
