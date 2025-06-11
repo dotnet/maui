@@ -9,16 +9,10 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 {
 	bool _invalidateParentWhenMovedToWindow;
 
-	WeakReference<ICustomMauiCollectionViewDelegate>? _customDelegate;
-
 	internal bool NeedsCellLayout { get; set; }
 
-	public MauiCollectionView(CGRect frame, UICollectionViewLayout layout, ICustomMauiCollectionViewDelegate? customDelegate = null) : base(frame, layout)
+	public MauiCollectionView(CGRect frame, UICollectionViewLayout layout) : base(frame, layout)
 	{
-		if (customDelegate is not null)
-		{
-			SetCustomDelegate(customDelegate);
-		}
 	}
 
 	public override void ScrollRectToVisible(CGRect rect, bool animated)
@@ -57,11 +51,6 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 		base.MovedToWindow();
 		_movedToWindow?.Invoke(this, EventArgs.Empty);
 
-		if (_customDelegate?.TryGetTarget(out var target) == true)
-		{
-			target.MovedToWindow(this);
-		}
-
 		if (_invalidateParentWhenMovedToWindow)
 		{
 			_invalidateParentWhenMovedToWindow = false;
@@ -69,13 +58,7 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 		}
 	}
 
-	public void SetCustomDelegate(ICustomMauiCollectionViewDelegate customDelegate)
-	{
-		_customDelegate = new WeakReference<ICustomMauiCollectionViewDelegate>(customDelegate);
-	}
-
-
-	public interface ICustomMauiCollectionViewDelegate
+	internal interface ICustomMauiCollectionViewDelegate
 	{
 		void MovedToWindow(UIView view);
 	}
