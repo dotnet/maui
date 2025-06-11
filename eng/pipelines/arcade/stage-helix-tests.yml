@@ -57,8 +57,8 @@ stages:
   - ${{ each BuildConfiguration in parameters.buildConfigurations }}:
     - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml@self', '/eng/common/templates-official/jobs/jobs.yml@self') }}
       parameters:
-        name: ${{ format('{0}_{1}_{2}', 'test_helix_unit_tests', 'Windows', ${{ BuildConfiguration }} ) }}
-        displayName: ${{ format('{0}-{1}-{2}', 'Helix Unit Tests', 'Windows', ${{ BuildConfiguration }} ) }}
+        name: ${{ format('{0}_{1}_{2}', 'test_helix_unit_tests', 'Windows', BuildConfiguration ) }}
+        displayName: ${{ format('{0}-{1}-{2}', 'Helix Unit Tests', 'Windows', BuildConfiguration ) }}
         helixRepo: dotnet/maui
         pool:
           name: NetCore-Public
