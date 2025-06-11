@@ -403,10 +403,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ContentView_should_have_the_InternalChildren_correctly_when_Content_changed()
 		{
 			var sut = new ContentView();
-			IList<Element> internalChildren = ((IControlTemplated)sut).InternalChildren;
-			internalChildren.Add(new VisualElement());
-			internalChildren.Add(new VisualElement());
-			internalChildren.Add(new VisualElement());
+			var controlTemplated = (IControlTemplated)sut;
+			var internalChildren = controlTemplated.InternalChildren;
+			controlTemplated.AddLogicalChild(new VisualElement());
+			controlTemplated.AddLogicalChild(new VisualElement());
+			controlTemplated.AddLogicalChild(new VisualElement());
 
 			var expected = new View();
 			sut.Content = expected;

@@ -76,7 +76,15 @@ namespace Microsoft.Maui.Controls
 
 		bool IControlTemplated.RemoveAt(int index)
 		{
-			return RemoveLogicalChild(InternalChildren[index], index);
+			var ct = (IControlTemplated)this;
+			var view = ct.InternalChildren[index];
+			if (InternalChildren.Contains(view))
+			{
+				InternalChildren.Remove(view);
+				return true;
+			}
+
+			return RemoveLogicalChild(ct.InternalChildren[index], index);
 		}
 	}
 }
