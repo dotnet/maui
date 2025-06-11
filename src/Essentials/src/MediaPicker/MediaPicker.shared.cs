@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.Storage;
 
@@ -21,6 +22,10 @@ namespace Microsoft.Maui.Media
 		/// <returns>A <see cref="FileResult"/> object containing details of the picked photo. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
 		Task<FileResult?> PickPhotoAsync(MediaPickerOptions? options = null);
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		Task<List<FileResult>> PickPhotosAsync(MediaPickerOptions? options = null);
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
 		/// <summary>
 		/// Opens the camera to take a photo.
 		/// </summary>
@@ -34,6 +39,10 @@ namespace Microsoft.Maui.Media
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the picked video. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
 		Task<FileResult?> PickVideoAsync(MediaPickerOptions? options = null);
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		Task<List<FileResult>> PickVideosAsync(MediaPickerOptions? options = null);
+#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		/// <summary>
 		/// Opens the camera to take a video.
@@ -62,6 +71,11 @@ namespace Microsoft.Maui.Media
 		public static Task<FileResult?> PickPhotoAsync(MediaPickerOptions? options = null) =>
 			Default.PickPhotoAsync(options);
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public static Task<List<FileResult>> PickPhotosAsync(MediaPickerOptions? options = null) =>
+			Default.PickPhotosAsync(options);
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
 		/// <summary>
 		/// Opens the camera to take a photo.
 		/// </summary>
@@ -77,6 +91,11 @@ namespace Microsoft.Maui.Media
 		/// <returns>A <see cref="FileResult"/> object containing details of the picked video. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
 		public static Task<FileResult?> PickVideoAsync(MediaPickerOptions? options = null) =>
 			Default.PickVideoAsync(options);
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public static Task<List<FileResult>> PickVideosAsync(MediaPickerOptions? options = null) =>
+			Default.PickVideosAsync(options);
+#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		/// <summary>
 		/// Opens the camera to take a video.
@@ -108,5 +127,12 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <remarks>This title is not guaranteed to be shown on all operating systems.</remarks>
 		public string? Title { get; set; }
+
+		/// <summary>
+		/// Gets or sets the maximum number of items that can be selected. Default value is 1.
+		/// </summary>
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public int SelectionLimit { get; set; } = 1;
+#pragma warning restore RS0016 // Add public types and members to the declared API
 	}
 }
