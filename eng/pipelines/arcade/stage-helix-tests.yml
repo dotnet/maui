@@ -77,9 +77,7 @@ stages:
         workspace:
           clean: all
         jobs:
-        - job: test_helix_unit_tests_${{ BuildConfiguration }}
-          displayName: Run UnitTests (${{ BuildConfiguration }})
-          timeoutInMinutes: 240
+        - timeoutInMinutes: 240
           variables:
           - name: _BuildConfig
             value: ${{ BuildConfiguration }}
