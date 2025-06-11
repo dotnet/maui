@@ -1,9 +1,9 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 1, "Page Busy indicator should be visible", PlatformAffected.UWP)]
-public class Issue1 : ContentPage
+[Issue(IssueTracker.Github, 29925, "Page Busy indicator should be visible", PlatformAffected.UWP)]
+public class Issue29925 : ContentPage
 {
-	public Issue1()
+	public Issue29925()
 	{
 		var button = new Button
 		{
