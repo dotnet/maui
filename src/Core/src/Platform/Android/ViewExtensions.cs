@@ -557,7 +557,7 @@ namespace Microsoft.Maui.Platform
 			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler is not null && view.IsAlive())
-				
+				{
 					view.ViewAttachedToWindow -= routedEventHandler;
 				}
 			});
