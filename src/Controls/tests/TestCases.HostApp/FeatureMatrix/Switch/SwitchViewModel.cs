@@ -6,27 +6,13 @@ namespace Maui.Controls.Sample;
 
 public class SwitchViewModel : INotifyPropertyChanged
 {
-    private Color _backgroundColor = Colors.White;
     private FlowDirection _flowDirection = FlowDirection.LeftToRight;
     private bool _isEnabled = true;
     private bool _isVisible = true;
     private bool _isToggled = false;
-    private Color _onColor = Colors.SkyBlue;
-    private float _shadowOpacity = 0f;
-    private Color _thumbColor = Colors.DarkBlue;
-
-    public Color BackgroundColor
-    {
-        get => _backgroundColor;
-        set
-        {
-            if (_backgroundColor != value)
-            {
-                _backgroundColor = value;
-                OnPropertyChanged();
-            }
-        }
-    }
+    private Color _onColor;
+    private Shadow _shadow;
+    private Color _thumbColor;
 
     public FlowDirection FlowDirection
     {
@@ -93,14 +79,14 @@ public class SwitchViewModel : INotifyPropertyChanged
         }
     }
 
-    public float ShadowOpacity
+    public Shadow Shadow
     {
-        get => _shadowOpacity;
+        get => _shadow;
         set
         {
-            if (_shadowOpacity != value)
+            if (_shadow != value)
             {
-                _shadowOpacity = value;
+                _shadow = value;
                 OnPropertyChanged();
             }
         }

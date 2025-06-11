@@ -15,70 +15,102 @@ public partial class SwitchOptionsPage : ContentPage
 	{
 		Navigation.PopAsync();
 	}
-	private void OnBackgroundColorRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
+
+	private void OnFlowDirectionCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
+		if (!(sender is CheckBox changedBox) || !changedBox.IsChecked)
+			return;
+		// Uncheck the other CheckBox in the group
+		if (changedBox == FlowDirectionLeftToRightCheckBox)
 		{
-			_viewModel.BackgroundColor = radioButton.Content.ToString() == "Blue" ? Colors.Blue : Colors.Orange;
+			FlowDirectionRightToLeftCheckBox.IsChecked = false;
+			_viewModel.FlowDirection = FlowDirection.LeftToRight;
 		}
-	}
-	private void OnFlowDirectionRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
-	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
+		else if (changedBox == FlowDirectionRightToLeftCheckBox)
 		{
-			_viewModel.FlowDirection = radioButton.Content.ToString() == "LeftToRight" ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
-		}
-	}
-	private void OnEnabledRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
-	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
-		{
-			_viewModel.IsEnabled = radioButton.Content.ToString() == "True" ? true : false;
-		}
-	}
-	private void OnVisibleRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
-	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
-		{
-			_viewModel.IsVisible = radioButton.Content.ToString() == "True" ? true : false;
-		}
-	}
-	private void OnToggledRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
-	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
-		{
-			_viewModel.IsToggled = radioButton.Content.ToString() == "True" ? true : false;
-		}
-	}
-	private void OnOnColorRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
-	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
-		{
-			_viewModel.OnColor = radioButton.Content.ToString() == "Red" ? Colors.Red : Colors.Green;
+			FlowDirectionLeftToRightCheckBox.IsChecked = false;
+			_viewModel.FlowDirection = FlowDirection.RightToLeft;
 		}
 	}
 
-	private void OnShadowRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
+	private void OnEnabledCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
+		if (e.Value)
 		{
-			_viewModel.ShadowOpacity = radioButton.Value.ToString() == "1" ? 1f : 0f;
+			_viewModel.IsEnabled = false;
+		}
+		else
+		{
+			_viewModel.IsEnabled = true;
 		}
 	}
 
-	private void OnThumbColorRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
+	private void OnVisibleCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
+
+		if (e.Value)
 		{
-			_viewModel.ThumbColor = radioButton.Content.ToString() == "Red" ? Colors.Red : Colors.Green;
+			_viewModel.IsVisible = false;
+		}
+		else
+		{
+			_viewModel.IsVisible = true;
+		}
+	}
+
+	private void OnToggledCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (e.Value)
+		{
+			_viewModel.IsToggled = true;
+		}
+		else
+		{
+			_viewModel.IsToggled = false;
+		}
+	}
+
+	private void OnOnColorCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (!(sender is CheckBox changedBox) || !changedBox.IsChecked)
+			return;
+		if (changedBox == OnColorRedCheckBox)
+		{
+			OnColorGreenCheckBox.IsChecked = false;
+			_viewModel.OnColor = Colors.Red;
+		}
+		else if (changedBox == OnColorGreenCheckBox)
+		{
+			OnColorRedCheckBox.IsChecked = false;
+			_viewModel.OnColor = Colors.Green;
+		}
+	}
+
+	private void OnShadowCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (e.Value)
+		{
+			_viewModel.Shadow = new Shadow { Brush = Colors.Violet, Radius = 20, Offset = new Point(0, 0), Opacity = 1f };
+		}
+		else
+		{
+			_viewModel.Shadow = null;
+		}
+	}
+
+	private void OnThumbColorCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (!(sender is CheckBox changedBox) || !changedBox.IsChecked)
+			return;
+		if (changedBox == ThumbColorRedCheckBox)
+		{
+			ThumbColorGreenCheckBox.IsChecked = false;
+			_viewModel.ThumbColor = Colors.Red;
+		}
+		else if (changedBox == ThumbColorGreenCheckBox)
+		{
+			ThumbColorRedCheckBox.IsChecked = false;
+			_viewModel.ThumbColor = Colors.Green;
 		}
 	}
 }

@@ -11,22 +11,30 @@
                      AutomationId="Options"/>
     </ContentPage.ToolbarItems>
 
-    <Switch AutomationId="SwitchControl"
-            Margin="10"
-            BackgroundColor="{Binding BackgroundColor}"
-            FlowDirection="{Binding FlowDirection}"
-            IsEnabled="{Binding IsEnabled}"
-            IsVisible="{Binding IsVisible}"
-            IsToggled="{Binding IsToggled}"
-            OnColor="{Binding OnColor}"
-            ThumbColor="{Binding ThumbColor}"
-            HeightRequest="10"
-            HorizontalOptions="Center">
-        <Switch.Shadow>
-            <Shadow Brush="Red"
-                    Offset="0,0"
-                    Opacity="{Binding ShadowOpacity}"
-                    Radius="20"/>
-        </Switch.Shadow>
-    </Switch>
+    <Grid RowDefinitions="*,Auto">
+        <Grid x:Name="SwitchGrid"
+              Grid.Row="0">
+            <Switch AutomationId="SwitchControl"
+                    FlowDirection="{Binding FlowDirection}"
+                    IsEnabled="{Binding IsEnabled}"
+                    IsVisible="{Binding IsVisible}"
+                    IsToggled="{Binding IsToggled}"
+                    OnColor="{Binding OnColor}"
+                    Shadow="{Binding Shadow}"
+                    ThumbColor="{Binding ThumbColor}"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    Toggled="Switch_Toggled">
+            </Switch>
+        </Grid>
+        <HorizontalStackLayout Grid.Row="1"
+                               HorizontalOptions="Center"
+                               Spacing="10">
+            <Label Text="Toggled Event: "/>
+            <Label x:Name="EventLabel"
+                   AutomationId="ToggledEventLabel"
+                   Text="False"/>
+        </HorizontalStackLayout>
+
+    </Grid>
 </ContentPage>
