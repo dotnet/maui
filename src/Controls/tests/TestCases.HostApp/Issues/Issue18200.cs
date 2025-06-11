@@ -67,7 +67,7 @@ public class Issue18200 : TestFlyoutPage
         Detail = detailPage;
     }
 
-    private void OnCollapseStyleValueChanged(object sender, EventArgs e)
+    void OnCollapseStyleValueChanged(object sender, EventArgs e)
     {
 		var currentCollapseStyle = this.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().GetCollapseStyle();
 		var newCollapseStyle = currentCollapseStyle == CollapseStyle.Full 
