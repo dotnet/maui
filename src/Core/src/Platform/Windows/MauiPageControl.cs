@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal void UpdateIndicatorsColor()
-		{	
+		{
 			if (UseShapeIndicator)
 			{
 				return;

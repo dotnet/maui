@@ -1,5 +1,5 @@
-using Microsoft.Maui.Controls;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.Controls;
 namespace Maui.Controls.Sample;
 public partial class CollectionViewScrollPage : ContentPage
 {
@@ -12,10 +12,10 @@ public partial class CollectionViewScrollPage : ContentPage
 		BindingContext = _viewModel;
 	}
 
-		private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
-		{
-			BindingContext = _viewModel = new CollectionViewViewModel();
-			_viewModel.ItemsSourceType = ItemsSourceType.ObservableCollectionT3;
-			await Navigation.PushAsync(new ScrollBehaviorOptionsPage(_viewModel));
-		}
+	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
+	{
+		BindingContext = _viewModel = new CollectionViewViewModel();
+		_viewModel.ItemsSourceType = ItemsSourceType.ObservableCollectionT3;
+		await Navigation.PushAsync(new ScrollBehaviorOptionsPage(_viewModel));
+	}
 }

@@ -1,5 +1,6 @@
 ﻿using Controls.Sample.UITests;
 using Maui.Controls.Sample.CollectionViewGalleries;
+using Maui.Controls.Sample.Issues;
 
 namespace Maui.Controls.Sample
 {
@@ -69,6 +70,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new ProgressBarCoreGalleryPage(), "Progress Bar Gallery"),
 			new GalleryPageFactory(() => new RadioButtonCoreGalleryPage(), "RadioButton Gallery"),
 			new GalleryPageFactory(() => new ScrollViewCoreGalleryPage(), "ScrollView Gallery"),
+			new GalleryPageFactory(() => new ShadowFeaturePage(), "Shadow Feature Matrix"),
 			new GalleryPageFactory(() => new SearchBarCoreGalleryPage(), "Search Bar Gallery"),
 			new GalleryPageFactory(() => new SliderCoreGalleryPage(), "Slider Gallery"),
 			new GalleryPageFactory(() => new StepperCoreGalleryPage(), "Stepper Gallery"),
@@ -78,6 +80,8 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new WebViewCoreGalleryPage(), "WebView Gallery"),
 			new GalleryPageFactory(() => new SliderControlPage(), "Slider Feature Matrix"),
 			new GalleryPageFactory(() => new CollectionViewFeaturePage(), "CollectionView Feature Matrix"),
+			new GalleryPageFactory(() => new LabelControlPage(), "Label Feature Matrix"),
+			new GalleryPageFactory(() => new CarouselViewFeaturePage(), "CarouselView Feature Matrix"),
 		};
 
 		public CorePageView(Page rootPage)
