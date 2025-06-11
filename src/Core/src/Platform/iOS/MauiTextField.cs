@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -9,6 +11,7 @@ namespace Microsoft.Maui.Platform
 
 	public class MauiTextField : UITextField, IUIViewLifeCycleEvents
 	{
+		internal bool IsReadOnly;
 
 		public MauiTextField(CGRect frame)
 			: base(frame)
@@ -22,6 +25,14 @@ namespace Microsoft.Maui.Platform
 		public override void WillMoveToWindow(UIWindow? window)
 		{
 			base.WillMoveToWindow(window);
+		}
+
+		public override bool CanPerform(Selector action, NSObject? withSender)
+		{
+			if (!IsReadOnly)
+				return base.CanPerform(action, withSender);
+
+			return action.Name == "copy:" || action.Name == "select:" || action.Name == "selectAll:";
 		}
 
 		public override string? Text
