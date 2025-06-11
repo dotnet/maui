@@ -23,9 +23,21 @@ public class Issue29898 : ContentPage
 			HorizontalOptions = LayoutOptions.Center
 		};
 
+		var button2 = new Button
+		{
+			Text = "Set StrokeDashArray",
+			AutomationId = "SetDashButton",
+			HorizontalOptions = LayoutOptions.Center
+		};
+
 		button.Clicked += (s, e) =>
 		{
 			border.StrokeDashArray = null;
+		};
+
+		button2.Clicked += (s, e) =>
+		{
+			border.StrokeDashArray = new DoubleCollection { 5, 2 };
 		};
 
 		var layout = new VerticalStackLayout
@@ -33,7 +45,7 @@ public class Issue29898 : ContentPage
 			Spacing = 25,
 			Padding = new Thickness(30, 60, 30, 30),
 			VerticalOptions = LayoutOptions.Center,
-			Children = { border, button }
+			Children = { border, button, button2 }
 		};
 
 		Content = layout;
