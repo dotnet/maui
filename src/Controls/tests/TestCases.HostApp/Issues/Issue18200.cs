@@ -9,7 +9,6 @@ public class Issue18200 : TestFlyoutPage
 	Button _button;
 	protected override void Init()
     {
-		// Set the platform-specific collapse style (equivalent to your NewPage1.xaml.cs)
 		this.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().SetCollapseStyle(CollapseStyle.Partial);
 
         // Set the flyout page properties
