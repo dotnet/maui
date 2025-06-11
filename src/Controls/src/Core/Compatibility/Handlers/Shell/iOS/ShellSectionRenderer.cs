@@ -343,7 +343,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_displayedPage != null)
 			{
 				_displayedPage.PropertyChanged += OnDisplayedPagePropertyChanged;
-				UpdateNavigationBarHidden();
 				UpdateNavigationBarHasShadow();
 			}
 		}
@@ -692,7 +691,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateNavigationBarHidden()
 		{
-			SetNavigationBarHidden(!Shell.GetNavBarIsVisible(_displayedPage), true);
+			SetNavigationBarHidden(!Shell.GetNavBarIsVisible(_displayedPage), Shell.GetNavBarVisibilityAnimationEnabled(_displayedPage));
 		}
 
 		void UpdateNavigationBarHasShadow()
@@ -774,8 +773,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					else
 						navBarVisible = Shell.GetNavBarIsVisible(element);
 				}
-
-				navigationController.SetNavigationBarHidden(!navBarVisible, true);
 
 				var coordinator = viewController.GetTransitionCoordinator();
 				if (coordinator != null && coordinator.IsInteractive)
