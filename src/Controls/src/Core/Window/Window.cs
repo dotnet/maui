@@ -631,7 +631,6 @@ namespace Microsoft.Maui.Controls
 			if (oldValue is Page oldPage)
 			{
 				oldPage.SendDisappearing();
-				oldPage.WireUpAsOutgoingPage(oldPage as Page, NavigationType.PageSwap);
 			}
 		}
 
