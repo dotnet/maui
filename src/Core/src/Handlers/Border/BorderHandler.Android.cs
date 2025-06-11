@@ -42,7 +42,14 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.RemoveAllViews();
 
 			if (handler.VirtualView.PresentedContent is IView view)
-				handler.PlatformView.AddView(view.ToPlatform(handler.MauiContext));
+			{
+				var platformView = view.ToPlatform(handler.MauiContext);
+				//Ensure the view is detached from any existing parent before adding it
+				var parent = platformView.Parent as Android.Views.ViewGroup;
+				parent?.RemoveView(platformView);
+
+				handler.PlatformView.AddView(platformView);
+			}
 		}
 
 		public static partial void MapHeight(IBorderHandler handler, IBorderView border)
