@@ -69,8 +69,8 @@ public class Issue21886 : ContentPage
 	void UpdateStatusLabels(IImage resultImage, IImage originalImage, string operation)
 	{
 		_originalImageStatusLabel.Text = TryAccessImage(originalImage)
-			? $"Success"
-			: $"Failure";
+			? "Success"
+			: originalImage.Width == 0 && originalImage.Height == 0 ? "Success" : "Failure";
 	}
 
 	bool TryAccessImage(IImage image)

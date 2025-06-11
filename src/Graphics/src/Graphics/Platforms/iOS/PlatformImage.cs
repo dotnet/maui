@@ -11,60 +11,24 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		private UIImage _image;
 
-		bool _disposed;
-
-		void ThrowIfDisposed()
-		{
-			if (_disposed)
-			{
-				throw new ObjectDisposedException(nameof(PlatformImage));
-			}
-		}
-
 		public PlatformImage(UIImage image)
 		{
 			_image = image;
 		}
 
-		public float Width
-		{
-			get
-			{
-				ThrowIfDisposed();
-				return (float)(_image?.Size.Width ?? 0);
-			}
-		}
+		public float Width => (float)(_image?.Size.Width ?? 0);
 
-		public float Height
-		{
-			get
-			{
-				ThrowIfDisposed();
-				return (float)(_image?.Size.Height ?? 0);
-			}
-		}
+		public float Height => (float)(_image?.Size.Height ?? 0);
 
 		public IImage Downsize(float maxWidthOrHeight, bool disposeOriginal = false)
 		{
 			var scaledImage = _image.ScaleImage(maxWidthOrHeight, maxWidthOrHeight, disposeOriginal);
-
-			if (disposeOriginal)
-			{
-				Dispose();
-			}
-
 			return new PlatformImage(scaledImage);
 		}
 
 		public IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
 			var scaledImage = _image.ScaleImage(maxWidth, maxHeight, disposeOriginal);
-
-			if (disposeOriginal)
-			{
-				Dispose();
-			}
-
 			return new PlatformImage(scaledImage);
 		}
 
@@ -123,7 +87,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 				if (disposeOriginal)
 				{
-					Dispose();
+					_image.Dispose();
 				}
 
 				return context.Image;
@@ -183,12 +147,8 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public void Dispose()
 		{
-			if (_disposed)
-				return;
-
 			var disp = Interlocked.Exchange(ref _image, null);
 			disp?.Dispose();
-			_disposed = true;
 		}
 
 		public void Draw(ICanvas canvas, RectF dirtyRect)
