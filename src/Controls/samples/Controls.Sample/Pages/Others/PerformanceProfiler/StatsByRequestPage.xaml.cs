@@ -20,9 +20,13 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnGetStatsClicked(object? sender, EventArgs e)
 		{
+			var imageStats = _performanceProfiler.Image.GetStats();
+			ImageStatsLabelTitle.Text = "Layout Performance Stats";
+			ImageStatsLabel.Text = $"LoadDuration: {imageStats.LoadDuration} ms";
+			
 			var layoutStats = _performanceProfiler.Layout.GetStats();
-
-			StatsLabel.Text = $"ArrangeDuration: {layoutStats.ArrangePassCount}, AverageArrangeDuration: {layoutStats.ArrangeDuration}, MeasurePassCount: {layoutStats.MeasurePassCount}, MeasureDuration: {layoutStats.MeasureDuration}";
+			LayoutStatsLabelTitle.Text = "Layout Performance Stats";
+			LayoutStatsLabel.Text = $"ArrangeDuration: {layoutStats.ArrangePassCount}, AverageArrangeDuration: {layoutStats.ArrangeDuration}, MeasurePassCount: {layoutStats.MeasurePassCount}, MeasureDuration: {layoutStats.MeasureDuration}";
 		}
 	}
 }

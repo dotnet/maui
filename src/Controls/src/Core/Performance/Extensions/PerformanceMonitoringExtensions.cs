@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.Performance
             
             // Register core services
             builder.Services.AddSingleton<IPerformanceProfiler, PerformanceProfiler>();
+            builder.Services.AddSingleton<IImagePerformanceTracker, ImagePerformanceTracker>();
             builder.Services.AddSingleton<ILayoutPerformanceTracker, LayoutPerformanceTracker>();
 
             // Register warning manager with configuration
@@ -48,6 +49,7 @@ namespace Microsoft.Maui.Controls.Performance
             // Configure options
             builder.Services.Configure<PerformanceMonitoringOptions>(opt =>
             {
+				opt.Image = options.Image;
                 opt.Layout = options.Layout;
                 opt.Warnings = options.Warnings;
             });
@@ -55,6 +57,24 @@ namespace Microsoft.Maui.Controls.Performance
             return builder;
         }
 
+        /// <summary>
+        /// Configures image tracking options for performance monitoring.
+        /// </summary>
+        /// <param name="options">The performance monitoring options instance to modify.</param>
+        /// <param name="configure">A delegate that applies configuration settings to image tracking.</param>
+        /// <returns>The modified <see cref="PerformanceMonitoringOptions"/> instance.</returns>
+        /// <remarks>
+        /// This extension method allows customization of image tracking settings by applying user-defined configurations.
+        /// It enables fine-tuned performance monitoring based on application needs.
+        /// </remarks>
+        public static PerformanceMonitoringOptions ConfigureImage(
+	        this PerformanceMonitoringOptions options,
+	        Action<ImageTrackingOptions> configure)
+        {
+	        configure(options.Image);
+	        return options;
+        }  
+        
         /// <summary>
         /// Configures layout‐tracking options within the <see cref="PerformanceMonitoringOptions"/>.
         /// </summary>

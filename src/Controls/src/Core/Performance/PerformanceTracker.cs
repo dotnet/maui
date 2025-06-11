@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,9 +12,51 @@ namespace Microsoft.Maui.Controls.Performance.Internals;
 /// </summary>
 internal class Performance
 {
+	static readonly ConcurrentDictionary<object, Stopwatch> _loadTimers = new();
+	
 	static readonly object Lock = new object();
 	static IPerformanceProfiler? CachedProfiler;
 
+	/// <summary>
+	/// Tracks the loading state of an image and performs necessary performance monitoring.
+	/// </summary>
+	/// <param name="context">The MAUI context containing the service provider</param>
+	/// <param name="imageSourcePart">The image source being tracked.</param>
+	/// <param name="isLoading">Indicates whether the image is currently loading (<c>true</c>) or has finished (<c>false</c>).</param>
+	/// <remarks>
+	/// This method monitors image loading behavior, enabling performance tracking and optimization.
+	/// It can be used to analyze loading efficiency and improve application responsiveness.
+	/// </remarks>
+	public static void TrackImageLoad(IMauiContext? context, object imageSourcePart, bool isLoading)
+	{	
+		var profiler = GetProfiler(context);
+		
+		if (profiler?.Image is null)
+		{
+			return;
+		}
+		
+		if (isLoading)
+		{
+			// Start timing when loading begins (true)
+			var stopwatch = Stopwatch.StartNew();
+			_loadTimers.AddOrUpdate(imageSourcePart, stopwatch, (key, existing) =>
+			{
+				existing?.Stop(); // Stop any existing timer
+				return stopwatch;
+			});
+		}
+		else
+		{
+			// Stop timing when loading ends (false) and record the result
+			if (_loadTimers.TryRemove(imageSourcePart, out var stopwatch))
+			{
+				stopwatch.Stop();
+				profiler?.Image?.RecordImageLoad(stopwatch.Elapsed.TotalMilliseconds);
+			}
+		}
+	}
+	
 	/// <summary>
 	/// Tracks the execution time of a measure operation and records the performance data.
 	/// </summary>
@@ -72,8 +115,8 @@ internal class Performance
 			profiler?.Layout.RecordArrangePass(stopwatch.Elapsed.TotalMilliseconds, element);
 		}
 	}
-	
-	internal static IPerformanceProfiler? GetProfiler(IMauiContext? context)
+
+	static IPerformanceProfiler? GetProfiler(IMauiContext? context)
 	{
 		// Return cached profiler if available
 		if (CachedProfiler is not null)

@@ -57,6 +57,12 @@ Microsoft.Maui.Controls.LayoutConstraint.Fixed = Microsoft.Maui.Controls.LayoutC
 Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.None = 0 -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed = 2 -> Microsoft.Maui.Controls.LayoutConstraint
+Microsoft.Maui.Controls.Performance.IImagePerformanceTracker
+Microsoft.Maui.Controls.Performance.IImagePerformanceTracker.Configure(Microsoft.Maui.Controls.Performance.ImageTrackingOptions! options) -> void
+Microsoft.Maui.Controls.Performance.IImagePerformanceTracker.GetStats() -> Microsoft.Maui.Controls.Performance.ImageStats!
+Microsoft.Maui.Controls.Performance.IImagePerformanceTracker.Options.get -> Microsoft.Maui.Controls.Performance.ImageTrackingOptions!
+Microsoft.Maui.Controls.Performance.IImagePerformanceTracker.RecordImageLoad(double loadDuration) -> void
+Microsoft.Maui.Controls.Performance.IImagePerformanceTracker.SubscribeToImageUpdates(System.Action<Microsoft.Maui.Controls.Performance.ImageUpdate!>! callback) -> void
 Microsoft.Maui.Controls.Performance.ILayoutPerformanceTracker
 Microsoft.Maui.Controls.Performance.ILayoutPerformanceTracker.Configure(Microsoft.Maui.Controls.Performance.LayoutTrackingOptions! options) -> void
 Microsoft.Maui.Controls.Performance.ILayoutPerformanceTracker.GetStats() -> Microsoft.Maui.Controls.Performance.LayoutStats!
@@ -64,7 +70,33 @@ Microsoft.Maui.Controls.Performance.ILayoutPerformanceTracker.Options.get -> Mic
 Microsoft.Maui.Controls.Performance.ILayoutPerformanceTracker.RecordArrangePass(double duration, string? element = null) -> void
 Microsoft.Maui.Controls.Performance.ILayoutPerformanceTracker.RecordMeasurePass(double duration, string? element = null) -> void
 Microsoft.Maui.Controls.Performance.ILayoutPerformanceTracker.SubscribeToLayoutUpdates(System.Action<Microsoft.Maui.Controls.Performance.LayoutUpdate!>! callback) -> void
+Microsoft.Maui.Controls.Performance.ImagePerformanceTracker
+Microsoft.Maui.Controls.Performance.ImagePerformanceTracker.Configure(Microsoft.Maui.Controls.Performance.ImageTrackingOptions! options) -> void
+Microsoft.Maui.Controls.Performance.ImagePerformanceTracker.GetStats() -> Microsoft.Maui.Controls.Performance.ImageStats!
+Microsoft.Maui.Controls.Performance.ImagePerformanceTracker.ImagePerformanceTracker(System.Diagnostics.Metrics.Meter! meter, Microsoft.Maui.Controls.Performance.IPerformanceWarningManager? warningManager = null) -> void
+Microsoft.Maui.Controls.Performance.ImagePerformanceTracker.Options.get -> Microsoft.Maui.Controls.Performance.ImageTrackingOptions!
+Microsoft.Maui.Controls.Performance.ImagePerformanceTracker.RecordImageLoad(double loadDuration) -> void
+Microsoft.Maui.Controls.Performance.ImagePerformanceTracker.SubscribeToImageUpdates(System.Action<Microsoft.Maui.Controls.Performance.ImageUpdate!>! callback) -> void
+Microsoft.Maui.Controls.Performance.ImageStats
+Microsoft.Maui.Controls.Performance.ImageStats.ImageStats() -> void
+Microsoft.Maui.Controls.Performance.ImageStats.LoadDuration.get -> double
+Microsoft.Maui.Controls.Performance.ImageStats.LoadDuration.set -> void
+Microsoft.Maui.Controls.Performance.ImageThresholds
+Microsoft.Maui.Controls.Performance.ImageThresholds.ImageMaxLoadTime.get -> System.TimeSpan
+Microsoft.Maui.Controls.Performance.ImageThresholds.ImageMaxLoadTime.set -> void
+Microsoft.Maui.Controls.Performance.ImageThresholds.ImageThresholds() -> void
+Microsoft.Maui.Controls.Performance.ImageTrackingOptions
+Microsoft.Maui.Controls.Performance.ImageTrackingOptions.EnableLoadTimeTracking.get -> bool
+Microsoft.Maui.Controls.Performance.ImageTrackingOptions.EnableLoadTimeTracking.set -> void
+Microsoft.Maui.Controls.Performance.ImageTrackingOptions.ImageTrackingOptions() -> void
+Microsoft.Maui.Controls.Performance.ImageUpdate
+Microsoft.Maui.Controls.Performance.ImageUpdate.ImageUpdate() -> void
+Microsoft.Maui.Controls.Performance.ImageUpdate.TimestampUtc.get -> System.DateTime
+Microsoft.Maui.Controls.Performance.ImageUpdate.TimestampUtc.set -> void
+Microsoft.Maui.Controls.Performance.ImageUpdate.TotalTime.get -> double
+Microsoft.Maui.Controls.Performance.ImageUpdate.TotalTime.set -> void
 Microsoft.Maui.Controls.Performance.IPerformanceProfiler
+Microsoft.Maui.Controls.Performance.IPerformanceProfiler.Image.get -> Microsoft.Maui.Controls.Performance.IImagePerformanceTracker!
 Microsoft.Maui.Controls.Performance.IPerformanceProfiler.Layout.get -> Microsoft.Maui.Controls.Performance.ILayoutPerformanceTracker!
 Microsoft.Maui.Controls.Performance.IPerformanceProfiler.Warnings.get -> Microsoft.Maui.Controls.Performance.IPerformanceWarningManager!
 Microsoft.Maui.Controls.Performance.IPerformanceWarningManager
@@ -111,12 +143,16 @@ Microsoft.Maui.Controls.Performance.LayoutUpdate.TotalTime.get -> double
 Microsoft.Maui.Controls.Performance.LayoutUpdate.TotalTime.set -> void
 Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions
 Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions
+Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions.Image.get -> Microsoft.Maui.Controls.Performance.ImageTrackingOptions!
+Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions.Image.set -> void
 Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions.Layout.get -> Microsoft.Maui.Controls.Performance.LayoutTrackingOptions!
 Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions.Layout.set -> void
 Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions.PerformanceMonitoringOptions() -> void
 Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions.Warnings.get -> Microsoft.Maui.Controls.Performance.WarningOptions!
 Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions.Warnings.set -> void
 Microsoft.Maui.Controls.Performance.PerformanceThresholds
+Microsoft.Maui.Controls.Performance.PerformanceThresholds.Image.get -> Microsoft.Maui.Controls.Performance.ImageThresholds!
+Microsoft.Maui.Controls.Performance.PerformanceThresholds.Image.set -> void
 Microsoft.Maui.Controls.Performance.PerformanceThresholds.Layout.get -> Microsoft.Maui.Controls.Performance.LayoutThresholds!
 Microsoft.Maui.Controls.Performance.PerformanceThresholds.Layout.set -> void
 Microsoft.Maui.Controls.Performance.PerformanceThresholds.PerformanceThresholds() -> void
@@ -157,6 +193,7 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.Compone
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
 static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.AddPerformanceMonitoring(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions!>? configure = null) -> Microsoft.Maui.Hosting.MauiAppBuilder!
+static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.ConfigureImage(this Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions! options, System.Action<Microsoft.Maui.Controls.Performance.ImageTrackingOptions!>! configure) -> Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions!
 static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.ConfigureLayout(this Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions! options, System.Action<Microsoft.Maui.Controls.Performance.LayoutTrackingOptions!>! configure) -> Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions!
 static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.ConfigureWarnings(this Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions! options, System.Action<Microsoft.Maui.Controls.Performance.WarningOptions!>! configure) -> Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions!
 ~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void

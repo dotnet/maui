@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls.Performance
 				return;
 			}
 
-			// Update aggregation fields
+			// Update fields
 			_totalMeasurePasses++;
 			_totalMeasureDuration = duration;
 

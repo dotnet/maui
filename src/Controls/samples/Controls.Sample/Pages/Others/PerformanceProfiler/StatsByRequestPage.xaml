@@ -9,77 +9,98 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition />
+        <RowDefinition />
+        <RowDefinition />
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition />
+        <ColumnDefinition />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
 
-        <BoxView Color="AliceBlue" />
-        <Label Text="Upper left"
-               HorizontalOptions="Start"
-               VerticalOptions="Start" />
-        <BoxView Grid.Column="1"
-                 Color="LightSkyBlue" />
-        <Label Grid.Column="1"
-               Text="Upper center"
-               HorizontalOptions="Center"
-               VerticalOptions="Start"/>
-        <BoxView Grid.Column="2"
-                 Color="CadetBlue" />
-        <Label Grid.Column="2"
-               Text="Upper right"
-               HorizontalOptions="End"
-               VerticalOptions="Start" />
-        <BoxView Grid.Row="1"
-                 Color="CornflowerBlue" />
-        <Label Grid.Row="1"
-               Text="Center left"
-               HorizontalOptions="Start"
-               VerticalOptions="Center" />
-        <BoxView Grid.Row="1"
-                 Grid.Column="1"
-                 Color="DodgerBlue" />
-        <Label Grid.Row="1"
+      <!-- Upper Row -->
+      <BoxView Color="AliceBlue" />
+      <Label Text="Upper left"
+             HorizontalOptions="Start"
+             VerticalOptions="Start" />
+
+      <BoxView Grid.Column="1"
+               Color="LightSkyBlue" />
+      <Label Grid.Column="1"
+             Text="Upper center"
+             HorizontalOptions="Center"
+             VerticalOptions="Start"/>
+
+      <BoxView Grid.Column="2"
+               Color="CadetBlue" />
+      <Label Grid.Column="2"
+             Text="Upper right"
+             HorizontalOptions="End"
+             VerticalOptions="Start" />
+
+      <!-- Middle Row -->
+      <BoxView Grid.Row="1"
+               Color="CornflowerBlue" />
+      <Label Grid.Row="1"
+             Text="Center left"
+             HorizontalOptions="Start"
+             VerticalOptions="Center" />
+
+      <BoxView Grid.Row="1"
                Grid.Column="1"
-               Text="Center center"
-               HorizontalOptions="Center"
-               VerticalOptions="Center" />
-        <BoxView Grid.Row="1"
-                 Grid.Column="2"
-                 Color="DarkSlateBlue" />
-        <Label Grid.Row="1"
+               Color="DodgerBlue" />
+      
+      <Image Grid.Row="1"
+             Grid.Column="1"
+             Source="oasis.jpg"
+             Aspect="AspectFit"
+             HorizontalOptions="Center"
+             VerticalOptions="Center"
+             WidthRequest="100"
+             HeightRequest="100"/>
+
+      <Label Grid.Row="1"
+             Grid.Column="1"
+             Text="Center center"
+             HorizontalOptions="Center"
+             VerticalOptions="Center" />
+
+      <BoxView Grid.Row="1"
                Grid.Column="2"
-               Text="Center right"
-               HorizontalOptions="End"
-               VerticalOptions="Center" />
-        <BoxView Grid.Row="2"
-                 Color="SteelBlue" />
-        <Label Grid.Row="2"
-               Text="Lower left"
-               HorizontalOptions="Start"
-               VerticalOptions="End" />
-        <BoxView Grid.Row="2"
-                 Grid.Column="1"
-                 Color="LightBlue" />
-        <Label Grid.Row="2"
+               Color="DarkSlateBlue" />
+      <Label Grid.Row="1"
+             Grid.Column="2"
+             Text="Center right"
+             HorizontalOptions="End"
+             VerticalOptions="Center" />
+
+      <!-- Lower Row -->
+      <BoxView Grid.Row="2"
+               Color="SteelBlue" />
+      <Label Grid.Row="2"
+             Text="Lower left"
+             HorizontalOptions="Start"
+             VerticalOptions="End" />
+
+      <BoxView Grid.Row="2"
                Grid.Column="1"
-               Text="Lower center"
-               HorizontalOptions="Center"
-               VerticalOptions="End" />
-        <BoxView Grid.Row="2"
-                 Grid.Column="2"
-                 Color="BlueViolet" />
-        <Label Grid.Row="2"
+               Color="LightBlue" />
+      <Label Grid.Row="2"
+             Grid.Column="1"
+             Text="Lower center"
+             HorizontalOptions="Center"
+             VerticalOptions="End" />
+
+      <BoxView Grid.Row="2"
                Grid.Column="2"
-               Text="Lower right"
-               HorizontalOptions="End"
-               VerticalOptions="End" />
+               Color="BlueViolet" />
+      <Label Grid.Row="2"
+             Grid.Column="2"
+             Text="Lower right"
+             HorizontalOptions="End"
+             VerticalOptions="End" />
     </Grid>
     <VerticalStackLayout
       Grid.Row="1"
@@ -88,7 +109,13 @@
         Text="Get Performance Stats"
         Clicked="OnGetStatsClicked"/>
       <Label 
-        x:Name="StatsLabel"/>
+        x:Name="ImageStatsLabelTitle"/>
+      <Label 
+        x:Name="ImageStatsLabel"/>
+      <Label 
+        x:Name="LayoutStatsLabelTitle"/>
+      <Label 
+        x:Name="LayoutStatsLabel"/>
     </VerticalStackLayout>
   </Grid>
 </ContentPage>

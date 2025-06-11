@@ -304,6 +304,11 @@ namespace Maui.Controls.Sample
 			// Add performance monitoring
 			appBuilder.AddPerformanceMonitoring(options =>
 			{
+				options.ConfigureImage(image =>
+				{
+					image.EnableLoadTimeTracking = true;
+				});
+				
 				options.ConfigureLayout(layout =>
 				{
 					layout.EnableMeasurePassTracking = true;
@@ -317,10 +322,14 @@ namespace Maui.Controls.Sample
 					warning.MinimumLevel = PerformanceWarningLevel.Info;
 					warning.Thresholds = new PerformanceThresholds
 					{
+						Image = new ImageThresholds
+						{
+							ImageMaxLoadTime = TimeSpan.FromMilliseconds(100),
+						},
 						Layout = new LayoutThresholds
 						{
 							LayoutMaxArrangeTime = TimeSpan.FromMilliseconds(1),
-							LayoutMaxMeasureTime = TimeSpan.FromMilliseconds(1)
+							LayoutMaxMeasureTime = TimeSpan.FromMilliseconds(2)
 						}
 					};
 				});
