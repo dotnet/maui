@@ -16,12 +16,12 @@ public class Issue11812 : ContentPage
 		{
 			Text = "Add ContentView",
 			HorizontalOptions = LayoutOptions.Center,
-			AutomationId = "TestButton"
+			AutomationId = "ChangeInnerContent"
 		};
 		button.Clicked += OnButtonClicked;
 
 		_mainContentView = new ContentView();
-		_mainContentView.SetBinding(ContentView.ContentProperty, "Content.InnerContentView");
+		_mainContentView.SetBinding(ContentView.ContentProperty, "Content");
 
 		var layout = new VerticalStackLayout
 		{
@@ -39,10 +39,7 @@ public class Issue11812 : ContentPage
 	}
 	private void OnButtonClicked(object sender, EventArgs e)
 	{
-		_viewModel.Content = new Issue11812Model()
-		{
-			InnerContentView = new Issue11812InnerContentView() { BackgroundColor = Colors.Red }
-		};
+		_viewModel.Content = new Issue11812InnerContentView() { BackgroundColor = Colors.Red };
 	}
 }
 
@@ -69,24 +66,15 @@ public class Issue11812InnerContentView : ContentView
 		Style = (Style)Application.Current.Resources["SubContentStyle"];
 	}
 }
-
-public class Issue11812Model
-{
-	public Issue11812InnerContentView InnerContentView { get; set; }
-}
-
 public class Issue11812ViewModel : INotifyPropertyChanged
 {
 	public Issue11812ViewModel()
 	{
-		Content = new Issue11812Model()
-		{
-			InnerContentView = new Issue11812InnerContentView()
-		};
+		Content = new Issue11812InnerContentView();
 	}
 
-	private Issue11812Model _content;
-	public Issue11812Model Content
+	private Issue11812InnerContentView _content;
+	public Issue11812InnerContentView Content
 	{
 		get => _content;
 		set

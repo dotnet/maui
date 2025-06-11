@@ -12,10 +12,10 @@ public class Issue11812 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Border)]
-	public void InnerContentViewShouldNotCrash()
+	public void InnerContentViewShouldNotCrashWhenDynamicallyChange()
 	{
-		App.WaitForElement("TestButton");
-		App.Tap("TestButton");
-		App.WaitForElement("TestButton");
+		App.WaitForElement("ChangeInnerContent");
+		App.Tap("ChangeInnerContent");
+		App.WaitForElement("ChangeInnerContent");
 	}
 }
