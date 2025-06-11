@@ -12,6 +12,11 @@
 		IView Flyout { get; }
 
 		/// <summary>
+		///  Gets the flyout custom icon.
+		/// </summary>
+		IImageSource FlyoutIcon { get; }
+
+		/// <summary>
 		/// Gets the detail view.
 		/// </summary>
 		IView Detail { get; }

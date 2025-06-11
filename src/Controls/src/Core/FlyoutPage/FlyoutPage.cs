@@ -352,6 +352,7 @@ namespace Microsoft.Maui.Controls
 
 		IView IFlyoutView.Flyout => this.Flyout;
 		IView IFlyoutView.Detail => this.Detail;
+		IImageSource IFlyoutView.FlyoutIcon => this.Flyout.IconImageSource;
 
 		Maui.FlyoutBehavior IFlyoutView.FlyoutBehavior
 		{

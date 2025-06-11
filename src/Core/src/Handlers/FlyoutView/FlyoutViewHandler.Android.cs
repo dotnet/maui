@@ -364,6 +364,7 @@ namespace Microsoft.Maui.Handlers
 				te.Toolbar?.Handler is ToolbarHandler th)
 			{
 				th.SetupWithDrawerLayout(platformHandler.DrawerLayout);
+				th.UpdateToolbarIcon(view.FlyoutIcon);
 			}
 		}
 
