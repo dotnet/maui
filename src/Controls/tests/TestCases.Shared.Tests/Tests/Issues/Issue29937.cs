@@ -19,6 +19,7 @@ public class Issue29937 : _IssuesUITest
     {
         App.WaitForElement("MauiButton");
         App.Tap("MauiButton");
-        App.WaitForElement("MauiCollectionView"); // If app doesn't crash, test passes.
+        App.WaitForNoElement("MauiCollectionView");
+        App.WaitForElement("MauiButton"); // If app doesn't crash, test passes.
 	}
 }
