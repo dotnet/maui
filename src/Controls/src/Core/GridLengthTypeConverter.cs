@@ -17,9 +17,9 @@ namespace Microsoft.Maui.Controls
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			var strValue = value?.ToString();
+			var strValue = value as string ?? value?.ToString();
 
-			if (strValue == null)
+			if (strValue is null)
 				return null;
 
 			return ParseStringToGridLength(strValue);
@@ -38,17 +38,16 @@ namespace Microsoft.Maui.Controls
 				if (value.Length == 4 && value.Equals("auto", StringComparison.OrdinalIgnoreCase))
 					return GridLength.Auto;
 
+				if (value.Length == 1 && value[0] == '*')
+					return GridLength.Star;
+
 #if NETSTANDARD2_1_OR_GREATER
 				var lastChar = value[^1];
 #else
     			var lastChar = value[value.Length - 1];
 #endif
-
 				if (lastChar == '*')
 				{
-					if (value.Length == 1)
-						return GridLength.Star;
-
 #if NETSTANDARD2_1_OR_GREATER
 					var prefix = value[..^1];
 #else

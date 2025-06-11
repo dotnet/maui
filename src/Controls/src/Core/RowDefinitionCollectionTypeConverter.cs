@@ -1,8 +1,9 @@
 #nullable disable
 using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Text;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
@@ -19,92 +20,54 @@ namespace Microsoft.Maui.Controls
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			var strValue = value?.ToString()
+			var strValue = value as string ?? value?.ToString()
 				?? throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(RowDefinitionCollection)));
 
-			var definitions = ConvertFrom(strValue);
-			
-			return new RowDefinitionCollection(definitions);
+			// fast path for no value or empty string
+			if (strValue.Length == 0)
+				return new RowDefinitionCollection();
+
+#if NETSTANDARD2_1_OR_GREATER
+			var unsplit = (ReadOnlySpan<char>)strValue;
+#else
+			var unsplit = strValue;
+#endif
+			var lengths = unsplit.Split(',');
+
+			var definitions = new List<RowDefinition>(lengths.Length);
+			for (var i = 0; i < lengths.Length; i++)
+			{
+				var length = GridLengthTypeConverter.ParseStringToGridLength(lengths[i]);
+				definitions.Add(new RowDefinition(length));
+			}
+			return new RowDefinitionCollection(definitions, copy: false);
 		}
 
-
-#if NETSTANDARD2_1_OR_GREATER
-		private static RowDefinition[] ConvertFrom(ReadOnlySpan<char> value)
-#else
-		private static RowDefinition[] ConvertFrom(string value)
-#endif
-		{
-			int start = 0;
-
-			int rowsCount = 0;
-			for (int i = 0; i < value.Length; i++)
-			{
-				if (value[i] == ',')
-				{
-					rowsCount++;
-				}
-			}
-			rowsCount++;
-
-			RowDefinition[] definitions = new RowDefinition[rowsCount];
-			int currentRow = 0;
-
-			for (int i = 0; i < value.Length; i++)
-			{
-				if (value[i] == ',')
-				{
-#if NETSTANDARD2_1_OR_GREATER
-					var gridLengthSlice = value[start..i];
-#else
-    				var gridLengthSlice = value.Substring(start, i - start);
-#endif
-					var gridLength = GridLengthTypeConverter.ParseStringToGridLength(gridLengthSlice);
-					definitions[currentRow++] = new RowDefinition(gridLength);
-					start = i + 1;
-				}
-			}
-
-			// Handle the last segment
-			if (start < value.Length)
-			{
-#if NETSTANDARD2_1_OR_GREATER
-				var gridLengthSlice = value[start..];
-#else
-				var gridLengthSlice = value.Substring(start);
-#endif
-				var gridLength = GridLengthTypeConverter.ParseStringToGridLength(gridLengthSlice);
-				definitions[currentRow] = new RowDefinition(gridLength);
-			}
-
-			return definitions;
-		}
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (value is not RowDefinitionCollection rowDefinitions)
+			if (value is not RowDefinitionCollection definitions)
 				throw new NotSupportedException();
 
-    		StringBuilder sb = new(rowDefinitions.Count * 4);
+			var count = definitions.Count;
 
-			int count = rowDefinitions.Count;
-    		int lastIndex = count - 1;
+			// fast path for empty or single definitions
+			if (count == 0)
+				return string.Empty;
+			if (count == 1)
+				return GridLengthTypeConverter.ConvertToString(definitions[0].Height);
 
-			for (var i = 0; i < count; i++)
+			// for multiple items
+			var pool = ArrayPool<string>.Shared;
+			var rentedArray = pool.Rent(definitions.Count);
+			for (var i = 0; i < definitions.Count; i++)
 			{
-				var rowDefinition = rowDefinitions[i];
-				var width = GridLengthTypeConverter.ConvertToString(rowDefinition.Height);
-
-				if (i < lastIndex)
-				{
-					sb.Append(width).Append(", ");
-				}
-				else
-				{
-					sb.Append(width);
-				}
+				var definition = definitions[i];
+				rentedArray[i] = GridLengthTypeConverter.ConvertToString(definition.Height);
 			}
-
-			return sb.ToString();
+			var result = string.Join(", ", rentedArray, 0, definitions.Count);
+			pool.Return(rentedArray);
+			return result;
 		}
 	}
 }
