@@ -223,5 +223,15 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				Assert.Null(fetched);
 			});
 		}
+
+		[Theory]
+		[InlineData("myKey1", "value123")]
+		[InlineData("myKey2", " ")]
+		[InlineData("myKey3", null)]
+		public async Task Get_Or_Set_Async_Returns_Value(string key, string value)
+		{
+			var result = await SecureStorage.GetOrSetAsync(key, value);
+			Assert.Equal(value, result);
+		}
 	}
 }

@@ -8,6 +8,12 @@ namespace Tests
 	public class SecureStorage_Tests
 	{
 		[Fact]
+		public async Task SecureStorage_LoadOrSaveAsync_Fail_On_NetStandard()
+		{
+			await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SecureStorage.GetOrSetAsync("key", "value"));
+		}
+		
+		[Fact]
 		public async Task SecureStorage_LoadAsync_Fail_On_NetStandard()
 		{
 			await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SecureStorage.GetAsync("key"));
