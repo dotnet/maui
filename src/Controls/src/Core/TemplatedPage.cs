@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ControlTemplateProperty, value); }
 		}
 
-		IList<Element> IControlTemplated.InternalChildren => InternalChildren;
+		IReadOnlyList<Element> IControlTemplated.InternalChildren => LogicalChildrenInternal;
 
 		Element IControlTemplated.TemplateRoot { get; set; }
 
@@ -73,5 +73,10 @@ namespace Microsoft.Maui.Controls
 		}
 
 		protected object GetTemplateChild(string name) => TemplateUtilities.GetTemplateChild(this, name);
+
+		bool IControlTemplated.RemoveAt(int index)
+		{
+			return RemoveLogicalChild(InternalChildren[index], index);
+		}
 	}
 }

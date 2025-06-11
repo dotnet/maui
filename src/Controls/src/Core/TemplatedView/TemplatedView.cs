@@ -77,7 +77,12 @@ namespace Microsoft.Maui.Controls
 
 		IReadOnlyList<Element> ILayoutController.Children => LogicalChildrenInternal;
 
-		IList<Element> IControlTemplated.InternalChildren => LogicalChildrenInternalBackingStore;
+		IReadOnlyList<Element> IControlTemplated.InternalChildren => LogicalChildrenInternal; 
+
+		bool IControlTemplated.RemoveAt(int index)
+		{
+			return RemoveLogicalChild(LogicalChildrenInternalBackingStore[index], index);
+		}
 
 		Element IControlTemplated.TemplateRoot { get; set; }
 

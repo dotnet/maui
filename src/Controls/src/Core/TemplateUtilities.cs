@@ -61,11 +61,14 @@ namespace Microsoft.Maui.Controls
 			{
 				while (self.InternalChildren.Count > 0)
 				{
-					self.InternalChildren.RemoveAt(self.InternalChildren.Count - 1);
+					// TODO I don't think it's correct to remove everything here
+					// Things might gain logical children that are not added from the templated Root
+					// This problem existed before we removed Compatibility.Layout though
+					self.RemoveAt(self.InternalChildren.Count - 1);
 				}
 
 				if (newValue != null)
-					self.InternalChildren.Add(newElement);
+					self.AddLogicalChild(newElement);
 			}
 			else
 			{
@@ -107,7 +110,7 @@ namespace Microsoft.Maui.Controls
 			// Now remove all remnants of any other children just to be sure
 			while (self.InternalChildren.Count > 0)
 			{
-				self.InternalChildren.RemoveAt(self.InternalChildren.Count - 1);
+				self.RemoveAt(self.InternalChildren.Count - 1);
 			}
 
 			ControlTemplate template = self.ControlTemplate;
@@ -123,7 +126,7 @@ namespace Microsoft.Maui.Controls
 					throw new NotSupportedException("ControlTemplate must return a type derived from View.");
 				}
 
-				self.InternalChildren.Add(content);
+				self.AddLogicalChild(content);
 				var controlTemplated = (IControlTemplated)bindable;
 				controlTemplated.OnControlTemplateChanged((ControlTemplate)oldValue, (ControlTemplate)newValue);
 				controlTemplated.TemplateRoot = content;

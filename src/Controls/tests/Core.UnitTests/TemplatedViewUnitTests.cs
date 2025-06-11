@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var contentView = new MyTestContentView();
 			contentView.LoadFromXaml(xaml);
 
-			IList<Element> internalChildren = contentView.InternalChildren;
+			IList<Element> internalChildren =  ((IControlTemplated)contentView).InternalChildren;
 			Assert.Equal(internalChildren[0], contentView.TemplateChildObtained);
 		}
 
