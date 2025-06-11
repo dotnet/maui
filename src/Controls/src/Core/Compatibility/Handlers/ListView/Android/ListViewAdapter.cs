@@ -82,8 +82,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			realListView.OnItemClickListener = this;
 			realListView.OnItemLongClickListener = this;
 
-			//TODO: MAUI
-			//MessagingCenter.Subscribe<ListViewAdapter>(this, Platform.CloseContextActionsSignalName, lva => CloseContextActions());
+			var currentWindow = Application.Current?.Windows.FirstOrDefault();
+			var modalNavigationManager = currentWindow?.ModalNavigationManager;
+
+			if (modalNavigationManager is not null)
+			{
+				modalNavigationManager.RequestCloseContextActions += OnCloseContextActions;
+			}
 
 			InvalidateCount();
 		}
@@ -522,8 +527,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				CloseContextActions();
 
-				// TODO: MAUI
-				//MessagingCenter.Unsubscribe<ListViewAdapter>(this, Platform.CloseContextActionsSignalName);
+				var currentWindow = Application.Current?.Windows.FirstOrDefault();
+				var modalNavigationManager = currentWindow?.ModalNavigationManager;
+
+				if (modalNavigationManager is not null)
+				{
+					modalNavigationManager.RequestCloseContextActions -= OnCloseContextActions;
+				}
 
 				_realListView.OnItemClickListener = null;
 				_realListView.OnItemLongClickListener = null;
@@ -543,6 +553,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			base.Dispose(disposing);
+		}
+
+		void OnCloseContextActions(object sender, EventArgs e)
+		{
+			CloseContextActions();
 		}
 
 #pragma warning disable CS0618 // Type or member is obsolete
