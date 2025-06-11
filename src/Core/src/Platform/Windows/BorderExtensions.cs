@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Platform
 					borderPath.StrokeDashArray.Add(value);
 				}
 			}
-			else if (borderDashArray is null)
+			else if (borderDashArray is null || borderDashArray.Length == 0)
 			{
 				borderPath.StrokeDashArray = null;
 			}
