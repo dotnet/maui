@@ -2,7 +2,7 @@
   <PropertyGroup>
     <HelixType>test/product/</HelixType>
     <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
-    <HelixTargetQueues>Windows.10.Amd64.Open</HelixTargetQueues>
+    <HelixTargetQueues>(Windows10_Debug)Windows.10.Amd64.Open</HelixTargetQueues>
     <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
 
     <IncludeDotNetCli>true</IncludeDotNetCli>
