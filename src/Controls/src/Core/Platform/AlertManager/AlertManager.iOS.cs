@@ -66,6 +66,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			UIActivityIndicatorView activityIndicatorView;
 
+			UIView overlayView;
+
 			public void Dispose()
 			{
 #pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
@@ -74,6 +76,8 @@ namespace Microsoft.Maui.Controls.Platform
 				MessagingCenter.Unsubscribe<Page, PromptArguments>(PlatformView, Page.PromptSignalName);
 				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(PlatformView, Page.ActionSheetSignalName);
 #pragma warning restore CS0618 // Type or member is obsolete
+
+				CleanUpActivityIndicator();
 			}
 
 			void OnPageBusy(Page sender, bool enabled)
@@ -90,7 +94,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (activityIndicatorView is null)
 					{
-						var overlay = new UIView(rootView.Bounds)
+						overlayView = new UIView(rootView.Bounds)
 						{
 							UserInteractionEnabled = false,
 							AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight,
@@ -103,15 +107,15 @@ namespace Microsoft.Maui.Controls.Platform
 							TranslatesAutoresizingMaskIntoConstraints = false
 						};
 
-						overlay.AddSubview(activityIndicatorView);
+						overlayView.AddSubview(activityIndicatorView);
 
 						NSLayoutConstraint.ActivateConstraints(
 						[
-							activityIndicatorView.CenterXAnchor.ConstraintEqualTo(overlay.CenterXAnchor),
-							activityIndicatorView.CenterYAnchor.ConstraintEqualTo(overlay.CenterYAnchor)
+							activityIndicatorView.CenterXAnchor.ConstraintEqualTo(overlayView.CenterXAnchor),
+							activityIndicatorView.CenterYAnchor.ConstraintEqualTo(overlayView.CenterYAnchor)
 						]);
 
-						rootView.AddSubview(overlay);
+						rootView.AddSubview(overlayView);
 					}
 
 					if (!activityIndicatorView.IsAnimating)
@@ -121,13 +125,24 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
-					if (activityIndicatorView is not null)
-					{
-						activityIndicatorView.StopAnimating();
-						activityIndicatorView.RemoveFromSuperview();
-						activityIndicatorView.Dispose();
-						activityIndicatorView = null;
-					}
+					CleanUpActivityIndicator();
+				}
+			}
+
+			void CleanUpActivityIndicator()
+			{
+				if (activityIndicatorView is not null)
+				{
+					activityIndicatorView.StopAnimating();
+					activityIndicatorView.RemoveFromSuperview();
+					activityIndicatorView.Dispose();
+					activityIndicatorView = null;
+				}
+				if (overlayView is not null)
+				{
+					overlayView.RemoveFromSuperview();
+					overlayView.Dispose();
+					overlayView = null;
 				}
 			}
 
