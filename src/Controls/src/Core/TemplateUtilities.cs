@@ -61,9 +61,6 @@ namespace Microsoft.Maui.Controls
 			{
 				while (self.InternalChildren.Count > 0)
 				{
-					// TODO I don't think it's correct to remove everything here
-					// Things might gain logical children that are not added from the templated Root
-					// This problem existed before we removed Compatibility.Layout though
 					self.RemoveAt(self.InternalChildren.Count - 1);
 				}
 

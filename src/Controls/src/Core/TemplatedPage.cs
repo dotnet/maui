@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ControlTemplateProperty, value); }
 		}
 
-		IReadOnlyList<Element> IControlTemplated.InternalChildren => LogicalChildrenInternal;
+		IReadOnlyList<Element> IControlTemplated.InternalChildren => InternalChildren;
 
 		Element IControlTemplated.TemplateRoot { get; set; }
 
