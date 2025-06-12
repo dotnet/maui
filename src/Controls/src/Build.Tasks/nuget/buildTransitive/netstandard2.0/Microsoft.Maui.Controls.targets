@@ -303,7 +303,7 @@
       <MauiImplicitCastOperatorsUsageViaReflectionSupport Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' == ''">false</MauiImplicitCastOperatorsUsageViaReflectionSupport>
       <MauiEnableXamlCBindingWithSourceCompilation Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' == ''">true</MauiEnableXamlCBindingWithSourceCompilation>
       <MauiHybridWebViewSupported Condition="'$(MauiHybridWebViewSupported)' == ''">false</MauiHybridWebViewSupported>
-      <MauiCssEnabled Condition="'$(MauiCssEnabled)' == ''">false</MauiCssEnabled>
+      <MauiCssEnabled Condition="'$(MauiCssEnabled)' == '' and '@(MauiCss->Count())' == '0'">false</MauiCssEnabled>
       <!-- FIXME: https://github.com/xamarin/xamarin-macios/issues/22065 -->
       <MobileAggressiveAttributeTrimming Condition="'$(PublishAot)' == 'true' and '$(MobileAggressiveAttributeTrimming)' == ''">false</MobileAggressiveAttributeTrimming>
       

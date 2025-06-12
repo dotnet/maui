@@ -416,7 +416,9 @@ namespace Microsoft.Maui.Controls.Internals
 				new StylePropertyAttribute("visibility", typeof(VisualElement), nameof(VisualElement.IsVisibleProperty)) { Inherited = true },
 				new StylePropertyAttribute("width", typeof(VisualElement), nameof(VisualElement.WidthRequestProperty)),
 				new StylePropertyAttribute("letter-spacing", typeof(ITextElement), nameof(TextElement.CharacterSpacingProperty)) { Inherited = true },
-				new StylePropertyAttribute("line-height", typeof(Controls.ILineHeightElement), nameof(LineHeightElement.LineHeightProperty)) { Inherited = true },
+#pragma warning disable CS0618 // Type or member is obsolete
+				new StylePropertyAttribute("line-height", typeof(ILineHeightElement), nameof(LineHeightElement.LineHeightProperty)) { Inherited = true },
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				//flex
 				new StylePropertyAttribute("align-content", typeof(FlexLayout), nameof(FlexLayout.AlignContentProperty)),
