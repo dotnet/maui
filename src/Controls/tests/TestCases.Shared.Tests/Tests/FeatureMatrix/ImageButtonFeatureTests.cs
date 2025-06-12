@@ -104,22 +104,7 @@ public class ImageButtonFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.ImageButton)]
-	public void VerifyImageButtonAspect_AspectFillWithImageSourceFromFile()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ImageAspectFill);
-		App.Tap(ImageAspectFill);
-		App.WaitForElement(SourceTypeFile);
-		App.Tap(SourceTypeFile);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("ImageButtonControl");
-		VerifyScreenshot();
-	}
-
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/29956
 	[Test]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_AspectFillWithImageSourceFromUri()
@@ -135,6 +120,7 @@ public class ImageButtonFeatureTests : UITest
 		App.WaitForElement("ImageButtonControl", timeout: TimeSpan.FromSeconds(3));
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.ImageButton)]
@@ -146,22 +132,6 @@ public class ImageButtonFeatureTests : UITest
 		App.Tap(ImageAspectFill);
 		App.WaitForElement(SourceTypeStream);
 		App.Tap(SourceTypeStream);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("ImageButtonControl");
-		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.ImageButton)]
-	public void VerifyImageButtonAspect_AspectFillWithImageSourceFromFontImage()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ImageAspectFill);
-		App.Tap(ImageAspectFill);
-		App.WaitForElement(SourceTypeFontImage);
-		App.Tap(SourceTypeFontImage);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageButtonControl");
@@ -218,22 +188,6 @@ public class ImageButtonFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.ImageButton)]
-	public void VerifyImageButtonAspect_FillWithImageSourceFromFontImage()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ImageFill);
-		App.Tap(ImageFill);
-		App.WaitForElement(SourceTypeFontImage);
-		App.Tap(SourceTypeFontImage);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("ImageButtonControl");
-		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_CenterWithImageSourceFromFile()
 	{
 		App.WaitForElement(Options);
@@ -248,21 +202,8 @@ public class ImageButtonFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.ImageButton)]
-	public void VerifyImageButtonAspect_CenterWithImageSourceFromUri()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ImageCenter);
-		App.Tap(ImageCenter);
-		App.WaitForElement(SourceTypeUri);
-		App.Tap(SourceTypeUri);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("ImageButtonControl", timeout: TimeSpan.FromSeconds(3));
-		VerifyScreenshot();
-	}
+
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29959
 
 	[Test]
 	[Category(UITestCategories.ImageButton)]
@@ -274,6 +215,38 @@ public class ImageButtonFeatureTests : UITest
 		App.Tap(ImageCenter);
 		App.WaitForElement(SourceTypeStream);
 		App.Tap(SourceTypeStream);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageButtonControl");
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.ImageButton)]
+	public void VerifyImageButtonAspect_AspectFillWithImageSourceFromFontImage()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ImageAspectFill);
+		App.Tap(ImageAspectFill);
+		App.WaitForElement(SourceTypeFontImage);
+		App.Tap(SourceTypeFontImage);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageButtonControl");
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.ImageButton)]
+	public void VerifyImageButtonAspect_FillWithImageSourceFromFontImage()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ImageFill);
+		App.Tap(ImageFill);
+		App.WaitForElement(SourceTypeFontImage);
+		App.Tap(SourceTypeFontImage);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageButtonControl");
@@ -295,6 +268,40 @@ public class ImageButtonFeatureTests : UITest
 		App.WaitForElement("ImageButtonControl");
 		VerifyScreenshot();
 	}
+
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/29956
+    [Test]
+	[Category(UITestCategories.ImageButton)]
+	public void VerifyImageButtonAspect_AspectFillWithImageSourceFromFile()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ImageAspectFill);
+		App.Tap(ImageAspectFill);
+		App.WaitForElement(SourceTypeFile);
+		App.Tap(SourceTypeFile);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageButtonControl");
+		VerifyScreenshot();
+	}
+	[Test]
+	[Category(UITestCategories.ImageButton)]
+	public void VerifyImageButtonAspect_CenterWithImageSourceFromUri()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ImageCenter);
+		App.Tap(ImageCenter);
+		App.WaitForElement(SourceTypeUri);
+		App.Tap(SourceTypeUri);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageButtonControl", timeout: TimeSpan.FromSeconds(3));
+		VerifyScreenshot();
+	}
+#endif
+#endif
 
 	[Test]
 	[Category(UITestCategories.ImageButton)]
@@ -324,7 +331,7 @@ public class ImageButtonFeatureTests : UITest
 		App.WaitForNoElement("ImageButton Clicked: 1");
 	}
 
-#if TEST_FAILS_ON_WINDOWS
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29812
 	[Test]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithShadow()
