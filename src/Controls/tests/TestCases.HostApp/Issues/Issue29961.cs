@@ -4,11 +4,11 @@ using IImage = Microsoft.Maui.Graphics.IImage;
 
 namespace Controls.TestCases.HostApp.Issues;
 
-[Issue(IssueTracker.None, 141812, "The resize method returns an image that has already been disposed", PlatformAffected.Android)]
-public class Issue21886_1 : ContentPage
+[Issue(IssueTracker.Github, 29961, "The resize method returns an image that has already been disposed", PlatformAffected.Android)]
+public class Issue29961 : ContentPage
 {
 	Label _convertedImageStatusLabel;
-	public Issue21886_1()
+	public Issue29961()
 	{
 		_convertedImageStatusLabel = new Label
 		{
