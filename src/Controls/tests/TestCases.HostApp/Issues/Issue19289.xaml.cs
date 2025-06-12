@@ -1,4 +1,4 @@
-namespace Controls.TestCases.HostApp.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 19289, "[Android] Adding a PointerGestureRecognizer to a button on Android stops the button from working", PlatformAffected.Android)]
 public partial class Issue19289 : ContentPage
