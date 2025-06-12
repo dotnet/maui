@@ -1,4 +1,4 @@
-namespace Controls.TestCases.HostApp.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 16203, "SwipeGestureRecognizer does not raise Swiped event", PlatformAffected.Android)]
 public partial class Issue16203 : ContentPage
