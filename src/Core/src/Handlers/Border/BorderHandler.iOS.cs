@@ -48,6 +48,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.VirtualView.PresentedContent is IView content)
 			{
 				var platformContent = content.ToPlatform(handler.MauiContext);
+				platformContent.RemoveFromSuperview();
 
 				// If the content is a UIScrollView, we need a container to handle masks and clip shapes effectively.
 				if (platformContent is UIScrollView)

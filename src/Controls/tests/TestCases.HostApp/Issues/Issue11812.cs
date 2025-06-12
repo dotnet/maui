@@ -7,10 +7,9 @@ namespace Maui.Controls.Sample.Issues;
 public class Issue11812 : ContentPage
 {
 	ContentView _mainContentView;
-	Issue11812ViewModel _viewModel;
 	public Issue11812()
 	{
-		this.BindingContext = _viewModel = new Issue11812ViewModel();
+		this.BindingContext = new Issue11812ViewModel();
 
 		var button = new Button
 		{
@@ -39,7 +38,7 @@ public class Issue11812 : ContentPage
 	}
 	private void OnButtonClicked(object sender, EventArgs e)
 	{
-		_viewModel.Content = new Issue11812InnerContentView() { BackgroundColor = Colors.Red };
+		_mainContentView.Content = new Issue11812InnerContentView() { BackgroundColor = Colors.Red };
 	}
 }
 
