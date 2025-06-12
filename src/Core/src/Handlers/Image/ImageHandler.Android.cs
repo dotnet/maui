@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Handlers
 			// So we want to reload the image here if it's supposed to have an image
 			if (imageHandler.SourceLoader.CheckForImageLoadedOnAttached &&
 				imageHandler.PlatformView.Drawable is null &&
-				imageHandler.VirtualView.Source is not null)
+				imageHandler.VirtualView.Source is not null && !imageHandler.SourceLoader.SourceManager.IsLoading)
 			{
 				imageHandler.SourceLoader.CheckForImageLoadedOnAttached = false;
 				imageHandler.UpdateValue(nameof(IImage.Source));
