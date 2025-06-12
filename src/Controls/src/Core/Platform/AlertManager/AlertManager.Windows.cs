@@ -70,6 +70,8 @@ namespace Microsoft.Maui.Controls.Platform
 				MessagingCenter.Unsubscribe<Page, PromptArguments>(PlatformView, Page.PromptSignalName);
 				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(PlatformView, Page.ActionSheetSignalName);
 #pragma warning restore CS0618 // Type or member is obsolete
+
+				CleanUpActivityIndicator();
 			}
 
 			void OnPageBusy(Page sender, bool enabled)
@@ -86,22 +88,24 @@ namespace Microsoft.Maui.Controls.Platform
 							{
 								IsActive = busyCount > 0
 							};
-						}
 
-						if (!panel.CachedChildren.Contains(progressRing))
-						{
 							panel.AddOverlay(progressRing);
 						}
 					}
 					else
 					{
-						if (progressRing is not null && panel.CachedChildren.Contains(progressRing))
-						{
-							progressRing.IsActive = false;
-							panel.RemoveOverlay(progressRing);
-							progressRing = null;
-						}
+						CleanUpActivityIndicator();
 					}
+				}
+			}
+
+			void CleanUpActivityIndicator()
+			{
+				if (progressRing is not null && PlatformView.Content is WindowRootViewContainer panel)
+				{
+					progressRing.IsActive = false;
+					panel.RemoveOverlay(progressRing);
+					progressRing = null;
 				}
 			}
 
