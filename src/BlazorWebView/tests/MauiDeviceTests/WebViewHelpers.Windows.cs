@@ -18,7 +18,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 				string version = CoreWebView2Environment.GetAvailableBrowserVersionString(null);
 				if (string.IsNullOrEmpty(version))
 				{
-					throw new Exception("WebView2 runtime is not installed.");
+					throw new InvalidOperationException("WebView2 runtime is not installed.");
 				}
 				await wv2.EnsureCoreWebView2Async();
 			}
