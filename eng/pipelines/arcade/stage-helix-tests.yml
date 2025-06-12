@@ -76,7 +76,7 @@ stages:
           clean: all
         jobs:
         - job: test_helix_unit_tests_windows_${{ BuildConfiguration }}
-          displayName: Run UnitTests Windows (${{ BuildConfiguration }})
+          displayName: Windows Helix Unit Tests (${{ BuildConfiguration }})
           timeoutInMinutes: 240
           variables:
           - name: _BuildConfig
