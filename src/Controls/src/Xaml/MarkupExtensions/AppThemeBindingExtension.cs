@@ -11,7 +11,8 @@ namespace Microsoft.Maui.Controls.Xaml
 		 typeof(IValueConverterProvider),
 		 typeof(IXmlLineInfoProvider),
 		 typeof(IConverterOptions)])]
-	public class AppThemeBindingExtension : IMarkupExtension<BindingBase>
+	[ProvideCompiled("Microsoft.Maui.Controls.Build.Tasks.AppThemeBindingExtension")]
+	public class AppThemeBindingExtension : IMarkupExtension
 	{
 		object _default;
 		bool _hasdefault;
@@ -46,9 +47,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		}
 		public object Value { get; private set; }
 
-		public object ProvideValue(IServiceProvider serviceProvider) => (this as IMarkupExtension<BindingBase>).ProvideValue(serviceProvider);
-
-		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
+		public object ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (Default == null
 				&& Light == null
