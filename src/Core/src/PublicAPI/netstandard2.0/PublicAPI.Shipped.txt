@@ -237,6 +237,7 @@ Microsoft.Maui.DisplayDensityRequest.DisplayDensityRequest() -> void
 Microsoft.Maui.Easing
 Microsoft.Maui.Easing.Ease(double v) -> double
 Microsoft.Maui.Easing.Easing(System.Func<double, double>! easingFunc) -> void
+Microsoft.Maui.ElementHandlerExtensions
 Microsoft.Maui.EmbeddedFont
 Microsoft.Maui.EmbeddedFont.EmbeddedFont() -> void
 Microsoft.Maui.EmbeddedFont.FontName.get -> string?
@@ -351,6 +352,9 @@ Microsoft.Maui.GridUnitType
 Microsoft.Maui.GridUnitType.Absolute = 0 -> Microsoft.Maui.GridUnitType
 Microsoft.Maui.GridUnitType.Auto = 2 -> Microsoft.Maui.GridUnitType
 Microsoft.Maui.GridUnitType.Star = 1 -> Microsoft.Maui.GridUnitType
+Microsoft.Maui.HandlerDisconnectPolicy
+Microsoft.Maui.HandlerDisconnectPolicy.Automatic = 0 -> Microsoft.Maui.HandlerDisconnectPolicy
+Microsoft.Maui.HandlerDisconnectPolicy.Manual = 1 -> Microsoft.Maui.HandlerDisconnectPolicy
 Microsoft.Maui.Handlers.ActivityIndicatorHandler
 Microsoft.Maui.Handlers.ActivityIndicatorHandler.ActivityIndicatorHandler() -> void
 Microsoft.Maui.Handlers.ActivityIndicatorHandler.ActivityIndicatorHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
@@ -411,6 +415,9 @@ Microsoft.Maui.Handlers.GraphicsViewHandler
 Microsoft.Maui.Handlers.GraphicsViewHandler.GraphicsViewHandler() -> void
 Microsoft.Maui.Handlers.GraphicsViewHandler.GraphicsViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
 Microsoft.Maui.Handlers.GraphicsViewHandler.GraphicsViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.HybridWebViewHandler
+Microsoft.Maui.Handlers.HybridWebViewHandler.HybridWebViewHandler() -> void
+Microsoft.Maui.Handlers.HybridWebViewHandler.HybridWebViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Handlers.IActivityIndicatorHandler
 Microsoft.Maui.Handlers.IActivityIndicatorHandler.PlatformView.get -> object!
 Microsoft.Maui.Handlers.IActivityIndicatorHandler.VirtualView.get -> Microsoft.Maui.IActivityIndicator!
@@ -442,6 +449,11 @@ Microsoft.Maui.Handlers.IFlyoutViewHandler.VirtualView.get -> Microsoft.Maui.IFl
 Microsoft.Maui.Handlers.IGraphicsViewHandler
 Microsoft.Maui.Handlers.IGraphicsViewHandler.PlatformView.get -> object!
 Microsoft.Maui.Handlers.IGraphicsViewHandler.VirtualView.get -> Microsoft.Maui.IGraphicsView!
+Microsoft.Maui.Handlers.IHybridPlatformWebView
+Microsoft.Maui.Handlers.IHybridPlatformWebView.SendRawMessage(string! rawMessage) -> void
+Microsoft.Maui.Handlers.IHybridWebViewHandler
+Microsoft.Maui.Handlers.IHybridWebViewHandler.PlatformView.get -> object!
+Microsoft.Maui.Handlers.IHybridWebViewHandler.VirtualView.get -> Microsoft.Maui.IHybridWebView!
 Microsoft.Maui.Handlers.IImageButtonHandler
 Microsoft.Maui.Handlers.IImageButtonHandler.PlatformView.get -> object!
 Microsoft.Maui.Handlers.IImageButtonHandler.VirtualView.get -> Microsoft.Maui.IImageButton!
@@ -735,6 +747,7 @@ Microsoft.Maui.Hosting.FontDescriptor.Filename.get -> string!
 Microsoft.Maui.Hosting.FontDescriptor.FontDescriptor(string! filename, string? alias, System.Reflection.Assembly? assembly) -> void
 Microsoft.Maui.Hosting.FontsMauiAppBuilderExtensions
 Microsoft.Maui.Hosting.HandlerMauiAppBuilderExtensions
+Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions
 Microsoft.Maui.Hosting.IEssentialsBuilder
 Microsoft.Maui.Hosting.IEssentialsBuilder.AddAppAction(Microsoft.Maui.ApplicationModel.AppAction! appAction) -> Microsoft.Maui.Hosting.IEssentialsBuilder!
 Microsoft.Maui.Hosting.IEssentialsBuilder.OnAppAction(System.Action<Microsoft.Maui.ApplicationModel.AppAction!>! action) -> Microsoft.Maui.Hosting.IEssentialsBuilder!
@@ -774,6 +787,16 @@ Microsoft.Maui.HotReload.IReloadHandler.Reload() -> void
 Microsoft.Maui.HotReload.MauiHotReloadHelper
 Microsoft.Maui.HotReload.OnHotReloadAttribute
 Microsoft.Maui.HotReload.OnHotReloadAttribute.OnHotReloadAttribute() -> void
+Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest
+Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.HybridWebViewInvokeJavaScriptRequest(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo? returnTypeJsonTypeInfo, object?[]? paramValues, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos) -> void
+Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.MethodName.get -> string!
+Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ParamJsonTypeInfos.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]?
+Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ParamValues.get -> object?[]?
+Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ReturnTypeJsonTypeInfo.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo?
+Microsoft.Maui.HybridWebViewRawMessage
+Microsoft.Maui.HybridWebViewRawMessage.HybridWebViewRawMessage() -> void
+Microsoft.Maui.HybridWebViewRawMessage.Message.get -> string?
+Microsoft.Maui.HybridWebViewRawMessage.Message.set -> void
 Microsoft.Maui.IAbsoluteLayout
 Microsoft.Maui.IAbsoluteLayout.GetLayoutBounds(Microsoft.Maui.IView! view) -> Microsoft.Maui.Graphics.Rect
 Microsoft.Maui.IAbsoluteLayout.GetLayoutFlags(Microsoft.Maui.IView! view) -> Microsoft.Maui.Layouts.AbsoluteLayoutFlags
@@ -787,6 +810,7 @@ Microsoft.Maui.IAdorner
 Microsoft.Maui.IAdorner.Density.get -> float
 Microsoft.Maui.IAdorner.VisualView.get -> Microsoft.Maui.IView!
 Microsoft.Maui.IApplication
+Microsoft.Maui.IApplication.ActivateWindow(Microsoft.Maui.IWindow! window) -> void
 Microsoft.Maui.IApplication.CloseWindow(Microsoft.Maui.IWindow! window) -> void
 Microsoft.Maui.IApplication.CreateWindow(Microsoft.Maui.IActivationState? activationState) -> Microsoft.Maui.IWindow!
 Microsoft.Maui.IApplication.OpenWindow(Microsoft.Maui.IWindow! window) -> void
@@ -917,6 +941,18 @@ Microsoft.Maui.IGridLayout.RowDefinitions.get -> System.Collections.Generic.IRea
 Microsoft.Maui.IGridLayout.RowSpacing.get -> double
 Microsoft.Maui.IGridRowDefinition
 Microsoft.Maui.IGridRowDefinition.Height.get -> Microsoft.Maui.GridLength
+Microsoft.Maui.IHybridWebView
+Microsoft.Maui.IHybridWebView.DefaultFile.get -> string?
+Microsoft.Maui.IHybridWebView.EvaluateJavaScriptAsync(string! script) -> System.Threading.Tasks.Task<string?>!
+Microsoft.Maui.IHybridWebView.HybridRoot.get -> string?
+Microsoft.Maui.IHybridWebView.InvokeJavaScriptAsync<TReturnType>(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TReturnType>! returnTypeJsonTypeInfo, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task<TReturnType?>!
+Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.get -> object?
+Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.set -> void
+Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.get -> System.Type?
+Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.set -> void
+Microsoft.Maui.IHybridWebView.RawMessageReceived(string! rawMessage) -> void
+Microsoft.Maui.IHybridWebView.SendRawMessage(string! rawMessage) -> void
+Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
 Microsoft.Maui.IImage
 Microsoft.Maui.IImage.Aspect.get -> Microsoft.Maui.Aspect
 Microsoft.Maui.IImage.IsOpaque.get -> bool
@@ -1177,6 +1213,10 @@ Microsoft.Maui.ITimePicker
 Microsoft.Maui.ITimePicker.Format.get -> string!
 Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
 Microsoft.Maui.ITimePicker.Time.set -> void
+Microsoft.Maui.ITitleBar
+Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
+Microsoft.Maui.ITitleBar.Subtitle.get -> string?
+Microsoft.Maui.ITitleBar.Title.get -> string?
 Microsoft.Maui.ITitledElement
 Microsoft.Maui.ITitledElement.Title.get -> string?
 Microsoft.Maui.IToolbar
@@ -1276,6 +1316,7 @@ Microsoft.Maui.IWebView.GoBack() -> void
 Microsoft.Maui.IWebView.GoForward() -> void
 Microsoft.Maui.IWebView.Navigated(Microsoft.Maui.WebNavigationEvent evnt, string! url, Microsoft.Maui.WebNavigationResult result) -> void
 Microsoft.Maui.IWebView.Navigating(Microsoft.Maui.WebNavigationEvent evnt, string! url) -> bool
+Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
 Microsoft.Maui.IWebView.Reload() -> void
 Microsoft.Maui.IWebView.Source.get -> Microsoft.Maui.IWebViewSource!
 Microsoft.Maui.IWebView.UserAgent.get -> string?
@@ -1290,7 +1331,7 @@ Microsoft.Maui.IWindow.Activated() -> void
 Microsoft.Maui.IWindow.AddOverlay(Microsoft.Maui.IWindowOverlay! overlay) -> bool
 Microsoft.Maui.IWindow.BackButtonClicked() -> bool
 Microsoft.Maui.IWindow.Backgrounding(Microsoft.Maui.IPersistedState! state) -> void
-Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
+Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
 Microsoft.Maui.IWindow.Created() -> void
 Microsoft.Maui.IWindow.Deactivated() -> void
 Microsoft.Maui.IWindow.Destroying() -> void
@@ -1670,6 +1711,7 @@ Microsoft.Maui.SwipeViewSwipeStarted.SwipeViewSwipeStarted(Microsoft.Maui.SwipeD
 Microsoft.Maui.TextAlignment
 Microsoft.Maui.TextAlignment.Center = 1 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.TextAlignment.End = 2 -> Microsoft.Maui.TextAlignment
+Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.TextAlignment.Start = 0 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.TextDecorations
 Microsoft.Maui.TextDecorations.None = 0 -> Microsoft.Maui.TextDecorations
@@ -1758,6 +1800,8 @@ Microsoft.Maui.WebNavigationResult.Cancel = 2 -> Microsoft.Maui.WebNavigationRes
 Microsoft.Maui.WebNavigationResult.Failure = 4 -> Microsoft.Maui.WebNavigationResult
 Microsoft.Maui.WebNavigationResult.Success = 1 -> Microsoft.Maui.WebNavigationResult
 Microsoft.Maui.WebNavigationResult.Timeout = 3 -> Microsoft.Maui.WebNavigationResult
+Microsoft.Maui.WebProcessTerminatedEventArgs
+Microsoft.Maui.WebProcessTerminatedEventArgs.WebProcessTerminatedEventArgs() -> void
 Microsoft.Maui.WindowExtensions
 Microsoft.Maui.WindowOverlay
 Microsoft.Maui.WindowOverlay.Density.get -> float
@@ -1800,6 +1844,7 @@ override Microsoft.Maui.GridLength.ToString() -> string!
 override Microsoft.Maui.Handlers.ActivityIndicatorHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Handlers.ApplicationHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Handlers.BorderHandler.CreatePlatformView() -> object!
+override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Handlers.ButtonHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Handlers.CheckBoxHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Handlers.ContentViewHandler.CreatePlatformView() -> object!
@@ -1810,6 +1855,7 @@ override Microsoft.Maui.Handlers.FlyoutViewHandler.CreatePlatformView() -> objec
 override Microsoft.Maui.Handlers.GraphicsViewHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Handlers.GraphicsViewHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Handlers.GraphicsViewHandler.DisconnectHandler(object! platformView) -> void
+override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Handlers.ImageButtonHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Handlers.ImageHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Handlers.IndicatorViewHandler.CreatePlatformView() -> object!
@@ -1909,6 +1955,12 @@ static Microsoft.Maui.Dispatching.DispatcherProvider.Current.get -> Microsoft.Ma
 static Microsoft.Maui.Dispatching.DispatcherProvider.SetCurrent(Microsoft.Maui.Dispatching.IDispatcherProvider? provider) -> bool
 static Microsoft.Maui.Easing.Default.get -> Microsoft.Maui.Easing!
 static Microsoft.Maui.Easing.implicit operator Microsoft.Maui.Easing!(System.Func<double, double>! func) -> Microsoft.Maui.Easing!
+static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T
+static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler) -> T
+static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T?
+static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler) -> T?
+static Microsoft.Maui.ElementHandlerExtensions.GetServiceProvider(this Microsoft.Maui.IElementHandler! handler) -> System.IServiceProvider!
+static Microsoft.Maui.ElementHandlerExtensions.IsConnected(this Microsoft.Maui.IElementHandler! handler) -> bool
 static Microsoft.Maui.Font.Default.get -> Microsoft.Maui.Font
 static Microsoft.Maui.Font.OfSize(string? name, double size, Microsoft.Maui.FontWeight weight = Microsoft.Maui.FontWeight.Regular, Microsoft.Maui.FontSlant fontSlant = Microsoft.Maui.FontSlant.Default, bool enableScaling = true) -> Microsoft.Maui.Font
 static Microsoft.Maui.Font.operator !=(Microsoft.Maui.Font left, Microsoft.Maui.Font right) -> bool
@@ -1926,6 +1978,7 @@ static Microsoft.Maui.Handlers.ActivityIndicatorHandler.MapColor(Microsoft.Maui.
 static Microsoft.Maui.Handlers.ActivityIndicatorHandler.MapIsRunning(Microsoft.Maui.Handlers.IActivityIndicatorHandler! handler, Microsoft.Maui.IActivityIndicator! activityIndicator) -> void
 static Microsoft.Maui.Handlers.ActivityIndicatorHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IActivityIndicator!, Microsoft.Maui.Handlers.IActivityIndicatorHandler!>!
 static Microsoft.Maui.Handlers.ApplicationHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IApplication!, Microsoft.Maui.Handlers.ApplicationHandler!>!
+static Microsoft.Maui.Handlers.ApplicationHandler.MapActivateWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
 static Microsoft.Maui.Handlers.ApplicationHandler.MapCloseWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
 static Microsoft.Maui.Handlers.ApplicationHandler.MapOpenWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
 static Microsoft.Maui.Handlers.ApplicationHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IApplication!, Microsoft.Maui.Handlers.ApplicationHandler!>!
@@ -2018,6 +2071,11 @@ static Microsoft.Maui.Handlers.GraphicsViewHandler.MapDrawable(Microsoft.Maui.Ha
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapFlowDirection(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapInvalidate(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView, object? arg) -> void
 static Microsoft.Maui.Handlers.GraphicsViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IGraphicsView!, Microsoft.Maui.Handlers.IGraphicsViewHandler!>!
+static Microsoft.Maui.Handlers.HybridWebViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
+static Microsoft.Maui.Handlers.HybridWebViewHandler.MapEvaluateJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
+static Microsoft.Maui.Handlers.HybridWebViewHandler.MapInvokeJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
+static Microsoft.Maui.Handlers.HybridWebViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
+static Microsoft.Maui.Handlers.HybridWebViewHandler.MapSendRawMessage(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
 static Microsoft.Maui.Handlers.ImageButtonHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IImageButton!, Microsoft.Maui.Handlers.IImageButtonHandler!>!
 static Microsoft.Maui.Handlers.ImageButtonHandler.ImageMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IImage!, Microsoft.Maui.Handlers.IImageHandler!>!
 static Microsoft.Maui.Handlers.ImageButtonHandler.MapCornerRadius(Microsoft.Maui.Handlers.IImageButtonHandler! handler, Microsoft.Maui.IButtonStroke! buttonStroke) -> void
@@ -2288,6 +2346,7 @@ static Microsoft.Maui.Hosting.FontsMauiAppBuilderExtensions.ConfigureFonts(this 
 static Microsoft.Maui.Hosting.FontsMauiAppBuilderExtensions.ConfigureFonts(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 static Microsoft.Maui.Hosting.HandlerMauiAppBuilderExtensions.ConfigureMauiHandlers(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Maui.Hosting.IMauiHandlersCollection!>? configureDelegate) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Maui.Hosting.HandlerMauiAppBuilderExtensions.ConfigureMauiHandlers(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Hosting.IMauiHandlersCollection!>? configureDelegate) -> Microsoft.Maui.Hosting.MauiAppBuilder!
+static Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions.AddHybridWebViewDeveloperTools(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Maui.Hosting.ImageSourceServiceCollectionExtensions.AddService<TImageSource, TImageSourceService>(this Microsoft.Maui.Hosting.IImageSourceServiceCollection! services) -> Microsoft.Maui.Hosting.IImageSourceServiceCollection!
 static Microsoft.Maui.Hosting.ImageSourceServiceCollectionExtensions.AddService<TImageSource>(this Microsoft.Maui.Hosting.IImageSourceServiceCollection! services, System.Func<System.IServiceProvider!, Microsoft.Maui.IImageSourceService<TImageSource>!>! implementationFactory) -> Microsoft.Maui.Hosting.IImageSourceServiceCollection!
 static Microsoft.Maui.Hosting.ImageSourcesMauiAppBuilderExtensions.ConfigureImageSources(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Hosting.IImageSourceServiceCollection!>? configureDelegate) -> Microsoft.Maui.Hosting.MauiAppBuilder!
@@ -2327,12 +2386,15 @@ static Microsoft.Maui.IPickerExtension.GetItemsAsList(this Microsoft.Maui.IPicke
 static Microsoft.Maui.ITextInputExtensions.UpdateText(this Microsoft.Maui.ITextInput! textInput, string? text) -> void
 static Microsoft.Maui.Keyboard.Chat.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Create(Microsoft.Maui.KeyboardFlags flags) -> Microsoft.Maui.Keyboard!
+static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Default.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Email.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Numeric.get -> Microsoft.Maui.Keyboard!
+static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Plain.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Telephone.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Text.get -> Microsoft.Maui.Keyboard!
+static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Url.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Layouts.FlexBasis.implicit operator Microsoft.Maui.Layouts.FlexBasis(float length) -> Microsoft.Maui.Layouts.FlexBasis
 static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
@@ -2425,6 +2487,7 @@ static Microsoft.Maui.Thickness.operator +(Microsoft.Maui.Thickness left, Micros
 static Microsoft.Maui.Thickness.operator ==(Microsoft.Maui.Thickness left, Microsoft.Maui.Thickness right) -> bool
 static Microsoft.Maui.Thickness.Zero -> Microsoft.Maui.Thickness
 static Microsoft.Maui.ViewExtensions.CaptureAsync(this Microsoft.Maui.IView! view) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!
+static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.VisualDiagnostics.CaptureAsJpegAsync(Microsoft.Maui.IView! view, int quality = 80) -> System.Threading.Tasks.Task<byte[]?>!
 static Microsoft.Maui.VisualDiagnostics.CaptureAsJpegAsync(Microsoft.Maui.IWindow! window, int quality = 80) -> System.Threading.Tasks.Task<byte[]?>!
 static Microsoft.Maui.VisualDiagnostics.CaptureAsPngAsync(Microsoft.Maui.IView! view) -> System.Threading.Tasks.Task<byte[]?>!

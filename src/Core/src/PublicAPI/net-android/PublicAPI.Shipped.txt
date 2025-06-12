@@ -43,7 +43,6 @@
 ~override Microsoft.Maui.Converters.ThicknessTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) -> object
 ~override Microsoft.Maui.Platform.MauiWebChromeClient.OnShowFileChooser(Android.Webkit.WebView webView, Android.Webkit.IValueCallback filePathCallback, Android.Webkit.WebChromeClient.FileChooserParams fileChooserParams) -> bool
 ~override Microsoft.Maui.Platform.WrapperView.DispatchTouchEvent(Android.Views.MotionEvent e) -> bool
-~override Microsoft.Maui.Platform.WrapperView.DrawShadow(Android.Graphics.Canvas canvas, int viewWidth, int viewHeight) -> void
 ~override Microsoft.Maui.Platform.WrapperView.GetClipPath(int width, int height) -> Android.Graphics.Path
 ~static Microsoft.Maui.Platform.ActivityResultCallbackRegistry.InvokeCallback(int requestCode, Android.App.Result resultCode, Android.Content.Intent data) -> void
 ~virtual Microsoft.Maui.Platform.MauiWebChromeClient.ParseResult(Android.App.Result resultCode, Android.Content.Intent data) -> Java.Lang.Object
@@ -58,7 +57,6 @@ abstract Microsoft.Maui.Layouts.LayoutManager.ArrangeChildren(Microsoft.Maui.Gra
 abstract Microsoft.Maui.Layouts.LayoutManager.Measure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 abstract Microsoft.Maui.MauiApplication.CreateMauiApp() -> Microsoft.Maui.Hosting.MauiApp!
 abstract Microsoft.Maui.PlatformContentViewGroup.GetClipPath(int p0, int p1) -> Android.Graphics.Path?
-abstract Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! p0, int p1, int p2) -> void
 const Microsoft.Maui.Platform.MauiWebView.AssetBaseUrl = "file:///android_asset/" -> string!
 const Microsoft.Maui.Platform.ProgressBarExtensions.Maximum = 10000 -> int
 const Microsoft.Maui.Platform.SliderExtensions.PlatformMaxValue = 2147483647 -> double
@@ -257,6 +255,7 @@ Microsoft.Maui.DisplayDensityRequest.DisplayDensityRequest() -> void
 Microsoft.Maui.Easing
 Microsoft.Maui.Easing.Ease(double v) -> double
 Microsoft.Maui.Easing.Easing(System.Func<double, double>! easingFunc) -> void
+Microsoft.Maui.ElementHandlerExtensions
 Microsoft.Maui.EmbeddedFont
 Microsoft.Maui.EmbeddedFont.EmbeddedFont() -> void
 Microsoft.Maui.EmbeddedFont.FontName.get -> string?
@@ -403,6 +402,9 @@ Microsoft.Maui.GridUnitType
 Microsoft.Maui.GridUnitType.Absolute = 0 -> Microsoft.Maui.GridUnitType
 Microsoft.Maui.GridUnitType.Auto = 2 -> Microsoft.Maui.GridUnitType
 Microsoft.Maui.GridUnitType.Star = 1 -> Microsoft.Maui.GridUnitType
+Microsoft.Maui.HandlerDisconnectPolicy
+Microsoft.Maui.HandlerDisconnectPolicy.Automatic = 0 -> Microsoft.Maui.HandlerDisconnectPolicy
+Microsoft.Maui.HandlerDisconnectPolicy.Manual = 1 -> Microsoft.Maui.HandlerDisconnectPolicy
 Microsoft.Maui.Handlers.ActivityIndicatorHandler
 Microsoft.Maui.Handlers.ActivityIndicatorHandler.ActivityIndicatorHandler() -> void
 Microsoft.Maui.Handlers.ActivityIndicatorHandler.ActivityIndicatorHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
@@ -463,6 +465,9 @@ Microsoft.Maui.Handlers.GraphicsViewHandler
 Microsoft.Maui.Handlers.GraphicsViewHandler.GraphicsViewHandler() -> void
 Microsoft.Maui.Handlers.GraphicsViewHandler.GraphicsViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
 Microsoft.Maui.Handlers.GraphicsViewHandler.GraphicsViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.HybridWebViewHandler
+Microsoft.Maui.Handlers.HybridWebViewHandler.HybridWebViewHandler() -> void
+Microsoft.Maui.Handlers.HybridWebViewHandler.HybridWebViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Handlers.IActivityIndicatorHandler
 Microsoft.Maui.Handlers.IActivityIndicatorHandler.PlatformView.get -> Android.Widget.ProgressBar!
 Microsoft.Maui.Handlers.IActivityIndicatorHandler.VirtualView.get -> Microsoft.Maui.IActivityIndicator!
@@ -494,6 +499,11 @@ Microsoft.Maui.Handlers.IFlyoutViewHandler.VirtualView.get -> Microsoft.Maui.IFl
 Microsoft.Maui.Handlers.IGraphicsViewHandler
 Microsoft.Maui.Handlers.IGraphicsViewHandler.PlatformView.get -> Microsoft.Maui.Platform.PlatformTouchGraphicsView!
 Microsoft.Maui.Handlers.IGraphicsViewHandler.VirtualView.get -> Microsoft.Maui.IGraphicsView!
+Microsoft.Maui.Handlers.IHybridPlatformWebView
+Microsoft.Maui.Handlers.IHybridPlatformWebView.SendRawMessage(string! rawMessage) -> void
+Microsoft.Maui.Handlers.IHybridWebViewHandler
+Microsoft.Maui.Handlers.IHybridWebViewHandler.PlatformView.get -> Android.Webkit.WebView!
+Microsoft.Maui.Handlers.IHybridWebViewHandler.VirtualView.get -> Microsoft.Maui.IHybridWebView!
 Microsoft.Maui.Handlers.IImageButtonHandler
 Microsoft.Maui.Handlers.IImageButtonHandler.PlatformView.get -> Google.Android.Material.ImageView.ShapeableImageView!
 Microsoft.Maui.Handlers.IImageButtonHandler.VirtualView.get -> Microsoft.Maui.IImageButton!
@@ -791,6 +801,7 @@ Microsoft.Maui.Hosting.FontDescriptor.Filename.get -> string!
 Microsoft.Maui.Hosting.FontDescriptor.FontDescriptor(string! filename, string? alias, System.Reflection.Assembly? assembly) -> void
 Microsoft.Maui.Hosting.FontsMauiAppBuilderExtensions
 Microsoft.Maui.Hosting.HandlerMauiAppBuilderExtensions
+Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions
 Microsoft.Maui.Hosting.IEssentialsBuilder
 Microsoft.Maui.Hosting.IEssentialsBuilder.AddAppAction(Microsoft.Maui.ApplicationModel.AppAction! appAction) -> Microsoft.Maui.Hosting.IEssentialsBuilder!
 Microsoft.Maui.Hosting.IEssentialsBuilder.OnAppAction(System.Action<Microsoft.Maui.ApplicationModel.AppAction!>! action) -> Microsoft.Maui.Hosting.IEssentialsBuilder!
@@ -830,6 +841,16 @@ Microsoft.Maui.HotReload.IReloadHandler.Reload() -> void
 Microsoft.Maui.HotReload.MauiHotReloadHelper
 Microsoft.Maui.HotReload.OnHotReloadAttribute
 Microsoft.Maui.HotReload.OnHotReloadAttribute.OnHotReloadAttribute() -> void
+Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest
+Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.HybridWebViewInvokeJavaScriptRequest(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo? returnTypeJsonTypeInfo, object?[]? paramValues, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos) -> void
+Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.MethodName.get -> string!
+Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ParamJsonTypeInfos.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]?
+Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ParamValues.get -> object?[]?
+Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ReturnTypeJsonTypeInfo.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo?
+Microsoft.Maui.HybridWebViewRawMessage
+Microsoft.Maui.HybridWebViewRawMessage.HybridWebViewRawMessage() -> void
+Microsoft.Maui.HybridWebViewRawMessage.Message.get -> string?
+Microsoft.Maui.HybridWebViewRawMessage.Message.set -> void
 Microsoft.Maui.IAbsoluteLayout
 Microsoft.Maui.IAbsoluteLayout.GetLayoutBounds(Microsoft.Maui.IView! view) -> Microsoft.Maui.Graphics.Rect
 Microsoft.Maui.IAbsoluteLayout.GetLayoutFlags(Microsoft.Maui.IView! view) -> Microsoft.Maui.Layouts.AbsoluteLayoutFlags
@@ -843,6 +864,7 @@ Microsoft.Maui.IAdorner
 Microsoft.Maui.IAdorner.Density.get -> float
 Microsoft.Maui.IAdorner.VisualView.get -> Microsoft.Maui.IView!
 Microsoft.Maui.IApplication
+Microsoft.Maui.IApplication.ActivateWindow(Microsoft.Maui.IWindow! window) -> void
 Microsoft.Maui.IApplication.CloseWindow(Microsoft.Maui.IWindow! window) -> void
 Microsoft.Maui.IApplication.CreateWindow(Microsoft.Maui.IActivationState? activationState) -> Microsoft.Maui.IWindow!
 Microsoft.Maui.IApplication.OpenWindow(Microsoft.Maui.IWindow! window) -> void
@@ -976,6 +998,18 @@ Microsoft.Maui.IGridLayout.RowDefinitions.get -> System.Collections.Generic.IRea
 Microsoft.Maui.IGridLayout.RowSpacing.get -> double
 Microsoft.Maui.IGridRowDefinition
 Microsoft.Maui.IGridRowDefinition.Height.get -> Microsoft.Maui.GridLength
+Microsoft.Maui.IHybridWebView
+Microsoft.Maui.IHybridWebView.DefaultFile.get -> string?
+Microsoft.Maui.IHybridWebView.EvaluateJavaScriptAsync(string! script) -> System.Threading.Tasks.Task<string?>!
+Microsoft.Maui.IHybridWebView.HybridRoot.get -> string?
+Microsoft.Maui.IHybridWebView.InvokeJavaScriptAsync<TReturnType>(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TReturnType>! returnTypeJsonTypeInfo, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task<TReturnType?>!
+Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.get -> object?
+Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.set -> void
+Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.get -> System.Type?
+Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.set -> void
+Microsoft.Maui.IHybridWebView.RawMessageReceived(string! rawMessage) -> void
+Microsoft.Maui.IHybridWebView.SendRawMessage(string! rawMessage) -> void
+Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
 Microsoft.Maui.IImage
 Microsoft.Maui.IImage.Aspect.get -> Microsoft.Maui.Aspect
 Microsoft.Maui.IImage.IsOpaque.get -> bool
@@ -1246,6 +1280,10 @@ Microsoft.Maui.ITimePicker
 Microsoft.Maui.ITimePicker.Format.get -> string!
 Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
 Microsoft.Maui.ITimePicker.Time.set -> void
+Microsoft.Maui.ITitleBar
+Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
+Microsoft.Maui.ITitleBar.Subtitle.get -> string?
+Microsoft.Maui.ITitleBar.Title.get -> string?
 Microsoft.Maui.ITitledElement
 Microsoft.Maui.ITitledElement.Title.get -> string?
 Microsoft.Maui.IToolbar
@@ -1345,6 +1383,7 @@ Microsoft.Maui.IWebView.GoBack() -> void
 Microsoft.Maui.IWebView.GoForward() -> void
 Microsoft.Maui.IWebView.Navigated(Microsoft.Maui.WebNavigationEvent evnt, string! url, Microsoft.Maui.WebNavigationResult result) -> void
 Microsoft.Maui.IWebView.Navigating(Microsoft.Maui.WebNavigationEvent evnt, string! url) -> bool
+Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
 Microsoft.Maui.IWebView.Reload() -> void
 Microsoft.Maui.IWebView.Source.get -> Microsoft.Maui.IWebViewSource!
 Microsoft.Maui.IWebView.UserAgent.get -> string?
@@ -1359,7 +1398,7 @@ Microsoft.Maui.IWindow.Activated() -> void
 Microsoft.Maui.IWindow.AddOverlay(Microsoft.Maui.IWindowOverlay! overlay) -> bool
 Microsoft.Maui.IWindow.BackButtonClicked() -> bool
 Microsoft.Maui.IWindow.Backgrounding(Microsoft.Maui.IPersistedState! state) -> void
-Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
+Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
 Microsoft.Maui.IWindow.Created() -> void
 Microsoft.Maui.IWindow.Deactivated() -> void
 Microsoft.Maui.IWindow.Destroying() -> void
@@ -1723,6 +1762,9 @@ Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.Handler.get -> Microsoft
 Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.Handler.set -> void
 Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.MauiAccessibilityDelegateCompat() -> void
 Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.MauiAccessibilityDelegateCompat(AndroidX.Core.View.AccessibilityDelegateCompat? originalDelegate) -> void
+Microsoft.Maui.Platform.MauiAppCompatEditText
+Microsoft.Maui.Platform.MauiAppCompatEditText.MauiAppCompatEditText(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiAppCompatEditText.SelectionChanged -> System.EventHandler?
 Microsoft.Maui.Platform.MauiBoxView
 Microsoft.Maui.Platform.MauiBoxView.MauiBoxView(Android.Content.Context? context) -> void
 Microsoft.Maui.Platform.MauiDatePicker
@@ -1735,8 +1777,16 @@ Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(nint javaReference, Androi
 Microsoft.Maui.Platform.MauiDatePicker.OnClick(Android.Views.View? v) -> void
 Microsoft.Maui.Platform.MauiDatePicker.ShowPicker.get -> System.Action?
 Microsoft.Maui.Platform.MauiDatePicker.ShowPicker.set -> void
+Microsoft.Maui.Platform.MauiHybridWebView
+Microsoft.Maui.Platform.MauiHybridWebView.MauiHybridWebView(Microsoft.Maui.Handlers.HybridWebViewHandler! handler, Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiHybridWebView.SendRawMessage(string! rawMessage) -> void
+Microsoft.Maui.Platform.MauiHybridWebViewClient
+Microsoft.Maui.Platform.MauiHybridWebViewClient.MauiHybridWebViewClient(Microsoft.Maui.Handlers.HybridWebViewHandler! handler) -> void
 Microsoft.Maui.Platform.MauiMaterialButton
+Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
+Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
 Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.Platform.MauiPageControl
 Microsoft.Maui.Platform.MauiPageControl.MauiPageControl(Android.Content.Context? context) -> void
 Microsoft.Maui.Platform.MauiPageControl.ResetIndicators() -> void
@@ -1854,7 +1904,6 @@ Microsoft.Maui.PlatformContentViewGroup.PlatformContentViewGroup(Android.Content
 Microsoft.Maui.PlatformContentViewGroup.PlatformContentViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
 Microsoft.Maui.PlatformContentViewGroup.PlatformContentViewGroup(Android.Content.Context? context) -> void
 Microsoft.Maui.PlatformContentViewGroup.PlatformContentViewGroup(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
-Microsoft.Maui.PlatformContentViewGroup.SetHasClip(bool hasClip) -> void
 Microsoft.Maui.PlatformContentViewGroup.ViewGroupDispatchDraw(Android.Graphics.Canvas? canvas) -> void
 Microsoft.Maui.PlatformWrapperView
 Microsoft.Maui.PlatformWrapperView.PlatformWrapperView(Android.Content.Context? context) -> void
@@ -2013,6 +2062,7 @@ Microsoft.Maui.SwipeViewSwipeStarted.SwipeViewSwipeStarted(Microsoft.Maui.SwipeD
 Microsoft.Maui.TextAlignment
 Microsoft.Maui.TextAlignment.Center = 1 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.TextAlignment.End = 2 -> Microsoft.Maui.TextAlignment
+Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.TextAlignment.Start = 0 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.TextDecorations
 Microsoft.Maui.TextDecorations.None = 0 -> Microsoft.Maui.TextDecorations
@@ -2101,6 +2151,9 @@ Microsoft.Maui.WebNavigationResult.Cancel = 2 -> Microsoft.Maui.WebNavigationRes
 Microsoft.Maui.WebNavigationResult.Failure = 4 -> Microsoft.Maui.WebNavigationResult
 Microsoft.Maui.WebNavigationResult.Success = 1 -> Microsoft.Maui.WebNavigationResult
 Microsoft.Maui.WebNavigationResult.Timeout = 3 -> Microsoft.Maui.WebNavigationResult
+Microsoft.Maui.WebProcessTerminatedEventArgs
+Microsoft.Maui.WebProcessTerminatedEventArgs.RenderProcessGoneDetail.get -> Android.Webkit.RenderProcessGoneDetail?
+Microsoft.Maui.WebProcessTerminatedEventArgs.Sender.get -> Android.Views.View?
 Microsoft.Maui.WindowExtensions
 Microsoft.Maui.WindowOverlay
 Microsoft.Maui.WindowOverlay.Density.get -> float
@@ -2156,6 +2209,7 @@ override Microsoft.Maui.Handlers.ActivityIndicatorHandler.CreatePlatformView() -
 override Microsoft.Maui.Handlers.ApplicationHandler.CreatePlatformElement() -> Android.App.Application!
 override Microsoft.Maui.Handlers.BorderHandler.CreatePlatformView() -> Microsoft.Maui.Platform.ContentViewGroup!
 override Microsoft.Maui.Handlers.BorderHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentViewGroup! platformView) -> void
+override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Handlers.BorderHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.ButtonHandler.ConnectHandler(Google.Android.Material.Button.MaterialButton! platformView) -> void
 override Microsoft.Maui.Handlers.ButtonHandler.CreatePlatformView() -> Google.Android.Material.Button.MaterialButton!
@@ -2185,6 +2239,9 @@ override Microsoft.Maui.Handlers.FlyoutViewHandler.DisconnectHandler(Android.Vie
 override Microsoft.Maui.Handlers.GraphicsViewHandler.ConnectHandler(Microsoft.Maui.Platform.PlatformTouchGraphicsView! platformView) -> void
 override Microsoft.Maui.Handlers.GraphicsViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.PlatformTouchGraphicsView!
 override Microsoft.Maui.Handlers.GraphicsViewHandler.DisconnectHandler(Microsoft.Maui.Platform.PlatformTouchGraphicsView! platformView) -> void
+override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(Android.Webkit.WebView! platformView) -> void
+override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> Android.Webkit.WebView!
+override Microsoft.Maui.Handlers.HybridWebViewHandler.DisconnectHandler(Android.Webkit.WebView! platformView) -> void
 override Microsoft.Maui.Handlers.ImageButtonHandler.ConnectHandler(Google.Android.Material.ImageView.ShapeableImageView! platformView) -> void
 override Microsoft.Maui.Handlers.ImageButtonHandler.CreatePlatformView() -> Google.Android.Material.ImageView.ShapeableImageView!
 override Microsoft.Maui.Handlers.ImageButtonHandler.DisconnectHandler(Google.Android.Material.ImageView.ShapeableImageView! platformView) -> void
@@ -2286,15 +2343,15 @@ override Microsoft.Maui.MauiViewGroup.JniPeerMembers.get -> Java.Interop.JniPeer
 override Microsoft.Maui.MauiViewGroup.OnLayout(bool changed, int l, int t, int r, int b) -> void
 override Microsoft.Maui.MauiViewGroup.ThresholdClass.get -> nint
 override Microsoft.Maui.MauiViewGroup.ThresholdType.get -> System.Type!
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.DispatchPopulateAccessibilityEvent(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> bool
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.GetAccessibilityNodeProvider(Android.Views.View! host) -> AndroidX.Core.View.Accessibility.AccessibilityNodeProviderCompat?
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityEvent(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> void
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnPopulateAccessibilityEvent(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> void
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnRequestSendAccessibilityEvent(Android.Views.ViewGroup! host, Android.Views.View! child, Android.Views.Accessibility.AccessibilityEvent! e) -> bool
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.PerformAccessibilityAction(Android.Views.View! host, int action, Android.OS.Bundle? args) -> bool
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEvent(Android.Views.View! host, int eventType) -> void
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEventUnchecked(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.DispatchPopulateAccessibilityEvent(Android.Views.View? host, Android.Views.Accessibility.AccessibilityEvent? e) -> bool
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.GetAccessibilityNodeProvider(Android.Views.View? host) -> AndroidX.Core.View.Accessibility.AccessibilityNodeProviderCompat?
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityEvent(Android.Views.View? host, Android.Views.Accessibility.AccessibilityEvent? e) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnPopulateAccessibilityEvent(Android.Views.View? host, Android.Views.Accessibility.AccessibilityEvent? e) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnRequestSendAccessibilityEvent(Android.Views.ViewGroup? host, Android.Views.View? child, Android.Views.Accessibility.AccessibilityEvent? e) -> bool
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.PerformAccessibilityAction(Android.Views.View? host, int action, Android.OS.Bundle? args) -> bool
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEvent(Android.Views.View? host, int eventType) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEventUnchecked(Android.Views.View? host, Android.Views.Accessibility.AccessibilityEvent? e) -> void
 override Microsoft.Maui.Platform.BorderDrawable.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.BorderDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 override Microsoft.Maui.Platform.BorderDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
@@ -2307,7 +2364,10 @@ override Microsoft.Maui.Platform.LayoutViewGroup.OnTouchEvent(Android.Views.Moti
 override Microsoft.Maui.Platform.LocalizedDigitsKeyListener.FilterFormatted(Java.Lang.ICharSequence? source, int start, int end, Android.Text.ISpanned? dest, int dstart, int dend) -> Java.Lang.ICharSequence?
 override Microsoft.Maui.Platform.LocalizedDigitsKeyListener.GetAcceptedChars() -> char[]!
 override Microsoft.Maui.Platform.LocalizedDigitsKeyListener.InputType.get -> Android.Text.InputTypes
-override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
+override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
+override Microsoft.Maui.Platform.MauiAppCompatEditText.OnSelectionChanged(int selStart, int selEnd) -> void
+override Microsoft.Maui.Platform.MauiHybridWebViewClient.Dispose(bool disposing) -> void
+override Microsoft.Maui.Platform.MauiHybridWebViewClient.ShouldInterceptRequest(Android.Webkit.WebView? view, Android.Webkit.IWebResourceRequest? request) -> Android.Webkit.WebResourceResponse?
 override Microsoft.Maui.Platform.MauiMaterialButton.IconGravity.get -> int
 override Microsoft.Maui.Platform.MauiMaterialButton.IconGravity.set -> void
 override Microsoft.Maui.Platform.MauiMaterialButton.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
@@ -2323,12 +2383,15 @@ override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.CanChildScrollUp() -> bo
 override Microsoft.Maui.Platform.MauiSwipeView.DispatchTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiSwipeView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Platform.MauiSwipeView.OnInterceptTouchEvent(Android.Views.MotionEvent? e) -> bool
+override Microsoft.Maui.Platform.MauiSwipeView.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
 override Microsoft.Maui.Platform.MauiSwipeView.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
+override Microsoft.Maui.Platform.MauiTextView.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiWebChromeClient.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiWebViewClient.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiWebViewClient.OnPageFinished(Android.Webkit.WebView? view, string? url) -> void
 override Microsoft.Maui.Platform.MauiWebViewClient.OnPageStarted(Android.Webkit.WebView? view, string? url, Android.Graphics.Bitmap? favicon) -> void
 override Microsoft.Maui.Platform.MauiWebViewClient.OnReceivedError(Android.Webkit.WebView? view, Android.Webkit.IWebResourceRequest? request, Android.Webkit.WebResourceError? error) -> void
+override Microsoft.Maui.Platform.MauiWebViewClient.OnRenderProcessGone(Android.Webkit.WebView? view, Android.Webkit.RenderProcessGoneDetail? detail) -> bool
 override Microsoft.Maui.Platform.MauiWebViewClient.ShouldOverrideUrlLoading(Android.Webkit.WebView? view, Android.Webkit.IWebResourceRequest? request) -> bool
 override Microsoft.Maui.Platform.NavigationViewFragment.OnCreateAnimation(int transit, bool enter, int nextAnim) -> Android.Views.Animations.Animation!
 override Microsoft.Maui.Platform.NavigationViewFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
@@ -2337,9 +2400,7 @@ override Microsoft.Maui.Platform.NavigationViewFragment.OnResume() -> void
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnHoverEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
-override Microsoft.Maui.Platform.WrapperView.OnDetachedFromWindow() -> void
 override Microsoft.Maui.Platform.WrapperView.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
-override Microsoft.Maui.Platform.WrapperView.RequestLayout() -> void
 override Microsoft.Maui.Platform.WrapperView.Visibility.get -> Android.Views.ViewStates
 override Microsoft.Maui.Platform.WrapperView.Visibility.set -> void
 override Microsoft.Maui.PlatformAppCompatTextView.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
@@ -2349,6 +2410,7 @@ override Microsoft.Maui.PlatformContentViewGroup.JniPeerMembers.get -> Java.Inte
 override Microsoft.Maui.PlatformContentViewGroup.ThresholdClass.get -> nint
 override Microsoft.Maui.PlatformContentViewGroup.ThresholdType.get -> System.Type!
 override Microsoft.Maui.PlatformWrapperView.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
+override Microsoft.Maui.PlatformWrapperView.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
 override Microsoft.Maui.PlatformWrapperView.ThresholdClass.get -> nint
 override Microsoft.Maui.PlatformWrapperView.ThresholdType.get -> System.Type!
 override Microsoft.Maui.RectangleGridAdorner.Draw(Microsoft.Maui.Graphics.ICanvas! canvas, Microsoft.Maui.Graphics.RectF dirtyRect) -> void
@@ -2411,6 +2473,12 @@ static Microsoft.Maui.Dispatching.DispatcherProvider.Current.get -> Microsoft.Ma
 static Microsoft.Maui.Dispatching.DispatcherProvider.SetCurrent(Microsoft.Maui.Dispatching.IDispatcherProvider? provider) -> bool
 static Microsoft.Maui.Easing.Default.get -> Microsoft.Maui.Easing!
 static Microsoft.Maui.Easing.implicit operator Microsoft.Maui.Easing!(System.Func<double, double>! func) -> Microsoft.Maui.Easing!
+static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T
+static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler) -> T
+static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T?
+static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler) -> T?
+static Microsoft.Maui.ElementHandlerExtensions.GetServiceProvider(this Microsoft.Maui.IElementHandler! handler) -> System.IServiceProvider!
+static Microsoft.Maui.ElementHandlerExtensions.IsConnected(this Microsoft.Maui.IElementHandler! handler) -> bool
 static Microsoft.Maui.Font.Default.get -> Microsoft.Maui.Font
 static Microsoft.Maui.Font.OfSize(string? name, double size, Microsoft.Maui.FontWeight weight = Microsoft.Maui.FontWeight.Regular, Microsoft.Maui.FontSlant fontSlant = Microsoft.Maui.FontSlant.Default, bool enableScaling = true) -> Microsoft.Maui.Font
 static Microsoft.Maui.Font.operator !=(Microsoft.Maui.Font left, Microsoft.Maui.Font right) -> bool
@@ -2436,6 +2504,7 @@ static Microsoft.Maui.Handlers.ActivityIndicatorHandler.MapColor(Microsoft.Maui.
 static Microsoft.Maui.Handlers.ActivityIndicatorHandler.MapIsRunning(Microsoft.Maui.Handlers.IActivityIndicatorHandler! handler, Microsoft.Maui.IActivityIndicator! activityIndicator) -> void
 static Microsoft.Maui.Handlers.ActivityIndicatorHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IActivityIndicator!, Microsoft.Maui.Handlers.IActivityIndicatorHandler!>!
 static Microsoft.Maui.Handlers.ApplicationHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IApplication!, Microsoft.Maui.Handlers.ApplicationHandler!>!
+static Microsoft.Maui.Handlers.ApplicationHandler.MapActivateWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
 static Microsoft.Maui.Handlers.ApplicationHandler.MapCloseWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
 static Microsoft.Maui.Handlers.ApplicationHandler.MapOpenWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
 static Microsoft.Maui.Handlers.ApplicationHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IApplication!, Microsoft.Maui.Handlers.ApplicationHandler!>!
@@ -2542,6 +2611,11 @@ static Microsoft.Maui.Handlers.GraphicsViewHandler.MapDrawable(Microsoft.Maui.Ha
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapFlowDirection(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapInvalidate(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView, object? arg) -> void
 static Microsoft.Maui.Handlers.GraphicsViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IGraphicsView!, Microsoft.Maui.Handlers.IGraphicsViewHandler!>!
+static Microsoft.Maui.Handlers.HybridWebViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
+static Microsoft.Maui.Handlers.HybridWebViewHandler.MapEvaluateJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
+static Microsoft.Maui.Handlers.HybridWebViewHandler.MapInvokeJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
+static Microsoft.Maui.Handlers.HybridWebViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
+static Microsoft.Maui.Handlers.HybridWebViewHandler.MapSendRawMessage(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
 static Microsoft.Maui.Handlers.ImageButtonHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IImageButton!, Microsoft.Maui.Handlers.IImageButtonHandler!>!
 static Microsoft.Maui.Handlers.ImageButtonHandler.ImageMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IImage!, Microsoft.Maui.Handlers.IImageHandler!>!
 static Microsoft.Maui.Handlers.ImageButtonHandler.MapBackground(Microsoft.Maui.Handlers.IImageButtonHandler! handler, Microsoft.Maui.IImageButton! imageButton) -> void
@@ -2825,6 +2899,7 @@ static Microsoft.Maui.Hosting.FontsMauiAppBuilderExtensions.ConfigureFonts(this 
 static Microsoft.Maui.Hosting.FontsMauiAppBuilderExtensions.ConfigureFonts(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 static Microsoft.Maui.Hosting.HandlerMauiAppBuilderExtensions.ConfigureMauiHandlers(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Maui.Hosting.IMauiHandlersCollection!>? configureDelegate) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Maui.Hosting.HandlerMauiAppBuilderExtensions.ConfigureMauiHandlers(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Hosting.IMauiHandlersCollection!>? configureDelegate) -> Microsoft.Maui.Hosting.MauiAppBuilder!
+static Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions.AddHybridWebViewDeveloperTools(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Maui.Hosting.ImageSourceServiceCollectionExtensions.AddService<TImageSource, TImageSourceService>(this Microsoft.Maui.Hosting.IImageSourceServiceCollection! services) -> Microsoft.Maui.Hosting.IImageSourceServiceCollection!
 static Microsoft.Maui.Hosting.ImageSourceServiceCollectionExtensions.AddService<TImageSource>(this Microsoft.Maui.Hosting.IImageSourceServiceCollection! services, System.Func<System.IServiceProvider!, Microsoft.Maui.IImageSourceService<TImageSource>!>! implementationFactory) -> Microsoft.Maui.Hosting.IImageSourceServiceCollection!
 static Microsoft.Maui.Hosting.ImageSourcesMauiAppBuilderExtensions.ConfigureImageSources(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Hosting.IImageSourceServiceCollection!>? configureDelegate) -> Microsoft.Maui.Hosting.MauiAppBuilder!
@@ -2865,12 +2940,15 @@ static Microsoft.Maui.ITextInputExtensions.UpdateText(this Microsoft.Maui.ITextI
 static Microsoft.Maui.ITextInputExtensions.UpdateText(this Microsoft.Maui.ITextInput! textInput, string? text) -> void
 static Microsoft.Maui.Keyboard.Chat.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Create(Microsoft.Maui.KeyboardFlags flags) -> Microsoft.Maui.Keyboard!
+static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Default.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Email.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Numeric.get -> Microsoft.Maui.Keyboard!
+static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Plain.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Telephone.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Text.get -> Microsoft.Maui.Keyboard!
+static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Url.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Layouts.FlexBasis.implicit operator Microsoft.Maui.Layouts.FlexBasis(float length) -> Microsoft.Maui.Layouts.FlexBasis
 static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
@@ -3184,6 +3262,7 @@ static Microsoft.Maui.Thickness.operator +(Microsoft.Maui.Thickness left, Micros
 static Microsoft.Maui.Thickness.operator ==(Microsoft.Maui.Thickness left, Microsoft.Maui.Thickness right) -> bool
 static Microsoft.Maui.Thickness.Zero -> Microsoft.Maui.Thickness
 static Microsoft.Maui.ViewExtensions.CaptureAsync(this Microsoft.Maui.IView! view) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!
+static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.VisualDiagnostics.CaptureAsJpegAsync(Microsoft.Maui.IView! view, int quality = 80) -> System.Threading.Tasks.Task<byte[]?>!
 static Microsoft.Maui.VisualDiagnostics.CaptureAsJpegAsync(Microsoft.Maui.IWindow! window, int quality = 80) -> System.Threading.Tasks.Task<byte[]?>!
 static Microsoft.Maui.VisualDiagnostics.CaptureAsPngAsync(Microsoft.Maui.IView! view) -> System.Threading.Tasks.Task<byte[]?>!
@@ -3268,6 +3347,8 @@ virtual Microsoft.Maui.Platform.StackNavigationManager.OnDestinationChanged(Andr
 virtual Microsoft.Maui.Platform.StackNavigationManager.OnNavigationViewFragmentDestroyed(AndroidX.Fragment.App.FragmentManager! fm, Microsoft.Maui.Platform.NavigationViewFragment! navHostPageFragment) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.OnNavigationViewFragmentResumed(AndroidX.Fragment.App.FragmentManager! fm, Microsoft.Maui.Platform.NavigationViewFragment! navHostPageFragment) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.RequestNavigation(Microsoft.Maui.NavigationRequest! e) -> void
+virtual Microsoft.Maui.PlatformContentViewGroup.SetHasClip(bool hasClip) -> void
+virtual Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! canvas, int viewWidth, int viewHeight) -> void
 virtual Microsoft.Maui.PropertyMapper.ClearKeyCache() -> void
 virtual Microsoft.Maui.PropertyMapper.GetKeys() -> System.Collections.Generic.IEnumerable<string!>!
 virtual Microsoft.Maui.PropertyMapper.GetProperty(string! key) -> System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>?
