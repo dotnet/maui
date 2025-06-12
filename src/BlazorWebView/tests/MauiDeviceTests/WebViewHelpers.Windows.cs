@@ -12,6 +12,8 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 		{
 			CoreWebView2 coreWebView2 = null;
 
+			await wv2.EnsureCoreWebView2Async();
+			
 			await Retry(() =>
 			{
 				coreWebView2 = wv2.CoreWebView2;
