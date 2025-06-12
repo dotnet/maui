@@ -633,7 +633,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// Update the flyout icon when the root page changes
 			if (index == 0)
 			{
-				GetParentingViewController()?.UpdateLeftBarButtonItem();
+				(target as ParentingViewController)?.UpdateLeftBarButtonItem();
 			}
 		}
 
