@@ -9,8 +9,6 @@ public class Issue11812 : ContentPage
 	ContentView _mainContentView;
 	public Issue11812()
 	{
-		this.BindingContext = new Issue11812ViewModel();
-
 		var button = new Button
 		{
 			Text = "Add ContentView",
@@ -20,7 +18,7 @@ public class Issue11812 : ContentPage
 		button.Clicked += OnButtonClicked;
 
 		_mainContentView = new ContentView();
-		_mainContentView.SetBinding(ContentView.ContentProperty, "Content");
+		_mainContentView.Content = new Issue11812InnerContentView();
 
 		var layout = new VerticalStackLayout
 		{
@@ -63,32 +61,5 @@ public class Issue11812InnerContentView : ContentView
 			};
 		}
 		Style = (Style)Application.Current.Resources["SubContentStyle"];
-	}
-}
-public class Issue11812ViewModel : INotifyPropertyChanged
-{
-	public Issue11812ViewModel()
-	{
-		Content = new Issue11812InnerContentView();
-	}
-
-	private Issue11812InnerContentView _content;
-	public Issue11812InnerContentView Content
-	{
-		get => _content;
-		set
-		{
-			if (_content != value)
-			{
-				_content = value;
-				OnPropertyChanged();
-			}
-		}
-	}
-	public event PropertyChangedEventHandler PropertyChanged;
-
-	protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-	{
-		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 }
