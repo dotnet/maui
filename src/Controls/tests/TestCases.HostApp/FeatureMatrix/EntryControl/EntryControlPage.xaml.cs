@@ -85,5 +85,45 @@ namespace Maui.Controls.Sample
 			else if (args.PropertyName == Entry.SelectionLengthProperty.PropertyName)
 				SelectionLengthEntry.Text = EntryControl.SelectionLength.ToString();
 		}
+
+		private void EntryControl_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			string eventInfo = $"TextChanged: Old='{e.OldTextValue}', New='{e.NewTextValue}'";
+
+			if (BindingContext is EntryViewModel vm)
+			{
+				vm.TextChangedText = eventInfo;
+			}
+		}
+
+		private void EntryControl_Completed(object sender, EventArgs e)
+		{
+			string eventInfo = $"Completed: Event Triggered";
+
+			if (BindingContext is EntryViewModel vm)
+			{
+				vm.CompletedText = eventInfo;
+			}
+		}
+
+		private void EntryControl_Focused(object sender, FocusEventArgs e)
+		{
+			string eventInfo = $"Focused: Event Triggered";
+			
+			if (BindingContext is EntryViewModel vm)
+			{
+				vm.FocusedText = eventInfo;
+			}
+		}
+
+		private void EntryControl_Unfocused(object sender, FocusEventArgs e)
+		{
+			string eventInfo = $"Unfocused: Event Triggered";
+			
+			if (BindingContext is EntryViewModel vm)
+			{
+				vm.UnfocusedText = eventInfo;
+			}
+		}
 	}
 }

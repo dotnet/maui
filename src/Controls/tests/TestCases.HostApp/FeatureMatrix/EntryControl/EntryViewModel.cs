@@ -30,6 +30,13 @@ namespace Maui.Controls.Sample
         private bool _isEnabled = true;
         private ClearButtonVisibility _clearButtonVisibility = ClearButtonVisibility.WhileEditing;
         private FlowDirection _flowDirection = FlowDirection.LeftToRight;
+        
+        // Event tracking properties
+        private string _textChangedText = "TextChanged: Not triggered";
+        private string _completedText = "Completed: Not triggered";
+        private string _focusedText = "Focused: Not triggered";
+        private string _unfocusedText = "Unfocused: Not triggered";
+        
         public event PropertyChangedEventHandler PropertyChanged;
 
         public ICommand ReturnCommand { get; set; }
@@ -169,6 +176,31 @@ namespace Maui.Controls.Sample
         {
             get => _fontFamily;
             set { _fontFamily = value; OnPropertyChanged(); }
+        }
+        
+        // Properties for event tracking labels
+        public string TextChangedText
+        {
+            get => _textChangedText;
+            set { _textChangedText = value; OnPropertyChanged(); }
+        }
+        
+        public string CompletedText
+        {
+            get => _completedText;
+            set { _completedText = value; OnPropertyChanged(); }
+        }
+        
+        public string FocusedText
+        {
+            get => _focusedText;
+            set { _focusedText = value; OnPropertyChanged(); }
+        }
+        
+        public string UnfocusedText
+        {
+            get => _unfocusedText;
+            set { _unfocusedText = value; OnPropertyChanged(); }
         }
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

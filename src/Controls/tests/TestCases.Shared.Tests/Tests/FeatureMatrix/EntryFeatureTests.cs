@@ -802,4 +802,175 @@ public class EntryFeatureTests : UITest
 #endif
 	}
 
+	[Test]
+	[Category(UITestCategories.Entry)]
+	public void VerifyEntryTextChangedEvent()
+	{
+		// Clear options first to ensure we have a clean state
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		// Wait for the entry control to be visible
+		App.WaitForElement("EntryText");
+		
+		// First verify the initial state of the TextChanged label
+		App.WaitForElement("TextChangedLabel");
+		var initialTextChangedText = App.Query("TextChangedLabel")[0].Text;
+		Assert.That(initialTextChangedText, Does.Contain("TextChanged"));
+		
+		// Change text in the entry
+		App.Tap("EntryText");
+		App.ClearText("EntryText");
+		App.EnterText("EntryText", "Testing TextChanged Event");
+		
+		// Verify the TextChanged event label is updated
+		App.WaitForElement("TextChangedLabel");
+		var textChangedText = App.Query("TextChangedLabel")[0].Text;
+		Assert.That(textChangedText, Does.Contain("TextChanged"));
+		Assert.That(textChangedText, Does.Contain("Testing TextChanged Event"));
+		
+		// Take a screenshot to verify the UI state
+		VerifyScreenshotWithKeyboardHandling("EntryTextChangedEvent");
+	}
+	
+	[Test]
+	[Category(UITestCategories.Entry)]
+	public void VerifyEntryCompletedEvent()
+	{
+		// Clear options first to ensure we have a clean state
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		// Wait for the entry control to be visible
+		App.WaitForElement("EntryText");
+		
+		// First verify the initial state of the Completed label
+		App.WaitForElement("CompletedLabel");
+		var initialCompletedText = App.Query("CompletedLabel")[0].Text;
+		Assert.That(initialCompletedText, Does.Contain("Completed"));
+		
+		// Trigger completed event by tapping the entry and pressing enter
+		App.Tap("EntryText");
+		App.ClearText("EntryText");
+		App.EnterText("EntryText", "Testing Completed Event");
+		App.PressEnter();
+		
+		// Verify the Completed event label is updated
+		App.WaitForElement("CompletedLabel");
+		var completedText = App.Query("CompletedLabel")[0].Text;
+		Assert.That(completedText, Does.Contain("Completed"));
+		Assert.That(completedText, Does.Contain("Event Triggered"));
+		
+		// Take a screenshot to verify the UI state
+		VerifyScreenshotWithKeyboardHandling("EntryCompletedEvent");
+	}
+	
+	[Test]
+	[Category(UITestCategories.Entry)]
+	public void VerifyEntryFocusEvents()
+	{
+		// Clear options first to ensure we have a clean state
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		// Wait for the entry control to be visible
+		App.WaitForElement("EntryText");
+		
+		// First verify the initial state of the Focus labels
+		App.WaitForElement("FocusedLabel");
+		App.WaitForElement("UnfocusedLabel");
+		var initialFocusedText = App.Query("FocusedLabel")[0].Text;
+		var initialUnfocusedText = App.Query("UnfocusedLabel")[0].Text;
+		Assert.That(initialFocusedText, Does.Contain("Focused"));
+		Assert.That(initialUnfocusedText, Does.Contain("Unfocused"));
+		
+		// Trigger focus event by tapping the entry
+		App.Tap("EntryText");
+		
+		// Verify the Focused event label is updated
+		App.WaitForElement("FocusedLabel");
+		var focusedText = App.Query("FocusedLabel")[0].Text;
+		Assert.That(focusedText, Does.Contain("Focused"));
+		Assert.That(focusedText, Does.Contain("Event Triggered"));
+		
+		// Take a screenshot of the focused state
+		VerifyScreenshotWithKeyboardHandling("EntryFocusedEvent");
+		
+		// Trigger unfocus event by tapping somewhere else
+		App.Tap("CompletedLabel"); // Tap another control to unfocus the entry
+		
+		// Verify the Unfocused event label is updated
+		App.WaitForElement("UnfocusedLabel");
+		var unfocusedText = App.Query("UnfocusedLabel")[0].Text;
+		Assert.That(unfocusedText, Does.Contain("Unfocused"));
+		Assert.That(unfocusedText, Does.Contain("Event Triggered"));
+		
+		// Take a screenshot of the unfocused state
+		VerifyScreenshotWithKeyboardHandling("EntryUnfocusedEvent");
+	}
+	
+	[Test]
+	[Category(UITestCategories.Entry)]
+	public void VerifyAllEntryEventsInSequence()
+	{
+		Exception? exception = null;
+		
+		// Clear options first to ensure we have a clean state
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		// Wait for the entry control to be visible
+		App.WaitForElement("EntryText");
+		
+		// First verify the initial state of all event labels
+		App.WaitForElement("TextChangedLabel");
+		App.WaitForElement("CompletedLabel");
+		App.WaitForElement("FocusedLabel");
+		App.WaitForElement("UnfocusedLabel");
+		
+		try {
+			// Step 1: Focus the entry (should trigger Focused event)
+			App.Tap("EntryText");
+			App.WaitForElement("FocusedLabel");
+			var focusedText = App.Query("FocusedLabel")[0].Text;
+			Assert.That(focusedText, Does.Contain("Event Triggered"));
+			
+			// Step 2: Change the text (should trigger TextChanged event)
+			App.ClearText("EntryText");
+			App.EnterText("EntryText", "All Events Test");
+			App.WaitForElement("TextChangedLabel");
+			var textChangedText = App.Query("TextChangedLabel")[0].Text;
+			Assert.That(textChangedText, Does.Contain("All Events Test"));
+			
+			// Step 3: Press Enter (should trigger Completed event)
+			App.PressEnter();
+			App.WaitForElement("CompletedLabel");
+			var completedText = App.Query("CompletedLabel")[0].Text;
+			Assert.That(completedText, Does.Contain("Event Triggered"));
+			
+			// Step 4: Unfocus the entry (should trigger Unfocused event)
+			App.Tap("TextChangedLabel");
+			App.WaitForElement("UnfocusedLabel");
+			var unfocusedText = App.Query("UnfocusedLabel")[0].Text;
+			Assert.That(unfocusedText, Does.Contain("Event Triggered"));
+			
+			// Take a screenshot of the final state with all events triggered
+			VerifyScreenshotOrSetException(ref exception, "EntryAllEventsTriggered");
+		}
+		catch (Exception ex) {
+			exception = ex;
+		}
+		
+		if (exception != null) {
+			throw exception;
+		}
+	}
 }

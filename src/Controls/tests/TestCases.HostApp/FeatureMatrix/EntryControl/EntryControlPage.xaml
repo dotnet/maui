@@ -26,7 +26,7 @@
                                  IsSpellCheckEnabled="{Binding IsSpellCheckEnabled}"
                                  MaxLength="{Binding MaxLength}"
                                  SelectionLength="{Binding SelectionLength}"
-                                 CursorPosition="{Binding CursorPosition}"
+                                 CursorPosition="{Binding CursorPosition, Mode=TwoWay}"
                                  ReturnType="{Binding ReturnType}"
                                  ReturnCommand="{Binding ReturnCommand}"
                                  ReturnCommandParameter="{Binding Text}"
@@ -36,6 +36,10 @@
                                  IsEnabled="{Binding IsEnabled}"
                                  FlowDirection="{Binding FlowDirection}"
                                  HeightRequest="100"
+                                 TextChanged="EntryControl_TextChanged"
+                                 Completed="EntryControl_Completed"
+                                 Focused="EntryControl_Focused"
+                                 Unfocused="EntryControl_Unfocused"
                                  AutomationId="EntryText"/>
 
               <Label Text="Selection Length:"
@@ -56,6 +60,25 @@
                       FontSize="11"
                       Clicked="OnUpdateCursorAndSelectionClicked"
                       AutomationId="UpdateCursorAndSelectionButton"/>
+              
+              <Label Text="Events:"
+                     FontSize="11"/>
+              <Label x:Name="TextChangedLabel"
+                     Text="{Binding TextChangedText}"
+                     AutomationId="TextChangedLabel"
+                     FontSize="11"/>
+              <Label x:Name="CompletedLabel"
+                     Text="{Binding CompletedText}"
+                     AutomationId="CompletedLabel"
+                     FontSize="11"/>
+              <Label x:Name="FocusedLabel"
+                     Text="{Binding FocusedText}"
+                     AutomationId="FocusedLabel"
+                     FontSize="11"/>
+              <Label x:Name="UnfocusedLabel"
+                     Text="{Binding UnfocusedText}"
+                     AutomationId="UnfocusedLabel"
+                     FontSize="11"/>
        </StackLayout>
 
        <ContentPage.ToolbarItems>
