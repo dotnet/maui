@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls.Performance.Internals;
 /// <summary>
 /// Internal performance tracking utility for measuring operations in .NET MAUI.
 /// </summary>
+[RequiresPerformanceMonitoring("Performance tracker requires performance monitoring")]
 internal class Performance
 {
 	static readonly ConcurrentDictionary<object, Stopwatch> _loadTimers = new();
@@ -27,6 +28,7 @@ internal class Performance
 	/// This method monitors image loading behavior, enabling performance tracking and optimization.
 	/// It can be used to analyze loading efficiency and improve application responsiveness.
 	/// </remarks>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void TrackImageLoad(IMauiContext? context, object imageSourcePart, bool isLoading)
 	{	
 		var profiler = GetProfiler(context);
@@ -65,6 +67,7 @@ internal class Performance
 	/// <param name="measureFunc">The measure function to execute</param>
 	/// <param name="element">The name of the calling element (automatically provided by CallerMemberName)</param>
 	/// <returns>The result of the measure function execution</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static T TrackMeasure<T>(IMauiContext? context, Func<T> measureFunc, [CallerMemberName] string? element = null)
 	{ 
 		var profiler = GetProfiler(context);
@@ -94,6 +97,7 @@ internal class Performance
 	/// <param name="arrangeFunc">The arrange function to execute</param>
 	/// <param name="element">The name of the calling element (automatically provided by CallerMemberName)</param>
 	/// <returns>The result of the arrange function execution</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static T TrackArrange<T>(IMauiContext? context, Func<T> arrangeFunc, [CallerMemberName] string? element = null)
 	{
 		var profiler = GetProfiler(context);
@@ -118,6 +122,12 @@ internal class Performance
 
 	static IPerformanceProfiler? GetProfiler(IMauiContext? context)
 	{
+		// Check if the performance profiling feature is enabled.
+		if (!PerformanceProfilerFeature.Guard())
+		{
+			return null;
+		}
+		
 		// Return cached profiler if available
 		if (CachedProfiler is not null)
 		{

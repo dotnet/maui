@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls.Performance
         /// If null, default options are applied.
         /// </param>
         /// <returns>The same <see cref="MauiAppBuilder"/> instance, allowing for fluent chaining.</returns>
+        [RequiresPerformanceMonitoringMethod]
         public static MauiAppBuilder AddPerformanceMonitoring(
             this MauiAppBuilder builder,
             Action<PerformanceMonitoringOptions>? configure = null)
@@ -67,6 +68,7 @@ namespace Microsoft.Maui.Controls.Performance
         /// This extension method allows customization of image tracking settings by applying user-defined configurations.
         /// It enables fine-tuned performance monitoring based on application needs.
         /// </remarks>
+        [RequiresPerformanceMonitoringMethod]
         public static PerformanceMonitoringOptions ConfigureImage(
 	        this PerformanceMonitoringOptions options,
 	        Action<ImageTrackingOptions> configure)
@@ -84,6 +86,7 @@ namespace Microsoft.Maui.Controls.Performance
         /// such as enabling measure/arrange pass tracking or per‐element tags.
         /// </param>
         /// <returns>The same <see cref="PerformanceMonitoringOptions"/> instance, enabling fluent configuration chaining.</returns>
+        [RequiresPerformanceMonitoringMethod]
         public static PerformanceMonitoringOptions ConfigureLayout(
             this PerformanceMonitoringOptions options,
             Action<LayoutTrackingOptions> configure)
@@ -99,6 +102,7 @@ namespace Microsoft.Maui.Controls.Performance
         /// <param name="options">The <see cref="PerformanceMonitoringOptions"/> instance to configure.</param>
         /// <param name="configure">An action to modify <see cref="WarningOptions"/>.</param>
         /// <returns>The updated <see cref="PerformanceMonitoringOptions"/> instance.</returns>
+        [RequiresPerformanceMonitoringMethod]
         public static PerformanceMonitoringOptions ConfigureWarnings(
 	        this PerformanceMonitoringOptions options,
 	        Action<WarningOptions> configure)

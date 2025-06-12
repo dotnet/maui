@@ -11,7 +11,7 @@
     <GitInfoReportImportance>high</GitInfoReportImportance>
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027;RS0022</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027;RS0022;NU1605</NoWarn>
     <NoWarn Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">$(NoWarn);CA1420</NoWarn>
   </PropertyGroup>
 
@@ -58,6 +58,40 @@
       ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!-- Feature switch for MAUI Performance Monitoring -->
+    <!-- By default: enabled in Debug, disabled in Release -->
+    <EnableMauiPerformanceMonitoring Condition="'$(Configuration)' == 'Debug'">true</EnableMauiPerformanceMonitoring>
+    <EnableMauiPerformanceMonitoring Condition="'$(Configuration)' == 'Release' AND '$(EnableMauiPerformanceMonitoring)' == ''">false</EnableMauiPerformanceMonitoring>
+
+    <!-- Fallback if no condition matches -->
+    <EnableMauiPerformanceMonitoring Condition="'$(EnableMauiPerformanceMonitoring)' == ''">false</EnableMauiPerformanceMonitoring>
+  </PropertyGroup>
+
+  <!-- Trimming settings for release builds -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <PublishTrimmed>true</PublishTrimmed>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <TrimMode>link</TrimMode>
+  </PropertyGroup>
+
+  <!-- Define the feature switch for the linker -->
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.Controls.Performance.EnableMonitoring"
+                                    Value="$(EnableMauiPerformanceMonitoring)" />
+  </ItemGroup>
+
+  <!-- Feature switch metadata for trimmer -->
+  <ItemGroup>
+    <FeatureSwitch Include="Microsoft.Maui.Controls.Performance.EnableMonitoring"
+                   Value="$(EnableMauiPerformanceMonitoring)" />
+  </ItemGroup>
+
+  <!-- Conditional compilation symbols -->
+  <PropertyGroup Condition="'$(EnableMauiPerformanceMonitoring)' == 'true'">
+    <DefineConstants>$(DefineConstants);MAUI_PERFORMANCE_MONITORING</DefineConstants>
+  </PropertyGroup>
+    
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
