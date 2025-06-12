@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:Microsoft.Maui.ManualTests.Views"
+             x:Class="Microsoft.Maui.ManualTests.Tests.CollectionView.I1_Layout"
+             Title="I1_Layout">
+    <TableView Intent="Menu">
+        <TableRoot>
+            <TableSection>
+                <TextCell Text="Vertical list"
+                          Detail="Text"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalListTextPage}" />
+                <TextCell Text="Horizontal list"
+                          Detail="Text"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:HorizontalListTextPage}" />
+                <TextCell Text="Vertical grid"
+                          Detail="Text"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalGridTextPage}" />
+                <TextCell Text="Horizontal grid"
+                          Detail="Text"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:HorizontalGridTextPage}" />
+                <TextCell Text="Vertical list"
+                          Detail="DataTemplate"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalListPage}" />
+                <TextCell Text="Horizontal list"
+                          Detail="DataTemplate"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:HorizontalListPage}" />
+                <TextCell Text="Vertical grid"
+                          Detail="DataTemplate"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalGridPage}" />
+                <TextCell Text="Horizontal grid"
+                          Detail="DataTemplate"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:HorizontalGridPage}" />
+                <TextCell Text="Vertical list"
+                          Detail="Data template selector"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalListDataTemplateSelectorPage}" />
+                <TextCell Text="Vertical list"
+                          Detail="RTL FlowDirection"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalListRTLPage}" />
+                <TextCell Text="Vertical list"
+                          Detail="BackgroundColor Width"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalListBorderPage}" />
+                <TextCell Text="Vertical Grid"
+                          Detail="Multi Span Layout"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalGridMultiSpanLayoutPage}" />
+                <TextCell Text="Vertical Grid"
+                          Detail="Single Span Layout"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalGridSingleSpanLayoutPage}" />
+                <TextCell Text="Vertical list"
+                          Detail="Switch CollectionView Visibility"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalListSwitchVisibilityPage}" />
+                <TextCell Text="Horizontal list"
+                          Detail="Add items to linear layout"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:HorizontalListAddItemsPage}" />
+                <TextCell Text="Vertical list"
+                          Detail="Item Height"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VeriticalListItemHeightPage}" />
+                <TextCell Text="Vertical list"
+                          Detail="Layout of line break mode"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:LineBreakModeLayoutPage}" />
+                <TextCell Text="Vertical list"
+                          Detail="Multiple Rows"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalListwithMultipleRowsPage}" />
+            </TableSection>
+        </TableRoot>
+    </TableView>
+</ContentPage>

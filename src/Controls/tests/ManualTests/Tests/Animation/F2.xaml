@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.F2"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="F2">
+    <VerticalStackLayout>
+        <Label Text="1. Enable developer options (Settings -&gt; About -&gt; Click Build number 7 times)." />
+        <Label Text="2. Once the page appears, you have 120 seconds to enable Remove Animations (Settings -&gt; Accessibility -&gt; Color and motion -&gt; Remove animations)." />
+        <Label Text="3. Enabling Remove Animations should make both labels below (Label 1, Label 2) fully visible immediately." />
+        <Label Text="4. If either label is not fully visible, this test has failed." />
+        <Label Text="5. Navigate back to the category screen and then return to this test." />
+        <Label Text="6. The labels should be full visible immediately upon returning to the test." />
+        <Label Text="7. If either label is not fully visible, this test has failed." />
+        <Label Text="8. Disable Remove Animations (Settings -&gt; Accessibility -&gt; Color and motion -&gt; Remove animations)." />
+
+        <Label x:Name="Label1"
+               Margin="0,12,0,0"
+               FontSize="36"
+               Opacity="0"
+               Text="Label 1" />
+        <Label x:Name="Label2"
+               FontSize="36"
+               IsVisible="false"
+               Text="Label 2" />
+    </VerticalStackLayout>
+</ContentPage>

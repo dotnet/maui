@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:Microsoft.Maui.ManualTests.Views"
+             x:Class="Microsoft.Maui.ManualTests.Tests.CollectionView.I2_Spacing"
+             Title="I2_Spacing">
+    <TableView Intent="Menu">
+        <TableRoot>
+            <TableSection>
+                <TextCell Text="Vertical list"
+                          Detail="ItemSpacing"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalListSpacingPage}" />
+                <TextCell Text="Horizontal list"
+                          Detail="ItemSpacing"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:HorizontalListSpacingPage}" />
+                <TextCell Text="Vertical grid"
+                          Detail="HorizontalItemSpacing and VerticalItemSpacing"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalGridSpacingPage}" />
+                <TextCell Text="Horizontal grid"
+                          Detail="HorizontalItemSpacing and VerticalItemSpacing"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:HorizontalGridSpacingPage}" />
+                <TextCell Text="Vertical list"
+                          Detail="ItemSpan and ItemSpacing"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalListSpanPage}" />
+            </TableSection>
+        </TableRoot>
+    </TableView>
+</ContentPage>

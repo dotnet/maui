@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:Microsoft.Maui.ManualTests.Views"
+             x:Class="Microsoft.Maui.ManualTests.Tests.CollectionView.I7_PullToRefresh"
+             Title="I7_PullToRefresh">
+    <TableView Intent="Menu">
+        <TableRoot>
+            <TableSection>
+                <TextCell Text="Pull to refresh using RefreshView"
+                          Detail="Vertical list"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalListPullToRefreshPage}" />
+                <TextCell Text="Pull to refresh using RefreshView"
+                          Detail="Horizontal grid"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:HorizontalGridPullToRefreshPage}" />
+            </TableSection>
+        </TableRoot>
+    </TableView>
+</ContentPage>

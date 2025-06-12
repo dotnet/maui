@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.D16"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="D16">
+    <ScrollView>
+        <VerticalStackLayout>
+            <Label Text="1. Focus editor 1 below and attempt to use the tab key to navigate focus." />
+            <Label Text="2. The test fails if the navigation order is not 1 -&gt; 2 -&gt; 3 -&gt; 1 -&gt; 2 -&gt; etc... It's OK if some window control gets focus too." />
+            <Editor Text="1" />
+            <Editor Text="2" />
+            <Editor Text="3" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

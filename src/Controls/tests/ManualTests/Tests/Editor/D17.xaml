@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.D17"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="D17">
+    <ScrollView>
+        <VerticalStackLayout>
+            <Label Text="1. Focus editor 2 below and then click on some empty space." />
+            <Label Text="2. The test fails if any of the editors are still focused after the click." />
+            <Editor Text="1" />
+            <Editor Text="2" />
+            <Editor Text="3" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

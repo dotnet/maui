@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:Microsoft.Maui.ManualTests.Views"
+             x:Class="Microsoft.Maui.ManualTests.Tests.CollectionView.I6_Grouping"
+             Title="I6_Grouping">
+    <TableView Intent="Menu">
+        <TableRoot>
+            <TableSection>
+                <TextCell Text="Grouping"
+                          Detail="Vertical list with DataTemplates"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalListGroupingPage}" />
+                <TextCell Text="Grouping"
+                          Detail="Vertical list without DataTemplates"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalListTextGroupingPage}" />
+                <TextCell Text="Grouping including empty groups"
+                          Detail="Vertical list with DataTemplates"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalListEmptyGroupsPage}" />
+                <TextCell Text="Grouping with variable sized items"
+                          Detail="Vertical list with DataTemplates"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalListGroupingVariableSizeItemsPage}" />
+                <TextCell Text="Grouping with GridItemsLayouts"
+                          Detail="Vertical list with GridItemsLayout.VerticalItemSpacing"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:VerticalItemSpacingPage}" />
+            </TableSection>
+        </TableRoot>
+    </TableView>
+</ContentPage>

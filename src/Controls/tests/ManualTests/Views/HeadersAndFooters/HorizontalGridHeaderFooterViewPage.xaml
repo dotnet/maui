@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.ManualTests.Views.HorizontalGridHeaderFooterViewPage"
+             Title="Grid header and footer (View)">
+    <Grid Margin="20" RowDefinitions="Auto, *">
+        <StackLayout Grid.Row="0">
+            <Label Text="1. The test passes if the view is displayed in horizontal grid layout with 2 rows."/>
+            <Label Text="2. The test passes if the header is displayed to the left of the grid and text display 'Monkeys' and background color display LightGray."/>
+            <Label Text="3. The test passes if the footer is displayed to the right of the grid and text display 'Friends of Xamarin Monkeys' and background color display LightGray."/>
+        </StackLayout>
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Monkeys}"
+                        ItemsLayout="HorizontalGrid, 2">
+            <CollectionView.Header>
+                <StackLayout BackgroundColor="LightGray">
+                    <Label Margin="10,0,0,0"
+                           Text="Monkeys"
+                           FontSize="12"
+                           FontAttributes="Bold" />
+                </StackLayout>
+            </CollectionView.Header>
+            <CollectionView.Footer>
+                <StackLayout BackgroundColor="LightGray">
+                    <Label Margin="10,0,0,0"
+                           Text="Friends of Xamarin Monkeys"
+                           FontSize="12"
+                           FontAttributes="Bold" />
+                </StackLayout>
+            </CollectionView.Footer>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.RowSpan="2"
+                               Source="{Binding ImageUrl}"
+                               Aspect="AspectFill"
+                               HeightRequest="60"
+                               WidthRequest="60" />
+                        <Label Grid.Column="1"
+                               Text="{Binding Name}"
+                               FontAttributes="Bold" />
+                        <Label Grid.Row="1"
+                               Grid.Column="1"
+                               Text="{Binding Location}"
+                               FontAttributes="Italic"
+                               VerticalOptions="End" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>
