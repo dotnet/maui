@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			UpdateColors(platformControl, platformControl.Resources, _backgroundColorKeys, searchBar.Background?.ToPlatform());
+			UpdateColors(platformControl, _backgroundColorKeys, searchBar.Background?.ToPlatform());
 		}
 
 		public static void UpdateIsEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar)
@@ -45,8 +45,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePlaceholderColor(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			UpdateColors(platformControl, platformControl.Resources, _placeholderForegroundColorKeys,
-				searchBar.PlaceholderColor?.ToPlatform());
+			UpdateColors(platformControl, _placeholderForegroundColorKeys, searchBar.PlaceholderColor?.ToPlatform());
 		}
 
 		public static void UpdateText(this AutoSuggestBox platformControl, ISearchBar searchBar)
@@ -80,8 +79,10 @@ namespace Microsoft.Maui.Platform
 			platformControl.RefreshThemeResources();
 		}
 
-		private static void UpdateColors(AutoSuggestBox platformControl, ResourceDictionary resource, string[] keys, Brush? brush)
+		static void UpdateColors(AutoSuggestBox platformControl, string[] keys, Brush? brush)
 		{
+			ResourceDictionary resource = platformControl.Resources;
+
 			if (brush is null)
 			{
 				resource.RemoveKeys(keys);
