@@ -110,6 +110,12 @@ namespace Microsoft.Maui.Controls
 
 		double IStepper.Interval => Increment;
 
+		double IRange.Value
+		{
+			get => Value;
+			set => SetValue(ValueProperty, value, SetterSpecificity.FromHandler);
+		}
+
 		private protected override string GetDebuggerDisplay()
 		{
 			return $"{base.GetDebuggerDisplay()}, Value = {Value}";
