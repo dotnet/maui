@@ -1,4 +1,4 @@
-namespace Controls.TestCases.HostApp.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 27831, "Adding GestureRecognizer To Editor prevents focus on Android & iOS", PlatformAffected.iOS|PlatformAffected.Android)]
 public partial class Issue27831 : ContentPage

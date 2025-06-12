@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Controls.TestCases.HostApp.Issues.Issue19111"
+             x:Class="Maui.Controls.Sample.Issues.Issue19111"
              Title="Issue19111">
     <VerticalStackLayout>
         <Button AutomationId="MauiButton" Text="Button" Clicked="Button_Clicked"
-            Command="{Binding ButtonCommand}">
+                Command="{Binding ButtonCommand}">
             <Button.GestureRecognizers>
                 <DragGestureRecognizer DragStarting="DragGestureRecognizer_DragStarting" />
             </Button.GestureRecognizers>

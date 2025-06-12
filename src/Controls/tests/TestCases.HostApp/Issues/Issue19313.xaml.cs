@@ -1,4 +1,4 @@
-namespace Controls.TestCases.HostApp.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 19313, "Checkbox broken in Android", PlatformAffected.Android)]
 public partial class Issue19313 : ContentPage
