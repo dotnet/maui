@@ -11,6 +11,17 @@
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.set -> void
 *REMOVED*Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime
 *REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime oldDate, System.DateTime newDate) -> void
+*REMOVED*override Microsoft.Maui.Controls.ContentPresenter.LayoutChildren(double x, double y, double width, double height) -> void
+*REMOVED*override Microsoft.Maui.Controls.ContentPresenter.OnMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
+*REMOVED*override Microsoft.Maui.Controls.ScrollView.LayoutChildren(double x, double y, double width, double height) -> void
+*REMOVED*override Microsoft.Maui.Controls.ScrollView.OnMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
+*REMOVED*override Microsoft.Maui.Controls.TemplatedView.LayoutChildren(double x, double y, double width, double height) -> void
+*REMOVED*override Microsoft.Maui.Controls.TemplatedView.OnMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
+Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.get -> bool
+Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.set -> void
+Microsoft.Maui.Controls.ContentPresenter.LayoutChanged -> System.EventHandler
+Microsoft.Maui.Controls.ContentPresenter.Padding.get -> Microsoft.Maui.Thickness
+Microsoft.Maui.Controls.ContentPresenter.Padding.set -> void
 Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime? oldDate, System.DateTime? newDate) -> void
 *REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.NewDate.get -> System.DateTime
 Microsoft.Maui.Controls.DateChangedEventArgs.NewDate.get -> System.DateTime?
@@ -47,6 +58,18 @@ Microsoft.Maui.Controls.ITextAlignmentElement.HorizontalTextAlignment.get -> Mic
 Microsoft.Maui.Controls.ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(Microsoft.Maui.TextAlignment oldValue, Microsoft.Maui.TextAlignment newValue) -> void
 Microsoft.Maui.Controls.ITextAlignmentElement.VerticalTextAlignment.get -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.Controls.ITextElement
+Microsoft.Maui.Controls.ScrollView.CascadeInputTransparent.get -> bool
+Microsoft.Maui.Controls.ScrollView.CascadeInputTransparent.set -> void
+Microsoft.Maui.Controls.ScrollView.LayoutChanged -> System.EventHandler
+Microsoft.Maui.Controls.ScrollView.Padding.get -> Microsoft.Maui.Thickness
+Microsoft.Maui.Controls.ScrollView.Padding.set -> void
+Microsoft.Maui.Controls.TemplatedView.CascadeInputTransparent.get -> bool
+Microsoft.Maui.Controls.TemplatedView.CascadeInputTransparent.set -> void
+Microsoft.Maui.Controls.TemplatedView.IsClippedToBounds.get -> bool
+Microsoft.Maui.Controls.TemplatedView.IsClippedToBounds.set -> void
+Microsoft.Maui.Controls.TemplatedView.LayoutChanged -> System.EventHandler
+Microsoft.Maui.Controls.TemplatedView.Padding.get -> Microsoft.Maui.Thickness
+Microsoft.Maui.Controls.TemplatedView.Padding.set -> void
 Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.Fixed = Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed | Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Controls.LayoutConstraint
@@ -74,6 +97,7 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertFrom(System.Compo
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
+~Microsoft.Maui.Controls.TemplatedView.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~override Microsoft.Maui.Controls.Compatibility.AbsoluteLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.Compatibility.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.Compatibility.StackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
@@ -344,6 +368,8 @@ override Microsoft.Maui.Controls.LayoutOptionsConverter.GetStandardValuesSupport
 override Microsoft.Maui.Controls.LayoutOptionsConverter.GetStandardValuesExclusive(System.ComponentModel.ITypeDescriptorContext? context) -> bool
 override Microsoft.Maui.Controls.LayoutOptionsConverter.GetStandardValues(System.ComponentModel.ITypeDescriptorContext? context) -> System.ComponentModel.TypeConverter.StandardValuesCollection!
 Microsoft.Maui.Controls.IExtendedTypeConverter.ConvertFromInvariantString(string! value, System.IServiceProvider! serviceProvider) -> object?
+~static readonly Microsoft.Maui.Controls.TemplatedView.IsClippedToBoundsProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.TemplatedView.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty
 ~virtual Microsoft.Maui.Controls.VisualElement.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 override Microsoft.Maui.Controls.Shapes.PathGeometryConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Controls.Shapes.PathGeometryConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
@@ -379,3 +405,10 @@ Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.GradientBrushPars
 Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.Parse(string? css) -> Microsoft.Maui.Controls.GradientBrush?
 static Microsoft.Maui.Controls.Shapes.PathFigureCollectionConverter.ParseStringToPathFigureCollection(Microsoft.Maui.Controls.Shapes.PathFigureCollection! pathFigureCollection, string? pathString) -> void
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.Target.get -> string
+*REMOVED*Microsoft.Maui.Controls.ScrollView.LayoutAreaOverride.get -> Microsoft.Maui.Graphics.Rect
+*REMOVED*Microsoft.Maui.Controls.ScrollView.LayoutAreaOverride.set -> void
+~static readonly Microsoft.Maui.Controls.ScrollView.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ContentPresenter.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ScrollView.CascadeInputTransparentProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.TemplatedView.CascadeInputTransparentProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparentProperty -> Microsoft.Maui.Controls.BindableProperty
