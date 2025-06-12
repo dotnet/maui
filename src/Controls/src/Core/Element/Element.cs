@@ -643,7 +643,6 @@ namespace Microsoft.Maui.Controls
 			_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
 
 			var specificity = GetContext(property).Values.GetSpecificity();
-			var count = GetContext(property).Values.Count;
 			if (specificity == SetterSpecificity.FromHandler)
 			{
 				return;
