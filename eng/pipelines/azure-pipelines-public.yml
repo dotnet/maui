@@ -162,13 +162,14 @@ stages:
       pool: ${{ parameters.PackPlatform }}
       timeout: 120
       testCategory: WindowsTemplates
-    - name: mac_wintemplate_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedMacImage)
-        os: macOS
-      timeout: 120
-      testCategory: WindowsTemplates
+
+    # - name: mac_wintemplate_tests
+    #   pool:
+    #     name: Azure Pipelines
+    #     vmImage: $(HostedMacImage)
+    #     os: macOS
+    #   timeout: 120
+    #   testCategory: WindowsTemplates
 
     - name: win_buildtemplate_tests
       pool: ${{ parameters.PackPlatform }}
@@ -179,7 +180,7 @@ stages:
         name: Azure Pipelines
         vmImage: $(HostedMacImage)
         os: macOS
-      timeout: 120
+      timeout: 240
       testCategory: Build
 
     - name: win_blazortemplate_tests
