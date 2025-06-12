@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
@@ -106,12 +107,27 @@ namespace Microsoft.Maui.DeviceTests
 				return true;
 			});
 
+		private static int _zindex = 1000;
+
+		private class TestWrapperView : UIView
+		{
+			private readonly TaskCompletionSource _tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public Task WaitForLayoutPassAsync() => _tcs.Task;
+
+			public override void LayoutSubviews()
+			{
+				base.LayoutSubviews();
+				_tcs.TrySetResult();
+			}
+		}
+
 		public static async Task<T> AttachAndRun<T>(this UIView view, Func<Task<T>> action)
 		{
-			var currentView = FindContentView();
+			var currentView = await FindContentView();
 
 			// MauiView has optimization code that won't fire a remeasure of the child view
-			// Check LayoutSubviews inside Mauiveiw.cs for more details. 
+			// Check LayoutSubviews inside MauiView.cs for more details. 
 			// If the parent is a MauiView, the expectation is that the parent will call
 			// measure on all the children. But this view that we're "attaching" is unknown to MauiView
 			// so the optimization code causes the attached view to not remeasure when it actually should. 
@@ -120,19 +136,23 @@ namespace Microsoft.Maui.DeviceTests
 			// This middle view is also helpful so we can make sure the attached view isn't inside the safe area
 			// which can have some unexpected results
 			var safeAreaInsets = currentView.SafeAreaInsets;
-			var attachedView = new UIView()
+			var attachedView = new TestWrapperView
 			{
 				Frame = new CGRect(
 					safeAreaInsets.Right,
 					safeAreaInsets.Top,
 					currentView.Frame.Width - safeAreaInsets.Right,
-					currentView.Frame.Height - safeAreaInsets.Top)
+					currentView.Frame.Height - safeAreaInsets.Top),
 			};
 
-			attachedView.AddSubview(view);
+			attachedView.Layer.ZPosition = Interlocked.Increment(ref _zindex);
 			currentView.AddSubview(attachedView);
+			attachedView.AddSubview(view);
 
-			// Give the UI time to refresh
+			// Layout pass happens only after Window has been set on the view
+			await attachedView.WaitForLayoutPassAsync();
+
+			// We're not sure that the view has been successfully rendered, but give it time to settle
 			await Task.Delay(100);
 
 			T result;
@@ -153,56 +173,56 @@ namespace Microsoft.Maui.DeviceTests
 			return result;
 		}
 
-		public static UIViewController FindContentViewController()
+		private static UIView? _contentView;
+		private static readonly object _contentViewLock = new();
+
+		public static Task<UIView> FindContentView() => FindContentView(0);
+
+		public static async Task<UIView> FindContentView(int retryCount)
 		{
-			if (GetKeyWindow(UIApplication.SharedApplication) is not UIWindow window)
+			if (_contentView is not null)
 			{
-				throw new InvalidOperationException("Could not attach view - unable to find UIWindow");
+				return _contentView;
 			}
 
-			if (window.RootViewController is not UIViewController viewController)
+			if (retryCount > 0)
+				await Task.Delay(1000);
+			else
+				await Task.Yield();
+
+			UIWindow? window = null;
+
+			lock (_contentViewLock)
 			{
-				throw new InvalidOperationException("Could not attach view - unable to find RootViewController");
+				if (_contentView is not null)
+				{
+					return _contentView;
+				}
+
+				window = GetKeyWindow(UIApplication.SharedApplication);
+
+				if (retryCount > 4 || window is not null)
+				{
+					if (window is null)
+					{
+						throw new InvalidOperationException($"Could not attach view - unable to find UIWindow.");
+					}
+
+					if (window?.RootViewController is not UIViewController viewController)
+					{
+						throw new InvalidOperationException("Could not attach view - unable to find RootViewController");
+					}
+
+					var rootView = viewController.View ?? throw new InvalidOperationException("Could not attach view - root view is null");
+
+					return _contentView = rootView;
+				}
 			}
 
-			while (viewController.PresentedViewController is not null)
-			{
-				if (viewController is ModalWrapper || viewController.PresentedViewController is ModalWrapper)
-					throw new InvalidOperationException("Modal Window Is Still Present");
+			// If we don't have a window yet, wait a bit and try again
+			Console.WriteLine($"Retrying to find content view. Retry count: {retryCount}");
 
-				viewController = viewController.PresentedViewController;
-			}
-
-			if (viewController == null)
-			{
-				throw new InvalidOperationException("Could not attach view - unable to find presented ViewController");
-			}
-
-			if (viewController is UINavigationController nav)
-			{
-				viewController = nav.VisibleViewController;
-			}
-
-			return viewController;
-		}
-
-		public static UIView FindContentView()
-		{
-			var currentView = FindContentViewController().View;
-
-			if (currentView == null)
-			{
-				throw new InvalidOperationException("Could not attach view - unable to find visible view");
-			}
-
-			var attachParent = currentView.FindDescendantView<ContentView>() as UIView;
-
-			if (attachParent == null)
-			{
-				attachParent = currentView.FindDescendantView<UIView>();
-			}
-
-			return attachParent ?? currentView;
+			return await FindContentView(retryCount + 1).ConfigureAwait(false);
 		}
 
 		public static Task<UIImage> ToBitmap(this UIView view, IMauiContext mauiContext)

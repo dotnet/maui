@@ -8,6 +8,7 @@
 		{
 			var list = new ListView
 			{
+				AutomationId = "TestReady",
 				ItemsSource = GetList("Normal BG Blue"),
 				BackgroundColor = Colors.Blue,
 				ItemTemplate = new DataTemplate(typeof(NormalCell))
@@ -50,7 +51,6 @@
 
 			Content = new StackLayout
 			{
-				AutomationId = "TestReady",
 				Children = {
 					list,
 					listTransparent,

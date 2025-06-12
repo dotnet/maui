@@ -55,6 +55,9 @@
 			}
 		}
 
+		public static Task WaitUntilLoaded(this Image image, int timeout = 1000) =>
+					AssertEventually(() => !image.IsLoading, timeout, message: $"Timed out loading image {image}");
+
 		public static void RunMemoryTest(this INavigation navigationPage, Func<VisualElement> elementToTest)
 		{
 			ContentPage rootPage = new ContentPage { Title = "Page 1" };
@@ -82,7 +85,14 @@
 					};
 
 					await navigationPage.PushAsync(page);
-					await Task.Delay(500); // give the View time to load
+					if (element is Image image)
+					{
+						await image.WaitUntilLoaded();
+					}
+					else
+					{
+						await Task.Delay(500); // give the View time to load
+					}
 
 					references.Add(new(element));
 					references.Add(new(element.Handler));

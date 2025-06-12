@@ -61,20 +61,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		private protected override void RegisterSupplementaryViews(UICollectionElementKindSection kind)
 		{
 			base.RegisterSupplementaryViews(kind);
-			if (IsHorizontal)
-			{
-				CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalSupplementaryView2),
-					kind, HorizontalSupplementalView2ReuseId);
-				CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalDefaultSupplementalView2),
-					kind, HorizontalDefaultSupplementalView2ReuseId);
-			}
-			else
-			{
-				CollectionView.RegisterClassForSupplementaryView(typeof(VerticalSupplementaryView2),
-					kind, VerticalSupplementaryView2ReuseId);
-				CollectionView.RegisterClassForSupplementaryView(typeof(VerticalDefaultSupplementalView2),
-					kind, VerticalDefaultSupplementalView2ReuseId);
-			}
+			CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalSupplementaryView2),
+				kind, HorizontalSupplementalView2ReuseId);
+			CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalDefaultSupplementalView2),
+				kind, HorizontalDefaultSupplementalView2ReuseId);
+			CollectionView.RegisterClassForSupplementaryView(typeof(VerticalSupplementaryView2),
+				kind, VerticalSupplementaryView2ReuseId);
+			CollectionView.RegisterClassForSupplementaryView(typeof(VerticalDefaultSupplementalView2),
+				kind, VerticalDefaultSupplementalView2ReuseId);
 		}
 
 		string DetermineViewReuseId(NSString elementKind)
@@ -133,7 +127,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var bindingContext = ItemsSource.Group(indexPath);
 
+			cell.isHeaderOrFooterChanged = true;
 			cell.Bind(template, bindingContext, ItemsView);
+			cell.isHeaderOrFooterChanged = false;
 
 			// if (cell is ItemsViewCell2)
 			// {

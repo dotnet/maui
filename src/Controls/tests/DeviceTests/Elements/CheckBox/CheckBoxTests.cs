@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -42,6 +43,40 @@ namespace Microsoft.Maui.DeviceTests
 			checkBox.BackgroundColor = color;
 
 			await ValidateHasColor<CheckBoxHandler>(checkBox, color);
+		}
+
+		[Fact]
+		[Description("The Opacity property of a CheckBox should match with native Opacity")]
+		public async Task VerifyCheckBoxOpacityProperty()
+		{
+			var checkBox = new CheckBox
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = checkBox.Opacity;
+
+			var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var nativeOpacityValue = await GetPlatformOpacity(handler);
+				Assert.Equal(expectedValue, nativeOpacityValue);
+			});
+		}
+
+		[Fact]
+		[Description("The IsVisible property of a CheckBox should match with native IsVisible")]
+		public async Task VerifyCheckBoxIsVisibleProperty()
+		{
+			var checkBox = new CheckBox();
+			checkBox.IsVisible = false;
+			var expectedValue = checkBox.IsVisible;
+
+			var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
+			await InvokeOnMainThreadAsync(async () =>
+   			{
+				   var isVisible = await GetPlatformIsVisible(handler);
+				   Assert.Equal(expectedValue, isVisible);
+			   });
 		}
 	}
 }

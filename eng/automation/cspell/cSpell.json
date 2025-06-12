@@ -9,7 +9,8 @@
         "netstandard",
         "Appium",
         "XCUI",
-        "Automator"
+        "Automator",
+        "cgmanifest"
     ],
     "ignoreWords": [],
     "patterns": [

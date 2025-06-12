@@ -70,6 +70,18 @@ namespace Microsoft.Maui.Controls
 			if (sender is not ContentPage cp)
 				return;
 
+			var pages = cp.GetParentPages();
+			Page previous = null;
+			foreach (var page in pages)
+			{
+				if (page is FlyoutPage fp)
+				{
+					if (fp.Flyout == cp || previous == fp.Flyout)
+						return;
+				}
+				previous = page;
+			}
+
 			_toolbarTracker.PagePropertyChanged -= OnPagePropertyChanged;
 			_currentPage = cp;
 			_currentNavigationPage = _currentPage.FindParentOfType<NavigationPage>();
@@ -168,7 +180,11 @@ namespace Microsoft.Maui.Controls
 
 			// Set this before BackButtonVisible triggers an update to the handler
 			// This way all useful information is present
-			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
+			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton()
+#if !WINDOWS // TODO NET 10 : Move this logic to ShouldShowToolbarButton
+				&& !anyPagesPushed.Value
+#endif
+				)
 				_drawerToggleVisible = true;
 			else
 				_drawerToggleVisible = false;

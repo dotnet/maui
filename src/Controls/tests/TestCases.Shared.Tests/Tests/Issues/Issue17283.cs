@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS
+﻿#if TEST_FAILS_ON_WINDOWS //In Windows platform, CarouselView has issues with the initial rendering of items and doesn't scroll to the correct position when Loop is enabled, for more information: https://github.com/dotnet/maui/issues/24482
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

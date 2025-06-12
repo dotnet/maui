@@ -1,8 +1,8 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Controls.Handlers.Items;
 using ObjCRuntime;
 using UIKit;
 
@@ -75,20 +75,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		private protected virtual void RegisterSupplementaryViews(UICollectionElementKindSection kind)
 		{
-			if (IsHorizontal)
-			{
-				CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalSupplementaryView2),
-					kind, HorizontalSupplementaryView2.ReuseId);
-				CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalDefaultSupplementalView2),
-					kind, HorizontalDefaultSupplementalView2.ReuseId);
-			}
-			else
-			{
-				CollectionView.RegisterClassForSupplementaryView(typeof(VerticalSupplementaryView2),
-					kind, VerticalSupplementaryView2.ReuseId);
-				CollectionView.RegisterClassForSupplementaryView(typeof(VerticalDefaultSupplementalView2),
-					kind, VerticalDefaultSupplementalView2.ReuseId);
-			}
+			CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalSupplementaryView2),
+				kind, HorizontalSupplementaryView2.ReuseId);
+			CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalDefaultSupplementalView2),
+				kind, HorizontalDefaultSupplementalView2.ReuseId);
+			CollectionView.RegisterClassForSupplementaryView(typeof(VerticalSupplementaryView2),
+				kind, VerticalSupplementaryView2.ReuseId);
+			CollectionView.RegisterClassForSupplementaryView(typeof(VerticalDefaultSupplementalView2),
+				kind, VerticalDefaultSupplementalView2.ReuseId);
 		}
 
 		string DetermineViewReuseId(NSString elementKind)
@@ -107,11 +101,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				: ItemsView.Footer;
 
 			cell.Label.Text = obj?.ToString();
+			cell.Tag = elementKind == UICollectionElementKindSectionKey.Header
+				? HeaderTag
+				: FooterTag;
 		}
 
 		void UpdateTemplatedSupplementaryView(TemplatedCell2 cell, NSString elementKind)
 		{
 			bool isHeader = elementKind == UICollectionElementKindSectionKey.Header;
+			cell.isHeaderOrFooterChanged = true;
 
 			if (isHeader)
 			{
@@ -137,6 +135,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 				cell.Tag = FooterTag;
 			}
+
+			cell.isHeaderOrFooterChanged = false;
 		}
 
 		string DetermineViewReuseId(DataTemplate template, object item)
@@ -160,6 +160,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				? HorizontalSupplementaryView2.ReuseId
 				: VerticalSupplementaryView2.ReuseId;
 		}
+		internal override CGRect LayoutEmptyView()
+		{
+			var emptyViewFrame = base.LayoutEmptyView();
+			var footerView = CollectionView.ViewWithTag(FooterTag);
+
+			if (footerView is not null)
+			{
+				if (emptyViewFrame.Height > 0)
+					footerView.Frame = new CGRect(footerView.Frame.X, emptyViewFrame.Bottom, footerView.Frame.Width, footerView.Frame.Height);
+				else
+					footerView.Frame = new CGRect(footerView.Frame.X, CollectionView.ContentSize.Height - footerView.Frame.Height, footerView.Frame.Width, footerView.Frame.Height);
+			}
+
+			return emptyViewFrame;
+		}
 
 		protected override CGRect DetermineEmptyViewFrame()
 		{
@@ -175,13 +190,53 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (footerView != null)
 				footerHeight = footerView.Frame.Height;
 
-			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y, CollectionView.Frame.Width,
-				Math.Abs(CollectionView.Frame.Height - (headerHeight + footerHeight)));
+			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y + headerHeight, CollectionView.Frame.Width,
+							Math.Abs(CollectionView.Frame.Height - (headerHeight + footerHeight)));
 		}
 
 		public override void ViewWillLayoutSubviews()
 		{
+			if (CollectionView is Items.MauiCollectionView { NeedsCellLayout: true })
+			{
+				InvalidateLayoutIfItemsMeasureChanged();
+			}
+
 			base.ViewWillLayoutSubviews();
+		}
+
+		void InvalidateLayoutIfItemsMeasureChanged()
+		{
+			// If the header or footer is a view, we need to check if the measure has changed.
+			// We could then invalidate the layout for supplementary cell only `collectionView.IndexPathForCell(headerCell)` like we do on standard cells,
+			// but that causes other cells to oddly collapse (see Issue25362 UITest), so in this case we have to stick with `InvalidateLayout`.
+			var collectionView = CollectionView;
+
+			if (ItemsView.Header is not null || ItemsView.HeaderTemplate is not null)
+			{
+				var visibleHeaders = collectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Header);
+				foreach (var header in visibleHeaders)
+				{
+					if (header is TemplatedCell2 { MeasureInvalidated: true })
+					{
+						collectionView.CollectionViewLayout.InvalidateLayout();
+						return;
+					}
+				}
+			}
+
+
+			if (ItemsView.Footer is not null || ItemsView.FooterTemplate is not null)
+			{
+				var visibleFooters = collectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Footer);
+				foreach (var footer in visibleFooters)
+				{
+					if (footer is TemplatedCell2 { MeasureInvalidated: true })
+					{
+						collectionView.CollectionViewLayout.InvalidateLayout();
+						return;
+					}
+				}
+			}
 		}
 	}
 }

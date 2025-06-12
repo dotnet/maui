@@ -3,6 +3,7 @@ trigger:
     include:
     - main
     - net9.0
+    - net10.0
     - release/*
   tags:
     include:
@@ -26,6 +27,7 @@ schedules:
   branches:
     include:
     - main
+    - inflight/current
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
@@ -59,9 +61,8 @@ parameters:
 resources:
   repositories:
     - repository: yaml-templates
-      type: github
-      name: xamarin/yaml-templates
-      endpoint: xamarin
+      type: git
+      name: DevDiv/Xamarin.yaml-templates
       ref: refs/heads/main
     - repository: 1ESPipelineTemplates
       type: git
@@ -158,9 +159,12 @@ extends:
                       parameters:
                         checkoutDirectory: '$(System.DefaultWorkingDirectory)'
                         # gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
-                        skipAndroidImages: true
-                        skipAndroidSdks: true
-                        installDefaultAndroidApi: true
+                        skipJdk: false
+                        skipAndroidCommonSdks: false
+                        skipAndroidPlatformApis: false
+                        onlyAndroidPlatformDefaultApis: true
+                        skipAndroidEmulatorImages: true
+                        skipAndroidCreateAvds: true
                         skipProvisioning: true
                         skipXcode: true
 
