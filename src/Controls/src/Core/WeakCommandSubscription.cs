@@ -1,8 +1,7 @@
 #nullable enable
 using System;
+using System.Runtime;
 using System.Windows.Input;
-using Microsoft.Maui.Controls.Internals;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -34,40 +33,53 @@ namespace Microsoft.Maui.Controls
 
 		internal class CommandCanExecuteSubscription : IDisposable
 		{
-			WeakReference<BindableObject> _bindableObject;
+			DependentHandle _dependentHandle;
 			ICommand? _command;
-			ConditionalWeakTable<BindableObject, Action<object, EventArgs>> _conditionalWeakTable;
+			bool _disposed;
 
 			public CommandCanExecuteSubscription(
 				BindableObject bindableObject,
 				ICommand command,
 				Action<object, EventArgs> canExecuteChangedHandler)
 			{
-				_conditionalWeakTable = new ConditionalWeakTable<BindableObject, Action<object, EventArgs>>();
 				_command = command;
-				_bindableObject = new WeakReference<BindableObject>(bindableObject);
-				_conditionalWeakTable.Add(bindableObject, canExecuteChangedHandler);
+				// Create a DependentHandle linking the BindableObject (primary) to the handler (dependent)
+				_dependentHandle = new DependentHandle(bindableObject, canExecuteChangedHandler);
 				_command.CanExecuteChanged += CanExecuteChanged;
 			}
 
 			public void Dispose()
 			{
+				if (_disposed)
+					return;
+
+				_disposed = true;
+
 				if (_command is not null)
 				{
 					_command.CanExecuteChanged -= CanExecuteChanged;
 					_command = null;
 				}
+				_dependentHandle.Dispose();
+				_disposed = true;
 			}
 
 			void CanExecuteChanged(object? arg1, EventArgs args)
 			{
-				if (_bindableObject is not null && _bindableObject.TryGetTarget(out var bindableObject) &&
-					_conditionalWeakTable.TryGetValue(bindableObject, out var handler))
+				if (_disposed)
+					return;
+
+				// Try to get both the primary (BindableObject) and dependent (handler) objects
+				var bindableObject = _dependentHandle.Target;
+				var handler = _dependentHandle.Dependent as Action<object, EventArgs>;
+
+				if (bindableObject is not null && handler is not null)
 				{
-					handler?.Invoke(bindableObject, args);
+					handler.Invoke(bindableObject, args);
 				}
 				else
 				{
+					// If either object has been collected, dispose the subscription
 					Dispose();
 				}
 			}
