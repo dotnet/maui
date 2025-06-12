@@ -92,6 +92,15 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Page>>(() => new PlatformConfigurationRegistry<Page>(this));
 			this.NavigatedTo += FlushPendingActions;
 
+			if (InternalChildren.Count > 0)
+			{
+				for (var i = 0; i < InternalChildren.Count; i++)
+				{
+					var item = InternalChildren[i];
+					InsertLogicalChild(i, item);
+				}
+			}
+
 			InternalChildren.CollectionChanged += (sender, args) =>
 			{
 				if (args.NewItems != null)
