@@ -1,4 +1,4 @@
-# if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS  // It's a Windows specific API issue, so restricting the other platforms
+# if WINDOWS  // It's a Windows specific API issue, so restricting the other platforms
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
