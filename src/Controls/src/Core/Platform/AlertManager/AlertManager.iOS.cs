@@ -49,6 +49,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (activityIndicatorView is null)
 					{
+						// This overlayView is used to avoid issues with the activity indicator view not being centered correctly when the device orientation changes.
 						overlayView = new UIView(rootView.Bounds)
 						{
 							UserInteractionEnabled = false,
