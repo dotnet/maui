@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				return;
 			}
-	
+
 			var selectedItemIndexes = CollectionView.GetIndexPathsForSelectedItems();
 
 			foreach (var index in selectedItemIndexes)
