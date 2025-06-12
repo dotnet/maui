@@ -1,6 +1,6 @@
 #nullable enable
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETSTANDARD2_1
 using System;
 using System.Runtime;
 using System.Runtime.CompilerServices;
@@ -26,8 +26,6 @@ internal class DependentHandle : IDisposable
     /// <param name="dependent">The dependent object that will be collected when primary is collected.</param>
     public DependentHandle(object primary, object? dependent)
     {
-        ArgumentNullException.ThrowIfNull(primary);
-
         _table = new ConditionalWeakTable<object, object>();
         _primaryRef = new WeakReference<object>(primary);
 
