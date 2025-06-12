@@ -9,6 +9,8 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 {
 	bool _invalidateParentWhenMovedToWindow;
 
+	readonly WeakEventManager _movedToWindowEventManager = new();
+
 	internal bool NeedsCellLayout { get; set; }
 
 	public MauiCollectionView(CGRect frame, UICollectionViewLayout layout) : base(frame, layout)
@@ -38,28 +40,21 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	}
 
 	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
-	EventHandler? _movedToWindow;
-
 	event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
 	{
-		add => _movedToWindow += value;
-		remove => _movedToWindow -= value;
+		add => _movedToWindowEventManager.AddEventHandler(value);
+		remove => _movedToWindowEventManager.RemoveEventHandler(value);
 	}
 
 	public override void MovedToWindow()
 	{
 		base.MovedToWindow();
-		_movedToWindow?.Invoke(this, EventArgs.Empty);
+		_movedToWindowEventManager.HandleEvent(this, EventArgs.Empty, nameof(IUIViewLifeCycleEvents.MovedToWindow));
 
 		if (_invalidateParentWhenMovedToWindow)
 		{
 			_invalidateParentWhenMovedToWindow = false;
 			this.InvalidateAncestorsMeasures();
 		}
-	}
-
-	internal interface ICustomMauiCollectionViewDelegate
-	{
-		void MovedToWindow(UIView view);
 	}
 }
