@@ -114,20 +114,20 @@ stages:
       #     testResultsFiles: $(Agent.TempDirectory)/Essentials.UnitTests/*.trx
       #     testRunTitle: Essentials.UnitTests - ${{ job.testOS }}
 
-      # - template: /eng/pipelines/common/run-dotnet-preview.yml
-      #   parameters:
-      #     displayName: Run Resizetizer.UnitTests - ${{ job.testOS }}
-      #     mauiSourcePath: ${{ parameters.mauiSourcePath }}
-      #     command: test
-      #     project: ${{ parameters.mauiSourcePath }}/src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj
-      #     arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Resizetizer.UnitTests /p:_SkipUpdateBuildNumber=true'
-      #     useExitCodeForErrors: true
+      - template: /eng/pipelines/common/run-dotnet-preview.yml
+        parameters:
+          displayName: Run Resizetizer.UnitTests - ${{ job.testOS }}
+          mauiSourcePath: ${{ parameters.mauiSourcePath }}
+          command: test
+          project: ${{ parameters.mauiSourcePath }}/src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj
+          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Resizetizer.UnitTests /p:_SkipUpdateBuildNumber=true'
+          useExitCodeForErrors: true
 
-      # - task: PublishTestResults@2
-      #   inputs:
-      #     testResultsFormat: VSTest
-      #     testResultsFiles: $(Agent.TempDirectory)/Resizetizer.UnitTests/*.trx
-      #     testRunTitle: Resizetizer.UnitTests - ${{ job.testOS }}
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: VSTest
+          testResultsFiles: $(Agent.TempDirectory)/Resizetizer.UnitTests/*.trx
+          testRunTitle: Resizetizer.UnitTests - ${{ job.testOS }}
 
       - template: /eng/pipelines/common/run-dotnet-preview.yml
         parameters:
