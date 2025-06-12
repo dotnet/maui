@@ -373,7 +373,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (e.PropertyName == binding.Path)
 				{
-					//ResetItems();
+					ResetItems();
 				}
 			}
 		}
