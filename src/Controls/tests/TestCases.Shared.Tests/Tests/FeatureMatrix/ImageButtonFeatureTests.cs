@@ -40,7 +40,7 @@ public class ImageButtonFeatureTests : UITest
 		App.NavigateToGallery(ImageButtonFeatureMatrix);
 	}
 
-	[Test]
+	[Test, Order(1)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_AspectFitWithImageSourceFromFile()
 	{
@@ -285,6 +285,7 @@ public class ImageButtonFeatureTests : UITest
 		App.WaitForElement("ImageButtonControl");
 		VerifyScreenshot();
 	}
+	
 	[Test]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_CenterWithImageSourceFromUri()
