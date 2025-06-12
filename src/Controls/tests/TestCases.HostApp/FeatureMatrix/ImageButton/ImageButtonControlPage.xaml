@@ -12,8 +12,7 @@
         </ContentPage.ToolbarItems>
 
         <Grid RowDefinitions="*,Auto,Auto,Auto,Auto"
-              ColumnDefinitions="*"
-              Padding="20">
+              ColumnDefinitions="*" >
 
                 <ImageButton x:Name="TestImageButton"
                              Source="{Binding Source}"
@@ -33,9 +32,6 @@
                              FlowDirection="{Binding FlowDirection}"
                              WidthRequest="350"
                              HeightRequest="450"
-                             HorizontalOptions="Center"
-                             VerticalOptions="Center"
-                             Margin="20"
                              AutomationId="ImageButtonControl"/>
                 <Label Grid.Row="1"
                        Text="{Binding ClickTotal, StringFormat='ImageButton Clicked: {0}'}"

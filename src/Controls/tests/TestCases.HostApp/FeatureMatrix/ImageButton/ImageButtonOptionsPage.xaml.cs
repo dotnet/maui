@@ -79,7 +79,7 @@ public partial class ImageButtonOptionsPage : ContentPage
 						FontFamily = "Ion",
 						Glyph = "\uf30c",
 						Color = Colors.Red,
-						Size = 250
+						Size = 40
 					};
 					break;
 			}

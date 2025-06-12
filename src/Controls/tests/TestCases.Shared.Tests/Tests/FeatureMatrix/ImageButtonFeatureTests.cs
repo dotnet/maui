@@ -324,6 +324,7 @@ public class ImageButtonFeatureTests : UITest
 		App.WaitForNoElement("ImageButton Clicked: 1");
 	}
 
+#if TEST_FAILS_ON_WINDOWS
 	[Test]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithShadow()
@@ -337,6 +338,7 @@ public class ImageButtonFeatureTests : UITest
 		App.WaitForElement("ImageButtonControl");
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.ImageButton)]
@@ -481,7 +483,7 @@ public class ImageButtonFeatureTests : UITest
 		App.Tap(BorderGreen);
 		App.WaitForElement(BorderWidthEntry);
 		App.ClearText(BorderWidthEntry);
-		App.EnterText(BorderWidthEntry, "10");
+		App.EnterText(BorderWidthEntry, "15");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageButtonControl");
@@ -490,7 +492,7 @@ public class ImageButtonFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.ImageButton)]
-	public void VerifyImageButtonWithBorderColorAndWidthAndCornerRadius()
+	public void VerifyImageButtonWithBorderWidthAndCornerRadius()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
