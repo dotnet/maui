@@ -29,12 +29,12 @@
         </Grid>
         <HorizontalStackLayout Grid.Row="1"
                                HorizontalOptions="Center"
+                               Padding="0,0,0,40"
                                Spacing="10">
             <Label Text="Toggled Event: "/>
             <Label x:Name="EventLabel"
                    AutomationId="ToggledEventLabel"
                    Text="False"/>
         </HorizontalStackLayout>
-
     </Grid>
 </ContentPage>

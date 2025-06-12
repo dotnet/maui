@@ -20,7 +20,6 @@ public partial class SwitchOptionsPage : ContentPage
 	{
 		if (!(sender is CheckBox changedBox) || !changedBox.IsChecked)
 			return;
-		// Uncheck the other CheckBox in the group
 		if (changedBox == FlowDirectionLeftToRightCheckBox)
 		{
 			FlowDirectionRightToLeftCheckBox.IsChecked = false;

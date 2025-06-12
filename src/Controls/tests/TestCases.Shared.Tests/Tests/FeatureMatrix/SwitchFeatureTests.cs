@@ -25,7 +25,7 @@ public class SwitchFeatureTests : UITest
     public void Switch_InitialState_VerifyVisualState()
     {
         App.WaitForElement("SwitchControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test, Order(2)]
@@ -34,7 +34,7 @@ public class SwitchFeatureTests : UITest
     {
         App.WaitForElement("SwitchControl");
         App.Tap("SwitchControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -49,7 +49,7 @@ public class SwitchFeatureTests : UITest
         App.Tap("Apply");
         App.WaitForElement("SwitchControl");
         App.Tap("SwitchControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -96,7 +96,7 @@ public class SwitchFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("SwitchControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -113,7 +113,7 @@ public class SwitchFeatureTests : UITest
         App.Tap("Apply");
         App.WaitForElement("SwitchControl");
         App.Tap("SwitchControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -129,7 +129,7 @@ public class SwitchFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("SwitchControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -146,7 +146,7 @@ public class SwitchFeatureTests : UITest
         App.Tap("Apply");
         App.WaitForElement("SwitchControl");
         App.Tap("SwitchControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -163,7 +163,7 @@ public class SwitchFeatureTests : UITest
         App.Tap("Apply");
         App.WaitForElement("SwitchControl");
         App.Tap("SwitchControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -180,6 +180,6 @@ public class SwitchFeatureTests : UITest
         App.Tap("Apply");
         App.WaitForElement("SwitchControl");
         App.Tap("SwitchControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 }
