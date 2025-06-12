@@ -2,6 +2,7 @@
 using System;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -34,17 +35,18 @@ namespace Microsoft.Maui.Controls
 		internal class CommandCanExecuteSubscription : IDisposable
 		{
 			WeakReference<BindableObject> _bindableObject;
-			WeakReference<Action<object, EventArgs>> _canExecuteChangedHandler;
 			ICommand? _command;
+			ConditionalWeakTable<BindableObject, Action<object, EventArgs>> _conditionalWeakTable;
 
 			public CommandCanExecuteSubscription(
 				BindableObject bindableObject,
 				ICommand command,
 				Action<object, EventArgs> canExecuteChangedHandler)
 			{
+				_conditionalWeakTable = new ConditionalWeakTable<BindableObject, Action<object, EventArgs>>();
 				_command = command;
 				_bindableObject = new WeakReference<BindableObject>(bindableObject);
-				_canExecuteChangedHandler = new WeakReference<Action<object, EventArgs>>(canExecuteChangedHandler);
+				_conditionalWeakTable.Add(bindableObject, canExecuteChangedHandler);
 				_command.CanExecuteChanged += CanExecuteChanged;
 			}
 
@@ -60,9 +62,9 @@ namespace Microsoft.Maui.Controls
 			void CanExecuteChanged(object? arg1, EventArgs args)
 			{
 				if (_bindableObject is not null && _bindableObject.TryGetTarget(out var bindableObject) &&
-					_canExecuteChangedHandler is not null && _canExecuteChangedHandler.TryGetTarget(out var canExecuteChangedHandler))
+					_conditionalWeakTable.TryGetValue(bindableObject, out var handler))
 				{
-					canExecuteChangedHandler(bindableObject, args);
+					handler?.Invoke(bindableObject, args);
 				}
 				else
 				{
