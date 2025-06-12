@@ -123,23 +123,23 @@ stages:
         skipProvisioning: true
         skipXcode: true
 
-# - template: /eng/pipelines/arcade/stage-unit-tests.yml@self
-#   parameters:
-#     jobMatrix:
-#     - name: win_unit_tests
-#       displayName: Windows Unit Tests
-#       pool: ${{ parameters.PackPlatform }}
-#       timeout: 90
-#       testOS: Windows
-#     - name: mac_unit_tests
-#       displayName: macOS Unit Tests
-#       pool:
-#         name: Azure Pipelines
-#         vmImage: $(HostedMacImage)
-#         os: macOS
-#       timeout: 90
-#       testOS: macOS
-#     publishTaskPrefix: ''
+- template: /eng/pipelines/arcade/stage-unit-tests.yml@self
+  parameters:
+    jobMatrix:
+    - name: win_unit_tests
+      displayName: Windows Unit Tests
+      pool: ${{ parameters.PackPlatform }}
+      timeout: 90
+      testOS: Windows
+    - name: mac_unit_tests
+      displayName: macOS Unit Tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 90
+      testOS: macOS
+    publishTaskPrefix: ''
 
 - template: /eng/pipelines/arcade/stage-integration-tests.yml@self
   parameters:
