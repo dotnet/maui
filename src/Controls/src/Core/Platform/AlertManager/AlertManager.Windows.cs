@@ -42,6 +42,8 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			Task<bool>? CurrentAlert;
 			Task<string?>? CurrentPrompt;
+			int busyCount;
+			ProgressRing? progressRing;
 
 			internal AlertRequestHelper(Window virtualView, UI.Xaml.Window platformView)
 			{
@@ -68,11 +70,43 @@ namespace Microsoft.Maui.Controls.Platform
 				MessagingCenter.Unsubscribe<Page, PromptArguments>(PlatformView, Page.PromptSignalName);
 				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(PlatformView, Page.ActionSheetSignalName);
 #pragma warning restore CS0618 // Type or member is obsolete
+
+				CleanUpActivityIndicator();
 			}
 
 			void OnPageBusy(Page sender, bool enabled)
 			{
-				// TODO: Wrap the pages in a Canvas, and dynamically add a ProgressBar
+				busyCount = Math.Max(0, enabled ? busyCount + 1 : busyCount - 1);
+
+				if (PlatformView.Content is WindowRootViewContainer panel)
+				{
+					if (busyCount > 0)
+					{
+						if (progressRing is null)
+						{
+							progressRing = new ProgressRing()
+							{
+								IsActive = busyCount > 0
+							};
+
+							panel.AddOverlay(progressRing);
+						}
+					}
+					else
+					{
+						CleanUpActivityIndicator();
+					}
+				}
+			}
+
+			void CleanUpActivityIndicator()
+			{
+				if (progressRing is not null && PlatformView.Content is WindowRootViewContainer panel)
+				{
+					progressRing.IsActive = false;
+					panel.RemoveOverlay(progressRing);
+					progressRing = null;
+				}
 			}
 
 			async void OnAlertRequested(Page sender, AlertArguments arguments)

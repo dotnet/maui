@@ -2547,5 +2547,47 @@ namespace UITest.Appium
 
 			return element;
 		}
+
+		/// <summary>
+		/// Waits for the page busy indicator to be visible.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="timeout"></param>
+		public static void PageBusyIndicatorIsVisible(this IApp app, TimeSpan? timeout = null)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.WaitForElement(AppiumQuery.ByXPath("//android.widget.ProgressBar"), timeout: timeout);
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.WaitForElement("In progress", timeout: timeout);
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				app.WaitForElement("LottiePlayer", timeout: timeout);
+			}
+		}
+
+		/// <summary>
+		/// Waits for the page busy indicator to not be visible.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="timeout"></param>
+		public static void PageBusyIndicatorIsNotVisible(this IApp app, TimeSpan? timeout = null)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.WaitForNoElement(AppiumQuery.ByXPath("//android.widget.ProgressBar"), timeout: timeout);
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.WaitForNoElement("In progress", timeout: timeout);
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				app.WaitForNoElement("LottiePlayer", timeout: timeout);
+			}
+		}
 	}
 }

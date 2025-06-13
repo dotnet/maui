@@ -64,6 +64,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public UIWindow PlatformView { get; }
 
+			UIActivityIndicatorView activityIndicatorView;
+
+			UIView overlayView;
+
 			public void Dispose()
 			{
 #pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
@@ -72,14 +76,75 @@ namespace Microsoft.Maui.Controls.Platform
 				MessagingCenter.Unsubscribe<Page, PromptArguments>(PlatformView, Page.PromptSignalName);
 				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(PlatformView, Page.ActionSheetSignalName);
 #pragma warning restore CS0618 // Type or member is obsolete
+
+				CleanUpActivityIndicator();
 			}
 
 			void OnPageBusy(Page sender, bool enabled)
 			{
 				_busyCount = Math.Max(0, enabled ? _busyCount + 1 : _busyCount - 1);
-#pragma warning disable CA1416, CA1422 // TODO:  'UIApplication.NetworkActivityIndicatorVisible' is unsupported on: 'ios' 13.0 and later
-				UIApplication.SharedApplication.NetworkActivityIndicatorVisible = _busyCount > 0;
-#pragma warning restore CA1416, CA1422
+
+				var rootView = PlatformView.RootViewController?.View;
+				if (rootView is null)
+				{
+					return;
+				}
+
+				if (_busyCount > 0)
+				{
+					if (activityIndicatorView is null)
+					{
+						// This overlayView is used to avoid issues with the activity indicator view not being centered correctly when the device orientation changes.
+						overlayView = new UIView(rootView.Bounds)
+						{
+							UserInteractionEnabled = false,
+							AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight,
+						};
+
+						activityIndicatorView = new UIActivityIndicatorView(UIActivityIndicatorViewStyle.Large)
+						{
+							UserInteractionEnabled = false,
+							HidesWhenStopped = true,
+							TranslatesAutoresizingMaskIntoConstraints = false
+						};
+
+						overlayView.AddSubview(activityIndicatorView);
+
+						NSLayoutConstraint.ActivateConstraints(
+						[
+							activityIndicatorView.CenterXAnchor.ConstraintEqualTo(overlayView.CenterXAnchor),
+							activityIndicatorView.CenterYAnchor.ConstraintEqualTo(overlayView.CenterYAnchor)
+						]);
+
+						rootView.AddSubview(overlayView);
+					}
+
+					if (!activityIndicatorView.IsAnimating)
+					{
+						activityIndicatorView.StartAnimating();
+					}
+				}
+				else
+				{
+					CleanUpActivityIndicator();
+				}
+			}
+
+			void CleanUpActivityIndicator()
+			{
+				if (activityIndicatorView is not null)
+				{
+					activityIndicatorView.StopAnimating();
+					activityIndicatorView.RemoveFromSuperview();
+					activityIndicatorView.Dispose();
+					activityIndicatorView = null;
+				}
+				if (overlayView is not null)
+				{
+					overlayView.RemoveFromSuperview();
+					overlayView.Dispose();
+					overlayView = null;
+				}
 			}
 
 			void OnAlertRequested(Page sender, AlertArguments arguments)
