@@ -15,22 +15,19 @@
         <!-- TwoPaneView -->
         <foldable:TwoPaneView x:Name="MyTwoPaneView"
                               Grid.Row="1"
-                              Pane1Length="1*"
-                              Pane2Length="1*"
-                              MinTallModeHeight="500"
-                              MinWideModeWidth="700"
-                              TallModeConfiguration="TopBottom"
-                              WideModeConfiguration="LeftRight"
-                              PanePriority="Pane1">
+                              Pane1Length="{Binding Pane1Length}"
+                              Pane2Length="{Binding Pane2Length}"
+                              MinTallModeHeight="{Binding MinTallModeHeight}"
+                              MinWideModeWidth="{Binding MinWideModeWidth}">
             <foldable:TwoPaneView.Pane1>
                 <Frame BackgroundColor="#f0f8ff"
                        Margin="10"
                        Padding="20"
                        BorderColor="#ccddff"
-                       HasShadow="True">
-                    <Label Text="Pane 1 Content"
-                           FontSize="18"
-                           HorizontalOptions="Center"/>
+                       HasShadow="{Binding IsShadowEnabled}">
+                    <Image Source="dotnet_bot.png"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
                 </Frame>
             </foldable:TwoPaneView.Pane1>
 
@@ -39,10 +36,10 @@
                        Margin="10"
                        Padding="20"
                        BorderColor="#ffccdd"
-                       HasShadow="True">
-                    <Label Text="Pane 2 Content"
-                           FontSize="18"
-                           HorizontalOptions="Center"/>
+                       HasShadow="{Binding IsShadowEnabled}">
+                    <Image Source="dotnet_bot.png"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
                 </Frame>
             </foldable:TwoPaneView.Pane2>
         </foldable:TwoPaneView>

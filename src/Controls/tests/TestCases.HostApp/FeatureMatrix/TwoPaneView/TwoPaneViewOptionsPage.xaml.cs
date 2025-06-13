@@ -9,13 +9,21 @@ public partial class TwoPaneViewOptionsPage : ContentPage
 		InitializeComponent();
 		_viewModel = viewModel;
 		BindingContext = _viewModel;
-	}
+		TallModeStepper.Value = _viewModel.MinTallModeHeight;
+		WideModeStepper.Value = _viewModel.MinWideModeWidth;
+		Pane1LengthStepper.Value = ParseLength(_viewModel.Pane1Length);
+		Pane2LengthStepper.Value = ParseLength(_viewModel.Pane2Length);
 
+		TallModeHeightValue.Text = $"{_viewModel.MinTallModeHeight}px";
+		WideModeWidthValue.Text = $"{_viewModel.MinWideModeWidth}px";
+		Pane1LengthValue.Text = _viewModel.Pane1Length.ToString();
+		Pane2LengthValue.Text = _viewModel.Pane2Length.ToString();
+	}
+	
 	private void ApplyButton_Clicked(object sender, EventArgs e)
 	{
 		Navigation.PopAsync();
 	}
-
 	private void OnTallModeHeightChanged(object sender, ValueChangedEventArgs e)
 	{
 		var value = (int)e.NewValue;
