@@ -11,8 +11,8 @@ using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CardView.Widget;
+using AndroidX.Core.Content;
 using Java.Lang;
-using Microsoft.Maui.Controls.Platform.Compatibility;
 using AColor = Android.Graphics.Color;
 using AImageButton = Android.Widget.ImageButton;
 using ASupportDrawable = AndroidX.AppCompat.Graphics.Drawable;
@@ -317,12 +317,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			result.SetScaleType(ImageView.ScaleType.FitCenter);
 
 			if (bindable.GetValue(property) is ImageSource image)
+			{
 				AutomationPropertiesProvider.SetContentDescription(result, image, null, null);
 
-			((ImageSource)bindable.GetValue(property)).LoadImage(MauiContext, (r) =>
+				image.LoadImage(MauiContext, (r) =>
+				{
+					result.SetImageDrawable(r?.Value);
+				});
+			}
+			else if (defaultImage > 0 && ContextCompat.GetDrawable(Context, defaultImage) is Drawable defaultDrawable)
 			{
-				result.SetImageDrawable(r?.Value);
-			});
+				result.SetImageDrawable(defaultDrawable);
+			}
+			else
+			{
+				result.SetImageDrawable(null);
+			}
 
 			var lp = new LinearLayout.LayoutParams((int)Context.ToPixels(22), LP.MatchParent)
 			{
