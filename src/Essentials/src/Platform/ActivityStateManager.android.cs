@@ -83,7 +83,10 @@ namespace Microsoft.Maui.ApplicationModel
 				throw new InvalidOperationException("Activity was not attached to an application.");
 
 			if (activity is ComponentActivity componentActivity && MediaPickerImplementation.IsPhotoPickerAvailable)
+			{
 				PickVisualMediaForResult.Instance.Register(componentActivity);
+				PickMultipleVisualMediaForResult.Instance.Register(componentActivity);
+			}
 
 			Init(application);
 			lifecycleListener!.Activity = activity;
