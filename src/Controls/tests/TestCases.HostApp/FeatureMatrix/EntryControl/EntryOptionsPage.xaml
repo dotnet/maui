@@ -16,23 +16,26 @@
         <VerticalStackLayout Grid.Column="0"
                              Spacing="2">
       <!-- Text -->
-      <VerticalStackLayout>
+      <HorizontalStackLayout>
         <Label Text="Text:"
-           FontSize="11"/>
+           FontSize="11"
+            VerticalTextAlignment="Center"/>
         <Entry x:Name="TextEntry"
            Text="{Binding Text}"
            TextChanged="Entry_TextChanged"
-           AutomationId="TextEntryChanged"/>
-      </VerticalStackLayout>
+           AutomationId="TextEntryChanged"
+           WidthRequest="80"/>
+      </HorizontalStackLayout>
       <!-- Font Size -->
-            <VerticalStackLayout>
+            <HorizontalStackLayout>
                 <Label Text="Font Size:"
-                       FontSize="11"/>
+                       FontSize="11"
+                       VerticalTextAlignment="Center"/>
                 <Entry x:Name="FontSizeEntry"
                        Text="{Binding FontSize}"
                        TextChanged="FontSizeEntry_TextChanged"
                        AutomationId="FontSizeEntry"/>
-            </VerticalStackLayout>
+            </HorizontalStackLayout>
             <!-- Horizontal Alignment -->
             <Label Text="Horizontal Alignment:"
                    FontSize="11"/>

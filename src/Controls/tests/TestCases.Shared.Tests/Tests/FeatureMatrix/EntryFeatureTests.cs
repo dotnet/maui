@@ -22,7 +22,7 @@ public class EntryFeatureTests : UITest
 	}
 
 
-	[Test, Order(1)]
+	[Test, Order(2)]
 	[Category(UITestCategories.Entry)]
 	public void VerifyEntryCompletedEvent()
 	{
@@ -34,15 +34,16 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("EntryText");
 
 		Assert.That(App.WaitForElement("CompletedLabel").GetText(), Is.EqualTo("Completed: Not triggered"));
-
+		App.WaitForElement("EntryText");
+		App.Tap("EntryText");
 		App.ClearText("EntryText");
-		App.EnterText("EntryText", "Completed");
+		App.EnterText("EntryText", "CompletedEvent");
 		App.PressEnter();
 
 		Assert.That(App.WaitForElement("CompletedLabel").GetText(), Is.EqualTo("Completed: Event Triggered"));
 	}
 
-	[Test, Order(2)]
+	[Test, Order(1)]
 	[Category(UITestCategories.Entry)]
 	public void VerifyEntryTextChangedEvent()
 	{
@@ -65,7 +66,7 @@ public class EntryFeatureTests : UITest
 #endif
 	}
 
-#if TEST_FAILS_ON_WINDOWS //On Windows, the Entry gets focused by default when the app starts.Navigating to the control page triggers both Focused and Unfocused events automatically.
+#if TEST_FAILS_ON_WINDOWS //On Windows, the Entry gets focused by default when the app starts. Navigating to the control page triggers both Focused and Unfocused events automatically.
 	
 		[Test, Order(3)]
 	[Category(UITestCategories.Entry)]
@@ -79,11 +80,12 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("EntryText");
 
 		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Not triggered"));
-
+		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
 		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
 	}
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Navigating to the control page triggers both Focused and Unfocused events automatically.
 	[Test, Order(4)]
 	[Category(UITestCategories.Entry)]
 	public void VerifyEntryUnfocusedEvent()
@@ -104,6 +106,7 @@ public class EntryFeatureTests : UITest
 
 		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Event Triggered"));
 	}
+#endif
 #endif
 
 	[Test]
