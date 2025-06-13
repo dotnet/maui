@@ -1,10 +1,13 @@
-﻿namespace Microsoft.Maui.IntegrationTests;
+﻿using Xunit;
+using Xunit.Abstractions;
+
+namespace Microsoft.Maui.IntegrationTests;
 
 public abstract class BaseTemplateTests : BaseBuildTest
 {
-	[SetUp]
-	public void TemplateTestsSetUp()
+	protected BaseTemplateTests() : base()
 	{
+		// Constructor performs setup that was previously in [SetUp] method
 		File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "tests", "Directory.Build.props"),
 			Path.Combine(TestDirectory, "Directory.Build.props"), true);
 		File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "tests", "Directory.Build.targets"),
@@ -22,15 +25,11 @@ public abstract class BaseTemplateTests : BaseBuildTest
 
 	protected void AssertContains(string expected, string actual)
 	{
-		Assert.IsTrue(
-			actual.Contains(expected, StringComparison.Ordinal),
-			$"Expected string '{actual}' to contain '{expected}'.");
+		Assert.Contains(expected, actual, StringComparison.Ordinal);
 	}
 
 	protected void AssertDoesNotContain(string expected, string actual)
 	{
-		Assert.IsFalse(
-			actual.Contains(expected, StringComparison.Ordinal),
-			$"Expected string '{actual}' to not contain '{expected}'.");
+		Assert.DoesNotContain(expected, actual, StringComparison.Ordinal);
 	}
 }

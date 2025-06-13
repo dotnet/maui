@@ -1,31 +1,35 @@
-﻿
-using System.Collections;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.IntegrationTests
 {
-	[Category(Categories.Samples)]
+	[Trait(Categories.TraitKey, Categories.Samples)]
 	public class SampleTests : BaseBuildTest
 	{
-		public static IEnumerable SampleTestMatrix
+		public SampleTests(ITestOutputHelper output) : base()
 		{
-			get
+			_output = output;
+			TestContext.Configure(output);
+		}
+
+		public static IEnumerable<object[]> GetSampleTestMatrix()
+		{
+			// Parse individual project files from `Microsoft.Maui.Samples.slnf` to generate a set of test cases
+			var sampleSln = Path.Combine(TestEnvironment.GetMauiDirectory(), "eng", "Microsoft.Maui.Samples.slnf");
+			var slnFile = JsonConvert.DeserializeObject<SolutionFile>(File.ReadAllText(sampleSln));
+			foreach (var projectFile in slnFile?.solution.projects ?? new List<string> { sampleSln })
 			{
-				// Parse individual project files from `Microsoft.Maui.Samples.slnf` to generate a set of test cases
-				var sampleSln = Path.Combine(TestEnvironment.GetMauiDirectory(), "eng", "Microsoft.Maui.Samples.slnf");
-				var slnFile = JsonConvert.DeserializeObject<SolutionFile>(File.ReadAllText(sampleSln));
-				foreach (var projectFile in slnFile?.solution.projects ?? new List<string> { sampleSln })
+				foreach (var config in new[] { "Debug", "Release" })
 				{
-					foreach (var config in new[] { "Debug", "Release" })
-					{
-						yield return new TestCaseData(projectFile, config);
-					}
+					yield return new object[] { projectFile, config };
 				}
 			}
 		}
 
-		[Test]
-		[TestCaseSource(nameof(SampleTestMatrix))]
+		[Theory]
+		[MemberData(nameof(GetSampleTestMatrix))]
 		public void Build(string relativeProj, string config)
 		{
 			var projectFile = Path.GetFullPath(Path.Combine(TestEnvironment.GetMauiDirectory(), relativeProj));
@@ -38,10 +42,9 @@ namespace Microsoft.Maui.IntegrationTests
 				"TreatWarningsAsErrors=true",
 			};
 
-			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: sampleProps, binlogPath: binlog),
+			Assert.True(DotnetInternal.Build(projectFile, config, properties: sampleProps, binlogPath: binlog),
 					$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
-
 	}
 
 

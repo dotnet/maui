@@ -1,70 +1,89 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Maui.IntegrationTests.Android;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.IntegrationTests
 {
-	[Category(Categories.RunOnAndroid)]
-	public class AndroidTemplateTests : BaseBuildTest
+	// Use a trait instead of NUnit's Category attribute
+	[Trait("Category", Categories.RunOnAndroid)]
+	public class AndroidTemplateTests : BaseBuildTest, IDisposable
 	{
-		Emulator TestAvd = new Emulator();
-		string testPackage = "";
+		private readonly Emulator _testAvd = new Emulator();
+		private string _testPackage = "";
+		private readonly ITestOutputHelper _outputHelper;
 
-		[OneTimeSetUp]
-		public void AndroidTemplateFxtSetUp()
+		// Constructor for xUnit dependency injection
+		public AndroidTemplateTests(ITestOutputHelper outputHelper) : base(outputHelper)
+		{
+			_outputHelper = outputHelper;
+			
+			// xUnit equivalent of OneTimeSetUp
+			SetupTestAvd();
+		}
+
+		private void SetupTestAvd()
 		{
 			if (TestEnvironment.IsMacOS && RuntimeInformation.OSArchitecture == Architecture.Arm64)
-				TestAvd.Abi = "arm64-v8a";
+				_testAvd.Abi = "arm64-v8a";
 
-			Assert.IsTrue(TestAvd.AcceptLicenses(out var licenseOutput), $"Failed to accept SDK licenses.\n{licenseOutput}");
-			Assert.IsTrue(TestAvd.InstallAvd(out var installOutput), $"Failed to install Test AVD.\n{installOutput}");
+			Assert.True(_testAvd.AcceptLicenses(out var licenseOutput), $"Failed to accept SDK licenses.\n{licenseOutput}");
+			Assert.True(_testAvd.InstallAvd(out var installOutput), $"Failed to install Test AVD.\n{installOutput}");
 		}
 
-		[SetUp]
-		public void AndroidTemplateSetUp()
+		 // Made private to avoid xUnit Fact requirement
+		private void AndroidTemplateSetUp()
 		{
 			var emulatorLog = Path.Combine(TestDirectory, $"emulator-launch-{DateTime.UtcNow.ToFileTimeUtc()}.log");
-			Assert.IsTrue(TestAvd.LaunchAndWaitForAvd(600, emulatorLog), "Failed to launch Test AVD.");
+			Assert.True(_testAvd.LaunchAndWaitForAvd(600, emulatorLog), "Failed to launch Test AVD.");
 		}
-
-		[OneTimeTearDown]
-		public void AndroidTemplateFxtTearDown()
+		
+		// Test cleanup logic moved to Dispose method
+		public override void Dispose()
 		{
-			Adb.KillEmulator(TestAvd.Id);
+			// Tear down for individual test
+			if (!string.IsNullOrEmpty(_testPackage))
+			{
+				Adb.UninstallPackage(_testPackage);
+			}
+			
+			// xUnit equivalent of OneTimeTearDown for class fixture
+			Adb.KillEmulator(_testAvd.Id);
 
 			// adb.exe can lock certain files on windows, kill it after tests complete
 			if (TestEnvironment.IsWindows)
 			{
-				Adb.Run("kill-server", deviceId: TestAvd.Id);
+				Adb.Run("kill-server", deviceId: _testAvd.Id);
 				foreach (var p in Process.GetProcessesByName("adb.exe"))
 					p.Kill();
 			}
+			
+			// Call base class Dispose
+			base.Dispose();
 		}
 
-		[TearDown]
-		public void AndroidTemplateTearDown()
-		{
-			Adb.UninstallPackage(testPackage);
-		}
-
-
-		[Test]
-		[TestCase("maui", DotNetPrevious, "Debug", null)]
-		[TestCase("maui", DotNetPrevious, "Release", null)]
-		[TestCase("maui", DotNetCurrent, "Debug", null)]
-		[TestCase("maui", DotNetCurrent, "Release", null)]
-		[TestCase("maui", DotNetCurrent, "Release", "full")]
-		[TestCase("maui-blazor", DotNetPrevious, "Debug", null)]
-		[TestCase("maui-blazor", DotNetPrevious, "Release", null)]
-		[TestCase("maui-blazor", DotNetCurrent, "Debug", null)]
-		[TestCase("maui-blazor", DotNetCurrent, "Release", null)]
-		[TestCase("maui-blazor", DotNetCurrent, "Release", "full")]
+		// Replace [TestCase] with [Theory] and [InlineData]
+		// Using empty strings instead of null to fix xUnit warnings
+		[Theory]
+		[InlineData("maui", DotNetPrevious, "Debug", "")]
+		[InlineData("maui", DotNetPrevious, "Release", "")]
+		[InlineData("maui", DotNetCurrent, "Debug", "")]
+		[InlineData("maui", DotNetCurrent, "Release", "")]
+		[InlineData("maui", DotNetCurrent, "Release", "full")]
+		[InlineData("maui-blazor", DotNetPrevious, "Debug", "")]
+		[InlineData("maui-blazor", DotNetPrevious, "Release", "")]
+		[InlineData("maui-blazor", DotNetCurrent, "Debug", "")]
+		[InlineData("maui-blazor", DotNetCurrent, "Release", "")]
+		[InlineData("maui-blazor", DotNetCurrent, "Release", "full")]
 		public void RunOnAndroid(string id, string framework, string config, string trimMode)
 		{
+			AndroidTemplateSetUp(); // Setup the test environment
+			
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+			Assert.True(DotnetInternal.New(id, projectDir, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			var buildProps = BuildProps;
@@ -76,11 +95,11 @@ namespace Microsoft.Maui.IntegrationTests
 
 			AddInstrumentation(projectDir);
 
-			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: BuildProps),
+			Assert.True(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: BuildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to install. Check test output/attachments for errors.");
 
-			testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLowerInvariant()}";
-			Assert.IsTrue(XHarness.RunAndroid(testPackage, Path.Combine(projectDir, "xh-results"), -1),
+			_testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLowerInvariant()}";
+			Assert.True(XHarness.RunAndroid(_testPackage, Path.Combine(projectDir, "xh-results"), -1),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 
@@ -96,6 +115,5 @@ namespace Microsoft.Maui.IntegrationTests
 				"MainLauncher = true",
 				"MainLauncher = true, Name = \"com.microsoft.mauitemplate.MainActivity\"");
 		}
-
 	}
 }

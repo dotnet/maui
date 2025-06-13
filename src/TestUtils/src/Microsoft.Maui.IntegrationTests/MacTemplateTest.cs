@@ -1,21 +1,29 @@
 ﻿using Microsoft.Maui.IntegrationTests.Apple;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.IntegrationTests;
 
-[Category(Categories.macOSTemplates)]
+[Trait(Categories.TraitKey, Categories.macOSTemplates)]
 public class MacTemplateTest : BaseTemplateTests
 {
-	[Test]
-	[TestCase("maui", "ios")]
-	[TestCase("maui", "maccatalyst")]
-	[TestCase("maui-blazor", "ios")]
-	[TestCase("maui-blazor", "maccatalyst")]
+	public MacTemplateTest(ITestOutputHelper output) : base()
+	{
+		_output = output;
+		TestContext.Configure(output);
+	}
+
+	[Theory]
+	[InlineData("maui", "ios")]
+	[InlineData("maui", "maccatalyst")]
+	[InlineData("maui-blazor", "ios")]
+	[InlineData("maui-blazor", "maccatalyst")]
 	public void BuildWithCustomBundleResource(string id, string framework)
 	{
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		File.WriteAllText(Path.Combine(projectDir, "Resources", "testfile.txt"), "Something here :)");
@@ -32,19 +40,15 @@ public class MacTemplateTest : BaseTemplateTests
 		var extendedBuildProps = BuildProps;
 		extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-{framework}");
 
-		Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	//[Test]
-	//[TestCase("maui-blazor", "Debug", DotNetCurrent, true)]
-	//[TestCase("maui-blazor", "Release", DotNetCurrent, true)]
-	public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework, bool sign)
+	[Fact]
+	public void CheckEntitlementsForMauiBlazorOnMacCatalyst()
 	{
 		if (TestEnvironment.IsWindows)
-		{
-			Assert.Ignore("Running MacCatalyst templates is only supported on Mac.");
-		}
+			return; // Skip if running on Windows
 
 		var arch = System.Runtime.InteropServices.RuntimeInformation.OSArchitecture;
 
@@ -52,40 +56,38 @@ public class MacTemplateTest : BaseTemplateTests
 		string projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 		// Note: Debug app is stored in the maccatalyst-x64 folder, while the Release is in parent directory
 		// or in maccatalyst-arm64 thats why we have to check where the test is running 
-		string appLocation = config == "Release" ?
-			Path.Combine(projectDir, "bin", config, $"{framework}-maccatalyst", $"{Path.GetFileName(projectDir)}.app") :
-			Path.Combine(projectDir, "bin", config, $"{framework}-maccatalyst", $"maccatalyst-{arch}", $"{Path.GetFileName(projectDir)}.app");
+		string appLocation = "Release" == "Release" ?
+			Path.Combine(projectDir, "bin", "Release", $"{DotNetCurrent}-maccatalyst", $"{Path.GetFileName(projectDir)}.app") :
+			Path.Combine(projectDir, "bin", "Release", $"{DotNetCurrent}-maccatalyst", $"maccatalyst-{arch}", $"{Path.GetFileName(projectDir)}.app");
 		string entitlementsPath = Path.Combine(projectDir, "x.xml");
 
 		List<string> buildWithCodeSignProps = new List<string>(BuildProps)
 		{
-			$"EnableCodeSigning={sign}"
+			$"EnableCodeSigning=true"
 		};
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-maccatalyst", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.New("maui-blazor", projectDir, DotNetCurrent), $"Unable to create template maui-blazor. Check test output for errors.");
+		Assert.True(DotnetInternal.Build(projectFile, "Release", framework: $"{DotNetCurrent}-maccatalyst", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		List<string> expectedEntitlements =
 			new() { "com.apple.security.app-sandbox", "com.apple.security.network.client" };
 		List<string> foundEntitlements = Codesign.SearchForExpectedEntitlements(entitlementsPath, appLocation, expectedEntitlements);
 
-		CollectionAssert.AreEqual(expectedEntitlements, foundEntitlements, "Entitlements missing from executable.");
+		Assert.Equal(expectedEntitlements, foundEntitlements);
 	}
 
-	[Test]
-	[TestCase("maui-blazor", "Debug", DotNetCurrent, false)]
-	[TestCase("maui-blazor", "Release", DotNetCurrent, false)]
-	[TestCase("maui", "Debug", DotNetCurrent, false)]
-	[TestCase("maui", "Release", DotNetCurrent, false)]
-	[TestCase("maui-multiproject", "Debug", DotNetCurrent, false)]
-	[TestCase("maui-multiproject", "Release", DotNetCurrent, false)]
+	[Theory]
+	[InlineData("maui-blazor", "Debug", DotNetCurrent, false)]
+	[InlineData("maui-blazor", "Release", DotNetCurrent, false)]
+	[InlineData("maui", "Debug", DotNetCurrent, false)]
+	[InlineData("maui", "Release", DotNetCurrent, false)]
+	[InlineData("maui-multiproject", "Debug", DotNetCurrent, false)]
+	[InlineData("maui-multiproject", "Release", DotNetCurrent, false)]
 	public void CheckPrivacyManifestForiOS(string id, string config, string framework, bool sign)
 	{
 		if (TestEnvironment.IsWindows)
-		{
-			Assert.Ignore("Running iOS templates is only supported on Mac.");
-		}
+			return; // Skip if running on Windows
 
 		var arch = System.Runtime.InteropServices.RuntimeInformation.OSArchitecture;
 
@@ -120,12 +122,12 @@ public class MacTemplateTest : BaseTemplateTests
 			buildWithCodeSignProps.Add("EnableCodeSigning=true");
 		}
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		string manifestLocation = Path.Combine(appLocation, "PrivacyInfo.xcprivacy");
 
-		Assert.IsTrue(File.Exists(manifestLocation), $"Privacy Manifest not found in {manifestLocation}.");
+		Assert.True(File.Exists(manifestLocation), $"Privacy Manifest not found in {manifestLocation}.");
 	}
 }

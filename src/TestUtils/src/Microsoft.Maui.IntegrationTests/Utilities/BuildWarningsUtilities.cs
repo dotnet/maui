@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
+using Xunit;
 
 namespace Microsoft.Maui.IntegrationTests
 {
@@ -84,7 +85,8 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static void AssertNoWarnings(this List<WarningsPerFile> actualWarnings)
 		{
-			Assert.AreEqual(0, actualWarnings.Count, $"No warnings expected, but got {actualWarnings.Count} warnings:\n{string.Join("\n", actualWarnings.Select(actualWarning => actualWarning.ToString()))}");
+			var message = $"No warnings expected, but got {actualWarnings.Count} warnings:\n{string.Join("\n", actualWarnings.Select(actualWarning => actualWarning.ToString()))}";
+			Assert.True(actualWarnings.Count == 0, message);
 		}
 
 		public static void AssertWarnings(this List<WarningsPerFile> actualWarnings, List<WarningsPerFile> expectedWarnings)
@@ -92,35 +94,49 @@ namespace Microsoft.Maui.IntegrationTests
 			foreach (var expectedWarningsPerFile in expectedWarnings)
 			{
 				var actualWarningsPerFile = actualWarnings.FirstOrDefault(actualWarning => actualWarning.File.CompareWarningsFilePaths(expectedWarningsPerFile.File));
-				Assert.NotNull(actualWarningsPerFile,
-					$"Expected warnings file path '{expectedWarningsPerFile.File}' was not found.");
+				
+				var fileFoundMessage = $"Expected warnings file path '{expectedWarningsPerFile.File}' was not found.";
+				Assert.True(actualWarningsPerFile != null, fileFoundMessage);
+
+				if (actualWarningsPerFile == null)
+				{
+					// Skip further checks if file was not found - assertion above will fail the test
+					continue;
+				}
 
 				foreach (var expectedWarningsPerCode in expectedWarningsPerFile.WarningsPerCode)
 				{
-					var actualWarningsPerCode = actualWarningsPerFile!.WarningsPerCode.FirstOrDefault(x => x.Code == expectedWarningsPerCode.Code);
-					Assert.NotNull(actualWarningsPerCode,
-						$"Expected warning code '{expectedWarningsPerCode.Code}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}'");
+					var actualWarningsPerCode = actualWarningsPerFile.WarningsPerCode.FirstOrDefault(x => x.Code == expectedWarningsPerCode.Code);
+					
+					var codeFoundMessage = $"Expected warning code '{expectedWarningsPerCode.Code}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}'";
+					Assert.True(actualWarningsPerCode != null, codeFoundMessage);
+
+					if (actualWarningsPerCode == null)
+					{
+						// Skip further checks if code was not found - assertion above will fail the test
+						continue; 
+					}
 
 					foreach (var expectedWarningsMessage in expectedWarningsPerCode.Messages)
 					{
-						Assert.True(actualWarningsPerCode!.Messages.Remove(expectedWarningsMessage),
-							$"Expected warning message '{expectedWarningsMessage}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}' and warning code '{expectedWarningsPerCode.Code}'");
+						var removeMessage = $"Expected warning message '{expectedWarningsMessage}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}' and warning code '{expectedWarningsPerCode.Code}'";
+						Assert.True(actualWarningsPerCode.Messages.Remove(expectedWarningsMessage), removeMessage);
 					}
 
-					Assert.AreEqual(0, actualWarningsPerCode!.Messages.Count,
-						$"Unexpected warning messages detected for the expected warnings file path '{expectedWarningsPerFile.File}' and warning code '{expectedWarningsPerCode.Code}'! Unexpected warning messages are: {string.Join("\n\t\t", actualWarningsPerCode.Messages)}");
+					var unexpectedMessages = $"Unexpected warning messages detected for the expected warnings file path '{expectedWarningsPerFile.File}' and warning code '{expectedWarningsPerCode.Code}'! Unexpected warning messages are: {string.Join("\n\t\t", actualWarningsPerCode.Messages)}";
+					Assert.True(actualWarningsPerCode.Messages.Count == 0, unexpectedMessages);
 
 					actualWarningsPerFile.WarningsPerCode.Remove(actualWarningsPerCode);
 				}
 
-				Assert.AreEqual(0, actualWarningsPerFile!.WarningsPerCode.Count,
-					$"Unexpected warning codes detected for the expected warnings file path '{expectedWarningsPerFile.File}'! Unexpected warning codes are: {string.Join("\n\t\t", actualWarningsPerFile.WarningsPerCode.Select(c => c.Code).ToList())}");
+				var unexpectedCodes = $"Unexpected warning codes detected for the expected warnings file path '{expectedWarningsPerFile.File}'! Unexpected warning codes are: {string.Join("\n\t\t", actualWarningsPerFile.WarningsPerCode.Select(c => c.Code).ToList())}";
+				Assert.True(actualWarningsPerFile.WarningsPerCode.Count == 0, unexpectedCodes);
 
-				actualWarnings.Remove(actualWarningsPerFile!);
+				actualWarnings.Remove(actualWarningsPerFile);
 			}
 
-			Assert.AreEqual(0, actualWarnings.Count,
-				$"Unexpected warning files detected! Unexpected warning file paths are: {string.Join("\n\t\t", actualWarnings.Select(f => f.File).ToList())}");
+			var unexpectedFiles = $"Unexpected warning files detected! Unexpected warning file paths are: {string.Join("\n\t\t", actualWarnings.Select(f => f.File).ToList())}";
+			Assert.True(actualWarnings.Count == 0, unexpectedFiles);
 		}
 
 		#region Expected warning messages

@@ -7,8 +7,11 @@ namespace Microsoft.Maui.IntegrationTests
 		Mono,
 		NativeAOT
 	}
-
-	public abstract class BaseBuildTest
+    
+	/// <summary>
+	/// Base class for all build tests that replaces the functionality previously provided by NUnit attributes
+	/// </summary>
+	public abstract class BaseBuildTest : IDisposable
 	{
 		public const string DotNetCurrent = "net9.0";
 		public const string DotNetPrevious = "net8.0";
@@ -16,7 +19,29 @@ namespace Microsoft.Maui.IntegrationTests
 		public const string MauiVersionCurrent = "9.0.0-rc.1.24453.9"; // this should not be the same as the last release
 		public const string MauiVersionPrevious = "8.0.72"; // this should not be the same version as the default. aka: MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
 
-		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
+		private readonly char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
+		protected string? _testName;
+		protected ITestOutputHelper? _output;
+
+		static BaseBuildTest()
+		{
+			// This is the one-time setup that would have been in [OneTimeSetUp]
+			PrepareNuGetPackages();
+		}
+        
+		/// <summary>
+		/// Base constructor for all build tests
+		/// </summary>
+		public BaseBuildTest(ITestOutputHelper? output = null)
+		{
+			_output = output;
+            
+			// Setup for each test
+			if (Directory.Exists(TestDirectory))
+				Directory.Delete(TestDirectory, recursive: true);
+
+			Directory.CreateDirectory(TestDirectory);
+		}
 
 		public string MauiPackageVersion
 		{
@@ -33,7 +58,13 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			get
 			{
-				var result = TestContext.CurrentContext.Test.Name;
+				if (_testName == null)
+				{
+					// Generate a random test name since we don't have TestContext.CurrentContext.Test.Name
+					_testName = $"Test_{Guid.NewGuid().ToString("N").Substring(0, 8)}";
+				}
+
+				var result = _testName;
 				foreach (var c in invalidChars.Concat(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars())))
 				{
 					result = result.Replace(c, '_');
@@ -46,14 +77,15 @@ namespace Microsoft.Maui.IntegrationTests
 					result = result.Substring(0, 15) + Convert.ToString(Math.Abs(string.GetHashCode(result.AsSpan(), StringComparison.Ordinal)), CultureInfo.InvariantCulture);
 				}
 				return result;
-			}
+				}
+			set => _testName = value;
 		}
 
 		public string LogDirectory => Path.Combine(TestEnvironment.GetLogDirectory(), TestName);
 
 		public string TestDirectory => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), TestName);
 
-		public string TestNuGetConfig => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "NuGet.config");
+		public static string TestNuGetConfig => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "NuGet.config");
 
 		// Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
 		protected List<string> BuildProps => new()
@@ -77,8 +109,7 @@ namespace Microsoft.Maui.IntegrationTests
 		/// TODO: Should these be moved to a library-packs workload folder for testing?
 		/// </summary>
 		/// <exception cref="DirectoryNotFoundException"></exception>
-		[OneTimeSetUp]
-		public void BuildTestFxtSetUp()
+		static void PrepareNuGetPackages()
 		{
 			string[] NuGetOnlyPackages = new string[] {
 				"Microsoft.Maui.Controls.*.nupkg",
@@ -111,27 +142,18 @@ namespace Microsoft.Maui.IntegrationTests
 			FileUtilities.ReplaceInFile(TestNuGetConfig, "NUGET_ONLY_PLACEHOLDER", extraPacksDir);
 		}
 
-		[SetUp]
-		public void BuildTestSetUp()
+		public virtual void Dispose()
 		{
-			if (Directory.Exists(TestDirectory))
-				Directory.Delete(TestDirectory, recursive: true);
-
-			Directory.CreateDirectory(TestDirectory);
-		}
-
-		[OneTimeTearDown]
-		public void BuildTestFxtTearDown() { }
-
-		[TearDown]
-		public void BuildTestTearDown()
-		{
+			// Equivalent to [TearDown]
 			// Attach test content and logs as artifacts
-			foreach (var log in Directory.GetFiles(Path.Combine(TestDirectory), "*log", SearchOption.AllDirectories))
+			// Since XUnit doesn't have built-in test attachments, we just log the file locations
+			if (_output != null)
 			{
-				TestContext.AddTestAttachment(log, Path.GetFileName(TestDirectory));
+				foreach (var log in Directory.GetFiles(Path.Combine(TestDirectory), "*log", SearchOption.AllDirectories))
+				{
+					_output.WriteLine($"Test log file: {log}");
+				}
 			}
 		}
-
 	}
 }

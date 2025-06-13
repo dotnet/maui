@@ -44,7 +44,7 @@ namespace Microsoft.Maui.IntegrationTests.Android
 		{
 			RunForOutput(args, out int exitCode, timeout, deviceId);
 			if (exitCode != 0)
-				TestContext.WriteLine(exitCode);
+				TestContext.WriteLine(exitCode.ToString());
 
 			return exitCode == 0;
 		}
