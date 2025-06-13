@@ -1,4 +1,4 @@
-﻿#if IOS || MACCATALYST // More tab is available in MAC and iOS
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // More tab is available in Mac and iOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -7,20 +7,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue16175 : _IssuesUITest
 {
-	public Issue16175(TestDevice testDevice) : base(testDevice)
+	public Issue16175(TestDevice device) : base(device)
 	{
 	}
-	public override string Issue => "OnNavigatedTo was not triggered when tabs in More section";
+	public override string Issue => "OnNavigatedTo event triggered in More tabs";
 
 	[Test]
 	[Category(UITestCategories.TabbedPage)]
-	public void TabbedPageTabEventsTriggeredInMoreSection()
+	public void TabEventsTriggeredInMoreTab()
 	{
-		App.WaitForElement("navigatedToLabel");
-		App.WaitForElement("More");
-		App.Tap("More");
-		App.WaitForElement("8");
-		App.Tap("8");
+		App.TapTab("More");
+		App.TapTab("Tab8");
 		var navigatedToLabel = App.WaitForElement("navigatedToLabel");
 		Assert.That(navigatedToLabel.GetText(), Is.EqualTo("NavigatedTo: Triggered"));
 	}
