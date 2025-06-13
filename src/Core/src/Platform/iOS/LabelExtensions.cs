@@ -73,10 +73,8 @@ namespace Microsoft.Maui.Platform
 				platformLabel.AttributedText = modAttrText;
 		}
 
-		internal static void UpdateTextHtml(this UILabel platformLabel, ILabel label)
+		internal static void UpdateTextHtml(this UILabel platformLabel, string text)
 		{
-			string text = label.Text ?? string.Empty;
-
 			var attr = new NSAttributedStringDocumentAttributes
 			{
 				DocumentType = NSDocumentType.HTML,
