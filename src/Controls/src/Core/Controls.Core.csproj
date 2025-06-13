@@ -69,7 +69,7 @@
   </PropertyGroup>
 
   <!-- Trimming settings for release builds -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Release' AND !$(TargetFramework.StartsWith('netstandard'))">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' AND !$(TargetFramework.StartsWith('netstandard')) AND !$(TargetFramework.Contains('windows'))">
   <PublishTrimmed>true</PublishTrimmed>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <TrimMode>link</TrimMode>
