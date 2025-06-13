@@ -67,6 +67,7 @@
     <MauiFont Remove="Resources\Fonts\Dokdo-Regular.ttf" />
     <EmbeddedResource Include="Resources\Fonts\Dokdo-Regular.ttf" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Resources\Images\royals.png" />
   </ItemGroup>
 
   <ItemGroup>
