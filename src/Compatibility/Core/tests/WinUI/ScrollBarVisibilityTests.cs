@@ -1,9 +1,9 @@
 using Microsoft.Maui.Controls.Platform;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class ScrollBarVisibilityTests
 	{
 		[Test, Category("Scrollbar")]

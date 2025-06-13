@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class DatePickerTests : PlatformTestFixture
 	{
 		[Test, Category("DatePicker")]
