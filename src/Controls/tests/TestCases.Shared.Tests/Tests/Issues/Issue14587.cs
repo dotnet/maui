@@ -1,6 +1,6 @@
 #if TEST_FAILS_ON_WINDOWS // On the Windows platform, the automationId of the Glyph icon is not working.
 //For more information : https://github.com/dotnet/maui/issues/27702
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue14587(TestDevice device) : base(device) { }
 		public override string Issue => "ImageButton with FontImageSource becomes invisible";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Image)]
 		public void ImageDoesNotDisappearWhenSwitchingTab()
 		{

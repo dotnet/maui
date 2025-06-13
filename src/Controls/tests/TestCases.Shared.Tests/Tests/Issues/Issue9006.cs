@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_IOS // On iOS test consistently crashes on CI, but passes locally. Adding failure for iOS to ensure CI stability.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] Unable to open a new Page for the second time in Xamarin.Forms Shell Tabbar";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Shell)]
 		[Category(UITestCategories.Compatibility)]
 		public void ClickingOnTabToPopToRootDoesntBreakNavigation()
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(ClickMe);
 			App.Tap(ClickMe);
 			App.WaitForElementTillPageNavigationSettled(FinalLabel);
-			Assert.That(App.WaitForElement(FinalLabel)?.GetText(), Is.EqualTo("Success"));
+			Assert.Equal("Success", App.WaitForElement(FinalLabel)?.GetText());
 		}
 	}
 }

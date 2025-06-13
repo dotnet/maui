@@ -1,5 +1,5 @@
 ﻿#if IOS
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Truncation Issues with Relative Layouts";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest]

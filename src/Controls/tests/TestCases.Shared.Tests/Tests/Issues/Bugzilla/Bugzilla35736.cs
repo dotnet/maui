@@ -1,6 +1,6 @@
 ﻿#if IOS
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Editor does not update Text value from autocorrect when losing focus";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Editor)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOSWhenRunningOnXamarinUITest("Fails sometimes")]
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Bugzilla35736Editor");
 			App.EnterText("Bugzilla35736Editor", "Testig");
 			App.Tap("Bugzilla35736Button");
-			ClassicAssert.AreEqual("Testing", App.FindElement("Bugzilla35736Label").GetText());
+			Assert.Equal("Testing", App.FindElement("Bugzilla35736Label").GetText());
 		}
 	}
 }

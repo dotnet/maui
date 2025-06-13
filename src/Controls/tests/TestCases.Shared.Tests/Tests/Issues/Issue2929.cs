@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[UWP] ListView with null ItemsSource crashes on 3.0.0.530893";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.ListView)]
 		public void NullItemSourceDoesNotCrash()
 		{

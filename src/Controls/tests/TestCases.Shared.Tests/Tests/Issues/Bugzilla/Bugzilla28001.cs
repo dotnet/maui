@@ -1,5 +1,5 @@
 /*
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ public class Bugzilla28001 : _IssuesUITest
 
 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	[FailsOnAndroidWhenRunningOnXamarinUITest]
-	[Test]
+	[Fact]
 	[Category(UITestCategories.TabbedPage)]
 	public void Bugzilla28001Test()
 	{

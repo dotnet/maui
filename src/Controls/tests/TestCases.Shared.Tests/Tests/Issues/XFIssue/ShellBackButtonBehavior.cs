@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	public override string Issue => "Shell Back Button Behavior Test";
 
 	// TODO: HostApp UI pushes some ControlGallery specific page? Commented out now, fix that first!
-	//[Test]
+	//[Fact]
 	//	[FailsOnAndroid]
 	//	public void CommandTest()
 	//	{
@@ -47,7 +47,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	//		Assert.AreEqual("parameter", commandResult);
 	//	}
 
-	//	[Test]
+	//	[Fact]
 	//	public void CommandWorksWhenItsTheOnlyThingSet()
 	//	{
 	//		App.Tap(PushPageId);
@@ -73,7 +73,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	//		Assert.AreEqual(commandResult, "parameter");
 	//	}
 
-	//	[Test]
+	//	[Fact]
 	//	[FailsOnIOSWhenRunningOnXamarinUITest]
 	//	public void BackButtonSetToTextStillNavigatesBack()
 	//	{
@@ -84,7 +84,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	//		App.WaitForElement("Page 0");
 	//	}
 
-	//	[Test]
+	//	[Fact]
 	//	[FailsOnIOSWhenRunningOnXamarinUITest]
 	//	public void BackButtonSetToTextStillOpensFlyout()
 	//	{
@@ -95,7 +95,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	//	}
 
 	//#if __ANDROID__
-	//	[Test]
+	//	[Fact]
 	//	public void FlyoutDisabledDoesntOpenFlyoutWhenSetToText()
 	//	{
 	//		App.WaitForElement("ToggleFlyoutBehavior");
@@ -107,7 +107,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	//		App.WaitForNoElement(FlyoutOpen);
 	//	}
 	//#else
-	//	[Test]
+	//	[Fact]
 	//	[FailsOnIOSWhenRunningOnXamarinUITest]
 	//	public void FlyoutDisabledDoesntOpenFlyoutWhenSetToText()
 	//	{
@@ -122,7 +122,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	//		App.WaitForNoElement(FlyoutOpen);
 	//	}
 	//#endif
-	//	[Test]
+	//	[Fact]
 	//	public void AutomationIdOnIconOverride()
 	//	{
 	//		App.WaitForElement("ToggleFlyoutBehavior");

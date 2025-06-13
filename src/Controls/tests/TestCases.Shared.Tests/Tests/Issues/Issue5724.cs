@@ -1,6 +1,6 @@
 #if ANDROID // This test case only works on Android because Send Keys functionality is platform-specific and does not behave the same way on iOS, macOS, or Windows.
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Next Moves To Next Entry and Done Closes Input View";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Entry)]
 		public async Task TappingNextMovesToNextElement()
 		{
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 #if TEST_FAILS_ON_ANDROID // More information: https://github.com/dotnet/maui/issues/28640
-		[Test]
+		[Fact]
 		[Category(UITestCategories.SoftInput)]
 		public async Task TappingDoneClosesKeyboard()
 		{

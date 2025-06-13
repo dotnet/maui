@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ObjectDisposedException for Microsoft.Maui.Controls.Platform.Android.FastRenderers.ImageRenderer";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Image)]
 		public void RemovingImageWithGestureFromLayoutWithinGestureHandlerDoesNotCrash()
 		{

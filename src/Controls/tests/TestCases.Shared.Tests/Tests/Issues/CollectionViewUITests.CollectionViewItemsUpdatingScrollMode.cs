@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 #if TEST_FAILS_ON_WINDOWS // For more information, see :https://github.com/dotnet/maui/issues/28006
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void KeepItemsInView()
 		{
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // The test fails on iOS and macOS because Appium is unable to locate the Picker control elements resulting in a TimeoutException. For more information, see: https://github.com/dotnet/maui/issues/28024
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void KeepScrollOffset()
 		{
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		// KeepLastItemInView(src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void KeepLastItemInView()
 		{

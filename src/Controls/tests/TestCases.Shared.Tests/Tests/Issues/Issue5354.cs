@@ -1,7 +1,7 @@
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Related Issue : https://github.com/dotnet/maui/issues/27955, https://github.com/dotnet/maui/issues/27946
 using Microsoft.Maui.TestCases.Tests;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[CollectionView] Updating the ItemsLayout type should refresh the layout";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewItemsLayoutUpdate()
 		{
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				var linearRect0 = App.WaitForElement("Image0").GetRect();
 				var linearRect1 = App.WaitForElement("Image1").GetRect();
 
-				ClassicAssert.AreEqual(linearRect0.X, linearRect1.X);
+				Assert.Equal(linearRect0.X, linearRect1.X);
 				ClassicAssert.GreaterOrEqual(linearRect1.Y, linearRect0.Y + linearRect0.Height);
 
 				App.Click("Button5354");
@@ -33,8 +33,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				var gridRect0 = App.WaitForElement("Image0").GetRect();
 				var gridRect1 = App.WaitForElement("Image1").GetRect();
 
-				ClassicAssert.AreEqual(gridRect0.Y, gridRect1.Y);
-				ClassicAssert.AreEqual(gridRect0.Height, gridRect1.Height);
+				Assert.Equal(gridRect0.Y, gridRect1.Y);
+				Assert.Equal(gridRect0.Height, gridRect1.Height);
 
 				App.Click("Button5354");
 			}

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // Maps are not implemented on Windows
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ public class MapsModalCrash : _IssuesUITest
 
 	public override string Issue => "Modal Page over Map crashes application";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Maps)]
 	public void CanDisplayModalOverMap()
 	{

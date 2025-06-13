@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue8145 : _IssuesUITest
 
 	public override string Issue => "Shell System.ObjectDisposedException: Cannot access a disposed object. Object name: Android.Support.Design.Widget.BottomSheetDialog";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shell)]
 	public void Issue8145ShellToolbarDisposedException()
 	{

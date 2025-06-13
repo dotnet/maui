@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue29472 : _IssuesUITest
 
 	public override string Issue => "ItemsSource is not dynamically cleared in the CarouselView";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewItemsSourceClearedDynamically()
 	{

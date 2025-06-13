@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -38,12 +38,12 @@ public class ShellFlyoutSizing : _IssuesUITest
 		var initialWidth = App.WaitForElement("FlyoutHeader").GetRect().Width;
 		var initialHeight = App.WaitForElement("FlyoutFooter").GetRect().Y;
 		App.Tap(ChangeFlyoutSizes);
-		Assert.That(App.WaitForElement("FlyoutHeader").GetRect().Width, Is.Not.EqualTo(initialWidth));
-		Assert.That(App.WaitForElement("FlyoutFooter").GetRect().Y, Is.Not.EqualTo(initialHeight));
+		Assert.NotEqual(initialWidth, App.WaitForElement("FlyoutHeader").GetRect().Width);
+		Assert.NotEqual(initialHeight, App.WaitForElement("FlyoutFooter").GetRect().Y);
 
 		App.Tap(ResetFlyoutSizes);
-		Assert.That(App.WaitForElement("FlyoutHeader").GetRect().Width, Is.EqualTo(initialWidth));
-		Assert.That(App.WaitForElement("FlyoutFooter").GetRect().Y, Is.EqualTo(initialHeight));
+		Assert.Equal(initialWidth, App.WaitForElement("FlyoutHeader").GetRect().Width);
+		Assert.Equal(initialHeight, App.WaitForElement("FlyoutFooter").GetRect().Y);
 	}
 
 	[Test, Order(2)]

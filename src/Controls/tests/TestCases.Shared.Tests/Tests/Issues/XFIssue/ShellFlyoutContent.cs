@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,7 +21,7 @@ public class ShellFlyoutContent : _IssuesUITest
 
 	public override string Issue => "Shell Flyout Content";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shell)]
 	public void FlyoutContentTests()
 	{

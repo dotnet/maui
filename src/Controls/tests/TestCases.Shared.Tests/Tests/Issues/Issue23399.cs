@@ -1,5 +1,5 @@
 #if ANDROID || IOS //The test fails on Windows and MacCatalyst because the BackgroundApp and ForegroundApp method, which is only supported on mobile platforms iOS and Android.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -9,7 +9,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	{
 		public override string Issue => "Closing Modal While App is Backgrounded Fails";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Navigation)]
 		public void MakingFragmentRelatedChangesWhileAppIsBackgroundedFails()
 		{

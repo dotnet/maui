@@ -1,5 +1,5 @@
 ﻿#if WINDOWS // Chevron icon color is only applicable to Windows
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue25115 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shell)]
 	public void VerifyTabChevronIconColor()
 	{

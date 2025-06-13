@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Setting SelectedItem to null inside ItemSelected event handler does not work";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.LifeCycle)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue1469Test()

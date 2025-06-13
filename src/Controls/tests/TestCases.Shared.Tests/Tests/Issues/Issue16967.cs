@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Existing TextDecorations applied to a Label are not removed when a new TextDecoration value is set after the Label's Text has been modified";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Label)]
 		public void VerifyTextDecorationAppliedProperly()
 		{

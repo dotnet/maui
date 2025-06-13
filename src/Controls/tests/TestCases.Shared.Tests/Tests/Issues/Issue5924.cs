@@ -1,5 +1,5 @@
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Entry)]
 		public void TableViewViewCellVanishesAfterContentIsUpdated()
 		{

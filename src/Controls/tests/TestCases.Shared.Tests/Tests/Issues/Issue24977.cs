@@ -1,6 +1,6 @@
 #if IOS
 using System.Drawing;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 using System.Text;
@@ -12,14 +12,14 @@ public class Issue24977 : _IssuesUITest
 
     public override string Issue => "Keyboard Scrolling in editors with Center or End VerticalTextAlignment is off";
 
-    [Test]
+    [Fact]
     [Category(UITestCategories.Editor)]
     public void KeepEditorCursorAboveKeyboardWithVerticalAlignmentAsCenter()
     {
         TestKeepEditorCursorAboveKeyboard("CenterButton", true);
     }
 
-    [Test]
+    [Fact]
     [Category(UITestCategories.Editor)]
     public void KeepEditorCursorAboveKeyboardWithVerticalAlignmentAsEnd()
     {

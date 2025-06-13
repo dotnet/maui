@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ public class Bugzilla46363 : _IssuesUITest
 	const string TapSuccess = "Tap Success";
 	public override string Issue => "TapGestureRecognizer blocks List View Context Actions";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ListView)]
 	public void _46363_Tap_Succeeds()
 	{
@@ -27,7 +27,7 @@ public class Bugzilla46363 : _IssuesUITest
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
 	//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ListView)]
 	public void _46363_ContextAction_Succeeds()
 	{

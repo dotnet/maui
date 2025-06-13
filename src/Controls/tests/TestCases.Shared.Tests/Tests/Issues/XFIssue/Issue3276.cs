@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ public class Issue3276 : _IssuesUITest
 
 	public override string Issue => "Crashing Unknown cell parent type on ContextAction Bindings";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ContextActions)]
 	public void Issue3276Test()
 	{

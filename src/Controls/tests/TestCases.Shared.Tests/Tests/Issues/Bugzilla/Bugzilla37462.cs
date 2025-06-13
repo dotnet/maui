@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Bugzilla37462 : _IssuesUITest
 
 	public override string Issue => "Using App Compat/App Compat theme breaks Navigation.RemovePage on Android ";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Navigation)]
 	public void CanRemoveIntermediatePagesAndPopToFirstPage()
 	{

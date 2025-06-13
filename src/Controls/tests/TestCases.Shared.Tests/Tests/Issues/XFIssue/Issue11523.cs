@@ -2,7 +2,7 @@
 // This test is skipped on iOS and Catalyst due to potential flakiness.
 // In the sample uses a delay which can cause the test to fail randomly.
 // To maintain test reliability, we exclude this test on these platforms.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ public class Issue11523 : _IssuesUITest
 
 	public override string Issue => "[Bug] FlyoutBehavior.Disabled removes back-button from navbar";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shell)]
 	public void BackButtonStillVisibleWhenFlyoutBehaviorDisabled()
 	{

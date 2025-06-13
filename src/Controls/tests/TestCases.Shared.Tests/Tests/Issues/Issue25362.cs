@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ public class Issue25362 : _IssuesUITest
 	public Issue25362(TestDevice device) : base(device)
 	{ }
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void HeaderShouldNotCollapseWithItems()
 	{

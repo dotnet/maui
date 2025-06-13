@@ -1,5 +1,5 @@
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Refresh View Tests";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.RefreshView)]
 		public void IsRefreshingAndCommandTest()
 		{

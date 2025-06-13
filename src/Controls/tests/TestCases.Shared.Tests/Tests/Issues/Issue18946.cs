@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue18946(TestDevice device) : base(device)
 		{ }
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Shell)]
 		public void ToolbarItemsShouldWork()
 		{

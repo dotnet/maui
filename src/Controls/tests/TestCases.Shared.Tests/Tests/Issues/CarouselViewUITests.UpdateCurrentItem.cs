@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //For more information : https://github.com/dotnet/maui/issues/24482
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CarouselView does not update the CurrentItem on Swipe under strange condition";
 
 		// Issue9827 (src\ControlGallery\src\Issues.Shared\Issue9827.cs
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CarouselView)]
 		public void Issue9827Test()
 		{

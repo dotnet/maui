@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue25114 : _IssuesUITest
 
 	public override string Issue => "NullReferenceException when setting BarBackgroundColor for a NavigationPage";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.FlyoutPage)]
 	public void NoExceptionShouldBeThrownWhenChangingNavigationBarColor()
 	{

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public Issue21706(TestDevice device) : base(device) { }
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.ImageButton)]
 		public async Task ImageButtonStuckAfterRightClick()
 		{

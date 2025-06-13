@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "When the CollectionView has a group footer template it should not crash the application";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
 		public void CollectionViewGroupFooterTemplateShouldNotCrash()

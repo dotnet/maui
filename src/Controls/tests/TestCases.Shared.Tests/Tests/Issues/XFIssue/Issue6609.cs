@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue6609 : _IssuesUITest
 
 	public override string Issue => "[Bug, CollectionView] SelectionChangedCommand invoked before SelectedItem is set";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void SelectionChangedCommandParameterBoundToSelectedItemShouldMatchSelectedItem()
 	{

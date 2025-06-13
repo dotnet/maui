@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_ANDROID // Exception handling not performs in Android, Issue: https://github.com/dotnet/maui/issues/26941
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Multi-item add in INotifyCollectionChanged causes a NSInternalInconsistencyException in bindings on iOS";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla56771Test()

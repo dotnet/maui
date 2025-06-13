@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue29233 : _IssuesUITest
 
 	public override string Issue => "Android WebView Navigated is fired without setting source";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.WebView)]
 	public void NavigatedShouldNotFireWithNullSource()
 	{

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ public class Issue22674 : _IssuesUITest
 
 	public override string Issue => "Crash when quickly clicking to delete item";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void RemoveItemWhenSelectionChanged()
 	{

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -26,7 +26,7 @@ public class Bugzilla38731 : _IssuesUITest
 
 	public override string Issue => "iOS.NavigationRenderer.GetAppearedOrDisappearedTask NullReferenceExceptionObject";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Navigation)]
 	public void Bugzilla38731Test()
 	{

@@ -1,7 +1,7 @@
 ﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS
 // ListView.HasUnevenRows Property Changes Not Reflected in UI on Android and Windows Platforms. Issue Link: https://github.com/dotnet/maui/issues/26780
 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Changing ListViews HasUnevenRows at runtime on iOS has no effect";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.ListView)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]

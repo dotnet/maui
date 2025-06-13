@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] WebView.Eval crashes on Android with long string";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
 		public void WebViewEvalCrashesOnAndroidWithLongString()

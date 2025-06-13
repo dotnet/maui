@@ -1,5 +1,5 @@
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CarouselView reverts to displaying first item in collection when collection modified";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CarouselView)]
 		public void Issue25991Test()
 		{

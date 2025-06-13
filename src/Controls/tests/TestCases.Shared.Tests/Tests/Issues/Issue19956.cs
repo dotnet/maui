@@ -1,11 +1,11 @@
 ﻿#if IOS || (ANDROID && TEST_FAILS_ON_ANDROID)//android related issue: https://github.com/dotnet/maui/issues/27951
 //The test is applicable only to mobile platforms like iOS and Android.
 using System.Drawing;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 using OpenQA.Selenium.Interactions;
-using NUnit.Framework.Legacy;
+using Xunit;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
@@ -16,7 +16,7 @@ public class Issue19956: _IssuesUITest
 
     public override string Issue => "Sticky headers and bottom content insets";
 
-    [Test]
+    [Fact]
 	public void ContentAccountsForStickyHeaders()
     {
 		// This is an iOS Keyboard Scrolling issue.
@@ -43,7 +43,7 @@ public class Issue19956: _IssuesUITest
         var entryRect = App.WaitForElement(entryName).GetRect();
         var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
 
-        ClassicAssert.AreEqual(App.WaitForElement("StickyHeader").GetRect(), stickyHeaderRect);
+        Assert.Equal(App.WaitForElement("StickyHeader").GetRect(), stickyHeaderRect);
 		ClassicAssert.Less(stickyHeaderRect.Bottom, entryRect.Top);
         ClassicAssert.NotNull(keyboardPos);
 		ClassicAssert.Less(entryRect.Bottom, keyboardPos!.Value.Y);
@@ -51,7 +51,7 @@ public class Issue19956: _IssuesUITest
         KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
     }
 
-    [Test]
+    [Fact]
     public void BottomInsetsSetCorrectly()
     {
         var app = App as AppiumApp;

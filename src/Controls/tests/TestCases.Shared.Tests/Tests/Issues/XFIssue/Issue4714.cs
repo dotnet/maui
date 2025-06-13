@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue4714 : _IssuesUITest
 	}
 	public override string Issue => "SingleTapGesture called once on DoubleTap";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Gestures)]
 	public void Issue4714Test()
 	{
@@ -21,6 +21,6 @@ public class Issue4714 : _IssuesUITest
 		App.DoubleTap(InitialText);
 		App.Tap(InitialText);
 		App.Tap(InitialText);
-		Assert.That(App.FindElement(InitialText).GetText(), Is.EqualTo("ClickMeToIncrement: 4"));
+		Assert.Equal("ClickMeToIncrement: 4", App.FindElement(InitialText).GetText());
 	}
 }

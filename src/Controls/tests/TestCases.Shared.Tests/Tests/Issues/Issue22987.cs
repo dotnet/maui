@@ -1,7 +1,7 @@
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS
 // In MacCatalyst, DatePicker Text color property is not working MacOS https://github.com/dotnet/maui/issues/20904
 // In Windows, Once this PR https://github.com/dotnet/maui/pull/27477 merged, we can implement the MoveCursor and enable the test
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue22987 : _IssuesUITest
 
 	public override string Issue => "DatePicker Color Icon";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.DatePicker)]
 	public void DatePickerTextandIconColorShouldWorkProperlyOnPointerOver()
 	{

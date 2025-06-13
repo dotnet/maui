@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.TableView)]
 		public void ValidateTableViewTitles()
 		{
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			}
 			else
 			{
-				Assert.That(tableViewRootText, Is.EqualTo("TableRoot Title Text"));
+				Assert.Equal("TableRoot Title Text", tableViewRootText);
 			}
 
 			var tableViewSelectionText = App.FindElement("TableSectionLabel").GetText();
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			}
 			else
 			{
-				Assert.That(tableViewSelectionText, Is.EqualTo("TableSection Title Text"));
+				Assert.Equal("TableSection Title Text", tableViewSelectionText);
 			}
 
 			VerifyScreenshot();

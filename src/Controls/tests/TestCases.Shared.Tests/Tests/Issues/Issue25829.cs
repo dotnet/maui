@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ScrollView starts at the position of first Entry control on the bottom rather than at 0";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Entry)]
 		public void ScrollViewStartsOccasionallyStartsAtTheFirstEntry()
 		{

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Pull to refresh doesn't work if iOS 11 large titles is enabled";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.ListView)]
 		public void TestIssue1905RefreshShows()
 		{

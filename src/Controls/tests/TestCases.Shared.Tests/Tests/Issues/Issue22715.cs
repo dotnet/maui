@@ -1,7 +1,7 @@
 #if IOS //This test case verifies that the sample is working exclusively on IOS platforms "due to use of UIKit APIs".
 using System.Drawing;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Interactions;
 using UITest.Appium;
@@ -14,7 +14,7 @@ public class Issue22715 : _IssuesUITest
 
     public override string Issue => "Page should not scroll when focusing element above keyboard";
 
-    [Test]
+    [Fact]
     [Category(UITestCategories.Entry)]
     public void PageShouldNotScroll ()
     {

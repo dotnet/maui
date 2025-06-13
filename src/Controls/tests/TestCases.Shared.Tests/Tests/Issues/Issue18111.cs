@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Setting MaximumTrackColor on Slider has no effect";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Slider)]
 		public void SettingMaximumTrackColorOnSliderWorks()
 		{

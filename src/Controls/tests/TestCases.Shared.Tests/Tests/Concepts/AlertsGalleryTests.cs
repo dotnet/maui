@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery("Alerts Gallery");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.DisplayAlert)]
 		public void AlertCancel()
 		{
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			remote.GoTo(test.ToString());
 
 			var textBeforeClick = remote.GetEventLabel().GetText();
-			ClassicAssert.AreEqual($"Event: {test} (none)", textBeforeClick);
+			Assert.Equal($"Event: {test} (none)", textBeforeClick);
 
 			remote.TapView();
 
@@ -43,17 +43,17 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.True(buttons.Count == 1, $"Expected 1 buttonText, found {buttons.Count}.");
 
 			var cancel = buttons.First();
-			ClassicAssert.AreEqual("CANCEL", cancel.GetText());
+			Assert.Equal("CANCEL", cancel.GetText());
 
 			cancel.Click();
 
 			App.WaitForNoElement(() => App.GetAlert());
 
 			var textAfterClick = remote.GetEventLabel().GetText();
-			ClassicAssert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
+			Assert.Equal($"Event: {test} (SUCCESS 1)", textAfterClick);
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.DisplayAlert)]
 		[TestCase(Test.Alerts.AlertAcceptCancelClickAccept, "ACCEPT")]
 		[TestCase(Test.Alerts.AlertAcceptCancelClickCancel, "CANCEL")]
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			remote.GoTo(test.ToString());
 
 			var textBeforeClick = remote.GetEventLabel().GetText();
-			ClassicAssert.AreEqual($"Event: {test} (none)", textBeforeClick);
+			Assert.Equal($"Event: {test} (none)", textBeforeClick);
 
 			remote.TapView();
 
@@ -88,10 +88,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement(() => App.GetAlert());
 
 			var textAfterClick = remote.GetEventLabel().GetText();
-			ClassicAssert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
+			Assert.Equal($"Event: {test} (SUCCESS 1)", textAfterClick);
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.ActionSheet)]
 		[TestCase(Test.Alerts.ActionSheetClickItem, "ITEM 2")]
 		[TestCase(Test.Alerts.ActionSheetClickCancel, "CANCEL")]
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			remote.GoTo(test.ToString());
 
 			var textBeforeClick = remote.GetEventLabel().GetText();
-			ClassicAssert.AreEqual($"Event: {test} (none)", textBeforeClick);
+			Assert.Equal($"Event: {test} (none)", textBeforeClick);
 
 			remote.TapView();
 
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement(() => App.GetAlert());
 
 			var textAfterClick = remote.GetEventLabel().GetText();
-			ClassicAssert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
+			Assert.Equal($"Event: {test} (SUCCESS 1)", textAfterClick);
 		}
 	}
 }

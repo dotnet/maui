@@ -1,5 +1,5 @@
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 				App.WaitForElement("EmptySpace");
 				App.Click("EmptySpace");
-				ClassicAssert.AreEqual(!hideOnTapped, App.IsFocused(control));
+				Assert.Equal(!hideOnTapped, App.IsFocused(control));
 			}
 			finally
 			{
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 				App.WaitForElement("EmptySpace");
 				App.Tap("EmptySpace");
-				ClassicAssert.AreEqual(!hideOnTapped, App.IsKeyboardShown());
+				Assert.Equal(!hideOnTapped, App.IsKeyboardShown());
 			}
 			finally
 			{
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			}
 		}
 
-		[Test]
+		[Fact]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Test ignored on Windows")]
 		public void TogglingHideSoftInputOnTapped()
 		{
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 					App.WaitForElement("EmptySpace");
 					App.Click("EmptySpace");
-					ClassicAssert.AreEqual(false, App.IsFocused("HideKeyboardWhenTappingPage"));
+					Assert.Equal(false, App.IsFocused("HideKeyboardWhenTappingPage"));
 
 					App.WaitForElement("DontHideKeyboardWhenTappingPage");
 					App.Click("DontHideKeyboardWhenTappingPage");
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 					App.WaitForElement("EmptySpace");
 					App.Click("EmptySpace");
-					ClassicAssert.AreEqual(true, App.IsFocused("DontHideKeyboardWhenTappingPage"));
+					Assert.Equal(true, App.IsFocused("DontHideKeyboardWhenTappingPage"));
 				}
 			}
 			finally
@@ -164,14 +164,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 					ClassicAssert.True(App.IsKeyboardShown());
 					App.WaitForElement("EmptySpace");
 					App.Tap("EmptySpace");
-					ClassicAssert.AreEqual(false, App.IsKeyboardShown());
+					Assert.Equal(false, App.IsKeyboardShown());
 
 					App.WaitForElement("DontHideKeyboardWhenTappingPage");
 					App.Tap("DontHideKeyboardWhenTappingPage");
 					ClassicAssert.True(App.IsKeyboardShown());
 					App.WaitForElement("EmptySpace");
 					App.Tap("EmptySpace");
-					ClassicAssert.AreEqual(true, App.IsKeyboardShown());
+					Assert.Equal(true, App.IsKeyboardShown());
 				}
 			}
 			finally

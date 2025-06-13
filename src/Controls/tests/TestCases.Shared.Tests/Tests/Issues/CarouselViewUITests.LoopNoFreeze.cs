@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // Related issue for windows: https://github.com/dotnet/maui/issues/24482
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CarouselView Loop=True default freezes iOS app";
 
 		// Issue12574 (src\ControlGallery\src\Issues.Shared\Issue12574.cs
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CarouselView)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("https://github.com/dotnet/maui/issues/24482")]
 		public void Issue12574Test()
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("0 item");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CarouselView)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("https://github.com/dotnet/maui/issues/24482")]
 		public void RemoveItemsQuickly()

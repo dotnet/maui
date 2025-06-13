@@ -1,5 +1,5 @@
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,13 +13,13 @@ public class Issue18526 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Frame)]
 	public void BorderShouldRender()
 	{
 		var label = App.WaitForElement("label");
 		var size = label.GetRect();
-		Assert.That(label.GetText(), Is.EqualTo(".NET MAUI"));
+		Assert.Equal(".NET MAUI", label.GetText());
 		Assert.That(size.Width, Is.GreaterThan(0));
 		Assert.That(size.Height, Is.GreaterThan(0));
 	}

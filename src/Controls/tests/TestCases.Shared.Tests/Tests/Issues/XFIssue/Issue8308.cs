@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue8308 : _IssuesUITest
 
 	public override string Issue => "[Bug] [iOS] Cannot access a disposed object. Object name: 'GroupableItemsViewController`1";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void NavigatingBackToCollectionViewShouldNotCrash()
 	{

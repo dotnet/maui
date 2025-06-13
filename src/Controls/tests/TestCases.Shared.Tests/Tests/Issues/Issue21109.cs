@@ -1,6 +1,6 @@
 ﻿#if ANDROID //This test case verifies "that the KeyListener is being set to handle numeric keyboard" exclusively on Android platform
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 

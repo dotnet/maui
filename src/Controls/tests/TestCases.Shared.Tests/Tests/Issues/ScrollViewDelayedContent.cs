@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Crash measuring empty ScrollView";
 
 		// MeasuringEmptyScrollViewDoesNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue1538.cs)
-		[Test]
+		[Fact]
 		[Description("Measuring empty ScrollView does not crash")]
 		public void MeasuringEmptyScrollViewDoesNotCrash()
 		{

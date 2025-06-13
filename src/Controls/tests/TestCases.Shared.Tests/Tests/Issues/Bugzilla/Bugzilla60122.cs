@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ public class Bugzilla60122 : _IssuesUITest
 	const string ImageId = "60122Image";
 	const string Success = "Success";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Gestures)]
 	public void LongClickFiresOnCustomImageRenderer()
 	{

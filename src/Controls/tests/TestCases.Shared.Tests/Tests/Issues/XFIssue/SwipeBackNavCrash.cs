@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,14 +13,14 @@ public class SwipeBackNavCrash : _IssuesUITest
 
 	public override string Issue => "Swipe back nav crash";
 
-	[Test]
+	[Fact]
 	public void SwipeBackNavCrashTestsAllElementsPresent()
 	{
 		App.WaitForElement("Page One");
 		App.WaitForElement("Go to second page");
 	}
 
-	[Test]
+	[Fact]
 	public void SwipeBackNavCrashTestsGoToSecondPage()
 	{
 		App.WaitForElement("Page One");
@@ -28,7 +28,7 @@ public class SwipeBackNavCrash : _IssuesUITest
 	}
 
 #if !MACCATALYST //SwipeActions not working in Catalyst
-	[Test]
+	[Fact]
 	public void SwipeBackNavCrashTestsSwipeBackDoesNotCrash()
 	{
 		App.WaitForElement("Swipe lightly left and right to crash this page");

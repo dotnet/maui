@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ public class Issue7240 : _IssuesUITest
 
 	public override string Issue => "[Android] Shell content layout hides navigated to page";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shell)]
 	public void ShellSecondPageHasSameLayoutAsPrimary()
 	{

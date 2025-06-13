@@ -1,5 +1,5 @@
 ﻿#if WINDOWS || ANDROID // The back hardware button behavior is only applicable for Windows and Android. On iOS and macOS, the picker closes only when the Done button is clicked.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ public class Issue7311 : _IssuesUITest
 
 	public override string Issue => "[Bug] [Android] Error back hardware button with Picker";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Picker)]
 	public void OpeningPickerPressingBackButtonTwiceShouldNotOpenPickerAgain()
 	{

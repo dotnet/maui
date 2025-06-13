@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue18161 : _IssuesUITest
 
 	public override string Issue => "Toggling FlyoutLayoutBehavior on Android causes the app to crash";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.FlyoutPage)]
 	public void NoExceptionShouldBeThrown()
 	{

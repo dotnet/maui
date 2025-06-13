@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Changing Translation of an element causes Maui in iOS to constantly run Measure & ArrangeChildren";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Layout)]
 		public async Task ChangingTranslationShouldNotCauseLayoutPassOnAncestors()
 		{

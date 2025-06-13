@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -9,7 +9,7 @@ public class Issue29194 : _IssuesUITest
 
 	public override string Issue => "[Android][Label] Setting a Label visible after having had focus on a InputView will increase the Label's height";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Label)]
 	public void LabelShouldSizeProperly()
 	{

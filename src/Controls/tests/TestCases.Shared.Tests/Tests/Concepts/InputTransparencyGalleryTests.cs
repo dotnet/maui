@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,10 +20,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(ButtonGallery);
 		}
 
-		[Test]
+		[Fact]
 		public void InputTransparencySimple([Values] Test.InputTransparency test) => RunTest(test.ToString());
 
-		[Test]
+		[Fact]
 		[Combinatorial]
 		public void InputTransparencyWhenRootIsTransparentMatrix([Values] bool rootCascade, [Values] bool nestedTrans, [Values] bool nestedCascade, [Values] bool trans)
 		{
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			RunTest(key, clickable, passthru);
 		}
 
-		[Test]
+		[Fact]
 		[Combinatorial]
 		public void InputTransparencyWhenRootIsNotTransparentMatrix([Values] bool rootCascade, [Values] bool nestedTrans, [Values] bool nestedCascade, [Values] bool trans)
 		{
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			remote.GoTo(test.ToString());
 
 			var textBeforeClick = remote.GetEventLabel().GetText();
-			ClassicAssert.AreEqual($"Event: {test} (none)", textBeforeClick);
+			Assert.Equal($"Event: {test} (none)", textBeforeClick);
 
 			remote.TapView();
 
@@ -58,19 +58,19 @@ namespace Microsoft.Maui.TestCases.Tests
 			if (clickable is null || passthru is null)
 			{
 				// some tests are really basic so have no need for fancy checks
-				ClassicAssert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
+				Assert.Equal($"Event: {test} (SUCCESS 1)", textAfterClick);
 			}
 			else if (clickable == true || passthru == true)
 			{
 				// if the button is clickable or taps pass through to the base button
-				ClassicAssert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
+				Assert.Equal($"Event: {test} (SUCCESS 1)", textAfterClick);
 			}
 			else if (Device == TestDevice.Android)
 			{
 				// TODO: Android is broken with everything passing through so we just use that
 				// to test the bottom button was clickable
 				// https://github.com/dotnet/maui/issues/10252
-				ClassicAssert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
+				Assert.Equal($"Event: {test} (SUCCESS 1)", textAfterClick);
 			}
 			else
 			{
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				Task.Delay(500).Wait(); // just make sure that nothing happened
 
 				textAfterClick = remote.GetEventLabel().GetText();
-				ClassicAssert.AreEqual($"Event: {test} (none)", textBeforeClick);
+				Assert.Equal($"Event: {test} (none)", textBeforeClick);
 			}
 		}
 	}

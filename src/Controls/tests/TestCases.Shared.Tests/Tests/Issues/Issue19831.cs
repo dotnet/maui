@@ -1,5 +1,5 @@
 ﻿#if ANDROID
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue19831 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ListView)]
 	public void ActionModeMenuShouldNotBeVisibleAfterSwitchingTab()
 	{

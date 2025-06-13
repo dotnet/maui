@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Controls;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Issue12213 : _IssuesUITest
 
 	public override string Issue => "[Windows] TapGestureRecognizer not working on Entry";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Entry)]
 	[Category(UITestCategories.Gestures)]
 	public void TapGestureRecognizerNotWorkingOnEntry()

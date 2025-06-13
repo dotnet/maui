@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // Setting orientation is not supported on Windows and mac
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ public class Bugzilla30353 : _IssuesUITest
 	}
 
 	public override string Issue => "FlyoutPage.IsPresentedChanged is not raised";
-	[Test]
+	[Fact]
 	[Category(UITestCategories.FlyoutPage)]
 	public void FlyoutPageIsPresentedChangedRaised()
 	{

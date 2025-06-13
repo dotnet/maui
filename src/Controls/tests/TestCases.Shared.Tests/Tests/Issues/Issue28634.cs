@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue28634 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shell)]
 	public void VerifySearchHandlerPlaceholderText()
 	{

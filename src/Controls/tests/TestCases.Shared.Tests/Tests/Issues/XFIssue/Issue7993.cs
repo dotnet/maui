@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In MacCatalyst, the DragCoordinates is not supported. On the iOS platform, scroll position is not reset while update the itemsource. Issue: https://github.com/dotnet/maui/issues/26366
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue7993 : _IssuesUITest
 
 	public override string Issue => "[Bug] CollectionView.Scrolled event offset isn't correctly reset when items change";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void CollectionViewVerticalOffset()
 	{

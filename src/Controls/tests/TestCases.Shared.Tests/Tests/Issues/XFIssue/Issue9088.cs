@@ -1,7 +1,7 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 // On Catalyst, Swipe actions not supported in Appium.
 // On Windows, StackLayout AutomationId not works in Automation. 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,49 +19,49 @@ public class Issue9088 : _IssuesUITest
 
 	public override string Issue => "[Bug] SwipeView items conflict with Shell menu swipe in from left, on real iOS devices";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shell)]
 	public void Issue9088SwipeViewConfictWithShellMenuSwipeInFromLeft()
 	{
 		App.WaitForElement(SwipeViewId);
 
 		App.SwipeRightToLeft(SwipeViewId);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("1"));
+		Assert.Equal("1", App.WaitForElement(LeftCountLabelId).GetText());
 
 		App.SwipeRightToLeft(SwipeViewId, 0.67, 250);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("2"));
+		Assert.Equal("2", App.WaitForElement(LeftCountLabelId).GetText());
 
 		App.SwipeRightToLeft(SwipeViewId, 0.67, 200);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("3"));
+		Assert.Equal("3", App.WaitForElement(LeftCountLabelId).GetText());
 
 
 		App.SwipeLeftToRight(SwipeViewId, 0.67, 200);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("1"));
+		Assert.Equal("1", App.WaitForElement(RightCountLabelId).GetText());
 
 		App.SwipeLeftToRight(SwipeViewId, 0.67, 250);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("2"));
+		Assert.Equal("2", App.WaitForElement(RightCountLabelId).GetText());
 
 		App.SwipeLeftToRight(SwipeViewId, 0.67, 500);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("3"));
+		Assert.Equal("3", App.WaitForElement(RightCountLabelId).GetText());
 
 
 		App.SwipeRightToLeft(SwipeViewId);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("4"));
+		Assert.Equal("4", App.WaitForElement(LeftCountLabelId).GetText());
 
 		App.SwipeLeftToRight(SwipeViewId);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("4"));
+		Assert.Equal("4", App.WaitForElement(RightCountLabelId).GetText());
 
 		App.SwipeRightToLeft(SwipeViewId);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("5"));
+		Assert.Equal("5", App.WaitForElement(LeftCountLabelId).GetText());
 
 		App.SwipeLeftToRight(SwipeViewId);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("5"));
+		Assert.Equal("5", App.WaitForElement(RightCountLabelId).GetText());
 
 		App.SwipeLeftToRight(SwipeViewId);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("6"));
+		Assert.Equal("6", App.WaitForElement(RightCountLabelId).GetText());
 
 		App.SwipeRightToLeft(SwipeViewId);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("6"));
+		Assert.Equal("6", App.WaitForElement(LeftCountLabelId).GetText());
 	}
 }
 #endif

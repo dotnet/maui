@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "App crashes when setting CurrentPage on TabbedPage in ctor in 2.5.1pre1";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.TabbedPage)]
 		public void Issue2035Test()
 		{

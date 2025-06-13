@@ -1,5 +1,5 @@
 #if IOS //This test case verifies that the sample is working exclusively on IOS platforms "due to use of UIKit APIs".
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Pickers scroll to bottom and new keyboard types rekick the scrolling";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Entry)]
         public void PickerNewKeyboardIsAboveKeyboard()
         {

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Issue5831 : _IssuesUITest
 
 	public override string Issue => "Navigating away from CollectionView and coming back leaves weird old items";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shell)]
 	public void CollectionViewRenderingWhenLeavingAndReturningViaFlyout()
 	{

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Bugzilla44166 : _IssuesUITest
 
 	public override string Issue => "FlyoutPage instances do not get disposed upon GC";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Performance)]
 	public void Bugzilla44166Test()
 	{

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "RadioButton with value cannot display selected state correctly";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.RadioButton)]
 		public void RadioButtonWithValueChangeSelected()
 		{

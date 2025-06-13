@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ internal class Issue28153 : _IssuesUITest
 
 	public override string Issue => "The border color of the RadioButton is visible in Windows only";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.RadioButton)]
 	public void ValidateRadioButtonNoBorderColorWhenNoBorderWidth()
 	{

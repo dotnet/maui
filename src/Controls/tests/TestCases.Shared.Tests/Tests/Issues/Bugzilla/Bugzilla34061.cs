@@ -1,5 +1,5 @@
 ﻿#if !ANDROID
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "RelativeLayout - First child added after page display does not appear";
 
-		[Test]
+		[Fact]
 		[Ignore("The sample is crashing.")]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]

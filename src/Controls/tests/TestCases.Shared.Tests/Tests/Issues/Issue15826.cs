@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ListView visibility doesn't work well";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.ListView)]
 		public async Task WhenTapButtonThenListViewsChangesVisibility()
 		{
@@ -27,9 +27,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var thirdStatus = TapButtonAndGetStatus();
 			await Task.Delay(500);
 
-			ClassicAssert.AreEqual(GetExpectedListsStatus("List 1"), initialStatus);
-			ClassicAssert.AreEqual(GetExpectedListsStatus("List 2"), secondStatus);
-			ClassicAssert.AreEqual(GetExpectedListsStatus("List 1"), thirdStatus);
+			Assert.Equal(GetExpectedListsStatus("List 1"), initialStatus);
+			Assert.Equal(GetExpectedListsStatus("List 2"), secondStatus);
+			Assert.Equal(GetExpectedListsStatus("List 1"), thirdStatus);
 		}
 
 		string? TapButtonAndGetStatus()

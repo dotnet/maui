@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Shapes;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 

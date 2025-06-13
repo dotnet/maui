@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Bugzilla53179_2 : _IssuesUITest
 
 	public override string Issue => "Removing page during OnAppearing throws exception";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Navigation)]
 	public void RemovePageOnAppearingDoesNotCrash()
 	{

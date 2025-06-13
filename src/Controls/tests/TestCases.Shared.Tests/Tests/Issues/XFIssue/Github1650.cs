@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // Need to Implement App.PressEnter() for Catalyst and Windows.
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,15 +14,15 @@ public class Github1650 : _IssuesUITest
 
 	public override string Issue => "[macOS] Completed event of Entry raised on Tab key";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Entry)]
 	public void GitHub1650Test()
 	{
 		App.WaitForElement("CompletedTargetEntry");
 		App.Tap("CompletedTargetEntry");
-		Assert.That(App.FindElement("CompletedCountLabel").GetText(), Is.EqualTo("Completed count: 0"));
+		Assert.Equal("Completed count: 0", App.FindElement("CompletedCountLabel").GetText());
 		App.PressEnter();
-		Assert.That(App.FindElement("CompletedCountLabel").GetText(), Is.EqualTo("Completed count: 1"));
+		Assert.Equal("Completed count: 1", App.FindElement("CompletedCountLabel").GetText());
 	}
 }
 #endif

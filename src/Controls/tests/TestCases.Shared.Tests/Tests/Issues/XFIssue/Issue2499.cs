@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //The test fails on iOS and macOS because Appium is unable to locate the Picker control elements (such as "cat"), resulting in a TimeoutException.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue2499 : _IssuesUITest
 
 	public override string Issue => "Binding Context set to Null in Picker";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Picker)]
 	public void Issue2499Test()
 	{

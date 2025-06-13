@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ListView IsEnabled property is not working on iOS and Catalyst, Issue: https://github.com/dotnet/maui/issues/19768.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Bugzilla34912 : _IssuesUITest
 
 	public override string Issue => "ListView.IsEnabled has no effect on iOS";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla34912Test()
 	{

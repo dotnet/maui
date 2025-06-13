@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ public class Bugzilla40092 : _IssuesUITest
 	public override string Issue => "Ensure android devices with fractional scale factors (3.5) don't have a white line around the border";
 
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.BoxView)]
 	public void AllScreenIsBlack()
 	{

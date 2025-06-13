@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -9,7 +9,7 @@ public class Issue28838 : _IssuesUITest
 
 	public override string Issue => "Incorrect Text Color Applied to Selected Tab in TabbedPage on Android";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.TabbedPage)]
 	public void DefaultSelectedTabTextColorShouldApplyProperly()
 	{

@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
-using UITest.Appium.NUnit;
+using UITest.Appium.XUnit;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests

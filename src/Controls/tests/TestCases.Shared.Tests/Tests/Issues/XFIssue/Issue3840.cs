@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // In iOS and Catalyst, WaitForNoElement throws a timeout exception eventhough the text is not visible on the screen by scrolling.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ public class Issue3840 : _IssuesUITest
 
 	public override string Issue => "[iOS] Translation change causes ScrollView to reset to initial position (0, 0)";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ScrollView)]
 	public void TranslatingViewKeepsScrollViewPosition()
 	{

@@ -1,6 +1,6 @@
 #if TEST_FAILS_ON_WINDOWS
 // https://github.com/dotnet/maui/issues/13027 In windows, .NET MAUI CollectionView does not reorder when grouped
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ public class Issue28530 : _IssuesUITest
 
 	public override string Issue => "[Catalyst] CanMixGroups Set to False Still Allows Reordering Between Groups in CollectionView";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void ReorderBetweenGroupsShouldNotOccurWhenCanMixGroupsIsFalse()
 	{

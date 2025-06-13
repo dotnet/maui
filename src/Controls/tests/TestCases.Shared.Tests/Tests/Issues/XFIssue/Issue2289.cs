@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
 //For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Issue2289 : _IssuesUITest
 
 	public override string Issue => "TextCell IsEnabled property not disabling element in TableView";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Cells)]
 	public void TestIsEnabledFalseContextActions()
 	{
@@ -22,7 +22,7 @@ public class Issue2289 : _IssuesUITest
 		App.WaitForNoElement("More");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Cells)]
 	public void TestIsEnabledTrueContextActions()
 	{

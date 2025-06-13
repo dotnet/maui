@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Color not initialized for Label";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue181TestsLabelShouldHaveRedText()

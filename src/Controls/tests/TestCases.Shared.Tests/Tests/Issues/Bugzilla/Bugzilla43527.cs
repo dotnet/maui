@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Bugzilla43527 : _IssuesUITest
 
 	public override string Issue => "[UWP] Detail title does not update when wrapped in a NavigationPage";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.FlyoutPage)]
 	public void TestB43527UpdateTitle()
 	{

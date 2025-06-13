@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // Can't able to override the automation id property windows, as it always with default value.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Issue5132 : _IssuesUITest
 	public override string Issue => "Unable to specify automation properties on the hamburger/flyout icon";
 
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shell)]
 	public void ShellFlyoutAndHamburgerAutomationProperties()
 	{

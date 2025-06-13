@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Span with tail truncation and paragraph breaks with Java.Lang.IndexOutOfBoundsException";
 
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.Compatibility)]
 		public void ExpectingPageNotToBreak()

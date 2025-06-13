@@ -1,5 +1,5 @@
 ﻿#if IOS
-using NUnit.Framework;
+using Xunit;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(KeyboardScrollingGallery);
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Layout)]
 		public void GridStarRowScrollingTest()
 		{

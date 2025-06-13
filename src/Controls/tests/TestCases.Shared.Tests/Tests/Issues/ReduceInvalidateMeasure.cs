@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "https://github.com/dotnet/maui/pull/21801";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Performance)]
 		public void ReduceInvalidateMeasuresUpdatingLabel()
 		{

@@ -1,6 +1,6 @@
 #if ANDROID
 //Since bottom tab placement is specific to Android, I enabled it only for Android: https://learn.microsoft.com/en-us/dotnet/maui/android/platform-specifics/tabbedpage-toolbar-placement?view=net-maui-9.0
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 

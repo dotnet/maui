@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Bugzilla44129 : _IssuesUITest
 
 	public override string Issue => "Crash when adding tabbed page after removing all pages using DataTemplates";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.TabbedPage)]
 	public void Issue44129Test()
 	{

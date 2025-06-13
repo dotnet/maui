@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,16 +17,16 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery("Image Loading Gallery");
 		}
 
-		[Test]
+		[Fact]
 		public void LoadAndVerifyPng() => LoadAndVerify(Test.ImageLoading.FromBundlePng);
 
-		[Test]
+		[Fact]
 		public void LoadAndVerifyJpg() => LoadAndVerify(Test.ImageLoading.FromBundleJpg);
 
-		[Test]
+		[Fact]
 		public void LoadAndVerifyGif() => LoadAndVerify(Test.ImageLoading.FromBundleGif);
 
-		[Test]
+		[Fact]
 		public void LoadAndVerifySvg() => LoadAndVerify(Test.ImageLoading.FromBundleSvg);
 
 		void LoadAndVerify(Test.ImageLoading test)

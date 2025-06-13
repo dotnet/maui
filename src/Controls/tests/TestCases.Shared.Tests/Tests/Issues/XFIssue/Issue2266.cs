@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_ANDROID // ToolBarItem not shown on FlyoutPage, issue: https://github.com/dotnet/maui/issues/26330
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue2266 : _IssuesUITest
 
 	public override string Issue => "Setting a different Detail page from a FlyoutPage after 2nd time on MainPage";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Navigation)]
 
 	public void SwapMainPageWithFlyoutPages()

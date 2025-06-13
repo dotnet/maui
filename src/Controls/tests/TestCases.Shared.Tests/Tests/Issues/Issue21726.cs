@@ -1,6 +1,6 @@
 ﻿#if IOS //This test case verifies that the sample is working exclusively on IOS platforms "due to use of UIKit APIs".
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
         public override string Issue => "Modal with a bottom sheet should not crash iOS Keyboard Scroll";
 
-        [Test]
+        [Fact]
 		[Category(UITestCategories.SoftInput)]
 		public void PushViewControllerWithNullWindow()
         {

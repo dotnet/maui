@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using OpenQA.Selenium;
 using UITest.Appium;
 using UITest.Core;
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "In a ToolbarItems, if an item has no icon but just text, MAUI uses the icon from the previous page in the Navigation";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.ToolbarItem)]
 		public void UpdateToolbarItemAfterNavigate()
 		{

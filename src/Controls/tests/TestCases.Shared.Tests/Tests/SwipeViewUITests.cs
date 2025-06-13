@@ -1,6 +1,6 @@
-﻿#if ANDROID || IOS || MACCATALYST
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿#if ANDROID || IOS
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(ScrollViewGallery);
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.SwipeView)]
 		[Description("Swipe to right the SwipeView")]
 		public void SwipeToRight()
@@ -36,12 +36,12 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// 2. Check if the SwipeView has been opened correctly.
 			var result = App.FindElement(ResultToRightId).GetText();
-			ClassicAssert.AreEqual("Success", result);
+			Assert.Equal("Success", result);
 
 			App.Screenshot("The SwipeView is Open");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.SwipeView)]
 		[Description("Swipe to left the SwipeView")]
 		public void SwipeToLeft()
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// 2. Check if the SwipeView has been opened correctly.
 			var result = App.FindElement(ResultToLeftId).GetText();
-			ClassicAssert.AreEqual("Success", result);
+			Assert.Equal("Success", result);
 
 			App.Screenshot("The SwipeView is Open");
 		}

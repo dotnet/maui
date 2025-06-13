@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -8,7 +8,7 @@ public class Issue15649(TestDevice testDevice) : _IssuesUITest(testDevice)
 {
 	public override string Issue => "Updating a ControlTemplate at runtime for a Content Page is not working.";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Page)]
 	public void DynamicallyUpdatingContentPage()
 	{

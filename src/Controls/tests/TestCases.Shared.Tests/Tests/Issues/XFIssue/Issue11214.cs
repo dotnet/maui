@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,7 +18,7 @@ public class Issue11214 : _IssuesUITest
 
 	public override string Issue => "When adding FlyoutItems during Navigating only first one is shown";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shell)]
 	public void FlyoutItemChangesPropagateCorrectlyToPlatformForShellElementsNotCurrentlyActive()
 	{

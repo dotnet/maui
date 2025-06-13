@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,7 +19,7 @@ public class TabbedPageTests : _IssuesUITest
 
 	public override string Issue => "TabbedPage nav basic tests";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithModalIssueTestsAllElementsPresent()
 	{
@@ -30,7 +30,7 @@ public class TabbedPageTests : _IssuesUITest
 		App.WaitForElement(Pop);
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithModalIssueTestsPopFromFirstTab()
 	{
@@ -39,7 +39,7 @@ public class TabbedPageTests : _IssuesUITest
 		App.WaitForElement(HomePage);
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithModalIssueTestsPopFromSecondTab()
 	{

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] iOS application suspended at UICollectionViewFlowLayout.PrepareLayout() when using IsVisible = false";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 
 		public void InitiallyInvisbleCollectionViewSurvivesiOSLayoutNonsense()

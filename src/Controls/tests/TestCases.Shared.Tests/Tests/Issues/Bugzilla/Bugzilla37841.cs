@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ public class Bugzilla37841 : _IssuesUITest
 
 	public override string Issue => "TableView EntryCells and TextCells cease to update after focus change";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.TableView)]
 	public void TextAndEntryCellsDataBindInTableView()
 	{

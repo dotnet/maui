@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "NullReferenceException from FlexLayout.InitItemProperties";
 
-		[Test]
+		[Fact]
 		public void AddDoesNotCrash()
 		{
 			App.WaitForElement("Add");
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Item3");
 		}
 
-		[Test]
+		[Fact]
 		public void InsertDoesNotCrash()
 		{
 			App.WaitForElement("Insert");
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Item3");
 		}
 
-		[Test]
+		[Fact]
 		public void UpdateDoesNotCrash()
 		{
 			App.WaitForElement("Update");
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Item3");
 		}
 
-		[Test]
+		[Fact]
 		public void RemoveDoesNotCrash()
 		{
 			App.WaitForElement("Remove");

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] CarouselView NRE if item template is not specified";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CarouselView)]
 		public void Issue12777Test()
 		{

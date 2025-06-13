@@ -1,6 +1,6 @@
 #if ANDROID || IOS //This test is only valid for Android and iOS as it measures the layout passes.
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Layout passes should not increase";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public async Task LayoutPassesShouldNotIncrease()
 		{

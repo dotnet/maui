@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		: base(device)
 		{ }
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Shell), Order(1)]
 		public void VerifyHamburgerIcon()
 		{
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Shell), Order(2)]
 		public void VerifyFlyoutBackgroundColor()
 		{

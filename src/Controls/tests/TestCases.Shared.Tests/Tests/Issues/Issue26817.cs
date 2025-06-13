@@ -1,5 +1,5 @@
 #if MACCATALYST || IOS || ANDROID
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionViewHandler2 assigns Accessibility Traits with SelectionMode correctly";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void AccessibilityTraitsSetCorrectly()
 		{

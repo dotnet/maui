@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "IllegalArgumentException when changing number of tabbar pages";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Shell)]
 		public void NoExceptionShouldBeThrownAddingShellTabs()
 		{

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST //ScrollDown is not working on Catalyst
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ public class Issue7167 : _IssuesUITest
 	const string ListViewId = "ListViewId";
 	const string AddRangeCommandId = "AddRangeCommandId";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ListView)]
 	public void Issue7167Test()
 	{

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue2681 : _IssuesUITest
 
 	public override string Issue => "[UWP] Label inside Listview gets stuck inside infinite loop";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ListView)]
 	public void ListViewDoesntFreezeApp()
 	{

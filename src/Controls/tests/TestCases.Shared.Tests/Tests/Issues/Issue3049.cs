@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
 // The DisplayActionSheet will not dismiss when tapping outside of it, which is a behavior specific to iPads on iOS. Since the host app is running on an iPhone XS, this test can be ignored.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "DisplayActionSheet freezes app in iOS custom renderer (iPad only)";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.DisplayAlert)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOSWhenRunningOnXamarinUITest("Skip this test -- as it is not applicable since the host app is not run on iPad in CI")]

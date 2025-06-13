@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue2976 : _IssuesUITest
 
 	public override string Issue => "Sample 'WorkingWithListviewNative' throw Exception on Xam.Android project.";
 
-	// [Test]
+	// [Fact]
 	// [Category(UITestCategories.ListView)]
 	// [FailsOnAndroid]
 	// [FailsOnIOS]

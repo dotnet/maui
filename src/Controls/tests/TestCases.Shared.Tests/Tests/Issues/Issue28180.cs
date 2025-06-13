@@ -1,6 +1,6 @@
 #if IOSUITEST || MACUITEST
 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Issue28180 : _IssuesUITest
 
 	public override string Issue => "Labels with Padding are truncated on iOS";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Label)]
 	public void LabelWithPaddingIsNotTruncated()
 	{

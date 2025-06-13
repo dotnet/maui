@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,15 +15,15 @@ public class Issue3012 : _IssuesUITest
 
 	public override string Issue => "[macOS] Entry focus / unfocus behavior";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Entry)]
 	public void Issue3012Test()
 	{
 		App.WaitForElement(OtherEntry);
 		App.Tap(OtherEntry);
 		App.Tap(FocusTargetEntry);
-		Assert.That(App.FindElement("UnfocusedCountLabel").GetText(), Is.EqualTo($"Unfocused count: {0}"));
+		Assert.Equal($"Unfocused count: {0}", App.FindElement("UnfocusedCountLabel").GetText());
 		App.Tap(OtherEntry);
-		Assert.That(App.FindElement("UnfocusedCountLabel").GetText(), Is.EqualTo($"Unfocused count: {1}"));
+		Assert.Equal($"Unfocused count: {1}", App.FindElement("UnfocusedCountLabel").GetText());
 	}
 }

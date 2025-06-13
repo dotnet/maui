@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ public class Bugzilla41153 : _IssuesUITest
 	public override string Issue => "jobject must not be IntPtr.Zero with TabbedPage and ToolbarItems";
 
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.TabbedPage)]
 	public void Bugzilla41153Test()
 	{

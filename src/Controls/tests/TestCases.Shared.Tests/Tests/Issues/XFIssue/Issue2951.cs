@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,23 +12,23 @@ public class Issue2951 : _IssuesUITest
 
 	public override string Issue => "On Android, button background is not updated when color changes ";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Button)]
 	public void Issue2951Test()
 	{
 		App.WaitForElement("Ready");
 
 		var initialButtonCount = App.FindElements("btnChangeStatus").Count();
-		Assert.That(initialButtonCount, Is.EqualTo(3));
+		Assert.Equal(3, initialButtonCount);
 
 		var buttonToClick = App.FindElements("btnChangeStatus").ElementAt(1);
 		buttonToClick.Click();
 
-		Assert.That(buttonToClick.GetText(), Is.EqualTo("B"));
+		Assert.Equal("B", buttonToClick.GetText());
 
 		buttonToClick.Click();
 		var updatedButtonCount = App.FindElements("btnChangeStatus").Count();
-		Assert.That(updatedButtonCount, Is.EqualTo(2));
+		Assert.Equal(2, updatedButtonCount);
 
 		buttonToClick = App.FindElements("btnChangeStatus").ElementAt(1);
 		buttonToClick.Click();

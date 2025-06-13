@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -27,16 +27,16 @@ public class HeaderFooterShellFlyout : _IssuesUITest
 	public override string Issue => "Shell Flyout Header Footer";
 
 #if IOS
-    [Test]
+    [Fact]
     public void FlyoutHeaderWithZeroMarginShouldHaveNoY()
     {
         App.Tap("ZeroMarginHeader");
         var layout = App.WaitForElement("ZeroMarginLayout").GetRect().Y;
-        Assert.That(layout, Is.EqualTo(0));
+        Assert.Equal(0, layout);
     }
 #endif
 
-	[Test]
+	[Fact]
 	public void AFlyoutTests()
 	{
 		App.WaitForElement("PageLoaded");
@@ -84,8 +84,8 @@ public class HeaderFooterShellFlyout : _IssuesUITest
 
 		Assert.That(headerSizeLarge.Height, Is.GreaterThan(headerSizeSmall.Height));
 		Assert.That(footerSizeLarge.Height, Is.GreaterThan(footerSizeSmall.Height));
-		Assert.That(headerSizeSmall2.Height, Is.EqualTo(headerSizeSmall.Height));
-		Assert.That(footerSizeSmall2.Height, Is.EqualTo(footerSizeSmall.Height));
+		Assert.Equal(headerSizeSmall.Height, headerSizeSmall2.Height);
+		Assert.Equal(footerSizeSmall.Height, footerSizeSmall2.Height);
 
 #elif WINDOWS
 
@@ -104,8 +104,8 @@ public class HeaderFooterShellFlyout : _IssuesUITest
 
         Assert.That(headerSizeLarge.Y, Is.GreaterThan(headerSizeSmall.Y));
         Assert.That(footerSizeLarge.Y, Is.LessThan(footerSizeSmall.Y));
-        Assert.That(headerSizeSmall2.Y, Is.EqualTo(headerSizeSmall.Y));
-        Assert.That(footerSizeSmall2.Y, Is.EqualTo(footerSizeSmall.Y));
+        Assert.Equal(headerSizeSmall.Y, headerSizeSmall2.Y);
+        Assert.Equal(footerSizeSmall.Y, footerSizeSmall2.Y);
 #endif
 	}
 }
