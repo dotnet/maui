@@ -1,12 +1,12 @@
 using System;
 using System.Collections;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class ScaleTests : PlatformTestFixture
 	{
 		static IEnumerable ScaleXCases

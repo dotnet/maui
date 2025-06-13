@@ -1,6 +1,6 @@
 #if TEST_FAILS_ON_ANDROID
 // https://github.com/dotnet/maui/issues/28676
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 

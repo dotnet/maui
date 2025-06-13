@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue14557(TestDevice device) : base(device) { }
 		public override string Issue => "CollectionView header and footer not displaying on Windows";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void HeaderAndFooterRender()
 		{

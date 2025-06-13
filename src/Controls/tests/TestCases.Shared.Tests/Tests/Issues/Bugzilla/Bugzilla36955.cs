@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //Unable to access the switch element directly when it placed inside the TableView, Also Hardcoded TapCoordinates don't work reliably in CI environments for desktop platforms.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,14 +14,14 @@ public class Bugzilla36955 : _IssuesUITest
 	public override string Issue => "[iOS] ViewCellRenderer.UpdateIsEnabled referencing null object";
 
 	[Category(UITestCategories.TableView)]
-	[Test]
+	[Fact]
 	public void Bugzilla36955Test()
 	{
 		App.WaitForElement("Button");
-		Assert.That(App.FindElement("Button").GetText(), Is.EqualTo("False"));
+		Assert.Equal("False", App.FindElement("Button").GetText());
 
 		ToggleSwitch();
-		Assert.That(App.FindElement("Button").GetText(), Is.EqualTo("True"));
+		Assert.Equal("True", App.FindElement("Button").GetText());
 	}
 	void ToggleSwitch()
 	{

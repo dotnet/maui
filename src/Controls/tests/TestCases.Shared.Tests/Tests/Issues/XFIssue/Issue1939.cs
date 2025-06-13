@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue1939 : _IssuesUITest
 
 	public override string Issue => "ArgumentOutOfRangeException on clearing a group on a grouped ListView on Android";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ListView)]
 	public void Issue1939Test()
 	{

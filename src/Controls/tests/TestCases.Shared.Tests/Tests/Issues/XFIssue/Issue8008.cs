@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue8008 : _IssuesUITest
 
 	public override string Issue => "Removing Shell Item can cause Shell to try and set a MenuItem as the default visible item";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shell)]
 	public void RemovingShellItemCorrectlyPicksNextValidShellItemAsVisibleShellItem()
 	{

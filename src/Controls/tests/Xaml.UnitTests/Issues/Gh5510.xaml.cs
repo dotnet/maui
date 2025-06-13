@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -61,23 +61,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[Test]
+			[Fact]
 			public void CompileBindingWithIndexer([Values(false, true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh5510)));
+					() => MockCompiler.Compile(typeof(Gh5510))
 
 				var vm = new Gh5510VM();
 				var layout = new Gh5510(useCompiledXaml) { BindingContext = vm };
-				Assert.That(layout.entry.TextColor, Is.EqualTo(Colors.Red));
+				Assert.Equal(Colors.Red, layout.entry.TextColor);
 				vm.ClearErrorForPerson();
-				Assert.That(layout.entry.TextColor, Is.EqualTo(Colors.Black));
+				Assert.Equal(Colors.Black, layout.entry.TextColor);
 			}
 		}
 	}

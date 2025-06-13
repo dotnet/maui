@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue1024 : _IssuesUITest
 
 	public override string Issue => "Entry and Editor are leaking when used in ViewCell";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Performance)]
 	public void Bugzilla1024Test()
 	{
@@ -31,6 +31,6 @@ public class Issue1024 : _IssuesUITest
 		App.WaitForElement("GC");
 		App.Tap("GC");
 
-		Assert.That(App.FindElement("Counter").GetText(), Is.EqualTo("Counter: 0"));
+		Assert.Equal("Counter: 0", App.FindElement("Counter").GetText());
 	}
 }

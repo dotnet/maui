@@ -12,7 +12,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -28,11 +28,10 @@ public partial class Maui16208
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
-		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -41,20 +40,19 @@ public partial class Maui16208
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
-		[TearDown]
 		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 			mockDeviceInfo = null;
 		}
 
-		[Test]
+		[Fact]
 		public void SetterAndTargetName([Values(false, true)] bool useCompiledXaml)
 		{
 
-			Assert.DoesNotThrow(() => new Maui16208(useCompiledXaml));
+			() => new Maui16208(useCompiledXaml)
 			var page = new Maui16208(useCompiledXaml);
-			Assert.That(page!.ItemLabel.BackgroundColor, Is.EqualTo(Colors.Green));
+			Assert.Equal(Colors.Green, page!.ItemLabel.BackgroundColor);
 		}
 	}
 }

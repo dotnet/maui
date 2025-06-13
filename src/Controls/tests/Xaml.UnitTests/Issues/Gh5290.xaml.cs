@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -26,18 +26,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[Test]
+			[Fact]
 			public void TwoWayBindingToNullable([Values(false, true)] bool useCompiledXaml)
 			{
 				var vm = new Gh5290VM { Time = TimeSpan.FromMinutes(42) };
 				var layout = new Gh5290(useCompiledXaml) { BindingContext = vm };
-				Assert.That(layout.NullableTime, Is.EqualTo(TimeSpan.FromMinutes(42)));
+				Assert.Equal(TimeSpan.FromMinutes(42, layout.NullableTime));
 
 				layout.SetValueFromRenderer(NullableTimeProperty, null);
-				Assert.That(vm.Time, Is.Null);
+				Assert.Null(vm.Time);
 			}
 		}
 	}

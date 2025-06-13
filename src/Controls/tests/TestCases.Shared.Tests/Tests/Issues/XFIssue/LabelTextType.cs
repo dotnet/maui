@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,14 +12,14 @@ public class LabelTextType : _IssuesUITest
 
 	public override string Issue => "Implementation of Label TextType";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Label)]
 	public void LabelToggleHtmlAndPlainTextTest()
 	{
 		App.WaitForElement("TextTypeLabel");
 		App.Screenshot("I see plain text");
 
-		Assert.That(App.WaitForElement("TextTypeLabel").GetText(), Is.EqualTo("<h1>Hello World!</h1>"));
+		Assert.Equal("<h1>Hello World!</h1>", App.WaitForElement("TextTypeLabel").GetText());
 
 		App.Tap("ToggleTextTypeButton");
 

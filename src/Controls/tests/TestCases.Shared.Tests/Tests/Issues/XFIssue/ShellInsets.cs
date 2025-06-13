@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -91,7 +91,7 @@ public class ShellInsets : _IssuesUITest
 		App.WaitForElement(EmptyPageSafeAreaTest);
 		App.Tap(EmptyPageSafeAreaTest);
 		var noSafeAreaLocation = App.WaitForElement(SafeAreaTopLabel);
-		Assert.That(noSafeAreaLocation.GetRect().Y, Is.EqualTo(0));
+		Assert.Equal(0, noSafeAreaLocation.GetRect().Y);
 
 	}
 
@@ -104,13 +104,13 @@ public class ShellInsets : _IssuesUITest
 		App.Tap(SafeAreaTest);
 		var noSafeAreaLocation = App.FindElements(SafeAreaBottomLabel).Count();
 		var noSafeArea = App.WaitForElement(SafeAreaBottomLabel).GetRect().Y;
-		Assert.That(noSafeAreaLocation, Is.EqualTo(1));
+		Assert.Equal(1, noSafeAreaLocation);
 		App.Tap(ResetButton);
 		App.Tap(ToggleSafeArea);
 		App.Tap(SafeAreaTest);
 		var safeAreaLocation = App.FindElements(SafeAreaBottomLabel).Count();
 		var safeArea = App.WaitForElement(SafeAreaBottomLabel).GetRect().Y;
-		Assert.That(safeAreaLocation, Is.EqualTo(1));
+		Assert.Equal(1, safeAreaLocation);
 		Assert.That(safeArea, Is.GreaterThan(noSafeArea));
 	}
 #endif
@@ -126,7 +126,7 @@ public class ShellInsets : _IssuesUITest
 		App.WaitForElement(PaddingLabel);
 		var zeroPadding = App.FindElements(PaddingLabel).Count();
 		var zeroPaddingValue = App.WaitForElement(PaddingLabel).GetRect().Y;
-		Assert.That(zeroPadding, Is.EqualTo(1));
+		Assert.Equal(1, zeroPadding);
 		App.WaitForElement(ResetButton);
 		App.Tap(ResetButton);
 		App.WaitForElement(PaddingEntry);
@@ -136,7 +136,7 @@ public class ShellInsets : _IssuesUITest
 		App.WaitForElement(PaddingLabel);
 		var somePadding = App.FindElements(PaddingLabel).Count();
 		var somePaddingValue = App.WaitForElement(PaddingLabel).GetRect().Y;
-		Assert.That(somePadding, Is.EqualTo(1));
+		Assert.Equal(1, somePadding);
 		Assert.That(somePaddingValue, Is.GreaterThan(zeroPaddingValue));
 	}
 }

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Swipe, ScrollDown not working on Catalyst, In iOS, WaitForNoElement throws a timeout exception eventhough the text is not visible on the UI. 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,17 +20,17 @@ public class ShellGestures : _IssuesUITest
 
 
 	public override string Issue => "Shell Gestures Test";
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Gestures)]
 	public void SwipeGesture()
 	{
 		App.TapInShellFlyout(SwipeTitle);
 		App.WaitForElement(SwipeGestureSuccessId);
 		App.SwipeLeftToRight(SwipeGestureSuccessId);
-		Assert.That(App.WaitForElement(SwipeGestureSuccessId).GetText(), Is.EqualTo(SwipeGestureSuccess));
+		Assert.Equal(SwipeGestureSuccess, App.WaitForElement(SwipeGestureSuccessId).GetText());
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.TableView)]
 	public void TableViewScroll()
 	{
@@ -42,7 +42,7 @@ public class ShellGestures : _IssuesUITest
 		App.WaitForNoElement("section1");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ListView)]
 	public void ListViewScroll()
 	{

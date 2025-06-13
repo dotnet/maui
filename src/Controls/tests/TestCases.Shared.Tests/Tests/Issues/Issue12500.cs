@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue12500 : _IssuesUITest
 	{
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shell)]
 	public void ShellNavigatingShouldTrigger()
 	{
@@ -20,6 +20,6 @@ public class Issue12500 : _IssuesUITest
 		App.WaitForElement("Events");
 		App.Tap("Events");
 		var result = App.WaitForElement("Issue12500EventPage").GetText();
-		Assert.That(result, Is.EqualTo("Navigating to //EventPage"));
+		Assert.Equal("Navigating to //EventPage", result);
 	}
 }

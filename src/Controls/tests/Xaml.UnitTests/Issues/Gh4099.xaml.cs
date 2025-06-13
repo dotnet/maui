@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,10 +17,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[TestCase(true)]
+			[InlineData(true)]]
 			[Ignore("Ignore for now, Compiled Converters are disabled")]
 			public void BetterExceptionReport(bool useCompiledXaml)
 			{
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					}
 					catch (BuildException xpe)
 					{
-						Assert.That(xpe.XmlInfo.LineNumber, Is.EqualTo(5));
+						Assert.Equal(5, xpe.XmlInfo.LineNumber);
 						Assert.Pass();
 					}
 					Assert.Fail();

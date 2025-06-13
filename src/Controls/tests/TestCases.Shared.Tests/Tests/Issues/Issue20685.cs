@@ -1,5 +1,5 @@
 #if MACCATALYST || WINDOWS // MenuBarItems are only supported on desktop platforms
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -29,25 +29,25 @@ public class Issue20685 : _IssuesUITest
         App.Tap(menuItem);
     }
 
-    [Test]
+    [Fact]
     public void MenuFlyoutItem_ClickedEventWorks()
     {
         OpenMenuAndTapItem(ClickedEventItem);
-        Assert.That(App.WaitForElement(ResultLabel)?.GetText(), Is.EqualTo("Clicked event handler executed"));
+        Assert.Equal("Clicked event handler executed", App.WaitForElement(ResultLabel)?.GetText());
     }
 
-    [Test]
+    [Fact]
     public void MenuFlyoutItem_CommandWorks()
     {
         OpenMenuAndTapItem(CommandItem);
-        Assert.That(App.WaitForElement(ResultLabel)?.GetText(), Is.EqualTo("Command executed"));
+        Assert.Equal("Command executed", App.WaitForElement(ResultLabel)?.GetText());
     }
 
-    [Test]
+    [Fact]
     public void MenuFlyoutItem_CommandWithParameterWorks()
     {
         OpenMenuAndTapItem(CommandWithParamItem);
-        Assert.That(App.WaitForElement(ResultLabel)?.GetText(), Is.EqualTo("Command executed with parameter: Test Parameter"));
+        Assert.Equal("Command executed with parameter: Test Parameter", App.WaitForElement(ResultLabel)?.GetText());
     }
 }
 

@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Xaml.UnitTests.Issues.Maui14158;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests.Maui14158;
 
@@ -15,15 +15,15 @@ public partial class WithSuffix : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	class Tests
 	{
-		[TestCase(true)]
-		[TestCase(false)]
+		[InlineData(true)]]
+		[InlineData(false)]]
 		public void VerifyCorrectTypesUsed(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
-				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(WithSuffix)));
+				() => MockCompiler.Compile(typeof(WithSuffix))
 
 			var page = new WithSuffix(useCompiledXaml);
 

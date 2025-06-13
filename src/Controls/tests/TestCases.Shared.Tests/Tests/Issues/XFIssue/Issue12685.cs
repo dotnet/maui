@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,12 +15,12 @@ public class Issue12685 : _IssuesUITest
 
 	public override string Issue => "[iOs][Bug] TapGestureRecognizer in Path does not work on iOS";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shape)]
 	public void ShapesPathReceiveGestureRecognizers()
 	{
 		var testLabel = App.WaitForFirstElement(StatusLabelId);
-		Assert.That(testLabel.ReadText(), Is.EqualTo(ResetStatus));
+		Assert.Equal(ResetStatus, testLabel.ReadText());
 		var labelRect = App.WaitForFirstElement(StatusLabelId).GetRect(); // Path element not able get via automationid so getting the rect of the label calculated points to tap on the path
 #if MACCATALYST // TapCoordinates is not working on MacCatalyst Issue: https://github.com/dotnet/maui/issues/19754
         App.ClickCoordinates(labelRect.X + 3, labelRect.Y - 10);
@@ -28,6 +28,6 @@ public class Issue12685 : _IssuesUITest
 		App.TapCoordinates(labelRect.X + 3, labelRect.Y - 10);
 #endif
 		App.WaitForElement(StatusLabelId);
-		Assert.That(testLabel.ReadText(), Is.EqualTo(ClickedStatus));
+		Assert.Equal(ClickedStatus, testLabel.ReadText());
 	}
 }

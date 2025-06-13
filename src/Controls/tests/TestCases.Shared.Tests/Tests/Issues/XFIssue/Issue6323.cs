@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue6323 : _IssuesUITest
 
 	public override string Issue => "TabbedPage Page not watching icon changes";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.WebView)]
 	public void Issue6323Test()
 	{

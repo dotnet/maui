@@ -1,5 +1,5 @@
 ﻿#if WINDOWS
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Windows] Shell Flyout Menu Icon disappears from Window Title Bar after Navigation";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Shell)]
 		public void FlyoutMenuShouldNotDisappearAfterNavigation_Shell()
 		{

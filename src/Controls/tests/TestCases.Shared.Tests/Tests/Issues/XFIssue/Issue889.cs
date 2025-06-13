@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Issue889 : _IssuesUITest
 
 	public override string Issue => "Assigning to FlyoutPage.Detail after construction doesn't work";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.FlyoutPage)]
 	public void Issue899TestsAppCrashWhenSwitchingTabs()
 	{

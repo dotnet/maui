@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue6077 : _IssuesUITest
 
 	public override string Issue => "CollectionView (iOS) using horizontal grid does not display last column of uneven item count";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void LastColumnShouldBeVisible()
 	{

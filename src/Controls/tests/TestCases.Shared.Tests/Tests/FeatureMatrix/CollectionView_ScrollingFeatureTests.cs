@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -55,7 +55,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS // [Windows] NullReferenceException thrown When Toggling IsGrouped to True in ObservableCollection Binding Issue Link: https://github.com/dotnet/maui/issues/28824
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureAllItemsWithGroupedList()
 	{
@@ -78,7 +78,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 	//CollectionView ItemsLayout does not update while switch from LinearItemsLayout to GridItemsLayout Issue Link: https://github.com/dotnet/maui/issues/27946
 	//CollectionView CollectionView2 doesnot change ItemsLayout Issue Link: https://github.com/dotnet/maui/issues/28656
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureFirstItemsWithObservableCollection()
 	{
@@ -93,7 +93,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureFirstItemsWithObservableCollectionWhenVerticalGrid()
 	{
@@ -110,7 +110,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureFirstItemsWithGroupedList()
 	{
@@ -127,7 +127,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureAllItemsWithObservableCollectionWhenHorizontalGrid()
 	{
@@ -144,7 +144,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureAllItemsWithObservableCollectionWhenHorizontalList()
 	{
@@ -161,7 +161,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureAllItemsWithObservableCollectionWhenVerticalGrid()
 	{
@@ -178,7 +178,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureAllItemsWithGroupedListWhenVerticalGrid()
 	{
@@ -197,7 +197,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureAllItemsWithGroupedListWhenHorizontalGrid()
 	{
@@ -216,7 +216,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureAllItemsWithGroupedListWhenHorizontalList()
 	{
@@ -238,7 +238,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 #if TEST_FAILS_ON_ANDROID
 //[Android] CollectionView with ItemSizingStrategy="MeasureFirstItem" Does Not Work as Expected for HorizontalList and HorizontalGrid Layouts Issue Link: https://github.com/dotnet/maui/issues/29192
 //[Android] ItemSizingStrategy="MeasureFirstItem" does not work correctly with VerticalGrid and grouped ItemsSource Issue Link: https://github.com/dotnet/maui/issues/29191
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureFirstItemsWithObservableCollectionWhenHorizontalGrid()
 	{
@@ -255,7 +255,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureFirstItemsWithObservableCollectionWhenHorizontalList()
 	{
@@ -272,7 +272,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureFirstItemsWithGroupedListWhenVerticalGrid()
 	{
@@ -291,7 +291,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureFirstItemsWithGroupedListWhenHorizontalList()
 	{
@@ -310,7 +310,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureFirstItemsWithGroupedListWhenHorizontalGrid()
 	{
@@ -334,7 +334,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 //[Android] KeepItemsInView and KeepScrollOffset doesn't not works as expected when new items are added in CollectionView Issue Link: https://github.com/dotnet/maui/issues/29131
 //[iOS] KeepItemsInView Does Not Show Newly Added Items After Scrolling Down in CollectionView Issue Link: https://github.com/dotnet/maui/issues/29145
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithObservableList()
 	{
@@ -353,7 +353,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 	}
 
 	
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithGroupedList()
 	{
@@ -376,7 +376,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS // //CollectionView ItemsLayout does not update Issue Link: https://github.com/dotnet/maui/issues/27946
-    [Test]
+    [Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithObservableListWhenVerticalGrid()
 	{
@@ -396,7 +396,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Passionfruit");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithObservableListWhenHorizontalGrid()
 	{
@@ -416,7 +416,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Passionfruit");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithObservableListWhenHorizontalList()
 	{
@@ -436,7 +436,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Passionfruit");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithGroupedListWhenVerticalGrid()
 	{
@@ -460,7 +460,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Passionfruit");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithGroupedListWhenHorizontalList()
 	{
@@ -484,7 +484,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Passionfruit");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithGroupedListWhenHorizontalGrid()
 	{
@@ -514,7 +514,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 	//Scroll mode "KeepLastItemInView" does not keep the last item at the end of the displayed list when adding new items Issue Link: https://github.com/dotnet/maui/issues/28716
 	//KeepLastItemInView Does Not Scroll to Last Item When Adding Items at Top, Instead Scrolls to SecondLast Item : https://github.com/dotnet/maui/issues/29207
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepLastItemInViewWithObservableList()
 	{
@@ -529,7 +529,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Cabbage");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepLastItemInViewWithObservableListWhenVerticalGrid()
 	{
@@ -546,7 +546,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Cabbage");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepLastItemInViewWithObservableListWhenHorizontalList()
 	{
@@ -563,7 +563,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Cabbage");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepLastItemInViewWithObservableListWhenHorizontalGrid()
 	{
@@ -582,7 +582,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 
 #if TEST_FAILS_ON_ANDROID
 //[Android] ArgumentOutOfRangeException Occurs with KeepLastItemInView for Grouped List Issue Link: https://github.com/dotnet/maui/issues/29153
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepLastItemInViewWithGroupedList()
 	{
@@ -601,7 +601,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Pumpkin");
 	}
  
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepLastItemInViewWithGroupedListWhenVerticalGrid()
 	{
@@ -622,7 +622,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Pumpkin");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepLastItemInViewWithGroupedListWhenHorizontalList()
 	{
@@ -643,7 +643,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Pumpkin");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepLastItemInViewWithGroupedListWhenHorizontalGrid()
 	{
@@ -668,7 +668,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 
 #if TEST_FAILS_ON_ANDROID
 //[Android] KeepScrollOffset doesn't not works as expected when new items are added in CollectionView Issue Link:  https://github.com/dotnet/maui/issues/29131
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithObservableList()
 	{
@@ -690,7 +690,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Cabbage");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithGroupedList()
 	{
@@ -721,7 +721,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 //CollectionView ItemsLayout does not update while switch from LinearItemsLayout to GridItemsLayout Issue Link: https://github.com/dotnet/maui/issues/27946
 //CollectionView CollectionView2 doesnot change ItemsLayout Issue Link: https://github.com/dotnet/maui/issues/28656
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithObservableListWhenVerticalGrid()
 	{
@@ -744,7 +744,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Cabbage");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithObservableListWhenHorizontalList()
 	{
@@ -769,7 +769,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Cabbage");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithObservableListWhenHorizontalGrid()
 	{
@@ -793,7 +793,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Cabbage");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithGroupedListWhenVerticalGrid()
 	{
@@ -820,7 +820,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Pumpkin");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithGroupedListWhenHorizontalList()
 	{
@@ -849,7 +849,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.WaitForElement("Pumpkin");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithGroupedListWhenHorizontalGrid()
 	{

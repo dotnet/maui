@@ -1,5 +1,5 @@
 #if TEST_FAILS_ON_WINDOWS // EmptyView Elements not accessible via Automation on Windows, Issue Link: https://github.com/dotnet/maui/issues/28022
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void EmptyViewItemsSourceNullStringWorks()
 		{
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Nothing to display.");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void EmptyViewItemsSourceNullViewWorks()
 		{

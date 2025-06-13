@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "System.ArgumentException: NaN is not a valid value for width";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Label)]
 		public void Bugzilla52533Test()
 		{

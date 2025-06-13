@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,7 +18,7 @@ public class Bugzilla42329 : _IssuesUITest
 
 	public override string Issue => "ListView in Frame and FormsAppCompatActivity Memory Leak";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ListView)]
 	public async Task MemoryLeakB42329()
 	{

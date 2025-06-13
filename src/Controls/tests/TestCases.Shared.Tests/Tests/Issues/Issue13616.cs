@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue13616 : _IssuesUITest
 
 	public override string Issue => "[Bug] After updating XF 5.0.0.1931 getting Java.Lang.IllegalArgumentException: Invalid target position at Java.Interop.JniEnvironment+InstanceMethods.CallVoidMethod";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CarouselView)]
 	[Category(UITestCategories.Compatibility)]
 	public void Issue13616Test()

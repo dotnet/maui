@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -62,7 +62,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForNoElement("CollectionView Header(String)");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderStringWithItemsSourceObservableCollection5()
 	{
@@ -77,7 +77,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Mango");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderStringWithItemsSourceNone()
 	{
@@ -92,7 +92,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("CollectionView Header(String)");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderViewWithItemsSourceObservableCollection25()
 	{
@@ -111,7 +111,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForNoElement("CollectionView Header(Grid View)");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderViewWithItemsSourceObservableCollection5()
 	{
@@ -128,7 +128,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Mango");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderViewWithItemsSourceNone()
 	{
@@ -144,7 +144,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issues:https://github.com/dotnet/maui/issues/28022
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderStringWithEmptyViewString()
 	{
@@ -162,7 +162,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("No Items Available(String)");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderViewWithEmptyViewString()
 	{
@@ -181,7 +181,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	}
 #endif
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderStringWithFooterString()
 	{
@@ -199,7 +199,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("CollectionView Footer(String)");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderViewWithFooterView()
 	{
@@ -217,7 +217,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderStringWithFooterView()
 	{
@@ -235,7 +235,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderViewWithFooterString()
 	{
@@ -254,7 +254,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID //related issue: https://github.com/dotnet/maui/issues/28334
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderStringWhenFooterTemplateView()
 		{
@@ -272,7 +272,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 			App.WaitForElementTillPageNavigationSettled("FooterTemplateLabel");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderViewWhenFooterTemplateView()
 		{
@@ -292,7 +292,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In CV2 related issue: https://github.com/dotnet/maui/issues/28509, In windows related issue: https://github.com/dotnet/maui/issues/28824
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderStringWhenGroupHeaderTemplateView()
 	{
@@ -314,7 +314,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Potato");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderViewWhenGroupHeaderTemplateView()
 	{
@@ -336,7 +336,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Potato");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderStringWhenGroupFooterTemplateView()
 	{
@@ -358,7 +358,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Potato");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderViewWhenGroupFooterTemplateView()
 	{
@@ -382,7 +382,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_WINDOWS  //related issue: https://github.com/dotnet/maui/issues/28337
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderStringWhenHeaderTemplateView()
 	{
@@ -400,7 +400,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Mango");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderViewWhenHeaderTemplateView()
 	{
@@ -420,7 +420,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //relate issue: https://github.com/dotnet/maui/issues/28824
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderStringWhenIsGroupedTrueOrFalse()
 		{
@@ -446,7 +446,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 			App.WaitForElementTillPageNavigationSettled("Apple");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderViewWhenIsGroupedTrueOrFalse()
 		{
@@ -473,7 +473,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		}
 #endif
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderStringWhenBasicDataTemplateView()
 	{
@@ -490,7 +490,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("CollectionView Header(String)");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderViewWhenBasicDataTemplateView()
 	{
@@ -508,7 +508,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In windows, related issue: https://github.com/dotnet/maui/issues/27946 and In CV2, related issue: https://github.com/dotnet/maui/issues/28678
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderStringWithItemsLayoutVerticalGrid()
 	{
@@ -525,7 +525,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Mango");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderViewWithItemsLayoutVerticalGrid()
 	{
@@ -542,7 +542,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Mango");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderStringWithItemsLayoutHorizontalList()
 	{
@@ -560,7 +560,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Mango");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderViewWithItemsLayoutHorizontalList()
 	{
@@ -578,7 +578,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Mango");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderViewWithItemsLayoutHorizontalGrid()
 	{
@@ -596,7 +596,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Mango");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderStringWithItemsLayoutHorizontalGrid()
 	{
@@ -617,7 +617,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 
 
 #if TEST_FAILS_ON_ANDROID //related issue: https://github.com/dotnet/maui/issues/28337
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWithItemsSourceObserableCollection5()
 		{
@@ -632,7 +632,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 			App.WaitForElementTillPageNavigationSettled("Mango");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWithItemsSourceObserableCollection25()
 		{
@@ -651,7 +651,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 			App.WaitForNoElement("Header Template(Grid View)");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWithItemsSourceNone()
 		{
@@ -668,7 +668,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS //In windows related issue:https://github.com/dotnet/maui/issues/28022, In related issue: https://github.com/dotnet/maui/issues/28337
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWhenEmptyViewString()
 		{
@@ -688,7 +688,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID //related issue: https://github.com/dotnet/maui/issues/28337
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTempalteWhenFooterTemplateView()
 		{
@@ -708,7 +708,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In CV2: related issue: https://github.com/dotnet/maui/issues/28824 and In windows: https://github.com/dotnet/maui/issues/28824
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderTemplateWhenGroupFooterTemplate()
 	{
@@ -730,7 +730,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Potato");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderTemplateWhenGroupHeaderTemplate()
 	{
@@ -754,7 +754,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS  //In CV2, unintended synchronization between the HeaderTemplate/FooterTemplate and Header/Footer views, related issue: https://github.com/dotnet/maui/issues/28504
 	//In windows, related issue: https://github.com/dotnet/maui/issues/28337
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderTemplateWhenHeaderString()
 	{
@@ -772,7 +772,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderTemplateWhenHeaderView()
 	{
@@ -790,7 +790,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In all platforms, issue related: https://github.com/dotnet/maui/issues/28824 and CV2, related issues:https://github.com/dotnet/maui/issues/28504
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWhenIsGroupedTrueOrFalse()
 		{
@@ -817,7 +817,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		}
 #endif
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderTemplateWhenBasicDataTemplateView()
 	{
@@ -835,7 +835,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID //In windows, related issue: https://github.com/dotnet/maui/issues/27946, In CV2, related issue: https://github.com/dotnet/maui/issues/28678 and In android related issue:https://github.com/dotnet/maui/issues/28337
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWithItemsLayoutVerticalGrid()
 		{
@@ -852,7 +852,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 			App.WaitForElementTillPageNavigationSettled("Mango");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWithItemsLayoutHorizontalList()
 		{
@@ -870,7 +870,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 			App.WaitForElementTillPageNavigationSettled("Mango");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWithItemsLayoutHorizontalGrid()
 		{
@@ -890,7 +890,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //In CV2, unintended synchronization between the HeaderTemplate/FooterTemplate and Header/Footer views, related issue: https://github.com/dotnet/maui/issues/28504
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterStringWithItemsSourceObservableCollection5()
 	{
@@ -905,7 +905,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Mango");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterStringWithItemsSourceNone()
 	{
@@ -921,7 +921,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	}
 
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterStringWithItemsSourceObservableCollection25()
 	{
@@ -940,7 +940,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElement("CollectionView Footer(String)");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterViewWithItemsSourceObservableCollection5()
 	{
@@ -955,7 +955,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Mango");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterViewWithItemsSourceObservableCollection25()
 	{
@@ -974,7 +974,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("CollectionView Footer(Grid View)");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterViewWithItemsSourceNone()
 	{
@@ -990,7 +990,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In android related issue:https://github.com/dotnet/maui/issues/28622, In windows related issue:https://github.com/dotnet/maui/issues/28022 and In CV2, related issue: https://github.com/dotnet/maui/issues/28604
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterStringWhenEmptyViewString()
 		{
@@ -1008,7 +1008,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 			App.WaitForElementTillPageNavigationSettled("No Items Available(String)");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterViewWhenEmptyViewString()
 		{
@@ -1028,7 +1028,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_WINDOWS //In Windows related issue: https://github.com/dotnet/maui/issues/28337
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterStringWhenFooterTemplateView()
 	{
@@ -1046,7 +1046,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("FooterTemplateLabel");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterViewWhenFooterTemplateView()
 	{
@@ -1066,7 +1066,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS//In CV2 related issues:https://github.com/dotnet/maui/issues/28509
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterStringWhenGroupFooterTemplateView()
 	{
@@ -1090,7 +1090,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("GroupFooterTemplateLabel");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterViewWhenGroupFooterTemplateView()
 	{
@@ -1114,7 +1114,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("GroupFooterTemplateLabel");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterStringWhenGroupHeaderTemplateView()
 	{
@@ -1136,7 +1136,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("GroupHeaderTemplateLabel");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterViewWhenGroupHeaderTemplateView()
 	{
@@ -1159,7 +1159,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	}
 #endif
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterStringWhenHeaderString()
 	{
@@ -1177,7 +1177,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("CollectionView Footer(String)");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterViewWhenHeaderString()
 	{
@@ -1195,7 +1195,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterStringWhenHeaderView()
 	{
@@ -1213,7 +1213,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("CollectionView Footer(String)");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterViewWhenHeaderView()
 	{
@@ -1232,7 +1232,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID //related issue: https://github.com/dotnet/maui/issues/28337
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterStringWhenHeaderTemplate()
 		{
@@ -1250,7 +1250,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 			App.WaitForElementTillPageNavigationSettled("CollectionView Footer(String)");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterViewWhenHeaderTemplate()
 		{
@@ -1270,7 +1270,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //related isssue: https://github.com/dotnet/maui/issues/28824
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterStringWhenIsGroupedTrueOrFalse()
 		{
@@ -1298,7 +1298,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 			App.WaitForElementTillPageNavigationSettled("CollectionView Footer(String)");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterViewWhenIsGroupedTrueOrFalse()
 		{
@@ -1326,7 +1326,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 			App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
 		}
 #endif
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterStringWhenBasicDataTemplateView()
 	{
@@ -1342,7 +1342,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Apple");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterViewWhenBasicDataTemplateView()
 	{
@@ -1359,7 +1359,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In windows, related issue: https://github.com/dotnet/maui/issues/27946 and In CV2, related issue: https://github.com/dotnet/maui/issues/28678
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterStringWithItemsLayoutVerticalGrid()
 	{
@@ -1375,7 +1375,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Apple");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterViewWithItemsLayoutVerticalGrid()
 	{
@@ -1391,7 +1391,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Apple");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterStringWithItemsLayoutHorizontalList()
 	{
@@ -1409,7 +1409,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("CollectionView Footer(String)");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterViewWithItemsLayoutHorizontalList()
 	{
@@ -1427,7 +1427,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterStringWithItemsLayoutHorizontalGrid()
 	{
@@ -1445,7 +1445,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("CollectionView Footer(String)");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterViewWithItemsLayoutHorizontalGrid()
 	{
@@ -1466,7 +1466,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID //related issue: https://github.com/dotnet/maui/issues/28337
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWithItemsSourceObservableCollections5()
 		{
@@ -1480,7 +1480,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 			App.WaitForElementTillPageNavigationSettled("Apple");
 		}
 #endif
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterTemplateWithItemsSourceObservableCollections25()
 	{
@@ -1498,7 +1498,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("Pepper");
 		App.WaitForElementTillPageNavigationSettled("Footer Template(Grid View)");
 	}
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterTemplateWithItemsSourceNone()
 	{
@@ -1515,7 +1515,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In windows related issue:https://github.com/dotnet/maui/issues/28022, In android: https://github.com/dotnet/maui/issues/28101 and In CV2, related issue: https://github.com/dotnet/maui/issues/28604 and https://github.com/dotnet/maui/issues/28504
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWhenEmptyViewString()
 		{
@@ -1552,7 +1552,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForNoElement("CollectionView Footer(String)");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterTemplateWhenFooterView()
 	{
@@ -1572,7 +1572,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //In CV2 related issues: https://github.com/dotnet/maui/issues/28509 and In windows, related issue: https://github.com/dotnet/maui/issues/28824
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterTemplateWhenGroupFooterTemplateView()
 	{
@@ -1596,7 +1596,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("GroupFooterTemplateLabel");
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterTemplateWhenGroupHeaderTemplateView()
 	{
@@ -1620,7 +1620,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In android,related issue: https://github.com/dotnet/maui/issues/28337 and In CV2, reltaed issue:https://github.com/dotnet/maui/issues/28504
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWhenHeaderString()
 		{
@@ -1638,7 +1638,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 			App.WaitForElementTillPageNavigationSettled("FooterTemplateLabel");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWhenHeaderView()
 		{
@@ -1658,7 +1658,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID //In android,related issue: https://github.com/dotnet/maui/issues/28337
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWhenHeaderTemplate()
 		{
@@ -1678,7 +1678,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //related issue: https://github.com/dotnet/maui/issues/28824
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWhenIsGroupedTrueOrFalse()
 		{
@@ -1707,7 +1707,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		}
 #endif
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyFooterTemplateWhenBasicDataTemplateView()
 	{
@@ -1724,7 +1724,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID //In windows, related issue: https://github.com/dotnet/maui/issues/27946, In CV2, related issue: https://github.com/dotnet/maui/issues/28678, In android related issue: https://github.com/dotnet/maui/issues/28337
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWithItemsLayoutVerticalGrid()
 		{
@@ -1740,7 +1740,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 			App.WaitForElementTillPageNavigationSettled("FooterTemplateLabel");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWithItemsLayoutHorizontalList()
 		{
@@ -1758,7 +1758,7 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 			App.WaitForElementTillPageNavigationSettled("FooterTemplateLabel");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWithItemsLayoutHorizontalGrid()
 		{

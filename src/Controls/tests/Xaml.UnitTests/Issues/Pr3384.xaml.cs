@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -21,29 +21,27 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[SetUp]
 			public void Setup()
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
 			}
 
-			[TearDown]
 			public void TearDown()
 			{
 				DispatcherProvider.SetCurrent(null);
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]]
+			[InlineData(true)]]
 			public void RecyclingStrategyIsHandled(bool useCompiledXaml)
 			{
 				var p = new Pr3384(useCompiledXaml);
-				Assert.AreEqual(ListViewCachingStrategy.RecycleElement, p.listView.CachingStrategy);
+				Assert.Equal(ListViewCachingStrategy.RecycleElement, p.listView.CachingStrategy);
 			}
 		}
 	}

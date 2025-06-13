@@ -1,8 +1,8 @@
 ﻿#nullable disable
 using System.Drawing;
 using System.Globalization;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string BtnChangeToNoText = "Change to Has No Text";
 		const string BtnChangeSizeOption = "Change the Size Option";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Editor)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroid]
@@ -65,8 +65,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			foreach (var editor in editors)
 			{
 				var allTheSame = GetDimensions(editor);
-				ClassicAssert.AreEqual(allTheSame.Width, _results[editor].Width, editor);
-				ClassicAssert.AreEqual(allTheSame.Height, _results[editor].Height, editor);
+				Assert.Equal(allTheSame.Width, _results[editor].Width, editor);
+				Assert.Equal(allTheSame.Height, _results[editor].Height, editor);
 			}
 
 			// This sets it back to not auto size and we click everything again to see if it grows
@@ -78,15 +78,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			foreach (var editor in editors)
 			{
 				var allTheSame = GetDimensions(editor);
-				ClassicAssert.AreEqual(allTheSame.Width, _results[editor].Width, editor);
-				ClassicAssert.AreEqual(allTheSame.Height, _results[editor].Height, editor);
+				Assert.Equal(allTheSame.Width, _results[editor].Width, editor);
+				Assert.Equal(allTheSame.Height, _results[editor].Height, editor);
 			}
 		}
 
 		void TestGrowth(bool heightPressureShrink)
 		{
 			var testSizes = GetDimensions(EditorHeightShrinkWithPressureId);
-			ClassicAssert.AreEqual(testSizes.Width, _results[EditorHeightShrinkWithPressureId].Width, EditorHeightShrinkWithPressureId);
+			Assert.Equal(testSizes.Width, _results[EditorHeightShrinkWithPressureId].Width, EditorHeightShrinkWithPressureId);
 
 			if (heightPressureShrink)
 				ClassicAssert.Less(testSizes.Height, _results[EditorHeightShrinkWithPressureId].Height, EditorHeightShrinkWithPressureId);
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				ClassicAssert.Greater(testSizes.Height, _results[EditorHeightShrinkWithPressureId].Height, EditorHeightShrinkWithPressureId);
 
 			testSizes = GetDimensions(EditorHeightGrowId);
-			ClassicAssert.AreEqual(testSizes.Width, _results[EditorHeightGrowId].Width, EditorHeightGrowId);
+			Assert.Equal(testSizes.Width, _results[EditorHeightGrowId].Width, EditorHeightGrowId);
 			ClassicAssert.Greater(testSizes.Height, _results[EditorHeightGrowId].Height, EditorHeightGrowId);
 
 			var grow1 = GetDimensions(EditorWidthGrow1Id);

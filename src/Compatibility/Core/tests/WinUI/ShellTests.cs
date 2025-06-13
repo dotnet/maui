@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
-using NUnit.Framework;
+using Xunit;
 
 //[assembly: ExportRenderer(typeof(TestShell), typeof(TestShellRenderer))]
 //namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests

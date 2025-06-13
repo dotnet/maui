@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,10 +22,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			var element = App.WaitForFirstElement(SafeAreaAutomationId);
 
-			ClassicAssert.AreEqual(element.GetText(), text);
+			Assert.Equal(element.GetText(), text);
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Page)]
 		public void SafeAreaInsetsBreaksAndroidPadding()
@@ -38,32 +38,32 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			if (element.ReadText() != "25, 25, 25, 25")
 				usesSafeAreaInsets = true;
 
-			Assert.That(element.ReadText(), Is.Not.EqualTo("0, 0, 0, 0"));
+			Assert.NotEqual("0, 0, 0, 0", element.ReadText());
 			if (!usesSafeAreaInsets)
-				Assert.That(element.ReadText(), Is.EqualTo("25, 25, 25, 25"));
+				Assert.Equal("25, 25, 25, 25", element.ReadText());
 
 			// Disable Safe Area Insets
 			App.Tap(SafeAreaAutomationId);
 			AssertSafeAreaText($"{SafeAreaText}{false}");
 			element = App.WaitForFirstElement(PaddingLabel);
 
-			Assert.That(element.ReadText(), Is.EqualTo("25, 25, 25, 25"));
+			Assert.Equal("25, 25, 25, 25", element.ReadText());
 
 			// Enable Safe Area insets
 			App.Tap(SafeAreaAutomationId);
 			AssertSafeAreaText($"{SafeAreaText}{true}");
 			element = App.WaitForFirstElement(PaddingLabel);
-			Assert.That(element.ReadText(), Is.Not.EqualTo("0, 0, 0, 0"));
+			Assert.NotEqual("0, 0, 0, 0", element.ReadText());
 
 			if (!usesSafeAreaInsets)
-				Assert.That(element.ReadText(), Is.EqualTo("25, 25, 25, 25"));
+				Assert.Equal("25, 25, 25, 25", element.ReadText());
 
 			// Set Padding and then disable safe area insets
 			App.Tap(SetPagePadding);
 			App.Tap(SafeAreaAutomationId);
 			AssertSafeAreaText($"{SafeAreaText}{false}");
 			element = App.WaitForFirstElement(PaddingLabel);
-			Assert.That(element.ReadText(), Is.EqualTo("25, 25, 25, 25"));
+			Assert.Equal("25, 25, 25, 25", element.ReadText());
 		}
 	}
 }

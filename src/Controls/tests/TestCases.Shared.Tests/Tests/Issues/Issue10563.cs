@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //SwipeView does not work correctly when opened programmatically, for more information: https://github.com/dotnet/maui/issues/17204, https://github.com/dotnet/maui/issues/22153 & https://github.com/dotnet/maui/issues/14777
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] SwipeView Open methods does not work for RightItems";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.SwipeView)]
 		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void Issue10563OpenSwipeViewTest()

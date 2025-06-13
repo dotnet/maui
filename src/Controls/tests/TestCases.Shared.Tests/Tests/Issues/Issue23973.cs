@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -9,7 +9,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		protected override bool ResetAfterEachTest => true;
 		public override string Issue => "Default Modal Page Is Not Transparent";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Navigation)]
 		public void VerifyOpaqueModalDefault()
 		{
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Navigation)]
 		public void VerifyTransparentModalShowsPageBeneathModal()
 		{

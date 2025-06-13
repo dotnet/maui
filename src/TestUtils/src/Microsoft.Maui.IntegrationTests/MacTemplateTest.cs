@@ -5,7 +5,7 @@ namespace Microsoft.Maui.IntegrationTests;
 [Category(Categories.macOSTemplates)]
 public class MacTemplateTest : BaseTemplateTests
 {
-	[Test]
+	[Fact]
 	[TestCase("maui", "ios")]
 	[TestCase("maui", "maccatalyst")]
 	[TestCase("maui-blazor", "ios")]
@@ -15,7 +15,7 @@ public class MacTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		File.WriteAllText(Path.Combine(projectDir, "Resources", "testfile.txt"), "Something here :)");
@@ -32,11 +32,11 @@ public class MacTemplateTest : BaseTemplateTests
 		var extendedBuildProps = BuildProps;
 		extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-{framework}");
 
-		Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	//[Test]
+	//[Fact]
 	//[TestCase("maui-blazor", "Debug", DotNetCurrent, true)]
 	//[TestCase("maui-blazor", "Release", DotNetCurrent, true)]
 	public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework, bool sign)
@@ -62,18 +62,18 @@ public class MacTemplateTest : BaseTemplateTests
 			$"EnableCodeSigning={sign}"
 		};
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-maccatalyst", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: $"{framework}-maccatalyst", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		List<string> expectedEntitlements =
 			new() { "com.apple.security.app-sandbox", "com.apple.security.network.client" };
 		List<string> foundEntitlements = Codesign.SearchForExpectedEntitlements(entitlementsPath, appLocation, expectedEntitlements);
 
-		CollectionAssert.AreEqual(expectedEntitlements, foundEntitlements, "Entitlements missing from executable.");
+		CollectionAssert.Equal(expectedEntitlements, foundEntitlements, "Entitlements missing from executable.");
 	}
 
-	[Test]
+	[Fact]
 	[TestCase("maui-blazor", "Debug", DotNetCurrent, false)]
 	[TestCase("maui-blazor", "Release", DotNetCurrent, false)]
 	[TestCase("maui", "Debug", DotNetCurrent, false)]
@@ -120,12 +120,12 @@ public class MacTemplateTest : BaseTemplateTests
 			buildWithCodeSignProps.Add("EnableCodeSigning=true");
 		}
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		string manifestLocation = Path.Combine(appLocation, "PrivacyInfo.xcprivacy");
 
-		Assert.IsTrue(File.Exists(manifestLocation), $"Privacy Manifest not found in {manifestLocation}.");
+		Assert.True(File.Exists(manifestLocation), $"Privacy Manifest not found in {manifestLocation}.");
 	}
 }
