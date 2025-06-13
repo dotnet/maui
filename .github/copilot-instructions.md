@@ -7,7 +7,11 @@ This document provides specific guidance for GitHub Copilot when working on the 
 **.NET MAUI** is a cross-platform framework for creating mobile and desktop applications with C# and XAML. This repository contains the core framework code that enables development for Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
 
 ### Key Technologies
-- **.NET 9.0.105** (current version per global.json)
+- **.NET SDK** - Version depends on the branch:
+  - **main branch**: Use the latest stable version of .NET to build
+  - **net10 branch**: Use the latest .NET 10 SDK
+  - **net11 branch**: Use the latest .NET 11 SDK
+  - **etc.**: Each feature branch correlates to its respective .NET version
 - **C#** and **XAML** for application development
 - **Cake build system** for compilation and packaging
 - **MSBuild** with custom build tasks
