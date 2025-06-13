@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Provider;
+using Android.Widget;
 using AndroidX.Activity.Result;
 using AndroidX.Activity.Result.Contract;
 using Microsoft.Maui.ApplicationModel;
@@ -15,7 +17,7 @@ using AndroidUri = Android.Net.Uri;
 namespace Microsoft.Maui.Media
 {
 	partial class MediaPickerImplementation : IMediaPicker
-	{
+	{		
 		public bool IsCaptureSupported
 			=> Application.Context?.PackageManager?.HasSystemFeature(PackageManager.FeatureCameraAny) ?? false;
 
@@ -132,9 +134,15 @@ namespace Microsoft.Maui.Media
 
 		async Task<FileResult> PickUsingPhotoPicker(MediaPickerOptions options, bool photo)
 		{
-			var pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
-				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance)
-				.Build();
+			var pickVisualMediaRequestBuilder = new PickVisualMediaRequest.Builder()
+				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance);
+
+			if (options.SelectionLimit > 1)
+			{
+				pickVisualMediaRequestBuilder.SetMaxItems(options.SelectionLimit);
+			}
+			
+			var pickVisualMediaRequest = pickVisualMediaRequestBuilder.Build();
 
 			var androidUri = await PickVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
 
