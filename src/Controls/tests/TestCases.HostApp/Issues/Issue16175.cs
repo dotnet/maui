@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 16175, "OnNavigatedTo was not triggered when tabs in More section", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 16175, "OnNavigatedTo event triggered in More tabs", PlatformAffected.iOS)]
 
 public class Issue16175 : TabbedPage
 {
@@ -8,18 +8,18 @@ public class Issue16175 : TabbedPage
 	{
 		for (var i = 0; i < 10; i++)
 		{
-			Children.Add(new Issue16175Page(i.ToString()));
+			var page = new Issue16175Page { Title = $"Tab{i + 1}" };
+			Children.Add(page);
 		}
 	}
 }
 
 public class Issue16175Page : ContentPage
 {
-	private readonly Label _navigatedToLabel;
+	Label _navigatedToLabel;
 
-	public Issue16175Page(string title)
+	public Issue16175Page()
 	{
-		Title = title;
 		_navigatedToLabel = new Label { Text = "NavigatedTo: Not triggered", AutomationId = "navigatedToLabel" };
 
 		Content = new VerticalStackLayout
@@ -30,7 +30,7 @@ public class Issue16175Page : ContentPage
 
 	protected override void OnNavigatedTo(NavigatedToEventArgs args)
 	{
-		if (Parent is TabbedPage tabbed && tabbed.CurrentPage?.Title.Equals("8", StringComparison.Ordinal) == true)
+		if (Title is not null && Title == "Tab8" && _navigatedToLabel is not null)
 		{
 			_navigatedToLabel.Text = "NavigatedTo: Triggered";
 		}
