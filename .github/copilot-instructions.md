@@ -147,6 +147,8 @@ dotnet test
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests
 ```
 
+**Note:** `dotnet test` will not work with any projects that contain the word "DeviceTest" in their name.
+
 #### Debugging
 1. Use the Sandbox project (`src/Controls/samples/Controls.Sample.Sandbox`) for reproduction
 2. Add your reproduction code to the Sandbox project
