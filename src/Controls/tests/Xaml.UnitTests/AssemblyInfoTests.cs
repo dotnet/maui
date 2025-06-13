@@ -2,12 +2,12 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using NUnit.Framework;
+using Xunit;
 using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class AssemblyInfoTests
 	{
 		static readonly string[] references = new[]
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		public void AssemblyTitle(string assemblyName)
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
-			Assert.AreEqual(assemblyName, testAssembly.GetName().Name);
+			Assert.Equal(assemblyName, testAssembly.GetName().Name);
 		}
 
 		[Test, TestCaseSource(nameof(references))]
@@ -38,10 +38,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
 			Version actual = testAssembly.GetName().Version;
 			// Currently we keep the assembly verison at 1.0.0.0
-			Assert.AreEqual(1, actual.Major, actual.ToString());
-			Assert.AreEqual(0, actual.Minor, actual.ToString());
-			Assert.AreEqual(0, actual.Build, actual.ToString());
-			Assert.AreEqual(0, actual.Revision, actual.ToString());
+			Assert.Equal(1, actual.Major, actual.ToString());
+			Assert.Equal(0, actual.Minor, actual.ToString());
+			Assert.Equal(0, actual.Build, actual.ToString());
+			Assert.Equal(0, actual.Revision, actual.ToString());
 		}
 
 		// [Test, TestCaseSource(nameof(references))]
@@ -56,14 +56,14 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		// 	var majorString = xml.SelectSingleNode("//MajorVersion").InnerText;
 		// 	var minorString = xml.SelectSingleNode("//MinorVersion").InnerText;
 		// 	Version expected = Version.Parse($"{majorString}.{minorString}.0.0");
-		// 	Assert.AreEqual(expected.Major, actual.FileMajorPart, $"FileMajorPart is wrong. {actual}");
-		// 	Assert.AreEqual(expected.Minor, actual.FileMinorPart, $"FileMinorPart is wrong. {actual}");
+		// 	Assert.Equal(expected.Major, actual.FileMajorPart, $"FileMajorPart is wrong. {actual}");
+		// 	Assert.Equal(expected.Minor, actual.FileMinorPart, $"FileMinorPart is wrong. {actual}");
 		// 	// Fails locally
-		// 	//Assert.AreEqual(expected.Build, actual.FileBuildPart, $"FileBuildPart is wrong. {actual.ToString()}");
+		// 	//Assert.Equal(expected.Build, actual.FileBuildPart, $"FileBuildPart is wrong. {actual.ToString()}");
 		// 	//We need to enable this
-		// 	//	Assert.AreEqual(ThisAssembly.Git.Commits, version.FilePrivatePart);
-		// 	Assert.AreEqual(s_productName, actual.ProductName);
-		// 	Assert.AreEqual(s_company, actual.CompanyName);
+		// 	//	Assert.Equal(ThisAssembly.Git.Commits, version.FilePrivatePart);
+		// 	Assert.Equal(s_productName, actual.ProductName);
+		// 	Assert.Equal(s_company, actual.CompanyName);
 		// }
 
 		[Test, TestCaseSource(nameof(references))]
@@ -71,8 +71,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
 			FileVersionInfo actual = FileVersionInfo.GetVersionInfo(testAssembly.Location);
-			Assert.AreEqual(s_productName, actual.ProductName);
-			Assert.AreEqual(s_company, actual.CompanyName);
+			Assert.Equal(s_productName, actual.ProductName);
+			Assert.Equal(s_company, actual.CompanyName);
 		}
 
 		internal static string GetFilePathFromRoot(string file)

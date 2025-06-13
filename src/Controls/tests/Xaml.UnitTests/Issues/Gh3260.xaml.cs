@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -35,15 +35,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[TestCase(false), TestCase(true)]
+			[InlineData(false)], TestCase(true)]
 			public void AssignContentWithNoContentAttributeDoesNotThrow(bool useCompiledXaml)
 			{
 				var layout = new Gh3260(useCompiledXaml);
-				Assert.That(layout.mylayout.Children.Count, Is.EqualTo(1));
-				Assert.That(layout.mylayout.Children[0], Is.EqualTo(layout.label));
+				Assert.Equal(1, layout.mylayout.Children.Count);
+				Assert.Equal(layout.label, layout.mylayout.Children[0]);
 			}
 		}
 	}

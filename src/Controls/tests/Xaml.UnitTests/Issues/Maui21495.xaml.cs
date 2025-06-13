@@ -12,7 +12,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -28,10 +28,9 @@ public partial class Maui21495
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	class Test
 	{
-		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -40,7 +39,7 @@ public partial class Maui21495
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public async Task AppThemeLeak([Values(false, true)] bool useCompiledXaml)
 		{
 			Application.Current.Resources.Add("labelColor", Colors.HotPink);
@@ -51,7 +50,7 @@ public partial class Maui21495
 			Application.Current.MainPage = page = null;
 			await Task.Delay(10);
 			GC.Collect();
-			Assert.IsNull(pagewr.Target, "Page leaked");
+			Assert.Null(pagewr.Target, "Page leaked");
 		}
 	}
 }

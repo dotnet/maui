@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -21,12 +21,11 @@ public partial class Maui16327 : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
 		public void Setup()
 		{
 			AppInfo.SetCurrent(new MockAppInfo());
@@ -34,14 +33,13 @@ public partial class Maui16327 : ContentPage
 
 		}
 
-		[TearDown]
 		public void TearDown()
 		{
 			DeviceInfo.SetCurrent(mockDeviceInfo = null);
 			AppInfo.SetCurrent(null);
 		}
 
-		[Test]
+		[Fact]
 		public void ConversionOfResources([Values(false, true)] bool useCompiledXaml)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
@@ -50,7 +48,7 @@ public partial class Maui16327 : ContentPage
 			var border = page.border;
 
 			var shape = border.StrokeShape as RoundRectangle;
-			Assert.That(shape.CornerRadius.BottomLeft, Is.EqualTo(10));
+			Assert.Equal(10, shape.CornerRadius.BottomLeft);
 		}
 	}
 }

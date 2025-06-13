@@ -6,7 +6,7 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -23,12 +23,11 @@ public partial class Maui23711 : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -37,19 +36,18 @@ public partial class Maui23711 : ContentPage
 		}
 
 
-		[TearDown]
 		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test]
+		[Fact]
 		public void UsesReflectionBasedBindingsWhenCompilationOfBindingsWithSourceIsDisabled([Values(false, true)] bool compileBindingsWithSource)
 		{
 			MockCompiler.Compile(typeof(Maui23711), out MethodDefinition methodDefinition, out bool hasLoggedErrors, compileBindingsWithSource: compileBindingsWithSource);
 			Assert.That(!hasLoggedErrors);
-			Assert.AreEqual(compileBindingsWithSource, ContainsTypedBindingInstantiation(methodDefinition));
+			Assert.Equal(compileBindingsWithSource, ContainsTypedBindingInstantiation(methodDefinition));
 		}
 
 		static bool ContainsTypedBindingInstantiation(MethodDefinition methodDef)

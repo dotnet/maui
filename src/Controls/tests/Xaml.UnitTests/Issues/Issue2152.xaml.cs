@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -25,24 +25,24 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			clickcount++;
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]]
+			[InlineData(true)]]
 			public void TestEventConnection(bool useCompiledXaml)
 			{
 				Issue2152 layout = null;
-				Assert.DoesNotThrow(() => layout = new Issue2152(useCompiledXaml));
+				() => layout = new Issue2152(useCompiledXaml)
 				Cell cell = null;
-				Assert.DoesNotThrow(() => cell = layout.listview.TemplatedItems.GetOrCreateContent(0, null));
+				() => cell = layout.listview.TemplatedItems.GetOrCreateContent(0, null)
 				var button = cell.FindByName<Button>("btn") as IButtonController;
-				Assert.AreEqual(0, layout.clickcount);
+				Assert.Equal(0, layout.clickcount);
 				button.SendClicked();
-				Assert.AreEqual(1, layout.clickcount);
+				Assert.Equal(1, layout.clickcount);
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -13,19 +13,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Test
 		{
 			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Test]
+			[Fact]
 			public void ContentPropertyAttributeOnLayoutSubclass([Values(false, true)] bool useCompiledXaml)
 			{
 				var page = new Maui6944(useCompiledXaml);
-				Assert.That(page.layout, Is.Not.Null);
+				Assert.NotNull(page.layout);
 				Assert.That(page.layout, Is.TypeOf<Maui6944Layout>());
-				Assert.That(page.layout.ChildContent, Is.EqualTo(page.label));
+				Assert.Equal(page.label, page.layout.ChildContent);
 			}
 		}
 	}

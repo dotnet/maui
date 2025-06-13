@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -20,17 +20,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[TestCase(true), TestCase(false)]
+			[InlineData(true)], TestCase(false)]
 			public void CompiledBindingsTargetNullValue(bool useCompiledXaml)
 			{
 				var layout = new Gh4103(useCompiledXaml) { BindingContext = new Gh4103VM() };
-				Assert.That(layout.label.Text, Is.EqualTo("initial"));
+				Assert.Equal("initial", layout.label.Text);
 
 				layout.BindingContext = new Gh4103VM { SomeNullableValue = null };
-				Assert.That(layout.label.Text, Is.EqualTo("target null"));
+				Assert.Equal("target null", layout.label.Text);
 			}
 		}
 	}
