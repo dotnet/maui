@@ -1,5 +1,6 @@
 #if IOS
 using System.Drawing;
+using System.Globalization;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -50,7 +51,7 @@ public class Issue24977 : _IssuesUITest
         var keyboardLocation = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
 
         var cursorLabel = app.WaitForElement("CursorHeightTracker").GetText();
-        var cursorHeight1 = Convert.ToDouble(cursorLabel);
+        var cursorHeight1 = double.Parse(cursorLabel!, CultureInfo.InvariantCulture);
         try
         {
             if (keyboardLocation is Point keyboardPoint)
