@@ -11,7 +11,12 @@ namespace Microsoft.Maui.UnitTests
 			{
 				await Task.Yield();
 				GC.Collect();
+				await Task.Yield();
 				GC.WaitForPendingFinalizers();
+				await Task.Yield();
+				GC.Collect(2);
+				GC.WaitForPendingFinalizers();
+
 			}
 
 			return reference.IsAlive;
