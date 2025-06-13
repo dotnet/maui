@@ -80,6 +80,23 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertFrom(System.Compo
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
+~Microsoft.Maui.Controls.Performance.PerformanceWarning.Category.get -> string
+~Microsoft.Maui.Controls.Performance.PerformanceWarning.Category.set -> void
+~Microsoft.Maui.Controls.Performance.PerformanceWarning.CurrentValue.get -> object
+~Microsoft.Maui.Controls.Performance.PerformanceWarning.CurrentValue.set -> void
+~Microsoft.Maui.Controls.Performance.PerformanceWarning.Message.get -> string
+~Microsoft.Maui.Controls.Performance.PerformanceWarning.Message.set -> void
+~Microsoft.Maui.Controls.Performance.PerformanceWarning.Metric.get -> string
+~Microsoft.Maui.Controls.Performance.PerformanceWarning.Metric.set -> void
+~Microsoft.Maui.Controls.Performance.PerformanceWarning.Recommendation.get -> string
+~Microsoft.Maui.Controls.Performance.PerformanceWarning.Recommendation.set -> void
+~Microsoft.Maui.Controls.Performance.PerformanceWarning.ThresholdValue.get -> object
+~Microsoft.Maui.Controls.Performance.PerformanceWarning.ThresholdValue.set -> void
+~Microsoft.Maui.Controls.Performance.PerformanceWarning.Unit.get -> string
+~Microsoft.Maui.Controls.Performance.PerformanceWarning.Unit.set -> void
+~Microsoft.Maui.Controls.Performance.PerformanceWarningManager.CheckThreshold<T>(string category, string metric, T currentValue, T thresholdValue, string recommendation = null) -> void
+~Microsoft.Maui.Controls.Performance.PerformanceWarningManager.Configure(Microsoft.Maui.Controls.Performance.WarningOptions options) -> void
+~Microsoft.Maui.Controls.Performance.PerformanceWarningManager.Options.get -> Microsoft.Maui.Controls.Performance.WarningOptions
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.XmlnsDefinitionAttribute(string xmlNamespace, string target) -> void
 ~override Microsoft.Maui.Controls.Compatibility.AbsoluteLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.Compatibility.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
@@ -388,8 +405,6 @@ Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.Al
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.Target.get -> string
 *REMOVED*~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.XmlnsDefinitionAttribute(string xmlNamespace, string clrNamespace) -> void
 Microsoft.Maui.Controls.Performance.IImagePerformanceTracker
-
-
 Microsoft.Maui.Controls.Performance.IImagePerformanceTracker.Configure(Microsoft.Maui.Controls.Performance.ImageTrackingOptions! options) -> void
 Microsoft.Maui.Controls.Performance.IImagePerformanceTracker.GetStats() -> Microsoft.Maui.Controls.Performance.ImageStats!
 Microsoft.Maui.Controls.Performance.IImagePerformanceTracker.Options.get -> Microsoft.Maui.Controls.Performance.ImageTrackingOptions!
@@ -513,20 +528,3 @@ static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.AddPe
 static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.ConfigureImage(this Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions! options, System.Action<Microsoft.Maui.Controls.Performance.ImageTrackingOptions!>! configure) -> Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions!
 static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.ConfigureLayout(this Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions! options, System.Action<Microsoft.Maui.Controls.Performance.LayoutTrackingOptions!>! configure) -> Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions!
 static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.ConfigureWarnings(this Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions! options, System.Action<Microsoft.Maui.Controls.Performance.WarningOptions!>! configure) -> Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions!
-~Microsoft.Maui.Controls.Performance.PerformanceWarning.Category.get -> string
- ~Microsoft.Maui.Controls.Performance.PerformanceWarning.Category.set -> void
- ~Microsoft.Maui.Controls.Performance.PerformanceWarning.CurrentValue.get -> object
- ~Microsoft.Maui.Controls.Performance.PerformanceWarning.CurrentValue.set -> void
- ~Microsoft.Maui.Controls.Performance.PerformanceWarning.Message.get -> string
- ~Microsoft.Maui.Controls.Performance.PerformanceWarning.Message.set -> void
- ~Microsoft.Maui.Controls.Performance.PerformanceWarning.Metric.get -> string
- ~Microsoft.Maui.Controls.Performance.PerformanceWarning.Metric.set -> void
- ~Microsoft.Maui.Controls.Performance.PerformanceWarning.Recommendation.get -> string
- ~Microsoft.Maui.Controls.Performance.PerformanceWarning.Recommendation.set -> void
- ~Microsoft.Maui.Controls.Performance.PerformanceWarning.ThresholdValue.get -> object
- ~Microsoft.Maui.Controls.Performance.PerformanceWarning.ThresholdValue.set -> void
- ~Microsoft.Maui.Controls.Performance.PerformanceWarning.Unit.get -> string
- ~Microsoft.Maui.Controls.Performance.PerformanceWarning.Unit.set -> void
- ~Microsoft.Maui.Controls.Performance.PerformanceWarningManager.CheckThreshold<T>(string category, string metric, T currentValue, T thresholdValue, string recommendation = null) -> void
- ~Microsoft.Maui.Controls.Performance.PerformanceWarningManager.Configure(Microsoft.Maui.Controls.Performance.WarningOptions options) -> void
- ~Microsoft.Maui.Controls.Performance.PerformanceWarningManager.Options.get -> Microsoft.Maui.Controls.Performance.WarningOptions
