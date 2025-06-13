@@ -1144,11 +1144,17 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			UpdateIsOpen(true);
+			UpdateSwipeItems();
 
 			var swipeThreshold = GetSwipeThreshold();
 			UpdateOffset(swipeThreshold);
 
-			UpdateSwipeItems();
+			// Set the background on the swipe view, we need to update the layout.
+			if (_contentView is WrapperView)
+			{
+				LayoutIfNeeded();
+			}
+
 			Swipe(animated);
 
 			_swipeOffset = Math.Abs(_swipeOffset);
