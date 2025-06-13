@@ -316,13 +316,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			result.Focusable = false;
 			result.SetScaleType(ImageView.ScaleType.FitCenter);
 
-			if (bindable.GetValue(property) is ImageSource image)
-				AutomationPropertiesProvider.SetContentDescription(result, image, null, null);
+			var imageSource = bindable.GetValue(property) as ImageSource;
 
-			((ImageSource)bindable.GetValue(property)).LoadImage(MauiContext, (r) =>
+			if (imageSource is not null)
 			{
-				result.SetImageDrawable(r?.Value);
-			});
+				AutomationPropertiesProvider.SetContentDescription(result, imageSource, null, null);
+
+				imageSource.LoadImage(MauiContext, r =>
+				{
+					result.SetImageDrawable(r?.Value);
+				});
+			}
+			else if (defaultImage != -1)
+			{
+				// If the icon is not set, use the default icon
+				result.SetImageResource(defaultImage);
+			}
 
 			var lp = new LinearLayout.LayoutParams((int)Context.ToPixels(22), LP.MatchParent)
 			{
