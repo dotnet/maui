@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SearchBarExtensions
 	{
-		private static readonly string[] _backgroundColorKeys =
+		static readonly string[] _backgroundColorKeys =
 		{
 			"TextControlBackground",
 			"TextControlBackgroundPointerOver",
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			UpdateColors(platformControl.Resources, _backgroundColorKeys, searchBar.Background?.ToPlatform());
+			UpdateColors(platformControl, _backgroundColorKeys, searchBar.Background?.ToPlatform());
 		}
 
 		public static void UpdateIsEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar)
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Platform
 			platformControl.PlaceholderText = searchBar.Placeholder ?? string.Empty;
 		}
 
-		private static readonly string[] _placeholderForegroundColorKeys =
+		static readonly string[] _placeholderForegroundColorKeys =
 		{
 			"TextControlPlaceholderForeground",
 			"TextControlPlaceholderForegroundPointerOver",
@@ -45,8 +45,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePlaceholderColor(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			UpdateColors(platformControl.Resources, _placeholderForegroundColorKeys,
-				searchBar.PlaceholderColor?.ToPlatform());
+			UpdateColors(platformControl, _placeholderForegroundColorKeys, searchBar.PlaceholderColor?.ToPlatform());
 		}
 
 		public static void UpdateText(this AutoSuggestBox platformControl, ISearchBar searchBar)
@@ -54,7 +53,7 @@ namespace Microsoft.Maui.Platform
 			platformControl.Text = searchBar.Text;
 		}
 
-		private static readonly string[] _foregroundColorKeys =
+		static readonly string[] _foregroundColorKeys =
 		{
 			"TextControlForeground",
 			"TextControlForegroundPointerOver",
@@ -66,7 +65,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var tintBrush = searchBar.TextColor?.ToPlatform();
 
-			if (tintBrush == null)
+			if (tintBrush is null)
 			{
 				platformControl.Resources.RemoveKeys(_foregroundColorKeys);
 				platformControl.Foreground = null;
@@ -80,8 +79,10 @@ namespace Microsoft.Maui.Platform
 			platformControl.RefreshThemeResources();
 		}
 
-		private static void UpdateColors(ResourceDictionary resource, string[] keys, Brush? brush)
+		static void UpdateColors(AutoSuggestBox platformControl, string[] keys, Brush? brush)
 		{
+			ResourceDictionary resource = platformControl.Resources;
+
 			if (brush is null)
 			{
 				resource.RemoveKeys(keys);
@@ -90,6 +91,8 @@ namespace Microsoft.Maui.Platform
 			{
 				resource.SetValueForAllKey(keys, brush);
 			}
+
+			platformControl.RefreshThemeResources();
 		}
 
 		public static void UpdateFont(this AutoSuggestBox platformControl, ISearchBar searchBar, IFontManager fontManager) =>
@@ -126,14 +129,20 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (maxLength == 0)
+			{
 				MauiAutoSuggestBox.SetIsReadOnly(platformControl, true);
+			}
 			else
+			{
 				MauiAutoSuggestBox.SetIsReadOnly(platformControl, searchBar.IsReadOnly);
+			}
 
 			var currentControlText = platformControl.Text;
 
 			if (currentControlText.Length > maxLength)
+			{
 				platformControl.Text = currentControlText.Substring(0, maxLength);
+			}
 		}
 
 		public static void UpdateIsReadOnly(this AutoSuggestBox platformControl, ISearchBar searchBar)
@@ -146,7 +155,9 @@ namespace Microsoft.Maui.Platform
 			var textBox = platformControl.GetFirstDescendant<TextBox>();
 
 			if (textBox is null)
+			{
 				return;
+			}
 
 			textBox.UpdateIsTextPredictionEnabled(searchBar);
 		}
@@ -156,7 +167,9 @@ namespace Microsoft.Maui.Platform
 			var textBox = platformControl.GetFirstDescendant<TextBox>();
 
 			if (textBox is null)
+			{
 				return;
+			}
 
 			textBox.UpdateIsSpellCheckEnabled(searchBar);
 		}
@@ -165,13 +178,15 @@ namespace Microsoft.Maui.Platform
 		{
 			var queryTextBox = platformControl.GetFirstDescendant<TextBox>();
 
-			if (queryTextBox == null)
+			if (queryTextBox is null)
+			{
 				return;
+			}
 
 			queryTextBox.UpdateInputScope(searchBar);
 		}
 
-		private static readonly string[] CancelButtonColorKeys =
+		static readonly string[] CancelButtonColorKeys =
 		{
 			"TextControlButtonForeground",
 			"TextControlButtonForegroundPointerOver",
@@ -183,7 +198,9 @@ namespace Microsoft.Maui.Platform
 			var cancelButton = platformControl.GetDescendantByName<Button>("DeleteButton");
 
 			if (cancelButton is null)
+			{
 				return;
+			}
 
 			cancelButton.UpdateTextColor(searchBar.CancelButtonColor, CancelButtonColorKeys);
 		}
