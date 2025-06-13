@@ -74,6 +74,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new SearchBarCoreGalleryPage(), "Search Bar Gallery"),
 			new GalleryPageFactory(() => new SliderCoreGalleryPage(), "Slider Gallery"),
 			new GalleryPageFactory(() => new StepperCoreGalleryPage(), "Stepper Gallery"),
+			new GalleryPageFactory(() => new SwitchControlPage(), "Switch Feature Matrix"),
 			new GalleryPageFactory(() => new SwitchCoreGalleryPage(), "Switch Gallery"),
 			new GalleryPageFactory(() => new SwipeViewCoreGalleryPage(), "SwipeView Gallery"),
 			new GalleryPageFactory(() => new TimePickerCoreGalleryPage(), "Time Picker Gallery"),
