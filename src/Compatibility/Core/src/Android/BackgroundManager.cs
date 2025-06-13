@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		static void OnElementChanged(object sender, VisualElementChangedEventArgs e)
 		{
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 			if (e.OldElement != null)
 			{
 				e.OldElement.PropertyChanged -= OnElementPropertyChanged;
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				UpdateBackground(renderer?.View, renderer?.Element);
 			}
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 		}
 
 

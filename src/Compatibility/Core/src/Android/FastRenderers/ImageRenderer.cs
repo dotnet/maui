@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			Image oldElement = _element;
 			_element = image;
 
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			if (oldElement != null)
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				ImageElementManager.Init(this);
 			}
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 			_motionEventHelper.UpdateElement(element);
 			OnElementChanged(new ElementChangedEventArgs<Image>(oldElement, _element));
 

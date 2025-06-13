@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			Cell cell = null;
 
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			ListViewCachingStrategy cachingStrategy = Controller.CachingStrategy;
 			var nextCellIsHeader = false;
@@ -228,7 +228,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					if (cell == null)
 					{
-						Performance.Stop(reference);
+						Internals.Performance.Stop(reference);
 
 						return new AView(_context);
 					}
@@ -293,13 +293,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				else
 					UnsetSelectedBackground(layout);
 
-				Performance.Stop(reference);
+				Internals.Performance.Stop(reference);
 				return layout;
 			}
 
 			AView view = CellFactory.GetCell(cell, convertView, parent, _context, _listView);
 
-			Performance.Start(reference, "AddView");
+			Internals.Performance.Start(reference, "AddView");
 
 			if (cellIsBeingReused)
 			{
@@ -312,7 +312,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			else
 				layout.AddView(view, 0);
 
-			Performance.Stop(reference, "AddView");
+			Internals.Performance.Stop(reference, "AddView");
 
 			bool isHeader = cell.GetIsGroupHeader<ItemsView<Cell>, Cell>();
 
@@ -338,7 +338,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			layout.ApplyTouchListenersToSpecialCells(cell);
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 
 			return layout;
 		}

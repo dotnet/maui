@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public void UpdateLayout()
 		{
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
@@ -94,9 +94,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (aview is MauiViewGroup formsViewGroup)
 			{
-				Performance.Start(reference, "MeasureAndLayout");
+				Internals.Performance.Start(reference, "MeasureAndLayout");
 				formsViewGroup.MeasureAndLayout(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.Exactly), MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.Exactly), x, y, x + width, y + height);
-				Performance.Stop(reference, "MeasureAndLayout");
+				Internals.Performance.Stop(reference, "MeasureAndLayout");
 			}
 			else if ((aview is LayoutViewGroup || aview is ContentViewGroup || aview is CoordinatorLayout || aview is FragmentContainerView) && width == 0 && height == 0)
 			{
@@ -104,20 +104,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			else
 			{
-				Performance.Start(reference, "Measure");
+				Internals.Performance.Start(reference, "Measure");
 				aview.Measure(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.Exactly), MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
-				Performance.Stop(reference, "Measure");
+				Internals.Performance.Stop(reference, "Measure");
 
-				Performance.Start(reference, "Layout");
+				Internals.Performance.Start(reference, "Layout");
 				aview.Layout(x, y, x + width, y + height);
-				Performance.Stop(reference, "Layout");
+				Internals.Performance.Stop(reference, "Layout");
 			}
 
 			// We have to make sure to update the ClipBounds to match the new size of the ViewGroup
 			UpdateClipToBounds();
 			UpdateClip();
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 
 			//On Width or Height changes, the anchors needs to be updated
 			UpdateAnchorX();
@@ -326,7 +326,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void UpdateNativeView(object sender, EventArgs e)
 		{
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
@@ -363,20 +363,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 												   _context.ToPixels(view.TranslationY));
 			}
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 		}
 
 		[PortHandler]
 		void UpdateOpacity()
 		{
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
 
 			aview.Alpha = (float)view.Opacity;
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 		}
 
 		[PortHandler]

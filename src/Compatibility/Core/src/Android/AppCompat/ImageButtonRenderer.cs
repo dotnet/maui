@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			ImageButton oldElement = Element;
 			Element = image;
 
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			if (oldElement != null)
 			{
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_visualElementRenderer = new VisualElementRenderer(this);
 			}
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 			this.EnsureId();
 
 			UpdateInputTransparent();

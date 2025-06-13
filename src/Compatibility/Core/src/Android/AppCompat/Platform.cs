@@ -260,7 +260,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		internal static SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			IVisualElementRenderer visualElementRenderer = GetRenderer(view);
 			SizeRequest returnValue;
@@ -285,7 +285,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				returnValue = new SizeRequest(Size.Zero, Size.Zero);
 			}
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 
 			return returnValue;
 		}

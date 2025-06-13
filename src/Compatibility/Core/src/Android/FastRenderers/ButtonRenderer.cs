@@ -117,13 +117,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			VisualElement oldElement = Button;
 			Button = (Button)element;
 
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			OnElementChanged(new ElementChangedEventArgs<Button>(oldElement as Button, Button));
 
 			SendVisualElementInitialized(element, this);
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 		}
 
 		void IVisualElementRenderer.SetLabelFor(int? id)
