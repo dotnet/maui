@@ -33,7 +33,6 @@ dotnet --version  # Should show 9.0.105 or newer
 - **OpenJDK 17** for Android development
 - **VS Code** with .NET MAUI Dev Kit extension
 - **Android SDK** for Android development
-- **Platform-specific workloads** (installed via dotnet workload restore)
 
 ### Initial Repository Setup
 
@@ -47,11 +46,6 @@ dotnet --version  # Should show 9.0.105 or newer
    ```bash
    dotnet tool restore
    dotnet build ./Microsoft.Maui.BuildTasks.slnf
-   ```
-
-3. **Install platform workloads:**
-   ```bash
-   dotnet workload restore
    ```
 
 ## Project Structure
@@ -73,24 +67,43 @@ dotnet --version  # Should show 9.0.105 or newer
 - `Microsoft.Maui.BuildTasks.slnf` - Build tasks solution (must build first)
 
 ### Sample Projects
-- `src/Controls/samples/Maui.Controls.Sample` - Full gallery sample
+```
+├── Controls 
+│   ├── samples
+│   │   ├── Maui.Controls.Sample
+│   │   ├── Maui.Controls.Sample.Sandbox
+├── Essentials 
+│   ├── samples
+│   │   ├── Essentials.Sample
+├── BlazorWebView 
+│   ├── samples
+│   │   ├── BlazorWinFormsApp
+│   │   ├── BlazorWpfApp
+```
+
+- `src/Controls/samples/Maui.Controls.Sample` - Full gallery sample with all controls and features
 - `src/Controls/samples/Maui.Controls.Sample.Sandbox` - Empty project for testing/reproduction
-- `src/Essentials/samples/Essentials.Sample` - Essentials API demonstrations
+- `src/Essentials/samples/Essentials.Sample` - Essentials API demonstrations (non-UI MAUI APIs)
+- `src/BlazorWebView/samples/` - BlazorWebView sample applications
 
 ## Development Workflow
 
 ### IDE Setup
 
-#### VS Code (Recommended for Linux)
+#### VS Code (Recommended for Linux/macOS)
 1. Open repository root folder in VS Code
-2. Install the ".NET MAUI" extension by Microsoft
-3. Wait for IntelliSense to initialize (may take several minutes)
+2. Install the ".NET MAUI Dev Kit" extension from the marketplace: https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui
+3. Wait for IntelliSense to initialize (may take several minutes to fully process the solution)
 4. Use Command Palette (`Ctrl+Shift+P`):
    - "Pick Device" to select target platform
    - "Pick Startup Project" to select project to run
 
+**Note:** IntelliSense takes considerable time to fully process the solution. If experiencing issues, unload/reload the `maui.core` and `maui.controls` projects to resolve problems.
+
 #### Visual Studio (Windows)
-- Open `Microsoft.Maui-windows.slnf` in Visual Studio 2022 v17.12+
+- Install Visual Studio 2022 v17.12 or newer
+- Follow [these steps](https://learn.microsoft.com/dotnet/maui/get-started/installation?tabs=vswin) to include MAUI workload
+- Open `Microsoft.Maui-windows.slnf` in Visual Studio from the repository root
 
 ### Building
 
@@ -153,10 +166,11 @@ For compatibility with specific branches:
 ### Android
 - Requires Android SDK and OpenJDK 17
 - Use `--android` flag with Cake builds
+- Install missing Android SDKs via [Android SDK Manager](https://learn.microsoft.com/xamarin/android/get-started/installation/android-sdk)
 - Android SDK Manager available via: `android` command (after dotnet tool restore)
 
 ### iOS (requires macOS)
-- Requires Xcode installation
+- Requires current stable Xcode installation from [App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12) or [Apple Developer portal](https://developer.apple.com/download/more/?name=Xcode)
 - Use `--ios` flag with Cake builds
 - Pair to Mac required when developing on Windows
 
@@ -182,10 +196,6 @@ dotnet tool restore
 # Build build tasks (required first)
 dotnet build ./Microsoft.Maui.BuildTasks.slnf
 
-# Install/update workloads
-dotnet workload restore
-dotnet workload update
-
 # Generate API documentation
 dotnet cake --target=dotnet-pack-docs
 ```
@@ -205,13 +215,19 @@ dotnet cake --target=dotnet-pack-docs
 ### Platform Issues
 - Run `git clean -xdf` when changing/adding platforms
 - Verify required SDKs are installed
-- Check workload installation: `dotnet workload list`
 
 ## Contribution Guidelines
+
+### Files to Never Commit
+- **Never** check in changes to `cgmanifest.json` files
+- **Never** check in changes to `templatestrings.json` files
+- These files are automatically generated and should not be modified manually
 
 ### Branching
 - `main` - For bug fixes without API changes
 - `net10.0` - For new features and API changes
+
+**Note:** The main branch is always pinned to the latest stable release of the .NET SDK, regardless of whether it's a long-term support (LTS) release. Ensure you have that version installed to build the codebase.
 
 ### Documentation
 - Update XML documentation for public APIs
