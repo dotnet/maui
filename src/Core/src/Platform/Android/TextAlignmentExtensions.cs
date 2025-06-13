@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Android.Widget;
 using AGravityFlags = Android.Views.GravityFlags;
 
@@ -28,6 +28,13 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateVerticalAlignment(this TextView view, TextAlignment alignment, AGravityFlags orMask = AGravityFlags.NoGravity)
 		{
 			view.Gravity = (view.Gravity & ~VerticalGravityMask) | alignment.ToVerticalGravityFlags() | orMask;
+		}
+
+		internal static void UpdateHorizontalAlignment(this TextView textView, TextAlignment alignment, AGravityFlags orMask = AGravityFlags.NoGravity)
+		{
+			// The text alignment does not work at runtime, so we also need to update the gravity.
+			textView.TextAlignment = alignment.ToTextAlignment();
+			textView.Gravity = (textView.Gravity & ~HorizontalGravityMask) | alignment.ToHorizontalGravityFlags() | orMask;
 		}
 
 		[Obsolete("Use UpdateHorizontalAlignment and/or UpdateVerticalAlignment instead")] // Nothing currently calls this method in our code
