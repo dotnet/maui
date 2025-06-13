@@ -24,6 +24,7 @@
                                  IsReadOnly="{Binding IsReadOnly}"
                                  IsTextPredictionEnabled="{Binding IsTextPredictionEnabled}"
                                  IsSpellCheckEnabled="{Binding IsSpellCheckEnabled}"
+                                 Shadow="{Binding EntryShadow}"
                                  MaxLength="{Binding MaxLength}"
                                  SelectionLength="{Binding SelectionLength}"
                                  CursorPosition="{Binding CursorPosition, Mode=TwoWay}"

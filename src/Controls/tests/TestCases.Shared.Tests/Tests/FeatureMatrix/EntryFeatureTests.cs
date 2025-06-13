@@ -758,6 +758,22 @@ public class EntryFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.Entry)]
+	public void VerifyEntry_WithShadow()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.Entry)]
 	public void VerifyAllEntryEventsInSequence()
 	{
 		// Clear options first to ensure we have a clean state
@@ -781,11 +797,11 @@ public class EntryFeatureTests : UITest
 		// Step 2: Change the text (should trigger TextChanged event)
 		App.ClearText("EntryText");
 		App.EnterText("EntryText", "New Text");
-		#if !ANDROID
+#if !ANDROID
 		Assert.That(App.WaitForElement("TextChangedLabel").GetText(), Is.EqualTo("TextChanged: Old='New Tex', New='New Text'"));
-		#else
+#else
 		Assert.That(App.WaitForElement("TextChangedLabel").GetText(), Is.EqualTo("TextChanged: Old='', New='New Text'"));
-		#endif
+#endif
 
 		// Step 3: Press Enter (should trigger Completed event)
 		App.PressEnter();
