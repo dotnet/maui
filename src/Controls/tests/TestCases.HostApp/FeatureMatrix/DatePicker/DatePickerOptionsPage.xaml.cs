@@ -25,6 +25,16 @@ public partial class DatePickerOptionsPage : ContentPage
 			_viewModel.Date = parsedDate;
 		}
 	}
+
+	private void OnFlowDirectionChanged(object sender, CheckedChangedEventArgs e)
+	{
+		var radioButton = sender as RadioButton;
+		if (radioButton != null && radioButton.IsChecked)
+		{
+			_viewModel.FlowDirection = radioButton.Content.ToString() == "Left to Right" ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+		}
+	}
+
 	private void OnFontAttributesRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
 		var radioButton = sender as RadioButton;
@@ -41,12 +51,47 @@ public partial class DatePickerOptionsPage : ContentPage
 			_viewModel.FontFamily = radioButton.Content.ToString() == "Dokdo" ? "Dokdo" : "MontserratBold";
 		}
 	}
+
+	private void OnIsEnabledRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		var radioButton = sender as RadioButton;
+		if (radioButton != null && radioButton.IsChecked)
+		{
+			_viewModel.IsEnabled = radioButton.Content.ToString() == "True";
+		}
+	}
+
+	private void OnIsVisibleRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		var radioButton = sender as RadioButton;
+		if (radioButton != null && radioButton.IsChecked)
+		{
+			_viewModel.IsVisible = radioButton.Content.ToString() == "True";
+		}
+	}
+
+	private void OnShadowRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		var radioButton = sender as RadioButton;
+		if (radioButton.IsChecked)
+		{
+			_viewModel.ShadowOpacity = radioButton.Content.ToString() == "True" ? 1f : 0f;
+		}
+	}
 	private void OnTextColorRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
 		var radioButton = sender as RadioButton;
 		if (radioButton.IsChecked)
 		{
 			_viewModel.TextColor = radioButton.Content.ToString() == "Red" ? Colors.Red : Colors.Green;
+		}
+	}
+
+	private void SetFormatButton_Clicked(object sender, EventArgs e)
+	{
+		if (!string.IsNullOrWhiteSpace(Format.Text))
+		{
+			_viewModel.Format = Format.Text;
 		}
 	}
 	private void SetMaximumDateButton_Clicked(object sender, EventArgs e)

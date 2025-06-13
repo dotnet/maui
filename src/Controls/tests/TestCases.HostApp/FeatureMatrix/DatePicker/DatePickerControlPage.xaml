@@ -11,11 +11,21 @@
     <DatePicker AutomationId="DatePickerControl"
                 CharacterSpacing="{Binding CharacterSpacing}"
                 Date="{Binding Date}"
+                FlowDirection="{Binding FlowDirection}"
                 Format="{Binding Format}"
                 FontAttributes="{Binding FontAttributes}"
                 FontFamily="{Binding FontFamily}"
                 FontSize="{Binding FontSize}"
+                IsEnabled="{Binding IsEnabled}"
+                IsVisible="{Binding IsVisible}"
                 MinimumDate="{Binding MinimumDate}"
                 MaximumDate="{Binding MaximumDate}"
-                TextColor="{Binding TextColor}"/>
+                TextColor="{Binding TextColor}">
+        <DatePicker.Shadow>
+            <Shadow Brush="Violet"
+                    Offset="0, 0"
+                    Opacity="{Binding ShadowOpacity}"
+                    Radius="20"/>
+        </DatePicker.Shadow>
+    </DatePicker>
 </ContentPage>

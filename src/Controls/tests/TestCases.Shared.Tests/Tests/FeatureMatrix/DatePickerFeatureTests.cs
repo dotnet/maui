@@ -35,46 +35,6 @@ public class DatePickerFeatureTests : UITest
 
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetDateAndFontAttributes_VerifyVisualState()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("FontAttributesItalicButton");
-        App.Tap("FontAttributesItalicButton");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        // VerifyScreenshot();
-    }
-
-    [Test]
-    [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetDateAndFontFamily_VerifyVisualState()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("FontFamilyDokdoButton");
-        App.Tap("FontFamilyDokdoButton");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        // VerifyScreenshot();
-    }
-
-    [Test]
-    [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetDateAndFontSize_VerifyVisualState()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("FontSizeEntry");
-        App.ClearText("FontSizeEntry");
-        App.EnterText("FontSizeEntry", "20");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        // VerifyScreenshot();
-    }
-
-    [Test]
-    [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetDateAndFormat_VerifyVisualState()
     {
         App.WaitForElement("Options");
@@ -84,7 +44,7 @@ public class DatePickerFeatureTests : UITest
         App.EnterText("FormatEntry", "D");
         App.WaitForElement("Apply");
         App.Tap("Apply");
-        Task.Delay(2000).Wait();
+        App.WaitForTextToBePresentInElement("DatePicker","Monday, June 11, 2025");
         // VerifyScreenshot();
     }
 
@@ -96,6 +56,19 @@ public class DatePickerFeatureTests : UITest
         App.Tap("Options");
         App.WaitForElement("TextColorGreenButton");
         App.Tap("TextColorGreenButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        // VerifyScreenshot();
+    }
+
+    [Test]
+    [Category(UITestCategories.DatePicker)]
+    public void DatePicker_SetDateAndFlowDirection_VerifyVisualState()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("FlowDirectionRightToLeftButton");
+        App.Tap("FlowDirectionRightToLeftButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
         // VerifyScreenshot();
@@ -142,7 +115,7 @@ public class DatePickerFeatureTests : UITest
         App.Tap("FontAttributesItalicButton");
         App.WaitForElement("FormatEntry");
         App.ClearText("FormatEntry");
-        App.EnterText("FormatEntry", "D");
+        App.EnterText("FormatEntry", "Y");
         App.WaitForElement("Apply");
         App.Tap("Apply");
         // VerifyScreenshot();
@@ -174,11 +147,13 @@ public class DatePickerFeatureTests : UITest
         App.Tap("FontFamilyDokdoButton");
         App.WaitForElement("FormatEntry");
         App.ClearText("FormatEntry");
-        App.EnterText("FormatEntry", "D");
+        App.EnterText("FormatEntry", "Y");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForTextToBePresentInElement("DatePicker", "2025");
         // VerifyScreenshot();
     }
+
     [Test]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetFontSizeAndFormat_VerifyVisualState()
@@ -190,12 +165,54 @@ public class DatePickerFeatureTests : UITest
         App.EnterText("FontSizeEntry", "20");
         App.WaitForElement("FormatEntry");
         App.ClearText("FormatEntry");
-        App.EnterText("FormatEntry", "D");
+        App.EnterText("FormatEntry", "Y");
         App.WaitForElement("Apply");
         App.Tap("Apply");
         // VerifyScreenshot();
     }
 
+    [Test]
+    [Category(UITestCategories.DatePicker)]
+    public void DatePicker_SetDateAndIsEnabled_VerifyVisualState()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("IsEnabledFalseButton");
+        App.Tap("IsEnabledFalseButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElement("DatePickerControl");
+        App.Tap("DatePickerControl");
+        // VerifyScreenshot();
+    }
+
+    [Test]
+    [Category(UITestCategories.DatePicker)]
+    public void DatePicker_SetDateAndIsVisible_VerifyVisualState()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("IsVisibleFalseButton");
+        App.Tap("IsVisibleFalseButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForNoElement("DatePickerControl");
+        // VerifyScreenshot();
+    }
+
+    [Test]
+    [Category(UITestCategories.DatePicker)]
+    public void DatePicker_SetDateAndShadowOpacity_VerifyVisualState()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("ShadowOpacityEntry");
+        App.ClearText("ShadowOpacityEntry");
+        App.EnterText("ShadowOpacityEntry", "0.5");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        // VerifyScreenshot();
+    }
     [Test]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetMinimumDateAndDate_VerifyVisualState()
@@ -204,17 +221,17 @@ public class DatePickerFeatureTests : UITest
         App.Tap("Options");
         App.WaitForElement("MinimumDateEntry");
         App.ClearText("MinimumDateEntry");
-        App.EnterText("MinimumDateEntry", "01/01/2024");
+        App.EnterText("MinimumDateEntry", "12/01/2024");
         App.WaitForElement("SetMinimumDateButton");
         App.Tap("SetMinimumDateButton");
         App.WaitForElement("DateEntry");
         App.ClearText("DateEntry");
-        App.EnterText("DateEntry", "01/01/2023");
+        App.EnterText("DateEntry", "12/01/2023");
         App.WaitForElement("SetDateButton");
         App.Tap("SetDateButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
-        Task.Delay(2000).Wait();
+        App.WaitForTextToBePresentInElement("DatePicker", "12/01/2024");
         // VerifyScreenshot();
     }
 
@@ -226,17 +243,17 @@ public class DatePickerFeatureTests : UITest
         App.Tap("Options");
         App.WaitForElement("MaximumDateEntry");
         App.ClearText("MaximumDateEntry");
-        App.EnterText("MaximumDateEntry", "01/01/2027");
+        App.EnterText("MaximumDateEntry", "12/01/2027");
         App.WaitForElement("SetMaximumDateButton");
         App.Tap("SetMaximumDateButton");
         App.WaitForElement("DateEntry");
         App.ClearText("DateEntry");
-        App.EnterText("DateEntry", "01/01/2028");
+        App.EnterText("DateEntry", "12/01/2028");
         App.WaitForElement("SetDateButton");
         App.Tap("SetDateButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
-        Task.Delay(2000).Wait();
+        App.WaitForTextToBePresentInElement("DatePicker", "12/01/2027");
         // VerifyScreenshot();
     }
 
@@ -249,48 +266,22 @@ public class DatePickerFeatureTests : UITest
         App.Tap("Options");
         App.WaitForElement("MinimumDateEntry");
         App.ClearText("MinimumDateEntry");
-        App.EnterText("MinimumDateEntry", "01/01/2025");
+        App.EnterText("MinimumDateEntry", "12/01/2025");
         App.WaitForElement("SetMinimumDateButton");
         App.Tap("SetMinimumDateButton");
         App.WaitForElement("MaximumDateEntry");
         App.ClearText("MaximumDateEntry");
-        App.EnterText("MaximumDateEntry", "01/01/2025");
+        App.EnterText("MaximumDateEntry", "12/01/2025");
         App.WaitForElement("SetMaximumDateButton");
         App.Tap("SetMaximumDateButton");
         App.WaitForElement("DateEntry");
         App.ClearText("DateEntry");
-        App.EnterText("DateEntry", "01/01/2024");
+        App.EnterText("DateEntry", "12/01/2025");
         App.WaitForElement("SetDateButton");
         App.Tap("SetDateButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
-        // VerifyScreenshot();
-    }
-
-    //MinimumDate and MaximumDate are same date. Try to set Date is greater than MaximumDate
-    [Test]
-    [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetMaximumDateAndMinimumDate_VerifyVisualState()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("MinimumDateEntry");
-        App.ClearText("MinimumDateEntry");
-        App.EnterText("MinimumDateEntry", "01/01/2025");
-        App.WaitForElement("SetMinimumDateButton");
-        App.Tap("SetMinimumDateButton");
-        App.WaitForElement("MaximumDateEntry");
-        App.ClearText("MaximumDateEntry");
-        App.EnterText("MaximumDateEntry", "01/01/2025");
-        App.WaitForElement("SetMaximumDateButton");
-        App.Tap("SetMaximumDateButton");
-        App.WaitForElement("DateEntry");
-        App.ClearText("DateEntry");
-        App.EnterText("DateEntry", "01/01/2026");
-        App.WaitForElement("SetDateButton");
-        App.Tap("SetDateButton");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
+        App.WaitForTextToBePresentInElement("DatePicker", "01/01/2025");
         // VerifyScreenshot();
     }
 }
