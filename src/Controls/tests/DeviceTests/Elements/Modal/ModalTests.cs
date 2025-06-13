@@ -449,8 +449,8 @@ namespace Microsoft.Maui.DeviceTests
 					};
 
 					window.Page = nextPage;
-					await OnUnloadedAsync(modalPage.Content);
-					await OnLoadedAsync(nextPage.Content);
+
+					await IdleSynchronizer.GetForCurrentProcess().WaitAsync();
 					Assert.Empty(window.Navigation.ModalStack);
 				});
 		}
@@ -523,10 +523,10 @@ namespace Microsoft.Maui.DeviceTests
 					var currentPage = rootPage.GetCurrentPage();
 
 					await currentPage.Navigation.PushModalAsync(modalPage);
-					await OnLoadedAsync(modalPage);
+					await IdleSynchronizer.GetForCurrentProcess().WaitAsync();
 					Assert.Single(currentPage.Navigation.ModalStack);
 					await currentPage.Navigation.PopModalAsync();
-					await OnUnloadedAsync(modalPage);
+					await IdleSynchronizer.GetForCurrentProcess().WaitAsync();
 				});
 
 
