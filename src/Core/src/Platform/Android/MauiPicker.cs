@@ -1,5 +1,6 @@
 ﻿using Android.Content;
 using Android.Runtime;
+using Android.Text.Method;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Graphics.Drawable;
@@ -31,5 +32,7 @@ namespace Microsoft.Maui.Platform
 			if (Background != null)
 				DrawableCompat.Wrap(Background);
 		}
+
+		protected override IMovementMethod? DefaultMovementMethod => null;
 	}
 }
