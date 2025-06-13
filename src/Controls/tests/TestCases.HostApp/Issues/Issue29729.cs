@@ -10,7 +10,6 @@ public class Issue29729 : ContentPage
         radioButton = new RadioButton
 		{
 			Content = "HelloWorld",
-			TextTransform= TextTransform.Uppercase,
 			AutomationId = "radioButton"
         };
 
@@ -19,22 +18,36 @@ public class Issue29729 : ContentPage
 			Text = "Lower",
 			AutomationId = "LowerCaseButton"
         };
-        button.Clicked += OnButtonClicked;
+        button.Clicked += OnLowerButtonClicked;
+
+		var button1 = new Button
+		{
+			Text = "Upper",
+			AutomationId = "UpperCaseButton"
+		};
+
+		button1.Clicked += OnUpperButtonClicked;
 
         var layout = new VerticalStackLayout
         {
             Children =
             {
                 radioButton,
-                button
+                button,
+				button1
             }
         };
 
         Content = layout;
     }
 
-    void OnButtonClicked(object sender, EventArgs e)
+    void OnLowerButtonClicked(object sender, EventArgs e)
     {
         radioButton.TextTransform = TextTransform.Lowercase;
     }
+
+	void OnUpperButtonClicked(object sender, EventArgs e)
+	{
+		radioButton.TextTransform = TextTransform.Uppercase;
+	}
 }
