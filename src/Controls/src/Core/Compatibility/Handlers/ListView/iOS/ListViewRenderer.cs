@@ -310,6 +310,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateVerticalScrollBarVisibility();
 			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
 				UpdateHorizontalScrollBarVisibility();
+			else if (e.PropertyName == ListView.IsVisibleProperty.PropertyName)
+				UpdateVisibility();
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
@@ -491,6 +493,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_footerRenderer.VirtualView?.DisposeModalAndChildHandlers();
 				_footerRenderer.DisconnectHandler();
 				_footerRenderer = null;
+			}
+		}
+
+		private void UpdateVisibility()
+		{
+			if (Element.IsVisible)
+			{
+				if (Element.Parent is View parent)
+				{
+					parent.InvalidateMeasure();
+				}
 			}
 		}
 
