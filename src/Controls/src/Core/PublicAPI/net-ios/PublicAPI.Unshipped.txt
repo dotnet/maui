@@ -1,4 +1,8 @@
 #nullable enable
+Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView
+Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.MauiCollectionView(CoreGraphics.CGRect frame, UIKit.UICollectionViewLayout! layout) -> void
+override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.MovedToWindow() -> void
+override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.ScrollRectToVisible(CoreGraphics.CGRect rect, bool animated) -> void
 Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.Fixed = Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed | Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Controls.LayoutConstraint
