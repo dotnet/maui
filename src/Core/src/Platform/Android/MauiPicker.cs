@@ -18,6 +18,11 @@ namespace Microsoft.Maui.Platform
 
 		public override bool OnTouchEvent(MotionEvent? e)
 		{
+			if (!Enabled)
+			{
+				return false;
+			}
+
 			PickerManager.OnTouchEvent(this, e);
 			return base.OnTouchEvent(e); // Raises the OnClick event if focus is already received
 		}
