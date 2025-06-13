@@ -39,8 +39,8 @@ namespace Maui.Controls.Sample
         private void BackgroundColorButton_Clicked(object sender, EventArgs e)
         {
             var button = (Button)sender;
-            if (button.Text == "Gray")
-                _viewModel.BackgroundColor = Colors.Gray;
+            if (button.Text == "Orange")
+                _viewModel.BackgroundColor = Colors.Orange;
             else if (button.Text == "Light Blue")
                 _viewModel.BackgroundColor = Colors.LightBlue;
         }
@@ -50,7 +50,7 @@ namespace Maui.Controls.Sample
             var radioButton = sender as RadioButton;
             if (radioButton != null && radioButton.IsChecked)
             {
-                _viewModel.IsVisible = radioButton.Content.ToString() == "True";
+                _viewModel.IsVisible = false;
             }
         }
 
@@ -68,7 +68,7 @@ namespace Maui.Controls.Sample
             var radioButton = (RadioButton)sender;
             if (radioButton != null && radioButton.IsChecked)
             {
-                _viewModel.ShadowOpacity = radioButton.Content.ToString() == "True" ? 1f : 0f;
+                _viewModel.Shadow = new Shadow { Brush = Colors.Violet, Radius = 20, Offset = new Point(0, 0), Opacity = 1f };
             }
         }
     }

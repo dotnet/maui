@@ -32,34 +32,48 @@
                      VerticalOptions="Center"
                      WidthRequest="100"/>
 
-              <!-- IsVisible -->
+              <!-- BackgroundColor -->
               <Label Grid.Row="1"
                      Grid.Column="0"
-                     Text="Is Visible:"
+                     Text="Background Color:"
                      VerticalOptions="Center"/>
               <StackLayout Grid.Row="1"
                            Grid.Column="1"
                            Orientation="Horizontal"
+                           Spacing="5"
                            VerticalOptions="Center">
-                     <RadioButton x:Name="IsVisibleTrueRadio"
-                                  AutomationId="IsVisibleTrueRadio"
-                                  GroupName="IsVisible"
-                                  Content="True"
-                                  CheckedChanged="OnIsVisibleCheckedChanged"/>
-                     <RadioButton x:Name="IsVisibleFalseRadio"
-                                  AutomationId="IsVisibleFalseRadio"
-                                  GroupName="IsVisible"
-                                  Content="False"
-                                  CheckedChanged="OnIsVisibleCheckedChanged"/>
+                     <Button Text="Orange"
+                             BackgroundColor="Orange"
+                             TextColor="White"
+                             Clicked="BackgroundColorButton_Clicked"
+                             AutomationId="BackgroundColorOrangeButton"/>
+                     <Button Text="Light Blue"
+                             BackgroundColor="LightBlue"
+                             TextColor="Black"
+                             Clicked="BackgroundColorButton_Clicked"
+                             AutomationId="BackgroundColorLightBlueButton"/>
               </StackLayout>
 
-              <!-- Flow Direction -->
+              <!-- IsVisible -->
               <Label Grid.Row="2"
+                     Grid.Column="0"
+                     Text="Is Visible:"
+                     VerticalOptions="Center"/>
+              <RadioButton Grid.Row="2"
+                           Grid.Column="1"
+                           VerticalOptions="Center"
+                           AutomationId="IsVisibleFalseRadio"
+                           GroupName="IsVisible"
+                           Content="False"
+                           CheckedChanged="OnIsVisibleCheckedChanged"/>
+
+              <!-- Flow Direction -->
+              <Label Grid.Row="3"
                      Grid.Column="0"
                      Text="Flow Direction:"
                      FontSize="15"
                      VerticalOptions="Center"/>
-              <StackLayout Grid.Row="2"
+              <StackLayout Grid.Row="3"
                            Grid.Column="1"
                            Orientation="Horizontal"
                            VerticalOptions="Center">
@@ -76,11 +90,11 @@
               </StackLayout>
 
               <!-- Progress Color -->
-              <Label Grid.Row="3"
+              <Label Grid.Row="4"
                      Grid.Column="0"
                      Text="Progress Color:"
                      VerticalOptions="Center"/>
-              <StackLayout Grid.Row="3"
+              <StackLayout Grid.Row="4"
                            Grid.Column="1"
                            Orientation="Horizontal"
                            Spacing="5"
@@ -97,48 +111,16 @@
                              AutomationId="ProgressColorRedButton"/>
               </StackLayout>
 
-              <!-- BackgroundColor -->
-              <Label Grid.Row="4"
-                     Grid.Column="0"
-                     Text="Background Color:"
-                     VerticalOptions="Center"/>
-              <StackLayout Grid.Row="4"
-                           Grid.Column="1"
-                           Orientation="Horizontal"
-                           Spacing="5"
-                           VerticalOptions="Center">
-                     <Button Text="Gray"
-                             BackgroundColor="Gray"
-                             TextColor="White"
-                             Clicked="BackgroundColorButton_Clicked"
-                             AutomationId="BackgroundColorGrayButton"/>
-                     <Button Text="Light Blue"
-                             BackgroundColor="LightBlue"
-                             TextColor="Black"
-                             Clicked="BackgroundColorButton_Clicked"
-                             AutomationId="BackgroundColorLightBlueButton"/>
-              </StackLayout>
-
               <!-- Shadow -->
               <Label Grid.Row="5"
                      Grid.Column="0"
                      Text="Shadow:"
                      VerticalOptions="Center"/>
-              <StackLayout Grid.Row="5"
+              <RadioButton Grid.Row="5"
                            Grid.Column="1"
-                           Orientation="Horizontal"
-                           Spacing="5"
-                           VerticalOptions="Center">
-                     <RadioButton x:Name="ShadowTrueRadio"
-                                  AutomationId="ShadowTrueRadio"
-                                  GroupName="Shadow"
-                                  Content="True"
-                                  CheckedChanged="OnShadowCheckedChanged"/>
-                     <RadioButton x:Name="ShadowFalseRadio"
-                                  AutomationId="ShadowFalseRadio"
-                                  GroupName="Shadow"
-                                  Content="False"
-                                  CheckedChanged="OnShadowCheckedChanged"/>
-              </StackLayout>
+                           VerticalOptions="Center"
+                           AutomationId="ShadowTrueRadio"
+                           Content="True"
+                           CheckedChanged="OnShadowCheckedChanged"/>
        </Grid>
 </ContentPage>

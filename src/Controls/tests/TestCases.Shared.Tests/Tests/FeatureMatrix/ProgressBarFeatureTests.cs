@@ -41,6 +41,16 @@ namespace Microsoft.Maui.TestCases.Tests
             Assert.That(App.FindElement("ProgressValueLabel").GetText(), Is.EqualTo("0.80"));
         }
 
+        [Test, Order(3)]
+        [Category(UITestCategories.ProgressBar)]
+        public void ProgressBar_ProgressToMethod_VerifyVisualState()
+        {
+            App.WaitForElement("ProgressToButton");
+            App.Tap("ProgressToButton");
+            Task.Delay(1000).Wait();
+            // VerifyScreenshot();
+        }
+
         [Test]
         [Category(UITestCategories.ProgressBar)]
         public void ProgressBar_SetProgressOutOfRange()
@@ -71,7 +81,7 @@ namespace Microsoft.Maui.TestCases.Tests
             // VerifyScreenshot();
         }
 
-        [Test, Order(5)]
+        [Test]
         [Category(UITestCategories.ProgressBar)]
         public void ProgressBar_SetProgressColorAndBackgroundColor_VerifyVisualState()
         {
@@ -90,7 +100,7 @@ namespace Microsoft.Maui.TestCases.Tests
             // VerifyScreenshot();
         }
 
-        [Test, Order(5)]
+        [Test]
         [Category(UITestCategories.ProgressBar)]
         public void ProgressBar_SetIsVisibleFalse_VerifyLabel()
         {
@@ -104,7 +114,7 @@ namespace Microsoft.Maui.TestCases.Tests
             // VerifyScreenshot();
         }
 
-        [Test, Order(6)]
+        [Test]
         [Category(UITestCategories.ProgressBar)]
         public void ProgressBar_ChangeFlowDirection_RTL_VerifyLabel()
         {
@@ -118,7 +128,7 @@ namespace Microsoft.Maui.TestCases.Tests
             // VerifyScreenshot();
         }
 
-        [Test, Order(7)]
+        [Test]
         [Category(UITestCategories.ProgressBar)]
         public void ProgressBar_ToggleShadow_VerifyVisualState()
         {
