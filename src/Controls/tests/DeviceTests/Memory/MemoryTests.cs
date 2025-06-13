@@ -11,6 +11,9 @@ using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.DeviceTests.Stubs;
+#if IOS || MACCATALYST
+using Microsoft.Maui.Controls.Handlers.Items2;
+#endif
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
@@ -20,6 +23,11 @@ namespace Microsoft.Maui.DeviceTests.Memory;
 [Category(TestCategory.Memory)]
 public class MemoryTests : ControlsHandlerTestBase
 {
+	// Subclasses used to enable memory tests for CV2 handlers
+	public class CollectionView2 : CollectionView { }
+	public class CarouselView2 : CarouselView { }
+
+
 	void SetupBuilder()
 	{
 		EnsureHandlerCreated(builder =>
@@ -31,6 +39,10 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<BoxView, BoxViewHandler>();
 				handlers.AddHandler<CarouselView, CarouselViewHandler>();
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
+#if IOS || MACCATALYST
+				handlers.AddHandler<CollectionView2, CollectionViewHandler2>();
+				handlers.AddHandler<CarouselView2, CarouselViewHandler2>();
+#endif
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
 				handlers.AddHandler<Shape, ShapeViewHandler>();
@@ -170,6 +182,10 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(TableView))]
 	//[InlineData(typeof(WebView))] - This test was moved to MemoryTests.cs inside Appium
 	[InlineData(typeof(CollectionView))]
+#if IOS || MACCATALYST
+	//[InlineData(typeof(CollectionView2))] - Fails, Check https://github.com/dotnet/maui/issues/29619
+	[InlineData(typeof(CarouselView2))]
+#endif
 	public async Task HandlerDoesNotLeak(Type type)
 	{
 		SetupBuilder();
@@ -177,7 +193,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #if ANDROID
 		// NOTE: skip certain controls on older Android devices
 		if ((type == typeof(DatePicker) || type == typeof(ListView)) && !OperatingSystem.IsAndroidVersionAtLeast(30))
-				return;
+			return;
 
 		if (type == typeof(HybridWebView) && !OperatingSystem.IsAndroidVersionAtLeast(24))
 		{
@@ -259,8 +275,12 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
 	}
 
-	[Fact("CollectionView Header/Footer Doesn't Leak")]
-	public async Task CollectionViewHeaderFooterDoesntLeak()
+	[Theory("CollectionView Header/Footer Doesn't Leak")]
+	[InlineData(typeof(CollectionView))]
+#if IOS || MACCATALYST
+	//[InlineData(typeof(CollectionView2))] Fails, Check https://github.com/dotnet/maui/issues/29619
+#endif
+	public async Task CollectionViewHeaderFooterDoesntLeak(Type type)
 	{
 		SetupBuilder();
 
@@ -273,20 +293,19 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
 		{
-			var cv = new CollectionView
+			var cv = (CollectionView)Activator.CreateInstance(type);
+			cv.Footer = new VerticalStackLayout();
+			cv.Header = new VerticalStackLayout();
+			cv.ItemTemplate = new DataTemplate(() =>
 			{
-				Footer = new VerticalStackLayout(),
-				Header = new VerticalStackLayout(),
-				ItemTemplate = new DataTemplate(() =>
+				var view = new Label
 				{
-					var view = new Label
-					{
-					};
-					view.SetBinding(Label.TextProperty, ".");
-					return view;
-				}),
-				ItemsSource = observable
-			};
+				};
+				view.SetBinding(Label.TextProperty, ".");
+				return view;
+			});
+			cv.ItemsSource = observable;
+
 
 			viewReference = new WeakReference(cv);
 			handlerReference = new WeakReference(cv.Handler);
@@ -298,10 +317,20 @@ public class MemoryTests : ControlsHandlerTestBase
 			});
 
 
-#if IOS
-			var controller = (cv.Handler as CollectionViewHandler).Controller;
-			controllerReference = new WeakReference(controller);
-			controller = null;
+#if IOS || MACCATALYST
+			var cv1handler = cv.Handler as CollectionViewHandler;
+			var cv2handler = cv.Handler as CollectionViewHandler2;
+
+			if (cv1handler is not null)
+			{
+				controllerReference = new WeakReference(cv1handler.Controller);
+			}
+			else if (cv2handler is not null)
+			{
+				controllerReference = new WeakReference(cv2handler.Controller);
+			}
+			cv1handler = null;
+			cv2handler = null;
 #else
 			controllerReference = new WeakReference(new object());
 #endif
