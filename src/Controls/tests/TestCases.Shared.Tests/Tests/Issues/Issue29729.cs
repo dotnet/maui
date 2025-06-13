@@ -11,12 +11,21 @@ public class Issue29729 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[Test]
+	[Test, Order(1)]
 	[Category(UITestCategories.RadioButton)]
-	public void VerifyRadioButtonTextTransformChanges()
+	public void VerifyRadioButtonTextWithLowerTransform()
 	{
 		App.WaitForElement("radioButton");
 		App.Tap("LowerCaseButton");
+		VerifyScreenshot();
+	}
+
+	[Test, Order(2)]
+	[Category(UITestCategories.RadioButton)]
+	public void VerifyRadioButtonTextWithUpperTransform()
+	{
+		App.WaitForElement("radioButton");
+		App.Tap("UpperCaseButton");
 		VerifyScreenshot();
 	}
 }
