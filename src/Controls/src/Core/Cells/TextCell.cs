@@ -89,8 +89,13 @@ namespace Microsoft.Maui.Controls
 			Command?.Execute(CommandParameter);
 		}
 
-		void ICommandElement.CanExecuteChanged(object sender, EventArgs eventArgs) =>
+		void ICommandElement.CanExecuteChanged(object sender, EventArgs eventArgs)
+		{
+			if (Command is null)
+				return;
+
 			IsEnabled = Command.CanExecute(CommandParameter);
+		}
 
 		WeakCommandSubscription ICommandElement.CleanupTracker { get; set; }
 	}
