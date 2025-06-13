@@ -16,7 +16,7 @@ using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 namespace Microsoft.Maui.UnitTests.Layouts
 {
 	[Category(TestCategory.Layout)]
-	public class GridLayoutManagerTests
+	public partial class GridLayoutManagerTests
 	{
 		const string GridSpacing = "GridSpacing";
 		const string GridAutoSizing = "GridAutoSizing";
