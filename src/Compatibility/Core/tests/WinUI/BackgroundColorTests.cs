@@ -7,14 +7,14 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using NUnit.Framework;
+using Xunit;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WColor = Windows.UI.Color;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class BackgroundColorTests : PlatformTestFixture
 	{
 		static IEnumerable TestCases

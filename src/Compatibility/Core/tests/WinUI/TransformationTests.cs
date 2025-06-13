@@ -2,13 +2,13 @@ using System;
 using System.Collections;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
-using NUnit.Framework;
+using Xunit;
 using Windows.UI.Xaml;
 using WCompositeTransform = Microsoft.UI.Xaml.Media.CompositeTransform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class TransformationTests : PlatformTestFixture
 	{
 		static IEnumerable TransformationCases

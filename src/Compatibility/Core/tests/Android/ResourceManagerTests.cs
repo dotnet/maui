@@ -2,11 +2,11 @@ using System;
 using System.Threading.Tasks;
 using Android.Views;
 using Microsoft.Maui.Platform;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class ResourceManagerTests : PlatformTestFixture
 	{
 		[Test, Category("Resource")]

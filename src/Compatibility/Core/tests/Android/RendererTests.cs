@@ -1,11 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using Android.Views;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class RendererTests : PlatformTestFixture
 	{
 		[Test, Category("Entry")]

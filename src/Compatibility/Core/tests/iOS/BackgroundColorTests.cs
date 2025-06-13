@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class BackgroundColorTests : PlatformTestFixture
 	{
 		static IEnumerable TestCases

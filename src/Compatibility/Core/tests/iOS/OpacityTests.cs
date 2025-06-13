@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class OpacityTests : PlatformTestFixture
 	{
 		static readonly double TestOpacity = 0.4;
