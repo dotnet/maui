@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -27,27 +27,27 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]]
+			[InlineData(true)]]
 			public void CanUseBindableObjectDefinedInThisAssembly(bool useCompiledXaml)
 			{
 				var layout = new Issue3076(useCompiledXaml);
 
 				Assert.That(layout.local, Is.TypeOf<Issue3076Button>());
-				Assert.AreEqual(TextAlignment.Start, layout.local.VerticalContentAlignment);
+				Assert.Equal(TextAlignment.Start, layout.local.VerticalContentAlignment);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]]
+			[InlineData(true)]]
 			public void CanUseBindableObjectDefinedInOtherAssembly(bool useCompiledXaml)
 			{
 				var layout = new Issue3076(useCompiledXaml);
 
 				Assert.That(layout.controls, Is.TypeOf<Microsoft.Maui.Controls.ControlGallery.Issue3076Button>());
-				Assert.AreEqual(TextAlignment.Start, layout.controls.HorizontalContentAlignment);
+				Assert.Equal(TextAlignment.Start, layout.controls.HorizontalContentAlignment);
 			}
 		}
 	}

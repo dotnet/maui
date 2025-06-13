@@ -2,17 +2,17 @@ using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class Issue1554
 	{
 		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void CollectionItemsInDataTemplate()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
@@ -50,10 +50,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				cell1 = (ViewCell)listview.TemplatedItems.GetOrCreateContent(1, items[1]);
 			});
 
-			Assert.AreNotSame(cell0, cell1);
-			Assert.AreNotSame(cell0.View, cell1.View);
-			Assert.AreNotSame(((StackLayout)cell0.View).Children[0], ((StackLayout)cell1.View).Children[0]);
-			Assert.AreNotSame(((StackLayout)cell0.View).Children[1], ((StackLayout)cell1.View).Children[1]);
+			Assert.NotSame(cell0, cell1);
+			Assert.NotSame(cell0.View, cell1.View);
+			Assert.NotSame(((StackLayout)cell0.View).Children[0], ((StackLayout)cell1.View).Children[0]);
+			Assert.NotSame(((StackLayout)cell0.View).Children[1], ((StackLayout)cell1.View).Children[1]);
 
 		}
 	}

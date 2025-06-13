@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -28,19 +28,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[Test]
+			[Fact]
 			public void BindingWithMultipleIndexers([Values(false, true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					MockCompiler.Compile(typeof(Gh7837));
 				var layout = new Gh7837(useCompiledXaml);
-				Assert.That(layout.label0.Text, Is.EqualTo("forty-two"));
-				Assert.That(layout.label1.Text, Is.EqualTo("FOO"));
-				Assert.That(layout.label2.Text, Is.EqualTo("forty-two"));
-				Assert.That(layout.label3.Text, Is.EqualTo("FOO"));
+				Assert.Equal("forty-two", layout.label0.Text);
+				Assert.Equal("FOO", layout.label1.Text);
+				Assert.Equal("forty-two", layout.label2.Text);
+				Assert.Equal("FOO", layout.label3.Text);
 			}
 		}
 	}

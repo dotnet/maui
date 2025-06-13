@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -16,15 +16,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]]
+			[InlineData(false)]]
 			public void AllowWhiteSpacesInMarkups(bool useCompiledXaml)
 			{
 				var layout = new Bz31529(useCompiledXaml);
-				Assert.AreEqual("Foo", layout.button.CommandParameter);
+				Assert.Equal("Foo", layout.button.CommandParameter);
 			}
 		}
 	}
