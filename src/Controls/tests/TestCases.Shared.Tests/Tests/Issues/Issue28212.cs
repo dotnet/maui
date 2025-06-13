@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue28212 : _IssuesUITest
 
 	public override string Issue => "Using CollectionView.EmptyView results in an Exception on Windows";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void Issue28212_CollectionView()
 	{

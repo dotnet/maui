@@ -1,5 +1,5 @@
 ﻿#if ANDROID
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var beforeEntryRectY = App.WaitForElement(Page1Entry).GetRect().Y;
 			App.Tap(Page1Entry);
 			var afterEntryRectY = App.WaitForElement(Page1Entry).GetRect().Y;
-			Assert.That(beforeEntryRectY, Is.Not.EqualTo(afterEntryRectY));
+			Assert.NotEqual(afterEntryRectY, beforeEntryRectY);
 			App.Tap("BackButton");
 		}
 
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var beforeEntryRectY = App.WaitForElement(Page2Entry).GetRect().Y;
 			App.Tap(Page2Entry);
 			var afterEntryRectY = App.WaitForElement(Page2Entry).GetRect().Y;
-			Assert.That(beforeEntryRectY, Is.EqualTo(afterEntryRectY));
+			Assert.Equal(afterEntryRectY, beforeEntryRectY);
 		}
 	}
 }

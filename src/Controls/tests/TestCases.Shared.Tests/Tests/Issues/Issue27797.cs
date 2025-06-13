@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ public class Issue27797 : _IssuesUITest
 
 	public override string Issue => "CollectionView with grouped data crashes on iOS when the groups change";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CollectionView)]
 	public void AppShouldNotCrashWhenModifyingCollectionView()
 	{

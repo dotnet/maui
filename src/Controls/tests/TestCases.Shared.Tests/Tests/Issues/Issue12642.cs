@@ -1,7 +1,7 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 // In Windows the app gets crashes randomly while executing the test.
 // In Catalyst the animation happens while tab changes which cause additional delays. Tried by adding timespan still getting OpenQA.Selenium.InvalidSelectorException on line no 25.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Rapid ShellContent Navigation Causes Blank Screens";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Shell)]
 		[Category(UITestCategories.Compatibility)]
 		public void ClickingQuicklyBetweenTopTabsBreaksContent()

@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -8,7 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	{
 		public override string Issue => "Add a permanent wrapper around ImageButton so it works better with loading and unloading";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.ImageButton)]
 		public void LoadingAndUnloadingWorksForImageButton()
 		{
@@ -16,8 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			{
 				var loadedCount = App.WaitForElement("LoadedCount").GetText();
 				var unLoadedCount = App.WaitForElement("UnloadedCount").GetText();
-				Assert.That(loadedCount, Is.EqualTo($"{i + 1}"));
-				Assert.That(unLoadedCount, Is.EqualTo($"{i}"));
+				Assert.Equal($"{i + 1}", loadedCount);
+				Assert.Equal($"{i}", unLoadedCount);
 
 				App.Tap("PushAndPopPage");
 			}

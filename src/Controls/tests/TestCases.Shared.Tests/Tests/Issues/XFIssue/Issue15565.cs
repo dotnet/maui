@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,7 +18,7 @@ public class Issue15565 : _IssuesUITest
 
 	public override string Issue => "[Bug] Shell TitleView and ToolBarItems rendering strange display on iOS 16";
 
-	[Test]
+	[Fact]
 	public void TitleViewHeightIsNotZero()
 	{
 		App.TapTab(Page1, true);
@@ -35,14 +35,14 @@ public class Issue15565 : _IssuesUITest
 	}
 
 
-	[Test]
+	[Fact]
 	public void ToolbarItemsWithTitleViewAreRendering()
 	{
 		App.WaitForElement("Item 1");
 		App.WaitForElement("Item 2");
 	}
 
-	[Test]
+	[Fact]
 	public void NoDuplicateTitleViews()
 	{
 		App.WaitForElement("title 1");
@@ -57,9 +57,9 @@ public class Issue15565 : _IssuesUITest
 	void ValidateElementsCount(string element)
 	{
 #if WINDOWS // FindElements without query fails on Mac, with query fails on Windows; below condition ensures cross-platform compatibility
-        Assert.That(App.FindElements(element).Count, Is.EqualTo(1));
+        Assert.Equal(1, App.FindElements(element).Count);
 #else
-		Assert.That(App.FindElements(AppiumQuery.ById(element)).Count, Is.EqualTo(1));
+		Assert.Equal(1, App.FindElements(AppiumQuery.ById(element)).Count);
 #endif
 	}
 

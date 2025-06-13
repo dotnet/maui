@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView, EmptyView Fills Available Space By Default";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewEmptyViewFillsAvailableSpaceByDefault()
 		{

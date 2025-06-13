@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void GroupingAndHeaderWorks()
 		{

@@ -1,5 +1,5 @@
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Soft Input Extension Methods";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Entry)]
 		public void SoftInputExtensionsPageTest()
 		{

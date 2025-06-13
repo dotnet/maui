@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Crash occurs when switching CollectionView.IsVisible right after setting ItemsSource";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void SwitchingVisibilityAndChangingItemsSourceShouldNotCrash()
 		{

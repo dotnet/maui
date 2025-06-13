@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue14825 : _IssuesUITest
 	{
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.WebView)]
 	public void ValidateWebViewScreenshot()
 	{

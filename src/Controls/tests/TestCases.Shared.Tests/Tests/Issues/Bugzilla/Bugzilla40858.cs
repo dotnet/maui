@@ -1,5 +1,5 @@
 ﻿#if !MACCATALYST
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Bugzilla40858 : _IssuesUITest
 
 	public override string Issue => "Long clicking a text entry in a ListView header/footer cause a crash";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ListView)]
 	[Category(UITestCategories.Compatibility)]
 	public void ListViewDoesNotCrashOnTextEntryHeaderOrFooterLongClick()

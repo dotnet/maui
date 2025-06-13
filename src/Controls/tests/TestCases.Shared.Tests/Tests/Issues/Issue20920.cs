@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ public class Issue20920 : _IssuesUITest
 
 	public override string Issue => "Nested ScrollView does not work in Android";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ScrollView)]
 	public void ScrollingBothDirectionsWithNestedScrollViews()
 	{

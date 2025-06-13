@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Tap event not always propagated to containing Grid/StackLayout";
 
-		[Test]
+		[Fact]
 		public void GestureBubblingInStackLayout()
 		{
 			App.WaitForElement(StackLabelId);
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(Success);
 		}
 
-		[Test]
+		[Fact]
 		public void GestureBubblingInGrid()
 		{
 			App.WaitForElement(GridLabelId);

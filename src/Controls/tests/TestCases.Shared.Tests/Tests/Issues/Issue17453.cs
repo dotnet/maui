@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Clear Entry text tapping the clear button not working";
 		protected override bool ResetAfterEachTest => true;
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Entry)]
 		public void EntryClearButtonWorksEntryDoesntClearWhenNotClickingOnClear()
 		{
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ClassicAssert.IsNotEmpty(rtlEntryText);
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Entry)]
 		public void EntryClearButtonWorks()
 		{
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ClassicAssert.IsEmpty(rtlEntryText);
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Entry)]
 		public void EntryWithMarginClearButtonWorks()
 		{

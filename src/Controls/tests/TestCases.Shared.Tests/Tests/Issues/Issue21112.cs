@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 		public override string Issue => "TableView TextCell command executes only once";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.TableView)]
 		public void TableViewTextCellCommand()
 		{
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("MainPageButton");
 			App.Tap("MainPageButton");
 			var label = App.WaitForElement("NavigatedPageLabel");
-			Assert.That(label.GetText(), Is.EqualTo("Main Page"));
+			Assert.Equal("Main Page", label.GetText());
 		}
 	}
 }

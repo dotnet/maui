@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ public class Issue29661 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Border)]
 	public void VerifyBorderWithStrokeDashArray()
 	{

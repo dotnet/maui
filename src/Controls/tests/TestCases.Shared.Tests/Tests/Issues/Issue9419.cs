@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "Crash when toolbar item removed then page changed";
-		[Test]
+		[Fact]
 		[Category(UITestCategories.ToolbarItem)]
 		[Category(UITestCategories.Compatibility)]
 		public void TestIssue9419()

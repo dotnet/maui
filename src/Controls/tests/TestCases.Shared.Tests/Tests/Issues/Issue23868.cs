@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST //Swipe actions cannot be performed on the macOS test server
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView with RefreshView Throws Exception During Pull-to-Refresh Actions";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewWithHeaderAndRefreshViewShouldNotCrashOnPullToRefresh()
 		{

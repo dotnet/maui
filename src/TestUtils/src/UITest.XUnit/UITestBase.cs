@@ -9,9 +9,9 @@ namespace UITest.Appium.XUnit
 	public abstract class UITestBase : UITestContextBase, IDisposable
 	{
 		protected virtual bool ResetAfterEachTest => false;
-		protected readonly ITestOutputHelper _output;
+		protected readonly ITestOutputHelper? _output;
 
-		public UITestBase(TestDevice testDevice, ITestOutputHelper output)
+		public UITestBase(TestDevice testDevice, ITestOutputHelper? output = null)
 			: base(testDevice)
 		{
 			_output = output;
@@ -22,7 +22,7 @@ namespace UITest.Appium.XUnit
 		public void RecordTestSetup()
 		{
 			var name = GetTestName();
-			_output.WriteLine($">>>>> {DateTime.Now} {name} Start");
+			_output?.WriteLine($">>>>> {DateTime.Now} {name} Start");
 		}
 
 		public virtual void TestSetup()
@@ -47,13 +47,13 @@ namespace UITest.Appium.XUnit
 		public void RecordTestTeardown()
 		{
 			var name = GetTestName();
-			_output.WriteLine($">>>>> {DateTime.Now} {name} Stop");
+			_output?.WriteLine($">>>>> {DateTime.Now} {name} Stop");
 		}
 
 		protected virtual void FixtureSetup()
 		{
 			var name = GetTestName();
-			_output.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureSetup)} for {name}");
+			_output?.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureSetup)} for {name}");
 		}
 
 		protected virtual void FixtureOneTimeTearDown()
@@ -66,7 +66,7 @@ namespace UITest.Appium.XUnit
 			catch (Exception e)
 			{
 				var name = GetTestName();
-				_output.WriteLine($">>>>> {DateTime.Now} The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+				_output?.WriteLine($">>>>> {DateTime.Now} The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
 			}
 		}
 
@@ -121,7 +121,7 @@ namespace UITest.Appium.XUnit
 			try
 			{
 				var types = App.GetLogTypes().ToArray();
-				_output.WriteLine($">>>>> {DateTime.Now} Log types: {string.Join(", ", types)}");
+				_output?.WriteLine($">>>>> {DateTime.Now} Log types: {string.Join(", ", types)}");
 
 				foreach (var logType in new[] { "logcat" })
 				{
@@ -141,7 +141,7 @@ namespace UITest.Appium.XUnit
 			catch (Exception e)
 			{
 				var name = GetTestName();
-				_output.WriteLine($">>>>> {DateTime.Now} The SaveDeviceDiagnosticInfo threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+				_output?.WriteLine($">>>>> {DateTime.Now} The SaveDeviceDiagnosticInfo threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
 			}
 		}
 
@@ -197,7 +197,7 @@ namespace UITest.Appium.XUnit
 			{
 				// xUnit doesn't have built-in test attachment support like NUnit
 				// We'll log the file path instead
-				_output.WriteLine($"Test attachment: {filePath} - {description}");
+				_output?.WriteLine($"Test attachment: {filePath} - {description}");
 			}
 			catch (FileNotFoundException e) when (e.Message == "Test attachment file path could not be found.")
 			{

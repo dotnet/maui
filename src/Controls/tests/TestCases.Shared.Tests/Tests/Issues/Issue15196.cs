@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public Issue15196(TestDevice testDevice) : base(testDevice) { }
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Entry)]
 		public void NestedEntryViewInFrameShouldNotCrash()
 		{

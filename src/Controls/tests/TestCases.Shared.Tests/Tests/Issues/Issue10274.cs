@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "MAUI Flyout does not work on Android when not using Shell";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.FlyoutPage)]
 		public void FlyoutPageNavigation()
 		{
@@ -20,12 +20,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("mainPageButton"); // Navigate to FlyoutPage using PushAsync()
 
 			var flyoutLabel = App.WaitForElement("flyoutPageLabel");
-			Assert.That(flyoutLabel.GetText(), Is.EqualTo("This is FlyoutPage"));
+			Assert.Equal("This is FlyoutPage", flyoutLabel.GetText());
 
 			App.Tap("flyoutPageButton"); // Navigate to MainPage using PopAsync()
 
 			var mainLabel = App.WaitForElement("mainPageLabel");
-			Assert.That(mainLabel.GetText(), Is.EqualTo("This is MainPage"));
+			Assert.Equal("This is MainPage", mainLabel.GetText());
 		}
 	}
 }

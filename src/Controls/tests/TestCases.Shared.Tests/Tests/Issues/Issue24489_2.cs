@@ -1,6 +1,6 @@
 #if MACCATALYST || WINDOWS // This test verifies that "the class defines a custom TitleBar for a ContentPage" that works on Desktop platforms only.
 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		protected override bool ResetAfterEachTest => true;
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Window)]
 		public void TitleBarWithSmallHeight()
 		{
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallHeightRequest");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Window)]
 		public void TitleBarWithLargeHeight()
 		{
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Window)]
 		public void NavBarResetsColorAfterSmallTitleBar()
 		{
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Window)]
 		public void NavBarResetsColorAfterLargeTitleBar()
 		{

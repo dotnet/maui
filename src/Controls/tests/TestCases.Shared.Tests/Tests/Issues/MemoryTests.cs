@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		protected override bool ResetAfterEachTest => true;
 		public override string Issue => "Test Handlers for Memory Leaks";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.DatePicker)]
 		public void DatePickerDoesNotLeak()
 		{
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.AssertMemoryTest();
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.WebView)]
 		public void WebViewDoesNotLeak()
 		{
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.AssertMemoryTest();
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Image)]
 		public void ImageDoesNotLeak()
 		{

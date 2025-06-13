@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //Application crash while load the listview, for more information: https://github.com/dotnet/maui/issues/27174
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Regression in Xamarin.Forms 4.2.0-pre1 (Java.Lang.NullPointerException when using FastRenderers)";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Button)]
 		public void NullPointerExceptionOnFastLabelTextColorChange()
 		{

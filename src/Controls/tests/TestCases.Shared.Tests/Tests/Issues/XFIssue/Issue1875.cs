@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue1875 : _IssuesUITest
 
 	public override string Issue => "NSRangeException adding items through ItemAppearing";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ListView)]
 	public void NSRangeException()
 	{

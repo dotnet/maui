@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue19500 : _IssuesUITest
 	{
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Editor)]
 	public void TextInEditorShouldScroll()
 	{

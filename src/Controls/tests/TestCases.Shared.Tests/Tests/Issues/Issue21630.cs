@@ -1,6 +1,6 @@
 ﻿#if ANDROID || IOS // This is purely testing softinput keyboard behavior on mobile platforms
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -40,12 +40,12 @@ public class Issue21630 : _IssuesUITest
 
 		var newNavBarEntry = App.WaitForElement(NavBarEntry + scenarioSuffix);
 		var newNavBarEntryLocation = newNavBarEntry.GetRect();
-		ClassicAssert.AreEqual(navBarLocation, newNavBarEntryLocation);
+		Assert.Equal(navBarLocation, newNavBarEntryLocation);
 
 		var newHeaderEntry = App.WaitForElement(HeaderEntry);
 		var newHeaderLocation = newHeaderEntry.GetRect();
 
-		ClassicAssert.AreEqual(headerLocation, newHeaderLocation);
+		Assert.Equal(headerLocation, newHeaderLocation);
 
 		App.WaitForElement(RestoreButton);
 		App.Click(RestoreButton);

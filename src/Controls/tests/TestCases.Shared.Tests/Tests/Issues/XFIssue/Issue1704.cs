@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ public class Issue1704 : _IssuesUITest
 
 	public override string Issue => "[Enhancement] Basic GIF animation features";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.TabbedPage)]
 	[Category(UITestCategories.ManualReview)]
 	public void Issue1704Test()

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //On the Windows platform, when the "Remove" button is clicked, it only removes one item. Issue: https://github.com/dotnet/maui/issues/26377
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue7890 : _IssuesUITest
 
 	public override string Issue => "TemplatedItemsList incorrect grouped collection range removal";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ListView)]
 	public void TestCorrectListItemsRemoved()
 	{

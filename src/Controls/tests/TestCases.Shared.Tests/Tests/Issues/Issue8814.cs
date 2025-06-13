@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] UWP Shell cannot host CollectionView/CarouselView";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewInShellShouldBeVisible()
 		{

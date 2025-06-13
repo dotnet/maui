@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue29562 : _IssuesUITest
 
 	public override string Issue => "Maui.Graphics GetStringSize Inverts Width and Height";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsViewShouldNotWrapText()
 	{

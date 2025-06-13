@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] CollectionView crash if source is empty in XF 4.2.0.709249";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		public void Issue7338Test()
 		{

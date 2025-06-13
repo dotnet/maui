@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ public class Issue10222 : _IssuesUITest
 	}
 	public override string Issue => "[CollectionView] ObjectDisposedException if the page is closed during scrolling";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.LifeCycle)]
 	public void Issue10222Test()
 	{

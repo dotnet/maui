@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 		public override string Issue => "Shell FlowDirection not updating properly";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Shell)]
 		public void ShellFlowDirectionUpdate()
 		{

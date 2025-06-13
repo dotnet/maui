@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "The editor placeholder can't able to changed, It's default placed at center";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Editor)]
 		public void EditorPlaceholderPosition()
 		{

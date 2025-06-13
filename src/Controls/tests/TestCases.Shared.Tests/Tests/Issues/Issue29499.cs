@@ -1,5 +1,5 @@
 ﻿#if ANDROID
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ public class Issue29499 : _IssuesUITest
 
 	public override string Issue => "[Android] The number of SearchHandler toolbar item increases abnormally";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.SearchBar)]
 	public void NumberOfToolbarItemsShouldNotIncrease()
 	{

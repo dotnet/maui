@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Button with images measures correctly";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Button)]
 		public async Task ButtonMeasuresLargerThanDefault()
 		{
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.That(rotateButtonRect.Height > button3Rect.Height, $"rotateButtonRect.Height is {rotateButtonRect.Height} is not greater than button3Rect.Height {button3Rect.Height}");
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Button)]
 		public void ButtonLayoutResizesWithImagePosition()
 		{

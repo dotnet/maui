@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView duplicates group headers/footers when adding a new item to a group or crashes when adding a new group with empty view";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void CollectionViewDuplicateViewsWhenAddItemToGroup()
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void CollectionViewAddGroupWhenViewIsEmpty()

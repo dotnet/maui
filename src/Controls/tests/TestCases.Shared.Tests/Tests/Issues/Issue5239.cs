@@ -1,6 +1,6 @@
 ﻿#if IOS ////This test case verifies that the sample is working exclusively on iOS platforms "due to navigationBehavior: NavigationBehavior.SetApplicationRoot".
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,12 +14,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Top Padding not working on iOS when it is set alone";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Layout)]
 		public void PaddingEqualToSafeAreaWorks()
 		{
 			var somePadding = App.WaitForElement("Hello").GetRect();
-			Assert.That(20f, Is.EqualTo(somePadding.Y));
+			Assert.Equal(somePadding.Y, 20f);
 		}
 	}
 }

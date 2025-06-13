@@ -1,5 +1,5 @@
 ﻿#if IOS
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue11107 : _IssuesUITest
 
 	public override string Issue => "[Bug][iOS] Shell Navigation implicitly adds Tabbar";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shell)]
 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void TabShouldntBeVisibleWhenThereIsOnlyOnePage()
