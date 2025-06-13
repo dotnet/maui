@@ -3,7 +3,7 @@
 [Category(Categories.AOT)]
 public class AOTTemplateTest : BaseTemplateTests
 {
-	[Test]
+	[Fact]
 	[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
 	[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
 	[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
@@ -17,20 +17,20 @@ public class AOTTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		var extendedBuildProps = PrepareNativeAotBuildProps();
 
 		string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-		Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
+		Assert.True(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
 		actualWarnings.AssertNoWarnings();
 	}
 
-	[Test]
+	[Fact]
 	[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
 	[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
 	[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
@@ -45,7 +45,7 @@ public class AOTTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		var extendedBuildProps = PrepareNativeAotBuildProps();
@@ -72,7 +72,7 @@ public class AOTTemplateTest : BaseTemplateTests
 			""");
 
 		string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-		Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
+		Assert.True(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
