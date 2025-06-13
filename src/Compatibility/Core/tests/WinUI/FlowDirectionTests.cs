@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
-using NUnit.Framework;
+using Xunit;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WTextAlignment = Microsoft.UI.Xaml.TextAlignment;
 

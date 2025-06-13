@@ -2,14 +2,14 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
-using NUnit.Framework;
+using Xunit;
 using ObjCRuntime;
 using UIKit;
 using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class HtmlLabelTests : PlatformTestFixture
 	{
 		[Test, Category("Text"), Category("Label"), Category("Color")]

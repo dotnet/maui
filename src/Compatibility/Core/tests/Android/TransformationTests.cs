@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Threading.Tasks;
 using Microsoft.Maui.Platform;
-using NUnit.Framework;
+using Xunit;
 using NUnit.Framework.Internal;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class TransformationTests : PlatformTestFixture
 	{
 		static IEnumerable TransformationCases

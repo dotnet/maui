@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 using static Microsoft.Maui.Controls.Compatibility.UITests.NumericExtensions;
 using static Microsoft.Maui.Controls.Compatibility.UITests.ParsingUtils;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class RotationTests : PlatformTestFixture
 	{
 		static IEnumerable RotationXCases

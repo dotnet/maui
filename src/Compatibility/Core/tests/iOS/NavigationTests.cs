@@ -1,9 +1,9 @@
 using Microsoft.Maui.Dispatching;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class NavigationTests : PlatformTestFixture
 	{
 		[Test, Category("Navigation"), Category("Dispose")]

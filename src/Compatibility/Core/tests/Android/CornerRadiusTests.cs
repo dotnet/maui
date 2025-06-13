@@ -3,12 +3,12 @@ using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 using NUnit.Framework.Internal;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class CornerRadiusTests : PlatformTestFixture
 	{
 		[Test, Category("CornerRadius"), Category("BoxView")]

@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Foundation;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
 	[TestFixture(Category = "CollectionView")]
 	public class IndexPathTests
 	{
-		[Test]
+		[Fact]
 		public void GenerateIndexPathRange()
 		{
 			var result = IndexPathHelpers.GenerateIndexPathRange(0, 0, 5);
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			Assert.That((int)result[4].Item, Is.EqualTo(4));
 		}
 
-		[Test]
+		[Fact]
 		public void GenerateIndexPathRangeForLoop()
 		{
 			// Section 0
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			Assert.That((int)result[8].Item, Is.EqualTo(14));
 		}
 
-		[Test]
+		[Fact]
 		public void IndexPathValidTest()
 		{
 			var list = new List<string>
@@ -78,9 +78,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			var invalidItem = NSIndexPath.FromItemSection(7, 0);
 			var invalidSection = NSIndexPath.FromItemSection(1, 9);
 
-			Assert.IsTrue(source.IsIndexPathValid(valid));
-			Assert.IsFalse(source.IsIndexPathValid(invalidItem));
-			Assert.IsFalse(source.IsIndexPathValid(invalidSection));
+			Assert.True(source.IsIndexPathValid(valid));
+			Assert.False(source.IsIndexPathValid(invalidItem));
+			Assert.False(source.IsIndexPathValid(invalidSection));
 		}
 	}
 }

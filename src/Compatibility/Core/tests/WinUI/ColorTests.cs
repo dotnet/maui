@@ -1,11 +1,11 @@
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class ColorTests
 	{
 		[Test, Category("Color")]

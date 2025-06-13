@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 using Android.OS;
 using Java.Lang;
 using Microsoft.Maui.Dispatching;
-using NUnit.Framework;
+using Xunit;
 using NUnit.Framework.Internal;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class ObservrableItemsSourceTests
 	{
 		Handler _handler = new Handler(Looper.MainLooper);

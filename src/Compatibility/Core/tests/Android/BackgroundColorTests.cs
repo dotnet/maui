@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 using NUnit.Framework.Internal;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class BackgroundColorTests : PlatformTestFixture
 	{
 		static IEnumerable TestCases

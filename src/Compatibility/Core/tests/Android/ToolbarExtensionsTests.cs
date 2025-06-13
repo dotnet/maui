@@ -17,7 +17,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 using AToolBar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			int i = 0;
 			foreach (var textView in settings.TextViews)
 			{
-				Assert.AreEqual(sortedItems[i].Text, textView.Text);
+				Assert.Equal(sortedItems[i].Text, textView.Text);
 				i++;
 			}
 		}
@@ -80,15 +80,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 				SetupToolBar(settings, MauiContext);
 				AToolBar aToolBar = settings.ToolBar;
 				List<IMenuItem> menuItemsCreated = settings.MenuItemsCreated;
-				Assert.IsTrue(menuItemsCreated[2].IsEnabled, "Initial state of menu Item is not enabled");
+				Assert.True(menuItemsCreated[2].IsEnabled, "Initial state of menu Item is not enabled");
 				sortedItems[2].IsEnabled = false;
 
-				Assert.IsTrue(menuItemsCreated[0].IsEnabled, "Menu Item 1 is incorrectly disabled");
-				Assert.IsTrue(menuItemsCreated[1].IsEnabled, "Menu Item 2 is incorrectly disabled");
-				Assert.IsFalse(menuItemsCreated[2].IsEnabled, "Menu Item 3 is incorrectly disabled");
+				Assert.True(menuItemsCreated[0].IsEnabled, "Menu Item 1 is incorrectly disabled");
+				Assert.True(menuItemsCreated[1].IsEnabled, "Menu Item 2 is incorrectly disabled");
+				Assert.False(menuItemsCreated[2].IsEnabled, "Menu Item 3 is incorrectly disabled");
 
 				var textViews = settings.TextViews.ToList();
-				Assert.AreEqual(3, textViews.Count, $"{textViews.Count} textviews retrieved which it should have been 3");
+				Assert.Equal(3, textViews.Count, $"{textViews.Count} textviews retrieved which it should have been 3");
 
 				settings.Layout();
 				for (int i = 0; i < 3; i++)
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 
 
 					textViews[i].AssertContainsColor(androidColor);
-					Assert.AreEqual(sortedItems[i].Text, textViews[i].Text);
+					Assert.Equal(sortedItems[i].Text, textViews[i].Text);
 				}
 			}
 			catch (Exception exc)
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 
 				if (colorSpan != null)
 				{
-					Assert.AreNotEqual(
+					Assert.NotEqual(
 						colorSpan.ForegroundColor,
 						(int)Colors.Red.ToAndroid(),
 						"Secondary Menu Item Incorrectly set to ForegroundColor");

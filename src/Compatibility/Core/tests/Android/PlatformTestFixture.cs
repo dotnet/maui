@@ -10,7 +10,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.CardView.Widget;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 using AColor = Android.Graphics.Color;
 using AProgressBar = Android.Widget.ProgressBar;
 using ASearchView = AndroidX.AppCompat.Widget.SearchView;

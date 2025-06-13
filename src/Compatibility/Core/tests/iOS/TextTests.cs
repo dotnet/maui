@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class TextTests : PlatformTestFixture
 	{
 		[Test, Category("Text"), Category("Label")]

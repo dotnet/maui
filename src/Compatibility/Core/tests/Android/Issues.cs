@@ -6,12 +6,12 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Platform;
-using NUnit.Framework;
+using Xunit;
 using NUnit.Framework.Internal;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class Issues : PlatformTestFixture
 	{
 		[Test, Category("Entry")]

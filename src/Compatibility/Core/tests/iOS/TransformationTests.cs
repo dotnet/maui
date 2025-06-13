@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Threading.Tasks;
 using CoreAnimation;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class TransformationTests : PlatformTestFixture
 	{
 		static IEnumerable TransformationCases
