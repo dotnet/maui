@@ -94,9 +94,13 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentM
 ~override Microsoft.Maui.Controls.Compatibility.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.Compatibility.StackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.ContentPresenter.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.HorizontalStackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.ScrollView.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.StackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.TemplatedPage.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.TemplatedView.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.VerticalStackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.GetTransformedText(string source, Microsoft.Maui.TextTransform textTransform) -> string
 ~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.SetPlainText(Microsoft.Maui.Controls.InputView inputView, string platformText) -> void
 ~Microsoft.Maui.Controls.Page.DisplayActionSheetAsync(string title, string cancel, string destruction, Microsoft.Maui.FlowDirection flowDirection, params string[] buttons) -> System.Threading.Tasks.Task<string>

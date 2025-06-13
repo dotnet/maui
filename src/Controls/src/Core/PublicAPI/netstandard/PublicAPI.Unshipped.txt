@@ -118,12 +118,16 @@ static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Ma
 ~override Microsoft.Maui.Controls.Compatibility.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.Compatibility.StackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.ContentPresenter.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.HorizontalStackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.ScrollView.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.Target.get -> string
 ~override Microsoft.Maui.Controls.ShellContent.OnPropertyChanged(string propertyName = null) -> void
 *REMOVED*~static Microsoft.Maui.Controls.Application.ControlsApplicationMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IApplication, Microsoft.Maui.Handlers.ApplicationHandler>
+~override Microsoft.Maui.Controls.StackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.TemplatedPage.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.TemplatedView.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.VerticalStackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~static Microsoft.Maui.Controls.Brush.DarkGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
 ~static Microsoft.Maui.Controls.Brush.DarkSlateGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
 ~static Microsoft.Maui.Controls.Brush.DimGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
