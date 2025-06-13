@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Provider;
+using Android.Widget;
 using AndroidX.Activity.Result;
 using AndroidX.Activity.Result.Contract;
 using Microsoft.Maui.ApplicationModel;
@@ -15,9 +17,9 @@ using AndroidUri = Android.Net.Uri;
 namespace Microsoft.Maui.Media
 {
 	partial class MediaPickerImplementation : IMediaPicker
-	{
+	{		
 		public bool IsCaptureSupported
-			=> Application.Context.PackageManager.HasSystemFeature(PackageManager.FeatureCameraAny);
+			=> Application.Context?.PackageManager?.HasSystemFeature(PackageManager.FeatureCameraAny) ?? false;
 
 		internal static bool IsPhotoPickerAvailable
 			=> PickVisualMedia.InvokeIsPhotoPickerAvailable(Platform.AppContext);
@@ -26,18 +28,23 @@ namespace Microsoft.Maui.Media
 			=> PickAsync(options, true);
 
 		public Task<List<FileResult>> PickPhotosAsync(MediaPickerOptions options)
-			=> throw new FeatureNotSupportedException("Multiple photo selection is not supported on Android. Use PickPhotoAsync instead.");
+			=> PickMultipleAsync(options, true);
 
 		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
 			=> PickAsync(options, false);
 
 		public Task<List<FileResult>> PickVideosAsync(MediaPickerOptions options)
-			=> throw new FeatureNotSupportedException("Multiple video selection is not supported on Android. Use PickVideoAsync instead.");
+			=> PickMultipleAsync(options, false);
 
 		public async Task<FileResult> PickAsync(MediaPickerOptions options, bool photo)
 			=> IsPhotoPickerAvailable
-				? await PickUsingPhotoPicker(photo)
+				? await PickUsingPhotoPicker(options, photo)
 				: await PickUsingIntermediateActivity(options, photo);
+
+		public async Task<List<FileResult>> PickMultipleAsync(MediaPickerOptions options, bool photo)
+			=> IsPhotoPickerAvailable
+				? await PickMultipleUsingPhotoPicker(options, photo)
+				: await PickMultipleUsingIntermediateActivity(options, photo);
 
 		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
 			=> CaptureAsync(options, true);
@@ -48,7 +55,9 @@ namespace Microsoft.Maui.Media
 		public async Task<FileResult> CaptureAsync(MediaPickerOptions options, bool photo)
 		{
 			if (!IsCaptureSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			await Permissions.EnsureGrantedAsync<Permissions.Camera>();
 			// StorageWrite no longer exists starting from Android API 33
@@ -70,25 +79,31 @@ namespace Microsoft.Maui.Media
 				string captureResult = null;
 
 				if (photo)
+				{
 					captureResult = await CapturePhotoAsync(captureIntent);
+				}
 				else
+				{
 					captureResult = await CaptureVideoAsync(captureIntent);
+				}
 
 				// Return the file that we just captured
-				return new FileResult(captureResult);
+				return captureResult != null ? new FileResult(captureResult) : null;
 			}
 			catch (OperationCanceledException)
 			{
 				return null;
 			}
-		}
-
+		}		
+		
 		async Task<FileResult> PickUsingIntermediateActivity(MediaPickerOptions options, bool photo)
 		{
 			var intent = new Intent(Intent.ActionGetContent);
 			intent.SetType(photo ? FileMimeTypes.ImageAll : FileMimeTypes.VideoAll);
 
 			var pickerIntent = Intent.CreateChooser(intent, options?.Title);
+			if (pickerIntent == null)
+				return null;
 
 			try
 			{
@@ -104,7 +119,7 @@ namespace Microsoft.Maui.Media
 
 				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeMediaPicker, onResult: OnResult);
 
-				return new FileResult(path);
+				return path != null ? new FileResult(path) : null;
 			}
 			catch (OperationCanceledException)
 			{
@@ -112,21 +127,57 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		async Task<FileResult> PickUsingPhotoPicker(bool photo)
+		async Task<FileResult> PickUsingPhotoPicker(MediaPickerOptions options, bool photo)
 		{
-			var pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
-				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance)
-				.Build();
+			var pickVisualMediaRequestBuilder = new PickVisualMediaRequest.Builder()
+				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance);
+
+			if (options.SelectionLimit > 1)
+			{
+				pickVisualMediaRequestBuilder.SetMaxItems(options.SelectionLimit);
+			}
+			
+			var pickVisualMediaRequest = pickVisualMediaRequestBuilder.Build();
 
 			var androidUri = await PickVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
 
 			if (androidUri?.Equals(AndroidUri.Empty) ?? true)
 			{
-				return default;
+				return null;
 			}
 
 			var path = FileSystemUtils.EnsurePhysicalPath(androidUri);
 			return new FileResult(path);
+		}
+
+		async Task<List<FileResult>> PickMultipleUsingPhotoPicker(MediaPickerOptions options, bool photo)
+		{
+			var pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
+				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance)
+				.SetMaxItems(options.SelectionLimit)
+				.Build();
+
+			var androidUris = await PickMultipleVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
+
+			if (androidUris?.IsEmpty ?? true)
+			{
+				return null;
+			}
+
+			var resultList = new List<FileResult>();
+			
+			foreach (AndroidUri uri in androidUris.ToEnumerable())
+			{
+				if (uri?.Equals(AndroidUri.Empty) ?? true)
+				{
+					continue;
+				}
+
+				var path = FileSystemUtils.EnsurePhysicalPath(uri);
+				resultList.Add(new FileResult(path));
+			}
+
+			return resultList;
 		}
 
 		async Task<string> CapturePhotoAsync(Intent captureIntent)
@@ -169,6 +220,81 @@ namespace Microsoft.Maui.Media
 			await IntermediateActivity.StartAsync(captureIntent, PlatformUtils.requestCodeMediaCapture, onResult: OnResult);
 
 			return path;
+		}
+	
+		
+		async Task<List<FileResult>> PickMultipleUsingIntermediateActivity(MediaPickerOptions options, bool photo)
+		{
+			var intent = new Intent(Intent.ActionGetContent);
+			intent.SetType(photo ? FileMimeTypes.ImageAll : FileMimeTypes.VideoAll);
+
+			if (options is not null)
+			{
+				intent.PutExtra(Intent.ExtraAllowMultiple, options.SelectionLimit > 1 || options.SelectionLimit == 0);
+				intent.PutExtra(MediaStore.ExtraPickImagesMax, options.SelectionLimit);
+			}
+
+			var pickerIntent = Intent.CreateChooser(intent, options?.Title);
+			if (pickerIntent is null)
+			{
+				return null;
+			}
+
+			try
+			{
+				var resultList = new List<FileResult>();
+				void OnResult(Intent resultIntent)
+				{
+					// The uri returned is only temporary and only lives as long as the Activity that requested it,
+					// so this means that it will always be cleaned up by the time we need it because we are using
+					// an intermediate activity.
+					
+					if (resultIntent.ClipData is null)
+					{
+						// Single selection result
+						if (resultIntent.Data is not null)
+						{
+							var path = FileSystemUtils.EnsurePhysicalPath(resultIntent.Data);
+							resultList.Add(new FileResult(path));
+						}
+					}
+					else
+					{
+						// Multiple selection result
+						var selectionLimit = options?.SelectionLimit ?? 0;
+						var totalSelected = resultIntent.ClipData.ItemCount;
+						var itemCount = selectionLimit > 0 ? Math.Min(totalSelected, selectionLimit) : totalSelected;
+								// If selection limit is exceeded, show a toast notification
+						if (selectionLimit > 0 && totalSelected > selectionLimit)
+						{
+							var activity = ActivityStateManager.Default.GetCurrentActivity(true);
+							if (activity != null)
+							{
+								var message = $"Selection limited to {selectionLimit} item{(selectionLimit == 1 ? "" : "s")}. Only the first {selectionLimit} item{(selectionLimit == 1 ? " was" : "s were")} selected.";
+								Toast.MakeText(activity, message, ToastLength.Long)?.Show();
+							}
+						}
+						
+						for (var i = 0; i < itemCount; i++)
+						{
+							var uri = resultIntent.ClipData.GetItemAt(i)?.Uri;
+							if (uri != null)
+							{
+								var path = FileSystemUtils.EnsurePhysicalPath(uri);
+								resultList.Add(new FileResult(path));
+							}
+						}
+					}
+				}
+
+				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeMediaPicker, onResult: OnResult);
+
+				return resultList.Any() ? resultList : null;
+			}
+			catch (OperationCanceledException)
+			{
+				return null;
+			}
 		}
 	}
 }
