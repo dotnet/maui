@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
 //For more information : https://github.com/dotnet/maui/issues/27329
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Searchbar in Horizontal Stacklayout doesn't render";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.SearchBar)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue3413Test()

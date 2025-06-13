@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Bugzilla25979 : _IssuesUITest
 
 	public override string Issue => "https://bugzilla.xamarin.com/show_bug.cgi?id=25979";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Navigation)]
 	public void Bugzilla25979Test()
 	{

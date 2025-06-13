@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class StackLayoutIssue : _IssuesUITest
 
 	public override string Issue => "StackLayout issue";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Layout)]
 	public void StackLayoutIssueTestsAllElementsPresent()
 	{

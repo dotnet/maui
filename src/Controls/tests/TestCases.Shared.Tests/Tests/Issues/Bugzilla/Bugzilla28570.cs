@@ -1,5 +1,5 @@
 ﻿#if !ANDROID
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "https://bugzilla.xamarin.com/show_bug.cgi?id=28570";
 
 		// Bugzilla28570 (src\Compatibility\ControlGallery\src\Issues.Shared\Bugzilla28570.cs)
-		[Test]
+		[Fact]
 		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void Bugzilla28570Test()
 		{

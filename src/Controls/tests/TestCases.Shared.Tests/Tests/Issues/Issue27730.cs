@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Shadow not updated when Clipping a View with a shadow";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Visual)]
 		public void ShadowShouldUpdateWhenClipping()
 		{

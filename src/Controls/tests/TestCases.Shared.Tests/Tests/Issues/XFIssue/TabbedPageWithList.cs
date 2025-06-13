@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ public class TabbedPageWithList : _IssuesUITest
 
 	public override string Issue => "TabbedPage with list";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithListViewIssueTestsAllElementsPresent()
 	{
@@ -23,7 +23,7 @@ public class TabbedPageWithList : _IssuesUITest
 		App.WaitForTabElement(ListPage);
 	}
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithListViewIssueTestsNavigateToAndVerifyListView()
 	{

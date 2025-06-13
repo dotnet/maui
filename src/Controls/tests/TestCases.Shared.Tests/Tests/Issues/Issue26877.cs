@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "The iOS platform page cannot scroll to the bottom";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Shape)]
 		[Category(UITestCategories.ScrollView)]
 		public void ScrollToBottom()

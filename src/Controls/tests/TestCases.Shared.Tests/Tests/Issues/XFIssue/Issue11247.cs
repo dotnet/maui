@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // FlyoutIsPresented fails on Android and Windows. More details: https://github.com/dotnet/maui/issues/26324
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue11247 : _IssuesUITest
 
 	public override string Issue => "[Bug] Shell FlyoutIsPresented not working if set in \"navigating\" handler";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shell)]
 
 	public void SettingFlyoutIsPresentedInNavigatingKeepsFlyoutOpen()

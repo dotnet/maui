@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue6784 : _IssuesUITest
 
 	public override string Issue => "ShellItem.CurrentItem is not set when selecting shell section aggregated in more tab";
 
-	[Test]
+	[Fact]
 	public void CurrentItemIsSetWhenSelectingShellSectionAggregatedInMoreTab()
 	{
 		App.WaitForElement("More");
@@ -23,7 +23,7 @@ public class Issue6784 : _IssuesUITest
 		App.WaitForElementTillPageNavigationSettled("Success");
 	}
 
-	[Test]
+	[Fact]
 	public void OneMoreControllerOpensOnFirstClick()
 	{
 		App.WaitForElement("More");
@@ -42,7 +42,7 @@ public class Issue6784 : _IssuesUITest
 		App.Tap("Tab 12");
 	}
 
-	[Test]
+	[Fact]
 	public void TwoMoreControllerDoesNotShowEditButton()
 	{
 		App.WaitForElement("More");
@@ -53,9 +53,9 @@ public class Issue6784 : _IssuesUITest
 		// In MacCatalyst it includes the "Edit" menu item in the macOS menu bar.
 		// Note: This different behavior is due to Appium's ability to detect macOS menu items in MacCatalyst apps.
 #if MACCATALYST
-		Assert.That(App.FindElements("Edit").Count(), Is.EqualTo(1));
+		Assert.Equal(1, App.FindElements("Edit").Count());
 #else
-		Assert.That(App.FindElements("Edit").Count(), Is.EqualTo(0));
+		Assert.Equal(0, App.FindElements("Edit").Count());
 #endif
 	}
 }

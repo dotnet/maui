@@ -1,5 +1,5 @@
 #if TEST_FAILS_ON_WINDOWS //Maps control is not supported on Windows platform.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Bugzilla26171 : _IssuesUITest
 
 	public override string Issue => "Microsoft.Maui.Controls.Maps is not updating VisibleRegion property when layout is changed";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Maps)]
 	public void Bugzilla26171Test()
 	{

@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Bugzilla27731 : _IssuesUITest
 
 	public override string Issue => "[Android] Action Bar can not be controlled reliably on FlyoutPage";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.InputTransparent)]
 	public void Bugzilla27731Test()
 	{

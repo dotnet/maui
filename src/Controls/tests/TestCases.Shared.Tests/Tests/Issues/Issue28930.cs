@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_WINDOWS
 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue28930 : _IssuesUITest
 
 	public override string Issue => "Incorrect label LineBreakMode in IOS inside CarouselView";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.CarouselView)]
 	public void LineBreakModeInCarouselViewShouldWork()
 	{
@@ -23,7 +23,7 @@ public class Issue28930 : _IssuesUITest
 
 		App.ScrollRight("MyCarousel", swipePercentage: 0.9, swipeSpeed: 200);
 
-		Assert.That(App.WaitForElementTillPageNavigationSettled("Item 2").GetText(), Is.EqualTo("Item 2"));
+		Assert.Equal("Item 2", App.WaitForElementTillPageNavigationSettled("Item 2").GetText());
 	}
 }
 

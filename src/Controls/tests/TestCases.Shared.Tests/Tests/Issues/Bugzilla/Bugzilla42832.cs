@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
 //For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Bugzilla42832 : _IssuesUITest
 
 	public override string Issue => "Scrolling a ListView with active ContextAction Items causes NRE";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ListView)]
 	public void ContextActionsScrollNRE()
 	{

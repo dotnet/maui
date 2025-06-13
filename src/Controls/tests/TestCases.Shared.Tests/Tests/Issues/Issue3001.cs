@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ public class Issue3001 : _IssuesUITest
 
 	public override string Issue => "[macOS] Navigating back from a complex page is highly inefficient";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Navigation)]
 	[Category(UITestCategories.Compatibility)]
 	public void Issue3001Test()

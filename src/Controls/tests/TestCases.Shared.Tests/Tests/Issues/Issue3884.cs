@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "BoxView corner radius";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.BoxView)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue3884Test()

@@ -1,7 +1,7 @@
 ﻿#if TEST_FAILS_ON_CATALYST //related issue: https://github.com/dotnet/maui/issues/17435
 using System.Drawing;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Appium.iOS;
 using OpenQA.Selenium.Appium.Windows;
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Quick single taps on Android have wrong second tap location";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Label)]
 		[FailsOnMacWhenRunningOnXamarinUITest("https://github.com/dotnet/maui/issues/17435")]
 		public void TapTwoPlacesQuickly()
@@ -73,8 +73,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Turn the text values into numbers so we can compare with a tolerance
 			(var tapX, var tapY) = ParseCoordinates(tapData);
 
-			ClassicAssert.AreEqual((double)expectedX, tapX, 1.5, $"{which} tap has unexpected X value");
-			ClassicAssert.AreEqual((double)expectedY, tapY, 1.5, $"{which} tap has unexpected Y value");
+			Assert.Equal((double)expectedX, tapX, 1.5, $"{which} tap has unexpected X value");
+			Assert.Equal((double)expectedY, tapY, 1.5, $"{which} tap has unexpected Y value");
 		}
 
 		static (double, double) ParseCoordinates(string text)

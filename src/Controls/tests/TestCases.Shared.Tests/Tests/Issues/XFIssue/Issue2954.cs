@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue reproduced and logged the issue report: https://github.com/dotnet/maui/issues/26091.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue2954 : _IssuesUITest
 
 	public override string Issue => "Cell becomes empty after adding a new one with context actions (TableView) ";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.TableView)]
 	public void Issue2954Test()
 	{

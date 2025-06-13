@@ -1,5 +1,5 @@
 ﻿#if ANDROID //This test case verifies "The background property of AppCompatEditText (Entry) works" exclusively on the Android platform.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Setting the background property of AppCompatEditText (Entry) in a handler mapping does not work";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Entry)]
 		public async Task SettingEntryBackgroundFromHandler()
 		{

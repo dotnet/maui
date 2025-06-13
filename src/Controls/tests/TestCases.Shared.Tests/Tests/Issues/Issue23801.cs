@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		: base(device)
 		{ }
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Label)]
 		public void VerifyLabelSpanGestureWhenWrappedOverTwoLines()
 		{
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var endOfFirstLine = location.X + location.Width - marginRight;
 			var testlabel = App.WaitForElement("TestLabel");
 			App.TapCoordinates(endOfFirstLine, location.Y + middleHeight);
-			Assert.That(testlabel.GetText(), Is.EqualTo("Label span tapped"));
+			Assert.Equal("Label span tapped", testlabel.GetText());
 		}
 	}
 }

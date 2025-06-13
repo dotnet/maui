@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue2964 : _IssuesUITest
 
 	public override string Issue => "TabbedPage toolbar item crash";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ToolbarItem)]
 	public void Issue2964Test()
 	{

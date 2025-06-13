@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Orientation mode not supported on Catalyst and Windows.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue774 : _IssuesUITest
 
 	public override string Issue => "ActionSheet won't dismiss after rotation to landscape";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.ActionSheet)]
 	public void Issue774TestsDismissActionSheetAfterRotation()
 	{

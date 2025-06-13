@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Drag and drop reordering not firing CollectionChanged";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Gestures)]
 		public void Issue3273Test()
 		{

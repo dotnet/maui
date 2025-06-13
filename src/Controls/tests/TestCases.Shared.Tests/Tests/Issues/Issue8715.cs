@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "NullReferenceException Microsoft.Maui.Controls.Platform.iOS.StructuredItemsViewRenderer [Bug]";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Shell)]
 		[Category(UITestCategories.Compatibility)]

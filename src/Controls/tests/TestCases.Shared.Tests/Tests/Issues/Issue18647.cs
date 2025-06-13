@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Editor TextTransform property works as expected";
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Editor)]
 		public void EditorTextTransformWorks()
 		{
@@ -25,30 +25,30 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// 2. The test fails if the editor below does not display the string 'aBcDeFg' exactly (case-sensitive).
 			var result2 = App.FindElement("NoneTextTransformEditor").GetText()?.Trim();
-			ClassicAssert.AreEqual("aBcDeFg", result2);
+			Assert.Equal("aBcDeFg", result2);
 
 			// 3. Input the string 'aBcDeFg' into the editor below.
 			App.EnterText("LowercaseTextTransformEditor", "aBcDeFg");
 
 			// 4. The test fails if the editor below does not display the string 'abcdefg' exactly (case-sensitive).
 			var result4 = App.FindElement("LowercaseTextTransformEditor").GetText()?.Trim();
-			ClassicAssert.AreEqual("abcdefg", result4);
+			Assert.Equal("abcdefg", result4);
 
 			// 5. Input the string 'aBcDeFg' into the editor below.
 			App.EnterText("UppercaseTextTransformEditor", "aBcDeFg");
 
 			// 6. The test fails if the editor below does not display the string 'ABCDEFG' exactly (case-sensitive).
 			var result6 = App.FindElement("UppercaseTextTransformEditor").GetText()?.Trim();
-			ClassicAssert.AreEqual("ABCDEFG", result6);
+			Assert.Equal("ABCDEFG", result6);
 
 			// 7. The test fails if the editor below does not display the string 'abcdefg' exactly (case-sensitive).
 			var result7 = App.FindElement("FilledLowercaseTextTransformEditor").GetText()?.Trim();
-			ClassicAssert.AreEqual("abcdefg", result7);
+			Assert.Equal("abcdefg", result7);
 
 			// 8. The test fails if the editor below does not display the string 'ABCDEFG' exactly (case-sensitive).
 			var result8 = App.FindElement("FilledUppercaseTextTransformEditor").GetText()?.Trim();
 
-			ClassicAssert.AreEqual("ABCDEFG", result8);
+			Assert.Equal("ABCDEFG", result8);
 		}
 	}
 }

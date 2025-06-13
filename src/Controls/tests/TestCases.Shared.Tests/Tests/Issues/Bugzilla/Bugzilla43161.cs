@@ -1,5 +1,5 @@
 ﻿#if IOS
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Bugzilla43161 : _IssuesUITest
 
 	public override string Issue => "[iOS] Setting Accessory in ViewCellRenderer breaks layout";
 
-	 [Test]
+	 [Fact]
 	 [Category(UITestCategories.Cells)]
 	 public void Bugzilla43161Test()
 	 {

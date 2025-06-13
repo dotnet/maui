@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -9,7 +9,7 @@ public class Issue28419 : _IssuesUITest
 
 	public override string Issue => "SearchBar focus/unfocus do not fire on Windows";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.SearchBar)]
 	public void SearchBarShouldTriggerFocusedAndUnFocusedEvents()
 	{

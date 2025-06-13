@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		: base(device)
 		{ }
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.WebView)]
 		public void VerifyWebViewNavigatedEvent()
 		{
@@ -20,8 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var navigatingLabel = App.WaitForElement("navigatingLabel");
 			var navigatedLabel = App.WaitForElement("navigatedLabel");
 
-			Assert.That(navigatingLabel.GetText(), Is.EqualTo("Navigating event is triggered"));
-			Assert.That(navigatedLabel.GetText(), Is.EqualTo("Navigated event is triggered"));
+			Assert.Equal("Navigating event is triggered", navigatingLabel.GetText());
+			Assert.Equal("Navigated event is triggered", navigatedLabel.GetText());
 		}
 	}
 }

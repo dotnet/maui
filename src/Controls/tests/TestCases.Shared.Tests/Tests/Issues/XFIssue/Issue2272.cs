@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST //While invoking EnterText("1") results in the text being cleared before appending "1", leading to test fails on Catalyst.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue2272 : _IssuesUITest
 
 	public override string Issue => "Entry text updating set focus on the beginning of text not the end of it";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Entry)]
 	public void TestFocusIsOnTheEndAfterSettingText()
 	{
@@ -22,7 +22,7 @@ public class Issue2272 : _IssuesUITest
 		App.EnterText("userNameEditorEmptyString", "1");
 		App.PressEnter();
 		var q = App.FindElement("userNameEditorEmptyString");
-		Assert.That("focused1", Is.EqualTo(q.GetText()));
+		Assert.Equal(q.GetText(, "focused1"));
 	}
 }
 #endif

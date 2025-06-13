@@ -1,7 +1,7 @@
 #if IOS //This sample is specific to the iOS platform and handles text input behavior by accessing the native UITextView.
 using System.Drawing;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Interactions;
 using UITest.Appium;
@@ -16,7 +16,7 @@ public class Issue19214_3 : _IssuesUITest
 
     public override string Issue => "iOS Editor Cursor stays above keyboard - Top level ScrollView";
 
-    [Test]
+    [Fact]
     [Category(UITestCategories.Entry)]
     public void KeepEditorCursorAboveKeyboardInScrollView ()
     {

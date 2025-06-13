@@ -1,5 +1,5 @@
 ﻿#if ANDROID //This test case verifies the "System Specific Fonts" exclusively on the Android platform.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue19556 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Label)]
 	public void SystemFontsShouldRenderCorrectly()
 	{

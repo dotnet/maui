@@ -1,5 +1,5 @@
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID  // Windows Character Spacing Issue Link - https://github.com/dotnet/maui/issues/29493 
-using NUnit.Framework;
+#if TEST_FAILS_ON_WINDOWS  // Windows Character Spacing Issue Link - https://github.com/dotnet/maui/issues/29493 
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue29492 : _IssuesUITest
 
 	public override string Issue => "CharacterSpacing should be applied";
 
-	[Test]
+	[Fact]
 	[Category(UITestCategories.Shell)]
 	public void CharacterSpacingShouldApply()
 	{

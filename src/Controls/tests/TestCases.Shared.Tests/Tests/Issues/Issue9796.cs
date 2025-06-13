@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Test]
+		[Fact]
 		[Category(UITestCategories.Editor)]
 		[Category(UITestCategories.Focus)]
 		public void EditorCompletedEventShouldTriggerOnFocusLost()
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("FocusButton");
 			App.Click("FocusButton");
 			App.Click("UnfocusButton");
-			ClassicAssert.AreEqual("Triggered", App.FindElement("Label").GetText());
+			Assert.Equal("Triggered", App.FindElement("Label").GetText());
 		}
 	}
 }

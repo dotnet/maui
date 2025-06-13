@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Border does not expand on Content size changed";
 
-		[Test]
+		[Fact]
 		public void BorderBackgroundExpandsOnContentSizeChanged()
 		{
 			App.WaitForElement("SetHeightTo200");
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 #if ANDROID || IOS  //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms iOS and Android.
-		[Test]
+		[Fact]
 		public void BorderBackgroundSizeUpdatesWhenRotatingScreen()
 		{
 			App.WaitForElement("SetHeightTo200");
