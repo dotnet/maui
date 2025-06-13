@@ -3,7 +3,7 @@
 [Category(Categories.WindowsTemplates)]
 public class WindowsTemplateTest : BaseTemplateTests
 {
-	[Test]
+	[Fact]
 	[TestCase("maui", DotNetPrevious, "Debug")]
 	[TestCase("maui", DotNetPrevious, "Release")]
 	[TestCase("maui", DotNetCurrent, "Debug")]
@@ -17,7 +17,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+		Assert.True(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		// TODO: remove this if as we should be able to build tizen net8
@@ -40,11 +40,11 @@ public class WindowsTemplateTest : BaseTemplateTests
 				"");
 		}
 
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	[Test]
+	[Fact]
 	[TestCase("maui", true, true, "None")]
 	[TestCase("maui", true, true, "MSIX")]
 	[TestCase("maui", true, false, "None")]
@@ -63,7 +63,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		FileUtilities.ReplaceInFile(projectFile,
@@ -77,11 +77,11 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var extendedBuildProps = BuildProps;
 		extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-windows10.0.19041.0");
 
-		Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	[Test]
+	[Fact]
 	[TestCase("maui", true, "None")]
 	[TestCase("maui", true, "MSIX")]
 	[TestCase("maui", false, "None")]
@@ -96,7 +96,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		FileUtilities.ReplaceInFile(projectFile,
@@ -109,11 +109,11 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var extendedBuildProps = BuildProps;
 		extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-windows10.0.19041.0");
 
-		Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	[Test]
+	[Fact]
 	[TestCase("maui", DotNetCurrent, "Release")]
 	[TestCase("maui", DotNetPrevious, "Release")]
 	[TestCase("maui-blazor", DotNetCurrent, "Release")]
@@ -128,7 +128,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+		Assert.True(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		if (framework == DotNetPrevious)
@@ -145,7 +145,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 				"<WindowsPackageType>None</WindowsPackageType>");
 		}
 
-		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
+		Assert.True(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win10-x64/publish");
@@ -159,12 +159,12 @@ public class WindowsTemplateTest : BaseTemplateTests
 		void AssetExists(string filename)
 		{
 			var fullpath = Path.Combine(assetsRoot!, filename);
-			Assert.IsTrue(File.Exists(fullpath),
+			Assert.True(File.Exists(fullpath),
 				$"Unable to find expected asset: {fullpath}");
 		}
 	}
 
-	[Test]
+	[Fact]
 	[TestCase("maui", DotNetCurrent, "Release")]
 	[TestCase("maui", DotNetPrevious, "Release")]
 	[TestCase("maui-blazor", DotNetCurrent, "Release")]
@@ -180,7 +180,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var name = Path.GetFileName(projectDir);
 		var projectFile = Path.Combine(projectDir, $"{name}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+		Assert.True(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		if (framework == DotNetPrevious)
@@ -197,7 +197,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 				"");
 		}
 
-		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
+		Assert.True(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win10-x64/AppPackages/{name}_1.0.0.1_Test");
@@ -207,7 +207,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		void AssetExists(string filename)
 		{
 			var fullpath = Path.Combine(assetsRoot!, filename);
-			Assert.IsTrue(File.Exists(fullpath),
+			Assert.True(File.Exists(fullpath),
 				$"Unable to find expected asset: {fullpath}");
 		}
 	}

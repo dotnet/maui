@@ -15,7 +15,7 @@ namespace Microsoft.Maui.IntegrationTests
 				Assert.Ignore("Running Apple templates is only supported on macOS.");
 
 			TestSimulator.Shutdown();
-			Assert.IsTrue(TestSimulator.Launch(), $"Failed to boot simulator with UDID '{TestSimulator.GetUDID()}'.");
+			Assert.True(TestSimulator.Launch(), $"Failed to boot simulator with UDID '{TestSimulator.GetUDID()}'.");
 			TestSimulator.ShowWindow();
 		}
 
@@ -25,14 +25,14 @@ namespace Microsoft.Maui.IntegrationTests
 			TestSimulator.Shutdown();
 		}
 
-		[Test]
-		// [TestCase("maui", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [TestCase("maui", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
+		[Fact]
+		[TestCase("maui", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
+		[TestCase("maui", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		[TestCase("maui", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		[TestCase("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		[TestCase("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "full")]
-		// [TestCase("maui-blazor", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [TestCase("maui-blazor", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
+		[TestCase("maui-blazor", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
+		[TestCase("maui-blazor", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		[TestCase("maui-blazor", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		[TestCase("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		// FIXME: has trimmer warnings
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+			Assert.True(DotnetInternal.New(id, projectDir, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			var buildProps = BuildProps;
@@ -62,12 +62,12 @@ namespace Microsoft.Maui.IntegrationTests
 				buildProps.Add("TrimmerSingleWarn=false");
 			}
 
-			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildProps),
+			Assert.True(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 			var appFile = Path.Combine(projectDir, "bin", config, $"{framework}-ios", runtimeIdentifier, $"{Path.GetFileName(projectDir)}.app");
 
-			Assert.IsTrue(XHarness.RunAppleForTimeout(appFile, Path.Combine(projectDir, "xh-results"), TestSimulator.XHarnessID),
+			Assert.True(XHarness.RunAppleForTimeout(appFile, Path.Combine(projectDir, "xh-results"), TestSimulator.XHarnessID),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 	}

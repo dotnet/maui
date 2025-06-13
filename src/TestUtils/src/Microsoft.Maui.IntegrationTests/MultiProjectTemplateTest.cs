@@ -3,7 +3,7 @@
 [Category(Categories.MultiProject)]
 public class MultiProjectTemplateTest : BaseTemplateTests
 {
-	[Test]
+	[Fact]
 	[TestCase("Debug", "simplemulti")]
 	[TestCase("Release", "simplemulti")]
 	[TestCase("Debug", "MultiProject@Symbol & More")]
@@ -14,7 +14,7 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		var name = Path.GetFileName(projectDir);
 		var solutionFile = Path.Combine(projectDir, $"{name}.sln");
 
-		Assert.IsTrue(DotnetInternal.New("maui-multiproject", projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New("maui-multiproject", projectDir, DotNetCurrent),
 			$"Unable to create template maui-multiproject. Check test output for errors.");
 
 		// Always remove WinUI project if the project name contains special characters that cause WinRT source generator issues
@@ -23,7 +23,7 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 
 		if (!TestEnvironment.IsWindows || containsSpecialChars)
 		{
-			Assert.IsTrue(DotnetInternal.Run("sln", $"\"{solutionFile}\" remove \"{projectDir}/{name}.WinUI/{name}.WinUI.csproj\""),
+			Assert.True(DotnetInternal.Run("sln", $"\"{solutionFile}\" remove \"{projectDir}/{name}.WinUI/{name}.WinUI.csproj\""),
 				$"Unable to remove WinUI project from solution. Check test output for errors.");
 		}
 
@@ -31,11 +31,11 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		var buildProps = BuildProps;
 		buildProps.Add("ResizetizerErrorOnDuplicateOutputFilename=false");
 
-		Assert.IsTrue(DotnetInternal.Build(solutionFile, config, properties: buildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(solutionFile, config, properties: buildProps, msbuildWarningsAsErrors: true),
 			$"Solution {name} failed to build. Check test output/attachments for errors.");
 	}
 
-	[Test]
+	[Fact]
 	[TestCase("Debug", "--android")]
 	[TestCase("Debug", "--ios")]
 	[TestCase("Debug", "--windows")]
@@ -46,20 +46,20 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		var name = Path.GetFileName(projectDir);
 		var solutionFile = Path.Combine(projectDir, $"{name}.sln");
 
-		Assert.IsTrue(DotnetInternal.New($"maui-multiproject {platformArg}", projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New($"maui-multiproject {platformArg}", projectDir, DotNetCurrent),
 			$"Unable to create template maui-multiproject. Check test output for errors.");
 
 		if (!TestEnvironment.IsWindows)
 		{
-			Assert.IsTrue(DotnetInternal.Run("sln", $"{solutionFile} remove {projectDir}/{name}.WinUI/{name}.WinUI.csproj"),
+			Assert.True(DotnetInternal.Run("sln", $"{solutionFile} remove {projectDir}/{name}.WinUI/{name}.WinUI.csproj"),
 				$"Unable to remove WinUI project from solution. Check test output for errors.");
 		}
 
-		Assert.IsTrue(DotnetInternal.Build(solutionFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(solutionFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
 			$"Solution {name} failed to build. Check test output/attachments for errors.");
 	}
 
-	[Test]
+	[Fact]
 	[TestCase("--android")]
 	[TestCase("--ios")]
 	[TestCase("--windows")]
@@ -72,16 +72,16 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		var name = Path.GetFileName(projectDir);
 		var solutionFile = Path.Combine(projectDir, $"{name}.sln");
 
-		Assert.IsTrue(DotnetInternal.New($"maui-multiproject {platformArg}", projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New($"maui-multiproject {platformArg}", projectDir, DotNetCurrent),
 			$"Unable to create template maui-multiproject. Check test output for errors.");
 
 		var slnListOutput = DotnetInternal.RunForOutput("sln", $"{solutionFile} list", out int exitCode);
 
 		// Asserts the process completed successfully
-		Assert.AreEqual(0, exitCode, $"Unable to list projects in solution. Check test output for errors.");
+		Assert.Equal(0, exitCode, $"Unable to list projects in solution. Check test output for errors.");
 
 		// Asserts if the shared project is included in the solution, this should always be the case
-		Assert.IsTrue(slnListOutput.Contains($"{name}.csproj", StringComparison.OrdinalIgnoreCase),
+		Assert.True(slnListOutput.Contains($"{name}.csproj", StringComparison.OrdinalIgnoreCase),
 			$"Expected shared project (with name {name}.csproj) to be included in the solution.");
 
 		var expectedCsprojFiles = new List<string> { "Droid.csproj", "iOS.csproj", "Mac.csproj", "WinUI.csproj" };
@@ -113,7 +113,7 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		// Depending on the platform argument, we assert if the expected projects are included in the solution
 		foreach (var platformCsproj in expectedCsprojFiles)
 		{
-			Assert.IsTrue(slnListOutput.Contains(platformCsproj, StringComparison.Ordinal),
+			Assert.True(slnListOutput.Contains(platformCsproj, StringComparison.Ordinal),
 				$"Expected {platformCsproj} to be included in the solution.");
 		}
 	}
