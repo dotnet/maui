@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Performance;
 using Microsoft.Maui.Controls.Shapes;
 
 using Microsoft.Maui.Graphics;
@@ -1909,7 +1910,10 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Arrange(Rect bounds)
 		{
-			return ArrangeOverride(bounds);
+			return Performance.Internals.Performance.TrackArrange(
+				this.FindMauiContext(),
+				() => ArrangeOverride(bounds),
+				GetType().Name);
 		}
 
 		/// <summary>
@@ -1953,8 +1957,12 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc/>
 		Size IView.Measure(double widthConstraint, double heightConstraint)
-		{
-			DesiredSize = MeasureOverride(widthConstraint, heightConstraint);
+		{	
+			DesiredSize = Performance.Internals.Performance.TrackMeasure(
+				this.FindMauiContext(),
+				() => MeasureOverride(widthConstraint, heightConstraint),
+				GetType().Name
+			);
 			return DesiredSize;
 		}
 

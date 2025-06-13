@@ -1,0 +1,16 @@
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Pages.PerformanceWarningsPage"
+             BackgroundColor="{DynamicResource PageBackgroundColor}"
+             Title="Get Performance Warnings">
+  <AbsoluteLayout>
+    <Label x:Name="label1"
+           Text="Bouncing text"
+           FontSize="20"
+           AbsoluteLayout.LayoutFlags="PositionProportional" />
+    <Label x:Name="label2"
+           Text="Bouncing text"
+           FontSize="20"
+           AbsoluteLayout.LayoutFlags="PositionProportional" />
+  </AbsoluteLayout>    
+</ContentPage>

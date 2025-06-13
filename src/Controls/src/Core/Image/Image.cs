@@ -104,8 +104,13 @@ namespace Microsoft.Maui.Controls
 
 		IImageSource IImageSourcePart.Source => Source;
 
-		void IImageSourcePart.UpdateIsLoading(bool isLoading) =>
+		void IImageSourcePart.UpdateIsLoading(bool isLoading)
+		{
 			IsLoading = isLoading;
+			
+			// Track the loading time
+			Performance.Internals.Performance.TrackImageLoad(this.FindMauiContext(), this, isLoading);
+		}
 
 		private protected override string GetDebuggerDisplay()
 		{

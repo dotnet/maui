@@ -15,14 +15,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 	{
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
-			Performance.Start(out string reference, "GetCellCore");
+			Internals.Performance.Start(out string reference, "GetCellCore");
 			var cell = (ViewCell)item;
 
 			var container = convertView as ViewCellContainer;
 			if (container != null)
 			{
 				container.Update(cell);
-				Performance.Stop(reference, "GetCellCore");
+				Internals.Performance.Stop(reference, "GetCellCore");
 				return container;
 			}
 
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			cell.View.IsPlatformEnabled = true;
 			var c = new ViewCellContainer(context, view, cell, ParentView, unevenRows, rowHeight);
 
-			Performance.Stop(reference, "GetCellCore");
+			Internals.Performance.Stop(reference, "GetCellCore");
 
 			return c;
 		}
@@ -181,23 +181,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			public void Update(ViewCell cell)
 			{
-				Performance.Start(out string reference);
+				Internals.Performance.Start(out string reference);
 				var renderer = GetChildAt(0) as IVisualElementRenderer;
 				var viewHandlerType = Registrar.Registered.GetHandlerTypeForObject(cell.View) ?? typeof(Platform.DefaultRenderer);
 				var reflectableType = renderer as System.Reflection.IReflectableType;
 				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : (renderer != null ? renderer.GetType() : typeof(System.Object));
 				if (renderer != null && rendererType == viewHandlerType)
 				{
-					Performance.Start(reference, "Reuse");
+					Internals.Performance.Start(reference, "Reuse");
 					_viewCell = cell;
 
 					cell.View.DisableLayout = true;
 					foreach (VisualElement c in cell.View.Descendants())
 						c.DisableLayout = true;
 
-					Performance.Start(reference, "Reuse.SetElement");
+					Internals.Performance.Start(reference, "Reuse.SetElement");
 					renderer.SetElement(cell.View);
-					Performance.Stop(reference, "Reuse.SetElement");
+					Internals.Performance.Stop(reference, "Reuse.SetElement");
 
 					Platform.SetRenderer(cell.View, _view);
 
@@ -211,8 +211,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					Invalidate();
 
-					Performance.Stop(reference, "Reuse");
-					Performance.Stop(reference);
+					Internals.Performance.Stop(reference, "Reuse");
+					Internals.Performance.Stop(reference);
 					return;
 				}
 
@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				UpdateIsEnabled();
 				UpdateWatchForLongPress();
 
-				Performance.Stop(reference);
+				Internals.Performance.Stop(reference);
 			}
 
 			public void UpdateIsEnabled()
@@ -250,22 +250,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
-				Performance.Start(out string reference);
+				Internals.Performance.Start(out string reference);
 
 				double width = Context.FromPixels(r - l);
 				double height = Context.FromPixels(b - t);
 
-				Performance.Start(reference, "Element.Layout");
+				Internals.Performance.Start(reference, "Element.Layout");
 				Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(_view.Element, new Rect(0, 0, width, height));
-				Performance.Stop(reference, "Element.Layout");
+				Internals.Performance.Stop(reference, "Element.Layout");
 
 				_view.UpdateLayout();
-				Performance.Stop(reference);
+				Internals.Performance.Stop(reference);
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 			{
-				Performance.Start(out string reference);
+				Internals.Performance.Start(out string reference);
 
 				int width = MeasureSpec.GetSize(widthMeasureSpec);
 				int height;
@@ -280,7 +280,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				SetMeasuredDimension(width, height);
 
-				Performance.Stop(reference);
+				Internals.Performance.Stop(reference);
 			}
 
 			bool WatchForSwipeViewTap()
