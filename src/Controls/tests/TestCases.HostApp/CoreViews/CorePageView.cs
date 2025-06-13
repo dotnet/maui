@@ -49,6 +49,7 @@ namespace Maui.Controls.Sample
 			// Elements
 			new GalleryPageFactory(() => new ActivityIndicatorCoreGalleryPage(), "ActivityIndicator Gallery"),
 			new GalleryPageFactory(() => new BoxViewCoreGalleryPage(), "Box Gallery"),
+			new GalleryPageFactory(() => new ButtonControlPage(), "Button Feature Matrix"),
 			new GalleryPageFactory(() => new ButtonCoreGalleryPage(), "Button Gallery"),
 			new GalleryPageFactory(() => new CarouselViewCoreGalleryPage(), "CarouselView Gallery"),
 			new GalleryPageFactory(() => new CheckBoxCoreGalleryPage(), "CheckBox Gallery"),
@@ -68,20 +69,24 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new ListViewCoreGalleryPage(), "ListView Gallery"),
 			new GalleryPageFactory(() => new PickerCoreGalleryPage(), "Picker Gallery"),
 			new GalleryPageFactory(() => new ProgressBarCoreGalleryPage(), "Progress Bar Gallery"),
+			new GalleryPageFactory(() => new RadioButtonControlPage(), "RadioButton Feature Matrix"),
 			new GalleryPageFactory(() => new RadioButtonCoreGalleryPage(), "RadioButton Gallery"),
 			new GalleryPageFactory(() => new ScrollViewCoreGalleryPage(), "ScrollView Gallery"),
 			new GalleryPageFactory(() => new ShadowFeaturePage(), "Shadow Feature Matrix"),
 			new GalleryPageFactory(() => new SearchBarCoreGalleryPage(), "Search Bar Gallery"),
 			new GalleryPageFactory(() => new SliderCoreGalleryPage(), "Slider Gallery"),
+			new GalleryPageFactory(() => new StepperControlPage(), "Stepper Feature Matrix"),
 			new GalleryPageFactory(() => new StepperCoreGalleryPage(), "Stepper Gallery"),
 			new GalleryPageFactory(() => new SwitchCoreGalleryPage(), "Switch Gallery"),
 			new GalleryPageFactory(() => new SwipeViewCoreGalleryPage(), "SwipeView Gallery"),
 			new GalleryPageFactory(() => new TimePickerCoreGalleryPage(), "Time Picker Gallery"),
 			new GalleryPageFactory(() => new WebViewCoreGalleryPage(), "WebView Gallery"),
 			new GalleryPageFactory(() => new SliderControlPage(), "Slider Feature Matrix"),
+			new GalleryPageFactory(() => new CheckBoxControlPage(), "CheckBox Feature Matrix"),
 			new GalleryPageFactory(() => new CollectionViewFeaturePage(), "CollectionView Feature Matrix"),
 			new GalleryPageFactory(() => new LabelControlPage(), "Label Feature Matrix"),
 			new GalleryPageFactory(() => new CarouselViewFeaturePage(), "CarouselView Feature Matrix"),
+			new GalleryPageFactory(() => new BoxViewControlPage(), "BoxView Feature Matrix"),
 		};
 
 		public CorePageView(Page rootPage)

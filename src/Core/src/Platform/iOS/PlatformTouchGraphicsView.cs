@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Platform
 			_proxy = new(this);
 			Opaque = false;
 			BackgroundColor = null;
+			MultipleTouchEnabled = true;
 		}
 
 		public override void LayoutSubviews()
