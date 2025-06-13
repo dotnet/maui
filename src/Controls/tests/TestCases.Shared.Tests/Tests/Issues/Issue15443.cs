@@ -18,11 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("15443Button3");
 			App.Click("15443Button3");
-			var labelText = App.WaitForElement("15443PositionLabel").GetText();
-			Assert.That(labelText, Is.EqualTo("Position: 2"));
 			App.Click("15443Button2");
-			var labelText1 = App.WaitForElement("15443PositionLabel").GetText();
-			Assert.That(labelText1, Is.EqualTo("Position: 1"));
+			App.Click("15443Button1");
+			VerifyScreenshot();
 		}
 	}
 }
