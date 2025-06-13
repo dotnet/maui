@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
 using Mono.Cecil;
-using NUnit.Framework;
+using Xunit;
 using NUnit.Framework.Interfaces;
 using static Microsoft.Maui.Controls.MSBuild.UnitTests.MSBuildXmlExtensions;
 using IOPath = System.IO.Path;
@@ -14,7 +14,7 @@ using IOPath = System.IO.Path;
 namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 {
 	//This set of tests is for validating Microsoft.Maui.Controls.targets
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	[Category("LongRunning")]
 	public class MSBuildTests
 	{
@@ -68,7 +68,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		string tempDirectory;
 		string intermediateDirectory;
 
-		[SetUp]
 		public void SetUp()
 		{
 			testDirectory = TestContext.CurrentContext.TestDirectory;
@@ -95,7 +94,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			File.Copy(targets, IOPath.Combine(tempDirectory, "Directory.Build.targets"), true);
 		}
 
-		[TearDown]
 		public void TearDown()
 		{
 			// Leave log files behind on test failures
@@ -226,9 +224,9 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				}
 
 				if (shouldSucceed)
-					Assert.AreEqual(0, p.ExitCode, "MSBuild exited with {0}", p.ExitCode);
+					Assert.Equal(0, p.ExitCode, "MSBuild exited with {0}", p.ExitCode);
 				else
-					Assert.AreNotEqual(0, p.ExitCode, "MSBuild exited with {0}", p.ExitCode);
+					Assert.NotEqual(0, p.ExitCode, "MSBuild exited with {0}", p.ExitCode);
 
 				return builder.ToString();
 			}
@@ -249,7 +247,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				Assert.Fail($"{path} should *not* exist!");
 		}
 
-		[Test]
+		[Fact]
 		public void BuildAProject()
 		{
 			var project = NewProject();
@@ -263,7 +261,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		// Tests the MauiXamlCValidateOnly=True MSBuild property
-		[Test]
+		[Fact]
 		public void ValidateOnly([Values("Debug", "Release", "ReleaseProd")] string configuration)
 		{
 			var project = NewProject();
@@ -289,7 +287,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			}
 		}
 
-		[Test]
+		[Fact]
 		[Ignore("source gen changes")]
 		public void ValidateOnly_WithErrors()
 		{
@@ -305,7 +303,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// <summary>
 		/// Tests that XamlG and XamlC targets skip, as well as checking IncrementalClean doesn't delete generated files
 		/// </summary>
-		[Test]
+		[Fact]
 		public void TargetsShouldSkip()
 		{
 			var project = NewProject();
@@ -324,13 +322,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(xamlCStamp);
 
 			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-			Assert.AreEqual(expectedXamlC, actualXamlC, $"Timestamps should match for {xamlCStamp}.");
+			Assert.Equal(expectedXamlC, actualXamlC, $"Timestamps should match for {xamlCStamp}.");
 		}
 
 		/// <summary>
 		/// Checks that XamlG and XamlC files are cleaned
 		/// </summary>
-		[Test]
+		[Fact]
 		public void Clean()
 		{
 			var project = NewProject();
@@ -351,7 +349,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertDoesNotExist(xamlCStamp);
 		}
 
-		[Test]
+		[Fact]
 		public void LinkedFile()
 		{
 			var folder = IOPath.Combine(tempDirectory, "A", "B");
@@ -374,7 +372,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		//https://github.com/dotnet/project-system/blob/master/docs/design-time-builds.md
 		//https://daveaglick.com/posts/running-a-design-time-build-with-msbuild-apis
-		[Test]
+		[Fact]
 		public void DesignTimeBuild()
 		{
 			var project = NewProject();
@@ -398,7 +396,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		}
 
-		[Test]
+		[Fact]
 		public void AddNewFile()
 		{
 			var project = NewProject();
@@ -419,10 +417,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(xamlCStamp);
 
 			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-			Assert.AreNotEqual(expectedXamlC, actualXamlC, $"Timestamps should *not* match for {xamlCStamp}.");
+			Assert.NotEqual(expectedXamlC, actualXamlC, $"Timestamps should *not* match for {xamlCStamp}.");
 		}
 
-		[Test]
+		[Fact]
 		[Ignore("source gen changes")]
 		public void TouchXamlFile()
 		{
@@ -447,10 +445,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(xamlCStamp);
 
 			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-			Assert.AreNotEqual(expectedXamlC, actualXamlC, $"Timestamps should *not* match for {xamlCStamp}.");
+			Assert.NotEqual(expectedXamlC, actualXamlC, $"Timestamps should *not* match for {xamlCStamp}.");
 		}
 
-		[Test]
+		[Fact]
 		public void RandomXml()
 		{
 			var project = NewProject();
@@ -463,7 +461,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		// [Test]
+		// [Fact]
 		// public void InvalidXml()
 		// {
 		// 	var project = NewProject();
@@ -473,7 +471,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		// 	Assert.Throws<AssertionException>(() => Build(projectFile));
 		// }
 
-		[Test]
+		[Fact]
 		public void RandomEmbeddedResource()
 		{
 			var project = NewProject();
@@ -488,14 +486,14 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		[Test]
+		[Fact]
 		public void NoXamlFiles()
 		{
 			var project = NewProject();
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 			var log = Build(projectFile, verbosity: "diagnostic");
-			Assert.IsTrue(log.Contains("Target \"XamlC\" skipped", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
+			Assert.True(log.Contains("Target \"XamlC\" skipped", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
 		}
 	}
 }

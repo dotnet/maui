@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -37,11 +37,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]]
+			[InlineData(false)]]
 			public void GridItemsLayoutWithConverter(bool useCompiledXaml)
 			{
 				var layout = new Bz18828(useCompiledXaml);

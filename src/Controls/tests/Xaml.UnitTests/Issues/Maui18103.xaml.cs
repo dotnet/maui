@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -21,17 +21,17 @@ public partial class Maui18103 : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	class Test
 	{
 		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void VSMOverride([Values(false, true)] bool useCompiledXaml)
 		{
 			var page = new Maui18103(useCompiledXaml);
-			Assert.That(page.button.Background, Is.EqualTo(new SolidColorBrush(Colors.Orange)));
+			Assert.Equal(new SolidColorBrush(Colors.Orange, page.button.Background));
 		}
 	}
 }

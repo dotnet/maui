@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -48,17 +48,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]]
+			[InlineData(false)]]
 			public void BindProperties(bool useCompiledXaml)
 			{
 				var page = new BindablePropertiesAccessModifiers(useCompiledXaml);
 				page.BindingContext = new BindablePropertiesAccessModifiersVM();
-				Assert.AreEqual("Bar", page.AMC.GetValue(AccessModifiersControl.InternalBarProperty));
-				Assert.AreEqual("Foo", page.AMC.GetValue(AccessModifiersControl.PublicFooProperty));
+				Assert.Equal("Bar", page.AMC.GetValue(AccessModifiersControl.InternalBarProperty));
+				Assert.Equal("Foo", page.AMC.GetValue(AccessModifiersControl.PublicFooProperty));
 			}
 		}
 	}

@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
-using NUnit.Framework;
+using Xunit;
 
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -17,30 +17,30 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
 			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Test]
+			[Fact]
 			public void VSMSetterOverrideManualValues([Values(false, true)] bool useCompiledXaml)
 			{
 				var page = new Maui11204(useCompiledXaml);
-				Assert.AreEqual(Colors.FloralWhite, page.border.BackgroundColor);
+				Assert.Equal(Colors.FloralWhite, page.border.BackgroundColor);
 				VisualStateManager.GoToState(page.border, "State1");
-				Assert.AreEqual(2, page.border.StrokeThickness);
-				Assert.AreEqual(Colors.Blue, page.border.BackgroundColor);
+				Assert.Equal(2, page.border.StrokeThickness);
+				Assert.Equal(Colors.Blue, page.border.BackgroundColor);
 			}
 
-			[Test]
+			[Fact]
 			public void StyleVSMSetterOverrideManualValues([Values(false, true)] bool useCompiledXaml)
 			{
 				var page = new Maui11204(useCompiledXaml);
-				Assert.AreEqual(Colors.HotPink, page.borderWithStyleClass.BackgroundColor);
+				Assert.Equal(Colors.HotPink, page.borderWithStyleClass.BackgroundColor);
 				VisualStateManager.GoToState(page.borderWithStyleClass, "State1");
-				Assert.AreEqual(2, page.borderWithStyleClass.StrokeThickness);
-				Assert.AreEqual(Colors.Blue, page.borderWithStyleClass.BackgroundColor);
+				Assert.Equal(2, page.borderWithStyleClass.StrokeThickness);
+				Assert.Equal(Colors.Blue, page.borderWithStyleClass.BackgroundColor);
 			}
 		}
 	}

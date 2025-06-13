@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,17 +17,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[Test]
+			[Fact]
 			public void StyleClassCanBeChanged([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh2678(useCompiledXaml);
 				var label = layout.label0;
-				Assert.That(label.BackgroundColor, Is.EqualTo(Colors.Red));
+				Assert.Equal(Colors.Red, label.BackgroundColor);
 				label.StyleClass = new List<string> { "two" };
-				Assert.That(label.BackgroundColor, Is.EqualTo(Colors.Green));
+				Assert.Equal(Colors.Green, label.BackgroundColor);
 			}
 		}
 	}

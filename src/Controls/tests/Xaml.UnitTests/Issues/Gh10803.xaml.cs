@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,13 +17,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
 			bool debuggerinitialstate;
 			int failures = 0;
 
-			[SetUp]
 			public void Setup()
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
@@ -32,7 +31,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				DebuggerHelper._mockDebuggerIsAttached = true;
 			}
 
-			[TearDown]
 			public void TearDown()
 			{
 				DebuggerHelper._mockDebuggerIsAttached = debuggerinitialstate;
@@ -41,7 +39,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				failures = 0;
 			}
 
-			[Test]
+			[Fact]
 			public void SourceInfoForElementsInDT([Values(false)] bool useCompiledXaml)
 			{
 				var layout = new Gh10803(useCompiledXaml);

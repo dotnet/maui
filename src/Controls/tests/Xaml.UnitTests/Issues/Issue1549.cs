@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -55,10 +55,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class Issue1549
 	{
-		[SetUp]
 		public void Setup()
 		{
 			SeverityColorConverter.count = 0;
@@ -68,7 +67,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void ConverterIsInvoked()
 		{
 			var xaml = @"
@@ -93,11 +92,11 @@ xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			var layout = new ContentPage().LoadFromXaml(xaml);
 			layout.BindingContext = new { Value = "Foo", Severity = "Bar" };
 			var label = layout.FindByName<Label>("label");
-			Assert.AreEqual(Colors.Blue, label.BackgroundColor);
-			Assert.AreEqual(1, SeverityColorConverter.count);
+			Assert.Equal(Colors.Blue, label.BackgroundColor);
+			Assert.Equal(1, SeverityColorConverter.count);
 		}
 
-		[Test]
+		[Fact]
 		public void ConverterIsInvoked_Escaped()
 		{
 			var xaml = @"
@@ -122,11 +121,11 @@ xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			var layout = new ContentPage().LoadFromXaml(xaml);
 			layout.BindingContext = new { Value = "Foo", Severity = "Bar" };
 			var label = layout.FindByName<Label>("label");
-			Assert.AreEqual(Colors.Blue, label.BackgroundColor);
-			Assert.AreEqual(1, SeverityColorConverter.count);
+			Assert.Equal(Colors.Blue, label.BackgroundColor);
+			Assert.Equal(1, SeverityColorConverter.count);
 		}
 
-		[Test]
+		[Fact]
 		public void ResourcesInNonXFBaseClassesAreFound()
 		{
 			var xaml = @"<local:BaseView 
@@ -183,13 +182,13 @@ xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			var label00 = (cell0.View as Compatibility.Grid).Children[0] as Label;
 			var label01 = (cell0.View as Compatibility.Grid).Children[1] as Label;
 
-			Assert.AreEqual("Show Is Locked", label00.Text);
-			Assert.AreEqual("Show Is Not locked", label01.Text);
+			Assert.Equal("Show Is Locked", label00.Text);
+			Assert.Equal("Show Is Not locked", label01.Text);
 
-			Assert.AreEqual(true, label00.IsVisible);
-			Assert.AreEqual(false, label01.IsVisible);
+			Assert.Equal(true, label00.IsVisible);
+			Assert.Equal(false, label01.IsVisible);
 
-			Assert.AreEqual(4, InvertBoolenConverter.count);
+			Assert.Equal(4, InvertBoolenConverter.count);
 
 		}
 	}

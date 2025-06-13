@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -18,21 +18,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[SetUp]
 			public void SetUp()
 			{
 				Application.Current = null;
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]]
+			[InlineData(true)]]
 			public void StaticResourceOnApplication(bool useCompiledXaml)
 			{
 				Issue2114 app;
-				Assert.DoesNotThrow(() => app = new Issue2114(useCompiledXaml));
+				() => app = new Issue2114(useCompiledXaml)
 
 				Assert.True(Current.Resources.ContainsKey("ButtonStyle"));
 				Assert.True(Current.Resources.ContainsKey("NavButtonBlueStyle"));

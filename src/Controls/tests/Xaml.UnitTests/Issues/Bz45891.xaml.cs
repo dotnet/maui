@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -27,30 +27,28 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			set { SetValue(ListProperty, value); }
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
-			[SetUp]
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			}
 
-			[TearDown]
 			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]]
+			[InlineData(false)]]
 			public void LookForInheritanceOnOpImplicit(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;
 				var p = new Bz45891(useCompiledXaml);
-				Assert.AreEqual("Foo", p.List.First());
+				Assert.Equal("Foo", p.List.First());
 			}
 		}
 	}

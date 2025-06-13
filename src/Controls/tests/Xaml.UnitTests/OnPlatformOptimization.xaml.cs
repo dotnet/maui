@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -22,10 +22,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[Test]
+			[Fact]
 			public void OnPlatformExtensionsAreSimplified([Values("net7.0-ios", "net7.0-android")] string targetFramework)
 			{
 				MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, out var hasLoggedErrors, targetFramework);
@@ -36,16 +36,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.That(methodDef.Body.Instructions.Any(instr => instr.Operand as string == expected), $"Did not find instruction containing '{expected}'");
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]]
+			[InlineData(true)]]
 			public void ValuesAreSet(bool useCompiledXaml)
 			{
 				var p = new OnPlatformOptimization(useCompiledXaml);
-				Assert.AreEqual("ringo", p.label0.Text);
-				Assert.AreEqual("foo", p.label1.Text);
+				Assert.Equal("ringo", p.label0.Text);
+				Assert.Equal("foo", p.label1.Text);
 			}
 
-			[Test]
+			[Fact]
 			[Ignore("capability disabled for now")]
 			public void OnPlatformAreSimplified([Values("net6.0-ios", "net6.0-android")] string targetFramework)
 			{

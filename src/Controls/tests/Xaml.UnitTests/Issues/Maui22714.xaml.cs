@@ -2,7 +2,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -19,10 +19,9 @@ public partial class Maui22714
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class Test
 	{
-		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -31,7 +30,7 @@ public partial class Maui22714
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void TestNonCompiledResourceDictionary(
 			[Values(false, true)] bool useCompiledXaml,
 			[Values(false, true)] bool treatWarningsAsErrors)

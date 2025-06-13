@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -21,10 +21,9 @@ public partial class Unreported010
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	class Test
 	{
-		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -33,13 +32,13 @@ public partial class Unreported010
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void LocalDynamicResources([Values(false, true)] bool useCompiledXaml)
 		{
 			var page = new Unreported010(useCompiledXaml);
-			Assert.That(page.button0.BackgroundColor, Is.EqualTo(Colors.Blue));
+			Assert.Equal(Colors.Blue, page.button0.BackgroundColor);
 			page.Resources["Foo"] = Colors.Red;
-			Assert.That(page.button0.BackgroundColor, Is.EqualTo(Colors.Red));
+			Assert.Equal(Colors.Red, page.button0.BackgroundColor);
 		}
 	}
 

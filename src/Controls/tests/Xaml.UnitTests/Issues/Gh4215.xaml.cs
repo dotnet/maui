@@ -5,7 +5,7 @@ using System.Globalization;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -54,15 +54,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[TestCase(true), TestCase(false)]
+			[InlineData(true)], TestCase(false)]
 			public void AvoidAmbiguousMatch(bool useCompiledXaml)
 			{
 				var layout = new Gh4215(useCompiledXaml);
-				Assert.DoesNotThrow(() => layout.BindingContext = new Gh4215VM());
-				Assert.That(layout.l0.Text, Is.EqualTo("foo"));
+				() => layout.BindingContext = new Gh4215VM()
+				Assert.Equal("foo", layout.l0.Text);
 			}
 		}
 	}

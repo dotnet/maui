@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -62,29 +62,29 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				action((Button)view);
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
 			void AssertStyleApplied(Button button)
 			{
-				Assert.AreEqual(LayoutOptions.Center, button.HorizontalOptions);
-				Assert.AreEqual(LayoutOptions.CenterAndExpand, button.VerticalOptions);
-				Assert.AreEqual(16, button.FontSize);
-				Assert.AreEqual(Colors.Blue, button.TextColor);
-				Assert.AreEqual(FontAttributes.Italic, button.FontAttributes);
+				Assert.Equal(LayoutOptions.Center, button.HorizontalOptions);
+				Assert.Equal(LayoutOptions.CenterAndExpand, button.VerticalOptions);
+				Assert.Equal(16, button.FontSize);
+				Assert.Equal(Colors.Blue, button.TextColor);
+				Assert.Equal(FontAttributes.Italic, button.FontAttributes);
 			}
 
 			void AssertStyleUnApplied(Button button)
 			{
-				Assert.AreEqual(View.HorizontalOptionsProperty.DefaultValue, button.HorizontalOptions);
-				Assert.AreEqual(View.VerticalOptionsProperty.DefaultValue, button.VerticalOptions);
-				Assert.AreEqual(new Button().GetDefaultFontSize(), button.FontSize);
-				Assert.AreEqual(Button.TextColorProperty.DefaultValue, button.TextColor);
-				Assert.AreEqual(Button.FontAttributesProperty.DefaultValue, button.FontAttributes);
+				Assert.Equal(View.HorizontalOptionsProperty.DefaultValue, button.HorizontalOptions);
+				Assert.Equal(View.VerticalOptionsProperty.DefaultValue, button.VerticalOptions);
+				Assert.Equal(new Button().GetDefaultFontSize(), button.FontSize);
+				Assert.Equal(Button.TextColorProperty.DefaultValue, button.TextColor);
+				Assert.Equal(Button.FontAttributesProperty.DefaultValue, button.FontAttributes);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]]
+			[InlineData(true)]]
 			public void SetUnsetStyleFromResource(bool useCompiledXaml)
 			{
 				var layout = new Issue2659(useCompiledXaml);
@@ -99,18 +99,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			void AssertPropertiesApplied(Button button)
 			{
-				Assert.AreEqual(Colors.Red, button.TextColor);
-				Assert.AreEqual(FontAttributes.Bold, button.FontAttributes);
+				Assert.Equal(Colors.Red, button.TextColor);
+				Assert.Equal(FontAttributes.Bold, button.FontAttributes);
 			}
 
 			void AssertPropertiesUnApplied(Button button)
 			{
-				Assert.AreEqual(Button.TextColorProperty.DefaultValue, button.TextColor);
-				Assert.AreEqual(Button.FontAttributesProperty.DefaultValue, button.FontAttributes);
+				Assert.Equal(Button.TextColorProperty.DefaultValue, button.TextColor);
+				Assert.Equal(Button.FontAttributesProperty.DefaultValue, button.FontAttributes);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]]
+			[InlineData(true)]]
 			public void SetUnsetLocalProperties(bool useCompiledXaml)
 			{
 				var layout = new Issue2659(useCompiledXaml);

@@ -12,7 +12,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -34,24 +34,22 @@ public partial class Maui25141 : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	class Test
 	{
-		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
 		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test]
+		[Fact]
 		public void BindingsInDataTriggerAndMultiBindingAreCompiledCorrectly()
 		{
 			MockCompiler.Compile(typeof(Maui25141), treatWarningsAsErrors: true);

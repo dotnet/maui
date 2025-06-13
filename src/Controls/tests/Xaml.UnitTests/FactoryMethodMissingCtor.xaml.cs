@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -13,10 +13,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[Test]
+			[Fact]
 			public void Throw([Values(false, true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

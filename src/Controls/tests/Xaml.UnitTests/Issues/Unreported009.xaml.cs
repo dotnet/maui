@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -18,15 +18,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[TestCase(true), TestCase(false)]
+			[InlineData(true)], TestCase(false)]
 			public void AllowSetterValueAsElementProperties(bool useCompiledXaml)
 			{
 				var p = new Unreported009(useCompiledXaml);
 				var s = p.Resources["Default"] as Style;
-				Assert.AreEqual("Bananas!", (s.Setters[0].Value as Label).Text);
+				Assert.Equal("Bananas!", (s.Setters[0].Value as Label).Text);
 			}
 		}
 	}

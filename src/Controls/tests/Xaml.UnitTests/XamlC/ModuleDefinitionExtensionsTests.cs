@@ -1,12 +1,12 @@
 using System;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Mono.Cecil;
-using NUnit.Framework;
+using Xunit;
 using NUnit.Framework.Constraints;
 
 namespace Microsoft.Maui.Controls.XamlcUnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class ModuleDefinitionExtensionsTests
 	{
 		class WithGenericInstanceCtorParameter
@@ -23,7 +23,6 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		ModuleDefinition module;
 		XamlCAssemblyResolver resolver;
 
-		[SetUp]
 		public void SetUp()
 		{
 			resolver = new XamlCAssemblyResolver();
@@ -37,14 +36,13 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 			});
 		}
 
-		[TearDown]
 		public void TearDown()
 		{
 			resolver?.Dispose();
 			module?.Dispose();
 		}
 
-		[Test]
+		[Fact]
 		public void TestImportCtorReferenceWithGenericInstanceCtorParameter()
 		{
 			var cache = new XamlCache();
@@ -54,11 +52,11 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 			var int16Tuple = module.ImportReference(typeof(Tuple<short>));
 			var int16TupleCtor = module.ImportCtorReference(cache, type, new[] { int16Tuple });
 
-			Assert.AreEqual("System.Tuple`1<System.Byte>", byteTupleCtor.Parameters[0].ParameterType.FullName);
-			Assert.AreEqual("System.Tuple`1<System.Int16>", int16TupleCtor.Parameters[0].ParameterType.FullName);
+			Assert.Equal("System.Tuple`1<System.Byte>", byteTupleCtor.Parameters[0].ParameterType.FullName);
+			Assert.Equal("System.Tuple`1<System.Int16>", int16TupleCtor.Parameters[0].ParameterType.FullName);
 		}
 
-		[Test]
+		[Fact]
 		public void TestImportCtorReferenceWithGenericInstanceTypeParameter()
 		{
 			var cache = new XamlCache();
@@ -67,8 +65,8 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 			var in16Tuple = module.ImportReference(typeof(Tuple<short>));
 			var int16TupleCtor = module.ImportCtorReference(cache, ("mscorlib", "System", "Tuple`1"), 1, new[] { in16Tuple });
 
-			Assert.AreEqual("System.Tuple`1<System.Byte>", ((GenericInstanceType)byteTupleCtor.DeclaringType).GenericArguments[0].FullName);
-			Assert.AreEqual("System.Tuple`1<System.Int16>", ((GenericInstanceType)int16TupleCtor.DeclaringType).GenericArguments[0].FullName);
+			Assert.Equal("System.Tuple`1<System.Byte>", ((GenericInstanceType)byteTupleCtor.DeclaringType).GenericArguments[0].FullName);
+			Assert.Equal("System.Tuple`1<System.Int16>", ((GenericInstanceType)int16TupleCtor.DeclaringType).GenericArguments[0].FullName);
 		}
 	}
 }

@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -25,10 +25,9 @@ public partial class Maui18324 : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	class Test
 	{
-		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -38,7 +37,7 @@ public partial class Maui18324 : ContentPage
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void xTypeShoudntCrash([Values(false, true)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)

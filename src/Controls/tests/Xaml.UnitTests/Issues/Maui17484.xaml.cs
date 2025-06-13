@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -21,19 +21,19 @@ public partial class Maui17484 : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	class Test
 	{
 		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void ObsoleteinDT([Values(false, true)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
-				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui17484)));
+				() => MockCompiler.Compile(typeof(Maui17484))
 			else
-				Assert.DoesNotThrow(() => new Maui17484(useCompiledXaml));
+				() => new Maui17484(useCompiledXaml)
 
 
 

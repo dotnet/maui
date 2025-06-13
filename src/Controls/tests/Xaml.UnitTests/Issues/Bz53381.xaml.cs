@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -21,20 +21,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 
-			[TearDown]
 			public void TearDown()
 			{
 				Application.Current = null;
 				DispatcherProvider.SetCurrent(null);
 			}
 
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]]
+			[InlineData(false)]]
 			public void ControlTemplateAsImplicitAppLevelStyles(bool useCompiledXaml)
 			{
 				Application.Current = new Bz53381App();
@@ -43,8 +42,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var presenter = ((StackLayout)view.InternalChildren[0]).Children[1] as ContentPresenter;
 				Assume.That(presenter, Is.Not.Null);
 				var grid = presenter.Content as Grid;
-				Assert.That(grid, Is.Not.Null);
-				Assert.That(grid.BackgroundColor, Is.EqualTo(Colors.Green));
+				Assert.NotNull(grid);
+				Assert.Equal(Colors.Green, grid.BackgroundColor);
 			}
 		}
 	}

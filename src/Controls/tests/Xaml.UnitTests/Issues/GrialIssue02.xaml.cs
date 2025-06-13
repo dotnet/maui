@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -47,18 +47,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]]
+			[InlineData(false)]]
 			public void BoxValueTypes(bool useCompiledXaml)
 			{
 				var layout = new GrialIssue02(useCompiledXaml);
 				var res = (GrialIssue02Converter)layout.Resources["converter"];
 
-				Assert.AreEqual(FontAttributes.None, res.TrueValue);
-				Assert.AreEqual(FontAttributes.Bold, res.FalseValue);
+				Assert.Equal(FontAttributes.None, res.TrueValue);
+				Assert.Equal(FontAttributes.Bold, res.FalseValue);
 			}
 		}
 	}

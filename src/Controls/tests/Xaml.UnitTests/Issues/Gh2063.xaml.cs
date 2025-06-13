@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Build.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -16,10 +16,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[TestCase(false), TestCase(true)]
+			[InlineData(false)], TestCase(true)]
 			public void DetailedErrorMessageOnMissingXmlnsDeclaration(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

@@ -1,6 +1,6 @@
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -29,10 +29,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[Test]
+			[Fact]
 			public void EventOverriding([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh5256(useCompiledXaml) { BindingContext = new { CompletedCommand = new Command(() => Assert.Pass()) } };

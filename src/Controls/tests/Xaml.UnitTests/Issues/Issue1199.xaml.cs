@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -18,17 +18,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]]
+			[InlineData(false)]]
 			public void AllowCreationOfTypesFromString(bool useCompiledXaml)
 			{
 				var layout = new Issue1199(useCompiledXaml);
 				var res = (Color)layout.Resources["AlmostSilver"];
 
-				Assert.AreEqual(Color.FromArgb("#FFCCCCCC"), res);
+				Assert.Equal(Color.FromArgb("#FFCCCCCC"), res);
 			}
 		}
 	}

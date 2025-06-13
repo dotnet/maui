@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
 			//{x:Static Member=prefix:typeName.staticMemberName}
@@ -29,8 +29,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			// - An enumeration value
 			// All other cases should throw
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]]
+			[InlineData(true)]]
 			public void ThrowOnInstanceProperty(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
