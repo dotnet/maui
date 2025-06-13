@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Networking
 		{
 			// Add in artifical delay so the connection status has time to change
 			// else it will return true no matter what.
-			await Task.Delay(100);
+			await Task.Delay(400);
 
 			ReachabilityChanged?.Invoke();
 		}
