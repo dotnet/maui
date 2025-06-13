@@ -29,14 +29,12 @@ namespace Microsoft.Maui.TestCases.Tests
         [Category(UITestCategories.ProgressBar)]
         public void ProgressBar_SetProgress_VerifyLabel()
         {
-            App.WaitForElement("Options");
-            App.Tap("Options");
+            App.WaitForElement("ResetButton");
+            App.Tap("ResetButton");
             App.WaitForElement("ProgressEntry");
             App.ClearText("ProgressEntry");
             App.EnterText("ProgressEntry", "0.80");
-            App.WaitForElement("Apply");
-            App.Tap("Apply");
-            App.WaitForElementTillPageNavigationSettled("ProgressBarControl");
+            App.PressEnter();
             App.WaitForElement("ProgressValueLabel");
             Assert.That(App.FindElement("ProgressValueLabel").GetText(), Is.EqualTo("0.80"));
         }
@@ -45,101 +43,98 @@ namespace Microsoft.Maui.TestCases.Tests
         [Category(UITestCategories.ProgressBar)]
         public void ProgressBar_ProgressToMethod_VerifyVisualState()
         {
+            App.WaitForElement("ResetButton");
+            App.Tap("ResetButton");
+            App.WaitForElement("ProgressToEntry");
+            App.ClearText("ProgressToEntry");
+            App.EnterText("ProgressToEntry", "0.90");
+            App.PressEnter();
             App.WaitForElement("ProgressToButton");
             App.Tap("ProgressToButton");
             Task.Delay(1000).Wait();
-            // VerifyScreenshot();
+            VerifyScreenshot();
         }
 
         [Test]
         [Category(UITestCategories.ProgressBar)]
         public void ProgressBar_SetProgressOutOfRange()
         {
-            App.WaitForElement("Options");
-            App.Tap("Options");
+            App.WaitForElement("ResetButton");
+            App.Tap("ResetButton");
             App.WaitForElement("ProgressEntry");
+            App.ClearText("ProgressEntry");
             App.EnterText("ProgressEntry", "1.44");
             App.PressEnter();
-            App.WaitForElement("Apply");
-            App.Tap("Apply");
-            App.WaitForElementTillPageNavigationSettled("ProgressBarControl");
-            // VerifyScreenshot();
+            App.WaitForElement("ProgressBarControl");
+            VerifyScreenshot();
         }
 
         [Test]
         [Category(UITestCategories.ProgressBar)]
         public void ProgressBar_SetProgressNegativeValue()
         {
-            App.WaitForElement("Options");
-            App.Tap("Options");
+            App.WaitForElement("ResetButton");
+            App.Tap("ResetButton");
             App.WaitForElement("ProgressEntry");
+            App.ClearText("ProgressEntry");
             App.EnterText("ProgressEntry", "-0.44");
             App.PressEnter();
-            App.WaitForElement("Apply");
-            App.Tap("Apply");
-            App.WaitForElementTillPageNavigationSettled("ProgressBarControl");
-            // VerifyScreenshot();
+            App.WaitForElement("ProgressBarControl");
+            VerifyScreenshot();
         }
 
         [Test]
         [Category(UITestCategories.ProgressBar)]
         public void ProgressBar_SetProgressColorAndBackgroundColor_VerifyVisualState()
         {
-            App.WaitForElement("Options");
-            App.Tap("Options");
+            App.WaitForElement("ResetButton");
+            App.Tap("ResetButton");
             App.WaitForElement("ProgressEntry");
             App.ClearText("ProgressEntry");
             App.EnterText("ProgressEntry", "0.60");
+            App.PressEnter();
             App.WaitForElement("ProgressColorRedButton");
             App.Tap("ProgressColorRedButton");
             App.WaitForElement("BackgroundColorLightBlueButton");
             App.Tap("BackgroundColorLightBlueButton");
-            App.WaitForElement("Apply");
-            App.Tap("Apply");
-            App.WaitForElementTillPageNavigationSettled("ProgressBarControl");
-            // VerifyScreenshot();
+            App.WaitForElement("ProgressBarControl");
+            VerifyScreenshot();
         }
 
         [Test]
         [Category(UITestCategories.ProgressBar)]
         public void ProgressBar_SetIsVisibleFalse_VerifyLabel()
         {
-            App.WaitForElement("Options");
-            App.Tap("Options");
+            App.WaitForElement("ResetButton");
+            App.Tap("ResetButton");
             App.WaitForElement("IsVisibleFalseRadio");
             App.Tap("IsVisibleFalseRadio");
-            App.WaitForElement("Apply");
-            App.Tap("Apply");
             App.WaitForNoElement("ProgressBarControl");
-            // VerifyScreenshot();
+            VerifyScreenshot();
         }
 
         [Test]
         [Category(UITestCategories.ProgressBar)]
         public void ProgressBar_ChangeFlowDirection_RTL_VerifyLabel()
         {
-            App.WaitForElement("Options");
-            App.Tap("Options");
+            App.WaitForElement("ResetButton");
+            App.Tap("ResetButton");
             App.WaitForElement("FlowDirectionRTL");
             App.Tap("FlowDirectionRTL");
-            App.WaitForElement("Apply");
-            App.Tap("Apply");
-            App.WaitForElementTillPageNavigationSettled("ProgressBarControl");
-            // VerifyScreenshot();
+            App.WaitForElement("ProgressBarControl");
+            VerifyScreenshot();
         }
 
         [Test]
         [Category(UITestCategories.ProgressBar)]
         public void ProgressBar_ToggleShadow_VerifyVisualState()
         {
-            App.WaitForElement("Options");
-            App.Tap("Options");
+            App.WaitForElement("ResetButton");
+            App.Tap("ResetButton");
             App.WaitForElement("ShadowTrueRadio");
             App.Tap("ShadowTrueRadio");
-            App.WaitForElement("Apply");
-            App.Tap("Apply");
-            App.WaitForElementTillPageNavigationSettled("ProgressBarControl");
-            // VerifyScreenshot();
+            App.WaitForElement("ProgressBarControl");
+            VerifyScreenshot();
         }
     }
 }
