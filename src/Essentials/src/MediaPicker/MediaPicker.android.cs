@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Media
 				}
 
 				// Return the file that we just captured
-				return captureResult != null ? new FileResult(captureResult) : null;
+				return captureResult is not null ? new FileResult(captureResult) : null;
 			}
 			catch (OperationCanceledException)
 			{
@@ -102,8 +102,11 @@ namespace Microsoft.Maui.Media
 			intent.SetType(photo ? FileMimeTypes.ImageAll : FileMimeTypes.VideoAll);
 
 			var pickerIntent = Intent.CreateChooser(intent, options?.Title);
-			if (pickerIntent == null)
+
+			if (pickerIntent is null)
+			{
 				return null;
+			}
 
 			try
 			{
@@ -119,7 +122,7 @@ namespace Microsoft.Maui.Media
 
 				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeMediaPicker, onResult: OnResult);
 
-				return path != null ? new FileResult(path) : null;
+				return path is not null ? new FileResult(path) : null;
 			}
 			catch (OperationCanceledException)
 			{
@@ -152,10 +155,24 @@ namespace Microsoft.Maui.Media
 
 		async Task<List<FileResult>> PickMultipleUsingPhotoPicker(MediaPickerOptions options, bool photo)
 		{
-			var pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
-				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance)
-				.SetMaxItems(options.SelectionLimit)
-				.Build();
+			// Android has a limitation that you need to use a different request for single and multiple picks.
+			// If the selection limit is 1, we can use the single pick method,
+			// otherwise we need to use the multiple pick method.
+			if (options.SelectionLimit == 1)
+			{
+				var singleResult = await PickUsingPhotoPicker(options, photo);
+				return singleResult is not null ? [singleResult] : null;
+			}
+			
+			var pickVisualMediaRequestBuilder = new PickVisualMediaRequest.Builder()
+				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance);
+
+			if (options.SelectionLimit >= 2)
+			{
+				pickVisualMediaRequestBuilder.SetMaxItems(options.SelectionLimit);
+			}
+
+			var pickVisualMediaRequest = pickVisualMediaRequestBuilder.Build();
 
 			var androidUris = await PickMultipleVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
 
@@ -165,17 +182,18 @@ namespace Microsoft.Maui.Media
 			}
 
 			var resultList = new List<FileResult>();
-			
-			foreach (AndroidUri uri in androidUris.ToEnumerable())
-			{
-				if (uri?.Equals(AndroidUri.Empty) ?? true)
-				{
-					continue;
-				}
 
-				var path = FileSystemUtils.EnsurePhysicalPath(uri);
-				resultList.Add(new FileResult(path));
-			}
+            var uriArray = androidUris.ToArray();
+            foreach (AndroidUri uri in uriArray.Cast<AndroidUri>())
+            {
+                if (uri?.Equals(AndroidUri.Empty) ?? true)
+                {
+                    continue;
+                }
+
+                var path = FileSystemUtils.EnsurePhysicalPath(uri);
+                resultList.Add(new FileResult(path));
+            }
 
 			return resultList;
 		}
@@ -259,26 +277,11 @@ namespace Microsoft.Maui.Media
 						}
 					}
 					else
-					{
-						// Multiple selection result
-						var selectionLimit = options?.SelectionLimit ?? 0;
-						var totalSelected = resultIntent.ClipData.ItemCount;
-						var itemCount = selectionLimit > 0 ? Math.Min(totalSelected, selectionLimit) : totalSelected;
-								// If selection limit is exceeded, show a toast notification
-						if (selectionLimit > 0 && totalSelected > selectionLimit)
-						{
-							var activity = ActivityStateManager.Default.GetCurrentActivity(true);
-							if (activity != null)
-							{
-								var message = $"Selection limited to {selectionLimit} item{(selectionLimit == 1 ? "" : "s")}. Only the first {selectionLimit} item{(selectionLimit == 1 ? " was" : "s were")} selected.";
-								Toast.MakeText(activity, message, ToastLength.Long)?.Show();
-							}
-						}
-						
-						for (var i = 0; i < itemCount; i++)
+					{	
+						for (var i = 0; i < resultIntent.ClipData.ItemCount; i++)
 						{
 							var uri = resultIntent.ClipData.GetItemAt(i)?.Uri;
-							if (uri != null)
+							if (uri is not null)
 							{
 								var path = FileSystemUtils.EnsurePhysicalPath(uri);
 								resultList.Add(new FileResult(path));
