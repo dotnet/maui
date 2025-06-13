@@ -21,7 +21,92 @@ public class EntryFeatureTests : UITest
 		App.NavigateToGallery(EntryFeatureMatrix);
 	}
 
+
 	[Test, Order(1)]
+	[Category(UITestCategories.Entry)]
+	public void VerifyEntryCompletedEvent()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		App.WaitForElement("EntryText");
+
+		Assert.That(App.WaitForElement("CompletedLabel").GetText(), Is.EqualTo("Completed: Not triggered"));
+
+		App.ClearText("EntryText");
+		App.EnterText("EntryText", "Completed");
+		App.PressEnter();
+
+		Assert.That(App.WaitForElement("CompletedLabel").GetText(), Is.EqualTo("Completed: Event Triggered"));
+	}
+
+	[Test, Order(2)]
+	[Category(UITestCategories.Entry)]
+	public void VerifyEntryTextChangedEvent()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		App.WaitForElement("EntryText");
+
+		Assert.That(App.WaitForElement("TextChangedLabel").GetText(), Is.EqualTo("TextChanged: Not triggered"));
+
+		App.ClearText("EntryText");
+		App.EnterText("EntryText", "New Text");
+
+#if !ANDROID
+		Assert.That(App.WaitForElement("TextChangedLabel").GetText(), Is.EqualTo("TextChanged: Old='New Tex', New='New Text'"));
+#else
+    Assert.That(App.WaitForElement("TextChangedLabel").GetText(), Is.EqualTo("TextChanged: Old='', New='New Text'"));
+#endif
+	}
+
+#if TEST_FAILS_ON_WINDOWS //On Windows, the Entry gets focused by default when the app starts.Navigating to the control page triggers both Focused and Unfocused events automatically.
+	
+		[Test, Order(3)]
+	[Category(UITestCategories.Entry)]
+	public void VerifyEntryFocusedEvent()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		App.WaitForElement("EntryText");
+
+		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Not triggered"));
+
+		App.Tap("EntryText");
+		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
+	}
+
+	[Test, Order(4)]
+	[Category(UITestCategories.Entry)]
+	public void VerifyEntryUnfocusedEvent()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		App.WaitForElement("EntryText");
+
+		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Not triggered"));
+
+		// Focus the entry
+		App.Tap("EntryText");
+		// Tap elsewhere to unfocus (e.g., a label)
+		App.Tap("TextChangedLabel");
+
+		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Event Triggered"));
+	}
+#endif
+
+	[Test]
 	[Category(UITestCategories.Entry)]
 	public void VerifyClearButtonVisiblityWhenTextPresentOrEmpty()
 	{
@@ -328,11 +413,12 @@ public class EntryFeatureTests : UITest
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");	
+		App.EnterText("TextEntryChanged", "Test Entered Set MaxLenght");
 		App.WaitForElement("MaxLength");
 		App.ClearText("MaxLength");
 		App.EnterText("MaxLength", "6");
-		App.WaitForElement("PasswordTrue");
-		App.Tap("PasswordTrue");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		VerifyScreenshot();
@@ -348,6 +434,9 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("CharacterSpacing");
 		App.ClearText("CharacterSpacing");
 		App.EnterText("CharacterSpacing", "5");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.EnterText("TextEntryChanged", "Test Entered Set MaxLenght");
 		App.WaitForElement("MaxLength");
 		App.ClearText("MaxLength");
 		App.EnterText("MaxLength", "6");
@@ -363,12 +452,9 @@ public class EntryFeatureTests : UITest
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("EntryText");
-		Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Test Entry"));
-		App.WaitForElement("Options");
-		App.Tap("Options");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.EnterText("TextEntryChanged", "Test Entered Set MaxLenght");
 		App.WaitForElement("MaxLength");
 		App.ClearText("MaxLength");
 		App.EnterText("MaxLength", "6");
@@ -385,6 +471,9 @@ public class EntryFeatureTests : UITest
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.EnterText("TextEntryChanged", "Test Entered Set MaxLenght");
 		App.WaitForElement("ReadOnlyTrue");
 		App.Tap("ReadOnlyTrue");
 		App.WaitForElement("MaxLength");
@@ -578,7 +667,8 @@ public class EntryFeatureTests : UITest
 		Assert.That(App.WaitForElement("SelectionLength").GetText(), Is.EqualTo("0"));
 	}
 
-#if TEST_FAILS_ON_ANDROID //After setting IsReadOnly to true, the Cursor remains visible on Android even when IsCursorVisible is set to false, which is not the expected behavior.
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // On Windows, cursor position and selection length still work when the Entry is set to read-only  
+	//On android After setting IsReadOnly to true, the Cursor remains visible on Android even when IsCursorVisible is set to false, which is not the expected behavior.
 	[Test]
 	[Category(UITestCategories.Entry)]
 	public void VerifyCursorPositionWhenIsReadOnlyTrue()
@@ -594,7 +684,6 @@ public class EntryFeatureTests : UITest
 		Assert.That(App.WaitForElement("CursorPosition").GetText(), Is.EqualTo("0"));
 	}
 
-#if TEST_FAILS_ON_WINDOWS // On Windows, Even when IsReadOnly is set to true, the Entry control still allows text selection, and SelectionLength continues to work.
 	[Test]
 	[Category(UITestCategories.Entry)]
 	public void VerifySelectionLenghtWhenIsReadOnlyTrue()
@@ -614,7 +703,6 @@ public class EntryFeatureTests : UITest
 		App.Tap("EntryText");
 		Assert.That(App.WaitForElement("SelectionLength").GetText(), Is.EqualTo("3"));
 	}
-#endif
 #endif
 
 	[Test]
@@ -664,8 +752,11 @@ public class EntryFeatureTests : UITest
 		App.Tap("EntryText");
 		VerifyScreenshotWithKeyboardHandling();
 	}
-    
-	// On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsEnabled property is set to false.
+
+#endif
+#endif
+
+#if TEST_FAILS_ON_ANDROID // On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsEnabled property is set to false.
 	[Test]
 	[Category(UITestCategories.Entry)]
 	public void VerifyEntryControlWhenIsEnabledTrueOrFalse()
@@ -689,7 +780,6 @@ public class EntryFeatureTests : UITest
 		Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Test Entry"));
 
 	}
-#endif
 #endif
 
 	[Test]
@@ -758,6 +848,21 @@ public class EntryFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.Entry)]
+	public void VerifyEntryWhenTextChanged()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");	
+		App.EnterText("TextEntryChanged", "New Text Changed");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("New Text Changed"));
+	}
+
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/29812
+	[Test]
+	[Category(UITestCategories.Entry)]
 	public void VerifyEntry_WithShadow()
 	{
 		App.WaitForElement("Options");
@@ -771,47 +876,7 @@ public class EntryFeatureTests : UITest
 
 		VerifyScreenshot();
 	}
-
-	[Test]
-	[Category(UITestCategories.Entry)]
-	public void VerifyAllEntryEventsInSequence()
-	{
-		// Clear options first to ensure we have a clean state
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-
-		// Wait for the entry control to be visible
-		App.WaitForElement("EntryText");
-
-		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Not triggered"));
-		Assert.That(App.WaitForElement("TextChangedLabel").GetText(), Is.EqualTo("TextChanged: Not triggered"));
-		Assert.That(App.WaitForElement("CompletedLabel").GetText(), Is.EqualTo("Completed: Not triggered"));
-		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Not triggered"));
-
-
-		// Step 1: Focus the entry (should trigger Focused event)
-		App.Tap("EntryText");
-		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
-		// Step 2: Change the text (should trigger TextChanged event)
-		App.ClearText("EntryText");
-		App.EnterText("EntryText", "New Text");
-#if !ANDROID
-		Assert.That(App.WaitForElement("TextChangedLabel").GetText(), Is.EqualTo("TextChanged: Old='New Tex', New='New Text'"));
-#else
-		Assert.That(App.WaitForElement("TextChangedLabel").GetText(), Is.EqualTo("TextChanged: Old='', New='New Text'"));
 #endif
-
-		// Step 3: Press Enter (should trigger Completed event)
-		App.PressEnter();
-		Assert.That(App.WaitForElement("CompletedLabel").GetText(), Is.EqualTo("Completed: Event Triggered"));
-
-		// Step 4: Unfocus the entry (should trigger Unfocused event)
-		App.Tap("TextChangedLabel");
-		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Event Triggered"));
-
-	}
 
 	/// <summary>
 	/// Helper method to handle keyboard visibility and take a screenshot with appropriate cropping

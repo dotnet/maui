@@ -35,6 +35,10 @@ namespace Maui.Controls.Sample
 			_viewModel.Placeholder = "Enter text here";
 			_viewModel.CursorPosition = 0;
 			_viewModel.SelectionLength = 0;
+			_viewModel.FocusedText = "Focused: Not triggered";
+			_viewModel.UnfocusedText = "Unfocused: Not triggered";
+			_viewModel.TextChangedText = "TextChanged: Not triggered";
+			_viewModel.CompletedText = "Completed: Not triggered";
 			EntryControl.PropertyChanged += UpdateEntryControl;
 			await Navigation.PushAsync(new EntryOptionsPage(_viewModel));
 		}

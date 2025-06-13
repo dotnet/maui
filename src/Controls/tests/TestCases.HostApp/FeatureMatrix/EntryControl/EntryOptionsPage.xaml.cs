@@ -27,7 +27,15 @@ namespace Maui.Controls.Sample
             }
         }
 
-        private void PlaceholderEntry_TextChanged(object sender, TextChangedEventArgs e)
+		private void Entry_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (BindingContext is EntryViewModel vm)
+			{
+				vm.Text = e.NewTextValue;
+			}
+		}
+
+		private void PlaceholderEntry_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (BindingContext is EntryViewModel vm)
             {

@@ -15,7 +15,16 @@
         <!-- Left Column: Entry property toggles and settings -->
         <VerticalStackLayout Grid.Column="0"
                              Spacing="2">
-            <!-- Font Size -->
+      <!-- Text -->
+      <VerticalStackLayout>
+        <Label Text="Text:"
+           FontSize="11"/>
+        <Entry x:Name="TextEntry"
+           Text="{Binding Text}"
+           TextChanged="Entry_TextChanged"
+           AutomationId="TextEntryChanged"/>
+      </VerticalStackLayout>
+      <!-- Font Size -->
             <VerticalStackLayout>
                 <Label Text="Font Size:"
                        FontSize="11"/>
