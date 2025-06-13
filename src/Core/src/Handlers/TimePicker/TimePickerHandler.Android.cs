@@ -1,13 +1,17 @@
 ﻿using System;
 using Android.App;
+using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text.Format;
+using DateFormat = Android.Text.Format.DateFormat;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
 	{
+		TimePickerDialogDismissListener DialogDismissListener { get; } = new TimePickerDialogDismissListener();
+		
 		MauiTimePicker? _timePicker;
 		TimePickerDialog? _dialog;
 
@@ -26,6 +30,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog != null)
 			{
+				DialogDismissListener.Handler = null;
+				_dialog.SetOnDismissListener(null);
+				
 				_dialog.Hide();
 				_dialog = null;
 			}
@@ -48,7 +55,10 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			var dialog = new TimePickerDialog(Context!, onTimeSetCallback, hour, minute, Use24HourView);
-
+			
+			DialogDismissListener.Handler = this;
+			dialog.SetOnDismissListener(DialogDismissListener);
+			
 			return dialog;
 		}
 
@@ -85,6 +95,17 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextColor(timePicker);
 		}
 
+		public static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker)
+		{
+			if (handler is TimePickerHandler timePickerHandler)
+			{
+				if (timePicker.IsOpen)
+					timePickerHandler.ShowPickerDialog();
+				else
+					timePickerHandler.HidePickerDialog();
+			}
+		}
+		
 		void ShowPickerDialog()
 		{
 			if (VirtualView is null)
@@ -100,11 +121,21 @@ namespace Microsoft.Maui.Handlers
 		// to be lost). Not useful until we have orientation changed events.
 		void ShowPickerDialog(TimeSpan? time)
 		{
+			if (_dialog is not null && _dialog.IsShowing)
+			{
+				return;
+			}
+			
 			var hour = time?.Hours ?? 0;
 			var minute = time?.Minutes ?? 0;
 
 			_dialog = CreateTimePickerDialog(hour, minute);
 			_dialog.Show();
+
+			if (VirtualView is not null)
+			{
+				VirtualView.IsOpen = true;
+			}
 		}
 
 		void HidePickerDialog()
@@ -115,9 +146,30 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			_dialog = null;
+
+			if (VirtualView is not null)
+			{
+				VirtualView.IsOpen = false;
+			}
 		}
 
 		bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(PlatformView?.Context)
 			&& VirtualView.Format == "t" || VirtualView.Format == "HH:mm");
+		
+		static void OnDismiss(ITimePickerHandler? handler, IDialogInterface? dialog)
+		{
+			if (handler is TimePickerHandler timePickerHandler)
+				timePickerHandler.HidePickerDialog();
+		}
+		
+		class TimePickerDialogDismissListener : Java.Lang.Object, IDialogInterfaceOnDismissListener
+		{
+			public TimePickerHandler? Handler { get; set; }
+			
+			public void OnDismiss(IDialogInterface? dialog)
+			{
+				TimePickerHandler.OnDismiss(Handler, dialog);
+			}
+		}
 	}
 }
