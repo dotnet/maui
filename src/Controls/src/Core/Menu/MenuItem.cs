@@ -106,6 +106,8 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void OnClicked() => Clicked?.Invoke(this, EventArgs.Empty);
 
+		internal void RaiseClickedEvent() => OnClicked();
+
 		void IMenuItemController.Activate()
 		{
 			if (IsEnabled)
