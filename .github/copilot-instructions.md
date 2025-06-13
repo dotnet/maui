@@ -59,6 +59,12 @@ dotnet --version  # Should show 9.0.105 or newer
 - `eng/` - Build engineering and tooling
 - `.github/` - GitHub workflows and configuration
 
+### Platform-Specific Code Organization
+- **Android** specific code is inside folders labeled `Android`
+- **iOS** specific code is inside folders labeled `iOS`
+- **MacCatalyst** specific code is inside folders named `MacCatalyst`
+- **Windows** specific code is inside folders named `Windows`
+
 ### Solution Files
 - `Microsoft.Maui.sln` - Main solution file
 - `Microsoft.Maui-windows.slnf` - Windows-specific solution filter
@@ -115,9 +121,6 @@ dotnet cake
 # Clean build (removes obj/bin folders)
 dotnet cake --clean
 
-# Target specific platforms
-dotnet cake --target=VS --workloads=global --android --ios
-
 # Pack NuGet packages
 dotnet cake --target=dotnet-pack
 ```
@@ -138,9 +141,6 @@ dotnet test
 
 # Run specific test project
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests
-
-# Run specific test with parameters
-dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --logger "console;verbosity=diagnostic" --filter "Name=Build\(%22maui%22,%22net7.0%22,%22Debug%22,False\)"
 ```
 
 #### Debugging
@@ -171,17 +171,14 @@ For compatibility with specific branches:
 
 ### iOS (requires macOS)
 - Requires current stable Xcode installation from [App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12) or [Apple Developer portal](https://developer.apple.com/download/more/?name=Xcode)
-- Use `--ios` flag with Cake builds
 - Pair to Mac required when developing on Windows
 
 ### Windows
 - Requires Windows SDK
-- Use `--windows` flag with Cake builds
 - Open `Microsoft.Maui-windows.slnf` in Visual Studio
 
 ### macOS/Mac Catalyst
 - Requires Xcode installation
-- Use `--catalyst` flag with Cake builds
 
 ## Common Commands
 
