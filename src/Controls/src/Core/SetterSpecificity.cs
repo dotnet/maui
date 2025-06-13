@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Controls
 		public const ushort StyleLocal = 0x100;
 
 		public static readonly SetterSpecificity DefaultValue = new SetterSpecificity(0);
+		public static readonly SetterSpecificity LowestAppliedValue = new SetterSpecificity(1);
 		public static readonly SetterSpecificity VisualStateSetter = new SetterSpecificity(ExtrasVsm, 0, 0, 0, 0, 0, 0, 0);
 		public static readonly SetterSpecificity FromBinding = new SetterSpecificity(0, 0, 0, 1, 0, 0, 0, 0);
 
