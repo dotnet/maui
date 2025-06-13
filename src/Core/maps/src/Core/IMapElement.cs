@@ -9,5 +9,12 @@
 		/// Gets or sets the platform counterpart of this map element.
 		/// </summary>
 		object? MapElementId { get; set; }
+
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		/// <summary>
+		/// Method called by the handler when user clicks on the element.
+		/// </summary>
+		void Clicked();
 	}
 }
