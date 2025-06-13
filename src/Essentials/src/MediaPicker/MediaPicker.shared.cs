@@ -116,7 +116,6 @@ namespace Microsoft.Maui.Media
 		internal static void SetDefault(IMediaPicker? implementation) =>
 			defaultImplementation = implementation;
 	}
-
 	/// <summary>
 	/// Pick options for picking media from the device.
 	/// </summary>
@@ -131,6 +130,9 @@ namespace Microsoft.Maui.Media
 		/// <summary>
 		/// Gets or sets the maximum number of items that can be selected. Default value is 1.
 		/// </summary>
+		/// <remarks>
+		/// A value of 0 means no limit.
+		/// </remarks>
 #pragma warning disable RS0016 // Add public types and members to the declared API
 		public int SelectionLimit { get; set; } = 1;
 #pragma warning restore RS0016 // Add public types and members to the declared API
