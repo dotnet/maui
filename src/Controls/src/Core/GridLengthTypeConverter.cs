@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 #if NET6_0_OR_GREATER
 				var lastChar = value[^1];
 #else
-    			var lastChar = value[value.Length - 1];
+				var lastChar = value[value.Length - 1];
 #endif
 				if (lastChar == '*')
 				{

@@ -602,7 +602,7 @@ namespace Microsoft.Maui.Platform
 					view.ViewDetachedFromWindow -= routedEventHandler;
 			});
 
-			routedEventHandler = (sender,args) =>
+			routedEventHandler = (sender, args) =>
 			{
 				// This event seems to fire prior to the view actually being
 				// detached from the window
@@ -617,7 +617,7 @@ namespace Microsoft.Maui.Platform
 						{
 							args.DetachedView.ViewDetachedFromWindow -= routedEventHandler;
 						}
-						
+
 						routedEventHandler = null;
 					}
 

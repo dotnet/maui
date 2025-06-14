@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 			{
 				if (PlatformInterop.CreateEditTextColorStateList(platformPicker.TextColors, titleColor.ToPlatform()) is ColorStateList c)
 					platformPicker.SetHintTextColor(c);
-				else if(picker.TextColor == picker.TitleColor)
+				else if (picker.TextColor == picker.TitleColor)
 					platformPicker.SetHintTextColor(titleColor.ToPlatform());
 			}
 		}
