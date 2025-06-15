@@ -84,6 +84,32 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 		}
 
+		internal static void MapFocus(IPickerHandler handler, IPicker picker, object? args)
+		{
+			if (handler.IsConnected() && !picker.IsFocused)
+			{
+				if (args is FocusRequest request)
+				{
+					handler.PlatformView.Focus(request);
+				}
+
+				handler.PlatformView.CallOnClick();
+			}
+		}
+
+		internal static void MapUnfocus(IPickerHandler handler, IPicker picker, object? args)
+		{
+			if (handler.IsConnected() && handler is PickerHandler pickerHandler && picker.IsFocused)
+			{
+				pickerHandler.DismissDialog();
+				pickerHandler.PlatformView.ClearFocus();
+			}
+		}
+
+		void DismissDialog()
+		{
+			_dialog?.Dismiss();
+		}
 
 		void OnClick(object? sender, EventArgs e)
 		{
@@ -132,13 +158,35 @@ namespace Microsoft.Maui.Handlers
 
 				_dialog.SetCanceledOnTouchOutside(true);
 
-				_dialog.DismissEvent += (sender, args) =>
-				{
-					_dialog = null;
-				};
+				_dialog.ShowEvent += OnDialogShown;
+
+				_dialog.DismissEvent += OnDialogDismiss;
 
 				_dialog.Show();
 			}
+		}
+
+		void OnDialogDismiss(object? sender, EventArgs e)
+		{
+			if (_dialog is null)
+			{
+				return;
+			}
+
+			_dialog.DismissEvent -= OnDialogDismiss;
+			VirtualView.IsFocused = false;
+			_dialog = null;
+		}
+
+		void OnDialogShown(object? sender, EventArgs e)
+		{
+			if (_dialog is null)
+			{
+				return;
+			}
+
+			_dialog.ShowEvent -= OnDialogShown;
+			VirtualView.IsFocused = true;
 		}
 
 		static void Reload(IPickerHandler handler)

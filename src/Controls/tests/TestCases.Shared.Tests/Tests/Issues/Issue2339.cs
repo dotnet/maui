@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
-#if TEST_FAILS_ON_ANDROID 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue2339 : _IssuesUITest
@@ -28,4 +27,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif
