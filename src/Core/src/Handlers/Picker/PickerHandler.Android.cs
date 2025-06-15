@@ -19,7 +19,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiPicker platformView)
 		{
-			platformView.FocusChange += OnFocusChange;
 			platformView.Click += OnClick;
 
 			base.ConnectHandler(platformView);
@@ -27,7 +26,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiPicker platformView)
 		{
-			platformView.FocusChange -= OnFocusChange;
 			platformView.Click -= OnClick;
 
 			base.DisconnectHandler(platformView);
@@ -86,23 +84,31 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 		}
 
-		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
+		internal static void MapFocus(IPickerHandler handler, IPicker picker, object? args)
 		{
-			if (PlatformView == null)
-				return;
+			if (handler.IsConnected() && !picker.IsFocused)
+			{
+				if (args is FocusRequest request)
+				{
+					handler.PlatformView.Focus(request);
+				}
 
-			if (e.HasFocus)
-			{
-				if (PlatformView.Clickable)
-					PlatformView.CallOnClick();
-				else
-					OnClick(PlatformView, EventArgs.Empty);
+				handler.PlatformView.CallOnClick();
 			}
-			else if (_dialog != null)
+		}
+
+		internal static void MapUnfocus(IPickerHandler handler, IPicker picker, object? args)
+		{
+			if (handler.IsConnected() && handler is PickerHandler pickerHandler && picker.IsFocused)
 			{
-				_dialog.Hide();
-				_dialog = null;
+				pickerHandler.DismissDialog();
+				pickerHandler.PlatformView.ClearFocus();
 			}
+		}
+
+		void DismissDialog()
+		{
+			_dialog?.Dismiss();
 		}
 
 		void OnClick(object? sender, EventArgs e)
@@ -152,13 +158,35 @@ namespace Microsoft.Maui.Handlers
 
 				_dialog.SetCanceledOnTouchOutside(true);
 
-				_dialog.DismissEvent += (sender, args) =>
-				{
-					_dialog = null;
-				};
+				_dialog.ShowEvent += OnDialogShown;
+
+				_dialog.DismissEvent += OnDialogDismiss;
 
 				_dialog.Show();
 			}
+		}
+
+		void OnDialogDismiss(object? sender, EventArgs e)
+		{
+			if (_dialog is null)
+			{
+				return;
+			}
+
+			_dialog.DismissEvent -= OnDialogDismiss;
+			VirtualView.IsFocused = false;
+			_dialog = null;
+		}
+
+		void OnDialogShown(object? sender, EventArgs e)
+		{
+			if (_dialog is null)
+			{
+				return;
+			}
+
+			_dialog.ShowEvent -= OnDialogShown;
+			VirtualView.IsFocused = true;
 		}
 
 		static void Reload(IPickerHandler handler)
