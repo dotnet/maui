@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue29391">
+  <Grid RowDefinitions="Auto,*">
+    <HorizontalStackLayout>
+      <Label Grid.Row="0"
+             Text="IsSwipeEnabled: "/>
+      <Switch AutomationId="Switch"
+              IsToggled="True"
+              x:Name="Switch"/>
+    </HorizontalStackLayout>
+    <CarouselView
+      AutomationId="CarouselView"
+      Grid.Row="1"
+      IsSwipeEnabled="{Binding Source={x:Reference Switch}, Path=IsToggled}"
+      x:Name="CarouselView">
+      <CarouselView.ItemTemplate>
+        <DataTemplate>
+          <Border>
+            <Grid Background="Yellow">
+              <Label HorizontalOptions="Center"
+                     VerticalOptions="Center"
+                     AutomationId="{Binding}"
+                     Text="{Binding}"/>
+            </Grid>
+          </Border>
+        </DataTemplate>
+      </CarouselView.ItemTemplate>
+      <CarouselView.ItemsSource>
+        <x:Array Type="{x:Type x:String}">
+          <x:String>Item1</x:String>
+          <x:String>Item2</x:String>
+          <x:String>Item3</x:String>
+        </x:Array>
+      </CarouselView.ItemsSource>
+    </CarouselView>
+  </Grid>
+</ContentPage>
