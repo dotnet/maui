@@ -124,22 +124,6 @@ public class ImageButtonFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.ImageButton)]
-	public void VerifyImageButtonAspect_AspectFillWithImageSourceFromStream()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ImageAspectFill);
-		App.Tap(ImageAspectFill);
-		App.WaitForElement(SourceTypeStream);
-		App.Tap(SourceTypeStream);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("ImageButtonControl");
-		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_FillWithImageSourceFromFile()
 	{
 		App.WaitForElement(Options);
@@ -204,6 +188,22 @@ public class ImageButtonFeatureTests : UITest
 
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29959
+
+	[Test]
+	[Category(UITestCategories.ImageButton)]
+	public void VerifyImageButtonAspect_AspectFillWithImageSourceFromStream()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ImageAspectFill);
+		App.Tap(ImageAspectFill);
+		App.WaitForElement(SourceTypeStream);
+		App.Tap(SourceTypeStream);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageButtonControl");
+		VerifyScreenshot();
+	}
 
 	[Test]
 	[Category(UITestCategories.ImageButton)]
