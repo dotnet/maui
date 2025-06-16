@@ -19,6 +19,18 @@ public partial class TwoPaneViewOptionsPage : ContentPage
 		Pane1LengthValue.Text = _viewModel.Pane1Length.ToString();
 		Pane2LengthValue.Text = _viewModel.Pane2Length.ToString();
 	}
+
+	private void OnFlowDirectionCheckBoxChanged(object sender, CheckedChangedEventArgs e)
+		{
+			if (e.Value)
+			{
+				_viewModel.FlowDirection = FlowDirection.RightToLeft;
+			}
+			else
+			{
+				_viewModel.FlowDirection = FlowDirection.LeftToRight;
+			}
+		}
 	
 	private void ApplyButton_Clicked(object sender, EventArgs e)
 	{
@@ -42,14 +54,14 @@ public partial class TwoPaneViewOptionsPage : ContentPage
 	{
 		var value = e.NewValue;
 		_viewModel.Pane1Length = new GridLength(value, GridUnitType.Star);
-		Pane1LengthValue.Text = $"{value}*";
+		Pane1LengthValue.Text = $"{value}";
 	}
 
 	private void OnPane2LengthChanged(object sender, ValueChangedEventArgs e)
 	{
 		var value = e.NewValue;
 		_viewModel.Pane2Length = new GridLength(value, GridUnitType.Star);
-		Pane2LengthValue.Text = $"{value}*";
+		Pane2LengthValue.Text = $"{value}";
 	}
 
 	private double ParseLength(GridLength length)
