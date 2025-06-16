@@ -6,60 +6,75 @@
              x:DataType="local:TwoPaneViewViewModel"
              Title="TwoPaneView Options">
 
-        <ContentPage.ToolbarItems>
-                <ToolbarItem Text="Apply"
-                             Clicked="ApplyButton_Clicked"
-                             AutomationId="Apply"/>
-        </ContentPage.ToolbarItems>
-        <VerticalStackLayout Padding="25"
-                             Spacing="10">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Apply"
+                           Clicked="ApplyButton_Clicked"
+                           AutomationId="Apply"/>
+       </ContentPage.ToolbarItems>
+       <VerticalStackLayout Padding="25"
+                            Spacing="10">
 
-                <!-- MinTallModeHeight -->
-                <Label Text="MinTallModeHeight"
-                       FontAttributes="Bold"/>
-                <Stepper x:Name="TallModeStepper"
-                         Maximum="1000"
-                         Minimum="0"
-                         Increment="200"
-                         ValueChanged="OnTallModeHeightChanged"
-                         AutomationId="TallModeStepper"/>
-                <Label x:Name="TallModeHeightValue"
-                       Text="500px"/>
+              <!-- MinTallModeHeight -->
+              <Label Text="MinTallModeHeight"
+                     FontAttributes="Bold"/>
+              <Stepper x:Name="TallModeStepper"
+                       Maximum="1000"
+                       Minimum="0"
+                       Increment="200"
+                       ValueChanged="OnTallModeHeightChanged"
+                       AutomationId="TallModeStepper"/>
+              <Label x:Name="TallModeHeightValue"
+                     Text="500px"/>
 
-                <!-- MinWideModeWidth -->
-                <Label Text="MinWideModeWidth"
-                       FontAttributes="Bold"/>
-                <Stepper x:Name="WideModeStepper"
-                         Maximum="1500"
-                         Minimum="0"
-                         Increment="200"
-                         ValueChanged="OnWideModeWidthChanged"
-                         AutomationId="WideModeStepper"/>
-                <Label x:Name="WideModeWidthValue"
-                       Text="700px"/>
+              <!-- MinWideModeWidth -->
+              <Label Text="MinWideModeWidth"
+                     FontAttributes="Bold"/>
+              <Stepper x:Name="WideModeStepper"
+                       Maximum="1500"
+                       Minimum="0"
+                       Increment="200"
+                       ValueChanged="OnWideModeWidthChanged"
+                       AutomationId="WideModeStepper"/>
+              <Label x:Name="WideModeWidthValue"
+                     Text="700px"/>
 
-                <!-- Pane1Length -->
-                <Label Text="Pane1Length"
-                       FontAttributes="Bold"/>
-                <Stepper x:Name="Pane1LengthStepper"
-                         Maximum="2"
-                         Minimum="0.5"
-                         Increment="0.5"
-                         ValueChanged="OnPane1LengthChanged"
-                         AutomationId="Pane1LengthStepper"/>
-                <Label x:Name="Pane1LengthValue"
-                       Text="1*"/>
+              <!-- Pane1Length -->
+              <Label Text="Pane1Length"
+                     FontAttributes="Bold"/>
+              <Stepper x:Name="Pane1LengthStepper"
+                       Maximum="2"
+                       Minimum="0.5"
+                       Increment="0.5"
+                       ValueChanged="OnPane1LengthChanged"
+                       AutomationId="Pane1LengthStepper"/>
+              <Label x:Name="Pane1LengthValue"
+                     Text="1"/>
 
-                <!-- Pane2Length -->
-                <Label Text="Pane2Length"
-                       FontAttributes="Bold"/>
-                <Stepper x:Name="Pane2LengthStepper"
-                         Maximum="2"
-                         Minimum="0.5"
-                         Increment="0.5"
-                         ValueChanged="OnPane2LengthChanged"
-                         AutomationId="Pane2LengthStepper"/>
-                <Label x:Name="Pane2LengthValue"
-                       Text="1*"/>
-        </VerticalStackLayout>
+              <!-- Pane2Length -->
+              <Label Text="Pane2Length"
+                     FontAttributes="Bold"/>
+              <Stepper x:Name="Pane2LengthStepper"
+                       Maximum="2"
+                       Minimum="0.5"
+                       Increment="0.5"
+                       ValueChanged="OnPane2LengthChanged"
+                       AutomationId="Pane2LengthStepper"/>
+              <Label x:Name="Pane2LengthValue"
+                     Text="1"/>
+              <HorizontalStackLayout Spacing="10"
+                                     Padding="0,10,0,0">
+                     <CheckBox x:Name="FlowDirectionRTLCheckBox"
+                               AutomationId="FlowDirectionRTLCheckBox"
+                               IsChecked="False"
+                               CheckedChanged="OnFlowDirectionCheckBoxChanged"/>
+                     <Label Text="RTL"
+                            VerticalOptions="Center"/>
+              </HorizontalStackLayout>
+              <HorizontalStackLayout Spacing="10">
+                     <CheckBox IsChecked="{Binding IsVisible}"
+                               AutomationId="VisibilityCheckBox"/>
+                     <Label Text="Is Visible"
+                            VerticalOptions="Center"/>
+              </HorizontalStackLayout>
+       </VerticalStackLayout>
 </ContentPage>

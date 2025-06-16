@@ -16,7 +16,6 @@ public class TwoPaneViewControlPage : NavigationPage
 public partial class TwoPaneViewControlMainPage : ContentPage
 {
 	private TwoPaneViewViewModel _viewModel;
-
 	public TwoPaneViewControlMainPage(TwoPaneViewViewModel viewModel)
 	{
 		InitializeComponent();

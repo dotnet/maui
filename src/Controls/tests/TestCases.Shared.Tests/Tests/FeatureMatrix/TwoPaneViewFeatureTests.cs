@@ -95,6 +95,21 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
+        [Test]
+        [Category("TwoPaneView")]
+        public void TwoPaneView_IsVisible()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("VisibilityCheckBox");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            VerifyScreenshot();
+        }
+
 #if ANDROID || IOS
         [Test]
         [Category("TwoPaneView")]
@@ -113,6 +128,40 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 
 #if MACCATALYST || WINDOWS
+
+        [Test]
+        [Category("TwoPaneView")]
+        public void TwoPaneView_HeightAndWidth()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.IncreaseStepper("TallModeStepper");
+
+            App.IncreaseStepper("WideModeStepper");
+            App.IncreaseStepper("WideModeStepper");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            VerifyScreenshot();
+        }
+
+        [Test]
+        [Category("TwoPaneView")]
+        public void TwoPaneView_RTLFlowDirection()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("FlowDirectionRTLCheckBox");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            VerifyScreenshot();
+        }
+
         [Test]
         [Category("TwoPaneView")]
         public void TwoPaneView_Width()
