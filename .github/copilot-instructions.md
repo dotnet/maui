@@ -9,8 +9,7 @@ This document provides specific guidance for GitHub Copilot when working on the 
 ### Key Technologies
 - **.NET SDK** - Version depends on the branch:
   - **main branch**: Use the latest stable version of .NET to build
-  - **net10 branch**: Use the latest .NET 10 SDK
-  - **net11 branch**: Use the latest .NET 11 SDK
+  - **net10.0 branch**: Use the latest .NET 10 SDK
   - **etc.**: Each feature branch correlates to its respective .NET version
 - **C#** and **XAML** for application development
 - **Cake build system** for compilation and packaging
@@ -22,16 +21,8 @@ This document provides specific guidance for GitHub Copilot when working on the 
 ### Prerequisites
 
 #### Linux Development (Current Environment)
-```bash
-# Install .NET 9 SDK
-wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-sudo dpkg -i packages-microsoft-prod.deb
-sudo apt-get update
-sudo apt-get install -y dotnet-sdk-9.0
-
-# Verify installation
-dotnet --version  # Should show 9.0.105 or newer
-```
+For .NET installation on Linux, follow the official Microsoft documentation:
+* https://learn.microsoft.com/en-us/dotnet/core/install/linux
 
 #### Additional Requirements
 - **OpenJDK 17** for Android development
@@ -98,23 +89,6 @@ dotnet --version  # Should show 9.0.105 or newer
 
 ## Development Workflow
 
-### IDE Setup
-
-#### VS Code (Recommended for Linux/macOS)
-1. Open repository root folder in VS Code
-2. Install the ".NET MAUI Dev Kit" extension from the marketplace: https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui
-3. Wait for IntelliSense to initialize (may take several minutes to fully process the solution)
-4. Use Command Palette (`Ctrl+Shift+P`):
-   - "Pick Device" to select target platform
-   - "Pick Startup Project" to select project to run
-
-**Note:** IntelliSense takes considerable time to fully process the solution. If experiencing issues, unload/reload the `maui.core` and `maui.controls` projects to resolve problems.
-
-#### Visual Studio (Windows)
-- Install Visual Studio 2022 v17.12 or newer
-- Follow [these steps](https://learn.microsoft.com/dotnet/maui/get-started/installation?tabs=vswin) to include MAUI workload
-- Open `Microsoft.Maui-windows.slnf` in Visual Studio from the repository root
-
 ### Building
 
 #### Using Cake (Recommended)
@@ -148,15 +122,6 @@ dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests
 ```
 
 **Note:** `dotnet test` will not work with any projects that contain the word "DeviceTest" in their name.
-
-#### Debugging
-1. Use the Sandbox project (`src/Controls/samples/Controls.Sample.Sandbox`) for reproduction
-2. Add your reproduction code to the Sandbox project
-3. Set breakpoints in MAUI source code
-4. Select Sandbox as startup project in VS Code
-5. Debug normally - breakpoints in MAUI source will be hit
-
-**Note:** Do not commit changes to the Sandbox project in PRs.
 
 ### Local Development with Branch-Specific .NET
 
@@ -205,11 +170,6 @@ dotnet cake --target=dotnet-pack-docs
 
 ## Troubleshooting
 
-### IntelliSense Issues
-- Reload VS Code window
-- Unload/reload `maui.core` and `maui.controls` projects
-- Wait for background tasks to complete
-
 ### Build Issues
 - Run `dotnet cake --clean` to clean obj/bin folders
 - Use `git clean -xdf` as last resort (loses uncommitted changes)
@@ -240,7 +200,12 @@ dotnet cake --target=dotnet-pack-docs
 ### Testing
 - Add tests for new functionality
 - Ensure existing tests pass
+  - `src/Core/tests/UnitTests/Core.UnitTests.csproj`
+  - `src/Essentials/test/UnitTests/Essentials.UnitTests.csproj`
+  - `src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj`
 - Use Integration tests for end-to-end scenarios
+  - `src/TestUtils/src/Microsoft.Maui.IntegrationTests/`
+  - Device Tests (UI testing): projects with "DeviceTest" in name
 
 ## Additional Resources
 
