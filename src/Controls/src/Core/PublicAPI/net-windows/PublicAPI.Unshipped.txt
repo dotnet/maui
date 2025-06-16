@@ -57,6 +57,36 @@ Microsoft.Maui.Controls.LayoutConstraint.Fixed = Microsoft.Maui.Controls.LayoutC
 Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.None = 0 -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed = 2 -> Microsoft.Maui.Controls.LayoutConstraint
+Microsoft.Maui.Controls.Performance.INavigationPerformanceTracker
+Microsoft.Maui.Controls.Performance.INavigationPerformanceTracker.Configure(Microsoft.Maui.Controls.Performance.NavigationTrackingOptions! options) -> void
+Microsoft.Maui.Controls.Performance.INavigationPerformanceTracker.GetStats() -> Microsoft.Maui.Controls.Performance.NavigationStats!
+Microsoft.Maui.Controls.Performance.INavigationPerformanceTracker.RecordNavigation(double duration) -> void
+Microsoft.Maui.Controls.Performance.INavigationPerformanceTracker.SubscribeToNavigationUpdates(System.Action<Microsoft.Maui.Controls.Performance.NavigationUpdate!>! callback) -> void
+Microsoft.Maui.Controls.Performance.NavigationPerformanceTracker
+Microsoft.Maui.Controls.Performance.NavigationPerformanceTracker.Configure(Microsoft.Maui.Controls.Performance.NavigationTrackingOptions! options) -> void
+Microsoft.Maui.Controls.Performance.NavigationPerformanceTracker.GetStats() -> Microsoft.Maui.Controls.Performance.NavigationStats!
+Microsoft.Maui.Controls.Performance.NavigationPerformanceTracker.NavigationPerformanceTracker(System.Diagnostics.Metrics.Meter! meter, Microsoft.Maui.Controls.Performance.IPerformanceWarningManager? warningManager = null) -> void
+Microsoft.Maui.Controls.Performance.NavigationPerformanceTracker.Options.get -> Microsoft.Maui.Controls.Performance.NavigationTrackingOptions!
+Microsoft.Maui.Controls.Performance.NavigationPerformanceTracker.RecordNavigation(double duration) -> void
+Microsoft.Maui.Controls.Performance.NavigationPerformanceTracker.SubscribeToNavigationUpdates(System.Action<Microsoft.Maui.Controls.Performance.NavigationUpdate!>! callback) -> void
+Microsoft.Maui.Controls.Performance.NavigationStats
+Microsoft.Maui.Controls.Performance.NavigationStats.NavigationDuration.get -> double
+Microsoft.Maui.Controls.Performance.NavigationStats.NavigationDuration.set -> void
+Microsoft.Maui.Controls.Performance.NavigationStats.NavigationStats() -> void
+Microsoft.Maui.Controls.Performance.NavigationThresholds
+Microsoft.Maui.Controls.Performance.NavigationThresholds.NavigationMaxTime.get -> System.TimeSpan
+Microsoft.Maui.Controls.Performance.NavigationThresholds.NavigationMaxTime.set -> void
+Microsoft.Maui.Controls.Performance.NavigationThresholds.NavigationThresholds() -> void
+Microsoft.Maui.Controls.Performance.NavigationTrackingOptions
+Microsoft.Maui.Controls.Performance.NavigationTrackingOptions.EnableNavigationTracking.get -> bool
+Microsoft.Maui.Controls.Performance.NavigationTrackingOptions.EnableNavigationTracking.set -> void
+Microsoft.Maui.Controls.Performance.NavigationTrackingOptions.NavigationTrackingOptions() -> void
+Microsoft.Maui.Controls.Performance.NavigationUpdate
+Microsoft.Maui.Controls.Performance.NavigationUpdate.NavigationDuration.get -> double
+Microsoft.Maui.Controls.Performance.NavigationUpdate.NavigationDuration.set -> void
+Microsoft.Maui.Controls.Performance.NavigationUpdate.NavigationUpdate() -> void
+Microsoft.Maui.Controls.Performance.NavigationUpdate.Timestamp.get -> System.DateTime
+Microsoft.Maui.Controls.Performance.NavigationUpdate.Timestamp.set -> void
 Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan?
 Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan?
 Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan? oldTime, System.TimeSpan? newTime) -> void
