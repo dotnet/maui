@@ -15,7 +15,7 @@ using AndroidUri = Android.Net.Uri;
 namespace Microsoft.Maui.Media
 {
 	partial class MediaPickerImplementation : IMediaPicker
-	{		
+	{
 		public bool IsCaptureSupported
 			=> Application.Context?.PackageManager?.HasSystemFeature(PackageManager.FeatureCameraAny) ?? false;
 
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Media
 			{
 				return null;
 			}
-		}		
+		}
 		
 		async Task<FileResult> PickUsingIntermediateActivity(MediaPickerOptions options, bool photo)
 		{
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Media
 			if (options.SelectionLimit == 1)
 			{
 				var singleResult = await PickUsingPhotoPicker(options, photo);
-				return singleResult is not null ? [singleResult] : null;
+				return singleResult is not null ? [singleResult] : [];
 			}
 			
 			var pickVisualMediaRequestBuilder = new PickVisualMediaRequest.Builder()
