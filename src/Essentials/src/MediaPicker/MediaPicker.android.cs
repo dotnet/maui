@@ -6,7 +6,6 @@ using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Provider;
-using Android.Widget;
 using AndroidX.Activity.Result;
 using AndroidX.Activity.Result.Contract;
 using Microsoft.Maui.ApplicationModel;
@@ -132,15 +131,9 @@ namespace Microsoft.Maui.Media
 
 		async Task<FileResult> PickUsingPhotoPicker(MediaPickerOptions options, bool photo)
 		{
-			var pickVisualMediaRequestBuilder = new PickVisualMediaRequest.Builder()
-				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance);
-
-			if (options.SelectionLimit > 1)
-			{
-				pickVisualMediaRequestBuilder.SetMaxItems(options.SelectionLimit);
-			}
-			
-			var pickVisualMediaRequest = pickVisualMediaRequestBuilder.Build();
+			var pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
+				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance)
+				.Build();
 
 			var androidUri = await PickVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
 
@@ -176,24 +169,22 @@ namespace Microsoft.Maui.Media
 
 			var androidUris = await PickMultipleVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
 
-			if (androidUris?.IsEmpty ?? true)
+			if (androidUris?.IsEmpty  ?? true)
 			{
 				return null;
 			}
 
 			var resultList = new List<FileResult>();
 
-            var uriArray = androidUris.ToArray();
-            foreach (AndroidUri uri in uriArray.Cast<AndroidUri>())
-            {
-                if (uri?.Equals(AndroidUri.Empty) ?? true)
-                {
-                    continue;
-                }
-
-                var path = FileSystemUtils.EnsurePhysicalPath(uri);
-                resultList.Add(new FileResult(path));
-            }
+            for (var i = 0; i < androidUris.Size(); i++)
+			{
+				var uri = androidUris.Get(i) as AndroidUri;
+				if (!uri?.Equals(AndroidUri.Empty) ?? false)
+				{
+					var path = FileSystemUtils.EnsurePhysicalPath(uri);
+					resultList.Add(new FileResult(path));
+				}
+			}
 
 			return resultList;
 		}

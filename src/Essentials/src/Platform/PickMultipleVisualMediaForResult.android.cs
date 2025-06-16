@@ -1,10 +1,10 @@
 ﻿using System;
-using Android.Util;
+using Android.Runtime;
 using static AndroidX.Activity.Result.Contract.ActivityResultContracts;
 
 namespace Microsoft.Maui.ApplicationModel;
 
-internal class PickMultipleVisualMediaForResult : ActivityForResultRequest<PickMultipleVisualMedia, ArraySet>
+internal class PickMultipleVisualMediaForResult : ActivityForResultRequest<PickMultipleVisualMedia, JavaList>
 {
 	static readonly Lazy<PickMultipleVisualMediaForResult> LazyInstance = new(new PickMultipleVisualMediaForResult());
 
