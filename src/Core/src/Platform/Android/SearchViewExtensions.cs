@@ -123,6 +123,8 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		static readonly int closeButtonId = Resource.Id.search_close_btn;
+
 		static ImageView? GetCancelButton(this SearchView searchView)
 		{
 			if (searchView.Resources is null)
@@ -130,13 +132,12 @@ namespace Microsoft.Maui.Platform
 				return null;
 			}
 
-			var closeButtonId = Resource.Id.search_close_btn;
 			if (closeButtonId <= 0)
 			{
 				return null;
 			}
 
-			return searchView.FindViewById<ImageView>(closeButtonId);
+			return searchView.FindViewById(closeButtonId) as ImageView;
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
