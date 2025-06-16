@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void UpdateEmptyViewVisibility()
 		{
-			if (ItemsView.Loop)
+			if (ItemsView?.Loop == true)
 			{
 				bool isEmpty = (CollectionViewSource?.View?.Count ?? 0) == 0;
 				var targetTemplate = isEmpty ? null : CarouselItemsViewTemplate;
