@@ -218,6 +218,48 @@ namespace Microsoft.Maui.Media
 			return null;
 		}
 
+		async Task<StorageFile?> CompressImageAsync(StorageFile originalFile, int compressionQuality)
+		{
+			try
+			{
+				// Create compressed file in same directory
+				var compressedFileName = System.IO.Path.GetFileNameWithoutExtension(originalFile.Name) + "_compressed.jpg";
+				var compressedFile = await originalFile.GetParentAsync()
+					.AsTask()
+					.ContinueWith(async task => await task.Result.CreateFileAsync(compressedFileName, CreationCollisionOption.GenerateUniqueName))
+					.Unwrap();
+
+				using (var originalStream = await originalFile.OpenAsync(FileAccessMode.Read))
+				using (var compressedStream = await compressedFile.OpenAsync(FileAccessMode.ReadWrite))
+				{
+					// Use the built-in Windows image compression
+					var decoder = await Windows.Graphics.Imaging.BitmapDecoder.CreateAsync(originalStream);
+					var encoder = await Windows.Graphics.Imaging.BitmapEncoder.CreateForTranscodingAsync(compressedStream, decoder);
+					
+					// Set JPEG quality (0.0 to 1.0)
+					var qualityFloat = compressionQuality / 100.0;
+					encoder.BitmapTransform.InterpolationMode = Windows.Graphics.Imaging.BitmapInterpolationMode.Fant;
+					
+					// Configure JPEG compression properties
+					var propertySet = new Windows.Foundation.Collections.PropertySet();
+					propertySet.Add("ImageQuality", qualityFloat);
+					await encoder.SetPropertiesAsync(propertySet);
+
+					await encoder.FlushAsync();
+				}
+
+				// Delete the original file if compression was successful
+				try { await originalFile.DeleteAsync(); } catch { }
+				
+				return compressedFile;
+			}
+			catch
+			{
+				// If compression fails, return null to use original file
+				return null;
+			}
+		}
+
 		class WinUICameraCaptureUI
 		{
 			const string WindowsCameraAppPackageName = "Microsoft.WindowsCamera_8wekyb3d8bbwe";
