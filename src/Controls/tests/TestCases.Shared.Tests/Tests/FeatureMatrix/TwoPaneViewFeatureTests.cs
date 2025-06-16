@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test, Order(1)]
-        [Category("TwoPaneView")]
+        [Category(UITestCategories.Layout)]
         public void TwoPaneView()
         {
             App.WaitForElement("Options");
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test]
-        [Category("TwoPaneView")]
+        [Category(UITestCategories.Layout)]
         public void TwoPaneView_Pane1Size()
         {
             App.WaitForElement("Options");
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test]
-        [Category("TwoPaneView")]
+        [Category(UITestCategories.Layout)]
         public void TwoPaneView_Pane2Size()
         {
             App.WaitForElement("Options");
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
         
         [Test]
-        [Category("TwoPaneView")]
+        [Category(UITestCategories.Layout)]
         public void TwoPaneView_Pane1SmallerThanPane2()
         {
             App.WaitForElement("Options");
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test]
-        [Category("TwoPaneView")]
+        [Category(UITestCategories.Layout)]
         public void TwoPaneView_Pane2SmallerThanPane1()
         {
             App.WaitForElement("Options");
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test]
-        [Category("TwoPaneView")]
+        [Category(UITestCategories.Layout)]
         public void TwoPaneView_IsVisible()
         {
             App.WaitForElement("Options");
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if ANDROID || IOS
         [Test]
-        [Category("TwoPaneView")]
+        [Category(UITestCategories.Layout)]
         public void TwoPaneView_Height()
         {
             App.WaitForElement("Options");
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #if MACCATALYST || WINDOWS
 
         [Test]
-        [Category("TwoPaneView")]
+        [Category(UITestCategories.Layout)]
         public void TwoPaneView_HeightAndWidth()
         {
             App.WaitForElement("Options");
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test]
-        [Category("TwoPaneView")]
+        [Category(UITestCategories.Layout)]
         public void TwoPaneView_RTLFlowDirection()
         {
             App.WaitForElement("Options");
@@ -163,7 +163,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test]
-        [Category("TwoPaneView")]
+        [Category(UITestCategories.Layout)]
         public void TwoPaneView_Width()
         {
             App.WaitForElement("Options");
