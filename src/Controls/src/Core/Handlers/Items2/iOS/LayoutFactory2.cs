@@ -338,7 +338,7 @@ internal static class LayoutFactory2
 					return;
 				}
 
-				if (!itemsView.IsSwipeEnabled)
+				if (!itemsView.IsSwipeEnabled && !cv2Controller.ScrollToRequested)
 				{
 					cv2Controller.CollectionView.ScrollToItem(
 						NSIndexPath.FromItemSection(lastPosition, 0),
@@ -395,6 +395,7 @@ internal static class LayoutFactory2
 				}
 
 				lastPosition = pageIndex;
+				cv2Controller.ScrollToRequested = false;
 				//Update the CarouselView position
 				cv2Controller?.SetPosition(carouselPosition);
 			};
