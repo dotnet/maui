@@ -798,6 +798,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_searchController.Active = false;
 			((ISearchHandlerController)SearchHandler).ItemSelected(e);
+			((ISearchHandlerController)SearchHandler).QueryConfirmed();
 		}
 
 		void SearchButtonClicked(object sender, EventArgs e)
