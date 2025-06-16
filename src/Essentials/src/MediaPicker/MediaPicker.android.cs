@@ -198,7 +198,7 @@ namespace Microsoft.Maui.Media
 
 			var androidUris = await PickMultipleVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
 
-			if (androidUris?.IsEmpty  ?? true)
+			if (androidUris?.IsEmpty ?? true)
 			{
 				return [];
 			}
