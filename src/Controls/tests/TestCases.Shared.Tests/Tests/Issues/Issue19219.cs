@@ -27,7 +27,7 @@ public class Issue19219 : _IssuesUITest
 		App.WaitForElement("Los Angeles");
 		App.Tap("Los Angeles");
 #endif
-		VerifyScreenshot();
-
+		var text = App.WaitForElement("SearchHandlerLabel").GetText();
+		Assert.That(text, Is.EqualTo("SearchHandler Command Executed when tap on item"));
 	}
 }

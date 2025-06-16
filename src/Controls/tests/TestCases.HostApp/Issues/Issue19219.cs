@@ -23,6 +23,12 @@ public class Issue19219Shell : Shell
 	{
 		public Issue19219()
 		{
+			Label label = new Label
+			{
+				Text = "SearchHandler command will execute when tap on item",
+				AutomationId = "SearchHandlerLabel"
+			};
+
 			var fruits = new List<string> { "New York", "London", "Sydney", "Toronto", "Los Angeles", "Chicago", "Melbourne", "Vancouver",
   			"Manchester", "Birmingham", "San Francisco", "Dublin", "Auckland", "Glasgow", "Perth", "Houston",
   			"Seattle", "Cape Town", "Ottawa", "Brisbane", "Boston", "Phoenix", "Washington", "Edinburgh" };
@@ -30,7 +36,10 @@ public class Issue19219Shell : Shell
 			{
 				AutomationId = "searchBar",
 				Placeholder = "SearchHandler",
-				Command = CreateRelayCommand(),
+				Command = (new Command(() =>
+				{
+					label.Text = "SearchHandler Command Executed when tap on item";
+				})),
 				ShowsResults = true,
 			};
 			searchHandler.SetBinding(SearchHandler.ItemsSourceProperty, new Binding
@@ -53,18 +62,10 @@ public class Issue19219Shell : Shell
 
 			StackLayout stackLayout = new StackLayout
 			{
-				Children = { button }
+				Children = { button, label }
 			};
 
 			Content = stackLayout;
-		}
-
-		private ICommand CreateRelayCommand()
-		{
-			return new Command(() =>
-			{
-				DisplayAlert("Command triggered when select on item", "", "OK");
-			});
 		}
 	}
 }
