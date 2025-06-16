@@ -16,7 +16,7 @@ public class Issue30006 : ContentPage
 			Text = "Result Image Status: "
 		};
 
-		VerticalStackLayout VerticalStackLayout = new VerticalStackLayout
+		VerticalStackLayout verticalStackLayout = new VerticalStackLayout
 		{
 			Padding = new Thickness(20),
 			Spacing = 10,
@@ -27,7 +27,7 @@ public class Issue30006 : ContentPage
 			}
 		};
 
-		Content = new ScrollView { Content = VerticalStackLayout };
+		Content = new ScrollView { Content = verticalStackLayout };
 	}
 
 	Button CreateButton(string text, EventHandler handler)
