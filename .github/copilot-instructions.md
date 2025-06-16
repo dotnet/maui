@@ -60,12 +60,11 @@ For .NET installation on Linux, follow the official Microsoft documentation:
 - **MacCatalyst** specific code is inside folders named `MacCatalyst`
 - **Windows** specific code is inside folders named `Windows`
 
-### Solution Files
-- `Microsoft.Maui.sln` - Main solution file
-- `Microsoft.Maui-windows.slnf` - Windows-specific solution filter
-- `Microsoft.Maui-mac.slnf` - macOS-specific solution filter
-- `Microsoft.Maui-vscode.sln` - VS Code optimized solution
-- `Microsoft.Maui.BuildTasks.slnf` - Build tasks solution (must build first)
+### Platform-Specific File Extensions
+- Files with `.windows.cs` will only compile for the Windows TFM
+- Files with `.android.cs` will only compile for the Android TFM
+- Files with `.ios.cs` will only compile for the iOS and MacCatalyst TFM
+- Files with `MacCatalyst.cs` will only compile for the MacCatalyst TFM
 
 ### Sample Projects
 ```
@@ -96,18 +95,8 @@ For .NET installation on Linux, follow the official Microsoft documentation:
 # Build everything
 dotnet cake
 
-# Clean build (removes obj/bin folders)
-dotnet cake --clean
-
 # Pack NuGet packages
 dotnet cake --target=dotnet-pack
-```
-
-#### Using dotnet CLI
-```bash
-# Build specific projects
-dotnet build src/Core/src/Microsoft.Maui.csproj
-dotnet build Microsoft.Maui.sln
 ```
 
 ### Testing and Debugging
@@ -116,9 +105,6 @@ dotnet build Microsoft.Maui.sln
 ```bash
 # Run all tests
 dotnet test
-
-# Run specific test project
-dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests
 ```
 
 **Note:** `dotnet test` will not work with any projects that contain the word "DeviceTest" in their name.
@@ -136,7 +122,6 @@ For compatibility with specific branches:
 
 ### Android
 - Requires Android SDK and OpenJDK 17
-- Use `--android` flag with Cake builds
 - Install missing Android SDKs via [Android SDK Manager](https://learn.microsoft.com/xamarin/android/get-started/installation/android-sdk)
 - Android SDK Manager available via: `android` command (after dotnet tool restore)
 
@@ -146,38 +131,9 @@ For compatibility with specific branches:
 
 ### Windows
 - Requires Windows SDK
-- Open `Microsoft.Maui-windows.slnf` in Visual Studio
 
 ### macOS/Mac Catalyst
 - Requires Xcode installation
-
-## Common Commands
-
-```bash
-# Clean everything (use when switching branches)
-git clean -xdf
-
-# Restore packages and tools
-dotnet restore
-dotnet tool restore
-
-# Build build tasks (required first)
-dotnet build ./Microsoft.Maui.BuildTasks.slnf
-
-# Generate API documentation
-dotnet cake --target=dotnet-pack-docs
-```
-
-## Troubleshooting
-
-### Build Issues
-- Run `dotnet cake --clean` to clean obj/bin folders
-- Use `git clean -xdf` as last resort (loses uncommitted changes)
-- Ensure build tasks are built first: `dotnet build ./Microsoft.Maui.BuildTasks.slnf`
-
-### Platform Issues
-- Run `git clean -xdf` when changing/adding platforms
-- Verify required SDKs are installed
 
 ## Contribution Guidelines
 
@@ -203,9 +159,7 @@ dotnet cake --target=dotnet-pack-docs
   - `src/Core/tests/UnitTests/Core.UnitTests.csproj`
   - `src/Essentials/test/UnitTests/Essentials.UnitTests.csproj`
   - `src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj`
-- Use Integration tests for end-to-end scenarios
-  - `src/TestUtils/src/Microsoft.Maui.IntegrationTests/`
-  - Device Tests (UI testing): projects with "DeviceTest" in name
+- Device Tests (UI testing): projects with "DeviceTest" in name
 
 ## Additional Resources
 
