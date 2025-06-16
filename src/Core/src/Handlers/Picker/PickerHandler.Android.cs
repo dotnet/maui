@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapFocus(IPickerHandler handler, IPicker picker, object? args)
 		{
-			if (handler.IsConnected() && !picker.IsFocused)
+			if (handler.IsConnected())
 			{
 				ViewHandler.MapFocus(handler, picker, args);
 				handler.PlatformView.CallOnClick();
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapUnfocus(IPickerHandler handler, IPicker picker, object? args)
 		{
-			if (handler.IsConnected() && handler is PickerHandler pickerHandler && picker.IsFocused)
+			if (handler.IsConnected() && handler is PickerHandler pickerHandler)
 			{
 				pickerHandler.DismissDialog();
 				ViewHandler.MapUnfocus(handler,picker,args);
