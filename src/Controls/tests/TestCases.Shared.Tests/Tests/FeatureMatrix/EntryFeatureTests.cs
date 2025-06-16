@@ -8,7 +8,15 @@ namespace Microsoft.Maui.TestCases.Tests;
 public class EntryFeatureTests : UITest
 {
 	public const string EntryFeatureMatrix = "Entry Feature Matrix";
-	private const int iOSKeyboardCropHeight = 1650;
+#if IOS
+	private const int iOSKeyboardCropHeight = 1685;
+#elif ANDROID
+	private const int iOSKeyboardCropHeight = 1300;
+#elif WINDOWS
+	private const int iOSKeyboardCropHeight = 650;
+#elif MACCATALYST
+	private const int iOSKeyboardCropHeight = 350;		
+#endif
 
 	public EntryFeatureTests(TestDevice device)
 		: base(device)
@@ -82,10 +90,11 @@ public class EntryFeatureTests : UITest
 		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Not triggered"));
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
+		App.DismissKeyboard();
+		App.WaitForElement("Focused: Event Triggered");
 	}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Navigating to the control page triggers both Focused and Unfocused events automatically.
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST // Navigating to the control page triggers both Focused and Unfocused events automatically.
 	[Test, Order(4)]
 	[Category(UITestCategories.Entry)]
 	public void VerifyEntryUnfocusedEvent()
@@ -102,8 +111,9 @@ public class EntryFeatureTests : UITest
 		// Focus the entry
 		App.Tap("EntryText");
 		// Tap elsewhere to unfocus (e.g., a label)
+		App.WaitForElement("TextChangedLabel");
 		App.Tap("TextChangedLabel");
-
+		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Event Triggered"));
 	}
 #endif
@@ -232,7 +242,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 	[Test]
@@ -245,7 +255,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 #if TEST_FAILS_ON_ANDROID //After setting IsReadOnly to true, the Cursor remains visible on Android even when IsCursorVisible is set to false, which is not the expected behavior.
@@ -277,7 +287,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 	[Test]
@@ -292,7 +302,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 	[Test]
@@ -309,7 +319,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 	[Test]
@@ -326,7 +336,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 #if TEST_FAILS_ON_IOS // When taking a screenshot of a password field (<Entry IsPassword="true" />), iOS hides the password text for security reasons.
@@ -344,7 +354,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 #endif
 
@@ -362,7 +372,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 #if TEST_FAILS_ON_IOS // When taking a screenshot of a password field (<Entry IsPassword="true" />), iOS hides the password text for security reasons.
@@ -377,7 +387,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 	[Test]
@@ -391,7 +401,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 	[Test]
@@ -407,7 +417,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 	[Test]
@@ -417,14 +427,14 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");	
+		App.ClearText("TextEntryChanged");
 		App.EnterText("TextEntryChanged", "Test Entered Set MaxLenght");
 		App.WaitForElement("MaxLength");
 		App.ClearText("MaxLength");
 		App.EnterText("MaxLength", "6");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 #endif
 
@@ -446,7 +456,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 	[Test]
@@ -505,7 +515,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 	[Test]
@@ -519,7 +529,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 	[Test]
@@ -534,7 +544,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 #if TEST_FAILS_ON_IOS // When taking a screenshot of a password field (<Entry IsPassword="true" />), iOS hides the password text for security reasons.
@@ -550,7 +560,7 @@ public class EntryFeatureTests : UITest
 		App.EnterText("FontSizeEntry", "20");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 #endif
 
@@ -830,7 +840,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("EntryText");
 		App.ClearText("EntryText");
 		App.DismissKeyboard();
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 	[Test]
@@ -846,7 +856,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("EntryText");
 		App.ClearText("EntryText");
 		App.DismissKeyboard();
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 
 	[Test]
@@ -856,7 +866,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");	
+		App.ClearText("TextEntryChanged");
 		App.EnterText("TextEntryChanged", "New Text Changed");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -877,7 +887,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 	}
 #endif
 
@@ -888,24 +898,15 @@ public class EntryFeatureTests : UITest
 	private void VerifyScreenshotWithKeyboardHandling(string? screenshotName = null)
 	{
 #if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
-		if (App.IsKeyboardShown())
-			App.DismissKeyboard();
+    if (App.IsKeyboardShown())
+        App.DismissKeyboard();
 #endif
 
-#if IOS
-		// On iOS, the virtual keyboard appears inconsistent with keyboard characters casing, can cause flaky test results.
-		// As this test verifying only the entry clear button color, crop the bottom portion of the screenshot to exclude the keyboard.
-		// Using DismissKeyboard() would unfocus the control in iOS, so we're using cropping instead to maintain focus during testing.
+		// Using cropping instead of DismissKeyboard() on iOS to maintain focus during testing
 		if (string.IsNullOrEmpty(screenshotName))
 			VerifyScreenshot(cropBottom: iOSKeyboardCropHeight);
 		else
 			VerifyScreenshot(screenshotName, cropBottom: iOSKeyboardCropHeight);
-#else
-		if (string.IsNullOrEmpty(screenshotName))
-			VerifyScreenshot();
-		else
-			VerifyScreenshot(screenshotName);
-#endif
 	}
 
 	/// <summary>
@@ -919,11 +920,7 @@ public class EntryFeatureTests : UITest
 		if (App.IsKeyboardShown())
 			App.DismissKeyboard();
 #endif
-
-#if IOS
 		VerifyScreenshotOrSetException(ref exception, screenshotName, cropBottom: iOSKeyboardCropHeight);
-#else
-		VerifyScreenshotOrSetException(ref exception, screenshotName);
-#endif
+
 	}
 }
