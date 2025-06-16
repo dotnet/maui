@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -23,12 +22,14 @@ namespace Microsoft.Maui.Media
 		internal static bool IsPhotoPickerAvailable
 			=> PickVisualMedia.InvokeIsPhotoPickerAvailable(Platform.AppContext);
 
+		[Obsolete("Switch to PickPhotoAsync which also allows multiple selections.")]
 		public Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
 			=> PickAsync(options, true);
 
 		public Task<List<FileResult>> PickPhotosAsync(MediaPickerOptions options)
 			=> PickMultipleAsync(options, true);
 
+		[Obsolete("Switch to PickVideosAsync which also allows multiple selections.")]
 		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
 			=> PickAsync(options, false);
 
@@ -160,6 +161,8 @@ namespace Microsoft.Maui.Media
 			var pickVisualMediaRequestBuilder = new PickVisualMediaRequest.Builder()
 				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance);
 
+			// Only set the limit for 2 and up. For single selection (limit == 1) is handled above,
+			// and limit == 0 should be treated as unlimited.
 			if (options.SelectionLimit >= 2)
 			{
 				pickVisualMediaRequestBuilder.SetMaxItems(options.SelectionLimit);
@@ -169,9 +172,9 @@ namespace Microsoft.Maui.Media
 
 			var androidUris = await PickMultipleVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
 
-			if (androidUris?.IsEmpty  ?? true)
+			if (androidUris?.IsEmpty ?? true)
 			{
-				return null;
+				return [];
 			}
 
 			var resultList = new List<FileResult>();
@@ -230,7 +233,6 @@ namespace Microsoft.Maui.Media
 
 			return path;
 		}
-	
 		
 		async Task<List<FileResult>> PickMultipleUsingIntermediateActivity(MediaPickerOptions options, bool photo)
 		{
@@ -240,13 +242,19 @@ namespace Microsoft.Maui.Media
 			if (options is not null)
 			{
 				intent.PutExtra(Intent.ExtraAllowMultiple, options.SelectionLimit > 1 || options.SelectionLimit == 0);
-				intent.PutExtra(MediaStore.ExtraPickImagesMax, options.SelectionLimit);
+
+				// Set a maximum when 2 or more. When the limit is 1 we only allow a single one and 0 should allow unlimited.
+				if (options.SelectionLimit >= 2)
+				{
+					intent.PutExtra(MediaStore.ExtraPickImagesMax, options.SelectionLimit);
+				}
 			}
 
 			var pickerIntent = Intent.CreateChooser(intent, options?.Title);
+			
 			if (pickerIntent is null)
 			{
-				return null;
+				return [];
 			}
 
 			try
@@ -283,11 +291,11 @@ namespace Microsoft.Maui.Media
 
 				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeMediaPicker, onResult: OnResult);
 
-				return resultList.Any() ? resultList : null;
+				return resultList;
 			}
 			catch (OperationCanceledException)
 			{
-				return null;
+				return [];
 			}
 		}
 	}
