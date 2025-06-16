@@ -107,7 +107,12 @@ dotnet cake --target=dotnet-pack
 dotnet test
 ```
 
-**Note:** `dotnet test` will not work with any projects that contain the word "DeviceTest" in their name.
+#### Testing Guidelines
+- Add tests for new functionality
+- Ensure existing tests pass:
+  - `src/Core/tests/UnitTests/Core.UnitTests.csproj`
+  - `src/Essentials/test/UnitTests/Essentials.UnitTests.csproj`
+  - `src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj`
 
 ### Local Development with Branch-Specific .NET
 
@@ -152,14 +157,6 @@ For compatibility with specific branches:
 - Update XML documentation for public APIs
 - Follow existing code documentation patterns
 - Update relevant docs in `docs/` folder when needed
-
-### Testing
-- Add tests for new functionality
-- Ensure existing tests pass
-  - `src/Core/tests/UnitTests/Core.UnitTests.csproj`
-  - `src/Essentials/test/UnitTests/Essentials.UnitTests.csproj`
-  - `src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj`
-- Device Tests (UI testing): projects with "DeviceTest" in name
 
 ## Additional Resources
 
