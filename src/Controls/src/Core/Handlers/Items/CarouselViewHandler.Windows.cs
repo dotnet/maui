@@ -14,6 +14,8 @@ using WScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using WSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment;
 using WSnapPointsType = Microsoft.UI.Xaml.Controls.SnapPointsType;
+using WSetter = Microsoft.UI.Xaml.Setter;
+using WStyle = Microsoft.UI.Xaml.Style;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -163,7 +165,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				listView = new FormsListView()
 				{
 					Style = (UI.Xaml.Style)WApp.Current.Resources["HorizontalCarouselListStyle"],
-					ItemsPanel = (ItemsPanelTemplate)WApp.Current.Resources["HorizontalListItemsPanel"]
+					ItemsPanel = (ItemsPanelTemplate)WApp.Current.Resources["HorizontalListItemsPanel"],
+					ItemContainerStyle = GetItemContainerStyle(true)
 				};
 
 				ScrollViewer.SetHorizontalScrollBarVisibility(listView, WScrollBarVisibility.Auto);
@@ -173,7 +176,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				listView = new FormsListView()
 				{
-					Style = (UI.Xaml.Style)WApp.Current.Resources["VerticalCarouselListStyle"]
+					Style = (UI.Xaml.Style)WApp.Current.Resources["VerticalCarouselListStyle"],
+					ItemContainerStyle = GetItemContainerStyle(false)
 				};
 
 				ScrollViewer.SetHorizontalScrollBarVisibility(listView, WScrollBarVisibility.Disabled);
@@ -596,6 +600,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				item.ItemWidth = itemWidth;
 			}
 			ListViewBase.InvalidateMeasure();
+		}
+
+		WStyle GetItemContainerStyle(bool isHorizontalLayout)
+		{
+			var h = CarouselItemsLayout?.ItemSpacing > 0 ? (CarouselItemsLayout.ItemSpacing) / 2 : 0;
+			var padding = isHorizontalLayout ? WinUIHelpers.CreateThickness(h, 0, h, 0) : WinUIHelpers.CreateThickness(0, h, 0, h);
+
+			var style = new WStyle(typeof(ListViewItem));
+			style.Setters.Add(new WSetter(Control.PaddingProperty, padding));
+			return style;
 		}
 	}
 }
