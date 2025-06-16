@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public PlatformImage PlatformImage => new PlatformImage(Bitmap);
 
-		public Bitmap Bitmap => Bitmap.CreateBitmap(_bitmap);
+		public Bitmap Bitmap => _disposeBitmap ? _bitmap.Copy(_bitmap.GetConfig(), false) : _bitmap;
 
 		public override void Dispose()
 		{
