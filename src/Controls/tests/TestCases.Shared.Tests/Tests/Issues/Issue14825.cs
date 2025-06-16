@@ -11,7 +11,7 @@ public class Issue14825 : _IssuesUITest
 	public Issue14825(TestDevice device) : base(device)
 	{
 	}
-
+#if TEST_FAILS_ON_ANDROID //For more information see: https://github.com/dotnet/maui/issues/30010
 	[Test]
 	[Category(UITestCategories.WebView)]
 	public void ValidateWebViewScreenshot()
@@ -23,4 +23,5 @@ public class Issue14825 : _IssuesUITest
 		App.WaitForElement("TestInstructions", timeout: TimeSpan.FromSeconds(2));
 		VerifyScreenshot();
 	}
+#endif
 }
