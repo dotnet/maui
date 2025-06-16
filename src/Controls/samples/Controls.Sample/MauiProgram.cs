@@ -315,6 +315,11 @@ namespace Maui.Controls.Sample
 					layout.EnableArrangePassTracking = true;
 					layout.TrackPerElement = true;
 				});
+				
+				options.ConfigureNavigation(navigation =>
+				{
+					navigation.EnableNavigationTracking = true;
+				});
 
 				options.ConfigureWarnings(warning =>
 				{
@@ -328,8 +333,12 @@ namespace Maui.Controls.Sample
 						},
 						Layout = new LayoutThresholds
 						{
-							LayoutMaxArrangeTime = TimeSpan.FromMilliseconds(1),
-							LayoutMaxMeasureTime = TimeSpan.FromMilliseconds(2)
+							LayoutMaxArrangeTime = TimeSpan.FromMilliseconds(5),
+							LayoutMaxMeasureTime = TimeSpan.FromMilliseconds(10)
+						},
+						Navigation = new NavigationThresholds
+						{
+							NavigationMaxTime = TimeSpan.FromMilliseconds(500)
 						}
 					};
 				});

@@ -25,8 +25,6 @@ namespace Maui.Controls.Sample.Pages
 			var serviceProvider = IPlatformApplication.Current?.Services;
 			_performanceProfiler = serviceProvider?.GetService<IPerformanceProfiler>() 
 			                       ?? throw new InvalidOperationException("IPerformanceProfiler service not found");
-
-			_performanceProfiler.Warnings.WarningRaised += OnPerformanceWarning;
 		}
 		
 		~PerformanceWarningsPage() => _timer.Tick -= OnTimerTick;
@@ -34,7 +32,9 @@ namespace Maui.Controls.Sample.Pages
 		protected override void OnAppearing()
 		{
 			base.OnAppearing();
-
+			
+			_performanceProfiler.Warnings.WarningRaised += OnPerformanceWarning;
+			
 			_timer = Dispatcher.CreateTimer();
 			_timer.Interval = TimeSpan.FromMilliseconds(15);
 			_timer.Tick += OnTimerTick;
@@ -44,6 +44,7 @@ namespace Maui.Controls.Sample.Pages
 		protected override void OnDisappearing()
 		{
 			base.OnDisappearing();
+			_performanceProfiler.Warnings.WarningRaised -= OnPerformanceWarning;
 			_timer.Stop();
 		}
 
@@ -64,6 +65,11 @@ namespace Maui.Controls.Sample.Pages
 			{
 				DisplayAlert("Performance Issue", $" Information: {e.Warning.Message}, Recommendation: {e.Warning.Recommendation}", "OK");
 			}
+		}
+
+		async void OnNavigationButtonClicked(object sender, EventArgs args)
+		{
+			await Navigation.PushAsync(new SimulatedLatencyPage());
 		}
 	}
 }

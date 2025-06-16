@@ -115,7 +115,11 @@
       <Label 
         x:Name="LayoutStatsLabelTitle"/>
       <Label 
-        x:Name="LayoutStatsLabel"/>
+        x:Name="LayoutStatsLabel"/>  
+      <Label 
+        x:Name="NavigationStatsLabelTitle"/>
+      <Label 
+        x:Name="NavigationStatsLabel"/>
     </VerticalStackLayout>
   </Grid>
 </ContentPage>

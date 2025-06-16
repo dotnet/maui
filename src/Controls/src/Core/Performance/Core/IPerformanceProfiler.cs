@@ -26,6 +26,16 @@ public interface IPerformanceProfiler
 	ILayoutPerformanceTracker Layout { get; }
 	
 	/// <summary>
+	/// Gets the navigation performance tracker responsible for analyzing
+	/// navigation timing data.
+	/// </summary>
+	/// <remarks>
+	/// This tracker monitors page navigations and helps detect slow navigations
+	/// by recording durations and comparing them to configured thresholds.
+	/// </remarks>
+	INavigationPerformanceTracker Navigation { get; }
+	
+	/// <summary>
 	/// Gets the performance warning manager responsible for tracking and managing potential performance issues.
 	/// </summary>
 	IPerformanceWarningManager Warnings { get; }

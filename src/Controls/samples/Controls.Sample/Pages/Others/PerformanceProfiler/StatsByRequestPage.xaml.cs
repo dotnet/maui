@@ -27,6 +27,10 @@ namespace Maui.Controls.Sample.Pages
 			var layoutStats = _performanceProfiler.Layout.GetStats();
 			LayoutStatsLabelTitle.Text = "Layout Performance Stats";
 			LayoutStatsLabel.Text = $"ArrangeDuration: {layoutStats.ArrangeDuration}, MeasureDuration: {layoutStats.MeasureDuration}";
+			
+			var navigationStats = _performanceProfiler.Navigation.GetStats();
+			NavigationStatsLabelTitle.Text = "Navigation Performance Stats";
+			NavigationStatsLabel.Text = $"NavigationDuration: {navigationStats.NavigationDuration} ms";
 		}
 	}
 }

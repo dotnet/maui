@@ -16,6 +16,11 @@ public class PerformanceMonitoringOptions
 	public LayoutTrackingOptions Layout { get; set; } = new();
 	
 	/// <summary>
+	/// Gets or sets the configuration options for monitoring navigation performance metrics.
+	/// </summary>
+	public NavigationTrackingOptions Navigation { get; set; } = new();
+	
+	/// <summary>
 	/// Gets or sets the warning configuration options for performance monitoring.
 	/// </summary>
 	public WarningOptions Warnings { get; set; } = new();

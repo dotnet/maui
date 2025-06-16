@@ -35,7 +35,8 @@ namespace Microsoft.Maui.Controls.Performance
             builder.Services.AddSingleton<IPerformanceProfiler, PerformanceProfiler>();
             builder.Services.AddSingleton<IImagePerformanceTracker, ImagePerformanceTracker>();
             builder.Services.AddSingleton<ILayoutPerformanceTracker, LayoutPerformanceTracker>();
-
+            builder.Services.AddSingleton<INavigationPerformanceTracker, NavigationPerformanceTracker>();
+            
             // Register warning manager with configuration
             builder.Services.AddSingleton<IPerformanceWarningManager>(_ =>
             {
@@ -52,6 +53,7 @@ namespace Microsoft.Maui.Controls.Performance
             {
 				opt.Image = options.Image;
                 opt.Layout = options.Layout;
+                opt.Navigation = options.Navigation;
                 opt.Warnings = options.Warnings;
             });
 
@@ -93,6 +95,24 @@ namespace Microsoft.Maui.Controls.Performance
         {
             configure(options.Layout);
             return options;
+        }    
+        
+        /// <summary>
+        /// Configures navigation-tracking options within the <see cref="PerformanceMonitoringOptions"/>.
+        /// </summary>
+        /// <param name="options">The <see cref="PerformanceMonitoringOptions"/> instance to configure.</param>
+        /// <param name="configure">
+        /// A callback to configure the <see cref="NavigationTrackingOptions"/>, 
+        /// such as enabling timing thresholds or subscription behavior for navigation events.
+        /// </param>
+        /// <returns>The same <see cref="PerformanceMonitoringOptions"/> instance, enabling fluent configuration chaining.</returns>
+        [RequiresPerformanceMonitoringMethod]
+        public static PerformanceMonitoringOptions ConfigureNavigation(
+	        this PerformanceMonitoringOptions options,
+	        Action<NavigationTrackingOptions> configure)
+        {
+	        configure(options.Navigation);
+	        return options;
         }  
         
         /// <summary>

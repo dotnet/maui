@@ -3,7 +3,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Performance.Internals;
 
@@ -120,11 +122,47 @@ internal class Performance
 		}
 	}
 
+	/// <summary>
+	/// Tracks the execution time of an asynchronous navigation operation and records the performance data.
+	/// </summary>
+	/// <param name="context">The MAUI context used to retrieve the profiler service instance.</param>
+	/// <param name="navigationFunc">The asynchronous navigation function to execute and measure.</param>
+	/// <returns>A task representing the asynchronous navigation operation.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static async Task TrackNavigationAsync(
+		IMauiContext? context,
+		Func<Task> navigationFunc)
+	{
+		var profiler = GetProfiler(context);
+            
+		if (profiler?.Navigation is null)
+		{
+			await navigationFunc();
+			return;
+		}
+
+		var stopwatch = Stopwatch.StartNew();
+		try
+		{
+			await navigationFunc();
+		}
+		finally
+		{
+			stopwatch.Stop();
+			
+			profiler.Navigation.RecordNavigation(
+				stopwatch.Elapsed.TotalMilliseconds);
+		}
+	}
+	
 	static IPerformanceProfiler? GetProfiler(IMauiContext? context)
 	{
 		// Check if the performance profiling feature is enabled.
 		if (!PerformanceProfilerFeature.Guard())
-		{
+		{  
+			Application.Current?.FindMauiContext()?.CreateLogger<Performance>()?.LogWarning(
+				"MAUI Performance Monitoring is disabled (EnableMauiPerformanceMonitoring)");
+			
 			return null;
 		}
 		

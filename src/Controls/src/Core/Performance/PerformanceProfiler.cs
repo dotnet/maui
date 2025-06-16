@@ -11,10 +11,12 @@ internal class PerformanceProfiler : IPerformanceProfiler
 	public PerformanceProfiler(
 		IImagePerformanceTracker imageTracker,
 		ILayoutPerformanceTracker layoutTracker,
+		INavigationPerformanceTracker navigationTracker,
 		IPerformanceWarningManager warningManager)
 	{
 		Image = imageTracker;
 		Layout = layoutTracker;
+		Navigation = navigationTracker;
 		Warnings = warningManager;
 	}
 	
@@ -39,6 +41,16 @@ internal class PerformanceProfiler : IPerformanceProfiler
 	public ILayoutPerformanceTracker Layout { get; }
 	
 	/// <summary>
+	/// Gets the navigation performance tracker responsible for analyzing
+	/// navigation timings.
+	/// </summary>
+	/// <remarks>
+	/// This tracker helps identify performance issues during page transitions, such as slow pushes, pops, or modal navigations,
+	/// and supports metrics collection and threshold-based warnings.
+	/// </remarks>
+	public INavigationPerformanceTracker Navigation { get; }
+	
+	/// <summary>
 	/// Gets the performance warning manager responsible for tracking and managing
 	/// potential performance issues.
 	/// </summary>
@@ -52,6 +64,7 @@ internal class PerformanceProfiler : IPerformanceProfiler
 	{
 		Image.Configure(options.Image);
 		Layout.Configure(options.Layout);
+		Navigation.Configure(options.Navigation);
 		Warnings.Configure(options.Warnings);
 
 		_options = options;
@@ -101,5 +114,18 @@ internal class PerformanceProfiler : IPerformanceProfiler
 	public void RecordArrangePass(long duration, string element = null)
 	{
 		Layout.RecordArrangePass(duration, element);
+	}
+	
+	/// <summary>
+	/// Records a navigation operation with the specified duration for performance tracking.
+	/// </summary>
+	/// <param name="duration">The time taken to complete a navigation action, in milliseconds.</param>
+	/// <remarks>
+	/// This method logs navigation durations to help identify latency in page navigations
+	/// and improve the perceived responsiveness of navigation flows.
+	/// </remarks>
+	public void RecordNavigation(long duration)
+	{
+		Navigation.RecordNavigation(duration);
 	}
 }

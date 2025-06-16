@@ -3,14 +3,24 @@
              x:Class="Maui.Controls.Sample.Pages.PerformanceWarningsPage"
              BackgroundColor="{DynamicResource PageBackgroundColor}"
              Title="Get Performance Warnings">
-  <AbsoluteLayout>
-    <Label x:Name="label1"
-           Text="Bouncing text"
-           FontSize="20"
-           AbsoluteLayout.LayoutFlags="PositionProportional" />
-    <Label x:Name="label2"
-           Text="Bouncing text"
-           FontSize="20"
-           AbsoluteLayout.LayoutFlags="PositionProportional" />
-  </AbsoluteLayout>    
+  <Grid>   
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <AbsoluteLayout>
+      <Label x:Name="label1"
+             Text="Bouncing text"
+             FontSize="20"
+             AbsoluteLayout.LayoutFlags="PositionProportional" />
+      <Label x:Name="label2"
+             Text="Bouncing text"
+             FontSize="20"
+             AbsoluteLayout.LayoutFlags="PositionProportional" />
+    </AbsoluteLayout>    
+    <Button
+      Grid.Row="1"
+      Text="Navigate"
+      Clicked="OnNavigationButtonClicked" />
+  </Grid>
 </ContentPage>
