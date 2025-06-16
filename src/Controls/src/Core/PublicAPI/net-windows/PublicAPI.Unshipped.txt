@@ -62,6 +62,7 @@ Microsoft.Maui.Controls.Performance.INavigationPerformanceTracker.Configure(Micr
 Microsoft.Maui.Controls.Performance.INavigationPerformanceTracker.GetStats() -> Microsoft.Maui.Controls.Performance.NavigationStats!
 Microsoft.Maui.Controls.Performance.INavigationPerformanceTracker.RecordNavigation(double duration) -> void
 Microsoft.Maui.Controls.Performance.INavigationPerformanceTracker.SubscribeToNavigationUpdates(System.Action<Microsoft.Maui.Controls.Performance.NavigationUpdate!>! callback) -> void
+Microsoft.Maui.Controls.Performance.IPerformanceProfiler.Navigation.get -> Microsoft.Maui.Controls.Performance.INavigationPerformanceTracker!
 Microsoft.Maui.Controls.Performance.NavigationPerformanceTracker
 Microsoft.Maui.Controls.Performance.NavigationPerformanceTracker.Configure(Microsoft.Maui.Controls.Performance.NavigationTrackingOptions! options) -> void
 Microsoft.Maui.Controls.Performance.NavigationPerformanceTracker.GetStats() -> Microsoft.Maui.Controls.Performance.NavigationStats!
@@ -87,9 +88,14 @@ Microsoft.Maui.Controls.Performance.NavigationUpdate.NavigationDuration.set -> v
 Microsoft.Maui.Controls.Performance.NavigationUpdate.NavigationUpdate() -> void
 Microsoft.Maui.Controls.Performance.NavigationUpdate.Timestamp.get -> System.DateTime
 Microsoft.Maui.Controls.Performance.NavigationUpdate.Timestamp.set -> void
+Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions.Navigation.get -> Microsoft.Maui.Controls.Performance.NavigationTrackingOptions!
+Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions.Navigation.set -> void
+Microsoft.Maui.Controls.Performance.PerformanceThresholds.Navigation.get -> Microsoft.Maui.Controls.Performance.NavigationThresholds!
+Microsoft.Maui.Controls.Performance.PerformanceThresholds.Navigation.set -> void
 Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan?
 Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan?
 Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan? oldTime, System.TimeSpan? newTime) -> void
+static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.ConfigureNavigation(this Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions! options, System.Action<Microsoft.Maui.Controls.Performance.NavigationTrackingOptions!>! configure) -> Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions!
 ~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
 ~Microsoft.Maui.Controls.ITextElement.TextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string
