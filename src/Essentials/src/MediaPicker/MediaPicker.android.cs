@@ -19,7 +19,7 @@ using AndroidUri = Android.Net.Uri;
 namespace Microsoft.Maui.Media
 {
 	partial class MediaPickerImplementation : IMediaPicker
-	{		
+	{
 		public bool IsCaptureSupported
 			=> Application.Context?.PackageManager?.HasSystemFeature(PackageManager.FeatureCameraAny) ?? false;
 
