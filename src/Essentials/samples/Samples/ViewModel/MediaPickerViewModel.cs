@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
@@ -13,10 +12,8 @@ namespace Samples.ViewModel
 	public class MediaPickerViewModel : BaseViewModel
 	{
 		ImageSource photoSource;
-		ImageSource videoSource;
 
 		bool showPhoto;
-		bool showVideo;
 		int pickerSelectionLimit = 1;
 		private ObservableCollection<ImageSource> photoList = [];
 		private bool showMultiplePhotos;
@@ -56,12 +53,6 @@ namespace Samples.ViewModel
 			set => SetProperty(ref showMultiplePhotos, value);
 		}
 
-		public bool ShowVideo
-		{
-			get => showVideo;
-			set => SetProperty(ref showVideo, value);
-		}
-
 		public ObservableCollection<ImageSource> PhotoList
 		{
 			get => photoList;
@@ -72,12 +63,6 @@ namespace Samples.ViewModel
 		{
 			get => photoSource;
 			set => SetProperty(ref photoSource, value);
-		}
-
-		public ImageSource VideoSource
-		{
-			get => videoSource;
-			set => SetProperty(ref videoSource, value);
 		}
 
 		async void DoPickPhoto()
@@ -120,19 +105,22 @@ namespace Samples.ViewModel
 		{
 			try
 			{
-				var video = await MediaPicker.PickVideoAsync(new MediaPickerOptions
+				var videos = await MediaPicker.PickVideosAsync(new MediaPickerOptions
 				{
 					Title = "Pick a video",
 					SelectionLimit = PickerSelectionLimit,
 				});
 
-				await LoadVideoAsync(video);
+				ShowPhoto = false;
+				ShowMultiplePhotos = false;
 
-				Console.WriteLine($"PickVideoAsync COMPLETED: {VideoSource}");
+				await DisplayAlertAsync($"{videos.Count} videos successfully picked.");
+
+				Console.WriteLine($"PickVideosAsync COMPLETED: {videos.Count} selected");
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"PickVideoAsync THREW: {ex.Message}");
+				Console.WriteLine($"PickVideosAsync THREW: {ex.Message}");
 			}
 		}
 
@@ -140,11 +128,14 @@ namespace Samples.ViewModel
 		{
 			try
 			{
-				var photo = await MediaPicker.CaptureVideoAsync();
+				var video = await MediaPicker.CaptureVideoAsync();
 
-				await LoadVideoAsync(photo);
+				ShowPhoto = false;
+				ShowMultiplePhotos = false;
 
-				Console.WriteLine($"CaptureVideoAsync COMPLETED: {VideoSource}");
+				await DisplayAlertAsync($"Video successfully captured at {video.FullPath}.");
+
+				Console.WriteLine($"CaptureVideoAsync COMPLETED: {video.FullPath}");
 			}
 			catch (Exception ex)
 			{
@@ -163,7 +154,6 @@ namespace Samples.ViewModel
 			var stream = await photo.OpenReadAsync();
 			PhotoSource = ImageSource.FromStream(() => stream);
 
-			ShowVideo = false;
 			ShowMultiplePhotos = false;
 			ShowPhoto = true;
 		}
@@ -185,32 +175,14 @@ namespace Samples.ViewModel
 				PhotoList.Add(ImageSource.FromStream(() => stream));
 			}
 
-			ShowVideo = false;
 			ShowPhoto = false;
 			ShowMultiplePhotos = true;
-		}
-
-		async Task LoadVideoAsync(FileResult video)
-		{
-			// canceled
-			if (video == null)
-			{
-				VideoSource = null;
-				return;
-			}
-
-			var stream = await video.OpenReadAsync();
-			VideoSource = ImageSource.FromStream(() => stream);
-
-			ShowVideo = true;
-			ShowPhoto = false;
 		}
 
 		public override void OnDisappearing()
 		{
 			PhotoList?.Clear();
 			PhotoSource = null;
-			VideoSource = null;
 
 			base.OnDisappearing();
 		}
