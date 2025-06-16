@@ -9,12 +9,12 @@ namespace Microsoft.Maui.Controls;
 /// <summary>
 /// Event arguments for the <see cref="HybridWebView.WebResourceRequested"/> event.
 /// </summary>
-public class HybridWebViewWebResourceRequestedEventArgs
+public class WebViewWebResourceRequestedEventArgs
 {
 	IReadOnlyDictionary<string, string>? _headers;
 	IReadOnlyDictionary<string, string>? _queryParams;
 
-	internal HybridWebViewWebResourceRequestedEventArgs(PlatformHybridWebViewWebResourceRequestedEventArgs platformArgs)
+	public WebViewWebResourceRequestedEventArgs(PlatformWebViewWebResourceRequestedEventArgs platformArgs)
 	{
 		PlatformArgs = platformArgs;
 		Uri = platformArgs.GetRequestUri() is string uri ? new Uri(uri) : throw new InvalidOperationException("Platform web request did not have a request URI.");
@@ -22,10 +22,10 @@ public class HybridWebViewWebResourceRequestedEventArgs
 	}
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="HybridWebViewWebResourceRequestedEventArgs"/> class
+	/// Initializes a new instance of the <see cref="WebViewWebResourceRequestedEventArgs"/> class
 	/// with the specified URI and method.
 	/// </summary>
-	public HybridWebViewWebResourceRequestedEventArgs(Uri uri, string method)
+	public WebViewWebResourceRequestedEventArgs(Uri uri, string method)
 	{
 		Uri = uri;
 		Method = method;
@@ -34,7 +34,7 @@ public class HybridWebViewWebResourceRequestedEventArgs
 	/// <summary>
 	/// Gets the platform-specific event arguments.
 	/// </summary>
-	public PlatformHybridWebViewWebResourceRequestedEventArgs? PlatformArgs { get; }
+	public PlatformWebViewWebResourceRequestedEventArgs? PlatformArgs { get; }
 
 	/// <summary>
 	/// Gets the URI of the requested resource.
@@ -264,9 +264,9 @@ public class HybridWebViewWebResourceRequestedEventArgs
 }
 
 /// <summary>
-/// Extension methods for the <see cref="HybridWebViewWebResourceRequestedEventArgs"/> class.
+/// Extension methods for the <see cref="WebViewWebResourceRequestedEventArgs"/> class.
 /// </summary>
-public static class HybridWebViewWebResourceRequestedEventArgsExtensions
+public static class WebViewWebResourceRequestedEventArgsExtensions
 {
 	/// <summary>
 	/// Sets the response for the web resource request with a status code and reason.
@@ -274,7 +274,7 @@ public static class HybridWebViewWebResourceRequestedEventArgsExtensions
 	/// <param name="e">The event arguments.</param>
 	/// <param name="code">The HTTP status code for the response.</param>
 	/// <param name="reason">The reason phrase for the response.</param>
-	public static void SetResponse(this HybridWebViewWebResourceRequestedEventArgs e, int code, string reason) =>
+	public static void SetResponse(this WebViewWebResourceRequestedEventArgs e, int code, string reason) =>
 		e.SetResponse(code, reason, null, (Stream?)null);
 
 	/// <summary>
@@ -285,7 +285,7 @@ public static class HybridWebViewWebResourceRequestedEventArgsExtensions
 	/// <param name="reason">The reason phrase for the response.</param>
 	/// <param name="contentType">The content type of the response.</param>
 	/// <param name="content">The content of the response as a stream.</param>
-	public static void SetResponse(this HybridWebViewWebResourceRequestedEventArgs e, int code, string reason, string contentType, Stream? content) =>
+	public static void SetResponse(this WebViewWebResourceRequestedEventArgs e, int code, string reason, string contentType, Stream? content) =>
 		e.SetResponse(code, reason, new Dictionary<string, string> { ["Content-Type"] = contentType }, content);
 
 	/// <summary>
@@ -296,6 +296,6 @@ public static class HybridWebViewWebResourceRequestedEventArgsExtensions
 	/// <param name="reason">The reason phrase for the response.</param>
 	/// <param name="contentType">The content type of the response.</param>
 	/// <param name="contentTask">A task that represents the asynchronous operation of getting the response content.</param>
-	public static void SetResponse(this HybridWebViewWebResourceRequestedEventArgs e, int code, string reason, string contentType, Task<Stream?> contentTask) =>
+	public static void SetResponse(this WebViewWebResourceRequestedEventArgs e, int code, string reason, string contentType, Task<Stream?> contentTask) =>
 		e.SetResponse(code, reason, new Dictionary<string, string> { ["Content-Type"] = contentType }, contentTask);
 }

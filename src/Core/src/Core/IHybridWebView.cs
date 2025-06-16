@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui
 {
-	public interface IHybridWebView : IView
+	public interface IHybridWebView : IView, IWebRequestInterceptingWebView
 	{
 		/// <summary>
 		/// Specifies the file within the <see cref="HybridRoot"/> that should be served as the default file. The
@@ -65,16 +65,5 @@ namespace Microsoft.Maui
 			JsonTypeInfo<TReturnType> returnTypeJsonTypeInfo,
 			object?[]? paramValues = null,
 			JsonTypeInfo?[]? paramJsonTypeInfos = null);
-
-		/// <summary>
-		/// Invoked when a web resource is requested. This event can be used to intercept requests and provide custom responses.
-		/// </summary>
-		/// <param name="args">The event arguments containing the request details.</param>
-		/// <returns><c>true</c> if the request was handled; otherwise, <c>false</c>.</returns>
-#if NETSTANDARD
-		bool WebResourceRequested(WebResourceRequestedEventArgs args);
-#else
-		bool WebResourceRequested(WebResourceRequestedEventArgs args) => false;
-#endif
 	}
 }

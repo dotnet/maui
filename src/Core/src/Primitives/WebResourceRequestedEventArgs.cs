@@ -1,13 +1,13 @@
 ﻿namespace Microsoft.Maui;
 
 /// <summary>
-/// Provides platform-specific information for the <see cref="IHybridWebView.WebResourceRequested"/> event.
+/// Provides platform-specific information for the <see cref="IWebRequestInterceptingWebView.WebResourceRequested"/> event.
 /// </summary>
 public class WebResourceRequestedEventArgs
 {
 #if WINDOWS
 
-	internal WebResourceRequestedEventArgs(
+	public WebResourceRequestedEventArgs(
 		global::Microsoft.Web.WebView2.Core.CoreWebView2 sender,
 		global::Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs eventArgs)
 	{
@@ -33,7 +33,7 @@ public class WebResourceRequestedEventArgs
 
 #elif IOS || MACCATALYST
 
-	internal WebResourceRequestedEventArgs(
+	public WebResourceRequestedEventArgs(
 		global::WebKit.WKWebView sender,
 		global::WebKit.IWKUrlSchemeTask urlSchemeTask)
 	{
@@ -59,7 +59,7 @@ public class WebResourceRequestedEventArgs
 
 #elif ANDROID
 
-	internal WebResourceRequestedEventArgs(
+	public WebResourceRequestedEventArgs(
 		global::Android.Webkit.WebView sender,
 		global::Android.Webkit.IWebResourceRequest request)
 	{

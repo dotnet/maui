@@ -6,15 +6,15 @@ using System.Linq;
 namespace Microsoft.Maui.Controls;
 
 /// <summary>
-/// Provides platform-specific information about the <see cref="HybridWebView.WebResourceRequested"/> event.
+/// Provides platform-specific information about the <see cref="WebViewWebResourceRequestedEventArgs"/> event.
 /// </summary>
-public class PlatformHybridWebViewWebResourceRequestedEventArgs
+public class PlatformWebViewWebResourceRequestedEventArgs
 {
 #if WINDOWS
 
 	IReadOnlyDictionary<string, string>? _headers;
 
-	internal PlatformHybridWebViewWebResourceRequestedEventArgs(
+	internal PlatformWebViewWebResourceRequestedEventArgs(
 		global::Microsoft.Web.WebView2.Core.CoreWebView2 sender,
 		global::Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs eventArgs)
 	{
@@ -22,7 +22,7 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 		RequestEventArgs = eventArgs;
 	}
 
-	internal PlatformHybridWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
+	public PlatformWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
 		: this(args.Sender, args.RequestEventArgs)
 	{
 	}
@@ -63,7 +63,7 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 
 	IReadOnlyDictionary<string, string>? _headers;
 
-	internal PlatformHybridWebViewWebResourceRequestedEventArgs(
+	internal PlatformWebViewWebResourceRequestedEventArgs(
 		global::WebKit.WKWebView sender,
 		global::WebKit.IWKUrlSchemeTask urlSchemeTask)
 	{
@@ -71,7 +71,7 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 		UrlSchemeTask = urlSchemeTask;
 	}
 
-	internal PlatformHybridWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
+	public PlatformWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
 		: this(args.Sender, args.UrlSchemeTask)
 	{
 	}
@@ -130,7 +130,7 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 	global::Android.Webkit.WebResourceResponse? _response;
 	IReadOnlyDictionary<string, string>? _headers;
 
-	internal PlatformHybridWebViewWebResourceRequestedEventArgs(
+	internal PlatformWebViewWebResourceRequestedEventArgs(
 		global::Android.Webkit.WebView sender,
 		global::Android.Webkit.IWebResourceRequest request,
 		Action<global::Android.Webkit.WebResourceResponse?> setResponse)
@@ -140,7 +140,7 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 		_setResponse = setResponse;
 	}
 
-	internal PlatformHybridWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
+	public PlatformWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
 		: this(args.Sender, args.Request, (response) => args.Response = response)
 	{
 	}
@@ -164,7 +164,7 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 	/// <summary>
 	/// Gets or sets the native response to return to the web view.
 	///
-	/// This property must be set to a valid response if the <see cref="HybridWebViewWebResourceRequestedEventArgs.Handled"/> property is set to true.
+	/// This property must be set to a valid response if the <see cref="WebViewWebResourceRequestedEventArgs.Handled"/> property is set to true.
 	///
 	/// This is only available on Android.
 	/// </summary>
@@ -189,11 +189,7 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 
 #else
 
-	internal PlatformHybridWebViewWebResourceRequestedEventArgs()
-	{
-	}
-
-	internal PlatformHybridWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
+	public PlatformWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
 	{
 	}
 
