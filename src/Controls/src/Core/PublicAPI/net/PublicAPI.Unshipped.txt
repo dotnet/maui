@@ -379,3 +379,11 @@ Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.GradientBrushPars
 Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.Parse(string? css) -> Microsoft.Maui.Controls.GradientBrush?
 static Microsoft.Maui.Controls.Shapes.PathFigureCollectionConverter.ParseStringToPathFigureCollection(Microsoft.Maui.Controls.Shapes.PathFigureCollection! pathFigureCollection, string? pathString) -> void
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.Target.get -> string
+Microsoft.Maui.Controls.AppThemeBinding
+Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
+~Microsoft.Maui.Controls.AppThemeBinding.Light.get -> object
+~Microsoft.Maui.Controls.AppThemeBinding.Light.set -> void
+~Microsoft.Maui.Controls.AppThemeBinding.Dark.get -> object
+~Microsoft.Maui.Controls.AppThemeBinding.Dark.set -> void
+~Microsoft.Maui.Controls.AppThemeBinding.Default.get -> object
+~Microsoft.Maui.Controls.AppThemeBinding.Default.set -> void

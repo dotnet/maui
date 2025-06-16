@@ -397,3 +397,11 @@ Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.Al
 Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.AllowImplicitXmlnsDeclarationAttribute(bool allow = true) -> void
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.Target.get -> string
 *REMOVED*~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.XmlnsDefinitionAttribute(string xmlNamespace, string clrNamespace) -> void
+Microsoft.Maui.Controls.AppThemeBinding
+Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
+~Microsoft.Maui.Controls.AppThemeBinding.Light.get -> object
+~Microsoft.Maui.Controls.AppThemeBinding.Light.set -> void
+~Microsoft.Maui.Controls.AppThemeBinding.Dark.get -> object
+~Microsoft.Maui.Controls.AppThemeBinding.Dark.set -> void
+~Microsoft.Maui.Controls.AppThemeBinding.Default.get -> object
+~Microsoft.Maui.Controls.AppThemeBinding.Default.set -> void

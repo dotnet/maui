@@ -1,14 +1,16 @@
 #nullable disable
 using System;
+using System.ComponentModel;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
-	class AppThemeBinding : BindingBase
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public class AppThemeBinding : BindingBase
 	{
-		public const string AppThemeResource = "__MAUI_ApplicationTheme__";
+		internal const string AppThemeResource = "__MAUI_ApplicationTheme__";
 		class AppThemeProxy : Element
 		{
 			public AppThemeProxy(Element parent, AppThemeBinding binding)
