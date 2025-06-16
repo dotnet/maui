@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Android.Graphics;
 using Android.Provider;
 using AndroidX.Activity.Result;
 using AndroidX.Activity.Result.Contract;
@@ -81,6 +83,11 @@ namespace Microsoft.Maui.Media
 				if (photo)
 				{
 					captureResult = await CapturePhotoAsync(captureIntent);
+					// Apply compression if needed for photos
+					if (captureResult is not null && options?.CompressionQuality < 100)
+					{
+						captureResult = await Task.Run(() => CompressImageIfNeeded(captureResult, options));
+					}
 				}
 				else
 				{
@@ -214,6 +221,74 @@ namespace Microsoft.Maui.Media
 			await IntermediateActivity.StartAsync(captureIntent, PlatformUtils.requestCodeMediaCapture, OnCreate);
 
 			return tmpFile.AbsolutePath;
+		}
+
+		string CompressImageIfNeeded(string imagePath, MediaPickerOptions options)
+		{
+			if (options?.CompressionQuality >= 100 || string.IsNullOrEmpty(imagePath))
+				return imagePath;
+
+			try
+			{
+				var originalFile = new Java.IO.File(imagePath);
+				if (!originalFile.Exists())
+					return imagePath;
+
+				// Use BitmapFactory.Options to get image dimensions without loading full bitmap
+				var bounds = new BitmapFactory.Options { InJustDecodeBounds = true };
+				BitmapFactory.DecodeFile(imagePath, bounds);
+
+				// Calculate appropriate sample size for memory efficiency
+				var sampleSize = CalculateInSampleSize(bounds, 2048, 2048);
+				var options_decode = new BitmapFactory.Options { InSampleSize = sampleSize };
+
+				using var originalBitmap = BitmapFactory.DecodeFile(imagePath, options_decode);
+				if (originalBitmap == null)
+					return imagePath;
+
+				// Create compressed version
+				var compressedFileName = System.IO.Path.GetFileNameWithoutExtension(imagePath) + "_compressed.jpg";
+				var compressedPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(imagePath), compressedFileName);
+
+				using var outputStream = System.IO.File.Create(compressedPath);
+				var success = originalBitmap.Compress(Bitmap.CompressFormat.Jpeg, options.CompressionQuality, outputStream);
+				
+				if (success)
+				{
+					// Delete the original uncompressed file
+					try { originalFile.Delete(); } catch { }
+					return compressedPath;
+				}
+			}
+			catch
+			{
+				// If compression fails, return original path
+			}
+
+			return imagePath;
+		}
+
+		static int CalculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight)
+		{
+			// Raw height and width of image
+			int height = options.OutHeight;
+			int width = options.OutWidth;
+			int inSampleSize = 1;
+
+			if (height > reqHeight || width > reqWidth)
+			{
+				int halfHeight = height / 2;
+				int halfWidth = width / 2;
+
+				// Calculate the largest inSampleSize value that is a power of 2 and keeps both
+				// height and width larger than the requested height and width.
+				while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth)
+				{
+					inSampleSize *= 2;
+				}
+			}
+
+			return inSampleSize;
 		}
 
 		async Task<string> CaptureVideoAsync(Intent captureIntent)

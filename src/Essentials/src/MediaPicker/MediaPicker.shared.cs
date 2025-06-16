@@ -168,6 +168,23 @@ namespace Microsoft.Maui.Media
 	/// </summary>
 	public class MediaPickerOptions
 	{
+		private int compressionQuality = 100;
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		/// <summary>
+		/// Gets or sets the compression quality for picked media.
+		/// The value should be between 0 and 100, where 0 is the lowest quality (most compression) and 100 is the highest quality (least compression).
+		/// </summary>
+		/// <remarks>
+		/// Please note that performance might be affected by the compression quality, especially on lower-end devices.
+		/// </remarks>
+		public int CompressionQuality 
+		{ 
+			get => compressionQuality;
+			set => compressionQuality = Math.Max(0, Math.Min(100, value));
+		}
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
 		/// <summary>
 		/// Gets or sets the title that is displayed when picking media.
 		/// </summary>

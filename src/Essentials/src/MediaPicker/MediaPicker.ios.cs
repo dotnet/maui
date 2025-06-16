@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Storage;
 using MobileCoreServices;
 using Photos;
@@ -137,7 +138,7 @@ namespace Microsoft.Maui.Media
 				{
 					CompletedHandler = async info =>
 					{
-						GetFileResult(info, tcs);
+						GetFileResult(info, tcs, options);
 						await vc.DismissViewControllerAsync(true);
 					}
 				};
@@ -265,11 +266,11 @@ namespace Microsoft.Maui.Media
 				.ToList() ?? [];
 		}
 
-		static void GetFileResult(NSDictionary info, TaskCompletionSource<FileResult> tcs)
+		static void GetFileResult(NSDictionary info, TaskCompletionSource<FileResult> tcs, MediaPickerOptions options = null)
 		{
 			try
 			{
-				tcs.TrySetResult(DictionaryToMediaFile(info));
+				tcs.TrySetResult(DictionaryToMediaFile(info, options));
 			}
 			catch (Exception ex)
 			{
@@ -277,7 +278,7 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		static FileResult DictionaryToMediaFile(NSDictionary info)
+		static FileResult DictionaryToMediaFile(NSDictionary info, MediaPickerOptions options = null)
 		{
 			// This method should only be called for iOS < 14
 			if (!OperatingSystem.IsIOSVersionAtLeast(14))
@@ -329,7 +330,8 @@ namespace Microsoft.Maui.Media
 
 				if (img is not null)
 				{
-					return new UIImageFileResult(img);
+					var compressionQuality = options?.CompressionQuality ?? 100;
+					return new CompressedUIImageFileResult(img, compressionQuality);
 				}
 			}
 
@@ -414,5 +416,45 @@ namespace Microsoft.Maui.Media
 
 		protected internal static string GetTag(string identifier, string tagClass)
 			   => UTType.CopyAllTags(identifier, tagClass)?.FirstOrDefault();
+	}
+
+	class CompressedUIImageFileResult : FileResult
+	{
+		readonly UIImage uiImage;
+		readonly int compressionQuality;
+		NSData data;
+
+		internal CompressedUIImageFileResult(UIImage image, int compressionQuality = 100)
+			: base()
+		{
+			uiImage = image;
+			this.compressionQuality = Math.Max(0, Math.Min(100, compressionQuality));
+
+			var extension = this.compressionQuality < 100 ? FileExtensions.Jpg : FileExtensions.Png;
+			FullPath = Guid.NewGuid().ToString() + extension;
+			FileName = FullPath;
+		}
+
+		internal override Task<Stream> PlatformOpenReadAsync()
+		{
+			if (data == null)
+			{
+				var normalizedImage = uiImage.NormalizeOrientation();
+				
+				if (compressionQuality < 100)
+				{
+					// Use JPEG compression with quality setting
+					var qualityFloat = compressionQuality / 100.0f;
+					data = normalizedImage.AsJPEG(qualityFloat);
+				}
+				else
+				{
+					// Use PNG for maximum quality
+					data = normalizedImage.AsPNG();
+				}
+			}
+
+			return Task.FromResult(data.AsStream());
+		}
 	}
 }
