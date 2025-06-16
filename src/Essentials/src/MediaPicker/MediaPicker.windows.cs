@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Media
 			=> PickAsync(options, true);
 
 		public Task<List<FileResult>> PickPhotosAsync(MediaPickerOptions? options = null)
-			=> PickMultipleAsync(options, false);
+			=> PickMultipleAsync(options, true);
 
 		[Obsolete("Switch to PickVideosAsync which also allows multiple selections.")]
 		public Task<FileResult?> PickVideoAsync(MediaPickerOptions? options = null)
@@ -67,6 +67,12 @@ namespace Microsoft.Maui.Media
 
 		public async Task<List<FileResult>> PickMultipleAsync(MediaPickerOptions? options, bool photo)
 		{
+			if (options?.SelectionLimit == 1)
+			{
+				var singleResult = await PickAsync(options, photo);
+				return singleResult is null ? [] : [singleResult];
+			}
+
 			var picker = new FileOpenPicker();
 
 			var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
