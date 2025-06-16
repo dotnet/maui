@@ -32,6 +32,8 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
+		// MovementMethod handles cursor positioning, scrolling, and text selection (per Android docs).
+		// Since text is readonly, we disable it to avoid unnecessary cursor navigation during keyboard input.
 		protected override IMovementMethod? DefaultMovementMethod => null;
 
 		public Action? ShowPicker { get; set; }

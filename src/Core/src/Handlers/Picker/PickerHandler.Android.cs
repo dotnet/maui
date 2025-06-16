@@ -88,11 +88,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler.IsConnected() && !picker.IsFocused)
 			{
-				if (args is FocusRequest request)
-				{
-					handler.PlatformView.Focus(request);
-				}
-
+				ViewHandler.MapFocus(handler, picker, args);
 				handler.PlatformView.CallOnClick();
 			}
 		}
@@ -102,7 +98,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.IsConnected() && handler is PickerHandler pickerHandler && picker.IsFocused)
 			{
 				pickerHandler.DismissDialog();
-				pickerHandler.PlatformView.ClearFocus();
+				ViewHandler.MapUnfocus(handler,picker,args);
 			}
 		}
 
