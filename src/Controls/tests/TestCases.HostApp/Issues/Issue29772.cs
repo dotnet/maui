@@ -17,7 +17,7 @@ public class Issue29772 : ContentPage
 		{
 			Text = "ItemSpacing Should apply between items on CarouselView",
 			HorizontalTextAlignment = TextAlignment.Center,
-			AutomationId = "29772Descriptionlabel"
+			AutomationId = "29772DescriptionLabel"
 		};
 
 		carouselView = new CarouselView
