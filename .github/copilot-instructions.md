@@ -101,18 +101,14 @@ dotnet cake --target=dotnet-pack
 
 ### Testing and Debugging
 
-#### Running Tests
-```bash
-# Run all tests
-dotnet test
-```
-
 #### Testing Guidelines
 - Add tests for new functionality
 - Ensure existing tests pass:
   - `src/Core/tests/UnitTests/Core.UnitTests.csproj`
   - `src/Essentials/test/UnitTests/Essentials.UnitTests.csproj`
   - `src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj`
+  - `src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj`
+  - `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
 
 ### Local Development with Branch-Specific .NET
 
