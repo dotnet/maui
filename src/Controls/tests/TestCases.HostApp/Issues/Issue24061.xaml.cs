@@ -4,7 +4,7 @@
 	public partial class Issue24061 : ContentPage
 	{
 		LinearGradientBrush _linearGradientBrush;
-		
+
 		public Issue24061()
 		{
 			InitializeComponent();
