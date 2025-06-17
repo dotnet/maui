@@ -89,6 +89,12 @@ namespace Microsoft.Maui.Controls
 				}
 
 				result = ContentCache ?? (Page)template.CreateContent(content, this);
+
+				if (GetValue(QueryAttributesProperty) is ShellRouteParameters delayedQueryParams)
+				{
+					result.SetValue(QueryAttributesProperty, delayedQueryParams);
+				}
+
 				ContentCache = result;
 			}
 
@@ -103,9 +109,6 @@ namespace Microsoft.Maui.Controls
 
 			if (result is NavigationPage)
 				throw new NotSupportedException("Shell is currently not compatible with NavigationPage. Shell has Navigation built in and doesn't require a NavigationPage.");
-
-			if (GetValue(QueryAttributesProperty) is ShellRouteParameters delayedQueryParams)
-				result.SetValue(QueryAttributesProperty, delayedQueryParams);
 
 			return result;
 		}
