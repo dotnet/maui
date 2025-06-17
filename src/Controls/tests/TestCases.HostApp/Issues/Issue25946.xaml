@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue25946">
     <Grid RowDefinitions="*,Auto">
-        <CarouselView x:Name="collectionView">
+        <!-- Loop set to False to avoid Windows automation issues - see issue: https://github.com/dotnet/maui/issues/29245 -->
+        <CarouselView x:Name="collectionView" Loop="False">
             <CarouselView.ItemsSource>
                 <x:Array Type="{x:Type x:String}">
                     <x:String>Item1</x:String>
