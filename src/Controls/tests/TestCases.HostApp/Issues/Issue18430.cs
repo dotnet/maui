@@ -11,7 +11,7 @@ public class Issue18430 : ContentPage
 	{
 		var label = new Label
 		{ 
-			Text = "Test passes if exception not thrown",
+			Text = "Test should pass only if no exception is thrown and the image should clipped",
 			AutomationId = "Issue18430DescriptionLabel",
 
 		};
