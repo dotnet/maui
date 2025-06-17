@@ -138,6 +138,7 @@ namespace Samples.ViewModel
 
 				ShowPhoto = false;
 				ShowMultiplePhotos = false;
+				ImageByteLength = 0;
 
 				await DisplayAlertAsync($"{videos.Count} videos successfully picked.");
 
@@ -157,6 +158,7 @@ namespace Samples.ViewModel
 
 				ShowPhoto = false;
 				ShowMultiplePhotos = false;
+				ImageByteLength = 0;
 
 				await DisplayAlertAsync($"Video successfully captured at {video.FullPath}.");
 
@@ -178,6 +180,7 @@ namespace Samples.ViewModel
 
 			var stream = await photo.OpenReadAsync();
 			PhotoSource = ImageSource.FromStream(() => stream);
+			ImageByteLength = stream.Length;
 
 			ShowMultiplePhotos = false;
 			ShowPhoto = true;
@@ -186,6 +189,7 @@ namespace Samples.ViewModel
 		async Task LoadPhotoAsync(List<FileResult> photo)
 		{
 			PhotoList.Clear();
+			ImageByteLength = 0;
 
 			// canceled
 			if (photo is null || photo.Count == 0)
