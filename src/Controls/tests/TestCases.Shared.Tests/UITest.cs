@@ -1,7 +1,9 @@
 using System.Reflection;
+using System.Text.RegularExpressions;
 using ImageMagick;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using UITest.Appium;
 using UITest.Appium.NUnit;
 using UITest.Core;
@@ -120,7 +122,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			string? name = null,
 			TimeSpan? retryDelay = null,
 			int cropTop = 0,
-			int cropBottom = 0
+			int cropBottom = 0,
+			double tolerance = 0.0
 #if MACUITEST || WINTEST
 			, bool includeTitleBar = false
 #endif
@@ -128,7 +131,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			try
 			{
-				VerifyScreenshot(name, retryDelay, cropTop, cropBottom
+				VerifyScreenshot(name, retryDelay, cropTop, cropBottom, tolerance
 #if MACUITEST || WINTEST
 				, includeTitleBar
 #endif
@@ -140,17 +143,41 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		/// <summary>
-		/// Verifies the Application screenshot.
+		/// Verifies a screenshot by comparing it against a baseline image and throws an exception if verification fails.
 		/// </summary>
-		/// <param name="name">Optional. The name to be used for the screenshot file. If not specified, the test name will be used.</param>
-		/// <param name="retryDelay">Optional. The delay time between retries. If not specified, a default retry delay of 500 ms will be used.</param>
-		/// <param name="includeTitleBar">Optional. (Only applicable for Mac or Windows) Specifies whether the TitleBar bar should be included in the screenshot. Default is false.</param>
+		/// <param name="name">Optional name for the screenshot. If not provided, a default name will be used.</param>
+		/// <param name="retryDelay">Optional delay between retry attempts when verification fails.</param>
+		/// <param name="cropTop">Number of pixels to crop from the top of the screenshot.</param>
+		/// <param name="cropBottom">Number of pixels to crop from the bottom of the screenshot.</param>
+		/// <param name="tolerance">Tolerance level for image comparison as a percentage from 0 to 100.</param>
+#if MACUITEST || WINTEST
+/// <param name="includeTitleBar">Whether to include the title bar in the screenshot comparison.</param>
+#endif
+		/// <remarks>
+		/// This method immediately throws an exception if the screenshot verification fails.
+		/// For batch verification of multiple screenshots, consider using <see cref="VerifyScreenshotOrSetException"/> instead.
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// // Exact match (no tolerance)
+		/// VerifyScreenshot("LoginScreen");
+		/// 
+		/// // Allow 2% difference for dynamic content
+		/// VerifyScreenshot("DashboardWithTimestamp", tolerance: 2.0);
+		/// 
+		/// // Allow 5% difference for animations or slight rendering variations
+		/// VerifyScreenshot("ButtonHoverState", tolerance: 5.0);
+		/// 
+		/// // Combined with cropping and tolerance
+		/// VerifyScreenshot("HeaderSection", cropTop: 50, cropBottom: 100, tolerance: 3.0);
+		/// </code>
+		/// </example>
 		public void VerifyScreenshot(
 			string? name = null,
 			TimeSpan? retryDelay = null,
 			int cropTop = 0,
-			int cropBottom = 0
+			int cropBottom = 0,
+			double tolerance = 0.0 // Add tolerance parameter (0.05 = 5%)
 #if MACUITEST || WINTEST
 				, bool includeTitleBar = false
 #endif
@@ -170,7 +197,75 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			void Verify(string? name)
 			{
-				string environmentName = GetEnvironmentName();
+				string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
+
+				// Remove the XHarness suffix if present
+				deviceName = deviceName.Replace(" - created by XHarness", "", StringComparison.Ordinal);
+
+				/*
+				Determine the environmentName, used as the directory name for visual testing snaphots. Here are the rules/conventions:
+				- Names are lower case, no spaces.
+				- By default, the name matches the platform (android, ios, windows, or mac).
+				- Each platform has a default device (or set of devices) - if the snapshot matches the default no suffix is needed (e.g. just ios).
+				- If tests are run on secondary devices that produce different snapshots, the device name is used as suffix (e.g. ios-iphonex).
+				- If tests are run on secondary devices with multiple OS versions that produce different snapshots, both device name and os version are
+				used as a suffix (e.g. ios-iphonex-16_4). We don't have any cases of this today but may eventually. The device name comes first here,
+				before os version, because most visual testing differences come from different sceen size (a device thing), not OS version differences,
+				but both can happen.
+				*/
+				string environmentName = "";
+				switch (_testDevice)
+				{
+					case TestDevice.Android:
+						environmentName = "android";
+						var deviceApiLevel = (long?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel")
+							?? throw new InvalidOperationException("deviceApiLevel capability is missing or null.");
+						var deviceScreenSize = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize")
+							?? throw new InvalidOperationException("deviceScreenSize capability is missing or null.");
+						var deviceScreenDensity = (long?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity")
+							?? throw new InvalidOperationException("deviceScreenDensity capability is missing or null.");
+
+						if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
+						{
+							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
+						}
+						break;
+
+					case TestDevice.iOS:
+						var platformVersion = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion")
+							?? throw new InvalidOperationException("platformVersion capability is missing or null.");
+						var device = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName")
+							?? throw new InvalidOperationException("deviceName capability is missing or null.");
+
+						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
+						{
+							environmentName = "ios";
+						}
+						else if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
+						{
+							environmentName = "ios";
+						}
+						else if (deviceName == "iPhone X (iOS 16.4)" || (device.Contains(" X", StringComparison.OrdinalIgnoreCase) && platformVersion == "16.4"))
+						{
+							environmentName = "ios-iphonex";
+						}
+						else
+						{
+							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
+						}
+						break;
+
+					case TestDevice.Windows:
+						environmentName = "windows";
+						break;
+
+					case TestDevice.Mac:
+						environmentName = "mac";
+						break;
+
+					default:
+						throw new NotImplementedException($"Unknown device type {_testDevice}");
+				}
 
 				name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 
@@ -227,8 +322,69 @@ namespace Microsoft.Maui.TestCases.Tests
 					actualImage = imageEditor.GetUpdatedImage();
 				}
 
-				_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+				// Apply tolerance if specified
+				if (tolerance > 0)
+				{
+					VerifyWithTolerance(name!, actualImage, environmentName, tolerance);
+				}
+				else
+				{
+					_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+				}
 			}
+		}
+
+		void VerifyWithTolerance(string name, ImageSnapshot actualImage, string environmentName, double tolerance)
+		{
+			if (tolerance > 15)
+			{
+				throw new ArgumentException($"Tolerance {tolerance}% exceeds the acceptable limit. Please review whether this requires a different test or if it is a bug.");
+			}
+
+			try
+			{
+				_visualRegressionTester.VerifyMatchesSnapshot(name, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+			}
+			catch (Exception ex) when (IsVisualDifferenceException(ex))
+			{
+				var difference = ExtractDifferencePercentage(ex);
+				if (difference <= tolerance)
+				{
+					// Log warning but pass test
+					TestContext.WriteLine($"Visual difference {difference}% within tolerance {tolerance}% for '{name}' on {environmentName}");
+					return;
+				}
+				throw; // Re-throw if exceeds tolerance
+			}
+		}
+
+		bool IsVisualDifferenceException(Exception ex)
+		{
+			// Check if this is a visual regression failure
+			return ex.GetType().Name.Contains("Assert", StringComparison.Ordinal) ||
+				   ex.Message.Contains("Snapshot different", StringComparison.Ordinal) ||
+				   ex.Message.Contains("baseline", StringComparison.Ordinal) ||
+				   ex.Message.Contains("different", StringComparison.Ordinal);
+		}
+
+		double ExtractDifferencePercentage(Exception ex)
+		{
+			var message = ex.Message;
+
+			// Extract percentage from pattern: "X,XX% difference"
+			var match = Regex.Match(message, @"(\d+,\d+)%\s*difference", RegexOptions.IgnoreCase);
+			if (match.Success)
+			{
+				var percentageString = match.Groups[1].Value.Replace(',', '.');
+				if (double.TryParse(percentageString, System.Globalization.NumberStyles.Float,
+					System.Globalization.CultureInfo.InvariantCulture, out var percentage))
+				{
+					return percentage;
+				}
+			}
+
+			// If can't extract specific percentage, throw an exception to indicate failure
+			throw new InvalidOperationException("Unable to extract difference percentage from exception message.");
 		}
 
 		/// <summary>

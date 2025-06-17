@@ -77,6 +77,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (mauiNavView is not null)
 				mauiNavView.SelectionChanged += OnNavigationTabChanged;
+
+			if (VirtualView.Parent is Shell shell)
+			{
+				shell.Navigated += OnShellNavigated;
+			}
 		}
 
 		protected override void DisconnectHandler(FrameworkElement platformView)
@@ -111,6 +116,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (_shellItem is IShellItemController shellItemController)
 				shellItemController.ItemsCollectionChanged -= OnItemsChanged;
+
+			if (VirtualView.Parent is Shell shell)
+			{
+				shell.Navigated -= OnShellNavigated;
+			}
 		}
 
 		public override void SetVirtualView(Maui.IElement view)
@@ -137,6 +147,11 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				base.SetVirtualView(view);
 			}
+		}
+
+		void OnShellNavigated(object? sender, ShellNavigatedEventArgs e)
+		{
+			UpdateSearchHandler();
 		}
 
 		private void OnItemsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
