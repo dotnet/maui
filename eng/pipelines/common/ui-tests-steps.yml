@@ -193,7 +193,7 @@ steps:
       name: CheckAndroidFolderExists
 
     - task: PublishBuildArtifacts@1
-      condition: eq(dependencies.CheckAndroidFolderExists.outputs['androidFolderExists'], 'true')
+      condition: eq(variables['CheckAndroidFolderExists.androidFolderExists'], 'true')
       displayName: publish Android screenshots artifacts
       inputs:
         PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.Android.Tests/${{ parameters.configuration }}/net9.0/snapshots-diff
@@ -213,7 +213,7 @@ steps:
       name: CheckIosFolderExists
 
     - task: PublishBuildArtifacts@1
-      condition: eq(dependencies.CheckIosFolderExists.outputs['iosFolderExists'], 'true')
+      condition: eq(variables['CheckIosFolderExists.iosFolderExists'], 'true')
       displayName: publish iOS screenshots artifacts
       inputs:
         PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.iOS.Tests/${{ parameters.configuration }}/net9.0/snapshots-diff
@@ -233,7 +233,7 @@ steps:
       name: CheckWindowsFolderExists
 
     - task: PublishBuildArtifacts@1
-      condition: eq(dependencies.CheckWindowsFolderExists.outputs['windowsFolderExists'], 'true')
+      condition: eq(variables['CheckWindowsFolderExists.windowsFolderExists'], 'true')
       displayName: publish Windows screenshots artifacts
       inputs:
         PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.WinUI.Tests/${{ parameters.configuration }}/net9.0/snapshots-diff
@@ -253,7 +253,7 @@ steps:
       name: CheckMacFolderExists
 
     - task: PublishBuildArtifacts@1
-      condition: eq(dependencies.CheckMacFolderExists.outputs['macFolderExists'], 'true')
+      condition: eq(variables['CheckMacFolderExists.macFolderExists'], 'true')
       displayName: publish Mac screenshots artifacts
       inputs:
         PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.Mac.Tests/${{ parameters.configuration }}/net9.0/snapshots-diff
