@@ -1,31 +1,29 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.DatePickerMainControlPage"
+             x:DataType="local:DatePickerViewModel"
              Title="DatePickerControlPage">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Options"
                      Clicked="NavigateToOptionsPage_Clicked"
                      AutomationId="Options"/>
     </ContentPage.ToolbarItems>
-    <DatePicker AutomationId="DatePickerControl"
-                CharacterSpacing="{Binding CharacterSpacing}"
-                Date="{Binding Date}"
-                FlowDirection="{Binding FlowDirection}"
-                Format="{Binding Format}"
-                FontAttributes="{Binding FontAttributes}"
-                FontFamily="{Binding FontFamily}"
-                FontSize="{Binding FontSize}"
-                IsEnabled="{Binding IsEnabled}"
-                IsVisible="{Binding IsVisible}"
-                MinimumDate="{Binding MinimumDate}"
-                MaximumDate="{Binding MaximumDate}"
-                TextColor="{Binding TextColor}">
-        <DatePicker.Shadow>
-            <Shadow Brush="Violet"
-                    Offset="0, 0"
-                    Opacity="{Binding ShadowOpacity}"
-                    Radius="20"/>
-        </DatePicker.Shadow>
-    </DatePicker>
+    <Grid x:Name="DatePickerGrid">
+        <DatePicker AutomationId="DatePickerControl"
+                    CharacterSpacing="{Binding CharacterSpacing}"
+                    Date="{Binding Date}"
+                    FlowDirection="{Binding FlowDirection}"
+                    Format="{Binding Format}"
+                    FontAttributes="{Binding FontAttributes}"
+                    FontFamily="{Binding FontFamily}"
+                    FontSize="{Binding FontSize}"
+                    IsEnabled="{Binding IsEnabled}"
+                    IsVisible="{Binding IsVisible}"
+                    MinimumDate="{Binding MinimumDate}"
+                    MaximumDate="{Binding MaximumDate}"
+                    Shadow="{Binding Shadow}"
+                    TextColor="{Binding TextColor}"/>
+    </Grid>
 </ContentPage>

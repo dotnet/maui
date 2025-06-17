@@ -1,9 +1,11 @@
+using MapKit;
+
 namespace Maui.Controls.Sample;
 
 public partial class DatePickerOptionsPage : ContentPage
 {
-	private DatePickerViewModal _viewModel;
-	public DatePickerOptionsPage(DatePickerViewModal viewModel)
+	private DatePickerViewModel _viewModel;
+	public DatePickerOptionsPage(DatePickerViewModel viewModel)
 	{
 		InitializeComponent();
 		_viewModel = viewModel;
@@ -26,12 +28,12 @@ public partial class DatePickerOptionsPage : ContentPage
 		}
 	}
 
-	private void OnFlowDirectionChanged(object sender, CheckedChangedEventArgs e)
+	private void OnFlowDirectionRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
 		var radioButton = sender as RadioButton;
 		if (radioButton != null && radioButton.IsChecked)
 		{
-			_viewModel.FlowDirection = radioButton.Content.ToString() == "Left to Right" ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+			_viewModel.FlowDirection = radioButton.Content.ToString() == "LTR" ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
 		}
 	}
 
@@ -57,7 +59,7 @@ public partial class DatePickerOptionsPage : ContentPage
 		var radioButton = sender as RadioButton;
 		if (radioButton != null && radioButton.IsChecked)
 		{
-			_viewModel.IsEnabled = radioButton.Content.ToString() == "True";
+			_viewModel.IsEnabled = false;
 		}
 	}
 
@@ -66,24 +68,24 @@ public partial class DatePickerOptionsPage : ContentPage
 		var radioButton = sender as RadioButton;
 		if (radioButton != null && radioButton.IsChecked)
 		{
-			_viewModel.IsVisible = radioButton.Content.ToString() == "True";
+			_viewModel.IsVisible = false;
 		}
 	}
 
 	private void OnShadowRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
 		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
+		if (radioButton != null && radioButton.IsChecked)
 		{
-			_viewModel.ShadowOpacity = radioButton.Content.ToString() == "True" ? 1f : 0f;
+			_viewModel.Shadow = new Shadow { Brush = Colors.Violet, Radius = 20, Offset = new Point(0, 0), Opacity = 1f };
 		}
 	}
-	private void OnTextColorRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
+	private void OnTextColorButtonClicked(object sender, EventArgs e)
 	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
+		var button = sender as Button;
+		if (button != null)
 		{
-			_viewModel.TextColor = radioButton.Content.ToString() == "Red" ? Colors.Red : Colors.Green;
+			_viewModel.TextColor = button.Text == "Red" ? Colors.Red : Colors.Green;
 		}
 	}
 
@@ -96,14 +98,14 @@ public partial class DatePickerOptionsPage : ContentPage
 	}
 	private void SetMaximumDateButton_Clicked(object sender, EventArgs e)
 	{
-		if (DateTime.TryParse(MaximumDate.Text, out var parsedDate))
+		if (DateTime.TryParseExact(MaximumDate.Text, "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsedDate))
 		{
 			_viewModel.MaximumDate = parsedDate;
 		}
 	}
 	private void SetMinimumDateButton_Clicked(object sender, EventArgs e)
 	{
-		if (DateTime.TryParse(MinimumDate.Text, out var parsedDate))
+		if (DateTime.TryParseExact(MinimumDate.Text, "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsedDate))
 		{
 			_viewModel.MinimumDate = parsedDate;
 		}

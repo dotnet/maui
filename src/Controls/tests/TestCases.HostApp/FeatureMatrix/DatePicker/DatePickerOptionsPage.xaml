@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.DatePickerOptionsPage"
+             x:DataType="local:DatePickerViewModel"
              Title="DatePickerOptionsPage">
        <ContentPage.ToolbarItems>
               <ToolbarItem Text="Apply"
@@ -16,7 +18,6 @@
              HorizontalOptions="Center">
 
               <!-- CharacterSpacing -->
-
               <Label Grid.Row="0"
                      Grid.Column="0"
                      Text="CharacterSpacing:"
@@ -31,59 +32,55 @@
                      WidthRequest="100"/>
 
               <!-- Date -->
-
               <Label Grid.Row="1"
                      Grid.Column="0"
                      Text="Date:"
                      VerticalOptions="Center"/>
-              <StackLayout Grid.Row="1"
-                           Grid.Column="1"
-                           Orientation="Horizontal"
-                           Spacing="10"
-                           VerticalOptions="Center">
+              <HorizontalStackLayout Grid.Row="1"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
                      <Entry x:Name="Date"
                             AutomationId="DateEntry"
                             HeightRequest="37"
                             HorizontalOptions="Start"
-                            Text="12/01/2025"
+                            Text="12/24/2025"
                             VerticalOptions="Center"
                             WidthRequest="100"/>
                      <Button AutomationId="SetDateButton"
                              Text="Set Date"
                              Clicked="SetDateButton_Clicked"/>
-              </StackLayout>
+              </HorizontalStackLayout>
 
               <!-- Flow Direction -->
               <Label Grid.Row="2"
                      Grid.Column="0"
                      Text="Flow Direction:"
                      VerticalOptions="Center"/>
-              <StackLayout Grid.Row="2"
-                           Grid.Column="1"
-                           Orientation="Horizontal"
-                           Spacing="10"
-                           VerticalOptions="Center">
-                     <RadioButton AutomationId="FlowDirectionLeftToRightButton"
+              <HorizontalStackLayout Grid.Row="2"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
+                     <RadioButton AutomationId="FlowDirectionLTR"
                                   GroupName="FlowDirection"
-                                  Content="Left to Right"
-                                  CheckedChanged="OnFlowDirectionChanged"/>
-                     <RadioButton AutomationId="FlowDirectionRightToLeftButton"
+                                  IsChecked="True"
+                                  Content="LTR"
+                                  CheckedChanged="OnFlowDirectionRadioButtonCheckedChanged"/>
+                     <RadioButton AutomationId="FlowDirectionRTL"
                                   GroupName="FlowDirection"
-                                  Content="Right to Left"
-                                  CheckedChanged="OnFlowDirectionChanged"/>
-              </StackLayout>
+                                  Content="RTL"
+                                  CheckedChanged="OnFlowDirectionRadioButtonCheckedChanged"/>
+              </HorizontalStackLayout>
 
               <!-- Font Attributes -->
-
               <Label Grid.Row="3"
                      Grid.Column="0"
                      Text="FontAttributes:"
                      VerticalOptions="Center"/>
-              <StackLayout Grid.Row="3"
-                           Grid.Column="1"
-                           Orientation="Horizontal"
-                           Spacing="10"
-                           VerticalOptions="Center">
+              <HorizontalStackLayout Grid.Row="3"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
                      <RadioButton GroupName="FontAttributes"
                                   AutomationId="FontAttributesItalicButton"
                                   Content="Italic"
@@ -98,19 +95,17 @@
                                   AutomationId="FontAttributesNoneButton"
                                   Content="None"
                                   CheckedChanged="OnFontAttributesRadioButtonCheckedChanged"/>
-              </StackLayout>
+              </HorizontalStackLayout>
 
               <!-- Font Family -->
-
               <Label Grid.Row="4"
                      Grid.Column="0"
                      Text="FontFamily:"
                      VerticalOptions="Center"/>
-              <StackLayout Grid.Row="4"
-                           Grid.Column="1"
-                           Orientation="Horizontal"
-                           Spacing="10"
-                           VerticalOptions="Center">
+              <HorizontalStackLayout Grid.Row="4"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
                      <RadioButton GroupName="FontFamily"
                                   AutomationId="FontFamilyDokdoButton"
                                   Content="Dokdo"
@@ -120,11 +115,9 @@
                                   AutomationId="FontFamilyMontserratBoldButton"
                                   Content="MontserratBold"
                                   CheckedChanged="OnFontFamilyRadioButtonCheckedChanged"/>
-              </StackLayout>
-
+              </HorizontalStackLayout>
 
               <!-- Font Size -->
-
               <Label Grid.Row="5"
                      Grid.Column="0"
                      Text="FontSize:"
@@ -139,16 +132,14 @@
                      WidthRequest="100"/>
 
               <!-- Format -->
-
               <Label Grid.Row="6"
                      Grid.Column="0"
                      Text="Format:"
                      VerticalOptions="Center"/>
-              <StackLayout Grid.Row="6"
-                           Grid.Column="1"
-                           Orientation="Horizontal"
-                           Spacing="10"
-                           VerticalOptions="Center">
+              <HorizontalStackLayout Grid.Row="6"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
                      <Entry x:Name="Format"
                             Grid.Row="6"
                             Grid.Column="1"
@@ -161,136 +152,107 @@
                      <Button AutomationId="SetFormatButton"
                              Text="Set Format"
                              Clicked="SetFormatButton_Clicked"/>
-              </StackLayout>
+              </HorizontalStackLayout>
 
               <!-- IsEnabled -->
               <Label Grid.Row="7"
                      Grid.Column="0"
                      Text="IsEnabled:"
                      VerticalOptions="Center"/>
-              <StackLayout Grid.Row="7"
+              <RadioButton Grid.Row="7"
                            Grid.Column="1"
-                           Orientation="Horizontal"
-                           Spacing="10"
-                           VerticalOptions="Center">
-                     <RadioButton GroupName="IsEnabled"
-                                  AutomationId="IsEnabledTrueButton"
-                                  Content="True"
-                                  CheckedChanged="OnIsEnabledRadioButtonCheckedChanged"/>
-                     <RadioButton GroupName="IsEnabled"
-                                  AutomationId="IsEnabledFalseButton"
-                                  Content="False"
-                                  CheckedChanged="OnIsEnabledRadioButtonCheckedChanged"/>
-
-              </StackLayout>
+                           GroupName="IsEnabled"
+                           AutomationId="IsEnabledFalseRadioButton"
+                           Content="False"
+                           CheckedChanged="OnIsEnabledRadioButtonCheckedChanged"/>
 
               <!-- IsVisible -->
               <Label Grid.Row="8"
                      Grid.Column="0"
-                     Text="IsVisible:"
+                     Text="Is Visible:"
                      VerticalOptions="Center"/>
-              <StackLayout Grid.Row="8"
+              <RadioButton Grid.Row="8"
                            Grid.Column="1"
-                           Orientation="Horizontal"
-                           Spacing="10"
-                           VerticalOptions="Center">
-                     <RadioButton GroupName="IsVisible"
-                                  AutomationId="IsVisibleTrueButton"
-                                  Content="True"
-                                  CheckedChanged="OnIsVisibleRadioButtonCheckedChanged"/>
-                     <RadioButton GroupName="IsVisible"
-                                  AutomationId="IsVisibleFalseButton"
-                                  Content="False"
-                                  CheckedChanged="OnIsVisibleRadioButtonCheckedChanged"/>
-              </StackLayout>
+                           GroupName="IsVisible"
+                           AutomationId="IsVisibleFalseRadioButton"
+                           Content="False"
+                           CheckedChanged="OnIsVisibleRadioButtonCheckedChanged"/>
 
               <!-- MinimumDate -->
-
               <Label Grid.Row="9"
                      Grid.Column="0"
                      Text="MinimumDate:"
                      VerticalOptions="Center"/>
-              <StackLayout Grid.Row="9"
-                           Grid.Column="1"
-                           Orientation="Horizontal"
-                           Spacing="10"
-                           VerticalOptions="Center">
+              <HorizontalStackLayout Grid.Row="9"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
                      <Entry x:Name="MinimumDate"
                             AutomationId="MinimumDateEntry"
                             HeightRequest="37"
                             HorizontalOptions="Start"
-                            Text="12/01/2025"
+                            Text="12/24/2025"
                             VerticalOptions="Center"
                             WidthRequest="100"/>
                      <Button AutomationId="SetMinimumDateButton"
                              Text="Set Minimum Date"
                              Clicked="SetMinimumDateButton_Clicked"/>
-              </StackLayout>
+              </HorizontalStackLayout>
 
               <!-- MaximumDate -->
-
               <Label Grid.Row="10"
                      Grid.Column="0"
                      Text="MaximumDate:"
                      VerticalOptions="Center"/>
-              <StackLayout Grid.Row="10"
-                           Grid.Column="1"
-                           Orientation="Horizontal"
-                           Spacing="10"
-                           VerticalOptions="Center">
+              <HorizontalStackLayout Grid.Row="10"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
                      <Entry x:Name="MaximumDate"
                             AutomationId="MaximumDateEntry"
                             HeightRequest="37"
                             HorizontalOptions="Start"
-                            Text="12/01/2027"
+                            Text="12/24/2027"
                             VerticalOptions="Center"
                             WidthRequest="100"/>
                      <Button AutomationId="SetMaximumDateButton"
                              Text="Set Maximum Date"
                              Clicked="SetMaximumDateButton_Clicked"/>
-              </StackLayout>
+              </HorizontalStackLayout>
 
               <!-- Shadow -->
               <Label Grid.Row="11"
                      Grid.Column="0"
                      Text="Shadow:"
                      VerticalOptions="Center"/>
-              <StackLayout Grid.Row="11"
+              <RadioButton Grid.Row="11"
                            Grid.Column="1"
-                           Orientation="Horizontal"
-                           Spacing="10"
-                           VerticalOptions="Center">
-                     <RadioButton GroupName="Shadow"
-                                  AutomationId="ShadowTrueButton"
-                                  Content="True"
-                                  CheckedChanged="OnShadowRadioButtonCheckedChanged"/>
-                     <RadioButton GroupName="Shadow"
-                                  AutomationId="ShadowFalseButton"
-                                  Content="False"
-                                  CheckedChanged="OnShadowRadioButtonCheckedChanged"/>
-              </StackLayout>
+                           x:Name="ShadowFalseRadio"
+                           VerticalOptions="Center"
+                           AutomationId="ShadowTrueRadioButton"
+                           GroupName="Shadow"
+                           Content="True"
+                           CheckedChanged="OnShadowRadioButtonCheckedChanged"/>
 
               <!-- Text Color -->
-
               <Label Grid.Row="12"
                      Grid.Column="0"
                      Text="TextColor:"
                      VerticalOptions="Center"/>
-              <StackLayout Grid.Row="12"
-                           Grid.Column="1"
-                           Orientation="Horizontal"
-                           Spacing="10"
-                           VerticalOptions="Center">
-                     <RadioButton GroupName="TextColor"
-                                  AutomationId="TextColorRedButton"
-                                  Content="Red"
-                                  CheckedChanged="OnTextColorRadioButtonCheckedChanged"/>
-
-                     <RadioButton GroupName="TextColor"
-                                  AutomationId="TextColorGreenButton"
-                                  Content="Green"
-                                  CheckedChanged="OnTextColorRadioButtonCheckedChanged"/>
-              </StackLayout>
+              <HorizontalStackLayout Grid.Row="12"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
+                     <Button AutomationId="TextColorRedButton"
+                             Clicked="OnTextColorButtonClicked"
+                             BackgroundColor="Red"
+                             Text="Red"
+                             TextColor="White"/>
+                     <Button AutomationId="TextColorGreenButton"
+                             Clicked="OnTextColorButtonClicked"
+                             BackgroundColor="Green"
+                             Text="Green"
+                             TextColor="White"/>
+              </HorizontalStackLayout>
        </Grid>
-
 </ContentPage>
