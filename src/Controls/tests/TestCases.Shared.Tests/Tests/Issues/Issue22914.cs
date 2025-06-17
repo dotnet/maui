@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string ButtonId = "Tap1Button";
 
 		readonly string[] _expectedNullBackgroundColorIds = [ButtonId, "ContentView1", "Label1", "VerticalStackLayout1"];
-		
+
 		public Issue22914(TestDevice device) : base(device)
 		{
 		}
