@@ -217,73 +217,48 @@ namespace Microsoft.Maui.Media
 
 			return null;
 		}
-
-		async Task<StorageFile?> CompressImageAsync(StorageFile originalFile, int compressionQuality)
+		static async Task<StorageFile?> CompressImageAsync(StorageFile originalFile, int compressionQuality)
 		{
+			if (compressionQuality >= 100)
+			{
+				return null; // No compression needed
+			}
+
 			try
 			{
-				// Determine if we should use PNG or JPEG based on original format and compression level
-				var originalExtension = System.IO.Path.GetExtension(originalFile.Name).ToLowerInvariant();
-				var isPng = originalExtension == ".png";
-				var useJpeg = !isPng || compressionQuality < 90; // Use JPEG for aggressive compression
-
-				// Create compressed file in same directory
-				var outputExtension = useJpeg ? ".jpg" : ".png";
-				var compressedFileName = System.IO.Path.GetFileNameWithoutExtension(originalFile.Name) + "_compressed" + outputExtension;
-				var compressedFile = await originalFile.GetParentAsync()
-					.AsTask()
-					.ContinueWith(async task => await task.Result.CreateFileAsync(compressedFileName, CreationCollisionOption.GenerateUniqueName))
-					.Unwrap();
+				// Create compressed file in cache directory
+				var tempFolder = await StorageFolder.GetFolderFromPathAsync(FileSystem.CacheDirectory);
+				var compressedFileName = $"compressed_{Guid.NewGuid()}.jpg";
+				var compressedFile = await tempFolder.CreateFileAsync(compressedFileName, CreationCollisionOption.ReplaceExisting);
 
 				using (var originalStream = await originalFile.OpenAsync(FileAccessMode.Read))
 				using (var compressedStream = await compressedFile.OpenAsync(FileAccessMode.ReadWrite))
 				{
-					// Use the built-in Windows image compression
-					var decoder = await Windows.Graphics.Imaging.BitmapDecoder.CreateAsync(originalStream);
-					
-					Windows.Graphics.Imaging.BitmapEncoder encoder;
-					var propertySet = new Windows.Foundation.Collections.PropertySet();
+					var decoder = await BitmapDecoder.CreateAsync(originalStream);
+					var encoder = await BitmapEncoder.CreateForTranscodingAsync(compressedStream, decoder);
 
-					if (useJpeg)
+					var qualityFloat = compressionQuality switch
 					{
-						encoder = await Windows.Graphics.Imaging.BitmapEncoder.CreateAsync(Windows.Graphics.Imaging.BitmapEncoder.JpegEncoderId, compressedStream);
-						
-						// Set JPEG quality (0.0 to 1.0)
-						var qualityFloat = compressionQuality / 100.0;
-						propertySet.Add("ImageQuality", qualityFloat);
-					}
-					else
-					{
-						encoder = await Windows.Graphics.Imaging.BitmapEncoder.CreateAsync(Windows.Graphics.Imaging.BitmapEncoder.PngEncoderId, compressedStream);
-						
-						// For PNG, we compress by scaling down the image
-						if (compressionQuality < 100)
-						{
-							var scale = Math.Sqrt(compressionQuality / 100.0);
-							var newWidth = (uint)Math.Max(1, decoder.PixelWidth * scale);
-							var newHeight = (uint)Math.Max(1, decoder.PixelHeight * scale);
-							
-							encoder.BitmapTransform.ScaledWidth = newWidth;
-							encoder.BitmapTransform.ScaledHeight = newHeight;
-						}
-					}
-					
-					encoder.BitmapTransform.InterpolationMode = Windows.Graphics.Imaging.BitmapInterpolationMode.Fant;
-					
-					if (propertySet.Count > 0)
-						await encoder.SetPropertiesAsync(propertySet);
+						< 20 => 0.2,   // Very low quality
+						< 40 => 0.4,   // Low quality
+						< 60 => 0.6,   // Medium quality
+						< 80 => 0.75,  // Good quality
+						_ => 0.85      // High quality
+					};
 
+					var propertySet = new BitmapPropertySet();
+					var qualityValue = new BitmapTypedValue(qualityFloat, global::Windows.Foundation.PropertyType.Single);
+					propertySet.Add("ImageQuality", qualityValue);
+
+					await encoder.BitmapProperties.SetPropertiesAsync(propertySet);
 					await encoder.FlushAsync();
 				}
 
-				// Delete the original file if compression was successful
-				try { await originalFile.DeleteAsync(); } catch { }
-				
 				return compressedFile;
 			}
-			catch
+			catch (Exception ex)
 			{
-				// If compression fails, return null to use original file
+				System.Diagnostics.Debug.WriteLine($"Image compression failed: {ex.Message}");
 				return null;
 			}
 		}
