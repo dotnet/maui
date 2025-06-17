@@ -5,6 +5,16 @@ public class Issue28660 : ContentPage
 {
 	public Issue28660()
 	{
+		Grid gridLayout = new Grid
+		{
+			RowDefinitions =
+			{
+				new RowDefinition { Height = GridLength.Auto },
+				new RowDefinition { Height = GridLength.Auto },
+
+			},
+		};
+
 		var label = new Label()
 		{
 			Text = "At any time, but not later than one month before the expiration date.",
@@ -12,7 +22,7 @@ public class Issue28660 : ContentPage
 			FontSize = 16,
 		};
 
-		VerticalStackLayout layout = new VerticalStackLayout
+		VerticalStackLayout layoutWithExplicitWidth = new VerticalStackLayout
 		{
 			WidthRequest = 350,
 			Children =
@@ -59,6 +69,13 @@ public class Issue28660 : ContentPage
 					FontSize = 16,
 					AutomationId = "ExplicitLabelSize",
 				},
+			}
+		};
+
+		VerticalStackLayout layoutWithoutExplicitWidth = new VerticalStackLayout
+		{
+			Children =
+			{
 				new Label
 				{
 					Text="Without explicit width and height request",
@@ -79,10 +96,13 @@ public class Issue28660 : ContentPage
 				}
 			}
 		};
-
+		gridLayout.SetRow(layoutWithExplicitWidth, 0);
+		gridLayout.Children.Add(layoutWithExplicitWidth);
+		gridLayout.SetRow(layoutWithoutExplicitWidth, 1);
+		gridLayout.Children.Add(layoutWithoutExplicitWidth);
 		Content = new ScrollView
 		{
-			Content = layout,
+			Content = gridLayout,
 			AutomationId = "ScrollView"
 		};
 	}
