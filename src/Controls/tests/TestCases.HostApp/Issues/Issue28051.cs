@@ -1,4 +1,3 @@
-#if ANDROID
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -97,16 +96,57 @@ public class Issue28051 : TestContentPage, INotifyPropertyChanged
 		=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }
 
+#if ANDROID
 public class LongPressBehavior : PlatformBehavior<Element, Android.Views.View>
 {
-	protected override void OnAttachedTo(Element bindable, Android.Views.View platformView)
+    protected override void OnAttachedTo(Element bindable, Android.Views.View platformView)
+    {
+        BindingContext = bindable.BindingContext;
+    }
+ 
+    protected override void OnDetachedFrom(Element bindable, Android.Views.View platformView)
+    {
+        BindingContext = null;
+    }
+}
+#elif IOS || MACCATALYST
+public class LongPressBehavior : PlatformBehavior<Element, UIKit.UIView>
+{
+	protected override void OnAttachedTo(Element bindable, UIKit.UIView platformView)
 	{
 		BindingContext = bindable.BindingContext;
 	}
 
-	protected override void OnDetachedFrom(Element bindable, Android.Views.View platformView)
+	protected override void OnDetachedFrom(Element bindable, UIKit.UIView platformView)
 	{
 		BindingContext = null;
+
 	}
+}
+#elif WINDOWS
+public class LongPressBehavior : PlatformBehavior<Element, Microsoft.UI.Xaml.FrameworkElement>
+{
+    protected override void OnAttachedTo(Element bindable, Microsoft.UI.Xaml.FrameworkElement platformView)
+    {
+        BindingContext = bindable.BindingContext;
+    }
+ 
+    protected override void OnDetachedFrom(Element bindable, Microsoft.UI.Xaml.FrameworkElement platformView)
+    {
+        BindingContext = null;
+    }
+}
+#else
+public class LongPressBehavior : PlatformBehavior<Element, object>
+{
+    protected override void OnAttachedTo(Element bindable, object platformView)
+    {
+        BindingContext = bindable.BindingContext;
+    }
+ 
+    protected override void OnDetachedFrom(Element bindable, object platformView)
+    {
+        BindingContext = null;
+    }
 }
 #endif
