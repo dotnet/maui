@@ -174,8 +174,9 @@ When working on an issue:
    - More robust implementation patterns
 
 ### Files to Never Commit
-- **Never** check in changes to `cgmanifest.json` files
-- **Never** check in changes to `templatestrings.json` files
+- **Never** check in changes to `cgmanifest.json` files (especially in `Templates/src/` directory)
+- **Never** check in changes to `templatestrings.json` files (especially in `Templates/src/` directory)
+- **Always revert** any changes to JSON files in the `Templates/src/` directory before committing
 - These files are automatically generated and should not be modified manually
 
 ### File Reset Guidelines for AI Agents
