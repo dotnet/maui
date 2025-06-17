@@ -536,6 +536,21 @@ namespace Microsoft.Maui.Media
 					// Use PNG format - lossless compression, supports transparency
 					data = workingImage.AsPNG();
 				}
+				else if (compressionQuality < 100)
+				{
+					// For PNG with mild compression, scale down the image
+					var scale = Math.Sqrt(compressionQuality / 100.0);
+					var newSize = new CoreGraphics.CGSize(
+						normalizedImage.Size.Width * scale,
+						normalizedImage.Size.Height * scale);
+					
+					UIGraphics.BeginImageContextWithOptions(newSize, false, normalizedImage.CurrentScale);
+					normalizedImage.Draw(new CoreGraphics.CGRect(CoreGraphics.CGPoint.Empty, newSize));
+					var scaledImage = UIGraphics.GetImageFromCurrentImageContext();
+					UIGraphics.EndImageContext();
+					
+					data = scaledImage?.AsPNG() ?? normalizedImage.AsPNG();
+				}
 				else
 				{
 					// Use JPEG with quality-based compression

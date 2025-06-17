@@ -222,8 +222,14 @@ namespace Microsoft.Maui.Media
 		{
 			try
 			{
+				// Determine if we should use PNG or JPEG based on original format and compression level
+				var originalExtension = System.IO.Path.GetExtension(originalFile.Name).ToLowerInvariant();
+				var isPng = originalExtension == ".png";
+				var useJpeg = !isPng || compressionQuality < 90; // Use JPEG for aggressive compression
+
 				// Create compressed file in same directory
-				var compressedFileName = System.IO.Path.GetFileNameWithoutExtension(originalFile.Name) + "_compressed.jpg";
+				var outputExtension = useJpeg ? ".jpg" : ".png";
+				var compressedFileName = System.IO.Path.GetFileNameWithoutExtension(originalFile.Name) + "_compressed" + outputExtension;
 				var compressedFile = await originalFile.GetParentAsync()
 					.AsTask()
 					.ContinueWith(async task => await task.Result.CreateFileAsync(compressedFileName, CreationCollisionOption.GenerateUniqueName))
@@ -234,16 +240,38 @@ namespace Microsoft.Maui.Media
 				{
 					// Use the built-in Windows image compression
 					var decoder = await Windows.Graphics.Imaging.BitmapDecoder.CreateAsync(originalStream);
-					var encoder = await Windows.Graphics.Imaging.BitmapEncoder.CreateForTranscodingAsync(compressedStream, decoder);
 					
-					// Set JPEG quality (0.0 to 1.0)
-					var qualityFloat = compressionQuality / 100.0;
+					Windows.Graphics.Imaging.BitmapEncoder encoder;
+					var propertySet = new Windows.Foundation.Collections.PropertySet();
+
+					if (useJpeg)
+					{
+						encoder = await Windows.Graphics.Imaging.BitmapEncoder.CreateAsync(Windows.Graphics.Imaging.BitmapEncoder.JpegEncoderId, compressedStream);
+						
+						// Set JPEG quality (0.0 to 1.0)
+						var qualityFloat = compressionQuality / 100.0;
+						propertySet.Add("ImageQuality", qualityFloat);
+					}
+					else
+					{
+						encoder = await Windows.Graphics.Imaging.BitmapEncoder.CreateAsync(Windows.Graphics.Imaging.BitmapEncoder.PngEncoderId, compressedStream);
+						
+						// For PNG, we compress by scaling down the image
+						if (compressionQuality < 100)
+						{
+							var scale = Math.Sqrt(compressionQuality / 100.0);
+							var newWidth = (uint)Math.Max(1, decoder.PixelWidth * scale);
+							var newHeight = (uint)Math.Max(1, decoder.PixelHeight * scale);
+							
+							encoder.BitmapTransform.ScaledWidth = newWidth;
+							encoder.BitmapTransform.ScaledHeight = newHeight;
+						}
+					}
+					
 					encoder.BitmapTransform.InterpolationMode = Windows.Graphics.Imaging.BitmapInterpolationMode.Fant;
 					
-					// Configure JPEG compression properties
-					var propertySet = new Windows.Foundation.Collections.PropertySet();
-					propertySet.Add("ImageQuality", qualityFloat);
-					await encoder.SetPropertiesAsync(propertySet);
+					if (propertySet.Count > 0)
+						await encoder.SetPropertiesAsync(propertySet);
 
 					await encoder.FlushAsync();
 				}

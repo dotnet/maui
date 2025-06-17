@@ -385,11 +385,7 @@ namespace Microsoft.Maui.Media
 					var compressionTasks = tempResultList.Select(async path =>
 					{
 						return await CompressImageIfNeeded(path, options);
-					});
 					
-					var compressedPaths = await Task.WhenAll(compressionTasks);
-					resultList.AddRange(compressedPaths.Select(path => new FileResult(path)));
-				}
 
 				return resultList;
 			}
