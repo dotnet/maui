@@ -4,7 +4,7 @@ namespace Controls.TestCases.HostApp.Issues;
 
 [Issue(IssueTracker.Github, 29216, "Carousel view scrolling on button click", PlatformAffected.UWP)]
 public class Issue29216 : TestContentPage
-{	
+{
 	protected override void Init()
 	{
 		var items = new List<string> { "Page1", "Page2" };

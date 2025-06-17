@@ -140,6 +140,11 @@ namespace UITest.Appium
 		{
 			var element = GetAppiumElement(parameters["element"]);
 
+			if (element == null)
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+
 			// Currently only pen and touch pointer input source types are supported, but this works fine
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 
@@ -178,6 +183,11 @@ namespace UITest.Appium
 		{
 			var element = GetAppiumElement(parameters["element"]);
 
+			if (element == null)
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 			var sequence = new ActionSequence(touchDevice, 0);
 			sequence.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
@@ -211,6 +221,11 @@ namespace UITest.Appium
 		CommandResponse TouchAndHold(IDictionary<string, object> parameters)
 		{
 			var element = GetAppiumElement(parameters["element"]);
+
+			if (element == null)
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
 
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 			var longPress = new ActionSequence(touchDevice, 0);

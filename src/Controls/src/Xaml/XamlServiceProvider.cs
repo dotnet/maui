@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			this.rootObject = rootObject ?? objectAndParents[objectAndParents.Length - 1];
 		}
 
-		public object RootObject => rootObject;	
+		public object RootObject => rootObject;
 		IEnumerable<object> IProvideParentValues.ParentObjects => objectAndParents;
 		object IProvideValueTarget.TargetObject => objectAndParents[0];
 		object IProvideValueTarget.TargetProperty => targetProperty;

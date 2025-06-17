@@ -19,6 +19,7 @@ public class Bugzilla44338 : _IssuesUITest
 	[Test]
 	public void Bugzilla44338Test()
 	{
+		App.WaitForElement("A");
 		App.ActivateContextMenu("A");
 		App.Tap("C");
 	}

@@ -10,10 +10,10 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	public const string Apply = "Apply";
 	public const string EmptyViewString = "EmptyViewString";
 	public const string HeaderString = "HeaderString";
-	public const string HeaderGrid = "HeaderGrid"; 
+	public const string HeaderGrid = "HeaderGrid";
 	public const string FooterString = "FooterString";
 	public const string FooterGrid = "FooterGrid";
-	public const string HeaderTemplateGrid = "HeaderTemplateGrid";	
+	public const string HeaderTemplateGrid = "HeaderTemplateGrid";
 	public const string FooterTemplateGrid = "FooterTemplateGrid";
 	public const string ItemsSourceGroupedList = "ItemsSourceGroupedList";
 	public const string ItemsSourceObservableCollection5 = "ItemsSourceObservableCollection5";

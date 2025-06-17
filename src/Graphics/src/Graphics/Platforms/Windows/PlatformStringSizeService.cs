@@ -24,7 +24,8 @@ namespace Microsoft.Maui.Graphics.Platform
 		public SizeF GetStringSize(string value, IFont font, float textSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
 		{
 			var format = font.ToCanvasTextFormat(textSize);
-			
+			format.WordWrapping = CanvasWordWrapping.NoWrap;
+
 			var device = CanvasDevice.GetSharedDevice();
 			var textLayout = new CanvasTextLayout(device, value, format, 0.0f, 0.0f);
 			textLayout.VerticalAlignment = verticalAlignment switch

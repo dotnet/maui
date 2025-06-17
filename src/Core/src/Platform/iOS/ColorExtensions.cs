@@ -14,126 +14,57 @@ namespace Microsoft.Maui.Platform
 
 		internal static UIColor LabelColor
 		{
-			get
-			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-					return UIColor.Label;
-
-				return UIColor.Black;
-			}
+			get => UIColor.Label;
 		}
 
 		internal static UIColor PlaceholderColor
 		{
-			get
-			{
-
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-					return UIColor.PlaceholderText;
-
-				return SeventyPercentGrey;
-			}
+			get => UIColor.PlaceholderText;
 		}
 
 		internal static UIColor SecondaryLabelColor
 		{
-			get
-			{
-
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-					return UIColor.SecondaryLabel;
-
-				return new Color(.32f, .4f, .57f).ToPlatform();
-			}
+			get => UIColor.SecondaryLabel;
 		}
 
 		internal static UIColor BackgroundColor
 		{
-			get
-			{
-
-				if (OperatingSystem.IsIOSVersionAtLeast(13))
-					return UIColor.SystemBackground;
-
-				return UIColor.White;
-			}
+			get => UIColor.SystemBackground;
 		}
 
 		internal static UIColor SeparatorColor
 		{
-			get
-			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-					return UIColor.Separator;
-
-				return UIColor.Gray;
-			}
+			get => UIColor.Separator;
 		}
 
 		internal static UIColor OpaqueSeparatorColor
 		{
-			get
-			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-					return UIColor.OpaqueSeparator;
-
-				return UIColor.Black;
-			}
+			get => UIColor.OpaqueSeparator;
 		}
 
 		internal static UIColor GroupedBackground
 		{
-			get
-			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13))
-					return UIColor.SystemGroupedBackground;
-
-				return new UIColor(247f / 255f, 247f / 255f, 247f / 255f, 1);
-			}
+			get => UIColor.SystemGroupedBackground;
 		}
 
 		internal static UIColor AccentColor
 		{
-			get
-			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-					return UIColor.SystemBlue;
-
-				return Color.FromRgba(50, 79, 133, 255).ToPlatform();
-			}
+			get => UIColor.SystemBlue;
 		}
 
 		internal static UIColor Red
 		{
-			get
-			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-					return UIColor.SystemRed;
-
-				return UIColor.FromRGBA(255, 0, 0, 255);
-			}
+			get => UIColor.SystemRed;
 		}
 
 		internal static UIColor Gray
 		{
-			get
-			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-					return UIColor.SystemGray;
-
-				return UIColor.Gray;
-			}
+			get => UIColor.SystemGray;
 		}
 
 		internal static UIColor LightGray
 		{
-			get
-			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13))
-					return UIColor.SystemGray2;
-
-				return UIColor.LightGray;
-			}
+			get => UIColor.SystemGray2;
 		}
 
 		public static CGColor ToCGColor(this Color color)

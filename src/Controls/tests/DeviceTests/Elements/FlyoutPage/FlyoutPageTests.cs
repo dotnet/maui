@@ -283,7 +283,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertionExtensions.WaitForGC(references.ToArray());
-		}	
+		}
 
 		bool CanDeviceDoSplitMode(FlyoutPage page)
 		{

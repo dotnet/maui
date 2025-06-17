@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				EmptyContainers();
-			    _element = null;
+				_element = null;
 				_disposed = true;
 			}
 
@@ -364,8 +364,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateBackground();
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.FlyoutPage.ApplyShadowProperty.PropertyName)
 				UpdateApplyShadow(((FlyoutPage)Element).OnThisPlatform().GetApplyShadow());
-			else if (e.PropertyName == Microsoft.Maui.Controls.FlyoutPage.FlyoutLayoutBehaviorProperty.PropertyName) 
-				UpdateFlyoutLayoutBehaviorChanges();				
+			else if (e.PropertyName == Microsoft.Maui.Controls.FlyoutPage.FlyoutLayoutBehaviorProperty.PropertyName)
+				UpdateFlyoutLayoutBehaviorChanges();
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName ||
 					 e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName)
 				UpdatePageSpecifics();
@@ -479,20 +479,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateFlyoutLayoutBehaviorChanges()
 		{
 			LayoutChildren(true);
-			if (FlyoutPage is null) 
+			if (FlyoutPage is null)
 				return;
-            FlyoutLayoutBehavior flyoutBehavior = FlyoutPage.FlyoutLayoutBehavior;
-            bool shouldPresent = FlyoutPageController.ShouldShowSplitMode;
-            if (flyoutBehavior == FlyoutLayoutBehavior.Popover || flyoutBehavior == FlyoutLayoutBehavior.Default)
-            {
-                shouldPresent = false;
-            }
- 
-            if (shouldPresent != FlyoutPage.IsPresented)
-            {
-                ((IElementController)Element).SetValueFromRenderer(FlyoutPage.IsPresentedProperty, shouldPresent);
-                UpdateLeftBarButton();
-            }
+			FlyoutLayoutBehavior flyoutBehavior = FlyoutPage.FlyoutLayoutBehavior;
+			bool shouldPresent = FlyoutPageController.ShouldShowSplitMode;
+			if (flyoutBehavior == FlyoutLayoutBehavior.Popover || flyoutBehavior == FlyoutLayoutBehavior.Default)
+			{
+				shouldPresent = false;
+			}
+
+			if (shouldPresent != FlyoutPage.IsPresented)
+			{
+				((IElementController)Element).SetValueFromRenderer(FlyoutPage.IsPresentedProperty, shouldPresent);
+				UpdateLeftBarButton();
+			}
 		}
 
 		void PackContainers()

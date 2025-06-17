@@ -30,7 +30,7 @@
         <PublishFlatContainer>true</PublishFlatContainer>
       </Artifact>
   
-      <Artifact Include="@(_MetadataRollbacksToPublish)" Kind="Blob" RelativeBlobPath="$(_UploadPathRoot)/$(VSComponentVersion)/metadata/rollback/%(Filename)%(Extension)">
+      <!-- <Artifact Include="@(_MetadataRollbacksToPublish)" Kind="Blob" RelativeBlobPath="$(_UploadPathRoot)/$(VSComponentVersion)/metadata/rollback/%(Filename)%(Extension)">
         <IsShipping>true</IsShipping>
         <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
         <PublishFlatContainer>false</PublishFlatContainer>
@@ -40,8 +40,8 @@
         <IsShipping>true</IsShipping>
         <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
         <PublishFlatContainer>false</PublishFlatContainer>
-      </Artifact>
-    </ItemGroup>
+      </Artifact>-->
+    </ItemGroup> 
 
   </Target>
 
