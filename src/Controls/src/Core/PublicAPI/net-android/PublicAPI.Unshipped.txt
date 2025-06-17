@@ -23,6 +23,15 @@ Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime?
 Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime?
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
+Microsoft.Maui.Controls.NavigatedFromEventArgs.NavigationType.get -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigatedToEventArgs.NavigationType.get -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigatingFromEventArgs.NavigationType.get -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.Insert = 3 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.Pop = 1 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.PopToRoot = 2 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.Push = 0 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.Remove = 4 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.HybridWebView.WebResourceRequested -> System.EventHandler<Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs!>?
 Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.Handled.get -> bool
@@ -42,6 +51,7 @@ Microsoft.Maui.Controls.ILineHeightElement
 Microsoft.Maui.Controls.ILineHeightElement.LineHeight.get -> double
 Microsoft.Maui.Controls.ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue) -> void
 Microsoft.Maui.Controls.Internals.TextTransformUtilities
+Microsoft.Maui.Controls.NavigationType.Replace = 5 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Request.get -> Android.Webkit.IWebResourceRequest!
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Response.get -> Android.Webkit.WebResourceResponse?
@@ -113,6 +123,9 @@ static Microsoft.Maui.Controls.ViewExtensions.ScaleYToAsync(this Microsoft.Maui.
 static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double x, double y, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 *REMOVED*static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToSpannableString(this Microsoft.Maui.Controls.FormattedString! formattedString, Microsoft.Maui.IFontManager! fontManager, Android.Text.TextPaint? textPaint = null, Android.Content.Context? context = null, double defaultLineHeight = 0, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> Android.Text.SpannableString!
 static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToSpannableString(this Microsoft.Maui.Controls.FormattedString! formattedString, Microsoft.Maui.IFontManager! fontManager, Android.Content.Context? context = null, double defaultCharacterSpacing = 0, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default, Microsoft.Maui.TextDecorations defaultTextDecorations = Microsoft.Maui.TextDecorations.None) -> Android.Text.SpannableString!
+~Microsoft.Maui.Controls.NavigatedFromEventArgs.DestinationPage.get -> Microsoft.Maui.Controls.Page
+~Microsoft.Maui.Controls.NavigatedToEventArgs.PreviousPage.get -> Microsoft.Maui.Controls.Page
+~Microsoft.Maui.Controls.NavigatingFromEventArgs.DestinationPage.get -> Microsoft.Maui.Controls.Page
 ~Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource<T>(System.Uri value) -> void
 ~Microsoft.Maui.Controls.Internals.TypedBindingBase.UpdateSourceEventName.set -> void
 ~Microsoft.Maui.Controls.Xaml.IXamlTypeResolver.Resolve(string qualifiedTypeName, System.IServiceProvider serviceProvider = null, bool expandToExtension = true) -> System.Type
