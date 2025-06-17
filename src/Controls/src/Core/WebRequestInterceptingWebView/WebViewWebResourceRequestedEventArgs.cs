@@ -261,41 +261,32 @@ public class WebViewWebResourceRequestedEventArgs
 		return null;
 	}
 #endif
-}
 
-/// <summary>
-/// Extension methods for the <see cref="WebViewWebResourceRequestedEventArgs"/> class.
-/// </summary>
-public static class WebViewWebResourceRequestedEventArgsExtensions
-{
 	/// <summary>
 	/// Sets the response for the web resource request with a status code and reason.
 	/// </summary>
-	/// <param name="e">The event arguments.</param>
 	/// <param name="code">The HTTP status code for the response.</param>
 	/// <param name="reason">The reason phrase for the response.</param>
-	public static void SetResponse(this WebViewWebResourceRequestedEventArgs e, int code, string reason) =>
-		e.SetResponse(code, reason, null, (Stream?)null);
+	public void SetResponse(int code, string reason) =>
+		SetResponse(code, reason, (IReadOnlyDictionary<string, string>?)null, (Stream?)null);
 
 	/// <summary>
 	/// Sets the response for the web resource request with a status code, reason, and content type.
 	/// </summary>
-	/// <param name="e">The event arguments.</param>
 	/// <param name="code">The HTTP status code for the response.</param>
 	/// <param name="reason">The reason phrase for the response.</param>
 	/// <param name="contentType">The content type of the response.</param>
 	/// <param name="content">The content of the response as a stream.</param>
-	public static void SetResponse(this WebViewWebResourceRequestedEventArgs e, int code, string reason, string contentType, Stream? content) =>
-		e.SetResponse(code, reason, new Dictionary<string, string> { ["Content-Type"] = contentType }, content);
+	public void SetResponse(int code, string reason, string contentType, Stream? content) =>
+		SetResponse(code, reason, new Dictionary<string, string> { ["Content-Type"] = contentType }, content);
 
 	/// <summary>
 	/// Sets the response for the web resource request with a status code, reason, and content type.
 	/// </summary>
-	/// <param name="e">The event arguments.</param>
 	/// <param name="code">The HTTP status code for the response.</param>
 	/// <param name="reason">The reason phrase for the response.</param>
 	/// <param name="contentType">The content type of the response.</param>
 	/// <param name="contentTask">A task that represents the asynchronous operation of getting the response content.</param>
-	public static void SetResponse(this WebViewWebResourceRequestedEventArgs e, int code, string reason, string contentType, Task<Stream?> contentTask) =>
-		e.SetResponse(code, reason, new Dictionary<string, string> { ["Content-Type"] = contentType }, contentTask);
+	public void SetResponse(int code, string reason, string contentType, Task<Stream?> contentTask) =>
+		SetResponse(code, reason, new Dictionary<string, string> { ["Content-Type"] = contentType }, contentTask);
 }

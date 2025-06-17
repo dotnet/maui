@@ -1,0 +1,96 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<div class="header-test-component">
+    <h3>Header Test Component</h3>
+    <div id="result">@result</div>
+    
+    <button @onclick="TestCaseInsensitiveHeaders" id="headerButton">Test Case Insensitive Headers</button>
+    <button @onclick="TestComplexHeaders" id="complexHeaderButton">Test Complex Headers</button>
+    
+    <div id="controlDiv">@controlValue</div>
+</div>
+
+@code
+{
+    private string result = "Ready";
+    private string controlValue = "Ready";
+
+    private async Task TestCaseInsensitiveHeaders()
+    {
+        try
+        {
+            controlValue = "Testing Headers";
+            StateHasChanged();
+            
+            // Use IJSRuntime to call fetch with custom headers
+            var response = await JSRuntime.InvokeAsync<string>("fetchWithHeaders", "/api/headers", new {
+                XCustomHeader = "TestValue"
+            });
+            
+            result = response;
+            controlValue = response;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            result = $"Error: {ex.Message}";
+            controlValue = result;
+            StateHasChanged();
+        }
+    }
+
+    private async Task TestComplexHeaders()
+    {
+        try
+        {
+            controlValue = "Testing Complex Headers";
+            StateHasChanged();
+            
+            // Use IJSRuntime to call fetch with multiple complex headers
+            var response = await JSRuntime.InvokeAsync<string>("fetchWithComplexHeaders", "/api/complex", new {
+                ContentType = "application/json",
+                Authorization = "Bearer token123",
+                XCustomHeader = "CustomValue",
+                Accept = "application/json, text/plain, */*"
+            });
+            
+            result = response;
+            controlValue = response;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            result = $"Error: {ex.Message}";
+            controlValue = result;
+            StateHasChanged();
+        }
+    }
+}
+
+<script>
+    window.fetchWithHeaders = async function(url, headers) {
+        const response = await fetch(url, {
+            headers: {
+                'X-Custom-Header': headers.XCustomHeader
+            }
+        });
+        const data = await response.json();
+        return data.message;
+    };
+    
+    window.fetchWithComplexHeaders = async function(url, headers) {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': headers.ContentType,
+                'Authorization': headers.Authorization,
+                'X-Custom-Header': headers.XCustomHeader,
+                'Accept': headers.Accept
+            },
+            body: JSON.stringify({ test: 'data' })
+        });
+        const data = await response.json();
+        return data.message;
+    };
+</script>

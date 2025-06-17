@@ -1,0 +1,68 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<div class="content-type-test-component">
+    <h3>Content Type Test Component</h3>
+    <div id="json-result">@jsonResult</div>
+    <div id="text-result">@textResult</div>
+    <div id="xml-result">@xmlResult</div>
+    
+    <button @onclick="TestAllContentTypes" id="contentTypeButton">Test All Content Types</button>
+    
+    <div id="controlDiv">@controlValue</div>
+</div>
+
+@code
+{
+    private string jsonResult = "JSON: Not tested";
+    private string textResult = "Text: Not tested";
+    private string xmlResult = "XML: Not tested";
+    private string controlValue = "Ready";
+
+    private async Task TestAllContentTypes()
+    {
+        try
+        {
+            controlValue = "Testing Content Types";
+            StateHasChanged();
+            
+            // Test JSON response
+            var jsonResponse = await JSRuntime.InvokeAsync<string>("fetchJson", "/api/json");
+            jsonResult = $"JSON: {jsonResponse}";
+            
+            // Test text response
+            var textResponse = await JSRuntime.InvokeAsync<string>("fetchText", "/api/text");
+            textResult = $"Text: {textResponse}";
+            
+            // Test XML response
+            var xmlResponse = await JSRuntime.InvokeAsync<string>("fetchXml", "/api/xml");
+            xmlResult = $"XML: {(xmlResponse.Contains("<message>") ? "Valid XML" : "Invalid")}";
+            
+            controlValue = "All content types tested";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            controlValue = $"Error: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+}
+
+<script>
+    window.fetchJson = async function(url) {
+        const response = await fetch(url);
+        const data = await response.json();
+        return data.message;
+    };
+    
+    window.fetchText = async function(url) {
+        const response = await fetch(url);
+        return await response.text();
+    };
+    
+    window.fetchXml = async function(url) {
+        const response = await fetch(url);
+        return await response.text();
+    };
+</script>

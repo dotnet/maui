@@ -1,0 +1,38 @@
+@page "/web-resource-test"
+@inject IJSRuntime JSRuntime
+
+<div id="result">Loading...</div>
+<button id="testButton" @onclick="TestWebResourceRequest">Test Request</button>
+
+@code {
+    private async Task TestWebResourceRequest()
+    {
+        try
+        {
+            var script = @"
+                fetch('/api/test?param1=value1&param2=value2')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('result').innerText = data.message;
+                })
+                .catch(error => {
+                    document.getElementById('result').innerText = 'Error: ' + error;
+                });
+            ";
+            
+            await JSRuntime.InvokeVoidAsync("eval", script);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("document.getElementById('result').innerText = 'Error: ' + arguments[0]", ex.Message);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await TestWebResourceRequest();
+        }
+    }
+}

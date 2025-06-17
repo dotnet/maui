@@ -1,0 +1,44 @@
+@page "/cancel-request-test"
+@inject IJSRuntime JSRuntime
+
+<div id="result">Loading...</div>
+<button id="testButton" @onclick="TestCancelRequest">Test Cancel Request</button>
+
+@code {
+    private async Task TestCancelRequest()
+    {
+        try
+        {
+            var script = @"
+                fetch('/api/blocked')
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    } else {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                })
+                .then(data => {
+                    document.getElementById('result').innerText = 'Success: ' + data;
+                })
+                .catch(error => {
+                    document.getElementById('result').innerText = 'Blocked: ' + error.message;
+                });
+            ";
+            
+            await JSRuntime.InvokeVoidAsync("eval", script);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("document.getElementById('result').innerText = 'Error: ' + arguments[0]", ex.Message);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await TestCancelRequest();
+        }
+    }
+}
