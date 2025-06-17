@@ -1,5 +1,3 @@
-using MapKit;
-
 namespace Maui.Controls.Sample;
 
 public partial class DatePickerOptionsPage : ContentPage
@@ -22,7 +20,7 @@ public partial class DatePickerOptionsPage : ContentPage
 
 	private void SetDateButton_Clicked(object sender, EventArgs e)
 	{
-		if (DateTime.TryParse(Date.Text, out var parsedDate))
+		if (DateTime.TryParseExact(Date.Text, "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsedDate))
 		{
 			_viewModel.Date = parsedDate;
 		}
