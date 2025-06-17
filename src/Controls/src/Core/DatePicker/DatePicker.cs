@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Controls
 		{
 			var datePicker = (DatePicker)bindable;
 
-			datePicker.DateChanged?.Invoke(datePicker, new DateChangedEventArgs(oldValue, newValue));
+			datePicker.DateChanged?.Invoke(datePicker, new DateChangedEventArgs((DateTime?)oldValue, (DateTime?)newValue));
 		}
 
 		static bool ValidateMaximumDate(BindableObject bindable, object value)
