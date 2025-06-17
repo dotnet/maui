@@ -300,7 +300,7 @@ namespace Microsoft.Maui.Platform
 						platformView.Background = drawable;
 				}
 			}
-			else if (platformView is not null)
+			else if (platformView is LayoutViewGroup)
 			{
 				platformView.Background = null;
 			}
