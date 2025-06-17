@@ -244,6 +244,7 @@ namespace Microsoft.Maui.Controls.Internals
 			{
 				currentInner.RemovePage(page);
 			}
+			page?.Handler?.DisconnectHandler();
 		}
 
 		Page Pop()
