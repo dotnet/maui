@@ -19,8 +19,8 @@
                               Pane2Length="{Binding Pane2Length}"
                               MinTallModeHeight="{Binding MinTallModeHeight}"
                               MinWideModeWidth="{Binding MinWideModeWidth}"
-                                FlowDirection="{Binding FlowDirection}"
-                                IsVisible="{Binding IsVisible}">
+                              FlowDirection="{Binding FlowDirection}"
+                              IsVisible="{Binding IsVisible}">
             <foldable:TwoPaneView.Pane1>
                 <Frame BackgroundColor="#f0f8ff"
                        Margin="10"

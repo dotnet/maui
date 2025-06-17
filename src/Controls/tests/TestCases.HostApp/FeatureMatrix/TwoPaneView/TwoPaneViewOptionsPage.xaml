@@ -76,7 +76,7 @@
                      <Label Text="Is Visible"
                             VerticalOptions="Center"/>
               </HorizontalStackLayout>
-                <HorizontalStackLayout Spacing="10">
+              <HorizontalStackLayout Spacing="10">
                      <CheckBox IsChecked="{Binding IsShadowEnabled}"
                                AutomationId="ShadowCheckBox"/>
                      <Label Text="Is Shadow Enabled"
