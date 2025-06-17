@@ -1172,6 +1172,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			WeakReference<Page> _child;
 			bool _disposed;
 			ToolbarTracker _tracker = new ToolbarTracker();
+			List<ToolbarItem> _trackedToolbarItems = new List<ToolbarItem>();
+			bool _toolbarUpdatePending = false;
 
 			public ParentingViewController(NavigationRenderer navigation)
 			{
@@ -1343,6 +1345,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			internal void Disconnect(bool dispose)
 			{
+				// Unsubscribe from toolbar item property changes
+				foreach (var item in _trackedToolbarItems)
+				{
+					item.PropertyChanged -= OnToolbarItemPropertyChanged;
+				}
+				_trackedToolbarItems.Clear();
+
 				if (Child is Page child)
 				{
 					child.SendDisappearing();
@@ -1403,6 +1412,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (disposing)
 				{
+					// Unsubscribe from toolbar item property changes
+					foreach (var item in _trackedToolbarItems)
+					{
+						item.PropertyChanged -= OnToolbarItemPropertyChanged;
+					}
+					_trackedToolbarItems.Clear();
+					
 					Disconnect(true);
 				}
 
@@ -1634,6 +1650,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateToolbarItems();
 			}
 
+			void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				// Only rebuild toolbar items if a relevant property changed
+				if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName ||
+					e.PropertyName == MenuItem.TextProperty.PropertyName ||
+					e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName)
+				{
+					// Throttle updates to prevent excessive rebuilding when multiple properties change rapidly
+					if (!_toolbarUpdatePending)
+					{
+						_toolbarUpdatePending = true;
+						BeginInvokeOnMainThread(() =>
+						{
+							_toolbarUpdatePending = false;
+							if (!_disposed)
+								UpdateToolbarItems();
+						});
+					}
+				}
+			}
+
 			void UpdateHasBackButton()
 			{
 				if (Child is not Page child || NavigationItem.HidesBackButton == !NavigationPage.GetHasBackButton(child))
@@ -1672,6 +1709,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			void UpdateToolbarItems()
 			{
+				// Unsubscribe from previous toolbar item property changes
+				foreach (var item in _trackedToolbarItems)
+				{
+					item.PropertyChanged -= OnToolbarItemPropertyChanged;
+				}
+				_trackedToolbarItems.Clear();
+
 				if (NavigationItem.RightBarButtonItems is not null)
 				{
 					for (var i = 0; i < NavigationItem.RightBarButtonItems.Length; i++)
@@ -1691,8 +1735,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				List<UIBarButtonItem> primaries = null;
 				List<UIMenuElement> secondaries = null;
 				var toolbarItems = _tracker.ToolbarItems;
+				
+				// Subscribe to property changes for all current toolbar items
 				foreach (var item in toolbarItems)
 				{
+					item.PropertyChanged += OnToolbarItemPropertyChanged;
+					_trackedToolbarItems.Add(item);
+
 					if (item.Order == ToolbarItemOrder.Secondary)
 					{
 						(secondaries ??= []).Add(item.ToSecondaryToolbarItem().PlatformAction);
@@ -1761,7 +1810,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override bool ShouldAutorotate()
 			{
 				if (Child?.Handler is IPlatformViewHandler ivh)
-
 					return ivh.ViewController.ShouldAutorotate();
 				return base.ShouldAutorotate();
 			}
