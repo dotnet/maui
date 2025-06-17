@@ -28,7 +28,11 @@ public class DateTimeTypeConverter : TypeConverter, IExtendedTypeConverter
         {
             return dateTime;
         }
-        if (value is string stringValue && DateTime.TryParse(stringValue, culture, DateTimeStyles.None, out dateTime))
+		if (value is string stringValue && DateOnly.TryParse(stringValue, culture, DateTimeStyles.None, out DateOnly dateTimeOnly))
+		{
+			return dateTimeOnly;
+		}
+		if (value is string stringValue2 && DateTime.TryParse(stringValue2, culture, DateTimeStyles.None, out dateTime))
         {
             return dateTime;
         }
@@ -47,11 +51,6 @@ public class DateTimeTypeConverter : TypeConverter, IExtendedTypeConverter
         }
 		else if (value is string stringValue)
 		{
-			if (destinationType == typeof(string))
-			{
-				return stringValue;
-			}
-
 			if (DateTime.TryParse(stringValue, culture, DateTimeStyles.None, out dateTime))
 			{
 				return ConvertToDestinationType(dateTime, destinationType, culture);

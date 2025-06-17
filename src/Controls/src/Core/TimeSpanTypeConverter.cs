@@ -51,10 +51,6 @@ public class TimeSpanTypeConverter : TypeConverter, IExtendedTypeConverter
 		}
 		else if (value is string stringValue)
 		{
-			if (destinationType == typeof(string))
-			{
-				return stringValue;
-			}
 			if (TimeOnly.TryParse(stringValue, culture, out timeOnly))
 			{
 				return ConvertToDestinationType(timeOnly, destinationType, culture);
