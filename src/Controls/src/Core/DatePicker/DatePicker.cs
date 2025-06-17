@@ -185,12 +185,9 @@ namespace Microsoft.Maui.Controls
 			return dateValue;
 		}
 
-		static void OnDateSelected(DatePicker datePicker, DateTime oldValue, DateTime newValue)
+		static void OnDateSelected(DatePicker datePicker, DateTime? oldValue, DateTime? newValue)
 		{
-			EventHandler<DateChangedEventArgs> selected = datePicker.DateSelected;
-
-			if (selected != null)
-				selected(datePicker, new DateChangedEventArgs((DateTime)oldValue, (DateTime)newValue));
+			datePicker.DateSelected?.Invoke(datePicker, new DateChangedEventArgs(oldValue, newValue));
 		}
 
 		static object CoerceMaximumDate(BindableObject bindable, object value)
@@ -222,12 +219,8 @@ namespace Microsoft.Maui.Controls
 		static void DatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var datePicker = (DatePicker)bindable;
-			EventHandler<DateChangedEventArgs> changed = datePicker.DateChanged;
 
-			if (changed is not null)
-			{
-				changed(datePicker, new DateChangedEventArgs((DateTime?)oldValue, (DateTime?)newValue));
-			}
+			datePicker.DateChanged?.Invoke(datePicker, new DateChangedEventArgs(oldValue, newValue));
 		}
 
 		static bool ValidateMaximumDate(BindableObject bindable, object value)
