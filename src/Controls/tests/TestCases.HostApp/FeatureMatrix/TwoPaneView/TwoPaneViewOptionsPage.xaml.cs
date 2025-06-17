@@ -21,17 +21,22 @@ public partial class TwoPaneViewOptionsPage : ContentPage
 	}
 
 	private void OnFlowDirectionCheckBoxChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (e.Value)
 		{
-			if (e.Value)
-			{
-				_viewModel.FlowDirection = FlowDirection.RightToLeft;
-			}
-			else
-			{
-				_viewModel.FlowDirection = FlowDirection.LeftToRight;
-			}
+			_viewModel.FlowDirection = FlowDirection.RightToLeft;
 		}
-	
+		else
+		{
+			_viewModel.FlowDirection = FlowDirection.LeftToRight;
+		}
+	}
+
+	private void OnShadowCheckBoxChanged(object sender, CheckedChangedEventArgs e)
+	{
+		_viewModel.IsShadowEnabled = e.Value;
+	}
+
 	private void ApplyButton_Clicked(object sender, EventArgs e)
 	{
 		Navigation.PopAsync();
