@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_shellContext = shellContext;
 			_shellContext.CurrentDrawerLayout.DrawerStateChanged += OnFlyoutStateChanging;
+			_shellContext.CurrentDrawerLayout.DrawerOpened += OnDrawerOpened;
 			LoadView(shellContext);
 		}
 
@@ -72,6 +73,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		void OnDrawerOpened(object sender, EventArgs e)
+		{
+			if (FlyoutView.FlyoutBehavior == FlyoutBehavior.Flyout)
+			{
+				UpdateContentPadding();
+			}
+			_shellContext.CurrentDrawerLayout.DrawerOpened -= OnDrawerOpened;
+		}
+		
 		protected virtual void LoadView(IShellContext shellContext)
 		{
 			var context = shellContext.AndroidContext;
