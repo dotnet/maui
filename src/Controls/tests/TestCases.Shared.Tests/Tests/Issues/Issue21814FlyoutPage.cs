@@ -83,6 +83,6 @@ public class Issue21814FlyoutPage : _IssuesUITest
 	
 	void OpenFlyoutMenu()
 	{
-		App.TapFlyoutPageIcon();
+		App.TapFlyoutPageIcon("Flyout Menu");
 	}
 }
