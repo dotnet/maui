@@ -15,6 +15,8 @@ namespace Samples.ViewModel
 
 		bool showPhoto;
 		int pickerSelectionLimit = 1;
+		int pickerCompressionQuality = 100;
+		long imageByteLength = 0;
 		private ObservableCollection<ImageSource> photoList = [];
 		private bool showMultiplePhotos;
 
@@ -39,6 +41,18 @@ namespace Samples.ViewModel
 		{
 			get => pickerSelectionLimit;
 			set => SetProperty(ref pickerSelectionLimit, value);
+		}
+
+		public int PickerCompressionQuality
+		{
+			get => pickerCompressionQuality;
+			set => SetProperty(ref pickerCompressionQuality, value);
+		}
+
+		public long ImageByteLength
+		{
+			get => imageByteLength;
+			set => SetProperty(ref imageByteLength, value);
 		}
 
 		public bool ShowPhoto
@@ -79,6 +93,7 @@ namespace Samples.ViewModel
 				{
 					Title = "Pick a photo",
 					SelectionLimit = PickerSelectionLimit,
+					CompressionQuality = PickerCompressionQuality,
 				});
 
 				await LoadPhotoAsync(photo);
@@ -95,7 +110,11 @@ namespace Samples.ViewModel
 		{
 			try
 			{
-				var photo = await MediaPicker.CapturePhotoAsync();
+				var photo = await MediaPicker.CapturePhotoAsync(new MediaPickerOptions
+				{
+					Title = "Capture a photo",
+					CompressionQuality = PickerCompressionQuality,
+				});
 
 				await LoadPhotoAsync(photo);
 
@@ -179,6 +198,7 @@ namespace Samples.ViewModel
 			{
 				var stream = await item.OpenReadAsync();
 				PhotoList.Add(ImageSource.FromStream(() => stream));
+				ImageByteLength += stream.Length;
 			}
 
 			ShowPhoto = false;

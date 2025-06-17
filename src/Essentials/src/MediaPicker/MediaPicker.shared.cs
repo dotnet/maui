@@ -176,7 +176,9 @@ namespace Microsoft.Maui.Media
 		/// The value should be between 0 and 100, where 0 is the lowest quality (most compression) and 100 is the highest quality (least compression).
 		/// </summary>
 		/// <remarks>
-		/// Please note that performance might be affected by the compression quality, especially on lower-end devices.
+		/// <para>Please note that performance might be affected by the compression quality, especially on lower-end devices.</para>
+		/// <para>For JPEG images, this controls the lossy compression quality directly.</para>
+		/// <para>For PNG images, values below 90 will convert to JPEG format for better compression. Values 90-99 will scale down the PNG image. Value 100 preserves original PNG format and quality.</para>
 		/// </remarks>
 		public int CompressionQuality 
 		{ 

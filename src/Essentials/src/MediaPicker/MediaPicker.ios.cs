@@ -214,8 +214,11 @@ namespace Microsoft.Maui.Media
 				{
 					Delegate = new Media.PhotoPickerDelegate
 					{
-						CompletedHandler = res =>
-							tcs.TrySetResult(PickerResultsToMediaFiles(res))
+						CompletedHandler = async res =>
+						{
+							var result = await PickerResultsToMediaFiles(res, options);
+							tcs.TrySetResult(result);
+						}
 					}
 				};
 
@@ -259,11 +262,25 @@ namespace Microsoft.Maui.Media
 				: new PHPickerFileResult(file.ItemProvider);
 		}
 
-		static List<FileResult> PickerResultsToMediaFiles(PHPickerResult[] results)
+		static async Task<List<FileResult>> PickerResultsToMediaFiles(PHPickerResult[] results, MediaPickerOptions options = null)
 		{
-			return results?
+			var fileResults = results?
 				.Select(file => (FileResult)new PHPickerFileResult(file.ItemProvider))
 				.ToList() ?? [];
+
+			// Apply compression if specified and dealing with images
+			if (options?.CompressionQuality < 100)
+			{
+				var compressedResults = new List<FileResult>();
+				foreach (var result in fileResults)
+				{
+					var compressedResult = await CompressedUIImageFileResult.CreateCompressedFromFileResult(result, options.CompressionQuality);
+					compressedResults.Add(compressedResult);
+				}
+				return compressedResults;
+			}
+
+			return fileResults;
 		}
 
 		static void GetFileResult(NSDictionary info, TaskCompletionSource<FileResult> tcs, MediaPickerOptions options = null)
@@ -424,13 +441,39 @@ namespace Microsoft.Maui.Media
 		readonly int compressionQuality;
 		NSData data;
 
+		// Static factory method to create compressed result from existing FileResult
+		internal static async Task<FileResult> CreateCompressedFromFileResult(FileResult originalResult, int compressionQuality)
+		{
+			if (originalResult == null || compressionQuality >= 100)
+				return originalResult;
+
+			try
+			{
+				using var stream = await originalResult.OpenReadAsync();
+				var image = UIImage.LoadFromData(NSData.FromStream(stream));
+				
+				if (image != null)
+				{
+					return new CompressedUIImageFileResult(image, compressionQuality);
+				}
+			}
+			catch
+			{
+				// If compression fails, return original
+			}
+
+			return originalResult;
+		}
+
 		internal CompressedUIImageFileResult(UIImage image, int compressionQuality = 100)
 			: base()
 		{
 			uiImage = image;
 			this.compressionQuality = Math.Max(0, Math.Min(100, compressionQuality));
 
-			var extension = this.compressionQuality < 100 ? FileExtensions.Jpg : FileExtensions.Png;
+			// Use JPEG for compression < 90%, PNG otherwise (to preserve transparency and quality)
+			var useJpeg = this.compressionQuality < 90;
+			var extension = useJpeg ? FileExtensions.Jpg : FileExtensions.Png;
 			FullPath = Guid.NewGuid().ToString() + extension;
 			FileName = FullPath;
 		}
@@ -441,11 +484,26 @@ namespace Microsoft.Maui.Media
 			{
 				var normalizedImage = uiImage.NormalizeOrientation();
 				
-				if (compressionQuality < 100)
+				if (compressionQuality < 90)
 				{
-					// Use JPEG compression with quality setting
+					// Use JPEG compression with quality setting for aggressive compression
 					var qualityFloat = compressionQuality / 100.0f;
 					data = normalizedImage.AsJPEG(qualityFloat);
+				}
+				else if (compressionQuality < 100)
+				{
+					// For PNG with mild compression, scale down the image
+					var scale = Math.Sqrt(compressionQuality / 100.0);
+					var newSize = new CoreGraphics.CGSize(
+						normalizedImage.Size.Width * scale,
+						normalizedImage.Size.Height * scale);
+					
+					UIGraphics.BeginImageContextWithOptions(newSize, false, normalizedImage.CurrentScale);
+					normalizedImage.Draw(new CoreGraphics.CGRect(CoreGraphics.CGPoint.Empty, newSize));
+					var scaledImage = UIGraphics.GetImageFromCurrentImageContext();
+					UIGraphics.EndImageContext();
+					
+					data = scaledImage?.AsPNG() ?? normalizedImage.AsPNG();
 				}
 				else
 				{

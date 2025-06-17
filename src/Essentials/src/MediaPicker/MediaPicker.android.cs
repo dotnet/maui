@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -129,7 +130,17 @@ namespace Microsoft.Maui.Media
 
 				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeMediaPicker, onResult: OnResult);
 
-				return path is not null ? new FileResult(path) : null;
+				if (path is not null)
+				{
+					// Apply compression if needed for photos
+					if (photo && options?.CompressionQuality < 100)
+					{
+						path = await Task.Run(() => CompressImageIfNeeded(path, options));
+					}
+					return new FileResult(path);
+				}
+				
+				return null;
 			}
 			catch (OperationCanceledException)
 			{
@@ -151,6 +162,13 @@ namespace Microsoft.Maui.Media
 			}
 
 			var path = FileSystemUtils.EnsurePhysicalPath(androidUri);
+			
+			// Apply compression if needed for photos
+			if (photo && options?.CompressionQuality < 100)
+			{
+				path = await Task.Run(() => CompressImageIfNeeded(path, options));
+			}
+			
 			return new FileResult(path);
 		}
 
@@ -192,6 +210,13 @@ namespace Microsoft.Maui.Media
 				if (!uri?.Equals(AndroidUri.Empty) ?? false)
 				{
 					var path = FileSystemUtils.EnsurePhysicalPath(uri);
+					
+					// Apply compression if needed for photos
+					if (photo && options?.CompressionQuality < 100)
+					{
+						path = await Task.Run(() => CompressImageIfNeeded(path, options));
+					}
+					
 					resultList.Add(new FileResult(path));
 				}
 			}
@@ -223,7 +248,7 @@ namespace Microsoft.Maui.Media
 			return tmpFile.AbsolutePath;
 		}
 
-		string CompressImageIfNeeded(string imagePath, MediaPickerOptions options)
+		static string CompressImageIfNeeded(string imagePath, MediaPickerOptions options)
 		{
 			if (options?.CompressionQuality >= 100 || string.IsNullOrEmpty(imagePath))
 				return imagePath;
@@ -232,26 +257,67 @@ namespace Microsoft.Maui.Media
 			{
 				var originalFile = new Java.IO.File(imagePath);
 				if (!originalFile.Exists())
+				{
 					return imagePath;
+				}
 
-				// Use BitmapFactory.Options to get image dimensions without loading full bitmap
-				var bounds = new BitmapFactory.Options { InJustDecodeBounds = true };
-				BitmapFactory.DecodeFile(imagePath, bounds);
-
-				// Calculate appropriate sample size for memory efficiency
-				var sampleSize = CalculateInSampleSize(bounds, 2048, 2048);
-				var options_decode = new BitmapFactory.Options { InSampleSize = sampleSize };
-
-				using var originalBitmap = BitmapFactory.DecodeFile(imagePath, options_decode);
+				// Load the bitmap directly without options to avoid JNI issues
+				using var originalBitmap = BitmapFactory.DecodeFile(imagePath);
 				if (originalBitmap == null)
+				{
 					return imagePath;
+				}
+
+				// If the bitmap is very large, scale it down first to prevent OOM
+				var maxDimension = 2048;
+				var scale = 1.0f;
+				if (originalBitmap.Width > maxDimension || originalBitmap.Height > maxDimension)
+				{
+					scale = Math.Min((float)maxDimension / originalBitmap.Width, (float)maxDimension / originalBitmap.Height);
+				}
+
+				Bitmap workingBitmap = originalBitmap;
+				if (scale < 1.0f)
+				{
+					var newWidth = (int)(originalBitmap.Width * scale);
+					var newHeight = (int)(originalBitmap.Height * scale);
+					workingBitmap = Bitmap.CreateScaledBitmap(originalBitmap, newWidth, newHeight, true);
+				}
+
+				// Determine output format based on original format and compression quality
+				var originalExtension = System.IO.Path.GetExtension(imagePath).ToLowerInvariant();
+				var isPng = originalExtension == ".png";
+				var useJpeg = !isPng || options.CompressionQuality < 90; // Use JPEG for aggressive compression or non-PNG files
 
 				// Create compressed version
-				var compressedFileName = System.IO.Path.GetFileNameWithoutExtension(imagePath) + "_compressed.jpg";
+				var compressedExtension = useJpeg ? ".jpg" : ".png";
+				var compressedFileName = System.IO.Path.GetFileNameWithoutExtension(imagePath) + "_compressed" + compressedExtension;
 				var compressedPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(imagePath), compressedFileName);
 
 				using var outputStream = System.IO.File.Create(compressedPath);
-				var success = originalBitmap.Compress(Bitmap.CompressFormat.Jpeg, options.CompressionQuality, outputStream);
+				
+				bool success;
+				if (useJpeg)
+				{
+					success = workingBitmap.Compress(Bitmap.CompressFormat.Jpeg, options.CompressionQuality, outputStream);
+				}
+				else
+				{
+					// For PNG, we can only reduce quality by resizing (PNG doesn't have lossy compression)
+					// Scale down the image if compression quality is less than 100%
+					var pngScale = Math.Sqrt(options.CompressionQuality / 100.0);
+					var newWidth = (int)(workingBitmap.Width * pngScale);
+					var newHeight = (int)(workingBitmap.Height * pngScale);
+					
+					using var scaledBitmap = Bitmap.CreateScaledBitmap(workingBitmap, Math.Max(1, newWidth), Math.Max(1, newHeight), true);
+					success = scaledBitmap.Compress(Bitmap.CompressFormat.Png, 0, outputStream); // PNG quality is ignored (always lossless)
+				}
+
+				// Clean up working bitmap if it's different from original
+				if (workingBitmap != originalBitmap)
+				{
+					workingBitmap.Dispose();
+				}
 				
 				if (success)
 				{
@@ -264,7 +330,7 @@ namespace Microsoft.Maui.Media
 			{
 				// If compression fails, return original path
 			}
-
+			
 			return imagePath;
 		}
 
@@ -365,6 +431,21 @@ namespace Microsoft.Maui.Media
 				}
 
 				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeMediaPicker, onResult: OnResult);
+
+				// Apply compression if needed for photos
+				if (photo && options?.CompressionQuality < 100)
+				{
+					var tempResultList = resultList.Select(fr => fr.FullPath).ToList();
+					resultList.Clear();
+					
+					var compressionTasks = tempResultList.Select(async path =>
+					{
+						return await Task.Run(() => CompressImageIfNeeded(path, options));
+					});
+					
+					var compressedPaths = await Task.WhenAll(compressionTasks);
+					resultList.AddRange(compressedPaths.Select(path => new FileResult(path)));
+				}
 
 				return resultList;
 			}
