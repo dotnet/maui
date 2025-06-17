@@ -4,20 +4,20 @@ using System.Runtime.CompilerServices;
 
 namespace Maui.Controls.Sample;
 
-public class DatePickerViewModal : INotifyPropertyChanged
+public class DatePickerViewModel : INotifyPropertyChanged
 {
     private double _characterSpacing = 0.0d;
-    private DateTime _date = DateTime.ParseExact("12/01/2025", "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+    private DateTime _date = DateTime.ParseExact("12/24/2025", "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture);
     private FlowDirection _flowDirection = FlowDirection.LeftToRight;
     private FontAttributes _fontAttributes = FontAttributes.None;
     private string _fontFamily = null;
     private double _fontSize = 0d;
-    private string _format = "MM/dd/yyyy";
+    private string _format = "d";
     private bool _isEnabled = true;
     private bool _isVisible = true;
-    private DateTime _minDate = DateTime.ParseExact("12/01/2025", "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture);
-    private DateTime _maxDate = DateTime.ParseExact("12/01/2027", "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture);
-    private float _shadowOpacity = 0f;
+    private DateTime _minDate = DateTime.ParseExact("12/24/2025", "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+    private DateTime _maxDate = DateTime.ParseExact("12/24/2027", "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+    private Shadow _shadow;
     private Color _textColor = Colors.Black;
 
     public double CharacterSpacing
@@ -163,18 +163,19 @@ public class DatePickerViewModal : INotifyPropertyChanged
         }
     }
 
-    public float ShadowOpacity
+    public Shadow Shadow
     {
-        get => _shadowOpacity;
+        get => _shadow;
         set
         {
-            if (_shadowOpacity != value)
+            if (_shadow != value)
             {
-                _shadowOpacity = value;
+                _shadow = value;
                 OnPropertyChanged();
             }
         }
     }
+
     public Color TextColor
     {
         get => _textColor;
