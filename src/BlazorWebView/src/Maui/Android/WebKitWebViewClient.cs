@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 			else
 			{
-				logger?.ReponseContentNotFound(requestUri ?? string.Empty);
+				logger?.ResponseContentNotFound(requestUri ?? string.Empty);
 			}
 
 			return null;

@@ -24,7 +24,7 @@ internal static partial class Log
 	public static partial void ResponseContentBeingSent(this ILogger logger, string requestUri, int statusCode);
 
 	[LoggerMessage(EventId = 6, Level = LogLevel.Debug, Message = "Response content was not found for web request to URI '{requestUri}'.")]
-	public static partial void ReponseContentNotFound(this ILogger logger, string requestUri);
+	public static partial void ResponseContentNotFound(this ILogger logger, string requestUri);
 
 	[LoggerMessage(EventId = 7, Level = LogLevel.Debug, Message = "Navigation event for URI '{uri}' with URL loading strategy '{urlLoadingStrategy}'.")]
 	public static partial void NavigationEvent(this ILogger logger, Uri uri, UrlLoadingStrategy urlLoadingStrategy);

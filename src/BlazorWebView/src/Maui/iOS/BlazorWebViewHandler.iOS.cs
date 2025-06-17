@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 				else
 				{
-					_webViewHandler?.Logger.ReponseContentNotFound(url);
+					_webViewHandler?.Logger.ResponseContentNotFound(url);
 
 					statusCode = 404;
 					contentType = string.Empty;

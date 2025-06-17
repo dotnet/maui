@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 			else
 			{
-				_logger.ReponseContentNotFound(requestUri);
+				_logger.ResponseContentNotFound(requestUri);
 			}
 
 			return false;
