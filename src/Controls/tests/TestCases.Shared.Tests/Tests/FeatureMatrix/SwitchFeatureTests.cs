@@ -116,6 +116,7 @@ public class SwitchFeatureTests : UITest
         VerifyScreenshot();
     }
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/29812
     [Test]
     [Category(UITestCategories.Switch)]
     public void Switch_SetShadowOpacityAndToggled_VerifyVisualState()
@@ -131,7 +132,9 @@ public class SwitchFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("SwitchControl");
         VerifyScreenshot();
     }
+#endif
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/29812
     [Test]
     [Category(UITestCategories.Switch)]
     public void Switch_SetShadowAndOnColor_VerifyVisualState()
@@ -148,7 +151,9 @@ public class SwitchFeatureTests : UITest
         App.Tap("SwitchControl");
         VerifyScreenshot();
     }
+#endif
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/29812
     [Test]
     [Category(UITestCategories.Switch)]
     public void Switch_SetShadowAndThumbColor_VerifyVisualState()
@@ -165,6 +170,7 @@ public class SwitchFeatureTests : UITest
         App.Tap("SwitchControl");
         VerifyScreenshot();
     }
+#endif
 
     [Test]
     [Category(UITestCategories.Switch)]
