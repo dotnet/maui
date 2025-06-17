@@ -1369,7 +1369,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (NavigationItem.TitleView is not null)
 				{
 					if (dispose)
+					{
 						NavigationItem.TitleView.Dispose();
+					}
 
 					NavigationItem.TitleView = null;
 				}
@@ -1377,13 +1379,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (NavigationItem.RightBarButtonItems is not null && dispose)
 				{
 					for (var i = 0; i < NavigationItem.RightBarButtonItems.Length; i++)
+					{
 						NavigationItem.RightBarButtonItems[i].Dispose();
+					}
 				}
 
 				if (ToolbarItems is not null && dispose)
 				{
 					for (var i = 0; i < ToolbarItems.Length; i++)
+					{
 						ToolbarItems[i].Dispose();
+					}
 				}
 
 				for (int i = View.Subviews.Length - 1; i >= 0; i--)
