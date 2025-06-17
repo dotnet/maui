@@ -41,20 +41,20 @@
                                  Completed="EntryControl_Completed"
                                  Focused="EntryControl_Focused"
                                  Unfocused="EntryControl_Unfocused"
-                                 AutomationId="EntryText"/>
+                                 AutomationId="TestEntry"/>
 
               <Label Text="Selection Length:"
                      FontSize="11"/>
               <local:UITestEntry x:Name="SelectionLengthEntry"
                                  Text="{Binding SelectionLength}"
-                                 AutomationId="SelectionLength"
+                                 AutomationId="SelectionLengthEntry"
                                  IsCursorVisible="False"
                                  TextChanged="SelectionLength_Clicked"/>
               <Label Text="Cursor position:"
                      FontSize="11"/>
               <local:UITestEntry x:Name="CursorPositionEntry"
                                  Text="{Binding CursorPosition}"
-                                 AutomationId="CursorPosition"
+                                 AutomationId="CursorPositionEntry"
                                  IsCursorVisible="False"/>
 
               <Button Text="Update Cursor Selection"
