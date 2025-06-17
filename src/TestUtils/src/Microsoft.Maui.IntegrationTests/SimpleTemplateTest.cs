@@ -102,8 +102,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		EnableTizen(projectFile);
-
 		// libraries do not have application IDs
 		if (id != "mauilib")
 		{
@@ -152,10 +150,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		// TODO: remove this if as we should be able to build tizen net8
-		if (framework != DotNetPrevious)
-			EnableTizen(projectFile);
-
 		if (shouldPack)
 			FileUtilities.ReplaceInFile(projectFile,
 				"</Project>",
@@ -199,9 +193,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetPrevious),
 			$"Unable to create template {id}. Check test output for errors.");
-
-		// TODO: fix this as we should be able to build tizen net8
-		// EnableTizen(projectFile);
 
 		if (shouldPack)
 			FileUtilities.ReplaceInFile(projectFile,
@@ -287,7 +278,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		EnableTizen(projectFile);
 		FileUtilities.ReplaceInFile(projectFile,
 			"</Project>",
 			"<PropertyGroup><SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences></PropertyGroup></Project>");
@@ -314,7 +304,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		EnableTizen(projectFile);
 		FileUtilities.ReplaceInFile(projectFile,
 			$"<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>",
 			$"<ApplicationDisplayVersion>{display}</ApplicationDisplayVersion>");
