@@ -198,5 +198,11 @@ namespace Microsoft.Maui.Controls
 		{
 			OnPropertyChanged(IconImageSourceProperty.PropertyName);
 		}
+
+		WeakCommandSubscription ICommandElement.CleanupTracker
+		{
+			get;
+			set;
+		}
 	}
 }
