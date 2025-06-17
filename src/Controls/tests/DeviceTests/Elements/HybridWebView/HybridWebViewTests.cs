@@ -450,10 +450,14 @@ namespace Microsoft.Maui.DeviceTests
 		public Task RequestsCanBeInterceptedAndCustomDataReturned() =>
 			RunTest(async (hybridWebView) =>
 			{
+				var intercepted = false;
+
 				hybridWebView.WebResourceRequested += (sender, e) =>
 				{
 					if (e.Uri.Host == "0.0.0.1")
 					{
+						intercepted = true;
+
 						// 1. Create the response data
 						var response = new EchoResponseObject { message = $"Hello real endpoint (param1={e.QueryParameters["param1"]}, param2={e.QueryParameters["param2"]})" };
 						var responseData = JsonSerializer.SerializeToUtf8Bytes(response);
@@ -471,6 +475,7 @@ namespace Microsoft.Maui.DeviceTests
 					"RequestsWithAppUriCanBeIntercepted",
 					HybridWebViewTestContext.Default.EchoResponseObject);
 
+				Assert.True(intercepted, "Request was not intercepted");
 				Assert.NotNull(responseObject);
 				Assert.Equal("Hello real endpoint (param1=value1, param2=value2)", responseObject.message);
 			});
@@ -479,10 +484,14 @@ namespace Microsoft.Maui.DeviceTests
 		public Task RequestsCanBeInterceptedAndAsyncCustomDataReturned() =>
 			RunTest(async (hybridWebView) =>
 			{
+				var intercepted = false;
+
 				hybridWebView.WebResourceRequested += (sender, e) =>
 				{
 					if (e.Uri.Host == "0.0.0.1")
 					{
+						intercepted = true;
+
 						// 1. Create the response
 						e.SetResponse(200, "OK", "application/json", GetDataAsync(e.QueryParameters));
 
@@ -495,6 +504,7 @@ namespace Microsoft.Maui.DeviceTests
 					"RequestsWithAppUriCanBeIntercepted",
 					HybridWebViewTestContext.Default.EchoResponseObject);
 
+				Assert.True(intercepted, "Request was not intercepted");
 				Assert.NotNull(responseObject);
 				Assert.Equal("Hello real endpoint (param1=value1, param2=value2)", responseObject.message);
 
@@ -532,10 +542,14 @@ namespace Microsoft.Maui.DeviceTests
 					return;
 				}
 
+				var intercepted = false;
+
 				hybridWebView.WebResourceRequested += (sender, e) =>
 				{
 					if (new Uri(uriBase).IsBaseOf(e.Uri) && !e.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
 					{
+						intercepted = true;
+
 						// 1. Get the request from the platform args
 						var name = e.Headers["X-Echo-Name"];
 
@@ -566,6 +580,7 @@ namespace Microsoft.Maui.DeviceTests
 					function,
 					HybridWebViewTestContext.Default.EchoResponseObject);
 
+				Assert.True(intercepted, "Request was not intercepted");
 				Assert.NotNull(responseObject);
 				Assert.Equal("Hello Matthew (param1=value1, param2=value2)", responseObject.message);
 			});
@@ -590,10 +605,15 @@ namespace Microsoft.Maui.DeviceTests
 
 				const string ExpectedHeaderValue = "My Header Value";
 
+
+				var intercepted = false;
+
 				hybridWebView.WebResourceRequested += (sender, e) =>
 				{
 					if (new Uri(uriBase).IsBaseOf(e.Uri) && !e.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
 					{
+						intercepted = true;
+
 #if WINDOWS
 						// Add the desired header for Windows by modifying the request
 						e.PlatformArgs.Request.Headers.SetHeader("X-Request-Header", ExpectedHeaderValue);
@@ -692,6 +712,7 @@ namespace Microsoft.Maui.DeviceTests
 					function,
 					HybridWebViewTestContext.Default.ResponseObject);
 
+				Assert.True(intercepted, "Request was not intercepted");
 				Assert.NotNull(responseObject);
 				Assert.NotNull(responseObject.headers);
 				Assert.True(responseObject.headers.TryGetValue("X-Request-Header", out var actualHeaderValue));
@@ -710,10 +731,14 @@ namespace Microsoft.Maui.DeviceTests
 		public Task RequestsCanBeInterceptedAndCancelledForDifferentHosts(string uriBase, string function) =>
 			RunTest(async (hybridWebView) =>
 			{
+				var intercepted = false;
+
 				hybridWebView.WebResourceRequested += (sender, e) =>
 				{
 					if (new Uri(uriBase).IsBaseOf(e.Uri))
 					{
+						intercepted = true;
+
 						// 1. Create the response
 						e.SetResponse(403, "Forbidden");
 
@@ -726,6 +751,8 @@ namespace Microsoft.Maui.DeviceTests
 					hybridWebView.InvokeJavaScriptAsync<ResponseObject>(
 						function,
 						HybridWebViewTestContext.Default.ResponseObject));
+						
+				Assert.True(intercepted, "Request was not intercepted");
 			});
 
 
@@ -747,12 +774,15 @@ namespace Microsoft.Maui.DeviceTests
 					return;
 				}
 
+				var intercepted = false;
 				var headerValues = new Dictionary<string, string>();
 
 				hybridWebView.WebResourceRequested += (sender, e) =>
 				{
 					if (new Uri(uriBase).IsBaseOf(e.Uri) && !e.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
 					{
+						intercepted = true;
+
 						// Should be exactly as set in the JS
 						try
 						{ headerValues["X-Echo-Name"] = e.Headers["X-Echo-Name"]; }
@@ -792,6 +822,7 @@ namespace Microsoft.Maui.DeviceTests
 					function,
 					HybridWebViewTestContext.Default.EchoResponseObject);
 
+				Assert.True(intercepted, "Request was not intercepted");
 				Assert.NotEmpty(headerValues);
 				Assert.Equal("Matthew", headerValues["X-Echo-Name"]);
 				Assert.Equal("Matthew", headerValues["x-echo-name"]);
