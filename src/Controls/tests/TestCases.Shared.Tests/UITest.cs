@@ -197,75 +197,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			void Verify(string? name)
 			{
-				string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
-
-				// Remove the XHarness suffix if present
-				deviceName = deviceName.Replace(" - created by XHarness", "", StringComparison.Ordinal);
-
-				/*
-				Determine the environmentName, used as the directory name for visual testing snaphots. Here are the rules/conventions:
-				- Names are lower case, no spaces.
-				- By default, the name matches the platform (android, ios, windows, or mac).
-				- Each platform has a default device (or set of devices) - if the snapshot matches the default no suffix is needed (e.g. just ios).
-				- If tests are run on secondary devices that produce different snapshots, the device name is used as suffix (e.g. ios-iphonex).
-				- If tests are run on secondary devices with multiple OS versions that produce different snapshots, both device name and os version are
-				used as a suffix (e.g. ios-iphonex-16_4). We don't have any cases of this today but may eventually. The device name comes first here,
-				before os version, because most visual testing differences come from different sceen size (a device thing), not OS version differences,
-				but both can happen.
-				*/
-				string environmentName = "";
-				switch (_testDevice)
-				{
-					case TestDevice.Android:
-						environmentName = "android";
-						var deviceApiLevel = (long?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel")
-							?? throw new InvalidOperationException("deviceApiLevel capability is missing or null.");
-						var deviceScreenSize = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize")
-							?? throw new InvalidOperationException("deviceScreenSize capability is missing or null.");
-						var deviceScreenDensity = (long?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity")
-							?? throw new InvalidOperationException("deviceScreenDensity capability is missing or null.");
-
-						if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
-						{
-							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
-						}
-						break;
-
-					case TestDevice.iOS:
-						var platformVersion = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion")
-							?? throw new InvalidOperationException("platformVersion capability is missing or null.");
-						var device = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName")
-							?? throw new InvalidOperationException("deviceName capability is missing or null.");
-
-						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
-						{
-							environmentName = "ios";
-						}
-						else if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
-						{
-							environmentName = "ios";
-						}
-						else if (deviceName == "iPhone X (iOS 16.4)" || (device.Contains(" X", StringComparison.OrdinalIgnoreCase) && platformVersion == "16.4"))
-						{
-							environmentName = "ios-iphonex";
-						}
-						else
-						{
-							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
-						}
-						break;
-
-					case TestDevice.Windows:
-						environmentName = "windows";
-						break;
-
-					case TestDevice.Mac:
-						environmentName = "mac";
-						break;
-
-					default:
-						throw new NotImplementedException($"Unknown device type {_testDevice}");
-				}
+				string deviceName = GetDeviceName();
+				string environmentName = GetEnvironmentName();
 
 				name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 
@@ -558,19 +491,24 @@ namespace Microsoft.Maui.TestCases.Tests
 			{
 				case TestDevice.Android:
 					environmentName = "android";
-					var deviceApiLevel = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel");
-					var deviceScreenSize = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize");
-					var deviceScreenDensity = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity");
+					var deviceApiLevel = (long?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel")
+						?? throw new InvalidOperationException("deviceApiLevel capability is missing or null.");
+					var deviceScreenSize = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize")
+						?? throw new InvalidOperationException("deviceScreenSize capability is missing or null.");
+					var deviceScreenDensity = (long?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity")
+						?? throw new InvalidOperationException("deviceScreenDensity capability is missing or null.");
 
-					//if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
-					//{
-					//	Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
-					//}
+					if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
+					{
+						Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
+					}
 					break;
 
 				case TestDevice.iOS:
-					var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
-					var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
+					var platformVersion = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion")
+						?? throw new InvalidOperationException("platformVersion capability is missing or null.");
+					var device = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName")
+						?? throw new InvalidOperationException("deviceName capability is missing or null.");
 
 					if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
 					{
