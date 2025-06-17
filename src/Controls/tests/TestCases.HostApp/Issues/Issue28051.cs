@@ -97,7 +97,7 @@ public class Issue28051 : TestContentPage, INotifyPropertyChanged
 		=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }
 
-public partial class LongPressBehavior : PlatformBehavior<Element, Android.Views.View>
+public class LongPressBehavior : PlatformBehavior<Element, Android.Views.View>
 {
 	protected override void OnAttachedTo(Element bindable, Android.Views.View platformView)
 	{
