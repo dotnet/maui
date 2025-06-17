@@ -15,6 +15,31 @@ namespace Maui.Controls.Sample
         private bool _isVisible = true;
         private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 
+        public bool IsShadowEnabled
+        {
+            get => _isShadowEnabled;
+            set
+            {
+                if (_isShadowEnabled != value)
+                {
+                    _isShadowEnabled = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set
+            {
+                if (_isVisible != value)
+                {
+                    _isVisible = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public FlowDirection FlowDirection
         {
             get => _flowDirection;

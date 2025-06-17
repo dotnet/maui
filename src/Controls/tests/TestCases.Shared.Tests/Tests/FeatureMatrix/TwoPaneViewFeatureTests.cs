@@ -103,6 +103,22 @@ namespace Microsoft.Maui.TestCases.Tests
             App.Tap("Options");
 
             App.WaitForElement("VisibilityCheckBox");
+            App.Tap("VisibilityCheckBox");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            VerifyScreenshot();
+        }
+         [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_Shadow()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("ShadowCheckBox");
+            App.Tap("ShadowCheckBox");
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
@@ -155,6 +171,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.Tap("Options");
 
             App.WaitForElement("FlowDirectionRTLCheckBox");
+            App.Tap("FlowDirectionRTLCheckBox");
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
