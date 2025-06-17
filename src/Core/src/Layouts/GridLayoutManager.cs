@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Layouts
@@ -701,20 +702,15 @@ namespace Microsoft.Maui.Layouts
 
 			double GetDisplayDensity()
 			{
-				// Try to get density from the handler context
-				// This is a simplified approach - in a real implementation,
-				// we might need to pass density down from the platform level
 				try
 				{
 					var grid = Grid;
-					if (grid is IView view && view.Handler?.MauiContext != null)
+					if (grid is IView view)
 					{
-						var request = new DisplayDensityRequest();
-						if (grid.Handler is Microsoft.Maui.Handlers.IElementHandler elementHandler)
+						var window = view.GetHostedWindow();
+						if (window != null)
 						{
-							// For now, return 0 to indicate no density is available
-							// In a full implementation, we'd get this from the platform context
-							return 0;
+							return window.GetDisplayDensity();
 						}
 					}
 				}
