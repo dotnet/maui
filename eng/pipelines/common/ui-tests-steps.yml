@@ -131,7 +131,7 @@ steps:
         $command += " --test-filter ""$testFilter"""
       }
 
-      $headless = ${{ parameters.$headless }}
+      $headless = ${{ parameters.headless }}
       if ($headless) {
         $command += " --headless ""$headless"""
       }
