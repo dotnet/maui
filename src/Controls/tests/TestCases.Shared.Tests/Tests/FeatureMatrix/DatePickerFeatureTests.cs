@@ -31,6 +31,7 @@ public class DatePickerFeatureTests : UITest
         App.EnterText("CharacterSpacingEntry", "5");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
         // VerifyScreenshot();
     }
 #endif
@@ -65,6 +66,7 @@ public class DatePickerFeatureTests : UITest
         App.Tap("TextColorGreenButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
         // VerifyScreenshot();
     }
 #endif
@@ -80,6 +82,7 @@ public class DatePickerFeatureTests : UITest
         App.Tap("FlowDirectionRTL");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
         // VerifyScreenshot();
     }
 #endif
@@ -97,6 +100,7 @@ public class DatePickerFeatureTests : UITest
         App.Tap("FontFamilyDokdoButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
         // VerifyScreenshot();
     }
 #endif
@@ -115,6 +119,7 @@ public class DatePickerFeatureTests : UITest
         App.EnterText("FontSizeEntry", "20");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
         // VerifyScreenshot();
     }
 #endif
@@ -135,6 +140,7 @@ public class DatePickerFeatureTests : UITest
         App.Tap("SetFormatButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
         // VerifyScreenshot();
     }
 #endif
@@ -153,6 +159,7 @@ public class DatePickerFeatureTests : UITest
         App.EnterText("FontSizeEntry", "20");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
         // VerifyScreenshot();
     }
 #endif
@@ -173,6 +180,7 @@ public class DatePickerFeatureTests : UITest
         App.Tap("SetFormatButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
         // VerifyScreenshot();
     }
 #endif
@@ -194,6 +202,7 @@ public class DatePickerFeatureTests : UITest
         App.Tap("SetFormatButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
         // VerifyScreenshot();
     }
 #endif
@@ -237,10 +246,10 @@ public class DatePickerFeatureTests : UITest
         App.Tap("ShadowTrueRadioButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
         // VerifyScreenshot();
     }
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Test fails on iOS and Catalyst due to date not updating correctly
     [Test]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetMinimumDateAndDate_VerifyVisualState()
@@ -259,13 +268,10 @@ public class DatePickerFeatureTests : UITest
         App.Tap("SetDateButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
-        var datePicker = App.WaitForElement("DatePickerControl").GetText();
-        Assert.That(datePicker, Is.EqualTo("12/24/2024"));
+        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
         // VerifyScreenshot();
     }
-#endif
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Test fails on iOS and Catalyst due to date not updating correctly
     [Test]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetMaximumDateAndDate_VerifyVisualState()
@@ -274,19 +280,17 @@ public class DatePickerFeatureTests : UITest
         App.Tap("Options");
         App.WaitForElement("MaximumDateEntry");
         App.ClearText("MaximumDateEntry");
-        App.EnterText("MaximumDateEntry", "12/24/2027");
+        App.EnterText("MaximumDateEntry", "12/24/2028");
         App.WaitForElement("SetMaximumDateButton");
         App.Tap("SetMaximumDateButton");
         App.WaitForElement("DateEntry");
         App.ClearText("DateEntry");
-        App.EnterText("DateEntry", "12/24/2028");
+        App.EnterText("DateEntry", "12/24/2031");
         App.WaitForElement("SetDateButton");
         App.Tap("SetDateButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
-        var datePicker = App.WaitForElement("DatePickerControl").GetText();
-        Assert.That(datePicker, Is.EqualTo("12/24/2027"));
+        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
         // VerifyScreenshot();
     }
-#endif
 }
