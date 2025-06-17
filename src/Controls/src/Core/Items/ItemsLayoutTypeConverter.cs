@@ -24,9 +24,9 @@ namespace Microsoft.Maui.Controls
 			int identifierLength = 0;
 
 			if (strValue == "VerticalList")
-				return LinearItemsLayout.Vertical;
+				return new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
 			else if (strValue == "HorizontalList")
-				return LinearItemsLayout.Horizontal;
+				return new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
 			else if (strValue.StartsWith("VerticalGrid", StringComparison.Ordinal))
 			{
 				orientation = ItemsLayoutOrientation.Vertical;
