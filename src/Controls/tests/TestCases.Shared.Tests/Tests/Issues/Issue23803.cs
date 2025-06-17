@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void VerifyClickAroundOverflowMenuItem()
 		{
 			App.Tap("More");
-#if WINDOWS			
+#if WINDOWS
 			var rect = App.WaitForElement("Tab18").GetRect();
 			App.TapCoordinates(rect.X + 80, rect.Y + 15);
 			App.WaitForElement("Button18");

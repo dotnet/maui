@@ -265,8 +265,6 @@ internal static class LayoutFactory2
 
 #nullable disable
 	public static UICollectionViewLayout CreateCarouselLayout(
-		bool isHorizontal,
-		Thickness peekAreaInsets,
 		WeakReference<CarouselView> weakItemsView,
 		WeakReference<CarouselViewController2> weakController)
 	{
@@ -279,10 +277,13 @@ internal static class LayoutFactory2
 
 		var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
 		{
-			if (!weakItemsView.TryGetTarget(out var itemsView) || !weakController.TryGetTarget(out var controller))
+			if (!weakItemsView.TryGetTarget(out var itemsView))
 			{
 				return null;
 			}
+
+			bool isHorizontal = itemsView.ItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
+			var peekAreaInsets = itemsView.PeekAreaInsets;
 
 			double sectionMargin = 0.0;
 

@@ -125,4 +125,7 @@
     </ItemGroup>
   </Target>
 
+  <!-- Tell typescript to stop deleting everything before building the next TFM -->
+  <Target Name="TypeScriptDeleteOutputFromOtherConfigs" />
+
 </Project>
