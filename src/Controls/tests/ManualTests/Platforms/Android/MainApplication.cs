@@ -1,5 +1,9 @@
-﻿using Android.App;
+﻿using System;
+using Android.App;
 using Android.Runtime;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.ManualTests;
 [Application]
