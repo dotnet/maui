@@ -6,7 +6,6 @@ namespace Maui.Controls.Sample;
 public class TwoPaneViewControlPage : NavigationPage
 {
 	private TwoPaneViewViewModel _viewModel;
-
 	public TwoPaneViewControlPage()
 	{
 		_viewModel = new TwoPaneViewViewModel();

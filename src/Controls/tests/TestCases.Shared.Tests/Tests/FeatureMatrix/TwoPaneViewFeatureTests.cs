@@ -40,6 +40,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
+            App.WaitForElement("Pane1LengthStepper");
             App.IncreaseStepper("Pane1LengthStepper");
 
             App.WaitForElement("Apply");
@@ -55,6 +56,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
+            App.WaitForElement("Pane2LengthStepper");
             App.IncreaseStepper("Pane2LengthStepper");
 
             App.WaitForElement("Apply");
@@ -62,7 +64,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
             VerifyScreenshot();
         }
-        
+
         [Test]
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_Pane1SmallerThanPane2()
@@ -70,7 +72,9 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
+            App.WaitForElement("Pane2LengthStepper");
             App.IncreaseStepper("Pane2LengthStepper");
+            App.WaitForElement("Pane1LengthStepper");
             App.DecreaseStepper("Pane1LengthStepper");
 
             App.WaitForElement("Apply");
@@ -86,7 +90,9 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
+            App.WaitForElement("Pane1LengthStepper");
             App.IncreaseStepper("Pane1LengthStepper");
+            App.WaitForElement("Pane2LengthStepper");
             App.DecreaseStepper("Pane2LengthStepper");
 
             App.WaitForElement("Apply");
@@ -110,7 +116,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
             VerifyScreenshot();
         }
-         [Test]
+
+        [Test]
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_Shadow()
         {
@@ -134,6 +141,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
+            App.WaitForElement("TallModeStepper");
             App.IncreaseStepper("TallModeStepper");
 
             App.WaitForElement("Apply");
@@ -152,8 +160,10 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
+            App.WaitForElement("TallModeStepper");
             App.IncreaseStepper("TallModeStepper");
 
+            App.WaitForElement("WideModeStepper");
             App.IncreaseStepper("WideModeStepper");
             App.IncreaseStepper("WideModeStepper");
 
@@ -186,6 +196,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
+            App.WaitForElement("WideModeStepper");
             App.IncreaseStepper("WideModeStepper");
             App.IncreaseStepper("WideModeStepper");
 
