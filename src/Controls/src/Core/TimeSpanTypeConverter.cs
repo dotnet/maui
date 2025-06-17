@@ -59,16 +59,16 @@ public class TimeSpanTypeConverter : TypeConverter, IExtendedTypeConverter
 			{
 				return ConvertToDestinationType(timeOnly, destinationType, culture);
 			}
-			else if (TimeSpan.TryParse(stringValue, culture, out var timeSpan))
+			else if (TimeSpan.TryParse(stringValue, culture, out var timeSpan1))
 			{
-				return ConvertToDestinationType(timeSpan, destinationType, culture);
+				return ConvertToDestinationType(timeSpan1, destinationType, culture);
 			}
 		}
 
         throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
     }
 
-	private static object ConvertToDestinationType(TimeOnly timeOnly, Type destinationType, CultureInfo? culture)
+	private static object ConvertToDestinationType(TimeOnly timeOnly, Type? destinationType, CultureInfo? culture)
 	{
 		if (destinationType == typeof(string))
 		{
@@ -83,14 +83,14 @@ public class TimeSpanTypeConverter : TypeConverter, IExtendedTypeConverter
 			return timeOnly;
 		}
 
-		throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
+		throw new NotSupportedException($"Cannot convert \"{timeOnly}\" into {destinationType}");
 	}
 
-	private static object ConvertToDestinationType(TimeSpan timeSpan, Type destinationType, CultureInfo? culture)
+	private static object ConvertToDestinationType(TimeSpan timeSpan, Type? destinationType, CultureInfo? culture)
 	{
 		if (destinationType == typeof(string))
 		{
-			return timeSpan.ToString(culture);
+			return timeSpan.ToString();
 		}
 		if (destinationType == typeof(TimeSpan))
 		{
@@ -101,7 +101,7 @@ public class TimeSpanTypeConverter : TypeConverter, IExtendedTypeConverter
 			return TimeOnly.FromTimeSpan(timeSpan);
 		}
 
-		throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
+		throw new NotSupportedException($"Cannot convert \"{timeSpan}\" into {destinationType}");
 	}
 }
 #endif

@@ -65,7 +65,7 @@ public class DateTimeTypeConverter : TypeConverter, IExtendedTypeConverter
         throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
     }
 
-	private static object ConvertToDestinationType(DateOnly dateOnly, Type destinationType, CultureInfo? culture)
+	private static object ConvertToDestinationType(DateOnly dateOnly, Type? destinationType, CultureInfo? culture)
 	{
 		if (destinationType == typeof(string))
 		{
@@ -80,10 +80,10 @@ public class DateTimeTypeConverter : TypeConverter, IExtendedTypeConverter
 			return dateOnly;
 		}
 
-		throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
+		throw new NotSupportedException($"Cannot convert \"{dateOnly}\" into {destinationType}");
 	}
 
-	private static object ConvertToDestinationType(DateTime dateTime, Type destinationType, CultureInfo? culture)
+	private static object ConvertToDestinationType(DateTime dateTime, Type? destinationType, CultureInfo? culture)
 	{
 		if (destinationType == typeof(string))
 		{
@@ -98,7 +98,7 @@ public class DateTimeTypeConverter : TypeConverter, IExtendedTypeConverter
 			return DateOnly.FromDateTime(dateTime);
 		}
 
-		throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
+		throw new NotSupportedException($"Cannot convert \"{dateTime}\" into {destinationType}");
 	}
 }
 #endif
