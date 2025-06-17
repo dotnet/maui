@@ -1,1 +1,12 @@
 #nullable enable
+Microsoft.Maui.Devices.Sensors.IDeviceCapabilities
+Microsoft.Maui.Devices.Sensors.IDeviceCapabilities.IsSupported.get -> bool
+Microsoft.Maui.Devices.Sensors.ISensor
+Microsoft.Maui.Devices.Sensors.ISensor.IsMonitoring.get -> bool
+Microsoft.Maui.Devices.Sensors.ISensor.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
+Microsoft.Maui.Devices.Sensors.ISensor.Stop() -> void
+Microsoft.Maui.Devices.Sensors.ISensor
+Microsoft.Maui.Devices.Sensors.ISensor.IsMonitoring.get -> bool
+Microsoft.Maui.Devices.Sensors.ISensor.IsSupported.get -> bool
+Microsoft.Maui.Devices.Sensors.ISensor.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
+Microsoft.Maui.Devices.Sensors.ISensor.Stop() -> void
