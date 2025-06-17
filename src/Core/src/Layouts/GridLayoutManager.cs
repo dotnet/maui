@@ -641,6 +641,13 @@ namespace Microsoft.Maui.Layouts
 				}
 				else
 				{
+					// Try to use density-aware distribution if possible
+					if (TryResolveStarsWithDensityAwareness(defs, availableSpace, starCount))
+					{
+						return;
+					}
+
+					// Fallback to original method
 					// If we have a finite space, we can divvy it up among the full star weight
 					starSize = availableSpace / starCount;
 				}
@@ -653,6 +660,70 @@ namespace Microsoft.Maui.Layouts
 						definition.Size = starSize * definition.GridLength.Value;
 					}
 				}
+			}
+
+			bool TryResolveStarsWithDensityAwareness(Definition[] defs, double availableSpace, double starCount)
+			{
+				// Try to get density from the Grid's MauiContext or handler
+				var density = GetDisplayDensity();
+				if (density <= 0)
+				{
+					return false; // No density available, fall back to regular method
+				}
+
+				// Create portions array for star definitions
+				var starDefs = new List<Definition>();
+				var portions = new List<double>();
+
+				foreach (var def in defs)
+				{
+					if (def.IsStar)
+					{
+						starDefs.Add(def);
+						portions.Add(def.GridLength.Value);
+					}
+				}
+
+				if (starDefs.Count == 0)
+					return true; // No star definitions to resolve
+
+				// Use DensityValue to distribute pixels precisely
+				var pixelAllocations = DensityValue.DistributePixels(availableSpace * density, density, portions.ToArray());
+
+				// Convert back to dp and assign to definitions
+				for (int i = 0; i < starDefs.Count; i++)
+				{
+					starDefs[i].Size = pixelAllocations[i] / density;
+				}
+
+				return true;
+			}
+
+			double GetDisplayDensity()
+			{
+				// Try to get density from the handler context
+				// This is a simplified approach - in a real implementation,
+				// we might need to pass density down from the platform level
+				try
+				{
+					var grid = Grid;
+					if (grid is IView view && view.Handler?.MauiContext != null)
+					{
+						var request = new DisplayDensityRequest();
+						if (grid.Handler is Microsoft.Maui.Handlers.IElementHandler elementHandler)
+						{
+							// For now, return 0 to indicate no density is available
+							// In a full implementation, we'd get this from the platform context
+							return 0;
+						}
+					}
+				}
+				catch
+				{
+					// Ignore errors and fall back to regular sizing
+				}
+
+				return 0; // Indicates density-aware sizing not available
 			}
 
 			void ResolveStarColumns(double widthConstraint)
