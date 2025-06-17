@@ -17,17 +17,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	{
 		public static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName = false, bool forcePrimary = false)
 		{
-			// if (item.Order == ToolbarItemOrder.Secondary && !forcePrimary)
-			// {
-			// 	return new SecondaryToolbarItem(item);
-			// }
-
 			return new PrimaryToolbarItem(item, forceName);
 		}
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		internal static SecondaryToolbarItem ToSecondaryToolbarItem(this ToolbarItem item)
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			var action = UIAction.Create(item.Text, null, null, _ =>
             {
