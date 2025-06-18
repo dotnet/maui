@@ -43,10 +43,10 @@ pr:
     - README.md
     - THIRD-PARTY-NOTICES.TXT
 
-# variables:
-# - template: /eng/common/templates/variables/pool-providers.yml@self
-# - template: /eng/pipelines/common/variables.yml@self
-# - template: /eng/pipelines/arcade/variables.yml@self
+variables:
+- template: /eng/common/templates/variables/pool-providers.yml@self
+- template: /eng/pipelines/common/variables.yml@self
+- template: /eng/pipelines/arcade/variables.yml@self
 
 parameters:
 
