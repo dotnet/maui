@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.FileProviders;
@@ -7,9 +6,9 @@ using WebViewAppShared;
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
 
 [Category(TestCategory.BlazorWebView)]
-public abstract class BlazorWebViewTestBase : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+public partial class BlazorWebViewTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
 {
-	protected sealed class BlazorWebViewWithCustomFiles : BlazorWebView
+	sealed class BlazorWebViewWithCustomFiles : BlazorWebView
 	{
 		public Dictionary<string, string> CustomFiles { get; set; }
 
@@ -32,12 +31,12 @@ public abstract class BlazorWebViewTestBase : Microsoft.Maui.DeviceTests.Control
 		}
 	}
 
-	public class TestResponseObject
+	class TestResponseObject
 	{
 		public string message { get; set; } = string.Empty;
 	}
 
-	protected static class TestStaticFilesContents
+	static class TestStaticFilesContents
 	{
 		public const string DefaultMauiIndexHtmlContent = @"<!DOCTYPE html>
 <html>

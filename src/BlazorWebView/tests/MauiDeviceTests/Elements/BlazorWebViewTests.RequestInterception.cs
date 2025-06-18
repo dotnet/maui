@@ -8,18 +8,12 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.MauiBlazorWebView.DeviceTests.Components;
-using WebViewAppShared;
 using Xunit;
-#if WINDOWS
-using Microsoft.Web.WebView2.Core;
-#endif
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
 
-[Category(TestCategory.BlazorWebView)]
-public partial class BlazorWebViewRequestInterceptionTests : BlazorWebViewTestBase
+public partial class BlazorWebViewTests
 {
 	[Fact]
 	public Task RequestsCanBeInterceptedAndCustomDataReturned() =>
@@ -46,14 +40,12 @@ public partial class BlazorWebViewRequestInterceptionTests : BlazorWebViewTestBa
 			};
 
 			// Execute JavaScript to make the request and store result in controlDiv
-			var resultJson = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult(handler.PlatformView,
+			var responseObject = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult<EchoResponseObject>(handler.PlatformView,
 				"""
 				const response = await fetch('/api/sample?param1=value1&param2=value2');
 				const jsonData = await response.json();
-				return JSON.stringify(jsonData);
+				return jsonData;
 				""");
-
-			var responseObject = JsonSerializer.Deserialize<EchoResponseObject>(resultJson, BlazorWebViewTestContext.Default.EchoResponseObject);
 
 			Assert.True(intercepted, "The request should have been intercepted.");
 			Assert.NotNull(responseObject);
@@ -80,14 +72,12 @@ public partial class BlazorWebViewRequestInterceptionTests : BlazorWebViewTestBa
 			};
 
 			// Execute JavaScript to make the request and store result in controlDiv
-			var resultJson = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult(handler.PlatformView,
+			var responseObject = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult<EchoResponseObject>(handler.PlatformView,
 				"""
 				const response = await fetch('/api/async-sample?param1=value1&param2=value2');
 				const jsonData = await response.json();
-				return JSON.stringify(jsonData);
+				return jsonData;
 				""");
-
-			var responseObject = JsonSerializer.Deserialize<EchoResponseObject>(resultJson, BlazorWebViewTestContext.Default.EchoResponseObject);
 
 			Assert.True(intercepted, "The request should have been intercepted.");
 			Assert.NotNull(responseObject);
@@ -156,7 +146,7 @@ public partial class BlazorWebViewRequestInterceptionTests : BlazorWebViewTestBa
 			};
 
 			// Execute JavaScript to make the request and store result in controlDiv
-			var resultJson = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult(handler.PlatformView,
+			var responseObject = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult<EchoResponseObject>(handler.PlatformView,
 				$$$"""
 				const response = await fetch('{{{uriBase}}}?param1=value1&param2=value2', {
 					method: 'GET',
@@ -167,10 +157,8 @@ public partial class BlazorWebViewRequestInterceptionTests : BlazorWebViewTestBa
 					}
 				});
 				const jsonData = await response.json();
-				return JSON.stringify(jsonData);
+				return jsonData;
 				""");
-
-			var responseObject = JsonSerializer.Deserialize<EchoResponseObject>(resultJson, BlazorWebViewTestContext.Default.EchoResponseObject);
 
 			Assert.True(intercepted, "The request should have been intercepted.");
 			Assert.NotNull(responseObject);
@@ -294,7 +282,7 @@ public partial class BlazorWebViewRequestInterceptionTests : BlazorWebViewTestBa
 			};
 
 			// Execute JavaScript to make the request and store result in controlDiv
-			var resultJson = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult(handler.PlatformView,
+			var responseObject = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult<ResponseObject>(handler.PlatformView,
 				$$$"""
 				const response = await fetch('{{{uriBase}}}?param1=value1&param2=value2', {
 					method: 'GET',
@@ -305,11 +293,9 @@ public partial class BlazorWebViewRequestInterceptionTests : BlazorWebViewTestBa
 					}
 				});
 				const jsonData = await response.json();
-				return JSON.stringify(jsonData);
+				return jsonData;
 				""");
 
-			var responseObject = JsonSerializer.Deserialize<ResponseObject>(resultJson, BlazorWebViewTestContext.Default.ResponseObject);
-			
 			Assert.True(intercepted, "The request should have been intercepted.");
 			Assert.NotNull(responseObject);
 			Assert.NotNull(responseObject.headers);
@@ -333,29 +319,31 @@ public partial class BlazorWebViewRequestInterceptionTests : BlazorWebViewTestBa
 
 			blazorWebView.WebResourceRequested += (sender, e) =>
 			{
-				if (new Uri(uriBase).IsBaseOf(e.Uri) )
+				if (new Uri(uriBase).IsBaseOf(e.Uri))
 				{
 					intercepted = true;
-				
+
 					// 1. Create the response
-					e.SetResponse(403, "Forbidden");				// 2. Let the app know we are handling it entirely
-				e.Handled = true;
-			}
-		};
+					e.SetResponse(403, "Forbidden");
+					
+					// 2. Let the app know we are handling it entirely
+					e.Handled = true;
+				}
+			};
 
-		// Execute JavaScript to make the request and store result in controlDiv
-		var result = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult(handler.PlatformView,
-			$$$"""
-			try {
-				const response = await fetch('{{{uriBase}}}?param1=value1&param2=value2');
-				return (response.status === 403).toString();
-			} catch (e) {
-				return 'true'; // Request was cancelled/failed
-			}
-			""");
+			// Execute JavaScript to make the request and store result in controlDiv
+			var result = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult<bool>(handler.PlatformView,
+				$$$"""
+				try {
+					const response = await fetch('{{{uriBase}}}?param1=value1&param2=value2');
+					return (response.status === 403);
+				} catch (e) {
+					return true; // Request was cancelled/failed
+				}
+				""");
 
-		Assert.True(intercepted, "The request should have been intercepted.");
-			Assert.Equal("true", result);
+			Assert.True(intercepted, "The request should have been intercepted.");
+			Assert.True(result);
 		});
 
 	[Theory]
@@ -415,7 +403,7 @@ public partial class BlazorWebViewRequestInterceptionTests : BlazorWebViewTestBa
 			};
 
 			// Execute JavaScript to make the request and store result in controlDiv
-			var resultJson = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult(handler.PlatformView,
+			var responseObject = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult<EchoResponseObject>(handler.PlatformView,
 				$$$"""
 				const response = await fetch('{{{uriBase}}}?param1=value1&param2=value2', {
 					method: 'GET',
@@ -426,10 +414,8 @@ public partial class BlazorWebViewRequestInterceptionTests : BlazorWebViewTestBa
 					}
 				});
 				const jsonData = await response.json();
-				return JSON.stringify(jsonData);
+				return jsonData;
 				""");
-
-			var responseObject = JsonSerializer.Deserialize<EchoResponseObject>(resultJson, BlazorWebViewTestContext.Default.EchoResponseObject);
 
 			Assert.True(intercepted, "Request was not intercepted");
 			Assert.NotEmpty(headerValues);
@@ -454,10 +440,10 @@ public partial class BlazorWebViewRequestInterceptionTests : BlazorWebViewTestBa
 			},
 		};
 
-		blazorWebView.RootComponents.Add(new RootComponent 
-		{ 
-			ComponentType = typeof(NoOpComponent), 
-			Selector = "#app" 
+		blazorWebView.RootComponents.Add(new RootComponent
+		{
+			ComponentType = typeof(NoOpComponent),
+			Selector = "#app"
 		});
 
 		await InvokeOnMainThreadAsync(async () =>
@@ -466,7 +452,7 @@ public partial class BlazorWebViewRequestInterceptionTests : BlazorWebViewTestBa
 			var platformWebView = blazorWebViewHandler.PlatformView;
 
 			await WebViewHelpers.WaitForWebViewReady(platformWebView);
-			
+
 			// Wait for the no-op component to load
 			await WebViewHelpers.WaitForControlDiv(platformWebView, controlValueToWaitFor: "Static");
 

@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 #if ANDROID
 using PlatformWebView = Android.Webkit.WebView;
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 		/// <param name="webView">The WKWebView instance</param>
 		/// <param name="asyncFunctionBody">The body of the async function (without function wrapper)</param>
 		/// <returns>The result stored in controlDiv after the async operation completes</returns>
-		public static async Task<string?> ExecuteAsyncScriptAndWaitForResult(PlatformWebView webView, string asyncFunctionBody)
+		public static async Task<T?> ExecuteAsyncScriptAndWaitForResult<T>(PlatformWebView webView, string asyncFunctionBody)
 		{
 			// Inject script that executes the async function and stores result in controlDiv
 			await ExecuteScriptAsync(webView,
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 								const result = await (async function() {
 									{{asyncFunctionBody}}
 								})();
-								document.getElementById('controlDiv').innerText = result;
+								document.getElementById('controlDiv').innerText = JSON.stringify(result);
 							} catch (error) {
 								document.getElementById('controlDiv').innerText = JSON.stringify({error: error.message});
 							}
@@ -62,7 +63,24 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 				""");
 
 			// Wait for the async operation to complete and get the result
-			return await WaitForControlDivToChangeFrom(webView, "Static");
+			var result = await WaitForControlDivToChangeFrom(webView, "Static");
+			if (result == null || result == "null" || result == "undefined")
+				return default;
+
+			// Deserialize the result from controlDiv
+			try
+			{
+				return JsonSerializer.Deserialize<T>(result);
+			}
+			catch (JsonException)
+			{
+				// sometimes the result is serialized by the platform, so we need to deserialize it as a string first
+				result = JsonSerializer.Deserialize<string>(result);
+				if (result == null || result == "null" || result == "undefined")
+					return default;
+
+				return JsonSerializer.Deserialize<T>(result);
+			}
 		}
 
 		public static async Task WaitForControlDiv(PlatformWebView webView, string controlValueToWaitFor)
@@ -104,7 +122,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 				});
 
 			// Remove quotes that some platforms add
-			return latestControlValue?.Trim('\"');
+			return latestControlValue;
 		}
 
 		private static Task<string?> GetControlDivValue(PlatformWebView webView)

@@ -2,14 +2,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit;
 using Microsoft.Maui.MauiBlazorWebView.DeviceTests.Components;
 using WebViewAppShared;
-using Xunit;
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
 
-[Category(TestCategory.BlazorWebView)]
-public class BlazorWebViewComponentTests : BlazorWebViewTestBase
+public partial class BlazorWebViewTests
 {
 	[Fact]
 	public async Task BasicRazorComponentClick()

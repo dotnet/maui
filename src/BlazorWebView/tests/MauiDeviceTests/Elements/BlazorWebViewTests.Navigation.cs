@@ -3,12 +3,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
 using WebViewAppShared;
-using Xunit;
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
 
-[Category(TestCategory.BlazorWebView)]
-public class BlazorWebViewNavigationTests : BlazorWebViewTestBase
+public partial class BlazorWebViewTests
 {
 	[Fact]
 	public async Task BlazorWebViewUsesStartPath()

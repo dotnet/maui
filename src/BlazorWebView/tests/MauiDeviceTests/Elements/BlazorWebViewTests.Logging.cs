@@ -5,13 +5,11 @@ using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.MauiBlazorWebView.DeviceTests.Components;
-using WebViewAppShared;
 using Xunit;
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
 
-[Category(TestCategory.BlazorWebView)]
-public class BlazorWebViewLoggingTests : BlazorWebViewTestBase
+public partial class BlazorWebViewTests
 {
 	[Fact]
 	public async Task BlazorWebViewLogsRequests()

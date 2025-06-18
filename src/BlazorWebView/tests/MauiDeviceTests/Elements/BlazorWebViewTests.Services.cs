@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
 
-[Category(TestCategory.BlazorWebView)]
-public class BlazorWebViewServiceTests : BlazorWebViewTestBase
+public partial class BlazorWebViewTests
 {
 	[Fact]
 	public async Task BlazorWebViewDispatchGetsScopedServices()
