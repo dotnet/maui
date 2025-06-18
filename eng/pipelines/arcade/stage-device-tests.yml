@@ -43,7 +43,7 @@ parameters:
   default: [ 'latest' ]
 - name: helixProject
   type: string
-  default: '$(Build.SourcesDirectory)/eng/helix_xharness.proj'
+  default: 'eng/helix_xharness.proj'
 - name: extraHelixArguments
   type: string
   default: ''
