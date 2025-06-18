@@ -2,7 +2,6 @@ using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Entry)]
@@ -15,7 +14,7 @@ public class EntryFeatureTests : UITest
 #elif ANDROID
 	private const int CropBottomValue = 1300;
 #elif WINDOWS
-	private const int CropBottomValue = 650;
+	private const int CropBottomValue = 500;
 #else
 	private const int CropBottomValue = 400;		
 #endif
@@ -61,7 +60,7 @@ public class EntryFeatureTests : UITest
 #if !ANDROID
 		Assert.That(App.WaitForElement("TextChangedLabel").GetText(), Is.EqualTo("TextChanged: Old='New Tex', New='New Text'"));
 #else
-    	Assert.That(App.WaitForElement("TextChangedLabel").GetText(), Is.EqualTo("TextChanged: Old='', New='New Text'"));
+		Assert.That(App.WaitForElement("TextChangedLabel").GetText(), Is.EqualTo("TextChanged: Old='', New='New Text'"));
 #endif
 	}
 
@@ -819,8 +818,8 @@ public class EntryFeatureTests : UITest
 	private void VerifyScreenshotWithKeyboardHandling(string? screenshotName = null)
 	{
 #if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
-    if (App.IsKeyboardShown())
-        App.DismissKeyboard();
+		if (App.IsKeyboardShown())
+			App.DismissKeyboard();
 #endif
 
 		// Using cropping instead of DismissKeyboard() on iOS to maintain focus during testing

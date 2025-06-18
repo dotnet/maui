@@ -1,4 +1,7 @@
-﻿namespace Maui.Controls.Sample;
+﻿using Microsoft.Maui.Controls;
+using System;
+
+namespace Maui.Controls.Sample;
 
 public partial class EntryOptionsPage : ContentPage
 {
@@ -39,6 +42,7 @@ public partial class EntryOptionsPage : ContentPage
             vm.Placeholder = e.NewTextValue;
         }
     }
+
     private void PlaceholderColorButton_Clicked(object sender, EventArgs e)
     {
         if (sender is Button button)
@@ -58,7 +62,6 @@ public partial class EntryOptionsPage : ContentPage
             _viewModel.ClearButtonVisibility = ClearButtonVisibility.Never;
         }
     }
-
 
     private void HorizontalAlignmentButton_Clicked(object sender, EventArgs e)
     {
@@ -87,6 +90,7 @@ public partial class EntryOptionsPage : ContentPage
             };
         }
     }
+
     private void IsPasswordTrueOrFalse_Clicked(object sender, EventArgs e)
     {
         if (IsPasswordTrue.IsChecked)
@@ -151,6 +155,7 @@ public partial class EntryOptionsPage : ContentPage
             _viewModel.IsReadOnly = false;
         }
     }
+
     private void IsTextPredictionEnabledTrueOrFalse_Clicked(object sender, EventArgs e)
     {
         if (IsTextPredictionEnabledTrue.IsChecked)
@@ -192,6 +197,7 @@ public partial class EntryOptionsPage : ContentPage
             };
         }
     }
+
     private void FontFamilyEntry_TextChanged(object sender, TextChangedEventArgs e)
     {
         _viewModel.FontFamily = FontFamilyEntry.Text;
