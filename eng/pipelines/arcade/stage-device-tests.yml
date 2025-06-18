@@ -93,7 +93,7 @@ stages:
 
           - template: /eng/common/templates-official/steps/send-to-helix.yml
             parameters:
-              helixProject: ${{ parameters.helixProject }}
+              HelixProjectPath: ${{ parameters.helixProject }}
               extraHelixArguments: ${{ parameters.extraHelixArguments }}
               #  helixScript: $(_helixScriptMacOS)
               helixTestName: Controls.DeviceTests
