@@ -123,12 +123,14 @@ namespace Microsoft.Maui.Controls.Platform
 				_flyoutGrouping = newGrouping;
 				var newItems = IterateItems(newGrouping).ToList();
 				var itemsCount = FlyoutItems.Count;
+				var newItemsSet = new HashSet<object>(newItems);
+				var flyoutItemsSet = new HashSet<object>(FlyoutItems);
 
 				for (int index = 0; index < newItems.Count; index++)
 				{
 					var item = newItems[index];
 
-					if (!FlyoutItems.Contains(item))
+					if (!flyoutItemsSet.Contains(item))
 					{
 						// Use Insert when within bounds, otherwise Add
 						if (index < itemsCount)
@@ -145,7 +147,7 @@ namespace Microsoft.Maui.Controls.Platform
 				for (var i = FlyoutItems.Count - 1; i >= 0; i--)
 				{
 					var item = FlyoutItems[i];
-					if (!newItems.Contains(item))
+					if (!newItemsSet.Contains(item))
 					{
 						FlyoutItems.RemoveAt(i);
 					}
