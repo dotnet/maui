@@ -64,8 +64,8 @@ stages:
       workspace:
         clean: all
       jobs:
-      - job: pack_net_Windows
-        displayName: Pack Windows
+      - job: device_tests_ios
+        displayName: Controls DeviceTests iOS
         timeoutInMinutes: 240
         preSteps:
         - checkout: self
