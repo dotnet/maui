@@ -46,8 +46,11 @@ namespace Microsoft.Maui.Authentication
 
 			AuthRequestParams authRequestParams = AuthRequestParams.CreateForAuthorizationCodeRequest("", callbackUrl);
 			AuthRequestResult authRequestResult = await OAuth2Manager.RequestAuthWithParamsAsync(windowId, url, authRequestParams);
-
-			return new WebAuthenticatorResult(authRequestResult.ResponseUri);
+			if(authRequestResult.Failure is not null)
+			{
+				throw new UnauthorizedAccessException(authRequestResult.Failure.Error);
+			}	
+			return new WebAuthenticatorResult(authRequestResult.ResponseUri, webAuthenticatorOptions.ResponseDecoder);
 		}
 
 		static bool IsUriProtocolDeclared(string scheme)
