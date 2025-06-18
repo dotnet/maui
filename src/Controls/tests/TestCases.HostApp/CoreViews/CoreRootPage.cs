@@ -51,7 +51,8 @@
 			var gcButton = new Button
 			{
 				Text = "Click to Force GC",
-				Command = new Command(() => {
+				Command = new Command(() =>
+				{
 					GC.Collect();
 					GC.WaitForPendingFinalizers();
 					GC.Collect();
