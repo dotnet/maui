@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[Controls.CarouselView.IsBounceEnabledProperty.PropertyName] = MapIsBounceEnabled,
 			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
 			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem,
-#if !WINDOWS
+#if !WINDOWS  //More info : https://github.com/dotnet/maui/issues/29412
 			[Controls.CarouselView.LoopProperty.PropertyName] = MapLoop
 #endif
 		};
