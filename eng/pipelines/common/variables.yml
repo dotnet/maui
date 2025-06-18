@@ -58,7 +58,7 @@ variables:
   value: ''
 
 # Variable groups required for private builds but not prs
-- ${{ if or(ne(variables['Build.DefinitionName'], 'maui-pr'), eq(variables['Build.DefinitionName'], 'maui-pr-devicetests')) }}:
+- ${{ if or(ne(variables['Build.DefinitionName'], 'maui-pr'), ne(variables['Build.DefinitionName'], 'maui-pr-devicetests')) }}:
   - group: Xamarin-Secrets
 
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
