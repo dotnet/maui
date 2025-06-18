@@ -109,13 +109,6 @@
     <SystemRuntimeCompilerServicesUnsafePackageVersion>6.1.2</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>17.9.5</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>17.9.5</MicrosoftBuildUtilitiesCorePackageVersion>
-    <!-- GLIDE - the android maven artifact in /src/Core/AndroidNative/maui/build.gradle -->
-    <!-- must be kept in sync with the binding library version to it here: -->
-    <_XamarinAndroidGlideVersion>4.16.0.13</_XamarinAndroidGlideVersion>
-    <_XamarinAndroidXSecurityVersion>1.1.0.4-alpha07</_XamarinAndroidXSecurityVersion>
-    <_XamarinGoogleCryptoTinkAndroidVersion>1.17.0.2</_XamarinGoogleCryptoTinkAndroidVersion>
-    <!-- Android Maps -->
-    <XamarinGooglePlayServicesMaps>119.2.0.2</XamarinGooglePlayServicesMaps>
     <!--
       SKIASHARP & HARFBUZZSHARP - the various things must be kept in sync with maui graphics:
        - NuGet versions below
