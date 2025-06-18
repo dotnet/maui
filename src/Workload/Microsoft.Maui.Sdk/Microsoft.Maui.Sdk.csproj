@@ -27,9 +27,6 @@
     <_ValuesToReplace Include="MicrosoftWindowsAppSDKPackageVersion" PropertyName="MicrosoftWindowsAppSDKPackageVersion" />
     <_ValuesToReplace Include="MicrosoftWindowsWebView2PackageVersion" PropertyName="MicrosoftWindowsWebView2PackageVersion" />
     <_ValuesToReplace Include="TizenUIExtensionsVersion" PropertyName="TizenUIExtensionsVersion" />
-    <_ValuesToReplace Include="_XamarinAndroidGlideVersion" PropertyName="_XamarinAndroidGlideVersion" />
-    <_ValuesToReplace Include="_XamarinAndroidXSecurityVersion" PropertyName="_XamarinAndroidXSecurityVersion" />
-    <_ValuesToReplace Include="_XamarinGoogleCryptoTinkAndroidVersion" PropertyName="_XamarinGoogleCryptoTinkAndroidVersion" />
   </ItemGroup>
 
   <Import Project="$(MauiRootDirectory)eng/ReplaceText.targets" />
