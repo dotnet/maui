@@ -3,13 +3,10 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Media;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIWindow;
-using Microsoft.Maui.Platform;
 #elif MONOANDROID
 using PlatformView = Android.App.Activity;
-using Microsoft.Maui.Platform;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Window;
-using Microsoft.Maui.Platform;
 #elif TIZEN
 using PlatformView =  Tizen.NUI.Window;
 #endif
@@ -34,13 +31,9 @@ namespace Microsoft.Maui
 		}
 
 
-
-
 #if PLATFORM
 		async static Task<IScreenshotResult?> CaptureAsync(PlatformView window) =>
 			await Screenshot.Default.CaptureAsync(window);
-
-
 #endif
 	}
 }
