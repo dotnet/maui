@@ -1,4 +1,6 @@
 #nullable disable
+using System;
+
 namespace Microsoft.Maui.Controls.Performance;
 
 /// <summary>
@@ -74,6 +76,28 @@ internal class PerformanceProfiler : IPerformanceProfiler
 	/// Gets the current performance monitoring options.
 	/// </summary>
 	internal PerformanceMonitoringOptions Options => _options;
+	
+	/// <summary>
+	/// Gathers and returns a snapshot of performance statistics across trackers.
+	/// </summary>
+	/// <returns>
+	/// A <see cref="PerformanceStats"/> instance containing metrics related to layout,
+	/// image processing, and navigation stats.
+	/// </returns>
+	/// <remarks>
+	/// This method aggregates performance data from their respective trackers,
+	/// providing a unified view for diagnostics, profiling, or telemetry logging.
+	/// </remarks>
+	public PerformanceStats GetStats()
+	{
+		return new PerformanceStats
+		{
+			Layout = Layout.GetStats(),
+			Image = Image.GetStats(),
+			Navigation = Navigation.GetStats(),
+			TimestampUtc = DateTime.UtcNow
+		};
+	}
 	
 	/// <summary>
 	/// Records the duration of an image load event for performance tracking.
