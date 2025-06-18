@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Layouts
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(Dp, Density);
+			return (Dp, Density).GetHashCode();
 		}
 
 		public static bool operator ==(DensityValue left, DensityValue right)
