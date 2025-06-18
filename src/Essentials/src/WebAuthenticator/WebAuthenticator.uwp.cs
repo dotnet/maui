@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Authentication
 		{
 			var url = webAuthenticatorOptions?.Url;
 			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
+
 			bool isPackaged = global::Windows.ApplicationModel.Package.Current is not null;
 			if(isPackaged)
 			{
@@ -35,15 +36,20 @@ namespace Microsoft.Maui.Authentication
 					throw new InvalidOperationException($"The URI Scheme '{callbackUrl.Scheme}' is not registered. Call ActivationRegistrationManager.RegisterForProtocolActivation to register protocol activation.");
 				}
 			}
-			AuthRequestParams authRequestParams = AuthRequestParams.CreateForAuthorizationCodeRequest("", callbackUrl);
+			var window = Microsoft.Maui.ApplicationModel.WindowStateManager.Default.GetActiveWindow();
 
-#pragma warning disable RS0030 // The proposed workaround for this issue is to use the `GetActiveWindow` method, which is not available here. Null is safely handled in this code.
-			var window = Microsoft.Maui.ApplicationModel.WindowStateManager.Default.GetActiveWindow()?.AppWindow?.Id;
-#pragma warning restore RS0030
-			if (!window.HasValue)
+			if (window is null)
 				throw new InvalidOperationException("No active window found for authentication.");
+
+			var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
 			
-			AuthRequestResult authRequestResult = await OAuth2Manager.RequestAuthWithParamsAsync(window.Value, url, authRequestParams);
+			if (hwnd == IntPtr.Zero)
+				throw new InvalidOperationException("No active window found for authentication.");
+
+			var windowId = UI.Win32Interop.GetWindowIdFromWindow(hwnd);
+
+			AuthRequestParams authRequestParams = AuthRequestParams.CreateForAuthorizationCodeRequest("", callbackUrl);
+			AuthRequestResult authRequestResult = await OAuth2Manager.RequestAuthWithParamsAsync(windowId, url, authRequestParams);
 
 			return new WebAuthenticatorResult(authRequestResult.ResponseUri);
 		}
