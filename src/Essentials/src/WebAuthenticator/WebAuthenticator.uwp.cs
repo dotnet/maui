@@ -36,13 +36,9 @@ namespace Microsoft.Maui.Authentication
 					throw new InvalidOperationException($"The URI Scheme '{callbackUrl.Scheme}' is not registered. Call ActivationRegistrationManager.RegisterForProtocolActivation to register protocol activation.");
 				}
 			}
-			var window = Microsoft.Maui.ApplicationModel.WindowStateManager.Default.GetActiveWindow();
 
-			if (window is null)
-				throw new InvalidOperationException("No active window found for authentication.");
-
-			var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
-			
+			var window = WindowStateManager.Default.GetActiveWindow();
+			var hwnd = window is null ? IntPtr.Zero : WinRT.Interop.WindowNative.GetWindowHandle(window);
 			if (hwnd == IntPtr.Zero)
 				throw new InvalidOperationException("No active window found for authentication.");
 
