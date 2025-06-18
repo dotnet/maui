@@ -1,12 +1,12 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
-    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen", "Blazor", "Blazor Hybrid", "Mobile" ],
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Blazor", "Blazor Hybrid", "Mobile" ],
     "identity": "Microsoft.Maui.BlazorApp.CSharp.DOTNET_TFM_VERSION_VALUE",
     "groupIdentity": "Microsoft.Maui.BlazorApp",
     "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
     "name": ".NET MAUI Blazor Hybrid App",
-    "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor Hybrid",
+    "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI, using Blazor Hybrid",
     "shortName": "maui-blazor",
     "tags": {
       "language": "C#",
