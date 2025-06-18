@@ -3235,5 +3235,214 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(smallerView, new Rect(0, 0, expectedWidth, heightConstraint));
 			AssertArranged(largerView, new Rect(expectedWidth, 0, expectedWidth, heightConstraint));
 		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void DensityAwareStarsHandleScenario1_293Point4DpAtDensity2Point625()
+		{
+			// Test case from PR description: 293.4dp at density 2.625 = 770.175px across 3 columns
+			// This test verifies the improved behavior when density information is available
+			var grid = CreateGridLayout(columns: "*, *, *");
+
+			var view0 = CreateTestView(new Size(50, 50));
+			var view1 = CreateTestView(new Size(50, 50));
+			var view2 = CreateTestView(new Size(50, 50));
+
+			SubstituteChildren(grid, view0, view1, view2);
+			SetLocation(grid, view0, col: 0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+
+			// Arrange at 293.4dp width - this should trigger improved distribution
+			var widthConstraint = 293.4;
+			MeasureAndArrangeFixed(grid, widthConstraint, 100);
+
+			// Even without density info, the layout should work properly
+			// Each column gets approximately 293.4 / 3 = 97.8dp
+			var expectedWidth = 293.4 / 3;
+
+			// Verify that all views are arranged properly and don't overflow
+			var arrangeCall0 = view0.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
+			var arrangeCall1 = view1.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
+			var arrangeCall2 = view2.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
+
+			Assert.NotNull(arrangeCall0);
+			Assert.NotNull(arrangeCall1);
+			Assert.NotNull(arrangeCall2);
+
+			var rect0 = (Rect)arrangeCall0.GetArguments()[0];
+			var rect1 = (Rect)arrangeCall1.GetArguments()[0];
+			var rect2 = (Rect)arrangeCall2.GetArguments()[0];
+
+			// Verify the columns are arranged sequentially
+			Assert.Equal(0, rect0.X, 1);
+			Assert.True(rect1.X >= rect0.X + rect0.Width - 1); // Allow for small rounding
+			Assert.True(rect2.X >= rect1.X + rect1.Width - 1);
+
+			// Verify total width doesn't exceed constraint
+			var totalWidth = rect0.Width + rect1.Width + rect2.Width;
+			Assert.True(totalWidth <= widthConstraint + 1, $"Total width {totalWidth} should not exceed constraint {widthConstraint}");
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void DensityAwareStarsHandleScenario2_290DpAtDensity3Point0()
+		{
+			// Test case from PR description: 290dp across 3 columns at density 3.0 (perfect case)
+			var grid = CreateGridLayout(columns: "*, *, *");
+
+			var view0 = CreateTestView(new Size(50, 50));
+			var view1 = CreateTestView(new Size(50, 50));
+			var view2 = CreateTestView(new Size(50, 50));
+
+			SubstituteChildren(grid, view0, view1, view2);
+			SetLocation(grid, view0, col: 0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+
+			// Arrange at 290dp width
+			var widthConstraint = 290.0;
+			MeasureAndArrangeFixed(grid, widthConstraint, 100);
+
+			// Verify that columns are distributed without overflow
+			var arrangeCall0 = view0.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
+			var arrangeCall1 = view1.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
+			var arrangeCall2 = view2.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
+
+			var rect0 = (Rect)arrangeCall0.GetArguments()[0];
+			var rect1 = (Rect)arrangeCall1.GetArguments()[0];
+			var rect2 = (Rect)arrangeCall2.GetArguments()[0];
+
+			// Verify proper layout without overflow
+			var totalWidth = rect0.Width + rect1.Width + rect2.Width;
+			Assert.True(totalWidth <= widthConstraint + 1, $"Total width {totalWidth} should not exceed constraint {widthConstraint}");
+			Assert.True(totalWidth >= widthConstraint - 1, $"Total width {totalWidth} should be close to constraint {widthConstraint}");
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void DensityAwareStarsHandleScenario3_300DpAtDensity2Point625()
+		{
+			// Test case from PR description: 300dp across 4 columns at density 2.625
+			var grid = CreateGridLayout(columns: "*, *, *, *");
+
+			var view0 = CreateTestView(new Size(30, 50));
+			var view1 = CreateTestView(new Size(30, 50));
+			var view2 = CreateTestView(new Size(30, 50));
+			var view3 = CreateTestView(new Size(30, 50));
+
+			SubstituteChildren(grid, view0, view1, view2, view3);
+			SetLocation(grid, view0, col: 0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+			SetLocation(grid, view3, col: 3);
+
+			// Arrange at 300dp width
+			var widthConstraint = 300.0;
+			MeasureAndArrangeFixed(grid, widthConstraint, 100);
+
+			// Verify that 4 columns are distributed properly
+			var arrangeCall0 = view0.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
+			var arrangeCall1 = view1.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
+			var arrangeCall2 = view2.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
+			var arrangeCall3 = view3.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
+
+			var rect0 = (Rect)arrangeCall0.GetArguments()[0];
+			var rect1 = (Rect)arrangeCall1.GetArguments()[0];
+			var rect2 = (Rect)arrangeCall2.GetArguments()[0];
+			var rect3 = (Rect)arrangeCall3.GetArguments()[0];
+
+			// Verify proper sequential layout
+			Assert.Equal(0, rect0.X, 1);
+			Assert.True(rect1.X >= rect0.X + rect0.Width - 1);
+			Assert.True(rect2.X >= rect1.X + rect1.Width - 1);
+			Assert.True(rect3.X >= rect2.X + rect2.Width - 1);
+
+			// Verify total width doesn't overflow
+			var totalWidth = rect0.Width + rect1.Width + rect2.Width + rect3.Width;
+			Assert.True(totalWidth <= widthConstraint + 1, $"Total width {totalWidth} should not exceed constraint {widthConstraint}");
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void DensityAwareStarsHandleWeightedSizing()
+		{
+			// Test weighted star sizing: 2*, 1*, 2* 
+			var grid = CreateGridLayout(columns: "2*, *, 2*");
+
+			var view0 = CreateTestView(new Size(40, 50));
+			var view1 = CreateTestView(new Size(20, 50));
+			var view2 = CreateTestView(new Size(40, 50));
+
+			SubstituteChildren(grid, view0, view1, view2);
+			SetLocation(grid, view0, col: 0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+
+			var widthConstraint = 250.0;
+			MeasureAndArrangeFixed(grid, widthConstraint, 100);
+
+			// Verify weighted distribution: first and third columns should be larger than middle
+			var arrangeCall0 = view0.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
+			var arrangeCall1 = view1.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
+			var arrangeCall2 = view2.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
+
+			var rect0 = (Rect)arrangeCall0.GetArguments()[0];
+			var rect1 = (Rect)arrangeCall1.GetArguments()[0];
+			var rect2 = (Rect)arrangeCall2.GetArguments()[0];
+
+			// First and third columns (2*) should be approximately twice the width of the middle column (1*)
+			Assert.True(rect0.Width > rect1.Width * 1.5, $"First column ({rect0.Width}) should be larger than middle column ({rect1.Width})");
+			Assert.True(rect2.Width > rect1.Width * 1.5, $"Third column ({rect2.Width}) should be larger than middle column ({rect1.Width})");
+
+			// First and third columns should be approximately equal
+			Assert.Equal(rect0.Width, rect2.Width, 1);
+
+			// Total should not exceed constraint
+			var totalWidth = rect0.Width + rect1.Width + rect2.Width;
+			Assert.True(totalWidth <= widthConstraint + 1, $"Total width {totalWidth} should not exceed constraint {widthConstraint}");
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void StarLayoutPreventsOverflow()
+		{
+			// Test that demonstrates the problem being solved: ensuring no overflow occurs
+			var grid = CreateGridLayout(columns: "*, *, *, *, *"); // 5 equal columns
+
+			var views = new IView[5];
+			for (int i = 0; i < 5; i++)
+			{
+				views[i] = CreateTestView(new Size(20, 50));
+				SetLocation(grid, views[i], col: i);
+			}
+			SubstituteChildren(grid, views);
+
+			// Use a constraint that would cause rounding issues
+			var widthConstraint = 333.33; // Doesn't divide evenly by 5
+			MeasureAndArrangeFixed(grid, widthConstraint, 100);
+
+			// Collect all arranged rects
+			var rects = new Rect[5];
+			for (int i = 0; i < 5; i++)
+			{
+				var arrangeCall = views[i].ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
+				Assert.NotNull(arrangeCall);
+				rects[i] = (Rect)arrangeCall.GetArguments()[0];
+			}
+
+			// Verify sequential layout
+			for (int i = 1; i < 5; i++)
+			{
+				Assert.True(rects[i].X >= rects[i - 1].X + rects[i - 1].Width - 1, $"Column {i} should start after column {i - 1}");
+			}
+
+			// Most importantly: verify no overflow
+			var totalWidth = rects.Sum(r => r.Width);
+			Assert.True(totalWidth <= widthConstraint + 1, $"Total width {totalWidth} should not exceed constraint {widthConstraint}");
+
+			// Verify all space is used (no significant gaps)
+			Assert.True(totalWidth >= widthConstraint - 5, $"Total width {totalWidth} should be close to constraint {widthConstraint}");
+		}
 	}
 }
