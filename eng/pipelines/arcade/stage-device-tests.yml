@@ -94,9 +94,11 @@ stages:
           - template: /eng/common/templates-official/steps/send-to-helix.yml
             parameters:
               HelixProjectPath: ${{ parameters.helixProject }}
-              extraHelixArguments: ${{ parameters.extraHelixArguments }}
+              HelixProjectArguments: ${{ parameters.extraHelixArguments }}
+              IncludeDotNetCli: true
               #  helixScript: $(_helixScriptMacOS)
-              helixTestName: Controls.DeviceTests
+              DisplayNamePrefix: Controls.DeviceTests
               #  helixTestCategory: DeviceTests
-              helixTestRunNameSuffix: $(_BuildConfig)$(Build.BuildId)
+              #  helixTestRunNameSuffix: $(_BuildConfig)$(Build.BuildId)
+              HelixAccessToken: $(System.AccessToken)
             #  helixTestResultsDirectory: $(Agent.TempDirectory)/Controls.DeviceTests

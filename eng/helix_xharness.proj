@@ -1,4 +1,4 @@
-<Project sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
 
     <PropertyGroup>
         <ScenariosDir>$(BUILD_SOURCESDIRECTORY)/artifacts/bin/</ScenariosDir>
