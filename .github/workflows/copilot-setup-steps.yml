@@ -28,6 +28,9 @@ jobs:
           echo "$GITHUB_WORKSPACE/bin/dotnet" >> "$GITHUB_PATH"
           echo "DOTNET_ROOT=$GITHUB_WORKSPACE/bin/dotnet" >> "$GITHUB_ENV"
 
+          cat "$GITHUB_PATH"
+          cat "$GITHUB_ENV"
+
       - name: Ensure we are using the correct .NET
         shell: pwsh
         run: |
