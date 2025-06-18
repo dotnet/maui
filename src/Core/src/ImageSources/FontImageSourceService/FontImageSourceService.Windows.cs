@@ -90,7 +90,7 @@ namespace Microsoft.Maui
 				var x = (layout.LayoutBounds.X * -1) + 1;
 				var y = (layout.LayoutBounds.Y * -1) + 1;
 
-				ds.DrawTextLayout(layout, 1f, 1f, color);
+				ds.DrawTextLayout(layout, (float)x, (float)y, color);
 			}
 
 			return canvasImageSource;
