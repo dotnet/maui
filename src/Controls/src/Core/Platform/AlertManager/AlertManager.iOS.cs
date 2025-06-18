@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (activityIndicatorView is null)
 					{
-						overlayView = new UIView(rootView.Bounds)
+						var overlay = new UIView(rootView.Bounds)
 						{
 							UserInteractionEnabled = false,
 							AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight,
@@ -62,15 +62,15 @@ namespace Microsoft.Maui.Controls.Platform
 							TranslatesAutoresizingMaskIntoConstraints = false
 						};
 
-						overlayView.AddSubview(activityIndicatorView);
+						overlay.AddSubview(activityIndicatorView);
 
 						NSLayoutConstraint.ActivateConstraints(
 						[
-							activityIndicatorView.CenterXAnchor.ConstraintEqualTo(overlayView.CenterXAnchor),
-							activityIndicatorView.CenterYAnchor.ConstraintEqualTo(overlayView.CenterYAnchor)
+							activityIndicatorView.CenterXAnchor.ConstraintEqualTo(overlay.CenterXAnchor),
+							activityIndicatorView.CenterYAnchor.ConstraintEqualTo(overlay.CenterYAnchor)
 						]);
 
-						rootView.AddSubview(overlayView);
+						rootView.AddSubview(overlay);
 					}
 
 					if (!activityIndicatorView.IsAnimating)
@@ -80,24 +80,13 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
-					CleanUpActivityIndicator();
-				}
-			}
-
-			void CleanUpActivityIndicator()
-			{
-				if (activityIndicatorView is not null)
-				{
-					activityIndicatorView.StopAnimating();
-					activityIndicatorView.RemoveFromSuperview();
-					activityIndicatorView.Dispose();
-					activityIndicatorView = null;
-				}
-				if (overlayView is not null)
-				{
-					overlayView.RemoveFromSuperview();
-					overlayView.Dispose();
-					overlayView = null;
+					if (activityIndicatorView is not null)
+					{
+						activityIndicatorView.StopAnimating();
+						activityIndicatorView.RemoveFromSuperview();
+						activityIndicatorView.Dispose();
+						activityIndicatorView = null;
+					}
 				}
 			}
 
