@@ -63,6 +63,13 @@ parameters:
   type: boolean
   default: false
 
+- name: VM_IMAGE_HOST
+  type: object
+  default:
+    name: NetCore-Public
+    image: 1es-windows-2022
+    os: windows
+
 - name: androidPool
   type: object
   default:
