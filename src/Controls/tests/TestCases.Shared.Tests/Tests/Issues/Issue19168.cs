@@ -23,6 +23,8 @@ public class Issue19168 : _IssuesUITest
 #elif ANDROID
 		App.Back();
 		App.WaitForElement("Button");
+#elif WINDOWS
+		App.TapCoordinates(60, 600);
 #elif IOS
 		App.Tap("Button");
 #endif
