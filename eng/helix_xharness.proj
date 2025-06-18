@@ -1,52 +1,58 @@
 <Project sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
 
-  <PropertyGroup>
-    <ScenariosDir>$(RepoRoot)/artifacts/bin/</ScenariosDir>
- </PropertyGroup>
-  <PropertyGroup>
-    <IncludeXHarnessCli>true</IncludeXHarnessCli>
-  </PropertyGroup>
+    <PropertyGroup>
+        <ScenariosDir>$(RepoRoot)/artifacts/bin/</ScenariosDir>
+    </PropertyGroup>
+    <PropertyGroup>
+        <IncludeXHarnessCli>true</IncludeXHarnessCli>
+        <!-- Optional: Specific version of Xcode to use. If omitted, xcode-select is used to
+        determine the version -->
+        <XHarnessXcodeVersion>16.3</XHarnessXcodeVersion>
+    </PropertyGroup>
 
-  <PropertyGroup>
-      <!-- Set Helix build to build number if available -->
-    <HelixBuild Condition="'$(HelixBuild)' == ''">$(BUILD_BUILDNUMBER)</HelixBuild>
-    <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
+    <PropertyGroup>
+        <!-- Set Helix build to build number if available -->
+        <HelixBuild Condition="'$(HelixBuild)' == ''">$(BUILD_BUILDNUMBER)</HelixBuild>
+        <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
 
-    <HelixTargetQueues>OSX.15.ARM64.Open</HelixTargetQueues>
-    <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
+        <HelixTargetQueues>OSX.15.ARM64.Open</HelixTargetQueues>
+        <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
 
-    <IncludeDotNetCli>true</IncludeDotNetCli>
-    <DotNetCliPackageType>sdk</DotNetCliPackageType>
+        <IncludeDotNetCli>true</IncludeDotNetCli>
+        <DotNetCliPackageType>sdk</DotNetCliPackageType>
 
-    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
-    <FailOnTestFailure>true</FailOnTestFailure>
-  </PropertyGroup>
+        <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+        <FailOnTestFailure>true</FailOnTestFailure>
+    </PropertyGroup>
 
-  <PropertyGroup Condition="'$(HelixType)' == ''">
-    <!-- For PRs we want HelixType to be the same for all frameworks except package testing-->
-    <TestScope Condition="'$(TestScope)' == ''">innerloop</TestScope>
-    <HelixType>test/functional/cli/$(TestScope)/</HelixType>
-  </PropertyGroup>
+    <PropertyGroup Condition="'$(HelixType)' == ''">
+        <!-- For PRs we want HelixType to be the same for all frameworks except package testing-->
+        <TestScope Condition="'$(TestScope)' == ''">innerloop</TestScope>
+        <HelixType>test/functional/cli/$(TestScope)/</HelixType>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <MAUIiOSScenario Include="Controls DeviceTests">
-      <ScenarioDirectoryName>Controls.DeviceTests</ScenarioDirectoryName>
-      <PayloadDirectory>$(ScenariosDir)%(ScenarioDirectoryName)</PayloadDirectory>
-      <IPAName>Microsoft.Maui.Controls.DeviceTests</IPAName>
-      <PackageName>com.microsoft.maui.controls.devicetests</PackageName>
-    </MAUIiOSScenario>
-  </ItemGroup>
+    <ItemGroup>
+        <MAUIiOSScenario Include="Controls DeviceTests">
+            <ScenarioDirectoryName>Controls.DeviceTests</ScenarioDirectoryName>
+            <PayloadDirectory>$(ScenariosDir)%(ScenarioDirectoryName)</PayloadDirectory>
+            <IPAName>Microsoft.Maui.Controls.DeviceTests</IPAName>
+            <PackageName>com.microsoft.maui.controls.devicetests</PackageName>
+        </MAUIiOSScenario>
+        <MAUIiOSScenario Include="Core DeviceTests">
+            <ScenarioDirectoryName>Core.DeviceTests</ScenarioDirectoryName>
+            <PayloadDirectory>$(ScenariosDir)%(ScenarioDirectoryName)</PayloadDirectory>
+            <IPAName>Microsoft.Maui.Core.DeviceTests</IPAName>
+            <PackageName>com.microsoft.maui.core.devicetests</PackageName>
+        </MAUIiOSScenario>
+    </ItemGroup>
 
- <ItemGroup>
-    <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)/Controls.DeviceTests', '*.app', System.IO.SearchOption.AllDirectories))">
-        <!-- Specify target platform () -->
-        <TestTarget>ios-simulator-64_18.0</TestTarget>
-    </XHarnessAppBundleToTest>
-  <ItemGroup>
+    <ItemGroup>
+        <XHarnessAppBundleToTest
+            Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)/Controls.DeviceTests', '*.app', System.IO.SearchOption.AllDirectories))">
+            <!-- Specify target platform () -->
+            <TestTarget>ios-simulator-64_18.0</TestTarget>
+        </XHarnessAppBundleToTest>
+    </ItemGroup>
 
-  <PropertyGroup>
-  <!-- Optional: Specific version of Xcode to use. If omitted, xcode-select is used to determine the version -->
-    <XHarnessXcodeVersion>16.3</XHarnessXcodeVersion>
- </PropertyGroup>
 
 </Project>
