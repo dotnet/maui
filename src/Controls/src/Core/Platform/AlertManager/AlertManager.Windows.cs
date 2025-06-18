@@ -48,13 +48,21 @@ namespace Microsoft.Maui.Controls.Platform
 							{
 								IsActive = busyCount > 0
 							};
+						}
 
+						if (!panel.CachedChildren.Contains(progressRing))
+						{
 							panel.AddOverlay(progressRing);
 						}
 					}
 					else
 					{
-						CleanUpActivityIndicator();
+						if (progressRing is not null && panel.CachedChildren.Contains(progressRing))
+						{
+							progressRing.IsActive = false;
+							panel.RemoveOverlay(progressRing);
+							progressRing = null;
+						}
 					}
 				}
 			}
