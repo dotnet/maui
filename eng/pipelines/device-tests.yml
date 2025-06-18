@@ -94,7 +94,8 @@ parameters:
   type: object
   default:
     name: MAUI-DNCENG
-    vmImage: $(windowsTestsVmImage)
+    demands:
+    - ImageOverride -equals 1ESPT-Windows2022
 
 - name: targetFrameworkVersions
   type: object
@@ -108,7 +109,7 @@ stages:
 
     - template: /eng/pipelines/arcade/stage-device-tests.yml@self
       parameters:
-        pool: ${{ parameters.windowsPool }}
+        pool: ${{ parameters.VM_IMAGE_HOST }}
         androidPool: ${{ parameters.androidPool }}
         iosPool: ${{ parameters.iosPool }}
         catalystPool: ${{ parameters.catalystPool }}
