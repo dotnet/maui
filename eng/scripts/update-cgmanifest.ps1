@@ -134,11 +134,15 @@ foreach ($package in $packageVersionMappings.GetEnumerator()) {
     }
 }
 
-# Update the manifest
-$cgManifest.registrations = $newRegistrations
+# Sort registrations by package name for consistent ordering
+$sortedRegistrations = $newRegistrations | Sort-Object { $_.component.nuget.name }
 
-# Save the updated manifest
+# Update the manifest
+$cgManifest.registrations = $sortedRegistrations
+
+# Save the updated manifest with consistent formatting
 $cgManifest | ConvertTo-Json -Depth 10 | Out-File $cgManifestPath -Encoding utf8
+
 Write-Host "Updated cgmanifest.json saved to: $cgManifestPath"
 
 # Print summary
