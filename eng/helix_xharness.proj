@@ -1,7 +1,7 @@
 <Project sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
 
     <PropertyGroup>
-        <ScenariosDir>$(RepoRoot)/artifacts/bin/</ScenariosDir>
+        <ScenariosDir>$(BUILD_SOURCESDIRECTORY)/artifacts/bin/</ScenariosDir>
     </PropertyGroup>
     <PropertyGroup>
         <IncludeXHarnessCli>true</IncludeXHarnessCli>
