@@ -179,6 +179,10 @@ When working on an issue:
 - **Always revert** any changes to JSON files in the `Templates/src/` directory before committing
 - These files are automatically generated and should not be modified manually
 
+### Platform-Specific Restrictions
+- **Never** make changes to files related to Tizen platform
+- Tizen-specific code should not be modified unless explicitly required for critical fixes
+
 ### File Reset Guidelines for AI Agents
 Since coding agents function as both CI and pair programmers, they need to handle CI-generated files appropriately:
 

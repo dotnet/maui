@@ -362,8 +362,5 @@ namespace Microsoft.Maui.Platform
 
 			return view.KeyInputFocus;
 		}
-
-		internal static IWindow? GetHostedWindow(this IView? view)
-			=> null; // Tizen doesn't currently support getting the hosted window
 	}
 }
