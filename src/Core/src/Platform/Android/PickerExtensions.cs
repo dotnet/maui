@@ -1,5 +1,6 @@
 ﻿using Android.App;
 using Android.Content.Res;
+using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
 
 namespace Microsoft.Maui.Platform
 {
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateSelectedIndex(this MauiPicker platformPicker, IPicker picker) =>
 			UpdatePicker(platformPicker, picker);
-
+		
 		internal static void UpdatePicker(this MauiPicker platformPicker, IPicker picker)
 		{
 			platformPicker.Hint = picker.Title;
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.Platform
 				platformPicker.Text = picker.GetItem(picker.SelectedIndex);
 		}
 
-		internal static void UpdateFlowDirection(this AndroidX.AppCompat.App.AlertDialog alertDialog, MauiPicker platformPicker)
+		internal static void UpdateFlowDirection(this AppCompatAlertDialog alertDialog, MauiPicker platformPicker)
 		{
 			var platformLayoutDirection = platformPicker.LayoutDirection;
 
