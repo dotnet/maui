@@ -3259,7 +3259,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Even without density info, the layout should work properly
 			// Each column gets approximately 293.4 / 3 = 97.8dp
-			var expectedWidth = 293.4 / 3;
 
 			// Verify that all views are arranged properly and don't overflow
 			var arrangeCall0 = view0.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
