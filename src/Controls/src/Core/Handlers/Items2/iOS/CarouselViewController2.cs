@@ -368,6 +368,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 		internal void UpdateLoop()
 		{
+			if (!InitialPositionSet)
+			{
+				return;
+			}
+			
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -380,9 +385,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				LoopItemsSource.Loop = carousel.Loop;
 			}
 
-			// CollectionView.ReloadData();
+			CollectionView.ReloadData();
 
-			// ScrollToPosition(carouselPosition, carouselPosition, false, true);
+			ScrollToPosition(carouselPosition, carouselPosition, false, true);
 		}
 
 		void ScrollToPosition(int goToPosition, int carouselPosition, bool animate, bool forceScroll = false)
