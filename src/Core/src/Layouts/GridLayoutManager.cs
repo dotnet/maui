@@ -665,12 +665,8 @@ namespace Microsoft.Maui.Layouts
 
 			bool TryResolveStarsWithDensityAwareness(Definition[] defs, double availableSpace, double starCount)
 			{
-				// Try to get density from the Grid's MauiContext or handler
+				// Get density from the Grid's window
 				var density = GetDisplayDensity();
-				if (density <= 0)
-				{
-					return false; // No density available, fall back to regular method
-				}
 
 				// Create portions array for star definitions
 				var starDefs = new List<Definition>();
@@ -704,22 +700,18 @@ namespace Microsoft.Maui.Layouts
 			{
 				try
 				{
-					var grid = Grid;
-					if (grid is IView view)
+					var window = _grid.GetHostedWindow();
+					if (window != null)
 					{
-						var window = view.GetHostedWindow();
-						if (window != null)
-						{
-							return window.GetDisplayDensity();
-						}
+						return window.RequestDisplayDensity();
 					}
 				}
 				catch
 				{
-					// Ignore errors and fall back to regular sizing
+					// Ignore errors and fall back to default density
 				}
 
-				return 0; // Indicates density-aware sizing not available
+				return 1; // Default density when window is not available
 			}
 
 			void ResolveStarColumns(double widthConstraint)
