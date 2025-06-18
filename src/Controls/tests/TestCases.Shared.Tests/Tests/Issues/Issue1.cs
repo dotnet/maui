@@ -4,11 +4,11 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue29925 : _IssuesUITest
+public class Issue1 : _IssuesUITest
 {
 	public override string Issue => "Page Busy indicator should be visible";
 
-	public Issue29925(TestDevice device)
+	public Issue1(TestDevice device)
 	: base(device)
 	{ }
 
