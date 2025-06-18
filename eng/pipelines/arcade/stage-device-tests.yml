@@ -82,5 +82,5 @@ stages:
           - script: $(_buildScript) -restore -configuration $(_BuildConfig) /bl:pack.binlog $(_OfficialBuildIdArgs)
             displayName: Build BuildTasks
 
-          - script: $(_buildScript) -restore -configuration $(_BuildConfig) -projects '/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj /bl:devicetests.binlog $(_OfficialBuildIdArgs)
+          - script: $(_buildScript) -restore -configuration $(_BuildConfig) -projects '/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj' /bl:devicetests.binlog $(_OfficialBuildIdArgs)
             displayName: Build Controls.DeviceTests
