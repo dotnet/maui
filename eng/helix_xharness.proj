@@ -2,6 +2,20 @@
     <PropertyGroup>
         <ScenariosDir>$(BUILD_SOURCESDIRECTORY)/artifacts/bin/</ScenariosDir>
     </PropertyGroup>
+
+    <PropertyGroup>
+        <HelixType>test/product/</HelixType>
+        <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
+        <HelixTargetQueues>OSX.15.ARM64.Open</HelixTargetQueues>
+        <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
+
+        <IncludeDotNetCli>true</IncludeDotNetCli>
+        <DotNetCliPackageType>sdk</DotNetCliPackageType>
+
+        <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+        <FailOnTestFailure>true</FailOnTestFailure>
+    </PropertyGroup>
+
     <PropertyGroup>
         <IncludeXHarnessCli>true</IncludeXHarnessCli>
         <!-- Optional: Specific version of Xcode to use. If omitted, xcode-select is used to
@@ -15,8 +29,7 @@
         <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
 
         <HelixTargetQueues>OSX.15.ARM64.Open</HelixTargetQueues>
-        <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
-
+       
         <IncludeDotNetCli>true</IncludeDotNetCli>
         <DotNetCliPackageType>sdk</DotNetCliPackageType>
 
@@ -47,7 +60,7 @@
 
     <ItemGroup>
         <XHarnessAppBundleToTest
-            Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)/Controls.DeviceTests', '*.app', System.IO.SearchOption.AllDirectories))">
+            Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)/Controls.DeviceTests/Debug', '*.app', System.IO.SearchOption.AllDirectories))">
             <!-- Specify target platform () -->
             <TestTarget>ios-simulator-64_18.0</TestTarget>
         </XHarnessAppBundleToTest>
