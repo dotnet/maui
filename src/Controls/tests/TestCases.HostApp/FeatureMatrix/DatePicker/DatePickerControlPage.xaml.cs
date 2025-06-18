@@ -30,7 +30,7 @@ public partial class DatePickerMainControlPage : ContentPage
 
 	private void ReinitializeDatePicker()
 	{
-		DatePickerGrid.Children.Clear();
+		DatePickerLayout.Children.Clear();
 		var datePickerControl = new DatePicker
 		{
 			AutomationId = "DatePickerControl"
@@ -49,6 +49,15 @@ public partial class DatePickerMainControlPage : ContentPage
 		datePickerControl.SetBinding(DatePicker.MaximumDateProperty, new Binding(nameof(DatePickerViewModel.MaximumDate)));
 		datePickerControl.SetBinding(DatePicker.ShadowProperty, new Binding(nameof(DatePickerViewModel.Shadow)));
 		datePickerControl.SetBinding(DatePicker.TextColorProperty, new Binding(nameof(DatePickerViewModel.TextColor)));
-		DatePickerGrid.Children.Add(datePickerControl);
+		DatePickerLayout.Children.Add(datePickerControl);
+	}
+
+	public void OnDateSelected(object sender, DateChangedEventArgs e)
+	{
+		if (e.NewDate != e.OldDate)
+		{
+			OldDateSelectedLabel.Text = e.OldDate.ToString();
+			NewDateSelectedLabel.Text = e.NewDate.ToString();
+		}
 	}
 }

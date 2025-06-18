@@ -12,7 +12,7 @@
        </ContentPage.ToolbarItems>
        <Grid ColumnSpacing="0"
              RowSpacing="5"
-             Padding="1"
+             Padding="10,5,0,0"
              RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
              ColumnDefinitions="Auto,Auto"
              HorizontalOptions="Center">

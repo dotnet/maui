@@ -10,20 +10,38 @@
                      Clicked="NavigateToOptionsPage_Clicked"
                      AutomationId="Options"/>
     </ContentPage.ToolbarItems>
-    <Grid x:Name="DatePickerGrid">
-        <DatePicker AutomationId="DatePickerControl"
-                    CharacterSpacing="{Binding CharacterSpacing}"
-                    Date="{Binding Date}"
-                    FlowDirection="{Binding FlowDirection}"
-                    Format="{Binding Format}"
-                    FontAttributes="{Binding FontAttributes}"
-                    FontFamily="{Binding FontFamily}"
-                    FontSize="{Binding FontSize}"
-                    IsEnabled="{Binding IsEnabled}"
-                    IsVisible="{Binding IsVisible}"
-                    MinimumDate="{Binding MinimumDate}"
-                    MaximumDate="{Binding MaximumDate}"
-                    Shadow="{Binding Shadow}"
-                    TextColor="{Binding TextColor}"/>
-    </Grid>
+    <VerticalStackLayout HorizontalOptions="Center"
+                         VerticalOptions="Center"
+                         Spacing="20">
+        <HorizontalStackLayout x:Name="DatePickerLayout"
+                               HorizontalOptions="Center"
+                               Padding="0,0,0,100">
+            <DatePicker AutomationId="DatePickerControl"
+                        CharacterSpacing="{Binding CharacterSpacing}"
+                        Date="{Binding Date}"
+                        DateSelected="OnDateSelected"
+                        FlowDirection="{Binding FlowDirection}"
+                        Format="{Binding Format}"
+                        FontAttributes="{Binding FontAttributes}"
+                        FontFamily="{Binding FontFamily}"
+                        FontSize="{Binding FontSize}"
+                        IsEnabled="{Binding IsEnabled}"
+                        IsVisible="{Binding IsVisible}"
+                        MinimumDate="{Binding MinimumDate}"
+                        MaximumDate="{Binding MaximumDate}"
+                        Shadow="{Binding Shadow}"
+                        TextColor="{Binding TextColor}"/>
+        </HorizontalStackLayout>
+
+        <Label Text="DateSelected Event"
+               HorizontalOptions="Center"/>
+        <HorizontalStackLayout>
+            <Label Text="New Date: "/>
+            <Label x:Name="NewDateSelectedLabel"/>
+        </HorizontalStackLayout>
+        <HorizontalStackLayout>
+            <Label Text="Old Date: "/>
+            <Label x:Name="OldDateSelectedLabel"/>
+        </HorizontalStackLayout>
+    </VerticalStackLayout>
 </ContentPage>
