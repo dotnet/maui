@@ -698,9 +698,10 @@ namespace Microsoft.Maui.Layouts
 
 			double GetDisplayDensity()
 			{
+#if !TIZEN
 				try
 				{
-					var window = _grid.GetHostedWindow();
+					var window = (_grid as IView)?.GetHostedWindow();
 					if (window != null)
 					{
 						return window.RequestDisplayDensity();
@@ -710,8 +711,11 @@ namespace Microsoft.Maui.Layouts
 				{
 					// Ignore errors and fall back to default density
 				}
-
-				return 1; // Default density when window is not available
+#else
+				// Tizen doesn't support getting hosted window, use default density
+				_ = _grid; // Reference instance data to avoid CA1822 warning
+#endif
+				return 1; // Default density when window is not available or on Tizen
 			}
 
 			void ResolveStarColumns(double widthConstraint)
