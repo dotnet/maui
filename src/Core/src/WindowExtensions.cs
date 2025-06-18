@@ -33,41 +33,14 @@ namespace Microsoft.Maui
 #endif
 		}
 
-		public static float GetDisplayDensity(this IWindow window)
-		{
-#if PLATFORM
-			if (window?.Handler?.PlatformView is not PlatformView platformView)
-				return 1.0f;
 
-			return GetPlatformDisplayDensity(platformView);
-#else
-			return 1.0f;
-#endif
-		}
 
 
 #if PLATFORM
 		async static Task<IScreenshotResult?> CaptureAsync(PlatformView window) =>
 			await Screenshot.Default.CaptureAsync(window);
 
-		static float GetPlatformDisplayDensity(PlatformView platformView)
-		{
-#if __IOS__ || MACCATALYST
-			// Use the existing UIWindow extension method
-			return platformView.GetDisplayDensity();
-#elif MONOANDROID
-			// Get Context from Activity and use existing extension method
-			return platformView.GetDisplayDensity();
-#elif WINDOWS
-			// Use the existing UI.Xaml.Window extension method  
-			return platformView.GetDisplayDensity();
-#elif TIZEN
-			// For Tizen, return default density for now
-			return 1.0f;
-#else
-			return 1.0f;
-#endif
-		}
+
 #endif
 	}
 }
