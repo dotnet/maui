@@ -22,8 +22,8 @@ public partial class Issue29923 : Shell
 						Command = new Command(async () =>
 						{
 							var navPage = new NavigationPage();
-							var page1 = new HandlerTestPage();
-							var page2 = new HandlerTestPage2();
+							var page1 = new Issue29923TestPage();
+							var page2 = new Issue29923TestPage2();
 
 							await navPage.PushAsync(page1);
 							await navPage.PushAsync(page2);
@@ -37,8 +37,8 @@ public partial class Issue29923 : Shell
 						AutomationId = "NavigateToTestPageButton",
 						Command = new Command(async () =>
 						{
-							var page1 = new HandlerTestPage();
-							var page2 = new HandlerTestPage2();
+							var page1 = new Issue29923TestPage();
+							var page2 = new Issue29923TestPage2();
 
 							await Navigation.PushAsync(page1);
 							await Navigation.PushAsync(page2);
@@ -55,9 +55,9 @@ public partial class Issue29923 : Shell
 		});
 	}
 
-	public class HandlerTestPage : ContentPage
+	public class Issue29923TestPage : ContentPage
 	{
-		public HandlerTestPage()
+		public Issue29923TestPage()
 		{
 			Title = "Test Page";
 
@@ -69,11 +69,11 @@ public partial class Issue29923 : Shell
 		}
 	}
 
-	public class HandlerTestPage2 : ContentPage
+	public class Issue29923TestPage2 : ContentPage
 	{
 		private Label _handlerStatusLabel;
 
-		public HandlerTestPage2()
+		public Issue29923TestPage2()
 		{
 			Title = "Test Page 2";
 
