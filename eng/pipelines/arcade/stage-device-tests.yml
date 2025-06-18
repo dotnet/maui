@@ -85,13 +85,19 @@ stages:
 
         # Run on public pipeline
         - ${{ if parameters.runAsPublic }}:
-          - script: $(_buildScript) -restore -configuration $(_BuildConfig) /bl:pack.binlog $(_OfficialBuildIdArgs)
+          - script: $(_buildScriptMacOS) -restore -configuration $(_BuildConfig) /bl:pack.binlog $(_OfficialBuildIdArgs)
             displayName: Build BuildTasks
 
-          - script: $(_buildScript) -restore -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj' /bl:devicetests.binlog $(_OfficialBuildIdArgs)
+          - script: $(_buildScriptMacOS) -restore -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj' /bl:devicetests.binlog $(_OfficialBuildIdArgs)
             displayName: Build Controls.DeviceTests
 
-          - script: $(Build.SourcesDirectory)/eng/common/msbuild.sh --ci "${{ parameters.helixProject }}" -warnAsError 0 -restore /p:Configuration=$(_BuildConfig)  /p:TestRunNameSuffix="$(_BuildConfig) " /bl:$(Build.Arcade.LogsPath)$(_BuildConfig)/helix_devicetests.binlog ${{ parameters.extraHelixArguments }}
-            displayName: Run Helix Tests
-            env:
-              SYSTEM_ACCESSTOKEN: $(System.AccessToken) # We need to set this env var to publish helix results to Azure Dev Ops
+          - template: /eng/common/templates-official/steps/send-to-helix.yml
+            parameters:
+              is1ESPipeline: true
+              helixProject: ${{ parameters.helixProject }}
+              extraHelixArguments: ${{ parameters.extraHelixArguments }}
+              #  helixScript: $(_helixScriptMacOS)
+              helixTestName: Controls.DeviceTests
+              #  helixTestCategory: DeviceTests
+              helixTestRunNameSuffix: $(_BuildConfig)$(Build.BuildId)
+            #  helixTestResultsDirectory: $(Agent.TempDirectory)/Controls.DeviceTests
