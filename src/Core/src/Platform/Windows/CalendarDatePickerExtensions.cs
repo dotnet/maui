@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else if (format.Equals("D", StringComparison.Ordinal))
 			{
-				return "{dayofweek.full}, {day.integer} {month.full} {year.full}";
+				return "{dayofweek.full}, {month.full} {day.integer}, {year.full}";
 			}
 			else
 			{
