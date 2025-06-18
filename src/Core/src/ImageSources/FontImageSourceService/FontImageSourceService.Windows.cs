@@ -87,6 +87,9 @@ namespace Microsoft.Maui
 			using (var ds = canvasImageSource.CreateDrawingSession(UI.Colors.Transparent))
 			{
 				// offset by 1px as we added a 1px padding
+				var x = (layout.LayoutBounds.X * -1) + 1;
+				var y = (layout.LayoutBounds.Y * -1) + 1;
+
 				ds.DrawTextLayout(layout, 1f, 1f, color);
 			}
 
