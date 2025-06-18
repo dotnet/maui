@@ -2343,6 +2343,10 @@ namespace UITest.Appium
 			{
 				app.WaitForElement(AppiumQuery.ByAccessibilityId("MoreButton"));
 			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.WaitForElement("SecondaryToolbarMenuButton");
+			}
 			else
 			{
 				throw new InvalidOperationException($"WaitForMoreButton is not supported on this platform.");
@@ -2363,6 +2367,10 @@ namespace UITest.Appium
 			else if (app is AppiumWindowsApp)
 			{
 				app.Tap(AppiumQuery.ByAccessibilityId("MoreButton"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.Tap("SecondaryToolbarMenuButton");
 			}
 		}
 
