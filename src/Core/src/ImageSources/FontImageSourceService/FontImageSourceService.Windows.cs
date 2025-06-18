@@ -77,20 +77,17 @@ namespace Microsoft.Maui
 			};
 
 			var device = CanvasDevice.GetSharedDevice();
-			using var layout = new CanvasTextLayout(device, imageSource.Glyph, textFormat, 0, 0);
+			using var layout = new CanvasTextLayout(device, imageSource.Glyph, textFormat, fontSize, fontSize);
 
 			// add a 1px padding all around
-			var canvasWidth = (float)layout.DrawBounds.Width + 2;
-			var canvasHeight = (float)layout.DrawBounds.Height + 2;
+			var canvasWidth = (float)layout.LayoutBounds.Width + 2;
+			var canvasHeight = (float)layout.LayoutBounds.Height + 2;
 
 			var canvasImageSource = new CanvasImageSource(device, canvasWidth, canvasHeight, dpi);
 			using (var ds = canvasImageSource.CreateDrawingSession(UI.Colors.Transparent))
 			{
 				// offset by 1px as we added a 1px padding
-				var x = (layout.DrawBounds.X * -1) + 1;
-				var y = (layout.DrawBounds.Y * -1) + 1;
-
-				ds.DrawTextLayout(layout, (float)x, (float)y, color);
+				ds.DrawTextLayout(layout, 1f, 1f, color);
 			}
 
 			return canvasImageSource;
