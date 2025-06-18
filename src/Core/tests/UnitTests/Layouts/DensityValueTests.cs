@@ -173,9 +173,9 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var value = new DensityValue(100.0, 2.5);
 			var result = value.ToString();
 
-			Assert.Contains("100.00dp", result);
-			Assert.Contains("250.00px", result);
-			Assert.Contains("2.50x", result);
+			Assert.Contains("100.00dp", result, StringComparison.Ordinal);
+			Assert.Contains("250.00px", result, StringComparison.Ordinal);
+			Assert.Contains("2.50x", result, StringComparison.Ordinal);
 		}
 	}
 }
