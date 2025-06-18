@@ -47,6 +47,9 @@ parameters:
 - name: extraHelixArguments
   type: string
   default: ''
+- name: BuildConfiguration
+  type: string
+  default: 'Debug'
 
 stages:
 - stage: deviceTests
@@ -73,6 +76,9 @@ stages:
       - job: device_tests_ios
         displayName: Controls DeviceTests iOS
         timeoutInMinutes: 240
+        variables:
+        - name: _BuildConfig
+          value: ${{ parameters.BuildConfiguration }}
         preSteps:
         - checkout: self
           fetchDepth: 1
@@ -95,6 +101,7 @@ stages:
             parameters:
               HelixProjectPath: ${{ parameters.helixProject }}
               HelixProjectArguments: ${{ parameters.extraHelixArguments }}
+              HelixConfiguration: $(_BuildConfig)
               IncludeDotNetCli: true
               #  helixScript: $(_helixScriptMacOS)
               DisplayNamePrefix: Controls.DeviceTests
