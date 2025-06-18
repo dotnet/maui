@@ -93,9 +93,8 @@ parameters:
 - name: windowsPool
   type: object
   default:
-    name: MAUI-DNCENG
-    demands:
-    - ImageOverride -equals 1ESPT-Windows2022
+    name: Azure Pipelines
+    vmImage: windows-2022
 
 - name: targetFrameworkVersions
   type: object
