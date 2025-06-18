@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls
 
 				if (GetValue(QueryAttributesProperty) is ShellRouteParameters delayedQueryParams)
 				{
-					result.SetValue(QueryAttributesProperty, delayedQueryParams);
+					result?.SetValue(QueryAttributesProperty, delayedQueryParams);
 				}
 
 				ContentCache = result;
