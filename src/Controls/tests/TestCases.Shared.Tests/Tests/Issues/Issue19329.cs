@@ -1,5 +1,5 @@
 ﻿using System.Drawing;
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Pointer gestures should work with relative positions correctly";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void RelativePointerPositionIsComputedCorrectly()
 		{

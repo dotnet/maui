@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_ANDROID // Sample level issue, btnInsert is not visible on Android
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] CollectionView Header cause delay to adding items.";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void HeaderDoesNotBreakIndexes()
 		{

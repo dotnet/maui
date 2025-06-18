@@ -1,5 +1,5 @@
 ﻿#if WINDOWS //This test case is only applicable for Windows because this test sample uses the Windows specific dpi path to load the image - appiconLogo.scale-100.png.
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => 
 			"Injecting base tag in Webview2 works";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.WebView)]
 		public async Task NavigateToStringWithWebviewWorks()
 		{

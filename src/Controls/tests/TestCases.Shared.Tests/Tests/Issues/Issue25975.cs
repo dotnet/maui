@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Double tapping Editor control locks app";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Editor)]
 		public void PerformDoubleTapActionOnEditor()
 		{
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.EnterText("DoubleTapEditor", "World");
 
 			var editorText = App.FindElement("DoubleTapEditor").GetText();
-			Assert.Equal("World", editorText);
+			Assert.That(editorText, Is.EqualTo("World"));
 		}
 	}
 }

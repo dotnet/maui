@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Issue3509 : _IssuesUITest
 
 	public override string Issue => "[iOS] NavigationPage.Popped called twice when Navigation.PopAsync is called";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Navigation)]
 	public void PoppedOnlyFiresOnce()
 	{

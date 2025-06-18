@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue2993 : _IssuesUITest
 
 	public override string Issue => "[Android] Bottom Tab Bar with a navigation page is hiding content";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Layout)]
 	public void BottomContentVisibleWithBottomBarAndNavigationPage()
 	{

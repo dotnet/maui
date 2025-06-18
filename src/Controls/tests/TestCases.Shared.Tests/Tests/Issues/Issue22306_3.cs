@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Verify many different button examples";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage1()
 		{
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Border");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage2()
 		{
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage3()
 		{
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage4()
 		{
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage5()
 		{
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage6()
 		{
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage7()
 		{
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage8()
 		{

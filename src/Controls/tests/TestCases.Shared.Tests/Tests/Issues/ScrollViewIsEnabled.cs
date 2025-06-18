@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ScrollView set to disabled will still allow scrolling";
 
 		// ScrollViewInitiallyEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
-		[Fact]
+		[Test]
 		public void ScrollViewInitiallyEnabled()
 		{
 			// 1. Enable the ScrollView.
@@ -37,14 +37,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// 3. If the ScrollView scrolled, the test passed.
 			var success = App.WaitForElement(Success).GetText();
-			Assert.Equal(success, "Success"); // If the ScrollView scrolled, the success label should be displayed
+			Assert.That("Success", Is.EqualTo(success)); // If the ScrollView scrolled, the success label should be displayed
 
 			App.TapBackArrow();
 
 		}
 
 		// ScrollViewInitiallyEnabledThenDisabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
-		[Fact]
+		[Test]
 		public void ScrollViewInitiallyEnabledThenDisabled()
 		{
 			// 1. Enable the ScrollView.
@@ -64,13 +64,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 
 			var success = App.WaitForElement(Success).GetText();
-			Assert.Equal(success, "Initial Text");
+			Assert.That("Initial Text", Is.EqualTo(success));
 
 			App.TapBackArrow();
 		}
 
 		// ScrollViewInitiallyNotEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
-		[Fact]
+		[Test]
 		public void ScrollViewInitiallyNotEnabled()
 		{
 			// 1. Disable the ScrollView.
@@ -83,13 +83,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// 2. Shouldn't have scrolled.
 			// Shouldn't have scrolled, so no success label should be displayed
 			var success = App.WaitForElement(Success).GetText();
-			Assert.Equal(success, "Initial Text");
+			Assert.That("Initial Text", Is.EqualTo(success));
 
 			App.TapBackArrow();
 		}
 
 		// ScrollViewInitiallyNotEnabledThenEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
-		[Fact]
+		[Test]
 		public void ScrollViewInitiallyNotEnabledThenEnabled()
 		{
 			// 1. Disable the ScrollView.
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// 4. If the ScrollView scrolled, the test passed.
 			var success = App.WaitForElement(Success).GetText();
-			Assert.Equal(success, "Success"); // If the ScrollView scrolled, the success label should be displayed
+			Assert.That("Success", Is.EqualTo(success)); // If the ScrollView scrolled, the success label should be displayed
 
 			App.TapBackArrow();
 		}

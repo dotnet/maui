@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Shadows & Gradients don't work with a list view's header/footer";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.ListView)]
 		public void GradientAndShadowShouldWork()
 		{

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Java.Lang.ArrayIndexOutOfBoundsException when rendering long Label on Android";
 
 		// Bugzilla49069 (src\Compatibility\ControlGallery\src\Issues.Shared\Bugzilla49069.cs)
-		[Fact]
+		[Test]
 		public void Bugzilla49069Test()
 		{
 			App.WaitForElement("lblLong");

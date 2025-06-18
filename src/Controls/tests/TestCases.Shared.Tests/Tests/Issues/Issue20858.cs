@@ -1,5 +1,5 @@
 #if ANDROID || IOS //This test case verifies "SetOrientationPotrait and Landscape works" exclusively on the Android and IOS platforms
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue20858 : _IssuesUITest
 
 	public override string Issue => "FlyoutPage Android app crashing on orientation change when flyout is open";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.FlyoutPage)]
 	public void NoExceptionShouldBeThrown()
 	{

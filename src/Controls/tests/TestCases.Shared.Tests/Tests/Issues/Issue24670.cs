@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shell)]
 		[Category(UITestCategories.SearchBar)]
 		public void SearchHandlerFocusAndUnfocusEventsShouldWork()
@@ -26,8 +26,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var focusedLabelText = App.WaitForElement("focusedLabel").GetText();
 			var unfocusedLabelText = App.WaitForElement("unfocusedLabel").GetText();
 
-			Assert.Equal("Focused: True", focusedLabelText);
-			Assert.Equal("Unfocused: True", unfocusedLabelText);
+			Assert.That(focusedLabelText, Is.EqualTo("Focused: True"));
+			Assert.That(unfocusedLabelText, Is.EqualTo("Unfocused: True"));
 		}
 	}
 }

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // Orientation not support in Windows and Catalyst.
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Bugzilla34632 : _IssuesUITest
 	public override string Issue => "Can't change IsPresented when setting SplitOnLandscape ";
 
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.FlyoutPage)]
 	public void Bugzilla34632Test()
 	{

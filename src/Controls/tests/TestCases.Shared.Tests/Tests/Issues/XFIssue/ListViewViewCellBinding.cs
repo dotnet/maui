@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class ListViewViewCellBinding : _IssuesUITest
 
 	public override string Issue => "ListView ViewCell binding";
 
-	[Fact]
+	[Test]
 
 	public void ListViewViewCellBindingTestsAllElementsPresent()
 	{
@@ -27,7 +27,7 @@ public class ListViewViewCellBinding : _IssuesUITest
 		App.WaitForElement("300.0");
 	}
 
-	[Fact]
+	[Test]
 
 	public void ListViewViewCellBindingTestsAddListItem()
 	{
@@ -37,7 +37,7 @@ public class ListViewViewCellBinding : _IssuesUITest
 		App.WaitForElement("400.0");
 	}
 
-	[Fact]
+	[Test]
 
 	public void ListViewViewCellBindingTestsRemoveListItem()
 	{

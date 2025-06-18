@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ public class Issue21787 : _IssuesUITest
 
 	public override string Issue => "[Windows] Remove workaround for label text decorations";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Label)]
 	public void LabelTextDecorationsWorks()
 	{

@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -9,7 +9,7 @@ public class Issue28678 : _IssuesUITest
 
 	public override string Issue => "TargetInvocationException Occurs When Selecting Header/Footer After Changing ItemsLayout in CV2";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void HeaderFooterSelectionAfterItemsLayoutChangeShouldNotCrash()
 	{

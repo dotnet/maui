@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // On Windows AutomationId is not working for Stacklayout, Hence we measure the layout height here so we can't use the inner elements AutomationId. More Information:https://github.com/dotnet/maui/issues/4715
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Entry with right aligned text keeps text jumping to the left during editing";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Entry)]
 		public void VerifyEntryHorizontalEndTextAlignmentPosition()
 		{

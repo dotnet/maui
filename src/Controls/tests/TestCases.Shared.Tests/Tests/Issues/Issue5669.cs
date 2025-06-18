@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.SearchBar)]
 		public void SearchBarMaxLength()
 		{
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #if MACCATALYST
 			// On MacCatalyst, pressing the ESC key during screenshot capture clears the text.
 			// This causes the image generated in CI to differ from local runs.
-			Assert.Equal("Sear", App.WaitForElement("Sear").GetText());
+			Assert.That(App.WaitForElement("Sear").GetText(), Is.EqualTo("Sear"));
 #else
 			VerifyScreenshot();
 #endif

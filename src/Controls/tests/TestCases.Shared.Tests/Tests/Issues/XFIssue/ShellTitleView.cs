@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -25,7 +25,7 @@ public class ShellTitleView : _IssuesUITest
 
 	public override string Issue => "Shell Title View Tests";
 
-	[Fact]
+	[Test]
 	public void TitleWidthMeasuresCorrectly_13949()
 	{
 		App.TapInShellFlyout("Width Measure (13949)");
@@ -34,7 +34,7 @@ public class ShellTitleView : _IssuesUITest
 		App.WaitForElement("B2");
 	}
 
-	[Fact]
+	[Test]
 	public void TitleWidthWithToolBarItemMeasuresCorrectly_13949()
 	{
 		App.TapInShellFlyout("Width Measure and ToolBarItem (13949)");
@@ -43,7 +43,7 @@ public class ShellTitleView : _IssuesUITest
 		App.WaitForElement("B2");
 	}
 
-	[Fact]
+	[Test]
 	public void TitleViewPositionsCorrectly()
 	{
 		var titleView = App.WaitForElement(TitleViewId).GetRect();
@@ -53,17 +53,17 @@ public class ShellTitleView : _IssuesUITest
 		Assert.That(topTabTop, Is.GreaterThanOrEqualTo(titleViewBottom), "Title View is incorrectly positioned behind tabs");
 	}
 
-	[Fact]
+	[Test]
 	public void NoDuplicateTitleViews()
 	{
 		App.WaitForElement(TitleViewId);
-		Assert.Equal(1, App.FindElements(TitleViewId).Count);
+		Assert.That(App.FindElements(TitleViewId).Count, Is.EqualTo(1));
 		App.TapTab(Page2, true);
 		App.WaitForElement("Instructions");
 		App.TapTab(Page3, true);
 		App.WaitForElement("Instructions");
 		App.TapTab(Page4, true);
 		App.WaitForElement(TitleViewId);
-		Assert.Equal(1, App.FindElements(TitleViewId).Count);
+		Assert.That(App.FindElements(TitleViewId).Count, Is.EqualTo(1));
 	}
 }

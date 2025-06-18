@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "PopAsync during ScrollToAsync throws NullReferenceException";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Navigation)]
 		public void Issue35472PopAsyncDuringAnimatedScrollToAsync()
 		{

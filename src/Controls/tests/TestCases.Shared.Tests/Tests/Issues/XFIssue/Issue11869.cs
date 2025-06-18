@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -32,7 +32,7 @@ public class Issue11869 : _IssuesUITest
 
 	public override string Issue => "[Bug] ShellContent.IsVisible issue on Android";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void IsVisibleWorksForShowingHidingTabs()
 	{

@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CarouselView crashes on iOS 15.8.3 when using CarouselViewHandler2";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewShouldNotCrash()
 		{

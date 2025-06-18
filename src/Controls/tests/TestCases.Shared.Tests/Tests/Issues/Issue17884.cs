@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] Entire words omitted & letters truncated from Label display";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Visual)]
 		public void VerifyTextIsNotMissing()
 		{

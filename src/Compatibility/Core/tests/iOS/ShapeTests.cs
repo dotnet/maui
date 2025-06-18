@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Threading.Tasks;
-using Xunit;
+using NUnit.Framework;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.UITests.NumericExtensions;
@@ -9,7 +9,7 @@ using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class ShapeTests : PlatformTestFixture
 	{
 		public ShapeTests()

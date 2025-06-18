@@ -1,5 +1,5 @@
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues;
@@ -18,7 +18,7 @@ public class Issue26598 : _IssuesUITest
 	{
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void TabBarShouldbeVisibleNavigatingBackFromNonTabbedPage()
 	{

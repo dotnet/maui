@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
-using Xunit;
+using NUnit.Framework;
 using ObjCRuntime;
 using UIKit;
 using CategoryAttribute = NUnit.Framework.CategoryAttribute;

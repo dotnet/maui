@@ -1,14 +1,14 @@
 using System.Threading.Tasks;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Dispatching;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class EmbeddingTests : PlatformTestFixture
 	{
-		[Fact]
+		[Test]
 		public async Task CanCreateFragmentFromContentPage()
 		{
 			var contentPage = new ContentPage { Title = "Embedded Page" };

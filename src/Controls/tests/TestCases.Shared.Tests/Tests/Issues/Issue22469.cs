@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ public class Issue22469 : _IssuesUITest
 
 	public override string Issue => "Crash with specific Font and text in Label";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Label)]
 	public void SpanRegionClicking()
 	{

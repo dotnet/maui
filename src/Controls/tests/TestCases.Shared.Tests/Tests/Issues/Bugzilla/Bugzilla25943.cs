@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string OuterLayout = "outerlayout";
 		const string Success = "Success";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Gestures)]
 		[Category(UITestCategories.Compatibility)]
 		public void VerifyNestedStacklayoutTapsBubble()
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.Tap(OuterLayout);
 
-			Assert.Equal("Success", App.FindElement(Success).GetText());
+			Assert.That(App.FindElement(Success).GetText(), Is.EqualTo("Success"));
 		}
 
 	}

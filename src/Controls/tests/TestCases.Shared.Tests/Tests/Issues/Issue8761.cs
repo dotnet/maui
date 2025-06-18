@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue8761 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void CollectionViewHeaderTemplateAndFooterTemplateDontWork()
 	{

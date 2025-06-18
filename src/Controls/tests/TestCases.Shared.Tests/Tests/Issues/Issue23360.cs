@@ -1,5 +1,5 @@
 #if IOS || MACCATALYST
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Crash upon resuming the app window was already activated";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Window)]
 		public void OpenAlertWithModals()
 		{

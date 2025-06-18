@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue29216 : _IssuesUITest
 
 	public override string Issue => "Carousel view scrolling on button click";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void Issue29216CarouselViewScrollingIssue()
 	{

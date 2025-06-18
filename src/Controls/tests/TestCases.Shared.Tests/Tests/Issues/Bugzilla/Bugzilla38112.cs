@@ -1,7 +1,7 @@
 ﻿#if TEST_FAILS_ON_WINDOWS
 //After Button Click removes all Items in TableView 
 //For more information: https://github.com/dotnet/maui/issues/26699
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ public class Bugzilla38112 : _IssuesUITest
 	}
 
 	public override string Issue => "Switch becomes reenabled when previous ViewCell is removed from TableView";
-	[Fact]
+	[Test]
 	public void Bugzilla38112_SwitchIsStillOnScreen()
 	{
 		App.WaitForElement("Click");
@@ -23,7 +23,7 @@ public class Bugzilla38112 : _IssuesUITest
 		App.WaitForElement("switch3");
 	}
 
-	[Fact]
+	[Test]
 	public void Bugzilla38112_SwitchIsStillDisabled()
 	{
 		App.WaitForElement("Click");

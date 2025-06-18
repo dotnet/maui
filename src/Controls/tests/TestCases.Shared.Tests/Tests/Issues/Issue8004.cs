@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Add a ScaleXTo and ScaleYTo animation extension method";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Animation)]
 		public void AnimateScaleOfBoxView()
 		{

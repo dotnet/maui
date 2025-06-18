@@ -1,5 +1,5 @@
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,7 +23,7 @@ public class LabelUITests : _ViewUITests
 		Assert.Ignore("Labels do not really have a concept of being \"disabled\".");
 	}
 
-	[Fact]
+	[Test]
 	public void SpanTapped()
 	{
 		if (Device == TestDevice.Mac)
@@ -35,7 +35,7 @@ public class LabelUITests : _ViewUITests
 		remote.GoTo();
 
 		var textBeforeClick = remote.GetEventLabel().GetText();
-		Assert.Equal("Event: SpanTapped (none)", textBeforeClick);
+		ClassicAssert.AreEqual("Event: SpanTapped (none)", textBeforeClick);
 
 		// TODO: This will probably fail on desktops because the tap is in screen coordinates and the
 		//       view seems to either be in window or parent coordinates.
@@ -43,10 +43,10 @@ public class LabelUITests : _ViewUITests
 		App.TapCoordinates(r.X + (r.Height * 3), r.CenterY()); // 3 "heights" in from the left
 
 		var textAfterClick = remote.GetEventLabel().GetText();
-		Assert.Equal("Event: SpanTapped (fired 1)", textAfterClick);
+		ClassicAssert.AreEqual("Event: SpanTapped (fired 1)", textAfterClick);
 	}
 
-	[Fact]
+	[Test]
 	public void FontFamilyLoadsDynamically()
 	{
 		var remote = GoToStateRemote("FontFamily");
@@ -58,7 +58,7 @@ public class LabelUITests : _ViewUITests
 #if WINDOWS
 	[Ignore("Windows App SDK 1.6 broke this test. See more details in https://github.com/dotnet/maui/issues/26749")]
 #endif
-	[Fact]
+	[Test]
 	public void FontFamily()
 	{
 		var remote = GoToStateRemote();

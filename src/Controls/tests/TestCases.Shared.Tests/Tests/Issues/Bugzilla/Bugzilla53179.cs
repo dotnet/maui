@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "PopAsync crashing after RemovePage when support packages are updated to 25.1.1";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Navigation)]
 		public void Bugzilla53179Test()
 		{

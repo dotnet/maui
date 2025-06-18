@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ContextActions cause memory leak: Page is never destroyed";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.ContextActions)]
 		public void Bugzilla32206Test()
 		{

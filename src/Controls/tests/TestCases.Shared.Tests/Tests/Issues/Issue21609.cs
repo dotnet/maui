@@ -1,7 +1,7 @@
 ﻿#if TEST_FAILS_ON_WINDOWS
 //The WidthRequest property of CarouselView is not functioning correctly on Windows. Issue Link: https://github.com/dotnet/maui/issues/27680
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue21609 : _IssuesUITest
 
 	public override string Issue => "Changing the dimensions of the CarouselView doesn't update Item Dimensions";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void ChangingDimensionsOfCarouselViewDoesntUpdateItemDimensions()
 	{
@@ -27,7 +27,7 @@ public class Issue21609 : _IssuesUITest
 		App.Tap("ChangeCarouselViewDimensions");
 		var imageAfterSizeChangedBacktoInitial = App.WaitForElement("DotnetBot").GetRect();
 
-		Assert.Equal(imageInitial, imageAfterSizeChangedBacktoInitial);
+		ClassicAssert.AreEqual(imageInitial, imageAfterSizeChangedBacktoInitial);
 		ClassicAssert.AreNotEqual(imageInitial, imageAfterSizeChange);
 	}
 }

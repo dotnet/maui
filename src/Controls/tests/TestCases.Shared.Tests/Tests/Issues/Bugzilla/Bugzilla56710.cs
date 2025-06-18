@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Bugzilla56710 : _IssuesUITest
 
 	public override string Issue => "ContextActionsCell.OnMenuItemPropertyChanged throws NullReferenceException";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	[Category(UITestCategories.Compatibility)]
 	public void Bugzilla56710Test()

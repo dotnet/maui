@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Flyout icon is displayed when flyout is disabled on iOS and MacCatalyst";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shell)]
 		public void VerifyFlyoutIconIsNotPresentWhenDisabledFlyout()
 		{

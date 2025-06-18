@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Setting Grid.IsEnabled to false does not disable child controls";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Layout)]
 		public void Bugzilla53445Test()
 		{

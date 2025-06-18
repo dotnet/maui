@@ -1,5 +1,5 @@
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void HeaderFooterStringWorks()
 		{
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("This footer is also a string");
 		}
 #if IOS || ANDROID
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public async Task HeaderFooterViewWorks()
 		{
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.IsTrue(App.WaitForElement("This Is A Footer").IsDisplayed());
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void HeaderFooterHorizontalViewWorks()
 		{
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("This Is A Footer");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void HeaderFooterTemplateWorks()
 		{
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void HeaderFooterGridWorks()
 		{
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// The screenshot that's currently generated for this test is wrong
 		// So, we're ignoring this test due to it causing confusion when other changes
 		// cause this test to fail.
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void HeaderFooterGridHorizontalWorks()
 		{

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue18806 : _IssuesUITest
 	public override string Issue => "SwipeItemView won't render FontImageSource on first opening";
 
 #if TEST_FAILS_ON_WINDOWS // Cannot open programatically a SwipeView on Windows.
-	[Fact]
+	[Test]
 	[Category(UITestCategories.SwipeView)]
 	public void ItemImageSourceShouldBeVisible()
 	{

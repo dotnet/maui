@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(GestureRecognizerGallery);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void PointerGestureTest()
 		{
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(secondaryLabelText, Is.Not.Null);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DoubleTap()
 		{
@@ -47,10 +47,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.DoubleTap("DoubleTapSurface");
 
 			var result = App.FindElement("DoubleTapResults").GetText();
-			Assert.Equal("Success", result);
+			ClassicAssert.AreEqual("Success", result);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void SingleTap()
 		{
@@ -62,10 +62,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("SingleTapSurface");
 
 			var result = App.FindElement("SingleTapGestureResults").GetText();
-			Assert.Equal("Success", result);
+			ClassicAssert.AreEqual("Success", result);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DisabledSingleTap()
 		{
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.AreNotEqual("Failed", result);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DynamicallyAddedTapGesturesDontCauseMultipleTapEvents()
 		{
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			if (int.TryParse(result, out var resultInt))
 			{
-				Assert.Equal(3, resultInt);
+				ClassicAssert.AreEqual(3, resultInt);
 			}
 			else
 			{

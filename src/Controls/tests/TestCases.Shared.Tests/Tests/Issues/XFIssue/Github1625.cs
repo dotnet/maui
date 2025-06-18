@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,14 +13,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Slider value is not changed for the first position change";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Slider)]
 		public void SettingSliderToSpecificValueWorks()
 		{
 			App.WaitForElement("LabelValue");
-			Assert.Equal("5", App.WaitForElement("LabelValue").GetText());
+			ClassicAssert.AreEqual("5", App.WaitForElement("LabelValue").GetText());
 			App.Tap("SetTo7");
-			Assert.Equal("7", App.WaitForElement("LabelValue").GetText());
+			ClassicAssert.AreEqual("7", App.WaitForElement("LabelValue").GetText());
 		}
 	}
 }

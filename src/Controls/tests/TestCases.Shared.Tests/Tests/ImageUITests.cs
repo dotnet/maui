@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -25,7 +25,7 @@ internal class ImageUITests : _ViewUITests
 	}
 
 #if TEST_FAILS_ON_CATALYST
-	[Fact]
+	[Test]
 	public void Source_FontImageSource()
 	{
 		var remote = GoToStateRemote();
@@ -39,7 +39,7 @@ internal class ImageUITests : _ViewUITests
 	}
 #endif
 
-	[Fact]
+	[Test]
 	public async Task IsAnimationPlaying()
 	{
 		var remote = GoToStateRemote();

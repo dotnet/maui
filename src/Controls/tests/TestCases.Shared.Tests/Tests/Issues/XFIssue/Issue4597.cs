@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,14 +13,14 @@ public class Issue4597 : _IssuesUITest
 
 	public override string Issue => "[Android] ImageCell not loading images and setting ImageSource to null has no effect";
 
-	//[Fact]
+	//[Test]
 	//[FailsOnIOS]
 	//public void ImageFromFileSourceAppearsAndDisappearsCorrectly()
 	//{
 	//	RunTest(nameof(Image), true);
 	//}
 
-	//[Fact]
+	//[Test]
 	//[FailsOnIOS]
 	//[FailsOnAndroid]
 	//public void ImageFromUriSourceAppearsAndDisappearsCorrectly()
@@ -29,14 +29,14 @@ public class Issue4597 : _IssuesUITest
 	//}
 
 
-	//[Fact]
+	//[Test]
 	//[FailsOnIOS]
 	//public void ButtonFromFileSourceAppearsAndDisappearsCorrectly()
 	//{
 	//	RunTest(nameof(Button), true);
 	//}
 
-	//[Fact]
+	//[Test]
 	//[FailsOnIOS]
 	//[FailsOnAndroid]
 	//public void ButtonFromUriSourceAppearsAndDisappearsCorrectly()
@@ -45,14 +45,14 @@ public class Issue4597 : _IssuesUITest
 	//}
 
 
-	//[Fact]
+	//[Test]
 	//[FailsOnIOS]
 	//public void ImageButtonFromFileSourceAppearsAndDisappearsCorrectly()
 	//{
 	//	RunTest(nameof(ImageButton), true);
 	//}
 
-	//[Fact]
+	//[Test]
 	//[FailsOnIOS]
 	//[FailsOnAndroid]
 	//public void ImageButtonFromUriSourceAppearsAndDisappearsCorrectly()
@@ -60,14 +60,14 @@ public class Issue4597 : _IssuesUITest
 	//	RunTest(nameof(ImageButton), false);
 	//}
 
-	//[Fact]
+	//[Test]
 	//[FailsOnIOS]
 	//public void ImageCellFromFileSourceAppearsAndDisappearsCorrectly()
 	//{
 	//	ImageCellTest(true);
 	//}
 
-	//[Fact]
+	//[Test]
 	//[FailsOnIOS]
 	//[FailsOnAndroid]
 	//public void ImageCellFromUriSourceAppearsAndDisappearsCorrectly()

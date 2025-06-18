@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -52,11 +52,11 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(ItemsSourceNone);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		Assert.Equal("0", App.WaitForElement(SelectedMultiple).GetText());
-		Assert.Equal("No items selected", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("0"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("No items selected"));
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeSingleWhenItemsSourceNone()
 	{
@@ -68,12 +68,12 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(ItemsSourceNone);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		Assert.Equal("No items selected", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("0", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("No items selected"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("0"));
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link:https://github.com/dotnet/maui/issues/18028
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeMultipleWhenItemsSourceNone()
 	{
@@ -85,12 +85,12 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(ItemsSourceNone);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		Assert.Equal("0", App.WaitForElement(SelectedMultiple).GetText());
-		Assert.Equal("No items selected", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("0"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("No items selected"));
 	}
 #endif
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeNoneWhenItemsSourceObservableCollection5()
 	{
@@ -104,11 +104,11 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap("Orange");
 		App.WaitForElement("Banana");
 		App.Tap("Banana");
-		Assert.Equal("No items selected", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("0", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("No items selected"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("0"));
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeSingleWhenItemsSourceObservableCollection5()
 	{
@@ -120,12 +120,12 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Banana");
 		App.Tap("Banana");
-		Assert.Equal("Banana", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("1", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Banana"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("1"));
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeMultipleWhenItemSourceObservableCollection5()
 	{
@@ -139,13 +139,13 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap("Orange");
 		App.WaitForElement("Banana");
 		App.Tap("Banana");
-		Assert.Equal("Orange, Banana", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("2", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Orange, Banana"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("2"));
 	}
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In CV2 related issue link: https://github.com/dotnet/maui/issues/28509 and In windows, relates issue: https://github.com/dotnet/maui/issues/28824
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeNoneWhenItemsSourceGroupList()
 	{
@@ -163,11 +163,11 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.WaitForElement("Orange");
 		App.Tap("Orange");
 		App.WaitForElement("Vegetables");
-		Assert.Equal("No items selected", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("0", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("No items selected"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("0"));
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeSingleWhenItemsSourceGroupList()
 	{
@@ -185,12 +185,12 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.WaitForElement("Vegetables");
 		App.WaitForElement("Carrot");
 		App.Tap("Carrot");
-		Assert.Equal("Carrot", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("1", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Carrot"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("1"));
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeMultipleWhenItemsSourceGroupList()
 	{
@@ -214,13 +214,13 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.WaitForElement("Vegetables");
 		App.WaitForElement("Spinach");
 		App.Tap("Spinach");
-		Assert.Equal("4", App.WaitForElement(SelectedMultiple).GetText());
-		Assert.Equal("Orange, Carrot, Apple, Spinach", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("4"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Orange, Carrot, Apple, Spinach"));
 	}
 #endif
 #endif
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeNoneWhenItemsLayoutVerticalList()
 	{
@@ -232,11 +232,11 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(ItemsLayoutVerticalList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		Assert.Equal("No items selected", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("0", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("No items selected"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("0"));
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeSingleWhenItemsLayoutVerticalList()
 	{
@@ -250,12 +250,12 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Grapes");
 		App.Tap("Grapes");
-		Assert.Equal("Grapes", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("1", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Grapes"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("1"));
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeMultipleWhenItemsLayoutVerticalList()
 	{
@@ -273,13 +273,13 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap("Apple");
 		App.WaitForElement("Mango");
 		App.Tap("Mango");
-		Assert.Equal("3", App.WaitForElement(SelectedMultiple).GetText());
-		Assert.Equal("Orange, Apple, Mango", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("3"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Orange, Apple, Mango"));
 	}
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In CV2, related issue link: https://github.com/dotnet/maui/issues/28030 and In windows, relates issue:https://github.com/dotnet/maui/issues/27946                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeNoneWhenItemsLayoutHorizontalList()
 	{
@@ -291,11 +291,11 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(ItemsLayoutHorizontalList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		Assert.Equal("No items selected", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("0", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("No items selected"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("0"));
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeSingleWhenItemsLayoutHorizontalList()
 	{
@@ -309,12 +309,12 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Mango");
 		App.Tap("Mango");
-		Assert.Equal("Mango", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("1", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Mango"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("1"));
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeMultipleWhenItemsLayoutHorizontalList()
 	{
@@ -330,12 +330,12 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap("Orange");
 		App.WaitForElement("Apple");
 		App.Tap("Apple");
-		Assert.Equal("2", App.WaitForElement(SelectedMultiple).GetText());
-		Assert.Equal("Orange, Apple", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("2"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Orange, Apple"));
 	}
 
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeNoneWhenItemsLayoutVerticalGrid()
 	{
@@ -347,11 +347,11 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(ItemsLayoutVerticalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		Assert.Equal("No items selected", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("0", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("No items selected"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("0"));
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeSingleWhenItemsLayoutVerticalGrid()
 	{
@@ -365,12 +365,12 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Banana");
 		App.Tap("Banana");
-		Assert.Equal("Banana", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("1", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Banana"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("1"));
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeMultipleWhenItemsLayoutVerticalGrid()
 	{
@@ -388,12 +388,12 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap("Grapes");
 		App.WaitForElement("Banana");
 		App.Tap("Banana");
-		Assert.Equal("3", App.WaitForElement(SelectedMultiple).GetText());
-		Assert.Equal("Orange, Grapes, Banana", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("3"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Orange, Grapes, Banana"));
 	}
 #endif
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeNoneWhenItemsLayoutHorizontalGrid()
 	{
@@ -405,11 +405,11 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(ItemsLayoutHorizontalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		Assert.Equal("No items selected", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("0", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("No items selected"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("0"));
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeSingleWhenItemsLayoutHorizontalGrid()
 	{
@@ -423,12 +423,12 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Banana");
 		App.Tap("Banana");
-		Assert.Equal("Banana", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("1", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Banana"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("1"));
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeMultipleWhenItemsLayoutHorizontalGrid()
 	{
@@ -448,13 +448,13 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap("Apple");
 		App.WaitForElement("Grapes");
 		App.Tap("Grapes");
-		Assert.Equal("4", App.WaitForElement(SelectedMultiple).GetText());
-		Assert.Equal("Orange, Banana, Apple, Grapes", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("4"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Orange, Banana, Apple, Grapes"));
 	}
 #endif
 #endif
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeSingleWhenProgrammaticSelectionWorksWithHorizontalList()
 	{
@@ -468,13 +468,13 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(ItemsLayoutHorizontalList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		Assert.Equal("Apple", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("1", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Apple"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("1"));
 		VerifyScreenshot();
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeMultipleWhenProgrammaticSelectionWorksWithHorizontalList()
 	{
@@ -488,14 +488,14 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(ItemsLayoutHorizontalList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		Assert.Equal("Apple, Orange", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("2", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Apple, Orange"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("2"));
 		VerifyScreenshot();
 	}
 #endif
 #endif
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeSingleWhenProgrammaticSelectionWorksWithVerticalList()
 	{
@@ -507,13 +507,13 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap("SingleModePreselection");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		Assert.Equal("Apple", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("1", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Apple"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("1"));
 		VerifyScreenshot();
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeMultipleWhenProgrammaticSelectionWorksWithVerticalList()
 	{
@@ -525,14 +525,14 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap("MultipleModePreselection");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		Assert.Equal("Apple, Orange", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("2", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Apple, Orange"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("2"));
 		VerifyScreenshot();
 	}
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In CV2 related issue link: https://github.com/dotnet/maui/issues/28509 and In windows, relates issue: https://github.com/dotnet/maui/issues/28824
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeSingleWhenProgrammaticSelectionWhithItemsSourceGroupList()
 	{
@@ -552,7 +552,7 @@ public class CollectionView_SelectionFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeMultipleWhenProgrammaticSelectionWhithItemsSourceGroupList()
 	{
@@ -568,14 +568,14 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap("MultipleModePreselection");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		Assert.Equal("Apple, Orange, Carrot, Spinach", App.WaitForElement(SelectedSingle).GetText());
-		Assert.Equal("4", App.WaitForElement(SelectedMultiple).GetText());
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Apple, Orange, Carrot, Spinach"));
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("4"));
 		VerifyScreenshot();
 	}
 #endif
 #endif
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelecctionModeSingleWhenCurrentSelection()
 	{
@@ -587,14 +587,14 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Banana");
 		App.Tap("Banana");
-		Assert.Equal("Banana", App.WaitForElement(CurrentSelectionTextLabel).GetText());
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Banana"));
 		App.WaitForElement("Orange");
 		App.Tap("Orange");
-		Assert.Equal("Orange", App.WaitForElement(CurrentSelectionTextLabel).GetText());
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Orange"));
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeMultipleWhenCurrentSelection()
 	{
@@ -606,14 +606,14 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Banana");
 		App.Tap("Banana");
-		Assert.Equal("Banana", App.WaitForElement(CurrentSelectionTextLabel).GetText());
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Banana"));
 		App.WaitForElement("Orange");
 		App.Tap("Orange");
-		Assert.Equal("Banana, Orange", App.WaitForElement(CurrentSelectionTextLabel).GetText());
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Banana, Orange"));
 	}
 #endif
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeNoneWhenCurrentSelection()
 	{
@@ -625,10 +625,10 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Banana");
 		App.Tap("Banana");
-		Assert.Equal("No current items", App.WaitForElement(CurrentSelectionTextLabel).GetText());
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("No current items"));
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeSingleWhenPreviousSelection()
 	{
@@ -640,14 +640,14 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Banana");
 		App.Tap("Banana");
-		Assert.Equal("No previous items", App.WaitForElement(PreviousSelectionTextLabel).GetText());
+		Assert.That(App.WaitForElement(PreviousSelectionTextLabel).GetText(), Is.EqualTo("No previous items"));
 		App.WaitForElement("Orange");
 		App.Tap("Orange");
-		Assert.Equal("Banana", App.WaitForElement(PreviousSelectionTextLabel).GetText());
+		Assert.That(App.WaitForElement(PreviousSelectionTextLabel).GetText(), Is.EqualTo("Banana"));
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeMultipleWhenPreviousSelection()
 	{
@@ -659,17 +659,17 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Banana");
 		App.Tap("Banana");
-		Assert.Equal("No previous items", App.WaitForElement(PreviousSelectionTextLabel).GetText());
+		Assert.That(App.WaitForElement(PreviousSelectionTextLabel).GetText(), Is.EqualTo("No previous items"));
 		App.WaitForElement("Orange");
 		App.Tap("Orange");
-		Assert.Equal("Banana", App.WaitForElement(PreviousSelectionTextLabel).GetText());
+		Assert.That(App.WaitForElement(PreviousSelectionTextLabel).GetText(), Is.EqualTo("Banana"));
 		App.WaitForElement("Apple");
 		App.Tap("Apple");
-		Assert.Equal("Banana, Orange", App.WaitForElement(PreviousSelectionTextLabel).GetText());
+		Assert.That(App.WaitForElement(PreviousSelectionTextLabel).GetText(), Is.EqualTo("Banana, Orange"));
 	}
 #endif
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeNoneWhenPreviousSelection()
 	{
@@ -681,14 +681,14 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Banana");
 		App.Tap("Banana");
-		Assert.Equal("No previous items", App.WaitForElement(PreviousSelectionTextLabel).GetText());
+		Assert.That(App.WaitForElement(PreviousSelectionTextLabel).GetText(), Is.EqualTo("No previous items"));
 		App.WaitForElement("Orange");
 		App.Tap("Orange");
-		Assert.Equal("No previous items", App.WaitForElement(PreviousSelectionTextLabel).GetText());
+		Assert.That(App.WaitForElement(PreviousSelectionTextLabel).GetText(), Is.EqualTo("No previous items"));
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeMultipleWithToggleSelection()
 	{
@@ -700,19 +700,19 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Orange");
 		App.Tap("Orange");
-		Assert.Equal("1", App.WaitForElement(SelectedMultiple).GetText());
-		Assert.Equal("Orange", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("1"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Orange"));
 		App.WaitForElement("Banana");
 		App.Tap("Banana");
-		Assert.Equal("2", App.WaitForElement(SelectedMultiple).GetText());
-		Assert.Equal("Orange, Banana", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("2"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Orange, Banana"));
 		App.WaitForElement("Orange");
 		App.Tap("Orange");
-		Assert.Equal("1", App.WaitForElement(SelectedMultiple).GetText());
-		Assert.Equal("Banana", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("1"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Banana"));
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeMultipleSelectionChangedEventCount()
 	{
@@ -722,23 +722,23 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(SelectionModeMultiple);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		Assert.Equal("0 times", App.WaitForElement(SelectionChangedEventCountLabel).GetText());
+		Assert.That(App.WaitForElement(SelectionChangedEventCountLabel).GetText(), Is.EqualTo("0 times"));
 		App.WaitForElement("Orange");
 		App.Tap("Orange");
-		Assert.Equal("1 times", App.WaitForElement(SelectionChangedEventCountLabel).GetText());
-		Assert.Equal("Orange", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectionChangedEventCountLabel).GetText(), Is.EqualTo("1 times"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Orange"));
 		App.WaitForElement("Banana");
 		App.Tap("Banana");
-		Assert.Equal("2 times", App.WaitForElement(SelectionChangedEventCountLabel).GetText());
-		Assert.Equal("Orange, Banana", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectionChangedEventCountLabel).GetText(), Is.EqualTo("2 times"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Orange, Banana"));
 		App.WaitForElement("Orange");
 		App.Tap("Orange");
-		Assert.Equal("3 times", App.WaitForElement(SelectionChangedEventCountLabel).GetText());
-		Assert.Equal("Banana", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectionChangedEventCountLabel).GetText(), Is.EqualTo("3 times"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Banana"));
 	}
 #endif
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectionModeSingleSelectionChangedEventCount()
 	{
@@ -748,15 +748,15 @@ public class CollectionView_SelectionFeatureTests : UITest
 		App.Tap(SelectionModeSingle);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		Assert.Equal("0 times", App.WaitForElement(SelectionChangedEventCountLabel).GetText());
-		Assert.Equal("No items selected", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectionChangedEventCountLabel).GetText(), Is.EqualTo("0 times"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("No items selected"));
 		App.WaitForElement("Orange");
 		App.Tap("Orange");
-		Assert.Equal("1 times", App.WaitForElement(SelectionChangedEventCountLabel).GetText());
-		Assert.Equal("Orange", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectionChangedEventCountLabel).GetText(), Is.EqualTo("1 times"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Orange"));
 		App.WaitForElement("Banana");
 		App.Tap("Banana");
-		Assert.Equal("2 times", App.WaitForElement(SelectionChangedEventCountLabel).GetText());
-		Assert.Equal("Banana", App.WaitForElement(SelectedSingle).GetText());
+		Assert.That(App.WaitForElement(SelectionChangedEventCountLabel).GetText(), Is.EqualTo("2 times"));
+		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Banana"));
 	}
 }

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_ANDROID // Clicking the navigation button causes the app to crash. Also as per documentation, dont use the tabbed page into the shell and navigation page.  
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "content page in tabbed page not showing inside shell tab";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Navigation)]
 		public void Github6384Test()
 		{

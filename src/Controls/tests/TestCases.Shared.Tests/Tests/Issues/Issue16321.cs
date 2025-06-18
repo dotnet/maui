@@ -1,5 +1,5 @@
 #if IOS // This test case uses iOS-specific APIs and will only be executed on iOS platforms.
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Alerts Open on top of current presented view";
 
-		[Fact]
+		[Test]
 		[TestCase("OpenAlertWithModals")]
 		[TestCase("OpenAlertWithNewUIWindow")]
 		[TestCase("OpenActionSheetWithNewUIWindow")]

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue3053 : _IssuesUITest
 
 	public override string Issue => "Moving items around on an Observable Collection causes the last item to disappear";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void MovingItemInObservableCollectionBreaksListView()
 	{

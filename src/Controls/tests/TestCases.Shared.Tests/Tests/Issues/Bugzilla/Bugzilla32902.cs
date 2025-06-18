@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ public class Bugzilla32902 : _IssuesUITest
 	}
 
 	public override string Issue => "[iOS | iPad] App Crashes (without debug log) when Flyout Detail isPresented and navigation being popped";
-	[Fact]
+	[Test]
 	[Category(UITestCategories.FlyoutPage)]
 	public void Bugzilla32902Test()
 	{

@@ -1,14 +1,14 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Platform;
-using Xunit;
+using NUnit.Framework;
 using ObjCRuntime;
 using UIKit;
 using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class FlowDirectionTests : PlatformTestFixture
 	{
 		[Test, Category("FlowDirection")]

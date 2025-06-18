@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_CATALYST //ScrollTo method doesn't working on the MacCatalyst.
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView with Incremental Collection (RemainingItemsThreshold)";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewInfiniteScroll()
 		{

@@ -1,6 +1,6 @@
 ﻿#if ANDROID // This code is specifically for Android. It sets the background color of the refresh indicator 
 // (MauiSwipeRefreshLayout) to red, ensuring enough contrast for screenshot comparison during testing. This is not applicable to other platforms.
-using Xunit;
+using NUnit.Framework;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Interactions;
 using UITest.Appium;
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Cancelling Refresh With Slow Scroll Leaves Refresh Icon Visible";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.RefreshView)]
 		public void RefreshIconDisappearsWhenUserCancelsRefreshByScrollingBackUp()
 		{

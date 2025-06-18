@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue2597 : _IssuesUITest
 
 	public override string Issue => "Stepper control .IsEnabled doesn't work";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Stepper)]
 	public void Issue2597Test()
 	{
@@ -20,10 +20,10 @@ public class Issue2597 : _IssuesUITest
 
 		App.IncreaseStepper("Stepper");
 
-		Assert.Equal("Stepper value is 0", App.FindElement("StepperValue").GetText());
+		Assert.That(App.FindElement("StepperValue").GetText(), Is.EqualTo("Stepper value is 0"));
 
 		App.DecreaseStepper("Stepper");
 
-		Assert.Equal("Stepper value is 0", App.FindElement("StepperValue").GetText());
+		Assert.That(App.FindElement("StepperValue").GetText(), Is.EqualTo("Stepper value is 0"));
 	}
 }

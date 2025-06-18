@@ -1,5 +1,5 @@
 #if IOS // Failed on other platforms as the modal page presentation style is supported only on the iOS platform.
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         {
         }
 
-        [Fact]
+        [Test]
         [Category(UITestCategories.Shell)]
         public void ShouldPushNavigationPageUsingPageSheet()
         {

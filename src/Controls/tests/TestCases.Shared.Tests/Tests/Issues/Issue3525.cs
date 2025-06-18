@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ public class Issue3525 : _IssuesUITest
 
 	public override string Issue => "Finicky tap gesture recognition on Spans";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Label)]
 	public void SpanRegionClicking()
 	{

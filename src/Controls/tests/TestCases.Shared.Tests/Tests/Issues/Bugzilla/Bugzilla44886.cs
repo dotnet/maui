@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Bugzilla44886 : _IssuesUITest
 
 	public override string Issue => "UWP Listview ItemSelected event triggered twice for each selection";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla44886Test()
 	{
@@ -23,6 +23,6 @@ public class Bugzilla44886 : _IssuesUITest
 
 		int count = int.Parse(App.FindElement(CountId)?.GetText() ?? "0");
 
-		Assert.Equal(1, count);
+		Assert.That(count, Is.EqualTo(1));
 	}
 }

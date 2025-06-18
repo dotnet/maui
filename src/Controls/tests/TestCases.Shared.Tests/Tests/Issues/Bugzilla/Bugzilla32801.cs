@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,7 +19,7 @@ public class Bugzilla32801 : _IssuesUITest
 
 	public override string Issue => "Memory Leak in TabbedPage + NavigationPage";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.TabbedPage)]
 	public void Bugzilla32801Test()
 	{

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,23 +16,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Enhancement] Add VerticalScrollMode/HorizontalScrollMode to ListView and ScrollView";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.ScrollView)]
 		public void Issue2680Test_ScrollDisabled()
 		{
 			var label = App.WaitForElement(FirstItemMark);
 			App.ScrollDown(ScrollViewMark);
-			Assert.Equal("Not scrolled", label.GetText());
+			Assert.That(label.GetText(), Is.EqualTo("Not scrolled"));
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.ScrollView)]
 		public void Issue2680Test_ScrollEnabled()
 		{
 			var label = App.WaitForElement(FirstItemMark);
 			App.Tap(ToggleButtonMark);
 			App.ScrollDown(ScrollViewMark);
-			Assert.Equal("Scrolled", label.GetText());
+			Assert.That(label.GetText(), Is.EqualTo("Scrolled"));
 		}
 	}
 }

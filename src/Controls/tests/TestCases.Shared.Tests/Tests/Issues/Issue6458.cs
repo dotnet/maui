@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] Fix load TitleIcon on non app compact";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Navigation)]
 		public void Issue6458Test()
 		{

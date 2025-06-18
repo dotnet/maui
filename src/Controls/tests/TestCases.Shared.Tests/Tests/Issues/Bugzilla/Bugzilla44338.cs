@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST //Appium's WebDriverAgentMac only supports the "mouse" pointer type, but a "touch" action was attempted, leading to the failure.
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ public class Bugzilla44338 : _IssuesUITest
 	public override string Issue => "Tapping off of a cell with an open context action causes a crash in iOS 10";
 
 
-	[Fact]
+	[Test]
 	public void Bugzilla44338Test()
 	{
 		App.WaitForElement("A");

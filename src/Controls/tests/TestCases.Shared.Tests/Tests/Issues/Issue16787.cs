@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,11 +13,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView runtime binding errors when loading the ItemSource asynchronously";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewBindingContextOnlyChangesOnce()
 		{
-			Assert.Equal("1", App.WaitForElement("LabelBindingCount").GetText());
+			ClassicAssert.AreEqual("1", App.WaitForElement("LabelBindingCount").GetText());
 		}
 	}
 }

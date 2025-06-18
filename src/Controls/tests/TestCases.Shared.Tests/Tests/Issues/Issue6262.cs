@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_ANDROID //Image Control Passes Touch Events to Visually Behind Controls on Android. 
 //Issue Link: https://github.com/dotnet/maui/issues/27227
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] Button in Grid gets wrong z-index";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Button)]
 		public void ImageShouldLayoutOnTopOfButton()
 		{

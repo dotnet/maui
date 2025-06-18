@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ public class Issue20535 : _IssuesUITest
 
 	public override string Issue => "Re-enable/move TrackColorInitializesCorrectly/TrackColorUpdatesCorrectly to Appium";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Switch)]
 	public void SwitchTrackColorTest()
 	{

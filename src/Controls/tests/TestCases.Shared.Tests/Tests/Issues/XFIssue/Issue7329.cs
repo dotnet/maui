@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST  //In Catalyst, `ScrollDown` isn't functioning correctly with Appium.
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue7329 : _IssuesUITest
 
 	public override string Issue => "[Android] ListView scroll not working when inside a ScrollView";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ScrollView)]
 	public void ScrollListViewInsideScrollView()
 	{

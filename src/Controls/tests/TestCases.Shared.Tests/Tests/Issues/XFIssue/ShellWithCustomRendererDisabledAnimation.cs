@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class ShellWithCustomRendererDisabledAnimation : _IssuesUITest
 
 	public override string Issue => "[Shell] Overriding animation with custom renderer to remove animation breaks next navigation";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void NavigationWithACustomRendererThatDoesntSetAnAnimationStillWorks()
 	{

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue29458 : _IssuesUITest
 
 	public override string Issue => "ScrollView content offset shifts unexpectedly when FlowDirection is set to RightToLeft";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ScrollView)]
 	public void ScrollViewShouldWorkInRTL()
 	{
