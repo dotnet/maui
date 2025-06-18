@@ -21,3 +21,14 @@ jobs:
         shell: pwsh
         continue-on-error: true
         run: .\build.ps1
+
+      - name: Add the local .NET to the PATH
+        shell: bash
+        run: echo "$GITHUB_WORKSPACE/bin/dotnet" >> $GITHUB_PATH
+
+      - name: Ensure we are using the correct .NET
+        shell: pwsh
+        run: |
+          dotnet --version
+          dotnet --info
+          dotnet workload --info
