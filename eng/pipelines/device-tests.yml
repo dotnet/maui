@@ -108,7 +108,7 @@ stages:
 
     - template: /eng/pipelines/arcade/stage-device-tests.yml@self
       parameters:
-        pool: ${{ parameters.VM_IMAGE_HOST }}
+        pool: ${{ parameters.windowsPool }}
         androidPool: ${{ parameters.androidPool }}
         iosPool: ${{ parameters.iosPool }}
         catalystPool: ${{ parameters.catalystPool }}
