@@ -56,6 +56,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
 		/// <summary>Bindable property for <see cref="IsBusy"/>.</summary>
+		[Obsolete("Page.IsBusy has been deprecated and will be removed in .NET 11")]
 		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create(nameof(IsBusy), typeof(bool), typeof(Page), false, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
 
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
@@ -128,6 +129,7 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>
 		/// <para>Setting <see cref="IsBusy"/> to <see langword="true"/> on multiple pages at once will cause the global activity indicator to run until all are set back to <see langword="false"/>. It is the developer's responsibility to unset the <see cref="IsBusy"/> flag before cleaning up a page.</para>
 		/// </remarks>
+		[Obsolete("Page.IsBusy has been deprecated and will be removed in .NET 11")]
 		public bool IsBusy
 		{
 			get { return (bool)GetValue(IsBusyProperty); }
@@ -655,6 +657,7 @@ namespace Microsoft.Maui.Controls
 
 			_hasAppeared = true;
 
+#pragma warning disable CS0618 // TODO: Remove this API in .NET 11.
 			if (IsBusy)
 			{
 				if (IsPlatformEnabled)
@@ -662,6 +665,7 @@ namespace Microsoft.Maui.Controls
 				else
 					_pendingActions.Add(() => Window.AlertManager.RequestPageBusy(this, true));
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			OnAppearing();
 			Appearing?.Invoke(this, EventArgs.Empty);
@@ -684,8 +688,10 @@ namespace Microsoft.Maui.Controls
 
 			_hasAppeared = false;
 
+#pragma warning disable CS0618 // TODO: Remove this API in .NET 11.
 			if (IsBusy)
 				Window.AlertManager.RequestPageBusy(this, false);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var pageContainer = this as IPageContainer<Page>;
 			pageContainer?.CurrentPage?.SendDisappearing();
@@ -746,7 +752,9 @@ namespace Microsoft.Maui.Controls
 		{
 			if (!_hasAppeared)
 				return;
+#pragma warning disable CS0618 // TODO: Remove this API in .NET 11.
 			Window.AlertManager.RequestPageBusy(this, IsBusy);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void OnToolbarItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
