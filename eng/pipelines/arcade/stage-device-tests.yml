@@ -85,10 +85,10 @@ stages:
 
         # Run on public pipeline
         - ${{ if parameters.runAsPublic }}:
-          - script: $(_buildScriptMacOS) -restore -configuration $(_BuildConfig) /bl:pack.binlog $(_OfficialBuildIdArgs)
+          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /bl:pack.binlog $(_OfficialBuildIdArgs)
             displayName: Build BuildTasks
 
-          - script: $(_buildScriptMacOS) -restore -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj' /bl:devicetests.binlog $(_OfficialBuildIdArgs)
+          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj' /bl:devicetests.binlog $(_OfficialBuildIdArgs)
             displayName: Build Controls.DeviceTests
 
           - template: /eng/common/templates-official/steps/send-to-helix.yml
