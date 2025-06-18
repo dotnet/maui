@@ -96,6 +96,30 @@ parameters:
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
+
+  - ${{ if eq(variables['Build.DefinitionName'], 'maui-pr-devicetests') }}:
+
+    - template: /eng/pipelines/arcade/stage-device-tests.yml@self
+      parameters:
+        pool: ${{ parameters.VM_IMAGE_HOST }}
+        androidPool: ${{ parameters.androidPool }}
+        iosPool: ${{ parameters.iosPool }}
+        catalystPool: ${{ parameters.catalystPool }}
+        windowsPool: ${{ parameters.windowsPool }}
+        runAsPublic: true
+        prepareSteps:
+        - template: /eng/pipelines/common/provision.yml@self
+          parameters:
+            checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+            skipJdk: false
+            skipAndroidCommonSdks: false
+            skipAndroidPlatformApis: false
+            onlyAndroidPlatformDefaultApis: true
+            skipAndroidEmulatorImages: true
+            skipAndroidCreateAvds: true
+            skipProvisioning: true
+            skipXcode: true
+
   - template: common/device-tests.yml
     parameters:
       androidPool: ${{ parameters.androidPool }}
