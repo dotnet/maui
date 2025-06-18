@@ -44,7 +44,9 @@ pr:
     - THIRD-PARTY-NOTICES.TXT
 
 variables:
+- template: /eng/common/templates/variables/pool-providers.yml@self
 - template: /eng/pipelines/common/variables.yml@self
+- template: /eng/pipelines/arcade/variables.yml@self
 
 parameters:
 
@@ -64,7 +66,7 @@ parameters:
 - name: androidPool
   type: object
   default:
-    name: $(1ESPTPool)
+    name: MAUI-DNCENG
     vmImage: $(androidTestsVmImage)
     demands:
     - ImageOverride -equals 1ESPT-Ubuntu22.04
@@ -72,15 +74,19 @@ parameters:
 - name: iosPool
   type: object
   default:
-    name: $(iosDeviceTestsVmPool)
-    vmImage: $(iosDeviceTestsVmImage)
-    demands:
-    - macOS.Name -equals Sequoia
+    name: Azure Pipelines
+    vmImage: macOS-15
+
+- name: catalystPool
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: macOS-15
 
 - name: windowsPool
   type: object
   default:
-    name: $(windowsTestsVmPool)
+    name: MAUI-DNCENG
     vmImage: $(windowsTestsVmImage)
 
 - name: targetFrameworkVersions
