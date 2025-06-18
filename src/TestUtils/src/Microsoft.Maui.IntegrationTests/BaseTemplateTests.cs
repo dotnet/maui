@@ -11,16 +11,6 @@ public abstract class BaseTemplateTests : BaseBuildTest
 			Path.Combine(TestDirectory, "Directory.Build.targets"), true);
 	}
 
-	protected void EnableTizen(string projectFile)
-	{
-		// TODO: enable Tizen in future
-		// FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
-		// {
-		// 	{ "<!-- <TargetFrameworks>", "<TargetFrameworks>" },
-		// 	{ "</TargetFrameworks> -->", "</TargetFrameworks>" },
-		// });
-	}
-
 	protected void OnlyAndroid(string projectFile)
 	{
 		FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
