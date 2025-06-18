@@ -116,7 +116,7 @@ public class SwitchFeatureTests : UITest
         VerifyScreenshot();
     }
 
-#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/29812
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30046, https://github.com/dotnet/maui/issues/29812
     [Test]
     [Category(UITestCategories.Switch)]
     public void Switch_SetShadowOpacityAndToggled_VerifyVisualState()
@@ -134,7 +134,7 @@ public class SwitchFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/29812
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30046, https://github.com/dotnet/maui/issues/29812
     [Test]
     [Category(UITestCategories.Switch)]
     public void Switch_SetShadowAndOnColor_VerifyVisualState()
@@ -153,7 +153,7 @@ public class SwitchFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/29812
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30046, https://github.com/dotnet/maui/issues/29812
     [Test]
     [Category(UITestCategories.Switch)]
     public void Switch_SetShadowAndThumbColor_VerifyVisualState()
