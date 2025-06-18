@@ -41,7 +41,9 @@ namespace Sample.Server.WebAuthenticator
 					{ "access_token", auth.Properties.GetTokenValue("access_token") },
 					{ "refresh_token", auth.Properties.GetTokenValue("refresh_token") ?? string.Empty },
 					{ "expires_in", (auth.Properties.ExpiresUtc?.ToUnixTimeSeconds() ?? -1).ToString() },
-					{ "email", email }
+					{ "email", email },
+					{ "code", auth.Properties.GetTokenValue("code") ?? Guid.NewGuid().ToString() },
+					{ "state", auth.Properties.GetTokenValue("state") ?? string.Empty },
 				};
 
 				// Build the result url
