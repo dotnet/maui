@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// Crash after navigation
 		/*
-		[Fact]
+		[Test]
 		[Ignore("The sample is crashing.")]
 		[Category(UITestCategories.FlyoutPage)]
 		[Category(UITestCategories.Compatibility)]

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue20419 : _IssuesUITest
 
 	public override string Issue => "Argument Exception raised when the GetStringSize method of ICanvas called with default font";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.GraphicsView)]
 	public void Issue20419ArgumentException()
 	{

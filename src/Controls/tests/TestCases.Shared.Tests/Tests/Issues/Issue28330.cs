@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,14 +11,14 @@ public class Issue28330 : _IssuesUITest
 
 	public override string Issue => "Stepper allows to increment when value equals to maximum";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Stepper)]
 	public void Issue28330StepperIncrementShouldBeDisabled()
 	{
 		App.WaitForElement("Incrementlabel");
 		App.IncreaseStepper("Incrementstepper");
-		Assert.Equal("1", App.FindElement("Incrementlabel").GetText());
+		Assert.That(App.FindElement("Incrementlabel").GetText(), Is.EqualTo("1"));
 		App.DecreaseStepper("Decrementstepper");
-		Assert.Equal("1", App.FindElement("Decrementlabel").GetText());
+		Assert.That(App.FindElement("Decrementlabel").GetText(), Is.EqualTo("1"));
 	}
 }

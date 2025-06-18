@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // On Windows, the ClearPlaceholderIcon is not displayed in the SearchHandler.
 // Issue: https://github.com/dotnet/maui/issues/28619
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Issue20250 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void VerifySearchHandlerClearPlaceholderIconColor()
 	{

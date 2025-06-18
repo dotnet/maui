@@ -1,5 +1,5 @@
 #if IOS
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue28657 : _IssuesUITest
     {
     }
 
-    [Fact]
+    [Test]
     [Category(UITestCategories.CollectionView)]
     public void CellLayoutUpdatesCorrectlyAfterDeviceOrientationChanges()
     {

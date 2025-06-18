@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue55555 : _IssuesUITest
 
 	public override string Issue => "Header problem";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void TGroupDisplayBindingPresentRecycleElementTest()
 	{

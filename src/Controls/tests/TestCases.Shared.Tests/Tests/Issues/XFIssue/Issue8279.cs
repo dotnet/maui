@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,7 +18,7 @@ public class Issue8279 : _IssuesUITest
 	const string ResetButton = "Reset";
 	public override string Issue => "[Feature requested] ListView do not ScrollTo a group when there is no child of this group";
 
-	[Fact]
+	[Test]
 	public void AScrollWithNoItemButGroupTest()
 	{
 		App.WaitForElement(ResetButton);
@@ -29,7 +29,7 @@ public class Issue8279 : _IssuesUITest
 		App.WaitForElement("Header 3");
 	}
 
-	[Fact]
+	[Test]
 	public void BScrollWithItemButNoGroupTest()
 	{
 		App.WaitForElement(ResetButton);
@@ -40,7 +40,7 @@ public class Issue8279 : _IssuesUITest
 		App.WaitForElement("title 1");
 	}
 
-	[Fact]
+	[Test]
 	public void CScrollWithItemWithGroupTest()
 	{
 		App.WaitForElement(ResetButton);
@@ -51,7 +51,7 @@ public class Issue8279 : _IssuesUITest
 		App.WaitForElement("Header 3");
 	}
 
-	[Fact]
+	[Test]
 	public void DScrollWithNoItemNoGroupTest()
 	{
 		App.WaitForElement(ResetButton);
@@ -62,7 +62,7 @@ public class Issue8279 : _IssuesUITest
 		App.WaitForElement("Header 1");
 	}
 
-	[Fact]
+	[Test]
 	public void EScrollWithNoItemEmptyGroupTest()
 	{
 		App.WaitForElement(ResetButton);

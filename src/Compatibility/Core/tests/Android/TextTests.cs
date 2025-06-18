@@ -1,10 +1,10 @@
 using System.Threading.Tasks;
-using Xunit;
+using NUnit.Framework;
 using NUnit.Framework.Internal;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class TextTests : PlatformTestFixture
 	{
 		[Test, Category("Text"), Category("Label")]

@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Progress spinner is not disabled after setting content on disabled RefreshView.";
 
-		[Fact]
+		[Test]
 		public void ProgressSpinnerNotDisabledOnStartup()
 		{
 			App.WaitForElement("RefreshNotTriggered");
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 #if TEST_FAILS_ON_ANDROID // https://github.com/dotnet/maui/issues/28361
-		[Fact]
+		[Test]
 		public void ProgressSpinnerRemainsDisabledAfterSwappingContent()
 		{
 			App.WaitForElement("RefreshNotTriggered");
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 #endif
 
-		[Fact]
+		[Test]
 		public void ProgressSpinnerWorksWhenReEnabled()
 		{
 			App.WaitForElement("SetToEnabled").Tap();

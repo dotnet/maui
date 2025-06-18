@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class RestartAppTest : _IssuesUITest
 
 	public override string Issue => "Config changes which restart the app should not crash";
 
-	//[Fact]
+	//[Test]
 	//[Category(UITestCategories.LifeCycle)]
 	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void ForcingRestartDoesNotCauseCrash()

@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class AddingMultipleItemsListView : _IssuesUITest
 
 	public override string Issue => "Adding Multiple Items to a ListView";
 
-	[Fact]
+	[Test]
 	public void AddingMultipleListViewTests1AllElementsPresent()
 	{
 		App.WaitForElement("Big Job");
@@ -30,7 +30,7 @@ public class AddingMultipleItemsListView : _IssuesUITest
 		App.FindElement("23");
 	}
 
-	[Fact]
+	[Test]
 	public void AddingMultipleListViewTests2AddOneElementToList()
 	{
 		App.WaitForElement("Add One");
@@ -39,7 +39,7 @@ public class AddingMultipleItemsListView : _IssuesUITest
 		App.WaitForElement("1234", timeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Fact]
+	[Test]
 	public void AddingMultipleListViewTests3AddTwoElementToList()
 	{
 		App.WaitForElement("Add Two");

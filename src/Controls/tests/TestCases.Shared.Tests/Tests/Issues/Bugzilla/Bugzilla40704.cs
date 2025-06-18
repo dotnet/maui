@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // ListView Group Header items are invisible while collapsing, Issue: https://github.com/dotnet/maui/issues/26494. 
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,14 +16,14 @@ public class Bugzilla40704 : _IssuesUITest
 
 	public override string Issue => "Strange duplication of listview headers when collapsing/expanding sections";
 
-	[Fact]
+	[Test]
 	public void Bugzilla40704HeaderPresentTest()
 	{
 		App.WaitForElement("Menu - 0");
 	}
 
 
-	[Fact]
+	[Test]
 	public void Bugzilla40704Test()
 	{
 		App.ScrollDown(List, ScrollStrategy.Gesture, 0.9, 500);

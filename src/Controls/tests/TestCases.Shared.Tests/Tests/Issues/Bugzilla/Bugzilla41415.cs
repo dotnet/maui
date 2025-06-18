@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ScrollX and ScrollY values at the ScrollView.Scrolled event are not consistent in ScrollOrientation.Both mode";
 
-		[Fact]
+		[Test]
 		public void Bugzilla41415Test()
 		{
 			App.WaitForElement(ButtonId);

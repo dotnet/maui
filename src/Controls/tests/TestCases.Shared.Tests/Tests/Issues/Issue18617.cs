@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Button Command CanExecute can disable the control";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Button)]
 		public void CommandCanExecuteDisableButton()
 		{
@@ -24,14 +24,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// 2. The test fails if the 'On' button is still enabled or the 'Off' button is not enabled.
 			var status1 = App.FindElement("StatusLabel").GetText();
-			Assert.Equal("OnButton disabled OffButton enabled", status1);
+			ClassicAssert.AreEqual("OnButton disabled OffButton enabled", status1);
 
 			// 3.Press the 'Off' button.
 			App.Tap("OffButton");
 
 			// 4. The test fails if the 'Off' button is still enabled or the 'On' button is not enabled.
 			var status2 = App.FindElement("StatusLabel").GetText();
-			Assert.Equal("OnButton enabled OffButton disabled", status2);
+			ClassicAssert.AreEqual("OnButton enabled OffButton disabled", status2);
 
 			// NOTE: We do not verify snapshots because we already did it in G1.
 		}

@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class IsEnabledTests : PlatformTestFixture
 	{
 		static IEnumerable TestCases

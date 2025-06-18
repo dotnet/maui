@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // On iOS and Catalyst, the ToolbarItem text does not update in the Accessibility layer. The label value in the accessibility information remains unchanged from the initial value.
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,7 +18,7 @@ public class Issue7181 : _IssuesUITest
 
 	public override string Issue => "[Bug] Cannot update ToolbarItem text and icon";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void ShellToolbarItemTests()
 	{

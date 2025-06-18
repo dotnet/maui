@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using OpenQA.Selenium;
 using UITest.Appium;
 using UITest.Core;
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView causes invalid measurements on resize";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewItemsResizeWhenContraintsOnCollectionViewChange()
 		{
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ClassicAssert.Greater(mediumSize.Width, smallSize.Width);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewFirstItemCorrectlySetsTheMeasure()
 		{
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ClassicAssert.Greater(200, itemSize.Height);
 		}
 #if IOS || ANDROID //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms iOS and Android.
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				var itemSizePortrait2 = App.WaitForElement("Item1").GetRect();
 
 				ClassicAssert.Greater(itemSizeLandscape.Width, itemSizePortrait.Width);
-				Assert.Equal(itemSizePortrait2.Width, itemSizePortrait.Width);
+				ClassicAssert.AreEqual(itemSizePortrait2.Width, itemSizePortrait.Width);
 			}
 			finally
 			{

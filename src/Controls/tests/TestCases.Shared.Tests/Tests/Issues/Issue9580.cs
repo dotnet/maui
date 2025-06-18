@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] CollectionView - iOS - Crash when adding first item to empty item group";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
 		public void AllEmptyGroupsShouldNotCrashOnItemInsert()

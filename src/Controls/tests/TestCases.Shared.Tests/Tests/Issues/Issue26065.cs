@@ -1,6 +1,6 @@
 ﻿#if IOS // Issue occurs only in CollectionViewHandler2
 
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues
@@ -11,14 +11,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionViewHandler2 null reference exception if ItemsLayout is set for Tablet but NOT Phone";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewShouldUseFallBackItemsLayout()
 		{
 			App.WaitForElement("CollectionView");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewWithFallbackVauleShouldUpdateAtRunTime()
 		{

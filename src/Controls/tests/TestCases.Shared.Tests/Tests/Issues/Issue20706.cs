@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,21 +12,21 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Stepper)]
 		public void ChangeIncrementValue()
 		{
 			App.WaitForElement("entry");
 			// check the current value.
 			var initialValue = App.FindElement("entry").GetText();
-			Assert.Equal(initialValue, "0");
+			Assert.That("0", Is.EqualTo(initialValue));
 
 			// Increase the value.
 			App.IncreaseStepper("myStepper");
 
 			// Verify that the value has been increased.
 			var step1Value = App.FindElement("entry").GetText();
-			Assert.Equal(step1Value, "2");
+			Assert.That("2", Is.EqualTo(step1Value));
 
 			// Change the Stepper increment value.
 			App.Click("incrementButton");
@@ -34,14 +34,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Increase the value.
 			App.IncreaseStepper("myStepper");
 			var step2Value = App.FindElement("entry").GetText();
-			Assert.Equal(step2Value, "12");
+			Assert.That("12", Is.EqualTo(step2Value));
 
 			// Decrease the value.
 			App.DecreaseStepper("myStepper");
 
 			// Verify that the value has decreased.
 			var step3Value = App.FindElement("entry").GetText();
-			Assert.Equal(step3Value, "2");
+			Assert.That("2", Is.EqualTo(step3Value));
 		}
 	}
 }

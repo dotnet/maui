@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.TestCases.Tests;
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		protected override bool ResetAfterEachTest => true;
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shell)]
 		public void ValidateBasicServiceLifetimePageBehavior()
 		{
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("OldPage", "New Page Incorrectly Created For Unregistered Page");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shell)]
 		public void SwappingShellInstancesRecreatesPages()
 		{

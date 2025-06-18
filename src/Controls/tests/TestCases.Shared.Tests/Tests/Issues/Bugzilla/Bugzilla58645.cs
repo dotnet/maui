@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] NRE Thrown When ListView Items Are Replaced By Items With a Different Template";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.ListView)]
 		public void Bugzilla58645Test()
 		{

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public Issue23674(TestDevice device) : base(device) { }
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Page)]
 		public void Issue23674Test()
 		{

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Resizing the Label results in wrapped text being cropped on iOS";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]

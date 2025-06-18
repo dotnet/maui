@@ -1,5 +1,5 @@
 ﻿#if WINDOWS
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "FlyoutPage throws ArgumentOutOfRangeException";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]

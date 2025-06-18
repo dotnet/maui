@@ -1,5 +1,5 @@
 ﻿#if ANDROID //This test case verifies "The background property of AppCompatEditText (DatePicker) works" exclusively on the Android platform.
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Setting the background property of AppCompatEditText (DatePicker) in a handler mapping does not work";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.DatePicker)]
 		public async Task SettingDatePickerBackgroundFromHandler()
 		{

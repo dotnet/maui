@@ -1,7 +1,7 @@
 ﻿#if TEST_FAILS_ON_WINDOWS
 // A timeout exception occurred while running this test on Windows. 
 // It appears that the ListView is not detectable in the CI environment.
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ public class Issue26534 : _IssuesUITest
 
 	public override string Issue => "Exception occurred when using GroupShortNameBinding in Grouped ListView";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void VerifyListViewWithGroupShortNameBinding()
 	{

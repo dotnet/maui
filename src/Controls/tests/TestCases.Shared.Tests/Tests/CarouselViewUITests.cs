@@ -1,6 +1,6 @@
 ﻿#if !WINDOWS
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(CarouselViewGallery);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewSetPosition()
 		{
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			CheckLabelValue("lblPosition", "3");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewGoToNextCurrentItem()
 		{
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("btnPrev");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewGoToPreviousCurrentItem()
 		{
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// Catalyst doesn't support orientation changes
 #if !MACCATALYST
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewKeepPositionChangingOrientation()
 		{
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 
 #if IOS || WINDOWS
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void NavigateBackWhenLooped()
 		{
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void NavigateForwardWhenLooped()
 		{
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		void CheckLabelValue(string labelAutomationId, string value)
 		{
 			var result = App.FindElement(labelAutomationId).GetText();
-			Assert.Equal(value, result);
+			ClassicAssert.AreEqual(value, result);
 		}
 	}
 }

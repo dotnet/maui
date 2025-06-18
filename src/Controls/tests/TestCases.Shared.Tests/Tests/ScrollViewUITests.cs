@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 
-		[Fact]
+		[Test]
 		[Description("Scroll element to the start")]
 		public void ScrollToElement1Start()
 		{
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Fact]
+		[Test]
 		[Description("Scroll element to the center")]
 		public void ScrollToElement2Center()
 		{
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Fact]
+		[Test]
 		[Description("Scroll element to the end")]
 		public void ScrollToElement3End()
 		{
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Fact]
+		[Test]
 		[Description("ScrollTo Y = 100")]
 		public void ScrollToY()
 		{
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		// ScrollToYTwice (src\Compatibility\ControlGallery\src\UITests.Shared\Tests\ScrollViewUITests.cs)
-		[Fact]
+		[Test]
 		[Description("ScrollTo Y = 100")]
 		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue, More Information: https://github.com/dotnet/maui/issues/27250")]
 		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue, More Information: https://github.com/dotnet/maui/issues/27250")]
@@ -93,17 +93,17 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("completed");
 		}
 
-		[Fact]
+		[Test]
 		[Description("Scroll down the ScrollView using a gesture")]
 		public void ScrollUpAndDownWithGestures()
 		{
 			var text = App.WaitForElement("WaitForStubControl").GetText();
 			App.ScrollDown("thescroller", ScrollStrategy.Gesture, 0.75);
 			var text1 = App.WaitForElement("WaitForStubControl").GetText();
-			Assert.NotEqual(text, text1);
+			Assert.That(text1, Is.Not.EqualTo(text));
 			App.ScrollUp("thescroller", ScrollStrategy.Gesture, 0.75);
 			var text2 = App.WaitForElement("WaitForStubControl").GetText();
-			Assert.NotEqual(text1, text2);
+			Assert.That(text2, Is.Not.EqualTo(text1));
 		}
 	}
 }

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ public class Issue24583 : _IssuesUITest
 	{
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Editor)]
 	public void TextInEditorShouldBeCorrectlyPositionedAfterResizing()
 	{

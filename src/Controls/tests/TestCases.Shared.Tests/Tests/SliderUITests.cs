@@ -1,5 +1,5 @@
 ﻿#if ANDROID || IOS
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(SliderGallery);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Slider)]
 		[Description("Set different slider values")]
 		public void SetSliderValue()

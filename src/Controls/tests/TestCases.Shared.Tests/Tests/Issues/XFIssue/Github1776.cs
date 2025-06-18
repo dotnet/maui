@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,15 +13,15 @@ public class Github1776 : _IssuesUITest
 
 	public override string Issue => "Button Released not being triggered";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Button)]
 	public void GitHub1776Test()
 	{
 		App.WaitForElement("TheButton");
 		App.Tap("TheButton");
-		Assert.Equal("Pressed: 1", App.FindElement("PressedLabel").GetText());
-		Assert.Equal("Released: 1", App.FindElement("ReleasedLabel").GetText());
-		Assert.Equal("Clicked: 1", App.FindElement("ClickedLabel").GetText());
-		Assert.Equal("Command: 1", App.FindElement("CommandLabel").GetText());
+		Assert.That(App.FindElement("PressedLabel").GetText(), Is.EqualTo("Pressed: 1"));
+		Assert.That(App.FindElement("ReleasedLabel").GetText(), Is.EqualTo("Released: 1"));
+		Assert.That(App.FindElement("ClickedLabel").GetText(), Is.EqualTo("Clicked: 1"));
+		Assert.That(App.FindElement("CommandLabel").GetText(), Is.EqualTo("Command: 1"));
 	}
 }

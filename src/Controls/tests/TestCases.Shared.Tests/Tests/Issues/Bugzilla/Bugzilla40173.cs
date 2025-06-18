@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_ANDROID //Issue reproduced on android and logged the issue: https://github.com/dotnet/maui/issues/26026
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,22 +13,22 @@ public class Bugzilla40173 : _IssuesUITest
 
 	public override string Issue => "Android BoxView/Frame not clickthrough in ListView";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.InputTransparent)]
 	public void ButtonBlocked()
 	{
 		App.WaitForElement("CantTouchButtonId");
 		App.Tap("CantTouchButtonId");
 
-		Assert.Equal(("Default", App.WaitForElement("outputlabel")?.GetText()));
+		Assert.That(App.WaitForElement("outputlabel")?.GetText(), Is.EqualTo(("Default")));
 
 		App.Tap("CanTouchButtonId");
 
-		Assert.Equal(("ButtonTapped", App.WaitForElement("outputlabel")?.GetText()));
+		Assert.That(App.WaitForElement("outputlabel")?.GetText(), Is.EqualTo(("ButtonTapped")));
 
 		App.WaitForElement("Foo");
 		App.Tap("Foo");
-		Assert.Equal(("ItemTapped", App.WaitForElement("outputlabel")?.GetText()));
+		Assert.That(App.WaitForElement("outputlabel")?.GetText(), Is.EqualTo(("ItemTapped")));
 	}
 }
 #endif

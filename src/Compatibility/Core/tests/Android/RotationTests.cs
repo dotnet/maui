@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Threading.Tasks;
-using Xunit;
+using NUnit.Framework;
 using NUnit.Framework.Internal;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class RotationTests : PlatformTestFixture
 	{
 		static IEnumerable RotationXCases

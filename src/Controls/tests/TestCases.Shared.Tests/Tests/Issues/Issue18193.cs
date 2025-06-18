@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST //related issue: https://github.com/dotnet/maui/issues/27206
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shell)]
 		public void ShellNavigationShouldWorkInMoreTab()
 		{

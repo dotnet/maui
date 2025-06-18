@@ -1,5 +1,5 @@
 ﻿#if MACCATALYST
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		/*
   		There's an issue getting the mouse interactions to work with Appium.
-		[Fact]
+		[Test]
 		[Category(UITestCategories.WebView)]
 		public async Task CanScrollWebView()
 		{

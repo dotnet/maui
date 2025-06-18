@@ -1,5 +1,5 @@
 ﻿#if IOS
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "WebView fails to load from urlwebviewsource with non-ascii characters (works with Uri)";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOSWhenRunningOnXamarinUITest]

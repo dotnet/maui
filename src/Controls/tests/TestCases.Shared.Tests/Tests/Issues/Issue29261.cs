@@ -1,6 +1,6 @@
 #if TEST_FAILS_ON_CATALYST
 // On Catalyst, Swipe actions not supported in Appium.
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue29261 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewBounceTest()
 	{
@@ -22,7 +22,7 @@ public class Issue29261 : _IssuesUITest
 		App.SwipeRightToLeft("carouselview");
 		App.SwipeRightToLeft("carouselview");
 		var text = App.FindElement("positionLabel").GetText();
-		Assert.Equal("CarouselView Position - 2", text);
+		Assert.That(text, Is.EqualTo("CarouselView Position - 2"));
 	}
 }
 #endif

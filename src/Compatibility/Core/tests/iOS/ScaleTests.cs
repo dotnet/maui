@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Threading.Tasks;
-using Xunit;
+using NUnit.Framework;
 using static Microsoft.Maui.Controls.Compatibility.UITests.NumericExtensions;
 using static Microsoft.Maui.Controls.Compatibility.UITests.ParsingUtils;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class ScaleTests : PlatformTestFixture
 	{
 		static IEnumerable ScaleCases

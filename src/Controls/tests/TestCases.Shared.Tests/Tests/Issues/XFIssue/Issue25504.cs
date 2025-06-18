@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,14 +12,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		: base(device)
 		{ }
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.ListView)]
 		public void ListViewShouldNotCrashWhenChangingRootPage()
 		{
 			App.WaitForElement("listView");
 			App.Tap("Label");
 			var testLabel = App.WaitForElement("DetailsPage");
-			Assert.Equal("Details Page", testLabel.GetText());
+			Assert.That(testLabel.GetText(), Is.EqualTo("Details Page"));
 		}
 	}
 }

@@ -1,5 +1,5 @@
 ﻿
-using Xunit;
+using NUnit.Framework;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] BoxView BackgroundColor not working on 3.2.0-pre1";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.BoxView)]
 		public void Issue3342Test()
 		{

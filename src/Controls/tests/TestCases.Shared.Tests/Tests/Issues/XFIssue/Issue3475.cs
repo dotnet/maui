@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,7 +19,7 @@ public class Issue3475 : _IssuesUITest
 
 	public override string Issue => "[iOS] LayoutCompression Performance Issues";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Layout)]
 	public void Issue3475TestsLayoutCompressionPerformance()
 	{

@@ -1,5 +1,5 @@
 #if ANDROID || IOS
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue28485 : _IssuesUITest
 
 	public override string Issue => "Back-navigation with swipe-back navigates back twice";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	[Category(UITestCategories.Navigation)]
 	public void SwipeBackGestureShouldNavigateOnce()

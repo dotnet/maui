@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST //This test is failing, likely due to product issue, for more information: https://github.com/dotnet/maui/issues/27059
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Windows] The list does not show newly added items";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CarouselView)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky test on Windows https://github.com/dotnet/maui/issues/27059")]
 		public async Task AddItemsToCarouselViewWorks()

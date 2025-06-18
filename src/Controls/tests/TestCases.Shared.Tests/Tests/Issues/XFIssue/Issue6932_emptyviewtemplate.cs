@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,7 +19,7 @@ public class Issue6932_emptyviewtemplate : _IssuesUITest
 
 	public override string Issue => "EmptyView for BindableLayout (template)";
 
-	[Fact]
+	[Test]
 	public void BEmptyViewTemplateBecomesVisibleWhenItemsSourceIsCleared()
 	{
 		App.WaitForElement(AddAutomationId);
@@ -31,7 +31,7 @@ public class Issue6932_emptyviewtemplate : _IssuesUITest
 		App.WaitForElement(EmptyTemplateAutomationId);
 	}
 
-	[Fact]
+	[Test]
 	public void AEmptyViewTemplateBecomesVisibleWhenItemsSourceIsEmptiedOneByOne()
 	{
 		App.WaitForElement(LayoutAutomationId);
@@ -42,7 +42,7 @@ public class Issue6932_emptyviewtemplate : _IssuesUITest
 		App.WaitForElement(EmptyTemplateAutomationId);
 	}
 
-	[Fact]
+	[Test]
 	public void CEmptyViewTemplateHidesWhenItemsSourceIsFilled()
 	{
 		App.WaitForElement(EmptyTemplateAutomationId);

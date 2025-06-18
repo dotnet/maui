@@ -1,10 +1,10 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class BackgroundTests : PlatformTestFixture
 	{
 		static readonly int Tolerance = 40;
@@ -39,12 +39,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			var expectedTopColor = Colors.Red.ToAndroid();
 			var resultTopColor = screenshot.ColorAtPoint(screenshotWidth / 2, 1);
 
-			Assert.True(AreColorsSimilar(expectedTopColor, resultTopColor, Tolerance));
+			Assert.IsTrue(AreColorsSimilar(expectedTopColor, resultTopColor, Tolerance));
 
 			var expectedBottomColor = Colors.Green.ToAndroid();
 			var resultBottomColor = screenshot.ColorAtPoint(screenshotWidth / 2, screenshotHeight - 1);
 
-			Assert.True(AreColorsSimilar(expectedBottomColor, resultBottomColor, Tolerance));
+			Assert.IsTrue(AreColorsSimilar(expectedBottomColor, resultBottomColor, Tolerance));
 		}
 
 		[Test, Category("Background"), Category("BoxView")]
@@ -60,12 +60,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			var expectedTopColor = Colors.Red.ToAndroid();
 			var resultTopColor = screenshot.ColorAtPoint(screenshotWidth / 2, 1);
 
-			Assert.True(AreColorsSimilar(expectedTopColor, resultTopColor, Tolerance));
+			Assert.IsTrue(AreColorsSimilar(expectedTopColor, resultTopColor, Tolerance));
 
 			var expectedBottomColor = Colors.Green.ToAndroid();
 			var resultBottomColor = screenshot.ColorAtPoint(screenshotWidth / 2, screenshotHeight - 1);
 
-			Assert.True(AreColorsSimilar(expectedBottomColor, resultBottomColor, Tolerance));
+			Assert.IsTrue(AreColorsSimilar(expectedBottomColor, resultBottomColor, Tolerance));
 		}
 	}
 }

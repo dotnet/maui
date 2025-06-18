@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -27,7 +27,7 @@ public class Bugzilla41424 : _IssuesUITest
 	}
 	public override string Issue => "[Android] Clicking cancel on a DatePicker does not cause it to unfocus";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.DatePicker)]
 	public void DatePickerCancelShouldUnfocus()
 	{
@@ -40,7 +40,7 @@ public class Bugzilla41424 : _IssuesUITest
 		App.WaitForElement(GetFocusState);
 		App.Tap(GetFocusState);
 
-		Assert.Equal("unfocused", App.WaitForElement(FocusStateLabel)?.GetText());
+		Assert.That(App.WaitForElement(FocusStateLabel)?.GetText(), Is.EqualTo("unfocused"));
 #if !ANDROID && !MACCATALYST && !WINDOWS //Programmatic focus does not open the dialog for picker controls, issue: https://github.com/dotnet/maui/issues/8946 
 		App.Tap(ProgrammaticFocus);
 
@@ -48,7 +48,7 @@ public class Bugzilla41424 : _IssuesUITest
 		App.WaitForElement(GetFocusState);
 		App.Tap(GetFocusState);
 		
-		Assert.Equal("unfocused", App.WaitForElement(FocusStateLabel)?.GetText());
+		Assert.That(App.WaitForElement(FocusStateLabel)?.GetText(), Is.EqualTo("unfocused"));
 #endif
 	}
 

@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -45,7 +45,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 
 #if TEST_FAILS_ON_ANDROID
 //Dynamic Updates to CollectionView Header/Footer and Templates Are Not Displayed Issue Link: https://github.com/dotnet/maui/issues/28676
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicHeaderStringDisplayed()
 	{
@@ -63,7 +63,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("Header String2");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicHeaderGridDisplayed()
 	{
@@ -81,7 +81,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("Header Grid2");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicHeaderTemplateDisplayed()
 	{
@@ -99,7 +99,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("Header Template2");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicFooterStringDisplayed()
 	{
@@ -117,7 +117,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("Footer String2");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicFooterGridDisplayed()
 	{
@@ -135,7 +135,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("Footer Grid2");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicFooterTemplateDisplayed()
 	{
@@ -154,7 +154,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 	}
 #endif
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicGroupHeaderTemplateDisplayed()
 	{
@@ -176,7 +176,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("GroupHeaderTemplate2");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicGroupFooterTemplateDisplayed()
 	{
@@ -201,7 +201,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 #if TEST_FAILS_ON_WINDOWS
 	//[Testing] EmptyView(null ItemsSource) elements Not Accessible via Automation on Windows Platform Issue Link:  https://github.com/dotnet/maui/issues/28022
 	//EmptyViewTemplate not shown in Windows Issue Link: https://github.com/dotnet/maui/issues/28334
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicEmptyViewStringDisplayed()
 	{
@@ -221,7 +221,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("EmptyView String2: No items available");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicEmptyViewGridDisplayed()
 	{
@@ -241,7 +241,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("EmptyView Grid2: No items available");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicEmptyViewTemplateDisplayed()
 	{

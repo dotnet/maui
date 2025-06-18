@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,19 +17,19 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery("Fonts Gallery");
 		}
 
-		[Fact]
+		[Test]
 		public void FromEmbedded_Image() => LoadAndVerify(Test.Fonts.FromEmbedded_Image);
 
-		[Fact]
+		[Test]
 		public void FromEmbedded_Label() => LoadAndVerify(Test.Fonts.FromEmbedded_Label);
 
-		[Fact]
+		[Test]
 		public void FromBundle_Image() => LoadAndVerify(Test.Fonts.FromBundle_Image);
 
 #if WINDOWS
 		[Ignore("Windows App SDK 1.6 broke this test. See more details in https://github.com/dotnet/maui/issues/26749")]
 #endif
-		[Fact]
+		[Test]
 		public void FromBundle_Label() => LoadAndVerify(Test.Fonts.FromBundle_Label);
 
 		void LoadAndVerify(Test.Fonts test)

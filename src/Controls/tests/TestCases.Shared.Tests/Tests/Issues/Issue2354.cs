@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ListView, ImageCell and disabled source cache and same image url";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.ListView)]
 		public void TestDoesntCrashWithCachingDisable()
 		{

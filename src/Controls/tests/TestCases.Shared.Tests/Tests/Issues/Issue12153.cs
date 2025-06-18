@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Setting FontFamily to pre-installed fonts on UWP crashes";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.Compatibility)]
 		public void InvalidFontDoesntCauseAppToCrash()

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // SepraratorColor is not supported on Windows by default. https://github.com/dotnet/maui/issues/8112
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues;
@@ -11,7 +11,7 @@ public class Issue3798 : _IssuesUITest
 
 	public override string Issue => "[Android] SeparatorColor of ListView is NOT updated dynamically";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 
 	public void Issue3798Test()

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] [Shell] iOS - BackButtonBehavior Command property binding throws InvalidCastException when using a custom command class that implements ICommand";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shell)]
 		public void Issue8529ShellBackButtonBehaviorCommandPropertyCanUseICommand()
 		{

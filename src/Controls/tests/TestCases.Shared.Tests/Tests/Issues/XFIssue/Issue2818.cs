@@ -1,7 +1,7 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
 // Orientation not supported in Catalyst and Windows
 // On iOS FlyoutPage RTL is not working as expected, Issue: https://github.com/dotnet/maui/issues/26726
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ public class Issue2818 : _IssuesUITest
 
 	public override string Issue => "Right-to-Left FlyoutPage in Xamarin.Forms Hamburger icon issue";
 
-	[Fact] // "While in landscape orientation and with the flow direction set to RightToLeft in IOS, the Flyout items are not displayed."
+	[Test] // "While in landscape orientation and with the flow direction set to RightToLeft in IOS, the Flyout items are not displayed."
 	public void RootViewMovesAndContentIsVisible()
 	{
 		var idiom = App.WaitForElement("Idiom");
@@ -32,10 +32,10 @@ public class Issue2818 : _IssuesUITest
 		App.WaitForElement("OpenRootView");
 		App.Tap("OpenRootView");
 		var secondPosition = App.WaitForElement("CloseRootView").GetRect().X;
-		Assert.NotEqual(secondPosition, positionStart);
+		Assert.That(positionStart, Is.Not.EqualTo(secondPosition));
 	}
 
-	[Fact]
+	[Test]
 	public void RootViewSizeDoesntChangeAfterBackground()
 	{
 		var idiom = App.WaitForElement("Idiom");

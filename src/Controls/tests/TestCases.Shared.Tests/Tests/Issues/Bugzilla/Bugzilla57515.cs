@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_CATALYST  //The test fails on macOS Catalyst because the PinchToZoomIn does not working.                                                                                  
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ public class Bugzilla57515 : _IssuesUITest
 
 	public override string Issue => "PinchGestureRecognizer not getting called on Android ";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Gestures)]
 	public void Bugzilla57515Test()
 	{

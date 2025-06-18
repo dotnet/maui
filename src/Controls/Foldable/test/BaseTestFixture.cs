@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Foldable.UnitTests
 {

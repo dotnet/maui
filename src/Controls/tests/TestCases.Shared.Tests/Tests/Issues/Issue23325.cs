@@ -1,6 +1,6 @@
 ﻿#if IOS || Android
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Setting background color on the Searchbar does nothing";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.SearchBar)]
 		public void Issue23325Test()
 		{

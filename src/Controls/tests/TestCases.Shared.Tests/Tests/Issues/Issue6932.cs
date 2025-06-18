@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "EmptyView for BindableLayout (view)";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
 		public void EmptyViewBecomesVisibleWhenItemsSourceIsCleared()
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("No Results");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void EmptyViewHidesWhenItemsSourceIsFilled()
 		{

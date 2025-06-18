@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
 //For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Issue2794 : _IssuesUITest
 
 	public override string Issue => "TableView does not react on underlying collection change";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.TableView)]
 	public void Issue2794Test()
 	{

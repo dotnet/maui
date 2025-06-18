@@ -1,5 +1,5 @@
 ﻿#if ANDROID
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] ImageButton Padding Incorrect After IsVisible False";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.ImageButton)]
 		public void ImageButtonPaddingDoesNotChangeWhenIsVisibleChanges()
 		{

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // Using ActivateContextMenu internally does a right click and is not working correctly.
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class ContextActionCellTest : _IssuesUITest
 
 	public override string Issue => "Table View ContextActionCell Test";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.TableView)]
 	public void VerifyContextActionCell()
 	{

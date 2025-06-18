@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "App Crashes On Shadow Effect's OnDetached On Button That's Never Visible";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Button)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]

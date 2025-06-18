@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Cannot bind properties in BindableObjects added to static resources in XAML";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.LifeCycle)]
 		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla23942Test()

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -70,8 +70,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ClearText("OffsetYEntry");
 			App.EnterText("OffsetYEntry", "20");
 
-			Assert.Equal("20", App.FindElement("OffsetXEntry").GetText());
-			Assert.Equal("20", App.FindElement("OffsetYEntry").GetText());
+			Assert.That(App.FindElement("OffsetXEntry").GetText(), Is.EqualTo("20"));
+			Assert.That(App.FindElement("OffsetYEntry").GetText(), Is.EqualTo("20"));
 
 			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshot();
@@ -89,8 +89,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ClearText("OffsetYEntry");
 			App.EnterText("OffsetYEntry", "0");
 
-			Assert.Equal("0", App.FindElement("OffsetXEntry").GetText());
-			Assert.Equal("0", App.FindElement("OffsetYEntry").GetText());
+			Assert.That(App.FindElement("OffsetXEntry").GetText(), Is.EqualTo("0"));
+			Assert.That(App.FindElement("OffsetYEntry").GetText(), Is.EqualTo("0"));
 
 			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshot();
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ClearText("RadiusEntry");
 			App.EnterText("RadiusEntry", "20");
 
-			Assert.Equal("20", App.FindElement("RadiusEntry").GetText());
+			Assert.That(App.FindElement("RadiusEntry").GetText(), Is.EqualTo("20"));
 
 			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshot();
@@ -120,13 +120,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ClearText("RadiusEntry");
 			App.EnterText("RadiusEntry", "0");
 
-			Assert.Equal("0", App.FindElement("RadiusEntry").GetText());
+			Assert.That(App.FindElement("RadiusEntry").GetText(), Is.EqualTo("0"));
 
 			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshot();
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetOpacity()
 		{
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("OpacityEntry");
 			App.EnterText("OpacityEntry", "1");
 
-			Assert.Equal("1", App.FindElement("OpacityEntry").GetText());
+			Assert.That(App.FindElement("OpacityEntry").GetText(), Is.EqualTo("1"));
 
 			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshot();
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ClearText("OpacityEntry");
 			App.EnterText("OpacityEntry", "0");
 
-			Assert.Equal("0", App.FindElement("OpacityEntry").GetText());
+			Assert.That(App.FindElement("OpacityEntry").GetText(), Is.EqualTo("0"));
 
 			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshot();
@@ -219,7 +219,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 
 #if !IOS && !WINDOWS // Fails iOS: https://github.com/dotnet/maui/issues/27879 and Windows: https://github.com/dotnet/maui/issues/27732
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_Remove_AtRuntime()
 		{
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_RemoveAdd_AtRuntime()
 		{
@@ -250,7 +250,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shadow)]
 		[Ignore("Fails on all the platforms. Get lower fps especially on Android and Windows (below 24 fps at times).")]
 		public void Shadow_Resize_Benchmark()

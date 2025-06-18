@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms iOS and Android. 
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue2948 : _IssuesUITest
 
 	public override string Issue => "FlyoutPage Detail is interactive even when Flyout is open when in Landscape";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.FlyoutPage)]
 	public void Issue2948Test()
 	{

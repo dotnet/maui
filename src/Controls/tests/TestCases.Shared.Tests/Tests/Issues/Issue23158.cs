@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue23158 : _IssuesUITest
 	{
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Entry)]
 	public void ValidateEntryClearButtonVisibilityBehavior()
 	{

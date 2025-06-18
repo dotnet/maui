@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,13 +13,13 @@ public class Issue22630 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void ListViewScrolled()
 	{
 		App.WaitForElement("TestListView");
 		App.ScrollDown("TestListView", ScrollStrategy.Gesture, swipeSpeed: 1000);
 		var result = App.WaitForElement("TestLabel").GetText();
-		Assert.Equal("Success", result);
+		ClassicAssert.AreEqual("Success", result);
 	}
 }

@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Bugzilla32148 : _IssuesUITest
 
 	public override string Issue => " Pull to refresh hides the first item on a list view";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla32148Test()
 	{

@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Bugzilla26233 : _IssuesUITest
 
 	public override string Issue => "Windows phone crashing when going back to page containing listview with Frame inside ViewCell";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void DoesntCrashOnNavigatingBackToThePage()
 	{

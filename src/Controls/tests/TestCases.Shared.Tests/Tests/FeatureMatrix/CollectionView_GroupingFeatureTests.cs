@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -49,7 +49,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForNoElement("GroupFooterTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupFooterTemplate_WithHeaderString()
 	{
@@ -66,7 +66,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForNoElement("GroupFooterTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupFooterTemplate_WithBasicItemTemplate()
 	{
@@ -84,7 +84,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForNoElement("GroupFooterTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupHeaderTemplate_WithFooterString()
 	{
@@ -101,7 +101,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForNoElement("GroupHeaderTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupHeaderTemplate_WithHeaderString()
 	{
@@ -118,7 +118,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForNoElement("GroupHeaderTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupHeaderTemplate_WithBasicItemTemplate()
 	{
@@ -136,7 +136,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForNoElement("GroupHeaderTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithObservableCollection()
 	{
@@ -152,7 +152,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForNoElement("GroupHeaderTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithItemSourceNull()
 	{
@@ -170,7 +170,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForNoElement("GroupFooterTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyIsGroupedFalse_WithItemSourceObservableCollection()
 	{
@@ -184,7 +184,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForNoElement("Vegetables");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyIsGroupedFalse_WithHeaderAndFooterString()
 	{
@@ -200,7 +200,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement("CollectionView Footer(String)");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyIsGroupedFalse_WithBasicItemTemplate()
 	{
@@ -215,7 +215,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS // [Windows] NullReferenceException thrown When Toggling IsGrouped to True in ObservableCollection Binding Issue Link: https://github.com/dotnet/maui/issues/28824
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyIsGrouped_WithFooterString()
 	{
@@ -230,7 +230,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement("CollectionView Footer(String)");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyIsGrouped_WithHeaderString()
 	{
@@ -249,7 +249,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
 	//Test fails on CV2 , GroupHeader and GroupFooter template is not visible  Issue Link: https://github.com/dotnet/maui/issues/28509
 	//Test fails on CV2 , ItemsLayout does not change Issue Link: https://github.com/dotnet/maui/issues/28656
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithVerticalListAndGroupedList()
 	{
@@ -271,7 +271,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement("GroupFooterTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithGroupedList()
 	{
@@ -291,7 +291,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement("GroupFooterTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyIsGrouped_WithGroupHeaderAndGroupFooterTemplate()
 	{
@@ -313,7 +313,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement("GroupFooterTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyIsGroupedTrue_WithItemSourceGroupedList()
 	{
@@ -329,7 +329,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement("Vegetables");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyIsGrouped_WithVerticalListAndGroupedList()
 	{
@@ -347,7 +347,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement("Vegetables");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyIsGroupedTrue_WithBasicTemplateWhenGroupedList()
 	{
@@ -369,7 +369,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS
 	//ItemsLayout does not change its default value on windows Issue Link: https://github.com/dotnet/maui/issues/27946
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithHorizontalListAndObservableCollection()
 	{
@@ -390,7 +390,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForNoElement("GroupFooterTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithHorizontalGridAndObservableCollection()
 	{
@@ -411,7 +411,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForNoElement("GroupFooterTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithVerticalGridAndObservableCollection()
 	{
@@ -431,7 +431,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForNoElement("GroupFooterTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithVerticalListAndObservableCollection()
 	{
@@ -449,7 +449,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForNoElement("GroupFooterTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyIsGrouped_WithHorizontalListAndGroupedList()
 	{
@@ -470,7 +470,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement("Vegetables");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyIsGrouped_WithHorizontalGridAndGroupedList()
 	{
@@ -491,7 +491,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement("Vegetables");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithHorizontalListAndGroupedList()
 	{
@@ -517,7 +517,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement("GroupFooterTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithHorizontalGridAndGroupedList()
 	{
@@ -543,7 +543,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement("GroupFooterTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithVerticalGridAndGroupedList()
 	{
@@ -567,7 +567,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement("GroupFooterTemplate");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyIsGrouped_WithVerticalGridAndGroupedList()
 	{
@@ -592,7 +592,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 //CollectionView Displays Blank UI When Changing IsGrouped and ItemsSourceType Issue Link: https://github.com/dotnet/maui/issues/28826
 //[Windows] NullReferenceException thrown When Toggling IsGrouped to True in ObservableCollection Binding: https://github.com/dotnet/maui/issues/28824
-        [Fact]
+        [Test]
         [Category(UITestCategories.CollectionView)]
         public void VerifyIsGroupedTrue_WithItemSourceObservableCollection()
         {
@@ -608,7 +608,7 @@ public class CollectionView_GroupingFeatureTests : UITest
             App.WaitForNoElement("Vegetables");
         }
  
-        [Fact]
+        [Test]
         [Category(UITestCategories.CollectionView)]
         public void VerifyIsGroupedFalse_WithItemSourceGroupedList()
         {
@@ -622,7 +622,7 @@ public class CollectionView_GroupingFeatureTests : UITest
             App.WaitForNoElement("Vegetables");
         }
  
-        [Fact]
+        [Test]
         [Category(UITestCategories.CollectionView)]
         public void VerifyIsGroupedTrue_WithBasicTemplateWhenObservableCollection()
         {
@@ -640,7 +640,7 @@ public class CollectionView_GroupingFeatureTests : UITest
             App.WaitForNoElement("Vegetables");
         }
        
-        [Fact]
+        [Test]
         [Category(UITestCategories.CollectionView)]
         public void VerifyIsGrouped_WithHorizontalListAndObservableCollection()
         {
@@ -659,7 +659,7 @@ public class CollectionView_GroupingFeatureTests : UITest
             App.WaitForNoElement("Vegetables");
         }
  
-        [Fact]
+        [Test]
         [Category(UITestCategories.CollectionView)]
         public void VerifyIsGrouped_WithHorizontalGridAndObservableCollection()
         {
@@ -678,7 +678,7 @@ public class CollectionView_GroupingFeatureTests : UITest
             App.WaitForNoElement("Vegetables");
         }
  
-        [Fact]
+        [Test]
         [Category(UITestCategories.CollectionView)]
         public void VerifyIsGrouped_WithVerticalGridAndObservableCollection()
         {
@@ -696,7 +696,7 @@ public class CollectionView_GroupingFeatureTests : UITest
             App.WaitForNoElement("Vegetables");
         }
  
-        [Fact]
+        [Test]
         [Category(UITestCategories.CollectionView)]
         public void VerifyIsGrouped_WithVerticalListAndObservableCollection()
         {
@@ -713,7 +713,7 @@ public class CollectionView_GroupingFeatureTests : UITest
         }
  
 // [Android] Group Header/Footer Repeated for All Items When IsGrouped is True for ObservableCollection Issue Link: https://github.com/dotnet/maui/issues/28827
-        [Fact]
+        [Test]
         [Category(UITestCategories.CollectionView)]
         public void VerifyIsGrouped_WithGroupHeaderAndFooterTemplateAndObservableCollection()
         {
@@ -738,7 +738,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 	//CanMixGroups Set to False Still Allows Reordering Between Groups in CollectionView on Catalyst Issue Link : https://github.com/dotnet/maui/issues/28530
 	//Test fails on CV2 . GroupHeader and GroupFooter template is not visible  Issue Link: https://github.com/dotnet/maui/issues/28509
 	//.NET MAUI CollectionView does not reorder when grouped on windows Issue Link:  https://github.com/dotnet/maui/issues/13027
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyCanMixGroupsFalseWithCanReorderItems()
 	{
@@ -758,7 +758,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Carrot' should be greater than Apple after the drag-and-drop operation.");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyCanMixGroupsTrueWithCanReorderItems()
 	{
@@ -780,7 +780,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Apple' should be greater after the drag-and-drop operation.");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyCanReorderItemsTrueWithCanMixGroups()
 	{
@@ -802,7 +802,7 @@ public class CollectionView_GroupingFeatureTests : UITest
 		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Apple' should be greater after the drag-and-drop operation.");
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyCanReorderItemsFalseWithCanMixGroups()
 	{

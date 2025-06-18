@@ -1,5 +1,5 @@
 ﻿#if ANDROID
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Modal Page margin correct after Keyboard opens";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Layout)]
 		public async Task ModalPageMarginCorrectAfterKeyboardOpens()
 		{
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// 6. Verify the latest Entry text.
 			var text = App.FindElement(LastEntry).GetText();
-			Assert.Equal("test", text);
+			Assert.That(text, Is.EqualTo("test"));
 
 			// 7. Make sure that everything has returned to the initial size once the keyboard has closed.
 			App.Screenshot("Make sure that everything has returned to the initial size once the keyboard has closed.");

@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "IsVisible binding not showing items again if Shadow is set";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.ListView)]
 		public async Task WhenTapButtonThenListViewsChangesVisibility()
 		{
@@ -27,9 +27,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var thirdStatus = TapButtonAndGetStatus();
 			await Task.Delay(500);
 
-			Assert.Equal(GetExpectedButtonStatus(isVisible: true), initialStatus);
-			Assert.Equal(GetExpectedButtonStatus(isVisible: false), secondStatus);
-			Assert.Equal(GetExpectedButtonStatus(isVisible: true), thirdStatus);
+			ClassicAssert.AreEqual(GetExpectedButtonStatus(isVisible: true), initialStatus);
+			ClassicAssert.AreEqual(GetExpectedButtonStatus(isVisible: false), secondStatus);
+			ClassicAssert.AreEqual(GetExpectedButtonStatus(isVisible: true), thirdStatus);
 		}
 
 		string? TapButtonAndGetStatus()

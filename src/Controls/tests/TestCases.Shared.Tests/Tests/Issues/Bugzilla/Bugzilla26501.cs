@@ -1,4 +1,4 @@
-/*using Xunit;
+/*using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Bugzilla26501 : _IssuesUITest
 
     public override string Issue => "BindingSource / Context action issue";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.InputTransparent)]
 	public void TestCellsShowAfterRefresh()
 	{

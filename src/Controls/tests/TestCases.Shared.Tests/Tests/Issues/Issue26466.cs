@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Button is not released on unload";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Button)]
 		public async Task ButtonReleasedTest()
 		{

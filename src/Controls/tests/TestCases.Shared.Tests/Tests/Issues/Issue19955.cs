@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;
@@ -12,7 +12,7 @@ public class Issue19955 : _IssuesUITest
 
 	public override string Issue => "Navigating Back to FlyoutPage Renders Blank Page";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.FlyoutPage)]
 	public void NavigatingBackToFlyoutPageRendersBlankPage()
 	{

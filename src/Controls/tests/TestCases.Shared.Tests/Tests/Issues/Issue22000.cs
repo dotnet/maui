@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Windows] Carousel changes the current position when window is resized";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public async Task ResizeCarouselViewKeepsIndex()
 		{

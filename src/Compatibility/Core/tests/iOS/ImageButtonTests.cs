@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Foundation;
-using Xunit;
+using NUnit.Framework;
 using ObjCRuntime;
 using UIKit;
 using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class ImageButtonTests : PlatformTestFixture
 	{
 		[Test, Category("ImageButton")]
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			var imageButton = new ImageButton();
 			UIButtonType buttonType = await GetControlProperty(imageButton, uiButton => uiButton.ButtonType);
-			Assert.NotEqual(UIButtonType.Custom, buttonType);
+			Assert.AreNotEqual(UIButtonType.Custom, buttonType);
 		}
 	}
 }

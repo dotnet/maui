@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "UWP CreateDefault passes string instead of object";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
 		public void CreateDefaultPassesStringInsteadOfObject()

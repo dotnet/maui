@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView OnCollectionViewScrolled Calls and parameters are inconsistent or incorrect";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void Issue25649Test()
 		{
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// The ScrollDown method returns a different FirstVisibleItemIndex values on each call, so it cannot be used for consistent test validation.
 
 			var lastVisibleItemIndex = App.FindElement("LastVisibleItemIndex").GetText();
-			Assert.Equal("30", lastVisibleItemIndex);
+			Assert.That(lastVisibleItemIndex, Is.EqualTo("30"));
 		}
 	}
 }

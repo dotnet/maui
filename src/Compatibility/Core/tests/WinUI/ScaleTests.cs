@@ -3,11 +3,11 @@ using System.Collections;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class ScaleTests : PlatformTestFixture
 	{
 		static IEnumerable ScaleXCases

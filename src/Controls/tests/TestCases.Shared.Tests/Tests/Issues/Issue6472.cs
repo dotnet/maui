@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //application crash while load the listview, for more information: https://github.com/dotnet/maui/issues/27174
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug][iOS] listview / observable collection throwing native error on load";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
 		public void ListViewDoesNotThrowExceptionWithObservableCollection()

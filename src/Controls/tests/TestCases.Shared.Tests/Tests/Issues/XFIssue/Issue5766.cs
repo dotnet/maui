@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -39,7 +39,7 @@ public class Issue5766 : _IssuesUITest
 	//	return true;
 	//}
 
-	//[Fact]
+	//[Test]
 	//[Category(UITestCategories.Layout)]
 	//[Ignore("Fails sometimes - needs a better test")]
 	//public void FrameSizeGetsCorruptedWhenListViewIsScrolled()

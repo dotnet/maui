@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,7 +18,7 @@ public class Issue3008 : _IssuesUITest
 
 	public override string Issue => "Setting ListView.ItemSource to null doesn't cause it clear out its contents";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void EnsureListViewEmptiesOut()
 	{

@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST
 // DisplayActionSheet and DisplayAlert are popped up in the constructor using BeginInvokeOnMainThread which is not working on Windows, Android, and Catalyst. Issue : https://github.com/dotnet/maui/issues/26481
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Bugzilla45743 : _IssuesUITest
 
 	public override string Issue => "[iOS] Calling DisplayAlert via BeginInvokeOnMainThread blocking other calls on iOS";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.DisplayAlert)]
 	public void Bugzilla45743Test()
 	{

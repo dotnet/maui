@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // AutomationId for Grid is not work on Windows
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string Page = "page 1";
 #endif
 		public override string Issue => "Shell Title View Test";
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shell)]
 		[Category(UITestCategories.Compatibility)]
 		public void TitleViewHeightDoesntOverflow()

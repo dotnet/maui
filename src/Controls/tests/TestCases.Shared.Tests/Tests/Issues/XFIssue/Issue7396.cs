@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ public class Issue7396 : _IssuesUITest
 
 	public override string Issue => "Setting Shell.BackgroundColor overrides all colors of TabBar";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void BottomTabColorTest()
 	{

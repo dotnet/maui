@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue7856 : _IssuesUITest
 
 	public override string Issue => "[Bug] Shell BackButtonBehaviour TextOverride breaks back";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void BackButtonBehaviorTest()
 	{

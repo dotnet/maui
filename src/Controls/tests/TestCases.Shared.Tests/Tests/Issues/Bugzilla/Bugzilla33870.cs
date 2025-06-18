@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Bugzilla33870 : _IssuesUITest
 
 	public override string Issue => "[W] Crash when the ListView Selection is set to null";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla33870Test()
 	{

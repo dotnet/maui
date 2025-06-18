@@ -1,5 +1,5 @@
 #if TEST_FAILS_ON_WINDOWS // Related issue for windows: https://github.com/dotnet/maui/issues/29445
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue29372 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselLayoutOrientationChange()
 	{

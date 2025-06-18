@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] [iOS][SwipeView] Swipe view not handling tap gesture events until swiped";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.SwipeView)]
 		[Category(UITestCategories.Compatibility)]
 		public void TapSwipeViewAndNavigateTest()

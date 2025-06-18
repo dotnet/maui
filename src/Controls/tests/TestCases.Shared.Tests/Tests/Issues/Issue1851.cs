@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue1851 : _IssuesUITest
 
 	public override string Issue => "ObservableCollection in ListView gets Index out of range when removing item";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	[Category(UITestCategories.Compatibility)]
 	public void Issue1851Test()

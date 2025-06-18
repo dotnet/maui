@@ -1,5 +1,5 @@
 #if IOS || MACCATALYST
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Navigation)]
 		public void ValidateOnNavigationToMethod()
 		{
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.LongPress("Back");
 
 			var navigationToLabel = App.WaitForElement("FirstPageLabel").GetText();
-			Assert.Equal("OnNavigatedTo method is called", navigationToLabel);
+			Assert.That(navigationToLabel, Is.EqualTo("OnNavigatedTo method is called"));
 		}
 	}
 }

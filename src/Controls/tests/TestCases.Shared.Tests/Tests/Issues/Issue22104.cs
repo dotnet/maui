@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "VisualState Setters not working properly on Windows for a CollectionView";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyCollectionViewVisualState()
 		{

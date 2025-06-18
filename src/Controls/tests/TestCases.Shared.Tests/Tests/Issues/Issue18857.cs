@@ -1,5 +1,5 @@
 #if TEST_FAILS_ON_ANDROID // Related issue: https://github.com/dotnet/maui/issues/26159
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ImageButton Padding & Ripple effect stops working with .NET 8";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.ImageButton)]
 		public async Task GradientImageButtonBackground()
 		{

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,12 +14,12 @@ public class Issue18452 : _IssuesUITest
 	{
 	}
 
-	[Fact]
+	[Test]
 	public void WebViewLoadedWithoutException()
 	{
 		VerifyInternetConnectivity();
 		App.WaitForElement("Label");
 		string? label = App.FindElement("Label").GetText();
-		Assert.Equal(expected, label);
+		Assert.That(label, Is.EqualTo(expected));
 	}
 }

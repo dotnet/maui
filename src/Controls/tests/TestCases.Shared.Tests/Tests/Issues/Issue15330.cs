@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Grid wrong Row height";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Layout)]
 		public void Issue15330Test()
 		{

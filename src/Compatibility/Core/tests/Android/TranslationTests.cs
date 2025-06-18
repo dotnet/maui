@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Threading.Tasks;
 using Microsoft.Maui.Platform;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class TranslationTests : PlatformTestFixture
 	{
 		static IEnumerable TranslationXCases

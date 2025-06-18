@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue2923 : _IssuesUITest
 
 	public override string Issue => "First tab does not load until navigating";
 
-	[Fact]
+	[Test]
 	public void Issue2923TestOne()
 	{
 		App.WaitForElement("FirstPageLabel");

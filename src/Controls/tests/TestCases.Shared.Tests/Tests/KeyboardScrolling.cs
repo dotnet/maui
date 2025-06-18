@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Interactions;

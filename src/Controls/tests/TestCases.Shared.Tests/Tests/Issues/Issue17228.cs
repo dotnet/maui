@@ -1,5 +1,5 @@
 ﻿#if ANDROID || IOS
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue17228 : _IssuesUITest
 
 	public override string Issue => "Back button image color can't be changed";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void CustomBackButtonShouldBeRed()
 	{

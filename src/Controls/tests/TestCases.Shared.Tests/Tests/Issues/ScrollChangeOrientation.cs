@@ -1,5 +1,5 @@
 #if ANDROID || IOS //This test case verifies "SetOrientationPotrait and Landscape works" exclusively on the Android and IOS platforms
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Horizontal ScrollView locks after rotation";
 
 		// Issue773TestsRotationRelayoutIssue (src\Compatibility\ControlGallery\src\Issues.Shared\Issue773.cs)
-		[Fact]
+		[Test]
 		public void ScrollRotationRelayoutIssue()
 		{
 			try

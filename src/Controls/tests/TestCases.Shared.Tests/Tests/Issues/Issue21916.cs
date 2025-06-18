@@ -1,5 +1,5 @@
 #if TEST_FAILS_ON_ANDROID //more information: https://github.com/dotnet/maui/issues/26050
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Page and control Unloaded events firing on iOS when navigating to another page"; 
 		
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shell)]
 		public void Shell_Issue21916()
 		{

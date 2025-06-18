@@ -2,12 +2,12 @@ using System.Collections;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Dispatching;
-using Xunit;
+using NUnit.Framework;
 using NUnit.Framework.Internal;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class IsEnabledTests : PlatformTestFixture
 	{
 		static IEnumerable TestCases

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ public class Issue14689 : _IssuesUITest
 	}
 	public override string Issue => "TabbedPage Back button not updated";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageBackButtonUpdated()
 	{

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue4720 : _IssuesUITest
 
 	public override string Issue => "UWP: Webview: Memory Leak in WebView";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.WebView)]
 	public void WebViewDoesntCrashWhenLoadingAHeavyPageAndUsingExecutionModeSeparateProcess()
 	{

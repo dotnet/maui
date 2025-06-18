@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class ShellSearchHandlerItemSizing : _IssuesUITest
 	public override string Issue => "Shell Search Handler Item Sizing";
 
 #if IOS || MACCATALYST
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void SearchHandlerSizesCorrectly()
 	{
@@ -27,7 +27,7 @@ public class ShellSearchHandlerItemSizing : _IssuesUITest
 	// For Windows and Android, the test is failing because it cannot retrieve the search result.
 	// Therefore, verify it using VerifyScreenshot.
 #if ANDROID || WINDOWS
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void VerifySearchHandlerItemsAreVisible()
 	{

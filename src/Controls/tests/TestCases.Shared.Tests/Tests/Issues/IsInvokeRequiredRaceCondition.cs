@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class IsInvokeRequiredRaceCondition : _IssuesUITest
 
 	public override string Issue => "Application.Current.Dispatcher.IsDispatchRequired race condition causes crash";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Dispatcher)]
 	public void ApplicationDispatcherIsInvokeRequiredRaceConditionCausesCrash()
 	{

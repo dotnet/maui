@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue5412 : _IssuesUITest
 
 	public override string Issue => "5412 - (NavigationBar disappears on FlyoutPage)";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.FlyoutPage)]
 	public void Issue5412Test()
 	{

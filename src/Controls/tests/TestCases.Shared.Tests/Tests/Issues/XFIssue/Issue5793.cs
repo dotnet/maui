@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue5793 : _IssuesUITest
 
 	public override string Issue => "[CollectionView/ListView] Not listening for Reset command";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void CollectionViewResetTest()
 	{

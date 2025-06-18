@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[UWP] Grid insert z-order on UWP broken in Forms 3";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue9360 : _IssuesUITest
 
 	public override string Issue => "[Bug] Android Icons no longer customizable via NavigationPageRenderer UpdateMenuItemIcon()";
 
-	//[Fact]
+	//[Test]
 	//[Category(UITestCategories.Navigation)]
 	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//public void NavigationPageRendererMenuItemIconOverrideWorks()

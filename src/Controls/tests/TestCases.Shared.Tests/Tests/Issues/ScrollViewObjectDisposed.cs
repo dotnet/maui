@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Object Disposed Exception in ScrollView";
 
 		// ScrollViewObjectDisposedTest (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewObjectDisposed.cs)
-		[Fact]
+		[Test]
 		[Description("Tapping a button inside the ScrollView does not cause an exception.")]
 		public void ScrollViewObjectDisposedTest()
 		{

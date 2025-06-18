@@ -1,5 +1,5 @@
 #if !ANDROID // this test case is ignored in android, as it has incositent scrolling behavior while using emptyView as string.  https://github.com/dotnet/maui/issues/28765 
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue28604 : _IssuesUITest
     }
     public override string Issue => "Footer Not Displayed at the Bottom When EmptyView is Active in CV2";
 
-    [Fact]
+    [Test]
     [Category(UITestCategories.CollectionView)]
     public void FooterShouldDisplayAtBottomOfEmptyView()
     {

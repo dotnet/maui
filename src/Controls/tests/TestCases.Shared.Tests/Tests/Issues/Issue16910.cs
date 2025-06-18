@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ public class Issue16910 : _IssuesUITest
 
 	}
 
-	[Fact]
+	[Test]
 	public void BindingUpdatesFromProgrammaticRefresh()
 	{
 		_ = App.WaitForElement("StartRefreshing");
@@ -28,7 +28,7 @@ public class Issue16910 : _IssuesUITest
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Failing on Mac and Windows. Flaky Test. More information: https://github.com/dotnet/maui/issues/28368
-	[Fact]
+	[Test]
 	public void BindingUpdatesFromInteractiveRefresh()
 	{
 		var collectionViewRect = App.WaitForElement("CollectionView").GetRect();

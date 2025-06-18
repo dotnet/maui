@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ShellContent IsVisible=True Does not display Title";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shell)]
 		public void Issue19783Shell()
 		{

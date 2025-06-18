@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //for more information:https://github.com/dotnet/maui/issues/24968
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView Header/Footer/EmptyView issues when adding/removing items";
 
-		[Fact]
+		[Test]
 
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionviewFooterHideswhenDynamicallyAddorRemoveItems()
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewHeaderBlankWhenLastItemRemoved()
 		{

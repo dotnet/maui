@@ -2,7 +2,7 @@
 // This test case is specifically for iOS. There's a known framework-level issue with AppLinkEntry on iOS.
 // The test is currently disabled on all platforms due to this limitation.
 // For more details, see: https://github.com/dotnet/maui/issues/12295
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ public class Issue5470 : _IssuesUITest
 
 	public override string Issue => "ApplinkEntry Thumbnail required after upgrading to 3.5/3.6";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.AppLinks)]
 	public void Issue5470Test()
 	{

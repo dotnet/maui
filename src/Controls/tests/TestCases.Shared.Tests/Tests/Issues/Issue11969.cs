@@ -1,5 +1,5 @@
 ﻿
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] Disabling Swipe view not handling tap gesture events on the content in iOS of Xamarin Forms";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.SwipeView)]
 		[Category(UITestCategories.Compatibility)]
 		public void SwipeDisableChildButtonTest()

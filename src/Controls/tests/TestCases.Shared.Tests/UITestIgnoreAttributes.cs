@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.TestCases.Tests
 {

@@ -1,6 +1,6 @@
 #if TEST_FAILS_ON_WINDOWS // EmptyView Elements not accessible via Automation on Windows, Issue Link: https://github.com/dotnet/maui/issues/28022
 // EmptyViewTemplate not displayed on Windows Issue Link: https://github.com/dotnet/maui/issues/28334
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayed()
 		{
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayed()
 		{
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom Empty View (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayed_AndItemSourceEmptyObservableCollectionSetFirst()
 		{
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringSetFirst_AndEmptyObservableCollection()
 		{
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayed_AndObservableCollectionSetFirst()
 		{
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("No Items Available(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringSetFirst_AndObservableCollection()
 		{
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("No Items Available(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayed_AndEmptyGroupedListSetFirst()
 		{
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayedSetFirst_AndItemSourceEmptyGroupedList()
 		{
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayed_GroupedListSetFirst()
 		{
@@ -171,7 +171,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("No Items Available(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayedSetFirst_AndGroupedList()
 		{
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("No Items Available(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayed_AndEmptyObservableCollectionSetFirst()
 		{
@@ -203,7 +203,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayedSetFirst_AndEmptyObservableCollection()
 		{
@@ -218,7 +218,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayed_AndObservableCollectionSetFirst()
 		{
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("No Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayedSetFirst_AndObservableCollection()
 		{
@@ -248,7 +248,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("No Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayed_EmptyGroupedListSetFirst()
 		{
@@ -263,7 +263,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayedSetFirst_AndEmptyGroupedList()
 		{
@@ -278,7 +278,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayed_GroupedListSetFirst()
 		{
@@ -295,7 +295,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("No Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayedSetFirst_AndGroupedList()
 		{
@@ -312,7 +312,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("No Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayed_AndEmptyObservableCollectionSetFirst()
 		{
@@ -327,7 +327,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom Empty View (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayedSetFirst_AndEmptyObservableCollection()
 		{
@@ -342,7 +342,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom Empty View (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayed_AndObservableCollectionSetFirst()
 		{
@@ -357,7 +357,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("Custom Empty View (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayedSetFirst_AndObservableCollection()
 		{
@@ -372,7 +372,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("Custom Empty View (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayed_EmptyGroupedListSetFirst()
 		{
@@ -387,7 +387,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom Empty View (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayedSetFirst_AndEmptyGroupedList()
 		{
@@ -402,7 +402,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom Empty View (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayed_GroupedListSetFirst()
 		{
@@ -417,7 +417,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("Custom Empty View (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayedSetFirst_AndGroupedList()
 		{
@@ -432,7 +432,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("Custom Empty View (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayed_AndEmptyViewTemplate()
 		{
@@ -447,7 +447,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayed_AndEmptyViewTemplate()
 		{
@@ -462,7 +462,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayed_AndEmptyViewTemplate()
 		{
@@ -477,7 +477,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayed_AndCustomEmptyViewTemplateSize()
 		{
@@ -492,7 +492,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayed_AndBasicItemTemplateSetFirst()
 		{
@@ -507,7 +507,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayedSetFirst_AndBasicItemTemplate()
 		{
@@ -522,7 +522,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayed_WhenBasicItemTemplateSetFirst()
 		{
@@ -537,7 +537,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayedSetFirst_WhenBasicItemTemplate()
 		{
@@ -552,7 +552,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayed_WhenBasicItemTemplateSetFirst()
 		{
@@ -567,7 +567,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom Empty View (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayedSetFirst_WhenBasicItemTemplate()
 		{
@@ -582,7 +582,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom Empty View (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayed()
 		{
@@ -595,7 +595,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayed()
 		{
@@ -608,7 +608,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayed_EmptyObservableCollectionSetFirst()
 		{
@@ -623,7 +623,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayedSetFirst_AndEmptyObservableCollection()
 		{
@@ -638,7 +638,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayed_AndeObservableCollectionSetFirst()
 		{
@@ -653,7 +653,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayedSetFirst_AndObservableCollection()
 		{
@@ -668,7 +668,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayed_AndEmptyGroupedListSetFirst()
 		{
@@ -683,7 +683,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayedSetFirst_AndEmptyGroupedList()
 		{
@@ -698,7 +698,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayed_AndGroupedListSetFirst()
 		{
@@ -715,7 +715,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayedSetFirst_AndGroupedList()
 		{
@@ -732,7 +732,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayed_EmptyObservableCollectionSetFirst()
 		{
@@ -747,7 +747,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayedSetFirst_AndEmptyObservableCollection()
 		{
@@ -762,7 +762,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayed_AndeObservableCollectionSetFirst()
 		{
@@ -777,7 +777,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("Custom EmptyViewTemplate (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayedSetFirst_AndObservableCollection()
 		{
@@ -792,7 +792,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("Custom EmptyViewTemplate (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayed_AndEmptyGroupedListSetFirst()
 		{
@@ -807,7 +807,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayedSetFirst_AndEmptyGroupedList()
 		{
@@ -822,7 +822,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayed_AndGroupedListSetFirst()
 		{
@@ -839,7 +839,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("Custom EmptyViewTemplate (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayedSetFirst_AndGroupedList()
 		{
@@ -856,7 +856,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("Custom EmptyViewTemplate (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayed_AndEmptyViewString()
 		{
@@ -871,7 +871,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayed_AndCustomEmptyView()
 		{
@@ -886,7 +886,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayed_AndEmptyViewString()
 		{
@@ -901,7 +901,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayed_AndCustomEmptyView()
 		{
@@ -916,7 +916,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayed_AndCustomSizeEmptyView()
 		{
@@ -931,7 +931,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayedSetFirst_AndBasicItemTemplate()
 		{
@@ -946,7 +946,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayed_AndBasicTemplateSetFirst()
 		{
@@ -961,7 +961,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Template Items Available(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayedSetFirst_AndBasicItemTemplate()
 		{
@@ -976,7 +976,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayed_AndBasicTemplateSetFirst()
 		{
@@ -991,7 +991,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewSize()
 		{
@@ -1019,7 +1019,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 		//When setting HeightRequest and WidthRequest in the EmptyViewTemplate, as the values were not applied, preventing proper resizing. Issue Link: https://github.com/dotnet/maui/issues/28605
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateSize()
 		{
@@ -1049,7 +1049,7 @@ namespace Microsoft.Maui.TestCases.Tests
 // CollectionView Footer Becomes Scrollable When EmptyView is Active on Android. Issue Link: https://github.com/dotnet/maui/issues/28350
 // HeaderTemplate and FooterTemplate are not displayed when ItemsSource is initially set to null on Android. Issue Link: https://github.com/dotnet/maui/issues/28337
 // Header and footer are not displayed when emptyview selected first Issue Link: https://github.com/dotnet/maui/issues/28351		
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayed_AndHeaderString()
 		{
@@ -1065,7 +1065,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Header(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayed_AndCustomViewHeader()
 		{
@@ -1081,7 +1081,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Header(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayed_AndHeaderString()
 		{
@@ -1097,7 +1097,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Header(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayed_AndCustomViewHeader()
 		{
@@ -1115,7 +1115,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 //Footer Not Displayed at the Bottom When EmptyView is Active in CV2 Issue Link: https://github.com/dotnet/maui/issues/28604
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayed_AndFooterString()
 		{
@@ -1131,7 +1131,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayed_AndCustomViewFooter()
 		{
@@ -1147,7 +1147,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayed_AndFooterString()
 		{
@@ -1163,7 +1163,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayed_AndCustomViewFooter()
 		{
@@ -1179,7 +1179,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayed_AndFooterString()
 		{
@@ -1195,7 +1195,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayed_AndCustomViewFooter()
 		{
@@ -1212,7 +1212,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 //In EmptyView, without explicitly setting HeightRequest and WidthRequest values, the Header and Footer do not appear Issue Link: https://github.com/dotnet/maui/issues/28605
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayed_AndHeaderString()
 		{
@@ -1228,7 +1228,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Header(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayed_AndCustomViewHeader()
 		{
@@ -1251,7 +1251,7 @@ namespace Microsoft.Maui.TestCases.Tests
 //ItemsLayout does not change its default value on windows Issue Link: https://github.com/dotnet/maui/issues/27946
 //Footer Not Displayed at the Bottom When EmptyView is Active in CV2 Issue Link: https://github.com/dotnet/maui/issues/28604
 //TargetInvocationException Occurs When Selecting Header/Footer After Changing ItemsLayout in CV2 Issue Link : https://github.com/dotnet/maui/issues/28678
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewString_WithHeaderFooterString_WhenVerticalList()
 		{
@@ -1272,7 +1272,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
         
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewString_WithHeaderFooterString_WhenHorizontalList()
 		{
@@ -1293,7 +1293,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewString_WithHeaderFooterString_WhenVerticalGrid()
 		{
@@ -1314,7 +1314,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewString_WithHeaderFooterString_WhenHorizontalGrid()
 		{
@@ -1335,7 +1335,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyView_WithHeaderFooterString_WhenVerticalList()
 		{
@@ -1356,7 +1356,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyView_WithHeaderFooterString_WhenHorizontalList()
 		{
@@ -1377,7 +1377,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyView_WithHeaderFooterString_WhenVerticalGrid()
 		{
@@ -1398,7 +1398,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyView_WithHeaderFooterString_WhenHorizontalGrid()
 		{
@@ -1419,7 +1419,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyView_WithHeaderFooterString_WhenVerticalList()
 		{
@@ -1440,7 +1440,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyView_WithHeaderFooterString_WhenHorizontalList()
 		{
@@ -1461,7 +1461,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyView_WithHeaderFooterString_WhenVerticalGrid()
 		{
@@ -1482,7 +1482,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyView_WithHeaderFooterString_WhenHorizontalGrid()
 		{
@@ -1503,7 +1503,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplate_WithHeaderFooterString_WhenVerticalList()
 		{
@@ -1524,7 +1524,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
         
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplate_WithHeaderFooterString_WhenHorizontalList()
 		{
@@ -1545,7 +1545,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplate_WithHeaderFooterString_WhenVerticalGrid()
 		{
@@ -1566,7 +1566,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplate_WithHeaderFooterString_WhenHorizontalGrid()
 		{
@@ -1587,7 +1587,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplate_WithHeaderFooterString_WhenVerticalList()
 		{
@@ -1608,7 +1608,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
         
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplate_WithHeaderFooterString_WhenHorizontalList()
 		{
@@ -1629,7 +1629,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplate_WithHeaderFooterString_WhenVerticalGrid()
 		{
@@ -1650,7 +1650,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplate_WithHeaderFooterString_WhenHorizontalGrid()
 		{
@@ -1671,7 +1671,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewString_WithHeaderFooterView_WhenVerticalList()
 		{
@@ -1692,7 +1692,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
         
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewString_WithHeaderFooterView_WhenHorizontalList()
 		{
@@ -1713,7 +1713,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewString_WithHeaderFooterView_WhenVerticalGrid()
 		{
@@ -1734,7 +1734,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewString_WithHeaderFooterView_WhenHorizontalGrid()
 		{
@@ -1755,7 +1755,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyView_WithHeaderFooterView_WhenVerticalList()
 		{
@@ -1776,7 +1776,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyView_WithHeaderFooterView_WhenHorizontalList()
 		{
@@ -1797,7 +1797,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyView_WithHeaderFooterView_WhenVerticalGrid()
 		{
@@ -1818,7 +1818,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyView_WithHeaderFooterView_WhenHorizontalGrid()
 		{
@@ -1839,7 +1839,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyView_WithHeaderFooterView_WhenVerticalList()
 		{
@@ -1860,7 +1860,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyView_WithHeaderFooterView_WhenHorizontalList()
 		{
@@ -1881,7 +1881,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyView_WithHeaderFooterView_WhenVerticalGrid()
 		{
@@ -1902,7 +1902,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyView_WithHeaderFooterView_WhenHorizontalGrid()
 		{
@@ -1923,7 +1923,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplate_WithHeaderFooterView_WhenVerticalList()
 		{
@@ -1944,7 +1944,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
         
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplate_WithHeaderFooterView_WhenHorizontalList()
 		{
@@ -1965,7 +1965,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplate_WithHeaderFooterView_WhenVerticalGrid()
 		{
@@ -1986,7 +1986,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplate_WithHeaderFooterView_WhenHorizontalGrid()
 		{
@@ -2007,7 +2007,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplate_WithHeaderFooterView_WhenVerticalList()
 		{
@@ -2028,7 +2028,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
         
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplate_WithHeaderFooterView_WhenHorizontalList()
 		{
@@ -2049,7 +2049,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplate_WithHeaderFooterView_WhenVerticalGrid()
 		{
@@ -2070,7 +2070,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplate_WithHeaderFooterView_WhenHorizontalGrid()
 		{

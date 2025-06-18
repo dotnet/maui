@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue264 : _IssuesUITest
 
 	public override string Issue => "PopModal NRE";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Navigation)]
 	public void Issue264TestsPushAndPopModal()
 	{

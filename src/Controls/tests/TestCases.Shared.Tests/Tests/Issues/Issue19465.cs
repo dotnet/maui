@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Double tap gesture NullReferenceException when navigating";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void Issue19465Test()
 		{

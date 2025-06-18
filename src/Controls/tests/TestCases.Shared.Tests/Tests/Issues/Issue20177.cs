@@ -1,5 +1,5 @@
 ﻿#if WINDOWS // Issue can be repro on windows only
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ internal class Issue20177 : _IssuesUITest
 
 	public override string Issue => "Shell TitleColor changes the secondary ToolbarItems TextColor";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ToolbarItem)]
 	public void ToolBarSecondayItemsShouldNotUseBarTextColor()
 	{

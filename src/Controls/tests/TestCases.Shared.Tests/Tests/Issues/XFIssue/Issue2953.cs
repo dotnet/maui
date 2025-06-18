@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue2953 : _IssuesUITest
 
 	public override string Issue => "GroupHeaderCells disappear when item is removed from a group in ListView (iOS only) ";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void Issue2953Test()
 	{

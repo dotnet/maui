@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ public class Issue25193 : _IssuesUITest
 
 	public override string Issue => "Background gradients don't work for some views";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Brush)]
 	public void BackgroundGradientsShouldRenderCorrectly()
 	{

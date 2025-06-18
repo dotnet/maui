@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,7 +20,7 @@ public class FlyoutBehaviorShell : _IssuesUITest
 	public override string Issue => "Shell Flyout Behavior";
 
 
-	//	[Fact]
+	//	[Test]
 	// 	[Category(UITestCategories.Shell)]
 	public void FlyoutTests()
 	{
@@ -79,7 +79,7 @@ public class FlyoutBehaviorShell : _IssuesUITest
 
 	}
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void WhenFlyoutIsLockedButtonsAreStillVisible()
 	{

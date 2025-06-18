@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Dispatching;
 using Microsoft.UI.Xaml.Controls;
-using Xunit;
+using NUnit.Framework;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests

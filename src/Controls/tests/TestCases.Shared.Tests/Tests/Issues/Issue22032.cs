@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Shell FlyoutItem Tab Selected Icon Color not changing if using Font icons";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.TabbedPage)]
 		public void SelectedTabIconShouldChangeColor()
 		{

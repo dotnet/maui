@@ -1,13 +1,13 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 using ObjCRuntime;
 using UIKit;
 using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class LabelTests : PlatformTestFixture
 	{
 		[Test, Category("Label"), Category("RTL"), Category("FormattedText")]

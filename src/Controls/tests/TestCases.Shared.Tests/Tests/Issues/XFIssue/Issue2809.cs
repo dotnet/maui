@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue2809 : _IssuesUITest
 
 	public override string Issue => "Secondary ToolbarItems cause app to hang during PushAsync";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ToolbarItem)]
 	public void TestPageDoesntCrash()
 	{

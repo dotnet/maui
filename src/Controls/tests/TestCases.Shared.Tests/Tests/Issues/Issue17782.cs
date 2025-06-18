@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue17782 : _IssuesUITest
 
 	public override string Issue => "[ManualMauiTests] New text in the Editor character spacing test sometimes uses the previous spacing";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Editor)]
 	public void VerifyEditorCharacterSpacingWithText()
 	{

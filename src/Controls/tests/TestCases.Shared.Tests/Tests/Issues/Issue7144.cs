@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue7144 : _IssuesUITest
 
 	public override string Issue => "IndicatorView using templated icons not working";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.IndicatorView)]
 	public void IndicatorViewWithTemplatedIcon()
 	{

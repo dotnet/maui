@@ -1,8 +1,8 @@
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Foldable.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class TwoPaneViewSpannedTests : BaseTestFixture
 	{
 		TwoPaneView CreateTwoPaneView(TestDualScreenService dualScreenService, View pane1 = null, View pane2 = null)
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			return view;
 		}
 
-		[Fact]
+		[Test]
 		public void BasicSpanTest()
 		{
 			TestDualScreenServicePortrait testDualScreenService = new TestDualScreenServicePortrait();
@@ -41,18 +41,18 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 			result.Layout(new Rectangle(Point.Zero, testDualScreenService.DeviceInfo.ScaledScreenSize));
 
-			Assert.Equal(490, result.Children[0].Width);
-			Assert.Equal(490, result.Children[1].Width);
-			Assert.Equal(510, result.Children[1].X);
+			Assert.AreEqual(490, result.Children[0].Width);
+			Assert.AreEqual(490, result.Children[1].Width);
+			Assert.AreEqual(510, result.Children[1].X);
 
-			Assert.Equal(490, result.Pane1.Width);
-			Assert.Equal(490, result.Pane2.Width);
+			Assert.AreEqual(490, result.Pane1.Width);
+			Assert.AreEqual(490, result.Pane2.Width);
 
-			Assert.Equal(testDualScreenService.DeviceInfo.ScaledScreenSize.Height, result.Pane1.Height);
-			Assert.Equal(testDualScreenService.DeviceInfo.ScaledScreenSize.Height, result.Pane2.Height);
+			Assert.AreEqual(testDualScreenService.DeviceInfo.ScaledScreenSize.Height, result.Pane1.Height);
+			Assert.AreEqual(testDualScreenService.DeviceInfo.ScaledScreenSize.Height, result.Pane2.Height);
 		}
 
-		[Fact]
+		[Test]
 		public void LayoutShiftedOffCenterWideMode()
 		{
 			TestDualScreenServicePortrait testDualScreenService = new TestDualScreenServicePortrait();
@@ -61,14 +61,14 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 			result.Layout(new Rectangle(400, 0, 500, testDualScreenService.DeviceInfo.ScaledScreenSize.Height));
 
-			Assert.Equal(90, result.Children[0].Width);
-			Assert.Equal(400, result.Bounds.X);
-			Assert.Equal(390, result.Children[1].Width);
-			Assert.Equal(110, result.Children[1].X);
+			Assert.AreEqual(90, result.Children[0].Width);
+			Assert.AreEqual(400, result.Bounds.X);
+			Assert.AreEqual(390, result.Children[1].Width);
+			Assert.AreEqual(110, result.Children[1].X);
 		}
 
 
-		[Fact]
+		[Test]
 		public void LayoutShiftedOffCenterTallMode()
 		{
 			var testDualScreenService = new TestDualScreenServiceLandscape();
@@ -77,15 +77,15 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 			result.Layout(new Rectangle(0, 400, testDualScreenService.DeviceInfo.ScaledScreenSize.Width, 500));
 
-			Assert.Equal(90, result.Children[0].Height);
-			Assert.Equal(400, result.Bounds.Y);
-			Assert.Equal(390, result.Children[1].Height);
-			Assert.Equal(110, result.Children[1].Y);
+			Assert.AreEqual(90, result.Children[0].Height);
+			Assert.AreEqual(400, result.Bounds.Y);
+			Assert.AreEqual(390, result.Children[1].Height);
+			Assert.AreEqual(110, result.Children[1].Y);
 		}
 
 
 
-		[Fact]
+		[Test]
 		public void PortraitLayoutStartUnderneathHinge()
 		{
 			TestDualScreenServicePortrait testDualScreenService = new TestDualScreenServicePortrait();
@@ -94,12 +94,12 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 			result.Layout(new Rectangle(500, 0, 400, testDualScreenService.DeviceInfo.ScaledScreenSize.Height));
 
-			Assert.Equal(390, result.Pane1.Width);
-			Assert.Equal(10, result.Pane1.X);
-			Assert.False(result.Children[1].IsVisible);
+			Assert.AreEqual(390, result.Pane1.Width);
+			Assert.AreEqual(10, result.Pane1.X);
+			Assert.IsFalse(result.Children[1].IsVisible);
 		}
 
-		[Fact]
+		[Test]
 		public void PortraitLayoutEndsUnderneathHinge()
 		{
 			TestDualScreenServicePortrait testDualScreenService = new TestDualScreenServicePortrait();
@@ -108,13 +108,13 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 			result.Layout(new Rectangle(100, 0, 400, testDualScreenService.DeviceInfo.ScaledScreenSize.Height));
 
-			Assert.Equal(390, result.Pane1.Width);
-			Assert.Equal(0, result.Pane1.X);
-			Assert.False(result.Children[1].IsVisible);
+			Assert.AreEqual(390, result.Pane1.Width);
+			Assert.AreEqual(0, result.Pane1.X);
+			Assert.IsFalse(result.Children[1].IsVisible);
 		}
 
 
-		[Fact]
+		[Test]
 		public void LandscapeLayoutStartUnderneathHinge()
 		{
 			var testDualScreenService = new TestDualScreenServiceLandscape();
@@ -122,12 +122,12 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			var result = CreateTwoPaneView(dualScreenService: testDualScreenService);
 			result.Layout(new Rectangle(0, 500, testDualScreenService.DeviceInfo.ScaledScreenSize.Width, 400));
 
-			Assert.Equal(390, result.Pane1.Height);
-			Assert.Equal(10, result.Pane1.Y);
-			Assert.False(result.Children[1].IsVisible);
+			Assert.AreEqual(390, result.Pane1.Height);
+			Assert.AreEqual(10, result.Pane1.Y);
+			Assert.IsFalse(result.Children[1].IsVisible);
 		}
 
-		[Fact]
+		[Test]
 		public void LandscapeLayoutEndsUnderneathHinge()
 		{
 			var testDualScreenService = new TestDualScreenServiceLandscape();
@@ -136,13 +136,13 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 			result.Layout(new Rectangle(0, 100, testDualScreenService.DeviceInfo.ScaledScreenSize.Width, 400));
 
-			Assert.Equal(390, result.Pane1.Height);
-			Assert.Equal(0, result.Pane1.Y);
-			Assert.False(result.Children[1].IsVisible);
+			Assert.AreEqual(390, result.Pane1.Height);
+			Assert.AreEqual(0, result.Pane1.Y);
+			Assert.IsFalse(result.Children[1].IsVisible);
 		}
 
 
-		[Fact]
+		[Test]
 		public void NestedTwoPaneViews()
 		{
 			Grid grid = new Grid();
@@ -159,18 +159,18 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			grid.Children.Add(twoPaneViewNested);
 			grid.Layout(new Rectangle(Point.Zero, testDualScreenServicePortrait.DeviceInfo.ScaledScreenSize));
 
-			Assert.Equal(twoPaneViewNested.Mode, TwoPaneViewMode.Wide);
+			Assert.AreEqual(twoPaneViewNested.Mode, TwoPaneViewMode.Wide);
 
-			Assert.Equal(90, twoPaneViewNested.Pane1.Width);
-			Assert.Equal(90, twoPaneViewNested.Pane2.Width);
-			Assert.Equal(200, twoPaneViewNested.Pane1.Height);
-			Assert.Equal(200, twoPaneViewNested.Pane2.Height);
+			Assert.AreEqual(90, twoPaneViewNested.Pane1.Width);
+			Assert.AreEqual(90, twoPaneViewNested.Pane2.Width);
+			Assert.AreEqual(200, twoPaneViewNested.Pane1.Height);
+			Assert.AreEqual(200, twoPaneViewNested.Pane2.Height);
 
-			Assert.Equal(0, twoPaneViewNested.Pane1.X);
-			Assert.Equal(0, twoPaneViewNested.Pane2.X);
+			Assert.AreEqual(0, twoPaneViewNested.Pane1.X);
+			Assert.AreEqual(0, twoPaneViewNested.Pane2.X);
 		}
 
-		[Fact]
+		[Test]
 		public void SpanningBoundsLandscape()
 		{
 			var testDualScreenService = new TestDualScreenServiceLandscape();
@@ -184,19 +184,19 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 			var top = info.SpanningBounds[0];
 
-			Assert.Equal(0, top.X);
-			Assert.Equal(0, top.Y);
-			Assert.Equal(testDualScreenService.ScaledScreenSize.Width, top.Width);
-			Assert.Equal(90, top.Height);
+			Assert.AreEqual(0, top.X);
+			Assert.AreEqual(0, top.Y);
+			Assert.AreEqual(testDualScreenService.ScaledScreenSize.Width, top.Width);
+			Assert.AreEqual(90, top.Height);
 
 			var bottom = info.SpanningBounds[1];
-			Assert.Equal(0, bottom.X);
-			Assert.Equal(110, bottom.Y);
-			Assert.Equal(testDualScreenService.ScaledScreenSize.Width, bottom.Width);
-			Assert.Equal(90, bottom.Height);
+			Assert.AreEqual(0, bottom.X);
+			Assert.AreEqual(110, bottom.Y);
+			Assert.AreEqual(testDualScreenService.ScaledScreenSize.Width, bottom.Width);
+			Assert.AreEqual(90, bottom.Height);
 		}
 
-		[Fact]
+		[Test]
 		public void SpanningBoundsPortrait()
 		{
 			var testDualScreenService = new TestDualScreenServicePortrait();
@@ -210,16 +210,16 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 			var left = info.SpanningBounds[0];
 
-			Assert.Equal(0, left.X);
-			Assert.Equal(0, left.Y);
-			Assert.Equal(90, left.Width);
-			Assert.Equal(testDualScreenService.ScaledScreenSize.Height, left.Height);
+			Assert.AreEqual(0, left.X);
+			Assert.AreEqual(0, left.Y);
+			Assert.AreEqual(90, left.Width);
+			Assert.AreEqual(testDualScreenService.ScaledScreenSize.Height, left.Height);
 
 			var right = info.SpanningBounds[1];
-			Assert.Equal(110, right.X);
-			Assert.Equal(0, right.Y);
-			Assert.Equal(90, right.Width);
-			Assert.Equal(testDualScreenService.ScaledScreenSize.Height, right.Height);
+			Assert.AreEqual(110, right.X);
+			Assert.AreEqual(0, right.Y);
+			Assert.AreEqual(90, right.Width);
+			Assert.AreEqual(testDualScreenService.ScaledScreenSize.Height, right.Height);
 		}
 	}
 }

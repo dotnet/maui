@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "'Navigation.InsertPageBefore()' does not work for more than two pages, \"throws java.lang.IndexOutOfBoundsException: index=3 count=2";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla31688Test()

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] Shell throws exception when delay adding Shell Content";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shell)]
 		public void DelayedAddingOfShellContentDoesntCrash()
 		{
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] Shell throws exception when delay adding Shell Section";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shell)]
 		public void DelayedAddingOfShellSectionDoesntCrash()
 		{
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] Shell throws exception when delay adding Shell Item";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Shell)]
 		public void DelayedAddingOfShellItemDoesntCrash()
 		{

@@ -1,6 +1,6 @@
 ﻿#if IOS // This test case verifies that the UINavigationBar behaves as expected (translucent or transparent) exclusively on the iOS platform.
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "UINavigationBar is Translucent";
 
 		// TODO: Add shell navigation bar tests when we can call shell in UITest
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Navigation)]
 		[TestCase("NewNavigationPageButton", false)]
         [TestCase("NewNavigationPageTransparentButton", false)]
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
                 {
                     if (isTopOfScreen)
                     {
-                        Assert.Equal(rect.Y, 0);
+                        ClassicAssert.AreEqual(rect.Y, 0);
                     }
                     else
                     {

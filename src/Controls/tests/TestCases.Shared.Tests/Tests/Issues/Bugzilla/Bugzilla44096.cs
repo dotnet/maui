@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string ToggleIsEnabled = "disabled";
 		const string Original = "Original";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest]
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			TestControl(Grid);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest]
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			TestControl(ContentView);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest]
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]

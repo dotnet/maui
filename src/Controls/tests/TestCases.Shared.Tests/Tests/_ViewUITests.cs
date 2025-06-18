@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		public _ViewUITests(TestDevice device) : base(device) { }
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.IsEnabled)]
 		public virtual void IsEnabled()
 		{
@@ -28,15 +28,15 @@ namespace Microsoft.Maui.TestCases.Tests
 			remote.TapStateButton();
 
 			var isEnabled = remote.GetStateLabel().GetText();
-			Assert.Equal("True", isEnabled);
+			ClassicAssert.AreEqual("True", isEnabled);
 
 			remote.TapStateButton();
 
 			var isDisabled = remote.GetStateLabel().GetText();
-			Assert.Equal("False", isDisabled);
+			ClassicAssert.AreEqual("False", isDisabled);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.IsVisible)]
 		public virtual void IsVisible()
 		{
@@ -45,13 +45,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement($"IsVisibleStateButton");
 			var viewPre = remote.GetViews();
 
-			Assert.Equal(1, viewPre.Count);
+			ClassicAssert.AreEqual(1, viewPre.Count);
 
 			remote.TapStateButton();
 
 			var viewPost = remote.GetViews();
 
-			Assert.Equal(0, viewPost.Count);
+			ClassicAssert.AreEqual(0, viewPost.Count);
 		}
 
 		internal StateViewContainerRemote GoToStateRemote([CallerMemberName] string? testName = null)

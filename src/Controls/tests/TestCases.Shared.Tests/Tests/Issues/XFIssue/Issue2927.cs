@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // Text is not rendered on windows. Issue -  https://github.com/dotnet/maui/issues/22731
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue2927 : _IssuesUITest
 
 	public override string Issue => "ListView item tapped not firing multiple times";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void Issue2927Test()
 	{

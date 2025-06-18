@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ public class Issue28580 : _IssuesUITest
 
 	public override string Issue => "CollectionView footer sizing when source is empty";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void FooterWithEmptyCVShouldHaveCorrectSize()
 	{

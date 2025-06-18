@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,29 +12,29 @@ public class Issue1439 : _IssuesUITest
 
 	public override string Issue => "ItemTapped event for a grouped ListView is not working as expected.";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.TableView)]
 	public void Issue1439Test()
 	{
 		App.WaitForElement("A");
 		App.Tap("A");
 
-		Assert.Equal("A", App.FindElement("lblItem").GetText());
-		Assert.Equal("Group 1", App.FindElement("lblGroup").GetText());
+		Assert.That(App.FindElement("lblItem").GetText(), Is.EqualTo("A"));
+		Assert.That(App.FindElement("lblGroup").GetText(), Is.EqualTo("Group 1"));
 
 		App.Tap("B");
 
-		Assert.Equal("B", App.FindElement("lblItem").GetText());
-		Assert.Equal("Group 1", App.FindElement("lblGroup").GetText());
+		Assert.That(App.FindElement("lblItem").GetText(), Is.EqualTo("B"));
+		Assert.That(App.FindElement("lblGroup").GetText(), Is.EqualTo("Group 1"));
 
 		App.Tap("C");
 
-		Assert.Equal("C", App.FindElement("lblItem").GetText());
-		Assert.Equal("Group 2", App.FindElement("lblGroup").GetText());
+		Assert.That(App.FindElement("lblItem").GetText(), Is.EqualTo("C"));
+		Assert.That(App.FindElement("lblGroup").GetText(), Is.EqualTo("Group 2"));
 
 		App.Tap("D");
 
-		Assert.Equal("D", App.FindElement("lblItem").GetText());
-		Assert.Equal("Group 2", App.FindElement("lblGroup").GetText());
+		Assert.That(App.FindElement("lblItem").GetText(), Is.EqualTo("D"));
+		Assert.That(App.FindElement("lblGroup").GetText(), Is.EqualTo("Group 2"));
 	}
 }

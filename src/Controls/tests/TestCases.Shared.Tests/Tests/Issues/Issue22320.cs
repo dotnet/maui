@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue22320 : _IssuesUITest
 
 	public override string Issue => "CollectionView does not highlight selected grouped items correctly";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void SelectionShouldNotMovedToTopWithGroupedCollection()
 	{

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Not able to update CollectionView header";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void UpdateCollectionViewHeaderTest()
 		{
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("WaitForStubControl");
 
 			// 2. Verify the result.
-			Assert.Equal("This is a CollectionViewHeader #1", App.WaitForElement("HeaderLabel").GetText());
+			Assert.That(App.WaitForElement("HeaderLabel").GetText(), Is.EqualTo("This is a CollectionViewHeader #1"));
 		}
 	}
 }

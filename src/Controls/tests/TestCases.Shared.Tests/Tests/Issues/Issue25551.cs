@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 
 		public void CollectionViewPreSelectionShouldUpdate()

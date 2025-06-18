@@ -1,15 +1,15 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
-using Xunit;
+using NUnit.Framework;
 using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class EmbeddingTests
 	{
-		[Fact]
+		[Test]
 		public async Task CanCreateViewControllerFromContentPage()
 		{
 			var contentPage = new ContentPage { Title = "Embedded Page" };

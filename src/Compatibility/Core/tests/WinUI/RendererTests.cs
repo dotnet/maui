@@ -1,12 +1,12 @@
 using System.Threading.Tasks;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class RendererTests : PlatformTestFixture
 	{
-		[Fact]
+		[Test]
 		[Description("Basic sanity check that Label text matches renderer text")]
 		public async Task LabelTextMatchesRendererText()
 		{

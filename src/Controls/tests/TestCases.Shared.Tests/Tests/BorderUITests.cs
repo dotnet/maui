@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		// TODO: Enable this as a test once fully working
-		//[Fact]
+		//[Test]
 		//[Category(UITestCategories.Border)]
 		public void BordersWithVariousShapes()
 		{

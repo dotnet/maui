@@ -1,5 +1,5 @@
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS //The Position property now functions correctly on Android and Windows, issue: https://github.com/dotnet/maui/issues/15443. // This scenario fails on iOS,Android and Catalyst with KeepItemsInView , However carouselview flickers with KeepScrollOffset , issue:https://github.com/dotnet/maui/issues/27773.
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue8964 : _IssuesUITest
 
 	public override string Issue => "Adding an item to the beginning of the bound ItemSource causes the carousel to skip sometimes";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void Issue8964Test()
 	{

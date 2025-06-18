@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView RemainingItemsThresholdReachedCommand not Firing";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void RemainingItemsThresholdReachedCommandFired()
 		{
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ScrollDown("collectionView", ScrollStrategy.Gesture, 0.99);
 
 			var label = App.WaitForElement("mainPageLabel");
-			Assert.Equal("Command Fired!", label.GetText());
+			Assert.That(label.GetText(), Is.EqualTo("Command Fired!"));
 		}
 	}
 }

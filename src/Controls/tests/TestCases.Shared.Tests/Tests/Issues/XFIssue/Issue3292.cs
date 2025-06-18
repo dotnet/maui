@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue3292 : _IssuesUITest
 
 	public override string Issue => "TableSection.Title property binding fails in XAML";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.TableView)]
 	public void Issue3292Test()
 	{

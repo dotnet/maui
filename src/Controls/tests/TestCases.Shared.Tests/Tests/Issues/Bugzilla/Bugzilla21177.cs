@@ -1,5 +1,5 @@
 #if IOS
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Bugzilla21177 : _IssuesUITest
 
     public override string Issue => "Using a UICollectionView in a ViewRenderer results in issues with selection";
 
-     [Fact]
+     [Test]
      [Category(UITestCategories.CollectionView)]
      [FailsOnIOSWhenRunningOnXamarinUITest]
      public void Bugzilla21177Test()

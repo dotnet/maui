@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ImageButton is not properly anti-aliased when scaled down";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.ImageButton)]
 		public void Issue16918Test()
 		{

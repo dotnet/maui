@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST // The Programmatic Focus doesn't open the dialog for picker controls. Issue: https://github.com/dotnet/maui/issues/8946 
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ public class Issue5159 : _IssuesUITest
 
 	public override string Issue => "[Android] Calling Focus on all Pickers running an API 28 devices no longer opens Picker";
 
-	[Fact]
+	[Test]
 	public void InvisibleDatepickerShowsDialogOnFocus()
 	{
 		App.WaitForElement("DatePickerButton");
@@ -26,7 +26,7 @@ public class Issue5159 : _IssuesUITest
 		App.TapCoordinates(5, 100);
 	}
 
-	[Fact]
+	[Test]
 	public void InvisibleTimepickerShowsDialogOnFocus()
 	{
 		App.WaitForElement(TimePickerButton);
@@ -35,7 +35,7 @@ public class Issue5159 : _IssuesUITest
 		App.TapCoordinates(5, 100);
 	}
 
-	[Fact]
+	[Test]
 	public void InvisiblePickerShowsDialogOnFocus()
 	{
 		App.WaitForElement(PickerButton);

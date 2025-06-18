@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue2883 : _IssuesUITest
 
 	public override string Issue => "ViewCell IsEnabled set to false does not disable a cell in a TableView";
 
-	[Fact]
+	[Test]
 	public void Issue2883TestDisabled()
 	{
 		App.WaitForElement("btnCustomCellTable");
@@ -25,7 +25,7 @@ public class Issue2883 : _IssuesUITest
 	}
 
 
-	[Fact]
+	[Test]
 	public void Issue2883TestEnabled()
 	{
 		App.WaitForElement("btnCustomCellTableEnabled");

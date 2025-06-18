@@ -1,5 +1,5 @@
 ﻿#if ANDROID
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue28552 : _IssuesUITest
 
 	public override string Issue => "Changing StatusBar and NavigationBar background color doesn't work with Modal pages";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Navigation)]
 	public void StatusBarAndNavigationBarShouldInheritColor()
 	{

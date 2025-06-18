@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Cannot enter text when Entry is focus()'d from an editor completed event";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Focus)]
 		[Category(UITestCategories.Compatibility)]

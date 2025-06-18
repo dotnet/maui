@@ -2,11 +2,11 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class CornerRadiusTests : PlatformTestFixture
 	{
 		[Test, Category("CornerRadius"), Category("BoxView")]

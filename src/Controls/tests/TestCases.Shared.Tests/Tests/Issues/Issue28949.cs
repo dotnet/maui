@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue28949 : _IssuesUITest
 
 	public override string Issue => "On iOS GestureRecognizers don't work on Span in a Label, which doesn't get IsVisible (=true) update from its parent";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Label)]
 	public void GestureRecognizersOnLabelSpanShouldWork()
 	{

@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[WP] Navigating to a ContentPage with a Grid inside a TableView affects Entry heights";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Entry)]
 		public void Bugzilla36559Test()
 		{

@@ -1,5 +1,5 @@
 #if MACCATALYST || WINDOWS // This test verifies that "the class defines a custom TitleBar for a ContentPage" that works on Desktop platforms only
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "TitleBar Implementation";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Window)]
 		public void TitleBarIsImplemented1()
 		{

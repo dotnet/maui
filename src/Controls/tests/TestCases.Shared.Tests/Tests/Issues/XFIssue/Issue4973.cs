@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // Test ignored on Windows and Android due to rendering issues. The documentation specifies that TabbedPage should contain NavigationPage or ContentPage, but this sample uses nested TabbedPages.
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue4973 : _IssuesUITest
 
 	public override string Issue => "TabbedPage nav tests";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Navigation)]
 	public void Issue4973Test()
 	{

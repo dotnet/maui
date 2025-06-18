@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Animating a `View` that is currently animating will throw `System.InvalidOperationException`";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Animation)]
 		[Category(UITestCategories.Compatibility)]
 		public void AnimationCancel()

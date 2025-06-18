@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -9,7 +9,7 @@ public class Issue24547 : _IssuesUITest
 
 	public override string Issue => "[Windows] FlyoutPage ShouldShowToolbarButton when overridden to return false, still shows button in title bar";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyInitialToolbarButtonHidden()
 	{

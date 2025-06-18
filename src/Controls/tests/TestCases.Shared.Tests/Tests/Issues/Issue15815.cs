@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,6 +17,6 @@ public class Issue15815 : _IssuesUITest
 	public void LastItemIsVisilbe()
 	{
 		var lastItem = App.WaitForElement("id-2");
-		Assert.Equal("Item 2", lastItem.GetText());
+		ClassicAssert.AreEqual("Item 2", lastItem.GetText());
 	}
 }
