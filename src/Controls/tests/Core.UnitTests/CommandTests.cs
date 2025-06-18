@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			command.Execute(null); // "null is not a valid value for int"
 			Assert.True(executions == 0, "the command should not have executed");
 		}
-		
+
 		[Theory]
 		[InlineData(typeof(Button), true)]
 		[InlineData(typeof(Button), false)]
@@ -294,10 +294,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					case RefreshView r:
 						r.Command = command;
 						break;
-						case TextCell t:
+					case TextCell t:
 						t.Command = command;
 						break;
-					case ImageButton i:	
+					case ImageButton i:
 						i.Command = command;
 						break;
 					case MenuItem m:
@@ -321,7 +321,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					weakReferences.Add(new WeakReference(commandElement.CleanupTracker));
 					weakReferences.Add(new WeakReference(commandElement.CleanupTracker.Proxy));
 				}
-				else if(control is SearchHandler searchHandler)
+				else if (control is SearchHandler searchHandler)
 				{
 					// Add weak references to the command and its cleanup tracker
 					weakReferences.Add(new WeakReference(searchHandler.CommandSubscription));
@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					Assert.True(weakRef.IsAlive);
 				}
 			}
-	
+
 			foreach (var weakRef in weakReferences)
 			{
 				Assert.False(await weakRef.WaitForCollect());
