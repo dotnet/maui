@@ -57,6 +57,7 @@ Microsoft.Maui.Controls.LayoutConstraint.Fixed = Microsoft.Maui.Controls.LayoutC
 Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.None = 0 -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed = 2 -> Microsoft.Maui.Controls.LayoutConstraint
+Microsoft.Maui.Controls.PerformanceTracker.PerformanceMonitoringExtensions
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
@@ -68,6 +69,7 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertFrom(System.Compo
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
+static Microsoft.Maui.Controls.PerformanceTracker.PerformanceMonitoringExtensions.AddPerformanceMonitoring(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 ~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
 ~Microsoft.Maui.Controls.ITextElement.TextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string

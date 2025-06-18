@@ -52,9 +52,11 @@ Microsoft.Maui.Controls.LayoutConstraint.Fixed = Microsoft.Maui.Controls.LayoutC
 Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.None = 0 -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed = 2 -> Microsoft.Maui.Controls.LayoutConstraint
+Microsoft.Maui.Controls.PerformanceTracker.PerformanceMonitoringExtensions
 Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan?
 Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan?
 Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan? oldTime, System.TimeSpan? newTime) -> void
+static Microsoft.Maui.Controls.PerformanceTracker.PerformanceMonitoringExtensions.AddPerformanceMonitoring(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 ~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
 ~Microsoft.Maui.Controls.ITextElement.TextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string

@@ -1,0 +1,23 @@
+using System;
+
+namespace Microsoft.Maui.Controls.PerformanceTracker;
+
+/// <summary>
+/// Represents performance statistics.
+/// </summary>
+internal class PerformanceStats
+{
+	/// <summary>
+	/// Gets or sets the layout-related performance statistics.
+	/// </summary>
+	public LayoutStats? Layout { get; set; }
+	
+	/// <summary>
+	/// The timestamp (UTC) when the image update was recorded.
+	/// </summary>
+	/// <remarks>
+	/// Capturing this timestamp allows performance monitoring over time 
+	/// and helps correlate image loading events.
+	/// </remarks>
+	public DateTime TimestampUtc { get; set; }
+}

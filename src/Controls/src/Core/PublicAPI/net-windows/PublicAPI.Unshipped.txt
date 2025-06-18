@@ -397,3 +397,5 @@ Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.Al
 Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.AllowImplicitXmlnsDeclarationAttribute(bool allow = true) -> void
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.Target.get -> string
 *REMOVED*~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.XmlnsDefinitionAttribute(string xmlNamespace, string clrNamespace) -> void
+Microsoft.Maui.Controls.PerformanceTracker.PerformanceMonitoringExtensions
+static Microsoft.Maui.Controls.PerformanceTracker.PerformanceMonitoringExtensions.AddPerformanceMonitoring(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!

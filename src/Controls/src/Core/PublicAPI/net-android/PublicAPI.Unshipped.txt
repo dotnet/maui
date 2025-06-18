@@ -42,6 +42,7 @@ Microsoft.Maui.Controls.ILineHeightElement
 Microsoft.Maui.Controls.ILineHeightElement.LineHeight.get -> double
 Microsoft.Maui.Controls.ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue) -> void
 Microsoft.Maui.Controls.Internals.TextTransformUtilities
+Microsoft.Maui.Controls.PerformanceTracker.PerformanceMonitoringExtensions
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Request.get -> Android.Webkit.IWebResourceRequest!
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Response.get -> Android.Webkit.WebResourceResponse?
@@ -68,6 +69,7 @@ Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed = 2 -> Microsoft.Maui.C
 Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan?
 Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan?
 Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan? oldTime, System.TimeSpan? newTime) -> void
+static Microsoft.Maui.Controls.PerformanceTracker.PerformanceMonitoringExtensions.AddPerformanceMonitoring(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 ~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
 ~Microsoft.Maui.Controls.ITextElement.TextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string

@@ -17,6 +17,7 @@ Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.SetResponse(i
 Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
 Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.Uri.get -> System.Uri!
 Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgsExtensions
+Microsoft.Maui.Controls.PerformanceTracker.PerformanceMonitoringExtensions
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Request.get -> Foundation.NSUrlRequest!
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Sender.get -> WebKit.WKWebView!
@@ -44,6 +45,7 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertFrom(System.Compo
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
+static Microsoft.Maui.Controls.PerformanceTracker.PerformanceMonitoringExtensions.AddPerformanceMonitoring(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.XmlnsDefinitionAttribute(string xmlNamespace, string target) -> void
 ~override Microsoft.Maui.Controls.Compatibility.AbsoluteLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.Compatibility.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
