@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,14 +17,14 @@ public class Issue6878 : _IssuesUITest
 
 	public override string Issue => "ShellItem.Items.Clear() crashes when the ShellItem has bottom tabs";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void ShellItemItemsClearTests()
 	{
 		App.WaitForElement(ClearShellItems);
 		App.Tap(ClearShellItems);
 		var label = App.WaitForElement(StatusLabel);
-		Assert.Equal(StatusLabelText, label.ReadText());
+		Assert.That(label.ReadText(), Is.EqualTo(StatusLabelText));
 		App.TapTab(PostClearTopTab, true);
 	}
 }

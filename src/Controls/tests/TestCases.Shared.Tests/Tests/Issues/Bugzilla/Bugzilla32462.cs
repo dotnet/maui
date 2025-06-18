@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Bugzilla32462 : _IssuesUITest
 
 	public override string Issue => "Crash after a page disappeared if a ScrollView is in the HeaderTemplate property of a ListView";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla36729Test()
 	{

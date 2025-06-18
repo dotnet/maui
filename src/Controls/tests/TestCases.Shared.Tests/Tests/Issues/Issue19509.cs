@@ -1,5 +1,5 @@
 #if TEST_FAILS_ON_IOS //For more info see: https://github.com/dotnet/maui/issues/28806
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "The entry text color property not working when the text value is bound after some time";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Entry)]
 		public async Task EntryTextColorStopsWorkingAfterPropertyIsUpdatedFromBinding()
 		{

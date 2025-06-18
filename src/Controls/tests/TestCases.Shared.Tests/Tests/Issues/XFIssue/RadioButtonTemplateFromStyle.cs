@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class RadioButtonTemplateFromStyle : _IssuesUITest
 
 	public override string Issue => "RadioButton: Template From Style";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.RadioButton)]
 	public void ContentRenderers()
 	{

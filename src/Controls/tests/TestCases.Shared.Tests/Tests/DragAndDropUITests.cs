@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Graphics;
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// https://github.com/dotnet/maui/issues/24914
 #if !MACCATALYST
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DragEvents()
 		{
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			else
 			{
-				Assert.Equal("DragStarting", textAfterDragStart);
+				Assert.That(textAfterDragStart, Is.EqualTo("DragStarting"));
 			}
 
 			App.WaitForElement("DragOverEventsLabel");
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			else
 			{
-				Assert.Equal("DragOver", textAfterDragOver);
+				Assert.That(textAfterDragOver, Is.EqualTo("DragOver"));
 			}
 
 			App.WaitForElement("DragCompletedEventsLabel");
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			else
 			{
-				Assert.Equal("DropCompleted", textAfterDragComplete);
+				Assert.That(textAfterDragComplete, Is.EqualTo("DropCompleted"));
 			}
 
 			App.WaitForElement("DropEventsLabel");
@@ -74,11 +74,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			else
 			{
-				Assert.Equal("Drop", textAfterDrop);
+				Assert.That(textAfterDrop, Is.EqualTo("Drop"));
 			}
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DragAndDropBetweenLayouts()
 		{
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			else
 			{
-				Assert.Equal("DragStarting", textAfterDragStart);
+				Assert.That(textAfterDragStart, Is.EqualTo("DragStarting"));
 			}
 
 			App.WaitForElement("DragOverEventsLabel");
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			else
 			{
-				Assert.Equal("DragOver", textAfterDragOver);
+				Assert.That(textAfterDragOver, Is.EqualTo("DragOver"));
 			}
 
 			App.WaitForElement("DragCompletedEventsLabel");
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			else
 			{
-				Assert.Equal("DropCompleted", textAfterDragComplete);
+				Assert.That(textAfterDragComplete, Is.EqualTo("DropCompleted"));
 			}
 
 			App.WaitForElement("RainBowColorsLabel");
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			else
 			{
-				Assert.Equal("RainbowColorsAdd:Red", rainbowColorText);
+				Assert.That(rainbowColorText, Is.EqualTo("RainbowColorsAdd:Red"));
 			}
 
 			App.WaitForElement("DropEventsLabel");
@@ -146,11 +146,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			else
 			{
-				Assert.Equal("Drop", textAfterDrop);
+				Assert.That(textAfterDrop, Is.EqualTo("Drop"));
 			}
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void PlatformDragEventArgs()
 		{
@@ -274,7 +274,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DragStartEventCoordinates()
 		{
@@ -308,7 +308,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(dragStartRelativeToLabel!.Value.Y < 0);
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DragEventCoordinates()
 		{
@@ -349,7 +349,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if TEST_FAILS_ON_WINDOWS || TEST_FAILS_ON_MACCATALYST
 		// TODO: Flaky test, disabling for Win and Mac.
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DropEventCoordinates()
 		{

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,7 +23,7 @@ public class Bugzilla52419 : _IssuesUITest
 
 	public override string Issue => "[A] OnAppearing called for previous pages in a tab's navigation when switching active tabs";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.TabbedPage)]
 	public void Bugzilla52419Test()
 	{
@@ -40,6 +40,6 @@ public class Bugzilla52419 : _IssuesUITest
 		App.WaitForElement(PushNewPage);
 		App.TapBackArrow(BackButtonIdentifier);
 		App.WaitForElement(AppearanceLabel);
-		Assert.Equal("Times Appeared: 2", App.WaitForElement(AppearanceLabel).GetText());
+		Assert.That(App.WaitForElement(AppearanceLabel).GetText(), Is.EqualTo("Times Appeared: 2"));
 	}
 }

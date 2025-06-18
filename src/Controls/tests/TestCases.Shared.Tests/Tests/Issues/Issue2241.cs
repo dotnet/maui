@@ -1,6 +1,6 @@
 ﻿#if IOS || ANDROID  //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms iOS and Android.
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ScrollView content can become stuck on orientation change (iOS)";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.ScrollView)]
 		[Category(UITestCategories.Compatibility)]
 		public void ChangeOrientationCheckScroll()
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.SetOrientationPortrait();
 			var grid2 = App.WaitForElement("MainGrid").GetRect();
 
-			Assert.Equal(grid1.CenterY(), grid2.CenterY());
+			ClassicAssert.AreEqual(grid1.CenterY(), grid2.CenterY());
 		}
 	}
 }

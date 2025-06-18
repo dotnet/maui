@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Circle view not rotating from center";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Animation)]
 		public void Issue17694Test()
 		{

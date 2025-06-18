@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Android 10 Setting ThumbColor on Switch causes a square block";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Switch)]
 		public void SwitchColorTestBeforeToggling()
 		{
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Switch)]
 		public void SwitchColorTestAfterToggling()
 		{

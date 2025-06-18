@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ContentPresenter just rendering component string in .Net9";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.RadioButton)]
 		public void RadioButtonContentNotRendering()
 		{

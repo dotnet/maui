@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue5500 : _IssuesUITest
 
 	public override string Issue => "[iOS] Editor with material visuals value binding not working on physical device";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Editor)]
 	public void VerifyEditorTextChangeEventsAreFiring()
 	{
@@ -21,13 +21,13 @@ public class Issue5500 : _IssuesUITest
 
 		var editorText = App.WaitForElement("EditorAutomationId").ReadText();
 		var entryText = App.WaitForElement("EntryAutomationId").ReadText();
-		Assert.Equal(entryText, editorText);
+		Assert.That(editorText, Is.EqualTo(entryText));
 
 		App.ClearText("EntryAutomationId");
 		App.EnterText("EntryAutomationId", "Test 2");
 
 		editorText = App.WaitForElement("EditorAutomationId").ReadText();
 		entryText = App.WaitForElement("EntryAutomationId").ReadText();
-		Assert.Equal(entryText, editorText);
+		Assert.That(editorText, Is.EqualTo(entryText));
 	}
 }

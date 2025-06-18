@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Bugzilla43941 : _IssuesUITest
 
 	public override string Issue => "Memory leak with ListView's RecycleElement on iOS";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla43941Test()
 	{

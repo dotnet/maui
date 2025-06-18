@@ -1,10 +1,10 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using ImageMagick;
-using Xunit;
+using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using UITest.Appium;
-using UITest.Appium.XUnit;
+using UITest.Appium.NUnit;
 using UITest.Core;
 using VisualTestUtils;
 using VisualTestUtils.MagickNet;

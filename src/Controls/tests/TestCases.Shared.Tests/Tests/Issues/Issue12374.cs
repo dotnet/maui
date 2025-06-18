@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // EmptyView is not accessible through the test framework on Windows.
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] iOS XF 5.0-pre1 crash with CollectionView when using EmptyView";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void Issue12374Test()
 		{

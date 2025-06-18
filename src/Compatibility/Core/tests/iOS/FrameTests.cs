@@ -5,14 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Maui.Dispatching;
-using Xunit;
+using NUnit.Framework;
 using ObjCRuntime;
 using UIKit;
 using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class FrameTests : PlatformTestFixture
 	{
 		[Test, Category("Frame")]
@@ -46,8 +46,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 
 					frameRenderer.SetElement(frame2);
 
-					Assert.Equal(1, frameRenderer.NativeView.Subviews.Length);
-					Assert.Equal(1, frameRenderer.NativeView.Subviews[0].Subviews.Length);
+					Assert.AreEqual(1, frameRenderer.NativeView.Subviews.Length);
+					Assert.AreEqual(1, frameRenderer.NativeView.Subviews[0].Subviews.Length);
 
 #pragma warning disable CS0612 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -55,12 +55,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 					var view = frameRenderer.NativeView;
-					Assert.Equal(1, view.Subviews.Length);
+					Assert.AreEqual(1, view.Subviews.Length);
 
 					while (labelRenderer == null)
 					{
 						view = view.Subviews[0];
-						Assert.Equal(1, view.Subviews.Length);
+						Assert.AreEqual(1, view.Subviews.Length);
 #pragma warning disable CS0612 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
 						labelRenderer = view as LabelRenderer;
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 					}
 
 					var uILabel = (UILabel)labelRenderer.NativeView.Subviews[0];
-					Assert.Equal("I am frame 2", uILabel.Text);
+					Assert.AreEqual("I am frame 2", uILabel.Text);
 
 					Frame frameWithButton = new Frame()
 					{
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 					frameRenderer.SetElement(frameWithButton);
 
 					var uiButton = (UIButton)frameRenderer.NativeView.Subviews[0].Subviews[0].Subviews[0];
-					Assert.Equal("I am a Button", uiButton.Title(UIControlState.Normal));
+					Assert.AreEqual("I am a Button", uiButton.Title(UIControlState.Normal));
 				}
 			});
 		}

@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,13 +16,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Disabling Editor in iOS does not disable entry of text";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue2963Test()
 		{
 			App.WaitForElement(EditorId);
 			App.Tap(EditorId);
-			Assert.Equal("False", App.FindElement(FocusedLabelId).GetText());
+			Assert.That(App.FindElement(FocusedLabelId).GetText(), Is.EqualTo("False"));
 		}
 	}
 }

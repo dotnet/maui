@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ public class Issue2470 : _IssuesUITest
 
 	public override string Issue => "ObservableCollection changes do not update ListView";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void ObservableCollectionChangeListView()
 	{

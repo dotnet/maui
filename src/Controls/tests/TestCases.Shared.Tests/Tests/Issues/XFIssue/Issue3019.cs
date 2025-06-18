@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,14 +12,14 @@ public class Issue3019 : _IssuesUITest
 
 	public override string Issue => "Grouped ListView Header empty for adding items";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void MakeSureListGroupShowsUpAndItemsAreClickable()
 	{
 		App.WaitForElement("Grouped Item: 0");
 		App.Tap("Grouped Item: 0");
-		Assert.Equal("Grouped Item: 0 Clicked", App.WaitForElement("MessageLabel").GetText());
+		Assert.That(App.WaitForElement("MessageLabel").GetText(), Is.EqualTo("Grouped Item: 0 Clicked"));
 		App.Tap("Grouped Item: 1");
-		Assert.Equal("Grouped Item: 1 Clicked", App.WaitForElement("MessageLabel").GetText());
+		Assert.That(App.WaitForElement("MessageLabel").GetText(), Is.EqualTo("Grouped Item: 1 Clicked"));
 	}
 }

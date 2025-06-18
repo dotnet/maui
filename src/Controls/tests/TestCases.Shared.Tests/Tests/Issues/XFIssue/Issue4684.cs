@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue4684 : _IssuesUITest
 	const string control = "Control";
 	public override string Issue => "[Android] don't clear shell content because native page isn't visible";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void NavigatingBackAndForthDoesNotCrash()
 	{

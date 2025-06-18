@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ public class Issue22452 : _IssuesUITest
 
 	public override string Issue => "Fix error when running new template maui app on iOS";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void NavigationBetweenFlyoutItems()
 	{

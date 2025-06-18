@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ public class Issue10947 : _IssuesUITest
 	string HeaderEntry => "HeaderEntry";
 	string FooterEntry => "FooterEntry";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void CollectionViewHeaderShouldNotScroll()
 	{
@@ -28,13 +28,13 @@ public class Issue10947 : _IssuesUITest
 
 		var newHeaderEntry = App.WaitForElement(HeaderEntry);
 		var newHeaderLocation = headerEntry.GetRect();
-		Assert.Equal(headerLocation, newHeaderLocation);
+		ClassicAssert.AreEqual(headerLocation, newHeaderLocation);
 
 		App.Tap(FooterEntry);
 
 		var newFooterEntry = App.WaitForElement(FooterEntry);
 		var newFooterLocation = headerEntry.GetRect();
 
-		Assert.Equal(footerLocation, newFooterLocation);
+		ClassicAssert.AreEqual(footerLocation, newFooterLocation);
 	}
 }

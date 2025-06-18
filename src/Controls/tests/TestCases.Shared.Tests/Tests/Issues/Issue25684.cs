@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[WinUI] Editor width is not updated when setting styles for native view";
 
-		[Fact]
+		[Test]
 		public void CustomStyleEditorFromPlatformViewWorks()
 		{
 			App.WaitForElement("WaitForStubControl");

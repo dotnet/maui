@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue22443 : _IssuesUITest
 
 	public override string Issue => "App Crash on Scroll Animation while navigating away from Page";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Navigation)]
 	public void NoExceptionShouldBeThrown()
 	{

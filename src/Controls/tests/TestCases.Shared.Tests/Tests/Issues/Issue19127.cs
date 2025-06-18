@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Frame)]
 		public void ContentOfFrameShouldChange()
 		{
@@ -24,8 +24,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			var textAfterClick = App.FindElement("label2").GetText();
 
-			Assert.Equal("Camera is Disabled", textBeforeClick!);
-			Assert.Equal("Camera is Enabled", textAfterClick!);
+			Assert.That(textBeforeClick!, Is.EqualTo("Camera is Disabled"));
+			Assert.That(textAfterClick!, Is.EqualTo("Camera is Enabled"));
 		}
 	}
 }

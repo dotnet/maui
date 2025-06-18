@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] Editor with MaxLength";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Editor)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue5367Test()
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap(ForceBigStringButton);
 			var text = App.WaitForElement(MaxLengthEditor).GetText() ?? string.Empty;
 			int count = text.Count();
-			Assert.Equal(14, count);
+			Assert.That(count, Is.EqualTo(14));
 		}
 	}
 }

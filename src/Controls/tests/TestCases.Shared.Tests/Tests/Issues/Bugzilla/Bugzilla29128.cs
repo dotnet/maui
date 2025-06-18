@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //Background Color updates on Slider Track
 //For more information : https://github.com/dotnet/maui/issues/25921
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Slider background lays out wrong Android";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.LifeCycle)]
 		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla29128Test()

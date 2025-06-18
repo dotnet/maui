@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;
@@ -12,7 +12,7 @@ public class Issue19609 : _IssuesUITest
 
 	public override string Issue => "Button clicked event and command will not be occurred in EmptyView of CollectionView";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void CanTapButtonOnEmptyView()
 	{

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Bugzilla53179_1 : _IssuesUITest
 
 	public override string Issue => "1PopAsync crashing after RemovePage when support packages are updated to 25.1.1";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Navigation)]
 	public void PopAsyncAfterRemovePageDoesNotCrash()
 	{

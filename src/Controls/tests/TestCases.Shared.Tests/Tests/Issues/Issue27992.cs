@@ -1,5 +1,5 @@
 using System;
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ public class Issue27992 : _IssuesUITest
 	public override string Issue => "Entry Completed Event Triggered Twice";
 
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Entry)]
 	public void EntryCompletedShouldOnlyFireOnce()
 	{
@@ -25,6 +25,6 @@ public class Issue27992 : _IssuesUITest
 		App.PressEnter();
 
 		var text = App.WaitForElement("MauiLabel").GetText();
-		Assert.Equal("Completed Invoked 1 times", text);
+		Assert.That(text, Is.EqualTo("Completed Invoked 1 times"));
 	}
 }

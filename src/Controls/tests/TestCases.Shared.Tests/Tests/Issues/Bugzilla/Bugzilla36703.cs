@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "TapGestureRecognizer inside initially disable Image will never fire Tapped event";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void _36703Test()
 		{

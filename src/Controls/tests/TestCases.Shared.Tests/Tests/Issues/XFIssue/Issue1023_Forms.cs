@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue1023_Forms : _IssuesUITest
 
 	public override string Issue => "Automate GC checks of picker disposals";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Picker)]
 	public void Bugzilla1023Test()
 	{
@@ -34,6 +34,6 @@ public class Issue1023_Forms : _IssuesUITest
 		App.WaitForElement("GC");
 		App.Tap("GC");
 
-		Assert.Equal("Counter: 0", App.WaitForElement("Counter").GetText());
+		Assert.That(App.WaitForElement("Counter").GetText(), Is.EqualTo("Counter: 0"));
 	}
 }

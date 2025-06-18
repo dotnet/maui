@@ -8,13 +8,13 @@ using Android.Views;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class ButtonTests : PlatformTestFixture
 	{
 		[Test, Category("Button")]
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			var disabledColor = textColors.GetColorForState(new[] { -global::Android.Resource.Attribute.StateEnabled }, AColor.Green);
 
 			int compareTo = Colors.White.ToAndroid();
-			Assert.NotEqual(compareTo, disabledColor);
+			Assert.AreNotEqual(compareTo, disabledColor);
 		}
 
 		[Test, Category("Button")]
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			button.TextTransform = TextTransform.Uppercase;
 			Assert.IsNull(buttonControl.TransformationMethod);
 			button.TextTransform = TextTransform.Default;
-			Assert.Equal(initialTextTransform, buttonControl.TransformationMethod);
+			Assert.AreEqual(initialTextTransform, buttonControl.TransformationMethod);
 		}
 
 		[Test, Category("Button")]
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			var button = new Button { Text = "foo" };
 			var buttonControl = GetNativeControl(button);
 			button.TextTransform = TextTransform.Uppercase;
-			Assert.Equal("FOO", buttonControl.Text);
+			Assert.AreEqual("FOO", buttonControl.Text);
 		}
 
 		[Test, Category("Button")]
@@ -74,13 +74,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			var button = new Button { Text = "FOO" };
 			var buttonControl = GetNativeControl(button);
 			button.TextTransform = TextTransform.Lowercase;
-			Assert.Equal("foo", buttonControl.Text);
+			Assert.AreEqual("foo", buttonControl.Text);
 		}
 
 		[Category("Button")]
 		[Description("Account for user's setting of styles property textAllCaps")]
 		[Issue(IssueTracker.Github, 11703, "[Bug] Android textAllCaps no longer works", issueTestNumber: 1)]
-		[Fact]
+		[Test]
 		public void StyleTextAllCapsSettingIsRespected()
 		{
 			var button = new ClearTextTransform { Text = "foo" };
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 
 			// when set through a style the type is an internal version of AllCapsTransformationMethod
 			string typeName = $"{initialTextTransform}";
-			Assert.Equal(allCaps, typeName.Contains("AllCapsTransformationMethod"));
+			Assert.AreEqual(allCaps, typeName.Contains("AllCapsTransformationMethod"));
 		}*/
 
 	}

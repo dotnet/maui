@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[D9] Editor IsReadOnly works";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Editor)]
 		[FailsOnMacWhenRunningOnXamarinUITest("Currently IsKeyboardShown is not implemented.")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Currently IsKeyboardShown is not implemented.")]

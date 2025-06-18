@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID  //App crashes on Android and Windows, Issue: https://github.com/dotnet/maui/issues/26427
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ public class Issue9686 : _IssuesUITest
 
 	public override string Issue => "[Bug, CollectionView,iOS] Foundation.Monotouch Exception in Grouped CollectionView";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 
 	public void AddRemoveEmptyGroupsShouldNotCrashOnInsert()

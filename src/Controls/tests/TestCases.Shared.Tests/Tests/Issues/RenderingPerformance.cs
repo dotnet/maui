@@ -1,5 +1,5 @@
-using Xunit;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Rendering performance";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Performance)]
 		public async Task RenderingPerformanceRun()
 		{

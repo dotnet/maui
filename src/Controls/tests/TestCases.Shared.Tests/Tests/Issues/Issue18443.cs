@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues
@@ -9,7 +9,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "SelectionLength Property Not Applied to Entry at Runtime";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Entry)]
 		public void EntrySelectionLengthRuntimeUpdate()
 		{

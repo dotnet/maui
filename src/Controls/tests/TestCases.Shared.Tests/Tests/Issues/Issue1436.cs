@@ -1,5 +1,5 @@
 ﻿#if ANDROID && TEST_FAILS_ON_ANDROID //Related issues: https://github.com/dotnet/maui/issues/26505
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Button border not drawn on Android without a BorderRadius"; 
 		
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Button)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest("https://github.com/dotnet/maui/issues/26505")]

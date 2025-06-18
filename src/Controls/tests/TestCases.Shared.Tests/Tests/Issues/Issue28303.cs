@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,12 +11,12 @@ public class Issue28303 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.WebView)]
 	public void VerifyWebViewNavigatedEventTriggered()
 	{
 		VerifyInternetConnectivity();
 		var navigatedLabel = App.WaitForElement("navigatedLabel");
-		Assert.Equal("WebView Navigated event is not triggered", navigatedLabel.GetText());
+		Assert.That(navigatedLabel.GetText(), Is.EqualTo("WebView Navigated event is not triggered"));
 	}
 }

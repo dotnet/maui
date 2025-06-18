@@ -11,7 +11,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 [assembly: ExportRenderer(typeof(TestShell), typeof(TestShellRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 					return (ColorChangeRevealDrawable)bottomView.Background;
 				});
 
-			Assert.Equal(Colors.White.ToAndroid(), ccr.EndColor);
+			Assert.AreEqual(Colors.White.ToAndroid(), ccr.EndColor);
 		}
 
 		public class ShellAppearanceTest : IShellAppearanceElement

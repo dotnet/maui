@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue6387 : _IssuesUITest
 
 	public override string Issue => "ArgumentException thrown when a negative value is set for the padding of a label";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Label)]
 	public void LabelWithNegativePaddingShouldNotThrowException()
 	{

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +16,7 @@ public class Issue1323 : _IssuesUITest
 
 	public override string Issue => "tabbed page BarTextColor is not pervasive and can't be applied after instantiation";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.TabbedPage)]
 	public void Issue1323Test()
 	{

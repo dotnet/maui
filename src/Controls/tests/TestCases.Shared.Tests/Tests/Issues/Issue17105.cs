@@ -1,5 +1,5 @@
 #if MACCATALYST
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue17105 : _IssuesUITest
 
     public override string Issue => "Hide password hint which is showing when the entry is focused";
 
-    [Fact]
+    [Test]
     [Category(UITestCategories.Entry)]
     public void HidePasswordHint()
     {

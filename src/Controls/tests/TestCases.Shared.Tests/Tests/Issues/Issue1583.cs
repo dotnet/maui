@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue1583 : _IssuesUITest
 
 	public override string Issue => "NavigationPage.TitleIcon broken";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Navigation)]
 	[Category(UITestCategories.Compatibility)]
 	public void Issue1583TitleIconTest()

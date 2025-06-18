@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,12 +12,12 @@ public class Issue2767 : _IssuesUITest
 
 	public override string Issue => "ArgumentException: NaN not valid for height";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Layout)]
 
 	public void Issue2767Test()
 	{
 		App.WaitForElement("Label 1:1");
-		Assert.Equal(0, App.FindElements("Collapsed").Count);
+		Assert.That(App.FindElements("Collapsed").Count, Is.EqualTo(0));
 	}
 }

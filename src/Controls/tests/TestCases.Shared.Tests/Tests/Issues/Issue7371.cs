@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "iOS race condition(or not checking for null) of refreshing(offset animation) causes NullReferenceException";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.RefreshView)]
 		public async Task RefreshingListViewCrashesWhenDisposedTest()
 		{

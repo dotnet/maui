@@ -1,5 +1,5 @@
 ﻿#if ANDROID || IOS // Using AppThemeBinding and changing theme not working on Windows and ThemeChangeAction not implemented in Appium Catalyst
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "AppThemeBinding BarBackground with GradientBrush in NavigationPage not working";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.Page)]
 		public void NavigationBarBackgroundShouldChange()
 		{

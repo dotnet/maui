@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ public class Issue20166 : _IssuesUITest
 
 	public override string Issue => "Custom FlyoutIcon visible although FlyoutBehavior set to disabled";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.FlyoutPage)]
 	public void ShouldHideCustomFlyoutIconWhenNavigatingToPageWithDisabledFlyout()
 	{

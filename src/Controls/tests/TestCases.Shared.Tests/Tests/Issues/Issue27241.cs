@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,7 +10,7 @@ public class Issue27241 : _IssuesUITest
 
 	public override string Issue => "[iOS] CarouselView2 does not render properly when using the Vertical orientation of the LinearItemsLayout";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void CarouselViewItemsShouldRenderVertically()
 	{

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class ListViewNRE : _IssuesUITest
 
 	public override string Issue => "ListView crashes when disposed on ItemSelected";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void ListViewNRETest()
 	{

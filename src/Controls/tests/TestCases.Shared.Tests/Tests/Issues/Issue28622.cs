@@ -1,7 +1,7 @@
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 //https://github.com/dotnet/maui/issues/27946 In Windows, dynamically changing the ItemsLayout does not work.
 // https://github.com/dotnet/maui/issues/28678 On iOS and Mac, in Cv2, changing the ItemsLayout throws an exception. In Cv1, the EmptyView overlaps.
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,7 @@ public class Issue28622 : _IssuesUITest
 
 	public override string Issue => "[Android] CollectionView Header and Footer Do Not Align with Horizontal ItemsLayout When EmptyView is Displayed";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ItemsLayoutShouldRenderProperlyOnEmptyView()
 	{

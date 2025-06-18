@@ -1,5 +1,5 @@
 ﻿using System.Drawing;
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ public class Issue2894 : _IssuesUITest
 
 	public override string Issue => "Gesture Recognizers added to Span after it's been set to FormattedText don't work and can cause an NRE";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Gestures)]
 	public void VariousSpanGesturePermutation()
 	{

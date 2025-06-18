@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -9,12 +9,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	{
 		public override string Issue => "Grid inside ScrollView should measure with infinite constraints";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.ScrollView)]
 		public void ScrollViewContentLayoutMeasuresWithInfiniteConstraints()
 		{
 			var measuredHeight = App.WaitForElement("StubLabel").GetText()!;
-			Assert.Equal("200", measuredHeight);
+			ClassicAssert.AreEqual("200", measuredHeight);
 		}
 	}
 }

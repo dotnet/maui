@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Xunit;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Adding an item to a CollectionView with linear layout crashes";
 
-		[Fact]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void Issue16320Test()
 		{

@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ public class Issue6738 : _IssuesUITest
 
 	public override string Issue => "Flyout Navigation fails when coupled with tabs that have a stack";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void FlyoutNavigationBetweenItemsWithNavigationStacks()
 	{

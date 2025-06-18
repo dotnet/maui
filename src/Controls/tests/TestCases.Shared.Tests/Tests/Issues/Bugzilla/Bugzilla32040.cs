@@ -1,5 +1,5 @@
 
-using Xunit;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Bugzilla32040 : _IssuesUITest
 
 	public override string Issue => "EntryCell.Tapped or SwitchCell.Tapped does not fire when within a TableView ";
 
-	[Fact]
+	[Test]
 	[Category(UITestCategories.Cells)]
 	public void TappedWorksForEntryAndSwithCellTest()
 	{
