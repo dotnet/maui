@@ -52,6 +52,11 @@ parameters:
   type: boolean
   default: false
 
+- name: provisionatorChannel
+  displayName: 'Provisionator channel'
+  type: string
+  default: 'latest'
+
 - name: BuildEverything
   type: boolean
   default: false
@@ -65,14 +70,6 @@ parameters:
     - ImageOverride -equals 1ESPT-Ubuntu22.04
 
 - name: iosPool
-  type: object
-  default:
-    name: $(iosDeviceTestsVmPool)
-    vmImage: $(iosDeviceTestsVmImage)
-    demands:
-    - macOS.Name -equals Sequoia
-
-- name: catalystPool
   type: object
   default:
     name: $(iosDeviceTestsVmPool)
