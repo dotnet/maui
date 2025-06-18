@@ -144,6 +144,10 @@ For compatibility with specific branches:
 - **Always revert** any changes to JSON files in the `Templates/src/` directory before committing
 - These files are automatically generated and should not be modified manually
 
+### Platform-Specific Restrictions
+- **Never** make changes to files related to Tizen platform
+- Tizen-specific code should not be modified unless explicitly required for critical fixes
+
 ### Branching
 - `main` - For bug fixes without API changes
 - `net10.0` - For new features and API changes
