@@ -22,12 +22,6 @@ public class Issue19168 : ContentPage
 			},
 			AutomationId = "Picker"
 		};
-		picker.SelectedIndexChanged += (s, e) =>
-{
-	// Picker was used and closed after selecting an item
-	var selected = picker.SelectedItem as string;
-	Console.WriteLine($"Picker closed. Selected item: {selected}");
-};
 
 		var counterBtn = new Button
 		{
@@ -36,9 +30,6 @@ public class Issue19168 : ContentPage
 			VerticalOptions = LayoutOptions.End,
 			HorizontalOptions = LayoutOptions.Fill
 		};
-		counterBtn.Clicked += OnCounterClicked;
-
-
 		Content = new ScrollView
 		{
 			Content = new VerticalStackLayout
@@ -52,9 +43,5 @@ public class Issue19168 : ContentPage
 				}
 			}
 		};
-	}
-	private void OnCounterClicked(object sender, EventArgs e)
-	{
-		// Your click handler logic here
 	}
 }
