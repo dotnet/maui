@@ -1768,6 +1768,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					var menu = UIMenu.Create(string.Empty, null, UIMenuIdentifier.Edit, UIMenuOptions.DisplayInline, secondaries.ToArray());
 					// Using the ellipsis.circle system image for the menu button, as per the iOS design guidelines: https://developer.apple.com/design/human-interface-guidelines/pull-down-buttons
 					var menuButton = new UIBarButtonItem(UIImage.GetSystemImage("ellipsis.circle"), menu);
+					menuButton.AccessibilityIdentifier = "SecondaryToolbarMenuButton";
+
 					// Since we are adding secondary items under a primary button,
 					// make sure that primaries is initialized
 					primaries ??= [];
