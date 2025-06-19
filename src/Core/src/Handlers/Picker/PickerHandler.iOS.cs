@@ -206,22 +206,22 @@ namespace Microsoft.Maui.Handlers
 
 		void SetupTouchDismissGesture()
 		{
-			if (_tapGestureRecognizer is not null && this.PlatformView?.Window is null)
+			if (_tapGestureRecognizer is not null && PlatformView?.Window is null)
 				return;
 
 			_tapGestureRecognizer = new UITapGestureRecognizer(() =>
 			{
-				this.PlatformView.EndEditing(true);
+				PlatformView.EndEditing(true);
 			});
 			_tapGestureRecognizer.CancelsTouchesInView = false;
-			this.PlatformView.Window.AddGestureRecognizer(_tapGestureRecognizer);
+			PlatformView.Window.AddGestureRecognizer(_tapGestureRecognizer);
 		}
 
 		void RemoveTouchDismissGesture()
 		{
-			if (_tapGestureRecognizer is not null)
+			if (_tapGestureRecognizer is not null && PlatformView.Window is not null)
 			{
-				this.PlatformView.Window?.RemoveGestureRecognizer(_tapGestureRecognizer);
+				PlatformView.Window.RemoveGestureRecognizer(_tapGestureRecognizer);
 				_tapGestureRecognizer.Dispose();
 				_tapGestureRecognizer = null;
 			}
@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidBegin -= OnStarted;
 				platformView.EditingDidEnd -= OnEnded;
 				platformView.EditingChanged -= OnEditing;
-				this.Handler?.RemoveTouchDismissGesture();
+				Handler?.RemoveTouchDismissGesture();
 			}
 
 #if !MACCATALYST
