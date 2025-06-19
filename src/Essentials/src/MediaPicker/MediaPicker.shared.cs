@@ -170,7 +170,6 @@ namespace Microsoft.Maui.Media
 	{
 		private int compressionQuality = 100;
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		/// <summary>
 		/// Gets or sets the compression quality for picked media.
 		/// The value should be between 0 and 100, where 0 is the lowest quality (most compression) and 100 is the highest quality (least compression).
@@ -185,7 +184,30 @@ namespace Microsoft.Maui.Media
 			get => compressionQuality;
 			set => compressionQuality = Math.Max(0, Math.Min(100, value));
 		}
-#pragma warning restore RS0016 // Add public types and members to the declared API
+
+		/// <summary>
+		/// Gets or sets the maximum width for image resizing.
+		/// When set, images will be resized to fit within this width while preserving aspect ratio.
+		/// A value of 0 or null means no width constraint.
+		/// </summary>
+		/// <remarks>
+		/// The image will be resized to fit within the specified maximum dimensions while maintaining aspect ratio.
+		/// If both MaximumWidth and MaximumHeight are specified, the image will be scaled to fit within both constraints.
+		/// This resizing is applied before any compression quality settings.
+		/// </remarks>
+		public int? MaximumWidth { get; set; }
+
+		/// <summary>
+		/// Gets or sets the maximum height for image resizing.
+		/// When set, images will be resized to fit within this height while preserving aspect ratio.
+		/// A value of 0 or null means no height constraint.
+		/// </summary>
+		/// <remarks>
+		/// The image will be resized to fit within the specified maximum dimensions while maintaining aspect ratio.
+		/// If both MaximumWidth and MaximumHeight are specified, the image will be scaled to fit within both constraints.
+		/// This resizing is applied before any compression quality settings.
+		/// </remarks>
+		public int? MaximumHeight { get; set; }
 
 		/// <summary>
 		/// Gets or sets the title that is displayed when picking media.

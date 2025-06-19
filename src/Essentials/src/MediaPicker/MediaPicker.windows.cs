@@ -63,10 +63,10 @@ namespace Microsoft.Maui.Media
 				return null;            // picked
 			var fileResult = new FileResult(result);
 
-			// Apply compression if specified for photos
-			if (photo && options?.CompressionQuality < 100)
+			// Apply compression/resizing if specified for photos
+			if (photo && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
 			{
-				var compressedResult = await CompressImageAsync(result, options.CompressionQuality);
+				var compressedResult = await CompressImageAsync(result, options.MaximumWidth, options.MaximumHeight, options?.CompressionQuality ?? 100);
 				return compressedResult != null ? new FileResult(compressedResult) : fileResult;
 			}
 
@@ -108,15 +108,15 @@ namespace Microsoft.Maui.Media
 			// picked
 			var fileResults = result.Select(file => new FileResult(file)).ToList();
 
-			// Apply compression if specified for photos
-			if (photo && options?.CompressionQuality < 100)
+			// Apply compression/resizing if specified for photos
+			if (photo && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
 			{
 				var compressedResults = new List<FileResult>();
 				for (int i = 0; i < result.Count; i++)
 				{
 					var originalFile = result[i];
 					var fileResult = fileResults[i];
-					var compressedResult = await CompressImageAsync(originalFile, options.CompressionQuality);
+					var compressedResult = await CompressImageAsync(originalFile, options.MaximumWidth, options.MaximumHeight, options?.CompressionQuality ?? 100);
 					compressedResults.Add(compressedResult != null ? new FileResult(compressedResult) : fileResult);
 				}
 				return compressedResults;
@@ -150,10 +150,10 @@ namespace Microsoft.Maui.Media
 			{
 				var fileResult = new FileResult(file);
 
-				// Apply compression if specified for photos
-				if (photo && options?.CompressionQuality < 100)
+				// Apply compression/resizing if specified for photos
+				if (photo && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
 				{
-					var compressedResult = await CompressImageAsync(file, options.CompressionQuality);
+					var compressedResult = await CompressImageAsync(file, options.MaximumWidth, options.MaximumHeight, options?.CompressionQuality ?? 100);
 					return compressedResult != null ? new FileResult(compressedResult) : fileResult;
 				}
 
@@ -162,33 +162,48 @@ namespace Microsoft.Maui.Media
 
 			return null;
 		}
-		static async Task<StorageFile?> CompressImageAsync(StorageFile originalFile, int compressionQuality)
+		static async Task<StorageFile?> CompressImageAsync(StorageFile originalFile, int? maximumWidth, int? maximumHeight, int compressionQuality = 100)
 		{
-			if (compressionQuality >= 100)
+			if ((!maximumWidth.HasValue && !maximumHeight.HasValue) && compressionQuality >= 100)
 			{
-				return null; // No compression needed
+				return null; // No compression or resizing needed
 			}
 
 			try
 			{
 				// Create compressed file in cache directory
 				var tempFolder = await StorageFolder.GetFolderFromPathAsync(FileSystem.CacheDirectory);
-				var compressedFileName = $"compressed_{Guid.NewGuid()}.jpg";
+				var compressedFileName = $"processed_{Guid.NewGuid()}.jpg";
 				var compressedFile = await tempFolder.CreateFileAsync(compressedFileName, CreationCollisionOption.ReplaceExisting);
 
 				using (var originalStream = await originalFile.OpenAsync(FileAccessMode.Read))
 				using (var compressedStream = await compressedFile.OpenAsync(FileAccessMode.ReadWrite))
 				{
 					var decoder = await BitmapDecoder.CreateAsync(originalStream);
+					
+					// Calculate new dimensions if resizing is needed
+					var originalWidth = decoder.PixelWidth;
+					var originalHeight = decoder.PixelHeight;
+					var newDimensions = CalculateResizedDimensions(originalWidth, originalHeight, maximumWidth, maximumHeight);
+					
 					var encoder = await BitmapEncoder.CreateForTranscodingAsync(compressedStream, decoder);
+					
+					// Set the size transform if resizing is needed
+					if (newDimensions.Width != originalWidth || newDimensions.Height != originalHeight)
+					{
+						encoder.BitmapTransform.ScaledWidth = (uint)newDimensions.Width;
+						encoder.BitmapTransform.ScaledHeight = (uint)newDimensions.Height;
+						encoder.BitmapTransform.InterpolationMode = BitmapInterpolationMode.Fant; // High quality scaling
+					}
 
+					// Set JPEG quality based on compression setting
 					var qualityFloat = compressionQuality switch
 					{
-						< 20 => 0.2,   // Very low quality
-						< 40 => 0.4,   // Low quality
-						< 60 => 0.6,   // Medium quality
-						< 80 => 0.75,  // Good quality
-						_ => 0.85      // High quality
+						< 20 => 0.2f,   // Very low quality
+						< 40 => 0.4f,   // Low quality
+						< 60 => 0.6f,   // Medium quality
+						< 80 => 0.75f,  // Good quality
+						_ => 0.85f      // High quality
 					};
 
 					var propertySet = new BitmapPropertySet();
@@ -206,6 +221,20 @@ namespace Microsoft.Maui.Media
 				System.Diagnostics.Debug.WriteLine($"Image compression failed: {ex.Message}");
 				return null;
 			}
+		}
+
+		static (int Width, int Height) CalculateResizedDimensions(uint originalWidth, uint originalHeight, int? maxWidth, int? maxHeight)
+		{
+			if (!maxWidth.HasValue && !maxHeight.HasValue)
+				return ((int)originalWidth, (int)originalHeight);
+
+			float scaleWidth = maxWidth.HasValue ? (float)maxWidth.Value / originalWidth : float.MaxValue;
+			float scaleHeight = maxHeight.HasValue ? (float)maxHeight.Value / originalHeight : float.MaxValue;
+			
+			// Use the smaller scale to ensure both constraints are respected
+			float scale = Math.Min(Math.Min(scaleWidth, scaleHeight), 1.0f); // Don't scale up
+			
+			return ((int)(originalWidth * scale), (int)(originalHeight * scale));
 		}
 
 		class WinUICameraCaptureUI

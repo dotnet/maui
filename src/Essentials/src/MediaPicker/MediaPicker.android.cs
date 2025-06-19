@@ -84,8 +84,8 @@ namespace Microsoft.Maui.Media
 				if (photo)
 				{
 					captureResult = await CapturePhotoAsync(captureIntent);
-					// Apply compression if needed for photos
-					if (captureResult is not null && options?.CompressionQuality < 100)
+					// Apply compression/resizing if needed for photos
+					if (captureResult is not null && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
 					{
 						captureResult = await Task.Run(() => CompressImageIfNeeded(captureResult, options));
 					}
@@ -132,8 +132,8 @@ namespace Microsoft.Maui.Media
 
 				if (path is not null)
 				{
-					// Apply compression if needed for photos
-					if (photo && options?.CompressionQuality < 100)
+					// Apply compression/resizing if needed for photos
+					if (photo && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
 					{
 						path = await Task.Run(() => CompressImageIfNeeded(path, options));
 					}
@@ -163,8 +163,8 @@ namespace Microsoft.Maui.Media
 
 			var path = FileSystemUtils.EnsurePhysicalPath(androidUri);
 			
-			// Apply compression if needed for photos
-			if (photo && options?.CompressionQuality < 100)
+			// Apply compression/resizing if needed for photos
+			if (photo && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
 			{
 				path = await Task.Run(() => CompressImageIfNeeded(path, options));
 			}
@@ -211,8 +211,8 @@ namespace Microsoft.Maui.Media
 				{
 					var path = FileSystemUtils.EnsurePhysicalPath(uri);
 					
-					// Apply compression if needed for photos
-					if (photo && options?.CompressionQuality < 100)
+					// Apply compression/resizing if needed for photos
+					if (photo && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
 					{
 						path = await Task.Run(() => CompressImageIfNeeded(path, options));
 					}
@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Media
 
 		static string CompressImageIfNeeded(string imagePath, MediaPickerOptions options)
 		{
-			if (options?.CompressionQuality >= 100 || string.IsNullOrEmpty(imagePath))
+			if (((!options?.MaximumWidth.HasValue == true && !options?.MaximumHeight.HasValue == true) && options?.CompressionQuality >= 100) || string.IsNullOrEmpty(imagePath))
 				return imagePath;
 
 			try
@@ -268,30 +268,27 @@ namespace Microsoft.Maui.Media
 					return imagePath;
 				}
 
-				// If the bitmap is very large, scale it down first to prevent OOM
-				var maxDimension = 2048;
-				var scale = 1.0f;
-				if (originalBitmap.Width > maxDimension || originalBitmap.Height > maxDimension)
-				{
-					scale = Math.Min((float)maxDimension / originalBitmap.Width, (float)maxDimension / originalBitmap.Height);
-				}
-
+				// First, apply resizing if maximum dimensions are specified
 				Bitmap workingBitmap = originalBitmap;
-				if (scale < 1.0f)
+				if (options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true)
 				{
-					var newWidth = (int)(originalBitmap.Width * scale);
-					var newHeight = (int)(originalBitmap.Height * scale);
-					workingBitmap = Bitmap.CreateScaledBitmap(originalBitmap, newWidth, newHeight, true);
+					var newDimensions = CalculateResizedDimensions(originalBitmap.Width, originalBitmap.Height, options.MaximumWidth, options.MaximumHeight);
+					
+					if (newDimensions.Width != originalBitmap.Width || newDimensions.Height != originalBitmap.Height)
+					{
+						workingBitmap = Bitmap.CreateScaledBitmap(originalBitmap, newDimensions.Width, newDimensions.Height, true);
+					}
 				}
 
-				// Determine output format based on original format and compression quality
+				// Determine output format and quality based on compression settings
 				var originalExtension = System.IO.Path.GetExtension(imagePath).ToLowerInvariant();
 				var isPng = originalExtension == ".png";
-				var useJpeg = !isPng || options.CompressionQuality < 90; // Use JPEG for aggressive compression or non-PNG files
+				var compressionQuality = options?.CompressionQuality ?? 100;
+				var useJpeg = !isPng || compressionQuality < 90; // Use JPEG for aggressive compression or non-PNG files
 
 				// Create compressed version
 				var compressedExtension = useJpeg ? ".jpg" : ".png";
-				var compressedFileName = System.IO.Path.GetFileNameWithoutExtension(imagePath) + "_compressed" + compressedExtension;
+				var compressedFileName = System.IO.Path.GetFileNameWithoutExtension(imagePath) + "_processed" + compressedExtension;
 				var compressedPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(imagePath), compressedFileName);
 
 				using var outputStream = System.IO.File.Create(compressedPath);
@@ -299,18 +296,25 @@ namespace Microsoft.Maui.Media
 				bool success;
 				if (useJpeg)
 				{
-					success = workingBitmap.Compress(Bitmap.CompressFormat.Jpeg, options.CompressionQuality, outputStream);
+					success = workingBitmap.Compress(Bitmap.CompressFormat.Jpeg, compressionQuality, outputStream);
 				}
 				else
 				{
 					// For PNG, we can only reduce quality by resizing (PNG doesn't have lossy compression)
-					// Scale down the image if compression quality is less than 100%
-					var pngScale = Math.Sqrt(options.CompressionQuality / 100.0);
-					var newWidth = (int)(workingBitmap.Width * pngScale);
-					var newHeight = (int)(workingBitmap.Height * pngScale);
-					
-					using var scaledBitmap = Bitmap.CreateScaledBitmap(workingBitmap, Math.Max(1, newWidth), Math.Max(1, newHeight), true);
-					success = scaledBitmap.Compress(Bitmap.CompressFormat.Png, 0, outputStream); // PNG quality is ignored (always lossless)
+					// If compression quality is less than 100% and we haven't already resized, scale down the image
+					if (compressionQuality < 100 && workingBitmap == originalBitmap)
+					{
+						var pngScale = Math.Sqrt(compressionQuality / 100.0);
+						var newWidth = (int)(workingBitmap.Width * pngScale);
+						var newHeight = (int)(workingBitmap.Height * pngScale);
+						
+						using var scaledBitmap = Bitmap.CreateScaledBitmap(workingBitmap, Math.Max(1, newWidth), Math.Max(1, newHeight), true);
+						success = scaledBitmap.Compress(Bitmap.CompressFormat.Png, 0, outputStream); // PNG quality is ignored (always lossless)
+					}
+					else
+					{
+						success = workingBitmap.Compress(Bitmap.CompressFormat.Png, 0, outputStream); // PNG quality is ignored (always lossless)
+					}
 				}
 
 				// Clean up working bitmap if it's different from original
@@ -332,6 +336,20 @@ namespace Microsoft.Maui.Media
 			}
 			
 			return imagePath;
+		}
+
+		static (int Width, int Height) CalculateResizedDimensions(int originalWidth, int originalHeight, int? maxWidth, int? maxHeight)
+		{
+			if (!maxWidth.HasValue && !maxHeight.HasValue)
+				return (originalWidth, originalHeight);
+
+			float scaleWidth = maxWidth.HasValue ? (float)maxWidth.Value / originalWidth : float.MaxValue;
+			float scaleHeight = maxHeight.HasValue ? (float)maxHeight.Value / originalHeight : float.MaxValue;
+			
+			// Use the smaller scale to ensure both constraints are respected
+			float scale = Math.Min(Math.Min(scaleWidth, scaleHeight), 1.0f); // Don't scale up
+			
+			return ((int)(originalWidth * scale), (int)(originalHeight * scale));
 		}
 
 		static int CalculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight)
@@ -432,8 +450,8 @@ namespace Microsoft.Maui.Media
 
 				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeMediaPicker, onResult: OnResult);
 
-				// Apply compression if needed for photos
-				if (photo && options?.CompressionQuality < 100)
+				// Apply compression/resizing if needed for photos
+				if (photo && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
 				{
 					var tempResultList = resultList.Select(fr => fr.FullPath).ToList();
 					resultList.Clear();
