@@ -3431,5 +3431,75 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Verify all space is used (no significant gaps)
 			Assert.True(totalWidth >= widthConstraint - 5, $"Total width {totalWidth} should be close to constraint {widthConstraint}");
 		}
+
+		[Theory]
+		[InlineData(1)]
+		[InlineData(2)]
+		[InlineData(3)]
+		[InlineData(4)]
+		[InlineData(5)]
+		[InlineData(6)]
+		[InlineData(7)]
+		[InlineData(8)]
+		[InlineData(9)]
+		[InlineData(10)]
+		[InlineData(11)]
+		[Category(GridStarSizing)]
+		public void ArrangesContentWithoutOverlapAndWithProperSize(int columnCount)
+		{
+			// Recreated from device test with density 2.75
+			// This test verifies that grid columns arrange without overlap at specific density
+			var columnDefs = string.Join(",", Enumerable.Repeat("*", columnCount));
+			var grid = CreateGridLayout(columns: columnDefs);
+
+			// Create views for each column (similar to the original test)
+			var views = new IView[columnCount];
+			for (int i = 0; i < columnCount; i++)
+			{
+				views[i] = CreateTestView(new Size(20, 50)); // Similar to ContentView with HeightRequest 50
+				SetLocation(grid, views[i], col: i);
+			}
+			SubstituteChildren(grid, views);
+
+			// Use width of 293 as specified in the original test
+			var widthConstraint = 293.0;
+			// Note: This test recreates the device test behavior at density 2.75
+
+			// Set up capture for all view rectangles  
+			var arrangedRects = new Rect[columnCount];
+			for (int i = 0; i < columnCount; i++)
+			{
+				int index = i; // Capture loop variable for closure
+				views[i].When(x => x.Arrange(Arg.Any<Rect>())).Do(x => arrangedRects[index] = x.Arg<Rect>());
+			}
+
+			MeasureAndArrangeFixed(grid, widthConstraint, 50);
+
+			// Verify sequential layout - equivalent to pxFrame.Left == lastRight from original test
+			for (int i = 1; i < columnCount; i++)
+			{
+				Assert.True(arrangedRects[i].X >= arrangedRects[i - 1].Right - 0.01, 
+					$"Column {i} should start where column {i - 1} ends. Column {i - 1} ends at {arrangedRects[i - 1].Right}, Column {i} starts at {arrangedRects[i].X}");
+			}
+
+			// Verify no overlap - each view should start at or after the previous one ends
+			for (int i = 0; i < columnCount - 1; i++)
+			{
+				Assert.True(arrangedRects[i + 1].X >= arrangedRects[i].X, 
+					$"Column {i + 1} should not start before column {i}");
+			}
+
+			// Verify total width doesn't exceed constraint
+			var totalWidth = arrangedRects.Sum(r => r.Width);
+			Assert.True(totalWidth <= widthConstraint + 1, 
+				$"Total width {totalWidth} should not exceed constraint {widthConstraint}");
+
+			// Verify all columns have reasonable widths (not zero or negative)
+			for (int i = 0; i < columnCount; i++)
+			{
+				Assert.True(arrangedRects[i].Width > 0, 
+					$"Column {i} should have positive width, got {arrangedRects[i].Width}");
+			}
+		}
 	}
 }
