@@ -32,6 +32,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static CommandMapper<IPicker, IPickerHandler> CommandMapper = new(ViewCommandMapper)
 		{
+#if ANDROID
+			[nameof(IPicker.Focus)] = MapFocus,
+			[nameof(IPicker.Unfocus)] = MapUnfocus
+#endif
 		};
 
 		public PickerHandler() : base(Mapper, CommandMapper)
