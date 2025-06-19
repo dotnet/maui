@@ -1,8 +1,9 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-#if !NETSTANDARD
+#if IOS || ANDROID || WINDOWS
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 #endif
 
 namespace Microsoft.Maui.Essentials;
@@ -24,8 +25,8 @@ internal static class ImageProcessor
     public static async Task<Stream> ProcessImageAsync(Stream inputStream, 
         int? maxWidth, int? maxHeight, int qualityPercent, string originalFileName = null)
     {
-#if NETSTANDARD || NET
-        // For .NET Standard and base .NET (without platform), return null to indicate no processing available
+#if !(IOS || ANDROID || WINDOWS)
+        // For platforms without MAUI Graphics support, return null to indicate no processing available
         await Task.CompletedTask; // Avoid async warning
         return null;
 #else
@@ -77,7 +78,7 @@ internal static class ImageProcessor
 #endif
     }
 
-#if !NETSTANDARD
+#if IOS || ANDROID || WINDOWS
     /// <summary>
     /// Applies resizing constraints to an image while preserving aspect ratio.
     /// </summary>
@@ -144,8 +145,8 @@ internal static class ImageProcessor
     /// </summary>
     public static bool IsProcessingNeeded(int? maxWidth, int? maxHeight, int qualityPercent)
     {
-#if NETSTANDARD || NET
-        // On .NET Standard and base .NET (without platform), always return false - no processing available
+#if !(IOS || ANDROID || WINDOWS)
+        // On platforms without MAUI Graphics support, always return false - no processing available
         return false;
 #else
         return (maxWidth.HasValue || maxHeight.HasValue) || qualityPercent < 100;
@@ -161,10 +162,10 @@ internal static class ImageProcessor
     /// <returns>File extension including the dot (e.g., ".jpg", ".png")</returns>
     public static string DetermineOutputExtension(Stream imageData, int qualityPercent, string originalFileName = null)
     {
-#if NETSTANDARD || NET
-        // On .NET Standard and base .NET (without platform), fall back to simple logic
+#if !(IOS || ANDROID || WINDOWS)
+        // On platforms without MAUI Graphics support, fall back to simple logic
         bool originalWasPng = !string.IsNullOrEmpty(originalFileName) && 
-                                originalFileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase);
+                              originalFileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase);
         return (qualityPercent >= 95 || originalWasPng) ? ".png" : ".jpg";
 #else
         // Try to detect format from the actual processed image data
@@ -185,7 +186,7 @@ internal static class ImageProcessor
 #endif
     }
 
-#if !NETSTANDARD && !NET
+#if IOS || ANDROID || WINDOWS
     /// <summary>
     /// Detects image format from stream using magic numbers.
     /// </summary>
