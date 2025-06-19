@@ -226,34 +226,8 @@ namespace Microsoft.Maui.Media
 
 			try
 			{
-				// Use ImageProcessor for unified image processing
-				using var originalStream = await originalFile.OpenAsync(FileAccessMode.Read);
-				using var processedStream = await ImageProcessor.ProcessImageAsync(
-					originalStream.AsStreamForRead(),
-					maximumWidth,
-					maximumHeight,
-					compressionQuality,
-					originalFile.Name);
-
-				// If ImageProcessor returns null (platforms without MAUI Graphics), fall back to Windows-specific processing
-				// MAUI Graphics doesn't support all functionaliy we need on Windows. Until it does, have a fallback.
-				if (processedStream == null)
-				{
-					return await CompressImageWithWindowsApis(originalFile, maximumWidth, maximumHeight, compressionQuality);
-				}
-
-				// Create compressed file in cache directory
-				var tempFolder = await StorageFolder.GetFolderFromPathAsync(FileSystem.CacheDirectory);
-				var outputExtension = ImageProcessor.DetermineOutputExtension(processedStream, compressionQuality, originalFile.Name);
-				var compressedFileName = $"processed_{Guid.NewGuid()}{outputExtension}";
-				var compressedFile = await tempFolder.CreateFileAsync(compressedFileName, CreationCollisionOption.ReplaceExisting);
-
-				// Write processed image to file
-				using var compressedStream = await compressedFile.OpenAsync(FileAccessMode.ReadWrite);
-				processedStream.Position = 0;
-				await processedStream.CopyToAsync(compressedStream.AsStreamForWrite());
-
-				return compressedFile;
+				// Use Windows-specific APIs for image processing
+				return await ProcessImage(originalFile, maximumWidth, maximumHeight, compressionQuality);
 			}
 			catch (Exception ex)
 			{
@@ -262,8 +236,7 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		// Fallback method using Windows-specific APIs when MAUI Graphics isn't available
-		static async Task<StorageFile?> CompressImageWithWindowsApis(StorageFile originalFile, int? maximumWidth, int? maximumHeight, int compressionQuality)
+		static async Task<StorageFile?> ProcessImage(StorageFile originalFile, int? maximumWidth, int? maximumHeight, int compressionQuality)
 		{
 			try
 			{

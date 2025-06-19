@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-#if IOS || ANDROID || WINDOWS
+#if IOS || ANDROID
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 #endif
@@ -25,7 +25,7 @@ internal static class ImageProcessor
     public static async Task<Stream> ProcessImageAsync(Stream inputStream, 
         int? maxWidth, int? maxHeight, int qualityPercent, string originalFileName = null)
     {
-#if !(IOS || ANDROID || WINDOWS)
+#if !(IOS || ANDROID)
         // For platforms without MAUI Graphics support, return null to indicate no processing available
         await Task.CompletedTask; // Avoid async warning
         return null;
@@ -78,7 +78,7 @@ internal static class ImageProcessor
 #endif
     }
 
-#if IOS || ANDROID || WINDOWS
+#if IOS || ANDROID
     /// <summary>
     /// Applies resizing constraints to an image while preserving aspect ratio.
     /// </summary>
@@ -145,7 +145,7 @@ internal static class ImageProcessor
     /// </summary>
     public static bool IsProcessingNeeded(int? maxWidth, int? maxHeight, int qualityPercent)
     {
-#if !(IOS || ANDROID || WINDOWS)
+#if !(IOS || ANDROID)
         // On platforms without MAUI Graphics support, always return false - no processing available
         return false;
 #else
@@ -186,7 +186,7 @@ internal static class ImageProcessor
 #endif
     }
 
-#if IOS || ANDROID || WINDOWS
+#if IOS || ANDROID
     /// <summary>
     /// Detects image format from stream using magic numbers.
     /// </summary>
