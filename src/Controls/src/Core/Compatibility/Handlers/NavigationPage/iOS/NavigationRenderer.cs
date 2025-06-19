@@ -966,6 +966,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var icon = result?.Value;
 				if (icon != null)
 				{
+					if (AppContext.TryGetSwitch("iOSResizeFlyoutIconToSystemDefault", out bool resize) && resize)
+					{
+						icon = FlyoutViewExtensions.AutoResizeFlyoutIcon(icon);
+					}
+
 					try
 					{
 						containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, OnItemTapped);
