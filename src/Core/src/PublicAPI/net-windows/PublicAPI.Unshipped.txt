@@ -76,7 +76,6 @@ Microsoft.Maui.WebProcessTerminatedEventArgs.Sender.get -> Microsoft.Web.WebView
 Microsoft.Maui.IWebRequestInterceptingWebView
 Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
 Microsoft.Maui.WebResourceRequestedEventArgs
-Microsoft.Maui.WebResourceRequestedEventArgs.WebResourceRequestedEventArgs(Microsoft.Web.WebView2.Core.CoreWebView2! sender, Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs! eventArgs) -> void
 Microsoft.Maui.WebResourceRequestedEventArgs.RequestEventArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs!
 Microsoft.Maui.WebResourceRequestedEventArgs.Sender.get -> Microsoft.Web.WebView2.Core.CoreWebView2!
 override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(Microsoft.UI.Xaml.Controls.WebView2! platformView) -> void

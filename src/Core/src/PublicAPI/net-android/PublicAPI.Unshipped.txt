@@ -83,7 +83,6 @@ Microsoft.Maui.WebProcessTerminatedEventArgs
 Microsoft.Maui.WebProcessTerminatedEventArgs.RenderProcessGoneDetail.get -> Android.Webkit.RenderProcessGoneDetail?
 Microsoft.Maui.WebProcessTerminatedEventArgs.Sender.get -> Android.Views.View?
 Microsoft.Maui.WebResourceRequestedEventArgs
-Microsoft.Maui.WebResourceRequestedEventArgs.WebResourceRequestedEventArgs(Android.Webkit.WebView! sender, Android.Webkit.IWebResourceRequest! request) -> void
 Microsoft.Maui.WebResourceRequestedEventArgs.Request.get -> Android.Webkit.IWebResourceRequest!
 Microsoft.Maui.WebResourceRequestedEventArgs.Response.get -> Android.Webkit.WebResourceResponse?
 Microsoft.Maui.WebResourceRequestedEventArgs.Response.set -> void

@@ -7,7 +7,7 @@ public class WebResourceRequestedEventArgs
 {
 #if WINDOWS
 
-	public WebResourceRequestedEventArgs(
+	internal WebResourceRequestedEventArgs(
 		global::Microsoft.Web.WebView2.Core.CoreWebView2 sender,
 		global::Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs eventArgs)
 	{
@@ -33,7 +33,7 @@ public class WebResourceRequestedEventArgs
 
 #elif IOS || MACCATALYST
 
-	public WebResourceRequestedEventArgs(
+	internal WebResourceRequestedEventArgs(
 		global::WebKit.WKWebView sender,
 		global::WebKit.IWKUrlSchemeTask urlSchemeTask)
 	{
@@ -59,7 +59,7 @@ public class WebResourceRequestedEventArgs
 
 #elif ANDROID
 
-	public WebResourceRequestedEventArgs(
+	internal WebResourceRequestedEventArgs(
 		global::Android.Webkit.WebView sender,
 		global::Android.Webkit.IWebResourceRequest request)
 	{

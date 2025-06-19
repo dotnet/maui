@@ -67,7 +67,6 @@ Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpa
 ~Microsoft.Maui.Controls.ITextElement.TextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs
-Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.PlatformWebViewWebResourceRequestedEventArgs(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> void
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Request.get -> Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequest!
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.RequestEventArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs!
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Sender.get -> Microsoft.Web.WebView2.Core.CoreWebView2!

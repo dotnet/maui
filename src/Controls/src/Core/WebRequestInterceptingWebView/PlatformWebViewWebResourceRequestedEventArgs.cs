@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls;
 
@@ -22,7 +24,7 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 		RequestEventArgs = eventArgs;
 	}
 
-	public PlatformWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
+	internal PlatformWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
 		: this(args.Sender, args.RequestEventArgs)
 	{
 	}
@@ -59,6 +61,49 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 	internal IReadOnlyDictionary<string, string> GetRequestHeaders() =>
 		_headers ??= new Dictionary<string, string>(Request.Headers, StringComparer.OrdinalIgnoreCase);
 
+	static string? ToPlatformHeaders(IReadOnlyDictionary<string, string>? headers)
+	{
+		if (headers?.Count > 0)
+		{
+			var sb = new StringBuilder();
+			foreach (var header in headers)
+			{
+				sb.AppendLine($"{header.Key}: {header.Value}");
+			}
+			return sb.ToString();
+		}
+		return null;
+	}
+
+	internal void SetResponse(int code, string reason, IReadOnlyDictionary<string, string>? headers, Stream? content)
+	{
+		// create the response
+		RequestEventArgs.Response = Sender.Environment.CreateWebResourceResponse(
+			content?.AsRandomAccessStream(),
+			code,
+			reason,
+			ToPlatformHeaders(headers));
+	}
+	
+	internal async Task SetResponseAsync(int code, string reason, IReadOnlyDictionary<string, string>? headers, Task<Stream?> contentTask)
+	{
+		// Windows uses a deferral to let the webview know that we are going to be async
+		using var deferral = RequestEventArgs.GetDeferral();
+
+		// get the actual content
+		var data = await contentTask;
+
+		// create the response
+		RequestEventArgs.Response = Sender.Environment.CreateWebResourceResponse(
+			data?.AsRandomAccessStream(),
+			code,
+			reason,
+			ToPlatformHeaders(headers));
+
+		// let the webview know
+		deferral.Complete();
+	}
+
 #elif IOS || MACCATALYST
 
 	IReadOnlyDictionary<string, string>? _headers;
@@ -71,7 +116,7 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 		UrlSchemeTask = urlSchemeTask;
 	}
 
-	public PlatformWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
+	internal PlatformWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
 		: this(args.Sender, args.UrlSchemeTask)
 	{
 	}
@@ -124,6 +169,63 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 		return headers;
 	}
 
+	static Foundation.NSMutableDictionary? ToPlatformHeaders(IReadOnlyDictionary<string, string>? headers)
+	{
+		if (headers?.Count > 0)
+		{
+			var dic = new Foundation.NSMutableDictionary();
+			foreach (var header in headers)
+			{
+				dic.Add((Foundation.NSString)header.Key, (Foundation.NSString)header.Value);
+			}
+			return dic;
+		}
+		return null;
+	}
+
+	internal void SetResponse(int code, string reason, IReadOnlyDictionary<string, string>? headers, Stream? content)
+	{
+		// create and send the response headers
+		UrlSchemeTask.DidReceiveResponse(new Foundation.NSHttpUrlResponse(
+			Request.Url,
+			code,
+			"HTTP/1.1",
+			ToPlatformHeaders(headers)));
+
+		// send the data
+		if (content is not null && Foundation.NSData.FromStream(content) is { } nsdata)
+		{
+			UrlSchemeTask.DidReceiveData(nsdata);
+		}
+
+		// let the webview know
+		UrlSchemeTask.DidFinish();
+	}
+
+	internal async Task SetResponseAsync(int code, string reason, IReadOnlyDictionary<string, string>? headers, Task<Stream?> contentTask)
+	{
+		// iOS and MacCatalyst will just wait until DidFinish is called
+
+		// create and send the response headers
+		UrlSchemeTask.DidReceiveResponse(new Foundation.NSHttpUrlResponse(
+			Request.Url,
+			code,
+			"HTTP/1.1",
+			ToPlatformHeaders(headers)));
+
+		// get the actual content
+		var data = await contentTask;
+
+		// send the data
+		if (data is not null && Foundation.NSData.FromStream(data) is { } nsdata)
+		{
+			UrlSchemeTask.DidReceiveData(nsdata);
+		}
+
+		// let the webview know
+		UrlSchemeTask.DidFinish();
+	}
+
 #elif ANDROID
 
 	Action<global::Android.Webkit.WebResourceResponse?> _setResponse;
@@ -140,7 +242,7 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 		_setResponse = setResponse;
 	}
 
-	public PlatformWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
+	internal PlatformWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
 		: this(args.Sender, args.Request, (response) => args.Response = response)
 	{
 	}
@@ -187,9 +289,64 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 			? new Dictionary<string, string>(rh, StringComparer.OrdinalIgnoreCase)
 			: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
+	static global::Android.Runtime.JavaDictionary<string, string>? ToPlatformHeaders(IReadOnlyDictionary<string, string>? headers, out string contentType)
+	{
+		contentType = "application/octet-stream";
+		if (headers?.Count > 0)
+		{
+			var dic = new global::Android.Runtime.JavaDictionary<string, string>();
+			foreach (var header in headers)
+			{
+				if ("Content-Type".Equals(header.Key, StringComparison.OrdinalIgnoreCase))
+				{
+					contentType = header.Value;
+				}
+
+				dic.Add(header.Key, header.Value);
+			}
+			return dic;
+		}
+		return null;
+	}
+
+	internal void SetResponse(int code, string reason, IReadOnlyDictionary<string, string>? headers, Stream? content)
+	{
+		// Android requires that we return immediately, even if the data is coming later
+
+		// create and send the response headers
+		var platformHeaders = ToPlatformHeaders(headers, out var contentType);
+		Response = new global::Android.Webkit.WebResourceResponse(
+			contentType,
+			"UTF-8",
+			code,
+			reason,
+			platformHeaders,
+			content);
+	}
+
+	internal Task SetResponseAsync(int code, string reason, IReadOnlyDictionary<string, string>? headers, Task<Stream?> contentTask)
+	{
+		// Android requires that we return immediately, even if the data is coming later
+
+		// get the actual content
+		var stream = new AsyncStream(contentTask, null);
+
+		// create and send the response headers
+		var platformHeaders = ToPlatformHeaders(headers, out var contentType);
+		Response = new global::Android.Webkit.WebResourceResponse(
+			contentType,
+			"UTF-8",
+			code,
+			reason,
+			platformHeaders,
+			stream);
+
+		return Task.CompletedTask;
+	}
+
 #else
 
-	public PlatformWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
+	internal PlatformWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
 	{
 	}
 
@@ -199,6 +356,10 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 	internal string? GetRequestMethod() => null;
 
 	internal IReadOnlyDictionary<string, string>? GetRequestHeaders() => null;
+
+	internal void SetResponse(int code, string reason, IReadOnlyDictionary<string, string>? headers, Stream? content) { }
+
+	internal Task SetResponseAsync(int code, string reason, IReadOnlyDictionary<string, string>? headers, Task<Stream?> contentTask) => Task.CompletedTask;
 #pragma warning restore CA1822 // Mark members as static
 
 #endif

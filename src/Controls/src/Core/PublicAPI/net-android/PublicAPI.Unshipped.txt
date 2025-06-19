@@ -43,7 +43,6 @@ Microsoft.Maui.Controls.ILineHeightElement.LineHeight.get -> double
 Microsoft.Maui.Controls.ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue) -> void
 Microsoft.Maui.Controls.Internals.TextTransformUtilities
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs
-Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.PlatformWebViewWebResourceRequestedEventArgs(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> void
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Request.get -> Android.Webkit.IWebResourceRequest!
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Response.get -> Android.Webkit.WebResourceResponse?
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Response.set -> void

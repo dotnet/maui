@@ -18,7 +18,6 @@ Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int cod
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Uri.get -> System.Uri!
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs
-Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.PlatformWebViewWebResourceRequestedEventArgs(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> void
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Request.get -> Foundation.NSUrlRequest!
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Sender.get -> WebKit.WKWebView!
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.UrlSchemeTask.get -> WebKit.IWKUrlSchemeTask!
