@@ -275,9 +275,9 @@ namespace Microsoft.Maui.Handlers
 
 				handler.DisplayAlert(handler.PlatformView);
 #endif
-				if (Handler is PickerHandler pickerHandler && sender is MauiPicker picker)
+				if (sender is MauiPicker picker)
 				{
-					SetupTouchDismissGesture(pickerHandler.PlatformView);
+					SetupTouchDismissGesture(picker);
 				}
 			}
 
@@ -294,7 +294,9 @@ namespace Microsoft.Maui.Handlers
 				if (VirtualView is IPicker virtualView)
 					virtualView.IsFocused = false;
 				if (sender is MauiPicker picker)
+				{
 					RemoveTouchDismissGesture(picker);
+				}
 			}
 
 			void OnEditing(object? sender, EventArgs eventArgs)
