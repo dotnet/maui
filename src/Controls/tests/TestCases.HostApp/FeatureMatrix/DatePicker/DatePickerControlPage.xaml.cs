@@ -38,6 +38,7 @@ public partial class DatePickerMainControlPage : ContentPage
 
 		datePickerControl.SetBinding(DatePicker.CharacterSpacingProperty, new Binding(nameof(DatePickerViewModel.CharacterSpacing)));
 		datePickerControl.SetBinding(DatePicker.DateProperty, new Binding(nameof(DatePickerViewModel.Date)));
+		datePickerControl.DateSelected += OnDateSelected;
 		datePickerControl.SetBinding(DatePicker.FlowDirectionProperty, new Binding(nameof(DatePickerViewModel.FlowDirection)));
 		datePickerControl.SetBinding(DatePicker.FormatProperty, new Binding(nameof(DatePickerViewModel.Format)));
 		datePickerControl.SetBinding(DatePicker.FontAttributesProperty, new Binding(nameof(DatePickerViewModel.FontAttributes)));
@@ -54,7 +55,7 @@ public partial class DatePickerMainControlPage : ContentPage
 
 	public void OnDateSelected(object sender, DateChangedEventArgs e)
 	{
-		if (e.NewDate != e.OldDate)
+		if (e.OldDate != DateTime.Now && e.NewDate != e.OldDate)
 		{
 			OldDateSelectedLabel.Text = e.OldDate.ToString();
 			NewDateSelectedLabel.Text = e.NewDate.ToString();
