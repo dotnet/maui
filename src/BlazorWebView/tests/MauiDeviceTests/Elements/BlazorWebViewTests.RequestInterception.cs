@@ -145,7 +145,7 @@ public partial class BlazorWebViewTests
 					}
 				});
 				const jsonData = await response.json();
-				return jsonData;
+				return JSON.stringify(jsonData);
 				""");
 
 			Assert.NotNull(responseObject);
