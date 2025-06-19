@@ -66,22 +66,40 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 
 			// Wait for the async operation to complete and get the result
 			var result = await WaitForControlDivToChangeFrom(webView, "Static");
-			if (result == null || result == "null" || result == "undefined")
-				return default;
 
 			// Deserialize the result from controlDiv
-			try
-			{
-				return JsonSerializer.Deserialize<T>(result);
-			}
-			catch (JsonException)
-			{
-				// sometimes the result is serialized by the platform, so we need to deserialize it as a string first
-				result = JsonSerializer.Deserialize<string>(result);
-				if (result == null || result == "null" || result == "undefined")
-					return default;
+			if (TryDeserialize<T>(result, out var value))
+				return value;
 
-				return JsonSerializer.Deserialize<T>(result);
+			// sometimes the result is serialized by the platform, so we need to deserialize it as a string first
+			if (TryDeserialize<string>(result, out var resultString))
+			{
+				// now try again with the string result
+				if (TryDeserialize<T>(resultString, out var secondTime))
+					return secondTime;
+			}
+
+			throw new Exception($"Failed to deserialize result from controlDiv: {result}");
+	
+			static bool TryDeserialize<TInner>(string? result, out TInner? value)
+			{
+				if (result is null or "null" or "undefined")
+				{
+					value = default;
+					return false;
+				}
+
+				try
+				{
+					value = JsonSerializer.Deserialize<TInner>(result);
+					return true;
+				}
+				catch (JsonException)
+				{
+					value = default;
+				}
+
+				return false;
 			}
 		}
 
