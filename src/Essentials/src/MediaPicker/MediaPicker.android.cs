@@ -11,6 +11,7 @@ using Android.Provider;
 using AndroidX.Activity.Result;
 using AndroidX.Activity.Result.Contract;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Storage;
 using static AndroidX.Activity.Result.Contract.ActivityResultContracts;
 using AndroidUri = Android.Net.Uri;
@@ -85,9 +86,9 @@ namespace Microsoft.Maui.Media
 				{
 					captureResult = await CapturePhotoAsync(captureIntent);
 					// Apply compression/resizing if needed for photos
-					if (captureResult is not null && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
+					if (captureResult is not null && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 					{
-						captureResult = await Task.Run(() => CompressImageIfNeeded(captureResult, options));
+						captureResult = await CompressImageIfNeeded(captureResult, options);
 					}
 				}
 				else
@@ -133,9 +134,9 @@ namespace Microsoft.Maui.Media
 				if (path is not null)
 				{
 					// Apply compression/resizing if needed for photos
-					if (photo && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
+					if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 					{
-						path = await Task.Run(() => CompressImageIfNeeded(path, options));
+						path = await CompressImageIfNeeded(path, options);
 					}
 					return new FileResult(path);
 				}
@@ -164,9 +165,9 @@ namespace Microsoft.Maui.Media
 			var path = FileSystemUtils.EnsurePhysicalPath(androidUri);
 			
 			// Apply compression/resizing if needed for photos
-			if (photo && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
+			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 			{
-				path = await Task.Run(() => CompressImageIfNeeded(path, options));
+				path = await CompressImageIfNeeded(path, options);
 			}
 			
 			return new FileResult(path);
@@ -212,9 +213,9 @@ namespace Microsoft.Maui.Media
 					var path = FileSystemUtils.EnsurePhysicalPath(uri);
 					
 					// Apply compression/resizing if needed for photos
-					if (photo && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
+					if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 					{
-						path = await Task.Run(() => CompressImageIfNeeded(path, options));
+						path = await CompressImageIfNeeded(path, options);
 					}
 					
 					resultList.Add(new FileResult(path));
@@ -248,9 +249,9 @@ namespace Microsoft.Maui.Media
 			return tmpFile.AbsolutePath;
 		}
 
-		static string CompressImageIfNeeded(string imagePath, MediaPickerOptions options)
+		static async Task<string> CompressImageIfNeeded(string imagePath, MediaPickerOptions options)
 		{
-			if (((!options?.MaximumWidth.HasValue == true && !options?.MaximumHeight.HasValue == true) && options?.CompressionQuality >= 100) || string.IsNullOrEmpty(imagePath))
+			if (!ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100) || string.IsNullOrEmpty(imagePath))
 				return imagePath;
 
 			try
@@ -261,118 +262,39 @@ namespace Microsoft.Maui.Media
 					return imagePath;
 				}
 
-				// Load the bitmap directly without options to avoid JNI issues
-				using var originalBitmap = BitmapFactory.DecodeFile(imagePath);
-				if (originalBitmap == null)
-				{
-					return imagePath;
-				}
+				// Use ImageProcessor for unified image processing
+				using var inputStream = File.OpenRead(imagePath);
+				var inputFileName = System.IO.Path.GetFileName(imagePath);
+				using var processedStream = await ImageProcessor.ProcessImageAsync(
+					inputStream,
+					options?.MaximumWidth,
+					options?.MaximumHeight,
+					options?.CompressionQuality ?? 100,
+					inputFileName);
 
-				// First, apply resizing if maximum dimensions are specified
-				Bitmap workingBitmap = originalBitmap;
-				if (options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true)
+				if (processedStream != null)
 				{
-					var newDimensions = CalculateResizedDimensions(originalBitmap.Width, originalBitmap.Height, options.MaximumWidth, options.MaximumHeight);
-					
-					if (newDimensions.Width != originalBitmap.Width || newDimensions.Height != originalBitmap.Height)
-					{
-						workingBitmap = Bitmap.CreateScaledBitmap(originalBitmap, newDimensions.Width, newDimensions.Height, true);
-					}
-				}
+					// Determine output extension based on processed data and original filename
+					var outputExtension = ImageProcessor.DetermineOutputExtension(processedStream, options?.CompressionQuality ?? 100, inputFileName);
+					var processedFileName = System.IO.Path.GetFileNameWithoutExtension(imagePath) + "_processed" + outputExtension;
+					var processedPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(imagePath), processedFileName);
 
-				// Determine output format and quality based on compression settings
-				var originalExtension = System.IO.Path.GetExtension(imagePath).ToLowerInvariant();
-				var isPng = originalExtension == ".png";
-				var compressionQuality = options?.CompressionQuality ?? 100;
-				var useJpeg = !isPng || compressionQuality < 90; // Use JPEG for aggressive compression or non-PNG files
+					// Write processed image to file
+					using var outputStream = File.Create(processedPath);
+					processedStream.Position = 0;
+					await processedStream.CopyToAsync(outputStream);
 
-				// Create compressed version
-				var compressedExtension = useJpeg ? ".jpg" : ".png";
-				var compressedFileName = System.IO.Path.GetFileNameWithoutExtension(imagePath) + "_processed" + compressedExtension;
-				var compressedPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(imagePath), compressedFileName);
-
-				using var outputStream = System.IO.File.Create(compressedPath);
-				
-				bool success;
-				if (useJpeg)
-				{
-					success = workingBitmap.Compress(Bitmap.CompressFormat.Jpeg, compressionQuality, outputStream);
-				}
-				else
-				{
-					// For PNG, we can only reduce quality by resizing (PNG doesn't have lossy compression)
-					// If compression quality is less than 100% and we haven't already resized, scale down the image
-					if (compressionQuality < 100 && workingBitmap == originalBitmap)
-					{
-						var pngScale = Math.Sqrt(compressionQuality / 100.0);
-						var newWidth = (int)(workingBitmap.Width * pngScale);
-						var newHeight = (int)(workingBitmap.Height * pngScale);
-						
-						using var scaledBitmap = Bitmap.CreateScaledBitmap(workingBitmap, Math.Max(1, newWidth), Math.Max(1, newHeight), true);
-						success = scaledBitmap.Compress(Bitmap.CompressFormat.Png, 0, outputStream); // PNG quality is ignored (always lossless)
-					}
-					else
-					{
-						success = workingBitmap.Compress(Bitmap.CompressFormat.Png, 0, outputStream); // PNG quality is ignored (always lossless)
-					}
-				}
-
-				// Clean up working bitmap if it's different from original
-				if (workingBitmap != originalBitmap)
-				{
-					workingBitmap.Dispose();
-				}
-				
-				if (success)
-				{
-					// Delete the original uncompressed file
+					// Delete original file
 					try { originalFile.Delete(); } catch { }
-					return compressedPath;
+					return processedPath;
 				}
 			}
 			catch
 			{
-				// If compression fails, return original path
+				// If processing fails, return original path
 			}
 			
 			return imagePath;
-		}
-
-		static (int Width, int Height) CalculateResizedDimensions(int originalWidth, int originalHeight, int? maxWidth, int? maxHeight)
-		{
-			if (!maxWidth.HasValue && !maxHeight.HasValue)
-				return (originalWidth, originalHeight);
-
-			float scaleWidth = maxWidth.HasValue ? (float)maxWidth.Value / originalWidth : float.MaxValue;
-			float scaleHeight = maxHeight.HasValue ? (float)maxHeight.Value / originalHeight : float.MaxValue;
-			
-			// Use the smaller scale to ensure both constraints are respected
-			float scale = Math.Min(Math.Min(scaleWidth, scaleHeight), 1.0f); // Don't scale up
-			
-			return ((int)(originalWidth * scale), (int)(originalHeight * scale));
-		}
-
-		static int CalculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight)
-		{
-			// Raw height and width of image
-			int height = options.OutHeight;
-			int width = options.OutWidth;
-			int inSampleSize = 1;
-
-			if (height > reqHeight || width > reqWidth)
-			{
-				int halfHeight = height / 2;
-				int halfWidth = width / 2;
-
-				// Calculate the largest inSampleSize value that is a power of 2 and keeps both
-				// height and width larger than the requested height and width.
-				while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth)
-				{
-					inSampleSize *= 2;
-				}
-			}
-
-			return inSampleSize;
 		}
 
 		async Task<string> CaptureVideoAsync(Intent captureIntent)
@@ -451,14 +373,14 @@ namespace Microsoft.Maui.Media
 				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeMediaPicker, onResult: OnResult);
 
 				// Apply compression/resizing if needed for photos
-				if (photo && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
+				if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 				{
 					var tempResultList = resultList.Select(fr => fr.FullPath).ToList();
 					resultList.Clear();
 					
 					var compressionTasks = tempResultList.Select(async path =>
 					{
-						return await Task.Run(() => CompressImageIfNeeded(path, options));
+						return await CompressImageIfNeeded(path, options);
 					});
 					
 					var compressedPaths = await Task.WhenAll(compressionTasks);

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Storage;
 using Windows.Foundation.Collections;
 using Windows.Graphics.Imaging;
@@ -64,7 +65,7 @@ namespace Microsoft.Maui.Media
 			var fileResult = new FileResult(result);
 
 			// Apply compression/resizing if specified for photos
-			if (photo && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
+			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 			{
 				var compressedResult = await CompressImageAsync(result, options.MaximumWidth, options.MaximumHeight, options?.CompressionQuality ?? 100);
 				return compressedResult != null ? new FileResult(compressedResult) : fileResult;
@@ -109,7 +110,7 @@ namespace Microsoft.Maui.Media
 			var fileResults = result.Select(file => new FileResult(file)).ToList();
 
 			// Apply compression/resizing if specified for photos
-			if (photo && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
+			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 			{
 				var compressedResults = new List<FileResult>();
 				for (int i = 0; i < result.Count; i++)
@@ -151,7 +152,7 @@ namespace Microsoft.Maui.Media
 				var fileResult = new FileResult(file);
 
 				// Apply compression/resizing if specified for photos
-				if (photo && ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100))
+				if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 				{
 					var compressedResult = await CompressImageAsync(file, options.MaximumWidth, options.MaximumHeight, options?.CompressionQuality ?? 100);
 					return compressedResult != null ? new FileResult(compressedResult) : fileResult;
@@ -164,7 +165,7 @@ namespace Microsoft.Maui.Media
 		}
 		static async Task<StorageFile?> CompressImageAsync(StorageFile originalFile, int? maximumWidth, int? maximumHeight, int compressionQuality = 100)
 		{
-			if ((!maximumWidth.HasValue && !maximumHeight.HasValue) && compressionQuality >= 100)
+			if (!ImageProcessor.IsProcessingNeeded(maximumWidth, maximumHeight, compressionQuality))
 			{
 				return null; // No compression or resizing needed
 			}

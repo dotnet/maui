@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Storage;
 using MobileCoreServices;
@@ -269,7 +270,7 @@ namespace Microsoft.Maui.Media
 				.ToList() ?? [];
 
 			// Apply resizing and compression if specified and dealing with images
-			if ((options?.MaximumWidth.HasValue == true || options?.MaximumHeight.HasValue == true) || options?.CompressionQuality < 100)
+			if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 			{
 				var compressedResults = new List<FileResult>();
 				foreach (var result in fileResults)
@@ -446,18 +447,21 @@ namespace Microsoft.Maui.Media
 		// Static factory method to create compressed result from existing FileResult
 		internal static async Task<FileResult> CreateCompressedFromFileResult(FileResult originalResult, int? maximumWidth, int? maximumHeight, int compressionQuality = 100)
 		{
-			if (originalResult == null || ((!maximumWidth.HasValue && !maximumHeight.HasValue) && compressionQuality >= 100))
+			if (originalResult == null || !ImageProcessor.IsProcessingNeeded(maximumWidth, maximumHeight, compressionQuality))
 				return originalResult;
 
 			try
 			{
-				using var stream = await originalResult.OpenReadAsync();
-				var image = UIImage.LoadFromData(NSData.FromStream(stream));
+				using var originalStream = await originalResult.OpenReadAsync();
+				using var processedStream = await ImageProcessor.ProcessImageAsync(
+					originalStream, maximumWidth, maximumHeight, compressionQuality, originalResult.FileName);
 				
-				if (image != null)
-				{
-					return new CompressedUIImageFileResult(image, originalResult.FileName, maximumWidth, maximumHeight, compressionQuality);
-				}
+				// Read processed stream into memory
+				var memoryStream = new MemoryStream();
+				await processedStream.CopyToAsync(memoryStream);
+				memoryStream.Position = 0;
+				
+				return new ProcessedImageFileResult(memoryStream, originalResult.FileName);
 			}
 			catch
 			{
@@ -563,6 +567,49 @@ namespace Microsoft.Maui.Media
 			nfloat scale = (nfloat)Math.Min(Math.Min((double)scaleWidth, (double)scaleHeight), 1.0); // Don't scale up
 			
 			return new CoreGraphics.CGSize(originalWidth * scale, originalHeight * scale);
+		}
+	}
+
+	/// <summary>
+	/// FileResult implementation for processed images using MAUI Graphics
+	/// </summary>
+	internal class ProcessedImageFileResult : FileResult, IDisposable
+	{
+		readonly MemoryStream imageData;
+		readonly string originalFileName;
+
+		internal ProcessedImageFileResult(MemoryStream imageData, string originalFileName = null)
+			: base()
+		{
+			this.imageData = imageData;
+			this.originalFileName = originalFileName;
+
+			// Determine output format extension using ImageProcessor's improved logic
+			var extension = ImageProcessor.DetermineOutputExtension(imageData, 75, originalFileName);
+			FullPath = Guid.NewGuid().ToString() + extension;
+			FileName = FullPath;
+		}
+
+		internal override Task<Stream> PlatformOpenReadAsync()
+		{
+			// Reset position and return a copy of the stream
+			imageData.Position = 0;
+			var copyStream = new MemoryStream(imageData.ToArray());
+			return Task.FromResult<Stream>(copyStream);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				imageData?.Dispose();
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 	}
 }
