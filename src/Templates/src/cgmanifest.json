@@ -4,8 +4,8 @@
     {
       "component": {
         "nuget": {
-          "name": "CommunityToolkit.Maui",
-          "version": "11.1.1"
+          "version": "11.1.1",
+          "name": "CommunityToolkit.Maui"
         },
         "type": "nuget"
       }
@@ -13,8 +13,8 @@
     {
       "component": {
         "nuget": {
-          "name": "CommunityToolkit.Maui",
-          "version": "9.1.0"
+          "version": "9.1.0",
+          "name": "CommunityToolkit.Maui"
         },
         "type": "nuget"
       }
@@ -22,8 +22,8 @@
     {
       "component": {
         "nuget": {
-          "name": "Microsoft.Graphics.Win2D",
-          "version": "1.3.2"
+          "version": "17.6.0",
+          "name": "Microsoft.NET.Test.Sdk"
         },
         "type": "nuget"
       }
@@ -31,8 +31,8 @@
     {
       "component": {
         "nuget": {
-          "name": "xunit.analyzer",
-          "version": "1.15.0"
+          "version": "2.8.2",
+          "name": "xunit.runner.visualstudio"
         },
         "type": "nuget"
       }
@@ -40,8 +40,8 @@
     {
       "component": {
         "nuget": {
-          "name": "Microsoft.Windows.SDK.BuildTools",
-          "version": "10.0.22621.756"
+          "version": "9.0.4",
+          "name": "Microsoft.Extensions.Configuration"
         },
         "type": "nuget"
       }
@@ -49,8 +49,8 @@
     {
       "component": {
         "nuget": {
-          "name": "Microsoft.Extensions.DependencyInjection",
-          "version": "9.0.5"
+          "version": "1.0.4",
+          "name": "Syncfusion.Maui.Toolkit"
         },
         "type": "nuget"
       }
@@ -58,8 +58,8 @@
     {
       "component": {
         "nuget": {
-          "name": "Syncfusion.Maui.Toolkit",
-          "version": "1.0.4"
+          "version": "1.7.250401001",
+          "name": "Microsoft.WindowsAppSDK"
         },
         "type": "nuget"
       }
@@ -67,8 +67,8 @@
     {
       "component": {
         "nuget": {
-          "name": "Microsoft.Extensions.Configuration",
-          "version": "9.0.5"
+          "version": "2.1.10",
+          "name": "SQLitePCLRaw.bundle_green"
         },
         "type": "nuget"
       }
@@ -76,8 +76,8 @@
     {
       "component": {
         "nuget": {
-          "name": "SQLitePCLRaw.bundle_green",
-          "version": "2.1.10"
+          "version": "9.0.4",
+          "name": "Microsoft.Extensions.Logging.Debug"
         },
         "type": "nuget"
       }
@@ -85,8 +85,8 @@
     {
       "component": {
         "nuget": {
-          "name": "xunit",
-          "version": "2.9.0"
+          "version": "10.0.22621.756",
+          "name": "Microsoft.Windows.SDK.BuildTools"
         },
         "type": "nuget"
       }
@@ -94,8 +94,8 @@
     {
       "component": {
         "nuget": {
-          "name": "xunit.runner.visualstudio",
-          "version": "2.8.2"
+          "version": "8.3.2",
+          "name": "CommunityToolkit.Mvvm"
         },
         "type": "nuget"
       }
@@ -103,8 +103,8 @@
     {
       "component": {
         "nuget": {
-          "name": "CommunityToolkit.Mvvm",
-          "version": "8.3.2"
+          "version": "1.2.0",
+          "name": "Microsoft.Graphics.Win2D"
         },
         "type": "nuget"
       }
@@ -112,8 +112,8 @@
     {
       "component": {
         "nuget": {
-          "name": "Microsoft.NET.Test.Sdk",
-          "version": "17.6.0"
+          "version": "2.9.0",
+          "name": "xunit"
         },
         "type": "nuget"
       }
@@ -121,8 +121,8 @@
     {
       "component": {
         "nuget": {
-          "name": "Microsoft.Extensions.Logging.Debug",
-          "version": "9.0.5"
+          "version": "8.0.8",
+          "name": "Microsoft.Data.Sqlite.Core"
         },
         "type": "nuget"
       }
@@ -130,8 +130,8 @@
     {
       "component": {
         "nuget": {
-          "name": "Microsoft.WindowsAppSDK",
-          "version": "1.7.250513003"
+          "version": "9.0.4",
+          "name": "Microsoft.Extensions.DependencyInjection"
         },
         "type": "nuget"
       }
@@ -139,8 +139,8 @@
     {
       "component": {
         "nuget": {
-          "name": "coverlet.collector",
-          "version": "6.0.0"
+          "version": "1.15.0",
+          "name": "xunit.analyzer"
         },
         "type": "nuget"
       }
@@ -148,8 +148,8 @@
     {
       "component": {
         "nuget": {
-          "name": "Microsoft.Data.Sqlite.Core",
-          "version": "8.0.8"
+          "version": "6.0.0",
+          "name": "coverlet.collector"
         },
         "type": "nuget"
       }
