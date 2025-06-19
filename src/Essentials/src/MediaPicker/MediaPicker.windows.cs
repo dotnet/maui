@@ -13,7 +13,6 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Storage;
 using Windows.Foundation.Collections;
-using Windows.Graphics.Imaging;
 using Windows.Media.Capture;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -226,48 +225,31 @@ namespace Microsoft.Maui.Media
 
 			try
 			{
+				// Use ImageProcessor for unified image processing
+				using var originalStream = await originalFile.OpenAsync(FileAccessMode.Read);
+				using var processedStream = await ImageProcessor.ProcessImageAsync(
+					originalStream.AsStreamForRead(),
+					maximumWidth,
+					maximumHeight,
+					compressionQuality,
+					originalFile.Name);
+
+				// If ImageProcessor returns null (e.g., on .NET Standard), return null to use original file
+				if (processedStream == null)
+				{
+					return null;
+				}
+
 				// Create compressed file in cache directory
 				var tempFolder = await StorageFolder.GetFolderFromPathAsync(FileSystem.CacheDirectory);
-				var compressedFileName = $"processed_{Guid.NewGuid()}.jpg";
+				var outputExtension = ImageProcessor.DetermineOutputExtension(processedStream, compressionQuality, originalFile.Name);
+				var compressedFileName = $"processed_{Guid.NewGuid()}{outputExtension}";
 				var compressedFile = await tempFolder.CreateFileAsync(compressedFileName, CreationCollisionOption.ReplaceExisting);
 
-				using (var originalStream = await originalFile.OpenAsync(FileAccessMode.Read))
-				using (var compressedStream = await compressedFile.OpenAsync(FileAccessMode.ReadWrite))
-				{
-					var decoder = await BitmapDecoder.CreateAsync(originalStream);
-					
-					// Calculate new dimensions if resizing is needed
-					var originalWidth = decoder.PixelWidth;
-					var originalHeight = decoder.PixelHeight;
-					var newDimensions = CalculateResizedDimensions(originalWidth, originalHeight, maximumWidth, maximumHeight);
-					
-					var encoder = await BitmapEncoder.CreateForTranscodingAsync(compressedStream, decoder);
-					
-					// Set the size transform if resizing is needed
-					if (newDimensions.Width != originalWidth || newDimensions.Height != originalHeight)
-					{
-						encoder.BitmapTransform.ScaledWidth = (uint)newDimensions.Width;
-						encoder.BitmapTransform.ScaledHeight = (uint)newDimensions.Height;
-						encoder.BitmapTransform.InterpolationMode = BitmapInterpolationMode.Fant; // High quality scaling
-					}
-
-					// Set JPEG quality based on compression setting
-					var qualityFloat = compressionQuality switch
-					{
-						< 20 => 0.2f,   // Very low quality
-						< 40 => 0.4f,   // Low quality
-						< 60 => 0.6f,   // Medium quality
-						< 80 => 0.75f,  // Good quality
-						_ => 0.85f      // High quality
-					};
-
-					var propertySet = new BitmapPropertySet();
-					var qualityValue = new BitmapTypedValue(qualityFloat, global::Windows.Foundation.PropertyType.Single);
-					propertySet.Add("ImageQuality", qualityValue);
-
-					await encoder.BitmapProperties.SetPropertiesAsync(propertySet);
-					await encoder.FlushAsync();
-				}
+				// Write processed image to file
+				using var compressedStream = await compressedFile.OpenAsync(FileAccessMode.ReadWrite);
+				processedStream.Position = 0;
+				await processedStream.CopyToAsync(compressedStream.AsStreamForWrite());
 
 				return compressedFile;
 			}
@@ -276,20 +258,6 @@ namespace Microsoft.Maui.Media
 				System.Diagnostics.Debug.WriteLine($"Image compression failed: {ex.Message}");
 				return null;
 			}
-		}
-
-		static (int Width, int Height) CalculateResizedDimensions(uint originalWidth, uint originalHeight, int? maxWidth, int? maxHeight)
-		{
-			if (!maxWidth.HasValue && !maxHeight.HasValue)
-				return ((int)originalWidth, (int)originalHeight);
-
-			float scaleWidth = maxWidth.HasValue ? (float)maxWidth.Value / originalWidth : float.MaxValue;
-			float scaleHeight = maxHeight.HasValue ? (float)maxHeight.Value / originalHeight : float.MaxValue;
-			
-			// Use the smaller scale to ensure both constraints are respected
-			float scale = Math.Min(Math.Min(scaleWidth, scaleHeight), 1.0f); // Don't scale up
-			
-			return ((int)(originalWidth * scale), (int)(originalHeight * scale));
 		}
 
 		class WinUICameraCaptureUI
