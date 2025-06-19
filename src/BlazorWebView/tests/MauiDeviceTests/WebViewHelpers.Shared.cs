@@ -55,7 +55,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 								})();
 								document.getElementById('controlDiv').innerText = JSON.stringify(result);
 							} catch (error) {
-								document.getElementById('controlDiv').innerText = JSON.stringify({message: error || 'Unknown error'});
+								document.getElementById('controlDiv').innerText = JSON.stringify(error || 'Unknown error');
 							}
 						})();
 					`;
