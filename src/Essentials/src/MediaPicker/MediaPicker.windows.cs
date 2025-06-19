@@ -219,7 +219,7 @@ namespace Microsoft.Maui.Media
 		}
 		static async Task<StorageFile?> CompressImageAsync(StorageFile originalFile, int? maximumWidth, int? maximumHeight, int compressionQuality = 100)
 		{
-			if ((!maximumWidth.HasValue && !maximumHeight.HasValue) && compressionQuality >= 100)
+			if (!ImageProcessor.IsProcessingNeeded(maximumWidth, maximumHeight, compressionQuality))
 			{
 				return null; // No compression or resizing needed
 			}
