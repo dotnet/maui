@@ -49,14 +49,17 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 					var script = document.createElement('script');
 					script.textContent = `
 						(async function() {
+							let result = {
+								message: 'Failed to run test'
+							};
 							try {
-								const result = await (async function() {
+								result = await (async function() {
 									{{asyncFunctionBody}}
 								})();
-								document.getElementById('controlDiv').innerText = JSON.stringify(result);
 							} catch (error) {
-								document.getElementById('controlDiv').innerText = JSON.stringify({message: error || 'Unknown error'});
+								result.message = error.message ?? error.toString();
 							}
+							document.getElementById('controlDiv').innerText = JSON.stringify(result);
 						})();
 					`;
 					document.head.appendChild(script);
