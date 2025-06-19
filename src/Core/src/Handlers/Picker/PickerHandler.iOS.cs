@@ -136,6 +136,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiPicker platformView)
 		{
 			_proxy.Disconnect(platformView);
+			RemoveTouchDismissGesture();
 
 #if MACCATALYST
 			if (_pickerController != null)
