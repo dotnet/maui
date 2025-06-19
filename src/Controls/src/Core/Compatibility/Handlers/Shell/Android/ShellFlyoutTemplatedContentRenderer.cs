@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_shellContext.CurrentDrawerLayout.DrawerStateChanged -= OnFlyoutStateChanging;
 			}
 		}
-		
+
 		protected virtual void LoadView(IShellContext shellContext)
 		{
 			var context = shellContext.AndroidContext;
