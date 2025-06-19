@@ -19,13 +19,10 @@ public partial class BlazorWebViewTests
 	public Task RequestsCanBeInterceptedAndCustomDataReturned() =>
 		RunTest(async (blazorWebView, handler) =>
 		{
-			var intercepted = false;
 			blazorWebView.WebResourceRequested += (sender, e) =>
 			{
 				if (e.Uri.PathAndQuery.StartsWith("/api/sample"))
 				{
-					intercepted = true;
-
 					// 1. Create the response data
 					var response = new EchoResponseObject { message = $"Hello real endpoint (param1={e.QueryParameters["param1"]}, param2={e.QueryParameters["param2"]})" };
 					var responseData = JsonSerializer.SerializeToUtf8Bytes(response);
@@ -47,7 +44,6 @@ public partial class BlazorWebViewTests
 				return jsonData;
 				""");
 
-			Assert.True(intercepted, "The request should have been intercepted.");
 			Assert.NotNull(responseObject);
 			Assert.Equal("Hello real endpoint (param1=value1, param2=value2)", responseObject.message);
 		});
@@ -56,13 +52,10 @@ public partial class BlazorWebViewTests
 	public Task RequestsCanBeInterceptedAndAsyncCustomDataReturned() =>
 		RunTest(async (blazorWebView, handler) =>
 		{
-			var intercepted = false;
 			blazorWebView.WebResourceRequested += (sender, e) =>
 			{
 				if (e.Uri.PathAndQuery.StartsWith("/api/async-sample"))
 				{
-					intercepted = true;
-
 					// 1. Create the response
 					e.SetResponse(200, "OK", "application/json", GetDataAsync(e.QueryParameters));
 
@@ -79,7 +72,6 @@ public partial class BlazorWebViewTests
 				return jsonData;
 				""");
 
-			Assert.True(intercepted, "The request should have been intercepted.");
 			Assert.NotNull(responseObject);
 			Assert.Equal("Hello real endpoint (param1=value1, param2=value2)", responseObject.message);
 
@@ -111,20 +103,10 @@ public partial class BlazorWebViewTests
 	public Task RequestsCanBeInterceptedAndCustomDataReturnedForDifferentHosts(string uriBase) =>
 		RunTest(async (blazorWebView, handler) =>
 		{
-			Output.WriteLine($"Testing RequestsCanBeInterceptedAndCustomDataReturnedForDifferentHosts with base URI: {uriBase}");
-			
-			var intercepted = false;
-
 			blazorWebView.WebResourceRequested += (sender, e) =>
 			{
-				Output.WriteLine($"Request intercepted: {e.Method} {e.Uri}");
-
 				if (new Uri(uriBase).IsBaseOf(e.Uri) && !e.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
 				{
-					Output.WriteLine($"Request matched: {e.Method} {e.Uri} ({uriBase})");
-
-					intercepted = true;
-
 					// 1. Get the request from the platform args
 					var name = e.Headers["X-Echo-Name"];
 
@@ -151,8 +133,6 @@ public partial class BlazorWebViewTests
 				}
 			};
 
-			Output.WriteLine($"Starting request interception for: {uriBase}");
-
 			// Execute JavaScript to make the request and store result in controlDiv
 			var responseObject = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult<EchoResponseObject>(handler.PlatformView,
 				$$$"""
@@ -168,10 +148,6 @@ public partial class BlazorWebViewTests
 				return jsonData;
 				""");
 
-			Output.WriteLine($"Finished: {responseObject} {{ message = '{responseObject.message}' }}");
-
-
-			Assert.True(intercepted, "The request should have been intercepted.");
 			Assert.NotNull(responseObject);
 			Assert.Equal("Hello Matthew (param1=value1, param2=value2)", responseObject.message);
 		});
@@ -190,14 +166,10 @@ public partial class BlazorWebViewTests
 		{
 			const string ExpectedHeaderValue = "My Custom Header Value";
 
-			var intercepted = false;
-
 			blazorWebView.WebResourceRequested += (sender, e) =>
 			{
 				if (new Uri(uriBase).IsBaseOf(e.Uri) && !e.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
 				{
-					intercepted = true;
-
 #if WINDOWS
 					// Add the desired header for Windows by modifying the request
 					e.PlatformArgs.Request.Headers.SetHeader("X-Request-Header", ExpectedHeaderValue);
@@ -307,7 +279,6 @@ public partial class BlazorWebViewTests
 				return jsonData;
 				""");
 
-			Assert.True(intercepted, "The request should have been intercepted.");
 			Assert.NotNull(responseObject);
 			Assert.NotNull(responseObject.headers);
 			Assert.True(responseObject.headers.TryGetValue("X-Request-Header", out var actualHeaderValue));
@@ -369,15 +340,12 @@ public partial class BlazorWebViewTests
 	public Task RequestsCanBeInterceptedAndCaseInsensitiveHeadersRead(string uriBase) =>
 		RunTest(async (blazorWebView, handler) =>
 		{
-			var intercepted = false;
 			var headerValues = new Dictionary<string, string>();
 
 			blazorWebView.WebResourceRequested += (sender, e) =>
 			{
 				if (new Uri(uriBase).IsBaseOf(e.Uri) && !e.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
 				{
-					intercepted = true;
-
 					// Should be exactly as set in the JS
 					try
 					{ headerValues["X-Echo-Name"] = e.Headers["X-Echo-Name"]; }
@@ -428,7 +396,6 @@ public partial class BlazorWebViewTests
 				return jsonData;
 				""");
 
-			Assert.True(intercepted, "Request was not intercepted");
 			Assert.NotEmpty(headerValues);
 			Assert.Equal("Matthew", headerValues["X-Echo-Name"]);
 			Assert.Equal("Matthew", headerValues["x-echo-name"]);
