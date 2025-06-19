@@ -10,16 +10,13 @@
                      Clicked="NavigateToOptionsPage_Clicked"
                      AutomationId="Options"/>
     </ContentPage.ToolbarItems>
-    <VerticalStackLayout HorizontalOptions="Center"
-                         VerticalOptions="Center"
+    <VerticalStackLayout 
                          Spacing="20">
-        <HorizontalStackLayout x:Name="DatePickerLayout"
-                               HorizontalOptions="Center"
-                               Padding="0,0,0,100">
+        <VerticalStackLayout x:Name="DatePickerLayout"
+                               Padding="20,200,20,200">
             <DatePicker AutomationId="DatePickerControl"
                         CharacterSpacing="{Binding CharacterSpacing}"
                         Date="{Binding Date}"
-                        DateSelected="OnDateSelected"
                         FlowDirection="{Binding FlowDirection}"
                         Format="{Binding Format}"
                         FontAttributes="{Binding FontAttributes}"
@@ -31,15 +28,15 @@
                         MaximumDate="{Binding MaximumDate}"
                         Shadow="{Binding Shadow}"
                         TextColor="{Binding TextColor}"/>
-        </HorizontalStackLayout>
+        </VerticalStackLayout>
 
         <Label Text="DateSelected Event"
                HorizontalOptions="Center"/>
-        <HorizontalStackLayout>
+        <HorizontalStackLayout HorizontalOptions="Center">
             <Label Text="New Date: "/>
             <Label x:Name="NewDateSelectedLabel"/>
         </HorizontalStackLayout>
-        <HorizontalStackLayout>
+        <HorizontalStackLayout HorizontalOptions="Center">
             <Label Text="Old Date: "/>
             <Label x:Name="OldDateSelectedLabel"/>
         </HorizontalStackLayout>

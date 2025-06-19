@@ -19,6 +19,22 @@ public class DatePickerFeatureTests : UITest
         App.NavigateToGallery(DatePickerFeatureMatrix);
     }
 
+    [Test, Order(1)]
+    [Category(UITestCategories.DatePicker)]
+    public void DatePicker_InitialState_VerifyVisualState()
+    {
+        App.WaitForElement("DatePickerControl");
+        App.Tap("DatePickerControl");
+#if IOS || MACCATALYST
+        App.WaitForElement("Done");
+        App.Tap("Done");
+#else
+        App.WaitForElement("Ok");
+        App.Tap("Ok");
+#endif
+        // VerifyScreenshot();
+    }
+
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
     [Test]
     [Category(UITestCategories.DatePicker)]
@@ -36,25 +52,21 @@ public class DatePickerFeatureTests : UITest
     }
 #endif
 
-    // [Test]
-    // [Category(UITestCategories.DatePicker)]
-    // public void DatePicker_DateSelectedEvent_FiresOnDateChange()
-    // {
-    //     App.WaitForElement("Options");
-    //     App.Tap("Options");
-    //     App.WaitForElement("MinimumDateEntry");
-    //     App.ClearText("MinimumDateEntry");
-    //     App.EnterText("MinimumDateEntry", "12/25/2024");
-    //     App.WaitForElement("SetDateButton");
-    //     App.Tap("SetDateButton");
-    //     App.WaitForElement("Apply");
-    //     App.Tap("Apply");
-    //     App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-    //     App.Tap("DatePickerControl");
-    //     App.TapCoordinates(50, 50);
-    //     Thread.Sleep(5000);
-    //     VerifyScreenshot();
-    // }
+    [Test]
+    [Category(UITestCategories.DatePicker)]
+    public void DatePicker_DateSelectedEvent_FiresOnDateChange()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("MinimumDateEntry");
+        App.ClearText("MinimumDateEntry");
+        App.EnterText("MinimumDateEntry", "12/15/2026");
+        App.WaitForElement("SetDateButton");
+        App.Tap("SetDateButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        // VerifyScreenshot();
+    }
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/23793, https://github.com/dotnet/maui/issues/29099, https://github.com/dotnet/maui/issues/30011
     [Test]
