@@ -237,9 +237,9 @@ namespace Microsoft.Maui.Handlers
 				picker.Window.AddGestureRecognizer(_tapGestureRecognizer);
 			}
 
-			void RemoveTouchDismissGesture(object? sender)
+			void RemoveTouchDismissGesture(MauiPicker picker)
 			{
-				if (_tapGestureRecognizer is not null && sender is MauiPicker picker)
+				if (_tapGestureRecognizer is not null)
 				{
 					picker.Window?.RemoveGestureRecognizer(_tapGestureRecognizer);
 					_tapGestureRecognizer.Dispose();
@@ -293,7 +293,8 @@ namespace Microsoft.Maui.Handlers
 				}
 				if (VirtualView is IPicker virtualView)
 					virtualView.IsFocused = false;
-				RemoveTouchDismissGesture(sender);
+				if (sender is MauiPicker picker)
+					RemoveTouchDismissGesture(picker);
 			}
 
 			void OnEditing(object? sender, EventArgs eventArgs)
