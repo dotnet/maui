@@ -546,10 +546,17 @@ namespace Microsoft.Maui.Media
 					
 					UIGraphics.BeginImageContextWithOptions(newSize, false, normalizedImage.CurrentScale);
 					normalizedImage.Draw(new CoreGraphics.CGRect(CoreGraphics.CGPoint.Empty, newSize));
-					var scaledImage = UIGraphics.GetImageFromCurrentImageContext();
+					workingImage = UIGraphics.GetImageFromCurrentImageContext();
 					UIGraphics.EndImageContext();
-					
-					data = scaledImage?.AsPNG() ?? normalizedImage.AsPNG();
+				}
+				
+				// Then determine output format and apply compression
+				bool usePng = ShouldUsePngFormat();
+				
+				if (usePng)
+				{
+					// Use PNG format - lossless compression, supports transparency
+					data = workingImage.AsPNG();
 				}
 				else
 				{
