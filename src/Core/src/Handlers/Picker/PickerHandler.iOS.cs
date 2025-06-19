@@ -219,7 +219,7 @@ namespace Microsoft.Maui.Handlers
 
 		void RemoveTouchDismissGesture()
 		{
-			if (_tapGestureRecognizer is not null && PlatformView.Window is not null)
+			if (_tapGestureRecognizer is not null && PlatformView?.Window is not null)
 			{
 				PlatformView.Window.RemoveGestureRecognizer(_tapGestureRecognizer);
 				_tapGestureRecognizer.Dispose();
