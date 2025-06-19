@@ -447,7 +447,7 @@ namespace Microsoft.Maui.Media
 		// Static factory method to create compressed result from existing FileResult
 		internal static async Task<FileResult> CreateCompressedFromFileResult(FileResult originalResult, int? maximumWidth, int? maximumHeight, int compressionQuality = 100)
 		{
-			if (originalResult == null || !ImageProcessor.IsProcessingNeeded(maximumWidth, maximumHeight, compressionQuality))
+			if (originalResult is null || !ImageProcessor.IsProcessingNeeded(maximumWidth, maximumHeight, compressionQuality))
 				return originalResult;
 
 			try
@@ -455,6 +455,12 @@ namespace Microsoft.Maui.Media
 				using var originalStream = await originalResult.OpenReadAsync();
 				using var processedStream = await ImageProcessor.ProcessImageAsync(
 					originalStream, maximumWidth, maximumHeight, compressionQuality, originalResult.FileName);
+				
+				// If ImageProcessor returns null (e.g., on .NET Standard), return original file
+				if (processedStream is null)
+				{
+					return originalResult;
+				}
 				
 				// Read processed stream into memory
 				var memoryStream = new MemoryStream();

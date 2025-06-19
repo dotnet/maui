@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Media
 			// Apply compression/resizing if specified for photos
 			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 			{
-				var compressedResult = await CompressImageAsync(result, options.MaximumWidth, options.MaximumHeight, options?.CompressionQuality ?? 100);
+				var compressedResult = await CompressImageAsync(result, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100);
 				return compressedResult != null ? new FileResult(compressedResult) : fileResult;
 			}
 
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Media
 				{
 					var originalFile = result[i];
 					var fileResult = fileResults[i];
-					var compressedResult = await CompressImageAsync(originalFile, options.MaximumWidth, options.MaximumHeight, options?.CompressionQuality ?? 100);
+					var compressedResult = await CompressImageAsync(originalFile, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100);
 					compressedResults.Add(compressedResult != null ? new FileResult(compressedResult) : fileResult);
 				}
 				return compressedResults;
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Media
 				// Apply compression/resizing if specified for photos
 				if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 				{
-					var compressedResult = await CompressImageAsync(file, options.MaximumWidth, options.MaximumHeight, options?.CompressionQuality ?? 100);
+					var compressedResult = await CompressImageAsync(file, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100);
 					return compressedResult != null ? new FileResult(compressedResult) : fileResult;
 				}
 

@@ -1,209 +1,231 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+#if !NETSTANDARD
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Platform;
+#endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials;
+
+/// <summary>
+/// Unified image processing helper using MAUI Graphics for cross-platform consistency.
+/// </summary>
+internal static class ImageProcessor
 {
-	/// <summary>
-	/// Unified image processing helper using MAUI Graphics for cross-platform consistency.
-	/// </summary>
-	internal static class ImageProcessor
-	{
-		/// <summary>
-		/// Processes an image by applying resizing and compression using MAUI Graphics.
-		/// </summary>
-		/// <param name="inputStream">The input image stream.</param>
-		/// <param name="maxWidth">Maximum width constraint (null for no constraint).</param>
-		/// <param name="maxHeight">Maximum height constraint (null for no constraint).</param>
-		/// <param name="qualityPercent">Compression quality percentage (0-100).</param>
-		/// <param name="originalFileName">Original filename to determine format preservation logic.</param>
-		/// <returns>A new stream containing the processed image.</returns>
-		public static async Task<Stream> ProcessImageAsync(Stream inputStream, 
-			int? maxWidth, int? maxHeight, int qualityPercent, string originalFileName = null)
-		{
-            if (inputStream is null)
+    /// <summary>
+    /// Processes an image by applying resizing and compression using MAUI Graphics.
+    /// </summary>
+    /// <param name="inputStream">The input image stream.</param>
+    /// <param name="maxWidth">Maximum width constraint (null for no constraint).</param>
+    /// <param name="maxHeight">Maximum height constraint (null for no constraint).</param>
+    /// <param name="qualityPercent">Compression quality percentage (0-100).</param>
+    /// <param name="originalFileName">Original filename to determine format preservation logic.</param>
+    /// <returns>A new stream containing the processed image.</returns>
+    public static async Task<Stream> ProcessImageAsync(Stream inputStream, 
+        int? maxWidth, int? maxHeight, int qualityPercent, string originalFileName = null)
+    {
+#if NETSTANDARD || NET
+        // For .NET Standard and base .NET (without platform), return null to indicate no processing available
+        await Task.CompletedTask; // Avoid async warning
+        return null;
+#else
+        if (inputStream is null)
+        {
+            throw new ArgumentNullException(nameof(inputStream));
+        }
+
+        // Ensure we can read from the beginning of the stream
+        if (inputStream.CanSeek)
+        {
+            inputStream.Position = 0;
+        }
+
+        IImage image = null;
+        try
+        {
+            // Load the image using MAUI Graphics
+            var imageLoadingService = new PlatformImageLoadingService();
+            image = imageLoadingService.FromStream(inputStream);
+
+            if (image is null)
             {
-                throw new ArgumentNullException(nameof(inputStream));
+                throw new InvalidOperationException("Failed to load image from stream");
             }
 
-            // Ensure we can read from the beginning of the stream
-            if (inputStream.CanSeek)
+            // Apply resizing if needed
+            if (maxWidth.HasValue || maxHeight.HasValue)
             {
-                inputStream.Position = 0;
+                image = ApplyResizing(image, maxWidth, maxHeight);
             }
 
-			IImage image = null;
-			try
-			{
-				// Load the image using MAUI Graphics
-				var imageLoadingService = new PlatformImageLoadingService();
-				image = imageLoadingService.FromStream(inputStream);
+            // Determine output format and quality
+            var format = ShouldUsePngFormat(originalFileName, qualityPercent) 
+                ? ImageFormat.Png : ImageFormat.Jpeg;
+            var quality = Math.Max(0f, Math.Min(1f, qualityPercent / 100.0f));
 
-                if (image is null)
-                {
-                    throw new InvalidOperationException("Failed to load image from stream");
-                }
+            // Save to new stream
+            var outputStream = new MemoryStream();
+            await image.SaveAsync(outputStream, format, quality);
+            outputStream.Position = 0;
 
-				// Apply resizing if needed
-                if (maxWidth.HasValue || maxHeight.HasValue)
-                {
-                    image = ApplyResizing(image, maxWidth, maxHeight);
-                }
+            return outputStream;
+        }
+        finally
+        {
+            image?.Dispose();
+        }
+#endif
+    }
 
-				// Determine output format and quality
-				var format = ShouldUsePngFormat(originalFileName, qualityPercent) 
-					? ImageFormat.Png : ImageFormat.Jpeg;
-				var quality = Math.Max(0f, Math.Min(1f, qualityPercent / 100.0f));
+#if !NETSTANDARD
+    /// <summary>
+    /// Applies resizing constraints to an image while preserving aspect ratio.
+    /// </summary>
+    private static IImage ApplyResizing(IImage image, int? maxWidth, int? maxHeight)
+    {
+        var currentWidth = image.Width;
+        var currentHeight = image.Height;
 
-				// Save to new stream
-				var outputStream = new MemoryStream();
-				await image.SaveAsync(outputStream, format, quality);
-				outputStream.Position = 0;
+        // Calculate new dimensions while preserving aspect ratio
+        var newDimensions = CalculateResizedDimensions(currentWidth, currentHeight, maxWidth, maxHeight);
 
-				return outputStream;
-			}
-			finally
-			{
-				image?.Dispose();
-			}
-		}
+        // Only resize if dimensions actually changed
+        if (Math.Abs(newDimensions.Width - currentWidth) > 0.1f || 
+            Math.Abs(newDimensions.Height - currentHeight) > 0.1f)
+        {
+            return image.Downsize(newDimensions.Width, newDimensions.Height, disposeOriginal: true);
+        }
 
-		/// <summary>
-		/// Applies resizing constraints to an image while preserving aspect ratio.
-		/// </summary>
-		private static IImage ApplyResizing(IImage image, int? maxWidth, int? maxHeight)
-		{
-			var currentWidth = image.Width;
-			var currentHeight = image.Height;
+        return image;
+    }
 
-			// Calculate new dimensions while preserving aspect ratio
-			var newDimensions = CalculateResizedDimensions(currentWidth, currentHeight, maxWidth, maxHeight);
+    /// <summary>
+    /// Calculates new image dimensions while preserving aspect ratio.
+    /// </summary>
+    private static (float Width, float Height) CalculateResizedDimensions(
+        float originalWidth, float originalHeight, int? maxWidth, int? maxHeight)
+    {
+        if (!maxWidth.HasValue && !maxHeight.HasValue)
+        {
+            return (originalWidth, originalHeight);
+        }
 
-			// Only resize if dimensions actually changed
-			if (Math.Abs(newDimensions.Width - currentWidth) > 0.1f || 
-				Math.Abs(newDimensions.Height - currentHeight) > 0.1f)
-			{
-				return image.Downsize(newDimensions.Width, newDimensions.Height, disposeOriginal: true);
-			}
+        var targetWidth = maxWidth ?? float.MaxValue;
+        var targetHeight = maxHeight ?? float.MaxValue;
 
-			return image;
-		}
+        var scaleX = targetWidth / originalWidth;
+        var scaleY = targetHeight / originalHeight;
+        var scale = Math.Min(scaleX, scaleY);
 
-		/// <summary>
-		/// Calculates new image dimensions while preserving aspect ratio.
-		/// </summary>
-		private static (float Width, float Height) CalculateResizedDimensions(
-			float originalWidth, float originalHeight, int? maxWidth, int? maxHeight)
-		{
-			if (!maxWidth.HasValue && !maxHeight.HasValue)
-			{
-				return (originalWidth, originalHeight);
-			}
+        // Only scale down, never scale up
+        if (scale >= 1.0f)
+            return (originalWidth, originalHeight);
 
-			var targetWidth = maxWidth ?? float.MaxValue;
-			var targetHeight = maxHeight ?? float.MaxValue;
+        return (originalWidth * scale, originalHeight * scale);
+    }
 
-			var scaleX = targetWidth / originalWidth;
-			var scaleY = targetHeight / originalHeight;
-			var scale = Math.Min(scaleX, scaleY);
+    /// <summary>
+    /// Determines whether to use PNG format based on the original filename and quality settings.
+    /// </summary>
+    private static bool ShouldUsePngFormat(string originalFileName, int qualityPercent)
+    {
+        var originalWasPng = !string.IsNullOrEmpty(originalFileName) && 
+                                Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase);
 
-			// Only scale down, never scale up
-			if (scale >= 1.0f)
-				return (originalWidth, originalHeight);
+        // High quality (>=95): Prefer PNG for lossless quality
+        // High quality (>=90) + original was PNG: preserve PNG format
+        // Otherwise: Use JPEG for better compression
+        return qualityPercent >= 95 || (qualityPercent >= 90 && originalWasPng);
+    }
+#endif
 
-			return (originalWidth * scale, originalHeight * scale);
-		}
+    /// <summary>
+    /// Determines if image processing is needed based on the provided options.
+    /// </summary>
+    public static bool IsProcessingNeeded(int? maxWidth, int? maxHeight, int qualityPercent)
+    {
+#if NETSTANDARD || NET
+        // On .NET Standard and base .NET (without platform), always return false - no processing available
+        return false;
+#else
+        return (maxWidth.HasValue || maxHeight.HasValue) || qualityPercent < 100;
+#endif
+    }
 
-		/// <summary>
-		/// Determines whether to use PNG format based on the original filename and quality settings.
-		/// </summary>
-		private static bool ShouldUsePngFormat(string originalFileName, int qualityPercent)
-		{
-			var originalWasPng = !string.IsNullOrEmpty(originalFileName) && 
-								 Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase);
+    /// <summary>
+    /// Determines the output file extension based on processed image data and quality settings.
+    /// </summary>
+    /// <param name="imageData">The processed image stream to analyze</param>
+    /// <param name="qualityPercent">Compression quality percentage</param>
+    /// <param name="originalFileName">Original filename for format hints (optional)</param>
+    /// <returns>File extension including the dot (e.g., ".jpg", ".png")</returns>
+    public static string DetermineOutputExtension(Stream imageData, int qualityPercent, string originalFileName = null)
+    {
+#if NETSTANDARD || NET
+        // On .NET Standard and base .NET (without platform), fall back to simple logic
+        bool originalWasPng = !string.IsNullOrEmpty(originalFileName) && 
+                                originalFileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase);
+        return (qualityPercent >= 95 || originalWasPng) ? ".png" : ".jpg";
+#else
+        // Try to detect format from the actual processed image data
+        var detectedFormat = DetectImageFormat(imageData);
+        if (!string.IsNullOrEmpty(detectedFormat))
+        {
+            return detectedFormat;
+        }
 
-			// High quality (>=95): Prefer PNG for lossless quality
-			// High quality (>=90) + original was PNG: preserve PNG format
-			// Otherwise: Use JPEG for better compression
-			return qualityPercent >= 95 || (qualityPercent >= 90 && originalWasPng);
-		}
+        // Fallback: Use quality-based decision with original format consideration
+        var originalWasPng = !string.IsNullOrEmpty(originalFileName) && 
+                                Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase);
+        
+        // High quality (>=90) and original was PNG: keep PNG
+        // Very high quality (>=95): prefer PNG for maximum quality
+        // Otherwise: use JPEG for better compression
+        return (qualityPercent >= 95 || (qualityPercent >= 90 && originalWasPng)) ? ".png" : ".jpg";
+#endif
+    }
 
-		/// <summary>
-		/// Determines if image processing is needed based on the provided options.
-		/// </summary>
-		public static bool IsProcessingNeeded(int? maxWidth, int? maxHeight, int qualityPercent)
-		{
-			return (maxWidth.HasValue || maxHeight.HasValue) || qualityPercent < 100;
-		}
+#if !NETSTANDARD && !NET
+    /// <summary>
+    /// Detects image format from stream using magic numbers.
+    /// </summary>
+    private static string DetectImageFormat(Stream imageData)
+    {
+        if (imageData?.Length < 4)
+        {
+            return null;
+        }
 
-		/// <summary>
-		/// Determines the output file extension based on processed image data and quality settings.
-		/// </summary>
-		/// <param name="imageData">The processed image stream to analyze</param>
-		/// <param name="qualityPercent">Compression quality percentage</param>
-		/// <param name="originalFileName">Original filename for format hints (optional)</param>
-		/// <returns>File extension including the dot (e.g., ".jpg", ".png")</returns>
-		public static string DetermineOutputExtension(Stream imageData, int qualityPercent, string originalFileName = null)
-		{
-			// Try to detect format from the actual processed image data
-			var detectedFormat = DetectImageFormat(imageData);
-			if (!string.IsNullOrEmpty(detectedFormat))
-			{
-				return detectedFormat;
-			}
+        var originalPosition = imageData.Position;
+        try
+        {
+            imageData.Position = 0;
+            var bytes = new byte[8];
+            var bytesRead = imageData.Read(bytes, 0, Math.Min(8, (int)imageData.Length));
+            
+            if (bytesRead < 3)
+            {
+                return null;
+            }
 
-			// Fallback: Use quality-based decision with original format consideration
-			var originalWasPng = !string.IsNullOrEmpty(originalFileName) && 
-								 Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase);
-			
-			// High quality (>=90) and original was PNG: keep PNG
-			// Very high quality (>=95): prefer PNG for maximum quality
-			// Otherwise: use JPEG for better compression
-			return (qualityPercent >= 95 || (qualityPercent >= 90 && originalWasPng)) ? ".png" : ".jpg";
-		}
+            // PNG: 89 50 4E 47
+            if (bytesRead >= 4 && bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47)
+            {
+                return ".png";
+            }
 
-		/// <summary>
-		/// Detects image format from stream using magic numbers.
-		/// </summary>
-		private static string DetectImageFormat(Stream imageData)
-		{
-			if (imageData?.Length < 4)
-			{
-				return null;
-			}
+            // JPEG: FF D8 FF
+            if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF)
+            {
+                return ".jpg";
+            }
 
-			var originalPosition = imageData.Position;
-			try
-			{
-				imageData.Position = 0;
-				var bytes = new byte[8];
-				var bytesRead = imageData.Read(bytes, 0, Math.Min(8, (int)imageData.Length));
-				
-				if (bytesRead < 3)
-				{
-					return null;
-				}
-
-				// PNG: 89 50 4E 47
-				if (bytesRead >= 4 && bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47)
-				{
-					return ".png";
-				}
-
-				// JPEG: FF D8 FF
-				if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF)
-				{
-					return ".jpg";
-				}
-
-				return null;
-			}
-			finally
-			{
-				imageData.Position = originalPosition;
-			}
-		}
-	}
+            return null;
+        }
+        finally
+        {
+            imageData.Position = originalPosition;
+        }
+    }
+#endif
 }

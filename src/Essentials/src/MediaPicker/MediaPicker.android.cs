@@ -288,6 +288,10 @@ namespace Microsoft.Maui.Media
 					try { originalFile.Delete(); } catch { }
 					return processedPath;
 				}
+				
+				// If ImageProcessor returns null (e.g., on .NET Standard), ImageProcessor.IsProcessingNeeded would have returned false,
+				// so we shouldn't reach this point. Return original path as fallback.
+				return imagePath;
 			}
 			catch
 			{
