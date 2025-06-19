@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Handlers
 		readonly MauiPickerProxy _proxy = new();
 		UIPickerView? _pickerView;
 
+		UITapGestureRecognizer? _tapGestureRecognizer;
+
 #if !MACCATALYST
 		protected override MauiPicker CreatePlatformView()
 		{
@@ -202,6 +204,29 @@ namespace Microsoft.Maui.Handlers
 			textField.ResignFirstResponder();
 		}
 
+		void SetupTouchDismissGesture()
+		{
+			if (_tapGestureRecognizer is not null && this.PlatformView?.Window is null)
+				return;
+
+			_tapGestureRecognizer = new UITapGestureRecognizer(() =>
+			{
+				this.PlatformView.EndEditing(true);
+			});
+			_tapGestureRecognizer.CancelsTouchesInView = false;
+			this.PlatformView.Window.AddGestureRecognizer(_tapGestureRecognizer);
+		}
+
+		void RemoveTouchDismissGesture()
+		{
+			if (_tapGestureRecognizer is not null)
+			{
+				this.PlatformView.Window?.RemoveGestureRecognizer(_tapGestureRecognizer);
+				_tapGestureRecognizer.Dispose();
+				_tapGestureRecognizer = null;
+			}
+		}
+
 		class MauiPickerProxy
 		{
 			WeakReference<PickerHandler>? _handler;
@@ -210,9 +235,6 @@ namespace Microsoft.Maui.Handlers
 			IPicker? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
 
 			PickerHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
-
-			UITapGestureRecognizer? _tapGestureRecognizer;
-
 
 			public void Connect(PickerHandler handler, IPicker virtualView, MauiPicker platformView)
 			{
@@ -224,35 +246,12 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingChanged += OnEditing;
 			}
 
-			void SetupTouchDismissGesture(MauiPicker picker)
-			{
-				if (_tapGestureRecognizer is not null && picker?.Window is null)
-					return;
-
-				_tapGestureRecognizer = new UITapGestureRecognizer(() =>
-				{
-					picker.EndEditing(true);
-				});
-				_tapGestureRecognizer.CancelsTouchesInView = false;
-				picker.Window.AddGestureRecognizer(_tapGestureRecognizer);
-			}
-
-			void RemoveTouchDismissGesture(MauiPicker picker)
-			{
-				if (_tapGestureRecognizer is not null)
-				{
-					picker.Window?.RemoveGestureRecognizer(_tapGestureRecognizer);
-					_tapGestureRecognizer.Dispose();
-					_tapGestureRecognizer = null;
-				}
-			}
-
 			public void Disconnect(MauiPicker platformView)
 			{
 				platformView.EditingDidBegin -= OnStarted;
 				platformView.EditingDidEnd -= OnEnded;
 				platformView.EditingChanged -= OnEditing;
-				RemoveTouchDismissGesture(platformView);
+				this.Handler?.RemoveTouchDismissGesture();
 			}
 
 #if !MACCATALYST
@@ -275,10 +274,7 @@ namespace Microsoft.Maui.Handlers
 
 				handler.DisplayAlert(handler.PlatformView);
 #endif
-				if (sender is MauiPicker picker)
-				{
-					SetupTouchDismissGesture(picker);
-				}
+				Handler?.SetupTouchDismissGesture();
 			}
 
 			void OnEnded(object? sender, EventArgs eventArgs)
@@ -293,10 +289,8 @@ namespace Microsoft.Maui.Handlers
 				}
 				if (VirtualView is IPicker virtualView)
 					virtualView.IsFocused = false;
-				if (sender is MauiPicker picker)
-				{
-					RemoveTouchDismissGesture(picker);
-				}
+
+				Handler?.RemoveTouchDismissGesture();
 			}
 
 			void OnEditing(object? sender, EventArgs eventArgs)
