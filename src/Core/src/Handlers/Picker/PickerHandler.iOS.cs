@@ -107,6 +107,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiPicker platformView)
 		{
 			_proxy.Disconnect(platformView);
+			RemoveTouchDismissGesture();
 
 			if (_pickerView != null)
 			{
@@ -251,7 +252,6 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidBegin -= OnStarted;
 				platformView.EditingDidEnd -= OnEnded;
 				platformView.EditingChanged -= OnEditing;
-				Handler?.RemoveTouchDismissGesture();
 			}
 
 #if !MACCATALYST
