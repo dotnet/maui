@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Media
 					compressionQuality,
 					originalFile.Name);
 
-				// If ImageProcessor returns null (e.g., on .NET Standard), return null to use original file
+				// If ImageProcessor returns null (platforms without MAUI Graphics), return null to use original file
 				if (processedStream == null)
 				{
 					return null;
