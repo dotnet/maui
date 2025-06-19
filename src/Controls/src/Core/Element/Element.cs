@@ -641,8 +641,19 @@ namespace Microsoft.Maui.Controls
 
 			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
 			_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
-			UpdateHandlerValue(property.PropertyName, changed);
 
+			if (!changed)
+			{
+				return;
+			}
+
+			var specificity = GetContext(property).Values.GetSpecificity();
+			if (specificity == SetterSpecificity.FromHandler)
+			{
+				return;
+			}
+
+			UpdateHandlerValue(property.PropertyName, changed);
 		}
 
 		/// <summary>Method that is called when a bound property is changed.</summary>

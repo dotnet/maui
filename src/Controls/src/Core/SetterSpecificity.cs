@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls
 	{
 		const byte ExtrasVsm = 0x01;
 		const byte ExtrasHandler = 0xFF;
+		const byte ExtrasDontKnow = 0xFE; // New
 
 		public const ushort ManualTriggerBaseline = 2;
 
@@ -36,7 +37,10 @@ namespace Microsoft.Maui.Controls
 		public static readonly SetterSpecificity DynamicResourceSetter = new SetterSpecificity(0, 0, 1, 0, 0, 0, 0, 0);
 
 		// handler always apply, but are removed when anything else comes in. see SetValueActual
-		public static readonly SetterSpecificity FromHandler = new SetterSpecificity(0xFF, 0, 0, 0, 0, 0, 0, 0);
+		public static readonly SetterSpecificity FromHandler = new SetterSpecificity(ExtrasHandler, 0, 0, 0, 0, 0, 0, 0);
+
+		// New specificity, intended to behave like FromHandler
+		public static readonly SetterSpecificity FromDontKnow = new SetterSpecificity(ExtrasDontKnow, 0, 0, 0, 0, 0, 0, 0); // New
 
 		// We store all information in one single UInt64 value to have the fastest comparison possible
 		readonly ulong _value;
@@ -44,6 +48,7 @@ namespace Microsoft.Maui.Controls
 
 		public bool IsDefault => _value == 0ul;
 		public bool IsHandler => _value == 0xFFFFFFFFFFFFFFFF;
+		public bool IsInternalFallback => _value == 0xFEFEFEFEFEFEFEFE; // New
 		public bool IsVsm => (_value & 0x0100000000000000) != 0;
 		public bool IsVsmImplicit => (_value & 0x0000000004000000) != 0;
 		public bool IsManual => ((_value >> 28) & 0xFFFF) == 1;
@@ -115,7 +120,12 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			// If no style is set, set it to a value which supersedes any other style value
+			if (extras == ExtrasDontKnow)
+			{
+				_value = 0xFEFEFEFEFEFEFEFE; // New fallback specificity value
+				return;
+			}
+
 			if (style == 0)
 			{
 				style = 0xFFF;
@@ -133,6 +143,7 @@ namespace Microsoft.Maui.Controls
 			// 6. Id                 0x0000000000FF0000
 			// 7. Class              0x000000000000FF00
 			// 8. Type               0x00000000000000FF
+			// 9. InternalFallback   0xFEFEFEFEFEFEFEFE // New
 
 			var implicitVsm = 0;
 			var vsm = extras == ExtrasVsm ? 0x01 : 0;

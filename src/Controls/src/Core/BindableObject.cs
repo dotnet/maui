@@ -133,6 +133,11 @@ namespace Microsoft.Maui.Controls
 			{
 				bpcontext.Values.Remove(SetterSpecificity.FromHandler);
 			}
+			if (original.Key == SetterSpecificity.FromDontKnow)
+			{
+				bpcontext.Values.Remove(SetterSpecificity.FromDontKnow);
+			}
+
 
 			var newValue = bpcontext.Values.GetClearedValue(specificity);
 			var changed = !Equals(original.Value, newValue);
@@ -286,7 +291,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="targetProperty">The bindable property on which to apply <paramref name="binding"/>.</param>
 		/// <param name="binding">The binding to set for <paramref name="targetProperty"/>.</param>
 		public void SetBinding(BindableProperty targetProperty, BindingBase binding)
-			=> SetBinding(targetProperty, binding, binding != null && targetProperty != null && binding.GetRealizedMode(targetProperty) == BindingMode.TwoWay ? SetterSpecificity.FromHandler : SetterSpecificity.FromBinding);
+			=> SetBinding(targetProperty, binding, binding != null && targetProperty != null && binding.GetRealizedMode(targetProperty) == BindingMode.TwoWay ? SetterSpecificity.FromDontKnow : SetterSpecificity.FromBinding);
 
 		internal void SetBinding(BindableProperty targetProperty, BindingBase binding, SetterSpecificity specificity)
 		{
@@ -618,6 +623,13 @@ namespace Microsoft.Maui.Controls
 				&& originalSpecificity == SetterSpecificity.FromHandler)
 			{
 				context.Values.Remove(SetterSpecificity.FromHandler);
+				originalSpecificity = context.Values.GetSpecificity();
+			}
+
+			if (specificity != SetterSpecificity.FromDontKnow
+				&& originalSpecificity == SetterSpecificity.FromDontKnow)
+			{
+				context.Values.Remove(SetterSpecificity.FromDontKnow);
 				originalSpecificity = context.Values.GetSpecificity();
 			}
 
