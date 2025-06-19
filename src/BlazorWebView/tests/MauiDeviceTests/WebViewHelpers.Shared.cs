@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 using PlatformWebView = Android.Webkit.WebView;
 #elif IOS || MACCATALYST
 using PlatformWebView = WebKit.WKWebView;
+#elif WINDOWS
+using PlatformWebView = Microsoft.UI.Xaml.Controls.WebView2;
 #else
-using PlatformWebView = Microsoft.Maui.Controls.WebView;
+using PlatformWebView = System.Object;
 #endif
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
