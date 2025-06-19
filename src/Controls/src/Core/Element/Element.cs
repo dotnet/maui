@@ -642,6 +642,11 @@ namespace Microsoft.Maui.Controls
 			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
 			_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
 
+			if (!changed)
+			{
+				return;
+			}
+
 			var specificity = GetContext(property).Values.GetSpecificity();
 			if (specificity == SetterSpecificity.FromHandler)
 			{
