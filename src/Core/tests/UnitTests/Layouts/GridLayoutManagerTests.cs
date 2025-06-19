@@ -2505,17 +2505,14 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(120, measure.Height);
 
 			// Now arrange it at a _different_ height
+			Rect view0Dest = default, view1Dest = default, view2Dest = default;
+			view0.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view0Dest = x.Arg<Rect>());
+			view1.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view1Dest = x.Arg<Rect>());
+			view2.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view2Dest = x.Arg<Rect>());
+			
 			manager.ArrangeChildren(new Rect(0, 0, measure.Width, measure.Height + heightDelta));
 
 			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
-			var v0ArrangeArgs = view0.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
-			var view0Dest = (Rect)v0ArrangeArgs[0];
-
-			var v1ArrangeArgs = view1.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
-			var view1Dest = (Rect)v1ArrangeArgs[0];
-
-			var v2ArrangeArgs = view2.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
-			var view2Dest = (Rect)v2ArrangeArgs[0];
 
 			// Ensure that the destination rect for each view is large enough
 			// for that view (that the grid isn't somehow shrinking their destination area)
@@ -2574,17 +2571,14 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(120, measure.Width);
 
 			// Now arrange it at a _different_ width
+			Rect view0Dest = default, view1Dest = default, view2Dest = default;
+			view0.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view0Dest = x.Arg<Rect>());
+			view1.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view1Dest = x.Arg<Rect>());
+			view2.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view2Dest = x.Arg<Rect>());
+			
 			manager.ArrangeChildren(new Rect(0, 0, measure.Width + widthDelta, measure.Height));
 
 			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
-			var v0ArrangeArgs = view0.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
-			var view0Dest = (Rect)v0ArrangeArgs[0];
-
-			var v1ArrangeArgs = view1.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
-			var view1Dest = (Rect)v1ArrangeArgs[0];
-
-			var v2ArrangeArgs = view2.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
-			var view2Dest = (Rect)v2ArrangeArgs[0];
 
 			// Ensure that the destination rect for each view is large enough
 			// for that view (that the grid isn't somehow shrinking their destination area)
@@ -2757,34 +2751,28 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			// Now arrange it at a _different_ size
+			Rect view0Dest1 = default, view1Dest1 = default, view2Dest1 = default;
+			view0.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view0Dest1 = x.Arg<Rect>());
+			view1.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view1Dest1 = x.Arg<Rect>());
+			view2.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view2Dest1 = x.Arg<Rect>());
+			
 			manager.ArrangeChildren(new Rect(0, 0, measure.Width + delta, measure.Height + delta));
 
 			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
-			var v0ArrangeArgs1 = view0.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
-			var view0Dest1 = (Rect)v0ArrangeArgs1[0];
-
-			var v1ArrangeArgs1 = view1.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
-			var view1Dest1 = (Rect)v1ArrangeArgs1[0];
-
-			var v2ArrangeArgs1 = view2.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
-			var view2Dest1 = (Rect)v2ArrangeArgs1[0];
 
 			view0.ClearReceivedCalls();
 			view1.ClearReceivedCalls();
 			view2.ClearReceivedCalls();
 
 			// Now arrange it at the same size again
+			Rect view0Dest2 = default, view1Dest2 = default, view2Dest2 = default;
+			view0.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view0Dest2 = x.Arg<Rect>());
+			view1.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view1Dest2 = x.Arg<Rect>());
+			view2.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view2Dest2 = x.Arg<Rect>());
+			
 			manager.ArrangeChildren(new Rect(0, 0, measure.Width + delta, measure.Height + delta));
 
 			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
-			var v0ArrangeArgs2 = view0.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
-			var view0Dest2 = (Rect)v0ArrangeArgs2[0];
-
-			var v1ArrangeArgs2 = view1.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
-			var view1Dest2 = (Rect)v1ArrangeArgs2[0];
-
-			var v2ArrangeArgs2 = view2.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
-			var view2Dest2 = (Rect)v2ArrangeArgs2[0];
 
 			// Ensure that Arrange was called with the same destination rect for each view both times
 			Assert.Equal(view0Dest1, view0Dest2);
@@ -3046,13 +3034,17 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Now we'll arrange it at a larger height (as if we were filling up the height of a layout)
 			double arrangeHeight = measure.Height + 100;
+			
+			// Capture arrange rectangles for each view
+			Rect view0Dest = default, view1Dest = default, view2Dest = default, view3Dest = default;
+			view0.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view0Dest = x.Arg<Rect>());
+			view1.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view1Dest = x.Arg<Rect>());
+			view2.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view2Dest = x.Arg<Rect>());
+			view3.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view3Dest = x.Arg<Rect>());
+			
 			manager.ArrangeChildren(new Rect(0, 0, measure.Width, arrangeHeight));
 
 			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
-			var view0Dest = GetArrangedRect(view0);
-			var view1Dest = GetArrangedRect(view1);
-			var view2Dest = GetArrangedRect(view2);
-			var view3Dest = GetArrangedRect(view3);
 
 			// We have four rows: 1*, 4.5*, 1*, 4.5*
 			double starCount = 1 + 4.5 + 1 + 4.5;
@@ -3099,13 +3091,17 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Now we'll arrange it at a larger width (as if we were filling up the width of a layout)
 			double arrangeWidth = measure.Width + 100;
+			
+			// Capture arrange rectangles for each view
+			Rect view0Dest = default, view1Dest = default, view2Dest = default, view3Dest = default;
+			view0.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view0Dest = x.Arg<Rect>());
+			view1.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view1Dest = x.Arg<Rect>());
+			view2.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view2Dest = x.Arg<Rect>());
+			view3.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => view3Dest = x.Arg<Rect>());
+			
 			manager.ArrangeChildren(new Rect(0, 0, arrangeWidth, measure.Height));
 
 			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
-			var view0Dest = GetArrangedRect(view0);
-			var view1Dest = GetArrangedRect(view1);
-			var view2Dest = GetArrangedRect(view2);
-			var view3Dest = GetArrangedRect(view3);
 
 			// We have four columns: 1*, 4.5*, 1*, 4.5*
 			double starCount = 1 + 4.5 + 1 + 4.5;
@@ -3123,11 +3119,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(expectedEvenRowWidth, view3Dest.Width, 1.0);
 		}
 
-		static Rect GetArrangedRect(IView view)
-		{
-			var args = view.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
-			return (Rect)args[0];
-		}
 
 		// The next two tests look at a corner case where the Grid is measured in one dimension without constraint
 		// (for instance, inside of a StackLayout); the Star in the unconstrained dimension should be treated
@@ -3255,23 +3246,19 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Arrange at 293.4dp width - this should trigger improved distribution
 			var widthConstraint = 293.4;
+			
+			// Set up capture for arrange rectangles
+			Rect rect0 = default, rect1 = default, rect2 = default;
+			view0.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect0 = x.Arg<Rect>());
+			view1.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect1 = x.Arg<Rect>());
+			view2.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect2 = x.Arg<Rect>());
+			
 			MeasureAndArrangeFixed(grid, widthConstraint, 100);
 
 			// Even without density info, the layout should work properly
 			// Each column gets approximately 293.4 / 3 = 97.8dp
 
 			// Verify that all views are arranged properly and don't overflow
-			var arrangeCall0 = view0.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
-			var arrangeCall1 = view1.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
-			var arrangeCall2 = view2.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
-
-			Assert.NotNull(arrangeCall0);
-			Assert.NotNull(arrangeCall1);
-			Assert.NotNull(arrangeCall2);
-
-			var rect0 = (Rect)arrangeCall0.GetArguments()[0];
-			var rect1 = (Rect)arrangeCall1.GetArguments()[0];
-			var rect2 = (Rect)arrangeCall2.GetArguments()[0];
 
 			// Verify the columns are arranged sequentially
 			Assert.Equal(0, rect0.X, 1);
@@ -3301,16 +3288,16 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Arrange at 290dp width
 			var widthConstraint = 290.0;
+			
+			// Set up capture for arrange rectangles
+			Rect rect0 = default, rect1 = default, rect2 = default;
+			view0.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect0 = x.Arg<Rect>());
+			view1.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect1 = x.Arg<Rect>());
+			view2.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect2 = x.Arg<Rect>());
+			
 			MeasureAndArrangeFixed(grid, widthConstraint, 100);
 
 			// Verify that columns are distributed without overflow
-			var arrangeCall0 = view0.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
-			var arrangeCall1 = view1.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
-			var arrangeCall2 = view2.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
-
-			var rect0 = (Rect)arrangeCall0.GetArguments()[0];
-			var rect1 = (Rect)arrangeCall1.GetArguments()[0];
-			var rect2 = (Rect)arrangeCall2.GetArguments()[0];
 
 			// Verify proper layout without overflow
 			var totalWidth = rect0.Width + rect1.Width + rect2.Width;
@@ -3338,18 +3325,17 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Arrange at 300dp width
 			var widthConstraint = 300.0;
+			
+			// Set up capture for arrange rectangles
+			Rect rect0 = default, rect1 = default, rect2 = default, rect3 = default;
+			view0.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect0 = x.Arg<Rect>());
+			view1.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect1 = x.Arg<Rect>());
+			view2.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect2 = x.Arg<Rect>());
+			view3.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect3 = x.Arg<Rect>());
+			
 			MeasureAndArrangeFixed(grid, widthConstraint, 100);
 
 			// Verify that 4 columns are distributed properly
-			var arrangeCall0 = view0.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
-			var arrangeCall1 = view1.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
-			var arrangeCall2 = view2.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
-			var arrangeCall3 = view3.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
-
-			var rect0 = (Rect)arrangeCall0.GetArguments()[0];
-			var rect1 = (Rect)arrangeCall1.GetArguments()[0];
-			var rect2 = (Rect)arrangeCall2.GetArguments()[0];
-			var rect3 = (Rect)arrangeCall3.GetArguments()[0];
 
 			// Verify proper sequential layout
 			Assert.Equal(0, rect0.X, 1);
@@ -3379,16 +3365,16 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view2, col: 2);
 
 			var widthConstraint = 250.0;
+			
+			// Set up capture for arrange rectangles
+			Rect rect0 = default, rect1 = default, rect2 = default;
+			view0.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect0 = x.Arg<Rect>());
+			view1.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect1 = x.Arg<Rect>());
+			view2.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect2 = x.Arg<Rect>());
+			
 			MeasureAndArrangeFixed(grid, widthConstraint, 100);
 
 			// Verify weighted distribution: first and third columns should be larger than middle
-			var arrangeCall0 = view0.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
-			var arrangeCall1 = view1.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
-			var arrangeCall2 = view2.ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
-
-			var rect0 = (Rect)arrangeCall0.GetArguments()[0];
-			var rect1 = (Rect)arrangeCall1.GetArguments()[0];
-			var rect2 = (Rect)arrangeCall2.GetArguments()[0];
 
 			// First and third columns (2*) should be approximately twice the width of the middle column (1*)
 			Assert.True(rect0.Width > rect1.Width * 1.5, $"First column ({rect0.Width}) should be larger than middle column ({rect1.Width})");
@@ -3419,16 +3405,18 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Use a constraint that would cause rounding issues
 			var widthConstraint = 333.33; // Doesn't divide evenly by 5
-			MeasureAndArrangeFixed(grid, widthConstraint, 100);
-
-			// Collect all arranged rects
+			
+			// Set up capture for all view rectangles
 			var rects = new Rect[5];
 			for (int i = 0; i < 5; i++)
 			{
-				var arrangeCall = views[i].ReceivedCalls().LastOrDefault(call => call.GetMethodInfo().Name == nameof(IView.Arrange));
-				Assert.NotNull(arrangeCall);
-				rects[i] = (Rect)arrangeCall.GetArguments()[0];
+				int index = i; // Capture loop variable for closure
+				views[i].When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rects[index] = x.Arg<Rect>());
 			}
+			
+			MeasureAndArrangeFixed(grid, widthConstraint, 100);
+
+			// Collect all arranged rects
 
 			// Verify sequential layout
 			for (int i = 1; i < 5; i++)
