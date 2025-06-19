@@ -2,12 +2,20 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.FileProviders;
 using WebViewAppShared;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
 
 [Category(TestCategory.BlazorWebView)]
 public partial class BlazorWebViewTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
 {
+	public BlazorWebViewTests(ITestOutputHelper output)
+	{
+		Output = output;
+	}
+		
+	public ITestOutputHelper Output { get; }
+
 	sealed class BlazorWebViewWithCustomFiles : BlazorWebView
 	{
 		public Dictionary<string, string> CustomFiles { get; set; }

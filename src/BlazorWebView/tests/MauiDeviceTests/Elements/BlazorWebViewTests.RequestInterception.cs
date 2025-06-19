@@ -111,12 +111,18 @@ public partial class BlazorWebViewTests
 	public Task RequestsCanBeInterceptedAndCustomDataReturnedForDifferentHosts(string uriBase) =>
 		RunTest(async (blazorWebView, handler) =>
 		{
+			Output.WriteLine($"Testing RequestsCanBeInterceptedAndCustomDataReturnedForDifferentHosts with base URI: {uriBase}");
+			
 			var intercepted = false;
 
 			blazorWebView.WebResourceRequested += (sender, e) =>
 			{
+				Output.WriteLine($"Request intercepted: {e.Method} {e.Uri}");
+
 				if (new Uri(uriBase).IsBaseOf(e.Uri) && !e.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
 				{
+					Output.WriteLine($"Request matched: {e.Method} {e.Uri} ({uriBase})");
+
 					intercepted = true;
 
 					// 1. Get the request from the platform args
@@ -145,6 +151,8 @@ public partial class BlazorWebViewTests
 				}
 			};
 
+			Output.WriteLine($"Starting request interception for: {uriBase}");
+
 			// Execute JavaScript to make the request and store result in controlDiv
 			var responseObject = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult<EchoResponseObject>(handler.PlatformView,
 				$$$"""
@@ -159,6 +167,9 @@ public partial class BlazorWebViewTests
 				const jsonData = await response.json();
 				return jsonData;
 				""");
+
+			Output.WriteLine($"Finished: {responseObject} {{ message = '{responseObject.message}' }}");
+
 
 			Assert.True(intercepted, "The request should have been intercepted.");
 			Assert.NotNull(responseObject);
