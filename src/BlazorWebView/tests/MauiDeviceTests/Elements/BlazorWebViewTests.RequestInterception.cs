@@ -446,9 +446,10 @@ public partial class BlazorWebViewTests
 			Selector = "#app"
 		});
 
-		await InvokeOnMainThreadAsync(async () =>
+		// Set up the view to be displayed/parented and run our tests on it
+		await AttachAndRun(blazorWebView, async handler =>
 		{
-			var blazorWebViewHandler = CreateHandler<BlazorWebViewHandler>(blazorWebView);
+			var blazorWebViewHandler = handler as BlazorWebViewHandler;
 			var platformWebView = blazorWebViewHandler.PlatformView;
 
 			await WebViewHelpers.WaitForWebViewReady(platformWebView);
