@@ -191,9 +191,10 @@ namespace Microsoft.Maui.Media
 		/// A value of 0 or null means no width constraint.
 		/// </summary>
 		/// <remarks>
-		/// The image will be resized to fit within the specified maximum dimensions while maintaining aspect ratio.
+		/// <para>This property only applies to images. It has no effect on video files.</para>
+		/// <para>The image will be resized to fit within the specified maximum dimensions while maintaining aspect ratio.
 		/// If both MaximumWidth and MaximumHeight are specified, the image will be scaled to fit within both constraints.
-		/// This resizing is applied before any compression quality settings.
+		/// This resizing is applied before any compression quality settings.</para>
 		/// </remarks>
 		public int? MaximumWidth { get; set; }
 
@@ -203,9 +204,10 @@ namespace Microsoft.Maui.Media
 		/// A value of 0 or null means no height constraint.
 		/// </summary>
 		/// <remarks>
-		/// The image will be resized to fit within the specified maximum dimensions while maintaining aspect ratio.
+		/// <para>This property only applies to images. It has no effect on video files.</para>
+		/// <para>The image will be resized to fit within the specified maximum dimensions while maintaining aspect ratio.
 		/// If both MaximumWidth and MaximumHeight are specified, the image will be scaled to fit within both constraints.
-		/// This resizing is applied before any compression quality settings.
+		/// This resizing is applied before any compression quality settings.</para>
 		/// </remarks>
 		public int? MaximumHeight { get; set; }
 
