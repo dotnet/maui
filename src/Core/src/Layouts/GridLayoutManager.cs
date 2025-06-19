@@ -6,6 +6,8 @@ using System.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Layouts
 {
@@ -698,24 +700,25 @@ namespace Microsoft.Maui.Layouts
 
 			double GetDisplayDensity()
 			{
-#if !TIZEN
 				try
 				{
+#if !TIZEN
 					var window = (_grid as IView)?.GetHostedWindow();
 					if (window != null)
 					{
 						return window.RequestDisplayDensity();
 					}
-				}
-				catch
-				{
-					// Ignore errors and fall back to default density
-				}
-#else
-				// Tizen doesn't support getting hosted window, use default density
-				_ = _grid; // Reference instance data to avoid CA1822 warning
 #endif
-				return 1; // Default density when window is not available or on Tizen
+				}
+				catch (Exception ex)
+				{
+					// Log the error and fall back to default density
+					var logger = (_grid as IView)?.Handler?.MauiContext?.Services.CreateLogger<GridLayoutManager>();
+#pragma warning disable CA1848 // For improved performance, use the LoggerMessage delegates
+					logger?.LogWarning(ex, "Failed to get display density from window, using default density of 1.0");
+#pragma warning restore CA1848
+				}
+				return 1; // Default density when window is not available
 			}
 
 			void ResolveStarColumns(double widthConstraint)
