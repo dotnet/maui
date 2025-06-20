@@ -964,9 +964,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			FlyoutPage.Flyout.IconImageSource.LoadImage(FlyoutPage.FindMauiContext(), result =>
 			{
 				var icon = result?.Value;
-				if (icon != null)
+				if (icon is not null)
 				{
-					if (AppContext.TryGetSwitch("iOSResizeFlyoutIconToSystemDefault", out bool resize) && resize)
+					if (!AppContext.TryGetSwitch("iOSDisableFlyoutIconAutoResizing", out bool disableResizing) || !disableResizing)
 					{
 						icon = FlyoutViewExtensions.AutoResizeFlyoutIcon(icon);
 					}
