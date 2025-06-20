@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
 				return;
 
-			if (Element is not null && AppContext.TryGetSwitch("iOSResizeTabIconsToSystemDefault", out bool resize) && resize)
+			if (Element is not null && (!AppContext.TryGetSwitch("iOSDisableTabIconAutoResizing", out bool disableResizing) || !disableResizing))
 			{
 				UpdateTabBarItems();
 			}
@@ -503,7 +503,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				throw new InvalidCastException($"{nameof(renderer)} must be a {nameof(Page)} renderer.");
 
 			var icons = await GetIcon(page);
-			if (AppContext.TryGetSwitch("iOSResizeTabIconsToSystemDefault", out bool resize) && resize)
+			if (!AppContext.TryGetSwitch("iOSDisableTabIconAutoResizing", out bool disableResizing) || !disableResizing)
 			{
 				var resizedImage = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icons?.Item1);
 				var resizedSelectedImage = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icons?.Item2);
