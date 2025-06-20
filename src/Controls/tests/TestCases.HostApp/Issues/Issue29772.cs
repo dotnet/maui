@@ -29,6 +29,7 @@ public class Issue29772 : ContentPage
 			Loop = false,
 			CurrentItem = "Item 0",
 			PeekAreaInsets = new Thickness(20, 0, 20, 0),
+			HorizontalScrollBarVisibility = ScrollBarVisibility.Never,
 			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal)
 			{
 				ItemSpacing = 10,
