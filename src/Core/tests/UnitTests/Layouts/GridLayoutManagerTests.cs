@@ -3320,39 +3320,23 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			MeasureAndArrangeFixedWithDensity(grid, density, widthConstraint, 100);
 
 			// Convert Dp values to pixels for verification with pixel precision
-			var pixelX0 = rect0.X * density;
-			var pixelX1 = rect1.X * density;
-			var pixelX2 = rect2.X * density;
-			var pixelWidth0 = rect0.Width * density;
-			var pixelWidth1 = rect1.Width * density;
-			var pixelWidth2 = rect2.Width * density;
+			var totalPixels = Math.Round(widthConstraint * density);
+			var portions = new double[] { 1.0, 1.0, 1.0 };
+			var expectedPixelWidths = DensityValue.DistributePixels(totalPixels, density, portions);
 
 			// Verify the columns are arranged sequentially (allow tolerance for DP coordinates)
 			Assert.True(Math.Abs(rect0.X) <= 1, $"First column should start near 0");
 			Assert.True(rect1.X >= rect0.X + rect0.Width - 1, $"Column 1 should start after column 0");
 			Assert.True(rect2.X >= rect1.X + rect1.Width - 1, $"Column 2 should start after column 1");
 
-			// Focus on pixel precision - the key benefit of density-aware distribution
-			var pixelXRoundingError0 = Math.Abs(pixelX0 - Math.Round(pixelX0));
-			var pixelXRoundingError1 = Math.Abs(pixelX1 - Math.Round(pixelX1));
-			var pixelXRoundingError2 = Math.Abs(pixelX2 - Math.Round(pixelX2));
-			var pixelWidthRoundingError0 = Math.Abs(pixelWidth0 - Math.Round(pixelWidth0));
-			var pixelWidthRoundingError1 = Math.Abs(pixelWidth1 - Math.Round(pixelWidth1));
-			var pixelWidthRoundingError2 = Math.Abs(pixelWidth2 - Math.Round(pixelWidth2));
-
-			// With density-aware distribution, pixel values should have minimal rounding errors
-			Assert.True(pixelXRoundingError0 <= 0.1, $"Pixel X0 rounding error {pixelXRoundingError0} should be minimal");
-			Assert.True(pixelXRoundingError1 <= 0.1, $"Pixel X1 rounding error {pixelXRoundingError1} should be minimal");
-			Assert.True(pixelXRoundingError2 <= 0.1, $"Pixel X2 rounding error {pixelXRoundingError2} should be minimal");
-			Assert.True(pixelWidthRoundingError0 <= 0.1, $"Pixel width 0 rounding error {pixelWidthRoundingError0} should be minimal");
-			Assert.True(pixelWidthRoundingError1 <= 0.1, $"Pixel width 1 rounding error {pixelWidthRoundingError1} should be minimal");
-			Assert.True(pixelWidthRoundingError2 <= 0.1, $"Pixel width 2 rounding error {pixelWidthRoundingError2} should be minimal");
-
-			// Verify total pixel count is preserved (key benefit of density-aware distribution)
-			var totalPixels = Math.Round(pixelWidth0) + Math.Round(pixelWidth1) + Math.Round(pixelWidth2);
-			var expectedPixels = Math.Round(widthConstraint * density);
-			Assert.True(Math.Abs(totalPixels - expectedPixels) <= 1, 
-				$"Total pixels {totalPixels} should be close to expected {expectedPixels}");
+			// With density-aware distribution, pixel values should be exact integers
+			var actualPixelWidth0 = Math.Round(rect0.Width * density);
+			var actualPixelWidth1 = Math.Round(rect1.Width * density);
+			var actualPixelWidth2 = Math.Round(rect2.Width * density);
+			
+			Assert.Equal(expectedPixelWidths[0], actualPixelWidth0);
+			Assert.Equal(expectedPixelWidths[1], actualPixelWidth1);
+			Assert.Equal(expectedPixelWidths[2], actualPixelWidth2);
 		}
 
 		[Fact]
@@ -3456,16 +3440,20 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.True(totalWidth <= widthConstraint + 1, $"Total width {totalWidth} should not exceed constraint {widthConstraint}");
 
 			// Convert Dp values to pixels for verification
-			var pixelWidth0 = rect0.Width * density;
-			var pixelWidth1 = rect1.Width * density;
-			var pixelWidth2 = rect2.Width * density;
-			var pixelWidth3 = rect3.Width * density;
+			var totalPixels = Math.Round(widthConstraint * density);
+			var portions = new double[] { 1.0, 1.0, 1.0, 1.0 };
+			var expectedPixelWidths = DensityValue.DistributePixels(totalPixels, density, portions);
 
 			// With density-aware distribution, pixel values should be exact integers
-			Assert.Equal(Math.Round(pixelWidth0), pixelWidth0);
-			Assert.Equal(Math.Round(pixelWidth1), pixelWidth1);
-			Assert.Equal(Math.Round(pixelWidth2), pixelWidth2);
-			Assert.Equal(Math.Round(pixelWidth3), pixelWidth3);
+			var actualPixelWidth0 = Math.Round(rect0.Width * density);
+			var actualPixelWidth1 = Math.Round(rect1.Width * density);
+			var actualPixelWidth2 = Math.Round(rect2.Width * density);
+			var actualPixelWidth3 = Math.Round(rect3.Width * density);
+			
+			Assert.Equal(expectedPixelWidths[0], actualPixelWidth0);
+			Assert.Equal(expectedPixelWidths[1], actualPixelWidth1);
+			Assert.Equal(expectedPixelWidths[2], actualPixelWidth2);
+			Assert.Equal(expectedPixelWidths[3], actualPixelWidth3);
 		}
 
 		[Fact]
@@ -3595,6 +3583,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Use width of 293 as specified in the original test
 			var widthConstraint = 293.0;
 
+			// Calculate expected pixel values using DensityValue distribution
+			var totalPixels = Math.Round(widthConstraint * density);
+			var portions = Enumerable.Repeat(1.0, columnCount).ToArray();
+			var expectedPixelWidths = DensityValue.DistributePixels(totalPixels, density, portions);
+
 			// Set up capture for all view rectangles  
 			var arrangedRects = new Rect[columnCount];
 			for (int i = 0; i < columnCount; i++)
@@ -3612,28 +3605,19 @@ namespace Microsoft.Maui.UnitTests.Layouts
 					$"Column {i} should start near where column {i - 1} ends");
 			}
 
-			// Focus on pixel precision - the key benefit of density-aware distribution
+			// Focus on pixel precision - compare against exact expected pixel values
 			for (int i = 0; i < columnCount; i++)
 			{
-				var pixelX = arrangedRects[i].X * density;
-				var pixelWidth = arrangedRects[i].Width * density;
-				var pixelRight = arrangedRects[i].Right * density;
+				var actualPixelWidth = Math.Round(arrangedRects[i].Width * density);
+				var expectedPixelWidth = expectedPixelWidths[i];
 
-				// With density-aware distribution, pixel values should have minimal rounding errors
-				var pixelXRoundingError = Math.Abs(pixelX - Math.Round(pixelX));
-				var pixelWidthRoundingError = Math.Abs(pixelWidth - Math.Round(pixelWidth));
-				var pixelRightRoundingError = Math.Abs(pixelRight - Math.Round(pixelRight));
-
-				Assert.True(pixelXRoundingError <= 0.1, $"Column {i} pixel X rounding error {pixelXRoundingError} should be minimal");
-				Assert.True(pixelWidthRoundingError <= 0.1, $"Column {i} pixel width rounding error {pixelWidthRoundingError} should be minimal");
-				Assert.True(pixelRightRoundingError <= 0.1, $"Column {i} pixel right rounding error {pixelRightRoundingError} should be minimal");
+				// With density-aware distribution, pixel values should be exact integers
+				Assert.Equal(expectedPixelWidth, actualPixelWidth);
 			}
 
 			// Verify total pixel count is preserved
-			var totalPixels = arrangedRects.Sum(r => Math.Round(r.Width * density));
-			var expectedPixels = Math.Round(widthConstraint * density);
-			Assert.True(Math.Abs(totalPixels - expectedPixels) <= columnCount, 
-				$"Total pixels {totalPixels} should be close to expected {expectedPixels}");
+			var totalActualPixels = arrangedRects.Sum(r => Math.Round(r.Width * density));
+			Assert.Equal(totalPixels, totalActualPixels);
 
 			// Verify all columns have positive widths
 			for (int i = 0; i < columnCount; i++)
@@ -3682,26 +3666,23 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			MeasureAndArrangeFixedWithDensity(grid, density, widthConstraint, 100);
 
-			// Debug: check what values we actually got
+			// Check pixel precision for each column
+			var totalPixels = Math.Round(widthConstraint * density);
+			var portions = new double[] { 1.0, 1.0, 1.0 };
+			var expectedPixelWidths = DensityValue.DistributePixels(totalPixels, density, portions);
+			
 			for (int i = 0; i < 3; i++)
 			{
 				var dpWidth = arrangedRects[i].Width;
 				var pixelWidth = dpWidth * density;
 				var roundingError = Math.Abs(pixelWidth - Math.Round(pixelWidth));
+				var actualPixelWidth = Math.Round(pixelWidth);
+				var expectedPixelWidth = expectedPixelWidths[i];
 				
-				// If density-aware distribution worked, this should be very small
-				// If it's large (like 0.275), then fallback was used
+				Console.WriteLine($"Column {i}: {dpWidth}dp, {pixelWidth}px (rounded: {actualPixelWidth}), expected: {expectedPixelWidth}px, error: {roundingError}");
 				
-				// For 293.4dp at 2.625 density across 3 columns:
-				// Density-aware: should give [256, 256, 258] pixels = [97.52381, 97.52381, 98.28571] dp
-				// Fallback: 293.4/3 = 97.8dp per column = 256.725 pixels (rounding error ~0.275)
-				
-				Console.WriteLine($"Column {i}: {dpWidth}dp, {pixelWidth}px, error: {roundingError}");
-				if (roundingError > 0.2)
-				{
-					Assert.Fail($"Large rounding error {roundingError} suggests density-aware distribution was not used. " +
-						$"Expected ~97.52dp or ~98.29dp but got {dpWidth}dp");
-				}
+				// With density-aware distribution, actual pixel width should match expected
+				Assert.Equal(expectedPixelWidth, actualPixelWidth);
 			}
 		}
 	}
