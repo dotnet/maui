@@ -284,7 +284,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
 			{
-				itemHeight = ListViewBase.ActualHeight - ItemsView.PeekAreaInsets.Top - ItemsView.PeekAreaInsets.Bottom;
+				if (ItemsView.PeekAreaInsets.Left > 0 || ItemsView.PeekAreaInsets.Right > 0)
+				{
+					itemHeight = ListViewBase.ActualHeight - ItemsView.PeekAreaInsets.Top - ItemsView.PeekAreaInsets.Bottom - ItemsView.ItemsLayout.ItemSpacing;
+				}
 			}
 
 			return Math.Max(itemHeight, 0);
