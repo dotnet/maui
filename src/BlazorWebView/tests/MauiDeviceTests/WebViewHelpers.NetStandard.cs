@@ -21,6 +21,11 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 		{
 			return Task.FromResult<string>(null);
 		}
+
+		public static Task<string> WaitForControlDivToChangeFrom(object platformWebView, string valueToChangeFrom)
+		{
+			return Task.FromResult<string>(null);
+		}
 	}
 #endif
 }

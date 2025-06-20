@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.WebResourceRequested -> System.EventHandler<Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs!>?

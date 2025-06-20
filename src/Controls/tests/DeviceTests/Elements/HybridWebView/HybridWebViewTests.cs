@@ -710,10 +710,14 @@ namespace Microsoft.Maui.DeviceTests
 		public Task RequestsCanBeInterceptedAndCancelledForDifferentHosts(string uriBase, string function) =>
 			RunTest(async (hybridWebView) =>
 			{
+				var intercepted = false;
+
 				hybridWebView.WebResourceRequested += (sender, e) =>
 				{
 					if (new Uri(uriBase).IsBaseOf(e.Uri))
 					{
+						intercepted = true;
+
 						// 1. Create the response
 						e.SetResponse(403, "Forbidden");
 
@@ -726,6 +730,8 @@ namespace Microsoft.Maui.DeviceTests
 					hybridWebView.InvokeJavaScriptAsync<ResponseObject>(
 						function,
 						HybridWebViewTestContext.Default.ResponseObject));
+						
+				Assert.True(intercepted, "Request was not intercepted");
 			});
 
 
