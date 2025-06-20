@@ -79,6 +79,7 @@ public partial class EntryOptionsPage : ContentPage
 
     private void VerticalAlignmentButton_Clicked(object sender, EventArgs e)
     {
+        _viewModel.HeightRequest = 100;
         if (sender is Button button)
         {
             _viewModel.VerticalTextAlignment = button.AutomationId switch
@@ -205,9 +206,13 @@ public partial class EntryOptionsPage : ContentPage
 
     private void FlowDirection_CheckedChanged(object sender, CheckedChangedEventArgs e)
     {
-        if (sender is CheckBox checkBox)
+        if (sender == FlowDirectionLeftToRight)
         {
-            _viewModel.FlowDirection = checkBox.IsChecked ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+            _viewModel.FlowDirection = FlowDirection.LeftToRight;
+        }
+        else if (sender == FlowDirectionRightToLeft)
+        {
+            _viewModel.FlowDirection = FlowDirection.RightToLeft;
         }
     }
 
@@ -232,6 +237,38 @@ public partial class EntryOptionsPage : ContentPage
         else if (IsEnabledFalse.IsChecked)
         {
             _viewModel.IsEnabled = false;
+        }
+    }
+
+    private void TextTransform_CheckedChanged(object sender, CheckedChangedEventArgs e)
+    {
+        if (sender == TextTransformLowercase)
+        {
+            _viewModel.TextTransform = TextTransform.Lowercase;
+        }
+        else if (sender == TextTransformUppercase)
+        {
+            _viewModel.TextTransform = TextTransform.Uppercase;
+        }
+        else if (sender == TextTransformDefault)
+        {
+            _viewModel.TextTransform = TextTransform.Default;
+        }
+    }
+
+    private void FontAttributes_CheckedChanged(object sender, CheckedChangedEventArgs e)
+    {
+        if (sender == FontAttributesBold)
+        {
+            _viewModel.FontAttributes = FontAttributes.Bold;
+        }
+        else if (sender == FontAttributesNone)
+        {
+            _viewModel.FontAttributes = FontAttributes.None;
+        }
+        else if (sender == FontAttributesItalic)
+        {
+            _viewModel.FontAttributes = FontAttributes.Italic;
         }
     }
 }

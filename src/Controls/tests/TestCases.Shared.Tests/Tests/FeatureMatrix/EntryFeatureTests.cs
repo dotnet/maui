@@ -10,13 +10,13 @@ public class EntryFeatureTests : UITest
 	public const string EntryFeatureMatrix = "Entry Feature Matrix";
 
 #if IOS
-	private const int CropBottomValue = 1685;
+	private const int CropBottomValue = 1550;
 #elif ANDROID
-	private const int CropBottomValue = 1300;
+	private const int CropBottomValue = 1150;
 #elif WINDOWS
-	private const int CropBottomValue = 500;
+	private const int CropBottomValue = 400;
 #else
-	private const int CropBottomValue = 400;		
+	private const int CropBottomValue = 360;		
 #endif
 
 	public EntryFeatureTests(TestDevice device)
@@ -546,10 +546,12 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("SelectionLengthEntry");
 		App.ClearText("SelectionLengthEntry");
 		App.EnterText("SelectionLengthEntry", "5");
+		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
+		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("0"));
 	}
 
@@ -563,10 +565,12 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("CursorPositionEntry");
 		App.ClearText("CursorPositionEntry");
 		App.EnterText("CursorPositionEntry", "5");
+		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
+		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("10"));
 	}
 
@@ -583,10 +587,12 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("CursorPositionEntry");
 		App.ClearText("CursorPositionEntry");
 		App.EnterText("CursorPositionEntry", "5");
+		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
+		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("10"));
 	}
 #endif
@@ -604,10 +610,12 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("SelectionLengthEntry");
 		App.ClearText("SelectionLengthEntry");
 		App.EnterText("SelectionLengthEntry", "5");
+		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
+		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("10"));
 		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("0"));
 	}
@@ -660,6 +668,7 @@ public class EntryFeatureTests : UITest
 		App.EnterText("TestEntry", "Test");
 		App.Tap("TestEntry");
 		App.PressEnter();
+		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Command Executed with Parameter"));
 	}
 
@@ -748,7 +757,24 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
+
+	[Test]
+	public void VerifyPlaceholderWhenFlowDirectionSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FlowDirectionRightToLeft");
+		App.Tap("FlowDirectionRightToLeft");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
 
 	[Test]
 	public void VerifyEntryControlWhenPlaceholderTextSet()
@@ -794,6 +820,32 @@ public class EntryFeatureTests : UITest
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("New Text Changed"));
 	}
 
+	[Test]
+	public void VerifyTextWhenFontAttributesSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBold");
+		App.Tap("FontAttributesBold");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test]
+	public void VerifyTextWhenTextTransFormSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextTransformUppercase");
+		App.Tap("TextTransformUppercase");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("TEST ENTRY"));
+	}
+
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/29812
 	[Test]
 	public void VerifyEntry_WithShadow()
@@ -809,7 +861,147 @@ public class EntryFeatureTests : UITest
 
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
+
+	[Test]
+	public void VerifyPlaceholderWithShadow()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
 #endif
+
+	[Test]
+	public void VerifyPlaceholderWithClearButtonVisible()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.Tap("TestEntry");
+		VerifyScreenshotWithKeyboardHandling("PlaceholderWithClearButtonVisible");
+	}
+
+	[Test]
+	public void VerifyPlaceholderWithPasswordTrue()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("PlaceholderText");
+		App.ClearText("PlaceholderText");
+		App.EnterText("PlaceholderText", "Enter your password");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("PasswordTrue");
+		App.Tap("PasswordTrue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test]
+	public void VerifyPlaceholderWithHorizontalAlignment()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HCenter");
+		App.Tap("HCenter");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test]
+	public void VerifyPlaceholderWithVerticalAlignment()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("VStart");
+		App.Tap("VStart");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30071
+	[Test]
+	public void VerifyPlaceholderWithCharacterSpacing()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("CharacterSpacing");
+		App.ClearText("CharacterSpacing");
+		App.EnterText("CharacterSpacing", "5");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+#endif
+
+	[Test]
+	public void VerifyPlaceholderWithFontFamily()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontFamily");
+		App.EnterText("FontFamily", "MontserratBold");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test]
+	public void VerifyPlaceholderWithFontSize()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontSizeEntry");
+		App.ClearText("FontSizeEntry");
+		App.EnterText("FontSizeEntry", "20");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test]
+	public void VerifyPlaceholderWithFontAttributes()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesItalic");
+		App.Tap("FontAttributesItalic");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
 
 	/// <summary>
 	/// Helper method to handle keyboard visibility and take a screenshot with appropriate cropping

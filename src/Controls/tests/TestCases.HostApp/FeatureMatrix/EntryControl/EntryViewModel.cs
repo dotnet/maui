@@ -11,6 +11,7 @@ public class EntryViewModel : INotifyPropertyChanged
     private string _placeholder = "Enter text here";
     private Color _placeholderColor = Colors.Gray;
     private double _fontSize = 14;
+    private double _heightrequest = -1;
     private TextAlignment _horizontalTextAlignment = TextAlignment.Start;
     private TextAlignment _verticalTextAlignment = TextAlignment.Center;
     private bool _isPassword = false;
@@ -30,6 +31,8 @@ public class EntryViewModel : INotifyPropertyChanged
     private FlowDirection _flowDirection = FlowDirection.LeftToRight;
     private bool _hasShadow = false;
     private Shadow _entryShadow = null;
+    private TextTransform _transform = TextTransform.Default;
+    private FontAttributes _fontAttributes = FontAttributes.None;
     private string _textChangedText = "TextChanged: Not triggered";
     private string _completedText = "Completed: Not triggered";
     private string _focusedText = "Focused: Not triggered";
@@ -83,6 +86,12 @@ public class EntryViewModel : INotifyPropertyChanged
     {
         get => _fontSize;
         set { _fontSize = value; OnPropertyChanged(); }
+    }
+
+    public double HeightRequest
+    {
+        get => _heightrequest;
+        set { _heightrequest = value; OnPropertyChanged(); }
     }
 
     public TextAlignment HorizontalTextAlignment
@@ -176,7 +185,6 @@ public class EntryViewModel : INotifyPropertyChanged
         set { _fontFamily = value; OnPropertyChanged(); }
     }
 
-    // Properties for event tracking labels
     public string TextChangedText
     {
         get => _textChangedText;
@@ -232,6 +240,32 @@ public class EntryViewModel : INotifyPropertyChanged
             {
                 _entryShadow = value;
                 OnPropertyChanged(nameof(EntryShadow));
+            }
+        }
+    }
+
+    public TextTransform TextTransform
+    {
+        get => _transform;
+        set
+        {
+            if (_transform != value)
+            {
+                _transform = value;
+                OnPropertyChanged(nameof(TextTransform));
+            }
+        }
+    }
+
+    public FontAttributes FontAttributes
+    {
+        get => _fontAttributes;
+        set
+        {
+            if (_fontAttributes != value)
+            {
+                _fontAttributes = value;
+                OnPropertyChanged(nameof(FontAttributes));
             }
         }
     }

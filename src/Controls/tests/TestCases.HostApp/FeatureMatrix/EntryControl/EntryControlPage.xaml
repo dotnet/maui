@@ -3,10 +3,10 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:DataType="local:EntryViewModel"
              x:Class="Maui.Controls.Sample.EntryControlMainPage">
-       <StackLayout Padding="20"
+       <VerticalStackLayout Padding="20"
                     Spacing="8">
               <Label Text="Entry Control"
-                     FontSize="20"
+                     FontSize="20" Margin="0,0,0,50"
                      HorizontalOptions="Center"/>
 
               <local:UITestEntry x:Name="EntryControl" 
@@ -36,26 +36,52 @@
                                  IsVisible="{Binding IsVisible}"
                                  IsEnabled="{Binding IsEnabled}"
                                  FlowDirection="{Binding FlowDirection}"
-                                 HeightRequest="100"
+                                 HeightRequest="{Binding HeightRequest}"
+                                 FontAttributes="{Binding FontAttributes}"
+                                 TextTransform="{Binding TextTransform}"
                                  TextChanged="EntryControl_TextChanged"
                                  Completed="EntryControl_Completed"
                                  Focused="EntryControl_Focused"
                                  Unfocused="EntryControl_Unfocused"
                                  AutomationId="TestEntry"/>
 
-              <Label Text="Selection Length:"
-                     FontSize="11"/>
-              <local:UITestEntry x:Name="SelectionLengthEntry"
-                                 Text="{Binding SelectionLength}"
-                                 AutomationId="SelectionLengthEntry"
-                                 IsCursorVisible="False"
-                                 TextChanged="SelectionLength_Clicked"/>
-              <Label Text="Cursor position:"
-                     FontSize="11"/>
-              <local:UITestEntry x:Name="CursorPositionEntry"
-                                 Text="{Binding CursorPosition}"
-                                 AutomationId="CursorPositionEntry"
-                                 IsCursorVisible="False"/>
+              <Grid HeightRequest="130"/>
+
+              <Grid ColumnSpacing="10" Margin="0,10,0,10">
+                     <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                     </Grid.RowDefinitions>
+                     <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                     </Grid.ColumnDefinitions>
+                     
+                     <!-- Row 1: Labels -->
+                     <Label Text="Selection Length:" 
+                               FontSize="11" 
+                               Grid.Row="0" 
+                               Grid.Column="0"/>
+                     <Label Text="Cursor position:"
+                               FontSize="11" 
+                               Grid.Row="0" 
+                               Grid.Column="1"/>
+                     
+                     <!-- Row 2: Entries -->
+                     <local:UITestEntry x:Name="SelectionLengthEntry"
+                                                    Text="{Binding SelectionLength}"
+                                                    AutomationId="SelectionLengthEntry"
+                                                    IsCursorVisible="False"
+                                                    TextChanged="SelectionLength_Clicked"
+                                                    Grid.Row="1"
+                                                    Grid.Column="0"/>
+                     <local:UITestEntry x:Name="CursorPositionEntry"
+                                                    Text="{Binding CursorPosition}"
+                                                    AutomationId="CursorPositionEntry"
+                                                    IsCursorVisible="False"
+                                                    Grid.Row="1"
+                                                    Grid.Column="1"/>
+              </Grid>
 
               <Button Text="Update Cursor Selection"
                       FontSize="11"
@@ -80,7 +106,7 @@
                      Text="{Binding UnfocusedText}"
                      AutomationId="UnfocusedLabel"
                      FontSize="11"/>
-       </StackLayout>
+       </VerticalStackLayout>
 
        <ContentPage.ToolbarItems>
               <ToolbarItem Text="Options"
