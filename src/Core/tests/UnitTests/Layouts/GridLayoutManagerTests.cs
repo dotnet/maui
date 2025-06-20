@@ -67,36 +67,50 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		IGridLayout CreateGridLayoutWithDensity(double density, int rowSpacing = 0, int colSpacing = 0,
 			string rows = null, string columns = null, IList<IView> children = null)
 		{
-			// Create the base grid layout
-			var grid = CreateGridLayout(rowSpacing, colSpacing, rows, columns, children);
+			// Create a substitute that implements both IGridLayout and IViewWithWindow
+			var grid = Substitute.For<IGridLayout, IViewWithWindow>();
 
-			// Add IViewWithWindow interface support for density injection
-			var gridWithWindow = Substitute.For<IGridLayout, IViewWithWindow>();
-			
-			// Copy all properties from the original grid
-			gridWithWindow.Height.Returns(grid.Height);
-			gridWithWindow.Width.Returns(grid.Width);
-			gridWithWindow.MinimumHeight.Returns(grid.MinimumHeight);
-			gridWithWindow.MinimumWidth.Returns(grid.MinimumWidth);
-			gridWithWindow.MaximumHeight.Returns(grid.MaximumHeight);
-			gridWithWindow.MaximumWidth.Returns(grid.MaximumWidth);
-			gridWithWindow.RowSpacing.Returns(grid.RowSpacing);
-			gridWithWindow.ColumnSpacing.Returns(grid.ColumnSpacing);
-			gridWithWindow.RowDefinitions.Returns(grid.RowDefinitions);
-			gridWithWindow.ColumnDefinitions.Returns(grid.ColumnDefinitions);
-			gridWithWindow.Count.Returns(grid.Count);
-			gridWithWindow.GetEnumerator().Returns(grid.GetEnumerator());
-			gridWithWindow.GetRow(Arg.Any<IView>()).Returns(info => grid.GetRow((IView)info[0]));
-			gridWithWindow.GetRowSpan(Arg.Any<IView>()).Returns(info => grid.GetRowSpan((IView)info[0]));
-			gridWithWindow.GetColumn(Arg.Any<IView>()).Returns(info => grid.GetColumn((IView)info[0]));
-			gridWithWindow.GetColumnSpan(Arg.Any<IView>()).Returns(info => grid.GetColumnSpan((IView)info[0]));
+			// Setup basic properties
+			grid.Height.Returns(Dimension.Unset);
+			grid.Width.Returns(Dimension.Unset);
+			grid.MinimumHeight.Returns(Dimension.Minimum);
+			grid.MinimumWidth.Returns(Dimension.Minimum);
+			grid.MaximumHeight.Returns(Dimension.Maximum);
+			grid.MaximumWidth.Returns(Dimension.Maximum);
+			grid.RowSpacing.Returns(rowSpacing);
+			grid.ColumnSpacing.Returns(colSpacing);
+
+			// Setup row/column definitions
+			if (!string.IsNullOrEmpty(rows))
+			{
+				SubRowDefs(grid, CreateTestRows(rows.Split(",")));
+			}
+			else
+			{
+				SubRowDefs(grid);
+			}
+
+			if (!string.IsNullOrEmpty(columns))
+			{
+				SubColDefs(grid, CreateTestColumns(columns.Split(",")));
+			}
+			else
+			{
+				SubColDefs(grid);
+			}
+
+			// Setup children if provided
+			if (children != null)
+			{
+				SubstituteChildren(grid, children);
+			}
 
 			// Setup mock window with specific density
 			var mockWindow = Substitute.For<IWindow>();
 			mockWindow.RequestDisplayDensity().Returns((float)density);
-			((IViewWithWindow)gridWithWindow).Window.Returns(mockWindow);
+			((IViewWithWindow)grid).Window.Returns(mockWindow);
 
-			return gridWithWindow;
+			return grid;
 		}
 
 		void SubRowDefs(IGridLayout grid, IEnumerable<IGridRowDefinition> rows = null)
@@ -3626,6 +3640,26 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			{
 				Assert.True(arrangedRects[i].Width > 0, 
 					$"Column {i} should have positive width, got {arrangedRects[i].Width}");
+			}
+		}
+
+		[Fact]
+		public void DensityInjectionWorksCorrectly()
+		{
+			// Test that density injection works through IViewWithWindow
+			var density = 2.75;
+			var grid = CreateGridLayoutWithDensity(density, columns: "*,*,*");
+			
+			// Access the density through the same path as GridLayoutManager
+			if (grid is IViewWithWindow viewWithWindow)
+			{
+				var window = viewWithWindow.Window;
+				Assert.NotNull(window);
+				Assert.Equal((float)density, window.RequestDisplayDensity());
+			}
+			else
+			{
+				Assert.Fail("Grid should implement IViewWithWindow");
 			}
 		}
 	}

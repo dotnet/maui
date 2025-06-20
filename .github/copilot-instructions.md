@@ -183,6 +183,13 @@ When working on an issue:
 - **Never** make changes to files related to Tizen platform
 - Tizen-specific code should not be modified unless explicitly required for critical fixes
 
+### Testing Guidelines
+- **Always** run unit tests for any code changes before finishing
+- **Never** leave failing unit tests that were introduced by your changes
+- Use `dotnet test` to run specific test projects or test filters
+- When adding new unit tests, ensure they pass consistently
+- Fix any test failures before committing and pushing changes
+
 ### File Reset Guidelines for AI Agents
 Since coding agents function as both CI and pair programmers, they need to handle CI-generated files appropriately:
 
