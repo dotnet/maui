@@ -14,12 +14,12 @@ namespace Microsoft.Maui.Platform
 		public static void Init(EditText editText)
 		{
 			editText.Focusable = true;
-    		editText.FocusableInTouchMode = false;
-    		editText.Clickable = true;
+			editText.FocusableInTouchMode = false;
+			editText.Clickable = true;
 
-    		// InputType needs to be set before setting KeyListener
-    		editText.InputType = InputTypes.Null;
-    		editText.KeyListener = null;
+			// InputType needs to be set before setting KeyListener
+			editText.InputType = InputTypes.Null;
+			editText.KeyListener = null;
 		}
 
 		public static void Dispose(EditText editText)

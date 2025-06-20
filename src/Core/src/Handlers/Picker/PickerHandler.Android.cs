@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.IsConnected() && handler is PickerHandler pickerHandler)
 			{
 				pickerHandler.DismissDialog();
-				ViewHandler.MapUnfocus(handler,picker,args);
+				ViewHandler.MapUnfocus(handler, picker, args);
 			}
 		}
 
