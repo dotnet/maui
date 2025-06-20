@@ -700,7 +700,7 @@ void EnsureAdbKeys(AdbToolSettings settings)
         }
 
         // Set proper directory permissions
-        if (IsRunningOnLinux() || IsRunningOnMacOS())
+        if (IsRunningOnLinux())
         {
         	StartProcess("chmod", $"700 {adbKeyPath}");
 		}
@@ -753,7 +753,7 @@ void EnsureAdbKeys(AdbToolSettings settings)
         Information("ADB keys generated successfully!");
 
         // Set correct file permissions for ADB keys (Unix systems only)
-        if (IsRunningOnLinux() || IsRunningOnMacOS())
+        if (IsRunningOnLinux())
         {
             Information("Setting correct permissions for ADB keys...");
             StartProcess("chmod", $"600 {adbKeyFile}");
@@ -1044,7 +1044,7 @@ void RecoverAdbConnection(AdbToolSettings settings)
         System.Threading.Thread.Sleep(2000);
         
         // Clear any cached connection state
-        if (IsRunningOnLinux() || IsRunningOnMacOS())
+        if (IsRunningOnLinux())
         {
             var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             var adbKeyPath = System.IO.Path.Combine(homeDir, ".android");
