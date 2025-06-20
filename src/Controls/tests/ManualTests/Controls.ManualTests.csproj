@@ -1,85 +1,59 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
+	<PropertyGroup>
     <TargetFrameworks>$(MauiManualTestsPlatforms)</TargetFrameworks>
     <TargetFrameworks Condition=" '$(UseMaui)' != 'true' and '$(IncludePreviousTfms)' == 'true' ">$(TargetFrameworks);$(MauiManualTestsPreviousPlatforms)</TargetFrameworks>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>Microsoft.Maui.ManualTests</RootNamespace>
-    <SingleProject>true</SingleProject>
-    <IsPackable>false</IsPackable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
-    <!-- Disable multi-RID builds to workaround a parallel build issue -->
-    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
-    <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
-    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
-  </PropertyGroup>
-  
-  <PropertyGroup>
-    <ApplicationTitle>Controls ManualTests</ApplicationTitle>
-    <ApplicationId>com.microsoft.maui.manualtests</ApplicationId>
-    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-    <ApplicationVersion>1</ApplicationVersion>
-    <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
-    <WindowsPackageType>None</WindowsPackageType>
-    <NoWarn>$(NoWarn);CS0618;CS0672</NoWarn>
-  </PropertyGroup>
-  
-  <ItemGroup>
-    <!-- App Icon -->
-    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<OutputType>Exe</OutputType>
+		<RootNamespace>Microsoft.Maui.ManualTests</RootNamespace>
+		<UseMaui>true</UseMaui>
+		<SingleProject>true</SingleProject>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>disable</Nullable>
 
-    <!-- Splash Screen -->
-    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+		<!-- Display name -->
+		<ApplicationTitle>Microsoft.Maui.ManualTests</ApplicationTitle>
 
-    <!-- Images -->
-    <MauiImage Include="Resources\Images\*" />
-    <MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
+		<!-- App Identifier -->
+		<ApplicationId>com.companyname.Microsoft.Maui.ManualTests</ApplicationId>
 
-    <!-- Custom Fonts -->
-    <MauiFont Include="Resources\Fonts\*" />
+		<!-- Versions -->
+		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+		<ApplicationVersion>1</ApplicationVersion>
 
-    <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
-    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
-  </ItemGroup>
+		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
+		<WindowsPackageType>None</WindowsPackageType>
 
-  <PropertyGroup Condition=" '$(_UseNativeAot)' == 'true' ">
-    <PublishAot>true</PublishAot>
-    <_IsPublishing>true</_IsPublishing>
-    <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
-    <WarningsNotAsErrors>IL3050;XC0022</WarningsNotAsErrors>
-    <DefineConstants>$(DefineConstants);NATIVE_AOT</DefineConstants>
-  </PropertyGroup>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+	</PropertyGroup>
 
-  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-  </ItemGroup>
+	<ItemGroup>
+		<!-- App Icon -->
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 
-  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
-    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
-    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
-    <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
-    <ProjectReference Condition="'$(IncludeCompatibilityProjects)' == 'true'" Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
-    <ProjectReference Include="..\..\..\Graphics\src\Graphics\Graphics.csproj" />
-  </ItemGroup>
+		<!-- Splash Screen -->
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
 
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' ">
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
-  </ItemGroup>
+		<!-- Images -->
+		<MauiImage Include="Resources\Images\*" />
+		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+		<!-- Custom Fonts -->
+		<MauiFont Include="Resources\Fonts\*" />
+
+		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\CustomAttributes\*.cs" />
-    <Using Include="Microsoft.Maui.Controls.CustomAttributes" />
-  </ItemGroup>
-
-  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+	</ItemGroup>
 
 </Project>
