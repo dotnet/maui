@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Maui.Controls.Sample;
 
 public class DatePickerControlPage : NavigationPage
@@ -19,10 +21,25 @@ public partial class DatePickerMainControlPage : ContentPage
 		InitializeComponent();
 		_viewModel = viewModel;
 		BindingContext = _viewModel;
+
+		// Display initial culture formatting information
+		DisplayCultureSpecificDate(_viewModel.Date, _viewModel.Culture);
+	}
+
+	protected override void OnAppearing()
+	{
+		base.OnAppearing();
+		// Refresh culture display when returning to the page
+		DisplayCultureSpecificDate(_viewModel.Date, _viewModel.Culture);
 	}
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
+		// Reset culture to default when navigating to options page
+		if (_viewModel != null)
+		{
+			_viewModel.Culture = System.Globalization.CultureInfo.CurrentCulture;
+		}
 		BindingContext = _viewModel = new DatePickerViewModel();
 		ReinitializeDatePicker();
 		await Navigation.PushAsync(new DatePickerOptionsPage(_viewModel));
@@ -50,12 +67,48 @@ public partial class DatePickerMainControlPage : ContentPage
 		datePickerControl.SetBinding(DatePicker.MaximumDateProperty, new Binding(nameof(DatePickerViewModel.MaximumDate)));
 		datePickerControl.SetBinding(DatePicker.ShadowProperty, new Binding(nameof(DatePickerViewModel.Shadow)));
 		datePickerControl.SetBinding(DatePicker.TextColorProperty, new Binding(nameof(DatePickerViewModel.TextColor)));
+
+		// Set culture directly and update when the view model's culture changes
+		datePickerControl.PropertyChanged += (s, e) =>
+		{
+			if (e.PropertyName == nameof(DatePicker.Date))
+			{
+				DisplayCultureSpecificDate(datePickerControl.Date, _viewModel.Culture);
+			}
+		};
+		_viewModel.PropertyChanged += (s, e) =>
+		{
+			if (e.PropertyName == nameof(DatePickerViewModel.Culture))
+			{
+				DisplayCultureSpecificDate(datePickerControl.Date, _viewModel.Culture);
+			}
+		};
+
 		DatePickerLayout.Children.Add(datePickerControl);
+	}
+
+	private void DisplayCultureSpecificDate(DateTime date, CultureInfo culture)
+	{
+		if (culture != null)
+		{
+			// Apply the culture to the current thread
+			Thread.CurrentThread.CurrentCulture = culture;
+			Thread.CurrentThread.CurrentUICulture = culture;
+
+			// Set default culture for new threads
+			CultureInfo.DefaultThreadCurrentCulture = culture;
+			CultureInfo.DefaultThreadCurrentUICulture = culture;
+		}
+
+		if (CultureFormatLabel != null)
+		{
+			CultureFormatLabel.Text = $"Culture: {culture.Name}, Date: {date.ToString(culture)}";
+		}
 	}
 
 	public void OnDateSelected(object sender, DateChangedEventArgs e)
 	{
-		if (e.OldDate != DateTime.Now && e.NewDate != e.OldDate)
+		if (e.OldDate.Date != DateTime.Now.Date && e.NewDate != e.OldDate)
 		{
 			OldDateSelectedLabel.Text = e.OldDate.ToString();
 			NewDateSelectedLabel.Text = e.NewDate.ToString();

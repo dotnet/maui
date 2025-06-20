@@ -13,7 +13,7 @@
        <Grid ColumnSpacing="0"
              RowSpacing="5"
              Padding="10,5,0,0"
-             RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+             RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
              ColumnDefinitions="Auto,Auto"
              HorizontalOptions="Center">
 
@@ -253,6 +253,29 @@
                              BackgroundColor="Green"
                              Text="Green"
                              TextColor="White"/>
+              </HorizontalStackLayout>
+              
+              <!-- Culture -->
+              <Label Grid.Row="13"
+                     Grid.Column="0"
+                     Text="Culture:"
+                     VerticalOptions="Center"/>
+              <HorizontalStackLayout Grid.Row="13"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
+                     <Button AutomationId="CultureUsButton"
+                             Clicked="OnCultureButtonClicked"
+                             Text="en-US"/>
+                     <Button AutomationId="CultureFrButton"
+                             Clicked="OnCultureButtonClicked"
+                             Text="fr-FR"/>
+                     <Button AutomationId="CultureJpButton"
+                             Clicked="OnCultureButtonClicked"
+                             Text="ja-JP"/>
+                     <Button AutomationId="CultureFiButton"
+                             Clicked="OnCultureButtonClicked"
+                             Text="sv-FI"/>
               </HorizontalStackLayout>
        </Grid>
 </ContentPage>
