@@ -4,24 +4,41 @@
                 xmlns:viewmodels="clr-namespace:Samples.ViewModel"
                 x:Class="Samples.View.MediaPickerPage"
                 Title="Media Picker">
-    <views:BasePage.BindingContext>
-        <viewmodels:MediaPickerViewModel />
-    </views:BasePage.BindingContext>
+  <views:BasePage.BindingContext>
+    <viewmodels:MediaPickerViewModel />
+  </views:BasePage.BindingContext>
 
-    <Grid RowDefinitions="Auto,*">
-        <Label Text="Pick or capture a photo or video." FontAttributes="Bold" Margin="12" />
+  <Grid RowDefinitions="Auto,*">
+    <Label Text="Pick or capture a photo or video." FontAttributes="Bold" Margin="12" />
 
-        <ScrollView Grid.Row="1">
-            <StackLayout Padding="12,0,12,12" Spacing="6">
-                <Button Text="Pick photo" Command="{Binding PickPhotoCommand}" />
-                <Button Text="Capture photo" Command="{Binding CapturePhotoCommand}" />
-                <Button Text="Pick video" Command="{Binding PickVideoCommand}" />
-                <Button Text="Capture video" Command="{Binding CaptureVideoCommand}" />
+    <ScrollView Grid.Row="1">
+      <VerticalStackLayout Padding="12,0,12,12" Spacing="6">
+        <Label Text="Picker selection limit" HorizontalOptions="Center" />
+        <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
+          <Stepper Value="{Binding PickerSelectionLimit, Mode=TwoWay}" Minimum="0" Maximum="10" Increment="1" />
+          <Label Text="{Binding PickerSelectionLimit}" VerticalOptions="Center" />
+        </HorizontalStackLayout>
+        <Button Text="Pick photo" Command="{Binding PickPhotoCommand}" />
+        <Button Text="Capture photo" Command="{Binding CapturePhotoCommand}" />
+        <Button Text="Pick video" Command="{Binding PickVideoCommand}" />
+        <Button Text="Capture video" Command="{Binding CaptureVideoCommand}" />
 
-                <Image Source="{Binding PhotoSource}" IsVisible="{Binding ShowPhoto}" HeightRequest="300"/>
-                <!--<MediaElement VerticalOptions="FillAndExpand" Source="{Binding VideoSource}" IsVisible="{Binding ShowVideo}" />-->
-            </StackLayout>
+        <ScrollView Orientation="Horizontal" IsVisible="{Binding ShowMultiplePhotos}">
+          <HorizontalStackLayout 
+                        BindableLayout.ItemsSource="{Binding PhotoList}"
+                        IsVisible="{Binding ShowMultiplePhotos}"
+                        HeightRequest="300">
+            <BindableLayout.ItemTemplate>
+              <DataTemplate>
+                <Image Source="{Binding .}" HeightRequest="300" WidthRequest="100" />
+              </DataTemplate>
+            </BindableLayout.ItemTemplate>
+          </HorizontalStackLayout>
         </ScrollView>
-    </Grid>
+
+        <Image Source="{Binding PhotoSource}" IsVisible="{Binding ShowPhoto}" HeightRequest="300"/>
+      </VerticalStackLayout>
+    </ScrollView>
+  </Grid>
 
 </views:BasePage>
