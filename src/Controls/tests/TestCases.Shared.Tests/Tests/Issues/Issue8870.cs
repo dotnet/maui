@@ -20,26 +20,26 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnMacWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
-		public async Task RotatingCollectionViewWithHTMLShouldNotHangOrCrash()
+		public void RotatingCollectionViewWithHTMLShouldNotHangOrCrash()
 		{
-			int delay = 3000;
+			int delay = 1000;
 
 			App.WaitForElement(CheckResult);
 
 			App.SetOrientationPortrait();
-			await Task.Delay(delay);
+			Thread.Sleep(delay);
 
 			App.SetOrientationLandscape();
-			await Task.Delay(delay);
+			Thread.Sleep(delay);
 
 			App.SetOrientationPortrait();
-			await Task.Delay(delay);
+			Thread.Sleep(delay);
 
 			App.SetOrientationLandscape();
-			await Task.Delay(delay);
+			Thread.Sleep(delay);
 
 			App.SetOrientationPortrait();
-			await Task.Delay(delay);
+			Thread.Sleep(delay);
 
 			App.WaitForElement(CheckResult);
 			App.Tap(CheckResult);
