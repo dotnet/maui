@@ -37,6 +37,8 @@ namespace Microsoft.Maui.Platform
 				// rotation values are set, but the aforementioned functionality will be lost.
 				if (Math.Abs(view.RotationX) != 0 || Math.Abs(view.RotationY) != 0)
 				{
+					if (double.IsNaN(rotationX) || double.IsNaN(rotationY) || double.IsNaN(rotation))
+						return;
 					frameworkElement.Projection = new PlaneProjection
 					{
 						CenterOfRotationX = anchorX,
