@@ -5,7 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.IO;
+using Windows.Foundation;
 using Windows.Storage.Streams;
+using WinRect = Windows.Foundation.Rect;
 
 #if MAUI_GRAPHICS_WIN2D
 namespace Microsoft.Maui.Graphics.Win2D
@@ -91,15 +93,16 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			// Create a new render target with the scaled dimensions
 			var newRenderTarget = new CanvasRenderTarget(_creator, newWidth, newHeight, 96);
-			
 			using (var session = newRenderTarget.CreateDrawingSession())
 			{
 				// Draw the original bitmap scaled to the new size
-				session.DrawImage(_bitmap, new Windows.Foundation.Rect(0, 0, newWidth, newHeight));
+				session.DrawImage(_bitmap, new WinRect(0, 0, newWidth, newHeight));
 			}
 
 			if (disposeOriginal)
+			{
 				Dispose();
+			}
 
 #if MAUI_GRAPHICS_WIN2D
 			return new W2DImage(_creator, newRenderTarget);

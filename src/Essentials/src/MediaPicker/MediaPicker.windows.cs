@@ -62,14 +62,32 @@ namespace Microsoft.Maui.Media
 
 			// cancelled
 			if (result is null)
-				return null;            // picked
-			var fileResult = new FileResult(result);
+			{
+				return null;
+			}
 
+			var fileResult = new FileResult(result);
+			
 			// Apply compression/resizing if specified for photos
 			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 			{
-				var compressedResult = await CompressImageAsync(result, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100);
-				return compressedResult != null ? new FileResult(compressedResult) : fileResult;
+				using var originalStream = await result.OpenStreamForReadAsync();
+				var processedStream = await ImageProcessor.ProcessImageAsync(
+					originalStream,
+					options?.MaximumWidth,
+					options?.MaximumHeight,
+					options?.CompressionQuality ?? 100,
+					result.Name);
+
+				if (processedStream != null)
+				{
+					// Convert to MemoryStream for ProcessedImageFileResult
+					var memoryStream = new MemoryStream();
+					await processedStream.CopyToAsync(memoryStream);
+					processedStream.Dispose();
+					
+					return new ProcessedImageFileResult(memoryStream, result.Name);
+				}
 			}
 
 			return fileResult;
@@ -107,9 +125,9 @@ namespace Microsoft.Maui.Media
 			{
 				return [];
 			}
-			// picked
+			
 			var fileResults = result.Select(file => new FileResult(file)).ToList();
-
+			
 			// Apply compression/resizing if specified for photos
 			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 			{
@@ -118,8 +136,28 @@ namespace Microsoft.Maui.Media
 				{
 					var originalFile = result[i];
 					var fileResult = fileResults[i];
-					var compressedResult = await CompressImageAsync(originalFile, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100);
-					compressedResults.Add(compressedResult != null ? new FileResult(compressedResult) : fileResult);
+					
+					using var originalStream = await originalFile.OpenStreamForReadAsync();
+					var processedStream = await ImageProcessor.ProcessImageAsync(
+						originalStream,
+						options?.MaximumWidth,
+						options?.MaximumHeight,
+						options?.CompressionQuality ?? 100,
+						originalFile.Name);
+
+					if (processedStream != null)
+					{
+						// Convert to MemoryStream for ProcessedImageFileResult
+						var memoryStream = new MemoryStream();
+						await processedStream.CopyToAsync(memoryStream);
+						processedStream.Dispose();
+						
+						compressedResults.Add(new ProcessedImageFileResult(memoryStream, originalFile.Name));
+					}
+					else
+					{
+						compressedResults.Add(fileResult);
+					}
 				}
 				return compressedResults;
 			}
@@ -263,20 +301,17 @@ namespace Microsoft.Maui.Media
 				};
 		}
 	}
-
 	/// <summary>
 	/// FileResult implementation for processed images using MAUI Graphics
 	/// </summary>
 	internal class ProcessedImageFileResult : FileResult, IDisposable
 	{
 		readonly MemoryStream imageData;
-		readonly string originalFileName;
 
-		internal ProcessedImageFileResult(MemoryStream imageData, string originalFileName = null)
+		internal ProcessedImageFileResult(MemoryStream imageData, string? originalFileName = null)
 			: base()
 		{
 			this.imageData = imageData;
-			this.originalFileName = originalFileName;
 
 			// Determine output format extension using ImageProcessor's improved logic
 			var extension = ImageProcessor.DetermineOutputExtension(imageData, 75, originalFileName);
