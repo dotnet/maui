@@ -102,9 +102,8 @@ public class Issue24831 : TestContentPage
 		var window = Window ?? Shell.Current?.Window;
 		if (window is not null)
 		{
+			window.BindingContext = this;
 			window.TitleBar = _customTitleBar;
-			// Ensure BindingContext is set after TitleBar is assigned
-			_customTitleBar.BindingContext = this;
 		}
 	}
 }
