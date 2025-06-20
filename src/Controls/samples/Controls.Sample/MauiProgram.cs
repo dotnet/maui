@@ -302,7 +302,7 @@ namespace Maui.Controls.Sample
 			});
 			
 			// Enables performance monitoring for the application.
-			appBuilder.AddPerformanceMonitoring();
+			appBuilder.ConfigurePerformance();
 			
 			return appBuilder.Build();
 		}

@@ -7,14 +7,14 @@ namespace Microsoft.Maui.Controls.PerformanceTracker
     /// <summary>
     /// Extension methods to register and configure performance monitoring services for a MAUI application.
     /// </summary>
-    public static class PerformanceMonitoringExtensions
+    public static class PerformanceMauiAppBuilderExtensions
     {
         /// <summary>
         /// Adds .NET MAUI performance monitoring services to the application's dependency injection container.
         /// </summary>
         /// <param name="builder">The <see cref="MauiAppBuilder"/> to which performance monitoring is being added.</param>
         /// <returns>The same <see cref="MauiAppBuilder"/> instance.</returns>
-        public static MauiAppBuilder AddPerformanceMonitoring(
+        public static MauiAppBuilder ConfigurePerformance(
             this MauiAppBuilder builder)
         {
             // Register the Meter

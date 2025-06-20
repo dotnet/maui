@@ -4,6 +4,8 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+#pragma warning disable CS0618 // Type or member is obsolete
 
 namespace Microsoft.Maui.Controls.PerformanceTracker;
 
@@ -79,7 +81,16 @@ internal class PerformanceTracker
 	}
 	
 	static IPerformanceProfiler? GetProfiler(IMauiContext? context)
-	{
+	{		
+		// Check if the performance profiling feature is enabled.
+		if (!PerformanceFeature.Guard())
+		{		
+			Application.Current?.FindMauiContext()?.CreateLogger<PerformanceTracker>()?.LogWarning(
+				"MAUI Performance Monitoring is disabled.");
+
+			return null;
+		}
+
 		// Return cached profiler if available
 		if (CachedProfiler is not null)
 		{
