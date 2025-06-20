@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
 				return;
 
-			if (AppContext.TryGetSwitch("iOSResizeTabIconsToSystemDefault", out bool resize) && resize)
+			if (!AppContext.TryGetSwitch("iOSDisableTabIconAutoResizing", out bool disableResizing) || !disableResizing)
 			{
 				foreach (var item in TabBar.Items)
 				{
