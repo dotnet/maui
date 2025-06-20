@@ -616,69 +616,75 @@ namespace Microsoft.Maui.Controls
 			Action firePostNavigatingEvents,
 			Action fireNavigatedEvents)
 		{
-			if (!_setForMaui || this.IsShimmed())
-			{
-				return;
-			}
-
-			processStackChanges?.Invoke();
-
-			if (Handler == null)
-			{
-				return;
-			}
-
-			try
-			{
-				Interlocked.Increment(ref _waitingCount);
-
-				// Wait for pending navigation tasks to finish
-				await SemaphoreSlim.WaitAsync();
-
-				// If our handler was removed while waiting then don't do anything
-				if (Handler != null)
+			await Performance.Internals.Performance.TrackNavigationAsync(
+				this.FindMauiContext(),
+				async () =>
 				{
-					var currentNavRequestTaskSource = new TaskCompletionSource<object>();
-					_allPendingNavigationCompletionSource ??= new TaskCompletionSource<object>();
 
-					if (CurrentNavigationTask == null)
+					if (!_setForMaui || this.IsShimmed())
 					{
-						CurrentNavigationTask = _allPendingNavigationCompletionSource.Task;
-					}
-					else if (CurrentNavigationTask != _allPendingNavigationCompletionSource.Task)
-					{
-						throw new InvalidOperationException("Pending Navigations still processing");
+						return;
 					}
 
-					_currentNavigationCompletionSource = currentNavRequestTaskSource;
+					processStackChanges?.Invoke();
 
-					// We create a new list to send to the handler because the structure backing 
-					// The Navigation stack isn't immutable
-					var immutableNavigationStack = new List<IView>(NavigationStack);
-					firePostNavigatingEvents?.Invoke();
+					if (Handler == null)
+					{
+						return;
+					}
 
-					// Create the request for the handler
-					var request = new NavigationRequest(immutableNavigationStack, animated);
-					((IStackNavigation)this).RequestNavigation(request);
+					try
+					{
+						Interlocked.Increment(ref _waitingCount);
 
-					// Wait for the handler to finish processing the navigation
-					// This task completes once the handler calls INavigationView.Finished
-					await currentNavRequestTaskSource.Task;
-				}
-			}
-			finally
-			{
-				if (Interlocked.Decrement(ref _waitingCount) == 0)
-				{
-					_allPendingNavigationCompletionSource.SetResult(new object());
-					_allPendingNavigationCompletionSource = null;
-				}
+						// Wait for pending navigation tasks to finish
+						await SemaphoreSlim.WaitAsync();
 
-				SemaphoreSlim.Release();
-			}
+						// If our handler was removed while waiting then don't do anything
+						if (Handler != null)
+						{
+							var currentNavRequestTaskSource = new TaskCompletionSource<object>();
+							_allPendingNavigationCompletionSource ??= new TaskCompletionSource<object>();
 
-			// Send navigated event to currently visible pages and associated navigation event
-			fireNavigatedEvents?.Invoke();
+							if (CurrentNavigationTask == null)
+							{
+								CurrentNavigationTask = _allPendingNavigationCompletionSource.Task;
+							}
+							else if (CurrentNavigationTask != _allPendingNavigationCompletionSource.Task)
+							{
+								throw new InvalidOperationException("Pending Navigations still processing");
+							}
+
+							_currentNavigationCompletionSource = currentNavRequestTaskSource;
+
+							// We create a new list to send to the handler because the structure backing 
+							// The Navigation stack isn't immutable
+							var immutableNavigationStack = new List<IView>(NavigationStack);
+							firePostNavigatingEvents?.Invoke();
+
+							// Create the request for the handler
+							var request = new NavigationRequest(immutableNavigationStack, animated);
+							((IStackNavigation)this).RequestNavigation(request);
+
+							// Wait for the handler to finish processing the navigation
+							// This task completes once the handler calls INavigationView.Finished
+							await currentNavRequestTaskSource.Task;
+						}
+					}
+					finally
+					{
+						if (Interlocked.Decrement(ref _waitingCount) == 0)
+						{
+							_allPendingNavigationCompletionSource.SetResult(new object());
+							_allPendingNavigationCompletionSource = null;
+						}
+
+						SemaphoreSlim.Release();
+					}
+
+					// Send navigated event to currently visible pages and associated navigation event
+					fireNavigatedEvents?.Invoke();
+				});
 		}
 
 		private protected override void OnHandlerChangedCore()

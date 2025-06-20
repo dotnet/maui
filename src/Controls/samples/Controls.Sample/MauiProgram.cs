@@ -14,6 +14,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Controls.Performance;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Hosting;
@@ -300,6 +301,49 @@ namespace Maui.Controls.Sample
 				}
 			});
 
+			// Add performance monitoring
+			appBuilder.AddPerformanceMonitoring(options =>
+			{
+				options.ConfigureImage(image =>
+				{
+					image.EnableLoadTimeTracking = true;
+				});
+				
+				options.ConfigureLayout(layout =>
+				{
+					layout.EnableMeasurePassTracking = true;
+					layout.EnableArrangePassTracking = true;
+					layout.TrackPerElement = true;
+				});
+				
+				options.ConfigureNavigation(navigation =>
+				{
+					navigation.EnableNavigationTracking = true;
+				});
+
+				options.ConfigureWarnings(warning =>
+				{
+					warning.Enable = true;
+					warning.MinimumLevel = PerformanceWarningLevel.Info;
+					warning.Thresholds = new PerformanceThresholds
+					{
+						Image = new ImageThresholds
+						{
+							ImageMaxLoadTime = TimeSpan.FromMilliseconds(100),
+						},
+						Layout = new LayoutThresholds
+						{
+							LayoutMaxArrangeTime = TimeSpan.FromMilliseconds(5),
+							LayoutMaxMeasureTime = TimeSpan.FromMilliseconds(10)
+						},
+						Navigation = new NavigationThresholds
+						{
+							NavigationMaxTime = TimeSpan.FromMilliseconds(500)
+						}
+					};
+				});
+			});
+			
 			return appBuilder.Build();
 		}
 	}

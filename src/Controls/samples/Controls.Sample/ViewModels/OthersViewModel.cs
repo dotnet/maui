@@ -25,7 +25,10 @@ namespace Maui.Controls.Sample.ViewModels
 				"Demonstrates rendering views as images."),
 
 			new SectionModel(typeof(HitTestingPage), "Hit Testing",
-				"Demonstrates VisualTreeElementExtensions hit testing methods"),
+				"Demonstrates VisualTreeElementExtensions hit testing methods."),
+			
+			new SectionModel(typeof(PerformanceProfilerGallery), "Performance Profiler",
+				"Provides insights into performance."),
 		};
 	}
 }
