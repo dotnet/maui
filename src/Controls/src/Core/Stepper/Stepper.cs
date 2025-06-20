@@ -3,11 +3,13 @@ using System;
 using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="Type[@FullName='Microsoft.Maui.Controls.Stepper']/Docs/*" />
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler<StepperHandler>]
 	public partial class Stepper : View, IElementConfiguration<Stepper>, IStepper
 	{
 		/// <summary>Bindable property for <see cref="Maximum"/>.</summary>

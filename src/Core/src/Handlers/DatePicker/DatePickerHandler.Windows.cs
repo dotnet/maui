@@ -76,4 +76,6 @@ public partial class DatePickerHandler : ViewHandler<IDatePicker, CalendarDatePi
 	{
 		handler.PlatformView?.UpdateBackground(datePicker);
 	}
+
+	internal override bool PreventGestureBubbling => true;
 }
