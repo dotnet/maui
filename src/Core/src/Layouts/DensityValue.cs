@@ -12,9 +12,9 @@ namespace Microsoft.Maui.Layouts
 		private const double Epsilon = 0.00001;
 
 		/// <summary>
-		/// Gets the value in density-independent pixels (dp).
+		/// Gets the raw pixel value without rounding.
 		/// </summary>
-		public double Dp { get; }
+		public double RawPx { get; }
 
 		/// <summary>
 		/// Gets the display density factor.
@@ -22,9 +22,9 @@ namespace Microsoft.Maui.Layouts
 		public double Density { get; }
 
 		/// <summary>
-		/// Gets the raw pixel value (dp * density) without rounding.
+		/// Gets the value in density-independent pixels (dp).
 		/// </summary>
-		public double RawPx => Dp * Density;
+		public double Dp => RawPx / Density;
 
 		/// <summary>
 		/// Gets the rounded pixel value suitable for display.
@@ -38,7 +38,16 @@ namespace Microsoft.Maui.Layouts
 		/// <param name="density">The display density factor.</param>
 		public DensityValue(double dp, double density)
 		{
-			Dp = dp;
+			RawPx = dp * density;
+			Density = density;
+		}
+
+		/// <summary>
+		/// Private constructor for internal use.
+		/// </summary>
+		private DensityValue(double rawPx, double density, bool fromPixels)
+		{
+			RawPx = rawPx;
 			Density = density;
 		}
 
@@ -50,7 +59,7 @@ namespace Microsoft.Maui.Layouts
 		/// <returns>A DensityValue representing the equivalent dp value.</returns>
 		public static DensityValue FromPixels(double pixels, double density)
 		{
-			return new DensityValue(pixels / density, density);
+			return new DensityValue(pixels, density, true);
 		}
 
 		/// <summary>
@@ -63,7 +72,7 @@ namespace Microsoft.Maui.Layouts
 				throw new ArgumentException("Cannot add DensityValues with different densities.");
 			}
 
-			return new DensityValue(left.Dp + right.Dp, left.Density);
+			return DensityValue.FromPixels(left.RawPx + right.RawPx, left.Density);
 		}
 
 		/// <summary>
@@ -76,7 +85,7 @@ namespace Microsoft.Maui.Layouts
 				throw new ArgumentException("Cannot subtract DensityValues with different densities.");
 			}
 
-			return new DensityValue(left.Dp - right.Dp, left.Density);
+			return DensityValue.FromPixels(left.RawPx - right.RawPx, left.Density);
 		}
 
 		/// <summary>
@@ -84,7 +93,7 @@ namespace Microsoft.Maui.Layouts
 		/// </summary>
 		public static DensityValue operator *(DensityValue value, double scalar)
 		{
-			return new DensityValue(value.Dp * scalar, value.Density);
+			return DensityValue.FromPixels(value.RawPx * scalar, value.Density);
 		}
 
 		/// <summary>
@@ -100,7 +109,7 @@ namespace Microsoft.Maui.Layouts
 		/// </summary>
 		public static DensityValue operator /(DensityValue value, double scalar)
 		{
-			return new DensityValue(value.Dp / scalar, value.Density);
+			return DensityValue.FromPixels(value.RawPx / scalar, value.Density);
 		}
 
 		/// <summary>
@@ -160,7 +169,7 @@ namespace Microsoft.Maui.Layouts
 
 		public bool Equals(DensityValue other)
 		{
-			return Math.Abs(Dp - other.Dp) < Epsilon &&
+			return Math.Abs(RawPx - other.RawPx) < Epsilon &&
 				   Math.Abs(Density - other.Density) < Epsilon;
 		}
 
@@ -171,7 +180,7 @@ namespace Microsoft.Maui.Layouts
 
 		public override int GetHashCode()
 		{
-			return (Dp, Density).GetHashCode();
+			return (RawPx, Density).GetHashCode();
 		}
 
 		public static bool operator ==(DensityValue left, DensityValue right)
@@ -186,7 +195,7 @@ namespace Microsoft.Maui.Layouts
 
 		public override string ToString()
 		{
-			return $"{Dp:F2}dp ({RawPx:F2}px @ {Density:F2}x)";
+			return $"{RawPx:F2}px ({Dp:F2}dp @ {Density:F2}x)";
 		}
 	}
 }
