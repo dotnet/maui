@@ -1,8 +1,12 @@
+using System;
 using SkiaSharp;
 using Color = SkiaSharp.SKColor;
 
 namespace Microsoft.Maui.Graphics.Skia
 {
+	/// <summary>
+	/// Represents the state of a <see cref="SkiaCanvas"/>, maintaining properties like colors, fonts, and transformations.
+	/// </summary>
 	public class SkiaCanvasState : CanvasState, IBlurrableCanvas
 	{
 		public float Alpha = 1;
@@ -10,10 +14,10 @@ namespace Microsoft.Maui.Graphics.Skia
 		private SKPaint _strokePaint;
 		private IFont _font;
 		private SKPaint _fontPaint;
+		private SKFont _fontFont;
 		private float _fontSize = 10f;
 		private float _scaleX = 1;
 		private float _scaleY = 1;
-		private bool _typefaceInvalid;
 		private bool _isBlurred;
 		private float _blurRadius;
 		private SKMaskFilter _blurFilter;
@@ -28,10 +32,17 @@ namespace Microsoft.Maui.Graphics.Skia
 		private Color _fillColor = Colors.White;
 		private Color _fontColor = Colors.Black;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SkiaCanvasState"/> class.
+		/// </summary>
 		public SkiaCanvasState()
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SkiaCanvasState"/> class with properties copied from another state.
+		/// </summary>
+		/// <param name="prototype">The state to copy from.</param>
 		public SkiaCanvasState(SkiaCanvasState prototype) : base(prototype)
 		{
 			_strokeColor = prototype._strokeColor;
@@ -39,6 +50,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			_fontColor = prototype._fontColor;
 
 			_fontPaint = prototype.FontPaint.CreateCopy();
+			_fontFont = prototype.FontFont.CreateCopy();
 			_fillPaint = prototype.FillPaint.CreateCopy();
 			_strokePaint = prototype.StrokePaint.CreateCopy();
 			_font = prototype._font;
@@ -46,7 +58,6 @@ namespace Microsoft.Maui.Graphics.Skia
 			Alpha = prototype.Alpha;
 			_scaleX = prototype._scaleX;
 			_scaleY = prototype._scaleY;
-			_typefaceInvalid = false;
 
 			_isBlurred = prototype._isBlurred;
 			_blurRadius = prototype._blurRadius;
@@ -59,12 +70,21 @@ namespace Microsoft.Maui.Graphics.Skia
 			_shadowBlur = prototype._shadowBlur;
 		}
 
+		/// <summary>
+		/// Gets or sets the stroke color.
+		/// </summary>
 		public Color StrokeColor
 		{
 			get => _strokeColor;
 			set => _strokeColor = value;
 		}
 
+		/// <summary>
+		/// Gets or sets the fill color.
+		/// </summary>
+		/// <remarks>
+		/// Setting this property resets any shader that might have been set.
+		/// </remarks>
 		public Color FillColor
 		{
 			get => _fillColor;
@@ -75,6 +95,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets the font color.
+		/// </summary>
 		public Color FontColor
 		{
 			get => _fontColor;
@@ -88,6 +111,10 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
+		/// <summary>
+		/// Sets the stroke line cap style.
+		/// </summary>
+		/// <value>The line cap style to apply to the ends of stroked lines.</value>
 		public LineCap StrokeLineCap
 		{
 			set
@@ -101,6 +128,10 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
+		/// <summary>
+		/// Sets the stroke line join style.
+		/// </summary>
+		/// <value>The line join style to apply at the corners of stroked lines.</value>
 		public LineJoin StrokeLineJoin
 		{
 			set
@@ -114,11 +145,21 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
+		/// <summary>
+		/// Sets the miter limit for stroked lines with miter joins.
+		/// </summary>
+		/// <value>The miter limit value.</value>
 		public float MiterLimit
 		{
 			set => StrokePaint.StrokeMiter = value;
 		}
 
+		/// <summary>
+		/// Sets the stroke dash pattern.
+		/// </summary>
+		/// <param name="pattern">An array of values that specify the lengths of alternating dashes and gaps.</param>
+		/// <param name="strokeDashOffset">The distance into the dash pattern to start the dash.</param>
+		/// <param name="strokeSize">The stroke width to scale the pattern by.</param>
 		public void SetStrokeDashPattern(float[] pattern, float strokeDashOffset, float strokeSize)
 		{
 			if (pattern == null || pattern.Length == 0 || strokeSize == 0)
@@ -200,7 +241,10 @@ namespace Microsoft.Maui.Graphics.Skia
 			set
 			{
 				_fontSize = value;
+#pragma warning disable CS0618 // Type or member is obsolete
 				FontPaint.TextSize = _fontSize * _scaleX;
+#pragma warning restore CS0618 // Type or member is obsolete
+				FontFont.Size = _fontSize * _scaleX;
 			}
 		}
 
@@ -211,12 +255,24 @@ namespace Microsoft.Maui.Graphics.Skia
 				if (!ReferenceEquals(_font, value) && (_font is null || !_font.Equals(value)))
 				{
 					_font = value;
-					_typefaceInvalid = true;
+
+					if (_fontPaint != null)
+					{
+#pragma warning disable CS0618 // Type or member is obsolete
+						_fontPaint.Typeface = GetSKTypeface();
+#pragma warning restore CS0618 // Type or member is obsolete
+					}
+
+					if (_fontFont != null)
+					{
+						_fontFont.Typeface = GetSKTypeface();
+					}
 				}
 			}
 
 			get => _font;
 		}
+		private SKTypeface GetSKTypeface() => _font?.ToSKTypeface() ?? SKTypeface.Default;
 
 		public SKPaint FontPaint
 		{
@@ -228,20 +284,35 @@ namespace Microsoft.Maui.Graphics.Skia
 					{
 						Color = SKColors.Black,
 						IsAntialias = true,
-						Typeface = SKTypeface.Default,
+#pragma warning disable CS0618 // Type or member is obsolete
+						Typeface = GetSKTypeface(),
+#pragma warning restore CS0618 // Type or member is obsolete
 					};
-				}
-
-				if (_typefaceInvalid)
-				{
-					_fontPaint.Typeface = _font?.ToSKTypeface() ?? SKTypeface.Default;
-					_typefaceInvalid = false;
 				}
 
 				return _fontPaint;
 			}
 
 			set => _fontPaint = value;
+		}
+
+
+		public SKFont FontFont
+		{
+			get
+			{
+				if (_fontFont == null)
+				{
+					_fontFont = new SKFont
+					{
+						Typeface = GetSKTypeface(),
+					};
+				}
+
+				return _fontFont;
+			}
+
+			set => _fontFont = value;
 		}
 
 		public SKPaint FillPaint
@@ -423,13 +494,25 @@ namespace Microsoft.Maui.Graphics.Skia
 			_scaleY = _scaleY * sy;
 
 			StrokePaint.StrokeWidth = StrokeSize * _scaleX;
+#pragma warning disable CS0618 // Type or member is obsolete
 			FontPaint.TextSize = _fontSize * _scaleX;
+#pragma warning restore CS0618 // Type or member is obsolete
+			FontFont.Size = _fontSize * _scaleX;
 		}
 
+		[Obsolete("Use Reset(SKPaint, SKFont, SKPaint, SKPaint) instead")]
 		public void Reset(SKPaint fontPaint, SKPaint fillPaint, SKPaint strokePaint)
+		{
+			Reset(fontPaint, fontPaint?.ToFont(), fillPaint, strokePaint);
+		}
+
+		public void Reset(SKPaint fontPaint, SKFont fontFont, SKPaint fillPaint, SKPaint strokePaint)
 		{
 			_fontPaint?.Dispose();
 			_fontPaint = fontPaint.CreateCopy();
+
+			_fontFont?.Dispose();
+			_fontFont = fontFont.CreateCopy();
 
 			_fillPaint?.Dispose();
 			_fillPaint = fillPaint.CreateCopy();

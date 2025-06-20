@@ -274,14 +274,78 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		/// <summary>
+		/// Invalidates the measure of the view and all its ancestors through <see cref="UIView.SetNeedsLayout"/> propagation.
+		/// </summary>
+		/// <remarks>
+		/// Stops when it reaches the page view or a scrollable area, including <see cref="UICollectionView"/>.
+		/// </remarks>
 		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
-			platformView.SetNeedsLayout();
+			InvalidateMeasure(platformView);
+		}
 
-			// MauiView/WrapperView already propagates the SetNeedsLayout to the parent
-			if (platformView is not MauiView && platformView is not WrapperView)
+		internal static void InvalidateMeasure(this UIView platformView)
+		{
+			var propagate = true;
+
+			if (platformView is IPlatformMeasureInvalidationController mauiPlatformView)
 			{
-				platformView.Superview?.SetNeedsLayout();
+				propagate = mauiPlatformView.InvalidateMeasure();
+			}
+			else
+			{
+				platformView.SetNeedsLayout();
+			}
+
+			if (propagate)
+			{
+				platformView.InvalidateAncestorsMeasures();
+			}
+		}
+
+		internal static void InvalidateAncestorsMeasures(this UIView child)
+		{
+			var childMauiPlatformLayout = child as IPlatformMeasureInvalidationController;
+
+			while (true)
+			{
+				// We verify the presence of a Window to prevent scenarios where an invalidate might propagate up the view hierarchy  
+				// to a SuperView that has already been disposed. Accessing such a disposed view would result in a crash (see #24032).  
+				// This validation is only possible using `IMauiPlatformView`, as it provides a way to schedule an invalidation when the view is moved to window.  
+				// For other cases, we accept the risk since avoiding it could lead to the layout not being updated properly.
+				if (childMauiPlatformLayout is not null && child.Window is null)
+				{
+					childMauiPlatformLayout.InvalidateAncestorsMeasuresWhenMovedToWindow();
+					return;
+				}
+
+				var superview = child.Superview;
+				if (superview is null)
+				{
+					return;
+				}
+
+				// Now invalidate the parent view
+				var propagate = true;
+				var superviewMauiPlatformLayout = superview as IPlatformMeasureInvalidationController;
+				if (superviewMauiPlatformLayout is not null)
+				{
+					propagate = superviewMauiPlatformLayout.InvalidateMeasure(isPropagating: true);
+				}
+				else
+				{
+					superview.SetNeedsLayout();
+				}
+
+				if (!propagate)
+				{
+					// We've been asked to stop propagation, so let's stop here
+					return;
+				}
+
+				child = superview;
+				childMauiPlatformLayout = superviewMauiPlatformLayout;
 			}
 		}
 
@@ -680,7 +744,8 @@ namespace Microsoft.Maui.Platform
 						uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
 					}
 				}
-			};
+			}
+			;
 
 			return disposable;
 		}
@@ -740,7 +805,8 @@ namespace Microsoft.Maui.Platform
 					disposable = null;
 					action();
 				}
-			};
+			}
+			;
 
 			return disposable;
 		}
@@ -765,6 +831,13 @@ namespace Microsoft.Maui.Platform
 			var nextResponder = view as UIResponder;
 			while (nextResponder is not null)
 			{
+				// We check for Window to avoid scenarios where an invalidate might propagate up the tree
+				// To a SuperView that's been disposed which will cause a crash when trying to access it
+				if (nextResponder is UIView uiview && uiview.Window is null)
+				{
+					return null;
+				}
+
 				nextResponder = nextResponder.NextResponder;
 
 				if (nextResponder is T responder)
@@ -778,6 +851,13 @@ namespace Microsoft.Maui.Platform
 			var nextResponder = controller.View as UIResponder;
 			while (nextResponder is not null)
 			{
+				// We check for Window to avoid scenarios where an invalidate might propagate up the tree
+				// To a SuperView that's been disposed which will cause a crash when trying to access it
+				if (nextResponder is UIView uiview && uiview.Window is null)
+				{
+					return null;
+				}
+
 				nextResponder = nextResponder.NextResponder;
 
 				if (nextResponder is T responder && responder != controller)
@@ -936,6 +1016,14 @@ namespace Microsoft.Maui.Platform
 
 		internal static bool IsSoftInputShowing(this UIView inputView) => inputView.IsFirstResponder;
 
-		internal static bool IsFinalMeasureHandledBySuperView(this UIView? view) => view?.Superview is ICrossPlatformLayoutBacking { CrossPlatformLayout: not null };
+		private const nint NativeViewControlledByCrossPlatformLayout = 0x63D2A1;
+
+		internal static bool IsFinalMeasureHandledBySuperView(this UIView? view)
+			=> view?.Superview is ICrossPlatformLayoutBacking { CrossPlatformLayout: not null } or { Tag: NativeViewControlledByCrossPlatformLayout };
+
+		internal static void MarkAsCrossPlatformLayoutBacking(this UIView view)
+		{
+			view.Tag = NativeViewControlledByCrossPlatformLayout;
+		}
 	}
 }

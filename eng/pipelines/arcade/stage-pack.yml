@@ -1,5 +1,11 @@
 # Template for build + pack on dnceng
 parameters:
+- name: prepareSteps
+  type: stepList
+  default: []
+- name: postSteps
+  type: stepList
+  default: []
 - name: pool
   type: object
 - name: enableSourceBuild
@@ -44,51 +50,32 @@ stages:
         - checkout: self
           fetchDepth: 1
           clean: true
-        steps:            
-        - script: $(_buildScript)
-                  -restore -build
-                  -configuration $(_BuildConfig)
-                  /p:ArchiveTests=true
-                  /p:TreatWarningsAsErrors=false
-                  /p:_SkipUpdateBuildNumber=true
-                  /bl:$(Build.Arcade.LogsPath)build.binlog
-                  $(_OfficialBuildIdArgs)
-          displayName: 🛠️ Build
+
+        steps:
+        - ${{ each step in parameters.prepareSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
+
+        # - script: $(_buildScript)
+        #           -restore -build
+        #           -configuration $(_BuildConfig)
+        #           /p:ArchiveTests=true
+        #           /p:TreatWarningsAsErrors=false
+        #           /p:_SkipUpdateBuildNumber=true
+        #           /bl:$(Build.Arcade.LogsPath)build.binlog
+        #           $(_OfficialBuildIdArgs)
+        #   displayName: 🛠️ Build
 
         # Run on public pipeline
         - ${{ if parameters.runAsPublic }}:
-          - script: $(_buildScript)
-                    -restore -pack
-                    -publish $(_PublishArgs)
-                    -configuration $(_BuildConfig)
-                    /bl:$(Build.Arcade.LogsPath)pack.binlog
-                    $(_OfficialBuildIdArgs)
+          - script: $(_buildScript) -restore -pack -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)pack.binlog $(_OfficialBuildIdArgs)
             displayName: Pack & Publish
 
         # Run on internal pipeline
         - ${{ if and(not(parameters.runAsPublic) , notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - script: $(_buildScript)
-                    -restore -pack
-                    -sign $(_SignArgs)
-                    -publish $(_PublishArgs)
-                    -configuration $(_BuildConfig)
-                    /bl:$(Build.Arcade.LogsPath)pack.binlog
-                    $(_OfficialBuildIdArgs)
-            displayName: Pack, Sign & Publish
-          
-          # only for workloads
-          - script: $(_buildScript)
-              -restore -build
-              -sign $(_SignArgs)
-              -publish $(_PublishArgs)
-              -configuration $(_BuildConfig)
-              /bl:$(Build.Arcade.LogsPath)/build-workloads.binlog
-              -projects src/Workload/workloads.csproj
-              $(_OfficialBuildIdArgs)
-            displayName: Build Workloads
+          - script: $(_buildScript) -restore -pack -sign $(_SignArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)pack.binlog $(_OfficialBuildIdArgs)
+            displayName: Pack, Sign
 
-          - task: 1ES.PublishPipelineArtifact@1
-            displayName: Publish VSDrop MSIs
-            inputs:
-              targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
-              artifactName: VSDropInsertion
+          # only for workloads
+          - script: $(_buildScript) -restore -build -sign $(_SignArgs) -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/build-workloads.binlog -projects src/Workload/workloads.csproj $(_OfficialBuildIdArgs)
+            displayName: Build Workloads, Sign & Publish

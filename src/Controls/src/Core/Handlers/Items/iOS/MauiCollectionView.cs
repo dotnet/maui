@@ -5,9 +5,14 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items;
 
-internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents
+internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 {
+	bool _invalidateParentWhenMovedToWindow;
+
 	WeakReference<ICustomMauiCollectionViewDelegate>? _customDelegate;
+
+	internal bool NeedsCellLayout { get; set; }
+
 	public MauiCollectionView(CGRect frame, UICollectionViewLayout layout) : base(frame, layout)
 	{
 	}
@@ -18,8 +23,25 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents
 			base.ScrollRectToVisible(rect, animated);
 	}
 
+	void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
+	{
+		_invalidateParentWhenMovedToWindow = true;
+	}
+
+	bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+	{
+		if (isPropagating)
+		{
+			NeedsCellLayout = true;
+		}
+
+		SetNeedsLayout();
+		return !isPropagating;
+	}
+
 	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 	EventHandler? _movedToWindow;
+
 	event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
 	{
 		add => _movedToWindow += value;
@@ -34,6 +56,12 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents
 		if (_customDelegate?.TryGetTarget(out var target) == true)
 		{
 			target.MovedToWindow(this);
+		}
+
+		if (_invalidateParentWhenMovedToWindow)
+		{
+			_invalidateParentWhenMovedToWindow = false;
+			this.InvalidateAncestorsMeasures();
 		}
 	}
 

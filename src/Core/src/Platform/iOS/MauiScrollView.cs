@@ -6,13 +6,15 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, ICrossPlatformLayoutBacking
+	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, ICrossPlatformLayoutBacking, IPlatformMeasureInvalidationController
 	{
 		bool _invalidateParentWhenMovedToWindow;
 		double _lastMeasureHeight;
 		double _lastMeasureWidth;
 		double _lastArrangeHeight;
 		double _lastArrangeWidth;
+
+		UIUserInterfaceLayoutDirection? _previousEffectiveUserInterfaceLayoutDirection;
 
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
@@ -33,18 +35,14 @@ namespace Microsoft.Maui.Platform
 			var widthConstraint = (double)bounds.Width;
 			var heightConstraint = (double)bounds.Height;
 			var frameChanged = _lastArrangeWidth != widthConstraint || _lastArrangeHeight != heightConstraint;
+
+			// If the frame changed, we need to arrange (and potentially measure) the content again
 			if (frameChanged && CrossPlatformLayout is { } crossPlatformLayout)
 			{
 				_lastArrangeWidth = widthConstraint;
 				_lastArrangeHeight = heightConstraint;
 
-				// If the SuperView is a cross-platform layout backed view (i.e. MauiView, MauiScrollView, LayoutView, ..),
-				// then measurement has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews.
-				// This is especially important to avoid overriding potentially infinite measurement constraints
-				// imposed by the parent (i.e. scroll view) with the current bounds.
-				// But we _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
-				// the window); there's no guarantee that SizeThatFits has been called in that case.
-				if (!IsMeasureValid(widthConstraint, heightConstraint) && !this.IsFinalMeasureHandledBySuperView())
+				if (!IsMeasureValid(widthConstraint, heightConstraint))
 				{
 					crossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
 					CacheMeasureConstraints(widthConstraint, heightConstraint);
@@ -52,8 +50,40 @@ namespace Microsoft.Maui.Platform
 
 				// Account for safe area adjustments automatically added by iOS
 				var crossPlatformBounds = AdjustedContentInset.InsetRect(bounds).Size.ToSize();
-				var size = crossPlatformLayout.CrossPlatformArrange(new Rect(new Point(), crossPlatformBounds));
-				ContentSize = size.ToCGSize();
+				var crossPlatformContentSize = crossPlatformLayout.CrossPlatformArrange(new Rect(new Point(), crossPlatformBounds));
+				var contentSize = crossPlatformContentSize.ToCGSize();
+
+				// For Right-To-Left (RTL) layouts, we need to adjust the content arrangement and offset
+				// to ensure the content is correctly aligned and scrolled. This involves a second layout
+				// arrangement with an adjusted starting point and recalculating the content offset.
+				if (_previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection)
+				{
+					if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+					{
+						var horizontalOffset = contentSize.Width - crossPlatformBounds.Width;
+						crossPlatformLayout.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), crossPlatformBounds));
+						ContentOffset = new CGPoint(horizontalOffset, 0);
+					}
+					else
+					{
+						ContentOffset = new CGPoint(0, ContentOffset.Y);
+					}
+				}
+
+				// When switching between LTR and RTL, we need to re-arrange and offset content exactly once
+				// to avoid cumulative shifts or incorrect offsets on subsequent layouts.
+				_previousEffectiveUserInterfaceLayoutDirection = EffectiveUserInterfaceLayoutDirection;
+
+				// When the content size changes, we need to adjust the scrollable area size so that the content can fit in it.
+				if (ContentSize != contentSize)
+				{
+					ContentSize = contentSize;
+
+					// Invalidation stops at `UIScrollViews` for performance reasons,
+					// but when the content size changes, we need to invalidate the ancestors
+					// in case the ScrollView is configured to grow/shrink with its content.
+					this.InvalidateAncestorsMeasures();
+				}
 			}
 
 			base.LayoutSubviews();
@@ -75,12 +105,17 @@ namespace Microsoft.Maui.Platform
 			return contentSize;
 		}
 
-		public override void SetNeedsLayout()
+		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
 		{
-			base.SetNeedsLayout();
+			_invalidateParentWhenMovedToWindow = true;
+		}
+
+		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		{
+			SetNeedsLayout();
 			InvalidateConstraintsCache();
 
-			TryToInvalidateSuperView(false);
+			return !isPropagating;
 		}
 
 		bool IsMeasureValid(double widthConstraint, double heightConstraint)
@@ -112,26 +147,6 @@ namespace Microsoft.Maui.Platform
 				base.ScrollRectToVisible(rect, animated);
 		}
 
-		private protected void TryToInvalidateSuperView(bool shouldOnlyInvalidateIfPending)
-		{
-			if (shouldOnlyInvalidateIfPending && !_invalidateParentWhenMovedToWindow)
-			{
-				return;
-			}
-
-			// We check for Window to avoid scenarios where an invalidate might propagate up the tree
-			// To a SuperView that's been disposed which will cause a crash when trying to access it
-			if (Window is not null)
-			{
-				this.Superview?.SetNeedsLayout();
-				_invalidateParentWhenMovedToWindow = false;
-			}
-			else
-			{
-				_invalidateParentWhenMovedToWindow = true;
-			}
-		}
-
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
 
@@ -145,7 +160,11 @@ namespace Microsoft.Maui.Platform
 		{
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
-			TryToInvalidateSuperView(true);
+			if (_invalidateParentWhenMovedToWindow)
+			{
+				_invalidateParentWhenMovedToWindow = false;
+				this.InvalidateAncestorsMeasures();
+			}
 		}
 	}
 }

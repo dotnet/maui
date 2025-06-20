@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.UI.Xaml;
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class HybridWebViewHandler : ViewHandler<IHybridWebView, WebView2>
 	{
 		private readonly HybridWebView2Proxy _proxy = new();
+		private readonly Lazy<IBuffer> _404MessageBuffer = new(() => Encoding.UTF8.GetBytes("Resource not found (404)").AsBuffer());
 
 		protected override WebView2 CreatePlatformView()
 		{
@@ -139,8 +141,7 @@ namespace Microsoft.Maui.Handlers
 					var contentBytes = await InvokeDotNetAsync(invokeQueryString);
 					if (contentBytes is not null)
 					{
-						var bytesStream = new MemoryStream(contentBytes);
-						var ras = await CopyContentToRandomAccessStreamAsync(bytesStream);
+						var ras = await CopyContentToRandomAccessStreamAsync(contentBytes.AsBuffer());
 						return (Stream: ras, ContentType: "application/json", StatusCode: 200, Reason: "OK");
 					}
 				}
@@ -174,24 +175,28 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			// 3.b. Otherwise, return a 404
-			var ras404 = new InMemoryRandomAccessStream();
-			using (var writer = new StreamWriter(ras404.AsStreamForWrite()))
-			{
-				writer.WriteLine("Resource not found (404)");
-			}
-
+			var ras404 = await CopyContentToRandomAccessStreamAsync(_404MessageBuffer.Value);
 			return (Stream: ras404, ContentType: "text/plain", StatusCode: 404, Reason: "Not Found");
-
-			static async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
-			{
-				using var memStream = new MemoryStream();
-				await content.CopyToAsync(memStream);
-				var randomAccessStream = new InMemoryRandomAccessStream();
-				await randomAccessStream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
-				return randomAccessStream;
-			}
 		}
 
+		static async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
+		{
+			var ras = new InMemoryRandomAccessStream();
+			var stream = ras.AsStreamForWrite(); // do not dispose as this stream IS the IMRAS
+			await content.CopyToAsync(stream);
+			await stream.FlushAsync();
+			ras.Seek(0);
+			return ras;
+		}
+
+		static async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(IBuffer content)
+		{
+			var ras = new InMemoryRandomAccessStream();
+			await ras.WriteAsync(content);
+			await ras.FlushAsync();
+			ras.Seek(0);
+			return ras;
+		}
 
 		[RequiresUnreferencedCode(DynamicFeatures)]
 #if !NETSTANDARD

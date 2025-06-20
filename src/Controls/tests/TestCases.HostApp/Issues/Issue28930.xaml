@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.Issues.Issue28930">
+  <VerticalStackLayout>
+    <Border Stroke="Violet"
+            StrokeThickness="2"
+            Padding="10">
+      <VerticalStackLayout Spacing="10">
+        <Label Text="CAROUSEL"
+               TextTransform="Uppercase" />
+        <!--https://github.com/dotnet/maui/issues/29402 -->
+        <CarouselView x:Name="MyCarousel"
+                      AutomationId="MyCarousel"
+                      HorizontalOptions="Fill"
+                      VerticalOptions="Start"
+                      MinimumHeightRequest="120"
+                      HeightRequest="140"
+                      HorizontalScrollBarVisibility="Never"
+                      EmptyView="No data">
+          <CarouselView.ItemsSource>
+            <x:Array Type="{x:Type x:String}">
+              <x:String>Item 1</x:String>
+              <x:String>Item 2</x:String>
+              <x:String>Item 3</x:String>
+            </x:Array>
+          </CarouselView.ItemsSource>
+          <CarouselView.ItemTemplate>
+            <DataTemplate>
+              <Grid ColumnDefinitions="*,*,*,*"
+                    RowDefinitions="*,Auto">
+                <Label Grid.ColumnSpan="4"
+                       Grid.Row="1"
+                       AutomationId="{Binding .}"
+                       Text="{Binding .}"
+                       VerticalTextAlignment="Center"
+                       HorizontalTextAlignment="Center" />
+                <Grid Grid.Column="0"
+                      RowDefinitions="Auto,Auto"
+                      RowSpacing="2">
+                  <Border BackgroundColor="GreenYellow"
+                          StrokeShape="RoundRectangle 7"
+                          HeightRequest="65"
+                          WidthRequest="65"
+                          HorizontalOptions="Center"
+                          Margin="0,5,0,0"
+                          Stroke="Violet"
+                          StrokeThickness="1">
+                    <Image Source="dotnet_bot.png"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           AutomationId="dotnetbot1"
+                           HeightRequest="40"
+                           WidthRequest="40" />
+                  </Border>
+                  <Label Grid.Row="1"
+                         Text="Long text that should be truncated at the end of the line. This is a test "
+                         HorizontalOptions="Center"
+                         HorizontalTextAlignment="Center"
+                         LineBreakMode="WordWrap"
+                         MaxLines="2" />
+                </Grid>
+                <Grid Grid.Column="1"
+                      RowDefinitions="Auto,Auto"
+                      RowSpacing="2">
+                  <Border BackgroundColor="Red"
+                          StrokeShape="RoundRectangle 7"
+                          HeightRequest="65"
+                          WidthRequest="65"
+                          HorizontalOptions="Center"
+                          Margin="0,5,0,0"
+                          Stroke="Violet"
+                          StrokeThickness="1">
+                    <Image Source="dotnet_bot.png"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           AutomationId="dotnetbot2"
+                           HeightRequest="40"
+                           WidthRequest="40" />
+                  </Border>
+                  <Label Grid.Row="1"
+                         Text="Long text that should be truncated at the end of the line. This is a test "
+                         HorizontalOptions="Center"
+                         HorizontalTextAlignment="Center"
+                         LineBreakMode="WordWrap"
+                         MaxLines="2" />
+                </Grid>
+                <Grid Grid.Column="2"
+                      RowDefinitions="Auto,Auto"
+                      RowSpacing="2">
+                  <Border BackgroundColor="Blue"
+                          StrokeShape="RoundRectangle 7"
+                          HeightRequest="65"
+                          WidthRequest="65"
+                          HorizontalOptions="Center"
+                          Margin="0,5,0,0"
+                          Stroke="Violet"
+                          StrokeThickness="1">
+                    <Image Source="dotnet_bot.png"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           HeightRequest="40"
+                           AutomationId="dotnetbot3"
+                           WidthRequest="40" />
+                  </Border>
+                  <Label Grid.Row="1"
+                         Text="Long text that should be truncated at the end of the line. This is a test "
+                         HorizontalOptions="Center"
+                         HorizontalTextAlignment="Center"
+                         LineBreakMode="WordWrap"
+                         MaxLines="2" />
+                </Grid>
+
+                <Grid Grid.Column="3"
+                      RowDefinitions="Auto,Auto"
+                      RowSpacing="2">
+                  <Border BackgroundColor="Yellow"
+                          StrokeShape="RoundRectangle 7"
+                          HeightRequest="65"
+                          WidthRequest="65"
+                          HorizontalOptions="Center"
+                          Margin="0,5,0,0"
+                          Stroke="Violet"
+                          StrokeThickness="1">
+                    <Image Source="dotnet_bot.png"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           AutomationId="dotnetbot4"
+                           HeightRequest="40"
+                           WidthRequest="40" />
+                  </Border>
+                  <Label Grid.Row="1"
+                         Text="Long text that should be truncated at the end of the line. This is a test "
+                         HorizontalOptions="Center"
+                         HorizontalTextAlignment="Center"
+                         LineBreakMode="WordWrap"
+                         MaxLines="2" />
+                </Grid>
+              </Grid>
+            </DataTemplate>
+          </CarouselView.ItemTemplate>
+        </CarouselView>
+      </VerticalStackLayout>
+    </Border>
+  </VerticalStackLayout>
+</ContentPage>

@@ -204,8 +204,41 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(entry, expected, typeof(EntryHandler));
 		}
 
+		[Fact]
+		[Description("The Opacity property of an Entry should match with native Opacity")]
+		public async Task VerifyEntryOpacityProperty()
+		{
+			var entry = new Entry
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = entry.Opacity;
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var nativeOpacityValue = await GetPlatformOpacity(handler);
+				Assert.Equal(expectedValue, nativeOpacityValue);
+			});
+		}
+
+		[Fact]
+		[Description("The IsVisible property of a Entry should match with native IsVisible")]
+		public async Task VerifyEntryIsVisibleProperty()
+		{
+			var entry = new Entry();
+			entry.IsVisible = false;
+			var expectedValue = entry.IsVisible;
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var isVisible = await GetPlatformIsVisible(handler);
+				Assert.Equal(expectedValue, isVisible);
+			});
+		}
+
 		[Category(TestCategory.Entry)]
-		[Category(TestCategory.TextInput)]
 		[Collection(RunInNewWindowCollection)]
 		public class EntryTextInputTests : TextInputTests<EntryHandler, Entry>
 		{

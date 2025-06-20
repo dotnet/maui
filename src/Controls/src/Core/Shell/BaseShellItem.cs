@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.BaseShellItem']/Docs/*" />
 	[DebuggerDisplay("Title = {Title}, Route = {Route}")]
+	[DebuggerTypeProxy(typeof(BaseShellItemDebugView))]
 	public class BaseShellItem : NavigableElement, IPropertyPropagationController, IVisualController, IFlowDirectionController, IWindowController
 	{
 		public event EventHandler Appearing;
@@ -556,6 +557,22 @@ namespace Microsoft.Maui.Controls
 				grid.Resources = new ResourceDictionary() { defaultGridClass, defaultLabelClass, defaultImageClass };
 				return grid;
 			});
+		}
+
+
+		/// <summary>
+		/// Provides a debug view for the <see cref="BaseShellItem"/> class.
+		/// </summary>
+		/// <param name="baseShellItem">The <see cref="BaseShellItem"/> instance to debug.</param>
+		private protected class BaseShellItemDebugView(BaseShellItem baseShellItem)
+		{
+			public ImageSource Icon => baseShellItem.Icon;
+
+			public ImageSource FlyoutIcon => baseShellItem.FlyoutIcon;
+
+			public bool FlyoutItemIsVisible => baseShellItem.FlyoutItemIsVisible;
+
+			public string Route => baseShellItem.Route;
 		}
 
 #if NETSTANDARD

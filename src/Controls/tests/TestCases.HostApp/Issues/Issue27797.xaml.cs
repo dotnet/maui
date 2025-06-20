@@ -257,4 +257,3 @@ public partial class Issue27797 : ContentPage
 		public Command<string> ChangeStatusCommand => new((newStatus) => Status = newStatus);
 	}
 }
-
