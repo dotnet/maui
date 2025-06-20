@@ -14,7 +14,7 @@ public class Issue25921 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Slider)]
-	public void VerifyTabChevronIconColor()
+	public void VerifySliderColors()
 	{
 		App.WaitForElement("testSlider");
 		VerifyScreenshot();
