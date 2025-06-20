@@ -153,3 +153,5 @@ override Microsoft.Maui.Handlers.ImageButtonHandler.SetupContainer() -> void
 *REMOVED*override Microsoft.Maui.Platform.MauiView.SetNeedsLayout() -> void
 *REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
 Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
+Microsoft.Maui.IWindow.IsMaximizable.get -> bool
+Microsoft.Maui.IWindow.IsMinimizable.get -> bool

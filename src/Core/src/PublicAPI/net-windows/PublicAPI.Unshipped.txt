@@ -118,3 +118,7 @@ static Microsoft.Maui.Platform.SearchBarExtensions.UpdateReturnType(this Microso
 static Microsoft.Maui.Platform.ScrollViewerExtensions.UpdateScrollBarVisibility(this Microsoft.UI.Xaml.Controls.ScrollViewer! scrollViewer, Microsoft.Maui.ScrollOrientation orientation, Microsoft.Maui.ScrollBarVisibility visibility) -> void
 *REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
 Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
+Microsoft.Maui.IWindow.IsMaximizable.get -> bool
+Microsoft.Maui.IWindow.IsMinimizable.get -> bool
+static Microsoft.Maui.Handlers.WindowHandler.MapIsMaximizable(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapIsMinimizable(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! window) -> void
