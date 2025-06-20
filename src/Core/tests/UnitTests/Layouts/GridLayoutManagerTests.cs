@@ -3644,13 +3644,13 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Fact]
-		public void DensityInjectionWorksCorrectly()
+		public void DebugWhyDensityAwareTestsFail()
 		{
-			// Test that density injection works through IViewWithWindow
-			var density = 2.75;
+			// Test case from PR description: 293.4dp at density 2.625 = 770.175px across 3 columns
+			var density = 2.625;
 			var grid = CreateGridLayoutWithDensity(density, columns: "*,*,*");
-			
-			// Access the density through the same path as GridLayoutManager
+
+			// Verify density injection is working
 			if (grid is IViewWithWindow viewWithWindow)
 			{
 				var window = viewWithWindow.Window;
@@ -3660,6 +3660,48 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			else
 			{
 				Assert.Fail("Grid should implement IViewWithWindow");
+			}
+
+			var views = new IView[3];
+			for (int i = 0; i < 3; i++)
+			{
+				views[i] = CreateTestView(new Size(10, 10));
+				SetLocation(grid, views[i], col: i);
+			}
+			SubstituteChildren(grid, views);
+
+			var widthConstraint = 293.4;
+
+			// Capture arranged rectangles
+			var arrangedRects = new Rect[3];
+			for (int i = 0; i < 3; i++)
+			{
+				int index = i;
+				views[i].When(x => x.Arrange(Arg.Any<Rect>())).Do(x => arrangedRects[index] = x.Arg<Rect>());
+			}
+
+			MeasureAndArrangeFixedWithDensity(grid, density, widthConstraint, 100);
+
+			// Debug: check what values we actually got
+			for (int i = 0; i < 3; i++)
+			{
+				var dpWidth = arrangedRects[i].Width;
+				var pixelWidth = dpWidth * density;
+				var roundingError = Math.Abs(pixelWidth - Math.Round(pixelWidth));
+				
+				// If density-aware distribution worked, this should be very small
+				// If it's large (like 0.275), then fallback was used
+				
+				// For 293.4dp at 2.625 density across 3 columns:
+				// Density-aware: should give [256, 256, 258] pixels = [97.52381, 97.52381, 98.28571] dp
+				// Fallback: 293.4/3 = 97.8dp per column = 256.725 pixels (rounding error ~0.275)
+				
+				Console.WriteLine($"Column {i}: {dpWidth}dp, {pixelWidth}px, error: {roundingError}");
+				if (roundingError > 0.2)
+				{
+					Assert.Fail($"Large rounding error {roundingError} suggests density-aware distribution was not used. " +
+						$"Expected ~97.52dp or ~98.29dp but got {dpWidth}dp");
+				}
 			}
 		}
 	}
