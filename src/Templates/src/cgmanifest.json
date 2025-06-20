@@ -31,98 +31,8 @@
     {
       "component": {
         "nuget": {
-          "name": "Syncfusion.Maui.Toolkit",
-          "version": "1.0.4"
-        },
-        "type": "nuget"
-      }
-    },
-    {
-      "component": {
-        "nuget": {
-          "name": "Microsoft.Graphics.Win2D",
-          "version": "1.3.2"
-        },
-        "type": "nuget"
-      }
-    },
-    {
-      "component": {
-        "nuget": {
-          "name": "Microsoft.Extensions.DependencyInjection",
-          "version": "9.0.5"
-        },
-        "type": "nuget"
-      }
-    },
-    {
-      "component": {
-        "nuget": {
-          "name": "Microsoft.Extensions.Logging.Debug",
-          "version": "9.0.5"
-        },
-        "type": "nuget"
-      }
-    },
-    {
-      "component": {
-        "nuget": {
-          "name": "xunit.analyzer",
-          "version": "1.15.0"
-        },
-        "type": "nuget"
-      }
-    },
-    {
-      "component": {
-        "nuget": {
-          "name": "coverlet.collector",
-          "version": "6.0.0"
-        },
-        "type": "nuget"
-      }
-    },
-    {
-      "component": {
-        "nuget": {
-          "name": "Microsoft.NET.Test.Sdk",
-          "version": "17.6.0"
-        },
-        "type": "nuget"
-      }
-    },
-    {
-      "component": {
-        "nuget": {
-          "name": "Microsoft.Windows.SDK.BuildTools",
-          "version": "10.0.22621.756"
-        },
-        "type": "nuget"
-      }
-    },
-    {
-      "component": {
-        "nuget": {
           "name": "SQLitePCLRaw.bundle_green",
           "version": "2.1.10"
-        },
-        "type": "nuget"
-      }
-    },
-    {
-      "component": {
-        "nuget": {
-          "name": "xunit",
-          "version": "2.9.0"
-        },
-        "type": "nuget"
-      }
-    },
-    {
-      "component": {
-        "nuget": {
-          "name": "Microsoft.Extensions.Configuration",
-          "version": "9.0.5"
         },
         "type": "nuget"
       }
@@ -139,8 +49,98 @@
     {
       "component": {
         "nuget": {
+          "name": "coverlet.collector",
+          "version": "6.0.0"
+        },
+        "type": "nuget"
+      }
+    },
+    {
+      "component": {
+        "nuget": {
+          "name": "xunit.analyzer",
+          "version": "1.15.0"
+        },
+        "type": "nuget"
+      }
+    },
+    {
+      "component": {
+        "nuget": {
+          "name": "Microsoft.Graphics.Win2D",
+          "version": "1.3.2"
+        },
+        "type": "nuget"
+      }
+    },
+    {
+      "component": {
+        "nuget": {
+          "name": "Microsoft.Extensions.Configuration",
+          "version": "9.0.5"
+        },
+        "type": "nuget"
+      }
+    },
+    {
+      "component": {
+        "nuget": {
+          "name": "Microsoft.NET.Test.Sdk",
+          "version": "17.6.0"
+        },
+        "type": "nuget"
+      }
+    },
+    {
+      "component": {
+        "nuget": {
+          "name": "Syncfusion.Maui.Toolkit",
+          "version": "1.0.4"
+        },
+        "type": "nuget"
+      }
+    },
+    {
+      "component": {
+        "nuget": {
+          "name": "Microsoft.Extensions.Logging.Debug",
+          "version": "9.0.5"
+        },
+        "type": "nuget"
+      }
+    },
+    {
+      "component": {
+        "nuget": {
+          "name": "Microsoft.Extensions.DependencyInjection",
+          "version": "9.0.5"
+        },
+        "type": "nuget"
+      }
+    },
+    {
+      "component": {
+        "nuget": {
           "name": "Microsoft.Data.Sqlite.Core",
           "version": "8.0.8"
+        },
+        "type": "nuget"
+      }
+    },
+    {
+      "component": {
+        "nuget": {
+          "name": "xunit",
+          "version": "2.9.0"
+        },
+        "type": "nuget"
+      }
+    },
+    {
+      "component": {
+        "nuget": {
+          "name": "Microsoft.Windows.SDK.BuildTools",
+          "version": "10.0.22621.756"
         },
         "type": "nuget"
       }
