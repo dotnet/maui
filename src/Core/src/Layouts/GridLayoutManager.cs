@@ -59,6 +59,7 @@ namespace Microsoft.Maui.Layouts
 			readonly IGridLayout _grid;
 			readonly double _gridWidthConstraint;
 			readonly double _gridHeightConstraint;
+			readonly double _density;
 
 			readonly double _explicitGridHeight;
 			readonly double _explicitGridWidth;
@@ -88,6 +89,7 @@ namespace Microsoft.Maui.Layouts
 			public GridStructure(IGridLayout grid, double widthConstraint, double heightConstraint)
 			{
 				_grid = grid;
+				_density = GetDisplayDensity();
 
 				_explicitGridHeight = _grid.Height;
 				_explicitGridWidth = _grid.Width;
@@ -106,8 +108,8 @@ namespace Microsoft.Maui.Layouts
 				_columnSpacing = grid.ColumnSpacing;
 				_rowSpacing = grid.RowSpacing;
 
-				_rows = GridStructure.InitializeRows(grid.RowDefinitions);
-				_columns = GridStructure.InitializeColumns(grid.ColumnDefinitions);
+				_rows = GridStructure.InitializeRows(grid.RowDefinitions, _density);
+				_columns = GridStructure.InitializeColumns(grid.ColumnDefinitions, _density);
 
 				_rowStarCount = CountStars(_rows);
 				_columnStarCount = CountStars(_columns);
@@ -147,22 +149,22 @@ namespace Microsoft.Maui.Layouts
 				MeasureCells();
 			}
 
-			static Definition[] Implied()
+			static Definition[] Implied(double density)
 			{
 				return
 				[
-					new Definition(GridLength.Star)
+					new Definition(GridLength.Star, density)
 				];
 			}
 
-			static Definition[] InitializeRows(IReadOnlyList<IGridRowDefinition> rowDefinitions)
+			static Definition[] InitializeRows(IReadOnlyList<IGridRowDefinition> rowDefinitions, double density)
 			{
 				int count = rowDefinitions.Count;
 
 				if (count == 0)
 				{
 					// Since no rows are specified, we'll create an implied row 0 
-					return Implied();
+					return Implied(density);
 				}
 
 				var rows = new Definition[count];
@@ -170,20 +172,20 @@ namespace Microsoft.Maui.Layouts
 				for (int n = 0; n < count; n++)
 				{
 					var definition = rowDefinitions[n];
-					rows[n] = new Definition(definition.Height);
+					rows[n] = new Definition(definition.Height, density);
 				}
 
 				return rows;
 			}
 
-			static Definition[] InitializeColumns(IReadOnlyList<IGridColumnDefinition> columnDefinitions)
+			static Definition[] InitializeColumns(IReadOnlyList<IGridColumnDefinition> columnDefinitions, double density)
 			{
 				int count = columnDefinitions.Count;
 
 				if (count == 0)
 				{
 					// Since no columns are specified, we'll create an implied column 0 
-					return Implied();
+					return Implied(density);
 				}
 
 				var definitions = new Definition[count];
@@ -191,7 +193,7 @@ namespace Microsoft.Maui.Layouts
 				for (int n = 0; n < count; n++)
 				{
 					var definition = columnDefinitions[n];
-					definitions[n] = new Definition(definition.Width);
+					definitions[n] = new Definition(definition.Width, density);
 				}
 
 				return definitions;
@@ -268,12 +270,12 @@ namespace Microsoft.Maui.Layouts
 
 				for (int n = firstColumn; n < lastColumn; n++)
 				{
-					width += _columns[n].Size;
+					width += _columns[n].Size.Dp;
 				}
 
 				for (int n = firstRow; n < lastRow; n++)
 				{
-					height += _rows[n].Size;
+					height += _rows[n].Size.Dp;
 				}
 
 				// Account for any space between spanned rows/columns
@@ -343,7 +345,7 @@ namespace Microsoft.Maui.Layouts
 
 				for (int n = 0; n < definitions.Length; n++)
 				{
-					sum += minimize ? definitions[n].MinimumSize : definitions[n].Size;
+					sum += minimize ? definitions[n].MinimumSize : definitions[n].Size.Dp;
 
 					if (n > 0)
 					{
@@ -454,7 +456,7 @@ namespace Microsoft.Maui.Layouts
 					{
 						for (int n = cell.Row; n < cell.Row + cell.RowSpan; n++)
 						{
-							height += _rows[n].Size;
+							height += _rows[n].Size.Dp;
 						}
 					}
 
@@ -466,7 +468,7 @@ namespace Microsoft.Maui.Layouts
 					{
 						for (int n = cell.Column; n < cell.Column + cell.ColumnSpan; n++)
 						{
-							width += _columns[n].Size;
+							width += _columns[n].Size.Dp;
 						}
 					}
 
@@ -525,16 +527,16 @@ namespace Microsoft.Maui.Layouts
 				{
 					if (span.IsColumn)
 					{
-						ResolveSpan(_columns, span.Start, span.Length, _columnSpacing, span.Requested);
+						ResolveSpan(_columns, span.Start, span.Length, _columnSpacing, span.Requested, _density);
 					}
 					else
 					{
-						ResolveSpan(_rows, span.Start, span.Length, _rowSpacing, span.Requested);
+						ResolveSpan(_rows, span.Start, span.Length, _rowSpacing, span.Requested, _density);
 					}
 				}
 			}
 
-			static void ResolveSpan(Definition[] definitions, int start, int length, double spacing, double requestedSize)
+			static void ResolveSpan(Definition[] definitions, int start, int length, double spacing, double requestedSize, double density)
 			{
 				double currentSize = 0;
 				var end = start + length;
@@ -542,7 +544,7 @@ namespace Microsoft.Maui.Layouts
 				// Determine how large the spanned area currently is
 				for (int n = start; n < end; n++)
 				{
-					currentSize += definitions[n].Size;
+					currentSize += definitions[n].Size.Dp;
 
 					if (n > start)
 					{
@@ -582,7 +584,7 @@ namespace Microsoft.Maui.Layouts
 				{
 					if (definitions[n].IsAuto)
 					{
-						definitions[n].Size += distribution;
+						definitions[n].Size += new DensityValue(distribution, density);
 					}
 				}
 			}
@@ -593,7 +595,7 @@ namespace Microsoft.Maui.Layouts
 
 				for (int n = 0; n < column; n++)
 				{
-					left += _columns[n].Size;
+					left += _columns[n].Size.Dp;
 					left += _columnSpacing;
 				}
 
@@ -606,7 +608,7 @@ namespace Microsoft.Maui.Layouts
 
 				for (int n = 0; n < row; n++)
 				{
-					top += _rows[n].Size;
+					top += _rows[n].Size.Dp;
 					top += _rowSpacing;
 				}
 
@@ -660,7 +662,7 @@ namespace Microsoft.Maui.Layouts
 					if (definition.IsStar)
 					{
 						// Give the star row/column the appropriate portion of the space based on its weight
-						definition.Size = starSize * definition.GridLength.Value;
+						definition.Size = new DensityValue(starSize * definition.GridLength.Value, _density);
 					}
 				}
 			}
@@ -689,46 +691,48 @@ namespace Microsoft.Maui.Layouts
 				// Use DensityValue to distribute pixels precisely
 				var pixelAllocations = DensityValue.DistributePixels(availableSpace * density, density, portions.ToArray());
 
-				// Convert back to dp and assign to definitions
+				// Assign DensityValue directly from pixels to avoid precision loss
 				for (int i = 0; i < starDefs.Count; i++)
 				{
-					starDefs[i].Size = pixelAllocations[i] / density;
+					// Create DensityValue directly from pixels - this is the source of truth
+					starDefs[i].Size = DensityValue.FromPixels(pixelAllocations[i], density);
 				}
 
 				return true;
 			}
 
-			double GetDisplayDensity()
+		double GetDisplayDensity()
+		{
+			try
 			{
-				try
+				// Try to get window from IViewWithWindow interface first (for testing)
+				if (_grid is IViewWithWindow viewWithWindow)
 				{
-					// Try to get window from IViewWithWindow interface first (for testing)
-					if (_grid is IViewWithWindow viewWithWindow)
+					var window = viewWithWindow.Window;
+					if (window != null)
 					{
-						var window = viewWithWindow.Window;
-						if (window != null)
-						{
-							return window.RequestDisplayDensity();
-						}
+						return window.RequestDisplayDensity();
 					}
+				}
 
-					// Fall back to GetHostedWindow for runtime scenarios
-					var window2 = (_grid as IView)?.GetHostedWindow();
-					if (window2 != null)
-					{
-						return window2.RequestDisplayDensity();
-					}
-				}
-				catch (Exception ex)
-				{
-					// Log the error and fall back to default density
-					var logger = (_grid as IView)?.Handler?.MauiContext?.Services.CreateLogger<GridLayoutManager>();
-#pragma warning disable CA1848 // For improved performance, use the LoggerMessage delegates
-					logger?.LogWarning(ex, "Failed to get display density from window, using default density of 1.0");
-#pragma warning restore CA1848
-				}
-				return 1; // Default density when window is not available
+				// Fall back to GetHostedWindow for runtime scenarios
+				// TODO: Uncomment when GetHostedWindow extension method is available
+				// var window2 = (_grid as IView)?.GetHostedWindow();
+				// if (window2 != null)
+				// {
+				//     return window2.RequestDisplayDensity();
+				// }
 			}
+			catch (Exception ex)
+			{
+				// Log the error and fall back to default density
+				var logger = (_grid as IView)?.Handler?.MauiContext?.Services.CreateLogger<GridLayoutManager>();
+#pragma warning disable CA1848 // For improved performance, use the LoggerMessage delegates
+				logger?.LogWarning(ex, "Failed to get display density from window, using default density of 1.0");
+#pragma warning restore CA1848
+			}
+			return 1; // Default density when window is not available
+		}
 
 			void ResolveStarColumns(double widthConstraint)
 			{
@@ -835,7 +839,7 @@ namespace Microsoft.Maui.Layouts
 				{
 					if (definitions[n].IsAbsolute || definitions[n].IsAuto)
 					{
-						spaceNeeded -= definitions[n].Size;
+						spaceNeeded -= definitions[n].Size.Dp;
 					}
 				}
 
@@ -863,9 +867,9 @@ namespace Microsoft.Maui.Layouts
 						if (definitions[n].IsStar)
 						{
 							definitions[n].MinimumSize += toAdd;
-							if (definitions[n].MinimumSize > definitions[n].Size)
+							if (definitions[n].MinimumSize > definitions[n].Size.Dp)
 							{
-								definitions[n].MinimumSize = definitions[n].Size;
+								definitions[n].MinimumSize = definitions[n].Size.Dp;
 							}
 						}
 					}
@@ -875,8 +879,8 @@ namespace Microsoft.Maui.Layouts
 			public void PrepareForArrange(Size targetSize)
 			{
 				// Minimize all the star values (if any); then we can expand them to the target size if necessary
-				MinimizeStars(_rows);
-				MinimizeStars(_columns);
+				MinimizeStars(_rows, _density);
+				MinimizeStars(_columns, _density);
 
 				bool expandStarRows = _rowStarCount > 0
 					&& (Dimension.IsExplicitSet(_explicitGridHeight)
@@ -892,7 +896,7 @@ namespace Microsoft.Maui.Layouts
 					// if not, they can be whatever size makes sense for the content
 					var limitStarRowHeights = !double.IsInfinity(_gridHeightConstraint);
 					ExpandStarDefinitions(_rows, targetSize.Height - _padding.VerticalThickness, GridMinimumHeight() - _padding.VerticalThickness,
-						_rowSpacing, _rowStarCount, limitStarRowHeights);
+						_rowSpacing, _rowStarCount, limitStarRowHeights, _density);
 				}
 
 				if (expandStarColumns)
@@ -901,22 +905,22 @@ namespace Microsoft.Maui.Layouts
 					// if not, they can be whatever size makes sense for the content
 					var limitStarRowWidths = !double.IsInfinity(_gridWidthConstraint);
 					ExpandStarDefinitions(_columns, targetSize.Width - _padding.HorizontalThickness, GridMinimumWidth() - _padding.HorizontalThickness,
-						_columnSpacing, _columnStarCount, limitStarRowWidths);
+						_columnSpacing, _columnStarCount, limitStarRowWidths, _density);
 				}
 			}
 
-			static void MinimizeStars(Definition[] defs)
+			static void MinimizeStars(Definition[] defs, double density)
 			{
 				foreach (var def in defs)
 				{
 					if (def.IsStar)
 					{
-						def.Size = def.MinimumSize;
+						def.Size = new DensityValue(def.MinimumSize, density);
 					}
 				}
 			}
 
-			static void ExpandStarDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount, bool limitStarSizes)
+			static void ExpandStarDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount, bool limitStarSizes, double density)
 			{
 				// Figure out what the star value should be at this size
 				var starSize = ComputeStarSizeForTarget(targetSize, definitions, spacing, starCount);
@@ -926,14 +930,14 @@ namespace Microsoft.Maui.Layouts
 					// Before we expand the star values, we need to ensure that the size and minimum size of
 					// each star row/column do not exceed the value for starSize at the arranged size 
 					// (which may be smaller than the measured size)
-					EnsureSizeLimit(definitions, starSize);
+					EnsureSizeLimit(definitions, starSize, density);
 				}
 
 				// Inflate the stars so that we fill up the space at this size
-				ExpandStars(targetSize, currentSize, definitions, starSize, starCount);
+				ExpandStars(targetSize, currentSize, definitions, starSize, starCount, density);
 			}
 
-			static void EnsureSizeLimit(Definition[] definitions, double starSize)
+			static void EnsureSizeLimit(Definition[] definitions, double starSize, double density)
 			{
 				for (int n = 0; n < definitions.Length; n++)
 				{
@@ -944,7 +948,7 @@ namespace Microsoft.Maui.Layouts
 					}
 
 					var maxSize = starSize * def.GridLength.Value;
-					def.Size = Math.Min(maxSize, def.Size);
+					def.Size = new DensityValue(Math.Min(maxSize, def.Size.Dp), density);
 					def.MinimumSize = Math.Min(maxSize, def.MinimumSize);
 				}
 			}
@@ -965,7 +969,7 @@ namespace Microsoft.Maui.Layouts
 				return (targetSize - sum) / starCount;
 			}
 
-			static void ExpandStars(double targetSize, double currentSize, Definition[] defs, double targetStarSize, double starCount)
+			static void ExpandStars(double targetSize, double currentSize, Definition[] defs, double targetStarSize, double starCount, double density)
 			{
 				Debug.Assert(starCount > 0, "Assume that the caller has already checked for the existence of star rows/columns before using this.");
 
@@ -1002,7 +1006,7 @@ namespace Microsoft.Maui.Layouts
 					{
 						if (definition.IsStar)
 						{
-							definition.Size = targetStarSize * definition.GridLength.Value;
+							definition.Size = new DensityValue(targetStarSize * definition.GridLength.Value, density);
 						}
 					}
 
@@ -1043,7 +1047,7 @@ namespace Microsoft.Maui.Layouts
 
 							var scale = (fullTargetSize - definition.MinimumSize) / totaldiff;
 							var portion = scale * availableSpace;
-							definition.Size = definition.MinimumSize + portion;
+							definition.Size = new DensityValue(definition.MinimumSize + portion, density);
 						}
 					}
 				}
@@ -1087,7 +1091,7 @@ namespace Microsoft.Maui.Layouts
 				double measureWidth = 0;
 				for (int column = cell.Column; column < cell.Column + cell.ColumnSpan; column++)
 				{
-					measureWidth += _columns[column].Size;
+					measureWidth += _columns[column].Size.Dp;
 
 					if (column > cell.Column)
 					{
@@ -1103,7 +1107,7 @@ namespace Microsoft.Maui.Layouts
 				double measureHeight = 0;
 				for (int row = cell.Row; row < cell.Row + cell.RowSpan; row++)
 				{
-					measureHeight += _rows[row].Size;
+					measureHeight += _rows[row].Size.Dp;
 
 					if (row > cell.Row)
 					{
@@ -1272,12 +1276,13 @@ namespace Microsoft.Maui.Layouts
 		class Definition
 		{
 			readonly GridLength _gridLength;
-			private double _size;
+			readonly double _density;
+			private DensityValue _size;
 
 			/// <summary>
 			/// The current size of this definition
 			/// </summary>
-			public double Size
+			public DensityValue Size
 			{
 				get => _size;
 				set
@@ -1285,7 +1290,7 @@ namespace Microsoft.Maui.Layouts
 					_size = value;
 					if (!IsStar)
 					{
-						MinimumSize = value;
+						MinimumSize = value.Dp;
 					}
 				}
 			}
@@ -1299,9 +1304,10 @@ namespace Microsoft.Maui.Layouts
 
 			public void Update(double size)
 			{
-				if (size > Size)
+				var newSize = new DensityValue(size, _density);
+				if (newSize.Dp > Size.Dp)
 				{
-					Size = size;
+					Size = newSize;
 				}
 			}
 
@@ -1311,14 +1317,20 @@ namespace Microsoft.Maui.Layouts
 
 			public GridLength GridLength => _gridLength;
 
-			public Definition(GridLength gridLength)
+			public Definition(GridLength gridLength, double density)
 			{
+				_density = density;
+				_gridLength = gridLength;
+				
 				if (gridLength.IsAbsolute)
 				{
-					Size = gridLength.Value;
+					Size = new DensityValue(gridLength.Value, density);
 				}
-
-				_gridLength = gridLength;
+				else
+				{
+					// For non-absolute definitions, initialize with zero size
+					Size = new DensityValue(0, density);
+				}
 			}
 		}
 	}
