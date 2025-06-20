@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				var logger = _webViewHandler.Logger;
 				
-				logger?.LogDebug("Intercepting request for {Url}.", url);
+				logger.LogDebug("Intercepting request for {Url}.", url);
 
 				// 1. First check if the app wants to modify or override the request.
 				if (WebRequestInterceptingWebView.TryInterceptResponseStream(_webViewHandler, webView, urlSchemeTask, url, logger))
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				//    handle the request as it would normally do. This means that it will try to load the resource
 				//    from the internet or from the local cache.
 
-				logger?.LogDebug("Request for {Url} was not handled.", url);
+				logger.LogDebug("Request for {Url} was not handled.", url);
 			}
 
 			private byte[] GetResponseBytes(string? url, out string contentType, out int statusCode)
