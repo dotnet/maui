@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.ManualTests;
 
