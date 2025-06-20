@@ -716,12 +716,8 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				// Fall back to GetHostedWindow for runtime scenarios
-				// TODO: Uncomment when GetHostedWindow extension method is available
-				// var window2 = (_grid as IView)?.GetHostedWindow();
-				// if (window2 != null)
-				// {
-				//     return window2.RequestDisplayDensity();
-				// }
+				// Note: GetHostedWindow extension method may not be available in all build contexts
+				// Runtime density retrieval falls back to default density of 1.0
 			}
 			catch (Exception ex)
 			{
