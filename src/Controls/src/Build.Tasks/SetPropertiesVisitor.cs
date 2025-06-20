@@ -532,7 +532,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					break;
 				}
 
-				if (n.XmlType.Name == nameof(DataTemplate) && n.XmlType.NamespaceUri == XamlParser.MauiUri)
+				if (n.XmlType.Name == nameof(DataTemplate) && (n.XmlType.NamespaceUri == XamlParser.MauiUri || n.XmlType.NamespaceUri == XamlParser.MauiGlobalUri))
 				{
 					xDataTypeIsInOuterScope = true;
 				}
