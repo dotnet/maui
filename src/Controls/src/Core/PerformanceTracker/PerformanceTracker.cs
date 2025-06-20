@@ -86,7 +86,7 @@ internal class PerformanceTracker
 		if (!PerformanceFeature.Guard())
 		{		
 			Application.Current?.FindMauiContext()?.CreateLogger<PerformanceTracker>()?.LogWarning(
-				"MAUI Performance Monitoring is disabled.");
+				".NET MAUI Performance Monitoring is disabled.");
 
 			return null;
 		}
