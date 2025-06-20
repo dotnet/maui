@@ -702,13 +702,22 @@ namespace Microsoft.Maui.Layouts
 			{
 				try
 				{
-#if !TIZEN
-					var window = (_grid as IView)?.GetHostedWindow();
-					if (window != null)
+					// Try to get window from IViewWithWindow interface first (for testing)
+					if (_grid is IViewWithWindow viewWithWindow)
 					{
-						return window.RequestDisplayDensity();
+						var window = viewWithWindow.Window;
+						if (window != null)
+						{
+							return window.RequestDisplayDensity();
+						}
 					}
-#endif
+
+					// Fall back to GetHostedWindow for runtime scenarios
+					var window2 = (_grid as IView)?.GetHostedWindow();
+					if (window2 != null)
+					{
+						return window2.RequestDisplayDensity();
+					}
 				}
 				catch (Exception ex)
 				{

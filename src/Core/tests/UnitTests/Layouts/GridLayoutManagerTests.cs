@@ -64,6 +64,41 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			return grid;
 		}
 
+		IGridLayout CreateGridLayoutWithDensity(double density, int rowSpacing = 0, int colSpacing = 0,
+			string rows = null, string columns = null, IList<IView> children = null)
+		{
+			// Create the base grid layout
+			var grid = CreateGridLayout(rowSpacing, colSpacing, rows, columns, children);
+
+			// Add IViewWithWindow interface support for density injection
+			var gridWithWindow = Substitute.For<IGridLayout, IViewWithWindow>();
+			
+			// Copy all properties from the original grid
+			gridWithWindow.Height.Returns(grid.Height);
+			gridWithWindow.Width.Returns(grid.Width);
+			gridWithWindow.MinimumHeight.Returns(grid.MinimumHeight);
+			gridWithWindow.MinimumWidth.Returns(grid.MinimumWidth);
+			gridWithWindow.MaximumHeight.Returns(grid.MaximumHeight);
+			gridWithWindow.MaximumWidth.Returns(grid.MaximumWidth);
+			gridWithWindow.RowSpacing.Returns(grid.RowSpacing);
+			gridWithWindow.ColumnSpacing.Returns(grid.ColumnSpacing);
+			gridWithWindow.RowDefinitions.Returns(grid.RowDefinitions);
+			gridWithWindow.ColumnDefinitions.Returns(grid.ColumnDefinitions);
+			gridWithWindow.Count.Returns(grid.Count);
+			gridWithWindow.GetEnumerator().Returns(grid.GetEnumerator());
+			gridWithWindow.GetRow(Arg.Any<IView>()).Returns(info => grid.GetRow((IView)info[0]));
+			gridWithWindow.GetRowSpan(Arg.Any<IView>()).Returns(info => grid.GetRowSpan((IView)info[0]));
+			gridWithWindow.GetColumn(Arg.Any<IView>()).Returns(info => grid.GetColumn((IView)info[0]));
+			gridWithWindow.GetColumnSpan(Arg.Any<IView>()).Returns(info => grid.GetColumnSpan((IView)info[0]));
+
+			// Setup mock window with specific density
+			var mockWindow = Substitute.For<IWindow>();
+			mockWindow.RequestDisplayDensity().Returns((float)density);
+			((IViewWithWindow)gridWithWindow).Window.Returns(mockWindow);
+
+			return gridWithWindow;
+		}
+
 		void SubRowDefs(IGridLayout grid, IEnumerable<IGridRowDefinition> rows = null)
 		{
 			if (rows == null)
@@ -156,6 +191,19 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		static Size MeasureAndArrangeFixed(IGridLayout grid, double widthConstraint, double heightConstraint, double left = 0, double top = 0)
 		{
+			var manager = new GridLayoutManager(grid);
+			var measuredSize = manager.Measure(widthConstraint, heightConstraint);
+
+			var arrangeSize = new Size(widthConstraint, heightConstraint);
+
+			manager.ArrangeChildren(new Rect(new Point(left, top), arrangeSize));
+
+			return measuredSize;
+		}
+
+		static Size MeasureAndArrangeFixedWithDensity(IGridLayout grid, double density, double widthConstraint, double heightConstraint, double left = 0, double top = 0)
+		{
+			// This method specifically uses the IViewWithWindow interface that GridLayoutManager now checks for
 			var manager = new GridLayoutManager(grid);
 			var measuredSize = manager.Measure(widthConstraint, heightConstraint);
 
@@ -3234,7 +3282,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			// Test case from PR description: 293.4dp at density 2.625 = 770.175px across 3 columns
 			// This test verifies the improved behavior when density information is available
-			var grid = CreateGridLayout(columns: "*, *, *");
+			var density = 2.625;
+			var grid = CreateGridLayoutWithDensity(density, columns: "*, *, *");
 
 			var view0 = CreateTestView(new Size(50, 50));
 			var view1 = CreateTestView(new Size(50, 50));
@@ -3247,7 +3296,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Arrange at 293.4dp width - this should trigger improved distribution
 			var widthConstraint = 293.4;
-			var density = 2.625; // This represents what we expect the density to be for this test
 			
 			// Set up capture for arrange rectangles
 			Rect rect0 = default, rect1 = default, rect2 = default;
@@ -3255,14 +3303,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			view1.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect1 = x.Arg<Rect>());
 			view2.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect2 = x.Arg<Rect>());
 			
-			MeasureAndArrangeFixed(grid, widthConstraint, 100);
-
-			// Note: Without actual density info from the window, the grid will use the fallback algorithm.
-			// This test validates that the layout works properly and can be validated for pixel precision
-			// when density information becomes available.
+			MeasureAndArrangeFixedWithDensity(grid, density, widthConstraint, 100);
 
 			// Verify that all views are arranged properly and don't overflow
-			// Convert Dp values to pixels for verification (simulating what would happen with actual density)
+			// Convert Dp values to pixels for verification with exact pixel alignment
 			var pixelX0 = rect0.X * density;
 			var pixelX1 = rect1.X * density;
 			var pixelX2 = rect2.X * density;
@@ -3279,16 +3323,13 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var totalWidth = rect0.Width + rect1.Width + rect2.Width;
 			Assert.True(totalWidth <= widthConstraint + 1, $"Total width {totalWidth} should not exceed constraint {widthConstraint}");
 
-			// When density-aware distribution is available, pixel values should be close to integers
-			// This validates that the approach would work with actual density information
-			var pixelWidthRoundingError0 = Math.Abs(pixelWidth0 - Math.Round(pixelWidth0));
-			var pixelWidthRoundingError1 = Math.Abs(pixelWidth1 - Math.Round(pixelWidth1));
-			var pixelWidthRoundingError2 = Math.Abs(pixelWidth2 - Math.Round(pixelWidth2));
-			
-			// At density 2.625, the rounding errors should be reasonable
-			Assert.True(pixelWidthRoundingError0 <= 0.6, $"Pixel width 0 rounding error {pixelWidthRoundingError0} should be reasonable");
-			Assert.True(pixelWidthRoundingError1 <= 0.6, $"Pixel width 1 rounding error {pixelWidthRoundingError1} should be reasonable");
-			Assert.True(pixelWidthRoundingError2 <= 0.6, $"Pixel width 2 rounding error {pixelWidthRoundingError2} should be reasonable");
+			// With density-aware distribution, pixel values should be exact integers
+			Assert.Equal(Math.Round(pixelWidth0), pixelWidth0);
+			Assert.Equal(Math.Round(pixelWidth1), pixelWidth1);
+			Assert.Equal(Math.Round(pixelWidth2), pixelWidth2);
+			Assert.Equal(Math.Round(pixelX0), pixelX0);
+			Assert.Equal(Math.Round(pixelX1), pixelX1);
+			Assert.Equal(Math.Round(pixelX2), pixelX2);
 		}
 
 		[Fact]
@@ -3296,7 +3337,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		public void DensityAwareStarsHandleScenario2_290DpAtDensity3Point0()
 		{
 			// Test case from PR description: 290dp across 3 columns at density 3.0 (perfect case)
-			var grid = CreateGridLayout(columns: "*, *, *");
+			var density = 3.0;
+			var grid = CreateGridLayoutWithDensity(density, columns: "*, *, *");
 
 			var view0 = CreateTestView(new Size(50, 50));
 			var view1 = CreateTestView(new Size(50, 50));
@@ -3309,7 +3351,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Arrange at 290dp width
 			var widthConstraint = 290.0;
-			var density = 3.0; // This represents what we expect the density to be for this test
 			
 			// Set up capture for arrange rectangles
 			Rect rect0 = default, rect1 = default, rect2 = default;
@@ -3317,7 +3358,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			view1.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect1 = x.Arg<Rect>());
 			view2.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect2 = x.Arg<Rect>());
 			
-			MeasureAndArrangeFixed(grid, widthConstraint, 100);
+			MeasureAndArrangeFixedWithDensity(grid, density, widthConstraint, 100);
 
 			// Convert Dp values to pixels for verification
 			var pixelWidth0 = rect0.Width * density;
@@ -3330,14 +3371,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.True(totalWidth >= widthConstraint - 1, $"Total width {totalWidth} should be close to constraint {widthConstraint}");
 
 			// In this perfect division case (290dp at 3.0 density = 870px, 870/3 = 290px each),
-			// the pixel values should be very close to integers when density-aware distribution is available
-			var pixelWidthRoundingError0 = Math.Abs(pixelWidth0 - Math.Round(pixelWidth0));
-			var pixelWidthRoundingError1 = Math.Abs(pixelWidth1 - Math.Round(pixelWidth1));
-			var pixelWidthRoundingError2 = Math.Abs(pixelWidth2 - Math.Round(pixelWidth2));
-			
-			Assert.True(pixelWidthRoundingError0 <= 0.6, $"Pixel width 0 rounding error {pixelWidthRoundingError0} should be reasonable");
-			Assert.True(pixelWidthRoundingError1 <= 0.6, $"Pixel width 1 rounding error {pixelWidthRoundingError1} should be reasonable");
-			Assert.True(pixelWidthRoundingError2 <= 0.6, $"Pixel width 2 rounding error {pixelWidthRoundingError2} should be reasonable");
+			// the pixel values should be exact integers with density-aware distribution
+			Assert.Equal(Math.Round(pixelWidth0), pixelWidth0);
+			Assert.Equal(Math.Round(pixelWidth1), pixelWidth1);
+			Assert.Equal(Math.Round(pixelWidth2), pixelWidth2);
 		}
 
 		[Fact]
@@ -3345,7 +3382,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		public void DensityAwareStarsHandleScenario3_300DpAtDensity2Point625()
 		{
 			// Test case from PR description: 300dp across 4 columns at density 2.625
-			var grid = CreateGridLayout(columns: "*, *, *, *");
+			var density = 2.625;
+			var grid = CreateGridLayoutWithDensity(density, columns: "*, *, *, *");
 
 			var view0 = CreateTestView(new Size(30, 50));
 			var view1 = CreateTestView(new Size(30, 50));
@@ -3360,7 +3398,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Arrange at 300dp width
 			var widthConstraint = 300.0;
-			var density = 2.625; // This represents what we expect the density to be for this test
 			
 			// Set up capture for arrange rectangles
 			Rect rect0 = default, rect1 = default, rect2 = default, rect3 = default;
@@ -3369,7 +3406,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			view2.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect2 = x.Arg<Rect>());
 			view3.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect3 = x.Arg<Rect>());
 			
-			MeasureAndArrangeFixed(grid, widthConstraint, 100);
+			MeasureAndArrangeFixedWithDensity(grid, density, widthConstraint, 100);
 
 			// Verify that 4 columns are distributed properly
 			// Verify proper sequential layout
@@ -3388,16 +3425,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var pixelWidth2 = rect2.Width * density;
 			var pixelWidth3 = rect3.Width * density;
 
-			// At density 2.625, when density-aware distribution is available, pixel values should be close to integers
-			var pixelWidthRoundingError0 = Math.Abs(pixelWidth0 - Math.Round(pixelWidth0));
-			var pixelWidthRoundingError1 = Math.Abs(pixelWidth1 - Math.Round(pixelWidth1));
-			var pixelWidthRoundingError2 = Math.Abs(pixelWidth2 - Math.Round(pixelWidth2));
-			var pixelWidthRoundingError3 = Math.Abs(pixelWidth3 - Math.Round(pixelWidth3));
-			
-			Assert.True(pixelWidthRoundingError0 <= 0.6, $"Pixel width 0 rounding error {pixelWidthRoundingError0} should be reasonable");
-			Assert.True(pixelWidthRoundingError1 <= 0.6, $"Pixel width 1 rounding error {pixelWidthRoundingError1} should be reasonable");
-			Assert.True(pixelWidthRoundingError2 <= 0.6, $"Pixel width 2 rounding error {pixelWidthRoundingError2} should be reasonable");
-			Assert.True(pixelWidthRoundingError3 <= 0.6, $"Pixel width 3 rounding error {pixelWidthRoundingError3} should be reasonable");
+			// With density-aware distribution, pixel values should be exact integers
+			Assert.Equal(Math.Round(pixelWidth0), pixelWidth0);
+			Assert.Equal(Math.Round(pixelWidth1), pixelWidth1);
+			Assert.Equal(Math.Round(pixelWidth2), pixelWidth2);
+			Assert.Equal(Math.Round(pixelWidth3), pixelWidth3);
 		}
 
 		[Fact]
@@ -3405,7 +3437,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		public void DensityAwareStarsHandleWeightedSizing()
 		{
 			// Test weighted star sizing: 2*, 1*, 2* 
-			var grid = CreateGridLayout(columns: "2*, *, 2*");
+			var density = 2.0;
+			var grid = CreateGridLayoutWithDensity(density, columns: "2*, *, 2*");
 
 			var view0 = CreateTestView(new Size(40, 50));
 			var view1 = CreateTestView(new Size(20, 50));
@@ -3417,7 +3450,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view2, col: 2);
 
 			var widthConstraint = 250.0;
-			var density = 2.0; // This represents what we expect the density to be for this test
 			
 			// Set up capture for arrange rectangles
 			Rect rect0 = default, rect1 = default, rect2 = default;
@@ -3425,7 +3457,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			view1.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect1 = x.Arg<Rect>());
 			view2.When(x => x.Arrange(Arg.Any<Rect>())).Do(x => rect2 = x.Arg<Rect>());
 			
-			MeasureAndArrangeFixed(grid, widthConstraint, 100);
+			MeasureAndArrangeFixedWithDensity(grid, density, widthConstraint, 100);
 
 			// Verify weighted distribution: first and third columns should be larger than middle
 			// First and third columns (2*) should be approximately twice the width of the middle column (1*)
@@ -3444,14 +3476,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var pixelWidth1 = rect1.Width * density;
 			var pixelWidth2 = rect2.Width * density;
 
-			// When density-aware distribution is available, pixel values should be close to integers
-			var pixelWidthRoundingError0 = Math.Abs(pixelWidth0 - Math.Round(pixelWidth0));
-			var pixelWidthRoundingError1 = Math.Abs(pixelWidth1 - Math.Round(pixelWidth1));
-			var pixelWidthRoundingError2 = Math.Abs(pixelWidth2 - Math.Round(pixelWidth2));
-			
-			Assert.True(pixelWidthRoundingError0 <= 0.6, $"Pixel width 0 rounding error {pixelWidthRoundingError0} should be reasonable");
-			Assert.True(pixelWidthRoundingError1 <= 0.6, $"Pixel width 1 rounding error {pixelWidthRoundingError1} should be reasonable");
-			Assert.True(pixelWidthRoundingError2 <= 0.6, $"Pixel width 2 rounding error {pixelWidthRoundingError2} should be reasonable");
+			// With density-aware distribution, pixel values should be exact integers
+			Assert.Equal(Math.Round(pixelWidth0), pixelWidth0);
+			Assert.Equal(Math.Round(pixelWidth1), pixelWidth1);
+			Assert.Equal(Math.Round(pixelWidth2), pixelWidth2);
 		}
 
 		[Fact]
@@ -3516,7 +3544,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Recreated from device test with density 2.75
 			// This test verifies that grid columns arrange without overlap at specific density
 			var columnDefs = string.Join(",", Enumerable.Repeat("*", columnCount));
-			var grid = CreateGridLayout(columns: columnDefs);
+			var density = 2.75;
+			var grid = CreateGridLayoutWithDensity(density, columns: columnDefs);
 
 			// Create views for each column (similar to the original test)
 			var views = new IView[columnCount];
@@ -3529,7 +3558,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Use width of 293 as specified in the original test
 			var widthConstraint = 293.0;
-			var density = 2.75; // This represents what we expect the density to be for this test
 
 			// Set up capture for all view rectangles  
 			var arrangedRects = new Rect[columnCount];
@@ -3539,7 +3567,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				views[i].When(x => x.Arrange(Arg.Any<Rect>())).Do(x => arrangedRects[index] = x.Arg<Rect>());
 			}
 
-			MeasureAndArrangeFixed(grid, widthConstraint, 50);
+			MeasureAndArrangeFixedWithDensity(grid, density, widthConstraint, 50);
 
 			// Verify sequential layout in Dp space first
 			for (int i = 1; i < columnCount; i++)
@@ -3548,24 +3576,22 @@ namespace Microsoft.Maui.UnitTests.Layouts
 					$"Column {i} should start where column {i - 1} ends");
 			}
 
-			// Convert to pixel values and verify they demonstrate the behavior we want to achieve
+			// Convert to pixel values and verify exact pixel alignment
 			for (int i = 0; i < columnCount; i++)
 			{
 				var pixelX = arrangedRects[i].X * density;
 				var pixelWidth = arrangedRects[i].Width * density;
 				var pixelRight = arrangedRects[i].Right * density;
 
-				// Note: Without actual density-aware distribution (since we can't mock the window properly),
-				// this test demonstrates that the DensityValue approach would improve precision.
-				// With actual density info, these pixel positions would be closer to integers.
-				var pixelXRoundingError = Math.Abs(pixelX - Math.Round(pixelX));
-				var pixelWidthRoundingError = Math.Abs(pixelWidth - Math.Round(pixelWidth));
-				var pixelRightRoundingError = Math.Abs(pixelRight - Math.Round(pixelRight));
+				// With density-aware distribution, pixel values should be integers or very close
+				var roundedPixelX = Math.Round(pixelX);
+				var roundedPixelWidth = Math.Round(pixelWidth);
+				var roundedPixelRight = Math.Round(pixelRight);
 
-				// Allow reasonable tolerance since we're simulating what would happen with density info
-				Assert.True(pixelXRoundingError <= 0.6, $"Column {i} pixel X rounding error {pixelXRoundingError} should be reasonable");
-				Assert.True(pixelWidthRoundingError <= 0.6, $"Column {i} pixel width rounding error {pixelWidthRoundingError} should be reasonable");
-				Assert.True(pixelRightRoundingError <= 0.6, $"Column {i} pixel right rounding error {pixelRightRoundingError} should be reasonable");
+				// Exact comparison for pixel values (should be integers)
+				Assert.Equal(roundedPixelX, pixelX);
+				Assert.Equal(roundedPixelWidth, pixelWidth);
+				Assert.Equal(roundedPixelRight, pixelRight);
 			}
 
 			// Verify sequential layout in pixel space - equivalent to pxFrame.Left == lastRight from original test
@@ -3575,9 +3601,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				var pixelLeft = Math.Round(arrangedRects[i].X * density);
 				var pixelRight = Math.Round(arrangedRects[i].Right * density);
 
-				// Allow for small rounding tolerance due to lack of actual density info
-				Assert.True(Math.Abs(lastPixelRight - pixelLeft) <= 1, 
-					$"Column {i} should start close to where column {i - 1} ends. Expected ~{lastPixelRight}px, got {pixelLeft}px");
+				// Exact comparison for pixel boundaries
+				Assert.Equal(lastPixelRight, pixelLeft);
 
 				lastPixelRight = pixelRight;
 			}
