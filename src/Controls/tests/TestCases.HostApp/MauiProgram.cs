@@ -21,7 +21,6 @@ namespace Maui.Controls.Sample
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 					fonts.AddFont("FontAwesome.ttf", "FA");
 					fonts.AddFont("ionicons.ttf", "Ion");
-					fonts.AddFont("MauiSampleFontIcon.ttf", "MauiSampleFontIcon");
 					fonts.AddFont("Montserrat-Bold.otf", "MontserratBold");
 				})
 				.RenderingPerformanceAddMappers()
