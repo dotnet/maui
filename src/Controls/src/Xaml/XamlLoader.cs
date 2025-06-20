@@ -61,15 +61,21 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			rootAssembly ??= view.GetType().Assembly;
 
-			var allowImplicitXmlns = rootAssembly.CustomAttributes.Any(a =>
-				   a.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute"
-				&& (a.ConstructorArguments.Count == 0 || a.ConstructorArguments[0].Value is bool b && b));
+			if (XamlParser.s_xmlnsPrefixes == null)
+				XamlParser.GatherXmlnsDefinitionAndXmlnsPrefixAttributes(rootAssembly);
+			if (!XamlParser.s_allowImplicitXmlns.TryGetValue(rootAssembly, out var allowImplicitXmlns))
+			{
+				allowImplicitXmlns = rootAssembly.CustomAttributes.Any(a =>
+				   		a.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute"
+					&& (a.ConstructorArguments.Count == 0 || a.ConstructorArguments[0].Value is bool b && b));
+				XamlParser.s_allowImplicitXmlns.Add(rootAssembly, allowImplicitXmlns);
+			}
 
 			var nsmgr = new XmlNamespaceManager(new NameTable());
 			if (allowImplicitXmlns)
 			{
 				nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
-				foreach (var xmlnsPrefix in XamlParser.GetXmlnsPrefixAttributes())
+				foreach (var xmlnsPrefix in XamlParser.s_xmlnsPrefixes)
 					nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
 			}
 			using (var textReader = new StringReader(xaml))

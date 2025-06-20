@@ -332,7 +332,8 @@ namespace Microsoft.Maui.Controls.Xaml
 		}
 
 		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
-
+		internal static IList<XmlnsPrefixAttribute> s_xmlnsPrefixes;
+		internal static Dictionary<Assembly, bool> s_allowImplicitXmlns = new();
 		static bool ValidateProtectedXmlns(string xmlNamespace, string assemblyName)
 		{
 			//maui, and x: xmlns are protected
@@ -348,11 +349,12 @@ namespace Microsoft.Maui.Controls.Xaml
 			return false;
 		}
 
-		static void GatherXmlnsDefinitionAttributes(Assembly currentAssembly)
+
+		internal static void GatherXmlnsDefinitionAndXmlnsPrefixAttributes(Assembly currentAssembly)
 		{
 			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 			s_xmlnsDefinitions = [];
-
+			s_xmlnsPrefixes = [];
 			foreach (var assembly in assemblies)
 			{
 				try
@@ -373,6 +375,11 @@ namespace Microsoft.Maui.Controls.Xaml
 						}
 						s_xmlnsDefinitions.Add(attribute);
 					}
+
+					foreach (XmlnsPrefixAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsPrefixAttribute), false))
+					{
+						s_xmlnsPrefixes.Add(attribute);
+					}
 				}
 				catch (Exception ex)
 				{
@@ -382,14 +389,6 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 			}
 		}
-
-		public static IList<XmlnsPrefixAttribute> GetXmlnsPrefixAttributes()
-		{
-			return [.. AppDomain.CurrentDomain.GetAssemblies()
-				.SelectMany(assembly => assembly.GetCustomAttributes(typeof(XmlnsPrefixAttribute), false)
-					.OfType<XmlnsPrefixAttribute>()).Distinct()];
-		}
-
 
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #if !NETSTANDARD
@@ -402,7 +401,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		retry:
 			if (s_xmlnsDefinitions == null)
-				GatherXmlnsDefinitionAttributes(currentAssembly);
+				GatherXmlnsDefinitionAndXmlnsPrefixAttributes(currentAssembly);
 
 			IEnumerable<Type> types = xmlType.GetTypeReferences(
 				s_xmlnsDefinitions,
