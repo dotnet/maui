@@ -664,7 +664,10 @@ namespace Microsoft.Maui.Layouts
 						if (definition.IsStar)
 						{
 							// Give the star row/column the appropriate portion of the space based on its weight
-							definition.Size = new DensityValue(starSize * definition.GridLength.Value, _density);
+							var sizeValue = starSize * definition.GridLength.Value;
+							
+							// Use density from the constructor
+							definition.Size = new DensityValue(sizeValue, _density);
 						}
 					}
 				}
@@ -674,6 +677,13 @@ namespace Microsoft.Maui.Layouts
 			{
 				// Use the density already obtained in the constructor
 				var density = _density;
+
+				// Only use density-aware distribution when density != 1.0
+				// This ensures backward compatibility when no scaling is needed
+				if (Math.Abs(density - 1.0) < 0.001)
+				{
+					return false; // Use original algorithm for density = 1.0
+				}
 
 				// Create portions array for star definitions
 				var starDefs = new List<Definition>();
