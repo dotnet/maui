@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace Maui.Controls.Sample;
@@ -7,7 +8,7 @@ namespace Maui.Controls.Sample;
 public class DatePickerViewModel : INotifyPropertyChanged
 {
     private double _characterSpacing = 0.0d;
-    private DateTime _date = DateTime.ParseExact("12/24/2025", "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+    private DateTime _date = DateTime.ParseExact("12/24/2025", "MM/dd/yyyy", System.Globalization.CultureInfo.CurrentCulture);
     private FlowDirection _flowDirection = FlowDirection.LeftToRight;
     private FontAttributes _fontAttributes = FontAttributes.None;
     private string _fontFamily = null;
@@ -19,6 +20,7 @@ public class DatePickerViewModel : INotifyPropertyChanged
     private DateTime _maxDate = DateTime.ParseExact("12/24/2027", "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture);
     private Shadow _shadow;
     private Color _textColor = Colors.Black;
+    private CultureInfo _culture;
 
     public double CharacterSpacing
     {
@@ -187,6 +189,24 @@ public class DatePickerViewModel : INotifyPropertyChanged
                 OnPropertyChanged();
             }
         }
+    }
+    
+    public CultureInfo Culture
+    {
+        get => _culture;
+        set
+        {
+            if (_culture != value)
+            {
+                _culture = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public DatePickerViewModel()
+    {
+        Culture = new CultureInfo("en-US");
     }
 
     public event PropertyChangedEventHandler PropertyChanged;

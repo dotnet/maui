@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Maui.Controls.Sample;
 
 public partial class DatePickerOptionsPage : ContentPage
@@ -20,7 +22,7 @@ public partial class DatePickerOptionsPage : ContentPage
 
 	private void SetDateButton_Clicked(object sender, EventArgs e)
 	{
-		if (DateTime.TryParseExact(Date.Text, "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsedDate))
+		if (DateTime.TryParseExact(Date.Text, "MM/dd/yyyy", System.Globalization.CultureInfo.CurrentCulture, System.Globalization.DateTimeStyles.None, out var parsedDate))
 		{
 			_viewModel.Date = parsedDate;
 		}
@@ -106,6 +108,23 @@ public partial class DatePickerOptionsPage : ContentPage
 		if (DateTime.TryParseExact(MinimumDate.Text, "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsedDate))
 		{
 			_viewModel.MinimumDate = parsedDate;
+		}
+	}
+	
+	private void OnCultureButtonClicked(object sender, EventArgs e)
+	{
+		if (sender is Button button)
+		{
+			string cultureName = button.Text;
+			try
+			{
+				CultureInfo culture = new CultureInfo(cultureName);
+				_viewModel.Culture = culture;
+			}
+			catch (Exception ex)
+			{
+				DisplayAlert("Culture Error", $"Failed to set culture {cultureName}: {ex.Message}", "OK");
+			}
 		}
 	}
 }
