@@ -270,8 +270,11 @@ namespace Microsoft.Maui.Layouts
 
 				for (int n = firstColumn; n < lastColumn; n++)
 				{
+					System.Console.WriteLine($"DEBUG: GetCellBoundsFor adding column {n} size {_columns[n].Size.Dp}dp ({_columns[n].Size.RawPx}px)");
 					width += _columns[n].Size.Dp;
 				}
+				
+				System.Console.WriteLine($"DEBUG: GetCellBoundsFor final width {width}dp");
 
 				for (int n = firstRow; n < lastRow; n++)
 				{
@@ -673,7 +676,6 @@ namespace Microsoft.Maui.Layouts
 			{
 				// Use the density already obtained in the constructor
 				var density = _density;
-				System.Console.WriteLine($"DEBUG: TryResolveStarsWithDensityAwareness called with availableSpace={availableSpace}, density={density}");
 
 				// Create portions array for star definitions
 				var starDefs = new List<Definition>();
@@ -689,27 +691,19 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				if (starDefs.Count == 0)
-				{
-					System.Console.WriteLine($"DEBUG: No star definitions, returning true");
 					return true; // No star definitions to resolve
-				}
 
 				// Use DensityValue to distribute pixels precisely
 				var totalPixels = availableSpace * density;
-				System.Console.WriteLine($"DEBUG: Total pixels to distribute: {totalPixels}");
 				var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions.ToArray());
-				System.Console.WriteLine($"DEBUG: Pixel allocations: [{string.Join(", ", pixelAllocations)}]");
 
 				// Assign DensityValue directly from pixels to avoid precision loss
 				for (int i = 0; i < starDefs.Count; i++)
 				{
 					// Create DensityValue directly from pixels - this is the source of truth
-					var oldSize = starDefs[i].Size;
 					starDefs[i].Size = DensityValue.FromPixels(pixelAllocations[i], density);
-					System.Console.WriteLine($"DEBUG: Set starDef[{i}] size from {oldSize.Dp}dp to {starDefs[i].Size.Dp}dp ({pixelAllocations[i]}px)");
 				}
 
-				System.Console.WriteLine($"DEBUG: TryResolveStarsWithDensityAwareness returning true");
 				return true;
 			}
 
@@ -723,16 +717,13 @@ namespace Microsoft.Maui.Layouts
 					var window = viewWithWindow.Window;
 					if (window != null)
 					{
-						var density = window.RequestDisplayDensity();
-						System.Console.WriteLine($"DEBUG: Retrieved density {density} from IViewWithWindow");
-						return density;
+						return window.RequestDisplayDensity();
 					}
 				}
 
 				// Fall back to GetHostedWindow for runtime scenarios
 				// Note: GetHostedWindow extension method may not be available in all build contexts
 				// Runtime density retrieval falls back to default density of 1.0
-				System.Console.WriteLine($"DEBUG: No window available, using default density 1.0");
 			}
 			catch (Exception ex)
 			{
@@ -741,7 +732,6 @@ namespace Microsoft.Maui.Layouts
 #pragma warning disable CA1848 // For improved performance, use the LoggerMessage delegates
 				logger?.LogWarning(ex, "Failed to get display density from window, using default density of 1.0");
 #pragma warning restore CA1848
-				System.Console.WriteLine($"DEBUG: Exception getting density: {ex.Message}, using default density 1.0");
 			}
 			return 1; // Default density when window is not available
 		}
@@ -1103,6 +1093,7 @@ namespace Microsoft.Maui.Layouts
 				var measureWidth = DensityValue.FromPixels(0, _density);
 				for (int column = cell.Column; column < cell.Column + cell.ColumnSpan; column++)
 				{
+					System.Console.WriteLine($"DEBUG: UpdateKnownMeasureWidth: Adding column {column} size {_columns[column].Size.Dp}dp ({_columns[column].Size.RawPx}px)");
 					measureWidth = measureWidth + _columns[column].Size;
 
 					if (column > cell.Column)
@@ -1111,6 +1102,7 @@ namespace Microsoft.Maui.Layouts
 					}
 				}
 
+				System.Console.WriteLine($"DEBUG: UpdateKnownMeasureWidth: Final cell width {measureWidth.Dp}dp ({measureWidth.RawPx}px)");
 				cell.MeasureWidth = measureWidth;
 			}
 
