@@ -1,5 +1,6 @@
 #if IOS //This sample is specific to the iOS platform and handles text input behavior by accessing the native UITextView.
 using System.Drawing;
+using System.Globalization;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using OpenQA.Selenium.Appium.Interactions;
@@ -41,7 +42,7 @@ public class Issue19214_2 : _IssuesUITest
 
         var cursorLabel = app.WaitForElement("CursorHeightTracker").GetText();
 
-        var cursorHeight1 = Convert.ToDouble(cursorLabel);
+		var cursorHeight1 = double.Parse(cursorLabel!, CultureInfo.InvariantCulture);
         KeyboardScrolling.HideKeyboard(app, app.Driver, true);
 
         // Click a low spot on the editor
@@ -51,12 +52,12 @@ public class Issue19214_2 : _IssuesUITest
         app.EnterText("IssueEditor", "A");
 
         cursorLabel = app.WaitForElement("CursorHeightTracker").GetText();
-        var cursorHeight2 = Convert.ToDouble(cursorLabel);
+		var cursorHeight2 = double.Parse(cursorLabel!, CultureInfo.InvariantCulture);
 
-        app.EnterText("IssueEditor", sb.ToString());
+        app.EnterText("ssueEditor", sb.ToString());
 
         cursorLabel = app.WaitForElement("CursorHeightTracker").GetText();
-        var cursorHeight3 = Convert.ToDouble(cursorLabel);
+		var cursorHeight3 = double.Parse(cursorLabel!, CultureInfo.InvariantCulture);
 
         if (keyboardLocation is Point keyboardPoint)
         {

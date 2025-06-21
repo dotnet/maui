@@ -198,6 +198,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void ViewWillLayoutSubviews()
 		{
+			if (KeyboardAutoManagerScroll.IsKeyboardAutoScrollAnimating)
+			{
+				base.ViewWillLayoutSubviews();
+				return;
+			}
+			
 			ConstrainItemsToBounds();
 
 			var mauiCollectionView = CollectionView as MauiCollectionView;
@@ -214,7 +220,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				// We don't want to mess up with ContentOffset while refreshing, given that's also gonna cause
 				// a change in the content's offset Y.
-				if (!IsRefreshing())
+				if (!IsRefreshing() && !KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling)
 				{
 					MeasureSupplementaryViews();
 					LayoutSupplementaryViews();
@@ -256,7 +262,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				var layoutInvalidationContext = new UICollectionViewFlowLayoutInvalidationContext();
 				layoutInvalidationContext.InvalidateItems(invalidatedPaths.ToArray());
-				CollectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
+				CollectionView.CollectionViewLayout.InvalidateLayout();
 			}
 		}
 
