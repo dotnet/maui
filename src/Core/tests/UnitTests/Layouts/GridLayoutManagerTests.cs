@@ -3580,6 +3580,14 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			}
 			SubstituteChildren(grid, views);
 
+			// Set up capture for all view rectangles  
+			var arrangedRects = new Rect[columnCount];
+			for (int i = 0; i < columnCount; i++)
+			{
+				int index = i; // Capture loop variable for closure
+				views[i].When(x => x.Arrange(Arg.Any<Rect>())).Do(x => arrangedRects[index] = x.Arg<Rect>());
+			}
+
 			// Use width of 293 as specified in the original test
 			var widthConstraint = 293.0;
 
@@ -3590,14 +3598,15 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Verify that each column has the expected pixel width
 			for (int i = 0; i < columnCount; i++)
 			{
-				var actualWidth = (int)views[i].Frame.Width;
-				Assert.Equal(expectedPixelWidths[i], actualWidth);
+				// Convert DP width to pixels for comparison
+				var actualWidthPixels = (int)Math.Round(arrangedRects[i].Width * density);
+				Assert.Equal(expectedPixelWidths[i], actualWidthPixels);
 
 				// Also verify no overlap between adjacent columns
 				if (i > 0)
 				{
-					var prevRight = views[i - 1].Frame.Right;
-					var currentLeft = views[i].Frame.Left;
+					var prevRight = arrangedRects[i - 1].Right;
+					var currentLeft = arrangedRects[i].Left;
 					Assert.True(prevRight <= currentLeft + 0.1, $"Column {i - 1} overlaps with column {i}");
 				}
 			}

@@ -962,6 +962,10 @@ namespace Microsoft.Maui.Layouts
 
 			static bool TryExpandStarDefinitionsWithDensityAwareness(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount, double density)
 			{
+				// Skip density-aware distribution when density is 1.0 to preserve fractional precision
+				if (Math.Abs(density - 1.0) < 0.001)
+					return false;
+				
 				// Calculate available space for star columns/rows
 				var availableSpace = targetSize;
 				
