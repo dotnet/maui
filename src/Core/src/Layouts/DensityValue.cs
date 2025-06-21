@@ -26,10 +26,7 @@ namespace Microsoft.Maui.Layouts
 		/// </summary>
 		public double Dp => RawPx / Density;
 
-		/// <summary>
-		/// Gets the rounded pixel value suitable for display.
-		/// </summary>
-		public int RoundedPx => (int)Math.Round(RawPx);
+
 
 		/// <summary>
 		/// Initializes a new instance of the DensityValue struct.
@@ -144,24 +141,26 @@ namespace Microsoft.Maui.Layouts
 				return new int[portions.Length]; // All zeros
 
 			var result = new int[portions.Length];
-			var targetTotal = (int)Math.Round(totalPixels);
+			var targetTotal = (int)Math.Floor(totalPixels);
 			var assignedTotal = 0;
 
 			// Calculate ideal pixels per portion
 			var idealPixelsPerUnit = totalPixels / totalPortions;
 
-			// Assign pixels to all but the last element using floor
-			for (int i = 0; i < portions.Length - 1; i++)
+			// Assign pixels to all elements using floor
+			for (int i = 0; i < portions.Length; i++)
 			{
 				var idealPixels = idealPixelsPerUnit * portions[i];
 				result[i] = (int)Math.Floor(idealPixels);
 				assignedTotal += result[i];
 			}
 
-			// Assign remaining pixels to the last element (this accumulates rounding error)
-			if (portions.Length > 0)
+			// Distribute remaining pixels from right to left
+			var remainingPixels = targetTotal - assignedTotal;
+			for (int i = portions.Length - 1; i >= 0 && remainingPixels > 0; i--)
 			{
-				result[portions.Length - 1] = targetTotal - assignedTotal;
+				result[i]++;
+				remainingPixels--;
 			}
 
 			return result;

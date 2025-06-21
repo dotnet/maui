@@ -1,7 +1,6 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Blazor Hybrid and Web App",
-  "_name.comment": "{Locked='.NET MAUI Blazor Hybrid', Locked='Web'}",
   "description": "A multi-project app for creating a .NET MAUI Blazor Hybrid application with a Blazor Web project with a shared user interface.",
   "postActions/openInEditor/description": "Opens Shared Pages/Home.razor in the editor.",
   "symbols/applicationId/description": "Overrides the $(ApplicationId) in the project",
