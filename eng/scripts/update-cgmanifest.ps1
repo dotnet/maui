@@ -134,11 +134,36 @@ foreach ($package in $packageVersionMappings.GetEnumerator()) {
     }
 }
 
-# Update the manifest
-$cgManifest.registrations = $newRegistrations
+# Sort registrations by package name for consistent ordering
+$sortedRegistrations = $newRegistrations | Sort-Object { $_.component.nuget.name }
 
-# Save the updated manifest
-$cgManifest | ConvertTo-Json -Depth 10 | Out-File $cgManifestPath -Encoding utf8
+# Update the manifest
+$cgManifest.registrations = $sortedRegistrations
+
+# Save the updated manifest with consistent formatting
+# Create a new ordered manifest to ensure consistent field ordering
+$orderedManifest = [ordered]@{
+    "`$schema" = $cgManifest.'$schema'
+    "version" = $cgManifest.version
+    "registrations" = @()
+}
+
+# Create consistent registrations with ordered fields
+foreach ($reg in $sortedRegistrations) {
+    $orderedReg = [ordered]@{
+        "component" = [ordered]@{
+            "type" = $reg.component.type
+            "nuget" = [ordered]@{
+                "name" = $reg.component.nuget.name
+                "version" = $reg.component.nuget.version
+            }
+        }
+    }
+    $orderedManifest.registrations += $orderedReg
+}
+
+$orderedManifest | ConvertTo-Json -Depth 10 | Out-File $cgManifestPath -Encoding utf8
+
 Write-Host "Updated cgmanifest.json saved to: $cgManifestPath"
 
 # Print summary
