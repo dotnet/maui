@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -81,7 +82,8 @@ namespace Microsoft.Maui.DeviceTests
 
 						// This fails sometimes due to the way we arrange the content based on coordinates instead of size
 						// Assert.Equal(expectedWidth, pxFrame.Width);
-						Assert.True(pxFrame.Left == lastRight);
+						
+						Assert.True(pxFrame.Left == lastRight, $"ColumnCount: {columnCount} Expected Left {lastRight} but got {pxFrame.Left} for child {i} Device Info: {DeviceDisplay.Current.MainDisplayInfo}");
 
 						lastRight = pxFrame.Right;
 					}
