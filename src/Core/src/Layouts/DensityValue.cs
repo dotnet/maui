@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Layouts
 				return new int[portions.Length]; // All zeros
 
 			var result = new int[portions.Length];
-			var targetTotal = (int)Math.Round(totalPixels);
+			var targetTotal = (int)Math.Floor(totalPixels);
 			var assignedTotal = 0;
 
 			// Calculate ideal pixels per portion
@@ -163,11 +163,12 @@ namespace Microsoft.Maui.Layouts
 				assignedTotal += result[i];
 			}
 
-			// Distribute remaining pixels to the last element only (to match expected test results)
+			// Distribute remaining pixels from right to left (as requested in review)
 			var remainingPixels = targetTotal - assignedTotal;
-			if (remainingPixels > 0 && portions.Length > 0)
+			for (int i = portions.Length - 1; i >= 0 && remainingPixels > 0; i--)
 			{
-				result[portions.Length - 1] += remainingPixels;
+				result[i]++;
+				remainingPixels--;
 			}
 
 			return result;
