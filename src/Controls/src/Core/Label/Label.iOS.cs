@@ -36,19 +36,17 @@ namespace Microsoft.Maui.Controls
 			handler.PlatformView?.UpdateMaxLines(label);
 		}
 
-		static void MapFormatting(ILabelHandler handler, Label label)
+		internal static void MapFormatting(ILabelHandler handler, Label label)
 		{
-			// we need to re-apply color and font for HTML labels
-			if (!label.HasFormattedTextSpans && label.TextType == TextType.Html)
+			if (IsPlainText(label))
+			{
+				LabelHandler.MapFormatting(handler, label);
+			}
+			else if (!label.HasFormattedTextSpans && label.TextType == TextType.Html) // we need to re-apply color and font for HTML labels
 			{
 				handler.UpdateValue(nameof(ILabel.TextColor));
 				handler.UpdateValue(nameof(ILabel.Font));
 			}
-
-			if (!IsPlainText(label))
-				return;
-
-			LabelHandler.MapFormatting(handler, label);
 		}
 
 		void RecalculateSpanPositions(Size size)

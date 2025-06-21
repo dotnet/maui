@@ -44,11 +44,7 @@ public class Issue2894 : _IssuesUITest
 
 	void PerformGestureAction(float x, float y)
 	{
-#if MACCATALYST // TapCoordinates is not working on MacCatalyst Issue: https://github.com/dotnet/maui/issues/19754
-		App.ClickCoordinates(x, y);
-#else
 		App.TapCoordinates(x, y);
-#endif
 	}
 
 	void PerformGestureActionForFirstSpan(Rectangle target)

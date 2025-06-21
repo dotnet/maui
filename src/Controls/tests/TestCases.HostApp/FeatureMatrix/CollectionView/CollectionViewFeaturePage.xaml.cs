@@ -2,6 +2,7 @@ using System;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample;
+
 public class CollectionViewFeaturePage : NavigationPage
 {
 	public CollectionViewFeaturePage()
@@ -46,4 +47,9 @@ public partial class CollectionViewFeatureMainPage : ContentPage
 		await Navigation.PushAsync(new CollectionViewSelectionPage());
 	}
 
+
+	private async void OnItemsSourceButtonClicked(object sender, EventArgs e)
+	{
+		await Navigation.PushAsync(new CollectionViewItemsSourcePage());
+	}
 }
