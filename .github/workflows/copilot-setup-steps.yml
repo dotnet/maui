@@ -35,3 +35,8 @@ jobs:
           dotnet --version
           dotnet --info
           dotnet workload --info
+
+      - name: Reset tracked files to clean workspace
+        shell: bash
+        run: |
+          git reset --hard HEAD

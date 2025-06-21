@@ -143,6 +143,14 @@ For compatibility with specific branches:
 - **Never** check in changes to `templatestrings.json` files
 - These files are automatically generated and should not be modified manually
 
+### File Reset Guidelines for AI Agents
+Since coding agents function as both CI and pair programmers, they need to handle CI-generated files appropriately:
+
+- **Always reset changes to `cgmanifest.json` files** - These are generated during CI builds and should not be committed by coding agents
+- **Always reset changes to `templatestrings.json` files** - These localization files are auto-generated and should not be committed by coding agents
+- Use `git checkout -- <file>` or `git restore <file>` to reset individual files
+- Use `git reset --hard HEAD` to reset all tracked files while preserving untracked build artifacts
+
 ### Branching
 - `main` - For bug fixes without API changes
 - `net10.0` - For new features and API changes
