@@ -658,6 +658,8 @@ namespace Microsoft.Maui.Layouts
 					// If we have a finite space, we can divvy it up among the full star weight
 					starSize = availableSpace / starCount;
 					
+					System.Diagnostics.Debug.WriteLine($"ResolveStars fallback: availableSpace={availableSpace}, starCount={starCount}, starSize={starSize}");
+					
 					// Apply the fallback calculation to star definitions
 					foreach (var definition in defs)
 					{

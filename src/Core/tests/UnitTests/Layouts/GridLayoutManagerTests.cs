@@ -3583,13 +3583,78 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Use width of 293 as specified in the original test
 			var widthConstraint = 293.0;
 
-			// Expected pixel values are now passed as test parameter
-			// var totalPixels = Math.Floor(widthConstraint * density);
-			// var portions = Enumerable.Repeat(1.0, columnCount).ToArray();
-			// var expectedPixelWidths = DensityValue.DistributePixels(totalPixels, density, portions);
+			var manager = new GridLayoutManager(grid);
+			var measureResult = manager.Measure(widthConstraint, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rect(0, 0, widthConstraint, measureResult.Height));
 
-			// Set up capture for all view rectangles  
-			var arrangedRects = new Rect[columnCount];
+			// Verify that each column has the expected pixel width
+			for (int i = 0; i < columnCount; i++)
+			{
+				var actualWidth = (int)views[i].Frame.Width;
+				Assert.Equal(expectedPixelWidths[i], actualWidth);
+
+				// Also verify no overlap between adjacent columns
+				if (i > 0)
+				{
+					var prevRight = views[i - 1].Frame.Right;
+					var currentLeft = views[i].Frame.Left;
+					Assert.True(prevRight <= currentLeft + 0.1, $"Column {i - 1} overlaps with column {i}");
+				}
+			}
+		}
+
+		[Theory]
+		[InlineData(1, new int[] {770})]
+		[InlineData(2, new int[] {385, 385})]
+		[InlineData(3, new int[] {256, 257, 257})]
+		[InlineData(4, new int[] {192, 192, 193, 193})]
+		[InlineData(5, new int[] {154, 154, 154, 154, 154})]
+		[InlineData(6, new int[] {128, 128, 128, 128, 129, 129})]
+		[InlineData(7, new int[] {110, 110, 110, 110, 110, 110, 110})]
+		[InlineData(8, new int[] {96, 96, 96, 96, 96, 96, 97, 97})]
+		[InlineData(9, new int[] {85, 85, 85, 86, 86, 86, 86, 86, 86})]
+		[InlineData(10, new int[] {77, 77, 77, 77, 77, 77, 77, 77, 77, 77})]
+		[InlineData(11, new int[] {70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70})]
+		[Category(GridStarSizing)]
+		public void ArrangesContentWithoutOverlapAndWithProperSizeAtDensity2625(int columnCount, int[] expectedPixelWidths)
+		{
+			// Test at density 2.625 as requested
+			// This test verifies that grid columns arrange without overlap at density 2.625
+			var columnDefs = string.Join(",", Enumerable.Repeat("*", columnCount));
+			var density = 2.625;
+			var grid = CreateGridLayoutWithDensity(density, columns: columnDefs);
+
+			// Create views for each column (similar to the original test)
+			var views = new IView[columnCount];
+			for (int i = 0; i < columnCount; i++)
+			{
+				views[i] = CreateTestView(new Size(20, 50)); // Similar to ContentView with HeightRequest 50
+				SetLocation(grid, views[i], col: i);
+			}
+			SubstituteChildren(grid, views);
+
+			// Use width of 293 as specified in the original test
+			var widthConstraint = 293.0;
+
+			var manager = new GridLayoutManager(grid);
+			var measureResult = manager.Measure(widthConstraint, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rect(0, 0, widthConstraint, measureResult.Height));
+
+			// Verify that each column has the expected pixel width
+			for (int i = 0; i < columnCount; i++)
+			{
+				var actualWidth = (int)views[i].Frame.Width;
+				Assert.Equal(expectedPixelWidths[i], actualWidth);
+
+				// Also verify no overlap between adjacent columns
+				if (i > 0)
+				{
+					var prevRight = views[i - 1].Frame.Right;
+					var currentLeft = views[i].Frame.Left;
+					Assert.True(prevRight <= currentLeft + 0.1, $"Column {i - 1} overlaps with column {i}");
+				}
+			}
+		}
 			for (int i = 0; i < columnCount; i++)
 			{
 				int index = i; // Capture loop variable for closure

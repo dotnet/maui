@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Layouts
 		/// <summary>
 		/// Gets the value in density-independent pixels (dp).
 		/// </summary>
-		public double Dp => RawPx / Density;
+		public double Dp => Math.Abs(Density - 1.0) < Epsilon ? RawPx : RawPx / Density;
 
 
 
@@ -35,7 +35,15 @@ namespace Microsoft.Maui.Layouts
 		/// <param name="density">The display density factor.</param>
 		public DensityValue(double dp, double density)
 		{
-			RawPx = dp * density;
+			// When density is 1.0, store the dp value directly as RawPx to avoid any precision loss
+			if (Math.Abs(density - 1.0) < Epsilon)
+			{
+				RawPx = dp;
+			}
+			else
+			{
+				RawPx = dp * density;
+			}
 			Density = density;
 		}
 
