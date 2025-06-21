@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal class ModalFragment : DialogFragment
+		internal class ModalFragment : DialogFragment, IDialogInterfaceOnKeyListener
 		{
 			Page _modal;
 			IMauiContext _mauiWindowContext;
@@ -228,6 +228,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (dialog is null || dialog.Window is null)
 					throw new InvalidOperationException($"{dialog} or {dialog?.Window} is null, and it's invalid");
 
+				dialog.SetOnKeyListener(this);
 				dialog.Window.SetBackgroundDrawable(TransparentColorDrawable);
 
 				var mainActivityWindow = Context?.GetActivity()?.Window;
@@ -359,6 +360,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_modal.PropertyChanged -= OnModalPagePropertyChanged;
 				_modal.HandlerChanged -= OnPageHandlerChanged;
+				Dialog?.SetOnKeyListener(null);
 
 				if (_modal.Toolbar?.Handler is not null)
 				{
@@ -390,6 +392,22 @@ namespace Microsoft.Maui.Controls.Platform
 				AnimationEnded?.Invoke(this, EventArgs.Empty);
 			}
 
+			public bool OnKey(IDialogInterface? dialog, [GeneratedEnum] Keycode keyCode, KeyEvent? e)
+			{
+				var mainActivity = Context?.GetActivity();
+				if (e is null || mainActivity is null)
+				{
+					return false;
+				}
+
+				return e.Action switch
+				{
+					KeyEventActions.Down => mainActivity.OnKeyDown(keyCode, e),
+					KeyEventActions.Up => mainActivity.OnKeyUp(keyCode, e),
+					KeyEventActions.Multiple => mainActivity.OnKeyMultiple(keyCode, e.RepeatCount, e),
+					_ => false,
+				};
+			}
 
 			sealed class CustomComponentDialog : ComponentDialog
 			{
