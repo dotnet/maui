@@ -384,7 +384,3 @@ snapshots-diff/
 temp
 .packages
 /src/Templates/.tempTemplateOutput
-
-# Auto-generated files that should not be committed
-cgmanifest.json
-templatestrings.json
