@@ -250,12 +250,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					carouselPosition = 0;
 				else if (removingLastElement)
 					carouselPosition = Carousel.Position - 1;
-
-				if (Carousel.Loop)
-				{
-					UpdateAdapter();
-					ScrollToPosition(carouselPosition);
-				}
 			}
 			//If we are adding a new item make sure to maintain the CurrentItemPosition
 			else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add
@@ -302,6 +296,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 							SetCurrentItem(carouselPosition);
 							UpdatePosition(carouselPosition);
 						}
+
+						UpdateAdapter();
+						ScrollToPosition(carouselPosition);
 
 						//If we are adding or removing the last item we need to update
 						//the inset that we give to items so they are centered
