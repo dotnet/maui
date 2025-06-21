@@ -96,6 +96,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void TestGetSolidColorBrushHashCode()
+		{
+			var solidColorBrush = new SolidColorBrush();
+			_ = solidColorBrush.GetHashCode();
+			// This test is just validating that calling `GetHashCode` doesn't throw
+		}
+
+		[Fact]
 		public void ImmutableBrushDoesntSetParent()
 		{
 			var grid = new Grid();
