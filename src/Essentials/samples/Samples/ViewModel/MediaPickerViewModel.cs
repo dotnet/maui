@@ -104,12 +104,6 @@ namespace Samples.ViewModel
 			set => SetProperty(ref photoList, value);
 		}
 
-		public ObservableCollection<ImageSource> PhotoList
-		{
-			get => photoList;
-			set => SetProperty(ref photoList, value);
-		}
-
 		public ImageSource PhotoSource
 		{
 			get => photoSource;
