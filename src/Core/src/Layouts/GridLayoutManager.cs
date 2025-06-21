@@ -90,6 +90,7 @@ namespace Microsoft.Maui.Layouts
 			{
 				_grid = grid;
 				_density = GetDisplayDensity();
+				Console.WriteLine($"GridLayoutManager initialized with density: {_density}");
 
 				_explicitGridHeight = _grid.Height;
 				_explicitGridWidth = _grid.Width;
@@ -303,7 +304,9 @@ namespace Microsoft.Maui.Layouts
 
 			double GridMinimumWidth()
 			{
-				return SumDefinitions(_columns, _columnSpacing, minimize: true) + _padding.HorizontalThickness;
+				var result = SumDefinitions(_columns, _columnSpacing, minimize: true) + _padding.HorizontalThickness;
+				Console.WriteLine($"GridMinimumWidth: {result} (SumDefinitions: {SumDefinitions(_columns, _columnSpacing, minimize: true)}, padding: {_padding.HorizontalThickness})");
+				return result;
 			}
 
 			public double MeasuredGridHeight()
@@ -346,7 +349,9 @@ namespace Microsoft.Maui.Layouts
 
 				for (int n = 0; n < definitions.Length; n++)
 				{
-					sum += minimize ? definitions[n].MinimumSize.Dp : definitions[n].Size.Dp;
+					var addedValue = minimize ? definitions[n].MinimumSize.Dp : definitions[n].Size.Dp;
+					sum += addedValue;
+					Console.WriteLine($"SumDefinitions: definitions[{n}] {(minimize ? "MinimumSize" : "Size")}: {addedValue}dp (IsStar: {definitions[n].IsStar})");
 
 					if (n > 0)
 					{
@@ -354,6 +359,7 @@ namespace Microsoft.Maui.Layouts
 					}
 				}
 
+				Console.WriteLine($"SumDefinitions: total sum = {sum}dp (minimize: {minimize})");
 				return sum;
 			}
 
@@ -677,15 +683,21 @@ namespace Microsoft.Maui.Layouts
 					var window = viewWithWindow.Window;
 					if (window != null)
 					{
-						return window.RequestDisplayDensity();
+						var density = window.RequestDisplayDensity();
+						Console.WriteLine($"GetDisplayDensity: Retrieved density {density} from IViewWithWindow");
+						return density;
 					}
 				}
+
+				Console.WriteLine("GetDisplayDensity: IViewWithWindow not available, trying GetHostedWindow");
 
 				// Fall back to GetHostedWindow for runtime scenarios
 				var hostedWindow = _grid.GetHostedWindow();
 				if (hostedWindow != null)
 				{
-					return hostedWindow.RequestDisplayDensity();
+					var density = hostedWindow.RequestDisplayDensity();
+					Console.WriteLine($"GetDisplayDensity: Retrieved density {density} from GetHostedWindow");
+					return density;
 				}
 			}
 			catch (Exception ex)
@@ -696,6 +708,7 @@ namespace Microsoft.Maui.Layouts
 				logger?.LogWarning(ex, "Failed to get display density from window, using default density of 1.0");
 #pragma warning restore CA1848
 			}
+			Console.WriteLine("GetDisplayDensity: Falling back to default density 1.0");
 			return 1; // Default density when window is not available
 		}
 
@@ -888,6 +901,8 @@ namespace Microsoft.Maui.Layouts
 
 			static void ExpandStarDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount, bool limitStarSizes, double density)
 			{
+				Console.WriteLine($"ExpandStarDefinitions: targetSize={targetSize}, currentSize={currentSize}, spacing={spacing}, starCount={starCount}");
+				
 				// Figure out what the star value should be at this size
 				var starSize = ComputeStarSizeForTarget(targetSize, definitions, spacing, starCount);
 
@@ -961,7 +976,12 @@ namespace Microsoft.Maui.Layouts
 			{
 				// Skip density-aware distribution when density is 1.0 to preserve fractional precision
 				if (Math.Abs(density - 1.0) < 0.001)
+				{
+					Console.WriteLine($"TryDensityAwareExpansion: Skipping density-aware for density={density}");
 					return false;
+				}
+
+				Console.WriteLine($"TryDensityAwareExpansion: Starting with availableSpace={availableSpace}, density={density}, starCount={starCount}");
 
 				// Create portions array for star definitions
 				var starDefs = new List<Definition>();
@@ -983,11 +1003,14 @@ namespace Microsoft.Maui.Layouts
 				var totalPixels = Math.Round(availableSpace * density);
 				var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions.ToArray());
 
+				Console.WriteLine($"TryDensityAwareExpansion: totalPixels={totalPixels}, pixelAllocations=[{string.Join(", ", pixelAllocations)}]");
+
 				// Assign DensityValue directly from pixels to avoid precision loss
 				for (int i = 0; i < starDefs.Count; i++)
 				{
 					// Create DensityValue directly from pixels - this is the source of truth
 					starDefs[i].Size = DensityValue.FromPixels(pixelAllocations[i], density);
+					Console.WriteLine($"TryDensityAwareExpansion: starDefs[{i}].Size set to {starDefs[i].Size.Dp}dp from {pixelAllocations[i]}px");
 				}
 
 				return true;
