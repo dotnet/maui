@@ -3604,21 +3604,21 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Theory]
-		[InlineData(1, new int[] {770})]
-		[InlineData(2, new int[] {385, 385})]
-		[InlineData(3, new int[] {256, 257, 257})]
-		[InlineData(4, new int[] {192, 192, 193, 193})]
-		[InlineData(5, new int[] {154, 154, 154, 154, 154})]
-		[InlineData(6, new int[] {128, 128, 128, 128, 129, 129})]
-		[InlineData(7, new int[] {110, 110, 110, 110, 110, 110, 110})]
-		[InlineData(8, new int[] {96, 96, 96, 96, 96, 96, 97, 97})]
-		[InlineData(9, new int[] {85, 85, 85, 86, 86, 86, 86, 86, 86})]
-		[InlineData(10, new int[] {77, 77, 77, 77, 77, 77, 77, 77, 77, 77})]
-		[InlineData(11, new int[] {70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70})]
+		[InlineData(1, new int[] {769})]
+		[InlineData(2, new int[] {384, 385})]
+		[InlineData(3, new int[] {256, 256, 257})]
+		[InlineData(4, new int[] {192, 192, 192, 193})]
+		[InlineData(5, new int[] {153, 154, 154, 154, 154})]
+		[InlineData(6, new int[] {128, 128, 128, 128, 128, 129})]
+		[InlineData(7, new int[] {109, 110, 110, 110, 110, 110, 110})]
+		[InlineData(8, new int[] {96, 96, 96, 96, 96, 96, 96, 97})]
+		[InlineData(9, new int[] {85, 85, 85, 85, 85, 86, 86, 86, 86})]
+		[InlineData(10, new int[] {76, 77, 77, 77, 77, 77, 77, 77, 77, 77})]
+		[InlineData(11, new int[] {69, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70})]
 		[Category(GridStarSizing)]
 		public void ArrangesContentWithoutOverlapAndWithProperSizeAtDensity2625(int columnCount, int[] expectedPixelWidths)
 		{
-			// Test at density 2.625 as requested
+			// Test at density 2.625 as requested in comment 2160074757
 			// This test verifies that grid columns arrange without overlap at density 2.625
 			var columnDefs = string.Join(",", Enumerable.Repeat("*", columnCount));
 			var density = 2.625;
@@ -3633,121 +3633,32 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			}
 			SubstituteChildren(grid, views);
 
-			// Use width of 293 as specified in the original test
-			var widthConstraint = 293.0;
-
-			var manager = new GridLayoutManager(grid);
-			var measureResult = manager.Measure(widthConstraint, double.PositiveInfinity);
-			manager.ArrangeChildren(new Rect(0, 0, widthConstraint, measureResult.Height));
-
-			// Verify that each column has the expected pixel width
-			for (int i = 0; i < columnCount; i++)
-			{
-				var actualWidth = (int)views[i].Frame.Width;
-				Assert.Equal(expectedPixelWidths[i], actualWidth);
-
-				// Also verify no overlap between adjacent columns
-				if (i > 0)
-				{
-					var prevRight = views[i - 1].Frame.Right;
-					var currentLeft = views[i].Frame.Left;
-					Assert.True(prevRight <= currentLeft + 0.1, $"Column {i - 1} overlaps with column {i}");
-				}
-			}
-		}
+			// Set up capture for all view rectangles  
+			var arrangedRects = new Rect[columnCount];
 			for (int i = 0; i < columnCount; i++)
 			{
 				int index = i; // Capture loop variable for closure
 				views[i].When(x => x.Arrange(Arg.Any<Rect>())).Do(x => arrangedRects[index] = x.Arg<Rect>());
 			}
 
+			// Use width of 293 as specified in the original test
+			var widthConstraint = 293.0;
+
 			MeasureAndArrangeFixedWithDensity(grid, density, widthConstraint, 50);
 
-			// Verify sequential layout in Dp space with tolerance
-			for (int i = 1; i < columnCount; i++)
-			{
-				Assert.True(arrangedRects[i].X >= arrangedRects[i - 1].Right - 1, 
-					$"Column {i} should start near where column {i - 1} ends");
-			}
-
-			// Focus on pixel precision - compare against exact expected pixel values
+			// Verify that each column has the expected pixel width
 			for (int i = 0; i < columnCount; i++)
 			{
-				var actualPixelWidth = Math.Round(arrangedRects[i].Width * density);
-				var expectedPixelWidth = expectedPixelWidths[i];
+				var actualWidth = (int)Math.Round(arrangedRects[i].Width * density);
+				Assert.Equal(expectedPixelWidths[i], actualWidth);
 
-				// With density-aware distribution, pixel values should be exact integers
-				Assert.Equal(expectedPixelWidth, actualPixelWidth);
-			}
-
-			// Verify total pixel count is preserved
-			var totalActualPixels = arrangedRects.Sum(r => Math.Round(r.Width * density));
-			Assert.Equal(expectedPixelWidths.Sum(), totalActualPixels);
-
-			// Verify all columns have positive widths
-			for (int i = 0; i < columnCount; i++)
-			{
-				Assert.True(arrangedRects[i].Width > 0, 
-					$"Column {i} should have positive width, got {arrangedRects[i].Width}");
-			}
-		}
-
-		[Fact]
-		public void DebugWhyDensityAwareTestsFail()
-		{
-			// Test case from PR description: 293.4dp at density 2.625 = 770.175px across 3 columns
-			var density = 2.625;
-			var grid = CreateGridLayoutWithDensity(density, columns: "*,*,*");
-
-			// Verify density injection is working
-			if (grid is IViewWithWindow viewWithWindow)
-			{
-				var window = viewWithWindow.Window;
-				Assert.NotNull(window);
-				Assert.Equal((float)density, window.RequestDisplayDensity());
-			}
-			else
-			{
-				Assert.Fail("Grid should implement IViewWithWindow");
-			}
-
-			var views = new IView[3];
-			for (int i = 0; i < 3; i++)
-			{
-				views[i] = CreateTestView(new Size(10, 10));
-				SetLocation(grid, views[i], col: i);
-			}
-			SubstituteChildren(grid, views);
-
-			var widthConstraint = 293.4;
-
-			// Capture arranged rectangles
-			var arrangedRects = new Rect[3];
-			for (int i = 0; i < 3; i++)
-			{
-				int index = i;
-				views[i].When(x => x.Arrange(Arg.Any<Rect>())).Do(x => arrangedRects[index] = x.Arg<Rect>());
-			}
-
-			MeasureAndArrangeFixedWithDensity(grid, density, widthConstraint, 100);
-
-			// Check pixel precision for each column
-			var totalPixels = Math.Floor(widthConstraint * density);
-			var portions = new double[] { 1.0, 1.0, 1.0 };
-			var expectedPixelWidths = DensityValue.DistributePixels(totalPixels, density, portions);
-			
-			for (int i = 0; i < 3; i++)
-			{
-				var dpWidth = arrangedRects[i].Width;
-				var pixelWidth = dpWidth * density;
-				var roundingError = Math.Abs(pixelWidth - Math.Round(pixelWidth));
-				var actualPixelWidth = Math.Round(pixelWidth);
-				var expectedPixelWidth = expectedPixelWidths[i];
-				
-				Console.WriteLine($"Column {i}: {dpWidth}dp, {pixelWidth}px (rounded: {actualPixelWidth}), expected: {expectedPixelWidth}px, error: {roundingError}");
-				
-				// With density-aware distribution, actual pixel width should match expected
-				Assert.Equal(expectedPixelWidth, actualPixelWidth);
+				// Also verify no overlap between adjacent columns
+				if (i > 0)
+				{
+					var prevRight = arrangedRects[i - 1].Right;
+					var currentLeft = arrangedRects[i].Left;
+					Assert.True(prevRight <= currentLeft + 0.1, $"Column {i - 1} overlaps with column {i}");
+				}
 			}
 		}
 	}
