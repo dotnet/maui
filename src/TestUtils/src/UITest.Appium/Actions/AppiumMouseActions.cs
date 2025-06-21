@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Runtime.InteropServices;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
@@ -9,13 +10,15 @@ using UITest.Core;
 
 namespace UITest.Appium
 {
-	public class AppiumMouseActions : ICommandExecutionGroup
+	public partial class AppiumMouseActions : ICommandExecutionGroup
 	{
 		const string ClickCommand = "click";
 		const string ClickCoordinatesCommand = "clickCoordinates";
 		const string DoubleClickCommand = "doubleClick";
 		const string DoubleClickCoordinatesCommand = "doubleClickCoordinates";
 		const string LongPressCommand = "longPress";
+		const string MoveCursorCommand = "moveCursor";
+		const string MoveCursorCoordinatesCommand = "moveCursorCoordinates";
 
 		readonly AppiumApp _appiumApp;
 
@@ -25,7 +28,9 @@ namespace UITest.Appium
 			ClickCoordinatesCommand,
 			DoubleClickCommand,
 			DoubleClickCoordinatesCommand,
-			LongPressCommand
+			LongPressCommand,
+			MoveCursorCommand,
+			MoveCursorCoordinatesCommand,
 		};
 
 		public AppiumMouseActions(AppiumApp appiumApp)
@@ -47,6 +52,8 @@ namespace UITest.Appium
 				DoubleClickCommand => DoubleClick(parameters),
 				DoubleClickCoordinatesCommand => DoubleClickCoordinates(parameters),
 				LongPressCommand => LongPress(parameters),
+				MoveCursorCommand => MoveCursor(parameters),
+				MoveCursorCoordinatesCommand => MoveCursorCoordinates(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -211,6 +218,85 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
+		CommandResponse TapCoordinates(IDictionary<string, object> parameters)
+		{
+			if (parameters.TryGetValue("x", out var x) &&
+				parameters.TryGetValue("y", out var y))
+			{
+				return ClickCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse MoveCursor(IDictionary<string, object> parameters)
+		{
+			var element = GetAppiumElement(parameters["element"]);
+			if (element is null)
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+
+			// Mouse actions are not supported on Windows
+			if (_appiumApp.GetTestDevice() == TestDevice.Windows)
+			{
+				var rect = GetAbsoluteRect(element);
+
+				var centerX = rect.X + rect.Width / 2;
+				var centerY = rect.Y + rect.Height / 2;
+
+				_appiumApp.Driver.ExecuteScript("windows: hover", new Dictionary<string, object>
+				{
+					{ "startX", centerX },
+					{ "startY", centerY },
+					{ "endX", centerX },
+					{ "endY", centerY },
+				});
+			}
+			else
+			{
+				var touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
+
+				var sequence = new ActionSequence(touchDevice, 0);
+				sequence.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
+
+				_appiumApp.Driver.PerformActions(new List<ActionSequence> { sequence });
+			}
+
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
+		CommandResponse MoveCursorCoordinates(IDictionary<string, object> parameters)
+		{
+			if (!parameters.TryGetValue("x", out var x) || !parameters.TryGetValue("y", out var y))
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+
+			// Mouse actions are not supported on Windows
+			if (_appiumApp.GetTestDevice() == TestDevice.Windows)
+			{
+				_appiumApp.Driver.ExecuteScript("windows: hover", new Dictionary<string, object>
+				{
+					{ "startX", 0 },
+					{ "startY", 0 },
+					{ "endX", x },
+					{ "endY", y },
+				});
+			}
+			else
+			{
+				var touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
+
+				var sequence = new ActionSequence(touchDevice, 0);
+				sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(5)));
+
+				_appiumApp.Driver.PerformActions(new List<ActionSequence> { sequence });
+			}
+
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
 		static AppiumElement? GetAppiumElement(object element)
 		{
 			if (element is AppiumElement appiumElement)
@@ -234,5 +320,50 @@ namespace UITest.Appium
 
 			return new PointF(x, y);
 		}
+
+		static Rectangle GetAbsoluteRect(AppiumElement element)
+		{
+			var rect = element.Rect;
+			var wndPos = element.WrappedDriver.Manage().Window.Position;
+
+			var screenDensity = GetCurrentMonitorScaleFactor(wndPos);
+
+			var x = (int)(rect.X / screenDensity);
+			var y = (int)(rect.Y / screenDensity);
+			var w = (int)(rect.Width / screenDensity);
+			var h = (int)(rect.Height / screenDensity);
+
+			x += (int)(wndPos.X / screenDensity);
+			y += (int)(wndPos.Y / screenDensity);
+
+			return new Rectangle(x, y, w, h);
+		}
+
+		static double GetCurrentMonitorScaleFactor(Point windowLocation)
+		{
+			if (!OperatingSystem.IsWindows())
+			{
+				return 1;
+			}
+
+			var hwnd = GetForegroundWindow();
+			if (hwnd == 0)
+			{
+				return 1;
+			}
+
+			var dpi = GetDpiForWindow(hwnd);
+
+			// Calculate the scale factor (assuming 96 DPI is 100%)
+			var scaleFactor = dpi / 96.0;
+
+			return Math.Max(1, scaleFactor);
+		}
+
+		[LibraryImport("user32.dll")]
+		private static partial IntPtr GetForegroundWindow();
+
+		[LibraryImport("user32.dll")]
+		private static partial uint GetDpiForWindow(IntPtr hWnd);
 	}
 }
