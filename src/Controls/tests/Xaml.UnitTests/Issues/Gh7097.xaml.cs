@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,22 +17,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[SetUp]
 			public void Setup()
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			}
 
-			[TearDown]
 			public void TearDown()
 			{
 				DispatcherProvider.SetCurrent(null);
 			}
 
-			[Test]
+			[Fact]
 			public void CanXReferenceRoot([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh7097(useCompiledXaml)
@@ -49,14 +47,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.That(btn1.Command, Is.TypeOf<MockCommand>());
 			}
 
-			[Test]
+			[Fact]
 			//this was later reported as https://github.com/xamarin/Microsoft.Maui.Controls/issues/7286
 			public void RegisteringXNameOnSubPages([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh7097(useCompiledXaml);
 				var s = layout.FindByName("self");
-				Assert.That(layout.self, Is.Not.Null);
-				Assert.That(layout.collectionview, Is.Not.Null);
+				Assert.NotNull(layout.self);
+				Assert.NotNull(layout.collectionview);
 			}
 
 			class MockCommand : ICommand

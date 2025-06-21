@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -13,30 +13,29 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Test
 		{
 			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-			[TearDown]
 			public void TearDown()
 			{
 				AppInfo.SetCurrent(null);
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[Test]
+			[Fact]
 			public void OnPlatformAsCollectionElementiOS([Values(false, true)] bool useCompiledXaml)
 			{
 				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
 				var page = new Maui4509(useCompiledXaml);
-				Assert.That(page.layout.Children.Count, Is.EqualTo(2));
+				Assert.Equal(2, page.layout.Children.Count);
 			}
-			[Test]
+			[Fact]
 			public void OnPlatformAsCollectionElementAndroid([Values(false, true)] bool useCompiledXaml)
 			{
 				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.Android));
 				var page = new Maui4509(useCompiledXaml);
-				Assert.That(page.layout.Children.Count, Is.EqualTo(1));
+				Assert.Equal(1, page.layout.Children.Count);
 			}
 		}
 	}

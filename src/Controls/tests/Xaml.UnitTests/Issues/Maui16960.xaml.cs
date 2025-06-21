@@ -5,7 +5,7 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -19,10 +19,9 @@ public partial class Maui16960
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	class Test
 	{
-		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -32,7 +31,7 @@ public partial class Maui16960
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void VSMandAppTheme([Values(false, true)] bool useCompiledXaml)
 		{
 
@@ -40,19 +39,19 @@ public partial class Maui16960
 
 			var page = new Maui16960(useCompiledXaml);
 			Button button = page.button;
-			Assert.That(button.BackgroundColor, Is.Null);
+			Assert.Null(button.BackgroundColor);
 
 			VisualStateManager.GoToState(button, "PointerOver");
-			Assert.That(button.BackgroundColor, Is.EqualTo(Colors.Red));
+			Assert.Equal(Colors.Red, button.BackgroundColor);
 
 			VisualStateManager.GoToState(button, "Pressed");
-			Assert.That(button.BackgroundColor, Is.EqualTo(Colors.Yellow));
+			Assert.Equal(Colors.Yellow, button.BackgroundColor);
 
 			VisualStateManager.GoToState(button, "Normal");
-			Assert.That(button.BackgroundColor, Is.Null);
+			Assert.Null(button.BackgroundColor);
 
 			VisualStateManager.GoToState(button, "PointerOver");
-			Assert.That(button.BackgroundColor, Is.EqualTo(Colors.Red));
+			Assert.Equal(Colors.Red, button.BackgroundColor);
 
 
 		}

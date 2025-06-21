@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -12,17 +12,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[Test]
+			[Fact]
 			public void SourceInfoIsRelative([Values(false)] bool useCompiledXaml)
 			{
 				var page = new Maui2418(useCompiledXaml);
-				Assert.That(page, Is.Not.Null);
+				Assert.NotNull(page);
 				var label0 = page.label0;
 				var sourceInfo = VisualDiagnostics.GetSourceInfo(label0);
-				Assert.That(sourceInfo.SourceUri.OriginalString, Is.EqualTo($"Issues{System.IO.Path.DirectorySeparatorChar}Maui2418.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"));
+				Assert.Equal($"Issues{System.IO.Path.DirectorySeparatorChar}Maui2418.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", sourceInfo.SourceUri.OriginalString);
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -37,15 +37,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[TestCase(true), TestCase(false)]
+			[InlineData(true)], TestCase(false)]
 			public void MultipleGetMethodsAllowed(bool useCompiledXaml)
 			{
 				var page = new Unreported004(useCompiledXaml);
 				Assert.NotNull(page.label);
-				Assert.AreEqual("foo", GetSomeProperty(page.label));
+				Assert.Equal("foo", GetSomeProperty(page.label));
 			}
 		}
 	}
