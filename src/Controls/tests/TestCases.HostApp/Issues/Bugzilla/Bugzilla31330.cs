@@ -19,8 +19,11 @@ public class Bugzilla31330 : TestContentPage
 		listview.ItemTemplate = new DataTemplate(typeof(CustomTextCell));
 		listview.ItemSelected += (object sender, SelectedItemChangedEventArgs e) =>
 		{
-			(e.SelectedItem as ListItemViewModel).CanExecute = true;
-			((e.SelectedItem as ListItemViewModel).DeleteItemCommand as Command).ChangeCanExecute();
+			if (e.SelectedItem is ListItemViewModel selectedItem)
+			{
+				selectedItem.CanExecute = true;
+				(selectedItem.DeleteItemCommand as Command).ChangeCanExecute();
+			}
 		};
 		// Initialize ui here instead of ctor
 		Content = listview;
