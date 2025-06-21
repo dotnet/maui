@@ -702,7 +702,7 @@ namespace Microsoft.Maui.Layouts
 					return true; // No star definitions to resolve
 
 				// Use DensityValue to distribute pixels precisely
-				var totalPixels = Math.Round(availableSpace * density);
+				var totalPixels = Math.Floor(availableSpace * density);
 				var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions.ToArray());
 
 				// Assign DensityValue directly from pixels to avoid precision loss
@@ -996,7 +996,7 @@ namespace Microsoft.Maui.Layouts
 					return true; // No star definitions to expand
 
 				// Use DensityValue to distribute pixels precisely
-				var totalPixels = Math.Round(availableSpace * density);
+				var totalPixels = Math.Floor(availableSpace * density);
 				var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions.ToArray());
 
 				// Assign DensityValue directly from pixels to avoid precision loss
