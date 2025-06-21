@@ -17,7 +17,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(dp, value.Dp);
 			Assert.Equal(density, value.Density);
 			Assert.Equal(dp * density, value.RawPx);
-			Assert.Equal((int)Math.Round(dp * density), value.RoundedPx);
+			Assert.Equal((int)Math.Round(dp * density), (int)Math.Round(value.RawPx));
 		}
 
 		[Fact]

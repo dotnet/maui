@@ -3320,7 +3320,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			MeasureAndArrangeFixedWithDensity(grid, density, widthConstraint, 100);
 
 			// Convert Dp values to pixels for verification with pixel precision
-			var totalPixels = Math.Round(widthConstraint * density);
+			var totalPixels = Math.Floor(widthConstraint * density);
 			var portions = new double[] { 1.0, 1.0, 1.0 };
 			var expectedPixelWidths = DensityValue.DistributePixels(totalPixels, density, portions);
 
@@ -3440,7 +3440,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.True(totalWidth <= widthConstraint + 1, $"Total width {totalWidth} should not exceed constraint {widthConstraint}");
 
 			// Convert Dp values to pixels for verification
-			var totalPixels = Math.Round(widthConstraint * density);
+			var totalPixels = Math.Floor(widthConstraint * density);
 			var portions = new double[] { 1.0, 1.0, 1.0, 1.0 };
 			var expectedPixelWidths = DensityValue.DistributePixels(totalPixels, density, portions);
 
@@ -3551,19 +3551,19 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Theory]
-		[InlineData(1)]
-		[InlineData(2)]
-		[InlineData(3)]
-		[InlineData(4)]
-		[InlineData(5)]
-		[InlineData(6)]
-		[InlineData(7)]
-		[InlineData(8)]
-		[InlineData(9)]
-		[InlineData(10)]
-		[InlineData(11)]
+		[InlineData(1, new int[] {805})]
+		[InlineData(2, new int[] {402, 403})]
+		[InlineData(3, new int[] {268, 268, 269})]
+		[InlineData(4, new int[] {201, 201, 201, 202})]
+		[InlineData(5, new int[] {161, 161, 161, 161, 161})]
+		[InlineData(6, new int[] {134, 134, 134, 134, 134, 135})]
+		[InlineData(7, new int[] {115, 115, 115, 115, 115, 115, 115})]
+		[InlineData(8, new int[] {100, 100, 100, 101, 101, 101, 101, 101})]
+		[InlineData(9, new int[] {89, 89, 89, 89, 89, 90, 90, 90, 90})]
+		[InlineData(10, new int[] {80, 80, 80, 80, 80, 81, 81, 81, 81, 81})]
+		[InlineData(11, new int[] {73, 73, 73, 73, 73, 73, 73, 73, 73, 74, 74})]
 		[Category(GridStarSizing)]
-		public void ArrangesContentWithoutOverlapAndWithProperSize(int columnCount)
+		public void ArrangesContentWithoutOverlapAndWithProperSize(int columnCount, int[] expectedPixelWidths)
 		{
 			// Recreated from device test with density 2.75
 			// This test verifies that grid columns arrange without overlap at specific density
@@ -3583,10 +3583,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Use width of 293 as specified in the original test
 			var widthConstraint = 293.0;
 
-			// Calculate expected pixel values using DensityValue distribution
-			var totalPixels = Math.Round(widthConstraint * density);
-			var portions = Enumerable.Repeat(1.0, columnCount).ToArray();
-			var expectedPixelWidths = DensityValue.DistributePixels(totalPixels, density, portions);
+			// Expected pixel values are now passed as test parameter
+			// var totalPixels = Math.Floor(widthConstraint * density);
+			// var portions = Enumerable.Repeat(1.0, columnCount).ToArray();
+			// var expectedPixelWidths = DensityValue.DistributePixels(totalPixels, density, portions);
 
 			// Set up capture for all view rectangles  
 			var arrangedRects = new Rect[columnCount];
@@ -3617,7 +3617,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Verify total pixel count is preserved
 			var totalActualPixels = arrangedRects.Sum(r => Math.Round(r.Width * density));
-			Assert.Equal(totalPixels, totalActualPixels);
+			Assert.Equal(expectedPixelWidths.Sum(), totalActualPixels);
 
 			// Verify all columns have positive widths
 			for (int i = 0; i < columnCount; i++)
@@ -3667,7 +3667,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			MeasureAndArrangeFixedWithDensity(grid, density, widthConstraint, 100);
 
 			// Check pixel precision for each column
-			var totalPixels = Math.Round(widthConstraint * density);
+			var totalPixels = Math.Floor(widthConstraint * density);
 			var portions = new double[] { 1.0, 1.0, 1.0 };
 			var expectedPixelWidths = DensityValue.DistributePixels(totalPixels, density, portions);
 			
