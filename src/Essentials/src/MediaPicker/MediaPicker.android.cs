@@ -25,6 +25,13 @@ namespace Microsoft.Maui.Media
 		{
 			var intent = new Intent(Intent.ActionGetContent);
 			intent.SetType(photo ? FileMimeTypes.ImageAll : FileMimeTypes.VideoAll);
+			
+			// In Android 14+, we can request READ_MEDIA_VISUAL_USER_SELECTED permission
+			// which will use the improved bottom sheet UI natively
+			if (OperatingSystem.IsAndroidVersionAtLeast(34))
+			{
+				await Permissions.EnsureGrantedAsync<Permissions.Photos>();
+			}
 
 			var pickerIntent = Intent.CreateChooser(intent, options?.Title);
 
