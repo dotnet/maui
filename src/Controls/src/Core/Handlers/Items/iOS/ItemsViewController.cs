@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (disposing)
 			{
 				ItemsSource?.Dispose();
-				
+
 				((IUIViewLifeCycleEvents)CollectionView).MovedToWindow -= MovedToWindow;
 
 				CollectionView.Delegate = null;
