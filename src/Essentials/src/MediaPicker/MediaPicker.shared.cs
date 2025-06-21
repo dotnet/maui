@@ -38,18 +38,6 @@ namespace Microsoft.Maui.Media
 		Task<List<FileResult>> PickPhotosAsync(MediaPickerOptions? options = null);
 
 		/// <summary>
-		/// Opens the media browser to select photos.
-		/// </summary>
-		/// <param name="options">Pick options to use.</param>
-		/// <returns>A list of <see cref="FileResult"/> objects containing details of the picked photos. When the operation was cancelled by the user, this will return an empty list.</returns>
-		/// <remarks>
-		/// <para>On Android, not all picker user interfaces enforce the <see cref="MediaPickerOptions.SelectionLimit"/>.</para>
-		/// <para>On Windows, <see cref="MediaPickerOptions.SelectionLimit"/> is not supported.</para>
-		/// <para>Implement your own logic to ensure that the limit is maintained and/or notify the user on these platforms.</para>
-		/// </remarks>
-		Task<List<FileResult>> PickPhotosAsync(MediaPickerOptions? options = null);
-
-		/// <summary>
 		/// Opens the camera to take a photo.
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
@@ -64,18 +52,6 @@ namespace Microsoft.Maui.Media
 		/// <remarks>When using <see cref="MediaPickerOptions.SelectionLimit"/> on this overload, it will <b>not</b> have effect.</remarks>
 		[Obsolete("Switch to PickVideosAsync which also allows multiple selections.")]
 		Task<FileResult?> PickVideoAsync(MediaPickerOptions? options = null);
-
-		/// <summary>
-		/// Opens the media browser to select videos.
-		/// </summary>
-		/// <param name="options">Pick options to use.</param>
-		/// <returns>A list of <see cref="FileResult"/> objects containing details of the picked videos. When the operation was cancelled by the user, this will return an empty list.</returns>
-		/// <remarks>
-		/// <para>On Android, not all picker user interfaces enforce the <see cref="MediaPickerOptions.SelectionLimit"/>.</para>
-		/// <para>On Windows, <see cref="MediaPickerOptions.SelectionLimit"/> is not supported.</para>
-		/// <para>Implement your own logic to ensure that the limit is maintained and/or notify the user on these platforms.</para>
-		/// </remarks>
-		Task<List<FileResult>> PickVideosAsync(MediaPickerOptions? options = null);
 
 		/// <summary>
 		/// Opens the media browser to select videos.
