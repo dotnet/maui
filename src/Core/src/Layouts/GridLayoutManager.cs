@@ -647,74 +647,24 @@ namespace Microsoft.Maui.Layouts
 				}
 				else
 				{
-					// Try to use density-aware distribution if possible
-					if (TryResolveStarsWithDensityAwareness(defs, availableSpace, starCount))
-					{
-						// Density-aware distribution was successful, definitions already set
-						return;
-					}
-
-					// Fallback to original method
 					// If we have a finite space, we can divvy it up among the full star weight
 					starSize = availableSpace / starCount;
 					
 					System.Diagnostics.Debug.WriteLine($"ResolveStars fallback: availableSpace={availableSpace}, starCount={starCount}, starSize={starSize}");
-					
-					// Apply the fallback calculation to star definitions
-					foreach (var definition in defs)
+				}
+
+				// Apply the star size to star definitions (this loop should run for both infinite and finite cases)
+				foreach (var definition in defs)
+				{
+					if (definition.IsStar)
 					{
-						if (definition.IsStar)
-						{
-							// Give the star row/column the appropriate portion of the space based on its weight
-							var sizeValue = starSize * definition.GridLength.Value;
-							
-							// Use density from the constructor
-							definition.Size = new DensityValue(sizeValue, _density);
-						}
+						// Give the star row/column the appropriate portion of the space based on its weight
+						var sizeValue = starSize * definition.GridLength.Value;
+						
+						// Use density from the constructor
+						definition.Size = new DensityValue(sizeValue, _density);
 					}
 				}
-			}
-
-			bool TryResolveStarsWithDensityAwareness(Definition[] defs, double availableSpace, double starCount)
-			{
-				// Use the density already obtained in the constructor
-				var density = _density;
-
-				// Only use density-aware distribution when density != 1.0
-				// This ensures backward compatibility when no scaling is needed
-				if (Math.Abs(density - 1.0) < 0.001)
-				{
-					return false; // Use original algorithm for density = 1.0
-				}
-
-				// Create portions array for star definitions
-				var starDefs = new List<Definition>();
-				var portions = new List<double>();
-
-				foreach (var def in defs)
-				{
-					if (def.IsStar)
-					{
-						starDefs.Add(def);
-						portions.Add(def.GridLength.Value);
-					}
-				}
-
-				if (starDefs.Count == 0)
-					return true; // No star definitions to resolve
-
-				// Use DensityValue to distribute pixels precisely
-				var totalPixels = Math.Floor(availableSpace * density);
-				var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions.ToArray());
-
-				// Assign DensityValue directly from pixels to avoid precision loss
-				for (int i = 0; i < starDefs.Count; i++)
-				{
-					// Create DensityValue directly from pixels - this is the source of truth
-					starDefs[i].Size = DensityValue.FromPixels(pixelAllocations[i], density);
-				}
-
-				return true;
 			}
 
 		double GetDisplayDensity()
@@ -938,13 +888,6 @@ namespace Microsoft.Maui.Layouts
 
 			static void ExpandStarDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount, bool limitStarSizes, double density)
 			{
-				// Try density-aware expansion first
-				if (TryExpandStarDefinitionsWithDensityAwareness(definitions, targetSize, currentSize, spacing, starCount, density))
-				{
-					return;
-				}
-
-				// Fallback to original method
 				// Figure out what the star value should be at this size
 				var starSize = ComputeStarSizeForTarget(targetSize, definitions, spacing, starCount);
 
@@ -956,63 +899,8 @@ namespace Microsoft.Maui.Layouts
 					EnsureSizeLimit(definitions, starSize, density);
 				}
 
-				// Inflate the stars so that we fill up the space at this size
-				ExpandStars(targetSize, currentSize, definitions, starSize, starCount, density);
-			}
-
-			static bool TryExpandStarDefinitionsWithDensityAwareness(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount, double density)
-			{
-				// Skip density-aware distribution when density is 1.0 to preserve fractional precision
-				if (Math.Abs(density - 1.0) < 0.001)
-					return false;
-				
-				// Calculate available space for star columns/rows
-				var availableSpace = targetSize;
-				
-				// Subtract space used by non-star definitions
-				foreach (var def in definitions)
-				{
-					if (!def.IsStar)
-					{
-						availableSpace -= def.Size.Dp;
-					}
-				}
-				
-				// Subtract spacing
-				var spacingTotal = spacing * (definitions.Length - 1);
-				availableSpace -= spacingTotal;
-				
-				if (availableSpace <= 0)
-					return true; // No space to distribute
-				
-				// Create portions array for star definitions
-				var starDefs = new List<Definition>();
-				var portions = new List<double>();
-
-				foreach (var def in definitions)
-				{
-					if (def.IsStar)
-					{
-						starDefs.Add(def);
-						portions.Add(def.GridLength.Value);
-					}
-				}
-
-				if (starDefs.Count == 0)
-					return true; // No star definitions to expand
-
-				// Use DensityValue to distribute pixels precisely
-				var totalPixels = Math.Floor(availableSpace * density);
-				var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions.ToArray());
-
-				// Assign DensityValue directly from pixels to avoid precision loss
-				for (int i = 0; i < starDefs.Count; i++)
-				{
-					// Create DensityValue directly from pixels - this is the source of truth
-					starDefs[i].Size = DensityValue.FromPixels(pixelAllocations[i], density);
-				}
-
-				return true;
+				// Inflate the stars so that we fill up the space at this size with density awareness
+				ExpandStarsWithDensityAwareness(targetSize, currentSize, definitions, starSize, starCount, density);
 			}
 
 			static void EnsureSizeLimit(Definition[] definitions, double starSize, double density)
@@ -1048,7 +936,7 @@ namespace Microsoft.Maui.Layouts
 				return (targetSize - sum) / starCount;
 			}
 
-			static void ExpandStars(double targetSize, double currentSize, Definition[] defs, double targetStarSize, double starCount, double density)
+			static void ExpandStarsWithDensityAwareness(double targetSize, double currentSize, Definition[] defs, double targetStarSize, double starCount, double density)
 			{
 				Debug.Assert(starCount > 0, "Assume that the caller has already checked for the existence of star rows/columns before using this.");
 
@@ -1058,6 +946,55 @@ namespace Microsoft.Maui.Layouts
 				{
 					return;
 				}
+
+				// Try density-aware distribution first (when density != 1.0)
+				if (TryDensityAwareExpansion(defs, availableSpace, starCount, density))
+				{
+					return;
+				}
+
+				// Fallback to original ExpandStars logic
+				ExpandStarsOriginal(defs, targetStarSize, availableSpace, density);
+			}
+
+			static bool TryDensityAwareExpansion(Definition[] defs, double availableSpace, double starCount, double density)
+			{
+				// Skip density-aware distribution when density is 1.0 to preserve fractional precision
+				if (Math.Abs(density - 1.0) < 0.001)
+					return false;
+
+				// Create portions array for star definitions
+				var starDefs = new List<Definition>();
+				var portions = new List<double>();
+
+				foreach (var def in defs)
+				{
+					if (def.IsStar)
+					{
+						starDefs.Add(def);
+						portions.Add(def.GridLength.Value);
+					}
+				}
+
+				if (starDefs.Count == 0)
+					return true; // No star definitions to expand
+
+				// Use DensityValue to distribute pixels precisely
+				var totalPixels = Math.Round(availableSpace * density);
+				var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions.ToArray());
+
+				// Assign DensityValue directly from pixels to avoid precision loss
+				for (int i = 0; i < starDefs.Count; i++)
+				{
+					// Create DensityValue directly from pixels - this is the source of truth
+					starDefs[i].Size = DensityValue.FromPixels(pixelAllocations[i], density);
+				}
+
+				return true;
+			}
+
+			static void ExpandStarsOriginal(Definition[] defs, double targetStarSize, double availableSpace, double density)
+			{
 
 				// Figure out which is the biggest star definition in this dimension (absolute value and star scale)
 				var maxCurrentSize = 0.0;
