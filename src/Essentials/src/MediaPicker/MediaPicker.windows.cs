@@ -6,11 +6,14 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Storage;
 using Windows.Foundation.Collections;
+using Windows.Graphics.Imaging;
 using Windows.Media.Capture;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -59,10 +62,35 @@ namespace Microsoft.Maui.Media
 
 			// cancelled
 			if (result is null)
+			{
 				return null;
+			}
 
-			// picked
-			return new FileResult(result);
+			var fileResult = new FileResult(result);
+			
+			// Apply compression/resizing if specified for photos
+			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+			{
+				using var originalStream = await result.OpenStreamForReadAsync();
+				var processedStream = await ImageProcessor.ProcessImageAsync(
+					originalStream,
+					options?.MaximumWidth,
+					options?.MaximumHeight,
+					options?.CompressionQuality ?? 100,
+					result.Name);
+
+				if (processedStream != null)
+				{
+					// Convert to MemoryStream for ProcessedImageFileResult
+					var memoryStream = new MemoryStream();
+					await processedStream.CopyToAsync(memoryStream);
+					processedStream.Dispose();
+					
+					return new ProcessedImageFileResult(memoryStream, result.Name);
+				}
+			}
+
+			return fileResult;
 		}
 
 		public async Task<List<FileResult>> PickMultipleAsync(MediaPickerOptions? options, bool photo)
@@ -97,9 +125,44 @@ namespace Microsoft.Maui.Media
 			{
 				return [];
 			}
+			
+			var fileResults = result.Select(file => new FileResult(file)).ToList();
+			
+			// Apply compression/resizing if specified for photos
+			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+			{
+				var compressedResults = new List<FileResult>();
+				for (int i = 0; i < result.Count; i++)
+				{
+					var originalFile = result[i];
+					var fileResult = fileResults[i];
+					
+					using var originalStream = await originalFile.OpenStreamForReadAsync();
+					var processedStream = await ImageProcessor.ProcessImageAsync(
+						originalStream,
+						options?.MaximumWidth,
+						options?.MaximumHeight,
+						options?.CompressionQuality ?? 100,
+						originalFile.Name);
 
-			// picked
-			return [.. result.Select(file => new FileResult(file))];
+					if (processedStream != null)
+					{
+						// Convert to MemoryStream for ProcessedImageFileResult
+						var memoryStream = new MemoryStream();
+						await processedStream.CopyToAsync(memoryStream);
+						processedStream.Dispose();
+						
+						compressedResults.Add(new ProcessedImageFileResult(memoryStream, originalFile.Name));
+					}
+					else
+					{
+						compressedResults.Add(fileResult);
+					}
+				}
+				return compressedResults;
+			}
+
+			return fileResults;
 		}
 
 		public Task<FileResult?> CapturePhotoAsync(MediaPickerOptions? options = null)
@@ -113,14 +176,44 @@ namespace Microsoft.Maui.Media
 			var captureUi = new WinUICameraCaptureUI();
 
 			if (photo)
+			{
 				captureUi.PhotoSettings.Format = CameraCaptureUIPhotoFormat.Jpeg;
+			}
 			else
+			{
 				captureUi.VideoSettings.Format = CameraCaptureUIVideoFormat.Mp4;
+			}
 
 			var file = await captureUi.CaptureFileAsync(photo ? CameraCaptureUIMode.Photo : CameraCaptureUIMode.Video);
 
 			if (file is not null)
-				return new FileResult(file);
+			{
+				var fileResult = new FileResult(file);
+
+				// Apply compression/resizing if specified for photos
+				if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+				{
+					using var originalStream = await file.OpenStreamForReadAsync();
+					var processedStream = await ImageProcessor.ProcessImageAsync(
+						originalStream,
+						options?.MaximumWidth,
+						options?.MaximumHeight,
+						options?.CompressionQuality ?? 100,
+						file.Name);
+
+					if (processedStream != null)
+					{
+						// Convert to MemoryStream for ProcessedImageFileResult
+						var memoryStream = new MemoryStream();
+						await processedStream.CopyToAsync(memoryStream);
+						processedStream.Dispose();
+						
+						return new ProcessedImageFileResult(memoryStream, file.Name);
+					}
+				}
+
+				return fileResult;
+			}
 
 			return null;
 		}
@@ -206,6 +299,46 @@ namespace Microsoft.Maui.Media
 					CameraCaptureUIVideoFormat.Wmv => ".wmv",
 					_ => ".mp4",
 				};
+		}
+	}
+	/// <summary>
+	/// FileResult implementation for processed images using MAUI Graphics
+	/// </summary>
+	internal class ProcessedImageFileResult : FileResult, IDisposable
+	{
+		readonly MemoryStream imageData;
+
+		internal ProcessedImageFileResult(MemoryStream imageData, string? originalFileName = null)
+			: base()
+		{
+			this.imageData = imageData;
+
+			// Determine output format extension using ImageProcessor's improved logic
+			var extension = ImageProcessor.DetermineOutputExtension(imageData, 75, originalFileName);
+			FullPath = Guid.NewGuid().ToString() + extension;
+			FileName = FullPath;
+		}
+
+		internal override Task<Stream> PlatformOpenReadAsync()
+		{
+			// Reset position and return a copy of the stream
+			imageData.Position = 0;
+			var copyStream = new MemoryStream(imageData.ToArray());
+			return Task.FromResult<Stream>(copyStream);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				imageData?.Dispose();
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 	}
 }

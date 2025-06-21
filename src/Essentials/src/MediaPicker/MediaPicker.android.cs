@@ -1,13 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Android.Graphics;
 using Android.Provider;
 using AndroidX.Activity.Result;
 using AndroidX.Activity.Result.Contract;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Storage;
 using static AndroidX.Activity.Result.Contract.ActivityResultContracts;
 using AndroidUri = Android.Net.Uri;
@@ -81,6 +85,11 @@ namespace Microsoft.Maui.Media
 				if (photo)
 				{
 					captureResult = await CapturePhotoAsync(captureIntent);
+					// Apply compression/resizing if needed for photos
+					if (captureResult is not null && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+					{
+						captureResult = await CompressImageIfNeeded(captureResult, options);
+					}
 				}
 				else
 				{
@@ -122,7 +131,17 @@ namespace Microsoft.Maui.Media
 
 				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeMediaPicker, onResult: OnResult);
 
-				return path is not null ? new FileResult(path) : null;
+				if (path is not null)
+				{
+					// Apply compression/resizing if needed for photos
+					if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+					{
+						path = await CompressImageIfNeeded(path, options);
+					}
+					return new FileResult(path);
+				}
+				
+				return null;
 			}
 			catch (OperationCanceledException)
 			{
@@ -144,6 +163,13 @@ namespace Microsoft.Maui.Media
 			}
 
 			var path = FileSystemUtils.EnsurePhysicalPath(androidUri);
+			
+			// Apply compression/resizing if needed for photos
+			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+			{
+				path = await CompressImageIfNeeded(path, options);
+			}
+			
 			return new FileResult(path);
 		}
 
@@ -185,6 +211,13 @@ namespace Microsoft.Maui.Media
 				if (!uri?.Equals(AndroidUri.Empty) ?? false)
 				{
 					var path = FileSystemUtils.EnsurePhysicalPath(uri);
+					
+					// Apply compression/resizing if needed for photos
+					if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+					{
+						path = await CompressImageIfNeeded(path, options);
+					}
+					
 					resultList.Add(new FileResult(path));
 				}
 			}
@@ -214,6 +247,58 @@ namespace Microsoft.Maui.Media
 			await IntermediateActivity.StartAsync(captureIntent, PlatformUtils.requestCodeMediaCapture, OnCreate);
 
 			return tmpFile.AbsolutePath;
+		}
+
+		static async Task<string> CompressImageIfNeeded(string imagePath, MediaPickerOptions options)
+		{
+			if (!ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100) || string.IsNullOrEmpty(imagePath))
+				return imagePath;
+
+			try
+			{
+				var originalFile = new Java.IO.File(imagePath);
+				if (!originalFile.Exists())
+				{
+					return imagePath;
+				}
+
+				// Use ImageProcessor for unified image processing
+				using var inputStream = File.OpenRead(imagePath);
+				var inputFileName = System.IO.Path.GetFileName(imagePath);
+				using var processedStream = await ImageProcessor.ProcessImageAsync(
+					inputStream,
+					options?.MaximumWidth,
+					options?.MaximumHeight,
+					options?.CompressionQuality ?? 100,
+					inputFileName);
+
+				if (processedStream != null)
+				{
+					// Determine output extension based on processed data and original filename
+					var outputExtension = ImageProcessor.DetermineOutputExtension(processedStream, options?.CompressionQuality ?? 100, inputFileName);
+					var processedFileName = System.IO.Path.GetFileNameWithoutExtension(imagePath) + "_processed" + outputExtension;
+					var processedPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(imagePath), processedFileName);
+
+					// Write processed image to file
+					using var outputStream = File.Create(processedPath);
+					processedStream.Position = 0;
+					await processedStream.CopyToAsync(outputStream);
+
+					// Delete original file
+					try { originalFile.Delete(); } catch { }
+					return processedPath;
+				}
+				
+				// If ImageProcessor returns null (e.g., on .NET Standard), ImageProcessor.IsProcessingNeeded would have returned false,
+				// so we shouldn't reach this point. Return original path as fallback.
+				return imagePath;
+			}
+			catch
+			{
+				// If processing fails, return original path
+			}
+			
+			return imagePath;
 		}
 
 		async Task<string> CaptureVideoAsync(Intent captureIntent)
@@ -290,6 +375,21 @@ namespace Microsoft.Maui.Media
 				}
 
 				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeMediaPicker, onResult: OnResult);
+
+				// Apply compression/resizing if needed for photos
+				if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+				{
+					var tempResultList = resultList.Select(fr => fr.FullPath).ToList();
+					resultList.Clear();
+					
+					var compressionTasks = tempResultList.Select(async path =>
+					{
+						return await CompressImageIfNeeded(path, options);
+					});
+					
+					var compressedPaths = await Task.WhenAll(compressionTasks);
+					resultList.AddRange(compressedPaths.Select(path => new FileResult(path)));
+				}
 
 				return resultList;
 			}
