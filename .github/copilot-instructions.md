@@ -139,9 +139,35 @@ For compatibility with specific branches:
 ## Contribution Guidelines
 
 ### Files to Never Commit
-- **Never** check in changes to `cgmanifest.json` files
-- **Never** check in changes to `templatestrings.json` files
+- **Never** check in changes to `cgmanifest.json` files (especially in `Templates/src/` directory)
+- **Never** check in changes to `templatestrings.json` files (especially in `Templates/src/` directory)
+- **Always revert** any changes to JSON files in the `Templates/src/` directory before committing
 - These files are automatically generated and should not be modified manually
+
+#### Pre-Completion Checklist for Templates Files
+**Before finishing any PR work, ALWAYS:**
+1. Check for modifications to Templates files: `git status | grep "Templates/src"`
+2. If any `cgmanifest.json` or `templatestrings.json` files are modified, revert them immediately:
+   ```bash
+   # Find the original commit before your changes
+   git log --oneline -n 30
+   # Revert all Templates JSON files to original state
+   git checkout <original_commit> -- src/Templates/src/cgmanifest.json
+   find src/Templates/src -name "templatestrings.json" -exec git checkout <original_commit> -- {} \;
+   ```
+3. Verify reversion: `git status` should show these files as "Changes to be committed" (reverted)
+4. Commit the reversion before proceeding with other changes
+
+### Platform-Specific Restrictions
+- **Never** make changes to files related to Tizen platform
+- Tizen-specific code should not be modified unless explicitly required for critical fixes
+
+### Testing Guidelines
+- **Always** run unit tests for any code changes before finishing
+- **Never** leave failing unit tests that were introduced by your changes
+- Use `dotnet test` to run specific test projects or test filters
+- When adding new unit tests, ensure they pass consistently
+- Fix any test failures before committing and pushing changes
 
 ### Branching
 - `main` - For bug fixes without API changes
