@@ -581,6 +581,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 					AddMapElements(e.NewItems.Cast<MapElement>());
 					break;
 				case NotifyCollectionChangedAction.Reset:
+					// Clear MapElementId on all map elements before removing native elements
+					// This prevents issues when the same elements are re-added later
+					if (Element?.MapElements != null)
+					{
+						foreach (var element in Element.MapElements)
+						{
+							element.MapElementId = null;
+						}
+					}
+
 					if (_polylines != null)
 					{
 						for (int i = 0; i < _polylines.Count; i++)
