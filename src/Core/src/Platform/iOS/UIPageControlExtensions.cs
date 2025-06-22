@@ -44,9 +44,17 @@ namespace Microsoft.Maui.Platform
 			// Find the index of the page control in its superview’s subview list
 			var index = Array.IndexOf(superview.Subviews, pageControl);
 
-			// Remove and immediately reinsert the control to force UIKit to reset its internal state.
-			pageControl.RemoveFromSuperview();
-			superview.InsertSubview(pageControl, index);
+			if (index >= 0)
+			{
+				// Remove and immediately reinsert the control to force UIKit to reset its internal state.
+				pageControl.RemoveFromSuperview();
+				superview.InsertSubview(pageControl, index);
+			}
+			else
+			{
+				// Fallback: Add the control directly to the superview if not found in the subview list.
+				superview.AddSubview(pageControl);
+			}
 
 			// Now set the actual page count — UIKit will correctly render the new number of indicators.
 			pageControl.Pages = pageCount;
