@@ -193,5 +193,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(nameof(SetterSpecificity.DefaultValue), list.GetClearedValue(SetterSpecificity.ManualValueSetter));
 			Assert.Equal(nameof(SetterSpecificity.ManualValueSetter), list.GetClearedValue(SetterSpecificity.FromHandler));
 		}
+
+		[Fact]
+		public void GetClearedValueForFromUnknown()
+		{
+			var list = new SetterSpecificityList<object>();
+
+			list[SetterSpecificity.DefaultValue] = nameof(SetterSpecificity.DefaultValue);
+			list[SetterSpecificity.ManualValueSetter] = nameof(SetterSpecificity.ManualValueSetter);
+			list[SetterSpecificity.FromUnknown] = nameof(SetterSpecificity.FromUnknown);
+
+			// Should fall back to ManualValueSetter
+			Assert.Equal(nameof(SetterSpecificity.ManualValueSetter), list.GetClearedValue(SetterSpecificity.FromUnknown));
+		}
 	}
 }
