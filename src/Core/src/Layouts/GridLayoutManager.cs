@@ -928,28 +928,14 @@ namespace Microsoft.Maui.Layouts
 					// to their full size.
 
 					// Use density-aware distribution for pixel-perfect allocation
-					if (density > 1.0)
+					var starDefinitions = defs.Where(d => d.IsStar).ToArray();
+					var portions = starDefinitions.Select(d => targetStarSize * d.GridLength.Value).ToArray();
+					var totalPixels = portions.Sum() * density;
+					var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions);
+					
+					for (int i = 0; i < starDefinitions.Length; i++)
 					{
-						var starDefinitions = defs.Where(d => d.IsStar).ToArray();
-						var portions = starDefinitions.Select(d => targetStarSize * d.GridLength.Value).ToArray();
-						var totalPixels = portions.Sum() * density;
-						var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions);
-						
-						for (int i = 0; i < starDefinitions.Length; i++)
-						{
-							starDefinitions[i].Size = DensityValue.FromPixels(pixelAllocations[i], density);
-						}
-					}
-					else
-					{
-						// Original logic for density = 1.0
-						foreach (var definition in defs)
-						{
-							if (definition.IsStar)
-							{
-								definition.Size = targetStarSize * definition.GridLength.Value;
-							}
-						}
+						starDefinitions[i].Size = DensityValue.FromPixels(pixelAllocations[i], density);
 					}
 
 					return;
@@ -973,60 +959,32 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				// Use density-aware distribution for pixel-perfect proportional allocation
-				if (density > 1.0)
+				var starDefinitions = defs.Where(d => d.IsStar).ToArray();
+				var portions = new double[starDefinitions.Length];
+				
+				for (int i = 0; i < starDefinitions.Length; i++)
 				{
-					var starDefinitions = defs.Where(d => d.IsStar).ToArray();
-					var portions = new double[starDefinitions.Length];
+					var definition = starDefinitions[i];
+					double fullTargetSize = targetStarSize * definition.GridLength.Value;
 					
-					for (int i = 0; i < starDefinitions.Length; i++)
+					if (definition.MinimumSize < fullTargetSize)
 					{
-						var definition = starDefinitions[i];
-						double fullTargetSize = targetStarSize * definition.GridLength.Value;
-						
-						if (definition.MinimumSize < fullTargetSize)
-						{
-							var scale = (fullTargetSize - definition.MinimumSize) / totaldiff;
-							var portion = scale * availableSpace;
-							portions[i] = definition.MinimumSize + portion;
-						}
-						else
-						{
-							portions[i] = definition.MinimumSize;
-						}
+						var scale = (fullTargetSize - definition.MinimumSize) / totaldiff;
+						var portion = scale * availableSpace;
+						portions[i] = definition.MinimumSize + portion;
 					}
-					
-					var totalPixels = portions.Sum() * density;
-					var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions);
-					
-					for (int i = 0; i < starDefinitions.Length; i++)
+					else
 					{
-						starDefinitions[i].Size = DensityValue.FromPixels(pixelAllocations[i], density);
+						portions[i] = definition.MinimumSize;
 					}
 				}
-				else
+				
+				var totalPixels = portions.Sum() * density;
+				var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions);
+				
+				for (int i = 0; i < starDefinitions.Length; i++)
 				{
-					// Original logic for density = 1.0
-					foreach (var definition in defs)
-					{
-						if (definition.IsStar)
-						{
-							// Skip the star rows/columns whose minimums are at or higher than the target sizes
-							double fullTargetSize = targetStarSize * definition.GridLength.Value;
-
-							if (definition.MinimumSize < fullTargetSize)
-							{
-								// Figure out how small this definition is relative to the total difference,
-								// and use that to determine how much of the available space this definition gets
-
-								// The goal is to have the definitions expand proportionate to their deficit from
-								// their full target sizes
-
-								var scale = (fullTargetSize - definition.MinimumSize) / totaldiff;
-								var portion = scale * availableSpace;
-								definition.Size = definition.MinimumSize + portion;
-							}
-						}
-					}
+					starDefinitions[i].Size = DensityValue.FromPixels(pixelAllocations[i], density);
 				}
 			}
 
