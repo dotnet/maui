@@ -716,14 +716,14 @@ namespace Microsoft.Maui.Controls
 			binding.Apply(BindingContext, this, context.Property, fromBindingContextChanged, specificity);
 		}
 
-		static bool ShouldOverrideSpecificity(SetterSpecificity previous, SetterSpecificity current)
+		static bool ShouldOverrideSpecificity(SetterSpecificity orginal, SetterSpecificity current)
 		{
 			// FromHandler gets overridden by anything except itself
-			if (previous == SetterSpecificity.FromHandler)
+			if (orginal == SetterSpecificity.FromHandler)
 				return current != SetterSpecificity.FromHandler;
 
 			// FromUnknown gets overridden by anything except itself
-			if (previous == SetterSpecificity.FromUnknown)
+			if (orginal == SetterSpecificity.FromUnknown)
 				return current != SetterSpecificity.FromUnknown;
 
 			// For all other cases, don't override
