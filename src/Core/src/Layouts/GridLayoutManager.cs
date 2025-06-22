@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
@@ -843,13 +844,6 @@ namespace Microsoft.Maui.Layouts
 
 			void ExpandStarDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount, bool limitStarSizes)
 			{
-				// Try density-aware expansion first if density information is available
-				if (TryExpandStarDefinitionsWithDensityAwareness(definitions, targetSize, currentSize, spacing, starCount, limitStarSizes))
-				{
-					return;
-				}
-
-				// Fallback to original method
 				// Figure out what the star value should be at this size
 				var starSize = ComputeStarSizeForTarget(targetSize, definitions, spacing, starCount);
 
@@ -861,8 +855,11 @@ namespace Microsoft.Maui.Layouts
 					EnsureSizeLimit(definitions, starSize);
 				}
 
+				// Get density for pixel-perfect distribution
+				var density = GetDensity();
+
 				// Inflate the stars so that we fill up the space at this size
-				ExpandStars(targetSize, currentSize, definitions, starSize, starCount);
+				ExpandStars(targetSize, currentSize, definitions, starSize, starCount, density);
 			}
 
 			static void EnsureSizeLimit(Definition[] definitions, double starSize)
@@ -897,7 +894,7 @@ namespace Microsoft.Maui.Layouts
 				return (targetSize - sum) / starCount;
 			}
 
-			static void ExpandStars(double targetSize, double currentSize, Definition[] defs, double targetStarSize, double starCount)
+			static void ExpandStars(double targetSize, double currentSize, Definition[] defs, double targetStarSize, double starCount, double density)
 			{
 				Debug.Assert(starCount > 0, "Assume that the caller has already checked for the existence of star rows/columns before using this.");
 
@@ -930,11 +927,28 @@ namespace Microsoft.Maui.Layouts
 					// targetStarSize, that means we have enough room to expand all of our star rows/columns
 					// to their full size.
 
-					foreach (var definition in defs)
+					// Use density-aware distribution for pixel-perfect allocation
+					if (density > 1.0)
 					{
-						if (definition.IsStar)
+						var starDefinitions = defs.Where(d => d.IsStar).ToArray();
+						var portions = starDefinitions.Select(d => targetStarSize * d.GridLength.Value).ToArray();
+						var totalPixels = portions.Sum() * density;
+						var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions);
+						
+						for (int i = 0; i < starDefinitions.Length; i++)
 						{
-							definition.Size = targetStarSize * definition.GridLength.Value;
+							starDefinitions[i].Size = DensityValue.FromPixels(pixelAllocations[i], density);
+						}
+					}
+					else
+					{
+						// Original logic for density = 1.0
+						foreach (var definition in defs)
+						{
+							if (definition.IsStar)
+							{
+								definition.Size = targetStarSize * definition.GridLength.Value;
+							}
 						}
 					}
 
@@ -958,89 +972,64 @@ namespace Microsoft.Maui.Layouts
 					}
 				}
 
-				foreach (var definition in defs)
+				// Use density-aware distribution for pixel-perfect proportional allocation
+				if (density > 1.0)
 				{
-					if (definition.IsStar)
+					var starDefinitions = defs.Where(d => d.IsStar).ToArray();
+					var portions = new double[starDefinitions.Length];
+					
+					for (int i = 0; i < starDefinitions.Length; i++)
 					{
-						// Skip the star rows/columns whose minimums are at or higher than the target sizes
+						var definition = starDefinitions[i];
 						double fullTargetSize = targetStarSize * definition.GridLength.Value;
-
+						
 						if (definition.MinimumSize < fullTargetSize)
 						{
-							// Figure out how small this definition is relative to the total difference,
-							// and use that to determine how much of the available space this definition gets
-
-							// The goal is to have the definitions expand proportionate to their deficit from
-							// their full target sizes
-
 							var scale = (fullTargetSize - definition.MinimumSize) / totaldiff;
 							var portion = scale * availableSpace;
-							definition.Size = definition.MinimumSize + portion;
+							portions[i] = definition.MinimumSize + portion;
+						}
+						else
+						{
+							portions[i] = definition.MinimumSize;
+						}
+					}
+					
+					var totalPixels = portions.Sum() * density;
+					var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions);
+					
+					for (int i = 0; i < starDefinitions.Length; i++)
+					{
+						starDefinitions[i].Size = DensityValue.FromPixels(pixelAllocations[i], density);
+					}
+				}
+				else
+				{
+					// Original logic for density = 1.0
+					foreach (var definition in defs)
+					{
+						if (definition.IsStar)
+						{
+							// Skip the star rows/columns whose minimums are at or higher than the target sizes
+							double fullTargetSize = targetStarSize * definition.GridLength.Value;
+
+							if (definition.MinimumSize < fullTargetSize)
+							{
+								// Figure out how small this definition is relative to the total difference,
+								// and use that to determine how much of the available space this definition gets
+
+								// The goal is to have the definitions expand proportionate to their deficit from
+								// their full target sizes
+
+								var scale = (fullTargetSize - definition.MinimumSize) / totaldiff;
+								var portion = scale * availableSpace;
+								definition.Size = definition.MinimumSize + portion;
+							}
 						}
 					}
 				}
 			}
 
-			bool TryExpandStarDefinitionsWithDensityAwareness(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount, bool limitStarSizes)
-			{
-				// Try to get density from the grid view
-				var density = GetDensity();
-				if (density <= 1.0)
-				{
-					return false; // Skip density-aware logic for density 1.0 to maintain backward compatibility
-				}
-
-				// Calculate available space for star definitions
-				var availableSpace = targetSize;
-				
-				// Subtract spacing
-				availableSpace -= spacing * (definitions.Length - 1);
-				
-				// Subtract size of non-star definitions
-				foreach (var def in definitions)
-				{
-					if (!def.IsStar)
-					{
-						availableSpace -= def.Size.Dp;
-					}
-				}
-
-				if (availableSpace <= 0)
-				{
-					return false;
-				}
-
-				// Collect star definitions and their weights
-				var starDefs = new List<Definition>();
-				var starWeights = new List<double>();
-				
-				foreach (var def in definitions)
-				{
-					if (def.IsStar)
-					{
-						starDefs.Add(def);
-						starWeights.Add(def.GridLength.Value);
-					}
-				}
-
-				if (starDefs.Count == 0)
-				{
-					return false;
-				}
-
-				// Use DensityValue.DistributePixels for precise distribution
-				var totalPixels = availableSpace * density;
-				var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, starWeights.ToArray());
-				
-				// Assign the distributed pixels back to star definitions
-				for (int i = 0; i < starDefs.Count; i++)
-				{
-					var dpSize = pixelAllocations[i] / density;
-					starDefs[i].Size = new DensityValue(dpSize, density);
-				}
-
-				return true;
-			}
 
 			/// <summary>
 			/// Gets the display density for density-aware calculations.
