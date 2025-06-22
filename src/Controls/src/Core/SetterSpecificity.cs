@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls
 	{
 		const byte ExtrasVsm = 0x01;
 		const byte ExtrasHandler = 0xFF;
+		const byte ExtrasUnknown = 0xFE;
 
 		public const ushort ManualTriggerBaseline = 2;
 
@@ -38,12 +39,16 @@ namespace Microsoft.Maui.Controls
 		// handler always apply, but are removed when anything else comes in. see SetValueActual
 		public static readonly SetterSpecificity FromHandler = new SetterSpecificity(0xFF, 0, 0, 0, 0, 0, 0, 0);
 
+		// Similar to FromHandler, with slightly lower priority
+		public static readonly SetterSpecificity FromUnknown = new SetterSpecificity(ExtrasUnknown, 0, 0, 0, 0, 0, 0, 0);
+
 		// We store all information in one single UInt64 value to have the fastest comparison possible
 		readonly ulong _value;
 
 
 		public bool IsDefault => _value == 0ul;
 		public bool IsHandler => _value == 0xFFFFFFFFFFFFFFFF;
+		public bool IsUnknown => _value == 0xFEFEFEFEFEFEFEFE;
 		public bool IsVsm => (_value & 0x0100000000000000) != 0;
 		public bool IsVsmImplicit => (_value & 0x0000000004000000) != 0;
 		public bool IsManual => ((_value >> 28) & 0xFFFF) == 1;
@@ -112,6 +117,12 @@ namespace Microsoft.Maui.Controls
 			if (extras == ExtrasHandler)
 			{
 				_value = 0xFFFFFFFFFFFFFFFF;
+				return;
+			}
+
+			if (extras == ExtrasUnknown)
+			{
+				_value = 0x8000000000000000;
 				return;
 			}
 

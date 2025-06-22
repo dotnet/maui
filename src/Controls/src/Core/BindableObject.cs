@@ -129,9 +129,9 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			var original = bpcontext.Values.GetSpecificityAndValue();
-			if (original.Key == SetterSpecificity.FromHandler)
+			if (original.Key == SetterSpecificity.FromHandler || original.Key == SetterSpecificity.FromUnknown)
 			{
-				bpcontext.Values.Remove(SetterSpecificity.FromHandler);
+				bpcontext.Values.Remove(original.Key);
 			}
 
 			var newValue = bpcontext.Values.GetClearedValue(specificity);
@@ -286,7 +286,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="targetProperty">The bindable property on which to apply <paramref name="binding"/>.</param>
 		/// <param name="binding">The binding to set for <paramref name="targetProperty"/>.</param>
 		public void SetBinding(BindableProperty targetProperty, BindingBase binding)
-			=> SetBinding(targetProperty, binding, binding != null && targetProperty != null && binding.GetRealizedMode(targetProperty) == BindingMode.TwoWay ? SetterSpecificity.FromHandler : SetterSpecificity.FromBinding);
+			=> SetBinding(targetProperty, binding, binding != null && targetProperty != null && binding.GetRealizedMode(targetProperty) == BindingMode.TwoWay ? SetterSpecificity.FromUnknown : SetterSpecificity.FromBinding);
 
 		internal void SetBinding(BindableProperty targetProperty, BindingBase binding, SetterSpecificity specificity)
 		{
@@ -613,11 +613,11 @@ namespace Microsoft.Maui.Controls
 			var original = specificityAndValue.Value;
 			var originalSpecificity = specificityAndValue.Key;
 
-			//if the last value was set from handler, override it
-			if (specificity != SetterSpecificity.FromHandler
-				&& originalSpecificity == SetterSpecificity.FromHandler)
+			// If the originalSpecificity is FromHandler or FromUnknown,
+			// determine whether it should be overridden.
+			if (ShouldOverrideSpecificity(originalSpecificity, specificity))
 			{
-				context.Values.Remove(SetterSpecificity.FromHandler);
+				context.Values.Remove(originalSpecificity);
 				originalSpecificity = context.Values.GetSpecificity();
 			}
 
@@ -714,6 +714,20 @@ namespace Microsoft.Maui.Controls
 			var specificity = kvp.Key;
 			binding.Unapply(fromBindingContextChanged);
 			binding.Apply(BindingContext, this, context.Property, fromBindingContextChanged, specificity);
+		}
+
+		static bool ShouldOverrideSpecificity(SetterSpecificity previous, SetterSpecificity current)
+		{
+			// FromHandler gets overridden by anything except itself
+			if (previous == SetterSpecificity.FromHandler)
+				return current != SetterSpecificity.FromHandler;
+
+			// FromUnknown gets overridden by anything except itself
+			if (previous == SetterSpecificity.FromUnknown)
+				return current != SetterSpecificity.FromUnknown;
+
+			// For all other cases, don't override
+			return false;
 		}
 
 		static void BindingContextPropertyBindingChanging(BindableObject bindable, BindingBase oldBindingBase, BindingBase newBindingBase)
