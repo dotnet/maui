@@ -24,7 +24,19 @@ namespace Microsoft.Maui.Layouts
 		/// <summary>
 		/// Gets the value in density-independent pixels (dp).
 		/// </summary>
-		public double Dp => Math.Abs(Density - 1.0) < Epsilon ? RawPx : RawPx / Density;
+		public double Dp 
+		{ 
+			get
+			{
+				// Handle default case where Density is 0
+				if (Math.Abs(Density) < Epsilon)
+				{
+					return RawPx; // Treat as 1.0 density
+				}
+				
+				return Math.Abs(Density - 1.0) < Epsilon ? RawPx : RawPx / Density;
+			}
+		}
 
 
 
@@ -45,6 +57,14 @@ namespace Microsoft.Maui.Layouts
 				RawPx = dp * density;
 			}
 			Density = density;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the DensityValue struct with default density of 1.0.
+		/// </summary>
+		/// <param name="value">The value in density-independent pixels.</param>
+		public DensityValue(double value) : this(value, 1.0)
+		{
 		}
 
 		/// <summary>
@@ -72,12 +92,30 @@ namespace Microsoft.Maui.Layouts
 		/// </summary>
 		public static DensityValue operator +(DensityValue left, DensityValue right)
 		{
-			if (Math.Abs(left.Density - right.Density) > Epsilon)
+			// If both have density 1.0, we can safely add them
+			if (Math.Abs(left.Density - 1.0) < Epsilon && Math.Abs(right.Density - 1.0) < Epsilon)
 			{
-				throw new ArgumentException("Cannot add DensityValues with different densities.");
+				return new DensityValue(left.RawPx + right.RawPx, 1.0);
 			}
 
-			return DensityValue.FromPixels(left.RawPx + right.RawPx, left.Density);
+			// If densities are the same, add them
+			if (Math.Abs(left.Density - right.Density) < Epsilon)
+			{
+				return DensityValue.FromPixels(left.RawPx + right.RawPx, left.Density);
+			}
+
+			// If one has density 1.0 and the other doesn't, treat the 1.0 density value as having the same density as the other
+			if (Math.Abs(left.Density - 1.0) < Epsilon)
+			{
+				return DensityValue.FromPixels(left.RawPx + right.RawPx, right.Density);
+			}
+
+			if (Math.Abs(right.Density - 1.0) < Epsilon)
+			{
+				return DensityValue.FromPixels(left.RawPx + right.RawPx, left.Density);
+			}
+
+			throw new ArgumentException("Cannot add DensityValues with different densities.");
 		}
 
 		/// <summary>
@@ -85,12 +123,30 @@ namespace Microsoft.Maui.Layouts
 		/// </summary>
 		public static DensityValue operator -(DensityValue left, DensityValue right)
 		{
-			if (Math.Abs(left.Density - right.Density) > Epsilon)
+			// If both have density 1.0, we can safely subtract them
+			if (Math.Abs(left.Density - 1.0) < Epsilon && Math.Abs(right.Density - 1.0) < Epsilon)
 			{
-				throw new ArgumentException("Cannot subtract DensityValues with different densities.");
+				return new DensityValue(left.RawPx - right.RawPx, 1.0);
 			}
 
-			return DensityValue.FromPixels(left.RawPx - right.RawPx, left.Density);
+			// If densities are the same, subtract them
+			if (Math.Abs(left.Density - right.Density) < Epsilon)
+			{
+				return DensityValue.FromPixels(left.RawPx - right.RawPx, left.Density);
+			}
+
+			// If one has density 1.0 and the other doesn't, treat the 1.0 density value as having the same density as the other
+			if (Math.Abs(left.Density - 1.0) < Epsilon)
+			{
+				return DensityValue.FromPixels(left.RawPx - right.RawPx, right.Density);
+			}
+
+			if (Math.Abs(right.Density - 1.0) < Epsilon)
+			{
+				return DensityValue.FromPixels(left.RawPx - right.RawPx, left.Density);
+			}
+
+			throw new ArgumentException("Cannot subtract DensityValues with different densities.");
 		}
 
 		/// <summary>
@@ -123,6 +179,14 @@ namespace Microsoft.Maui.Layouts
 		public static implicit operator double(DensityValue value)
 		{
 			return value.Dp;
+		}
+
+		/// <summary>
+		/// Implicitly converts a double to a DensityValue with density 1.0.
+		/// </summary>
+		public static implicit operator DensityValue(double value)
+		{
+			return new DensityValue(value, 1.0);
 		}
 
 		/// <summary>
