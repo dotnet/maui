@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls
 
 		public bool IsDefault => _value == 0ul;
 		public bool IsHandler => _value == 0xFFFFFFFFFFFFFFFF;
-		public bool IsUnknown => _value == 0xFEFEFEFEFEFEFEFE;
+		public bool IsUnknown => _value == 0x8000000000000000;
 		public bool IsVsm => (_value & 0x0100000000000000) != 0;
 		public bool IsVsmImplicit => (_value & 0x0000000004000000) != 0;
 		public bool IsManual => ((_value >> 28) & 0xFFFF) == 1;
