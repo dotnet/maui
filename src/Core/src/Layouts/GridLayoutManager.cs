@@ -927,30 +927,14 @@ namespace Microsoft.Maui.Layouts
 					// targetStarSize, that means we have enough room to expand all of our star rows/columns
 					// to their full size.
 
-					// Use density-aware distribution for pixel-perfect allocation when density != 1.0
-					// For density = 1.0, preserve original behavior to maintain fractional values
-					if (Math.Abs(density - 1.0) > 0.0001)
+					var starDefinitions = defs.Where(d => d.IsStar).ToArray();
+					var portions = starDefinitions.Select(d => targetStarSize * d.GridLength.Value).ToArray();
+					var totalPixels = portions.Sum() * density;
+					var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions);
+					
+					for (int i = 0; i < starDefinitions.Length; i++)
 					{
-						var starDefinitions = defs.Where(d => d.IsStar).ToArray();
-						var portions = starDefinitions.Select(d => targetStarSize * d.GridLength.Value).ToArray();
-						var totalPixels = portions.Sum() * density;
-						var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions);
-						
-						for (int i = 0; i < starDefinitions.Length; i++)
-						{
-							starDefinitions[i].Size = DensityValue.FromPixels(pixelAllocations[i], density);
-						}
-					}
-					else
-					{
-						// Original behavior for density = 1.0 to preserve fractional values
-						foreach (var definition in defs)
-						{
-							if (definition.IsStar)
-							{
-								definition.Size = new DensityValue(targetStarSize * definition.GridLength.Value, density);
-							}
-						}
+						starDefinitions[i].Size = DensityValue.FromPixels(pixelAllocations[i], density);
 					}
 
 					return;
@@ -973,59 +957,33 @@ namespace Microsoft.Maui.Layouts
 					}
 				}
 
-				// Use density-aware distribution for pixel-perfect proportional allocation when density != 1.0
-				// For density = 1.0, preserve original behavior to maintain fractional values
-				if (Math.Abs(density - 1.0) > 0.0001)
+				// Use density-aware distribution for pixel-perfect proportional allocation
+				var proportionalStarDefinitions = defs.Where(d => d.IsStar).ToArray();
+				var proportionalPortions = new double[proportionalStarDefinitions.Length];
+				
+				for (int i = 0; i < proportionalStarDefinitions.Length; i++)
 				{
-					var proportionalStarDefinitions = defs.Where(d => d.IsStar).ToArray();
-					var proportionalPortions = new double[proportionalStarDefinitions.Length];
+					var definition = proportionalStarDefinitions[i];
+					double fullTargetSize = targetStarSize * definition.GridLength.Value;
 					
-					for (int i = 0; i < proportionalStarDefinitions.Length; i++)
+					if (definition.MinimumSize < fullTargetSize)
 					{
-						var definition = proportionalStarDefinitions[i];
-						double fullTargetSize = targetStarSize * definition.GridLength.Value;
-						
-						if (definition.MinimumSize < fullTargetSize)
-						{
-							var scale = (fullTargetSize - definition.MinimumSize) / totaldiff;
-							var portion = scale * availableSpace;
-							proportionalPortions[i] = definition.MinimumSize + portion;
-						}
-						else
-						{
-							proportionalPortions[i] = definition.MinimumSize;
-						}
+						var scale = (fullTargetSize - definition.MinimumSize) / totaldiff;
+						var portion = scale * availableSpace;
+						proportionalPortions[i] = definition.MinimumSize + portion;
 					}
-					
-					var proportionalTotalPixels = proportionalPortions.Sum() * density;
-					var proportionalPixelAllocations = DensityValue.DistributePixels(proportionalTotalPixels, density, proportionalPortions);
-					
-					for (int i = 0; i < proportionalStarDefinitions.Length; i++)
+					else
 					{
-						proportionalStarDefinitions[i].Size = DensityValue.FromPixels(proportionalPixelAllocations[i], density);
+						proportionalPortions[i] = definition.MinimumSize;
 					}
 				}
-				else
+				
+				var proportionalTotalPixels = proportionalPortions.Sum() * density;
+				var proportionalPixelAllocations = DensityValue.DistributePixels(proportionalTotalPixels, density, proportionalPortions);
+				
+				for (int i = 0; i < proportionalStarDefinitions.Length; i++)
 				{
-					// Original behavior for density = 1.0 to preserve fractional values
-					foreach (var definition in defs)
-					{
-						if (definition.IsStar)
-						{
-							double fullTargetSize = targetStarSize * definition.GridLength.Value;
-							
-							if (definition.MinimumSize < fullTargetSize)
-							{
-								var scale = (fullTargetSize - definition.MinimumSize) / totaldiff;
-								var portion = scale * availableSpace;
-								definition.Size = new DensityValue(definition.MinimumSize + portion, density);
-							}
-							else
-							{
-								definition.Size = definition.MinimumSize;
-							}
-						}
-					}
+					proportionalStarDefinitions[i].Size = DensityValue.FromPixels(proportionalPixelAllocations[i], density);
 				}
 			}
 
