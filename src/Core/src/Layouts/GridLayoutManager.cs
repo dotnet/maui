@@ -841,8 +841,15 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			static void ExpandStarDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount, bool limitStarSizes)
+			void ExpandStarDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount, bool limitStarSizes)
 			{
+				// Try density-aware expansion first if density information is available
+				if (TryExpandStarDefinitionsWithDensityAwareness(definitions, targetSize, currentSize, spacing, starCount, limitStarSizes))
+				{
+					return;
+				}
+
+				// Fallback to original method
 				// Figure out what the star value should be at this size
 				var starSize = ComputeStarSizeForTarget(targetSize, definitions, spacing, starCount);
 
@@ -972,6 +979,83 @@ namespace Microsoft.Maui.Layouts
 						}
 					}
 				}
+			}
+
+			bool TryExpandStarDefinitionsWithDensityAwareness(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount, bool limitStarSizes)
+			{
+				// Try to get density from the grid view
+				var density = GetDensity();
+				if (density <= 1.0)
+				{
+					return false; // Skip density-aware logic for density 1.0 to maintain backward compatibility
+				}
+
+				// Calculate available space for star definitions
+				var availableSpace = targetSize;
+				
+				// Subtract spacing
+				availableSpace -= spacing * (definitions.Length - 1);
+				
+				// Subtract size of non-star definitions
+				foreach (var def in definitions)
+				{
+					if (!def.IsStar)
+					{
+						availableSpace -= def.Size.Dp;
+					}
+				}
+
+				if (availableSpace <= 0)
+				{
+					return false;
+				}
+
+				// Collect star definitions and their weights
+				var starDefs = new List<Definition>();
+				var starWeights = new List<double>();
+				
+				foreach (var def in definitions)
+				{
+					if (def.IsStar)
+					{
+						starDefs.Add(def);
+						starWeights.Add(def.GridLength.Value);
+					}
+				}
+
+				if (starDefs.Count == 0)
+				{
+					return false;
+				}
+
+				// Use DensityValue.DistributePixels for precise distribution
+				var totalPixels = availableSpace * density;
+				var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, starWeights.ToArray());
+				
+				// Assign the distributed pixels back to star definitions
+				for (int i = 0; i < starDefs.Count; i++)
+				{
+					var dpSize = pixelAllocations[i] / density;
+					starDefs[i].Size = new DensityValue(dpSize, density);
+				}
+
+				return true;
+			}
+
+			/// <summary>
+			/// Gets the display density for density-aware calculations.
+			/// </summary>
+			/// <returns>The display density, or 1.0 if not available.</returns>
+			[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Accesses instance member _grid")]
+			double GetDensity()
+			{
+				// Try to get density from the grid view if it implements IViewWithWindow
+				if (_grid is IViewWithWindow viewWithWindow && viewWithWindow.Window != null)
+				{
+					return viewWithWindow.Window.RequestDisplayDensity();
+				}
+				
+				return 1.0;
 			}
 
 			static bool AnyAuto(Definition[] definitions)

@@ -76,9 +76,9 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Theory]
-		[InlineData(770.175, 2.625, new double[] { 1, 1, 1 }, new int[] { 256, 256, 258 })]
+		[InlineData(770.175, 2.625, new double[] { 1, 1, 1 }, new int[] { 256, 257, 257 })]
 		[InlineData(870.0, 3.0, new double[] { 1, 1, 1 }, new int[] { 290, 290, 290 })]
-		[InlineData(787.5, 2.625, new double[] { 1, 1, 1, 1 }, new int[] { 196, 196, 196, 200 })]
+		[InlineData(787.5, 2.625, new double[] { 1, 1, 1, 1 }, new int[] { 196, 197, 197, 197 })]
 		public void DistributePixels_HandlesRoundingCorrectly(double totalPixels, double density, double[] portions, int[] expected)
 		{
 			var result = DensityValue.DistributePixels(totalPixels, density, portions);
@@ -89,13 +89,16 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				Assert.Equal(expected[i], result[i]);
 			}
 
-			// Verify that the total adds up correctly
+			// Verify that the total adds up correctly 
 			var sum = 0;
 			foreach (var value in result)
 			{
 				sum += value;
 			}
-			Assert.Equal((int)Math.Round(totalPixels), sum);
+			
+			// The total should be Math.Floor(totalPixels) for right-to-left distribution
+			var expectedTotal = (int)Math.Floor(totalPixels);
+			Assert.Equal(expectedTotal, sum);
 		}
 
 		[Fact]
@@ -145,10 +148,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var result = DensityValue.DistributePixels(totalPixels, density, portions);
 
-			// Expected allocation from issue: 256, 256, 258 (total 770)
+			// Expected allocation with right-to-left distribution: 256, 257, 257 (total 770)
 			Assert.Equal(256, result[0]);
-			Assert.Equal(256, result[1]);
-			Assert.Equal(258, result[2]);
+			Assert.Equal(257, result[1]);
+			Assert.Equal(257, result[2]);
 
 			var totalAllocated = result[0] + result[1] + result[2];
 			Assert.Equal(770, totalAllocated);
