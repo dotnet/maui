@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetIsFocused(bool value)
 		{
-			SetValue(IsFocusedPropertyKey, value, specificity: SetterSpecificity.FromHandler);
+			SetValue(IsFocusedPropertyKey, value, specificity: SetterSpecificity.FromUnknown);
 		}
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<FocusRequestArgs> FocusChangeRequested;
@@ -297,7 +297,7 @@ namespace Microsoft.Maui.Controls
 		void ISearchHandlerController.ItemSelected(object obj)
 		{
 			OnItemSelected(obj);
-			SetValue(SelectedItemPropertyKey, obj, specificity: SetterSpecificity.FromHandler);
+			SetValue(SelectedItemPropertyKey, obj, specificity: SetterSpecificity.FromUnknown);
 		}
 
 		void ISearchHandlerController.QueryConfirmed()

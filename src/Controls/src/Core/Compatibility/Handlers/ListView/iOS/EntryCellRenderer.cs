@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var model = (EntryCell)cell.Cell;
 
 			model
-				.SetValue(EntryCell.TextProperty, cell.TextField.Text, specificity: SetterSpecificity.FromHandler);
+				.SetValue(EntryCell.TextProperty, cell.TextField.Text, specificity: SetterSpecificity.FromUnknown);
 		}
 
 		static void UpdateHorizontalTextAlignment(EntryCellTableViewCell cell, EntryCell entryCell)

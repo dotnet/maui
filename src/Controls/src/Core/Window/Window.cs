@@ -220,10 +220,10 @@ namespace Microsoft.Maui.Controls
 
 			var shouldTriggerSizeChanged = (Width != frame.Width) || (Height != frame.Height);
 
-			SetValue(XProperty, frame.X, SetterSpecificity.FromHandler);
-			SetValue(YProperty, frame.Y, SetterSpecificity.FromHandler);
-			SetValue(WidthProperty, frame.Width, SetterSpecificity.FromHandler);
-			SetValue(HeightProperty, frame.Height, SetterSpecificity.FromHandler);
+			SetValue(XProperty, frame.X, SetterSpecificity.FromUnknown);
+			SetValue(YProperty, frame.Y, SetterSpecificity.FromUnknown);
+			SetValue(WidthProperty, frame.Width, SetterSpecificity.FromUnknown);
+			SetValue(HeightProperty, frame.Height, SetterSpecificity.FromUnknown);
 
 			_batchFrameUpdate--;
 			if (_batchFrameUpdate < 0)
