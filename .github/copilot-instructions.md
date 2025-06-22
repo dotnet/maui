@@ -186,6 +186,7 @@ When working on an issue:
 - Tizen-specific code should not be modified unless explicitly required for critical fixes
 
 ### Testing Guidelines
+- **Always** ensure code compiles before running tests to validate changes, otherwise you might be running tests against old code
 - **Always** run unit tests for any code changes before finishing
 - **Never** leave failing unit tests that were introduced by your changes
 - Use `dotnet test` to run specific test projects or test filters
