@@ -179,19 +179,7 @@ When working on an issue:
 - **Always revert** any changes to JSON files in the `Templates/src/` directory before committing
 - These files are automatically generated and should not be modified manually
 
-#### Pre-Completion Checklist for Templates Files
-**Before finishing any PR work, ALWAYS:**
-1. Check for modifications to Templates files: `git status | grep "Templates/src"`
-2. If any `cgmanifest.json` or `templatestrings.json` files are modified, revert them immediately:
-   ```bash
-   # Find the original commit before your changes
-   git log --oneline -n 30
-   # Revert all Templates JSON files to original state
-   git checkout <original_commit> -- src/Templates/src/cgmanifest.json
-   find src/Templates/src -name "templatestrings.json" -exec git checkout <original_commit> -- {} \;
-   ```
-3. Verify reversion: `git status` should show these files as "Changes to be committed" (reverted)
-4. Commit the reversion before proceeding with other changes
+
 
 ### Platform-Specific Restrictions
 - **Never** make changes to files related to Tizen platform
