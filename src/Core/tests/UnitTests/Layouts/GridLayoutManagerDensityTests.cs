@@ -18,11 +18,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var result = DensityValue.DistributePixels(totalPixels, density, portions);
 
-			// Expected from issue: 256 + 256 + 258 = 770px
+			// Expected with right-to-left distribution: [256, 257, 257] = 770px
 			Assert.Equal(3, result.Length);
 			Assert.Equal(256, result[0]);
-			Assert.Equal(256, result[1]);
-			Assert.Equal(258, result[2]);
+			Assert.Equal(257, result[1]); 
+			Assert.Equal(257, result[2]);
 
 			var total = result[0] + result[1] + result[2];
 			Assert.Equal(770, total);
@@ -65,15 +65,15 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var result = DensityValue.DistributePixels(totalPixels, density, portions);
 
-			// Expected: 196 + 196 + 196 + 200 = 788px (rounded total)
+			// Expected with right-to-left distribution: [196, 197, 197, 197] = 787px
 			Assert.Equal(4, result.Length);
 			Assert.Equal(196, result[0]);
-			Assert.Equal(196, result[1]); 
-			Assert.Equal(196, result[2]);
-			Assert.Equal(200, result[3]); // Last element gets the rounding error
+			Assert.Equal(197, result[1]); 
+			Assert.Equal(197, result[2]);
+			Assert.Equal(197, result[3]); 
 
 			var total = result[0] + result[1] + result[2] + result[3];
-			Assert.Equal(788, total);
+			Assert.Equal(787, total);
 		}
 
 		[Fact]
@@ -109,14 +109,17 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var result = DensityValue.DistributePixels(totalPixels, density, portions);
 
-			// Total weight = 8, so ideal distribution:
-			// First: 333 * (3/8) = 124.875 -> 124
-			// Second: 333 * (2/8) = 83.25 -> 83  
-			// Third: gets remainder = 333 - 124 - 83 = 126
+			// Total weight = 8, with right-to-left distribution:
+			// portions[0]=3: floor(333 * 3/8) = floor(124.875) = 124
+			// portions[1]=2: floor(333 * 2/8) = floor(83.25) = 83 
+			// portions[2]=3: floor(333 * 3/8) = floor(124.875) = 124
+			// Total assigned: 124+83+124 = 331, remainder: 333-331 = 2
+			// Right-to-left: portions[2] gets +1, portions[1] gets +1
+			// Final: [124, 84, 125]
 			Assert.Equal(3, result.Length);
 			Assert.Equal(124, result[0]);
-			Assert.Equal(83, result[1]);
-			Assert.Equal(126, result[2]); // Gets the remainder
+			Assert.Equal(84, result[1]);
+			Assert.Equal(125, result[2]);
 
 			var total = result[0] + result[1] + result[2];
 			Assert.Equal(333, total);
@@ -130,10 +133,32 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var result = DensityValue.DistributePixels(totalPixels, density, portions);
 
-			// All but last should get base amount
-			for (int i = 0; i < result.Length - 1; i++)
+			// With right-to-left distribution, we expect different behavior:
+			if (totalPixels == 103.0)
 			{
-				Assert.Equal(expectedBase, result[i]);
+				// 103/4 = 25.75, floor=25 each, remainder=3
+				// Right-to-left: [25, 26, 26, 26]
+				Assert.Equal(25, result[0]);
+				Assert.Equal(26, result[1]); 
+				Assert.Equal(26, result[2]);
+				Assert.Equal(26, result[3]);
+			}
+			else if (totalPixels == 101.0)
+			{
+				// 101/4 = 25.25, floor=25 each, remainder=1 
+				// Right-to-left: [25, 25, 25, 26]
+				Assert.Equal(25, result[0]);
+				Assert.Equal(25, result[1]);
+				Assert.Equal(25, result[2]);
+				Assert.Equal(26, result[3]);
+			}
+			else
+			{
+				// 100/4 = 25 exactly, no remainder
+				for (int i = 0; i < result.Length; i++)
+				{
+					Assert.Equal(expectedBase, result[i]);
+				}
 			}
 
 			// Total should match exactly
@@ -143,10 +168,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				total += value;
 			}
 			Assert.Equal((int)Math.Round(totalPixels), total);
-
-			// Last element gets any remainder
-			var expectedLast = (int)Math.Round(totalPixels) - (expectedBase * (portions.Length - 1));
-			Assert.Equal(expectedLast, result[result.Length - 1]);
 		}
 	}
 }

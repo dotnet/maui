@@ -3334,13 +3334,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var actualPixelWidth1 = Math.Round(rect1.Width * density);
 			var actualPixelWidth2 = Math.Round(rect2.Width * density);
 			
-			// DEBUG: Add some output to understand what's happening
-			Console.WriteLine($"DEBUG: widthConstraint={widthConstraint}, density={density}");
-			Console.WriteLine($"DEBUG: totalPixels={totalPixels}");
-			Console.WriteLine($"DEBUG: expectedPixelWidths=[{string.Join(", ", expectedPixelWidths)}]");
-			Console.WriteLine($"DEBUG: rect0.Width={rect0.Width}, rect1.Width={rect1.Width}, rect2.Width={rect2.Width}");
-			Console.WriteLine($"DEBUG: actualPixelWidths=[{actualPixelWidth0}, {actualPixelWidth1}, {actualPixelWidth2}]");
-			
 			Assert.Equal(expectedPixelWidths[0], actualPixelWidth0);
 			Assert.Equal(expectedPixelWidths[1], actualPixelWidth1);
 			Assert.Equal(expectedPixelWidths[2], actualPixelWidth2);
