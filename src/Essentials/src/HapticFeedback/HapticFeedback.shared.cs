@@ -1,17 +1,14 @@
 ﻿#nullable enable
 
+using Microsoft.Maui.Devices.Sensors;
+
 namespace Microsoft.Maui.Devices
 {
 	/// <summary>
 	/// The HapticFeedback API lets you control haptic feedback on the device.
 	/// </summary>
-	public interface IHapticFeedback
+	public interface IHapticFeedback : IDeviceCapabilities
 	{
-		/// <summary>
-		/// Gets a value indicating whether haptic feedback is supported on this device.
-		/// </summary>
-		bool IsSupported { get; }
-
 		/// <summary>
 		/// Perform a type of haptic feedback on the device.
 		/// </summary>

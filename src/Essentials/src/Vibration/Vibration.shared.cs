@@ -1,19 +1,15 @@
 #nullable enable
 using System;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Devices
 {
 	/// <summary>
 	/// The Vibration API provides an easy way to make the device vibrate.
 	/// </summary>
-	public interface IVibration
+	public interface IVibration : IDeviceCapabilities
 	{
-		/// <summary>
-		/// Gets a value indicating whether vibration is supported on this device.
-		/// </summary>
-		bool IsSupported { get; }
-
 		/// <summary>
 		/// Vibrates the device for 500ms.
 		/// </summary>

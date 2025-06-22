@@ -1,5 +1,5 @@
 #nullable enable
-namespace Microsoft.Maui.Devices.Sensors
+namespace Microsoft.Maui.Devices
 {
 	/// <summary>
 	/// Base interface for all interfaces related to device capabilities.
