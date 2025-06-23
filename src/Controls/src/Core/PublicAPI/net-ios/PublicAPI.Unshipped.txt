@@ -8,23 +8,23 @@ Microsoft.Maui.Controls.LayoutConstraint.Fixed = Microsoft.Maui.Controls.LayoutC
 Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.None = 0 -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed = 2 -> Microsoft.Maui.Controls.LayoutConstraint
-Microsoft.Maui.Controls.HybridWebView.WebResourceRequested -> System.EventHandler<Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs!>?
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.Handled.get -> bool
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.Handled.set -> void
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.Headers.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.HybridWebViewWebResourceRequestedEventArgs(System.Uri! uri, string! method) -> void
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.Method.get -> string!
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs?
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.QueryParameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.IO.Stream? content) -> void
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.Uri.get -> System.Uri!
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgsExtensions
-Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs
-Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Request.get -> Foundation.NSUrlRequest!
-Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Sender.get -> WebKit.WKWebView!
-Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.UrlSchemeTask.get -> WebKit.IWKUrlSchemeTask!
+Microsoft.Maui.Controls.HybridWebView.WebResourceRequested -> System.EventHandler<Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs!>?
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Handled.get -> bool
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Handled.set -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Headers.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.WebViewWebResourceRequestedEventArgs(Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs! platformArgs) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.WebViewWebResourceRequestedEventArgs(System.Uri! uri, string! method) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Method.get -> string!
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs?
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.QueryParameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.IO.Stream? content) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Uri.get -> System.Uri!
+Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs
+Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Request.get -> Foundation.NSUrlRequest!
+Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Sender.get -> WebKit.WKWebView!
+Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.UrlSchemeTask.get -> WebKit.IWKUrlSchemeTask!
 Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
 *REMOVED*Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime
@@ -59,9 +59,9 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentM
 ~override Microsoft.Maui.Controls.StackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.TemplatedPage.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.TemplatedView.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
-static Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgsExtensions.SetResponse(this Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs! e, int code, string! reason) -> void
-static Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgsExtensions.SetResponse(this Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs! e, int code, string! reason, string! contentType, System.IO.Stream? content) -> void
-static Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgsExtensions.SetResponse(this Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs! e, int code, string! reason, string! contentType, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, string! contentType, System.IO.Stream? content) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, string! contentType, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
 ~override Microsoft.Maui.Controls.VerticalStackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.GetTransformedText(string source, Microsoft.Maui.TextTransform textTransform) -> string
 ~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.SetPlainText(Microsoft.Maui.Controls.InputView inputView, string platformText) -> void
