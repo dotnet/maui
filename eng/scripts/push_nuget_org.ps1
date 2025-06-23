@@ -90,7 +90,7 @@ $nugetApiKeysExceedingQuota = [System.Collections.Generic.List[string]]::new()
 $nugetApiKeyIndex = 1
 
 foreach ($nupkg in $nupkgs) {
-  if ( $env:PUSH_PACKAGES -ne "True" ) {
+  if ( $env:PUSH_PACKAGES -ne "true" ) {
     Write-Host "`tdry run, not pushing $($nupkg.FullName)"
     continue
   }

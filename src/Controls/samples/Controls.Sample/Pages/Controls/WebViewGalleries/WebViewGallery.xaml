@@ -154,7 +154,15 @@
                     <Button
                         Text="Enable Zoom Controls"
                         Clicked="OnEnableZoomControlsClicked"/>
-                </VerticalStackLayout>
+                    <Label
+                        Text="JavaScriptEnabled"
+                        Style="{StaticResource Headline}"/>
+                    <Button
+                        Text="JavaScriptEnabled"
+                        Clicked="OnJavaScriptEnabledClicked"/>
+                    <Label
+                        x:Name="JavaScriptEnabledResult" />
+        </VerticalStackLayout>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

@@ -21,6 +21,6 @@ public partial class GlobalXmlnsWithStyle : ContentPage
 		var page = new GlobalXmlnsWithStyle(useCompiledXaml);
 		Assert.That(page.label0.TextColor, Is.EqualTo(Colors.Red));
 		Assert.That(page.label0.BackgroundColor, Is.EqualTo(Colors.Blue));
-		
+
 	}
 }

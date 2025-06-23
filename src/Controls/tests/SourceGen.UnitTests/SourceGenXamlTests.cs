@@ -276,7 +276,7 @@ using Microsoft.Maui.Controls;
 		Assert.That(result.Results.Single().GeneratedSources.Where(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)), Is.Empty);
 	}
 
-		[Test]
+	[Test]
 	public void TestCodeBehindGenerator_ConflictingNames()
 	{
 		var code =

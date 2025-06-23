@@ -6,8 +6,12 @@
 
 <h1>This is the count in the main app: @count</h1>
 <button @onclick="Increment">Increment</button>
+<button @onclick="Decrement">Decrement</button>
+<button @onclick="SetValue">Set Value</button>
 
 <MauiRazorClassLibrarySample.Component1 />
+
+@inject IJSRuntime JSRuntime
 
 @code {
     int count = 0;
@@ -15,5 +19,35 @@
     void Increment()
     {
         count++;
+    }
+
+    async Task Decrement()
+    {
+        if (await ConfirmDecrement())
+        {
+            count--;
+        }
+    }
+
+    async Task<bool> ConfirmDecrement()
+    {
+        return await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to decrement?");
+    }
+
+    async Task SetValue()
+    {
+        var userResponse = await JSRuntime.InvokeAsync<string?>("prompt", "Enter a new value for count:", count.ToString());
+        if (userResponse is null)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "No value entered, count remains unchanged.");
+        }
+        else if (!int.TryParse(userResponse, out var newCount))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Invalid input, please enter a valid number.");
+        }
+        else
+        {
+            count = newCount;
+        }
     }
 }

@@ -1,11 +1,11 @@
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "Microsoft.Maui.Controls.Xaml.UnitTests.NSGlobalXmlnsWithXStatic")]
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests.NSGlobalXmlnsWithXStatic
-{ 
+{
 	public class MockxStatic
 	{
 		public static string MockStaticProperty { get { return "Property"; } }

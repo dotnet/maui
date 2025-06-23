@@ -40,14 +40,14 @@ namespace Microsoft.Maui.Platform
 			if (view is not null && request is not null && !string.IsNullOrEmpty(url))
 			{
 				// 1. Check if the app wants to modify or override the request
-				var response = TryInterceptResponseStream(view, request, url, logger);
+				var response = WebRequestInterceptingWebView.TryInterceptResponseStream(Handler, view, request, url, logger);
 				if (response is not null)
 				{
 					return response;
 				}
 
 				// 2. Check if the request is for a local resource
-				response = GetResponseStream(view, request, url, logger);
+				response = GetResponse(url, logger);
 				if (response is not null)
 				{
 					return response;
@@ -60,31 +60,7 @@ namespace Microsoft.Maui.Platform
 			return base.ShouldInterceptRequest(view, request);
 		}
 
-		private WebResourceResponse? TryInterceptResponseStream(AWebView view, IWebResourceRequest request, string url, ILogger? logger)
-		{
-			if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
-			{
-				return null;
-			}
-
-			// 1. First, create the event args
-			var platformArgs = new WebResourceRequestedEventArgs(view, request);
-
-			// 2. Trigger the event for the app
-			var handled = Handler.VirtualView.WebResourceRequested(platformArgs);
-
-			// 3. If the app reported that it completed the request, then we do nothing more
-			if (handled)
-			{
-				logger?.LogDebug("Request for {Url} was handled by the user.", url);
-
-				return platformArgs.Response;
-			}
-
-			return null;
-		}
-
-		private WebResourceResponse? GetResponseStream(AWebView view, IWebResourceRequest request, string fullUrl, ILogger? logger)
+		private WebResourceResponse? GetResponse(string fullUrl, ILogger? logger)
 		{
 			if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
 			{

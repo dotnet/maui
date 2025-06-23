@@ -23,19 +23,19 @@ Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime?
 Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime?
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
-Microsoft.Maui.Controls.HybridWebView.WebResourceRequested -> System.EventHandler<Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs!>?
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.Handled.get -> bool
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.Handled.set -> void
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.Headers.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.HybridWebViewWebResourceRequestedEventArgs(System.Uri! uri, string! method) -> void
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.Method.get -> string!
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs?
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.QueryParameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.IO.Stream? content) -> void
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.Uri.get -> System.Uri!
-Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgsExtensions
+Microsoft.Maui.Controls.HybridWebView.WebResourceRequested -> System.EventHandler<Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs!>?
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Handled.get -> bool
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Handled.set -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Headers.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.WebViewWebResourceRequestedEventArgs(Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs! platformArgs) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.WebViewWebResourceRequestedEventArgs(System.Uri! uri, string! method) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Method.get -> string!
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs?
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.QueryParameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.IO.Stream? content) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Uri.get -> System.Uri!
 Microsoft.Maui.Controls.ICornerElement
 Microsoft.Maui.Controls.ICornerElement.CornerRadius.get -> Microsoft.Maui.CornerRadius
 Microsoft.Maui.Controls.ILineHeightElement
@@ -197,14 +197,14 @@ Microsoft.Maui.Controls.Performance.WarningOptions.MinimumLevel.set -> void
 Microsoft.Maui.Controls.Performance.WarningOptions.Thresholds.get -> Microsoft.Maui.Controls.Performance.PerformanceThresholds!
 Microsoft.Maui.Controls.Performance.WarningOptions.Thresholds.set -> void
 Microsoft.Maui.Controls.Performance.WarningOptions.WarningOptions() -> void
-Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs
-Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Request.get -> Android.Webkit.IWebResourceRequest!
-Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Response.get -> Android.Webkit.WebResourceResponse?
-Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Response.set -> void
-Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Sender.get -> Android.Webkit.WebView!
-static Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgsExtensions.SetResponse(this Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs! e, int code, string! reason) -> void
-static Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgsExtensions.SetResponse(this Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs! e, int code, string! reason, string! contentType, System.IO.Stream? content) -> void
-static Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgsExtensions.SetResponse(this Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs! e, int code, string! reason, string! contentType, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
+Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs
+Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Request.get -> Android.Webkit.IWebResourceRequest!
+Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Response.get -> Android.Webkit.WebResourceResponse?
+Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Response.set -> void
+Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Sender.get -> Android.Webkit.WebView!
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, string! contentType, System.IO.Stream? content) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, string! contentType, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
 Microsoft.Maui.Controls.ITextAlignmentElement
 Microsoft.Maui.Controls.ITextAlignmentElement.HorizontalTextAlignment.get -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.Controls.ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(Microsoft.Maui.TextAlignment oldValue, Microsoft.Maui.TextAlignment newValue) -> void
@@ -261,9 +261,13 @@ static Microsoft.Maui.Controls.ImageButton.MapRippleColor(Microsoft.Maui.Handler
 ~override Microsoft.Maui.Controls.Compatibility.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.Compatibility.StackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.ContentPresenter.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.HorizontalStackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.ScrollView.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.StackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.TemplatedPage.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.TemplatedView.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.VerticalStackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~static Microsoft.Maui.Controls.Button.MapRippleColor(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
 ~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.GetTransformedText(string source, Microsoft.Maui.TextTransform textTransform) -> string
 ~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.SetPlainText(Microsoft.Maui.Controls.InputView inputView, string platformText) -> void
@@ -320,6 +324,13 @@ static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToSpannableStr
 *REMOVED*~static Microsoft.Maui.Controls.VisualElement.ControlsVisualElementMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IView, Microsoft.Maui.IViewHandler>
 *REMOVED*~static Microsoft.Maui.Controls.WebView.ControlsWebViewMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWebView, Microsoft.Maui.Handlers.WebViewHandler>
 *REMOVED*~static Microsoft.Maui.Controls.Window.ControlsWindowMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWindow, Microsoft.Maui.Handlers.WindowHandler>
+~static Microsoft.Maui.Controls.Platform.WebViewExtensions.UpdateJavaScriptEnabled(this Android.Webkit.WebView platformView, Microsoft.Maui.Controls.WebView webView) -> void
+~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WebView.GetJavaScriptEnabled(Microsoft.Maui.Controls.WebView element) -> bool
+~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WebView.IsJavaScriptEnabled(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.WebView> config) -> bool
+~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WebView.JavaScriptEnabled(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.WebView> config, bool value) -> void
+~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WebView.SetJavaScriptEnabled(Microsoft.Maui.Controls.WebView element, bool value) -> void
+~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WebView.SetJavaScriptEnabled(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.WebView> config, bool value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.WebView>
+~static Microsoft.Maui.Controls.WebView.MapJavaScriptEnabled(Microsoft.Maui.Handlers.IWebViewHandler handler, Microsoft.Maui.Controls.WebView webView) -> void
 ~static readonly Microsoft.Maui.Controls.BaseShellItem.FlyoutItemIsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
 const Microsoft.Maui.Controls.TitleBar.ContentHiddenState = "ContentCollapsed" -> string!
 const Microsoft.Maui.Controls.TitleBar.ContentVisibleState = "ContentVisible" -> string!
@@ -423,6 +434,7 @@ static readonly Microsoft.Maui.Controls.TitleBar.TitleProperty -> Microsoft.Maui
 static readonly Microsoft.Maui.Controls.TitleBar.TrailingContentProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.TitleBarProperty -> Microsoft.Maui.Controls.BindableProperty!
 virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Controls.Window! window) -> void
+~static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WebView.JavaScriptEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Switch.OffColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~Microsoft.Maui.Controls.Switch.OffColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.Switch.OffColor.set -> void
