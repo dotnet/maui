@@ -1406,7 +1406,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		[Fact(Skip = "Failing on dnceng"), Category(TestCategory.Memory)]
+		[Fact, Category(TestCategory.Memory)]
 		public async Task BindingUnsubscribesForDeadTarget()
 		{
 			var viewmodel = new TestViewModel();
