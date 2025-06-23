@@ -52,8 +52,8 @@
     <MicrosoftExtensionsPrimitivesVersion>10.0.0-preview.6.25321.102</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftExtensionsHostingAbstractionsVersion>10.0.0-preview.6.25321.102</MicrosoftExtensionsHostingAbstractionsVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>36.0.0-preview.6.167</MicrosoftAndroidSdkWindowsPackageVersion>
-    <MicrosoftNETSdkAndroidManifest90100PackageVersion>35.0.61</MicrosoftNETSdkAndroidManifest90100PackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>36.0.0-ci.main.169</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftNETSdkAndroidManifest90100PackageVersion>35.0.78</MicrosoftNETSdkAndroidManifest90100PackageVersion>
     <AndroidNetPreviousVersion>$(MicrosoftNETSdkAndroidManifest90100PackageVersion)</AndroidNetPreviousVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdknet100_184PackageVersion>18.4.10636-net10-p6</MicrosoftMacCatalystSdknet100_184PackageVersion>
