@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.Maui.Platform.ScrollViewExtensions.UpdateOrientation(this UIKit.UIScrollView! nativeScrollView, Microsoft.Maui.IScrollView! scrollView) -> void

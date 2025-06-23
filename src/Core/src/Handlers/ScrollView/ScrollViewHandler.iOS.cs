@@ -82,7 +82,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
-
+			
+			platformView.UpdateOrientation(scrollView);
 			platformView.UpdateIsEnabled(scrollView);
 			platformView.InvalidateMeasure(scrollView);
 		}

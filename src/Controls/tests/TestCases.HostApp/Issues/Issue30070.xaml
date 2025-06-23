@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<local:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             xmlns:local="using:Maui.Controls.Sample.Issues"
+             xmlns:issues="using:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue30070">
+  <Grid RowDefinitions="*,Auto,Auto,Auto"
+        Padding="0,10">
+    <ScrollView
+      Grid.Row="0"
+      x:Name="MyScrollView"
+      Orientation="Horizontal"
+      AutomationId="TestScrollView">
+      <ContentView x:Name="ScrollViewContent"
+                   Content="{Binding Content}"
+                   AutomationId="ScrollViewContent"/>
+    </ScrollView>
+    <HorizontalStackLayout Grid.Row="1">
+      <Button Text="Label"
+              Clicked="OnContentTypeButtonClicked"
+              WidthRequest="100"
+              AutomationId="LabelContentBtn"/>
+      <Button Text="Image"
+              Clicked="OnContentTypeButtonClicked"
+              WidthRequest="100"
+              AutomationId="ImageContentBtn"/>
+      <Button Text="Editor"
+              Clicked="OnContentTypeButtonClicked"
+              WidthRequest="100"
+              AutomationId="GridContentBtn"/>
+    </HorizontalStackLayout>
+    <HorizontalStackLayout Grid.Row="2">
+      <Button Text="Grid"
+              Clicked="OnContentTypeButtonClicked"
+              WidthRequest="100"
+              AutomationId="GridContentBtn"/>
+      <Button Text="AbsoluteLayout"
+              Clicked="OnContentTypeButtonClicked"
+              WidthRequest="150"
+              AutomationId="AbsoluteLayoutContentBtn"/>
+    </HorizontalStackLayout>
+  </Grid>
+</local:TestContentPage>
