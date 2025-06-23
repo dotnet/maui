@@ -25,55 +25,63 @@ public class DatePickerFeatureTests : UITest
     {
         App.WaitForElement("DatePickerControl");
         App.Tap("DatePickerControl");
-#if IOS || MACCATALYST
+#if ANDROID
+        App.WaitForElement("OK");
+        App.Tap("OK");
+#elif IOS
         App.WaitForElement("Done");
         App.Tap("Done");
-#else
-        App.WaitForElement("Ok");
-        App.Tap("Ok");
 #endif
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
-    [Test]
+    [Test, Order(2)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_ModifyOldDateAndNewDate_VerifyVisualState()
     {
         App.WaitForElement("DatePickerControl");
         App.Tap("DatePickerControl");
-        App.Tap("26");
 #if ANDROID
-        App.WaitForElement("Ok");
-        App.Tap("Ok");
-        Assert.That(App.WaitForElement("NewDateSelectedLabel").GetText(), Is.EqualTo("12/26/2025"));
-        Assert.That(App.WaitForElement("OldDateSelectedLabel").GetText(), Is.EqualTo("12/24/2025"));
-
-#else
+        App.Tap("26");
+        App.WaitForElement("OK");
+        App.Tap("OK");
+        Assert.That(App.WaitForElement("NewDateSelectedLabel").GetText(), Is.EqualTo("12/26/2025 12:00:00 AM"));
+        Assert.That(App.WaitForElement("OldDateSelectedLabel").GetText(), Is.EqualTo("12/24/2025 12:00:00 AM"));
+#elif IOS
         App.WaitForElement("Done");
         App.Tap("Done");
-        // VerifyScreenshot();
 #endif
+        VerifyScreenshot();
     }
 
-    [Test]
+    [Test, Order(3)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_OldDateAndNewDate_VerifyVisualState()
     {
         App.WaitForElement("DatePickerControl");
         App.Tap("DatePickerControl");
-        App.Tap("28");
 #if ANDROID
+        App.WaitForElement("26");
+        App.Tap("26");
+        App.WaitForElement("OK");
+        App.Tap("OK");
+        App.WaitForElement("DatePickerControl");
+        App.Tap("DatePickerControl");
+        App.WaitForElement("28");
+        App.Tap("28");
         App.WaitForElement("Cancel");
         App.Tap("Cancel");
-        Assert.That(App.WaitForElement("NewDateSelectedLabel").GetText(), Is.EqualTo("12/26/2025"));
-        Assert.That(App.WaitForElement("OldDateSelectedLabel").GetText(), Is.EqualTo("12/24/2025"));
-#else
-        // VerifyScreenshot();
+        Assert.That(App.WaitForElement("NewDateSelectedLabel").GetText(), Is.EqualTo("12/26/2025 12:00:00 AM"));
+        Assert.That(App.WaitForElement("OldDateSelectedLabel").GetText(), Is.EqualTo("12/24/2025 12:00:00 AM"));
+#elif IOS
+        App.WaitForElement("Done");
+        App.Tap("Done");
 #endif
+        VerifyScreenshot();
     }
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
-    [Test]
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/30066
+    [Test, Order(4)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetCharacterSpacingAndDate_VerifyVisualState()
     {
@@ -85,28 +93,28 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 #endif
 
-    [Test]
+    [Test, Order(5)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_DateSelectedEvent_FiresOnDateChange()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
-        App.WaitForElement("MinimumDateEntry");
-        App.ClearText("MinimumDateEntry");
-        App.EnterText("MinimumDateEntry", "12/15/2026");
+        App.WaitForElement("DateEntry");
+        App.ClearText("DateEntry");
+        App.EnterText("DateEntry", "12/15/2026");
         App.WaitForElement("SetDateButton");
         App.Tap("SetDateButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/23793, https://github.com/dotnet/maui/issues/29099, https://github.com/dotnet/maui/issues/30011
-    [Test]
+    [Test, Order(6)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetDateAndFormat_VerifyVisualState()
     {
@@ -119,13 +127,18 @@ public class DatePickerFeatureTests : UITest
         App.Tap("SetFormatButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
+#if ANDROID
         var datePicker = App.WaitForElement("DatePickerControl").GetText();
         Assert.That(datePicker, Is.EqualTo("Wednesday, December 24, 2025"));
+#else
+        VerifyScreenshot();
+#endif
     }
 #endif
 
 #if TEST_FAILS_ON_CATALYST // Issue Links -https://github.com/dotnet/maui/issues/20904
-    [Test]
+    [Test, Order(7)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetDateAndTextColor_VerifyVisualState()
     {
@@ -136,12 +149,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 #endif
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
-    [Test]
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Links - https://github.com/dotnet/maui/issues/30065
+    [Test, Order(8)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetDateAndFlowDirection_VerifyVisualState()
     {
@@ -152,12 +165,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST
-    [Test]
+#if TEST_FAILS_ON_CATALYST
+    [Test, Order(9)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetFontAttributesAndFontFamily_VerifyVisualState()
     {
@@ -170,12 +183,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 #endif
 
 #if TEST_FAILS_ON_CATALYST
-    [Test]
+    [Test, Order(10)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetFontAttributesAndFontSize_VerifyVisualState()
     {
@@ -189,12 +202,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 #endif
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/23793, https://github.com/dotnet/maui/issues/29099, https://github.com/dotnet/maui/issues/30011
-    [Test]
+    [Test, Order(11)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetFontAttributesAndFormat_VerifyVisualState()
     {
@@ -210,12 +223,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST
-    [Test]
+#if TEST_FAILS_ON_CATALYST
+    [Test, Order(12)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetFontFamilyAndFontSize_VerifyVisualState()
     {
@@ -229,12 +242,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/23793, https://github.com/dotnet/maui/issues/29099, https://github.com/dotnet/maui/issues/30011
-    [Test]
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/23793, https://github.com/dotnet/maui/issues/29099, https://github.com/dotnet/maui/issues/30011
+    [Test, Order(13)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetFontFamilyAndFormat_VerifyVisualState()
     {
@@ -250,12 +263,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 #endif
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/23793, https://github.com/dotnet/maui/issues/29099, https://github.com/dotnet/maui/issues/30011
-    [Test]
+    [Test, Order(14)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetFontSizeAndFormat_VerifyVisualState()
     {
@@ -272,11 +285,11 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 #endif
 
-    [Test]
+    [Test, Order(15)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetDateAndIsEnabled_VerifyVisualState()
     {
@@ -287,10 +300,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        App.WaitForElement("DatePickerControl");
+        App.Tap("DatePickerControl");
+        VerifyScreenshot();
     }
 
-    [Test]
+    [Test, Order(16)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetDateAndIsVisible_VerifyVisualState()
     {
@@ -301,10 +316,10 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForNoElement("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
-    [Test]
+    [Test, Order(17)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetDateAndShadowOpacity_VerifyVisualState()
     {
@@ -315,10 +330,10 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
-    [Test]
+    [Test, Order(18)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetMinimumDateAndDate_VerifyVisualState()
     {
@@ -337,10 +352,10 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
-    [Test]
+    [Test, Order(19)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetMaximumDateAndDate_VerifyVisualState()
     {
@@ -359,27 +374,11 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
-    [Test]
-    [Category(UITestCategories.DatePicker)]
-    public void DatePicker_Format_d_ShortDatePattern()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("FormatEntry");
-        App.ClearText("FormatEntry");
-        App.EnterText("FormatEntry", "d");
-        App.WaitForElement("SetFormatButton");
-        App.Tap("SetFormatButton");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
-    }
-
-    [Test]
+#if TEST_FAILS_ON_CATALYST
+    [Test, Order(20)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_Format_D_LongDatePattern()
     {
@@ -393,10 +392,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
+#endif
 
-    [Test]
+#if TEST_FAILS_ON_CATALYST
+    [Test, Order(21)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_Format_f_FullDateShortTime()
     {
@@ -411,10 +412,12 @@ public class DatePickerFeatureTests : UITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
         Thread.Sleep(5000);
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
+#endif
 
-    [Test]
+#if TEST_FAILS_ON_CATALYST
+    [Test, Order(22)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_Format_F_FullDateLongTime()
     {
@@ -428,68 +431,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
+#endif
 
-    [Test]
-    [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetFontAttributesAndFormat_d_VerifyVisualState()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("FontAttributesItalicButton");
-        App.Tap("FontAttributesItalicButton");
-        App.WaitForElement("FormatEntry");
-        App.ClearText("FormatEntry");
-        App.EnterText("FormatEntry", "d");
-        App.WaitForElement("SetFormatButton");
-        App.Tap("SetFormatButton");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
-    }
-
-    [Test]
-    [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetFontFamilyAndFormat_d_VerifyVisualState()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("FontFamilyDokdoButton");
-        App.Tap("FontFamilyDokdoButton");
-        App.WaitForElement("FormatEntry");
-        App.ClearText("FormatEntry");
-        App.EnterText("FormatEntry", "d");
-        App.WaitForElement("SetFormatButton");
-        App.Tap("SetFormatButton");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
-    }
-
-    [Test]
-    [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetFontSizeAndFormat_d_VerifyVisualState()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("FontSizeEntry");
-        App.ClearText("FontSizeEntry");
-        App.EnterText("FontSizeEntry", "30");
-        App.WaitForElement("FormatEntry");
-        App.ClearText("FormatEntry");
-        App.EnterText("FormatEntry", "d");
-        App.WaitForElement("SetFormatButton");
-        App.Tap("SetFormatButton");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
-    }
-
-    [Test]
+#if TEST_FAILS_ON_CATALYST
+    [Test, Order(23)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetFontAttributesAndFormat_f_VerifyVisualState()
     {
@@ -505,10 +452,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
+#endif
 
-    [Test]
+#if TEST_FAILS_ON_CATALYST
+    [Test, Order(24)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetFontFamilyAndFormat_f_VerifyVisualState()
     {
@@ -524,10 +473,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
+#endif
 
-    [Test]
+#if TEST_FAILS_ON_CATALYST
+    [Test, Order(25)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetFontSizeAndFormat_f_VerifyVisualState()
     {
@@ -544,68 +495,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
+#endif
 
-    [Test]
-    [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetFontAttributesAndFormat_F_VerifyVisualState()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("FontAttributesItalicButton");
-        App.Tap("FontAttributesItalicButton");
-        App.WaitForElement("FormatEntry");
-        App.ClearText("FormatEntry");
-        App.EnterText("FormatEntry", "F");
-        App.WaitForElement("SetFormatButton");
-        App.Tap("SetFormatButton");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
-    }
-
-    [Test]
-    [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetFontFamilyAndFormat_F_VerifyVisualState()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("FontFamilyDokdoButton");
-        App.Tap("FontFamilyDokdoButton");
-        App.WaitForElement("FormatEntry");
-        App.ClearText("FormatEntry");
-        App.EnterText("FormatEntry", "F");
-        App.WaitForElement("SetFormatButton");
-        App.Tap("SetFormatButton");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
-    }
-
-    [Test]
-    [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetFontSizeAndFormat_F_VerifyVisualState()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("FontSizeEntry");
-        App.ClearText("FontSizeEntry");
-        App.EnterText("FontSizeEntry", "30");
-        App.WaitForElement("FormatEntry");
-        App.ClearText("FormatEntry");
-        App.EnterText("FormatEntry", "F");
-        App.WaitForElement("SetFormatButton");
-        App.Tap("SetFormatButton");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        // VerifyScreenshot();
-    }
-
-    [Test]
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/30090
+    [Test, Order(26)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetCulture_enUS_VerifyDateFormat()
     {
@@ -624,8 +519,10 @@ public class DatePickerFeatureTests : UITest
         var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
         Assert.That(cultureFormatText, Is.EqualTo("Culture: en-US, Date: 12/24/2026 12:00:00 AM"));
     }
+#endif
 
-    [Test]
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/30090
+    [Test, Order(27)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetCulture_frFR_VerifyDateFormat()
     {
@@ -644,8 +541,10 @@ public class DatePickerFeatureTests : UITest
         var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
         Assert.That(cultureFormatText, Is.EqualTo("Culture: fr-FR, Date: 24/12/2026 00:00:00"));
     }
+#endif
 
-    [Test]
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/30090
+    [Test, Order(28)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetCulture_jaJP_VerifyDateFormat()
     {
@@ -664,8 +563,10 @@ public class DatePickerFeatureTests : UITest
         var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
         Assert.That(cultureFormatText, Is.EqualTo("Culture: ja-JP, Date: 2026/12/24 0:00:00"));
     }
+#endif
 
-    [Test]
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/30090
+    [Test, Order(29)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetCulture_svFI_VerifyDateFormat()
     {
@@ -684,4 +585,5 @@ public class DatePickerFeatureTests : UITest
         var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
         Assert.That(cultureFormatText, Is.EqualTo("Culture: sv-FI, Date: 2026-12-24 00:00:00"));
     }
+#endif
 }

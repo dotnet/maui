@@ -110,7 +110,7 @@ public partial class DatePickerOptionsPage : ContentPage
 			_viewModel.MinimumDate = parsedDate;
 		}
 	}
-	
+
 	private void OnCultureButtonClicked(object sender, EventArgs e)
 	{
 		if (sender is Button button)

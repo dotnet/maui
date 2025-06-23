@@ -146,7 +146,7 @@
                             AutomationId="FormatEntry"
                             HeightRequest="37"
                             HorizontalOptions="Start"
-                            Text="MM/dd/yyyy"
+                            Text="d"
                             VerticalOptions="Center"
                             WidthRequest="100"/>
                      <Button AutomationId="SetFormatButton"
@@ -254,7 +254,7 @@
                              Text="Green"
                              TextColor="White"/>
               </HorizontalStackLayout>
-              
+
               <!-- Culture -->
               <Label Grid.Row="13"
                      Grid.Column="0"

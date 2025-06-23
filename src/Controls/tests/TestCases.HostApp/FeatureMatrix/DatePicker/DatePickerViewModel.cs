@@ -190,7 +190,7 @@ public class DatePickerViewModel : INotifyPropertyChanged
             }
         }
     }
-    
+
     public CultureInfo Culture
     {
         get => _culture;
