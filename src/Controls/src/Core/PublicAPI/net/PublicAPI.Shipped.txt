@@ -1677,7 +1677,7 @@
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.AssemblyName.set -> void
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.ClrNamespace.get -> string
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.XmlNamespace.get -> string
-~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.XmlnsDefinitionAttribute(string xmlNamespace, string target) -> void
+~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.XmlnsDefinitionAttribute(string xmlNamespace, string clrNamespace) -> void
 ~Microsoft.Maui.Controls.XmlnsPrefixAttribute.Prefix.get -> string
 ~Microsoft.Maui.Controls.XmlnsPrefixAttribute.XmlNamespace.get -> string
 ~Microsoft.Maui.Controls.XmlnsPrefixAttribute.XmlnsPrefixAttribute(string xmlNamespace, string prefix) -> void
