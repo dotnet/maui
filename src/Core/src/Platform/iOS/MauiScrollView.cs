@@ -18,6 +18,15 @@ namespace Microsoft.Maui.Platform
 
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
+		// Add reference to the ScrollView element to access orientation
+		WeakReference<IScrollView>? _virtualViewReference;
+
+		internal IScrollView? VirtualView
+		{
+			get => _virtualViewReference != null && _virtualViewReference.TryGetTarget(out var v) ? v : null;
+			set => _virtualViewReference = value == null ? null : new WeakReference<IScrollView>(value);
+		}
+
 		ICrossPlatformLayout? ICrossPlatformLayoutBacking.CrossPlatformLayout
 		{
 			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
@@ -52,6 +61,12 @@ namespace Microsoft.Maui.Platform
 				var crossPlatformBounds = AdjustedContentInset.InsetRect(bounds).Size.ToSize();
 				var crossPlatformContentSize = crossPlatformLayout.CrossPlatformArrange(new Rect(new Point(), crossPlatformBounds));
 				var contentSize = crossPlatformContentSize.ToCGSize();
+
+				// Apply orientation constraints to content size
+				if (VirtualView != null)
+				{
+					contentSize = ApplyOrientationConstraints(contentSize, bounds.Size, VirtualView.Orientation);
+				}
 
 				// For Right-To-Left (RTL) layouts, we need to adjust the content arrangement and offset
 				// to ensure the content is correctly aligned and scrolled. This involves a second layout
@@ -103,6 +118,24 @@ namespace Microsoft.Maui.Platform
 			CacheMeasureConstraints(widthConstraint, heightConstraint);
 
 			return contentSize;
+		}
+		
+		static CGSize ApplyOrientationConstraints(CGSize contentSize, CGSize frameSize, ScrollOrientation orientation)
+		{
+			return orientation switch
+			{
+				ScrollOrientation.Horizontal => new CGSize(
+					Math.Max(contentSize.Width, frameSize.Width), // Ensure content can scroll horizontally
+					frameSize.Height // Prevent vertical scrolling by matching frame height
+				),
+				ScrollOrientation.Vertical => new CGSize(
+					frameSize.Width, // Prevent horizontal scrolling by matching frame width
+					Math.Max(contentSize.Height, frameSize.Height) // Ensure content can scroll vertically
+				),
+				ScrollOrientation.Neither => frameSize, // Prevent all scrolling
+				ScrollOrientation.Both => contentSize, // Allow scrolling in both directions
+				_ => contentSize
+			};
 		}
 
 		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
