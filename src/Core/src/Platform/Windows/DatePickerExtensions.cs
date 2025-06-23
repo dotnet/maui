@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
@@ -38,7 +39,34 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCharacterSpacing(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.CharacterSpacing = datePicker.CharacterSpacing.ToEm();
+			// Store the character spacing value to apply it when ready
+			var characterSpacing = datePicker.CharacterSpacing;
+			
+			// Apply immediately if loaded, otherwise wait for load
+			if (platformDatePicker.IsLoaded)
+			{
+				ApplyCharacterSpacingToTextBlocks(platformDatePicker, characterSpacing);
+			}
+			else
+			{
+				// Wait for the control to load, then apply character spacing
+				platformDatePicker.OnLoaded(() => ApplyCharacterSpacingToTextBlocks(platformDatePicker, characterSpacing));
+			}
+		}
+
+		static void ApplyCharacterSpacingToTextBlocks(CalendarDatePicker platformDatePicker, double characterSpacing)
+		{
+			// Find all TextBlock elements within the CalendarDatePicker and apply character spacing
+			var textBlocks = platformDatePicker.GetChildren<Microsoft.UI.Xaml.Controls.TextBlock>();
+			var characterSpacingEm = characterSpacing.ToEm();
+			
+			foreach (var textBlock in textBlocks)
+			{
+				if (textBlock != null)
+				{
+					textBlock.CharacterSpacing = characterSpacingEm;
+				}
+			}
 		}
 
 		public static void UpdateFont(this CalendarDatePicker platformDatePicker, IDatePicker datePicker, IFontManager fontManager) =>

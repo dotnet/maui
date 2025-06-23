@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
 
@@ -88,6 +89,37 @@ namespace Microsoft.Maui.DeviceTests
 				return solidColorBrush.Color.ToColor();
 
 			return null;
+		}
+
+		[Fact]
+		public async Task CharacterSpacingInitializesCorrectly()
+		{
+			var datePicker = new DatePickerStub()
+			{
+				Date = DateTime.Today,
+				CharacterSpacing = 10
+			};
+
+			await ValidatePropertyInitValue(datePicker, () => datePicker.CharacterSpacing, GetNativeCharacterSpacing, 10.0);
+		}
+
+		double GetNativeCharacterSpacing(DatePickerHandler datePickerHandler)
+		{
+			var platformDatePicker = GetNativeDatePicker(datePickerHandler);
+			
+			// Since CalendarDatePicker doesn't have CharacterSpacing property directly,
+			// we need to check if it was applied to internal TextBlock elements
+			var textBlocks = platformDatePicker.GetChildren<Microsoft.UI.Xaml.Controls.TextBlock>();
+			foreach (var textBlock in textBlocks)
+			{
+				if (textBlock != null && textBlock.CharacterSpacing > 0)
+				{
+					// Convert back from Em to original value (reverse of ToEm() calculation)
+					return textBlock.CharacterSpacing / (0.0624 * 1000);
+				}
+			}
+			
+			return 0.0;
 		}
 	}
 }
