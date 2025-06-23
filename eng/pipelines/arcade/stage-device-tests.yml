@@ -97,15 +97,51 @@ stages:
           - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj' /bl:devicetests.binlog $(_OfficialBuildIdArgs)
             displayName: Build Controls.DeviceTests
 
+          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj' /bl:devicetests_core.binlog $(_OfficialBuildIdArgs)
+            displayName: Build Core.DeviceTests
+
           - template: /eng/common/templates-official/steps/send-to-helix.yml
             parameters:
               HelixProjectPath: ${{ parameters.helixProject }}
-              HelixProjectArguments: ${{ parameters.extraHelixArguments }}
+              HelixProjectArguments: /p:TargetOS=ios
               HelixConfiguration: $(_BuildConfig)
               IncludeDotNetCli: true
-              #  helixScript: $(_helixScriptMacOS)
-              DisplayNamePrefix: Controls.DeviceTests
-              #  helixTestCategory: DeviceTests
-              #  helixTestRunNameSuffix: $(_BuildConfig)$(Build.BuildId)
-              # HelixAccessToken: $(System.AccessToken)
-              #  helixTestResultsDirectory: $(Agent.TempDirectory)/Controls.DeviceTests
+              DisplayNamePrefix: DeviceTestsIOS
+
+      - job: device_tests_android
+        displayName: Controls DeviceTests Android
+        timeoutInMinutes: 240
+        variables:
+        - name: _BuildConfig
+          value: ${{ parameters.BuildConfiguration }}
+        preSteps:
+        - checkout: self
+          fetchDepth: 1
+          clean: true
+
+        steps:
+        - ${{ each step in parameters.prepareSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
+
+        # Run on public pipeline
+        - ${{ if parameters.runAsPublic }}:
+          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /bl:pack.binlog $(_OfficialBuildIdArgs)
+            displayName: Build BuildTasks
+
+          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj' /p:TargetFramework=net9.0-android /bl:devicetests.binlog $(_OfficialBuildIdArgs)
+            displayName: Build Controls.DeviceTests
+
+          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj' /p:TargetFramework=net9.0-android /bl:devicetests_core.binlog $(_OfficialBuildIdArgs)
+            displayName: Build Core.DeviceTests
+
+          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj' /p:TargetFramework=net9.0-android /bl:devicetests_core.binlog $(_OfficialBuildIdArgs)
+            displayName: Build Core.DeviceTests
+
+          - template: /eng/common/templates-official/steps/send-to-helix.yml
+            parameters:
+              HelixProjectPath: ${{ parameters.helixProject }}
+              HelixProjectArguments: /p:TargetOS=android
+              HelixConfiguration: $(_BuildConfig)
+              IncludeDotNetCli: true
+              DisplayNamePrefix: DeviceTestsAndroid
