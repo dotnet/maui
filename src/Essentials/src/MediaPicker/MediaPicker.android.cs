@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Media
 				return null;
 			}
 		}
-		
+
 		async Task<FileResult> PickUsingIntermediateActivity(MediaPickerOptions options, bool photo)
 		{
 			var intent = new Intent(Intent.ActionGetContent);
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Media
 				var singleResult = await PickUsingPhotoPicker(options, photo);
 				return singleResult is not null ? [singleResult] : [];
 			}
-			
+
 			var pickVisualMediaRequestBuilder = new PickVisualMediaRequest.Builder()
 				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance);
 
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Media
 
 			var resultList = new List<FileResult>();
 
-            for (var i = 0; i < androidUris.Size(); i++)
+			for (var i = 0; i < androidUris.Size(); i++)
 			{
 				var uri = androidUris.Get(i) as AndroidUri;
 				if (!uri?.Equals(AndroidUri.Empty) ?? false)
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Media
 
 			return path;
 		}
-		
+
 		async Task<List<FileResult>> PickMultipleUsingIntermediateActivity(MediaPickerOptions options, bool photo)
 		{
 			var intent = new Intent(Intent.ActionGetContent);
@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Media
 			}
 
 			var pickerIntent = Intent.CreateChooser(intent, options?.Title);
-			
+
 			if (pickerIntent is null)
 			{
 				return [];
@@ -265,7 +265,7 @@ namespace Microsoft.Maui.Media
 					// The uri returned is only temporary and only lives as long as the Activity that requested it,
 					// so this means that it will always be cleaned up by the time we need it because we are using
 					// an intermediate activity.
-					
+
 					if (resultIntent.ClipData is null)
 					{
 						// Single selection result
@@ -276,7 +276,7 @@ namespace Microsoft.Maui.Media
 						}
 					}
 					else
-					{	
+					{
 						for (var i = 0; i < resultIntent.ClipData.ItemCount; i++)
 						{
 							var uri = resultIntent.ClipData.GetItemAt(i)?.Uri;
