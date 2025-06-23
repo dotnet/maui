@@ -6,31 +6,10 @@ using Microsoft.Maui.ApplicationModel;
 namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <summary>
-	/// Detect device's orentation relative to Earth's magnetic field in microteslas (µ).
+	/// Detect device's orentation relative to Earth's magnetic field in microteslas (ï¿½).
 	/// </summary>
-	public interface IMagnetometer
+	public interface IMagnetometer : ISensor
 	{
-		/// <summary>
-		/// Gets a value indicating whether reading the magnetometer is supported on this device.
-		/// </summary>
-		bool IsSupported { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether the magnetometer is actively being monitored.
-		/// </summary>
-		bool IsMonitoring { get; }
-
-		/// <summary>
-		/// Start monitoring for changes to the magnetometer.
-		/// </summary>
-		/// <param name="sensorSpeed">The speed to listen for changes.</param>
-		void Start(SensorSpeed sensorSpeed);
-
-		/// <summary>
-		/// Stop monitoring for changes to the magnetometer.
-		/// </summary>
-		void Stop();
-
 		/// <summary>
 		/// Occurs when the magnetometer reading changes.
 		/// </summary>
@@ -38,7 +17,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	}
 
 	/// <summary>
-	/// Detect device's orentation relative to Earth's magnetic field in microteslas (µ).
+	/// Detect device's orentation relative to Earth's magnetic field in microteslas (ï¿½).
 	/// </summary>
 	public static partial class Magnetometer
 	{
@@ -138,7 +117,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			MagneticField = new Vector3(x, y, z);
 
 		/// <summary>
-		/// Gets the magnetic field vector in microteslas (µ).
+		/// Gets the magnetic field vector in microteslas (ï¿½).
 		/// </summary>
 		public Vector3 MagneticField { get; }
 

@@ -7,3 +7,9 @@ static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset
 static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value) -> void
 Microsoft.Maui.Media.SpeechOptions.Rate.get -> float?
 Microsoft.Maui.Media.SpeechOptions.Rate.set -> void
+Microsoft.Maui.Devices.Sensors.ISensor
+Microsoft.Maui.Devices.Sensors.ISensor.IsMonitoring.get -> bool
+Microsoft.Maui.Devices.Sensors.ISensor.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
+Microsoft.Maui.Devices.Sensors.ISensor.Stop() -> void
+Microsoft.Maui.Devices.IDeviceCapabilities
+Microsoft.Maui.Devices.IDeviceCapabilities.IsSupported.get -> bool
