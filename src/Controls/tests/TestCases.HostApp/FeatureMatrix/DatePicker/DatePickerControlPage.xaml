@@ -17,6 +17,7 @@
             <DatePicker AutomationId="DatePickerControl"
                         CharacterSpacing="{Binding CharacterSpacing}"
                         Date="{Binding Date}"
+                        DateSelected="OnDateSelected"
                         FlowDirection="{Binding FlowDirection}"
                         Format="{Binding Format}"
                         FontAttributes="{Binding FontAttributes}"
@@ -34,11 +35,13 @@
                HorizontalOptions="Center"/>
         <HorizontalStackLayout HorizontalOptions="Center">
             <Label Text="New Date: "/>
-            <Label x:Name="NewDateSelectedLabel"/>
+            <Label x:Name="NewDateSelectedLabel"
+                   AutomationId="NewDateSelectedLabel"/>
         </HorizontalStackLayout>
         <HorizontalStackLayout HorizontalOptions="Center">
             <Label Text="Old Date: "/>
-            <Label x:Name="OldDateSelectedLabel"/>
+            <Label x:Name="OldDateSelectedLabel"
+                   AutomationId="OldDateSelectedLabel"/>
         </HorizontalStackLayout>
 
         <Label Text="Culture Format Display"

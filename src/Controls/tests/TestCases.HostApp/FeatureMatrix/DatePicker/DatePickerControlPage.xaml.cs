@@ -36,10 +36,8 @@ public partial class DatePickerMainControlPage : ContentPage
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
 		// Reset culture to default when navigating to options page
-		if (_viewModel != null)
-		{
-			_viewModel.Culture = System.Globalization.CultureInfo.CurrentCulture;
-		}
+		_viewModel.Culture = System.Globalization.CultureInfo.CurrentCulture;
+
 		BindingContext = _viewModel = new DatePickerViewModel();
 		ReinitializeDatePicker();
 		await Navigation.PushAsync(new DatePickerOptionsPage(_viewModel));
@@ -100,10 +98,7 @@ public partial class DatePickerMainControlPage : ContentPage
 			CultureInfo.DefaultThreadCurrentUICulture = culture;
 		}
 
-		if (CultureFormatLabel != null)
-		{
-			CultureFormatLabel.Text = $"Culture: {culture.Name}, Date: {date.ToString(culture)}";
-		}
+		CultureFormatLabel.Text = $"Culture: {culture.Name}, Date: {date.ToString(culture)}";
 	}
 
 	public void OnDateSelected(object sender, DateChangedEventArgs e)
