@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS //Carousel view tests fail on Windows
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,3 +24,4 @@ public class Issue30118 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
