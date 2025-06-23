@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Media
 	partial class MediaPickerImplementation : IMediaPicker
 	{
 		static UIViewController PickerRef;
-		
+
 		public bool IsCaptureSupported
 			=> UIImagePickerController.IsSourceTypeAvailable(UIImagePickerControllerSourceType.Camera);
 
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Media
 			{
 				return null;
 			}
-			
+
 			if (!photo && !pickExisting)
 			{
 				await Permissions.EnsureGrantedAsync<Permissions.Microphone>();
