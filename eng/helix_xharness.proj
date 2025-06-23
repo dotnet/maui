@@ -59,9 +59,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <XHarnessAppBundleToTest
-            Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)/Controls.DeviceTests/Debug', '*.app', System.IO.SearchOption.AllDirectories))">
-            <!-- Specify target platform () -->
+        <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)/Controls.DeviceTests/Debug/net9.0-ios', '*.app', System.IO.SearchOption.AllDirectories))">
             <TestTarget>ios-simulator-64_18.0</TestTarget>
         </XHarnessAppBundleToTest>
     </ItemGroup>
