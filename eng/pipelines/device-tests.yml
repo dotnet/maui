@@ -114,7 +114,6 @@ stages:
         catalystPool: ${{ parameters.catalystPool }}
         windowsPool: ${{ parameters.windowsPool }}
         runAsPublic: true
-        extraHelixArguments: -warnAsError false
         prepareSteps:
         - template: /eng/pipelines/common/provision.yml@self
           parameters:
