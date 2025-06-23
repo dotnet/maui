@@ -102,6 +102,9 @@ dotnet cake --target=dotnet-pack
 ### Testing and Debugging
 
 #### Testing Guidelines
+- **Always** ensure code compiles before running tests to validate changes, otherwise you might be running tests against old code
+- **Always** run unit tests for any code changes before finishing
+- **Never** leave failing unit tests that were introduced by your changes
 - Add tests for new functionality
 - Ensure existing tests pass:
   - `src/Core/tests/UnitTests/Core.UnitTests.csproj`
@@ -109,6 +112,9 @@ dotnet cake --target=dotnet-pack
   - `src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj`
   - `src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj`
   - `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
+- Use `dotnet test` to run specific test projects or test filters
+- When adding new unit tests, ensure they pass consistently
+- Fix any test failures before committing and pushing changes
 
 ### Code Formatting
 
