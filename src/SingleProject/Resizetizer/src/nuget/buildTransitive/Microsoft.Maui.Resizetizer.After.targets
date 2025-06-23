@@ -128,6 +128,15 @@
         </ProcessMauiFontsDependsOnTargets>
     </PropertyGroup>
 
+    <!-- Override ProcessMauiFontsDependsOnTargets for platforms that use AfterTargets="ResizetizeCollectItems" -->
+    <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsTizenApp)' == 'True'">
+        <ProcessMauiFontsDependsOnTargets>
+            $(ProcessMauiFontsDependsOnTargets);
+            ProcessMauiAssets;
+            ProcessMauiSplashScreens;
+        </ProcessMauiFontsDependsOnTargets>
+    </PropertyGroup>
+
     <!-- iOS -->
     <PropertyGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
         <ResizetizerPlatformType>ios</ResizetizerPlatformType>
