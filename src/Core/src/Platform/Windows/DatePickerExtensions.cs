@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Platform
 			var characterSpacing = datePicker.CharacterSpacing.ToEm();
 			platformDatePicker.CharacterSpacing = characterSpacing;
 
-			var dateTextBlock = platformDatePicker.FindDescendant<TextBlock>("DateText");
+			var dateTextBlock = platformDatePicker.GetDescendantByName<TextBlock>("DateText");
 			if (dateTextBlock is not null)
 			{
 				dateTextBlock.CharacterSpacing = characterSpacing;
