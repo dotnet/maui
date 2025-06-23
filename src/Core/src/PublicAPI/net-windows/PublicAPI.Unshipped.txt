@@ -60,7 +60,6 @@ Microsoft.Maui.IPickerElement
 Microsoft.Maui.IPickerElement.IsOpen.get -> bool
 Microsoft.Maui.IPickerElement.IsOpen.set -> void
 Microsoft.Maui.IPickerElement.OnIsOpenPropertyChanged(bool oldValue, bool newValue) -> void
-Microsoft.Maui.IHybridWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
 Microsoft.Maui.ITitleBar
 Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
 Microsoft.Maui.ITitleBar.Subtitle.get -> string?
@@ -78,6 +77,8 @@ Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.WebProcessTerminatedEventArgs
 Microsoft.Maui.WebProcessTerminatedEventArgs.CoreWebView2ProcessFailedEventArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2ProcessFailedEventArgs!
 Microsoft.Maui.WebProcessTerminatedEventArgs.Sender.get -> Microsoft.Web.WebView2.Core.CoreWebView2!
+Microsoft.Maui.IWebRequestInterceptingWebView
+Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
 Microsoft.Maui.WebResourceRequestedEventArgs
 Microsoft.Maui.WebResourceRequestedEventArgs.RequestEventArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs!
 Microsoft.Maui.WebResourceRequestedEventArgs.Sender.get -> Microsoft.Web.WebView2.Core.CoreWebView2!

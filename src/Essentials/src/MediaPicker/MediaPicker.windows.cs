@@ -3,7 +3,9 @@
 //  - https://github.com/GiampaoloGabba
 //  - https://github.com/richardrigutins
 
+#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
@@ -23,13 +25,21 @@ namespace Microsoft.Maui.Media
 		public bool IsCaptureSupported
 			=> true;
 
-		public Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
+		[Obsolete("Switch to PickPhotoAsync which also allows multiple selections.")]
+		public Task<FileResult?> PickPhotoAsync(MediaPickerOptions? options = null)
 			=> PickAsync(options, true);
 
-		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
+		public Task<List<FileResult>> PickPhotosAsync(MediaPickerOptions? options = null)
+			=> PickMultipleAsync(options, true);
+
+		[Obsolete("Switch to PickVideosAsync which also allows multiple selections.")]
+		public Task<FileResult?> PickVideoAsync(MediaPickerOptions? options = null)
 			=> PickAsync(options, false);
 
-		public async Task<FileResult> PickAsync(MediaPickerOptions options, bool photo)
+		public Task<List<FileResult>> PickVideosAsync(MediaPickerOptions? options = null)
+			=> PickMultipleAsync(options, false);
+
+		public async Task<FileResult?> PickAsync(MediaPickerOptions? options, bool photo)
 		{
 			var picker = new FileOpenPicker();
 
@@ -55,13 +65,50 @@ namespace Microsoft.Maui.Media
 			return new FileResult(result);
 		}
 
-		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
+		public async Task<List<FileResult>> PickMultipleAsync(MediaPickerOptions? options, bool photo)
+		{
+			if (options?.SelectionLimit == 1)
+			{
+				var singleResult = await PickAsync(options, photo);
+				return singleResult is null ? [] : [singleResult];
+			}
+
+			var picker = new FileOpenPicker();
+
+			var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
+			InitializeWithWindow.Initialize(picker, hwnd);
+
+			var defaultTypes = photo ? FilePickerFileType.Images.Value : FilePickerFileType.Videos.Value;
+
+			// set picker properties
+			foreach (var filter in defaultTypes.Select(t => t.TrimStart('*')))
+			{
+				picker.FileTypeFilter.Add(filter);
+			}
+
+			picker.SuggestedStartLocation = photo ? PickerLocationId.PicturesLibrary : PickerLocationId.VideosLibrary;
+			picker.ViewMode = PickerViewMode.Thumbnail;
+
+			// show the picker
+			var result = await picker.PickMultipleFilesAsync();
+
+			// cancelled
+			if (result is null)
+			{
+				return [];
+			}
+
+			// picked
+			return [.. result.Select(file => new FileResult(file))];
+		}
+
+		public Task<FileResult?> CapturePhotoAsync(MediaPickerOptions? options = null)
 			=> CaptureAsync(options, true);
 
-		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions options)
+		public Task<FileResult?> CaptureVideoAsync(MediaPickerOptions? options = null)
 			=> CaptureAsync(options, false);
 
-		public async Task<FileResult> CaptureAsync(MediaPickerOptions options, bool photo)
+		public async Task<FileResult?> CaptureAsync(MediaPickerOptions? options, bool photo)
 		{
 			var captureUi = new WinUICameraCaptureUI();
 
@@ -90,7 +137,7 @@ namespace Microsoft.Maui.Media
 
 			public WinUICameraCaptureUIVideoCaptureSettings VideoSettings { get; } = new();
 
-			public async Task<StorageFile> CaptureFileAsync(CameraCaptureUIMode mode)
+			public async Task<StorageFile?> CaptureFileAsync(CameraCaptureUIMode mode)
 			{
 				var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
 

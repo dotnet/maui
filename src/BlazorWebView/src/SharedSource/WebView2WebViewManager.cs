@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			});
 #endif
 
-			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
+			_webview.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
 
 			_webview.CoreWebView2.WebResourceRequested += async (s, eventArgs) =>
 			{
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			}
 			else
 			{
-				_logger.ReponseContentNotFound(requestUri);
+				_logger.ResponseContentNotFound(requestUri);
 			}
 #elif WEBVIEW2_MAUI
 			// No-op here because all the work is done in the derived WinUIWebViewManager
