@@ -18,7 +18,7 @@ public class Issue30070 : _IssuesUITest
 	public void ScrollViewOrientationTest()
 	{
 		App.WaitForElement("TestScrollView");
-		App.SwipeLeftToRight("TestScrollView");
+		App.ScrollDown("TestScrollView");
 		VerifyScreenshot();
 	}
 }
