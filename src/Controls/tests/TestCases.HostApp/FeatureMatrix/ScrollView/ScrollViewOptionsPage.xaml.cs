@@ -34,14 +34,20 @@ public partial class ScrollViewOptionsPage : ContentPage
 				};
 				break;
 			case "Image":
+#if WINDOWS
+                double Imagewidth = 1200;
+#else
+				double Imagewidth = 1000;
+#endif
 				vm.Content = new Image
 				{
 					Source = "dotnet_bot.png",
 					HeightRequest = 1000,
-					WidthRequest = 1000,
+					WidthRequest = Imagewidth,
 					Aspect = Aspect.AspectFit
 				};
 				break;
+
 			case "Editor":
 				vm.Content = new Editor
 				{
