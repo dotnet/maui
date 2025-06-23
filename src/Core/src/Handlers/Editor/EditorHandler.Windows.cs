@@ -99,8 +99,15 @@ namespace Microsoft.Maui.Handlers
 		void OnLostFocus(object? sender, RoutedEventArgs e) =>
 			VirtualView?.Completed();
 
-		void OnPlatformLoaded(object sender, RoutedEventArgs e) =>
+		void OnPlatformLoaded(object sender, RoutedEventArgs e)
+		{
 			MauiTextBox.InvalidateAttachedProperties(PlatformView);
+
+			if(VirtualView is not null)
+			{
+				PlatformView?.UpdateCharacterSpacing(VirtualView);
+			}
+		}
 
 		private void OnSelectionChanged(object sender, RoutedEventArgs e)
 		{

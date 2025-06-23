@@ -75,7 +75,15 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCharacterSpacing(this TextBox textBox, ITextStyle textStyle)
 		{
-			textBox.CharacterSpacing = textStyle.CharacterSpacing.ToEm();
+			var characterSpacing = textStyle.CharacterSpacing.ToEm();
+			textBox.CharacterSpacing = characterSpacing;
+
+			var placeholderTextBlock = textBox.GetDescendantByName<TextBlock>("PlaceholderTextContentPresenter");
+			if (placeholderTextBlock is not null)
+			{
+				placeholderTextBlock.CharacterSpacing = characterSpacing;
+				placeholderTextBlock.RefreshThemeResources();
+			}
 		}
 
 		public static void UpdateReturnType(this TextBox textBox, ITextInput textInput)

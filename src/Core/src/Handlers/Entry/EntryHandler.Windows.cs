@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.KeyUp += OnPlatformKeyUp;
 			platformView.TextChanged += OnPlatformTextChanged;
 			platformView.SizeChanged += OnPlatformViewSizeChanged;
+			platformView.Loaded += OnLoaded;
 		}
 
 		protected override void DisconnectHandler(TextBox platformView)
@@ -42,11 +43,20 @@ namespace Microsoft.Maui.Handlers
 			platformView.SizeChanged -= OnPlatformViewSizeChanged;
 			platformView.KeyUp -= OnPlatformKeyUp;
 			platformView.TextChanged -= OnPlatformTextChanged;
+			platformView.Loaded -= OnLoaded;
 
 			if (_set)
 				platformView.SelectionChanged -= OnPlatformSelectionChanged;
 
 			_set = false;
+		}
+
+		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			if (VirtualView is not null)
+			{
+				PlatformView?.UpdateCharacterSpacing(VirtualView);
+			}
 		}
 
 		public static void MapText(IEntryHandler handler, IEntry entry) =>
