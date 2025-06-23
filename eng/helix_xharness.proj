@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
     <PropertyGroup>
         <ScenariosDir>$(BUILD_SOURCESDIRECTORY)/artifacts/bin/</ScenariosDir>
-        <TargetsAppleMobile>true</TargetsAppleMobile>
+        <TargetsAppleMobile Condition="'$(TargetOS)' == 'ios'">true</TargetsAppleMobile>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -69,7 +69,7 @@
     <!-- Process each scenario individually to avoid metadata evaluation issues -->
     <Target Name="DiscoverTestBundles" BeforeTargets="Test">
         <!-- iOS App Bundles -->
-        <ItemGroup>
+        <ItemGroup Condition="'$(TargetOS)' == 'ios'">
             <_ScenarioPaths Include="@(MAUIiOSScenario)">
                 <Path>$(ScenariosDir)/%(ScenarioDirectoryName)/Debug/net*-ios</Path>
                 <PackageName>%(PackageName)</PackageName>
@@ -88,8 +88,8 @@
             </XHarnessAppBundleToTest>
         </ItemGroup>
 
-        <!-- Android APKs -->
-        <ItemGroup>
+        <!-- Android APKs - only include when TargetOS is android -->
+        <ItemGroup Condition="'$(TargetOS)' == 'android'">
             <_ScenarioPathsAndroid Include="@(MAUIiOSScenario)">
                 <Path>$(ScenariosDir)/%(ScenarioDirectoryName)/Debug/net*-android</Path>
                 <PackageName>%(PackageName)</PackageName>
@@ -108,8 +108,9 @@
         </ItemGroup>
 
         <!-- Output discovered paths for debugging -->
-        <Message Text="Discovered iOS app bundles: @(XHarnessAppBundleToTest)" Importance="high" />
-        <Message Text="Discovered Android APKs: @(XHarnessApkToTest)" Importance="high" />
+        <Message Condition="'$(TargetOS)' == 'ios'" Text="Discovered iOS app bundles: @(XHarnessAppBundleToTest)" Importance="high" />
+        <Message Condition="'$(TargetOS)' == 'android'" Text="Discovered Android APKs: @(XHarnessApkToTest)" Importance="high" />
+        <Message Condition="'$(TargetOS)' != 'android'" Text="Skipping Android APKs as TargetOS is not 'android'" Importance="high" />
     </Target>
 
 
