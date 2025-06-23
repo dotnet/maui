@@ -79,24 +79,49 @@
         </MAUIiOSScenario>
     </ItemGroup>
 
-    <ItemGroup>
-        <XHarnessAppBundleToTest
-            Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)/%(MAUIiOSScenario.ScenarioDirectoryName)/Debug/net9.0-ios', '*.app', System.IO.SearchOption.AllDirectories))">
-            <TestTarget>ios-simulator-64</TestTarget>
-            <WorkItemTimeout>02:00:00</WorkItemTimeout>
-            <TestTimeout>01:00:00</TestTimeout>
-            <WorkItemPrefix>%(MAUIiOSScenario.PackageName)</WorkItemPrefix>
-        </XHarnessAppBundleToTest>
-    </ItemGroup>
+    <!-- Process each scenario individually to avoid metadata evaluation issues -->
+    <Target Name="DiscoverTestBundles" BeforeTargets="Test">
+        <!-- iOS App Bundles -->
+        <ItemGroup>
+            <_ScenarioPaths Include="@(MAUIiOSScenario)">
+                <Path>$(ScenariosDir)/%(ScenarioDirectoryName)/Debug/net*-ios</Path>
+                <PackageName>%(PackageName)</PackageName>
+            </_ScenarioPaths>
+            
+            <_AppBundleDirs Include="@(_ScenarioPaths->'$([System.IO.Directory]::GetDirectories(%(Path), *.app, System.IO.SearchOption.AllDirectories))')">
+                <PackageName>%(_ScenarioPaths.PackageName)</PackageName>
+            </_AppBundleDirs>
+            
+            <XHarnessAppBundleToTest Include="@(_AppBundleDirs)">
+                <TestTarget>ios-simulator-64</TestTarget>
+                <WorkItemTimeout>02:00:00</WorkItemTimeout>
+                <TestTimeout>01:00:00</TestTimeout>
+                <WorkItemPrefix>%(PackageName)</WorkItemPrefix>
+            </XHarnessAppBundleToTest>
+        </ItemGroup>
 
-    <ItemGroup>
-        <XHarnessApkToTest
-            Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)/%(MAUIiOSScenario.ScenarioDirectoryName)/Debug/net9.0-android', '*.apk', System.IO.SearchOption.AllDirectories))">
-            <WorkItemTimeout>02:00:00</WorkItemTimeout>
-            <TestTimeout>01:00:00</TestTimeout>
-            <AndroidPackageName>%(MAUIiOSScenario.PackageName)</AndroidPackageName>
-        </XHarnessApkToTest>
-    </ItemGroup>
+        <!-- Android APKs -->
+        <ItemGroup>
+            <_ScenarioPathsAndroid Include="@(MAUIiOSScenario)">
+                <Path>$(ScenariosDir)/%(ScenarioDirectoryName)/Debug/net*-android</Path>
+                <PackageName>%(PackageName)</PackageName>
+            </_ScenarioPathsAndroid>
+            
+            <_ApkDirs Include="@(_ScenarioPathsAndroid->'$([System.IO.Directory]::GetDirectories(%(Path), *.apk, System.IO.SearchOption.AllDirectories))')">
+                <PackageName>%(_ScenarioPathsAndroid.PackageName)</PackageName>
+            </_ApkDirs>
+            
+            <XHarnessApkToTest Include="@(_ApkDirs)">
+                <WorkItemTimeout>02:00:00</WorkItemTimeout>
+                <TestTimeout>01:00:00</TestTimeout>
+                <AndroidPackageName>%(PackageName)</AndroidPackageName>
+            </XHarnessApkToTest>
+        </ItemGroup>
+
+        <!-- Output discovered paths for debugging -->
+        <Message Text="Discovered iOS app bundles: @(XHarnessAppBundleToTest)" Importance="high" />
+        <Message Text="Discovered Android APKs: @(XHarnessApkToTest)" Importance="high" />
+    </Target>
 
 
 </Project>
