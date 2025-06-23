@@ -19,7 +19,8 @@ parameters:
   provisionatorXCodePath: $(provisionator.xcode)
   provisionatorChannel: 'latest'
   provisionatorExtraArguments: $(provisionator.extraArguments)
-  gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+  provisionatorUri: $(provisionator-uri)
+  gitHubToken: $(provisionator--github--pat)
   certPass: $(maui-cert-password) # This lives on MAUI variable group
   certName: 'MauiCert.p12'
   openSslArgs: '-legacy'
@@ -54,6 +55,7 @@ steps:
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       displayName: 'Provision Xcode'
       inputs:
+        provisionator_uri: ${{ parameters.provisionatorUri }}
         provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
         provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
         github_token: ${{ parameters.gitHubToken }}
