@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
     <PropertyGroup>
         <ScenariosDir>$(BUILD_SOURCESDIRECTORY)/artifacts/bin/</ScenariosDir>
+        <TargetsAppleMobile>true</TargetsAppleMobile>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -43,27 +44,48 @@
         <HelixType>test/functional/cli/$(TestScope)/</HelixType>
     </PropertyGroup>
 
+    <ItemGroup Condition="'$(TargetsAppleMobile)' == 'true'">
+        <HelixPreCommand Include="export XHARNESS_DISABLE_COLORED_OUTPUT=true" />
+        <HelixPreCommand Include="export XHARNESS_LOG_WITH_TIMESTAMPS=true" />
+    </ItemGroup>
+
     <ItemGroup>
-        <MAUIiOSScenario Include="Controls DeviceTests">
-            <ScenarioDirectoryName>Controls.DeviceTests</ScenarioDirectoryName>
+        <TestScenario Include="Controls">
+            <DisplayName>Controls DeviceTests</DisplayName>
+            <DirectoryName>Controls.DeviceTests</DirectoryName>
+        </TestScenario>
+        <TestScenario Include="Core">
+            <DisplayName>Core DeviceTests</DisplayName>
+            <DirectoryName>Core.DeviceTests</DirectoryName>
+        </TestScenario>
+        <TestScenario Include="MauiBlazorWebView">
+            <DisplayName>MauiBlazorWebView DeviceTests</DisplayName>
+            <DirectoryName>MauiBlazorWebView.DeviceTests</DirectoryName>
+        </TestScenario>
+        <TestScenario Include="Essentials">
+            <DisplayName>Essentials DeviceTests</DisplayName>
+            <DirectoryName>Essentials.DeviceTests</DirectoryName>
+        </TestScenario>
+        <TestScenario Include="Graphics">
+            <DisplayName>Graphics DeviceTests</DisplayName>
+            <DirectoryName>Graphics.DeviceTests</DirectoryName>
+        </TestScenario>
+
+        <MAUIiOSScenario Include="%(TestScenario.DisplayName)">
+            <ScenarioDirectoryName>%(TestScenario.DirectoryName)</ScenarioDirectoryName>
             <PayloadDirectory>$(ScenariosDir)%(ScenarioDirectoryName)</PayloadDirectory>
-            <IPAName>Microsoft.Maui.Controls.DeviceTests</IPAName>
-            <PackageName>com.microsoft.maui.controls.devicetests</PackageName>
-        </MAUIiOSScenario>
-        <MAUIiOSScenario Include="Core DeviceTests">
-            <ScenarioDirectoryName>Core.DeviceTests</ScenarioDirectoryName>
-            <PayloadDirectory>$(ScenariosDir)%(ScenarioDirectoryName)</PayloadDirectory>
-            <IPAName>Microsoft.Maui.Core.DeviceTests</IPAName>
-            <PackageName>com.microsoft.maui.core.devicetests</PackageName>
+            <IPAName>Microsoft.Maui.%(TestScenario.Identity).DeviceTests</IPAName>
+            <PackageName>com.microsoft.maui.%(TestScenario.Identity.ToLower()).devicetests</PackageName>
         </MAUIiOSScenario>
     </ItemGroup>
 
     <ItemGroup>
         <XHarnessAppBundleToTest
-            Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)/Controls.DeviceTests/Debug/net9.0-ios', '*.app', System.IO.SearchOption.AllDirectories))">
+            Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)/%(MAUIiOSScenario.ScenarioDirectoryName)/Debug/net9.0-ios', '*.app', System.IO.SearchOption.AllDirectories))">
             <TestTarget>ios-simulator-64</TestTarget>
             <WorkItemTimeout>02:00:00</WorkItemTimeout>
             <TestTimeout>01:00:00</TestTimeout>
+            <WorkItemPrefix>%(MAUIiOSScenario.PackageName)</WorkItemPrefix>
         </XHarnessAppBundleToTest>
     </ItemGroup>
 
