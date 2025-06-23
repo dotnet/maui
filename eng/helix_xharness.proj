@@ -6,7 +6,8 @@
 
     <PropertyGroup>
         <HelixType>test/product/</HelixType>
-        <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
+        <HelixBuild Condition="'$(HelixBuild)' == ''">$(BUILD_BUILDNUMBER)</HelixBuild>
+        <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
         <HelixTargetQueues>OSX.15.ARM64.Open</HelixTargetQueues>
         <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
 
@@ -22,20 +23,6 @@
         <!-- Optional: Specific version of Xcode to use. If omitted, xcode-select is used to
         determine the version -->
         <!-- <XHarnessXcodeVersion>16.3</XHarnessXcodeVersion> -->
-    </PropertyGroup>
-
-    <PropertyGroup>
-        <!-- Set Helix build to build number if available -->
-        <HelixBuild Condition="'$(HelixBuild)' == ''">$(BUILD_BUILDNUMBER)</HelixBuild>
-        <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
-
-        <HelixTargetQueues>OSX.15.ARM64.Open</HelixTargetQueues>
-
-        <IncludeDotNetCli>true</IncludeDotNetCli>
-        <DotNetCliPackageType>sdk</DotNetCliPackageType>
-
-        <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
-        <FailOnTestFailure>true</FailOnTestFailure>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(HelixType)' == ''">
@@ -87,11 +74,12 @@
                 <Path>$(ScenariosDir)/%(ScenarioDirectoryName)/Debug/net*-ios</Path>
                 <PackageName>%(PackageName)</PackageName>
             </_ScenarioPaths>
-            
-            <_AppBundleDirs Include="@(_ScenarioPaths->'$([System.IO.Directory]::GetDirectories(%(Path), *.app, System.IO.SearchOption.AllDirectories))')">
+
+            <_AppBundleDirs
+                Include="@(_ScenarioPaths->'$([System.IO.Directory]::GetDirectories(%(Path), *.app, System.IO.SearchOption.AllDirectories))')">
                 <PackageName>%(_ScenarioPaths.PackageName)</PackageName>
             </_AppBundleDirs>
-            
+
             <XHarnessAppBundleToTest Include="@(_AppBundleDirs)">
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
@@ -106,11 +94,12 @@
                 <Path>$(ScenariosDir)/%(ScenarioDirectoryName)/Debug/net*-android</Path>
                 <PackageName>%(PackageName)</PackageName>
             </_ScenarioPathsAndroid>
-            
-            <_ApkDirs Include="@(_ScenarioPathsAndroid->'$([System.IO.Directory]::GetDirectories(%(Path), *.apk, System.IO.SearchOption.AllDirectories))')">
+
+            <_ApkDirs
+                Include="@(_ScenarioPathsAndroid->'$([System.IO.Directory]::GetDirectories(%(Path), *.apk, System.IO.SearchOption.AllDirectories))')">
                 <PackageName>%(_ScenarioPathsAndroid.PackageName)</PackageName>
             </_ApkDirs>
-            
+
             <XHarnessApkToTest Include="@(_ApkDirs)">
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
