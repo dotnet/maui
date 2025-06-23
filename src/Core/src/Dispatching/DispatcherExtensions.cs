@@ -90,11 +90,9 @@ namespace Microsoft.Maui.Dispatching
 			});
 
 		/// <summary>
-		/// Checks if a dispatch is required. If a dispatch is required, the provided action will be executed on the UI thread.
+		/// Schedules the provided action on the UI thread from a worker thread if the current thread is not the UI thread. If the current thread is the UI thread, then the action is executed immediately.
 		/// </summary>
-		/// <param name="dispatcher"></param>
-		/// <param name="action"></param>
-		/// <returns></returns>
+		/// <param name="action">The <see cref="Action"/> to be scheduled for processing on the UI thread.</param>
 		public static void DispatchIfRequired(this IDispatcher dispatcher, Action action)
 		{
 			if (dispatcher.IsDispatchRequired)
