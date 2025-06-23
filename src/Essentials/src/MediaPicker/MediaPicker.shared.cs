@@ -144,6 +144,49 @@ namespace Microsoft.Maui.Media
 	/// </summary>
 	public class MediaPickerOptions
 	{
+		private int compressionQuality = 100;
+
+		/// <summary>
+		/// Gets or sets the compression quality for picked media.
+		/// The value should be between 0 and 100, where 0 is the lowest quality (most compression) and 100 is the highest quality (least compression).
+		/// </summary>
+		/// <remarks>
+		/// <para>Please note that performance might be affected by the compression quality, especially on lower-end devices.</para>
+		/// <para>For JPEG images, this controls the lossy compression quality directly.</para>
+		/// <para>For PNG images, values below 90 will convert to JPEG format for better compression. Values 90-99 will scale down the PNG image. Value 100 preserves original PNG format and quality.</para>
+		/// </remarks>
+		public int CompressionQuality 
+		{ 
+			get => compressionQuality;
+			set => compressionQuality = Math.Max(0, Math.Min(100, value));
+		}
+
+		/// <summary>
+		/// Gets or sets the maximum width for image resizing.
+		/// When set, images will be resized to fit within this width while preserving aspect ratio.
+		/// A value of 0 or null means no width constraint.
+		/// </summary>
+		/// <remarks>
+		/// <para>This property only applies to images. It has no effect on video files.</para>
+		/// <para>The image will be resized to fit within the specified maximum dimensions while maintaining aspect ratio.
+		/// If both MaximumWidth and MaximumHeight are specified, the image will be scaled to fit within both constraints.
+		/// This resizing is applied before any compression quality settings.</para>
+		/// </remarks>
+		public int? MaximumWidth { get; set; }
+
+		/// <summary>
+		/// Gets or sets the maximum height for image resizing.
+		/// When set, images will be resized to fit within this height while preserving aspect ratio.
+		/// A value of 0 or null means no height constraint.
+		/// </summary>
+		/// <remarks>
+		/// <para>This property only applies to images. It has no effect on video files.</para>
+		/// <para>The image will be resized to fit within the specified maximum dimensions while maintaining aspect ratio.
+		/// If both MaximumWidth and MaximumHeight are specified, the image will be scaled to fit within both constraints.
+		/// This resizing is applied before any compression quality settings.</para>
+		/// </remarks>
+		public int? MaximumHeight { get; set; }
+
 		/// <summary>
 		/// Gets or sets the title that is displayed when picking media.
 		/// </summary>
