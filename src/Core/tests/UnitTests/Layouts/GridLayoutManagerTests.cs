@@ -2548,7 +2548,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// adjustments made on the native side to handle rounding/conversion issues (e.g., Android
 			// density conversions), or because of ScrollView's "Fill the viewport" behavior.
 
-			var grid = CreateGridLayout(rows: "*, *, *");
+			var grid = CreateGridLayoutWithDensity(10.0, rows: "*, *, *");
 			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
 
 			var view0 = CreateTestView(new Size(20, 20));
@@ -3234,7 +3234,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(926, 1026)]
 		public void StarsAdjustWhenArrangeAndMeasureHeightDiffer(double heightConstraint, double arrangedHeight)
 		{
-			var grid = CreateGridLayout(rows: "*, *", columns: "*");
+			var grid = CreateGridLayoutWithDensity(2.0, rows: "*, *", columns: "*");
 
 			var smallerView = CreateTestView(new Size(20, 20));
 			var largerView = CreateTestView(new Size(20, 500));
@@ -3265,7 +3265,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(926, 1026)]
 		public void StarsAdjustWhenArrangeAndMeasureWidthDiffer(double widthConstraint, double arrangedWidth)
 		{
-			var grid = CreateGridLayout(rows: "*", columns: "*, *");
+			var grid = CreateGridLayoutWithDensity(2.0, rows: "*", columns: "*, *");
 
 			var smallerView = CreateTestView(new Size(20, 20));
 			var largerView = CreateTestView(new Size(500, 20));
