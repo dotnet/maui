@@ -170,7 +170,7 @@
                        FontAttributes="Bold"
                        Text="Image (animated)" />
                 <Image IsAnimationPlaying="True"
-                       Source="dance.gif" />
+                       Source="animated_heart.gif" />
             </VerticalStackLayout>
 
             <VerticalStackLayout x:Name="ActivityIndicatorContainer"
