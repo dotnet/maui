@@ -67,7 +67,7 @@
     </ItemGroup>
 
     <!-- Process each scenario individually to avoid metadata evaluation issues -->
-    <Target Name="DiscoverTestBundles" BeforeTargets="Test">
+    <Target Name="DiscoverTestBundles" BeforeTargets="BuildHelixWorkItems">
         <!-- iOS App Bundles -->
         <ItemGroup Condition="'$(TargetOS)' == 'ios'">
             <_ScenarioPaths Include="@(MAUIiOSScenario)">
