@@ -59,6 +59,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 			if (setNameScope && Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Cache, Context.Body.Method.Module.ImportReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindableObject"))))
 				SetNameScope(node, namescopeVarDef);
+			//workaround when VSM tries to apply state before parenting
+			else if (Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Cache, Context.Body.Method.Module.ImportReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Element"))))
+			{
+				var module = Context.Body.Method.Module;
+				var parameterTypes = new[] {
+					("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Element"),
+					("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "INameScope"),
+				};
+				Context.IL.Append(Context.Variables[node].LoadAs(Context.Cache, module.GetTypeDefinition(Context.Cache, parameterTypes[0]), module));
+				Context.IL.Append(namescopeVarDef.LoadAs(Context.Cache, module.GetTypeDefinition(Context.Cache, parameterTypes[1]), module));
+				Context.IL.Emit(OpCodes.Stfld, module.ImportFieldReference(Context.Cache, parameterTypes[0], nameof(Element.transientNamescope)));
+			}
 			Context.Scopes[node] = new Tuple<VariableDefinition, IList<string>>(namescopeVarDef, namesInNamescope);
 		}
 

@@ -13,14 +13,14 @@ public class Issue18526 : _IssuesUITest
 		: base(device)
 	{ }
 
-    [Test]
-    [Category(UITestCategories.Frame)]
+	[Test]
+	[Category(UITestCategories.Frame)]
 	public void BorderShouldRender()
 	{
 		var label = App.WaitForElement("label");
-        var size = label.GetRect();
-        Assert.That(label.GetText(), Is.EqualTo(".NET MAUI"));
-        Assert.That(size.Width, Is.GreaterThan(0));
-        Assert.That(size.Height, Is.GreaterThan(0));
+		var size = label.GetRect();
+		Assert.That(label.GetText(), Is.EqualTo(".NET MAUI"));
+		Assert.That(size.Width, Is.GreaterThan(0));
+		Assert.That(size.Height, Is.GreaterThan(0));
 	}
-} 
+}

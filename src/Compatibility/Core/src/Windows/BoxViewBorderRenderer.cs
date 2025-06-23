@@ -9,7 +9,7 @@ using WShape = Microsoft.UI.Xaml.Shapes.Shape;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class BoxViewBorderRenderer : ViewRenderer<BoxView, WBorder>
+	public partial class BoxViewBorderRenderer : ViewRenderer<BoxView, WBorder>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<BoxView> e)
 		{

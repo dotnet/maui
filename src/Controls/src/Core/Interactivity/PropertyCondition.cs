@@ -7,9 +7,7 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="Type[@FullName='Microsoft.Maui.Controls.PropertyCondition']/Docs/*" />
-	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.PassthroughValueProvider")]
-	[AcceptEmptyServiceProvider]
-	public sealed class PropertyCondition : Condition, IValueProvider
+	public sealed class PropertyCondition : Condition
 	{
 		readonly BindableProperty _stateProperty;
 
@@ -82,12 +80,6 @@ namespace Microsoft.Maui.Controls
 				}
 				_triggerValue = value;
 			}
-		}
-
-		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)
-		{
-			//This is no longer required
-			return this;
 		}
 
 		internal override bool GetState(BindableObject bindable)

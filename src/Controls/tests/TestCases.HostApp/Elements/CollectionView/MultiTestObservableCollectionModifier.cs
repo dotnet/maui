@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries
 {
 	internal abstract class MultiTestObservableCollectionModifier : CollectionModifier
 	{

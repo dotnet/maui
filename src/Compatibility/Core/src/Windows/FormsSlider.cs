@@ -8,7 +8,7 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class FormsSlider : Microsoft.UI.Xaml.Controls.Slider
+	public partial class FormsSlider : Microsoft.UI.Xaml.Controls.Slider
 	{
 		internal Thumb Thumb { get; set; }
 		internal Thumb ImageThumb { get; set; }

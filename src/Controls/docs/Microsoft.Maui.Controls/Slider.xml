@@ -165,8 +165,6 @@ namespace FormsGallery
         <ReturnType>System.EventHandler</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DragCompletedCommand">
@@ -183,9 +181,6 @@ namespace FormsGallery
         <ReturnType>System.Windows.Input.ICommand</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DragCompletedCommandProperty">
@@ -203,7 +198,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.Slider.DragCompletedCommand" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DragStarted">
@@ -220,8 +214,6 @@ namespace FormsGallery
         <ReturnType>System.EventHandler</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DragStartedCommand">
@@ -238,9 +230,6 @@ namespace FormsGallery
         <ReturnType>System.Windows.Input.ICommand</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DragStartedCommandProperty">
@@ -258,7 +247,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.Slider.DragStartedCommand" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Maximum">
@@ -331,7 +319,6 @@ namespace FormsGallery
       <Docs>
         <summary>Gets or sets the color of the portion of the slider track that contains the maximum value of the slider.</summary>
         <value>Thhe color of the portion of the slider track that contains the maximum value of the slider.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MaximumTrackColorProperty">
@@ -350,7 +337,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Slider.MaximumTrackColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Minimum">
@@ -423,7 +409,6 @@ namespace FormsGallery
       <Docs>
         <summary>Gets or sets the color of the portion of the slider track that contains the minimum value of the slider.</summary>
         <value>Thhe color of the portion of the slider track that contains the minimum value of the slider.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MinimumTrackColorProperty">
@@ -442,7 +427,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Slider.MinimumTrackColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="On&lt;T&gt;">
@@ -473,8 +457,6 @@ namespace FormsGallery
       <Docs>
         <typeparam name="T">The platform for which to get a platform-specific instance.</typeparam>
         <summary>Returns the platform-specific instance of this <see cref="T:Microsoft.Maui.Controls.Slider" />, on which a platform-specific method may be called.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ThumbColor">
@@ -494,7 +476,6 @@ namespace FormsGallery
       <Docs>
         <summary>Gets or sets the color of the slider thumb button.</summary>
         <value>The color of the slider thumb button.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ThumbColorProperty">
@@ -513,7 +494,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Slider.ThumbColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ThumbImage">
@@ -541,7 +521,6 @@ namespace FormsGallery
       <Docs>
         <summary>Gets or sets the image to use for the slider thumb button.</summary>
         <value>The image to use for the slider thumb button.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ThumbImageProperty">
@@ -568,7 +547,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Slider.ThumbImage" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ThumbImageSource">
@@ -585,9 +563,6 @@ namespace FormsGallery
         <ReturnType>Microsoft.Maui.Controls.ImageSource</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ThumbImageSourceProperty">
@@ -604,8 +579,6 @@ namespace FormsGallery
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Value">
@@ -705,8 +678,6 @@ namespace FormsGallery
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.ISliderController.SendDragStarted">
@@ -727,8 +698,6 @@ namespace FormsGallery
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -16,6 +16,119 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class HandlerLifeCycleTests : BaseTestFixture
 	{
 		[Fact]
+		public void BasicVisualTreeDisconnects()
+		{
+			var mauiApp1 = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ContentPage, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<VerticalStackLayout, HandlerStub>())
+				.Build();
+
+
+			MauiContext mauiContext1 = new MauiContext(mauiApp1.Services);
+
+			var page = new ContentPage();
+			var button1 = new Button();
+			var button2 = new Button();
+			var layout1 = new VerticalStackLayout()
+			{
+				button1,
+				button2
+			};
+
+			page.Content = layout1;
+
+			page.ToHandler(mauiContext1);
+			button1.ToHandler(mauiContext1);
+			button2.ToHandler(mauiContext1);
+			layout1.ToHandler(mauiContext1);
+
+			page.HandlerChanged += (_, __) =>
+			{
+				Assert.NotNull(button1.Handler);
+				Assert.NotNull(button2.Handler);
+				Assert.NotNull(layout1.Handler);
+
+			};
+
+			layout1.HandlerChanged += (_, __) =>
+			{
+				Assert.Null(page.Handler);
+				Assert.NotNull(button1.Handler);
+				Assert.NotNull(button2.Handler);
+			};
+
+			Assert.NotNull(page.Handler);
+			Assert.NotNull(button1.Handler);
+			Assert.NotNull(button2.Handler);
+			Assert.NotNull(layout1.Handler);
+
+
+			page.DisconnectHandlers();
+
+			Assert.Null(page.Handler);
+			Assert.Null(button1.Handler);
+			Assert.Null(button2.Handler);
+			Assert.Null(layout1.Handler);
+		}
+
+		[Fact]
+		public void InterruptDisconnect()
+		{
+			var mauiApp1 = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ContentPage, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<VerticalStackLayout, HandlerStub>())
+				.Build();
+
+
+			MauiContext mauiContext1 = new MauiContext(mauiApp1.Services);
+
+			var page = new ContentPage();
+			var button1 = new Button();
+			var button2 = new Button();
+			var layout1 = new VerticalStackLayout()
+			{
+				button1,
+				button2
+			};
+
+			var layout2 = new VerticalStackLayout()
+			{
+				 new Button(),
+				 new Button()
+			};
+
+			page.Content = new VerticalStackLayout()
+			{
+				layout1, layout2
+			};
+
+			HandlerProperties.SetDisconnectPolicy(layout2, HandlerDisconnectPolicy.Manual);
+
+			page.ToHandler(mauiContext1);
+			button1.ToHandler(mauiContext1);
+			button2.ToHandler(mauiContext1);
+			layout1.ToHandler(mauiContext1);
+			layout2.ToHandler(mauiContext1);
+			layout2[0].ToHandler(mauiContext1);
+			layout2[1].ToHandler(mauiContext1);
+
+			Assert.NotNull(layout2.Handler);
+			Assert.NotNull(layout1.Handler);
+
+			page.DisconnectHandlers();
+
+			Assert.NotNull(layout2.Handler);
+			Assert.NotNull(layout2[0].Handler);
+			Assert.NotNull(layout2[1].Handler);
+			Assert.Null(layout1.Handler);
+		}
+
+
+		[Fact]
 		public void SettingHandlerToNullDisconnectsHandlerFromVirtualView()
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()

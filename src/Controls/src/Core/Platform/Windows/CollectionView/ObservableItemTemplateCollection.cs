@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class ObservableItemTemplateCollection : ObservableCollection<ItemTemplateContext>
+	internal class ObservableItemTemplateCollection : ObservableCollection<ItemTemplateContext>, IDisposable
 	{
 		readonly IList _itemsSource;
 		readonly DataTemplate _itemTemplate;
@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool _innerCollectionChange = false;
 		bool _observeChanges = true;
+		bool _disposedValue;
 
 		~ObservableItemTemplateCollection() => _proxy.Unsubscribe();
 
@@ -59,10 +60,23 @@ namespace Microsoft.Maui.Controls.Platform
 			CollectionChanged += TemplateCollectionChanged;
 		}
 
-		public void CleanUp()
+		protected virtual void Dispose(bool disposing)
 		{
-			CollectionChanged -= TemplateCollectionChanged;
-			_proxy.Unsubscribe();
+			if (!_disposedValue)
+			{
+				if (disposing)
+				{
+					CollectionChanged -= TemplateCollectionChanged;
+					_proxy?.Unsubscribe();
+				}
+				_disposedValue = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
 		}
 
 		void TemplateCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -160,13 +174,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void Add(NotifyCollectionChangedEventArgs args)
 		{
-			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
+			var index = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
 
 			var count = args.NewItems.Count;
 
 			for (int n = 0; n < count; n++)
 			{
-				Insert(startIndex, new ItemTemplateContext(_itemTemplate, args.NewItems[n], _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
+				Insert(index, new ItemTemplateContext(_itemTemplate, args.NewItems[n], _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
+				index++;
 			}
 		}
 

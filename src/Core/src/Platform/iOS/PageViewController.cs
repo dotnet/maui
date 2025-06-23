@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.ApplicationModel;
-using UIKit;
+﻿using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
@@ -17,7 +16,7 @@ namespace Microsoft.Maui.Platform
 		{
 			return new ContentView
 			{
-				CrossPlatformLayout = ((IContentView)view)
+				CrossPlatformLayout = (IContentView)view
 			};
 		}
 
@@ -26,7 +25,7 @@ namespace Microsoft.Maui.Platform
 
 		public override bool PrefersStatusBarHidden()
 		{
-			if(CurrentView is IiOSPageSpecifics pageSpecifics)
+			if (CurrentView is IiOSPageSpecifics pageSpecifics)
 			{
 				return pageSpecifics.PrefersStatusBarHiddenMode switch
 				{

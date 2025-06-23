@@ -1,13 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Dispatching;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries.EmptyViewGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries.EmptyViewGalleries
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class EmptyViewLoadSimulateGallery : ContentPage
 	{
 		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource();

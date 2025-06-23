@@ -14,6 +14,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Compatibility.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.TestUtils")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.TestUtils.DeviceTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.TestUtils.DeviceTests.Runners")]

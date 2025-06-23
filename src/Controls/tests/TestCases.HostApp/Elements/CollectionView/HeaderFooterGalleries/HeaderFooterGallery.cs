@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Controls.Sample.UITests;
+﻿using Controls.Sample.UITests;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 {
@@ -22,6 +20,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 						descriptionLabel,
 						TestBuilder.NavButton("Header/Footer (String)", () => new HeaderFooterString(), Navigation),
 						TestBuilder.NavButton("Header/Footer (Forms View)", () => new HeaderFooterView(), Navigation),
+						TestBuilder.NavButton("Header/Footer (Horizontal Forms View)", () => new HeaderFooterViewHorizontal(), Navigation),
 						TestBuilder.NavButton("Header/Footer (Template)", () => new HeaderFooterTemplate(), Navigation),
 						TestBuilder.NavButton("Header/Footer (Grid)", () => new HeaderFooterGrid(), Navigation),
 						TestBuilder.NavButton("Footer Only (String)", () => new FooterOnlyString(), Navigation),

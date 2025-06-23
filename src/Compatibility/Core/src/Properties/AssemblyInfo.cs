@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.StyleSheets;
+#pragma warning disable CS0618 // Type or member is obsolete
 using CFlexLayout = Microsoft.Maui.Controls.Compatibility.FlexLayout;
 using CGrid = Microsoft.Maui.Controls.Compatibility.Grid;
 using CStackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
@@ -30,3 +31,4 @@ using CStackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 //xf specific
 [assembly: StyleProperty("-maui-spacing", typeof(CStackLayout), nameof(CStackLayout.SpacingProperty))]
 [assembly: StyleProperty("-maui-orientation", typeof(CStackLayout), nameof(CStackLayout.OrientationProperty))]
+#pragma warning restore CS0618 // Type or member is obsolete

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -8,6 +9,7 @@ using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Windowing;
+using Windows.UI;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
@@ -43,6 +45,35 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(mainWindow.Page, mainPage);
 
 				Assert.NotNull(mainWindow.Page);
+			});
+		}
+
+		[Fact(DisplayName = "MauiWinUIWindow doesn't leak")]
+		public async Task MauiWinUIWindowDoesntLeak()
+		{
+			List<WeakReference> weakReferences = new();
+
+			SetupBuilder();
+
+			var mainPage = new NavigationPage(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, async (handler) =>
+			{
+				for (int i = 0; i < 3; i++)
+				{
+					var window = new MauiWinUIWindow();
+					weakReferences.Add(new WeakReference(window));
+
+					window.Activate();
+					await Task.Delay(100);
+					window.Close();
+				}
+
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.WaitForFullGCComplete();
+
+				Assert.True(weakReferences.Count(r => r.IsAlive) == 0);
 			});
 		}
 
@@ -200,6 +231,45 @@ namespace Microsoft.Maui.DeviceTests
 							Assert.True(appTitleBarHeight > 0);
 							Assert.True(Math.Abs(position.Value.Y - appTitleBarHeight) < 1);
 						}
+					}
+					catch (Exception exc)
+					{
+						throw new Exception($"Failed to swap to {nextRootPage}", exc);
+					}
+				}
+			});
+		}
+
+		[Theory]
+		[ClassData(typeof(WindowPageSwapTestCases))]
+		public async Task TitlebarWorksWhenSwitchingPage(WindowPageSwapTestCase swapOrder)
+		{
+			SetupBuilder();
+
+			var firstRootPage = swapOrder.GetNextPageType();
+			var window = new Window(firstRootPage)
+			{
+				TitleBar = new TitleBar()
+				{
+					Title = "Hello World",
+					BackgroundColor = Colors.CornflowerBlue
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
+			{
+				await OnLoadedAsync(swapOrder.Page);
+				while (!swapOrder.IsFinished())
+				{
+					var nextRootPage = swapOrder.GetNextPageType();
+					window.Page = nextRootPage;
+
+					try
+					{
+						await OnLoadedAsync(swapOrder.Page);
+
+						var navView = GetWindowRootView(handler);
+						Assert.NotNull(navView.TitleBar);
 					}
 					catch (Exception exc)
 					{

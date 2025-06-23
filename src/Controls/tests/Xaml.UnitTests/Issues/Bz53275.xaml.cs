@@ -5,6 +5,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	[RequireService([typeof(IProvideValueTarget)])]
 	public class TargetPropertyExtension : IMarkupExtension
 	{
 		public object ProvideValue(IServiceProvider serviceProvider)

@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Class for loading style sheets from strings, assembly resources, and text readers.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="FromAssemblyResource">
@@ -50,7 +49,6 @@
         <param name="lineInfo">The line information for retrieving the style sheet.</param>
         <summary>Returns the specified style sheet.</summary>
         <returns>The specified style sheet.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FromReader">
@@ -74,7 +72,6 @@
         <param name="reader">The text reader from which to read the style sheet data.</param>
         <summary>Returns a style sheet by reading style data from the <paramref name="reader" />.</summary>
         <returns>A style sheet created from the data in the reader.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FromResource">
@@ -106,7 +103,6 @@
         <param name="lineInfo">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FromString">
@@ -135,7 +131,6 @@
         <param name="stylesheet">The style sheet, as a string.</param>
         <summary>Creates and returns a style sheet from a string that contains a text representation of a style sheet.</summary>
         <returns>The style sheet for the data.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

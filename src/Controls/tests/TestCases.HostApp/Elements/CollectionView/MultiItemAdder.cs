@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries
 {
 	internal class MultiItemAdder : MultiTestObservableCollectionModifier
 	{

@@ -31,8 +31,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		AView PlatformView => Content?.ContainerView ?? Content?.PlatformView;
 
-		internal Func<Size?> RetrieveStaticSize 
-		{ 
+		internal Func<Size?> RetrieveStaticSize
+		{
 			get => _retrieveStaticSize?.Target as Func<Size?>;
 			set => _retrieveStaticSize = new WeakReference(value);
 		}
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// This means a different cell has already set our new size
 			// so let's just use that instead of perform our own speculative measure
-			if (possibleNewSize is not null && 
+			if (possibleNewSize is not null &&
 				_pixelSize is not null &&
 				!_pixelSize.Equals(possibleNewSize))
 			{
@@ -170,15 +170,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Even though we already know the size we still need to pass the measure through to the children.
 			if (_pixelSize is not null)
 			{
-				var w = (int)this.FromPixels(_pixelSize.Value.Width);
-				var h = (int)this.FromPixels(_pixelSize.Value.Height);
-
 				// If the platform childs measure has been invalidated, it's going to still want to
 				// participate in the measure lifecycle in order to update its internal
 				// book keeping.
 				_ = (View.Handler as IPlatformViewHandler)?.MeasureVirtualView(
-						MeasureSpec.MakeMeasureSpec(w, MeasureSpecMode.Exactly),
-						MeasureSpec.MakeMeasureSpec(h, MeasureSpecMode.Exactly)
+						MeasureSpec.MakeMeasureSpec((int)_pixelSize.Value.Width, MeasureSpecMode.Exactly),
+						MeasureSpec.MakeMeasureSpec((int)_pixelSize.Value.Height, MeasureSpecMode.Exactly)
 					);
 
 				SetMeasuredDimension((int)_pixelSize.Value.Width, (int)_pixelSize.Value.Height);

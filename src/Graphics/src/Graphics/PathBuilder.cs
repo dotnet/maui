@@ -2,12 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Provides functionality for constructing path objects from string definitions.
+	/// </summary>
 	public class PathBuilder
 	{
+		/// <summary>
+		/// Builds a path from a string definition.
+		/// </summary>
+		/// <param name="definition">The string definition of the path using SVG-like path commands.</param>
+		/// <returns>A new <see cref="PathF"/> object representing the defined path.</returns>
+		/// <remarks>Returns an empty path if the definition is null or empty.</remarks>
 		public static PathF Build(string definition)
 		{
 			if (string.IsNullOrEmpty(definition))
@@ -58,6 +66,13 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Parses a string value as a float using invariant culture.
+		/// </summary>
+		/// <param name="value">The string representation of a number.</param>
+		/// <returns>The float value parsed from the string.</returns>
+		/// <exception cref="Exception">Thrown when the string cannot be parsed as a float.</exception>
+		/// <remarks>Handles special cases like Illustrator's malformed number formats (e.g., "5.96.88").</remarks>
 		public static float ParseFloat(string value)
 		{
 			if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
@@ -98,6 +113,12 @@ namespace Microsoft.Maui.Graphics
 			return builder.ToString();
 		}
 
+		/// <summary>
+		/// Builds a path from a string definition.
+		/// </summary>
+		/// <param name="pathAsString">The string definition of the path using SVG-like path commands.</param>
+		/// <returns>A <see cref="PathF"/> object representing the defined path.</returns>
+		/// <exception cref="Exception">Thrown when there's an error parsing the path commands.</exception>
 		public PathF BuildPath(string pathAsString)
 		{
 			try
@@ -117,7 +138,7 @@ namespace Microsoft.Maui.Graphics
 #else
 				pathAsString = pathAsString.Replace("Infinity", "0", StringComparison.Ordinal);
 #endif
-				pathAsString = Regex.Replace(pathAsString, "([a-zA-Z])", " $1 ");
+				pathAsString = SeparateLetterCharsWithSpaces(pathAsString);
 #if NETSTANDARD2_0
 				pathAsString = pathAsString.Replace("-", " -");
 				pathAsString = pathAsString.Replace(" E  -", "E-");
@@ -212,6 +233,25 @@ namespace Microsoft.Maui.Graphics
 #if DEBUG
 				throw;
 #endif
+			}
+
+			static string SeparateLetterCharsWithSpaces(string input)
+			{
+				var sb = new StringBuilder(input.Length, maxCapacity: 3 * input.Length);
+				foreach (var character in input)
+				{
+					if (char.IsLetter(character))
+					{
+						sb.Append(' ');
+						sb.Append(character);
+						sb.Append(' ');
+					}
+					else
+					{
+						sb.Append(character);
+					}
+				}
+				return sb.ToString();
 			}
 
 			return _path;

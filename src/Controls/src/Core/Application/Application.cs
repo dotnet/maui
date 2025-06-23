@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Controls
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
 
 #pragma warning disable CS0612 // Type or member is obsolete
-		readonly Lazy<IResourceDictionary> _systemResources;
+		readonly Lazy<IResourceDictionary?> _systemResources;
 #pragma warning restore CS0612 // Type or member is obsolete
 
 		IAppIndexingProvider? _appIndexProvider;
@@ -40,10 +41,13 @@ namespace Microsoft.Maui.Controls
 				SetCurrentApplication(this);
 
 #pragma warning disable CS0612 // Type or member is obsolete
-			_systemResources = new Lazy<IResourceDictionary>(() =>
+			_systemResources = new Lazy<IResourceDictionary?>(() =>
 			{
 				var systemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
-				systemResources.ValuesChanged += OnParentResourcesChanged;
+				if (systemResources is not null)
+				{
+					systemResources.ValuesChanged += OnParentResourcesChanged;
+				}
 				return systemResources;
 			});
 #pragma warning restore CS0612 // Type or member is obsolete
@@ -85,6 +89,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='MainPage']/Docs/*" />
 		public Page? MainPage
 		{
+			[Obsolete("This property has been deprecated. For single-window applications, use Windows[0].Page. For multi-window applications, identify and use the appropriate Window object to access the desired Page. Additionally, each element features a Window property, accessible when it's part of the current window.")]
 			get
 			{
 				if (Windows.Count == 0)
@@ -92,6 +97,7 @@ namespace Microsoft.Maui.Controls
 
 				return Windows[0].Page;
 			}
+			[Obsolete("This property is deprecated. Initialize your application by overriding Application.CreateWindow rather than setting MainPage. To modify the root page in an active application, use Windows[0].Page for applications with a single window. For applications with multiple windows, use Application.Windows to identify and update the root page on the correct window.  Additionally, each element features a Window property, accessible when it's part of the current window.")]
 			set
 			{
 				if (MainPage == value)
@@ -125,7 +131,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public NavigationProxy? NavigationProxy { get; private set; }
 
-		internal IResourceDictionary SystemResources => _systemResources.Value;
+		internal IResourceDictionary? SystemResources => _systemResources.Value;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SetAppIndexingProvider']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -218,8 +224,9 @@ namespace Microsoft.Maui.Controls
 
 			return null;
 #elif ANDROID
-			if (Current?.Windows?.Count > 0)
-				return Current.Windows[0].MauiContext.Context?.GetAccentColor();
+			var context = (Current?.Windows?.Count > 0 && Current.Windows[0].MauiContext is not null) ? Current.Windows[0].MauiContext.Context : Current?.FindMauiContext()?.Context;
+			if (context is not null)
+				return context?.GetAccentColor();
 
 			return null;
 #elif IOS
@@ -256,6 +263,7 @@ namespace Microsoft.Maui.Controls
 
 				OnParentResourcesChanged([new KeyValuePair<string, object>(AppThemeBinding.AppThemeResource, newTheme)]);
 				_weakEventManager.HandleEvent(this, new AppThemeChangedEventArgs(newTheme), nameof(RequestedThemeChanged));
+				OnPropertyChanged(nameof(UserAppTheme));
 			}
 			finally
 			{
@@ -453,12 +461,22 @@ namespace Microsoft.Maui.Controls
 		void IApplication.OpenWindow(IWindow window)
 		{
 			if (window is Window cwindow)
+			{
 				OpenWindow(cwindow);
+			}
 		}
 
 		void IApplication.CloseWindow(IWindow window)
 		{
 			Handler?.Invoke(nameof(IApplication.CloseWindow), window);
+		}
+
+		void IApplication.ActivateWindow(IWindow window)
+		{
+			if (window is Window cwindow)
+			{
+				ActivateWindow(cwindow);
+			}
 		}
 
 		internal void RemoveWindow(Window window)
@@ -500,6 +518,11 @@ namespace Microsoft.Maui.Controls
 			Handler?.Invoke(nameof(IApplication.CloseWindow), window);
 		}
 
+		public virtual void ActivateWindow(Window window)
+		{
+			Handler?.Invoke(nameof(IApplication.ActivateWindow), window);
+		}
+
 		void IApplication.ThemeChanged()
 		{
 			PlatformAppTheme = AppInfo.RequestedTheme;
@@ -513,7 +536,9 @@ namespace Microsoft.Maui.Controls
 				return window;
 
 			if (Windows.Count > 1)
+#pragma warning disable CS0618 // Type or member is obsolete
 				throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (Windows.Count > 0)
 				return Windows[0];
@@ -521,7 +546,9 @@ namespace Microsoft.Maui.Controls
 			if (_singleWindowMainPage is not null)
 				return new Window(_singleWindowMainPage);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		internal void AddWindow(Window window)

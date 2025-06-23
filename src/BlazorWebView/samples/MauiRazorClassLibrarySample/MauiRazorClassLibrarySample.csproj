@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <TargetFrameworks>$(_MauiDotNetTfm)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludePreviousTfms)' == 'true'">$(TargetFrameworks);$(_MauiPreviousDotNetTfm)</TargetFrameworks>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

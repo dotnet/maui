@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (disposing)
 			{
-				((INotifyCollectionChanged)_itemsSource).CollectionChanged -= CollectionChanged;
+				_proxy.Unsubscribe();
 			}
 		}
 

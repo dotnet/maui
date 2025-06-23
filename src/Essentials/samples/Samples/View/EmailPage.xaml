@@ -13,7 +13,8 @@
     </views:BasePage.ToolbarItems>
 
     <Grid RowDefinitions="Auto,*">
-        <Label Text="Easily send email messages." FontAttributes="Bold" Margin="12" />
+        <Label Text="{Binding IsComposeSupported, StringFormat='Easily send email messages. Supported on this device: {0}'}"
+            FontAttributes="Bold" Margin="12" />
 
         <ScrollView Grid.Row="1">
             <StackLayout Padding="12,0,12,12" Spacing="6">

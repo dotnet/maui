@@ -60,7 +60,6 @@
       <Parameters />
       <Docs>
         <summary>Initializes a new <see cref="T:Microsoft.Maui.Controls.NavigationPage" /> object.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -86,7 +85,6 @@
       <Docs>
         <param name="root">To be added.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.NavigationPage" /> element with <paramref name="root" /> as its root element.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BackButtonTitleProperty">
@@ -111,7 +109,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the property associated with the title of the back button.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BarBackground">
@@ -128,9 +125,6 @@
         <ReturnType>Microsoft.Maui.Controls.Brush</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BarBackgroundColor">
@@ -179,7 +173,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the property associated with the color of the NavigationPage's bar background color.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BarBackgroundProperty">
@@ -196,8 +189,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BarTextColor">
@@ -246,7 +237,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the property associated with the color of the NavigationPage's bar text color.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CurrentPage">
@@ -271,8 +261,6 @@
       </ReturnValue>
       <Docs>
         <summary>The <see cref="T:Microsoft.Maui.Controls.Page" /> that is currently top-most on the navigation stack.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CurrentPageProperty">
@@ -328,7 +316,6 @@
         <param name="page">The <see cref="T:Microsoft.Maui.Controls.Page" /> whose back-button's title is being requested.</param>
         <summary>The title of the back button for the specified <paramref name="page" />.</summary>
         <returns>The title of the back button that would be shown if the specified <paramref name="page" /> were the <see cref="P:Microsoft.Maui.Controls.NavigationPage.CurrentPage" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHasBackButton">
@@ -354,8 +341,6 @@
       <Docs>
         <param name="page">To be added.</param>
         <summary>Returns a value that indicates whether <paramref name="page" /> has a back button.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHasNavigationBar">
@@ -386,7 +371,6 @@
         <summary>Returns a value that indicates whether the <paramref name="page" /> has a navigation bar.</summary>
         <returns>
           <see langword="true" /> if <paramref name="page" /> would display a navigation bar were it the <see cref="P:Microsoft.Maui.Controls.NavigationPage.CurrentPage" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetIconColor">
@@ -407,9 +391,6 @@
       </Parameters>
       <Docs>
         <param name="bindable">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetTitleIcon">
@@ -438,9 +419,6 @@
       </Parameters>
       <Docs>
         <param name="bindable">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetTitleIconImageSource">
@@ -461,9 +439,6 @@
       </Parameters>
       <Docs>
         <param name="bindable">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetTitleView">
@@ -487,7 +462,6 @@
         <param name="bindable">The bindable object whose title view to get.</param>
         <summary>Returns the view to use as a title for the navigation page.</summary>
         <returns>The view to use as a title for the navigation page.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HasBackButtonProperty">
@@ -509,7 +483,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the HasBackButton property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HasNavigationBarProperty">
@@ -534,7 +507,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the HasNavigationBar property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IconColorProperty">
@@ -551,8 +523,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="InsertPageBeforeRequested">
@@ -579,7 +549,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="On&lt;T&gt;">
@@ -610,8 +579,6 @@
       <Docs>
         <typeparam name="T">To be added.</typeparam>
         <summary>Returns the platform-specific instance of this <see cref="T:Microsoft.Maui.Controls.NavigationPage" />, on which a platform-specific method may be called.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnBackButtonPressed">
@@ -634,8 +601,6 @@
       <Parameters />
       <Docs>
         <summary>Event that is raised when the hardware back button is pressed. This event is not raised on iOS.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Pages">
@@ -662,8 +627,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Peek">
@@ -694,8 +657,6 @@
       <Docs>
         <param name="depth">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PopAsync">
@@ -722,7 +683,6 @@
       <Docs>
         <summary>Asynchronously removes the top <see cref="T:Microsoft.Maui.Controls.Page" /> from the navigation stack.</summary>
         <returns>The <see cref="T:Microsoft.Maui.Controls.Page" /> that had been at the top of the navigation stack.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PopAsync">
@@ -748,8 +708,6 @@
       <Docs>
         <param name="animated">To be added.</param>
         <summary>Asynchronously removes the top <see cref="T:Microsoft.Maui.Controls.Page" /> from the navigation stack, with optional animation.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PopAsyncInner">
@@ -782,8 +740,6 @@
         <param name="animated">To be added.</param>
         <param name="fast">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Popped">
@@ -808,7 +764,6 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is raised after a page is popped from this <see cref="T:Microsoft.Maui.Controls.NavigationPage" /> element.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PoppedToRoot">
@@ -862,7 +817,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PopToRootAsync">
@@ -889,7 +843,6 @@
       <Docs>
         <summary>Pops all but the root <see cref="T:Microsoft.Maui.Controls.Page" /> off the navigation stack.</summary>
         <returns>A task that represents the asynchronous dismiss operation.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PopToRootAsync">
@@ -915,8 +868,6 @@
       <Docs>
         <param name="animated">To be added.</param>
         <summary>A task for asynchronously popping all pages off of the navigation stack.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PopToRootRequested">
@@ -943,7 +894,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PushAsync">
@@ -973,7 +923,6 @@
         <param name="page">The <see cref="T:Microsoft.Maui.Controls.Page" /> to present.</param>
         <summary>Presents a <see cref="T:Microsoft.Maui.Controls.Page" /> by asynchronously pushing it onto the navigation stack.</summary>
         <returns>An awaitable Task, indicating the Push completion.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PushAsync">
@@ -1001,8 +950,6 @@
         <param name="page">To be added.</param>
         <param name="animated">To be added.</param>
         <summary>A task for asynchronously pushing a page onto the navigation stack, with optional animation.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Pushed">
@@ -1027,7 +974,6 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when a page is pushed onto this <see cref="T:Microsoft.Maui.Controls.NavigationPage" /> element.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PushRequested">
@@ -1054,7 +1000,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RemovePageRequested">
@@ -1081,7 +1026,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RootPage">
@@ -1102,8 +1046,6 @@
         <summary>
           The <see cref="T:Microsoft.Maui.Controls.Page" /> that is the root of the navigation stack.
         </summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RootPageProperty">
@@ -1156,7 +1098,6 @@
         <param name="page">To be added.</param>
         <param name="value">To be added.</param>
         <summary>Sets the title that appears on the back button for <paramref name="page" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetHasBackButton">
@@ -1184,7 +1125,6 @@
         <param name="page">To be added.</param>
         <param name="value">To be added.</param>
         <summary>Adds or removes a back button to <paramref name="page" />, with optional animation.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetHasNavigationBar">
@@ -1215,7 +1155,6 @@
         <param name="page">To be added.</param>
         <param name="value">To be added.</param>
         <summary>Sets a value that indicates whether or not this <see cref="T:Microsoft.Maui.Controls.NavigationPage" /> element has a navigation bar.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIconColor">
@@ -1238,8 +1177,6 @@
       <Docs>
         <param name="bindable">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetTitleIcon">
@@ -1270,8 +1207,6 @@
       <Docs>
         <param name="bindable">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetTitleIconImageSource">
@@ -1294,8 +1229,6 @@
       <Docs>
         <param name="bindable">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetTitleView">
@@ -1320,7 +1253,6 @@
         <param name="bindable">The bindable object whose title to set.</param>
         <param name="value">The view to use.</param>
         <summary>Sets the view to use as the title for the navigation page.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="StackDepth">
@@ -1347,8 +1279,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Tint">
@@ -1381,7 +1311,6 @@
       </ReturnValue>
       <Docs>
         <summary>The color to be used as the Tint of the <see cref="T:Microsoft.Maui.Controls.NavigationPage" />.</summary>
-        <value>To be added.</value>
         <remarks>
           <para>Tint is especially important in iOS 7 and later, where the Tint is primary way to specify which controls on screen are active or have an action associated with them.</para>
         </remarks>
@@ -1417,7 +1346,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the <see cref="P:Microsoft.Maui.Controls.NavigationPage.Tint" /> bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TitleIconImageSourceProperty">
@@ -1434,8 +1362,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TitleIconProperty">
@@ -1467,8 +1393,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TitleViewProperty">
@@ -1524,8 +1448,6 @@
         <param name="animated">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="fast">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

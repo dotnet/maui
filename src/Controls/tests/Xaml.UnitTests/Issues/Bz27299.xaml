@@ -3,7 +3,8 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Bz27299"
 			 xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
-			 BindingContext="{Binding Bz27299, Source={StaticResource ViewModelLocator}}">
+			 BindingContext="{Binding Bz27299, Source={StaticResource ViewModelLocator}}"
+			 x:DataType="local:Bz27299ViewModel">
 	<ContentPage.Resources>
 		<ResourceDictionary>
 			<local:Bz27299ViewModelLocator x:Key="ViewModelLocator" />

@@ -21,7 +21,6 @@
   </Interfaces>
   <Docs>
     <summary>A gesture recognizer for use as a child of another.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -37,7 +36,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.ChildGestureRecognizer" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GestureRecognizer">
@@ -57,7 +55,6 @@
       <Docs>
         <summary>Gets or sets the recognizer.</summary>
         <value>The recognizer.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnPropertyChanged">
@@ -86,7 +83,6 @@
       <Docs>
         <param name="propertyName">The property that changed.</param>
         <summary>Method that is called when the recognizer is changed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PropertyChanged">
@@ -108,7 +104,6 @@
       </ReturnValue>
       <Docs>
         <summary>Event handler for changed properties.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

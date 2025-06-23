@@ -1,8 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -17,7 +13,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public partial class Issue9075ViewModel : BindableObject
 	{
 		List<int> _carouselCards = new()
@@ -35,8 +31,8 @@ namespace Maui.Controls.Sample.Issues
 		ObservableCollection<ObservableCollection<string>> _carouselGrids = new();
 
 		public ObservableCollection<ObservableCollection<string>> CarouselGrids
-		{ 
-			get => _carouselGrids; 
+		{
+			get => _carouselGrids;
 			set
 			{
 				_carouselGrids = value;
@@ -53,7 +49,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			foreach (var card in _carouselCards)
 			{
-				_carouselGrids.Add(new ObservableCollection<string>(Enumerable.Range(1, card).Select(x=> $"Item{x}")));
+				_carouselGrids.Add(new ObservableCollection<string>(Enumerable.Range(1, card).Select(x => $"Item{x}")));
 			}
 		}
 	}

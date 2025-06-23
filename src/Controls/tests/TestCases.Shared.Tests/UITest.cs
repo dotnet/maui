@@ -1,5 +1,8 @@
-﻿using System.Reflection;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using ImageMagick;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using UITest.Appium;
 using UITest.Appium.NUnit;
 using UITest.Core;
@@ -9,7 +12,7 @@ using VisualTestUtils.MagickNet;
 namespace Microsoft.Maui.TestCases.Tests
 {
 #if ANDROID
-		[TestFixture(TestDevice.Android)]
+	[TestFixture(TestDevice.Android)]
 #elif IOSUITEST
 		[TestFixture(TestDevice.iOS)]
 #elif MACUITEST
@@ -43,7 +46,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public override IConfig GetTestConfig()
 		{
-			var frameworkVersion = "net8.0";
+			var frameworkVersion = "net9.0";
 #if DEBUG
 			var configuration = "Debug";
 #else
@@ -62,7 +65,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "17.2");
+					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "18.0");
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
@@ -83,6 +86,18 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 			}
 
+			// This currently doesn't work
+			if (!String.IsNullOrEmpty(TestContext.CurrentContext.Test.ClassName))
+			{
+				config.SetTestConfigurationArg("StartingTestClass", TestContext.CurrentContext.Test.ClassName);
+			}
+
+			var commandLineArgs = Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "";
+			if (!String.IsNullOrEmpty(commandLineArgs))
+			{
+				config.SetTestConfigurationArg("TEST_CONFIGURATION_ARGS", commandLineArgs);
+			}
+
 			return config;
 		}
 
@@ -91,8 +106,88 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ResetApp();
 		}
 
-		public void VerifyScreenshot(string? name = null)
+		/// <summary>
+		/// Verifies the screenshots and returns an exception in case of failure.
+		/// </summary>
+		/// <remarks>
+		/// This is especially useful when capturing multiple screenshots in a single UI test.
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Exception? exception = null;
+		/// VerifyScreenshotOrSetException(ref exception, "MyScreenshotName");
+		/// VerifyScreenshotOrSetException(ref exception, "MyOtherScreenshotName");
+		/// if (exception is not null) throw exception;
+		/// </code>
+		/// </example>
+		public void VerifyScreenshotOrSetException(
+			ref Exception? exception,
+			string? name = null,
+			TimeSpan? retryDelay = null,
+			int cropTop = 0,
+			int cropBottom = 0,
+			double tolerance = 0.0
+#if MACUITEST || WINTEST
+			, bool includeTitleBar = false
+#endif
+			)
 		{
+			try
+			{
+				VerifyScreenshot(name, retryDelay, cropTop, cropBottom, tolerance
+#if MACUITEST || WINTEST
+				, includeTitleBar
+#endif
+				);
+			}
+			catch (Exception ex)
+			{
+				exception ??= ex;
+			}
+		}
+
+		/// <summary>
+		/// Verifies a screenshot by comparing it against a baseline image and throws an exception if verification fails.
+		/// </summary>
+		/// <param name="name">Optional name for the screenshot. If not provided, a default name will be used.</param>
+		/// <param name="retryDelay">Optional delay between retry attempts when verification fails.</param>
+		/// <param name="cropTop">Number of pixels to crop from the top of the screenshot.</param>
+		/// <param name="cropBottom">Number of pixels to crop from the bottom of the screenshot.</param>
+		/// <param name="tolerance">Tolerance level for image comparison as a percentage from 0 to 100.</param>
+#if MACUITEST || WINTEST
+/// <param name="includeTitleBar">Whether to include the title bar in the screenshot comparison.</param>
+#endif
+		/// <remarks>
+		/// This method immediately throws an exception if the screenshot verification fails.
+		/// For batch verification of multiple screenshots, consider using <see cref="VerifyScreenshotOrSetException"/> instead.
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// // Exact match (no tolerance)
+		/// VerifyScreenshot("LoginScreen");
+		/// 
+		/// // Allow 2% difference for dynamic content
+		/// VerifyScreenshot("DashboardWithTimestamp", tolerance: 2.0);
+		/// 
+		/// // Allow 5% difference for animations or slight rendering variations
+		/// VerifyScreenshot("ButtonHoverState", tolerance: 5.0);
+		/// 
+		/// // Combined with cropping and tolerance
+		/// VerifyScreenshot("HeaderSection", cropTop: 50, cropBottom: 100, tolerance: 3.0);
+		/// </code>
+		/// </example>
+		public void VerifyScreenshot(
+			string? name = null,
+			TimeSpan? retryDelay = null,
+			int cropTop = 0,
+			int cropBottom = 0,
+			double tolerance = 0.0 // Add tolerance parameter (0.05 = 5%)
+#if MACUITEST || WINTEST
+			, bool includeTitleBar = false
+#endif
+		)
+		{
+			retryDelay ??= TimeSpan.FromMilliseconds(500);
 			// Retry the verification once in case the app is in a transient state
 			try
 			{
@@ -100,13 +195,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			catch
 			{
-				Thread.Sleep(500);
+				Thread.Sleep(retryDelay.Value);
 				Verify(name);
 			}
 
 			void Verify(string? name)
 			{
 				string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
+
 				// Remove the XHarness suffix if present
 				deviceName = deviceName.Replace(" - created by XHarness", "", StringComparison.Ordinal);
 
@@ -125,22 +221,35 @@ namespace Microsoft.Maui.TestCases.Tests
 				switch (_testDevice)
 				{
 					case TestDevice.Android:
-						if (deviceName == "Nexus 5X")
+						environmentName = "android";
+						var deviceApiLevel = (long?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel")
+							?? throw new InvalidOperationException("deviceApiLevel capability is missing or null.");
+						var deviceScreenSize = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize")
+							?? throw new InvalidOperationException("deviceScreenSize capability is missing or null.");
+						var deviceScreenDensity = (long?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity")
+							?? throw new InvalidOperationException("deviceScreenDensity capability is missing or null.");
+
+						if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
 						{
-							environmentName = "android";
-						}
-						else
-						{
-							Assert.Fail($"Android visual tests should be run on an Nexus 5X (API 30) emulator image, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
+							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}
 						break;
 
 					case TestDevice.iOS:
-						if (deviceName == "iPhone Xs (iOS 17.2)")
+						var platformVersion = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion")
+							?? throw new InvalidOperationException("platformVersion capability is missing or null.");
+						var device = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName")
+							?? throw new InvalidOperationException("deviceName capability is missing or null.");
+
+						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
 						{
 							environmentName = "ios";
 						}
-						else if (deviceName == "iPhone X (iOS 16.4)")
+						else if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
+						{
+							environmentName = "ios";
+						}
+						else if (deviceName == "iPhone X (iOS 16.4)" || (device.Contains(" X", StringComparison.OrdinalIgnoreCase) && platformVersion == "16.4"))
 						{
 							environmentName = "ios-iphonex";
 						}
@@ -155,11 +264,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						break;
 
 					case TestDevice.Mac:
-						// For now, ignore visual tests on Mac Catalyst since the Appium screenshot on Mac (unlike Windows)
-						// is of the entire screen, not just the app. Later when xharness relay support is in place to
-						// send a message to the MAUI app to get the screenshot, we can use that to just screenshot
-						// the app.
-						Assert.Ignore("MacCatalyst isn't supported yet for visual tests");
+						environmentName = "mac";
 						break;
 
 					default:
@@ -175,7 +280,11 @@ namespace Microsoft.Maui.TestCases.Tests
 					Thread.Sleep(350);
 				}
 
+#if MACUITEST
+				byte[] screenshotPngBytes = TakeScreenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
+#else
 				byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
+#endif
 
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
@@ -187,16 +296,29 @@ namespace Microsoft.Maui.TestCases.Tests
 					TestDevice.Android => 60,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
+					TestDevice.Mac => 29,
 					_ => 0,
 				};
 
+#if MACUITEST || WINTEST
+				if (includeTitleBar)
+				{
+					cropFromTop = 0;
+				}
+#endif
+
 				// For Android also crop the 3 button nav from the bottom, since it's not part of the
-				// app itself and the button color can vary (the buttons change clear briefly when tapped)
+				// app itself and the button color can vary (the buttons change clear briefly when tapped).
+				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
 					TestDevice.Android => 125,
+					TestDevice.iOS => 40,
 					_ => 0,
 				};
+
+				cropFromTop = cropTop > 0 ? cropTop : cropFromTop;
+				cropFromBottom = cropBottom > 0 ? cropBottom : cropFromBottom;
 
 				if (cropFromTop > 0 || cropFromBottom > 0)
 				{
@@ -208,7 +330,81 @@ namespace Microsoft.Maui.TestCases.Tests
 					actualImage = imageEditor.GetUpdatedImage();
 				}
 
-				_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+				// Apply tolerance if specified
+				if (tolerance > 0)
+				{
+					VerifyWithTolerance(name!, actualImage, environmentName, tolerance);
+				}
+				else
+				{
+					_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+				}
+			}
+		}
+
+		void VerifyWithTolerance(string name, ImageSnapshot actualImage, string environmentName, double tolerance)
+		{
+			if (tolerance > 15)
+			{
+				throw new ArgumentException($"Tolerance {tolerance}% exceeds the acceptable limit. Please review whether this requires a different test or if it is a bug.");
+			}
+
+			try
+			{
+				_visualRegressionTester.VerifyMatchesSnapshot(name, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+			}
+			catch (Exception ex) when (IsVisualDifferenceException(ex))
+			{
+				var difference = ExtractDifferencePercentage(ex);
+				if (difference <= tolerance)
+				{
+					// Log warning but pass test
+					TestContext.WriteLine($"Visual difference {difference}% within tolerance {tolerance}% for '{name}' on {environmentName}");
+					return;
+				}
+				throw; // Re-throw if exceeds tolerance
+			}
+		}
+
+		bool IsVisualDifferenceException(Exception ex)
+		{
+			// Check if this is a visual regression failure
+			return ex.GetType().Name.Contains("Assert", StringComparison.Ordinal) ||
+				   ex.Message.Contains("Snapshot different", StringComparison.Ordinal) ||
+				   ex.Message.Contains("baseline", StringComparison.Ordinal) ||
+				   ex.Message.Contains("different", StringComparison.Ordinal);
+		}
+
+		double ExtractDifferencePercentage(Exception ex)
+		{
+			var message = ex.Message;
+
+			// Extract percentage from pattern: "X,XX% difference"
+			var match = Regex.Match(message, @"(\d+,\d+)%\s*difference", RegexOptions.IgnoreCase);
+			if (match.Success)
+			{
+				var percentageString = match.Groups[1].Value.Replace(',', '.');
+				if (double.TryParse(percentageString, System.Globalization.NumberStyles.Float,
+					System.Globalization.CultureInfo.InvariantCulture, out var percentage))
+				{
+					return percentage;
+				}
+			}
+
+			// If can't extract specific percentage, throw an exception to indicate failure
+			throw new InvalidOperationException("Unable to extract difference percentage from exception message.");
+		}
+
+		protected void VerifyInternetConnectivity()
+		{
+			try
+			{
+				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(30));
+				Assert.Inconclusive("This device doesn't have internet access");
+			}
+			catch (TimeoutException)
+			{
+				// Continue with the test
 			}
 		}
 
@@ -216,10 +412,51 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			base.TestSetup();
 			var device = App.GetTestDevice();
-			if(device == TestDevice.Android || device == TestDevice.iOS)
+			if (device == TestDevice.Android || device == TestDevice.iOS)
 			{
-				App.SetOrientationPortrait();
+				try
+				{
+					App.SetOrientationPortrait();
+				}
+				catch
+				{
+					// The app might not be ready
+					// Probably reduce this value if this works
+					Thread.Sleep(1000);
+					App.SetOrientationPortrait();
+				}
 			}
 		}
+
+#if MACUITEST
+		byte[] TakeScreenshot()
+		{
+			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
+			// we are going to crop the screenshot to the app window bounds, including rounded corners.
+			var windowBounds = App.FindElement(AppiumQuery.ByXPath("//XCUIElementTypeWindow")).GetRect();
+
+			var x = windowBounds.X;
+			var y = windowBounds.Y;
+			var width = windowBounds.Width;
+			var height = windowBounds.Height;
+			const int cornerRadius = 12;
+
+			// Take the screenshot
+			var bytes = App.Screenshot();
+
+			// Draw a rounded rectangle with the app window bounds as mask
+			using var surface = new MagickImage(MagickColors.Transparent, width, height);
+			new Drawables()
+				.RoundRectangle(0, 0, width, height, cornerRadius, cornerRadius)
+				.FillColor(MagickColors.Black)
+				.Draw(surface);
+
+			// Composite the screenshot with the mask
+			using var image = new MagickImage(bytes);
+			surface.Composite(image, -x, -y, CompositeOperator.SrcAtop);
+
+			return surface.ToByteArray(MagickFormat.Png);
+		}
+#endif
 	}
 }

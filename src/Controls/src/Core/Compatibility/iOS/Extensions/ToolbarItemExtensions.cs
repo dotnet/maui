@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				this.SetAccessibilityLabel(item);
 			}
 
-			void OnClicked (object sender, EventArgs e)
+			void OnClicked(object sender, EventArgs e)
 			{
 				if (_item.TryGetTarget(out var item))
 				{
@@ -104,9 +105,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				else
 				{
-					item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
+					var mauiContext = item.FindMauiContext();
+					if (mauiContext is null)
 					{
-						Image = result?.Value;
+						return;
+					}
+					item.IconImageSource.LoadImage(mauiContext, result =>
+					{
+						Image = item.IconImageSource is not FontImageSource
+							? result?.Value.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal)
+							: result?.Value;
 						Style = UIBarButtonItemStyle.Plain;
 					});
 				}
@@ -148,7 +156,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				this.SetAccessibilityLabel(item);
 			}
 
-			void OnClicked (object sender, EventArgs e)
+			void OnClicked(object sender, EventArgs e)
 			{
 				if (_item.TryGetTarget(out var item))
 				{

@@ -1,4 +1,5 @@
 using Microsoft.Maui.Graphics;
+using System.Diagnostics;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
 #elif __ANDROID__
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Handlers
 	/// </summary>
 	/// <remarks>Handlers map virtual views (.NET MAUI layer) to controls on each platform (iOS, Android, Windows, macOS, etc.), which are known as platform views.
 	/// Handlers are also responsible for instantiating the underlying platform view, and mapping the cross-platform control API to the platform view API. </remarks>
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public abstract partial class ViewHandler : ElementHandler, IViewHandler
 	{
 		/// <summary>
@@ -26,11 +28,17 @@ namespace Microsoft.Maui.Handlers
 		public static IPropertyMapper<IView, IViewHandler> ViewMapper =
 #if ANDROID
 			// Use a custom mapper for Android which knows how to batch the initial property sets
-			new AndroidBatchPropertyMapper<IView, IViewHandler>(ElementMapper)
+			new AndroidBatchPropertyMapper<IView, IViewHandler>(ElementHandler.ElementMapper)
 #else
 			new PropertyMapper<IView, IViewHandler>(ElementHandler.ElementMapper)
 #endif
 			{
+				// This property is a special one and needs to be set before other properties.
+				[nameof(IViewHandler.ContainerView)] = MapContainerView,
+#if ANDROID
+				[AndroidBatchPropertyMapper.InitializeBatchedPropertiesKey] = MapInitializeBatchedProperties,
+#endif
+
 				[nameof(IView.AutomationId)] = MapAutomationId,
 				[nameof(IView.Clip)] = MapClip,
 				[nameof(IView.Shadow)] = MapShadow,
@@ -56,8 +64,9 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IView.RotationY)] = MapRotationY,
 				[nameof(IView.AnchorX)] = MapAnchorX,
 				[nameof(IView.AnchorY)] = MapAnchorY,
-				[nameof(IViewHandler.ContainerView)] = MapContainerView,
+#pragma warning disable CS0618 // Type or member is obsolete
 				[nameof(IBorder.Border)] = MapBorderView,
+#pragma warning restore CS0618 // Type or member is obsolete
 #if ANDROID || WINDOWS || TIZEN
 				[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
@@ -65,10 +74,6 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IToolTipElement.ToolTip)] = MapToolTip,
 #if WINDOWS || MACCATALYST
 				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
-#endif
-
-#if ANDROID
-				["_InitializeBatchedProperties"] = MapInitializeBatchedProperties
 #endif
 			};
 
@@ -420,16 +425,17 @@ namespace Microsoft.Maui.Handlers
 			else
 				handler.HasContainer = view.NeedsContainer();
 
-			if(hasContainerOldValue != handler.HasContainer)
+			if (hasContainerOldValue != handler.HasContainer)
 			{
 				handler.UpdateValue(nameof(IView.Visibility));
-	
-				#if WINDOWS
+
+#if WINDOWS
 				handler.UpdateValue(nameof(IView.Opacity));
-				#endif
+#endif
 			}
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		/// <summary>
 		/// Maps the abstract <see cref="IBorder.Border"/> property to the platform-specific implementations.
 		/// </summary>
@@ -441,6 +447,7 @@ namespace Microsoft.Maui.Handlers
 
 			((PlatformView?)handler.ContainerView)?.UpdateBorder(view);
 		}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		static partial void MappingFrame(IViewHandler handler, IView view);
 
@@ -530,6 +537,21 @@ namespace Microsoft.Maui.Handlers
 			if (view is IToolTipElement tooltipContainer)
 				handler.ToPlatform().UpdateToolTip(tooltipContainer.ToolTip);
 #endif
+		}
+
+		/// <summary>
+		/// Provides a string representation of the current object for debugging purposes.
+		/// </summary>
+		/// <remarks>
+		/// This method is used by the <see cref="DebuggerDisplayAttribute"/> to display
+		/// a concise and informative string representation of the <see cref="ViewHandler"/> instance
+		/// during debugging sessions.
+		/// </remarks>
+		/// <returns>A string containing the type name and key properties of the object.</returns>
+		private protected virtual string GetDebuggerDisplay()
+		{
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(VirtualView), VirtualView, nameof(PlatformView), PlatformView);
+			return $"{GetType().FullName}: {debugText}";
 		}
 	}
 }

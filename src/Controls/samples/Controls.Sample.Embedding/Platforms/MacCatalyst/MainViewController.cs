@@ -85,7 +85,7 @@ public class MainViewController : UIViewController
 			UIBarButtonSystemItem.Add,
 			(sender, e) => RequestSession("NewTaskWindow"));
 
-		NavigationItem.RightBarButtonItems = [ addNewTaskButton, addNewWindowButton ];
+		NavigationItem.RightBarButtonItems = [addNewTaskButton, addNewWindowButton];
 	}
 
 	private void RequestSession(string? activityType = null)
@@ -128,7 +128,7 @@ public class MainViewController : UIViewController
 
 		public override void LayoutSubviews()
 		{
-			if (Subviews?.FirstOrDefault() is {} view)
+			if (Subviews?.FirstOrDefault() is { } view)
 				view.Frame = Bounds;
 		}
 

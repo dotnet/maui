@@ -1,12 +1,6 @@
-﻿using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
-	[Issue(IssueTracker.Github, 21846, "Fix crash closing Popup with WebView", PlatformAffected.iOS)]
+	[Issue(IssueTracker.Github, 21846, "Fix crash closing Popup with WebView", PlatformAffected.iOS, isInternetRequired: true)]
 	public partial class Issue21846 : ContentPage
 	{
 		public Issue21846()

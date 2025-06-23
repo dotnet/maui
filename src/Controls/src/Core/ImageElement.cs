@@ -27,8 +27,12 @@ namespace Microsoft.Maui.Controls
 		{
 			var newSource = (ImageSource)newValue;
 			var image = (IImageElement)bindable;
-			if (newSource != null && image != null)
+
+			if (newSource is not null && image is not null)
+			{
 				newSource.SourceChanged += image.OnImageSourceSourceChanged;
+			}
+
 			ImageSourceChanged(bindable, newSource);
 		}
 
@@ -37,11 +41,20 @@ namespace Microsoft.Maui.Controls
 			var oldSource = (ImageSource)oldValue;
 			var image = (IImageElement)bindable;
 
-			if (oldSource != null && image != null)
-				oldSource.SourceChanged -= image.OnImageSourceSourceChanged;
+			if (oldSource is not null)
+			{
+				if (image is not null)
+				{
+					oldSource.SourceChanged -= image.OnImageSourceSourceChanged;
+				}
+
+				oldSource.Parent = null;
+			}
+
 			ImageSourceChanging(oldSource);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static SizeRequest Measure(IImageElement ImageElementManager, SizeRequest desiredSize, double widthConstraint, double heightConstraint)
 		{
 			double desiredAspect = desiredSize.Request.Width / desiredSize.Request.Height;
@@ -96,6 +109,7 @@ namespace Microsoft.Maui.Controls
 
 			return new SizeRequest(new Size(width, height));
 		}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		public static void OnBindingContextChanged(IImageElement image, VisualElement visualElement)
 		{

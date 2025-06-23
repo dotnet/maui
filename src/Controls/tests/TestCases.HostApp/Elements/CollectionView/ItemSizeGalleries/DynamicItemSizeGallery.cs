@@ -1,7 +1,4 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries.ItemSizeGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries.ItemSizeGalleries
 {
 	internal class DynamicItemSizeGallery : ContentPage
 	{

@@ -6,10 +6,6 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Editor
 	{
-		[Obsolete("Use EditorHandler.Mapper instead.")]
-		public static IPropertyMapper<IEditor, EditorHandler> ControlsEditorMapper =
-			new ControlsMapper<Editor, EditorHandler>(EditorHandler.Mapper);
-
 		internal static new void RemapForControls()
 		{
 			// Adjust the mappings to preserve Controls.Editor legacy behaviors

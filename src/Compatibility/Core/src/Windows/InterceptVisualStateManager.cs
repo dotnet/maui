@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	internal class InterceptVisualStateManager : Microsoft.UI.Xaml.VisualStateManager
+	internal partial class InterceptVisualStateManager : Microsoft.UI.Xaml.VisualStateManager
 	{
 		static InterceptVisualStateManager s_instance;
 

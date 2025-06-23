@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -12,6 +13,7 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
+	[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 	internal sealed class BindingExpression
 	{
 		internal const string PropertyNotFoundErrorMessage = "'{0}' property not found on '{1}', target property: '{2}.{3}'";
@@ -63,6 +65,20 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		internal void Apply(object sourceObject, BindableObject target, BindableProperty property, SetterSpecificity specificity)
 		{
+			if (Binding is Binding { Source: var source, DataType: Type dataType })
+			{
+				// Do not check type mismatch if this is a binding with Source and compilation of bindings with Source is disale
+				bool skipTypeMismatchCheck = source is not null && !RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled;
+				if (!skipTypeMismatchCheck)
+				{
+					if (sourceObject != null && !dataType.IsAssignableFrom(sourceObject.GetType()))
+					{
+						BindingDiagnostics.SendBindingFailure(Binding, "Binding", $"Mismatch between the specified x:DataType ({dataType}) and the current binding context ({sourceObject.GetType()}).");
+						sourceObject = null;
+					}
+				}
+			}
+
 			_targetProperty = property;
 			_specificity = specificity;
 
@@ -154,7 +170,7 @@ namespace Microsoft.Maui.Controls
 				else
 					value = Binding.FallbackValue ?? property.GetDefaultValue(target);
 
-				if (!TryConvert(ref value, property, property.ReturnType, true))
+				if (!BindingExpressionHelper.TryConvert(ref value, property, property.ReturnType, true))
 				{
 					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, "Binding", CannotConvertTypeErrorMessage, value, property.ReturnType);
 					return;
@@ -166,7 +182,7 @@ namespace Microsoft.Maui.Controls
 			{
 				object value = Binding.GetTargetValue(target.GetValue(property), part.SetterType);
 
-				if (!TryConvert(ref value, property, part.SetterType, false))
+				if (!BindingExpressionHelper.TryConvert(ref value, property, part.SetterType, false))
 				{
 					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, "Binding", CannotConvertTypeErrorMessage, value, part.SetterType);
 					return;
@@ -219,8 +235,8 @@ namespace Microsoft.Maui.Controls
 				int lbIndex = part.IndexOf("[", StringComparison.Ordinal);
 				if (lbIndex != -1)
 				{
-					int rbIndex = part.LastIndexOf(']');
-					if (rbIndex == -1)
+					int rbIndex = part.Length - 1;
+					if (part[rbIndex] != ']')
 						throw new FormatException("Indexer did not contain closing bracket");
 
 					int argLength = rbIndex - lbIndex - 1;
@@ -326,10 +342,10 @@ namespace Microsoft.Maui.Controls
 				}
 
 				string indexerName = "Item";
-				foreach (DefaultMemberAttribute attrib in sourceType.GetCustomAttributes(typeof(DefaultMemberAttribute), true))
+				var defaultMemberAttribute = (DefaultMemberAttribute)sourceType.GetCustomAttribute(typeof(DefaultMemberAttribute), true);
+				if (defaultMemberAttribute != null)
 				{
-					indexerName = attrib.MemberName;
-					break;
+					indexerName = defaultMemberAttribute.MemberName;
 				}
 
 				part.IndexerName = indexerName;
@@ -366,27 +382,31 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				TypeInfo type = sourceType;
-				while (type != null && property == null)
+				do
 				{
 					property = type.GetDeclaredProperty(part.Content);
-					type = type.BaseType?.GetTypeInfo();
-				}
+				} while (property == null && (type = type.BaseType?.GetTypeInfo()) != null);
 			}
 			if (property != null)
 			{
-				if (property.CanRead && property.GetMethod.IsPublic && !property.GetMethod.IsStatic)
-					part.LastGetter = property.GetMethod;
-				if (property.CanWrite && property.SetMethod.IsPublic && !property.SetMethod.IsStatic)
+				var propertyType = property.PropertyType;
+
+				if (property is { CanRead: true, GetMethod: { IsPublic: true, IsStatic: false } propertyGetMethod })
 				{
-					part.LastSetter = property.SetMethod;
-					part.SetterType = property.PropertyType;
+					part.LastGetter = propertyGetMethod;
+				}
+
+				if (property is { CanWrite: true, SetMethod: { IsPublic: true, IsStatic: false } propertySetMethod })
+				{
+					part.LastSetter = propertySetMethod;
+					part.SetterType = propertyType;
 
 					if (Binding.AllowChaining)
 					{
 						FieldInfo bindablePropertyField = sourceType.GetDeclaredField(part.Content + "Property");
 						if (bindablePropertyField != null && bindablePropertyField.FieldType == typeof(BindableProperty) && sourceType.ImplementedInterfaces.Contains(typeof(IElementController)))
 						{
-							MethodInfo setValueMethod = typeof(IElementController).GetMethod("SetValueFromRenderer", new[] { typeof(BindableProperty), typeof(object) });
+							MethodInfo setValueMethod = typeof(IElementController).GetMethod(nameof(IElementController.SetValueFromRenderer), new[] { typeof(BindableProperty), typeof(object) });
 							if (setValueMethod != null)
 							{
 								part.LastSetter = setValueMethod;
@@ -397,11 +417,9 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 
-				if (property != null
-					&& part.NextPart != null
-					&& property.PropertyType.IsGenericType)
+				if (part.NextPart != null && propertyType.IsGenericType && propertyType.IsValueType)
 				{
-					Type genericTypeDefinition = property.PropertyType.GetGenericTypeDefinition();
+					Type genericTypeDefinition = propertyType.GetGenericTypeDefinition();
 					if ((genericTypeDefinition == typeof(ValueTuple<>)
 						|| genericTypeDefinition == typeof(ValueTuple<,>)
 						|| genericTypeDefinition == typeof(ValueTuple<,,>)
@@ -423,54 +441,6 @@ namespace Microsoft.Maui.Controls
 						}
 					}
 				}
-			}
-		}
-
-		static readonly Type[] DecimalTypes = { typeof(float), typeof(decimal), typeof(double) };
-
-		internal static bool TryConvert(ref object value, BindableProperty targetProperty, Type convertTo, bool toTarget)
-		{
-			if (value == null)
-				return !convertTo.GetTypeInfo().IsValueType || Nullable.GetUnderlyingType(convertTo) != null;
-			try
-			{
-				if ((toTarget && targetProperty.TryConvert(ref value)) || (!toTarget && convertTo.IsInstanceOfType(value)))
-					return true;
-			}
-			catch (InvalidOperationException)
-			{ //that's what TypeConverters ususally throw
-				return false;
-			}
-
-			object original = value;
-			try
-			{
-				convertTo = Nullable.GetUnderlyingType(convertTo) ?? convertTo;
-
-				var stringValue = value as string ?? string.Empty;
-				// see: https://bugzilla.xamarin.com/show_bug.cgi?id=32871
-				// do not canonicalize "*.[.]"; "1." should not update bound BindableProperty
-				if (stringValue.EndsWith(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal) && DecimalTypes.Contains(convertTo))
-				{
-					value = original;
-					return false;
-				}
-
-				// do not canonicalize "-0"; user will likely enter a period after "-0"
-				if (stringValue == "-0" && DecimalTypes.Contains(convertTo))
-				{
-					value = original;
-					return false;
-				}
-
-				value = Convert.ChangeType(value, convertTo, CultureInfo.CurrentCulture);
-
-				return true;
-			}
-			catch (Exception ex) when (ex is InvalidCastException || ex is FormatException || ex is InvalidOperationException || ex is OverflowException)
-			{
-				value = original;
-				return false;
 			}
 		}
 

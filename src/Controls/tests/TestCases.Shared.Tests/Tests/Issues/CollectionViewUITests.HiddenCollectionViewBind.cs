@@ -20,14 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionShouldInvalidateOnVisibilityChange()
 		{
-			if (Device == TestDevice.Android)
-			{
-				App.WaitForNoElement(Success);
-			}
-			else
-			{
-				Assert.Ignore("This test is failing, requires research.");
-			}
+			App.WaitForElement(Success);
 		}
 	}
 }

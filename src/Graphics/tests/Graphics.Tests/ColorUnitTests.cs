@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Graphics.Tests
 		public void TestToString()
 		{
 			var color = new Color(1, 1, 1, 0.5f);
-			Assert.Equal($"[Color: Red=1, Green=1, Blue=1, Alpha=0{System.Globalization.NumberFormatInfo.CurrentInfo.CurrencyDecimalSeparator}5]", color.ToString());
+			Assert.Equal($"[Color: Red=1, Green=1, Blue=1, Alpha=0.5]", color.ToString());
 		}
 
 		[Fact]

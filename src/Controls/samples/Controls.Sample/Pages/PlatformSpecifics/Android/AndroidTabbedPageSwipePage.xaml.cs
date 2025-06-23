@@ -8,18 +8,9 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class AndroidTabbedPageSwipePage : Microsoft.Maui.Controls.TabbedPage
 	{
-		ICommand? _returnToPlatformSpecificsPage;
-
 		public AndroidTabbedPageSwipePage()
 		{
 			InitializeComponent();
-		}
-
-		public AndroidTabbedPageSwipePage(ICommand restore)
-		{
-			InitializeComponent();
-
-			_returnToPlatformSpecificsPage = restore;
 		}
 
 		void OnSwipePagingButtonClicked(object sender, EventArgs e)
@@ -34,7 +25,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnReturnButtonClicked(object sender, EventArgs e)
 		{
-			_returnToPlatformSpecificsPage?.Execute(null);
+			Navigation.PopAsync();
 		}
 	}
 }

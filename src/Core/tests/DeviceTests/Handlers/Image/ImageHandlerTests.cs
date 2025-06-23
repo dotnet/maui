@@ -279,6 +279,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			await InterruptingLoadCancelsAndStartsOverImplementation();
 		}
+
 		async Task<List<(string Member, object Value)>> InterruptingLoadCancelsAndStartsOverImplementation()
 		{
 			var image = new TStub
@@ -286,10 +287,19 @@ namespace Microsoft.Maui.DeviceTests
 				Background = new SolidPaintStub(Colors.Black)
 			};
 
+			TaskCompletionSource finished = new TaskCompletionSource();
 			var order = new List<string>();
 
 			image.LoadingStarted += () => order.Add($"LoadingStarted");
-			image.LoadingCompleted += successful => order.Add($"LoadingCompleted({successful})");
+			image.LoadingCompleted += successful =>
+			{
+				order.Add($"LoadingCompleted({successful})");
+
+				if (!successful)
+				{
+					finished.SetResult();
+				}
+			};
 			image.LoadingFailed += exception => order.Add($"LoadingFailed({exception})");
 
 			var events = await InvokeOnMainThreadAsync(async () =>
@@ -330,6 +340,8 @@ namespace Microsoft.Maui.DeviceTests
 
 				// make sure it did actually work
 				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
+
+				await finished.Task.WaitAsync(TimeSpan.FromSeconds(1));
 
 				return handler.ImageEvents;
 			});
@@ -399,7 +411,7 @@ namespace Microsoft.Maui.DeviceTests
 #if ANDROID
 				Assert.Equal(GetDrawableId("red"), platformImage);
 #elif IOS || MACCATALYST
-				platformImage.AssertContainsColor(Colors.Red.ToPlatform());
+				await platformImage.AssertContainsColor(Colors.Red.ToPlatform()).ConfigureAwait(false);
 #endif
 			});
 		}
@@ -441,7 +453,7 @@ namespace Microsoft.Maui.DeviceTests
 #if ANDROID
 				Assert.Equal(GetDrawableId("blue"), platformImage);
 #elif IOS || MACCATALYST
-				platformImage.AssertContainsColor(Colors.Blue.ToPlatform());
+				await platformImage.AssertContainsColor(Colors.Blue.ToPlatform()).ConfigureAwait(false);
 #endif
 			});
 		}
@@ -463,7 +475,7 @@ namespace Microsoft.Maui.DeviceTests
 			platformImage.Color.IsEquivalent(Colors.Blue.ToPlatform());
 #elif IOS || MACCATALYST
 			var platformImage = Assert.IsType<UIImage>(events[0].Value);
-			platformImage.AssertContainsColor(Colors.Blue.ToPlatform());
+			await platformImage.AssertContainsColor(Colors.Blue.ToPlatform()).ConfigureAwait(false);
 #endif
 		}
 
@@ -484,7 +496,7 @@ namespace Microsoft.Maui.DeviceTests
 			platformImage.Color.IsEquivalent(Colors.Red.ToPlatform());
 #elif IOS || MACCATALYST
 			var platformImage = Assert.IsType<UIImage>(events[0].Value);
-			platformImage.AssertContainsColor(Colors.Red.ToPlatform());
+			await platformImage.AssertContainsColor(Colors.Red.ToPlatform()).ConfigureAwait(false);
 #endif
 		}
 

@@ -82,7 +82,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			DependencyProperty foregroundProperty;
 			if (!ForegroundProperties.Value.TryGetValue(type, out foregroundProperty))
 			{
-				FieldInfo field = ReflectionExtensions.GetFields(type).FirstOrDefault(f => f.Name == "ForegroundProperty");
+#pragma warning disable IL2075 // The Compatibility assembly is not trimmable
+				FieldInfo field = type.GetField("ForegroundProperty", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+#pragma warning restore IL2075
 				if (field == null)
 					throw new ArgumentException("type is not a Foregroundable type");
 

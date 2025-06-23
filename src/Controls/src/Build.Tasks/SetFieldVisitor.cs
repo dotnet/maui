@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			if (!IsXNameProperty(node, parentNode))
 				return;
-			var field = Context.Body.Method.DeclaringType.Fields.SingleOrDefault(fd => fd.Name == (string)node.Value);
+			var field = Context.Body.Method.DeclaringType.Fields.SingleOrDefault(fd => fd.Name == ((string)node.Value).Trim());
 			if (field == null)
 				return;
 			Context.IL.Emit(OpCodes.Ldarg_0);

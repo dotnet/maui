@@ -69,32 +69,32 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			base.OnActivityResult(requestCode, resultCode, data);
 
-			// we have a valid GUID, so handle the task
-			if (GetIntermediateTask(guid, true) is IntermediateTask task)
+			var task = GetIntermediateTask(guid, true);
+
+			Finish();
+
+			if (task is null)
+				return;
+
+			if (resultCode == Result.Canceled)
 			{
-				if (resultCode == Result.Canceled)
+				task.TaskCompletionSource.TrySetCanceled();
+			}
+			else
+			{
+				try
 				{
-					task.TaskCompletionSource.TrySetCanceled();
+					data ??= new Intent();
+
+					task.OnResult?.Invoke(data);
+
+					task.TaskCompletionSource.TrySetResult(data);
 				}
-				else
+				catch (Exception ex)
 				{
-					try
-					{
-						data ??= new Intent();
-
-						task.OnResult?.Invoke(data);
-
-						task.TaskCompletionSource.TrySetResult(data);
-					}
-					catch (Exception ex)
-					{
-						task.TaskCompletionSource.TrySetException(ex);
-					}
+					task.TaskCompletionSource.TrySetException(ex);
 				}
 			}
-
-			// close the intermediate activity
-			Finish();
 		}
 
 		public static Task<Intent> StartAsync(Intent intent, int requestCode, Action<Intent>? onCreate = null, Action<Intent>? onResult = null)

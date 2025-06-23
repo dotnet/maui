@@ -20,7 +20,6 @@
   <Interfaces />
   <Docs>
     <summary>An ImageSource that loads an image from a URI, caching the result.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -42,7 +41,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.UriImageSource" /> object with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CacheValidity">
@@ -67,8 +65,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a <see cref="T:System.TimeSpan" /> structure that indicates the length of time after which the image cache becomes invalid.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CachingEnabled">
@@ -93,8 +89,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a Boolean value that indicates whether caching is enabled on this <see cref="T:Microsoft.Maui.Controls.UriImageSource" /> object.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetStreamAsync">
@@ -122,8 +116,6 @@
       <Docs>
         <param name="userToken">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsEmpty">
@@ -140,9 +132,6 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">
@@ -163,7 +152,6 @@
       <Docs>
         <summary>Returns the path to the file for the image, prefixed with the string, "Uri: ".</summary>
         <returns>The path to the file for the image, prefixed with the string, "Uri: ".</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Uri">
@@ -193,8 +181,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the URI for the image to get.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UriProperty">
@@ -219,7 +205,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.UriImageSource.Uri" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

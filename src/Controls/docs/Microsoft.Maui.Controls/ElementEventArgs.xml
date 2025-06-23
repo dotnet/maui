@@ -51,7 +51,6 @@
       <Docs>
         <param name="element">The element relevant to the event.</param>
         <summary>Constructs and initializes a new instance of the <see cref="T:Microsoft.Maui.Controls.ElementEventArgs" /> class.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Element">
@@ -77,7 +76,6 @@
       <Docs>
         <summary>Gets the element relevant to the event.</summary>
         <value>The element relevant to the event.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

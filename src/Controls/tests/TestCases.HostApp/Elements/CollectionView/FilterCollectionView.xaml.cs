@@ -1,11 +1,5 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class FilterCollectionView : ContentPage
 	{
 		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource();

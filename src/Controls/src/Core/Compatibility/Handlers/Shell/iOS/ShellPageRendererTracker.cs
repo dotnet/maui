@@ -134,10 +134,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateTabBarVisible()
 		{
-			var tabBarVisible =
-				(Page.FindParentOfType<ShellItem>() as IShellItemController)?.ShowTabs ?? Shell.GetTabBarIsVisible(Page);
+			if (ViewController is null || Page is null)
+			{
+				return;
+			}
 
-			ViewController.HidesBottomBarWhenPushed = !tabBarVisible;
+			var tabBarVisible = (Page.FindParentOfType<ShellItem>() as IShellItemController)?.ShowTabs ?? Shell.GetTabBarIsVisible(Page);
+			// In iOS 18, the tab bar visibility is effectively managed by the TabBarHidden property in ShellItemRenderer.
+			if (!(OperatingSystem.IsMacCatalystVersionAtLeast(18) || OperatingSystem.IsIOSVersionAtLeast(18)))
+			{
+				ViewController.HidesBottomBarWhenPushed = !tabBarVisible;
+			}
 		}
 
 		void OnToolbarPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -292,17 +299,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					NavigationItem.RightBarButtonItems[i].Dispose();
 			}
 
+			var shellToolbarItems = _context?.Shell?.ToolbarItems;
 			List<UIBarButtonItem> primaries = null;
-			if (Page.ToolbarItems.Count > 0)
+			if (Page.ToolbarItems.Count > 0) // Display toolbar items defined on the current page
 			{
 				foreach (var item in System.Linq.Enumerable.OrderBy(Page.ToolbarItems, x => x.Priority))
 				{
 					(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(false, true));
 				}
-
-				if (primaries != null)
-					primaries.Reverse();
 			}
+			else if (shellToolbarItems != null && shellToolbarItems.Count > 0) // If the page has no toolbar items use the ones defined for the shell
+			{
+				foreach (var item in System.Linq.Enumerable.OrderBy(shellToolbarItems, x => x.Priority))
+				{
+					(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(false, true));
+				}
+			}
+
+			if (primaries != null)
+				primaries.Reverse();
 
 			NavigationItem.SetRightBarButtonItems(primaries == null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
 
@@ -321,7 +336,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (String.IsNullOrWhiteSpace(text) && image == null)
 			{
-				image = _context.Shell.FlyoutIcon;
+				//Add the FlyoutIcon only if the FlyoutBehavior is Flyout
+				if (_flyoutBehavior == FlyoutBehavior.Flyout)
+				{
+					image = _context.Shell.FlyoutIcon;
+				}
 			}
 
 			if (!IsRootPage)
@@ -400,7 +419,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					var previousNavItem = viewControllers[count - 2].NavigationItem;
 					if (previousNavItem != null)
 					{
-						if (!String.IsNullOrWhiteSpace(text))
+						if (text is not null)
 						{
 							var barButtonItem = (previousNavItem.BackBarButtonItem ??= new UIBarButtonItem());
 							barButtonItem.Title = text;
@@ -444,30 +463,37 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			const string hamburgerKey = "Hamburger";
 			UIImage img = (UIImage)_nSCache.ObjectForKey((NSString)hamburgerKey);
 
-			if (img != null)
+			if (img is not null)
+			{
 				return img;
+			}
 
 			var rect = new CGRect(0, 0, 23f, 23f);
 
-			UIGraphics.BeginImageContextWithOptions(rect.Size, false, 0);
-			var ctx = UIGraphics.GetCurrentContext();
-			ctx.SaveState();
-			ctx.SetStrokeColor(UIColor.Blue.CGColor);
-
-			float size = 3f;
-			float start = 4f;
-			ctx.SetLineWidth(size);
-
-			for (int i = 0; i < 3; i++)
+			var renderer = new UIGraphicsImageRenderer(rect.Size, new UIGraphicsImageRendererFormat()
 			{
-				ctx.MoveTo(1f, start + i * (size * 2));
-				ctx.AddLineToPoint(22f, start + i * (size * 2));
-				ctx.StrokePath();
-			}
+				Opaque = false,
+				Scale = 0,
+			});
 
-			ctx.RestoreState();
-			img = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
+			img = renderer.CreateImage((context) =>
+			{
+				context.CGContext.SaveState();
+				UIColor.Blue.SetStroke();
+
+				float size = 3f;
+				float start = 4f;
+				context.CGContext.SetLineWidth(size);
+
+				for (int i = 0; i < 3; i++)
+				{
+					context.CGContext.MoveTo(1f, start + i * (size * 2));
+					context.CGContext.AddLineToPoint(22f, start + i * (size * 2));
+					context.CGContext.StrokePath();
+				}
+
+				context.CGContext.RestoreState();
+			});
 
 			_nSCache.SetObjectforKey(img, (NSString)hamburgerKey);
 			return img;
@@ -781,7 +807,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void SetSearchBarIcon(UISearchBar searchBar, ImageSource source, UISearchBarIcon icon)
 		{
-			source.LoadImage(source.FindMauiContext(), image =>
+			var mauiContext = source.FindMauiContext(true);
+
+			if (mauiContext is null)
+			{
+				return;
+			}
+
+			source.LoadImage(mauiContext, image =>
 			{
 				var result = image?.Value;
 				if (result != null)
@@ -807,6 +840,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			UpdateToolbarItemsInternal();
+
+			//UIKIt will try to override our colors when the SearchController is inside the NavigationBar
+			//Best way was to force them to be set again when page is loaded / ViewDidLoad
+			_searchHandlerAppearanceTracker?.UpdateSearchBarColors();
+
 			CheckAppeared();
 		}
 
@@ -828,9 +866,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			_isVisiblePage = true;
-			//UIKIt will try to override our colors when the SearchController is inside the NavigationBar
-			//Best way was to force them to be set again when page is Appearing / ViewDidLoad
-			_searchHandlerAppearanceTracker?.UpdateSearchBarColors();
 			UpdateShellToMyPage();
 
 			if (_context.Shell.Toolbar != null)

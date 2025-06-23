@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -29,17 +30,21 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task GetImageAsync(string colorHex)
 		{
-			var expectedColor = Color.FromArgb(colorHex).ToPlatform();
+			await MainThread.InvokeOnMainThreadAsync(async () =>
+		   {
+			   var expectedColor = Color.FromArgb(colorHex).ToPlatform();
 
-			var service = new StreamImageSourceService();
+			   var service = new StreamImageSourceService();
 
-			var imageSource = new StreamImageSourceStub(CreateBitmapStream(100, 100, expectedColor));
+			   var imageSource = new StreamImageSourceStub(CreateBitmapStream(100, 100, expectedColor));
 
-			using var drawable = await service.GetImageAsync(imageSource);
+			   using var drawable = await service.GetImageAsync(imageSource);
 
-			var image = Assert.IsType<UIImage>(drawable.Value);
+			   var image = Assert.IsType<UIImage>(drawable.Value);
 
-			image.AssertColorAtCenter(expectedColor);
+			   image.AssertColorAtCenter(expectedColor);
+
+		   });
 		}
 	}
 }

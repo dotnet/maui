@@ -8,7 +8,7 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class FormsCommandBar : CommandBar
+	public partial class FormsCommandBar : CommandBar
 	{
 		Microsoft.UI.Xaml.Controls.Button _moreButton;
 		Microsoft.UI.Xaml.Controls.ItemsControl _primaryItemsControl;

@@ -1,8 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 18740, "Virtual keyboard appears with focus on Entry", PlatformAffected.Android)]
 	public class Issue18740NavPage : NavigationPage

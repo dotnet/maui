@@ -17,6 +17,8 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui
 {
+	// TODO MARK THIS OBSOLETE FOR NET10 
+	// There's already one of these inside the Microsoft.Maui.Platform namespace
 	public static partial class SemanticExtensions
 	{
 		public static void SetSemanticFocus(this IView element)

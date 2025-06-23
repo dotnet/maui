@@ -1,11 +1,13 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="Type[@FullName='Microsoft.Maui.Controls.Switch']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Switch : View, IElementConfiguration<Switch>, ISwitch
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='SwitchOnVisualState']/Docs/*" />
@@ -106,6 +108,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get => IsToggled;
 			set => SetValue(IsToggledProperty, value, SetterSpecificity.FromHandler);
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"{base.GetDebuggerDisplay()}, IsToggled = {IsToggled}";
 		}
 	}
 }

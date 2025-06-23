@@ -52,7 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var uiimage = Assert.IsType<UIImage>(drawable.Value);
 
-			uiimage.AssertContainsColor(expectedColor.ToPlatform());
+			await uiimage.AssertContainsColor(expectedColor.ToPlatform()).ConfigureAwait(false);
 		}
 
 		[Fact]
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var uiimage = Assert.IsType<UIImage>(drawable.Value);
 
-			uiimage.AssertContainsColor(Colors.Red.ToPlatform());
+			await uiimage.AssertContainsColor(Colors.Red.ToPlatform()).ConfigureAwait(false);
 		}
 	}
 }

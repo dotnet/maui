@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls
 				_additionalTargets.Clear();
 				if (value is not null)
 				{
-					foreach	(var page in value)
+					foreach (var page in value)
 					{
 						_additionalTargets.Add(new(page));
 					}
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls
 
 		public Page Target
 		{
-			get =>  _target is not null && _target.TryGetTarget(out var target) ? target : null;
+			get => _target is not null && _target.TryGetTarget(out var target) ? target : null;
 			set
 			{
 				var target = Target;

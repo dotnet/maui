@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			// If the initial position hasn't been set, we have a UpdateInitialPosition call on CarouselViewController
 			// that will handle this so we want to skip this mapper call. We need to wait for the CollectionView to be ready
-			if(handler.Controller is CarouselViewController carouselViewController && carouselViewController.InitialPositionSet)
+			if (handler.Controller is CarouselViewController carouselViewController && carouselViewController.InitialPositionSet)
 			{
 				carouselViewController.UpdateFromPosition();
 			}
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.Controller as CarouselViewController)?.UpdateLoop();
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) => 
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 	}
 }

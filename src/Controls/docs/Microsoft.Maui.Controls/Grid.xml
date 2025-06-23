@@ -30,116 +30,6 @@
   </Interfaces>
   <Docs>
     <summary>A layout that arranges views in rows and columns.</summary>
-    <remarks>
-      <example>
-        <para>The following example shows a basic use:</para>
-        <code lang="csharp lang-csharp"><![CDATA[
-using System;
-using Microsoft.Maui.Controls;
-    
-namespace FormsGallery
-{
-    class GridDemoPage : ContentPage
-    {
-        public GridDemoPage()
-        {
-            Grid grid = new Grid
-            {
-                VerticalOptions = LayoutOptions.FillAndExpand,
-                RowDefinitions = 
-                {
-                    new RowDefinition { Height = GridLength.Auto },
-                    new RowDefinition { Height = GridLength.Auto },
-                    new RowDefinition { Height = new GridLength(1, GridUnitType.Star) },
-                    new RowDefinition { Height = new GridLength(100, GridUnitType.Absolute) }
-                },
-                ColumnDefinitions = 
-                {
-                    new ColumnDefinition { Width = GridLength.Auto },
-                    new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
-                    new ColumnDefinition { Width = new GridLength(100, GridUnitType.Absolute) }
-                }
-            };
-    
-            grid.AddWithSpan(new Label
-                {
-                    Text = "Grid",
-                    FontSize = Device.GetNamedSize (NamedSize.Large, typeof(Label)),
-                    HorizontalOptions = LayoutOptions.Center
-                }, 0, 3, 0, 1);
-    
-            grid.Add(new Label
-                {
-                    Text = "Autosized cell",
-                    TextColor = Color.White,
-                    BackgroundColor = Color.Blue
-                }, 0, 1);
-    
-            grid.Add(new BoxView
-                {
-                    Color = Color.Silver,
-                    HeightRequest = 0
-                }, 1, 1);
-    
-            grid.Add(new BoxView
-                {
-                    Color = Color.Teal
-                }, 0, 2);
-    
-            grid.Add(new Label
-                {
-                    Text = "Leftover space",
-                    TextColor = Color.Purple,
-                    BackgroundColor = Color.Aqua,
-                    HorizontalTextAlignment = TextAlignment.Center,
-                    VerticalTextAlignment = TextAlignment.Center,
-                }, 1, 2);
-    
-            grid.AddWithSpan(new Label
-                {
-                    Text = "Span two rows (or more if you want)",
-                    TextColor = Color.Yellow,
-                    BackgroundColor = Color.Navy,
-                    HorizontalTextAlignment = TextAlignment.Center,
-                    VerticalTextAlignment = TextAlignment.Center
-                }, 2, 3, 1, 3);
-    
-            grid.AddWithSpan(new Label
-                {
-                    Text = "Span 2 columns",
-                    TextColor = Color.Blue,
-                    BackgroundColor = Color.Yellow,
-                    HorizontalTextAlignment = TextAlignment.Center,
-                    VerticalTextAlignment = TextAlignment.Center
-                }, 0, 2, 3, 4);
-    
-            grid.Add(new Label
-                {
-                    Text = "Fixed 100x100",
-                    TextColor = Color.Aqua,
-                    BackgroundColor = Color.Red,
-                    HorizontalTextAlignment = TextAlignment.Center,
-                    VerticalTextAlignment = TextAlignment.Center
-                }, 2, 3);
-    
-            // Accomodate iPhone status bar.
-            this.Padding = new Thickness(10, Device.OnPlatform(20, 0, 0), 10, 5);
-    
-            // Build the page.
-            this.Content = grid;
-        }
-    }
-}
-]]></code>
-      </example>
-      <para>The following shows Grids on the various platforms:</para>
-      <para>
-        <img href="~/xml/Microsoft.Maui.Controls/_images/Grid.TripleScreenShot.png" />
-      </para>
-      <para>It is convenient for the <see cref="T:Microsoft.Maui.Controls.Grid" /> layout class to store row and column indices of each of its child elements. Additionally, when a <see cref="T:Microsoft.Maui.Controls.View" /> element is laid out with a grid, application developers can access and change the child's position and span from the child itself by using the <see cref="M:Microsoft.Maui.Controls.Grid.GetRow(Microsoft.Maui.Controls.BindableObject)" />, <see cref="M:Microsoft.Maui.Controls.Grid.SetRow(Microsoft.Maui.Controls.BindableObject,System.Int32)" />, <see cref="M:Microsoft.Maui.Controls.Grid.GetRowSpan(Microsoft.Maui.Controls.BindableObject)" />, <see cref="M:Microsoft.Maui.Controls.Grid.SetRowSpan(Microsoft.Maui.Controls.BindableObject,System.Int32)" /> static methods, and the equivalent static methods for columns and column spans.</para>
-      <para>The documentation for the following <see cref="T:Microsoft.Maui.Controls.Grid" /> member methods contains XAML syntax examples:
-<list type="bullet"><item><term><see cref="M:Microsoft.Maui.Controls.Grid.SetRow(Microsoft.Maui.Controls.BindableObject,System.Int32)" /></term></item><item><term><see cref="M:Microsoft.Maui.Controls.Grid.SetRowSpan(Microsoft.Maui.Controls.BindableObject,System.Int32)" /></term></item><item><term><see cref="M:Microsoft.Maui.Controls.Grid.SetColumn(Microsoft.Maui.Controls.BindableObject,System.Int32)" /></term></item><item><term><see cref="M:Microsoft.Maui.Controls.Grid.SetColumnSpan(Microsoft.Maui.Controls.BindableObject,System.Int32)" /></term></item></list></para>
-    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -564,7 +454,6 @@ namespace FormsGallery
       <Docs>
         <param name="trigger">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LayoutChildren">
@@ -601,7 +490,6 @@ namespace FormsGallery
         <summary>
           <para>Lays out the child elements when the layout is invalidated.</para>
         </summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="On&lt;T&gt;">
@@ -632,8 +520,6 @@ namespace FormsGallery
       <Docs>
         <typeparam name="T">The platform configuration that selects the platform specific to use.</typeparam>
         <summary>Returns the configuration object that the developer can use to call platform-specific methods for the grid control.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnAdded">
@@ -685,7 +571,6 @@ namespace FormsGallery
       <Parameters />
       <Docs>
         <summary>Application developers override this to respond when the binding context changes.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnRemoved">
@@ -714,7 +599,6 @@ namespace FormsGallery
       <Docs>
         <param name="view">The element that was removed.</param>
         <summary>Method that is called when a child is removed from this <see cref="T:Microsoft.Maui.Controls.Grid" /> element.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnSizeRequest">
@@ -756,7 +640,6 @@ namespace FormsGallery
         <returns>
           <para>The new requested size.</para>
         </returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RowDefinitions">
@@ -814,7 +697,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Implements the <see cref="P:Microsoft.Maui.Controls.Grid.RowDefinitions" /> property, and allows the <see cref="T:Microsoft.Maui.Controls.Grid" /> class to bind it to properties on other objects at run time.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RowProperty">

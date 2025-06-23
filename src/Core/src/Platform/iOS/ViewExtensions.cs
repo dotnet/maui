@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
+using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -211,22 +212,14 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateShadow(this UIView platformView, IView view)
 		{
 			var shadow = view.Shadow;
-			var clip = view.Clip;
 
-			// If there is a clip shape, then the shadow should be applied to the clip layer, not the view layer
-			if (clip == null)
-			{
-				if (shadow == null)
-					platformView.ClearShadow();
-				else
-					platformView.SetShadow(shadow);
-			}
+			if (shadow == null)
+				platformView.ClearShadow();
 			else
-			{
-				if (platformView is WrapperView wrapperView)
-					wrapperView.Shadow = view.Shadow;
-			}
+				platformView.SetShadow(shadow);
 		}
+
+		[Obsolete("IBorder is not used and will be removed in a future release.")]
 		public static void UpdateBorder(this UIView platformView, IView view)
 		{
 			var border = (view as IBorder)?.Border;
@@ -245,29 +238,115 @@ namespace Microsoft.Maui.Platform
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView =>
 			FindDescendantView<T>(view, (_) => true);
 
-		public static void UpdateBackgroundLayerFrame(this UIView view)
+		[Obsolete("MAUI background layers now automatically update their Frame when their SuperLayer Frame changes. This method will be removed in a future release.")]
+		public static void UpdateBackgroundLayerFrame(this UIView view) =>
+			view.UpdateBackgroundLayerFrame(BackgroundLayerName);
+
+		[Obsolete("MAUI background layers now automatically update their Frame when their SuperLayer Frame changes. This method will be removed in a future release.")]
+		internal static void UpdateBackgroundLayerFrame(this UIView view, string layerName)
 		{
-			if (view == null || view.Frame.IsEmpty)
-				return;
-
-			var sublayers = view.Layer?.Sublayers;
-			if (sublayers is null || sublayers.Length == 0)
-				return;
-
-			foreach (var sublayer in sublayers)
+			if (view.Frame.IsEmpty)
 			{
-				if (sublayer.Name == BackgroundLayerName && sublayer.Frame != view.Bounds)
+				return;
+			}
+
+			var layer = view.Layer;
+			if (layer?.Sublayers is { Length: > 0 } sublayers)
+			{
+				var bounds = view.Bounds;
+				UpdateBackgroundLayers(sublayers, layerName, bounds);
+			}
+		}
+
+		static void UpdateBackgroundLayers(this CALayer[] layers, string layerName, CGRect bounds)
+		{
+			foreach (var layer in layers)
+			{
+				if (layer.Sublayers is { Length: > 0 } sublayers)
 				{
-					sublayer.Frame = view.Bounds;
-					break;
+					UpdateBackgroundLayers(sublayers, layerName, bounds);
+				}
+
+				if (layer.Name == layerName && layer.Frame != bounds)
+				{
+					layer.Frame = bounds;
 				}
 			}
 		}
 
+		/// <summary>
+		/// Invalidates the measure of the view and all its ancestors through <see cref="UIView.SetNeedsLayout"/> propagation.
+		/// </summary>
+		/// <remarks>
+		/// Stops when it reaches the page view or a scrollable area, including <see cref="UICollectionView"/>.
+		/// </remarks>
 		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
-			platformView.SetNeedsLayout();
-			platformView.Superview?.SetNeedsLayout();
+			InvalidateMeasure(platformView);
+		}
+
+		internal static void InvalidateMeasure(this UIView platformView)
+		{
+			var propagate = true;
+
+			if (platformView is IPlatformMeasureInvalidationController mauiPlatformView)
+			{
+				propagate = mauiPlatformView.InvalidateMeasure();
+			}
+			else
+			{
+				platformView.SetNeedsLayout();
+			}
+
+			if (propagate)
+			{
+				platformView.InvalidateAncestorsMeasures();
+			}
+		}
+
+		internal static void InvalidateAncestorsMeasures(this UIView child)
+		{
+			var childMauiPlatformLayout = child as IPlatformMeasureInvalidationController;
+
+			while (true)
+			{
+				// We verify the presence of a Window to prevent scenarios where an invalidate might propagate up the view hierarchy  
+				// to a SuperView that has already been disposed. Accessing such a disposed view would result in a crash (see #24032).  
+				// This validation is only possible using `IMauiPlatformView`, as it provides a way to schedule an invalidation when the view is moved to window.  
+				// For other cases, we accept the risk since avoiding it could lead to the layout not being updated properly.
+				if (childMauiPlatformLayout is not null && child.Window is null)
+				{
+					childMauiPlatformLayout.InvalidateAncestorsMeasuresWhenMovedToWindow();
+					return;
+				}
+
+				var superview = child.Superview;
+				if (superview is null)
+				{
+					return;
+				}
+
+				// Now invalidate the parent view
+				var propagate = true;
+				var superviewMauiPlatformLayout = superview as IPlatformMeasureInvalidationController;
+				if (superviewMauiPlatformLayout is not null)
+				{
+					propagate = superviewMauiPlatformLayout.InvalidateMeasure(isPropagating: true);
+				}
+				else
+				{
+					superview.SetNeedsLayout();
+				}
+
+				if (!propagate)
+				{
+					// We've been asked to stop propagation, so let's stop here
+					return;
+				}
+
+				child = superview;
+				childMauiPlatformLayout = superviewMauiPlatformLayout;
+			}
 		}
 
 		public static void UpdateWidth(this UIView platformView, IView view)
@@ -504,7 +583,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateInputTransparent(this UIView platformView, IViewHandler handler, IView view)
 		{
-			if (view is ITextInput textInput)
+			// Interaction should not be disabled for an editor if it is set as read-only
+			// because this prevents users from scrolling the content inside an editor.
+			if (view is not IEditor && view is ITextInput textInput)
 			{
 				platformView.UpdateInputTransparent(textInput.IsReadOnly, view.InputTransparent);
 				return;
@@ -621,7 +702,9 @@ namespace Microsoft.Maui.Platform
 
 				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
 				{
-					OnLoadedCheck(null);
+					//The MovedToWindow fires multiple times during navigation animations, causing repeated OnLoadedCheck calls. 
+					//BeginInvokeOnMainThread ensures OnLoadedCheck executes after all window transitions are complete.
+					uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
 				}
 			}
 			else
@@ -661,7 +744,8 @@ namespace Microsoft.Maui.Platform
 						uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
 					}
 				}
-			};
+			}
+			;
 
 			return disposable;
 		}
@@ -701,7 +785,9 @@ namespace Microsoft.Maui.Platform
 
 				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
 				{
-					UnLoadedCheck();
+					//The MovedToWindow fires multiple times during navigation animations, causing repeated UnLoadedCheck calls. 
+					//BeginInvokeOnMainThread ensures UnLoadedCheck executes after all window transitions are complete.
+					uiView.BeginInvokeOnMainThread(UnLoadedCheck);
 				}
 			}
 
@@ -719,7 +805,8 @@ namespace Microsoft.Maui.Platform
 					disposable = null;
 					action();
 				}
-			};
+			}
+			;
 
 			return disposable;
 		}
@@ -744,6 +831,13 @@ namespace Microsoft.Maui.Platform
 			var nextResponder = view as UIResponder;
 			while (nextResponder is not null)
 			{
+				// We check for Window to avoid scenarios where an invalidate might propagate up the tree
+				// To a SuperView that's been disposed which will cause a crash when trying to access it
+				if (nextResponder is UIView uiview && uiview.Window is null)
+				{
+					return null;
+				}
+
 				nextResponder = nextResponder.NextResponder;
 
 				if (nextResponder is T responder)
@@ -757,6 +851,13 @@ namespace Microsoft.Maui.Platform
 			var nextResponder = controller.View as UIResponder;
 			while (nextResponder is not null)
 			{
+				// We check for Window to avoid scenarios where an invalidate might propagate up the tree
+				// To a SuperView that's been disposed which will cause a crash when trying to access it
+				if (nextResponder is UIView uiview && uiview.Window is null)
+				{
+					return null;
+				}
+
 				nextResponder = nextResponder.NextResponder;
 
 				if (nextResponder is T responder && responder != controller)
@@ -914,5 +1015,15 @@ namespace Microsoft.Maui.Platform
 		internal static bool ShowSoftInput(this UIView inputView) => inputView.BecomeFirstResponder();
 
 		internal static bool IsSoftInputShowing(this UIView inputView) => inputView.IsFirstResponder;
+
+		private const nint NativeViewControlledByCrossPlatformLayout = 0x63D2A1;
+
+		internal static bool IsFinalMeasureHandledBySuperView(this UIView? view)
+			=> view?.Superview is ICrossPlatformLayoutBacking { CrossPlatformLayout: not null } or { Tag: NativeViewControlledByCrossPlatformLayout };
+
+		internal static void MarkAsCrossPlatformLayoutBacking(this UIView view)
+		{
+			view.Tag = NativeViewControlledByCrossPlatformLayout;
+		}
 	}
 }

@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries
 {
 	internal static class IndexParser
 	{

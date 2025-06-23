@@ -244,6 +244,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				var platformView = _viewCell.View.ToPlatform(Element.FindMauiContext());
 				_viewHandler = (IPlatformViewHandler)_viewCell.View.Handler;
+				platformView.RemoveFromParent();
 				AddView(platformView);
 
 				UpdateIsEnabled();

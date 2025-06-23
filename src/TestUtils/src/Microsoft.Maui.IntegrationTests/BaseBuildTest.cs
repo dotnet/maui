@@ -1,4 +1,5 @@
-﻿
+﻿using System.Globalization;
+
 namespace Microsoft.Maui.IntegrationTests
 {
 	public enum RuntimeVariant
@@ -7,15 +8,39 @@ namespace Microsoft.Maui.IntegrationTests
 		NativeAOT
 	}
 
-	public class BaseBuildTest
+	public abstract class BaseBuildTest
 	{
-		public const string DotNetCurrent = "net8.0";
-		public const string DotNetPrevious = "net7.0";
+		public const string DotNetCurrent = "net9.0";
+		public const string DotNetPrevious = "net8.0";
 
-		public const string MauiVersionCurrent = "8.0.0-rc.1.9171"; // this should not be the same as the last release
-		public const string MauiVersionPrevious = "7.0.86"; // this should not be the same version as the default. aka: MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
+		// Versions of .NET MAUI that are used when testing the <MauiVersion> property. These should preferrably
+		// different to the defaults in the SDKs such that the tests can test what would happen if the user puts
+		// some arbitrary number in <MauiVersion>. The actual numbers do not matter as much, as long as they trigger
+		// the MSBuild targets that would download some version that is only on nuget.org and not in the workload.
+		//
+		// MauiVersionCurrent: this should be the current .NET version of MAUI, but the latest released build.
+		// For example, if this branch is for .NET 9, then this must be a 9.0.x number. If the latest MAUI release
+		// is 9.0.100, then this should preferrable be some older build to make sure things work, like 9.0.30.
+		public const string MauiVersionCurrent = "9.0.14";
+		// MauiVersionPrevious: this should be the previous .NET version of MAUI.
+		// For example, if this branch is for .NET 9, then this must be a 8.0.x number, but should preferrably
+		// not be the same as the default in MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
+		// as this would result in the tests not testing anything. If the .NET 9 version of MAUI pulls in 8.0.100
+		// of the .NET 8 MAUI, then this should be 8.0.80 for example.
+		public const string MauiVersionPrevious = "8.0.93";
 
-		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', };
+		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
+
+		public string MauiPackageVersion
+		{
+			get
+			{
+				var version = Environment.GetEnvironmentVariable("MAUI_PACKAGE_VERSION");
+				if (string.IsNullOrWhiteSpace(version))
+					throw new Exception("MAUI_PACKAGE_VERSION was not set.");
+				return version;
+			}
+		}
 
 		public string TestName
 		{
@@ -26,7 +51,14 @@ namespace Microsoft.Maui.IntegrationTests
 				{
 					result = result.Replace(c, '_');
 				}
-				return result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
+				result = result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+				if (result.Length > 20)
+				{
+					// If the test name is too long, hash it to avoid path length issues
+					result = result.Substring(0, 15) + Convert.ToString(Math.Abs(string.GetHashCode(result.AsSpan(), StringComparison.Ordinal)), CultureInfo.InvariantCulture);
+				}
+				return result;
 			}
 		}
 

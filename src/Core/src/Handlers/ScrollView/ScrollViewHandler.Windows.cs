@@ -62,12 +62,16 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVerticalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.PlatformView.VerticalScrollBarVisibility = scrollView.VerticalScrollBarVisibility.ToWindowsScrollBarVisibility();
+			handler.PlatformView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollView.VerticalScrollBarVisibility);
 		}
 
 		public static void MapOrientation(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.PlatformView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollView.HorizontalScrollBarVisibility);
+			var scrollBarVisibility = scrollView.Orientation == ScrollOrientation.Horizontal
+					? scrollView.HorizontalScrollBarVisibility
+					: scrollView.VerticalScrollBarVisibility;
+
+			handler.PlatformView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollBarVisibility);
 		}
 
 		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
@@ -131,10 +135,10 @@ namespace Microsoft.Maui.Handlers
 
 			if (GetContentPanel(scrollViewer) is ContentPanel currentPaddingLayer)
 			{
-				if (currentPaddingLayer.Children.Count == 0 || currentPaddingLayer.Children[0] != nativeContent)
+				if (currentPaddingLayer.CachedChildren.Count == 0 || currentPaddingLayer.CachedChildren[0] != nativeContent)
 				{
-					currentPaddingLayer.Children.Clear();
-					currentPaddingLayer.Children.Add(nativeContent);
+					currentPaddingLayer.CachedChildren.Clear();
+					currentPaddingLayer.CachedChildren.Add(nativeContent);
 
 				}
 			}
@@ -158,7 +162,7 @@ namespace Microsoft.Maui.Handlers
 			};
 
 			scrollViewer.Content = null;
-			paddingShim.Children.Add(nativeContent);
+			paddingShim.CachedChildren.Add(nativeContent);
 			scrollViewer.Content = paddingShim;
 		}
 

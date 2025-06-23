@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -13,6 +14,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// A button <see cref="View" /> that reacts to touch events.
 	/// </summary>
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Button : View, IFontElement, ITextElement, IBorderElement, IButtonController, IElementConfiguration<Button>, IPaddingElement, IImageController, IViewController, IButtonElement, ICommandElement, IImageElement, IButton, ITextButton, IImageButton
 	{
 		const double DefaultSpacing = 10;
@@ -596,7 +598,7 @@ namespace Microsoft.Maui.Controls
 				int spacingIndex = spacingFirst ? 0 : (parts.Length == 2 ? 1 : -1);
 
 				if (spacingIndex > -1)
-					spacing = double.Parse(parts[spacingIndex]);
+					spacing = double.Parse(parts[spacingIndex], CultureInfo.InvariantCulture);
 
 				if (positionIndex > -1)
 					position = (ButtonContentLayout.ImagePosition)Enum.Parse(typeof(ButtonContentLayout.ImagePosition), parts[positionIndex], true);
@@ -606,6 +608,13 @@ namespace Microsoft.Maui.Controls
 
 			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 				=> throw new NotSupportedException();
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			var textString = DebuggerDisplayHelpers.GetDebugText(nameof(Text), Text);
+			var commandText = DebuggerDisplayHelpers.GetDebugText(nameof(Command), Command, false);
+			return $"{base.GetDebuggerDisplay()}, {textString}, {commandText}";
 		}
 	}
 }

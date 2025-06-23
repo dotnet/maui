@@ -88,6 +88,13 @@ namespace Microsoft.Maui.Platform
 				await handler.ProcessNavigatedAsync(url);
 		}
 
+		[Export("webViewWebContentProcessDidTerminate:")]
+		public void ContentProcessDidTerminate(WKWebView webView)
+		{
+			if (_handler.TryGetTarget(out var handler))
+				handler.VirtualView.ProcessTerminated(new WebProcessTerminatedEventArgs(webView));
+		}
+
 		public void LoadHtml(string? html, string? baseUrl)
 		{
 			if (html != null)

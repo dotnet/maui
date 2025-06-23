@@ -1,4 +1,5 @@
-﻿#if IOS
+﻿#if IOS || (ANDROID && TEST_FAILS_ON_ANDROID)//android related issue: https://github.com/dotnet/maui/issues/27951
+//The test is applicable only to mobile platforms like iOS and Android.
 using System.Drawing;
 using NUnit.Framework;
 using UITest.Appium;
@@ -55,20 +56,31 @@ public class Issue19956: _IssuesUITest
     {
         var app = App as AppiumApp;
         if (app is null)
+        {
             return;
+        }
 
-        App.Tap("Entry5");
-        ScrollToBottom(app);
-        CheckForBottomEntry(app);
-        KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
+        try
+        {
+            App.Tap("Entry5");
+            ScrollToBottom(app);
+            CheckForBottomEntry(app);
+            KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
 
-        App.Tap("Entry10");
-        ScrollToBottom(app);
-        CheckForBottomEntry(app);
-        KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
+            App.Tap("Entry10");
+            ScrollToBottom(app);
+            CheckForBottomEntry(app);
+            KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
 
-        ScrollToBottom(app);
-        CheckForBottomEntry(app);
+            ScrollToBottom(app);
+            CheckForBottomEntry(app);
+        }
+        finally
+        {
+            //Reset the app so other UITest is in a clean state
+            Reset();
+            FixtureSetup();
+        }
     }
 
     static void ScrollToBottom(AppiumApp app)

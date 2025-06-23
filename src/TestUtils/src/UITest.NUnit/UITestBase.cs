@@ -25,6 +25,10 @@ namespace UITest.Appium.NUnit
 		public virtual void TestSetup()
 		{
 			RecordTestSetup();
+			if (ResetAfterEachTest)
+			{
+				FixtureSetup();
+			}
 		}
 
 		[TearDown]
@@ -35,7 +39,6 @@ namespace UITest.Appium.NUnit
 			if (ResetAfterEachTest)
 			{
 				Reset();
-				FixtureSetup();
 			}
 		}
 
@@ -102,8 +105,11 @@ namespace UITest.Appium.NUnit
 			InitialSetup(UITestContextSetupFixture.ServerContext);
 			try
 			{
-				//SaveDiagnosticLogs("BeforeFixtureSetup");
-				FixtureSetup();
+				if (!ResetAfterEachTest)
+				{
+					//SaveDiagnosticLogs("BeforeFixtureSetup");
+					FixtureSetup();
+				}
 			}
 			catch
 			{

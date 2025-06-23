@@ -1642,7 +1642,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 								value.Width = (value.X - xSpace) + value.Width;
 								value.X = xSpace;
 							}
-						};
+						}
+						;
 
 						value.Height = ToolbarHeight;
 					}

@@ -102,7 +102,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Shell.SetNavBarHasShadow(contentPage, navBarHasShadow);
 			});
-			
+
 			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
 				await Task.Delay(100);
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.DeviceTests
 				var platformToolbar = GetPlatformToolbar(handler);
 				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
 
-				if(navBarHasShadow)
+				if (navBarHasShadow)
 					Assert.True(appBar.Elevation > 0);
 				else
 					Assert.True(appBar.Elevation == 0);
@@ -454,6 +454,68 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		//src/Compatibility/Core/tests/Android/ShellTests.cs
+		[Fact(DisplayName = "Flyout Header Changes When Updated")]
+		public async Task FlyoutHeaderReactsToChanges()
+		{
+			SetupBuilder();
+
+			var initialHeader = new Label() { Text = "Hello" };
+			var newHeader = new Label() { Text = "Hello Part 2" };
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { new ContentPage() }, Title = "Flyout Item" };
+				shell.FlyoutHeader = initialHeader;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				var initialHeaderPlatformView = initialHeader.ToPlatform();
+				Assert.NotNull(initialHeaderPlatformView);
+				Assert.NotNull(initialHeader.Handler);
+
+				shell.FlyoutHeader = newHeader;
+
+				var newHeaderPlatformView = newHeader.ToPlatform();
+				Assert.NotNull(newHeaderPlatformView);
+				Assert.NotNull(newHeader.Handler);
+
+				Assert.Null(initialHeader.Handler);
+
+				await OpenFlyout(handler);
+
+				var appBar = newHeaderPlatformView.GetParentOfType<AppBarLayout>();
+				Assert.NotNull(appBar);
+			});
+		}
+
+		//src/Compatibility/Core/tests/Android/ShellTests.cs
+		[Fact(DisplayName = "Ensure Default Colors are White for BottomNavigationView")]
+		public async Task ShellTabColorsDefaultToWhite()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 1" });
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, (handler) =>
+			{
+				var bottomNavigationView = GetDrawerLayout(handler).GetFirstChildOfType<BottomNavigationView>();
+				Assert.NotNull(bottomNavigationView);
+
+				var background = bottomNavigationView.Background;
+				Assert.NotNull(background);
+
+				if (background is ColorChangeRevealDrawable changeRevealDrawable)
+				{
+					Assert.Equal(Android.Graphics.Color.White, changeRevealDrawable.EndColor);
+				}
+			});
+		}
+
 		protected AView GetFlyoutPlatformView(ShellRenderer shellRenderer)
 		{
 			var drawerLayout = GetDrawerLayout(shellRenderer);
@@ -579,7 +641,9 @@ namespace Microsoft.Maui.DeviceTests
 			var behavior = clLayoutParams.Behavior as AppBarLayout.Behavior;
 			var headerContainer = appbarLayout.GetFirstChildOfType<HeaderContainer>();
 
+#pragma warning disable XAOBS001 // Obsolete
 			var verticalOffset = flyoutItems.ComputeVerticalScrollOffset();
+#pragma warning restore XAOBS001 // Obsolete
 			behavior.OnNestedPreScroll(coordinatorLayout, appbarLayout, flyoutItems, 0, verticalOffset, new int[2], ViewCompat.TypeTouch);
 			await Task.Delay(10);
 

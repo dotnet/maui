@@ -23,7 +23,6 @@
   <Interfaces />
   <Docs>
     <summary>A <see cref="T:Microsoft.Maui.Controls.TableSection" /> that contains either a table section or the entire table.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -45,7 +44,6 @@
       <Parameters />
       <Docs>
         <summary>Constructs and initializes a new instance of the <see cref="T:Microsoft.Maui.Controls.TableRoot" /> class.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -71,7 +69,6 @@
       <Docs>
         <param name="title">The title of the table.</param>
         <summary>Constructs and initializes a new instance of the <see cref="T:Microsoft.Maui.Controls.TableRoot" /> class with a title.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

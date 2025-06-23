@@ -22,7 +22,10 @@ namespace Microsoft.Maui.DeviceTests
 				})
 				.ConfigureFonts(fonts =>
 				{
+					fonts.AddFont("ionicons.ttf", "Ion");
+					fonts.AddFont("FontAwesome.ttf", "FA");
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
+					fonts.AddEmbeddedResourceFont(typeof(CoreDeviceTestExtensions).Assembly, "ionicons.ttf", "Embedded");
 					fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");
 					fonts.AddFont("LobsterTwo-Bold.ttf", "Lobster Two Bold");
 					fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");

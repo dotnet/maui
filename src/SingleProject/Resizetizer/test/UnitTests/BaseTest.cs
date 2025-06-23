@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using SkiaSharp;
 using SkiaSharp.Extended;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
@@ -13,33 +14,33 @@ namespace Microsoft.Maui.Resizetizer.Tests
 	{
 		private const string TestFolderName = "Microsoft.Maui.Resizetizer.Tests";
 		private const string TestImagesFolderName = "imageresults";
-		private const double ImageErrorThreshold = 0.0027;
+		private const double ImageErrorThreshold = 0.27;
 
 		private readonly string DeleteDirectory;
 		protected readonly string DestinationDirectory;
 
-		public BaseTest(string testContextDirectory = null)
+		public BaseTest(ITestOutputHelper output)
 		{
-			if (!string.IsNullOrEmpty(testContextDirectory))
-			{
-				DestinationDirectory = testContextDirectory;
-				DeleteDirectory = testContextDirectory;
-			}
-			else
-			{
-				var name = GetType().FullName;
-				if (name.StartsWith(TestFolderName + ".", StringComparison.OrdinalIgnoreCase))
-					name = name.Substring(TestFolderName.Length + 1);
+			Output = output;
 
-				var dir = Path.Combine(Path.GetTempPath(), TestFolderName, name, Path.GetRandomFileName());
+			var name = GetType().FullName;
+			if (name.StartsWith(TestFolderName + ".", StringComparison.OrdinalIgnoreCase))
+				name = name.Substring(TestFolderName.Length + 1);
 
-				DestinationDirectory = dir;
-				DeleteDirectory = dir;
-			}
+			var dir = Path.Combine(Path.GetTempPath(), TestFolderName, name, Path.GetRandomFileName());
+
+			DestinationDirectory = dir;
+			DeleteDirectory = dir;
+
+			Output.WriteLine($"Using DestinationDirectory={DestinationDirectory}");
 		}
+
+		public ITestOutputHelper Output { get; }
 
 		public virtual void Dispose()
 		{
+			Output.WriteLine($"Cleaning up directories={DeleteDirectory}");
+
 			if (Directory.Exists(DeleteDirectory))
 				Directory.Delete(DeleteDirectory, true);
 		}
@@ -126,42 +127,30 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				? actualFilename
 				: Path.Combine(DestinationDirectory, actualFilename);
 
-			var expectedFilename = GetTestImageFileName(args, methodName);
+			var expectedFilename = GetTestImageFileName(args, methodName, Path.GetExtension(actualFilename));
 
-			using var actual = SKImage.FromEncodedData(actualFilename);
-			using var expected = SKImage.FromEncodedData(expectedFilename);
+			if (Path.GetExtension(actualFilename).Equals(".json", StringComparison.OrdinalIgnoreCase))
+			{
+				var actual = File.ReadAllText(actualFilename);
+				var expected = File.ReadAllText(expectedFilename);
 
-			var similarity = SKPixelComparer.Compare(actual, expected);
-
-			var isSimilar = similarity.ErrorPixelPercentage <= ImageErrorThreshold;
-
-			if (!isSimilar)
+				Assert.Equal(expected, actual);
+			}
+			else
 			{
 				var root = GetTestProjectRoot();
-				var filename = GetTestImageFileName(args, methodName);
+				var diffDir = Path.Combine(root, "errors");
 
-				var maskFilename = Path.Combine(root, "errors", filename);
-				maskFilename = Path.ChangeExtension(maskFilename, ".mask.png");
+				Output.WriteLine($"Validating image similarity with diff dir:{diffDir}");
 
-				Directory.CreateDirectory(Path.GetDirectoryName(maskFilename));
-
-				using (var mask = SKPixelComparer.GenerateDifferenceMask(actual, expected))
-				using (var data = mask.Encode(SKEncodedImageFormat.Png, 100))
-				using (var maskFile = File.Create(maskFilename))
-				{
-					data.SaveTo(maskFile);
-				}
-
-				Assert.True(
-					isSimilar,
-					$"Image was not equal. Error was {similarity.ErrorPixelPercentage}% ({similarity.AbsoluteError} pixels). See {maskFilename}");
+				ImageAssert.Equivalent(actualFilename, expectedFilename, diffDir, ImageErrorThreshold);
 			}
 		}
 
 		void SaveImageResultFileReal(string destinationFilename, object[] args = null, [CallerMemberName] string methodName = null)
 		{
 			var root = GetTestProjectRoot();
-			var imagePath = GetTestImageFileName(args, methodName);
+			var imagePath = GetTestImageFileName(args, methodName, Path.GetExtension(destinationFilename));
 			var path = Path.Combine(root, imagePath);
 
 			var dir = Path.GetDirectoryName(path);
@@ -174,7 +163,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			File.Copy(src, path, true);
 		}
 
-		private string GetTestImageFileName(object[] args, string methodName)
+		private string GetTestImageFileName(object[] args, string methodName, string extension)
 		{
 			var strsSelect = args?.Select(a => string
 				.Format(CultureInfo.InvariantCulture, "{0}", a ?? "NULL")
@@ -186,7 +175,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var sepStr = strs?.Length > 0 ? "-" : "";
 			var argStr = strs?.Length > 0 ? string.Join("-", strs) : "";
 
-			var filename = $"output{sepStr}{argStr}.png";
+			var filename = $"output{sepStr}{argStr}{extension}";
 
 			var name = GetType().FullName;
 			if (name.StartsWith(TestFolderName + ".", StringComparison.OrdinalIgnoreCase))

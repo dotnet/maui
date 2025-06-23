@@ -7,6 +7,8 @@
     <IsPackable>false</IsPackable>
     <IsTrimmable>false</IsTrimmable>
     <NoWarn>$(NoWarn);RS0041</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

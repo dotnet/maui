@@ -1,73 +1,100 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class FailsOnAllPlatforms : IgnoreAttribute
+	public class FailsOnAllPlatformsWhenRunningOnXamarinUITest : IgnoreAttribute
 	{
-		public FailsOnAllPlatforms(string reason) : base(reason)
+		public FailsOnAllPlatformsWhenRunningOnXamarinUITest() : base(nameof(FailsOnAllPlatformsWhenRunningOnXamarinUITest))
+		{
+		}
+		public FailsOnAllPlatformsWhenRunningOnXamarinUITest(string reason) : base(reason)
 		{
 		}
 	}
 
 #if ANDROID
-	public class FailsOnAndroid : IgnoreAttribute
+	public class FailsOnAndroidWhenRunningOnXamarinUITest : IgnoreAttribute
 	{
-		public FailsOnAndroid(string reason) : base(reason)
+		public FailsOnAndroidWhenRunningOnXamarinUITest() : base(nameof(FailsOnAndroidWhenRunningOnXamarinUITest))
+		{
+		}
+		public FailsOnAndroidWhenRunningOnXamarinUITest(string reason) : base(reason)
 		{
 		}
 	}
 #else
-	public class FailsOnAndroid : CategoryAttribute
+	public class FailsOnAndroidWhenRunningOnXamarinUITest : CategoryAttribute
 	{
-		public FailsOnAndroid(string name) : base(name)
+		public FailsOnAndroidWhenRunningOnXamarinUITest() : base(nameof(FailsOnAndroidWhenRunningOnXamarinUITest))
+		{
+		}
+		public FailsOnAndroidWhenRunningOnXamarinUITest(string description) : base(description)
 		{
 		}
 	}
 #endif
 
 #if IOS
-	public class FailsOnIOS : IgnoreAttribute
+	public class FailsOnIOSWhenRunningOnXamarinUITest : IgnoreAttribute
 	{
-		public FailsOnIOS(string reason) : base(reason)
+		public FailsOnIOSWhenRunningOnXamarinUITest() : base(nameof(FailsOnIOSWhenRunningOnXamarinUITest))
+		{
+		}
+		public FailsOnIOSWhenRunningOnXamarinUITest(string reason) : base(reason)
 		{
 		}
 	}
 #else
-	public class FailsOnIOS : CategoryAttribute
+	public class FailsOnIOSWhenRunningOnXamarinUITest : CategoryAttribute
 	{
-		public FailsOnIOS(string name) : base(name)
+		public FailsOnIOSWhenRunningOnXamarinUITest() : base(nameof(FailsOnIOSWhenRunningOnXamarinUITest))
+		{
+		}
+		public FailsOnIOSWhenRunningOnXamarinUITest(string description) : base(description)
 		{
 		}
 	}
 #endif
 
 #if MACCATALYST
-	public class FailsOnMac : IgnoreAttribute
+	public class FailsOnMacWhenRunningOnXamarinUITest : IgnoreAttribute
 	{
-		public FailsOnMac(string reason) : base(reason)
+		public FailsOnMacWhenRunningOnXamarinUITest() : base(nameof(FailsOnMacWhenRunningOnXamarinUITest))
+		{
+		}
+		public FailsOnMacWhenRunningOnXamarinUITest(string reason) : base(reason)
 		{
 		}
 	}
 #else
-	public class FailsOnMac : CategoryAttribute
+	public class FailsOnMacWhenRunningOnXamarinUITest : CategoryAttribute
 	{
-		public FailsOnMac(string name) : base(name)
+		public FailsOnMacWhenRunningOnXamarinUITest() : base(nameof(FailsOnMacWhenRunningOnXamarinUITest))
+		{
+		}
+		public FailsOnMacWhenRunningOnXamarinUITest(string description) : base(description)
 		{
 		}
 	}
 #endif
 
 #if WINDOWS
-	public class FailsOnWindows : IgnoreAttribute
+	public class FailsOnWindowsWhenRunningOnXamarinUITest : IgnoreAttribute
 	{
-		public FailsOnWindows(string reason) : base(reason)
+		public FailsOnWindowsWhenRunningOnXamarinUITest() : base(nameof(FailsOnWindowsWhenRunningOnXamarinUITest))
+		{
+		}
+		public FailsOnWindowsWhenRunningOnXamarinUITest(string reason) : base(reason)
 		{
 		}
 	}
 #else
-	public class FailsOnWindows : CategoryAttribute
+	public class FailsOnWindowsWhenRunningOnXamarinUITest : CategoryAttribute
 	{
-		public FailsOnWindows(string description) : base(description)
+		public FailsOnWindowsWhenRunningOnXamarinUITest() : base(nameof(FailsOnWindowsWhenRunningOnXamarinUITest))
+		{
+		}
+		public FailsOnWindowsWhenRunningOnXamarinUITest(string description) : base(description)
 		{
 		}
 	}

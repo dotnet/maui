@@ -1,11 +1,7 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
+﻿namespace Maui.Controls.Sample.Issues;
 
-namespace Maui.Controls.Sample.Issues;
-
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 22433, "Button Device Tests Default", PlatformAffected.All)]
-public class Issue22433: NavigationPage
+public class Issue22433 : NavigationPage
 {
 	public Issue22433() : base(new Issue22433_Default())
 	{

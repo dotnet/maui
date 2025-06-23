@@ -25,5 +25,5 @@ jobs:
                   node-version: "18"
             - run: npm install -g cspell
               name: Install cSpell
-            - run: cspell --config ./cSpell.json "docs/**/*.md" --no-progress
+            - run: cspell --config ./eng/automation/cspell/cSpell.json "docs/**/*.md" --no-progress
               name: Run cSpell

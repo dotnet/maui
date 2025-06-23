@@ -1,10 +1,5 @@
-﻿using System.Drawing;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.Sample
 {
-	[Preserve(AllMembers = true)]
 	public class GestureRecognizerGallery : ContentViewGalleryPage
 	{
 		public GestureRecognizerGallery()

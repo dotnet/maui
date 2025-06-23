@@ -7,6 +7,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using SkiaSharp;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
@@ -14,6 +15,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 	{
 		public class ExecuteForApp : MSBuildTaskTestFixture<DetectInvalidResourceOutputFilenamesTask>
 		{
+			public ExecuteForApp(ITestOutputHelper output)
+				: base(output)
+			{
+			}
+
 			protected DetectInvalidResourceOutputFilenamesTask GetNewTask(params ITaskItem[] items) =>
 				new DetectInvalidResourceOutputFilenamesTask
 				{

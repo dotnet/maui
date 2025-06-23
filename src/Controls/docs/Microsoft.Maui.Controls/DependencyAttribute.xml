@@ -25,7 +25,6 @@
   </Attributes>
   <Docs>
     <summary>An attribute that indicates that the specified type provides a concrete implementation of a needed interface.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -51,7 +50,6 @@
       <Docs>
         <param name="implementorType">The type of the implementor of the dependency.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.DependencyAttribute" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

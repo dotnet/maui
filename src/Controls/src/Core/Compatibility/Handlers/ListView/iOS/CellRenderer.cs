@@ -32,12 +32,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var tv = VirtualView.TableView;
 			VirtualView.ReusableCell = null;
 			VirtualView.TableView = null;
+			_tableView = new(tv);
 			return GetCell(VirtualView, reusableCell, tv);
 		}
 
 		public virtual UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
-			_tableView = new(tv);
 			Performance.Start(out string reference);
 
 			var tvc = reusableCell as CellTableViewCell ?? new CellTableViewCell(UITableViewCellStyle.Default, item.GetType().FullName);
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.UpdateValue(property);
 			var args = new PropertyChangedEventArgs(property);
 			if (VirtualView is BindableObject bindableObject &&
-				GetRealCell(bindableObject) is CellTableViewCell ctv )
+				GetRealCell(bindableObject) is CellTableViewCell ctv)
 			{
 				ctv.HandlePropertyChanged(bindableObject, args);
 			}
@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.Invoke(command, args);
 
-			if (command == "ForceUpdateSizeRequested" && 
+			if (command == "ForceUpdateSizeRequested" &&
 				VirtualView is BindableObject bindableObject &&
 				GetRealCell(bindableObject) is UITableViewCell ctv &&
 				_tableView is not null &&

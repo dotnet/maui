@@ -31,6 +31,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 							new EmptyViewTemplateGallery(), Navigation),
 						GalleryBuilder.NavButton("EmptyView (Swap EmptyView)", () =>
 							new EmptyViewSwapGallery(), Navigation),
+						GalleryBuilder.NavButton("EmptyView (Data Template Selector)", () =>
+						new EmptyViewWithDataTemplateSelector(), Navigation),
 						GalleryBuilder.NavButton("EmptyView (load simulation)", () =>
 							new EmptyViewLoadSimulateGallery(), Navigation),
 						GalleryBuilder.NavButton("EmptyView RTL", () =>

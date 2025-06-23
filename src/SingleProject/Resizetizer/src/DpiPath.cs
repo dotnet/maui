@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Resizetizer
 		Circle,
 		// Squircle
 	}
-		
+
 	internal class DpiPath
 	{
 		public DpiPath(string path, decimal scale, string nameSuffix = null, string scaleSuffix = null, SKSize? size = null, string[] idioms = null, ClipShape clip = ClipShape.None)

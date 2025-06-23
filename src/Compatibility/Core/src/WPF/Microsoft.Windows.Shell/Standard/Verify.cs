@@ -55,7 +55,7 @@ namespace Standard
 			Assert.IsNeitherNullNorEmpty(name);
 
 			// Notice that ArgumentNullException and ArgumentException take the parameters in opposite order :P
-			const string errorMessage = "The parameter can not be either null or empty.";
+			const string errorMessage = "The parameter cannot be either null or empty.";
 			if (null == value)
 			{
 				Assert.Fail();
@@ -82,7 +82,7 @@ namespace Standard
 			Assert.IsNeitherNullNorEmpty(name);
 
 			// Notice that ArgumentNullException and ArgumentException take the parameters in opposite order :P
-			const string errorMessage = "The parameter can not be either null or empty or consist only of white space characters.";
+			const string errorMessage = "The parameter cannot be either null or empty or consist only of white space characters.";
 			if (null == value)
 			{
 				Assert.Fail();

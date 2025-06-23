@@ -2,6 +2,9 @@
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Represents an abstract base class for gradient paints that transition between multiple colors.
+	/// </summary>
 	public abstract class GradientPaint : Paint
 	{
 		PaintGradientStop[] _gradientStops =
@@ -10,10 +13,17 @@ namespace Microsoft.Maui.Graphics
 			new PaintGradientStop(1, Colors.White)
 		};
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GradientPaint"/> class with default white-to-white gradient stops.
+		/// </summary>
 		public GradientPaint()
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GradientPaint"/> class by copying from another gradient paint.
+		/// </summary>
+		/// <param name="source">The source gradient paint to copy from.</param>
 		public GradientPaint(GradientPaint source)
 		{
 			if (source != null)
@@ -39,7 +49,7 @@ namespace Microsoft.Maui.Graphics
 
 		public Color StartColor
 		{
-			get => _gradientStops[StartColorIndex].Color;
+			get => _gradientStops[StartColorIndex]?.Color;
 			set
 			{
 				var startColorIndex = StartColorIndex;
@@ -49,7 +59,7 @@ namespace Microsoft.Maui.Graphics
 
 		public Color EndColor
 		{
-			get => _gradientStops[EndColorIndex].Color;
+			get => _gradientStops[EndColorIndex]?.Color;
 			set
 			{
 				var endColorIndex = EndColorIndex;
@@ -66,7 +76,7 @@ namespace Microsoft.Maui.Graphics
 
 				for (var i = 0; i < _gradientStops.Length; i++)
 				{
-					if (_gradientStops[i].Offset <= offset)
+					if (_gradientStops[i] is not null && _gradientStops[i].Offset <= offset)
 					{
 						index = i;
 						offset = _gradientStops[i].Offset;
@@ -86,7 +96,7 @@ namespace Microsoft.Maui.Graphics
 
 				for (var i = 0; i < _gradientStops.Length; i++)
 				{
-					if (_gradientStops[i].Offset >= offset)
+					if (_gradientStops[i] is not null && _gradientStops[i].Offset >= offset)
 					{
 						index = i;
 						offset = _gradientStops[i].Offset;
@@ -103,7 +113,7 @@ namespace Microsoft.Maui.Graphics
 			{
 				foreach (var stop in GradientStops)
 				{
-					if (stop.Color != null && stop.Color.Alpha < 1)
+					if (stop is not null && stop.Color is not null && stop.Color.Alpha < 1)
 					{
 						return true;
 					}

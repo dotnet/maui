@@ -102,6 +102,76 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, result);
 		}
 
+		[Theory]
+		[InlineData(ScrollBarVisibility.Always, false)]
+		[InlineData(ScrollBarVisibility.Default, true)]
+		[InlineData(ScrollBarVisibility.Never, true)]
+		public async Task VerticalScrollbarFadingInitializesCorrectly(ScrollBarVisibility visibility, bool expected)
+		{
+			bool result = await InvokeOnMainThreadAsync(() =>
+			{
+				var scrollView = new ScrollViewStub()
+				{
+					Orientation = ScrollOrientation.Vertical,
+					VerticalScrollBarVisibility = visibility
+				};
+
+				var scrollViewHandler = CreateHandler(scrollView);
+
+				return ((MauiScrollView)scrollViewHandler.PlatformView).ScrollbarFadingEnabled;
+			});
+
+			Assert.Equal(expected, result);
+		}
+
+		[Theory]
+		[InlineData(ScrollBarVisibility.Always, false)]
+		[InlineData(ScrollBarVisibility.Default, true)]
+		[InlineData(ScrollBarVisibility.Never, true)]
+		public async Task HorizontalScrollbarFadingInitializesCorrectly(ScrollBarVisibility visibility, bool expected)
+		{
+			bool result = await InvokeOnMainThreadAsync(() =>
+			{
+				var scrollView = new ScrollViewStub()
+				{
+					Orientation = ScrollOrientation.Horizontal,
+					HorizontalScrollBarVisibility = visibility
+				};
+
+				var scrollViewHandler = CreateHandler(scrollView);
+
+				return ((MauiHorizontalScrollView)scrollViewHandler.PlatformView.GetChildAt(0)).ScrollbarFadingEnabled;
+			});
+
+			Assert.Equal(expected, result);
+		}
+
+		[Theory]
+		[InlineData(ScrollBarVisibility.Always, false)]
+		[InlineData(ScrollBarVisibility.Default, true)]
+		[InlineData(ScrollBarVisibility.Never, true)]
+		public async Task VerticalandHorizontalScrollbarFadingInitializesCorrectlyOnBothOrientation(ScrollBarVisibility visibility, bool expected)
+		{
+			bool result = await InvokeOnMainThreadAsync(() =>
+			{
+				var scrollView = new ScrollViewStub()
+				{
+					Orientation = ScrollOrientation.Both,
+					HorizontalScrollBarVisibility = visibility,
+					VerticalScrollBarVisibility = visibility
+				};
+
+				var scrollViewHandler = CreateHandler(scrollView);
+
+				var horizontalScrollView = (MauiHorizontalScrollView)scrollViewHandler.PlatformView.GetChildAt(0);
+				var verticalScrollView = (MauiScrollView)scrollViewHandler.PlatformView;
+
+				return horizontalScrollView.ScrollbarFadingEnabled && verticalScrollView.ScrollbarFadingEnabled;
+			});
+
+			Assert.Equal(expected, result);
+		}
+
 		[Fact]
 		public async Task MauiScrollViewGetsFullHeightInHorizontalOrientation()
 		{

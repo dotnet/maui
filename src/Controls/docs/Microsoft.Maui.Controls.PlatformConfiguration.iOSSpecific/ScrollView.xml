@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>The scroll view instance that Microsoft.Maui.Controls created on the iOS platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetShouldDelayContentTouches">
@@ -38,7 +37,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns a Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</summary>
         <returns>A Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetShouldDelayContentTouches">
@@ -63,7 +61,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetShouldDelayContentTouches">
@@ -89,7 +86,6 @@
         <param name="value">The new property value to assign.</param>
         <summary>Sets a Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</summary>
         <returns>The updated configuration object, on which more methods may be called.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ShouldDelayContentTouches">
@@ -113,7 +109,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns a Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</summary>
         <returns>A Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ShouldDelayContentTouchesProperty">
@@ -132,7 +127,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

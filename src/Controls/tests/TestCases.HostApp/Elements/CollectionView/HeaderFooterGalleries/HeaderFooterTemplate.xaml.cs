@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class HeaderFooterTemplate : ContentPage
 	{
 		public HeaderFooterTemplate()
@@ -21,7 +16,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 			BindingContext = new HeaderFooterDemoModel();
 		}
 
-		[Preserve(AllMembers = true)]
+
 		class HeaderFooterDemoModel : INotifyPropertyChanged
 		{
 			readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(3);
@@ -31,7 +26,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 
 			public HeaderFooterDemoModel()
 			{
-				CurrentTime = DateTime.Now;
+				CurrentTime = new DateTime(2023, 1, 1);
 			}
 
 			void OnPropertyChanged([CallerMemberName] string property = "")
@@ -41,7 +36,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 
 			public ObservableCollection<CollectionViewGalleryTestItem> Items => _demoFilteredItemSource.Items;
 
-			public ICommand TapCommand => new Command(() => { CurrentTime = DateTime.Now; });
+			public ICommand TapCommand => new Command(() => { CurrentTime = new DateTime(2024, 1, 1); });
 
 			public DateTime CurrentTime
 			{

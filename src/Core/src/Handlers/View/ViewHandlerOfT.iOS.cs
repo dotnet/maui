@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Handlers
 				if (containerView is WrapperView wrapperView)
 				{
 					wrapperView.RemoveFromSuperview();
-					wrapperView.Dispose();
+					wrapperView.Disconnect();
 				}
 			}
 		}

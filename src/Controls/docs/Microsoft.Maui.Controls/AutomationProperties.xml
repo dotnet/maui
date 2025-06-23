@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Contains both abbreviated and detailed UI information that is supplied to accessibility services.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -30,7 +29,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.AutomationProperties" /> object with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHelpText">
@@ -53,8 +51,6 @@
       <Docs>
         <param name="bindable">The bindable object whose help text to get.</param>
         <summary>Returns the help text, if any, for the bindable object.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetIsInAccessibleTree">
@@ -108,7 +104,6 @@
         <param name="bindable">The object whose label to find.</param>
         <summary>Returns the element that labels <paramref name="bindable" />, if <paramref name="bindable" /> does not label itself and if another element describes it in the UI.</summary>
         <returns>The element that labels <paramref name="bindable" />, if present.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetName">
@@ -132,7 +127,6 @@
         <param name="bindable">The object whose name to get.</param>
         <summary>Returns the short, developer-specified, introductory name of the element, such as "Progress Indicator" or "Button".</summary>
         <returns>The short, introdctory name of the element.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HelpTextProperty">
@@ -151,7 +145,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that contains the detailed description of the UI element and its behavior.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsInAccessibleTreeProperty">
@@ -170,7 +163,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that contains a Boolean value that tells whether the element is available to the accessible app.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LabeledByProperty">
@@ -189,7 +181,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that holds a reference to the element that labels the element that is being made accessible.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NameProperty">
@@ -208,7 +199,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that contains the brief description of the UI element</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetHelpText">
@@ -233,7 +223,6 @@
         <param name="bindable">The object whose help text to set.</param>
         <param name="value">The new help text value.</param>
         <summary>Sets the help text for <paramref name="bindable" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsInAccessibleTree">
@@ -259,7 +248,6 @@
         <param name="value">
           <see langword="true" /> to make <paramref name="bindable" /> visible to the accessibility system. <see langword="false" /> to remove it from the system.</param>
         <summary>Sets a Boolean value that tells whether the bindable object is available to the accessibility system.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetLabeledBy">
@@ -284,7 +272,6 @@
         <param name="bindable">The object whose label to set.</param>
         <param name="value">The visual element that will name <paramref name="bindable" />, or <see langword="null" /> to make <paramref name="bindable" /> its own label.</param>
         <summary>Sets another element, such as a <see cref="T:Microsoft.Maui.Controls.Label" /> as the label for <paramref name="bindable" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetName">
@@ -309,7 +296,6 @@
         <param name="bindable">The object whose name to set.</param>
         <param name="value">The new name.</param>
         <summary>Sets the short, developer-specified, introductory name of the element, such as "Progress Indicator" or "Button".</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

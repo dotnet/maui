@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		PointerEventHandler? _pointerPressedHandler;
 		PointerEventHandler? _pointerReleasedHandler;
+		bool _isPressed;
 
 		protected override Button CreatePlatformView() => new MauiButton();
 
@@ -18,15 +19,18 @@ namespace Microsoft.Maui.Handlers
 			_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
 
 			platformView.Click += OnClick;
+			platformView.Unloaded += OnUnloaded;
 			platformView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
 			platformView.AddHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
 
 			base.ConnectHandler(platformView);
 		}
 
+
 		protected override void DisconnectHandler(Button platformView)
 		{
 			platformView.Click -= OnClick;
+			platformView.Unloaded -= OnUnloaded;
 			platformView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
 			platformView.RemoveHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler);
 
@@ -97,12 +101,23 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
 		{
+			_isPressed = true;
 			VirtualView?.Pressed();
 		}
 
 		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
+			_isPressed = false;
 			VirtualView?.Released();
+		}
+
+		void OnUnloaded(object sender, RoutedEventArgs e)
+		{
+			// WinUI will not raise the PointerReleased event if the pointer is pressed and then unloaded
+			if (_isPressed)
+			{
+				VirtualView?.Released();
+			}
 		}
 
 		partial class ButtonImageSourcePartSetter

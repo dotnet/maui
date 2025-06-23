@@ -9,10 +9,6 @@ namespace Microsoft.Maui.Controls
 	{
 		IMauiContext MauiContext => Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext not set");
 
-		[Obsolete("Use RadioButtonHandler.Mapper instead.")]
-		public static IPropertyMapper<RadioButton, RadioButtonHandler> ControlsRadioButtonMapper =
-			new ControlsMapper<RadioButton, RadioButtonHandler>(RadioButtonHandler.Mapper);
-
 		internal new static void RemapForControls()
 		{
 			RadioButtonHandler.Mapper.ReplaceMapping<RadioButton, IRadioButtonHandler>(nameof(IRadioButton.Content), MapContent);

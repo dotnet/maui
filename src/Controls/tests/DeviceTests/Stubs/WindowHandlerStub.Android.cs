@@ -30,7 +30,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				PlatformViewUnderTest.RemoveFromParent();
 
 				farw.AddView(platformView, 0);
+#pragma warning disable XAOBS001 // Obsolete
 				platformView.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
+#pragma warning restore XAOBS001 // Obsolete
 			}
 
 			PlatformViewUnderTest = platformView;

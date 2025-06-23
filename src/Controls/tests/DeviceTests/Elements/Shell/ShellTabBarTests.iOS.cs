@@ -20,7 +20,18 @@ namespace Microsoft.Maui.DeviceTests
 			var pagerParent = (shell.CurrentPage.Handler as IPlatformViewHandler)
 				.PlatformView.FindParent(x => x.NextResponder is UITabBarController);
 
-			return pagerParent.Subviews.FirstOrDefault(v => v.GetType() == typeof(UITabBar)) as UITabBar;
+			// In macOS 15 Sequoia, the UITabBar is nested within the second subview (index 1) of the pagerParent. 
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15, 0) || OperatingSystem.IsMacOSVersionAtLeast(15, 0))
+			{
+				var subview = pagerParent.Subviews.ElementAtOrDefault(1);
+
+				if (subview?.Subviews is null)
+					return null;
+
+				return subview.Subviews.OfType<UITabBar>().FirstOrDefault();
+			}
+
+			return pagerParent.Subviews.OfType<UITabBar>().FirstOrDefault();
 		}
 
 		async Task ValidateTabBarIconColor(

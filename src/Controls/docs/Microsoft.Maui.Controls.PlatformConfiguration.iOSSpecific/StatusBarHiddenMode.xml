@@ -13,7 +13,6 @@
   </Base>
   <Docs>
     <summary>Enumerates status bar hiding behavior preferences.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Default">

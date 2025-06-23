@@ -4,5 +4,7 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"dotnet.defaultSolution": "Microsoft.Maui-vscode.sln"
+	}
 }

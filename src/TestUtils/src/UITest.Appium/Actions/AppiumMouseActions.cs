@@ -11,7 +11,7 @@ namespace UITest.Appium
 {
 	public class AppiumMouseActions : ICommandExecutionGroup
 	{
-		const string ClickCommand = "click"; 
+		const string ClickCommand = "click";
 		const string ClickCoordinatesCommand = "clickCoordinates";
 		const string DoubleClickCommand = "doubleClick";
 		const string DoubleClickCoordinatesCommand = "doubleClickCoordinates";
@@ -25,7 +25,7 @@ namespace UITest.Appium
 			ClickCoordinatesCommand,
 			DoubleClickCommand,
 			DoubleClickCoordinatesCommand,
-			LongPressCommand,
+			LongPressCommand
 		};
 
 		public AppiumMouseActions(AppiumApp appiumApp)
@@ -96,7 +96,7 @@ namespace UITest.Appium
 		CommandResponse ClickElement(AppiumElement element)
 		{
 			string tagName = string.Empty;
-			
+
 			// If the click fails on catalyst we need to retrieve the element again
 			if (_appiumApp.Driver is MacDriver)
 				tagName = element.TagName;
@@ -121,7 +121,7 @@ namespace UITest.Appium
 			{
 				// Appium elements will sometimes become stale
 				// Which appears to happen if click fails, so, we retrieve it here
-				if(!String.IsNullOrWhiteSpace(tagName))
+				if (!String.IsNullOrWhiteSpace(tagName))
 					element = (AppiumElement)_appiumApp.FindElement(tagName);
 
 				if (element is null)
@@ -154,6 +154,11 @@ namespace UITest.Appium
 		CommandResponse DoubleClick(IDictionary<string, object> parameters)
 		{
 			var element = GetAppiumElement(parameters["element"]);
+
+			if (element == null)
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
 
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
 			var sequence = new ActionSequence(touchDevice, 0);
@@ -189,10 +194,15 @@ namespace UITest.Appium
 		{
 			var element = GetAppiumElement(parameters["element"]);
 
+			if (element == null)
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
 			var longPress = new ActionSequence(touchDevice, 0);
-		
-			longPress.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(0)));
+
+			longPress.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
 			longPress.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
 			longPress.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(2000)));
 			longPress.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
@@ -200,18 +210,7 @@ namespace UITest.Appium
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
-		
-		CommandResponse TapCoordinates(IDictionary<string, object> parameters)
-		{
-			if (parameters.TryGetValue("x", out var x) &&
-				parameters.TryGetValue("y", out var y))
-			{
-				return ClickCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
-			}
 
-			return CommandResponse.FailedEmptyResponse;
-		}
-	
 		static AppiumElement? GetAppiumElement(object element)
 		{
 			if (element is AppiumElement appiumElement)

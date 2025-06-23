@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			var icon = materialButton.Icon ??
+#pragma warning disable CS0618 // Type or member is obsolete
 						TextViewCompat.GetCompoundDrawablesRelative(materialButton)[3];
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (icon != null &&
 				!String.IsNullOrEmpty(button.Text))

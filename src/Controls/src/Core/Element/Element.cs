@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls
 	///			</item>
 	///		</list>
 	///</remarks>
-	public abstract partial class Element : BindableObject, IElementDefinition, INameScope, IElementController, IVisualTreeElement, Maui.IElement, IEffectControlProvider, IToolTipElement, IContextFlyoutElement, IControlsElement
+	public abstract partial class Element : BindableObject, IElementDefinition, INameScope, IElementController, IVisualTreeElement, Maui.IElement, IEffectControlProvider, IToolTipElement, IContextFlyoutElement, IControlsElement, IHandlerDisconnectPolicies
 	{
 		internal static readonly ReadOnlyCollection<Element> EmptyChildren = new ReadOnlyCollection<Element>(Array.Empty<Element>());
 
@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls
 
 		internal Element ParentOverride
 		{
-			get 
+			get
 			{
 				if (_parentOverride is null)
 				{
@@ -335,8 +335,8 @@ namespace Microsoft.Maui.Controls
 		WeakReference<Element> _realParent;
 		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Element RealParent 
-		{ 
+		public Element RealParent
+		{
 			get
 			{
 				if (_realParent is null)
@@ -356,7 +356,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				return null;
-			} 
+			}
 			private set
 			{
 				if (value is null)
@@ -502,13 +502,19 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
+		//this is only used by XAMLC, not added to public API
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public INameScope transientNamescope;
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
 		/// <summary>Returns the element that has the specified name.</summary>
 		/// <param name="name">The name of the element to be found.</param>
 		/// <returns>The element that has the specified name.</returns>
 		/// <exception cref="InvalidOperationException">Thrown if the element's namescope couldn't be found.</exception>
 		public object FindByName(string name)
 		{
-			var namescope = GetNameScope();
+			var namescope = GetNameScope() ?? transientNamescope;
 			if (namescope == null)
 				throw new InvalidOperationException("this element is not in a namescope");
 			return namescope.FindByName(name);
@@ -587,8 +593,6 @@ namespace Microsoft.Maui.Controls
 		{
 			child.SetParent(this);
 
-			child.ApplyBindings(skipBindingContext: false, fromBindingContextChanged: true);
-
 			ChildAdded?.Invoke(this, new ElementEventArgs(child));
 
 			VisualDiagnostics.OnChildAdded(this, child);
@@ -627,13 +631,38 @@ namespace Microsoft.Maui.Controls
 			(this as IPropertyPropagationController)?.PropagatePropertyChanged(null);
 		}
 
+		HashSet<string> _pendingHandlerUpdatesFromBPSet = new HashSet<string>();
+		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)
+		{
+			if (willFirePropertyChanged)
+			{
+				_pendingHandlerUpdatesFromBPSet.Add(property.PropertyName);
+			}
+
+			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
+			_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
+			UpdateHandlerValue(property.PropertyName, changed);
+
+		}
+
 		/// <summary>Method that is called when a bound property is changed.</summary>
 		/// <param name="propertyName">The name of the bound property that changed.</param>
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
-			base.OnPropertyChanged(propertyName);
+			// If OnPropertyChanged is being called from a SetValue call on the BO we want the handler update to happen after
+			// the PropertyChanged Delegate on the BP and this OnPropertyChanged has fired. 
+			// if you look at BO you'll see the order is this
+			//
+			// OnPropertyChanged(property.PropertyName);
+			// property.PropertyChanged?.Invoke(this, original, value);
+			//
+			// It can cause somewhat confusing behavior if the handler update happens between these two calls
+			// And the user has placed reacting code inside the BP.PropertyChanged callback
+			// 
+			// If the OnPropertyChanged is being called from user code, we still want that to propagate to the mapper
+			bool waitForHandlerUpdateToFireFromBP = _pendingHandlerUpdatesFromBPSet.Contains(propertyName);
 
-			UpdateHandlerValue(propertyName);
+			base.OnPropertyChanged(propertyName);
 
 			if (_effects?.Count > 0)
 			{
@@ -643,10 +672,20 @@ namespace Microsoft.Maui.Controls
 					effect?.SendOnElementPropertyChanged(args);
 				}
 			}
+
+			if (!waitForHandlerUpdateToFireFromBP)
+			{
+				UpdateHandlerValue(propertyName, true);
+			}
 		}
 
-		private protected virtual void UpdateHandlerValue(string property) =>
-			Handler?.UpdateValue(property);
+		private protected virtual void UpdateHandlerValue(string property, bool valueChanged)
+		{
+			if (valueChanged)
+			{
+				Handler?.UpdateValue(property);
+			}
+		}
 
 		internal IEnumerable<Element> Descendants() =>
 			Descendants<Element>();
@@ -749,7 +788,8 @@ namespace Microsoft.Maui.Controls
 		internal override void OnSetDynamicResource(BindableProperty property, string key, SetterSpecificity specificity)
 		{
 			base.OnSetDynamicResource(property, key, specificity);
-			DynamicResources[property] = (key, specificity);
+			if (!DynamicResources.TryGetValue(property, out var existing) || existing.Item2 <= specificity)
+				DynamicResources[property] = (key, specificity);
 			if (this.TryGetResource(key, out var value))
 				OnResourceChanged(property, value, specificity);
 		}
@@ -1025,6 +1065,12 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc/>
 		IFlyout IContextFlyoutElement.ContextFlyout => FlyoutBase.GetContextFlyout(this);
+
+		HandlerDisconnectPolicy IHandlerDisconnectPolicies.DisconnectPolicy
+		{
+			get => HandlerProperties.GetDisconnectPolicy(this);
+			set => HandlerProperties.SetDisconnectPolicy(this, value);
+		}
 
 		class TemporaryWrapper : IList<Element>
 		{

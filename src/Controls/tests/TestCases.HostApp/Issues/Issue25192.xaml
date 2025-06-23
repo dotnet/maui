@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.Issues.Issue25192">
+    <Grid>
+        <!-- This functionality failed in CarouselView2. Reference: https://github.com/dotnet/maui/issues/27025 -->    
+        <!-- TODO: Replace CarouselView1 with CarouselView once the issues mentioned in the GitHub issue are resolved. -->    
+        <local:CarouselView1 Margin="2,9,2,20"
+                      HeightRequest="180"
+                      Loop="False"
+                      PeekAreaInsets="20"
+                      VerticalOptions="End"
+                      HorizontalScrollBarVisibility="Never">
+            <local:CarouselView1.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>Item1</x:String>
+                    <x:String>Item2</x:String>
+                    <x:String>Item3</x:String>
+                </x:Array>
+            </local:CarouselView1.ItemsSource>
+            <local:CarouselView1.ItemsLayout>
+                <LinearItemsLayout ItemSpacing="5"
+                                   Orientation="Horizontal"
+                                   SnapPointsAlignment="Center"
+                                   SnapPointsType="MandatorySingle"/>
+            </local:CarouselView1.ItemsLayout>
+            <local:CarouselView1.ItemTemplate>
+                <DataTemplate
+                    x:DataType="{x:Null}">
+                    <Border BackgroundColor="Red"
+                            Stroke="Blue"
+                            StrokeShape="RoundRectangle 12"
+                            StrokeThickness="0">
+                        <Grid Margin="16"
+                              ColumnDefinitions="*,*"
+                              ColumnSpacing="15"
+                              RowDefinitions="*,*,36"
+                              RowSpacing="15">
+                            <VerticalStackLayout
+                                Grid.Row="0"
+                                Grid.ColumnSpan="2"
+                                VerticalOptions="Center">
+                                <Label FontSize="16"
+                                       LineBreakMode="WordWrap"
+                                       Text="DummyLabel"
+                                       TextColor="#333333"
+                                       VerticalOptions="Center"/>
+                                <Label FontFamily="Medium"
+                                       FontSize="14"
+                                       LineBreakMode="WordWrap"
+                                       Text="DummyDesc"
+                                       TextColor="#5F5E6A"/>
+                            </VerticalStackLayout>
+
+                            <Border Grid.Row="1"
+                                    Grid.Column="0"
+                                    BackgroundColor="LightGray"
+                                    HorizontalOptions="Start"
+                                    StrokeShape="RoundRectangle 12"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Center">
+                                <Label Grid.Column="1"
+                                       FontFamily="Regular"
+                                       FontSize="14"
+                                       Margin="6"
+                                       AutomationId="{Binding .}"
+                                       Text="{Binding .}"
+                                       TextColor="Black"
+                                       VerticalOptions="Center"/>
+                            </Border>
+
+                            <Border Grid.Row="1"
+                                    Grid.Column="1"
+                                    BackgroundColor="#e8fccf"
+                                    HorizontalOptions="Center"
+                                    StrokeShape="RoundRectangle 12"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Center">
+                                <Label Grid.Column="1"
+                                       FontFamily="Regular"
+                                       FontSize="14"
+                                       Margin="6"
+                                       Text="{Binding .}"
+                                       TextColor="#155d27"
+                                       VerticalOptions="Center"/>
+                            </Border>
+
+                            <Label Grid.Row="2"
+                                   FontSize="24"
+                                   HorizontalOptions="Start"
+                                   Text="I am here"
+                                   TextColor="Black"
+                                   VerticalOptions="Center"/>
+
+                            <Button Grid.Row="2"
+                                    Grid.Column="1"
+                                    BackgroundColor="White"
+                                    BorderWidth="2"
+                                    TextColor="Black"
+                                    Text="Click me"
+                                    VerticalOptions="Center"/>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </local:CarouselView1.ItemTemplate>
+        </local:CarouselView1>
+    </Grid>
+</ContentPage>

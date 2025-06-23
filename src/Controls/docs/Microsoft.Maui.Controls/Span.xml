@@ -52,7 +52,6 @@
       <Parameters />
       <Docs>
         <summary>Initialize a new instance of the Span class.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BackgroundColor">
@@ -75,7 +74,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the Color of the span background.</summary>
-        <value>To be added.</value>
         <remarks>Not supported on WindowsPhone.</remarks>
       </Docs>
     </Member>
@@ -95,7 +93,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Span.BackgroundColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CharacterSpacing">
@@ -112,9 +109,6 @@
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CharacterSpacingProperty">
@@ -131,8 +125,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Font">
@@ -163,8 +155,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the Font for the text in the span.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontAttributes">
@@ -186,8 +176,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a value that indicates whether the font for the span is bold, italic, or neither.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontAttributesProperty">
@@ -206,7 +194,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Span.FontAttributes" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontFamily">
@@ -228,8 +215,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the font family to which the font for the text in the span belongs.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontFamilyProperty">
@@ -248,7 +233,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Span.FontFamily" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontProperty">
@@ -267,7 +251,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Span.Font" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontSize">
@@ -294,8 +277,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the size of the font for the text in the span.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontSizeProperty">
@@ -314,7 +295,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Span.FontSize" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ForegroundColor">
@@ -337,8 +317,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the Color for the text in the span.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ForegroundColorProperty">
@@ -365,7 +343,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Span.ForegroundColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LineHeight">
@@ -385,7 +362,6 @@
       <Docs>
         <summary>Gets or sets the multiplier to apply to the default line height when displaying text.</summary>
         <value>The multiplier to apply to the default line height when displaying text.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LineHeightProperty">
@@ -404,7 +380,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Span.LineHeight" /> bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnBindingContextChanged">
@@ -423,7 +398,6 @@
       <Parameters />
       <Docs>
         <summary>Override this method to execute an action when the BindingContext changes.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Style">
@@ -442,8 +416,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the Style to apply to the span.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="StyleProperty">
@@ -462,7 +434,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Span.Style" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Text">
@@ -485,8 +456,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the text of the span.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextColor">
@@ -505,8 +474,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the text color.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextColorProperty">
@@ -525,7 +492,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Span.TextColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextDecorations">
@@ -546,8 +512,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the <see cref="T:Microsoft.Maui.TextDecorations" /> applied to this span.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextDecorationsProperty">
@@ -565,7 +529,6 @@
       </ReturnValue>
       <Docs>
         <summary>The <see cref="T:Microsoft.Maui.Controls.BindableProperty" /> associated with the <see cref="P:Microsoft.Maui.Controls.Span.TextDecorations" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextProperty">
@@ -584,7 +547,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Span.Text" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextTransform">
@@ -601,9 +563,6 @@
         <ReturnType>Microsoft.Maui.Controls.TextTransform</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextTransformProperty">
@@ -620,8 +579,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UpdateFormsText">
@@ -644,9 +601,6 @@
       <Docs>
         <param name="source">To be added.</param>
         <param name="textTransform">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.FontSizeDefaultValueCreator">
@@ -669,8 +623,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontAttributesChanged">
@@ -698,7 +650,6 @@
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontChanged">
@@ -726,7 +677,6 @@
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontFamilyChanged">
@@ -754,7 +704,6 @@
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontSizeChanged">
@@ -782,7 +731,6 @@
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

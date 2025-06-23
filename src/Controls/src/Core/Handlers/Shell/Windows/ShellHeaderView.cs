@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellHeaderView : UI.Xaml.Controls.ContentControl
+	public partial class ShellHeaderView : UI.Xaml.Controls.ContentControl
 	{
 		Shell _shell;
 
@@ -19,8 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnShellHeaderViewSizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			if (Element is Controls.Compatibility.Layout layout)
-				layout.ForceLayout();
+			Element?.InvalidateMeasure();
 		}
 
 		internal VisualElement Element { get; set; }

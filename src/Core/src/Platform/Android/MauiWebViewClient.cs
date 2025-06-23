@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Platform
 
 		public override void OnPageStarted(WebView? view, string? url, Bitmap? favicon)
 		{
-			if (!_handler.TryGetTarget(out var handler) || handler.VirtualView == null || url == WebViewHandler.AssetBaseUrl)
+			if (!_handler.TryGetTarget(out var handler) || handler.VirtualView == null)
 				return;
 
 			if (!string.IsNullOrWhiteSpace(url))
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Platform
 
 		public override void OnPageFinished(WebView? view, string? url)
 		{
-			if (!_handler.TryGetTarget(out var handler) || handler.VirtualView == null || string.IsNullOrWhiteSpace(url) || url == WebViewHandler.AssetBaseUrl)
+			if (!_handler.TryGetTarget(out var handler) || handler.VirtualView == null || string.IsNullOrWhiteSpace(url))
 				return;
 
 			bool navigate = _navigationResult != WebNavigationResult.Failure || !GetValidUrl(url).Equals(_lastUrlNavigatedCancel, StringComparison.OrdinalIgnoreCase);
@@ -80,6 +80,18 @@ namespace Microsoft.Maui.Platform
 			}
 
 			base.OnReceivedError(view, request, error);
+		}
+
+		// The render process was observed to crash or killed by the system.
+		[System.Runtime.Versioning.SupportedOSPlatform("android26.0")]
+		public override bool OnRenderProcessGone(WebView? view, RenderProcessGoneDetail? detail)
+		{
+			if (_handler.TryGetTarget(out var handler))
+			{
+				handler.VirtualView.ProcessTerminated(new WebProcessTerminatedEventArgs(view, detail));
+			}
+
+			return base.OnRenderProcessGone(view, detail);
 		}
 
 		bool NavigatingCanceled(string? url) =>

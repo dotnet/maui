@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <_JsonInputFile Include="WorkloadDependencies.in.json" OutputPath="$(IntermediateOutputPath)WorkloadDependencies.json" Pack="true" />
     <_JsonInputFile Include="WorkloadManifest.in.json" OutputPath="$(IntermediateOutputPath)WorkloadManifest.json" Pack="true" />
     <_JsonInputFile Include="WorkloadManifest.in.targets" OutputPath="$(IntermediateOutputPath)WorkloadManifest.targets" Pack="true" />
     <_JsonInputFile Include="Rollback.in.json" OutputPath="$(IntermediateOutputPath)Rollback.json" Pack="false" />
@@ -54,6 +55,15 @@
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsWebViewPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreMetadataPackageVersion" />
       <_VersionsToReplace Include="MicrosoftJSInteropPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftWindowsAppSDKPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftWindowsSDKBuildToolsPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftGraphicsWin2DPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftWindowsWebView2PackageVersion" />
+      <_VersionsToReplace Include="AppiumVersion" />
+      <_VersionsToReplace Include="AppiumWindowsDriverVersion" />
+      <_VersionsToReplace Include="AppiumXCUITestDriverVersion" />
+      <_VersionsToReplace Include="AppiumMac2DriverVersion" />
+      <_VersionsToReplace Include="AppiumUIAutomator2DriverVersion" />
       <_VersionsToReplace Update="@(_VersionsToReplace)" PropertyName="%(Identity)" />
       <_VersionsToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
       <_VersionsToReplace Include="MAUI_DOTNET_VERSION_MAJOR" PropertyName="_MauiDotNetVersionMajor" />
@@ -108,27 +118,20 @@
   </Target>
 
   <Target Name="_CopyAdditionalFIles" AfterTargets="Build">
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(SourceRevisionId).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(PackageVersion).$(BUILDVERSION).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(PackageVersion).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(PackageReferenceVersion).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(SourceRevisionId).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(PackageVersion).json" />
-    <Copy Condition="$(CI) and '$(BUILD_SOURCEBRANCHNAME)' != ''" SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(BUILD_SOURCEBRANCHNAME).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(PackageReferenceVersion).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(SourceRevisionId).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(PackageVersion).$(BUILDVERSION).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(PackageVersion).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(PackageReferenceVersion).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(SourceRevisionId).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(PackageVersion).json" />
-    <Copy Condition="$(CI) and '$(BUILD_SOURCEBRANCHNAME)' != ''" SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(BUILD_SOURCEBRANCHNAME).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(PackageReferenceVersion).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(SourceRevisionId)_rollback.json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(PackageVersion)_rollback.json" />
+    <Copy Condition="$(CI) and '$(BUILD_SOURCEBRANCHNAME)' != ''" SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(BUILD_SOURCEBRANCHNAME)_rollback.json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(PackageReferenceVersion)_rollback.json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(SourceRevisionId)_sdk.json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(PackageVersion)_sdk.json" />
+    <Copy Condition="$(CI) and '$(BUILD_SOURCEBRANCHNAME)' != ''" SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(BUILD_SOURCEBRANCHNAME)_sdk.json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(PackageReferenceVersion)_sdk.json" />
   </Target>
 
   <Target Name="_CopyManifest" AfterTargets="Build">
     <ItemGroup>
       <_Files Include="$(OutputPath)WorkloadManifest.*" />
+      <_Files Include="$(OutputPath)WorkloadDependencies.*" />
     </ItemGroup>
     <Copy SourceFiles="@(_Files)" DestinationFolder="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.maui" />
   </Target>

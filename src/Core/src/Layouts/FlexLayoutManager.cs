@@ -15,7 +15,14 @@ namespace Microsoft.Maui.Layouts
 
 		public Size ArrangeChildren(Rect bounds)
 		{
-			FlexLayout.Layout(bounds.Width, bounds.Height);
+			var padding = FlexLayout.Padding;
+
+			double top = padding.Top + bounds.Top;
+			double left = padding.Left + bounds.Left;
+			double availableWidth = bounds.Width - padding.HorizontalThickness;
+			double availableHeight = bounds.Height - padding.VerticalThickness;
+
+			FlexLayout.Layout(availableWidth, availableHeight);
 
 			foreach (var child in FlexLayout)
 			{
@@ -25,7 +32,8 @@ namespace Microsoft.Maui.Layouts
 					|| double.IsNaN(frame.Width)
 					|| double.IsNaN(frame.Height))
 					throw new Exception("something is deeply wrong");
-				frame = frame.Offset(bounds.Left, bounds.Top);
+
+				frame = frame.Offset(left, top);
 				child.Arrange(frame);
 			}
 
@@ -34,10 +42,15 @@ namespace Microsoft.Maui.Layouts
 
 		public Size Measure(double widthConstraint, double heightConstraint)
 		{
+			var padding = FlexLayout.Padding;
+
+			var availableWidth = widthConstraint - padding.HorizontalThickness;
+			var availableHeight = heightConstraint - padding.VerticalThickness;
+
 			double measuredHeight = 0;
 			double measuredWidth = 0;
 
-			FlexLayout.Layout(widthConstraint, heightConstraint);
+			FlexLayout.Layout(availableWidth, availableHeight);
 
 			foreach (var child in FlexLayout)
 			{
@@ -51,8 +64,11 @@ namespace Microsoft.Maui.Layouts
 				measuredWidth = Math.Max(measuredWidth, frame.Right);
 			}
 
-			var finalHeight = LayoutManager.ResolveConstraints(heightConstraint, FlexLayout.Height, measuredHeight, FlexLayout.MinimumHeight, FlexLayout.MaximumHeight);
-			var finalWidth = LayoutManager.ResolveConstraints(widthConstraint, FlexLayout.Width, measuredWidth, FlexLayout.MinimumWidth, FlexLayout.MaximumWidth);
+			var finalHeight = LayoutManager.ResolveConstraints(heightConstraint, FlexLayout.Height, measuredHeight + padding.VerticalThickness,
+				FlexLayout.MinimumHeight, FlexLayout.MaximumHeight);
+
+			var finalWidth = LayoutManager.ResolveConstraints(widthConstraint, FlexLayout.Width, measuredWidth + padding.HorizontalThickness,
+				FlexLayout.MinimumWidth, FlexLayout.MaximumWidth);
 
 			return new Size(finalWidth, finalHeight);
 		}

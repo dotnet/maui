@@ -18,7 +18,6 @@
   </Attributes>
   <Docs>
     <summary>A <see cref="T:System.ComponentModel.TypeConverter" /> subclass that can convert between a string and a <see cref="T:Microsoft.Maui.TextDecorations" /> object.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -32,8 +31,6 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConvertFromInvariantString">
@@ -55,7 +52,6 @@
       <Docs>
         <param name="value">A comma-separated string whose contents correspond to values of <see cref="T:Microsoft.Maui.TextDecorations" />.</param>
         <summary>Converts a single value or comma-separated string to a <see cref="T:Microsoft.Maui.TextDecorations" /> object.</summary>
-        <returns>To be added.</returns>
         <remarks>
           <para>The elements of <param name="value" /> must each be a value within <see cref="T:Microsoft.Maui.TextDecorations" /> or the string "line-through".</para>
         </remarks>

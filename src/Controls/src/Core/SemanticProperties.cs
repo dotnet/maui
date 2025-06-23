@@ -89,5 +89,22 @@ namespace Microsoft.Maui.Controls
 					dest.SetValue(bp, source.GetValue(bp));
 			}
 		}
+
+#nullable enable
+		internal static Semantics? UpdateSemantics(BindableObject bindable, Semantics? semantics)
+		{
+			if (!bindable.IsSet(HintProperty) &&
+				!bindable.IsSet(DescriptionProperty) &&
+				!bindable.IsSet(HeadingLevelProperty))
+			{
+				return null;
+			}
+
+			semantics ??= new Semantics();
+			semantics.Description = GetDescription(bindable);
+			semantics.HeadingLevel = GetHeadingLevel(bindable);
+			semantics.Hint = GetHint(bindable);
+			return semantics;
+		}
 	}
 }

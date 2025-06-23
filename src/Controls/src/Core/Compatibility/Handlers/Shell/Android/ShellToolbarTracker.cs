@@ -68,11 +68,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		DrawerArrowDrawable _drawerArrowDrawable;
 		FlyoutIconDrawerDrawable _flyoutIconDrawerDrawable;
 		IToolbar _toolbar;
-		protected IMauiContext MauiContext => ShellContext.Shell.Handler.MauiContext;
+		protected IMauiContext MauiContext => _shell.Handler.MauiContext;
+
+		Toolbar _shellRootToolBar;
+		Shell _shell;
 
 		public ShellToolbarTracker(IShellContext shellContext, AToolbar toolbar, DrawerLayout drawerLayout)
 		{
 			ShellContext = shellContext ?? throw new ArgumentNullException(nameof(shellContext));
+			_shell = shellContext.Shell;
+
 			_platformToolbar = toolbar ?? throw new ArgumentNullException(nameof(toolbar));
 			_drawerLayout = drawerLayout ?? throw new ArgumentNullException(nameof(drawerLayout));
 			_appBar = _platformToolbar.Parent.GetParentOfType<AppBarLayout>();
@@ -80,7 +85,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_globalLayoutListener = new GenericGlobalLayoutListener((_, _) => UpdateNavBarHasShadow(Page), _appBar);
 			_platformToolbar.SetNavigationOnClickListener(this);
 			((IShellController)ShellContext.Shell).AddFlyoutBehaviorObserver(this);
-			ShellContext.Shell.Toolbar.PropertyChanged += OnToolbarPropertyChanged;
+			_shellRootToolBar = _shell.Toolbar;
+			_shellRootToolBar.PropertyChanged += OnToolbarPropertyChanged;
 			ShellContext.Shell.Navigated += OnShellNavigated;
 			ShellContext.Shell.PropertyChanged += HandleShellPropertyChanged;
 		}
@@ -130,7 +136,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_tintColor = value;
 				if (Page != null)
 				{
-					UpdateToolbarItems();
+					UpdateToolbarItemsTintColors();
 					UpdateLeftBarButtonItem();
 				}
 			}
@@ -162,7 +168,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				else if (CanNavigateBack)
 					OnNavigateBack();
 				else
-					ShellContext.Shell.FlyoutIsPresented = !ShellContext.Shell.FlyoutIsPresented;
+					_shell.FlyoutIsPresented = !_shell.FlyoutIsPresented;
 			}
 		}
 
@@ -181,9 +187,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_backButtonBehavior.PropertyChanged -= OnBackButtonBehaviorChanged;
 
 				((IShellController)ShellContext.Shell)?.RemoveFlyoutBehaviorObserver(this);
-				ShellContext.Shell.Toolbar.PropertyChanged -= OnToolbarPropertyChanged;
-				ShellContext.Shell.Navigated -= OnShellNavigated;
-				ShellContext.Shell.PropertyChanged -= HandleShellPropertyChanged;
+				_shellRootToolBar.PropertyChanged -= OnToolbarPropertyChanged;
+				_shell.Navigated -= OnShellNavigated;
+				_shell.PropertyChanged -= HandleShellPropertyChanged;
 				UpdateTitleView(ShellContext.AndroidContext, _platformToolbar, null);
 
 				if (_searchView != null)
@@ -212,6 +218,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_platformToolbar = null;
 			_appBar = null;
 			_drawerLayout = null;
+			_shell = null;
 
 			base.Dispose(disposing);
 		}
@@ -261,8 +268,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateNavBarHasShadow(newPage);
 				UpdateTitleView();
 
-				if (ShellContext.Shell.Toolbar is ShellToolbar shellToolbar &&
-					newPage == ShellContext.Shell.GetCurrentShellPage())
+				if (_shell.Toolbar is ShellToolbar shellToolbar &&
+					newPage == _shell.GetCurrentShellPage())
 				{
 					shellToolbar.ApplyChanges();
 				}
@@ -274,8 +281,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_disposed || Page == null)
 				return;
 
-			if (ShellContext?.Shell?.Toolbar is ShellToolbar &&
-				Page == ShellContext?.Shell?.GetCurrentShellPage())
+			if (_shell?.Toolbar is ShellToolbar &&
+				Page == _shell?.GetCurrentShellPage())
 			{
 				UpdateLeftBarButtonItem();
 				UpdateTitleView();
@@ -402,8 +409,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var backButtonHandler = Shell.GetBackButtonBehavior(page);
 			var text = backButtonHandler.GetPropertyIfSet(BackButtonBehavior.TextOverrideProperty, String.Empty);
 			var command = backButtonHandler.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
-			bool isEnabled = ShellContext.Shell.Toolbar.BackButtonEnabled;
-			var image = GetFlyoutIcon(backButtonHandler, page);
+			bool isEnabled = _shell.Toolbar.BackButtonEnabled;
+			//Add the FlyoutIcon only if the FlyoutBehavior is Flyout
+			var image = _flyoutBehavior == FlyoutBehavior.Flyout ? GetFlyoutIcon(backButtonHandler, page) : null;
 			var backButtonVisible = _toolbar.BackButtonVisible;
 
 			DrawerArrowDrawable icon = null;
@@ -496,7 +504,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 
 			//this needs to be set after SyncState
-			UpdateToolbarIconAccessibilityText(toolbar, ShellContext.Shell);
+			UpdateToolbarIconAccessibilityText(toolbar, _shell);
 			_toolbar?.Handler?.UpdateValue(nameof(Toolbar.IconColor));
 		}
 
@@ -604,10 +612,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnToolbarPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (_toolbar != null && ShellContext?.Shell?.GetCurrentShellPage() == Page)
+			if (_toolbar != null && _shell?.GetCurrentShellPage() == Page)
 			{
 				ApplyToolbarChanges((Toolbar)sender, (Toolbar)_toolbar);
-				UpdateToolbarIconAccessibilityText(_platformToolbar, ShellContext.Shell);
+				UpdateToolbarIconAccessibilityText(_platformToolbar, _shell);
 			}
 		}
 
@@ -617,13 +625,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateTitleView(Context context, AToolbar toolbar, View titleView)
 		{
-			if (_toolbar != null && ShellContext?.Shell?.GetCurrentShellPage() == Page)
+			if (_toolbar != null && _shell?.GetCurrentShellPage() == Page)
 				_toolbar.Handler?.UpdateValue(nameof(Toolbar.TitleView));
+		}
+
+		private void UpdateToolbarItemsTintColors(AToolbar toolbar)
+		{
+			var menu = toolbar.Menu;
+			int _placeholderMenuItemId = 100;
+			if (menu.FindItem(_placeholderMenuItemId) is IMenuItem item)
+			{
+				using (var icon = item.Icon)
+					icon.SetColorFilter(TintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
+			}
 		}
 
 		protected virtual void UpdateToolbarItems(AToolbar toolbar, Page page)
 		{
 			var menu = toolbar.Menu;
+			int _placeholderMenuItemId = 100;
 			SearchHandler = Shell.GetSearchHandler(page);
 			if (SearchHandler != null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
 			{
@@ -643,7 +663,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Collapsible)
 				{
 					var placeholder = new Java.Lang.String(SearchHandler.Placeholder);
-					var item = menu.Add(placeholder);
+					var item = menu.Add(0, _placeholderMenuItemId, 0, placeholder);
 					placeholder.Dispose();
 
 					item.SetEnabled(SearchHandler.IsSearchEnabled);
@@ -716,6 +736,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateToolbarItems()
 		{
 			UpdateToolbarItems(_platformToolbar, Page);
+		}
+
+		void UpdateToolbarItemsTintColors()
+		{
+			UpdateToolbarItemsTintColors(_platformToolbar);
 		}
 
 		class FlyoutIconDrawerDrawable : DrawerArrowDrawable

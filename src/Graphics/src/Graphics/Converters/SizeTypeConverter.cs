@@ -11,7 +11,13 @@ namespace Microsoft.Maui.Graphics.Converters
 			=> sourceType == typeof(string);
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
-			=> destinationType == typeof(string);
+			=> destinationType == typeof(string)
+				|| destinationType == typeof(SizeF)
+#if IOS || MACCATALYST
+				|| destinationType == typeof(CoreGraphics.CGSize)
+				|| destinationType == typeof(CoreGraphics.CGPoint)
+#endif
+				;
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
@@ -25,6 +31,15 @@ namespace Microsoft.Maui.Graphics.Converters
 		{
 			if (!(value is Size size))
 				throw new NotSupportedException();
+
+			if (destinationType == typeof(SizeF))
+				return (SizeF)size;
+#if IOS || MACCATALYST
+			if (destinationType == typeof(CoreGraphics.CGSize))
+				return (CoreGraphics.CGSize)size;
+			if (destinationType == typeof(CoreGraphics.CGPoint))
+				return (CoreGraphics.CGPoint)size;
+#endif
 			return $"{size.Width.ToString(CultureInfo.InvariantCulture)}, {size.Height.ToString(CultureInfo.InvariantCulture)}";
 		}
 	}

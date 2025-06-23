@@ -1,12 +1,7 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 17801, "ScrollView always has a scroll bar on iOS", PlatformAffected.iOS)]
-	public partial class Issue17801 : ContentPage
+	public partial class Issue17801
 	{
 		int _count = 0;
 
@@ -14,7 +9,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 		}
-		
+
 		void OnCounterClicked(object sender, EventArgs e)
 		{
 			_count++;

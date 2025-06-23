@@ -67,7 +67,7 @@
         <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}">
             <Grid>
                 <ContentControl x:Name="EmptyViewContentControl" 
-                                HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                 <ScrollViewer x:Name="ScrollViewer" 
                                 TabNavigation="{TemplateBinding TabNavigation}"
                                 HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"

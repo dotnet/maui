@@ -19,7 +19,6 @@
   </Attributes>
   <Docs>
     <summary>Class that is used within <c>OnPlatform</c> tags in XAML when specifying values on platforms.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -35,7 +34,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.On" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Platform">
@@ -59,8 +57,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the list of specified platforms.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Value">
@@ -79,8 +75,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the value on the current platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

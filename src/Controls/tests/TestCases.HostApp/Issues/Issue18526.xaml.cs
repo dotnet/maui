@@ -1,6 +1,3 @@
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 18526, "Border not rendering inside a frame", PlatformAffected.All)]

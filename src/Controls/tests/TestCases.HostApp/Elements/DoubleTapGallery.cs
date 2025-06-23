@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.Sample
 {
 	public class DoubleTapGallery : Microsoft.Maui.Controls.ContentView
 	{

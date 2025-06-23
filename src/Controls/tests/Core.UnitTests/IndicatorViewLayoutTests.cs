@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void IndicatorStackLayoutWithItems_ResetIndicators_ShouldBindChildren()
 		{
 			// Arrange
-			var indicatorView = new IndicatorView() { ItemsSource = new List<string>{"item1", "item2"} };
+			var indicatorView = new IndicatorView() { ItemsSource = new List<string> { "item1", "item2" } };
 			var indicatorStackLayout = new IndicatorStackLayout(indicatorView);
 
 			// Act
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void IndicatorStackLayout_ResetIndicatorCount_ShouldBindChildren(int oldCount, int expected)
 		{
 			// Arrange
-			var indicatorView = new IndicatorView() { ItemsSource = new List<string>{"item1", "item2"} };
+			var indicatorView = new IndicatorView() { ItemsSource = new List<string> { "item1", "item2" } };
 			var indicatorStackLayout = new IndicatorStackLayout(indicatorView);
 			Assert.Empty(indicatorStackLayout.Children);
 

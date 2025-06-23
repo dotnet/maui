@@ -8,27 +8,26 @@ namespace Microsoft.Maui.Dispatching
 	/// <inheritdoc/>
 	public partial class Dispatcher : IDispatcher
 	{
-		readonly Looper _looper;
-		readonly Handler _handler;
+		// NOTE: PlatformDispatcher extends Handler
+		readonly PlatformDispatcher _dispatcher;
 
-		internal Dispatcher(Looper looper)
+		internal Dispatcher(PlatformDispatcher dispatcher)
 		{
-			_looper = looper ?? throw new ArgumentNullException(nameof(looper));
-			_handler = new Handler(_looper);
+			_dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 		}
 
 		bool IsDispatchRequiredImplementation() =>
-			_looper != Looper.MyLooper();
+			_dispatcher.IsDispatchRequired;
 
 		bool DispatchImplementation(Action action) =>
-			_handler.Post(() => action());
+			_dispatcher.Post(() => action());
 
 		bool DispatchDelayedImplementation(TimeSpan delay, Action action) =>
-			_handler.PostDelayed(() => action(), (long)delay.TotalMilliseconds);
+			_dispatcher.PostDelayed(() => action(), (long)delay.TotalMilliseconds);
 
 		DispatcherTimer CreateTimerImplementation()
 		{
-			return new DispatcherTimer(_handler);
+			return new DispatcherTimer(_dispatcher);
 		}
 	}
 
@@ -149,11 +148,11 @@ namespace Microsoft.Maui.Dispatching
 	{
 		static Dispatcher? GetForCurrentThreadImplementation()
 		{
-			var q = Looper.MyLooper();
-			if (q == null || q != Looper.MainLooper)
+			var dispatcher = PlatformDispatcher.Create();
+			if (dispatcher is null)
 				return null;
 
-			return new Dispatcher(q);
+			return new Dispatcher(dispatcher);
 		}
 	}
 }

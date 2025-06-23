@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Key))]
+	[RequireService([typeof(IXmlLineInfoProvider)])]
 	public sealed class DynamicResourceExtension : IMarkupExtension<DynamicResource>
 	{
 		public string Key { get; set; }

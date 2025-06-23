@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.DeviceTests.ImageAnalysis;
 using Microsoft.Maui.Graphics;
@@ -259,6 +260,35 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);
 		}
 
+		[Fact(DisplayName = "Border With Stroke Shape And Name Does Not Leak")]
+		public async Task DoesNotLeakWithStrokeShape()
+		{
+			SetupBuilder();
+			WeakReference platformViewReference = null;
+			WeakReference handlerReference = null;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var layout = new Grid();
+				var border = new Border();
+				var rect = new RoundRectangle();
+				border.StrokeShape = rect;
+				layout.Add(border);
+
+				var nameScope = new NameScope();
+				((INameScope)nameScope).RegisterName("Border", border);
+				layout.transientNamescope = nameScope;
+				border.transientNamescope = nameScope;
+				rect.transientNamescope = nameScope;
+
+				var handler = CreateHandler<LayoutHandler>(layout);
+				handlerReference = new WeakReference(border.Handler);
+				platformViewReference = new WeakReference(border.Handler.PlatformView);
+			});
+
+			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);
+		}
+
 		[Fact("Ensures the border renders the expected size - Issue 15339")]
 		public async Task BorderAndStrokeIsCorrectSize()
 		{
@@ -268,7 +298,8 @@ namespace Microsoft.Maui.DeviceTests
 			border.Stroke = Colors.Blue;
 			border.StrokeThickness = borderThickness;
 
-			var bitmap = await GetRawBitmap(border, typeof(BorderHandler));
+			// This is randomly failing on iOS, so let's add a timeout to avoid device tests running for hours
+			var bitmap = await GetRawBitmap(border, typeof(BorderHandler)).WaitAsync(TimeSpan.FromSeconds(5));
 			Assert.Equal(200, bitmap.Width, 2d);
 			Assert.Equal(100, bitmap.Height, 2d);
 

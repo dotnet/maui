@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Networking
 		/// Unique identifier for the connectivity changed action on Android.
 		/// </summary>
 		public const string ConnectivityChangedAction = "com.maui.essentials.ESSENTIALS_CONNECTIVITY_CHANGED";
-		static ConnectivityManager ConnectivityManager => 
+		static ConnectivityManager ConnectivityManager =>
 			Application.Context.GetSystemService(Context.ConnectivityService) as ConnectivityManager;
 
 		ConnectivityBroadcastReceiver conectivityReceiver;

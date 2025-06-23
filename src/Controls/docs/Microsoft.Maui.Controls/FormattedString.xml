@@ -45,7 +45,6 @@
       <Parameters />
       <Docs>
         <summary>Initializes a new instance of the FormattedString class.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnBindingContextChanged">
@@ -65,7 +64,6 @@
       <Parameters />
       <Docs>
         <summary>Method that is called when the binding context is changed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Explicit">
@@ -92,8 +90,6 @@
       <Docs>
         <param name="formatted">The formatted string to cast.</param>
         <summary>Cast the FormattedString to a string, stripping all the attributes.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -120,8 +116,6 @@
       <Docs>
         <param name="text">The text to cast.</param>
         <summary>Cast a string to a FormattedString that contains a single span with no attribute set.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Spans">
@@ -144,8 +138,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the collection of spans.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">
@@ -169,8 +161,6 @@
       <Parameters />
       <Docs>
         <summary>Returns the text of the formatted string as an unformatted string.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

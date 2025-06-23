@@ -21,13 +21,13 @@ namespace Microsoft.Maui.Platform
 		FrameworkElement? _content;
 
 		internal Path? BorderPath => _borderPath;
-
+		internal IBorderStroke? BorderStroke => _borderStroke;
 		internal FrameworkElement? Content
 		{
 			get => _content;
 			set
 			{
-				var children = Children;
+				var children = CachedChildren;
 
 				// Remove the previous content if it exists
 				if (_content is not null && children.Contains(_content) && value != _content)
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (containsCheck)
 			{
-				var children = Children;
+				var children = CachedChildren;
 
 				if (!children.Contains(_borderPath))
 				{
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				Children.Add(_borderPath);
+				CachedChildren.Add(_borderPath);
 			}
 		}
 

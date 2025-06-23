@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Manages visual state groups and transitions controls between states.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetVisualStateGroups">
@@ -38,7 +37,6 @@
         <param name="visualElement">The visual element whose visual state groups to get.</param>
         <summary>Returns the visual state groups that can be applied to the specified visual element.</summary>
         <returns>The visual state groups that can be applied to the specified visual element.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GoToState">
@@ -65,7 +63,6 @@
         <summary>Transitions the specified <paramref name="visualElement" /> to the state with the specified <paramref name="name" />.</summary>
         <returns>
           <see langword="true" /> if the transition was successful. Otherwise, <see langword="false" /></returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HasVisualStateGroups">
@@ -90,7 +87,6 @@
         <summary>Returns <see langword="true" /> if <paramref name="element" /> has one or more visual state groups associated with it. Otherwise, returns <see langword="false" />.</summary>
         <returns>
           <see langword="true" /> if <paramref name="element" /> has one or more visual state groups associated with it. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetVisualStateGroups">
@@ -115,7 +111,6 @@
         <param name="visualElement">To be added.</param>
         <param name="value">The list of visual state groups to associate with <paramref name="visualElement" />.</param>
         <summary>Associates a list of visual state groups with a visual element.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="VisualStateGroupsProperty">
@@ -134,7 +129,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that contains the visual state groups in the manager.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

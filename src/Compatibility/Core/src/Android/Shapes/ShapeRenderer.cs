@@ -423,7 +423,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					_drawable.Paint.StrokeWidth = 0.01f;
 					_drawable.Paint.SetStyle(Paint.Style.Stroke);
 					_drawable.Paint.GetFillPath(_path, fillPath);
+#pragma warning disable CA1422 // Obsolete in API 35 https://developer.android.com/reference/android/graphics/Path#computeBounds(android.graphics.RectF,%20boolean)
 					fillPath.ComputeBounds(_pathFillBounds, false);
+#pragma warning restore CA1422
 					_drawable.Paint.StrokeWidth = _strokeWidth;
 				}
 			}
@@ -480,7 +482,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					_drawable.Paint.SetStyle(Paint.Style.Stroke);
 					_drawable.Paint.GetFillPath(_path, strokePath);
+#pragma warning disable CA1422 // Obsolete in API 35 https://developer.android.com/reference/android/graphics/Path#computeBounds(android.graphics.RectF,%20boolean)
 					strokePath.ComputeBounds(_pathStrokeBounds, false);
+#pragma warning restore CA1422 // Obsolete in API 35
 				}
 			}
 			else

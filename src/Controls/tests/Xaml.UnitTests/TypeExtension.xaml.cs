@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	}
 
 	[ContentProperty(nameof(Operation))]
+	[AcceptEmptyServiceProvider]
 	public class NavigateExtension : IMarkupExtension<ICommand>
 	{
 		public NavigationOperation Operation { get; set; }

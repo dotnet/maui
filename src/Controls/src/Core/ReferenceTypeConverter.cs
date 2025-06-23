@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.Xaml.Internals;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ReferenceTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.ReferenceTypeConverter']/Docs/*" />
+	[RequireService([typeof(IReferenceProvider), typeof(IProvideParentValues)])]
 	public sealed class ReferenceTypeConverter : TypeConverter, IExtendedTypeConverter
 	{
 

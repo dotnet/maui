@@ -16,7 +16,6 @@
   </Base>
   <Docs>
     <summary>Enumerates values that control the visibility of list item separators.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Default">

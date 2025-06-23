@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.None, 5555, "Memory leak when SwitchCell or EntryCell", PlatformAffected.iOS)]

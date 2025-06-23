@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Embedding;
 /// <summary>
 /// A set of extension methods that allow for embedding a MAUI view within a native application.
 /// </summary>
-internal static class EmbeddingExtensions
+public static class EmbeddingExtensions
 {
 	/// <summary>
 	/// Configures the <see cref="MauiAppBuilder"/> to use the specified <typeparamref name="TApp"/> as the embedded application type.

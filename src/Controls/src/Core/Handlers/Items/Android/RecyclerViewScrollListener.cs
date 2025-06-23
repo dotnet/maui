@@ -65,11 +65,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				case -1:
 					return;
 				case 0:
-					if (Last == ItemsViewAdapter.ItemCount - 1)
+					if (Last == ItemsViewAdapter.ItemsSource.Count - 1)
 						_itemsView.SendRemainingItemsThresholdReached();
 					break;
 				default:
-					if (ItemsViewAdapter.ItemCount - 1 - Last <= _itemsView.RemainingItemsThreshold)
+					if (ItemsViewAdapter.ItemsSource.Count - 1 - Last <= _itemsView.RemainingItemsThreshold)
 						_itemsView.SendRemainingItemsThresholdReached();
 					break;
 			}
@@ -87,6 +87,63 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				lastVisibleItemIndex = linearLayoutManager.FindLastVisibleItemPosition();
 				centerItemIndex = recyclerView.CalculateCenterItemIndex(firstVisibleItemIndex, linearLayoutManager, _getCenteredItemOnXAndY);
 			}
+
+			bool hasHeader = ItemsViewAdapter.ItemsSource.HasHeader;
+			bool hasFooter = ItemsViewAdapter.ItemsSource.HasFooter;
+			int itemsCount = ItemsViewAdapter.ItemCount;
+
+			if (!hasHeader && !hasFooter)
+			{
+				return (firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
+			}
+
+			if (firstVisibleItemIndex == 0 && lastVisibleItemIndex == itemsCount - 1)
+			{
+				lastVisibleItemIndex -= hasHeader && hasFooter ? 2 : 1;
+			}
+			else
+			{
+				if (hasHeader && !hasFooter)
+				{
+					lastVisibleItemIndex -= 1;
+					firstVisibleItemIndex -= 1;
+				}
+				else if (!hasHeader && hasFooter)
+				{
+					if (lastVisibleItemIndex == itemsCount - 1)
+					{
+						lastVisibleItemIndex -= 1;
+					}
+				}
+				else if (hasHeader && hasFooter)
+				{
+					if (firstVisibleItemIndex == 0)
+					{
+						lastVisibleItemIndex -= 1;
+					}
+					else if (lastVisibleItemIndex != itemsCount - 1)
+					{
+						firstVisibleItemIndex -= 1;
+						lastVisibleItemIndex -= 1;
+					}
+					else
+					{
+						firstVisibleItemIndex -= 1;
+						lastVisibleItemIndex -= 2;
+					}
+				}
+			}
+
+			if (firstVisibleItemIndex < 0)
+			{
+				firstVisibleItemIndex = 0;
+			}
+
+			if (lastVisibleItemIndex < 0)
+			{
+				lastVisibleItemIndex = 0;
+			}
+
 			return (firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
 		}
 

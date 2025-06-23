@@ -3,7 +3,7 @@ trigger:
     include:
     - main
     - release/*
-    - loc
+    - net10.0
   tags:
     include:
     - '*'
@@ -19,7 +19,6 @@ trigger:
     - LICENSE.TXT
     - PATENTS.TXT
     - README.md
-    - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
 
 pr:
@@ -27,6 +26,7 @@ pr:
     include:
     - main
     - release/*
+    - net10.0
   paths:
     include:
     - '*'
@@ -39,7 +39,6 @@ pr:
     - LICENSE.TXT
     - PATENTS.TXT
     - README.md
-    - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
 
 variables:
@@ -48,10 +47,15 @@ variables:
     value: $(botdeploy--azdo--token--register--xamarin-public--untrusted)
 
 parameters:
+
+  - name: UseProvisionator
+    type: boolean
+    default: false
+
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
     type: string
-    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
+    default: 'latest'
 
   - name: BuildEverything
     type: boolean
@@ -67,8 +71,16 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
+  
+  - name: androidPoolLinux
+    type: object
+    default:
+      name: $(1ESPTPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - ImageOverride -equals 1ESPT-Ubuntu22.04
 
   - name: iosPool
     type: object
@@ -76,9 +88,15 @@ parameters:
       name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
   
+  - name: windowsBuildPool
+    type: object
+    default:
+      name: $(windowsVmPool)
+      vmImage: $(windowsVmImage)
+
   - name: windowsPool
     type: object
     default:
@@ -88,7 +106,7 @@ parameters:
   - name: macosPool
     type: object
     default:
-      name: $(macosTestsVmPool)
+      name: Azure Pipelines
       vmImage: macOS-14
 
   - name: androidCompatibilityPool
@@ -97,7 +115,7 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
 
   - name: iosCompatibilityPool
@@ -106,7 +124,7 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
 
 resources:
@@ -122,22 +140,29 @@ stages:
   - template: common/ui-tests.yml
     parameters:
       androidPool: ${{ parameters.androidPool }}
+      androidLinuxPool: ${{ parameters.androidPoolLinux }}
       iosPool: ${{ parameters.iosPool }}
       windowsPool: ${{ parameters.windowsPool }}
+      windowsBuildPool: ${{ parameters.windowsBuildPool }}
       macosPool: ${{ parameters.macosPool }}
       androidCompatibilityPool: ${{ parameters.androidCompatibilityPool }}
       iosCompatibilityPool: ${{ parameters.iosCompatibilityPool }}
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30 ]
-        iosVersions: [ '17.2' ]
+        iosVersions: [ '18.0' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
+      ${{ else }}:
         androidApiLevels: [ 30 ]
-        iosVersions: [ '17.2' ]
+        iosVersions: [ '18.0' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      ${{ if or(parameters.CompatibilityTests, ne(variables['Build.Reason'], 'PullRequest')) }}:
+      ${{ if parameters.CompatibilityTests }}:
         runCompatibilityTests: true
+      ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
+        skipProvisioning: false
+        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+      ${{ else }}:  
+        skipProvisioning: true
       projects:
         - name: controls
           desc: Controls
@@ -148,9 +173,5 @@ stages:
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
           winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
           mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
-          compatibilityAndroidApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj 
-          compatibilityAndroidTestProject: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/test/Android.UITests/Compatibility.ControlGallery.Android.UITests.csproj
-          compatibilityiOSApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj 
-          compatibilityiOSTestProject: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/test/iOS.UITests/Compatibility.ControlGallery.iOS.UITests.csproj
 
 

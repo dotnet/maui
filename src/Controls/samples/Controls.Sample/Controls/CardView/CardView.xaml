@@ -3,16 +3,17 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Controls.CardView">
-    <Frame
+    <Border
         x:Name="Card"
         BackgroundColor="{Binding CardColor}"
-        BorderColor="{Binding BorderColor}"
-        CornerRadius="5"
-        HasShadow="True"
+        Stroke="{Binding BorderColor}"
         Padding="8"
         VerticalOptions="Center"
         HorizontalOptions="Center"
         Margin="0, 12, 0, 0">
+        <Border.StrokeShape>
+            <RoundRectangle CornerRadius="5" />
+        </Border.StrokeShape>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="75" />
@@ -23,23 +24,23 @@
                 <ColumnDefinition Width="75" />
                 <ColumnDefinition Width="200" />
             </Grid.ColumnDefinitions>
-            <Frame 
-                IsClippedToBounds="True"
-                BorderColor="{Binding BorderColor, FallbackValue='Black'}"
+            <Border 
+                Stroke="{Binding BorderColor, FallbackValue='Black'}"
                 BackgroundColor="{Binding IconBackgroundColor, FallbackValue='Gray'}"
-                CornerRadius="38"
                 HeightRequest="60"
                 WidthRequest="60"
                 HorizontalOptions="Center"
-                HasShadow="False"
                 VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="38" />
+                </Border.StrokeShape>
                 <Image 
                     Source="{Binding IconImageSource}"
                     Margin="-20"
                     WidthRequest="100"
                     HeightRequest="100"
                     Aspect="AspectFill" />
-            </Frame>
+            </Border>
             <Label 
                 Grid.Column="1"
                 Text="{Binding CardTitle, FallbackValue='Card Title'}"
@@ -61,5 +62,5 @@
                 VerticalOptions="Fill"
                 HorizontalOptions="Fill" />
         </Grid>
-    </Frame>
+    </Border>
 </ContentView>

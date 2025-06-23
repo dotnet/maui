@@ -41,7 +41,6 @@
         <summary>Returns <see langword="true" /> if the specified point is inside the region. Otherwise, returns <see langword="false" />.</summary>
         <returns>
           <see langword="true" /> if the specified point is inside the region. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Contains">
@@ -68,7 +67,6 @@
         <summary>Returns <see langword="true" /> if the point that is represented by the specified coordinates is inside the region. Otherwise, returns <see langword="false" />.</summary>
         <returns>
           <see langword="true" /> if the specified point that is represented by the specified coordinates is inside the region. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Deflate">
@@ -89,7 +87,6 @@
       <Docs>
         <summary>Returns a region shrunk by the values in the most recent inflation, or does nothing if there has not been a previous inflation.</summary>
         <returns>A region shrunk by the values in the most recent inflation, or does nothing if there has not been a previous inflation.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FromLines">
@@ -121,7 +118,6 @@
         <param name="startY">The top of the region.</param>
         <summary>Creates and returns a region that detects points inside a collection of rectangles created from the lines that are specified by the provided data.</summary>
         <returns>A region that detects points inside a collection of rectangles created from the lines that are specified by the provided data.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Inflate">
@@ -145,7 +141,6 @@
         <param name="size">The amount by which to move each side of the region or its subregions.</param>
         <summary>Returns a region that is expanded by or has all of its subregions expanded by the specified <paramref name="size" />.</summary>
         <returns>A  region that is expanded by or has all of its subregions expanded by the specified <paramref name="size" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Inflate">
@@ -175,7 +170,6 @@
         <param name="bottom">The amount to move the bottom down.</param>
         <summary>Returns a region that is expanded by or has all of its subregions expanded by the specified values.</summary>
         <returns>A  region that is expanded by or has all of its subregions expanded by the specified values.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

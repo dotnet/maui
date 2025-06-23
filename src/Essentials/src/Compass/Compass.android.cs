@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		static Sensor _accelerometer;
 		static Sensor _magnetic;
 
-		static SensorManager SensorManager => 
+		static SensorManager SensorManager =>
 			Application.Context.GetSystemService(Context.SensorService) as SensorManager;
 
 		static Sensor Accelerometer =>

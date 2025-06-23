@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	public partial class SelectableItemsViewHandler<TItemsView> : StructuredItemsViewHandler<TItemsView> where TItemsView : SelectableItemsView
 	{
 		bool _ignorePlatformSelectionChange;
+		bool _ignoreVirtualSelectionChange;
 
 		protected override void ConnectHandler(ListViewBase platformView)
 		{
@@ -126,11 +127,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					break;
 			}
 
+			UpdateItemContentControlSelection();
 			_ignorePlatformSelectionChange = false;
 		}
 
 		void VirtualSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			// When the selection changes within the SelectionChanged event, the new selection isn't immediately reflected in the view.
+			// After the virtual selection is correctly updated, the flag is reset to enable future updates
+			if (_ignoreVirtualSelectionChange)
+			{
+				_ignoreVirtualSelectionChange = false;
+				return;
+			}
 			UpdatePlatformSelection();
 		}
 
@@ -160,13 +169,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					break;
 			}
 
-			var formsItemContentControls = ListViewBase.GetChildren<ItemContentControl>();
-
-			foreach (var formsItemContentControl in formsItemContentControls)
-			{
-				bool isSelected = ItemsView.SelectedItem == formsItemContentControl.FormsDataContext || ItemsView.SelectedItems.Contains(formsItemContentControl.FormsDataContext);
-				formsItemContentControl.UpdateIsSelected(isSelected);
-			}
+			UpdateItemContentControlSelection();
 		}
 
 		void UpdateVirtualSingleSelection()
@@ -177,10 +180,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (ItemsView != null)
 			{
-				ItemsView.SelectionChanged -= VirtualSelectionChanged;
+				_ignoreVirtualSelectionChange = true;
 				ItemsView.SelectedItem = selectedItem;
 
-				ItemsView.SelectionChanged += VirtualSelectionChanged;
+				_ignoreVirtualSelectionChange = false;
 			}
 		}
 
@@ -200,6 +203,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ItemsView.SelectionChanged += VirtualSelectionChanged;
 		}
 
+		void UpdateItemContentControlSelection()
+		{
+			var formsItemContentControls = ListViewBase.GetChildren<ItemContentControl>();
+
+			foreach (var formsItemContentControl in formsItemContentControls)
+			{
+				bool isSelected = ItemsView.SelectedItem == formsItemContentControl.FormsDataContext || ItemsView.SelectedItems.Contains(formsItemContentControl.FormsDataContext);
+				formsItemContentControl.UpdateIsSelected(isSelected);
+			}
+		}
+
+		protected override void UpdateItemsLayout()
+		{
+			_ignorePlatformSelectionChange = true;
+
+			base.UpdateItemsLayout();
+			_ignorePlatformSelectionChange = false;
+		}
+
 		protected override void UpdateItemsSource()
 		{
 			_ignorePlatformSelectionChange = true;
@@ -210,7 +232,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_ignorePlatformSelectionChange = false;
 		}
 
-		class SelectionModeConvert : Microsoft.UI.Xaml.Data.IValueConverter
+		partial class SelectionModeConvert : Microsoft.UI.Xaml.Data.IValueConverter
 		{
 			public object Convert(object value, Type targetType, object parameter, string language)
 			{

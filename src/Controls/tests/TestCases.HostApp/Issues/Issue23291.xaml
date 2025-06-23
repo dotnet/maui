@@ -20,7 +20,7 @@
                         BackgroundColor="Blue"
                         VerticalOptions="End"
                         HorizontalOptions="Center"
-                        Margin="0,0,0,40"
+                        Margin="0,0,0,120"
                         Text="Open Second Page"
                         Clicked="OpenDetailPage_Clicked"/>
                 </Grid>
@@ -46,10 +46,13 @@
             FragmentOneItemTemplate="{StaticResource fragmentOneItemTemplate}"
             FragmentTwoItemTemplate="{StaticResource fragmentTwoItemTemplate}"/>
     </ContentPage.Resources>
+     <!-- This sample has been modified to address flakiness in CI for Catalyst. 
+        The original issue caused the application to appear in the bottom-left corner, 
+        where the bottom tabs overlapped with dock icons. -->
     <Grid
-        RowDefinitions="*,80">
+        RowDefinitions="80,*">
         <CarouselView
-            Grid.Row="0"
+            Grid.Row="1"
             x:Name="carousel"
             Position="{Binding PagePosition}"
             ItemsSource="{Binding DashboardItems}"
@@ -61,7 +64,7 @@
             ItemTemplate="{StaticResource dataTemplateSelector}"/>
         
         <HorizontalStackLayout
-            Grid.Row="1"
+            Grid.Row="0"
             Spacing="15"
             HorizontalOptions="Center">
             

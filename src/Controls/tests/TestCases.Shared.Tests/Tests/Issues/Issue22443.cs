@@ -6,13 +6,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue22443 : _IssuesUITest
 {
-    public Issue22443(TestDevice device)
+	public Issue22443(TestDevice device)
 		: base(device)
 	{ }
 
-    public override string Issue => "App Crash on Scroll Animation while navigating away from Page";
+	public override string Issue => "App Crash on Scroll Animation while navigating away from Page";
 
-    [Test]
+	[Test]
 	[Category(UITestCategories.Navigation)]
 	public void NoExceptionShouldBeThrown()
 	{

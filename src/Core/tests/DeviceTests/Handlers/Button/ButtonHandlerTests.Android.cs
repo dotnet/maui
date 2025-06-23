@@ -112,7 +112,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "CornerRadius Initializes Correctly"
-#if __ANDROID_23__	
+#if __ANDROID_23__
 			, Skip = "Failing on Android 23"
 #endif
 		)]
@@ -230,7 +230,9 @@ namespace Microsoft.Maui.DeviceTests
 		bool ImageSourceLoaded(ButtonHandler buttonHandler)
 		{
 			var image = buttonHandler.PlatformView.Icon ??
+#pragma warning disable CS0618 // Type or member is obsolete
 						TextViewCompat.GetCompoundDrawablesRelative(buttonHandler.PlatformView)[3];
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return image != null;
 		}

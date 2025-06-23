@@ -9,7 +9,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string ActivityIndicator = "ActivityIndicator";
 		public const string Animation = "Animation";
 		public const string AutomationId = "AutomationID";
-		public const string Border = "Border"; 
+		public const string Border = "Border";
 		public const string BoxView = "BoxView";
 		public const string Button = "Button";
 		public const string CarouselView = "CarouselView";
@@ -67,8 +67,12 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string DisplayPrompt = "DisplayPrompt";
 		public const string IndicatorView = "IndicatorView";
 		public const string RadioButton = "RadioButton";
+		public const string Shadow = "Shadow";
 		public const string Shape = "Shape";
 		public const string Accessibility = "Accessibility";
 		public const string Brush = "Brush";
+		public const string Compatibility = "MovedFromCompatibility";
+		public const string GraphicsView = "GraphicsView";
+		public const string Fonts = "Fonts";
 	}
 }

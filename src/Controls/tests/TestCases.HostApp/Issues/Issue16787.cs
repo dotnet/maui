@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 16787, "CollectionView runtime binding errors when loading the ItemSource asynchronously", PlatformAffected.UWP)]
 	public class Issue16787 : TestContentPage

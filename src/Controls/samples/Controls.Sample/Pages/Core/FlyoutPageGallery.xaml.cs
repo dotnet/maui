@@ -6,7 +6,7 @@ namespace Maui.Controls.Sample.Pages
 	public partial class FlyoutPageGallery
 	{
 
-		FlyoutPage? FlyoutPage => Application.Current!.MainPage as FlyoutPage;
+		FlyoutPage? FlyoutPage => this.Window!.Page as FlyoutPage;
 		public FlyoutPageGallery()
 		{
 			InitializeComponent();

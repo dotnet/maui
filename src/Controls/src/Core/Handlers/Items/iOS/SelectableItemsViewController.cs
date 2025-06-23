@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Foundation;
+using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -24,29 +25,51 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
+			if (ItemsView?.ItemsSource is null)
+			{
+				return;
+			}
 			FormsSelectItem(indexPath);
 		}
 
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemDeselected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
+			if (ItemsView?.ItemsSource is null)
+			{
+				return;
+			}
 			FormsDeselectItem(indexPath);
 		}
 
 		// Called by Forms to mark an item selected 
 		internal void SelectItem(object selectedItem)
 		{
+			if (ItemsView?.ItemsSource is null)
+			{
+				return;
+			}
+
 			var index = GetIndexForItem(selectedItem);
 
 			if (index.Section > -1 && index.Item > -1)
 			{
-				CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
+				// Ensure the selected index is updated after the collection view's items generation is completed
+				CollectionView.PerformBatchUpdates(null, _ =>
+				{
+					CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
+				});
 			}
 		}
 
 		// Called by Forms to clear the native selection
 		internal void ClearSelection()
 		{
+			if (ItemsView?.ItemsSource is null)
+			{
+				return;
+			}
+
 			var selectedItemIndexes = CollectionView.GetIndexPathsForSelectedItems();
 
 			foreach (var index in selectedItemIndexes)
@@ -90,7 +113,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UpdatePlatformSelection()
 		{
-			if (ItemsView == null)
+			if (ItemsView?.ItemsSource is null)
 			{
 				return;
 			}
@@ -130,18 +153,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				case SelectionMode.None:
 					CollectionView.AllowsSelection = false;
 					CollectionView.AllowsMultipleSelection = false;
+					ClearsSelectionOnViewWillAppear = true;
 					break;
 				case SelectionMode.Single:
 					CollectionView.AllowsSelection = true;
 					CollectionView.AllowsMultipleSelection = false;
+					ClearsSelectionOnViewWillAppear = false;
 					break;
 				case SelectionMode.Multiple:
 					CollectionView.AllowsSelection = true;
 					CollectionView.AllowsMultipleSelection = true;
+					ClearsSelectionOnViewWillAppear = false;
 					break;
 			}
 
 			UpdatePlatformSelection();
+			CollectionView.UpdateAccessibilityTraits(ItemsView);
 		}
 
 		void SynchronizePlatformSelectionWithSelectedItems()

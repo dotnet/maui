@@ -13,6 +13,63 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class WindowsTests : BaseTestFixture
 	{
 		[Fact]
+		public void WindowIsStyleableWithImplicitStyle()
+		{
+			var style = new Style(typeof(Window))
+			{
+				Setters =
+				{
+					new Setter { Property = Window.TitleProperty, Value = "Style Title" }
+				},
+			};
+
+			var app = new TestApp();
+			app.Resources.Add(style);
+
+			var window = app.CreateWindow();
+
+			Assert.Equal("Style Title", window.Title);
+		}
+
+		[Fact]
+		public void WindowIsStyleableWithStyleClass()
+		{
+			var style = new Style(typeof(Window))
+			{
+				Setters =
+				{
+					new Setter { Property = Window.TitleProperty, Value = "Style Title" }
+				},
+				Class = "fooClass",
+			};
+
+			var app = new TestApp();
+			app.Resources.Add(style);
+
+			var window = app.CreateWindow();
+			window.StyleClass = new[] { "fooClass" };
+
+			Assert.Equal("Style Title", window.Title);
+		}
+
+		[Fact]
+		public void WindowIsStyleableWithStyleProperty()
+		{
+			var style = new Style(typeof(Window))
+			{
+				Setters =
+				{
+					new Setter { Property = Window.TitleProperty, Value = "Style Title" }
+				},
+			};
+
+			var window = new Window();
+			window.Style = style;
+
+			Assert.Equal("Style Title", window.Title);
+		}
+
+		[Fact]
 		public void ContentPageFlowDirectionSetsOnIWindow()
 		{
 			var app = new TestApp();
@@ -699,9 +756,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			// GC collect the original key
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 
 			// Same window, doesn't create a new one
 			var actual = ((IApplication)application).CreateWindow(new ActivationState(new MockMauiContext(), new PersistedState

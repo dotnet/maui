@@ -7,7 +7,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CommonMethods.cs" />
     <AndroidAotProfile Include="custom.aprof" />
-    <PackageReference Include="Mono.AotProfiler.Android" Version="7.0.0-preview1" />
+    <PackageReference Include="Mono.AotProfiler.Android" Version="9.0.0-preview1" />
   </ItemGroup>
   <PropertyGroup>
     <RecordDependsOn>

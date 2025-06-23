@@ -1,12 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
+﻿using System.Windows.Input;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class HeaderFooterView : ContentPage
 	{
 		readonly HeaderFooterViewModel _viewModel = new HeaderFooterViewModel(0);
@@ -26,7 +21,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 		{
 		}
 
-		public ICommand AddCommand => new Command(async () => await AddItemsAsync());
+		public ICommand AddCommand => new Command(AddItemsAsync);
 
 		public ICommand ClearCommand => new Command(() => Items.Clear());
 
@@ -34,9 +29,8 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 
 		public string FooterText => "This Is A Footer";
 
-		async Task AddItemsAsync()
+		void AddItemsAsync()
 		{
-			await Task.Delay(TimeSpan.FromSeconds(1));
 			AddItems(Items, 2);
 		}
 	}

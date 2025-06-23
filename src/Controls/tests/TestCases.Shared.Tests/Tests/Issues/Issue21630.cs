@@ -14,10 +14,10 @@ public class Issue21630 : _IssuesUITest
 		: base(device)
 	{ }
 
-    string NavBarEntry => "NavBarEntry";
-    string HeaderEntry => "HeaderEntry";
-    string FocusButton => "FocusButton";
-    string RestoreButton => "RestoreMainPageButton";
+	string NavBarEntry => "NavBarEntry";
+	string HeaderEntry => "HeaderEntry";
+	string FocusButton => "FocusButton";
+	string RestoreButton => "RestoreMainPageButton";
 
 	protected override bool ResetAfterEachTest => true;
 

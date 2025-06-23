@@ -1,16 +1,18 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="Type[@FullName='Microsoft.Maui.Controls.Stepper']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Stepper : View, IElementConfiguration<Stepper>, IStepper
 	{
 		/// <summary>Bindable property for <see cref="Maximum"/>.</summary>
 		public static readonly BindableProperty MaximumProperty = BindableProperty.Create(nameof(Maximum), typeof(double), typeof(Stepper), 100.0,
-			validateValue: (bindable, value) => (double)value > ((Stepper)bindable).Minimum,
+			validateValue: (bindable, value) => (double)value >= ((Stepper)bindable).Minimum,
 			coerceValue: (bindable, value) =>
 			{
 				var stepper = (Stepper)bindable;
@@ -20,7 +22,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Minimum"/>.</summary>
 		public static readonly BindableProperty MinimumProperty = BindableProperty.Create(nameof(Minimum), typeof(double), typeof(Stepper), 0.0,
-			validateValue: (bindable, value) => (double)value < ((Stepper)bindable).Maximum,
+			validateValue: (bindable, value) => (double)value <= ((Stepper)bindable).Maximum,
 			coerceValue: (bindable, value) =>
 			{
 				var stepper = (Stepper)bindable;
@@ -107,5 +109,10 @@ namespace Microsoft.Maui.Controls
 		public IPlatformElementConfiguration<T, Stepper> On<T>() where T : IConfigPlatform => _platformConfigurationRegistry.Value.On<T>();
 
 		double IStepper.Interval => Increment;
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"{base.GetDebuggerDisplay()}, Value = {Value}";
+		}
 	}
 }

@@ -706,7 +706,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				catch (Exception)
 				{
 					// UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
-					Forms.MauiContext?.CreateLogger<SwipeViewRenderer>()?.LogWarning("Can not load SwipeItem Icon");
+					Forms.MauiContext?.CreateLogger<SwipeViewRenderer>()?.LogWarning("Cannot load SwipeItem Icon");
 				}
 			}
 		}
@@ -724,12 +724,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var width = maxResizeFactor * sourceSize.Width;
 			var height = maxResizeFactor * sourceSize.Height;
-			UIGraphics.BeginImageContextWithOptions(new CGSize((nfloat)width, (nfloat)height), false, 0);
-			sourceImage.Draw(new CGRect(0, 0, (nfloat)width, (nfloat)height));
-			var resultImage = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
+			var renderer = new UIGraphicsImageRenderer(new CGSize((nfloat)width, (nfloat)height), new UIGraphicsImageRendererFormat()
+			{
+				Opaque = false,
+				Scale = 0,
+			});
 
-			return resultImage;
+			return renderer.CreateImage((context) =>
+			{
+				sourceImage.Draw(new CGRect(0, 0, (nfloat)width, (nfloat)height));
+			});
 		}
 
 		void HandleTouchInteractions(GestureStatus status, CGPoint point)

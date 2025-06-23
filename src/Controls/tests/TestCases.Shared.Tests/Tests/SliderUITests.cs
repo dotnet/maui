@@ -5,7 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class SliderUITests : UITest
+	public class SliderUITests : CoreGalleryBasePageTest
 	{
 		public const string SliderGallery = "Slider Gallery";
 
@@ -14,9 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		protected override void FixtureSetup()
+		protected override void NavigateToGallery()
 		{
-			base.FixtureSetup();
 			App.NavigateToGallery(SliderGallery);
 		}
 

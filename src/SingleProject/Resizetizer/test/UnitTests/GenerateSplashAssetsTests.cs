@@ -5,11 +5,17 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using SkiaSharp;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
 	public class GenerateSplashAssetsTests : MSBuildTaskTestFixture<GenerateSplashAssets>
 	{
+		public GenerateSplashAssetsTests(ITestOutputHelper output)
+			: base(output)
+		{
+		}
+
 		protected GenerateSplashAssets GetNewTask(ITaskItem splash) =>
 			new()
 			{

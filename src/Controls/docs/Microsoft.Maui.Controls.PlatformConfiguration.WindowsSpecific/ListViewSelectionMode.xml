@@ -13,7 +13,6 @@
   </Base>
   <Docs>
     <summary>Selection modes for list view controls on UWP.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Accessible">

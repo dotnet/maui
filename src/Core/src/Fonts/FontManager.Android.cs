@@ -23,7 +23,8 @@ namespace Microsoft.Maui
 		{
 			{ "-light", FontWeight.Light },
 			{ "-medium", FontWeight.Medium },
-			{ "-black", FontWeight.Black }
+			{ "-black", FontWeight.Black },
+			{ "-thin", FontWeight.Thin }
 			// Add more styles as needed
 		};
 

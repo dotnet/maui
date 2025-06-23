@@ -1,6 +1,4 @@
-#load "../cake/helpers.cake"
-#load "../cake/dotnet.cake"
-#load "./devices-shared.cake"
+#load "./uitests-shared.cake"
 
 // Argument handling
 string DEFAULT_MAC_PROJECT = "../../src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj";
@@ -18,6 +16,7 @@ var deviceCleanupEnabled = Argument("cleanup", true);
 // Directory setup
 var binlogDirectory = DetermineBinlogDirectory(projectPath, binlogArg).FullPath;
 var dotnetToolPath = GetDotnetToolPath();
+LogSetupInfo(dotnetToolPath);
 
 Information($"Project File: {projectPath}");
 Information($"Build Binary Log (binlog): {binlogDirectory}");
@@ -27,29 +26,30 @@ Information($"Build Target Framework: {targetFramework}");
 Information($"Test Device: {testDevice}");
 Information($"Test Results Path: {testResultsPath}");
 
-Setup(context =>
-{
-	LogSetupInfo(dotnetToolPath);
-	PerformCleanupIfNeeded(deviceCleanupEnabled);
-});
-
-Teardown(context => PerformCleanupIfNeeded(deviceCleanupEnabled));
-
-Task("Cleanup");
-
-Task("Build")
+Task("buildOnly")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
 		ExecuteBuild(projectPath, binlogDirectory, configuration, runtimeIdentifier, targetFramework, dotnetToolPath);
 	});
 
-Task("Test")
-	.IsDependentOn("Build")
+Task("testOnly")
+	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
 		ExecuteTests(projectPath, testDevice, testResultsPath, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
 	});
+
+Task("build")
+	.IsDependentOn("buildOnly");
+
+Task("test")
+	.IsDependentOn("buildOnly")
+	.IsDependentOn("testOnly");
+
+Task("buildAndTest")
+	.IsDependentOn("buildOnly")
+	.IsDependentOn("testOnly");
 
 Task("uitest-build")
 	.Does(() =>
@@ -85,32 +85,26 @@ void ExecuteBuild(string project, string binDir, string config, string rid, stri
 	});
 }
 
+
 void ExecuteTests(string project, string device, string resultsDir, string config, string tfm, string rid, string toolPath)
 {
 	CleanResults(resultsDir);
 
 	var testApp = GetTestApplications(project, device, config, tfm, rid).FirstOrDefault();
-
 	Information($"Testing App: {testApp}");
-	var settings = new DotNetToolSettings
-	{
-		DiagnosticOutput = true,
-		ToolPath = toolPath,
-		ArgumentCustomization = args => args.Append($"run xharness apple test --app=\"{testApp}\" --targets=\"{device}\" --output-directory=\"{resultsDir}\" --verbosity=\"Debug\" ")
-	};
 
-	bool testsFailed = true;
-	try
+	RunMacAndiOSTests(project, device, resultsDir, config, tfm, rid, toolPath, projectPath, (category) =>
 	{
-		DotNetTool("tool", settings);
-		testsFailed = false;
-	}
-	finally
-	{
-		HandleTestResults(resultsDir, testsFailed, true);
-	}
-
-	Information("Testing completed.");
+		return new DotNetToolSettings
+		{
+			DiagnosticOutput = true,
+			ToolPath = toolPath,
+			ArgumentCustomization = args => 
+				args.Append($"run xharness apple test --app=\"{testApp}\" --targets=\"{device}\" --output-directory=\"{resultsDir}\" " + 
+					" --verbosity=\"Debug\" " + 
+					$"--set-env=\"TestFilter={category}\" ")
+		};
+	});
 }
 
 void ExecuteUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string toolPath)
@@ -142,8 +136,8 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-mac.binlog";
-	var appiumLog = $"{binDir}/appium_mac.log";
 	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-catalyst-{testFilter}");
+	var appiumLog = $"{binDir}/appium_mac_{resultsFileName}.log";
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{
@@ -173,7 +167,6 @@ void ExecuteBuildUITestApp(string appProject, string binDir, string config, stri
 		Framework = tfm,
 		ToolPath = toolPath,
 		ArgumentCustomization = args => args
-			.Append("/t:Restore;Build")
 			.Append($"/bl:{binlog}")
 	});
 
@@ -181,15 +174,6 @@ void ExecuteBuildUITestApp(string appProject, string binDir, string config, stri
 }
 
 // Helper methods
-
-void PerformCleanupIfNeeded(bool cleanupEnabled)
-{
-	if (cleanupEnabled)
-	{
-		// Add cleanup logic, possibly deleting temporary files, directories, etc.
-		Information("Cleaning up...");
-	}
-}
 
 string GetDefaultRuntimeIdentifier()
 {

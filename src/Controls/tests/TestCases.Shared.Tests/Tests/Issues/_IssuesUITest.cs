@@ -6,6 +6,17 @@ namespace Microsoft.Maui.TestCases.Tests
 {
 	public abstract class _IssuesUITest : UITest
 	{
+#if ANDROID
+		protected const string FlyoutIconAutomationId = "Open navigation drawer";
+#else
+		protected const string FlyoutIconAutomationId = "OK";
+#endif
+#if __IOS__ || WINDOWS
+		protected const string BackButtonAutomationId = "Back";
+#else
+		protected const string BackButtonAutomationId = "Navigate up";
+#endif
+
 		public _IssuesUITest(TestDevice device) : base(device) { }
 
 		protected override void FixtureSetup()
@@ -16,6 +27,9 @@ namespace Microsoft.Maui.TestCases.Tests
 				try
 				{
 					base.FixtureSetup();
+#if ANDROID || MACCATALYST
+					App.ToggleSystemAnimations(false);
+#endif
 					NavigateToIssue(Issue);
 					break;
 				}
@@ -24,6 +38,10 @@ namespace Microsoft.Maui.TestCases.Tests
 					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
 					if (retries++ < SetupMaxRetries)
 					{
+						App.Back();
+#if ANDROID || MACCATALYST
+						App.ToggleSystemAnimations(true);
+#endif
 						Reset();
 					}
 					else

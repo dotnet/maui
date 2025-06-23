@@ -102,7 +102,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<Frame, bool> ("HasShadow", v => v.HasShadow, (v, o) => v.HasShadow = o, () => true, false),
 			new PropertyTestCase<Grid, double> ("RowSpacing", v => v.RowSpacing, (v, o) => v.RowSpacing = o, () => 6, 12),
 			new PropertyTestCase<Grid, double> ("ColumnSpacing", v => v.ColumnSpacing, (v, o) => v.ColumnSpacing = o, () => 6, 12),
-			new PropertyTestCase<NaiveLayout, Thickness> ("Padding", v => v.Padding, (v, o) => v.Padding = o, () => default(Thickness), new Thickness (20, 20, 10, 10)),
 			new PropertyTestCase<Image, ImageSource> ("Source", v => v.Source, (v, o) => v.Source = o, () => null, ImageSource.FromFile("Foo")),
 			new PropertyTestCase<Image, Aspect> ("Aspect", v => v.Aspect, (v, o) => v.Aspect = o, () => Aspect.AspectFit, Aspect.AspectFill),
 			new PropertyTestCase<Image, bool> ("IsOpaque", v => v.IsOpaque, (v, o) => v.IsOpaque = o, () => false, true),

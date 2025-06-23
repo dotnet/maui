@@ -15,7 +15,6 @@
   <Interfaces />
   <Docs>
     <summary>Event that is raised when a pan gesture updates.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -38,7 +37,6 @@
         <param name="type">Whether the gesture just began, is continuing, was completed, or is canceled.</param>
         <param name="gestureId">An identifier for the gesture.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.PanUpdatedEventArgs" /> with the specified values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -65,7 +63,6 @@
         <param name="totalx">The total change in the X direction since the beginning of the gesture.</param>
         <param name="totaly">The total change in the Y direction since the beginning of the gesture.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.PanUpdatedEventArgs" /> with the specified values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GestureId">
@@ -85,8 +82,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the identifier for the gesture that raised the event.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="StatusType">
@@ -106,8 +101,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a value that tells if this event is for a newly started gesture, a running gesture, a completed gesture, or a canceled gesture.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TotalX">
@@ -127,8 +120,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the total change in the X direction since the beginning of the gesture.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TotalY">
@@ -148,8 +139,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the total change in the Y direction since the beginning of the gesture.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

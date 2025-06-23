@@ -1,4 +1,5 @@
-﻿#if WINDOWS || ANDROID
+﻿#pragma warning disable CS0618 // Type or member is obsolete
+#if WINDOWS || ANDROID
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
 
@@ -50,3 +51,4 @@ namespace Microsoft.Maui.DeviceTests
 	}
 }
 #endif
+#pragma warning restore CS0618 // Type or member is obsolete

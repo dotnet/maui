@@ -1,18 +1,14 @@
-﻿using System;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.Sample
 {
-	[Preserve(AllMembers = true)]
-	internal class CoreRootPage : Microsoft.Maui.Controls.ContentPage
+	internal class CoreRootPage : ContentPage
 	{
-		public CoreRootPage(Microsoft.Maui.Controls.Page rootPage)
+		public CoreRootPage(Page rootPage)
 		{
 			Title = "Controls TestCases";
 
 			var corePageView = new CorePageView(rootPage);
 
-			var searchBar = new Microsoft.Maui.Controls.Entry()
+			var searchBar = new Entry()
 			{
 				AutomationId = "SearchBar"
 			};
@@ -22,11 +18,11 @@ namespace Maui.Controls.Sample
 				corePageView.FilterPages(e.NewTextValue);
 			};
 
-			var testCasesButton = new Microsoft.Maui.Controls.Button
+			var testCasesButton = new Button
 			{
 				Text = "Go to Test Cases",
 				AutomationId = "GoToTestButton",
-				Command = new Microsoft.Maui.Controls.Command(async () =>
+				Command = new Command(async () =>
 				{
 					if (!string.IsNullOrEmpty(searchBar.Text))
 					{
@@ -39,26 +35,38 @@ namespace Maui.Controls.Sample
 				})
 			};
 
-			var stackLayout = new Microsoft.Maui.Controls.StackLayout()
+			var rootLayout = new Grid();
+			rootLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+			rootLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+			rootLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+			rootLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
+
+
+			rootLayout.Add(testCasesButton);
+			Grid.SetRow(testCasesButton, 0);
+
+			rootLayout.Add(searchBar);
+			Grid.SetRow(searchBar, 1);
+
+			var gcButton = new Button
 			{
-				Children = {
-					testCasesButton,
-					searchBar,
-					new Microsoft.Maui.Controls.Button {
-						Text = "Click to Force GC",
-						Command = new Microsoft.Maui.Controls.Command(() => {
-							GC.Collect ();
-							GC.WaitForPendingFinalizers ();
-							GC.Collect ();
-						})
-					},
-					corePageView
-				}
+				Text = "Click to Force GC",
+				Command = new Command(() =>
+				{
+					GC.Collect();
+					GC.WaitForPendingFinalizers();
+					GC.Collect();
+				})
 			};
+			rootLayout.Add(gcButton);
+			Grid.SetRow(gcButton, 2);
+
+			rootLayout.Add(corePageView);
+			Grid.SetRow(corePageView, 3);
 
 			AutomationId = "Gallery";
 
-			Content = stackLayout;
+			Content = rootLayout;
 		}
 	}
 }

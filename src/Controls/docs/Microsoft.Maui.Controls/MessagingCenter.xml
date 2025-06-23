@@ -60,7 +60,6 @@ Assert.AreEqual(2, subscriber.IntProperty);
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.MessagingCenter" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Instance">
@@ -80,7 +79,6 @@ Assert.AreEqual(2, subscriber.IntProperty);
       <Docs>
         <summary>Gets the singleton instance of the <see cref="T:Microsoft.Maui.Controls.MessagingCenter" />.</summary>
         <value>The singleton instance of the <see cref="T:Microsoft.Maui.Controls.MessagingCenter" />.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Send&lt;TSender&gt;">
@@ -122,7 +120,6 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <param name="sender">The instance that is sending the message. Typically, this is specified with the <see langword="this" /> keyword used within the sending object.</param>
         <param name="message">The message that will be sent to objects that are listening for the message from instances of type <typeparamref name="TSender" />.</param>
         <summary>Sends a named message that has no arguments.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Send&lt;TSender,TArgs&gt;">
@@ -168,7 +165,6 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <param name="message">The message that will be sent to objects that are listening for the message from instances of type <typeparamref name="TSender" />.</param>
         <param name="args">The arguments that will be passed to the listener's callback.</param>
         <summary>Sends a named message with the specified arguments.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Subscribe&lt;TSender&gt;">
@@ -214,7 +210,6 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <param name="callback">A callback, which takes the sender and arguments as parameters, that is run when the message is received by the subscriber.</param>
         <param name="source">The object that will send the messages.</param>
         <summary>Run the <paramref name="callback" /> on <paramref name="subscriber" /> in response to messages that are named <paramref name="message" /> and that are created by <paramref name="source" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Subscribe&lt;TSender,TArgs&gt;">
@@ -262,7 +257,6 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <param name="callback">A callback, which takes the sender and arguments as parameters, that is run when the message is received by the subscriber.</param>
         <param name="source">The object that will send the messages.</param>
         <summary>Run the <paramref name="callback" /> on <paramref name="subscriber" /> in response to parameterized messages that are named <paramref name="message" /> and that are created by <paramref name="source" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Unsubscribe&lt;TSender&gt;">
@@ -300,7 +294,6 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <param name="subscriber">The object that is subscribing to the messages. Typically, this is specified with the <see langword="this" /> keyword used within the subscribing object.</param>
         <param name="message">The message that will be sent to objects that are listening for the message from instances of type <typeparamref name="TSender" />.</param>
         <summary>Unsubscribes a subscriber from the specified messages that come from the specified sender.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Unsubscribe&lt;TSender,TArgs&gt;">
@@ -341,7 +334,6 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <param name="subscriber">The object that is subscribing to the messages. Typically, this is specified with the <see langword="this" /> keyword used within the subscribing object.</param>
         <param name="message">The message that will be sent to objects that are listening for the message from instances of type <typeparamref name="TSender" />.</param>
         <summary>Unsubscribes from the specified parameterless subscriber messages.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IMessagingCenter.Send&lt;TSender&gt;">
@@ -377,7 +369,6 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <param name="sender">The instance that is sending the message. Typically, this is specified with the <see langword="this" /> keyword used within the sending object.</param>
         <param name="message">The message that will be sent to objects that are listening for the message from instances of type <typeparamref name="TSender" />.</param>
         <summary>Sends the named parameterless message to objects that are listening for it on the type that is specified by <typeparamref name="TSender" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IMessagingCenter.Send&lt;TSender,TArgs&gt;">
@@ -417,7 +408,6 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <param name="message">The message that will be sent to objects that are listening for the message from instances of type <typeparamref name="TSender" />.</param>
         <param name="args">The arguments that will be passed to the listener's callback.</param>
         <summary>Sends a message and arguments to objects that are listening for them on the type that is specified by <typeparamref name="TSender" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IMessagingCenter.Subscribe&lt;TSender&gt;">
@@ -457,7 +447,6 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <param name="callback">A callback, which takes the sender and arguments as parameters, that is run when the message is received by the subscriber.</param>
         <param name="source">The object that will send the messages.</param>
         <summary>Subscribes to the specified <paramref name="message" /> from the specified <paramref name="source" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IMessagingCenter.Subscribe&lt;TSender,TArgs&gt;">
@@ -499,7 +488,6 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <param name="callback">A callback, which takes the sender and arguments as parameters, that is run when the message is received by the subscriber.</param>
         <param name="source">The object that will send the messages.</param>
         <summary>Subscribes to the specified <paramref name="message" /> from the specified <paramref name="source" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe&lt;TSender&gt;">
@@ -535,7 +523,6 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <param name="subscriber">The object that is unsubscribing to the messages. Typically, this is specified with the <see langword="this" /> keyword used within the subscribing object.</param>
         <param name="message">The message that will be sent to objects that are listening for the message from instances of type <typeparamref name="TSender" />.</param>
         <summary>Unsubscribes the specified <paramref name="subscriber" /> from the specified <paramref name="message" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe&lt;TSender,TArgs&gt;">
@@ -573,7 +560,6 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <param name="subscriber">The object that is subscribing to the messages. Typically, this is specified with the <see langword="this" /> keyword used within the subscribing object.</param>
         <param name="message">The message that will be sent to objects that are listening for the message from instances of type <typeparamref name="TSender" />.</param>
         <summary>Unsubscribes the specified <paramref name="subscriber" /> from the specified <paramref name="message" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

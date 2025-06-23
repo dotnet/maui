@@ -9,7 +9,7 @@ using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEv
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class TableViewRenderer : ViewRenderer<TableView, Microsoft.UI.Xaml.Controls.ListView>
+	public partial class TableViewRenderer : ViewRenderer<TableView, Microsoft.UI.Xaml.Controls.ListView>
 	{
 		bool _ignoreSelectionEvent;
 		bool _disposed;

@@ -18,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void TapStateButton()
 		{
 			App.Screenshot("Before state change");
+			App.WaitForElementTillPageNavigationSettled(StateButtonQuery);
 			App.Tap(StateButtonQuery);
 			App.Screenshot("After state change");
 		}

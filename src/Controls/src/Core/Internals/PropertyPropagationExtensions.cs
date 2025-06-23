@@ -1,12 +1,24 @@
 #nullable disable
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls.Internals
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/PropertyPropagationExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.PropertyPropagationExtensions']/Docs/*" />
 	public static class PropertyPropagationExtensions
 	{
+		[Obsolete]
 		internal static void PropagatePropertyChanged(string propertyName, Element element, IEnumerable children)
+		{
+			if (children == null)
+				return;
+
+			PropagatePropertyChanged(propertyName, element, children.OfType<IVisualTreeElement>().ToList());
+		}
+
+		internal static void PropagatePropertyChanged(string propertyName, Element element, IReadOnlyList<IVisualTreeElement> children)
 		{
 			if (propertyName == null || propertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				SetFlowDirectionFromParent(element);
@@ -23,10 +35,15 @@ namespace Microsoft.Maui.Controls.Internals
 			if (propertyName == null || propertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.TabBarIsVisibleProperty, element);
 
-			foreach (var child in children)
+			if (propertyName == null || propertyName == Shell.NavBarIsVisibleProperty.PropertyName)
+				BaseShellItem.PropagateFromParent(Shell.NavBarIsVisibleProperty, element);
+
+			foreach (var child in children.ToArray())
 			{
 				if (child is IPropertyPropagationController view)
+				{
 					view.PropagatePropertyChanged(propertyName);
+				}
 			}
 		}
 

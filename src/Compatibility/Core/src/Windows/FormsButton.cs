@@ -9,7 +9,7 @@ using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[PortHandler]
-	public class FormsButton : Microsoft.UI.Xaml.Controls.Button
+	public partial class FormsButton : Microsoft.UI.Xaml.Controls.Button
 	{
 		public static readonly DependencyProperty BorderRadiusProperty = DependencyProperty.Register(nameof(BorderRadius), typeof(int), typeof(FormsButton),
 			new PropertyMetadata(default(int), OnBorderRadiusChanged));
@@ -109,7 +109,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (content is StackPanel sp)
 			{
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 				foreach (var item in sp.Children)
+#pragma warning restore RS0030 // Do not use banned APIs
 				{
 					if (item is TextBlock textBlock)
 					{

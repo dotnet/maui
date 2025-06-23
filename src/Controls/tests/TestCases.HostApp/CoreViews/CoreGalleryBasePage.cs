@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.Sample
 {
 	internal abstract class CoreGalleryBasePage : CoreGalleryBasePage<View>
 	{
@@ -48,10 +42,10 @@ namespace Maui.Controls.Sample
 					new Button()
 					{
 						Text = "Dismiss Page",
-						Command = new Command(async () =>
+						Command = new Command(() =>
 						{
 							if (_picker.SelectedIndex == 0)
-								await Navigation.PopAsync();
+								Application.Current.Quit();
 							else
 								_picker.SelectedIndex--;
 						})

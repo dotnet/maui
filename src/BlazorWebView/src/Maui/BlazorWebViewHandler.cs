@@ -13,6 +13,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #endif
 	public partial class BlazorWebViewHandler
 	{
+		private const string UseBlockingDisposalSwitch = "BlazorWebView.UseBlockingDisposal";
+
+		private static bool IsBlockingDisposalEnabled =>
+			AppContext.TryGetSwitch(UseBlockingDisposalSwitch, out var enabled) && enabled;
+
 		/// <summary>
 		/// This field is part of MAUI infrastructure and is not intended for use by application code.
 		/// </summary>

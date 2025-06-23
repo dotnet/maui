@@ -67,6 +67,10 @@ csharp_style_var_for_built_in_types = true:none
 csharp_style_var_when_type_is_apparent = true:none
 csharp_style_var_elsewhere = false:none
 
+# Namespace preference (prefer file-scoped namespaces)
+csharp_style_namespace_declarations = file_scoped
+dotnet_diagnostic.IDE0161.severity = suggestion
+
 # use language keywords instead of BCL types
 dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
 dotnet_style_predefined_type_for_member_access = true:suggestion

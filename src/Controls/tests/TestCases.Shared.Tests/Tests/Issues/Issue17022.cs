@@ -1,4 +1,4 @@
-﻿#if IOS
+﻿#if IOS // This test case verifies that the UINavigationBar behaves as expected (translucent or transparent) exclusively on the iOS platform.
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;

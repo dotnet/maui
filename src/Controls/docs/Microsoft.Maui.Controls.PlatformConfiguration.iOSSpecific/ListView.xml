@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Provides access to the separator style for list views on the iOS platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetGroupHeaderStyle">
@@ -35,9 +34,6 @@
       </Parameters>
       <Docs>
         <param name="element">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetGroupHeaderStyle">
@@ -58,9 +54,6 @@
       </Parameters>
       <Docs>
         <param name="config">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetRowAnimationsEnabled">
@@ -81,9 +74,6 @@
       </Parameters>
       <Docs>
         <param name="element">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetSeparatorStyle">
@@ -107,7 +97,6 @@
         <param name="element">The list view element whose separator style to get.</param>
         <summary>Returns the separator style for a list view.</summary>
         <returns>The separator style for a list view.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetSeparatorStyle">
@@ -131,7 +120,6 @@
         <param name="config">The platform configuration for the list view element whose separator style to get.</param>
         <summary>Returns the separator style for a list view.</summary>
         <returns>The separator style for a list view.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GroupHeaderStyleProperty">
@@ -148,8 +136,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RowAnimationsEnabled">
@@ -170,9 +156,6 @@
       </Parameters>
       <Docs>
         <param name="config">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RowAnimationsEnabledProperty">
@@ -190,7 +173,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.ListView.RowAnimationsEnabled(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.ListView})" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SeparatorStyleProperty">
@@ -209,7 +191,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls the separator style.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetGroupHeaderStyle">
@@ -232,8 +213,6 @@
       <Docs>
         <param name="element">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetGroupHeaderStyle">
@@ -256,9 +235,6 @@
       <Docs>
         <param name="config">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetRowAnimationsEnabled">
@@ -281,8 +257,6 @@
       <Docs>
         <param name="element">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetRowAnimationsEnabled">
@@ -305,9 +279,6 @@
       <Docs>
         <param name="config">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetSeparatorStyle">
@@ -332,7 +303,6 @@
         <param name="element">The list view element whose separator style to set</param>
         <param name="value">The new separator style value.</param>
         <summary>Sets the separator style for a list view.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetSeparatorStyle">
@@ -358,7 +328,6 @@
         <param name="value">The new separator style value.</param>
         <summary>Sets the separator style for a list view.</summary>
         <returns>A fluent object on which the developer can make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

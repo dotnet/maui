@@ -442,7 +442,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				toolbarLayoutCompleted = true;
 			}
 
-			// Making the layout of the toolbar dependant on having a child Page could potentially mean that the toolbar is not laid out.
+			// Making the layout of the toolbar dependant on having a child Page could potentially mean that the toolbar is not arranged.
 			// We'll do one more check to make sure it isn't missed.
 			if (!toolbarLayoutCompleted)
 			{

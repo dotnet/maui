@@ -1,4 +1,4 @@
-﻿using OpenQA.Selenium.Appium.Android;
+﻿using OpenQA.Selenium.Appium.iOS;
 using OpenQA.Selenium.Appium.Windows;
 using UITest.Core;
 
@@ -12,6 +12,7 @@ namespace UITest.Appium
 		const string ResetAppCommand = "resetApp";
 		const string CloseAppCommand = "closeApp";
 		const string BackCommand = "back";
+		const string RefreshCommand = "refresh";
 
 		protected readonly AppiumApp _app;
 
@@ -22,7 +23,8 @@ namespace UITest.Appium
 			BackgroundAppCommand,
 			ResetAppCommand,
 			CloseAppCommand,
-			BackCommand
+			BackCommand,
+			RefreshCommand
 		};
 
 		public AppiumLifecycleActions(AppiumApp app)
@@ -45,6 +47,7 @@ namespace UITest.Appium
 				ResetAppCommand => ResetApp(parameters),
 				CloseAppCommand => CloseApp(parameters),
 				BackCommand => Back(parameters),
+				RefreshCommand => Refresh(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -68,6 +71,15 @@ namespace UITest.Appium
 				//   startRecordingScreen,stopRecordingScreen,launchApp,closeApp,deleteFile,deleteFolder,
 				//   click,scroll,clickAndDrag,hover,keys,setClipboard,getClipboard
 				windowsDriver.ExecuteScript("windows: launchApp", [_app.GetAppId()]);
+			}
+			else if (_app.Driver is IOSDriver iOSDriver)
+			{
+				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+				iOSDriver.ExecuteScript("mobile: launchApp", new Dictionary<string, object>
+				{
+					{ "bundleId", _app.GetAppId() },
+					{ "environment", args },
+				});
 			}
 			else
 			{
@@ -119,18 +131,18 @@ namespace UITest.Appium
 
 		CommandResponse CloseApp(IDictionary<string, object> parameters)
 		{
-			if (_app?.Driver is null)
-				return CommandResponse.FailedEmptyResponse;
-
 			try
 			{
+				if (_app is null || _app.Driver is null)
+					return CommandResponse.FailedEmptyResponse;
+
 				if (_app.AppState == ApplicationState.NotRunning)
 					return CommandResponse.SuccessEmptyResponse;
 			}
 			catch (Exception)
 			{
 				// TODO: Pass in logger so we can log these exceptions
-				
+
 				// Occasionally the app seems to get so locked up it can't 
 				// even report back the appstate. In that case, we'll just
 				// try to trigger a reset.
@@ -174,8 +186,26 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			// Navigate backwards in the history, if possible.
-			_app.Driver.Navigate().Back();
+			try
+			{
+				// Navigate backwards in the history, if possible.
+				_app.Driver.Navigate().Back();
+
+				return CommandResponse.SuccessEmptyResponse;
+			}
+			catch
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+		}
+
+		CommandResponse Refresh(IDictionary<string, object> parameters)
+		{
+			if (_app?.Driver is null)
+				return CommandResponse.FailedEmptyResponse;
+
+			// Refresh the current page.
+			_app.Driver.Navigate().Refresh();
 
 			return CommandResponse.SuccessEmptyResponse;
 		}

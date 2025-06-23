@@ -74,7 +74,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			}
 		}
 
-		public void LogTestStart(string? message = null)
+		public void LogTestsStart(string? message = null)
 		{
 			lock (_locker)
 			{
@@ -87,7 +87,15 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			}
 		}
 
-		public void LogTestComplete()
+		public void LogTestStart(string displayName)
+		{
+			lock (_locker)
+			{
+				_logger.LogInformation("\t[RUN] {0}", displayName);
+			}
+		}
+
+		public void LogTestsComplete()
 		{
 			lock (_locker)
 			{

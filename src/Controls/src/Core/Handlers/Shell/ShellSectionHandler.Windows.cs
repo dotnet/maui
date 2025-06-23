@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Text;
 using Microsoft.Maui.Controls.Internals;
 using WFrame = Microsoft.UI.Xaml.Controls.Frame;
@@ -54,6 +55,8 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				((IShellSectionController)_shellSection).NavigationRequested -= OnNavigationRequested;
 
+				((IShellSectionController)_shellSection).ItemsCollectionChanged -= OnItemsCollectionChanged;
+
 				if (_lastShell?.Target is IShellController shell)
 				{
 					shell.RemoveAppearanceObserver(this);
@@ -82,6 +85,8 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				((IShellSectionController)_shellSection).NavigationRequested += OnNavigationRequested;
 
+				((IShellSectionController)_shellSection).ItemsCollectionChanged += OnItemsCollectionChanged;
+
 				var shell = _shellSection.FindParentOfType<Shell>() as IShellController;
 				if (shell != null)
 				{
@@ -94,6 +99,17 @@ namespace Microsoft.Maui.Controls.Handlers
 		void OnNavigationRequested(object? sender, NavigationRequestedEventArgs e)
 		{
 			SyncNavigationStack(e.Animated, e);
+		}
+
+		void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+		{
+			if (_shellSection is null)
+				return;
+
+			if (_shellSection.Parent is ShellItem shellItem && shellItem.Handler is ShellItemHandler shellItemHandler)
+			{
+				shellItemHandler.MapMenuItems();
+			}
 		}
 
 		void SyncNavigationStack(bool animated, NavigationRequestedEventArgs? e)

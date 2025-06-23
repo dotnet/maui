@@ -12,13 +12,18 @@ namespace Microsoft.Maui.Controls.Shapes
 	public class PointCollectionConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-			=> sourceType == typeof(string);
+			=> sourceType == typeof(string) || sourceType == typeof(Point[]);
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> destinationType == typeof(string);
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			if (value is Point[] pointArray)
+			{
+				return (PointCollection)pointArray;
+			}
+
 			var strValue = value?.ToString();
 			string[] points = strValue.Split(new char[] { ' ', ',' });
 			var pointCollection = new PointCollection();

@@ -11,13 +11,18 @@ namespace Microsoft.Maui.Controls
 	public sealed class ImageSourceConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-			=> sourceType == typeof(string);
+			=> sourceType == typeof(string) || sourceType == typeof(Uri);
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> destinationType == typeof(string);
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			if (value is Uri uriValue)
+			{
+				return (ImageSource)uriValue;
+			}
+
 			// IMPORTANT! Update ImageSourceDesignTypeConverter.IsValid if making changes here
 			var strValue = value?.ToString();
 			if (strValue != null)

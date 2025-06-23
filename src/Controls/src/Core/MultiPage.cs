@@ -13,7 +13,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty("Children")]
-	public abstract class MultiPage<[DynamicallyAccessedMembers(BindableProperty.DeclaringTypeMembers)] T> : Page, IViewContainer<T>, IPageContainer<T>, IItemsView<T>, IMultiPageController<T> where T : Page
+	public abstract class MultiPage<[DynamicallyAccessedMembers(BindableProperty.DeclaringTypeMembers | BindableProperty.ReturnTypeMembers)] T> : Page, IViewContainer<T>, IPageContainer<T>, IItemsView<T>, IMultiPageController<T> where T : Page
 	{
 		/// <summary>Bindable property for <see cref="ItemsSource"/>.</summary>
 		public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(MultiPage<>), null);
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls
 				if (HasAppeared)
 					_current?.SendAppearing();
 
-				previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(_current));
+				previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(_current, NavigationType.PageSwap));
 				_current?.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
 			}
 		}

@@ -47,7 +47,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.Setter" /> object.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Property">
@@ -69,7 +68,6 @@
       </ReturnValue>
       <Docs>
         <summary>The property on which to apply the assignment.</summary>
-        <value>To be added.</value>
         <remarks>
           <para>Only bindable properties can be set with a <see cref="T:Microsoft.Maui.Controls.Setter" />.</para>.</remarks>
       </Docs>
@@ -88,9 +86,6 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Value">
@@ -112,8 +107,6 @@
       </ReturnValue>
       <Docs>
         <summary>The value to assign to the property.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Xaml.IValueProvider.ProvideValue">
@@ -142,8 +135,6 @@
       <Docs>
         <param name="serviceProvider">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

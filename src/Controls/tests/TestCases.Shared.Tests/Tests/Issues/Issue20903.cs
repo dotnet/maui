@@ -18,6 +18,7 @@ public class Issue20903 : _IssuesUITest
 		_ = App.WaitForElement("AddDoubleTapHandlerButton");
 
 		App.Tap("AddDoubleTapHandlerButton");
+		App.WaitForElement("AddDoubleTapHandlerButton");
 		App.Tap("AddDoubleTapHandlerButton");
 
 		App.DoubleTap("MyLabel");

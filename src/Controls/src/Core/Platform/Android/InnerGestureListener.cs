@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool HasAnyGestures()
 		{
-			return _panGestureHandler.HasAnyGestures() || _tapGestureHandler.HasAnyGestures() || _swipeGestureHandler.HasAnyGestures();
+			return (_panGestureHandler?.HasAnyGestures() ?? false) || (_tapGestureHandler?.HasAnyGestures() ?? false) || (_swipeGestureHandler?.HasAnyGestures() ?? false);
 		}
 
 		// This is needed because GestureRecognizer callbacks can be delayed several hundred milliseconds

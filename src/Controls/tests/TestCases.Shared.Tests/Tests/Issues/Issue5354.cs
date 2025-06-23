@@ -1,4 +1,4 @@
-#if ANDROID
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Related Issue : https://github.com/dotnet/maui/issues/27955, https://github.com/dotnet/maui/issues/27946
 using Microsoft.Maui.TestCases.Tests;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewItemsLayoutUpdate()
-		{	
+		{
 			App.WaitForElement("CollectionView5354");
 			App.WaitForElement("Button5354");
 
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 				ClassicAssert.AreEqual(gridRect0.Y, gridRect1.Y);
 				ClassicAssert.AreEqual(gridRect0.Height, gridRect1.Height);
-				
+
 				App.Click("Button5354");
 			}
 		}

@@ -5,11 +5,17 @@ using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
 	public class GeneratePackageAppxManifestTests : MSBuildTaskTestFixture<GeneratePackageAppxManifest>
 	{
+		public GeneratePackageAppxManifestTests(ITestOutputHelper output)
+			: base(output)
+		{
+		}
+
 		protected GeneratePackageAppxManifest GetNewTask(
 			string manifest,
 			string? generatedFilename = null,

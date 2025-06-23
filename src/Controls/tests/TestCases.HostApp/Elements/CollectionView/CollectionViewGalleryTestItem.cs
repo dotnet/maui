@@ -1,13 +1,9 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries
 {
-	[Preserve(AllMembers = true)]
 	public class CollectionViewGalleryTestItem : INotifyPropertyChanged
 	{
 		string _caption;

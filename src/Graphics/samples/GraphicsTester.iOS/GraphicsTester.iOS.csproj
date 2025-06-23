@@ -5,7 +5,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>GraphicsTester.iOS</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
-    <SupportedOSPlatformVersion>14.2</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

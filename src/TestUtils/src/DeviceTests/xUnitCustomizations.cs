@@ -11,11 +11,24 @@ using Xunit.Sdk;
 namespace Microsoft.Maui
 {
 	/// <summary>
+	/// This type provides the assembly name for the xUnit attributes specified in
+	/// the linked TestShared\xUnitSharedAttributes.cs file.
+	/// </summary>
+	internal static class XUnitTypeData
+	{
+		internal const string XUnitAttributeAssembly = "Microsoft.Maui.TestUtils.DeviceTests";
+	}
+
+	/// <summary>
 	/// Custom trait discoverer which adds a Category trait for filtering, etc.
 	/// </summary>
 	public class CategoryDiscoverer : ITraitDiscoverer
 	{
 		public const string Category = "Category";
+
+		public CategoryDiscoverer(IMessageSink diagnosticMessageSink)
+		{
+		}
 
 		public IEnumerable<KeyValuePair<string, string>> GetTraits(IAttributeInfo traitAttribute)
 		{
@@ -74,7 +87,7 @@ namespace Microsoft.Maui
 	}
 
 	/// <summary>
-	/// Conveninence attribute for setting a Category trait on a test or test class
+	/// Convenience attribute for setting a Category trait on a test or test class
 	/// </summary>
 	[TraitDiscoverer("Microsoft.Maui.CategoryDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests")]
 	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]

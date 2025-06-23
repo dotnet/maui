@@ -6,6 +6,8 @@ using Microsoft.Maui.Controls.Xaml.Internals;
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Key))]
+	[RequireService([typeof(IXmlLineInfoProvider), typeof(IProvideParentValues)])]
+	[ProvideCompiled("Microsoft.Maui.Controls.Build.Tasks.StaticResourceExtension")]
 	public sealed class StaticResourceExtension : IMarkupExtension
 	{
 		public string Key { get; set; }
@@ -42,21 +44,10 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (propertyType is null || propertyType.IsAssignableFrom(valueType))
 				return value;
 
-			MethodInfo implicit_op;
-
-			//OnPlatform might need double cast
-			if (valueType.IsGenericType && valueType.Name == "OnPlatform`1")
+			if (TypeConversionHelper.TryConvert(value, propertyType, out var convertedValue))
 			{
-				var onPlatType = valueType.GetGenericArguments()[0];
-				implicit_op = valueType.GetImplicitConversionOperator(fromType: valueType, toType: onPlatType);
-				value = implicit_op.Invoke(value, new[] { value });
-				valueType = value.GetType();
+				return convertedValue;
 			}
-
-			implicit_op = valueType.GetImplicitConversionOperator(fromType: valueType, toType: propertyType)
-							?? propertyType.GetImplicitConversionOperator(fromType: valueType, toType: propertyType);
-			if (implicit_op != null)
-				return implicit_op.Invoke(value, new[] { value });
 
 			return value;
 		}

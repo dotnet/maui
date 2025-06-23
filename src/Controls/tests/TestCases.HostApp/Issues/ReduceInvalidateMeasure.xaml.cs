@@ -1,11 +1,5 @@
-﻿using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.ManualTest, "ReduceInvalidateMeasure", "https://github.com/dotnet/maui/pull/21801", PlatformAffected.iOS)]
 	public partial class ReduceInvalidateMeasure : ContentPage
 	{

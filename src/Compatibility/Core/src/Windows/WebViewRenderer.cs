@@ -18,7 +18,7 @@ using WWebView = Microsoft.UI.Xaml.Controls.WebView2;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class WebViewRenderer : ViewRenderer<WebView, WebView2>, IWebViewDelegate
+	public partial class WebViewRenderer : ViewRenderer<WebView, WebView2>, IWebViewDelegate
 	{
 		IWebViewController WebViewController => Element;
 		WebNavigationEvent _eventState;

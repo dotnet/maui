@@ -56,7 +56,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new empty <see cref="T:Microsoft.Maui.Controls.ColumnDefinitionCollection" /> collection.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

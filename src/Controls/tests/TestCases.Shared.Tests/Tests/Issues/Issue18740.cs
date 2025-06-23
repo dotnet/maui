@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if ANDROID || IOS //This test case verifies "IsKeyboardShown method" exclusively on the Android and IOS platforms
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -36,8 +36,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.Tap($"Test{view}");
 
 				// 3. Verify that the virtual keyboard appears.
-				ClassicAssert.IsTrue(App.IsKeyboardShown());
-
+				Assert.That(App.IsKeyboardShown(), Is.True);
 			}
 			finally
 			{

@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>The tabbed page instance that Microsoft.Maui.Controls created on the macOS platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetTabsStyle">
@@ -37,8 +36,6 @@
       <Docs>
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns a value that describes the way that tabs are displayed.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetTabsStyle">
@@ -61,8 +58,6 @@
       <Docs>
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns a value that describes the way that tabs are displayed.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HideTabs">
@@ -85,8 +80,6 @@
       <Docs>
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Hides the tabs on the tabbed page.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetShowTabs">
@@ -111,8 +104,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls the way that tabs are displayed.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetTabsStyle">
@@ -137,7 +128,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls the way that tabs are displayed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ShowTabs">
@@ -160,8 +150,6 @@
       <Docs>
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Sets tab display to the default style.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ShowTabsOnNavigation">
@@ -184,8 +172,6 @@
       <Docs>
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Sets tab display to the respond to user swipes.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TabsStyleProperty">
@@ -204,7 +190,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls how tabs are displayed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

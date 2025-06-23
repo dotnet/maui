@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
+			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
 			platformView.FocusChange += OnFocusedChange;
 			platformView.Touch += OnTouch;
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
-
+			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
 			platformView.FocusChange -= OnFocusedChange;
 			platformView.Touch -= OnTouch;
@@ -63,6 +64,14 @@ namespace Microsoft.Maui.Handlers
 				editText.SelectionChanged -= OnSelectionChanged;
 
 			_set = false;
+		}
+
+		void OnViewAttachedToWindow(object? sender, ViewAttachedToWindowEventArgs e)
+		{
+			if (PlatformView is null || VirtualView is null)
+				return;
+
+			PlatformView.UpdateReturnType(VirtualView);
 		}
 
 		public static void MapBackground(IEntryHandler handler, IEntry entry) =>
@@ -211,9 +220,15 @@ namespace Microsoft.Maui.Handlers
 					VirtualView?.Completed();
 				}
 				// InputPaneView Path
-				else if(evt?.KeyCode is null && (actionId == ImeAction.Done || actionId == currentInputImeFlag))
+				else if (evt?.KeyCode is null && (actionId == ImeAction.Done || actionId == currentInputImeFlag))
 				{
 					VirtualView?.Completed();
+					// In case of Search, Go, Send the EditorAction will be invoked for KeyEventActions which will cause Completed to inovke twice
+					//So for these setting handled to true
+					if (actionId == ImeAction.Search ||
+					 actionId == ImeAction.Go ||
+					  actionId == ImeAction.Send)
+						handled = true;
 				}
 			}
 

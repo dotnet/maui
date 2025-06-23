@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections;
-using System.Linq;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Platform;
+﻿using System.Collections;
 
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 16910, "IsRefreshing binding works", PlatformAffected.All)]
 	public partial class Issue16910 : ContentPage
 	{
-		Label _isRefreshingLabel = new Label(){Text = "Is Refreshing", AutomationId = "IsRefreshing"};
-		Label _isNotRefreshingLabel = new Label(){Text = "Is Not Refreshing", AutomationId = "IsNotRefreshing"};
+		Label _isRefreshingLabel = new Label() { Text = "Is Refreshing", AutomationId = "IsRefreshing" };
+		Label _isNotRefreshingLabel = new Label() { Text = "Is Not Refreshing", AutomationId = "IsNotRefreshing" };
 
 		bool _isRefreshing;
 
-		public IEnumerable ItemSource {get; set;}
+		public IEnumerable ItemSource { get; set; }
 
 		public bool IsRefreshing
 		{
@@ -50,11 +45,11 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 			UpdateRefreshingLabels();
-			ItemSource = 
-				Enumerable.Range(0,100)
-					.Select(x => new { Text = $"Item {x}", AutomationId = $"Item{x}"  })
-					.ToList();		
-					
+			ItemSource =
+				Enumerable.Range(0, 100)
+					.Select(x => new { Text = $"Item {x}", AutomationId = $"Item{x}" })
+					.ToList();
+
 			this.BindingContext = this;
 		}
 
@@ -62,8 +57,8 @@ namespace Maui.Controls.Sample.Issues
 		void OnStopRefreshClicked(object sender, EventArgs e)
 		{
 			refreshView.IsRefreshing = false;
-		}		
-		
+		}
+
 		void OnRefreshClicked(object sender, EventArgs e)
 		{
 			refreshView.IsRefreshing = true;

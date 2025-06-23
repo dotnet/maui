@@ -32,7 +32,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.VisualState" /> object with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Name">
@@ -52,7 +51,6 @@
       <Docs>
         <summary>Gets or sets the developer-specified name of this visual state.</summary>
         <value>The developer-specified name of this visual state.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Setters">
@@ -72,7 +70,6 @@
       <Docs>
         <summary>Gets the list of property setters that establish the visual representation of the element when it is in the state that is named by <see langword="this" /> visual state object.</summary>
         <value>The list of property setters that establish the visual representation of the element when it is in the state that is named by <see langword="this" /> visual state object.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="StateTriggers">
@@ -89,9 +86,6 @@
         <ReturnType>System.Collections.Generic.IList&lt;Microsoft.Maui.Controls.StateTriggerBase&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TargetType">
@@ -111,7 +105,6 @@
       <Docs>
         <summary>Gets or sets the type of element that <see langword="this" /> visual state object can target.</summary>
         <value>The type of element that <see langword="this" /> visual state object can target.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

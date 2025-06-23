@@ -17,7 +17,6 @@
   <Interfaces />
   <Docs>
     <summary>Class that contains arguments for the event that is raised after web navigation completes.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -46,7 +45,6 @@
         <param name="url">The URL of the navigation event.</param>
         <param name="result">The result of the navigation that originated the event.</param>
         <summary>Initializes a new <see cref="T:Microsoft.Maui.Controls.WebNavigatedEventArgs" /> instance.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Result">
@@ -68,8 +66,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a value that describes the result of the navigation.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

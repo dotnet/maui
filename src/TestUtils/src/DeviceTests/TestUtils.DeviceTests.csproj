@@ -12,6 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\TestShared\xUnitSharedAttributes.cs" Link="xUnitSharedAttributes.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
     <PackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
     <PackageReference Include="xunit.runner.utility" Version="$(XunitPackageVersion)" />

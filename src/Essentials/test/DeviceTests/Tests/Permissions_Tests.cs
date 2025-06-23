@@ -1,6 +1,10 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Dispatching;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
@@ -36,10 +40,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			switch (permission)
 			{
 				case "Battery":
-					status = await Permissions.CheckStatusAsync<Permissions.Battery>();
+					status = await Permissions.CheckStatusAsync<Permissions.Battery>().ConfigureAwait(false);
 					break;
 				case "NetworkState":
-					status = await Permissions.CheckStatusAsync<Permissions.NetworkState>();
+					status = await Permissions.CheckStatusAsync<Permissions.NetworkState>().ConfigureAwait(false);
 					break;
 			}
 
@@ -55,10 +59,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			switch (permission)
 			{
 				case "Battery":
-					status = await Permissions.RequestAsync<Permissions.Battery>();
+					status = await Permissions.RequestAsync<Permissions.Battery>().ConfigureAwait(false);
 					break;
 				case "NetworkState":
-					status = await Permissions.RequestAsync<Permissions.NetworkState>();
+					status = await Permissions.RequestAsync<Permissions.NetworkState>().ConfigureAwait(false);
 					break;
 			}
 
@@ -71,8 +75,33 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			await Task.Run(async () =>
 			{
-				await Assert.ThrowsAsync<PermissionException>(async () => await Permissions.RequestAsync<Permissions.LocationWhenInUse>());
-			});
+				await Assert.ThrowsAsync<PermissionException>(async () => await Permissions.RequestAsync<Permissions.LocationWhenInUse>()).ConfigureAwait(false);
+			}).ConfigureAwait(false);
+		}
+
+		[Fact
+#if !__ANDROID__
+		(Skip = "Test only applies to Android")
+#endif
+		]
+		public async Task StorageAndroid13AlwaysGranted()
+		{
+			if (DeviceInfo.Platform == DevicePlatform.Android && OperatingSystem.IsAndroidVersionAtLeast(33))
+			{
+				var status = await Permissions.CheckStatusAsync<Permissions.StorageRead>();
+				Assert.Equal(PermissionStatus.Granted, status);
+
+				status = await Permissions.CheckStatusAsync<Permissions.StorageWrite>().ConfigureAwait(false);
+				Assert.Equal(PermissionStatus.Granted, status);
+			}
+			else // Android < API 33, we didn't request these, so status denied
+			{
+				var status = await Permissions.CheckStatusAsync<Permissions.StorageRead>();
+				Assert.Equal(PermissionStatus.Denied, status);
+
+				status = await Permissions.CheckStatusAsync<Permissions.StorageWrite>().ConfigureAwait(false);
+				Assert.Equal(PermissionStatus.Denied, status);
+			}
 		}
 	}
 }

@@ -1,30 +1,16 @@
 #!/usr/bin/env bash
 
-# script inspired by https://andrewlock.net/simplifying-the-cake-global-tool-bootstrapper-scripts-in-netcore3-with-local-tools/
+source="${BASH_SOURCE[0]}"
 
-# Define default arguments.
-SCRIPT="build.cake"
-CAKE_ARGUMENTS=()
+# resolve $SOURCE until the file is no longer a symlink
+while [[ -h $source ]]; do
+  scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
+  source="$(readlink "$source")"
 
-# Parse arguments.
-for i in "$@"; do
-    case $1 in
-        -s|--script) SCRIPT="$2"; shift ;;
-        --) shift; CAKE_ARGUMENTS+=("$@"); break ;;
-        *) CAKE_ARGUMENTS+=("$1") ;;
-    esac
-    shift
+  # if $source was a relative symlink, we need to resolve it relative to the path where the
+  # symlink file was located
+  [[ $source != /* ]] && source="$scriptroot/$source"
 done
 
-# Restore Cake tool
-dotnet tool restore
-
-if [ $? -ne 0 ]; then
-    echo "An error occurred while installing Cake."
-    exit 1
-fi
-
-echo "${CAKE_ARGUMENTS[@]}"
-
-# Start Cake
-dotnet tool run dotnet-cake "$SCRIPT" "${CAKE_ARGUMENTS[@]}"
+scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
+"$scriptroot/eng/build.sh" $@

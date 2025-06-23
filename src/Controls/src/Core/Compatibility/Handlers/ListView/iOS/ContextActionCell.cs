@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.iOS.Resources;
@@ -33,19 +34,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var rect = new RectangleF(0, 0, 1, 1);
 			var size = rect.Size;
-
-			UIGraphics.BeginImageContext(size);
-			var context = UIGraphics.GetCurrentContext();
-			context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.Red.CGColor);
-			context.FillRect(rect);
-			DestructiveBackground = UIGraphics.GetImageFromCurrentImageContext();
-
-			context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.LightGray.CGColor);
-			context.FillRect(rect);
-
-			NormalBackground = UIGraphics.GetImageFromCurrentImageContext();
-
-			context.Dispose();
+			using var renderer = new UIGraphicsImageRenderer(size);
+			DestructiveBackground = renderer.CreateImage((UIGraphicsImageRendererContext ctx) =>
+			{
+				FillRect(ctx, rect, ColorExtensions.Red.CGColor);
+			});
+			NormalBackground = renderer.CreateImage((UIGraphicsImageRendererContext ctx) =>
+			{
+				FillRect(ctx, rect, ColorExtensions.LightGray.CGColor);
+			});
 		}
 
 		public ContextActionsCell() : base(UITableViewCellStyle.Default, Key)
@@ -82,6 +79,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 
 			_scroller.ContentOffset = new PointF(0, 0);
+		}
+
+		static void FillRect(UIGraphicsImageRendererContext ctx, RectangleF rect, CGColor color)
+		{
+			var context = ctx.CGContext;
+			context.SetFillColor(color);
+			context.FillRect(rect);
 		}
 
 		public override void LayoutSubviews()
@@ -340,15 +344,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (controller == null)
 				throw new InvalidOperationException("No UIViewController found to present.");
 
-			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone)
+			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone || (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad && actionSheet.PopoverPresentationController == null))
 			{
 				var cancel = UIAlertAction.Create(StringResources.Cancel, UIAlertActionStyle.Cancel, null);
 				actionSheet.AddAction(cancel);
 			}
 			else
 			{
-				actionSheet.PopoverPresentationController.SourceView = _tableView;
-				actionSheet.PopoverPresentationController.SourceRect = sourceRect;
+				if (actionSheet.PopoverPresentationController != null)
+				{
+					actionSheet.PopoverPresentationController.SourceView = _tableView;
+					actionSheet.PopoverPresentationController.SourceRect = sourceRect;
+				}
 			}
 
 			controller.PresentViewController(actionSheet, true, null);

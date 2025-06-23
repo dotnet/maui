@@ -127,6 +127,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				void InitialLoad(GenericGlobalLayoutListener listener, AView view)
 				{
+					// This means the handler was disconnected before the flyout was loaded
+					if (_shellContext?.Shell is null)
+					{
+						listener.Invalidate();
+						sfl.LayoutChanging -= OnFlyoutViewLayoutChanging;
+						return;
+					}
+
 					OnFlyoutViewLayoutChanging();
 
 					if (_flyoutContentView == null || ggll == null)
@@ -397,7 +405,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// If you try to use Margin the RecylcerView won't render anything.
 				if (flyoutView is AndroidX.Core.View.IScrollingView &&
 					flyoutView is ViewGroup vg)
-				{				
+				{
 					if (vg.PaddingBottom != bottomOffset)
 					{
 						vg.SetPadding(0, 0, 0, bottomOffset);
@@ -779,7 +787,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					frameLayoutView.SetMinimumHeight(minHeight);
 				}
 
-				if (PlatformView.MinimumHeight != minHeight)
+				if (PlatformView is not null && PlatformView.MinimumHeight != minHeight)
 				{
 					PlatformView.SetMinimumHeight(minHeight);
 				}

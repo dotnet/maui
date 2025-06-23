@@ -11,6 +11,7 @@ using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
+using LD = Android.Views.LayoutDirection;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
 
@@ -144,6 +145,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			Shell.PropertyChanged += OnShellPropertyChanged;
 			ShellController.AddAppearanceObserver(this, Shell);
+			UpdateFlowDirection();
 
 			this.DrawerClosed += OnDrawerClosed;
 			this.DrawerSlide += OnDrawerSlide;
@@ -273,6 +275,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UpdateDrawerState();
 			}
+			else if (e.PropertyName == Shell.FlowDirectionProperty.PropertyName)
+			{
+				UpdateFlowDirection();
+			}
 		}
 
 		void UpdateDrawerState()
@@ -288,6 +294,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				CloseDrawers();
 			}
+		}
+
+		void UpdateFlowDirection()
+		{
+			LayoutDirection = _shellContext.Shell.FlowDirection.ToLayoutDirection();
 		}
 
 		void OnDualScreenServiceScreenChanged(object sender, EventArgs e)

@@ -29,6 +29,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		UITabBarAppearance _tabBarAppearance;
 		WeakReference<VisualElement> _element;
 
+		Brush _currentBarBackground;
+
 		IMauiContext MauiContext => _mauiContext;
 		public static IPropertyMapper<TabbedPage, TabbedRenderer> Mapper = new PropertyMapper<TabbedPage, TabbedRenderer>(TabbedViewHandler.ViewMapper);
 		public static CommandMapper<TabbedPage, TabbedRenderer> CommandMapper = new CommandMapper<TabbedPage, TabbedRenderer>(TabbedViewHandler.ViewCommandMapper);
@@ -39,6 +41,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public TabbedRenderer()
 		{
+			this.DisableiOS18ToolbarTabs();
 			_viewHandlerWrapper = new ViewHandlerDelegator<TabbedPage>(Mapper, CommandMapper, this);
 		}
 
@@ -360,9 +363,26 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Tabbed is not TabbedPage tabbed || TabBar == null)
 				return;
 
-			var barBackground = tabbed.BarBackground;
+			if (_currentBarBackground is GradientBrush oldGradientBrush)
+			{
+				oldGradientBrush.Parent = null;
+				oldGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
+			}
 
-			TabBar.UpdateBackground(barBackground);
+			_currentBarBackground = tabbed.BarBackground;
+
+			if (_currentBarBackground is GradientBrush newGradientBrush)
+			{
+				newGradientBrush.Parent = tabbed;
+				newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
+			}
+
+			TabBar.UpdateBackground(_currentBarBackground);
+		}
+
+		void OnBarBackgroundChanged(object sender, EventArgs e)
+		{
+			TabBar.UpdateBackground(_currentBarBackground);
 		}
 
 		void UpdateBarTextColor()
@@ -531,7 +551,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) ? tabbed.UnselectedTabColor : null,
 				tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? tabbed.BarBackgroundColor : null,
 				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null,
-				null);
+				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null);
 		}
 
 		#region IPlatformViewHandler

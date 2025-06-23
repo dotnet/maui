@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>The navigation page instance that Microsoft.Maui.Controls created on the iOS platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="DisableTranslucentNavigationBar">
@@ -38,7 +37,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Makes the navigation bar opaque on the platform-specific element.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="EnableTranslucentNavigationBar">
@@ -62,7 +60,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Makes the navigation bar translucent on the platform-specific element.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHideNavigationBarSeparator">
@@ -86,7 +83,6 @@
         <param name="element">The element for which to return whether the navigation bar separator is hidden.</param>
         <summary>Returns <see langword="true" /> if the separator is hidden. Otherwise, returns <see langword="false" />.</summary>
         <returns>see langword="true" /&gt; if the separator is hidden. Otherwise, <see langword="false" /></returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetIsNavigationBarTranslucent">
@@ -110,7 +106,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns a Boolean value that tells whether the navigation bar on the platform-specific navigation page is translucent.</summary>
         <returns>A Boolean value that tells whether the navigation bar on the platform-specific navigation page is translucent.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetPrefersLargeTitles">
@@ -134,7 +129,6 @@
         <param name="element">The element whose large title preference to get.</param>
         <summary>Returns the large title preference of <paramref name="element" />.</summary>
         <returns>The large title preference of <paramref name="element" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetStatusBarTextColorMode">
@@ -158,7 +152,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns a value that controls whether the status bar text color is adjusted to match the luminosity of the navigation bar for the platform-specific navigation page.</summary>
         <returns>A value that controls whether the status bar text color is adjusted to match the luminosity of the navigation bar for the platform-specific navigation page.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetStatusBarTextColorMode">
@@ -182,7 +175,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns a value that controls whether the status bar text color is adjusted to match the luminosity of the navigation bar for the platform-specific navigation page.</summary>
         <returns>A value that controls whether the status bar text color is adjusted to match the luminosity of the navigation bar for the platform-specific navigation page.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HideNavigationBarSeparator">
@@ -207,7 +199,6 @@
         <summary>Returns <see langword="true" /> if the separator is hidden. Otherwise, returns <see langword="false" />.</summary>
         <returns>
           <see langword="true" /> if the separator is hidden. Otherwise, <see langword="false" /></returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HideNavigationBarSeparatorProperty">
@@ -226,7 +217,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls whether the navigation bar separator is hidden.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsNavigationBarTranslucent">
@@ -250,7 +240,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns a Boolean value that tells whether the navigation bar on the platform-specific navigation page is translucent.</summary>
         <returns>A Boolean value that tells whether the navigation bar on the platform-specific navigation page is translucent.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsNavigationBarTranslucentProperty">
@@ -269,7 +258,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucent(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.NavigationPage})" /> method.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PrefersLargeTitles">
@@ -293,7 +281,6 @@
         <param name="config">The element whose large title preference to get.</param>
         <summary>Returns a value that indicates the element's preference for large titles.</summary>
         <returns>A value that indicates the element's preference for large titles.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PrefersLargeTitlesProperty">
@@ -312,7 +299,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls the navigation page's preference for large titles.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetHideNavigationBarSeparator">
@@ -338,7 +324,6 @@
         <param name="value">
           <see langword="true" /> to hide the separator. Otherwise, <see langword="false" />.</param>
         <summary>Developers set this to <see langword="true" /> to hide the separator. Otherwise, <see langword="false" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetHideNavigationBarSeparator">
@@ -365,7 +350,6 @@
           <see langword="true" /> to hide the separator. Otherwise, <see langword="false" />.</param>
         <summary>Developers set this to <see langword="true" /> to hide the separator. Otherwise, <see langword="false" />.</summary>
         <returns>A fluent object on which the developer can make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsNavigationBarTranslucent">
@@ -390,7 +374,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a Boolean value that controls whether the navigation bar on the platform-specific navigation page is translucent.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsNavigationBarTranslucent">
@@ -416,7 +399,6 @@
         <param name="value">The new property value to assign.</param>
         <summary>Sets a Boolean value that controls whether the navigation bar on the platform-specific navigation page is translucent.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetPrefersLargeTitles">
@@ -441,7 +423,6 @@
         <param name="element">The element whose preference to set.</param>
         <param name="value">The new large title preference behavior.</param>
         <summary>Sets the large title preference behavior of <paramref name="element" /> to <paramref name="value" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetPrefersLargeTitles">
@@ -466,8 +447,6 @@
         <param name="config">The element whose preference to set.</param>
         <param name="value">The new large title preference behavior.</param>
         <summary>Sets the large title preference behavior of <paramref name="config" /> to <paramref name="value" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetStatusBarTextColorMode">
@@ -492,7 +471,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls whether the status bar text color is adjusted to match the luminosity of the navigation bar for the platform-specific navigation page.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetStatusBarTextColorMode">
@@ -518,7 +496,6 @@
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls whether the status bar text color is adjusted to match the luminosity of the navigation bar for the platform-specific navigation page.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="StatusBarTextColorModeProperty">
@@ -537,7 +514,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls whether the status bar text color is adjusted to match the luminosity of the navigation bar for the platform-specific navigation page.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

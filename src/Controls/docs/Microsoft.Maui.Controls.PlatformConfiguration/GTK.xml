@@ -18,7 +18,6 @@
   </Interfaces>
   <Docs>
     <summary>Marker class that identifies the Linux platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -34,7 +33,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new GTK marker class.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

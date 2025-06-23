@@ -10,6 +10,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
+			GC.Collect(2, GCCollectionMode.Forced, true);
+			GC.WaitForPendingFinalizers();
+			GC.Collect(2, GCCollectionMode.Forced, true);
+			await Task.Yield();
+		}
+
+
+		public static async Task<bool> WaitForCollect(this WeakReference reference)
+		{
+			for (int i = 0; i < 40 && reference.IsAlive; i++)
+			{
+				await Collect();
+			}
+
+			return reference.IsAlive;
 		}
 	}
 }

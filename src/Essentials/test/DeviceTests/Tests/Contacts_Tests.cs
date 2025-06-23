@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		{
 			await MainThread.InvokeOnMainThreadAsync(async () =>
 			{
-				await Permissions.RequestAsync<Permissions.ContactsRead>();
+				await Permissions.RequestAsync<Permissions.ContactsRead>().ConfigureAwait(false);
 			});
 
 			var list = new List<Contact>();

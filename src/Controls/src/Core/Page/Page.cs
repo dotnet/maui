@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -18,7 +20,8 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	/// <remarks><see cref = "Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="Page"/> class are most prominently used as the top level UI element in .NET MAUI applications. In addition to their role as the main pages of applications, <see cref="Page"/> objects and their descendants can be used with navigation classes, such as <see cref="NavigationPage"/> or <see cref="FlyoutPage"/>, among others, to provide rich user experiences that conform to the expected behaviors on each platform.
 	/// </remarks>
-	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement, IConstrainedView
 #if IOS
 	,IiOSPageSpecifics
 #endif
@@ -62,11 +65,10 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string), typeof(Page), null);
 
 		/// <summary>Bindable property for <see cref="IconImageSource"/>.</summary>
-		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
+		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(Page), default(ImageSource), propertyChanged: OnImageSourceChanged);
 
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
 
-		bool _allocatedFlag;
 		Rect _containerArea;
 
 		bool _containerAreaSet;
@@ -148,7 +150,7 @@ namespace Microsoft.Maui.Controls
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
 		{
-			UpdateChildrenLayout();
+			(this as IView).InvalidateMeasure();
 		}
 
 		/// <summary>
@@ -209,6 +211,8 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc/>
 		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
+
+		bool IConstrainedView.HasFixedConstraints => true;
 
 #if IOS
 		/// <inheritdoc/>
@@ -303,6 +307,7 @@ namespace Microsoft.Maui.Controls
 			return args.Result.Task;
 		}
 
+		/// <returns>A <see cref="Task"/> that completes when the alert is dismissed.</returns>
 		/// <inheritdoc cref="DisplayAlert(string, string, string, string, FlowDirection)"/>
 		public Task DisplayAlert(string title, string message, string cancel)
 		{
@@ -315,6 +320,7 @@ namespace Microsoft.Maui.Controls
 			return DisplayAlert(title, message, accept, cancel, FlowDirection.MatchParent);
 		}
 
+		/// <returns>A <see cref="Task"/> that completes when the alert is dismissed.</returns>
 		/// <inheritdoc cref="DisplayAlert(string, string, string, string, FlowDirection)"/>
 		public Task DisplayAlert(string title, string message, string cancel, FlowDirection flowDirection)
 		{
@@ -412,6 +418,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="y">Y-coordinate of the top left corner of the bounding rectangle.</param>
 		/// <param name="width">Width of the bounding rectangle.</param>
 		/// <param name="height">Height of the bounding rectangle.</param>
+		[Obsolete("Use ArrangeOverride instead")]
 		protected virtual void LayoutChildren(double x, double y, double width, double height)
 		{
 			var area = new Rect(x, y, width, height);
@@ -435,10 +442,12 @@ namespace Microsoft.Maui.Controls
 					continue;
 
 				var page = child as Page;
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (page != null && page.IgnoresContainerArea)
 					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
 				else
 					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, area);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 
@@ -456,7 +465,6 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>
 		/// <para>Application developers can override this method to provide behavior when the back button is pressed. 
 		/// When overridden to handle or cancel the navigation yourself, this method should return <see langword="true"/>.</para>
-		/// <para>This only works on Android and UWP for the hardware back button. On iOS, this method will never be called because there is no hardware back button.</para>
 		/// </remarks>
 		protected virtual bool OnBackButtonPressed()
 		{
@@ -498,6 +506,14 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(TitleView, BindingContext);
 		}
 
+
+		internal override void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
+		{
+			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
+			var propagatedTrigger = GetPropagatedTrigger(trigger);
+			InvokeMeasureInvalidated(propagatedTrigger);
+		}
+
 		/// <summary>
 		/// Indicates that the preferred size of a child <see cref="Element"/> has changed.
 		/// </summary>
@@ -505,8 +521,6 @@ namespace Microsoft.Maui.Controls
 		/// <param name="e">The event arguments.</param>
 		protected virtual void OnChildMeasureInvalidated(object sender, EventArgs e)
 		{
-			InvalidationTrigger trigger = (e as InvalidationEventArgs)?.Trigger ?? InvalidationTrigger.Undefined;
-			OnChildMeasureInvalidated((VisualElement)sender, trigger);
 		}
 
 		/// <summary>
@@ -537,14 +551,20 @@ namespace Microsoft.Maui.Controls
 		/// <param name="height">The height allocated to the page.</param>
 		protected override void OnSizeAllocated(double width, double height)
 		{
-			_allocatedFlag = true;
 			base.OnSizeAllocated(width, height);
-			UpdateChildrenLayout();
+
+			if (Handler is null)
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				UpdateChildrenLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
+			}
 		}
 
 		/// <summary>
 		/// Requests that the child <see cref="Element"/>s of the page update their layouts.
 		/// </summary>
+		[Obsolete("Use ArrangeOverride instead")]
 		protected void UpdateChildrenLayout()
 		{
 			if (!ShouldLayoutChildren())
@@ -576,34 +596,6 @@ namespace Microsoft.Maui.Controls
 						return;
 					}
 				}
-			}
-		}
-
-		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
-		{
-			var container = this as IPageContainer<Page>;
-			if (container != null)
-			{
-				Page page = container.CurrentPage;
-				if (page != null && page.IsVisible && (!page.IsPlatformEnabled || !page.IsPlatformStateConsistent))
-					return;
-			}
-			else
-			{
-				var logicalChildren = this.InternalChildren;
-				for (var i = 0; i < logicalChildren.Count; i++)
-				{
-					var v = logicalChildren[i] as VisualElement;
-					if (v != null && v.IsVisible && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
-						return;
-				}
-			}
-
-			_allocatedFlag = false;
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-			if (!_allocatedFlag && Width >= 0 && Height >= 0)
-			{
-				SizeAllocated(Width, Height);
 			}
 		}
 
@@ -706,9 +698,6 @@ namespace Microsoft.Maui.Controls
 				for (var i = 0; i < e.OldItems.Count; i++)
 				{
 					var item = (Element)e.OldItems[i];
-					if (item is VisualElement visual)
-						visual.MeasureInvalidated -= OnChildMeasureInvalidated;
-
 					RemoveLogicalChild(item);
 				}
 			}
@@ -721,20 +710,21 @@ namespace Microsoft.Maui.Controls
 				{
 					int insertIndex = index;
 					if (insertIndex < 0)
-						insertIndex = InternalChildren.IndexOf(item);
-
-					if (item is VisualElement visual)
 					{
-						visual.MeasureInvalidated += OnChildMeasureInvalidated;
+						insertIndex = InternalChildren.IndexOf(item);
+					}
 
-						InsertLogicalChild(insertIndex, visual);
+					InsertLogicalChild(insertIndex, item);
+
+					if (item is VisualElement)
+					{
 						InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 					}
-					else
-						InsertLogicalChild(insertIndex, item);
 
 					if (index >= 0)
+					{
 						index++;
+					}
 				}
 			}
 		}
@@ -847,12 +837,44 @@ namespace Microsoft.Maui.Controls
 			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatingFrom(args);
 		}
 
-		internal void SendNavigatedFrom(NavigatedFromEventArgs args)
+		internal void SendNavigatedFrom(NavigatedFromEventArgs args, bool disconnectHandlers = true)
 		{
 			HasNavigatedTo = false;
 			NavigatedFrom?.Invoke(this, args);
 			OnNavigatedFrom(args);
-			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedFrom(args);
+			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedFrom(args, false);
+
+			if (!disconnectHandlers)
+			{
+				return;
+			}
+
+			if (args.NavigationType == NavigationType.Pop ||
+				args.NavigationType == NavigationType.PopToRoot)
+			{
+				if (!this.IsLoaded)
+				{
+					this.DisconnectHandlers();
+				}
+				else
+				{
+					this.OnUnloaded(() => this.DisconnectHandlers());
+				}
+			}
+		}
+
+		static void OnImageSourceChanged(BindableObject bindable, object oldvalue, object newValue)
+		{
+			if (oldvalue is ImageSource oldImageSource)
+				oldImageSource.SourceChanged -= ((Page)bindable).OnImageSourceSourceChanged;
+
+			if (newValue is ImageSource newImageSource)
+				newImageSource.SourceChanged += ((Page)bindable).OnImageSourceSourceChanged;
+		}
+
+		void OnImageSourceSourceChanged(object sender, EventArgs e)
+		{
+			OnPropertyChanged(IconImageSourceProperty.PropertyName);
 		}
 
 		/// <summary>
@@ -894,5 +916,11 @@ namespace Microsoft.Maui.Controls
 		/// <returns>The <see cref="Window"/> instance that parents the page.</returns>
 		public virtual Window GetParentWindow()
 			=> this.FindParentOfType<Window>();
+
+		private protected override string GetDebuggerDisplay()
+		{
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(BindingContext), BindingContext, nameof(Title), Title);
+			return $"{this.GetType().FullName}: {debugText}";
+		}
 	}
 }

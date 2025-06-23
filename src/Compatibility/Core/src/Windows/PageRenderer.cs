@@ -10,7 +10,7 @@ using Windows.UI.ViewManagement;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class PageRenderer :
+	public partial class PageRenderer :
 		//Microsoft.UI.Xaml.Controls.Grid, IVisualElementRenderer 
 		VisualElementRenderer<Page, FrameworkElement>
 	{

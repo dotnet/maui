@@ -3,6 +3,9 @@ using SkiaSharp.Views.Windows;
 
 namespace Microsoft.Maui.Graphics.Skia.Views
 {
+	/// <summary>
+	/// A SkiaSharp-based graphics view for Windows that can render <see cref="IDrawable"/> objects.
+	/// </summary>
 	public class SkiaGraphicsView : SKXamlCanvas
 	{
 		private IDrawable _drawable;
@@ -10,6 +13,10 @@ namespace Microsoft.Maui.Graphics.Skia.Views
 		private ScalingCanvas _scalingCanvas;
 		private float _width, _height;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SkiaGraphicsView"/> class.
+		/// </summary>
+		/// <param name="drawable">The drawable object to render in this view.</param>
 		public SkiaGraphicsView(IDrawable drawable = null)
 		{
 			_canvas = new SkiaCanvas();
@@ -19,6 +26,9 @@ namespace Microsoft.Maui.Graphics.Skia.Views
 			SizeChanged += OnSizeChanged;
 		}
 
+		/// <summary>
+		/// Gets or sets the drawable object to render in this view.
+		/// </summary>
 		public IDrawable Drawable
 		{
 			get => _drawable;

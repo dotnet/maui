@@ -7,8 +7,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents
+	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 	{
+		bool _invalidateParentWhenMovedToWindow;
 		static bool? _respondsToSafeArea;
 
 		double _lastMeasureHeight = double.NaN;
@@ -23,6 +24,8 @@ namespace Microsoft.Maui.Platform
 			set => _reference = value == null ? null : new(value);
 		}
 
+		bool HasFixedConstraints => CrossPlatformLayout is IConstrainedView { HasFixedConstraints: true };
+
 		bool RespondsToSafeArea()
 		{
 			if (_respondsToSafeArea.HasValue)
@@ -33,7 +36,9 @@ namespace Microsoft.Maui.Platform
 		protected CGRect AdjustForSafeArea(CGRect bounds)
 		{
 			if (KeyboardAutoManagerScroll.ShouldIgnoreSafeAreaAdjustment)
+			{
 				KeyboardAutoManagerScroll.ShouldScrollAgain = true;
+			}
 
 			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea || !RespondsToSafeArea())
 			{
@@ -50,6 +55,11 @@ namespace Microsoft.Maui.Platform
 			// Check the last constraints this View was measured with; if they're the same,
 			// then the current measure info is already correct and we don't need to repeat it
 			return heightConstraint == _lastMeasureHeight && widthConstraint == _lastMeasureWidth;
+		}
+
+		bool HasBeenMeasured()
+		{
+			return !double.IsNaN(_lastMeasureWidth) && !double.IsNaN(_lastMeasureHeight);
 		}
 
 		protected void InvalidateConstraintsCache()
@@ -122,25 +132,20 @@ namespace Microsoft.Maui.Platform
 			var widthConstraint = bounds.Width;
 			var heightConstraint = bounds.Height;
 
-			// If the SuperView is a MauiView (backing a cross-platform ContentView or Layout), then measurement
-			// has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews. But we
-			// _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
+			// If the SuperView is a cross-platform layout backed view (i.e. MauiView, MauiScrollView, LayoutView, ..),
+			// then measurement has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews.
+			// This is especially important to avoid overriding potentially infinite measurement constraints
+			// imposed by the parent (i.e. scroll view) with the current bounds, except when our bounds are fixed by constraints.
+			// But we _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
 			// the window); there's no guarantee that SizeThatFits has been called in that case.
-
-			if (!IsMeasureValid(widthConstraint, heightConstraint) && Superview is not MauiView)
+			if (!IsMeasureValid(widthConstraint, heightConstraint) && !this.IsFinalMeasureHandledBySuperView() ||
+				!HasBeenMeasured() && HasFixedConstraints)
 			{
 				CrossPlatformMeasure(widthConstraint, heightConstraint);
 				CacheMeasureConstraints(widthConstraint, heightConstraint);
 			}
 
 			CrossPlatformArrange(bounds);
-		}
-
-		public override void SetNeedsLayout()
-		{
-			InvalidateConstraintsCache();
-			base.SetNeedsLayout();
-			Superview?.SetNeedsLayout();
 		}
 
 		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
@@ -161,6 +166,34 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
+		{
+			_invalidateParentWhenMovedToWindow = true;
+		}
+
+		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		{
+			InvalidateConstraintsCache();
+			SetNeedsLayout();
+
+			// If we're propagating, we can stop at the first view with fixed constraints
+			if (isPropagating && HasFixedConstraints)
+			{
+				// We're stopping propagation here, but we have to account for the wrapper view
+				// which needs to be invalidated for consistency too.
+				if (Superview is WrapperView wrapper)
+				{
+					wrapper.SetNeedsLayout();
+				}
+
+				return false;
+			}
+
+			// If we're not propagating, then this view is the one triggering the invalidation
+			// and one possible cause is that constraints have changed, so we have to propagate the invalidation.
+			return true;
+		}
+
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
 		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
@@ -173,6 +206,11 @@ namespace Microsoft.Maui.Platform
 		{
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
+			if (_invalidateParentWhenMovedToWindow)
+			{
+				_invalidateParentWhenMovedToWindow = false;
+				this.InvalidateAncestorsMeasures();
+			}
 		}
 	}
 }

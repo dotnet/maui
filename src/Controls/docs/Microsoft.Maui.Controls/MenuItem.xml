@@ -21,7 +21,6 @@
   </Interfaces>
   <Docs>
     <summary>Class that presents a menu item and associates it with a command.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -40,7 +39,6 @@
       <Parameters />
       <Docs>
         <summary>Intitializes a new <see cref="T:Microsoft.Maui.Controls.MenuItem" /> instance.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AcceleratorProperty">
@@ -59,7 +57,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the accelerator attached property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="class">
@@ -81,9 +78,6 @@
         <ReturnType>System.Collections.Generic.IList&lt;System.String&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Clicked">
@@ -105,7 +99,6 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when the menu item is clicked.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Command">
@@ -127,8 +120,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the command that is run when the menu is clicked.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CommandParameter">
@@ -150,8 +141,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the parameter that is passed to the command.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CommandParameterProperty">
@@ -173,7 +162,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the command parameter bound property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CommandProperty">
@@ -195,7 +183,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the command bound property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetAccelerator">
@@ -218,8 +205,6 @@
       <Docs>
         <param name="bindable">The bindable object for which to retrieve the accelerator keys.</param>
         <summary>Gets the accelerator for the specified bindable object.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Icon">
@@ -249,8 +234,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the icon for the menu item.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IconImageSource">
@@ -267,9 +250,6 @@
         <ReturnType>Microsoft.Maui.Controls.ImageSource</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IconImageSourceProperty">
@@ -286,8 +266,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IconProperty">
@@ -317,7 +295,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identfies the icon bound property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsDestructive">
@@ -371,7 +348,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the IsDestructive bound property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsEnabled">
@@ -398,8 +374,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsEnabledProperty">
@@ -418,7 +392,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsEnabledPropertyName">
@@ -443,9 +416,6 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnClicked">
@@ -468,7 +438,6 @@
       <Parameters />
       <Docs>
         <summary>When overridden by an app dev, implements behavior when the menu item is clicked.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAccelerator">
@@ -493,7 +462,6 @@
         <param name="bindable">The bindable object for which to set the accelerator keys.</param>
         <param name="value">The new accelerator for the object.</param>
         <summary>Sets the accelerator for the specified bindable object.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="StyleClass">
@@ -516,8 +484,6 @@
       </ReturnValue>
       <Docs>
         <summary>Sets the StyleClass of the generated <see cref="T:Microsoft.Maui.Controls.FlyoutItem" /> when used with <see cref="T:Microsoft.Maui.Controls.Shell" /></summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Text">
@@ -539,8 +505,6 @@
       </ReturnValue>
       <Docs>
         <summary>The text of the menu item.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextProperty">
@@ -562,7 +526,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the text bound property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IMenuItemController.Activate">
@@ -588,8 +551,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

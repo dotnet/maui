@@ -166,7 +166,6 @@ class TabbedPageDemoPage2 : TabbedPage
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.TabbedPage" /> element with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BarBackground">
@@ -183,9 +182,6 @@ class TabbedPageDemoPage2 : TabbedPage
         <ReturnType>Microsoft.Maui.Controls.Brush</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BarBackgroundColor">
@@ -205,7 +201,6 @@ class TabbedPageDemoPage2 : TabbedPage
       <Docs>
         <summary>Gets or sets the background color of the bar.</summary>
         <value>The background color of the bar.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BarBackgroundColorProperty">
@@ -224,7 +219,6 @@ class TabbedPageDemoPage2 : TabbedPage
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.TabbedPage.BarBackgroundColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BarBackgroundProperty">
@@ -241,8 +235,6 @@ class TabbedPageDemoPage2 : TabbedPage
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BarTextColor">
@@ -262,7 +254,6 @@ class TabbedPageDemoPage2 : TabbedPage
       <Docs>
         <summary>Gets or sets the color of text on the bar.</summary>
         <value>The color of text on the bar.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BarTextColorProperty">
@@ -281,7 +272,6 @@ class TabbedPageDemoPage2 : TabbedPage
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.TabbedPage.BarTextColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CreateDefault">
@@ -342,8 +332,6 @@ class TabbedPageDemoPage2 : TabbedPage
       <Docs>
         <typeparam name="T">To be added.</typeparam>
         <summary>Returns the platform-specific instance of this <see cref="T:Microsoft.Maui.Controls.TabbedPage" />, on which a platform-specific method may be called.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SelectedTabColor">
@@ -360,9 +348,6 @@ class TabbedPageDemoPage2 : TabbedPage
         <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SelectedTabColorProperty">
@@ -380,7 +365,6 @@ class TabbedPageDemoPage2 : TabbedPage
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.TabbedPage.SelectedTabColor" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UnselectedTabColor">
@@ -397,9 +381,6 @@ class TabbedPageDemoPage2 : TabbedPage
         <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UnselectedTabColorProperty">
@@ -417,7 +398,6 @@ class TabbedPageDemoPage2 : TabbedPage
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.TabbedPage.UnselectedTabColor" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

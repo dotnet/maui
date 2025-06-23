@@ -1,22 +1,46 @@
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Provides extension methods for the <see cref="ICanvas"/> interface.
+	/// </summary>
 	public static class CanvasExtensions
 	{
+		/// <summary>
+		/// Draws a line between two points.
+		/// </summary>
+		/// <param name="target">The canvas to draw on.</param>
+		/// <param name="point1">The starting point of the line.</param>
+		/// <param name="point2">The ending point of the line.</param>
 		public static void DrawLine(this ICanvas target, PointF point1, PointF point2)
 		{
 			target.DrawLine(point1.X, point1.Y, point2.X, point2.Y);
 		}
 
+		/// <summary>
+		/// Draws the outline of a rectangle.
+		/// </summary>
+		/// <param name="target">The canvas to draw on.</param>
+		/// <param name="rect">The rectangle to draw.</param>
 		public static void DrawRectangle(this ICanvas target, Rect rect)
 		{
 			target.DrawRectangle((float)rect.X, (float)rect.Y, (float)rect.Width, (float)rect.Height);
 		}
 
+		/// <summary>
+		/// Draws the outline of a rectangle.
+		/// </summary>
+		/// <param name="target">The canvas to draw on.</param>
+		/// <param name="rect">The rectangle to draw.</param>
 		public static void DrawRectangle(this ICanvas target, RectF rect)
 		{
 			target.DrawRectangle(rect.X, rect.Y, rect.Width, rect.Height);
 		}
 
+		/// <summary>
+		/// Fills a rectangle with the current brush.
+		/// </summary>
+		/// <param name="target">The canvas to draw on.</param>
+		/// <param name="rect">The rectangle to fill.</param>
 		public static void FillRectangle(this ICanvas target, Rect rect)
 		{
 			target.FillRectangle((float)rect.X, (float)rect.Y, (float)rect.Width, (float)rect.Height);
