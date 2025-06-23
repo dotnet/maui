@@ -42,11 +42,11 @@
 				entry.Focus();
 
 #if IOS
-                if (entry.Handler?.PlatformView is UIKit.UITextField textField && textField.SelectedTextRange != null)
-                {
-                    rangeLabel.Text = $"Start={textField.GetOffsetFromPosition(textField.BeginningOfDocument, textField.SelectedTextRange.Start)}, " +
-                                    $"End={textField.GetOffsetFromPosition(textField.BeginningOfDocument, textField.SelectedTextRange.End)}";
-                }
+				if (entry.Handler?.PlatformView is UIKit.UITextField textField && textField.SelectedTextRange != null)
+				{
+					rangeLabel.Text = $"Start={textField.GetOffsetFromPosition(textField.BeginningOfDocument, textField.SelectedTextRange.Start)}, " +
+									$"End={textField.GetOffsetFromPosition(textField.BeginningOfDocument, textField.SelectedTextRange.End)}";
+				}
 #endif
 			};
 

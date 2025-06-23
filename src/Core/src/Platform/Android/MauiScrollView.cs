@@ -317,7 +317,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 #pragma warning disable CA1822 // DO NOT REMOVE! Needed because dotnet format will else try to make this static and break things
-		void IOnScrollChangeListener.OnScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
+		void IOnScrollChangeListener.OnScrollChange(NestedScrollView? v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
 #pragma warning restore CA1822
 		{
 			OnScrollChanged(scrollX, scrollY, oldScrollX, oldScrollY);

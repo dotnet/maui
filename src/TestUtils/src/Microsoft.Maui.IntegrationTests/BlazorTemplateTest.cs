@@ -74,8 +74,6 @@ public class BlazorTemplateTest : BaseTemplateTests
 		TestContext.WriteLine($"MAUI app project directory: {mauiAppProjectDir} (exists? {Directory.Exists(mauiAppProjectDir)})");
 		TestContext.WriteLine($"MAUI app project file: {mauiAppProjectFile} (exists? {File.Exists(mauiAppProjectFile)})");
 
-		EnableTizen(mauiAppProjectFile);
-
 		TestContext.WriteLine($"Building Blazor Web app: {webAppProjectFile}");
 		Assert.IsTrue(DotnetInternal.Build(webAppProjectFile, config, target: "", properties: BuildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(webAppProjectFile)} failed to build. Check test output/attachments for errors.");

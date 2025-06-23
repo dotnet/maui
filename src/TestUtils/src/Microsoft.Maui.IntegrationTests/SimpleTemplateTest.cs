@@ -13,6 +13,9 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[TestCase("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
 	[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
+	//Debug not ready yet
+	//[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content", "UseMonoRuntime=false")]
+	[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
 	[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
 	[TestCase("maui-blazor", DotNetPrevious, "Release", false, "", "")]
 	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
@@ -31,9 +34,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		// TODO: remove this if as we should be able to build tizen net8
-		if (framework != DotNetPrevious)
-			EnableTizen(projectFile);
 
 		if (shouldPack)
 			FileUtilities.ReplaceInFile(projectFile,
@@ -48,6 +48,12 @@ public class SimpleTemplateTest : BaseTemplateTests
 			{
 				"XC0103", // https://github.com/CommunityToolkit/Maui/issues/2205
 			};
+		}
+
+		// We only have these packs for Android
+		if (additionalDotNetBuildParams.Contains("UseMonoRuntime=false", StringComparison.OrdinalIgnoreCase))
+		{
+			OnlyAndroid(projectFile);
 		}
 
 		var buildProps = BuildProps;
@@ -95,8 +101,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
 			$"Unable to create template {id}. Check test output for errors.");
-
-		EnableTizen(projectFile);
 
 		// libraries do not have application IDs
 		if (id != "mauilib")
@@ -146,10 +150,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		// TODO: remove this if as we should be able to build tizen net8
-		if (framework != DotNetPrevious)
-			EnableTizen(projectFile);
-
 		if (shouldPack)
 			FileUtilities.ReplaceInFile(projectFile,
 				"</Project>",
@@ -194,9 +194,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetPrevious),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		// TODO: fix this as we should be able to build tizen net8
-		// EnableTizen(projectFile);
-
 		if (shouldPack)
 			FileUtilities.ReplaceInFile(projectFile,
 				"</Project>",
@@ -228,7 +225,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New("maui", projectDir, DotNetCurrent),
 			$"Unable to create template maui. Check test output for errors.");
 
-		EnableTizen(projectFile);
 		File.WriteAllText(Path.Combine(projectDir, "Resources", "Images", ".DS_Store"), "Boom!");
 
 		Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
@@ -250,10 +246,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
-
-		// TODO: remove this if as we should be able to build tizen net8
-		if (framework != DotNetPrevious)
-			EnableTizen(projectFile);
 
 		var projectSectionsToReplace = new Dictionary<string, string>()
 		{
@@ -286,7 +278,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		EnableTizen(projectFile);
 		FileUtilities.ReplaceInFile(projectFile,
 			"</Project>",
 			"<PropertyGroup><SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences></PropertyGroup></Project>");
@@ -313,7 +304,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		EnableTizen(projectFile);
 		FileUtilities.ReplaceInFile(projectFile,
 			$"<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>",
 			$"<ApplicationDisplayVersion>{display}</ApplicationDisplayVersion>");

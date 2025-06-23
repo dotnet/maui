@@ -99,8 +99,8 @@ namespace Microsoft.Maui.Controls.Xaml
 								node.Properties.Add(XmlName.xArguments, prop);
 						}
 						// 3. DataTemplate (should be handled by 4.)
-						else if (node.XmlType.NamespaceUri == MauiUri &&
-								 (node.XmlType.Name == "DataTemplate" || node.XmlType.Name == "ControlTemplate"))
+						else if ((node.XmlType.NamespaceUri == MauiUri || node.XmlType.NamespaceUri == MauiGlobalUri)
+								&& (node.XmlType.Name == "DataTemplate" || node.XmlType.Name == "ControlTemplate"))
 						{
 							if (node.Properties.ContainsKey(XmlName._CreateContent))
 								throw new XamlParseException($"Multiple child elements in {node.XmlType.Name}", ((IXmlLineInfo)reader).Clone());
@@ -332,20 +332,53 @@ namespace Microsoft.Maui.Controls.Xaml
 		}
 
 		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
+		internal static IList<XmlnsPrefixAttribute> s_xmlnsPrefixes;
+		internal static Dictionary<Assembly, bool> s_allowImplicitXmlns = new();
+		static bool ValidateProtectedXmlns(string xmlNamespace, string assemblyName)
+		{
+			//maui, and x: xmlns are protected
+			if (xmlNamespace != XamlParser.MauiUri && xmlNamespace != XamlParser.X2009Uri)
+				return true;
 
-		static void GatherXmlnsDefinitionAttributes()
+			//we know thos assemblies, they are fine in maui or x xmlns
+			if (assemblyName.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase)
+				|| assemblyName.StartsWith("System", StringComparison.OrdinalIgnoreCase)
+				|| assemblyName.StartsWith("mscorlib", StringComparison.OrdinalIgnoreCase))
+				return true;
+
+			return false;
+		}
+
+
+		internal static void GatherXmlnsDefinitionAndXmlnsPrefixAttributes(Assembly currentAssembly)
 		{
 			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
-
+			s_xmlnsDefinitions = [];
+			s_xmlnsPrefixes = [];
 			foreach (var assembly in assemblies)
 			{
 				try
 				{
 					foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute)))
 					{
+						// Only add global xmlns definition from the current assembly
+						if (attribute.XmlNamespace == XamlParser.MauiGlobalUri
+							&& assembly != currentAssembly)
+							continue;
+
+						attribute.AssemblyName ??= assembly.FullName;
+
+						if (!ValidateProtectedXmlns(attribute.XmlNamespace, attribute.AssemblyName))
+						{
+							Debug.WriteLine($"Can not overloadxmlns {attribute.XmlNamespace}. cause it's protected.");
+							continue;
+						}
 						s_xmlnsDefinitions.Add(attribute);
-						attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
+					}
+
+					foreach (XmlnsPrefixAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsPrefixAttribute), false))
+					{
+						s_xmlnsPrefixes.Add(attribute);
 					}
 				}
 				catch (Exception ex)
@@ -368,9 +401,9 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		retry:
 			if (s_xmlnsDefinitions == null)
-				GatherXmlnsDefinitionAttributes();
+				GatherXmlnsDefinitionAndXmlnsPrefixAttributes(currentAssembly);
 
-			Type type = xmlType.GetTypeReference(
+			IEnumerable<Type> types = xmlType.GetTypeReferences(
 				s_xmlnsDefinitions,
 				currentAssembly?.FullName,
 				(typeInfo) =>
@@ -385,7 +418,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			var typeArguments = xmlType.TypeArguments;
 			exception = null;
 
-			if (type == null)
+			if (!types.Any())
 			{
 				// This covers the scenario where the AppDomain's loaded
 				// assemblies might have changed since this method was first
@@ -398,6 +431,14 @@ namespace Microsoft.Maui.Controls.Xaml
 					goto retry;
 				}
 			}
+
+			if (types.Distinct().Skip(1).Any())
+			{
+				exception = new XamlParseException($"Ambiguous type '{xmlType.Name}' in xmlns '{xmlType.NamespaceUri}'", xmlInfo);
+				return null;
+			}
+
+			var type = types.Distinct().FirstOrDefault();
 
 			if (type != null && typeArguments != null)
 			{

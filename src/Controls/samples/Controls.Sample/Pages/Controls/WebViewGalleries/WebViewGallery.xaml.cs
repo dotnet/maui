@@ -131,6 +131,22 @@ namespace Maui.Controls.Sample.Pages.WebViewGalleries
 			MauiWebView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().EnableZoomControls(true);
 		}
 
+		void OnJavaScriptEnabledClicked(object sender, EventArgs e)
+		{
+			bool isJavaScriptEnabled = MauiWebView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().IsJavaScriptEnabled();
+
+			if (isJavaScriptEnabled)
+			{
+				MauiWebView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().JavaScriptEnabled(false);
+				JavaScriptEnabledResult.Text = "JavaScript is disabled";
+			}
+			else
+			{
+				MauiWebView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().JavaScriptEnabled(true);
+				JavaScriptEnabledResult.Text = "JavaScript is enabled";
+			}
+		}
+
 		void OnLoadHtml5VideoClicked(object sender, EventArgs e)
 		{
 			MauiWebView.Source = new UrlWebViewSource { Url = "video.html" };

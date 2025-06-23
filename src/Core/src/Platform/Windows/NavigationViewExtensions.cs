@@ -37,6 +37,10 @@ namespace Microsoft.Maui.Platform
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundPointerOver");
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundPressed");
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundDisabled");
+
+					navigationView.TopNavArea.Resources.Remove("NavigationViewItemForeground");
+					navigationView.TopNavArea.Resources.Remove("NavigationViewItemForegroundPointerOver");
+					navigationView.TopNavArea.Resources.Remove("NavigationViewItemForegroundPressed");
 				}
 				else
 				{
@@ -44,6 +48,11 @@ namespace Microsoft.Maui.Platform
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundPointerOver"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundPressed"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundDisabled"] = brush;
+
+					//The NavigationViewItemForeground color is applied to the Expand/Collapse Chevron icon
+					navigationView.TopNavArea.Resources["NavigationViewItemForeground"] = brush;
+					navigationView.TopNavArea.Resources["NavigationViewItemForegroundPointerOver"] = brush;
+					navigationView.TopNavArea.Resources["NavigationViewItemForegroundPressed"] = brush;
 				}
 
 				navigationView.TopNavArea.RefreshThemeResources();
@@ -264,6 +273,42 @@ namespace Microsoft.Maui.Platform
 
 			// At some point this Template Setting is going to show up with a bump to winui
 			//handler.PlatformView.OpenPaneLength = handler.PlatformView.TemplateSettings.OpenPaneWidth;
+		}
+
+		internal static async Task UpdateBackgroundImageSourceAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IImageSourceServiceProvider? provider, Aspect aspect)
+		{
+			if (provider is null || imageSource is null)
+			{
+				return;
+			}
+			var paneContentGrid = navigationView.PaneContentGrid;
+			if (paneContentGrid is null)
+			{
+				return;
+			}
+
+			var service = provider.GetRequiredImageSourceService(imageSource);
+			var nativeImageSource = await service.GetImageSourceAsync(imageSource);
+
+			if (nativeImageSource is null)
+			{
+				paneContentGrid.Background = null;
+				return;
+			}
+
+			var BackgroundImage = new ImageBrush
+			{
+				ImageSource = nativeImageSource?.Value,
+				Stretch = aspect switch
+				{
+					Aspect.AspectFit => Stretch.Uniform,
+					Aspect.AspectFill => Stretch.UniformToFill,
+					Aspect.Fill => Stretch.Fill,
+					_ => Stretch.None
+				}
+			};
+
+			paneContentGrid.Background = BackgroundImage;
 		}
 
 		public static async Task UpdateFlyoutIconAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IImageSourceServiceProvider? provider)

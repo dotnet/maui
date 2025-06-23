@@ -1,19 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Microsoft.Maui;
 
-namespace Microsoft.Maui
+/// <summary>
+/// Specifies which swipe items to open based on the swipe gesture direction.
+/// </summary>
+public enum OpenSwipeItem
 {
-	/// <include file="../../docs/Microsoft.Maui/OpenSwipeItem.xml" path="Type[@FullName='Microsoft.Maui.OpenSwipeItem']/Docs/*" />
-	public enum OpenSwipeItem
-	{
-		/// <include file="../../docs/Microsoft.Maui/OpenSwipeItem.xml" path="//Member[@MemberName='LeftItems']/Docs/*" />
-		LeftItems,
-		/// <include file="../../docs/Microsoft.Maui/OpenSwipeItem.xml" path="//Member[@MemberName='TopItems']/Docs/*" />
-		TopItems,
-		/// <include file="../../docs/Microsoft.Maui/OpenSwipeItem.xml" path="//Member[@MemberName='RightItems']/Docs/*" />
-		RightItems,
-		/// <include file="../../docs/Microsoft.Maui/OpenSwipeItem.xml" path="//Member[@MemberName='BottomItems']/Docs/*" />
-		BottomItems
-	}
+	/// <summary>Items displayed when the user swipes from the left side.</summary>
+	LeftItems,
+
+	/// <summary>Items displayed when the user swipes from the top side.</summary>
+	TopItems,
+
+	/// <summary>Items displayed when the user swipes from the right side.</summary>
+	RightItems,
+
+	/// <summary>Items displayed when the user swipes from the bottom side.</summary>
+	BottomItems
 }

@@ -20,12 +20,6 @@ public class WindowsTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		// TODO: remove this if as we should be able to build tizen net8
-		if (framework != DotNetPrevious)
-		{
-			EnableTizen(projectFile);
-		}
-
 		// .NET 9 and later was Unpackaged, so we need to remove the line
 		FileUtilities.ReplaceInFile(projectFile,
 			"<WindowsPackageType>None</WindowsPackageType>",

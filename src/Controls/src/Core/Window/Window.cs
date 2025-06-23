@@ -431,7 +431,13 @@ namespace Microsoft.Maui.Controls
 		void SendWindowDisppearing()
 		{
 			if (Navigation.ModalStack.Count == 0)
+			{
 				Page?.SendDisappearing();
+			}
+			else if (Navigation.ModalStack.Count > 0)
+			{
+				Navigation.ModalStack[Navigation.ModalStack.Count - 1]?.SendDisappearing();
+			}
 
 			IsActivated = false;
 		}
@@ -627,16 +633,18 @@ namespace Microsoft.Maui.Controls
 				newPage.NavigationProxy.Inner = NavigationProxy;
 				_menuBarTracker.Target = newPage;
 
-				if (Parent != null)
-				{
-					SendWindowAppearing();
-				}
-
 				newPage.HandlerChanged += OnPageHandlerChanged;
 				newPage.HandlerChanging += OnPageHandlerChanging;
 
 				if (newPage.Handler != null)
+				{
 					OnPageHandlerChanged(newPage, EventArgs.Empty);
+				}
+
+				if (Parent != null)
+				{
+					SendWindowAppearing();
+				}
 			}
 
 			if (newPage is Shell newShell)

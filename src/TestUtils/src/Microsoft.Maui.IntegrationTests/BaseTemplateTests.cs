@@ -11,14 +11,12 @@ public abstract class BaseTemplateTests : BaseBuildTest
 			Path.Combine(TestDirectory, "Directory.Build.targets"), true);
 	}
 
-	protected void EnableTizen(string projectFile)
+	protected void OnlyAndroid(string projectFile)
 	{
-		// TODO: enable Tizen in future
-		// FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
-		// {
-		// 	{ "<!-- <TargetFrameworks>", "<TargetFrameworks>" },
-		// 	{ "</TargetFrameworks> -->", "</TargetFrameworks>" },
-		// });
+		FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
+		{
+			{ "<TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>", "<TargetFrameworks>net10.0-android</TargetFrameworks>" },
+		});
 	}
 
 	protected void AssertContains(string expected, string actual)

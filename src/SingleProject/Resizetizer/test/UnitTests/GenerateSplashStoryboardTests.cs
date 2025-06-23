@@ -135,6 +135,25 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		[Fact]
+		public void ApppleResourceProcessingErrorCode()
+		{
+			var items = new[]
+			{
+				new TaskItem("non-existant.png"),
+			};
+
+			var task = GetNewTask(items);
+
+			var success = task.Execute();
+
+			Assert.False(success);
+
+			var errorCode = LogErrorEvents.FirstOrDefault()?.Code;
+
+			Assert.Equal("MAUIR0005", errorCode);
+		}
+
+		[Fact]
 		public void ValidFileSucceeds()
 		{
 			var items = new[]

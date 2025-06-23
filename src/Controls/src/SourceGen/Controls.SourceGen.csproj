@@ -21,6 +21,8 @@
     <Compile Include="..\Core\XamlParseException.cs" Link="XamlParseException.cs" />
     <Compile Include="..\Core\XmlLineInfo.cs" Link="XmlLineInfo.cs" />
     <Compile Include="..\Core\XmlnsDefinitionAttribute.cs" Link="XmlnsDefinitionAttribute.cs" />
+    <Compile Include="..\Core\XmlnsPrefixAttribute.cs" Link="XmlnsPrefixAttribute.cs" />
+    <Compile Include="..\Core\AllowImplicitXmlnsDeclarationAttribute.cs" Link="AllowImplicitXmlnsDeclarationAttribute.cs" />
     <Compile Include="..\Xaml\TypeArgumentsParser.cs" Link="TypeArgumentsParser.cs" />
     <Compile Include="..\Xaml\XamlLoader.Types.cs" Link="XamlLoader.Types.cs" />
     <Compile Include="..\Xaml\XamlParser.Namespaces.cs" Link="XamlParser.Namespaces.cs" />

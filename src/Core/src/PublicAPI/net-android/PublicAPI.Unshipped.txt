@@ -62,6 +62,8 @@ Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.I
 Microsoft.Maui.ITitleBar.Subtitle.get -> string?
 Microsoft.Maui.ITitleBar.Title.get -> string?
 Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
+Microsoft.Maui.IWebRequestInterceptingWebView
+Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
 *REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
 Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
 Microsoft.Maui.Platform.MauiAppCompatEditText
@@ -80,6 +82,11 @@ Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.WebProcessTerminatedEventArgs
 Microsoft.Maui.WebProcessTerminatedEventArgs.RenderProcessGoneDetail.get -> Android.Webkit.RenderProcessGoneDetail?
 Microsoft.Maui.WebProcessTerminatedEventArgs.Sender.get -> Android.Views.View?
+Microsoft.Maui.WebResourceRequestedEventArgs
+Microsoft.Maui.WebResourceRequestedEventArgs.Request.get -> Android.Webkit.IWebResourceRequest!
+Microsoft.Maui.WebResourceRequestedEventArgs.Response.get -> Android.Webkit.WebResourceResponse?
+Microsoft.Maui.WebResourceRequestedEventArgs.Response.set -> void
+Microsoft.Maui.WebResourceRequestedEventArgs.Sender.get -> Android.Webkit.WebView!
 override Microsoft.Maui.Handlers.EditorHandler.ConnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
 override Microsoft.Maui.Handlers.EditorHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiAppCompatEditText!
 override Microsoft.Maui.Handlers.EditorHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
@@ -89,6 +96,7 @@ override Microsoft.Maui.Handlers.EntryHandler.DisconnectHandler(Microsoft.Maui.P
 override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(Android.Webkit.WebView! platformView) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> Android.Webkit.WebView!
 override Microsoft.Maui.Handlers.HybridWebViewHandler.DisconnectHandler(Android.Webkit.WebView! platformView) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.PerformAccessibilityAction(Android.Views.View? host, int action, Android.OS.Bundle? args) -> bool
 override Microsoft.Maui.Platform.MauiAppCompatEditText.OnSelectionChanged(int selStart, int selEnd) -> void
 override Microsoft.Maui.Platform.MauiHybridWebViewClient.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiHybridWebViewClient.ShouldInterceptRequest(Android.Webkit.WebView? view, Android.Webkit.IWebResourceRequest? request) -> Android.Webkit.WebResourceResponse?
@@ -153,3 +161,22 @@ Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
 static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequired(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Action! action) -> void
 static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Action! action) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<System.Threading.Tasks.Task!>! action) -> System.Threading.Tasks.Task!
+*REMOVED*override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.DispatchPopulateAccessibilityEvent(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> bool
+*REMOVED*override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.GetAccessibilityNodeProvider(Android.Views.View! host) -> AndroidX.Core.View.Accessibility.AccessibilityNodeProviderCompat?
+*REMOVED*override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityEvent(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> void
+*REMOVED*override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
+*REMOVED*override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnPopulateAccessibilityEvent(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> void
+*REMOVED*override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnRequestSendAccessibilityEvent(Android.Views.ViewGroup! host, Android.Views.View! child, Android.Views.Accessibility.AccessibilityEvent! e) -> bool
+*REMOVED*override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.PerformAccessibilityAction(Android.Views.View! host, int action, Android.OS.Bundle? args) -> bool
+*REMOVED*override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEvent(Android.Views.View! host, int eventType) -> void
+*REMOVED*override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEventUnchecked(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.DispatchPopulateAccessibilityEvent(Android.Views.View? host, Android.Views.Accessibility.AccessibilityEvent? e) -> bool
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.GetAccessibilityNodeProvider(Android.Views.View? host) -> AndroidX.Core.View.Accessibility.AccessibilityNodeProviderCompat?
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityEvent(Android.Views.View? host, Android.Views.Accessibility.AccessibilityEvent? e) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnPopulateAccessibilityEvent(Android.Views.View? host, Android.Views.Accessibility.AccessibilityEvent? e) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnRequestSendAccessibilityEvent(Android.Views.ViewGroup? host, Android.Views.View? child, Android.Views.Accessibility.AccessibilityEvent? e) -> bool
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEvent(Android.Views.View? host, int eventType) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEventUnchecked(Android.Views.View? host, Android.Views.Accessibility.AccessibilityEvent? e) -> void
+*REMOVED*override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
+override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void

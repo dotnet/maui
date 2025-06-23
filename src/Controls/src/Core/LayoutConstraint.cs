@@ -3,7 +3,7 @@ using System;
 namespace Microsoft.Maui.Controls
 {
 	[Flags]
-	internal enum LayoutConstraint
+	public enum LayoutConstraint
 	{
 		None = 0,
 		HorizontallyFixed = 1 << 0,

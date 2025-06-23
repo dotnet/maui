@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void SetQueryStringParameters(string query)
 		{
-			var queryStringParameters = ParseQueryString(query);
+			var queryStringParameters = ParseQueryString(query.AsSpan());
 			if (queryStringParameters == null || queryStringParameters.Count == 0)
 				return;
 
@@ -98,20 +98,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		static Dictionary<string, string> ParseQueryString(string query)
+		static Dictionary<string, string> ParseQueryString(ReadOnlySpan<char> query)
 		{
-			if (query.StartsWith("?", StringComparison.Ordinal))
-				query = query.Substring(1);
+			if (query.Length > 0 && query[0] == '?')
+				query = query.Slice(1);
+
 			Dictionary<string, string> lookupDict = new(StringComparer.Ordinal);
-			if (query == null)
-				return lookupDict;
-			foreach (var part in query.Split('&'))
-			{
-				var p = part.Split('=');
-				if (p.Length != 2)
-					continue;
-				lookupDict[p[0]] = p[1];
-			}
+
+			WebUtils.UnpackParameters(query, lookupDict);
 
 			return lookupDict;
 		}

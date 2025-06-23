@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,12 +16,16 @@ namespace Microsoft.Maui.Media
 {
 	partial class MediaPickerImplementation : IMediaPicker
 	{
-		static UIViewController pickerRef;
+		static UIViewController PickerRef;
+
 		public bool IsCaptureSupported
 			=> UIImagePickerController.IsSourceTypeAvailable(UIImagePickerControllerSourceType.Camera);
 
 		public Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
 			=> PhotoAsync(options, true, true);
+
+		public Task<List<FileResult>> PickPhotosAsync(MediaPickerOptions options)
+			=> PhotosAsync(options, true, true);
 
 		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
 		{
@@ -34,6 +39,9 @@ namespace Microsoft.Maui.Media
 
 		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
 			=> PhotoAsync(options, false, true);
+
+		public Task<List<FileResult>> PickVideosAsync(MediaPickerOptions options)
+			=> PhotosAsync(options, false, true);
 
 		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions options)
 		{
@@ -84,7 +92,7 @@ namespace Microsoft.Maui.Media
 					}
 				};
 
-				pickerRef = picker;
+				PickerRef = picker;
 			}
 			else
 			{
@@ -123,7 +131,7 @@ namespace Microsoft.Maui.Media
 					picker.CameraCaptureMode = UIImagePickerControllerCameraCaptureMode.Video;
 				}
 
-				pickerRef = picker;
+				PickerRef = picker;
 
 				picker.Delegate = new PhotoPickerDelegate
 				{
@@ -137,28 +145,106 @@ namespace Microsoft.Maui.Media
 
 			if (!string.IsNullOrWhiteSpace(options?.Title))
 			{
-				pickerRef.Title = options.Title;
+				PickerRef.Title = options.Title;
 			}
 
 			if (DeviceInfo.Idiom == DeviceIdiom.Tablet)
 			{
-				pickerRef.ModalPresentationStyle = UIModalPresentationStyle.PageSheet;
+				PickerRef.ModalPresentationStyle = UIModalPresentationStyle.PageSheet;
 			}
 
-			if (pickerRef.PresentationController is not null)
+			if (PickerRef.PresentationController is not null)
 			{
-				pickerRef.PresentationController.Delegate = new PhotoPickerPresentationControllerDelegate
+				PickerRef.PresentationController.Delegate = new PhotoPickerPresentationControllerDelegate
 				{
 					Handler = () => tcs.TrySetResult(null)
 				};
 			}
 
-			await vc.PresentViewControllerAsync(pickerRef, true);
+			await vc.PresentViewControllerAsync(PickerRef, true);
 
 			var result = await tcs.Task;
 
-			pickerRef?.Dispose();
-			pickerRef = null;
+			PickerRef?.Dispose();
+			PickerRef = null;
+
+			return result;
+		}
+
+		async Task<List<FileResult>> PhotosAsync(MediaPickerOptions options, bool photo, bool pickExisting)
+		{
+			// iOS 14+ only supports multiple selection
+			// TODO throw exception?
+			if (!OperatingSystem.IsIOSVersionAtLeast(14, 0))
+			{
+				return null;
+			}
+
+			if (!photo && !pickExisting)
+			{
+				await Permissions.EnsureGrantedAsync<Permissions.Microphone>();
+			}
+
+			// Check if picking existing or not and ensure permission accordingly as they can be set independently from each other
+			if (pickExisting && !OperatingSystem.IsIOSVersionAtLeast(11, 0))
+			{
+				await Permissions.EnsureGrantedAsync<Permissions.Photos>();
+			}
+
+			if (!pickExisting)
+			{
+				await Permissions.EnsureGrantedAsync<Permissions.Camera>();
+			}
+
+			var vc = WindowStateManager.Default.GetCurrentUIViewController(true);
+			var tcs = new TaskCompletionSource<List<FileResult>>();
+
+			if (pickExisting)
+			{
+				var config = new PHPickerConfiguration
+				{
+					Filter = photo
+						? PHPickerFilter.ImagesFilter
+						: PHPickerFilter.VideosFilter,
+					SelectionLimit = options?.SelectionLimit ?? 1,
+				};
+
+				var picker = new PHPickerViewController(config)
+				{
+					Delegate = new Media.PhotoPickerDelegate
+					{
+						CompletedHandler = res =>
+							tcs.TrySetResult(PickerResultsToMediaFiles(res))
+					}
+				};
+
+				PickerRef = picker;
+			}
+
+			if (!string.IsNullOrWhiteSpace(options?.Title))
+			{
+				PickerRef.Title = options.Title;
+			}
+
+			if (DeviceInfo.Idiom == DeviceIdiom.Tablet)
+			{
+				PickerRef.ModalPresentationStyle = UIModalPresentationStyle.PageSheet;
+			}
+
+			if (PickerRef.PresentationController is not null)
+			{
+				PickerRef.PresentationController.Delegate = new PhotoPickerPresentationControllerDelegate
+				{
+					Handler = () => tcs.TrySetResult(null)
+				};
+			}
+
+			await vc.PresentViewControllerAsync(PickerRef, true);
+
+			var result = await tcs.Task;
+
+			PickerRef?.Dispose();
+			PickerRef = null;
 
 			return result;
 		}
@@ -170,6 +256,13 @@ namespace Microsoft.Maui.Media
 			return file == null
 				? null
 				: new PHPickerFileResult(file.ItemProvider);
+		}
+
+		static List<FileResult> PickerResultsToMediaFiles(PHPickerResult[] results)
+		{
+			return results?
+				.Select(file => (FileResult)new PHPickerFileResult(file.ItemProvider))
+				.ToList() ?? [];
 		}
 
 		static void GetFileResult(NSDictionary info, TaskCompletionSource<FileResult> tcs)

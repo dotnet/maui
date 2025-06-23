@@ -88,8 +88,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			timePicker.Time = initialTime;
 
 			TimePicker pickerFromSender = null;
-			TimeSpan oldTime = new TimeSpan();
-			TimeSpan newTime = new TimeSpan();
+			TimeSpan? oldTime = new TimeSpan();
+			TimeSpan? newTime = new TimeSpan();
 
 			timePicker.TimeSelected += (s, e) =>
 			{

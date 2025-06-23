@@ -6,9 +6,6 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/RadioButtonGroup.xml" path="Type[@FullName='Microsoft.Maui.Controls.RadioButtonGroup']/Docs/*" />
 	public static class RadioButtonGroup
 	{
-		internal const string GroupSelectionChangedMessage = "RadioButtonGroupSelectionChanged";
-		internal const string GroupValueChangedMessage = "RadioButtonGroupValueChanged";
-
 		static readonly BindableProperty RadioButtonGroupControllerProperty =
 			BindableProperty.CreateAttached("RadioButtonGroupController", typeof(RadioButtonGroupController), typeof(Maui.ILayout), default(RadioButtonGroupController),
 			defaultValueCreator: (b) => new RadioButtonGroupController(b as Maui.ILayout),
@@ -54,36 +51,64 @@ namespace Microsoft.Maui.Controls
 
 		internal static void UpdateRadioButtonGroup(RadioButton radioButton)
 		{
-			string groupName = radioButton.GroupName;
-
-			Element scope = string.IsNullOrEmpty(groupName)
-				? GroupByParent(radioButton)
-				: GetVisualRoot(radioButton);
-
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-			MessagingCenter.Send(radioButton, GroupSelectionChangedMessage,
-				new RadioButtonGroupSelectionChanged(scope, radioButton.Value));
-#pragma warning restore CS0618 // Type or member is obsolete
+			UncheckOtherRadioButtonsInScope(radioButton);
+			radioButton.OnGroupSelectionChanged(radioButton);
 		}
 
-		internal static Element GroupByParent(RadioButton radioButton)
+		internal static void UncheckOtherRadioButtonsInScope(RadioButton radioButton)
 		{
-			Element parent = radioButton.Parent;
-
-			if (parent != null)
+			if (!string.IsNullOrEmpty(radioButton.GroupName))
 			{
-				// Traverse logical children
-				IEnumerable children = ((IElementController)parent).LogicalChildren;
-				IEnumerator itor = children.GetEnumerator();
-				while (itor.MoveNext())
+				var root = GetVisualRoot(radioButton) ?? radioButton.Parent;
+				if (root is not IElementController rootController)
 				{
-					var rb = itor.Current as RadioButton;
-					if (rb != null && rb != radioButton && string.IsNullOrEmpty(rb.GroupName) && (rb.IsChecked == true))
-						rb.SetValueFromRenderer(RadioButton.IsCheckedProperty, false);
+					return;
+				}
+
+				foreach (var child in rootController.LogicalChildren)
+				{
+					UncheckMatchingDescendants(child, radioButton.GroupName, radioButton);
 				}
 			}
+			else
+			{
+				if (radioButton.Parent is not IElementController parentController)
+				{
+					return;
+				}
 
-			return parent;
+				foreach (var child in parentController.LogicalChildren)
+				{
+					if (child is RadioButton rb && string.IsNullOrEmpty(rb.GroupName))
+					{
+						UncheckRadioButtonIfChecked(rb, radioButton);
+					}
+				}
+			}
+		}
+
+		static void UncheckRadioButtonIfChecked(RadioButton child, RadioButton radioButton)
+		{
+			if (child != radioButton && child.IsChecked)
+			{
+				child.SetValue(RadioButton.IsCheckedProperty, false, specificity: SetterSpecificity.FromHandler);
+			}
+		}
+
+		static void UncheckMatchingDescendants(Element element, string groupName, RadioButton radioButton)
+		{
+			if (element is RadioButton rb && rb.GroupName == groupName)
+			{
+				UncheckRadioButtonIfChecked(rb, radioButton);
+			}
+
+			if (element is IElementController controller)
+			{
+				foreach (var child in controller.LogicalChildren)
+				{
+					UncheckMatchingDescendants(child, groupName, radioButton);
+				}
+			}
 		}
 
 		static void OnControllerChanged(BindableObject bindableObject, RadioButtonGroupController oldController,
@@ -102,7 +127,9 @@ namespace Microsoft.Maui.Controls
 		{
 			Element parent = element.Parent;
 			while (parent != null && !(parent is Page))
+			{
 				parent = parent.Parent;
+			}
 			return parent;
 		}
 	}

@@ -1,11 +1,11 @@
 {
   "tools": {
-    "dotnet": "10.0.100-preview.5.25265.106"
+    "dotnet": "10.0.100-preview.6.25316.103"
   },
   "msbuild-sdks": {
     "MSBuild.Sdk.Extras": "3.0.44",
     "Microsoft.Build.NoTargets": "3.7.0",
-    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25267.102"
+    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25316.103"
   },
   "sdk": {
     "allowPrerelease": true

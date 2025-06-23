@@ -2,7 +2,7 @@
 {
 
 	[Issue(IssueTracker.Github, 11962, "[iOS] Cannot access a disposed object. Object name: 'WkWebViewRenderer",
-		PlatformAffected.iOS)]
+		PlatformAffected.iOS, isInternetRequired: true)]
 	public class Issue11962 : TestShell
 	{
 		protected override void Init()

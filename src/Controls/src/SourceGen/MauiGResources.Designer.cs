@@ -77,5 +77,21 @@ namespace Microsoft.Maui.Controls.SourceGen {
                 return ResourceManager.GetString("XamlParsingFailed", resourceCulture);
             }
         }
-    }
+
+		internal static string AmbiguousTypeTitle
+		{
+			get
+			{
+				return ResourceManager.GetString("AmbiguousTypeTitle", resourceCulture);
+			}
+		}
+
+		internal static string AmbiguousTypeMessage
+		{
+			get
+			{
+				return ResourceManager.GetString("AmbiguousTypeMessage", resourceCulture);
+			}
+		}
+	}
 }

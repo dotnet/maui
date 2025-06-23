@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -27,17 +26,17 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='Hsla']/Docs/*" />
 		public const string Hsla = "hsla";
 
-		readonly ColorTypeConverter _colorTypeConverter = new ColorTypeConverter();
+		readonly ColorTypeConverter _colorTypeConverter = new();
 
-		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string)
 				|| sourceType == typeof(Color)
 				|| sourceType == typeof(Paint);
 
-		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 			=> destinationType == typeof(Paint);
 
-		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
 			if (value is Color colorValue)
 			{
@@ -50,7 +49,7 @@ namespace Microsoft.Maui.Controls
 
 			var strValue = value?.ToString();
 
-			if (strValue != null)
+			if (strValue is not null)
 			{
 				strValue = strValue.Trim();
 
@@ -59,29 +58,34 @@ namespace Microsoft.Maui.Controls
 					var gradientBrushParser = new GradientBrushParser(_colorTypeConverter);
 					var brush = gradientBrushParser.Parse(strValue);
 
-					if (brush != null)
+					if (brush is not null)
+					{
 						return brush;
+					}
 				}
 
-				if (strValue.StartsWith(Rgb, StringComparison.InvariantCulture) || strValue.StartsWith(Rgba, StringComparison.InvariantCulture) || strValue.StartsWith(Hsl, StringComparison.InvariantCulture) || strValue.StartsWith(Hsla))
+				if (strValue.StartsWith(Rgb, StringComparison.InvariantCulture)
+					|| strValue.StartsWith(Rgba, StringComparison.InvariantCulture)
+					|| strValue.StartsWith(Hsl, StringComparison.InvariantCulture)
+					|| strValue.StartsWith(Hsla, StringComparison.InvariantCulture))
 				{
-					var color = (Color)_colorTypeConverter.ConvertFromInvariantString(strValue);
+					var color = (Color?)_colorTypeConverter.ConvertFromInvariantString(strValue);
 					return new SolidColorBrush(color);
 				}
-			}
 
-			string[] parts = strValue.Split('.');
+				string[] parts = strValue.Split('.');
 
-			if (parts.Length == 1 || (parts.Length == 2 && parts[0] == "Color"))
-			{
-				var color = (Color)_colorTypeConverter.ConvertFromInvariantString(strValue);
-				return new SolidColorBrush(color);
+				if (parts.Length == 1 || (parts.Length == 2 && parts[0] == "Color"))
+				{
+					var color = (Color?)_colorTypeConverter.ConvertFromInvariantString(strValue);
+					return new SolidColorBrush(color);
+				}
 			}
 
 			return new SolidColorBrush(null);
 		}
 
-		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 		{
 			if (value is Brush brush && destinationType == typeof(Paint))
 			{
@@ -94,16 +98,16 @@ namespace Microsoft.Maui.Controls
 		public class GradientBrushParser
 		{
 			readonly ColorTypeConverter _colorConverter;
-			GradientBrush _gradient;
-			string[] _parts;
+			GradientBrush? _gradient;
+			string[]? _parts;
 			int _position;
 
-			public GradientBrushParser(ColorTypeConverter colorConverter = null)
+			public GradientBrushParser(ColorTypeConverter? colorConverter = null)
 			{
-				_colorConverter = colorConverter ?? new ColorTypeConverter();
+				_colorConverter = colorConverter ?? new();
 			}
 
-			public GradientBrush Parse(string css)
+			public GradientBrush? Parse(string? css)
 			{
 				if (string.IsNullOrWhiteSpace(css))
 				{
@@ -111,9 +115,9 @@ namespace Microsoft.Maui.Controls
 				}
 
 #if NETSTANDARD2_0
-				_parts = css.Replace("\r\n", "")
+				_parts = css!.Replace("\r\n", "")
 #else
-				_parts = css.Replace("\r\n", "", StringComparison.Ordinal)
+				_parts = css!.Replace("\r\n", "", StringComparison.Ordinal)
 #endif
 					.Split(new[] { '(', ')', ',' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -125,7 +129,7 @@ namespace Microsoft.Maui.Controls
 					if (part.StartsWith("#", StringComparison.Ordinal))
 					{
 						var parts = part.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-						var color = (Color)_colorConverter.ConvertFromInvariantString(parts[0]);
+						var color = (Color)_colorConverter.ConvertFromInvariantString(parts[0])!;
 
 						if (TryParseOffsets(parts, out var offsets))
 							AddGradientStops(color, offsets);
@@ -138,7 +142,7 @@ namespace Microsoft.Maui.Controls
 					if (colorParts[0].Equals("Color", StringComparison.Ordinal))
 					{
 						var parts = part.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-						var color = (Color)_colorConverter.ConvertFromInvariantString(parts[0]);
+						var color = (Color)_colorConverter.ConvertFromInvariantString(parts[0])!;
 
 						if (TryParseOffsets(parts, out var offsets))
 							AddGradientStops(color, offsets);
@@ -169,7 +173,7 @@ namespace Microsoft.Maui.Controls
 
 						colorString.Append(')');
 
-						var color = (Color)_colorConverter.ConvertFromInvariantString(colorString.ToString());
+						var color = (Color)_colorConverter.ConvertFromInvariantString(colorString.ToString())!;
 						var parts = GetNextPart().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
 						if (TryParseOffsets(parts, out var offsets))
@@ -211,7 +215,7 @@ namespace Microsoft.Maui.Controls
 
 			string GetPart()
 			{
-				if (!(_position < _parts.Length))
+				if (!(_position < _parts!.Length))
 					return string.Empty;
 
 				return _parts[_position];
@@ -259,13 +263,15 @@ namespace Microsoft.Maui.Controls
 					Offset = offset ?? -1
 				};
 
-				_gradient.GradientStops.Add(gradientStop);
+				_gradient!.GradientStops.Add(gradientStop);
 			}
 
 			void AddGradientStops(Color color, IEnumerable<float> offsets)
 			{
 				foreach (var offset in offsets)
+				{
 					AddGradientStop(color, offset);
+				}
 			}
 
 			Tuple<Point, Point> GetCoordinatesByAngle(double angle)
@@ -417,7 +423,9 @@ namespace Microsoft.Maui.Controls
 				foreach (var part in parts)
 				{
 					if (TryParseOffset(part, out var offset))
+					{
 						offsets.Add(offset);
+					}
 				}
 
 				result = offsets.ToArray();

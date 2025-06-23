@@ -66,6 +66,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		[Category(TestCategory.Entry)]
 		public class ScrollTests : ControlsHandlerTestBase
 		{
 			[Fact]
@@ -126,6 +127,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		[Category(TestCategory.Entry)]
 		public class NextKeyboardTests : ControlsHandlerTestBase
 		{
 			void SetupNextBuilder()

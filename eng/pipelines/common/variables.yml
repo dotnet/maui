@@ -21,7 +21,7 @@ variables:
 - name: signingCondition
   value: $[or(
             eq(variables['Sign'], 'true'),
-            in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main'),
+            in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main', 'refs/heads/inflight/current' ),
             startsWith(variables['Build.SourceBranch'], 'refs/tags/'),
             startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')
           )]

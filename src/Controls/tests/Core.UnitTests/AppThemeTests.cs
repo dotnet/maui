@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -205,8 +206,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var border = (Border)button.Children[0];
 			var grid = (Grid)border.Content;
-			var outerEllipse = (Shapes.Ellipse)grid.Children[0];
-			var innerEllipse = (Shapes.Ellipse)grid.Children[1];
+			var outerEllipse = (Ellipse)grid.Children[0];
+			var innerEllipse = (Ellipse)grid.Children[1];
 
 			Assert.Equal(desiredBrush, outerEllipse.Stroke);
 			Assert.Equal(desiredBrush, innerEllipse.Fill);
