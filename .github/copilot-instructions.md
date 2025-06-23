@@ -160,6 +160,19 @@ Since coding agents function as both CI and pair programmers, they need to handl
 - Follow existing code documentation patterns
 - Update relevant docs in `docs/` folder when needed
 
+### Opening PRs
+
+All PRs are required to have this at the top of the description:
+
+```
+<!-- Please let the below note in for people that find this PR -->
+> [!NOTE]
+> Are you waiting for the changes in this PR to be merged?
+> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
+```
+
+Always put that at the top, without the block quotes. Without it, the users will NOT be able to try the PR and your work will have been in vain!
+
 ## Additional Resources
 
 - [Development Guide](.github/DEVELOPMENT.md)
