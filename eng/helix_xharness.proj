@@ -89,5 +89,14 @@
         </XHarnessAppBundleToTest>
     </ItemGroup>
 
+    <ItemGroup>
+        <XHarnessApkToTest
+            Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)/%(MAUIiOSScenario.ScenarioDirectoryName)/Debug/net9.0-android', '*.apk', System.IO.SearchOption.AllDirectories))">
+            <WorkItemTimeout>02:00:00</WorkItemTimeout>
+            <TestTimeout>01:00:00</TestTimeout>
+            <AndroidPackageName>%(MAUIiOSScenario.PackageName)</AndroidPackageName>
+        </XHarnessApkToTest>
+    </ItemGroup>
+
 
 </Project>
