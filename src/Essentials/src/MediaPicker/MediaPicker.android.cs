@@ -84,9 +84,8 @@ namespace Microsoft.Maui.Media
 
 				if (photo)
 				{
-					captureResult = await CapturePhotoAsync(captureIntent);
-					// Apply compression/resizing if needed for photos
-					if (captureResult is not null && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+					captureResult = await CapturePhotoAsync(captureIntent);				// Apply compression/resizing if needed for photos
+				if (captureResult is not null && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100, options?.RotateImage ?? true))
 					{
 						captureResult = await CompressImageIfNeeded(captureResult, options);
 					}
@@ -163,9 +162,8 @@ namespace Microsoft.Maui.Media
 			}
 
 			var path = FileSystemUtils.EnsurePhysicalPath(androidUri);
-			
-			// Apply compression/resizing if needed for photos
-			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+					// Apply compression/resizing if needed for photos
+		if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100, options?.RotateImage ?? true))
 			{
 				path = await CompressImageIfNeeded(path, options);
 			}
@@ -208,15 +206,14 @@ namespace Microsoft.Maui.Media
 			for (var i = 0; i < androidUris.Size(); i++)
 			{
 				var uri = androidUris.Get(i) as AndroidUri;
-				if (!uri?.Equals(AndroidUri.Empty) ?? false)
+				if (!uri?.Equals(AndroidUri.Empty) ?? false)			{
+				var path = FileSystemUtils.EnsurePhysicalPath(uri);
+				
+				// Apply compression/resizing if needed for photos
+				if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100, options?.RotateImage ?? true))
 				{
-					var path = FileSystemUtils.EnsurePhysicalPath(uri);
-					
-					// Apply compression/resizing if needed for photos
-					if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
-					{
-						path = await CompressImageIfNeeded(path, options);
-					}
+					path = await CompressImageIfNeeded(path, options);
+				}
 					
 					resultList.Add(new FileResult(path));
 				}
@@ -251,7 +248,7 @@ namespace Microsoft.Maui.Media
 
 		static async Task<string> CompressImageIfNeeded(string imagePath, MediaPickerOptions options)
 		{
-			if (!ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100) || string.IsNullOrEmpty(imagePath))
+			if (!ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100, options?.RotateImage ?? true) || string.IsNullOrEmpty(imagePath))
 				return imagePath;
 
 			try
@@ -264,13 +261,13 @@ namespace Microsoft.Maui.Media
 
 				// Use ImageProcessor for unified image processing
 				using var inputStream = File.OpenRead(imagePath);
-				var inputFileName = System.IO.Path.GetFileName(imagePath);
-				using var processedStream = await ImageProcessor.ProcessImageAsync(
-					inputStream,
-					options?.MaximumWidth,
-					options?.MaximumHeight,
-					options?.CompressionQuality ?? 100,
-					inputFileName);
+				var inputFileName = System.IO.Path.GetFileName(imagePath);			using var processedStream = await ImageProcessor.ProcessImageAsync(
+				inputStream,
+				options?.MaximumWidth,
+				options?.MaximumHeight,
+				options?.CompressionQuality ?? 100,
+				options?.RotateImage ?? true,
+				inputFileName);
 
 				if (processedStream != null)
 				{
@@ -377,7 +374,7 @@ namespace Microsoft.Maui.Media
 				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeMediaPicker, onResult: OnResult);
 
 				// Apply compression/resizing if needed for photos
-				if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+				if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100, options?.RotateImage ?? true))
 				{
 					var tempResultList = resultList.Select(fr => fr.FullPath).ToList();
 					resultList.Clear();

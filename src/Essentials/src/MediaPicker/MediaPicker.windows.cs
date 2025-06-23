@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Media
 			var fileResult = new FileResult(result);
 			
 			// Apply compression/resizing if specified for photos
-			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100, options?.RotateImage ?? true))
 			{
 				using var originalStream = await result.OpenStreamForReadAsync();
 				var processedStream = await ImageProcessor.ProcessImageAsync(
@@ -77,6 +77,7 @@ namespace Microsoft.Maui.Media
 					options?.MaximumWidth,
 					options?.MaximumHeight,
 					options?.CompressionQuality ?? 100,
+					options?.RotateImage ?? true,
 					result.Name);
 
 				if (processedStream != null)
@@ -129,7 +130,7 @@ namespace Microsoft.Maui.Media
 			var fileResults = result.Select(file => new FileResult(file)).ToList();
 			
 			// Apply compression/resizing if specified for photos
-			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100, options?.RotateImage ?? true))
 			{
 				var compressedResults = new List<FileResult>();
 				for (int i = 0; i < result.Count; i++)
@@ -143,6 +144,7 @@ namespace Microsoft.Maui.Media
 						options?.MaximumWidth,
 						options?.MaximumHeight,
 						options?.CompressionQuality ?? 100,
+						options?.RotateImage ?? true,
 						originalFile.Name);
 
 					if (processedStream != null)
@@ -191,7 +193,7 @@ namespace Microsoft.Maui.Media
 				var fileResult = new FileResult(file);
 
 				// Apply compression/resizing if specified for photos
-				if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+				if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100, options?.RotateImage ?? true))
 				{
 					using var originalStream = await file.OpenStreamForReadAsync();
 					var processedStream = await ImageProcessor.ProcessImageAsync(
@@ -199,6 +201,7 @@ namespace Microsoft.Maui.Media
 						options?.MaximumWidth,
 						options?.MaximumHeight,
 						options?.CompressionQuality ?? 100,
+						options?.RotateImage ?? true,
 						file.Name);
 
 					if (processedStream != null)

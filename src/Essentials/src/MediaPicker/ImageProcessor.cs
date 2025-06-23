@@ -13,15 +13,6 @@ namespace Microsoft.Maui.Essentials;
 /// </summary>
 internal static partial class ImageProcessor
 {
-#if IOS || ANDROID || WINDOWS
-    /// <summary>
-    /// Platform-specific method to apply EXIF-based rotation to an image.
-    /// </summary>
-    /// <param name="image">The image to rotate.</param>
-    /// <param name="originalStream">The original image stream for EXIF reading.</param>
-    /// <returns>A rotated image, or the original if no rotation is needed.</returns>
-    private static partial IImage ApplyRotation(IImage image, Stream originalStream);
-#endif
 
     /// <summary>
     /// Processes an image by applying resizing, compression, and optional rotation using MAUI Graphics.
@@ -52,21 +43,6 @@ internal static partial class ImageProcessor
             inputStream.Position = 0;
         }
 
-        // Check if any processing is actually needed
-        var needsResizing = maxWidth.HasValue || maxHeight.HasValue;
-        var needsRecompression = qualityPercent < 100;
-        
-        // If we only need rotation and no resizing/recompression, handle it directly
-        if (rotateImage && !needsResizing && !needsRecompression)
-        {
-            var rotatedStream = await TryGetRotatedImageStreamAsync(null, inputStream, originalFileName);
-            if (rotatedStream != null)
-            {
-                return rotatedStream;
-            }
-        }
-
-        // Otherwise, proceed with full processing pipeline
         IImage image = null;
         try
         {
@@ -86,13 +62,15 @@ internal static partial class ImageProcessor
             }
 
             // Apply resizing if needed
-            if (needsResizing)
+            if (maxWidth.HasValue || maxHeight.HasValue)
             {
                 image = ApplyResizing(image, maxWidth, maxHeight);
             }
 
             // Determine output format and quality
-            var (format, quality) = DetermineFormatAndQuality(inputStream, qualityPercent, originalFileName);
+            var format = ShouldUsePngFormat(originalFileName, qualityPercent) 
+                ? ImageFormat.Png : ImageFormat.Jpeg;
+            var quality = Math.Max(0f, Math.Min(1f, qualityPercent / 100.0f));
 
             // Save to new stream
             var outputStream = new MemoryStream();
@@ -106,6 +84,14 @@ internal static partial class ImageProcessor
             image?.Dispose();
         }
 #endif
+    }
+
+    /// <summary>
+    /// Determines if image processing is needed based on the provided options.
+    /// </summary>
+    public static bool IsProcessingNeeded(int? maxWidth, int? maxHeight, int qualityPercent, bool rotateImage = false)
+    {
+        return (maxWidth.HasValue || maxHeight.HasValue) || qualityPercent < 100 || rotateImage;
     }
 
 #if IOS || ANDROID || WINDOWS
@@ -170,91 +156,26 @@ internal static partial class ImageProcessor
     }
 
     /// <summary>
-    /// Determines the appropriate format and quality settings based on original stream and quality preferences.
+    /// Applies rotation to correct image orientation based on EXIF data.
+    /// Platform-specific implementation.
     /// </summary>
-    /// <param name="originalStream">The original image stream for format detection</param>
-    /// <param name="qualityPercent">Quality percentage (0-100)</param>
-    /// <param name="originalFileName">Original filename for format hints</param>
-    /// <returns>A tuple containing ImageFormat and quality (0.0-1.0)</returns>
-    private static (ImageFormat format, float quality) DetermineFormatAndQuality(Stream originalStream, int qualityPercent, string originalFileName = null)
-    {
-        // First try to detect format from stream if available
-        bool originalWasPng = DetectPngFromStream(originalStream);
-        
-        // If stream detection failed, fall back to filename
-        if (!originalWasPng && !string.IsNullOrEmpty(originalFileName))
-        {
-            originalWasPng = Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase);
-        }
-
-        // Apply the same logic as ShouldUsePngFormat
-        var usePng = qualityPercent >= 95 || (qualityPercent >= 90 && originalWasPng);
-        var format = usePng ? ImageFormat.Png : ImageFormat.Jpeg;
-        var quality = Math.Max(0f, Math.Min(1f, qualityPercent / 100.0f));
-
-        return (format, quality);
-    }
-
-    /// <summary>
-    /// Detects if a stream contains PNG format by checking the signature.
-    /// </summary>
-    private static bool DetectPngFromStream(Stream stream)
-    {
-        if (stream == null || !stream.CanSeek)
-            return false;
-
-        try
-        {
-            var originalPosition = stream.Position;
-            stream.Position = 0;
-
-            var buffer = new byte[8];
-            var bytesRead = stream.Read(buffer, 0, buffer.Length);
-            stream.Position = originalPosition; // Restore position
-
-            // Check for PNG signature (89 50 4E 47 0D 0A 1A 0A)
-            return bytesRead >= 4 && 
-                   buffer[0] == 0x89 && buffer[1] == 0x50 && 
-                   buffer[2] == 0x4E && buffer[3] == 0x47;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Tries to get a rotated image stream without re-encoding, preserving original format and quality.
-    /// This method provides platform-specific optimization when available.
-    /// </summary>
-    /// <param name="rotatedImage">Not used in the optimized path - can be null.</param>
-    /// <param name="originalStream">The original image stream.</param>
-    /// <param name="originalFileName">Original filename for format hints.</param>
-    /// <returns>A stream containing the rotated image data, or null if platform-specific optimization isn't available.</returns>
-    private static async Task<Stream> TryGetRotatedImageStreamAsync(IImage rotatedImage, Stream originalStream, string originalFileName)
+    /// <param name="image">The image to rotate.</param>
+    /// <param name="originalStream">The original image stream for EXIF reading.</param>
+    /// <returns>A rotated image, or the original if no rotation is needed.</returns>
+    private static IImage ApplyRotation(IImage image, Stream originalStream)
     {
 #if IOS
-        return await TryGetRotatedImageStreamAsyncIOS(rotatedImage, originalStream, originalFileName);
+        return ApplyRotationiOS(image, originalStream);
+#elif ANDROID
+        return ApplyRotationAndroid(image, originalStream);
+#elif WINDOWS
+        return ApplyRotationWindows(image, originalStream);
 #else
-        // Default: return null to indicate no platform-specific optimization available
-        await Task.CompletedTask; // Avoid async warning
-        return null;
+        // For platforms without specific implementation, return unchanged
+        return image;
 #endif
     }
 #endif
-
-    /// <summary>
-    /// Determines if image processing is needed based on the provided options.
-    /// </summary>
-    public static bool IsProcessingNeeded(int? maxWidth, int? maxHeight, int qualityPercent, bool rotateImage = false)
-    {
-#if !(IOS || ANDROID || WINDOWS)
-        // On platforms without MAUI Graphics support, always return false - no processing available
-        return false;
-#else
-        return (maxWidth.HasValue || maxHeight.HasValue) || qualityPercent < 100 || rotateImage;
-#endif
-    }
 
     /// <summary>
     /// Determines the output file extension based on processed image data and quality settings.
@@ -265,12 +186,7 @@ internal static partial class ImageProcessor
     /// <returns>File extension including the dot (e.g., ".jpg", ".png")</returns>
     public static string DetermineOutputExtension(Stream imageData, int qualityPercent, string originalFileName = null)
     {
-#if !(IOS || ANDROID)
-        // On platforms without MAUI Graphics support, fall back to simple logic
-        bool originalWasPng = !string.IsNullOrEmpty(originalFileName) && 
-                              originalFileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase);
-        return (qualityPercent >= 95 || originalWasPng) ? ".png" : ".jpg";
-#else
+#if IOS || ANDROID || WINDOWS
         // Try to detect format from the actual processed image data
         var detectedFormat = DetectImageFormat(imageData);
         if (!string.IsNullOrEmpty(detectedFormat))
@@ -286,7 +202,13 @@ internal static partial class ImageProcessor
         // Very high quality (>=95): prefer PNG for maximum quality
         // Otherwise: use JPEG for better compression
         return (qualityPercent >= 95 || (qualityPercent >= 90 && originalWasPng)) ? ".png" : ".jpg";
+#else
+        // On platforms without MAUI Graphics support, fall back to simple logic
+        bool originalWasPng = !string.IsNullOrEmpty(originalFileName) && 
+                              originalFileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase);
+        return (qualityPercent >= 95 || originalWasPng) ? ".png" : ".jpg";
 #endif
+    }
     }
 
 #if IOS || ANDROID || WINDOWS

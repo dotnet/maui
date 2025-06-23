@@ -200,5 +200,17 @@ namespace Microsoft.Maui.Media
 		/// A value of 0 means no limit.
 		/// </remarks>
 		public int SelectionLimit { get; set; } = 1;
+
+		/// <summary>
+		/// Gets or sets whether to automatically rotate images based on EXIF orientation data.
+		/// When true, images will be rotated to correct orientation based on their EXIF metadata.
+		/// Default value is true.
+		/// </summary>
+		/// <remarks>
+		/// <para>This property only applies to images. It has no effect on video files.</para>
+		/// <para>EXIF orientation correction helps ensure images appear correctly oriented regardless of how the device was held when the photo was taken.</para>
+		/// <para>On platforms without EXIF support, this setting may have no effect.</para>
+		/// </remarks>
+		public bool RotateImage { get; set; } = true;
 	}
 }

@@ -268,18 +268,17 @@ namespace Microsoft.Maui.Media
 			var fileResults = results?
 				.Select(file => (FileResult)new PHPickerFileResult(file.ItemProvider))
 				.ToList() ?? [];
-
-			// Apply resizing and compression if specified and dealing with images
-			if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+		// Apply resizing and compression if specified and dealing with images
+		if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100, options?.RotateImage ?? true))
+		{
+			var compressedResults = new List<FileResult>();
+			foreach (var result in fileResults)
 			{
-				var compressedResults = new List<FileResult>();
-				foreach (var result in fileResults)
-				{
-					var compressedResult = await CompressedUIImageFileResult.CreateCompressedFromFileResult(result, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100);
-					compressedResults.Add(compressedResult);
-				}
-				return compressedResults;
+				var compressedResult = await CompressedUIImageFileResult.CreateCompressedFromFileResult(result, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100, options?.RotateImage ?? true);
+				compressedResults.Add(compressedResult);
 			}
+			return compressedResults;
+		}
 
 			return fileResults;
 		}
@@ -445,16 +444,16 @@ namespace Microsoft.Maui.Media
 		NSData data;
 
 		// Static factory method to create compressed result from existing FileResult
-		internal static async Task<FileResult> CreateCompressedFromFileResult(FileResult originalResult, int? maximumWidth, int? maximumHeight, int compressionQuality = 100)
+		internal static async Task<FileResult> CreateCompressedFromFileResult(FileResult originalResult, int? maximumWidth, int? maximumHeight, int compressionQuality = 100, bool rotateImage = true)
 		{
-			if (originalResult is null || !ImageProcessor.IsProcessingNeeded(maximumWidth, maximumHeight, compressionQuality))
+			if (originalResult is null || !ImageProcessor.IsProcessingNeeded(maximumWidth, maximumHeight, compressionQuality, rotateImage))
 				return originalResult;
 
 			try
 			{
 				using var originalStream = await originalResult.OpenReadAsync();
 				using var processedStream = await ImageProcessor.ProcessImageAsync(
-					originalStream, maximumWidth, maximumHeight, compressionQuality, originalResult.FileName);
+					originalStream, maximumWidth, maximumHeight, compressionQuality, rotateImage, originalResult.FileName);
 				
 				// If ImageProcessor returns null (e.g., on .NET Standard), return original file
 				if (processedStream is null)

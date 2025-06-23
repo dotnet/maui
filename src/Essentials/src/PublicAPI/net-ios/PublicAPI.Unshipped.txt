@@ -8,6 +8,8 @@ Microsoft.Maui.Media.MediaPickerOptions.MaximumHeight.get -> int?
 Microsoft.Maui.Media.MediaPickerOptions.MaximumHeight.set -> void
 Microsoft.Maui.Media.MediaPickerOptions.MaximumWidth.get -> int?
 Microsoft.Maui.Media.MediaPickerOptions.MaximumWidth.set -> void
+Microsoft.Maui.Media.MediaPickerOptions.RotateImage.get -> bool
+Microsoft.Maui.Media.MediaPickerOptions.RotateImage.set -> void
 Microsoft.Maui.Media.MediaPickerOptions.SelectionLimit.get -> int
 Microsoft.Maui.Media.MediaPickerOptions.SelectionLimit.set -> void
 static Microsoft.Maui.Devices.Sensors.Geolocation.IsEnabled.get -> bool
