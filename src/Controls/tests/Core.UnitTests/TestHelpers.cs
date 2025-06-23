@@ -31,18 +31,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			for (int i = 0; i < 40 && reference.TryGetTarget(out _); i++)
 			{
-				await Task.Yield();
-				GC.Collect();
-				await Task.Yield();
-				GC.WaitForPendingFinalizers();
-				await Task.Yield();
-				GC.Collect(2);
-				await Task.Yield();
-				GC.WaitForPendingFinalizers();
-				await Task.Yield();
-				GC.Collect(2);
-				await Task.Yield();
-				GC.WaitForPendingFinalizers();
+				await Collect();
 			}
 
 			return reference.TryGetTarget(out _);
