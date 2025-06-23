@@ -125,6 +125,9 @@ Microsoft.Maui.Controls.SearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
 Microsoft.Maui.Controls.SearchBar.ReturnType.set -> void
 Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
+*REMOVED*Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan
+*REMOVED*Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan
+*REMOVED*Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan oldTime, System.TimeSpan newTime) -> void
 Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan?
 Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan?
 Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan? oldTime, System.TimeSpan? newTime) -> void
