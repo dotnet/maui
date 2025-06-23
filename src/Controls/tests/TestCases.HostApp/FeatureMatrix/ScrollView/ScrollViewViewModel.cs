@@ -18,6 +18,8 @@ public class ScrollViewViewModel : INotifyPropertyChanged
 	public string ContentSizeString => $"{ContentSize.Width:F0} x {ContentSize.Height:F0}";
 	private double _scrollX;
 	private double _scrollY;
+	public int ScrollXInt => (int)Math.Round(ScrollX);
+	public int ScrollYInt => (int)Math.Round(ScrollY);
 	private View _content;
 	private ScrollOrientation _orientation = ScrollOrientation.Vertical;
 
@@ -110,13 +112,29 @@ public class ScrollViewViewModel : INotifyPropertyChanged
 	public double ScrollX
 	{
 		get => _scrollX;
-		set { if (_scrollX != value) { _scrollX = value; OnPropertyChanged(); } }
+		set
+		{
+			if (_scrollX != value)
+			{
+				_scrollX = value;
+				OnPropertyChanged();
+				OnPropertyChanged(nameof(ScrollXInt));
+			}
+		}
 	}
 
 	public double ScrollY
 	{
 		get => _scrollY;
-		set { if (_scrollY != value) { _scrollY = value; OnPropertyChanged(); } }
+		set
+		{
+			if (_scrollY != value)
+			{
+				_scrollY = value;
+				OnPropertyChanged();
+				OnPropertyChanged(nameof(ScrollYInt));
+			}
+		}
 	}
 	private ScrollToPosition _selectedScrollToPosition = ScrollToPosition.MakeVisible;
 	public ScrollToPosition SelectedScrollToPosition

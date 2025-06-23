@@ -28,11 +28,17 @@ public partial class ScrollViewControlMainPage : ContentPage
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
 		BindingContext = _viewModel = new ScrollViewViewModel();
-		await MyScrollView.ScrollToAsync(0, 0, false);
 		_viewModel.ScrollX = 0;
 		_viewModel.ScrollY = 0;
 		_viewModel.ContentSize = new Size(0, 0);
 		ScrollToPositionEntry.Text = string.Empty;
+		Dispatcher.Dispatch(async () =>
+		{
+			if (_viewModel.Content != null)
+			{
+				await MyScrollView.ScrollToAsync(_viewModel.Content, ScrollToPosition.MakeVisible, false);
+			}
+		});
 		await Navigation.PushAsync(new ScrollViewOptionsPage(_viewModel));
 	}
 

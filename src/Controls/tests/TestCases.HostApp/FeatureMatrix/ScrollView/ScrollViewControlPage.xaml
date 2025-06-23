@@ -43,7 +43,7 @@
                    FontSize="14"
                    Margin="100,5,0,0"/>
             <Label
-                Text="{Binding ScrollX ,Mode=TwoWay}"
+                Text="{Binding ScrollXInt ,Mode=TwoWay}"
                 FontSize="14"
                 Margin="0,5,0,0"
                 AutomationId="ScrollXLabel"/>
@@ -54,7 +54,7 @@
                 FontSize="14"
                 Margin="100,5,0,0"/>
             <Label
-                Text="{Binding ScrollY, Mode=TwoWay}"
+                Text="{Binding ScrollYInt, Mode=TwoWay}"
                 FontSize="14"
                 Margin="0,5,0,0"
                 AutomationId="ScrollYLabel"/>
@@ -64,6 +64,7 @@
             <Entry x:Name="ScrollToPositionEntry"
                    Placeholder="Enter: MakeVisible, Start, Center, End"
                    FontSize="14"
+                   WidthRequest="250"
                    Margin="10,10,0,0"
                    AutomationId="ScrollToPositionEntry"/>
             <Button Text="Go to Target"

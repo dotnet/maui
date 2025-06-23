@@ -11,13 +11,12 @@ public partial class ScrollViewOptionsPage : ContentPage
 		BindingContext = _viewModel;
 	}
 
-	private async void ApplyButton_Clicked(object sender, EventArgs e)
+	private void ApplyButton_Clicked(object sender, EventArgs e)
 	{
-		if (Navigation.NavigationStack.Count > 1)
-		{
-			await Navigation.PopAsync();
-		}
+		Navigation.PopAsync();
 	}
+
+
 	private void OnContentTypeButtonClicked(object sender, EventArgs e)
 	{
 		if (sender is not Button btn)
@@ -29,7 +28,7 @@ public partial class ScrollViewOptionsPage : ContentPage
 			case "Label":
 				vm.Content = new Label
 				{
-					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 30).Select(i => $"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
+					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 50).Select(i => $"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
 					FontSize = 16,
 					Padding = 10
 				};
@@ -46,7 +45,7 @@ public partial class ScrollViewOptionsPage : ContentPage
 			case "Editor":
 				vm.Content = new Editor
 				{
-					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 30).Select(i => $"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
+					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 50).Select(i => $"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
 					AutoSize = EditorAutoSizeOption.TextChanges
 				};
 				break;
@@ -106,7 +105,22 @@ public partial class ScrollViewOptionsPage : ContentPage
 				vm.Content = grid;
 				break;
 			case "AbsoluteLayout":
-				var absolute = new AbsoluteLayout { HeightRequest = 800, WidthRequest = 800 };
+				double width, height;
+#if WINDOWS || MACCATALYST
+                width = 1300;
+                height = 1000;
+#else
+				width = 800;
+				height = 800;
+#endif
+				var absolute = new AbsoluteLayout
+				{
+					WidthRequest = width,
+					HeightRequest = height,
+					HorizontalOptions = LayoutOptions.Center,
+					VerticalOptions = LayoutOptions.Center
+				};
+
 
 				for (int i = 0; i < 10; i++)
 				{
@@ -178,7 +192,7 @@ public partial class ScrollViewOptionsPage : ContentPage
 			var rb = sender as RadioButton;
 			if (rb?.Content?.ToString() == "True")
 			{
-				vm.Shadow = new Shadow { Brush = Brush.Black, Offset = new Point(10, 10), Radius = 5, Opacity = 0.8f };
+				vm.Shadow = new Shadow { Brush = Brush.Black, Offset = new Point(6, 6), Radius = 5, Opacity = 0.6f };
 			}
 			else if (rb?.Content?.ToString() == "False")
 			{
