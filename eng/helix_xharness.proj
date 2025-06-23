@@ -20,7 +20,7 @@
         <IncludeXHarnessCli>true</IncludeXHarnessCli>
         <!-- Optional: Specific version of Xcode to use. If omitted, xcode-select is used to
         determine the version -->
-        <!-- <XHarnessXcodeVersion>16.3</XHarnessXcodeVersion> -->
+        <XHarnessXcodeVersion>16.3</XHarnessXcodeVersion>
     </PropertyGroup>
 
     <PropertyGroup>
