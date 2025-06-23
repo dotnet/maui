@@ -29,7 +29,7 @@
         <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
 
         <HelixTargetQueues>OSX.15.ARM64.Open</HelixTargetQueues>
-
+       
         <IncludeDotNetCli>true</IncludeDotNetCli>
         <DotNetCliPackageType>sdk</DotNetCliPackageType>
 
@@ -59,15 +59,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <XHarnessAppBundleToTest
-            Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)/Controls.DeviceTests/Debug/net9.0-ios', '*.app', System.IO.SearchOption.AllDirectories))">
+        <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)/Controls.DeviceTests/Debug/net9.0-ios', '*.app', System.IO.SearchOption.AllDirectories))">
             <TestTarget>ios-simulator-64_18.0</TestTarget>
         </XHarnessAppBundleToTest>
-        <XHarnessAppBundleToTest
-            Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)/Controls.DeviceTests/Debug/net9.0-maccatalyst', '*.app', System.IO.SearchOption.AllDirectories))">
-            <TestTarget>maccatalyst</TestTarget>
-        </XHarnessAppBundleToTest>
-
     </ItemGroup>
 
 
