@@ -194,10 +194,24 @@ namespace Microsoft.Maui.Networking
 
 		async void OnChange(NetworkReachabilityFlags flags)
 		{
-			// Add in artifical delay so the connection status has time to change
-			// else it will return true no matter what.
-			await Task.Delay(400);
+			// This function waits up to 1 second, checking the device’s network status every 100 milliseconds. 
+			// If the network status changes, it immediately triggers the ReachabilityChanged event.
+			var initialAccess = Connectivity.NetworkAccess;
+			const int pollingIntervalMs = 100;
+			const int maxWaitTimeMs = 1000;
+			int elapsedTime = 0;
 
+			while (elapsedTime < maxWaitTimeMs)
+			{
+				await Task.Delay(pollingIntervalMs);
+				elapsedTime += pollingIntervalMs;
+				var currentAccess = Connectivity.NetworkAccess;
+				if (currentAccess != initialAccess)
+				{
+					ReachabilityChanged?.Invoke();
+					return;
+				}
+			}
 			ReachabilityChanged?.Invoke();
 		}
 	}
