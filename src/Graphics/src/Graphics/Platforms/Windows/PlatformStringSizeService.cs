@@ -23,8 +23,10 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public SizeF GetStringSize(string value, IFont font, float textSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
 		{
-			if (string.IsNullOrEmpty(value) || font is null || textSize <= 0)
+            if (string.IsNullOrEmpty(value) || font is null || textSize <= 0)
+            {
                 return SizeF.Zero;
+            }
 
             var format = font.ToCanvasTextFormat(textSize);
             format.WordWrapping = CanvasWordWrapping.NoWrap;
