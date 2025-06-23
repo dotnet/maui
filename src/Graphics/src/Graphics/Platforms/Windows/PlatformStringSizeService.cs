@@ -23,28 +23,42 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public SizeF GetStringSize(string value, IFont font, float textSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
 		{
-			var format = font.ToCanvasTextFormat(textSize);
-			format.WordWrapping = CanvasWordWrapping.NoWrap;
+			if (string.IsNullOrEmpty(value) || font is null || textSize <= 0)
+                return SizeF.Zero;
 
-			var device = CanvasDevice.GetSharedDevice();
-			var textLayout = new CanvasTextLayout(device, value, format, 0.0f, 0.0f);
-			textLayout.VerticalAlignment = verticalAlignment switch
-			{
-				VerticalAlignment.Top => CanvasVerticalAlignment.Top,
-				VerticalAlignment.Center => CanvasVerticalAlignment.Center,
-				VerticalAlignment.Bottom => CanvasVerticalAlignment.Bottom,
-				_ => CanvasVerticalAlignment.Top
-			};
-			textLayout.HorizontalAlignment = horizontalAlignment switch
-			{
-				HorizontalAlignment.Left => CanvasHorizontalAlignment.Left,
-				HorizontalAlignment.Center => CanvasHorizontalAlignment.Center,
-				HorizontalAlignment.Right => CanvasHorizontalAlignment.Right,
-				HorizontalAlignment.Justified => CanvasHorizontalAlignment.Justified,
-				_ => CanvasHorizontalAlignment.Left,
-			};
+            var format = font.ToCanvasTextFormat(textSize);
+            format.WordWrapping = CanvasWordWrapping.NoWrap;
 
-			return new SizeF((float)textLayout.DrawBounds.Width, (float)textLayout.DrawBounds.Height);
-		}
+            var device = CanvasDevice.GetSharedDevice();
+
+            using (var textLayout = new CanvasTextLayout(device, value, format, float.MaxValue, float.MaxValue))
+            {
+                textLayout.VerticalAlignment = verticalAlignment switch
+                {
+                    VerticalAlignment.Top => CanvasVerticalAlignment.Top,
+                    VerticalAlignment.Center => CanvasVerticalAlignment.Center,
+                    VerticalAlignment.Bottom => CanvasVerticalAlignment.Bottom,
+                    _ => CanvasVerticalAlignment.Top
+                };
+                textLayout.HorizontalAlignment = horizontalAlignment switch
+                {
+                    HorizontalAlignment.Left => CanvasHorizontalAlignment.Left,
+                    HorizontalAlignment.Center => CanvasHorizontalAlignment.Center,
+                    HorizontalAlignment.Right => CanvasHorizontalAlignment.Right,
+                    HorizontalAlignment.Justified => CanvasHorizontalAlignment.Justified,
+                    _ => CanvasHorizontalAlignment.Left,
+                };
+
+                var bounds = textLayout.LayoutBounds;
+
+                // If LayoutBounds is empty, fallback to DrawBounds
+                if (bounds.Width <= 0 || bounds.Height <= 0)
+                {
+                    bounds = textLayout.DrawBounds;
+                }
+
+                return new SizeF((float)bounds.Width, (float)bounds.Height);
+            }
+        }
 	}
 }
