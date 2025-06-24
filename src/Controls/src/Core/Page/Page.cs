@@ -657,7 +657,7 @@ namespace Microsoft.Maui.Controls
 
 			_hasAppeared = true;
 
-#pragma warning disable CS0618 // TODO: Remove this API in .NET 11.
+#pragma warning disable CS0618 // TODO: Remove this API in .NET 11. Issue Link: https://github.com/dotnet/maui/issues/30155
 			if (IsBusy)
 			{
 				if (IsPlatformEnabled)
@@ -688,7 +688,7 @@ namespace Microsoft.Maui.Controls
 
 			_hasAppeared = false;
 
-#pragma warning disable CS0618 // TODO: Remove this API in .NET 11.
+#pragma warning disable CS0618 // TODO: Remove this API in .NET 11. Issue Link: https://github.com/dotnet/maui/issues/30155
 			if (IsBusy)
 				Window.AlertManager.RequestPageBusy(this, false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -752,7 +752,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (!_hasAppeared)
 				return;
-#pragma warning disable CS0618 // TODO: Remove this API in .NET 11.
+#pragma warning disable CS0618 // TODO: Remove this API in .NET 11. Issue Link: https://github.com/dotnet/maui/issues/30155
 			Window.AlertManager.RequestPageBusy(this, IsBusy);
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
