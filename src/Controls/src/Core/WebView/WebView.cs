@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls
 			// Make all the platforms mimic Android's implementation, which is by far the most complete.
 			if (DeviceInfo.Platform != DevicePlatform.Android)
 			{
-				script = EscapeJsString(script);
+				script = WebViewHelper.EscapeJsString(script);
 
 				if (DeviceInfo.Platform != DevicePlatform.WinUI)
 				{
@@ -289,8 +289,6 @@ namespace Microsoft.Maui.Controls
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
-
-		internal static string EscapeJsString(string js) => WebViewHelper.EscapeJsString(js);
 
 		/// <inheritdoc/>
 		IWebViewSource IWebView.Source => Source;

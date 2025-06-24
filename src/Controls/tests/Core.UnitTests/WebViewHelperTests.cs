@@ -1,9 +1,9 @@
+using Xunit;
+using Microsoft.Maui.Handlers;
+
 namespace Microsoft.Maui.Controls.Core.UnitTests;
 
-using Microsoft.Maui.Handlers;
-using Xunit;
-
-public class WebViewTests
+public class WebViewHelperTests
 {
 	[Fact]
 	public void EscapeJsString_NullInput_ReturnsNull()

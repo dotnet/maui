@@ -335,7 +335,7 @@ namespace Microsoft.Maui.Handlers
 			// Make all the platforms mimic Android's implementation, which is by far the most complete.
 			if (!OperatingSystem.IsAndroid())
 			{
-				script = EscapeJsString(script);
+				script = WebViewHelper.EscapeJsString(script);
 
 				if (!OperatingSystem.IsWindows())
 				{
@@ -429,11 +429,6 @@ namespace Microsoft.Maui.Handlers
 				return typedResult;
 			}
 		}
-
-
-#if PLATFORM && !TIZEN
-		internal static string? EscapeJsString(string js) => WebViewHelper.EscapeJsString(js);
-#endif
 
 		internal static async Task<string?> GetAssetContentAsync(string assetPath)
 		{
