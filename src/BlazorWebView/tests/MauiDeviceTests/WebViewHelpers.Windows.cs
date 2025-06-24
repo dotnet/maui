@@ -11,6 +11,17 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 		public static async Task WaitForWebViewReady(WebView2 wv2)
 		{
 			CoreWebView2 coreWebView2 = null;
+			
+			// Ensure that the WebView2 runtime is installed and initialized and has a CoreWebView2 instance.
+			if (wv2?.CoreWebView2 == null)
+			{
+				string version = CoreWebView2Environment.GetAvailableBrowserVersionString(null);
+				if (string.IsNullOrEmpty(version))
+				{
+					throw new InvalidOperationException("WebView2 runtime is not installed.");
+				}
+				await wv2.EnsureCoreWebView2Async();
+			}
 
 			await Retry(() =>
 			{
