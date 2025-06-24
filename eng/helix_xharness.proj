@@ -39,10 +39,6 @@
             <DisplayName>Core DeviceTests</DisplayName>
             <DirectoryName>Core.DeviceTests</DirectoryName>
         </TestScenario>
-        <TestScenario Include="MauiBlazorWebView">
-            <DisplayName>MauiBlazorWebView DeviceTests</DisplayName>
-            <DirectoryName>MauiBlazorWebView.DeviceTests</DirectoryName>
-        </TestScenario>
         <TestScenario Include="Essentials">
             <DisplayName>Essentials DeviceTests</DisplayName>
             <DirectoryName>Essentials.DeviceTests</DirectoryName>
