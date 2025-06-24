@@ -85,9 +85,13 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsPassword(IEntryHandler handler, IEntry entry)
 		{
+			if (entry?.Text?.Length > 5000)
+			{
+				MapMaxLength(handler, entry);
+			}
 			handler.UpdateValue(nameof(IEntry.Text));
-
-			handler.PlatformView?.UpdateIsPassword(entry);
+			if (entry != null)
+				handler.PlatformView?.UpdateIsPassword(entry);
 		}
 
 		public static void MapHorizontalTextAlignment(IEntryHandler handler, IEntry entry) =>
