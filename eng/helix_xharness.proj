@@ -19,6 +19,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(SYSTEM_ACCESSTOKEN)' == ''">
+         <ScenariosDir>$(RepoRoot)artifacts/bin/</ScenariosDir>
         <!-- Local build outside of Azure Pipeline -->
         <HelixTargetQueues Condition="'$(HelixTargetQueues)' == ''">
             Windows.10.Amd64.Open;OSX.1200.Amd64.Open;OSX.1200.ARM64.Open;Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-20.04-helix-sqlserver-amd64</HelixTargetQueues>
@@ -40,28 +41,26 @@
     </ItemGroup>
 
     <ItemGroup>
-        <TestScenario Include="Controls">
-            <DisplayName>Controls DeviceTests</DisplayName>
-            <DirectoryName>Controls.DeviceTests</DirectoryName>
-        </TestScenario>
-        <TestScenario Include="Core">
-            <DisplayName>Core DeviceTests</DisplayName>
-            <DirectoryName>Core.DeviceTests</DirectoryName>
-        </TestScenario>
-        <!-- <TestScenario Include="Essentials">
-            <DisplayName>Essentials DeviceTests</DisplayName>
-            <DirectoryName>Essentials.DeviceTests</DirectoryName>
-        </TestScenario> -->
-        <TestScenario Include="Graphics">
-            <DisplayName>Graphics DeviceTests</DisplayName>
-            <DirectoryName>Graphics.DeviceTests</DirectoryName>
-        </TestScenario>
-
-        <MAUIiOSScenario Include="%(TestScenario.DisplayName)">
-            <ScenarioDirectoryName>%(TestScenario.DirectoryName)</ScenarioDirectoryName>
-            <PayloadDirectory>$(ScenariosDir)%(ScenarioDirectoryName)</PayloadDirectory>
-            <IPAName>Microsoft.Maui.%(TestScenario.Identity).DeviceTests</IPAName>
-            <PackageName>com.microsoft.maui.%(TestScenario.Identity.ToLower()).devicetests</PackageName>
+     
+        <MAUIiOSScenario Include="Controls">
+            <ScenarioDirectoryName>Controls.DeviceTests</ScenarioDirectoryName>
+            <PayloadDirectory>$(ScenariosDir)Controls.DeviceTests</PayloadDirectory>
+            <IPAName>Microsoft.Maui.Controls.DeviceTests</IPAName>
+            <PackageName>com.microsoft.maui.controls.devicetests</PackageName>
+        </MAUIiOSScenario>
+        
+        <MAUIiOSScenario Include="Core">
+            <ScenarioDirectoryName>Core.DeviceTests</ScenarioDirectoryName>
+            <PayloadDirectory>$(ScenariosDir)Core.DeviceTests</PayloadDirectory>
+            <IPAName>Microsoft.Maui.Core.DeviceTests</IPAName>
+            <PackageName>com.microsoft.maui.core.devicetests</PackageName>
+        </MAUIiOSScenario>
+        
+        <MAUIiOSScenario Include="Graphics">
+            <ScenarioDirectoryName>Graphics.DeviceTests</ScenarioDirectoryName>
+            <PayloadDirectory>$(ScenariosDir)Graphics.DeviceTests</PayloadDirectory>
+            <IPAName>Microsoft.Maui.Graphics.DeviceTests</IPAName>
+            <PackageName>com.microsoft.maui.graphics.devicetests</PackageName>
         </MAUIiOSScenario>
     </ItemGroup>
 
@@ -77,67 +76,24 @@
             <_PlatformName>android</_PlatformName>
         </PropertyGroup>
 
-        <!-- First discover the actual framework version and locations -->
-        <ItemGroup>
-            <_NetVersionDirs Include="$(ScenariosDir)/Controls.DeviceTests/Debug/*" />
-            <_NetVersionDirs Include="$(ScenariosDir)/Core.DeviceTests/Debug/*" />
-            <_NetVersionDirs Include="$(ScenariosDir)/Graphics.DeviceTests/Debug/*" />
-        </ItemGroup>
-
-        <!-- Debug the discovered directories -->
-        <Message Text="Discovered directory structure:" Importance="high" />
-        <Message Text="  - %(_NetVersionDirs.Identity)" Importance="high" />
-
-        <!-- iOS: Find app bundles directly -->
+        <!-- Print all MAUIiOSScenario -->
+        <Message Text="Discovered MAUIiOSScenarios:" Importance="high" />
+        <Message Text="Count: @(MAUIiOSScenario->Count())" Importance="high" />
+    
+        <!-- iOS: Find app bundles directly using MAUIiOSScenario PayloadDirectory -->
         <ItemGroup Condition="'$(TargetOS)' == 'ios'">
-            <!-- Controls DeviceTests -->
-            <_TempDirectories Include="$(ScenariosDir)/Controls.DeviceTests/Debug/**/*.app" />
-            <_TestItem Include="@(_TempDirectories)">
-                <PackageName>com.microsoft.maui.controls.devicetests</PackageName>
-            </_TestItem>
-
-            <!-- Core DeviceTests -->
-            <_TempDirectories Include="$(ScenariosDir)/Core.DeviceTests/Debug/**/*.app" />
-            <_TestItem Include="@(_TempDirectories)">
-                <PackageName>com.microsoft.maui.core.devicetests</PackageName>
-            </_TestItem>
-
-            <!-- Graphics DeviceTests -->
-            <_TempDirectories Include="$(ScenariosDir)/Graphics.DeviceTests/Debug/**/*.app" />
-            <_TestItem Include="@(_TempDirectories)">
-                <PackageName>com.microsoft.maui.graphics.devicetests</PackageName>
-            </_TestItem>
+            <!-- Create a special batching task to find app bundles by scenario -->
+            <_MAUIScenarioSearch Include="@(MAUIiOSScenario)" />
         </ItemGroup>
-
-        <!-- Android: Find apk files directly -->
-        <ItemGroup Condition="'$(TargetOS)' == 'android'">
-            <!-- Controls DeviceTests -->
-            <_TempDirectories Include="$(ScenariosDir)/Controls.DeviceTests/Debug/**/*.apk" />
-            <_TestItem Include="@(_TempDirectories)">
-                <PackageName>com.microsoft.maui.controls.devicetests</PackageName>
-            </_TestItem>
-
-            <!-- Core DeviceTests -->
-            <_TempDirectories Include="$(ScenariosDir)/Core.DeviceTests/Debug/**/*.apk" />
-            <_TestItem Include="@(_TempDirectories)">
-                <PackageName>com.microsoft.maui.core.devicetests</PackageName>
-            </_TestItem>
-
-            <!-- Graphics DeviceTests -->
-            <_TempDirectories Include="$(ScenariosDir)/Graphics.DeviceTests/Debug/**/*.apk" />
-            <_TestItem Include="@(_TempDirectories)">
-                <PackageName>com.microsoft.maui.graphics.devicetests</PackageName>
-            </_TestItem>
-        </ItemGroup>
-
-        <!-- Debug found items -->
-        <Message Text="ScenariosDir: $(ScenariosDir)" Importance="high" />
-        <Message Text="Found test items:" Importance="high" />
-        <Message Text="  - %(_TestItem.Identity)" Importance="high" />
+        
+        <!-- Print available PayloadDirectory paths -->
+        <Message Condition="'$(TargetOS)' == 'ios'" Text="Looking for .app bundles in PayloadDirectory paths:" Importance="high" />
+        <Message Condition="'$(TargetOS)' == 'ios'" Text="  - %(MAUIiOSScenario.PayloadDirectory)" Importance="high" />
+    
 
         <!-- Add the discovered items to the appropriate Helix test collection -->
         <ItemGroup Condition="'$(TargetOS)' == 'ios'">
-            <XHarnessAppBundleToTest Include="@(_TestItem)">
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Debug/net9.0-ios/', '*.app', System.IO.SearchOption.AllDirectories))" >
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
@@ -145,21 +101,13 @@
             </XHarnessAppBundleToTest>
         </ItemGroup>
 
-        <ItemGroup Condition="'$(TargetOS)' == 'android'">
+        <!-- <ItemGroup Condition="'$(TargetOS)' == 'android'">
             <XHarnessApkToTest Include="@(_TestItem)">
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
                 <AndroidPackageName>%(_TestItem.PackageName)</AndroidPackageName>
             </XHarnessApkToTest>
-        </ItemGroup>
-
-        <!-- Output discovered paths for debugging -->
-        <Message Condition="'$(TargetOS)' == 'ios'"
-            Text="Discovered iOS app bundles: @(XHarnessAppBundleToTest)" Importance="high" />
-        <Message Condition="'$(TargetOS)' == 'android'"
-            Text="Discovered Android APKs: @(XHarnessApkToTest)" Importance="high" />
-        <Message Condition="'$(TargetOS)' != 'android' and '$(TargetOS)' != 'ios'"
-            Text="TargetOS '$(TargetOS)' is not supported for device tests" Importance="high" />
+        </ItemGroup> -->
     </Target>
 
 
