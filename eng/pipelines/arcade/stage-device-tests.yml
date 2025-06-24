@@ -138,8 +138,8 @@ stages:
           - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj' /bl:devicetests_graphics.binlog $(_OfficialBuildIdArgs)
             displayName: Build Graphics.DeviceTests
 
-          # - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj' /bl:devicetests_essentials.binlog $(_OfficialBuildIdArgs)
-          #   displayName: Build Essentials.DeviceTests
+          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj' /p:CodesignRequireProvisioningProfile=false /bl:devicetests_essentials.binlog $(_OfficialBuildIdArgs)
+            displayName: Build Essentials.DeviceTests
 
           - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj' /bl:devicetests_blazorwebview.binlog $(_OfficialBuildIdArgs)
             displayName: Build BlazorWebView.DeviceTests
