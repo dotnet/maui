@@ -19,6 +19,11 @@ public class Issue30070 : _IssuesUITest
 	{
 		App.WaitForElement("TestScrollView");
 		App.ScrollDown("TestScrollView");
+		
+		// Wait to allow any temporary scroll indicators to disappear,
+		// ensuring a clean screenshot for visual validation.
+		Thread.Sleep(1000);
+		
 		VerifyScreenshot();
 	}
 }
