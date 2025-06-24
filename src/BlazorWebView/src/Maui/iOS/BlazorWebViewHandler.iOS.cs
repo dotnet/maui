@@ -111,6 +111,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				WebView = webview
 			});
 
+			// Apply platform-specific configurations
+			if (VirtualView is BlazorWebView blazorWebView)
+			{
+				Microsoft.Maui.Controls.Platform.BlazorWebViewExtensions.UpdateIsScrollBounceEnabled(webview, blazorWebView);
+			}
+
 			Logger.CreatedWebKitWKWebView();
 
 			return webview;

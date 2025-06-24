@@ -44,6 +44,10 @@ namespace Microsoft.Extensions.DependencyInjection
 #if WEBVIEW2_MAUI
 			services.TryAddSingleton(_ => new MauiBlazorMarkerService());
 			services.ConfigureMauiHandlers(static handlers => handlers.AddHandler<IBlazorWebView>(_ => new BlazorWebViewHandler()));
+			
+			// Configure platform-specific mappings
+			BlazorWebView.RemapForControls();
+			
 			return new MauiBlazorWebViewBuilder(services);
 #elif WEBVIEW2_WINFORMS
 			services.TryAddSingleton(_ => new WindowsFormsBlazorMarkerService());
