@@ -1172,6 +1172,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			WeakReference<Page> _child;
 			bool _disposed;
 			ToolbarTracker _tracker = new ToolbarTracker();
+			List<ToolbarItem> _trackedToolbarItems = new List<ToolbarItem>();
+			bool _toolbarUpdatePending = false;
 
 			public ParentingViewController(NavigationRenderer navigation)
 			{
@@ -1343,6 +1345,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			internal void Disconnect(bool dispose)
 			{
+				// Unsubscribe from toolbar item property changes
+				foreach (var item in _trackedToolbarItems)
+				{
+					item.PropertyChanged -= OnToolbarItemPropertyChanged;
+				}
+				_trackedToolbarItems.Clear();
+
 				if (Child is Page child)
 				{
 					child.SendDisappearing();
@@ -1360,7 +1369,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (NavigationItem.TitleView is not null)
 				{
 					if (dispose)
+					{
 						NavigationItem.TitleView.Dispose();
+					}
 
 					NavigationItem.TitleView = null;
 				}
@@ -1368,13 +1379,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (NavigationItem.RightBarButtonItems is not null && dispose)
 				{
 					for (var i = 0; i < NavigationItem.RightBarButtonItems.Length; i++)
+					{
 						NavigationItem.RightBarButtonItems[i].Dispose();
+					}
 				}
 
 				if (ToolbarItems is not null && dispose)
 				{
 					for (var i = 0; i < ToolbarItems.Length; i++)
+					{
 						ToolbarItems[i].Dispose();
+					}
 				}
 
 				for (int i = View.Subviews.Length - 1; i >= 0; i--)
@@ -1403,6 +1418,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (disposing)
 				{
+					// Unsubscribe from toolbar item property changes
+					foreach (var item in _trackedToolbarItems)
+					{
+						item.PropertyChanged -= OnToolbarItemPropertyChanged;
+					}
+					_trackedToolbarItems.Clear();
+					
 					Disconnect(true);
 				}
 
@@ -1634,6 +1656,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateToolbarItems();
 			}
 
+			void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				// Only rebuild toolbar items if a relevant property changed
+				if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName ||
+					e.PropertyName == MenuItem.TextProperty.PropertyName ||
+					e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName)
+				{
+					// Throttle updates to prevent excessive rebuilding when multiple properties change rapidly
+					if (!_toolbarUpdatePending)
+					{
+						_toolbarUpdatePending = true;
+						BeginInvokeOnMainThread(() =>
+						{
+							_toolbarUpdatePending = false;
+							if (!_disposed)
+								UpdateToolbarItems();
+						});
+					}
+				}
+			}
+
 			void UpdateHasBackButton()
 			{
 				if (Child is not Page child || NavigationItem.HidesBackButton == !NavigationPage.GetHasBackButton(child))
@@ -1672,36 +1715,74 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			void UpdateToolbarItems()
 			{
-				if (NavigationItem.RightBarButtonItems != null)
+				// Unsubscribe from previous toolbar item property changes
+				foreach (var item in _trackedToolbarItems)
+				{
+					item.PropertyChanged -= OnToolbarItemPropertyChanged;
+				}
+				_trackedToolbarItems.Clear();
+
+				if (NavigationItem.RightBarButtonItems is not null)
 				{
 					for (var i = 0; i < NavigationItem.RightBarButtonItems.Length; i++)
+					{
 						NavigationItem.RightBarButtonItems[i].Dispose();
+					}
 				}
-				if (ToolbarItems != null)
+
+				if (ToolbarItems is not null)
 				{
 					for (var i = 0; i < ToolbarItems.Length; i++)
+					{
 						ToolbarItems[i].Dispose();
+					}
 				}
 
 				List<UIBarButtonItem> primaries = null;
-				List<UIBarButtonItem> secondaries = null;
+				List<UIMenuElement> secondaries = null;
 				var toolbarItems = _tracker.ToolbarItems;
+				
+				// Subscribe to property changes for all current toolbar items
 				foreach (var item in toolbarItems)
 				{
+					item.PropertyChanged += OnToolbarItemPropertyChanged;
+					_trackedToolbarItems.Add(item);
+
 					if (item.Order == ToolbarItemOrder.Secondary)
-						(secondaries = secondaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(true));
+					{
+						(secondaries ??= []).Add(item.ToSecondaryToolbarItem().PlatformAction);
+					}
 					else
-						(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem());
+					{
+						(primaries ??= []).Add(item.ToUIBarButtonItem());
+					}
 				}
 
-				if (primaries != null)
+				if (primaries is not null && primaries.Count > 0)
+				{
 					primaries.Reverse();
-				NavigationItem.SetRightBarButtonItems(primaries == null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
-				ToolbarItems = secondaries == null ? Array.Empty<UIBarButtonItem>() : secondaries.ToArray();
+				}
 
-				NavigationRenderer n;
-				if (_navigation.TryGetTarget(out n))
+				if (secondaries is not null && secondaries.Count > 0)
+				{
+					var menu = UIMenu.Create(string.Empty, null, UIMenuIdentifier.Edit, UIMenuOptions.DisplayInline, secondaries.ToArray());
+					// Using the ellipsis.circle system image for the menu button, as per the iOS design guidelines: https://developer.apple.com/design/human-interface-guidelines/pull-down-buttons
+					var menuButton = new UIBarButtonItem(UIImage.GetSystemImage("ellipsis.circle"), menu);
+					menuButton.AccessibilityIdentifier = "SecondaryToolbarMenuButton";
+
+					// Since we are adding secondary items under a primary button,
+					// make sure that primaries is initialized
+					primaries ??= [];
+
+					primaries.Insert(0, menuButton);
+				}
+				
+				NavigationItem.SetRightBarButtonItems(primaries is null ? [] : primaries.ToArray(), false);
+
+				if (_navigation.TryGetTarget(out NavigationRenderer n))
+				{
 					n.UpdateToolBarVisible();
+				}
 			}
 
 			void UpdateLargeTitles()
@@ -1742,7 +1823,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override bool ShouldAutorotate()
 			{
 				if (Child?.Handler is IPlatformViewHandler ivh)
-
 					return ivh.ViewController.ShouldAutorotate();
 				return base.ShouldAutorotate();
 			}
