@@ -3,6 +3,9 @@ using SkiaSharp;
 
 namespace Microsoft.Maui.Graphics.Skia
 {
+	/// <summary>
+	/// Provides services for creating and managing <see cref="SkiaCanvasState"/> instances.
+	/// </summary>
 	public class SkiaCanvasStateService : IDisposable, ICanvasStateService<SkiaCanvasState>
 	{
 		private SKPaint _defaultFillPaint;
@@ -10,6 +13,11 @@ namespace Microsoft.Maui.Graphics.Skia
 		private SKFont _defaultFontFont;
 		private SKPaint _defaultStrokePaint;
 
+		/// <summary>
+		/// Creates a new canvas state instance.
+		/// </summary>
+		/// <param name="context">An optional context object.</param>
+		/// <returns>A new <see cref="SkiaCanvasState"/> instance with default properties.</returns>
 		public SkiaCanvasState CreateNew(object context)
 		{
 			EnsureDefaults();
@@ -25,9 +33,18 @@ namespace Microsoft.Maui.Graphics.Skia
 			return state;
 		}
 
+		/// <summary>
+		/// Creates a copy of the specified canvas state.
+		/// </summary>
+		/// <param name="prototype">The canvas state to copy.</param>
+		/// <returns>A new <see cref="SkiaCanvasState"/> instance with properties copied from the prototype.</returns>
 		public SkiaCanvasState CreateCopy(SkiaCanvasState prototype) =>
 			new SkiaCanvasState(prototype);
 
+		/// <summary>
+		/// Resets the specified canvas state to default values.
+		/// </summary>
+		/// <param name="currentState">The canvas state to reset.</param>
 		public void Reset(SkiaCanvasState currentState)
 		{
 			currentState.Reset(_defaultFontPaint, _defaultFontFont, _defaultFillPaint, _defaultStrokePaint);
@@ -69,6 +86,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			};
 		}
 
+		/// <summary>
+		/// Releases all resources used by this canvas state service.
+		/// </summary>
 		public void Dispose()
 		{
 			_defaultFillPaint.Dispose();

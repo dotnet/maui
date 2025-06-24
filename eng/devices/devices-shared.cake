@@ -133,7 +133,72 @@ void CleanResults(string resultsDir)
     }
 }
 
-void HandleTestResults(string resultsDir, bool testsFailed, bool needsNameFix)
+List<string> GetTestCategoriesToRunSeparately(string projectPath)
+{
+
+    if (!string.IsNullOrEmpty(testFilter))
+    {
+        return new List<string> { testFilter };
+    }
+
+    if (!projectPath.EndsWith("Controls.DeviceTests.csproj") && !projectPath.EndsWith("Core.DeviceTests.csproj"))
+    {
+        return new List<string>
+        {
+            ""
+        };
+    }
+
+	var file = Context.GetCallerInfo().SourceFilePath;
+	var directoryPath = file.GetDirectory().FullPath;
+	Information($"Directory: {directoryPath}");
+	Information(directoryPath);
+
+	// Search for files that match the pattern
+	List<FilePath> dllFilePath = null;
+    
+    if (projectPath.EndsWith("Controls.DeviceTests.csproj"))
+        dllFilePath = GetFiles($"{directoryPath}/../../**/Microsoft.Maui.Controls.DeviceTests.dll").ToList();
+
+    if (projectPath.EndsWith("Core.DeviceTests.csproj"))
+        dllFilePath = GetFiles($"{directoryPath}/../../**/Microsoft.Maui.Core.DeviceTests.dll").ToList();
+
+    System.Reflection.Assembly loadedAssembly = null;
+
+    foreach (var filePath in dllFilePath)
+    {
+        try
+        {
+            loadedAssembly = System.Reflection.Assembly.LoadFrom(filePath.FullPath);
+            Information($"Loaded assembly from {filePath}: {loadedAssembly.FullName}");
+            break; // Exit the loop if the assembly is loaded successfully
+        }
+        catch (Exception ex)
+        {
+            Warning($"Failed to load assembly from {filePath}: {ex.Message}");
+        }
+    }
+
+    if (loadedAssembly == null)
+    {
+        throw new Exception("No test assembly found.");
+    }
+	var testCategoryType = loadedAssembly.GetType("Microsoft.Maui.DeviceTests.TestCategory");
+
+	var values = new List<string>();
+
+	foreach (var field in testCategoryType.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static))
+	{
+		if (field.FieldType == typeof(string))
+		{
+			values.Add($"Category={(string)field.GetValue(null)}");
+		}
+	}
+	
+	return values.ToList();
+}
+
+void HandleTestResults(string resultsDir, bool testsFailed, bool needsNameFix, string suffix = null)
 {
     Information($"Handling test results: {resultsDir}");
 
@@ -145,10 +210,24 @@ void HandleTestResults(string resultsDir, bool testsFailed, bool needsNameFix)
         {
             throw new Exception("No test results found.");
         }
+        
         if (FileExists(resultsFile))
         {
             Information($"Test results found on {resultsDir}");
-            CopyFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath("TestResults.xml"));
+            MoveFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath($"TestResults{suffix}.xml"));
+            var logFiles = GetFiles($"{resultsDir}/*.log");
+
+            foreach (var logFile in logFiles)
+            {
+                if (logFile.GetFilename().ToString().StartsWith("TestResults"))
+                {
+                    // These are log files that have already been renamed
+                    continue;
+                }
+
+                Information($"Log file found: {logFile.GetFilename().ToString()}");
+                MoveFile(logFile, resultsFile.GetDirectory().CombineWithFilePath($"TestResults{suffix}-{logFile.GetFilename()}"));
+            }
         }
     }
 
@@ -158,12 +237,21 @@ void HandleTestResults(string resultsDir, bool testsFailed, bool needsNameFix)
         EnsureDirectoryExists(failurePath);
         // The tasks will retry the tests and overwrite the failed results each retry
         // we want to retain the failed results for diagnostic purposes
-        CopyFiles($"{resultsDir}/*.*", failurePath);
+
+        var searchQuery = "*.*";
+
+        if (!string.IsNullOrWhiteSpace(suffix))
+        {
+            searchQuery = $"*{suffix}*.*";
+        }
+
+        // Only copy files from this suffix set of failures
+        CopyFiles($"{resultsDir}/{searchQuery}", failurePath);
 
         // We don't want these to upload
-        MoveFile($"{failurePath}/TestResults.xml", $"{failurePath}/Results.xml");
+        MoveFile($"{failurePath}/TestResults{suffix}.xml", $"{failurePath}/Results{suffix}.xml");
     }
-    FailRunOnOnlyInconclusiveTests($"{resultsDir}/TestResults.xml");
+    FailRunOnOnlyInconclusiveTests($"{resultsDir}/TestResults{suffix}.xml");
 }
 
 DirectoryPath DetermineBinlogDirectory(string projectPath, string binlogArg)
@@ -183,6 +271,67 @@ DirectoryPath DetermineBinlogDirectory(string projectPath, string binlogArg)
         Warning("No project path or binlog directory specified, using current directory.");
         return null;
     }
+}
+
+void RunMacAndiOSTests(
+    string project, string device, string resultsDir, string config, string tfm, string rid, string toolPath, string projectPath,
+    Func<string, DotNetToolSettings> getSettings)
+{
+    Exception exception = null;
+	foreach (var category in GetTestCategoriesToRunSeparately(projectPath))
+	{
+	    bool testsFailed = true;
+		Information($"Running tests for category: {category}");
+		var settings = getSettings(category);
+        var suffix = category.Split('=').Skip(1).FirstOrDefault();
+
+		try
+		{
+			for(int i = 0; i < 2; i++)
+			{
+				Information($"Running test attempt {i}");
+				try
+				{
+					DotNetTool("tool", settings);
+					testsFailed = false;
+					break;
+				}
+				catch (Exception ex)
+				{
+					Information($"Test attempt {i} failed: {ex.Message}");
+					if (i == 1)
+                    {
+						throw;
+                    }
+                    else
+                    {
+                        // delete any log files created so it's fresh for the rerun
+			            HandleTestResults(resultsDir, false, true, "-" + suffix);
+                        var logFiles = GetFiles($"{resultsDir}/*-{suffix}*");
+
+                        foreach (var logFile in logFiles)
+                        {
+                            DeleteFile(logFile);
+                        }
+                    }
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			exception = ex;
+		}
+		finally
+		{
+			HandleTestResults(resultsDir, testsFailed, true, "-" + suffix);
+		}
+	}
+
+	Information("Testing completed.");
+	if (exception is not null)
+	{
+		throw exception;
+	}
 }
 
 void LogSetupInfo(string toolPath)

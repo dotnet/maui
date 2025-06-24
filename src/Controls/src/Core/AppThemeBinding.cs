@@ -114,7 +114,8 @@ namespace Microsoft.Maui.Controls
 					}
 					target.SetValueCore(_targetProperty, value, Internals.SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
 				}
-			};
+			}
+			;
 		}
 
 		object _light;

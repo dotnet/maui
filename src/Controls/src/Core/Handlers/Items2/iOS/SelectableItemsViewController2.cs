@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Foundation;
+using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
@@ -25,18 +25,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
+			if (ItemsView?.ItemsSource is null)
+			{
+				return;
+			}
 			FormsSelectItem(indexPath);
 		}
 
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemDeselected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
+			if (ItemsView?.ItemsSource is null)
+			{
+				return;
+			}
 			FormsDeselectItem(indexPath);
 		}
 
 		// Called by Forms to mark an item selected 
 		internal void SelectItem(object selectedItem)
 		{
+			if (ItemsView?.ItemsSource is null)
+			{
+				return;
+			}
+
 			var index = GetIndexForItem(selectedItem);
 
 			if (index.Section > -1 && index.Item > -1)
@@ -52,6 +65,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// Called by Forms to clear the native selection
 		internal void ClearSelection()
 		{
+			if (ItemsView?.ItemsSource is null)
+			{
+				return;
+			}
+
 			var selectedItemIndexes = CollectionView.GetIndexPathsForSelectedItems();
 
 			foreach (var index in selectedItemIndexes)
@@ -95,7 +113,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal void UpdatePlatformSelection()
 		{
-			if (ItemsView == null)
+			if (ItemsView?.ItemsSource is null)
 			{
 				return;
 			}

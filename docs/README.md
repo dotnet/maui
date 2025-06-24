@@ -10,6 +10,7 @@ The table below outlines the different docs in this folder and what they are hel
 
 | Documentation        | What is it about?   | Who is it for?      |
 |----------------------|---------------------|---------------------|
+| [CG Manifest](CgManifest.md) | Guide to Component Governance manifest generation and management | Contributors who need to manage third-party dependencies or include CG manifest in packages |
 | [Code Documentation Guidelines](CodeDocumentationGuidelines.md) | Overview of the guidelines for the inline code documentation | Community members and collaborators looking to understand how to add good inline code comments that fuel our IntelliSense and online API docs |
 | [Issue management](IssueManagementPolicies.md) | Overview of policies in place to manage issues| Community members and collaborators looking to understand how we handle closed issues, issues that need author feedback, etc. |
 | [Release Schedule](ReleaseSchedule.md) | Overview of .NET MAUI version releases | Anyone who is interested in .NET MAUI versions and release dates |

@@ -6,8 +6,8 @@
              x:DataType="local:Issue14825">
 
   <VerticalStackLayout>
-    <Label Text="WebView"/>
-    <WebView x:Name="myWebView" WidthRequest="400" HeightRequest="150">
+    <Label Text="WebView" AutomationId="TestLabel"/>
+    <WebView x:Name="myWebView" WidthRequest="400" HeightRequest="150" HorizontalOptions="Start">
       <WebView.Source>
         <HtmlWebViewSource>
           <HtmlWebViewSource.Html>

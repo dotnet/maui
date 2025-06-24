@@ -39,7 +39,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot("Issue28343_ProgressSpinnerDisabled");
 		}
 
-
 		[Test]
 		public void ProgressSpinnerWorksWhenReEnabled()
 		{

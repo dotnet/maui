@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -30,18 +31,32 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #if IOS || ANDROID
 		[Test]
-        [Category(UITestCategories.CollectionView)]
-        public void HeaderFooterViewWorks()
-        {
-            // Navigate to the selection galleries
-            VisitInitialGallery("Header Footer");
+		[Category(UITestCategories.CollectionView)]
+		public async Task HeaderFooterViewWorks()
+		{
+			// Navigate to the selection galleries
+			VisitInitialGallery("Header Footer");
 
-            // Navigate to the specific sample inside selection galleries
-            VisitSubGallery("Header/Footer (Forms View)");
+			// Navigate to the specific sample inside selection galleries
+			VisitSubGallery("Header/Footer (Forms View)");
 
-            App.WaitForElement("This Is A Header");
-            App.WaitForElement("This Is A Footer");
-        }
+			App.WaitForElement("This Is A Header");
+			App.WaitForElement("This Is A Footer");
+
+			// Now let's add items until the footer goes out of the screen
+			// and then remove them all and verify the footer is visible again (#29137)
+			var i = 5;
+			while (--i > 0)
+			{
+				App.WaitForElement("Add 2 Items").Tap();
+				App.ScrollDownTo("Add 2 Items", "CV");
+			}
+
+			App.WaitForElement("Clear All Items").Tap();
+			await Task.Delay(300);
+
+			ClassicAssert.IsTrue(App.WaitForElement("This Is A Footer").IsDisplayed());
+		}
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
@@ -55,7 +70,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// Verify the header is visible
 			App.WaitForElement("This Is A Header");
-			
+
 			// Scroll right to ensure the footer is visible and positioned at the end
 			for (int i = 0; i < 5; i++)
 			{
@@ -66,60 +81,60 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("This Is A Footer");
 		}
 
-        [Test]
-        [Category(UITestCategories.CollectionView)]
-        public void HeaderFooterTemplateWorks()
-        {
-            // Navigate to the selection galleries
-            VisitInitialGallery("Header Footer");
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void HeaderFooterTemplateWorks()
+		{
+			// Navigate to the selection galleries
+			VisitInitialGallery("Header Footer");
 
-            // Navigate to the specific sample inside selection galleries
-            VisitSubGallery("Header/Footer (Template)");
+			// Navigate to the specific sample inside selection galleries
+			VisitSubGallery("Header/Footer (Template)");
 
-            VerifyScreenshot();
-        }
+			VerifyScreenshot();
+		}
 
-        [Test]
-        [Category(UITestCategories.CollectionView)]
-        public void HeaderFooterGridWorks()
-        {
-            // Navigate to the selection galleries
-            VisitInitialGallery("Header Footer");
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void HeaderFooterGridWorks()
+		{
+			// Navigate to the selection galleries
+			VisitInitialGallery("Header Footer");
 
-            // Navigate to the specific sample inside selection galleries
-            VisitSubGallery("Header/Footer (Grid)");
+			// Navigate to the specific sample inside selection galleries
+			VisitSubGallery("Header/Footer (Grid)");
 
-            App.WaitForElement("This Is A Header");
+			App.WaitForElement("This Is A Header");
 #if !ANDROID
 			// Android screen is too small to show this label
 			// but we can check for the footer via screenshot
             App.WaitForElement("This Is A Footer");
 #endif
 
-            VerifyScreenshot();
-        }
+			VerifyScreenshot();
+		}
 
 #if TEST_FAILS_ON_IOS
-        // The screenshot that's currently generated for this test is wrong
-        // So, we're ignoring this test due to it causing confusion when other changes
-        // cause this test to fail.
-        [Test]
-        [Category(UITestCategories.CollectionView)]
-        public void HeaderFooterGridHorizontalWorks()
-        {
-            // Navigate to the selection galleries
-            VisitInitialGallery("Header Footer");
+		// The screenshot that's currently generated for this test is wrong
+		// So, we're ignoring this test due to it causing confusion when other changes
+		// cause this test to fail.
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void HeaderFooterGridHorizontalWorks()
+		{
+			// Navigate to the selection galleries
+			VisitInitialGallery("Header Footer");
 
-            // Navigate to the specific sample inside selection galleries
-            VisitSubGallery("Header/Footer (Grid Horizontal)");
+			// Navigate to the specific sample inside selection galleries
+			VisitSubGallery("Header/Footer (Grid Horizontal)");
 
-            App.WaitForElement("This Is A Header");
-            
-            // This is a bug in the test, the footer is not being found
-            //App.WaitForElement("This Is A Footer");
+			App.WaitForElement("This Is A Header");
 
-            VerifyScreenshot();
-        }
+			// This is a bug in the test, the footer is not being found
+			//App.WaitForElement("This Is A Footer");
+
+			VerifyScreenshot();
+		}
 #endif
 #endif
 	}

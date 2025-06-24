@@ -42,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 				return nativeView.Alpha;
 			});
 		}
-		
+
 		[Fact]
 		[Description("The ScaleX property of a SearchBar should match with native ScaleX")]
 		public async Task ScaleXConsistent()
@@ -115,6 +115,26 @@ namespace Microsoft.Maui.DeviceTests
 			var platformSearchBar = GetPlatformControl(handler);
 			var platformRotation = await InvokeOnMainThreadAsync(() => platformSearchBar.Rotation);
 			Assert.Equal(expected, platformRotation);
+		}
+
+		[Fact]
+		[Description("The IsEnabled of a SearchBar should match with native IsEnabled")]
+		public async Task VerifySearchBarIsEnabledProperty()
+		{
+			var searchBar = new SearchBar
+			{
+				IsEnabled = false
+			};
+			var expectedValue = searchBar.IsEnabled;
+
+			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.Enabled;
+
+				Assert.Equal(expectedValue, isEnabled);
+			});
 		}
 
 		Task<bool> GetPlatformIsVisible(SearchBarHandler searchBarHandler)

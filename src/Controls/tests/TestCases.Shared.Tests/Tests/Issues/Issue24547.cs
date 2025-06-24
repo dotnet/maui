@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS // Fix reverted. Refer For further info - https://github.com/dotnet/maui/issues/24547
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,4 +17,3 @@ public class Issue24547 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
-#endif

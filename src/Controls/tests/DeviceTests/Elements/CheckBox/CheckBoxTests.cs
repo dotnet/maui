@@ -1,11 +1,11 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The IsVisible property of a CheckBox should match with native IsVisible")]		
+		[Description("The IsVisible property of a CheckBox should match with native IsVisible")]
 		public async Task VerifyCheckBoxIsVisibleProperty()
 		{
 			var checkBox = new CheckBox();
@@ -74,9 +74,9 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
 			await InvokeOnMainThreadAsync(async () =>
    			{
-				var isVisible = await GetPlatformIsVisible(handler);
-				Assert.Equal(expectedValue, isVisible);
-			});
+				   var isVisible = await GetPlatformIsVisible(handler);
+				   Assert.Equal(expectedValue, isVisible);
+			   });
 		}
 	}
 }

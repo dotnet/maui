@@ -33,6 +33,7 @@
     <!-- Raw Assets for HybridWebView tests (removes the "Resources\Raw" prefix, to mimic what project templates do) -->
     <None Remove="Resources\Raw\**" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    <MauiAsset Include="..\..\..\Core\src\Handlers\HybridWebView\HybridWebView.js" LogicalName="HybridTestRoot\scripts\HybridWebView.js" />
   </ItemGroup>
 
   <PropertyGroup>

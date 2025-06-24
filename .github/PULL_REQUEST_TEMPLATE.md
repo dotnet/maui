@@ -1,3 +1,8 @@
+<!-- Please let the below note in for people that find this PR -->
+> [!NOTE]
+> Are you waiting for the changes in this PR to be merged?
+> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
+
 <!--
 !!!!!!! MAIN IS THE ONLY ACTIVE BRANCH. MAKE SURE THIS PR IS TARGETING MAIN. !!!!!!! 
 -->

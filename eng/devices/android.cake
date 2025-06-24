@@ -15,7 +15,7 @@ if (EnvironmentVariable("JAVA_HOME") == null)
 }
 
 string DEFAULT_ANDROID_PROJECT = "../../src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj";
-var projectPath = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? "");
+var projectPath = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_ANDROID_PROJECT);
 var testDevice = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-64_{DefaultApiLevel}");
 var targetFramework = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{DotnetVersion}-android");
 var binlogArg = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? "");
@@ -111,6 +111,13 @@ Task("test")
 Task("buildAndTest")
 	.IsDependentOn("buildOnly")
 	.IsDependentOn("testOnly");
+
+Task("uitest-build")
+	.IsDependentOn("dotnet-buildtasks")
+	.Does(() =>
+	{
+		ExecuteBuildUITestApp(testAppProjectPath, testDevice, binlogDirectory, configuration, targetFramework, "", dotnetToolPath);
+	});
 
 Task("uitest-prepare")
 	.IsDependentOn("connectToDevice")
@@ -288,6 +295,31 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 		}
 	}
 	Information("UI Tests completed.");
+}
+
+void ExecuteBuildUITestApp(string appProject, string device, string binDir, string config, string tfm, string rid, string toolPath)
+{
+	Information($"Building UI Test app: {appProject}");
+	var projectName = System.IO.Path.GetFileNameWithoutExtension(appProject);
+	var binlog = $"{binDir}/{projectName}-{config}-android.binlog";
+
+	DotNetBuild(appProject, new DotNetBuildSettings
+	{
+		Configuration = config,
+		Framework = tfm,
+		ToolPath = toolPath,
+		ArgumentCustomization = args =>
+		{
+			args
+			.Append("/p:EmbedAssembliesIntoApk=true")
+			.Append("/bl:" + binlog)
+			.Append("/tl");
+
+			return args;
+		}
+	});
+
+	Information("UI Test app build completed.");
 }
 
 // Helper methods
@@ -597,25 +629,24 @@ void PrepareDevice(bool waitForBoot)
 	{
 		Information("Waiting for the emulator to finish booting...");
 
-		// wait for it to finish booting
-		var waited = 0;
-		var total = EmulatorBootTimeoutSeconds;
-		while (AdbShell("getprop sys.boot_completed", settings).FirstOrDefault() != "1")
+        // Wait for the emulator to finish booting
+        var waited = 0;
+        var total = EmulatorBootTimeoutSeconds;
+        while (AdbShell("getprop sys.boot_completed", settings).FirstOrDefault() != "1")
 		{
-			System.Threading.Thread.Sleep(1000);
+		    System.Threading.Thread.Sleep(1000);
 
-			Information("Waiting {0}/{1} seconds for the emulator to boot up.", waited, total);
-			if (waited++ > total)
-			{
-				throw new Exception("The emulator did not finish booting in time.");
-			}
+            Information("Waiting {0}/{1} seconds for the emulator to boot up.", waited, total);
+            if (waited++ > total)
+            {
+                throw new Exception("The emulator did not finish booting in time.");
+            }
 
-			// something may be wrong with ADB, so restart every 30 seconds just in case
-			if (waited % 30 == 0 && IsCIBuild())
-			{
-				Information("Trying to restart ADB just in case...");
-				AdbKillServer(adbSettings);
-			}
+            if (waited % 60 == 0 && IsCIBuild())
+            {
+                // Ensure ADB keys are configured
+                EnsureAdbKeys(settings);
+            }
 		}
 
 		Information("Waited {0} seconds for the emulator to boot up.", waited);
@@ -641,4 +672,165 @@ void PrepareDevice(bool waitForBoot)
 	Information("{0}", string.Join("\n", lines));
 
 	Information("Finished setting ADB properties.");
+}
+
+void EnsureAdbKeys(AdbToolSettings settings)
+{
+    Information("Ensuring ADB keys are correctly configured...");
+
+    try
+    {
+        // Kill ADB server first before modifying keys
+        Information("Stopping ADB server...");
+        AdbKillServer(settings);
+        System.Threading.Thread.Sleep(1000);
+
+        // Set up file paths
+        var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var adbKeyPath = System.IO.Path.Combine(homeDir, ".android");
+        var adbKeyFile = System.IO.Path.Combine(adbKeyPath, "adbkey");
+        var adbKeyPubFile = System.IO.Path.Combine(adbKeyPath, "adbkey.pub");
+
+        // Ensure ADB directory exists with correct permissions
+        Information("Ensuring ADB key directory exists...");
+        if (!System.IO.Directory.Exists(adbKeyPath))
+        {
+            System.IO.Directory.CreateDirectory(adbKeyPath);
+            Information($"Created ADB directory at {adbKeyPath}");
+        }
+
+        // Set proper directory permissions
+        StartProcess("chmod", $"700 {adbKeyPath}");
+
+        // Delete existing ADB keys to avoid stale data
+        Information("Cleaning up old ADB keys...");
+        if (System.IO.File.Exists(adbKeyFile)) 
+        {
+            System.IO.File.Delete(adbKeyFile);
+            Information("Removed existing private key");
+        }
+
+        if (System.IO.File.Exists(adbKeyPubFile)) 
+        {
+            System.IO.File.Delete(adbKeyPubFile);
+            Information("Removed existing public key");
+        }
+
+        // Generate new ADB keys instead of waiting for automatic generation
+        Information("Explicitly generating new ADB keys...");
+        StartProcess("adb", new ProcessSettings {
+            Arguments = "keygen " + adbKeyPath,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        });
+        
+        // Check if keys were created
+        if (!System.IO.File.Exists(adbKeyFile) || !System.IO.File.Exists(adbKeyPubFile))
+        {
+            throw new Exception("Failed to generate ADB keys.");
+        }
+
+         // Set correct file permissions for ADB keys
+        Information("Setting correct permissions for ADB keys...");
+        StartProcess("chmod", $"600 {adbKeyFile}");
+        StartProcess("chmod", $"600 {adbKeyPubFile}");
+
+        // Set environment variable properly (platform specific)
+        Information("Setting ADB_VENDOR_KEYS environment variable...");
+
+        // This actually sets it for the current process
+        SetEnvironmentVariable("ADB_VENDOR_KEYS", adbKeyPubFile);
+
+        // Set ADB_VENDOR_KEYS environment variable
+        StartProcess("sh", new ProcessSettings {
+            Arguments = new ProcessArgumentBuilder()
+                .Append("-c")
+                .AppendQuoted($"export ADB_VENDOR_KEYS={adbKeyPubFile}"),
+            RedirectStandardOutput = true
+        });
+
+        // Start ADB server with new keys
+        Information("Starting ADB server with new keys...");
+        AdbStartServer(settings);
+        System.Threading.Thread.Sleep(2000); // Give ADB time to fully start
+
+        // Push keys to the device with better error handling
+        Information("Pushing ADB keys to the device...");
+        int retries = 0;
+        bool pushSuccess = false;
+        
+        while (retries < 3 && !pushSuccess)
+        {
+            var processSettings = new ProcessSettings {
+                Arguments = new ProcessArgumentBuilder()
+                    .Append("push")
+                    .AppendQuoted(adbKeyPubFile)
+                    .AppendQuoted("/data/misc/adb/adb_keys"),
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+            
+            var exitCode = StartProcess("adb", processSettings);
+            
+            // Check exit code for success indicators
+            if (exitCode == 0)
+            {
+                Information("ADB key successfully pushed.");
+                pushSuccess = true;
+                break;
+            }
+
+            retries++;
+            Information($"Push attempt {retries} failed. Retrying in 1 second...");
+            System.Threading.Thread.Sleep(1000);
+        }
+
+        if (!pushSuccess)
+        {
+            throw new Exception("Failed to push ADB keys after multiple attempts.");
+        }
+
+        // Set proper permissions on the device key file
+        AdbShell("chmod 600 /data/misc/adb/adb_keys", settings);
+
+        // Restart ADB on device to apply changes
+        Information("Restarting ADB daemon on the device...");
+        AdbShell("stop adbd", settings);
+        System.Threading.Thread.Sleep(2000);
+        AdbShell("start adbd", settings);
+        System.Threading.Thread.Sleep(2000);
+
+        // Verify connectivity after all changes
+        var deviceCheck = StartProcess("adb", new ProcessSettings {
+            Arguments = "devices",
+            RedirectStandardOutput = true
+        });
+        
+        if (deviceCheck == 0)
+        {
+            Information("Device connection authorized successfully.");
+        }
+        else
+        {
+            Warning("Device may not be properly authorized. Check 'adb devices' output.");
+        }
+    }
+    catch (Exception ex)
+    {
+        Warning($"Error ensuring ADB keys: {ex.Message}");
+        Information("Trying to restart ADB just in case...");
+        
+        try 
+        {
+            AdbKillServer(settings);
+            System.Threading.Thread.Sleep(1000);
+            AdbStartServer(settings);
+        }
+        catch (Exception innerEx) 
+        {
+            Error($"Recovery attempt also failed: {innerEx.Message}");
+        }
+        
+        throw; // Re-throw the original exception
+    }
 }

@@ -32,6 +32,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool _isRotating;
 
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
+			{
+				return;
+			}
+
+			if (ItemsView?.Loop == false || _carouselViewLoopManager is null)
+			{
+				CollectionView.ReloadData();
+				InitialPositionSet = false;
+			}
+		}
+
 		public CarouselViewController(CarouselView itemsView, ItemsViewLayout layout) : base(itemsView, layout)
 		{
 			CollectionView.AllowsSelection = false;
@@ -184,6 +198,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemIndex = GetIndexFromIndexPath(indexPath);
 			return base.DetermineCellReuseId(NSIndexPath.FromItemSection(itemIndex, 0));
 		}
+
+		private protected override (Type CellType, string CellTypeReuseId) DetermineTemplatedCellType()
+			=> (typeof(CarouselTemplatedCell), "maui_carousel");
 
 		protected override void RegisterViewTypes()
 		{

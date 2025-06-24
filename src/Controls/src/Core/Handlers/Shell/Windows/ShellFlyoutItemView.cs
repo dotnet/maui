@@ -98,9 +98,6 @@ namespace Microsoft.Maui.Controls.Platform
 			if (ShellView == null)
 				return base.MeasureOverride(availableSize);
 
-			if (!ShellView.IsPaneOpen)
-				return base.MeasureOverride(availableSize);
-
 			if (ShellView.OpenPaneLength < availableSize.Width)
 				return base.MeasureOverride(availableSize);
 

@@ -7,7 +7,7 @@ public partial class Issue27992 : ContentPage
 	{
 		InitializeComponent();
 	}
-	int i =0;
+	int i = 0;
 	private void Entry_Completed(object sender, EventArgs e)
 	{
 		i++;

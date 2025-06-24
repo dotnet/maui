@@ -1,8 +1,8 @@
 ﻿using System;
 using Android.Content;
-using AndroidX.AppCompat.Widget;
 using Android.Text;
 using Android.Views;
+using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Platform
 {
@@ -22,8 +22,19 @@ namespace Microsoft.Maui.Platform
 		{
 			if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.AtMost && Layout is not null)
 			{
-				int maxWidth = (int)Math.Ceiling(GetMaxLineWidth(Layout)) + CompoundPaddingLeft + CompoundPaddingRight;
-				widthMeasureSpec = MeasureSpec.MakeMeasureSpec(maxWidth, MeasureSpecMode.AtMost);
+				// Ensure the Layout is valid and measured before reading LineCount or GetLineWidth(i) to avoid unnecessary calculations.
+				if (Layout.Width > 0)
+				{
+					// Calculate the total width needed based on text content plus padding
+					int contentWidth = (int)Math.Ceiling(GetMaxLineWidth(Layout));
+					int totalPadding = CompoundPaddingLeft + CompoundPaddingRight;
+					int requiredWidth = contentWidth + totalPadding;
+
+					// Constrain to maximum available width from original spec
+					int availableWidth = MeasureSpec.GetSize(widthMeasureSpec);
+					int desiredWidth = Math.Min(requiredWidth, availableWidth);
+					widthMeasureSpec = MeasureSpec.MakeMeasureSpec(desiredWidth, MeasureSpecMode.AtMost);
+				}
 			}
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}

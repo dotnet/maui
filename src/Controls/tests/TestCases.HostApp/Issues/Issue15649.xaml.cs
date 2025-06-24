@@ -5,19 +5,19 @@ public partial class Issue15649 : ContentPage
 {
 	public int _positionSelected = 1;
 
-		public int PositionSelected
+	public int PositionSelected
+	{
+		set
 		{
-			set
+			if (_positionSelected != value)
 			{
-				if (_positionSelected != value)
-				{
-					_positionSelected = value;
+				_positionSelected = value;
 
-					OnPropertyChanged();
-				}
+				OnPropertyChanged();
 			}
-			get => _positionSelected;
 		}
+		get => _positionSelected;
+	}
 
 	public Issue15649()
 	{

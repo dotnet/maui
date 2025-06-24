@@ -167,5 +167,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await ((IStreamImageSource)imageSource).GetStreamAsync();
 			await imageSource.Cancel(); // This should complete!
 		}
+
+		[Fact]
+		public void SettingNewImageeSourceClearsParentOnOldImageSource()
+		{
+			var image = new Image { Source = "File.png" };
+			var imageSource = image.Source;
+			Assert.Equal(image, imageSource.Parent);
+			image.Source = "File2.png";
+			Assert.Null(imageSource.Parent);
+			Assert.Equal(image, image.Source.Parent);
+		}
 	}
 }

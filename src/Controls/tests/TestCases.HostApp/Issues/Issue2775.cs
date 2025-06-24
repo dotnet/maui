@@ -50,7 +50,7 @@
 			};
 
 			Content = new StackLayout
-			{				
+			{
 				Children = {
 					list,
 					listTransparent,

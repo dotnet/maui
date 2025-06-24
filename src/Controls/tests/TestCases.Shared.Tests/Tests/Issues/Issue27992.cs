@@ -14,17 +14,17 @@ public class Issue27992 : _IssuesUITest
 	public override string Issue => "Entry Completed Event Triggered Twice";
 
 
-    [Test]
+	[Test]
 	[Category(UITestCategories.Entry)]
 	public void EntryCompletedShouldOnlyFireOnce()
 	{
 		App.WaitForElement("MauiEntry");
 
-        App.Tap("MauiEntry");
+		App.Tap("MauiEntry");
 
-        App.PressEnter();
+		App.PressEnter();
 
-        var text = App.WaitForElement("MauiLabel").GetText();
-        Assert.That(text,Is.EqualTo("Completed Invoked 1 times"));
+		var text = App.WaitForElement("MauiLabel").GetText();
+		Assert.That(text, Is.EqualTo("Completed Invoked 1 times"));
 	}
 }

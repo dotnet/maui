@@ -438,6 +438,7 @@ namespace Microsoft.Maui.Controls.Handlers
 						{
 							menuItem.SetIcon(result.Value);
 						});
+					SetupBottomNavigationViewIconColor(page, menuItem, index);
 				}
 				else
 				{
@@ -635,19 +636,11 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 			else
 			{
-				if (barItemColor is not null)
-					defaultColor = barItemColor.ToPlatform().ToArgb();
+				// UnSelected tabs TextColor
+				defaultColor = GetItemTextColor(barItemColor, _originalTabTextColors);
 
-				if (barItemColor is null && _originalTabTextColors is not null)
-					defaultColor = _originalTabTextColors.DefaultColor;
-
-				if (!defaultColor.HasValue)
-					return _originalTabTextColors;
-				else
-					checkedColor = defaultColor.Value;
-
-				if (barSelectedItemColor is not null)
-					checkedColor = barSelectedItemColor.ToPlatform().ToArgb();
+				// Selected tabs TextColor
+				checkedColor = GetItemTextColor(barSelectedItemColor, _originalTabTextColors);
 			}
 
 			_newTabTextColors = GetColorStateList(defaultColor.Value, checkedColor);
@@ -655,8 +648,18 @@ namespace Microsoft.Maui.Controls.Handlers
 			return _newTabTextColors;
 		}
 
-		protected virtual ColorStateList GetItemIconTintColorState()
+		int GetItemTextColor(Color customColor, ColorStateList originalColors)
 		{
+			return customColor?.ToPlatform().ToArgb() ?? originalColors?.DefaultColor ?? 0;
+		}
+
+		protected virtual ColorStateList GetItemIconTintColorState(Page page)
+		{
+			if (page.IconImageSource is FontImageSource fontImageSource && fontImageSource.Color is not null)
+			{
+				return null;
+			}
+
 			if (_orignalTabIconColors is null)
 			{
 				_orignalTabIconColors = IsBottomTabPlacement ? _bottomNavigationView.ItemIconTintList : _tabLayout.TabIconTint;
@@ -776,7 +779,14 @@ namespace Microsoft.Maui.Controls.Handlers
 			_newTabIconColors = null;
 
 			if (IsBottomTabPlacement)
-				_bottomNavigationView.ItemIconTintList = GetItemIconTintColorState() ?? _orignalTabIconColors;
+			{
+				for (int i = 0; i < _bottomNavigationView.Menu.Size(); i++)
+				{
+					var menuItem = _bottomNavigationView.Menu.GetItem(i);
+					var page = Element.Children[i];
+					SetupBottomNavigationViewIconColor(page, menuItem, i);
+				}
+			}
 			else
 			{
 				for (int i = 0; i < _tabLayout.TabCount; i++)
@@ -786,6 +796,28 @@ namespace Microsoft.Maui.Controls.Handlers
 					this.SetIconColorFilter(page, tab);
 				}
 			}
+		}
+
+		void SetupBottomNavigationViewIconColor(Page page, IMenuItem menuItem, int i)
+		{
+			// Updating the icon color of each BottomNavigationView item individually works correctly.
+			// This is necessary because `ItemIconTintList` applies the color globally to all items,
+			// which doesn't allow for per-item customization.
+			// Currently, there is no modern API that provides the desired behavior.
+			// Therefore, the obsolete `BottomNavigationItemView` approach is used.
+#pragma warning disable XAOBS001 // Type or member is obsolete
+			if (_bottomNavigationView.GetChildAt(0) is BottomNavigationMenuView menuView)
+			{
+				var itemView = menuView.GetChildAt(i) as BottomNavigationItemView;
+
+				if (itemView != null && itemView.Id == menuItem.ItemId)
+				{
+					ColorStateList colors = GetItemIconTintColorState(page);
+
+					itemView.SetIconTintList(colors);
+				}
+			}
+#pragma warning restore XAOBS001 // Type or member is obsolete
 		}
 
 		internal void UpdateTabItemStyle()
@@ -833,7 +865,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (icon == null)
 				return;
 
-			ColorStateList colors = (page.IconImageSource is FontImageSource fontImageSource && fontImageSource.Color is not null) ? null : GetItemIconTintColorState();
+			ColorStateList colors = GetItemIconTintColorState(page);
 			if (colors == null)
 				ADrawableCompat.SetTintList(icon, null);
 			else

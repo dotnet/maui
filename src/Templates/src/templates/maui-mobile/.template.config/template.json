@@ -79,7 +79,8 @@
           "condition": "(IncludeSampleContent)",
           "exclude": [
             "MainPage.xaml",
-            "MainPage.xaml.cs"
+            "MainPage.xaml.cs",
+            "Resources/Images/dotnet_bot.png"
           ]
         }]
       }

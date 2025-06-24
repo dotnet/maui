@@ -40,12 +40,12 @@ namespace Microsoft.Maui.Platform
 
 		static void OnKeyPress(object? sender, AView.KeyEventArgs e)
 		{
+			//To prevent user from entering text when focus is received
+			e.Handled = true;
 			if (!AvailableKeys.Contains(e.KeyCode))
 			{
-				e.Handled = false;
 				return;
 			}
-			e.Handled = true;
 			(sender as AView)?.CallOnClick();
 		}
 

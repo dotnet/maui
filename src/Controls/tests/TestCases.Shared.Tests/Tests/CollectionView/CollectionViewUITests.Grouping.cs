@@ -4,31 +4,31 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-#if IOS
-    public class CollectionViewGroupingTests : CollectionViewUITests
-    {
-        protected override bool ResetAfterEachTest => true;
 
-        public CollectionViewGroupingTests(TestDevice device)
-            : base(device)
-        {
-        }
+	public class CollectionViewGroupingTests : CollectionViewUITests
+	{
+		protected override bool ResetAfterEachTest => true;
 
-        [Test]
-        [Category(UITestCategories.CollectionView)]
-        public void GroupingAndHeaderWorks()
-        {
-            VisitInitialGallery("Grouping");
+		public CollectionViewGroupingTests(TestDevice device)
+			: base(device)
+		{
+		}
 
-            VisitSubGallery("Basic Grouping");
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void GroupingAndHeaderWorks()
+		{
+			VisitInitialGallery("Grouping");
 
-            // header
-            App.WaitForElement("This is a header");
-            // group header
-            App.WaitForElement("Avengers");
-            // group footer
-            App.WaitForElement("Total members: 12");
-        }
-    }
-#endif
+			VisitSubGallery("Basic Grouping");
+
+			// header
+			App.WaitForElement("This is a header");
+			// group header
+			App.WaitForElement("Avengers");
+			// group footer
+			App.WaitForElement("Total members: 12");
+		}
+	}
+
 }

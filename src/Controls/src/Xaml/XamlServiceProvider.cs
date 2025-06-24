@@ -135,10 +135,11 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 	}
 #nullable restore
 
-	public class SimpleValueTargetProvider : IProvideParentValues, IProvideValueTarget, IReferenceProvider
+	public class SimpleValueTargetProvider : IProvideParentValues, IProvideValueTarget, IReferenceProvider, IRootObjectProvider
 	{
 		readonly object[] objectAndParents;
 		readonly object targetProperty;
+		readonly object rootObject;
 		readonly INameScope[] scopes;
 
 		[Obsolete("Use the other ctor")]
@@ -147,7 +148,13 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		{
 		}
 
+		[Obsolete("Use the other ctor")]
 		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, INameScope[] scopes, bool notused)
+			: this(objectAndParents, targetProperty, scopes, null)
+		{
+		}
+
+		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, INameScope[] scopes, object rootObject)
 		{
 			if (objectAndParents == null)
 				throw new ArgumentNullException(nameof(objectAndParents));
@@ -157,8 +164,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			this.objectAndParents = objectAndParents;
 			this.targetProperty = targetProperty;
 			this.scopes = scopes;
+			this.rootObject = rootObject ?? objectAndParents[objectAndParents.Length - 1];
 		}
 
+		public object RootObject => rootObject;
 		IEnumerable<object> IProvideParentValues.ParentObjects => objectAndParents;
 		object IProvideValueTarget.TargetObject => objectAndParents[0];
 		object IProvideValueTarget.TargetProperty => targetProperty;

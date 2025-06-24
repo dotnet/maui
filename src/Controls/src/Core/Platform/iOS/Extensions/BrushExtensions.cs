@@ -113,24 +113,25 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static UIImage GetBackgroundImage(this UIView control, Brush brush)
 		{
-			if (control == null || brush == null || brush.IsEmpty)
+			if (control is null || brush is null || brush.IsEmpty)
+			{
 				return null;
+			}
 
 			var backgroundLayer = control.GetBackgroundLayer(brush);
 
-			if (backgroundLayer == null)
+			if (backgroundLayer is null || backgroundLayer.Bounds.Size.Width <= 0 || backgroundLayer.Bounds.Size.Height <= 0)
+			{
 				return null;
+			}
 
-			UIGraphics.BeginImageContextWithOptions(backgroundLayer.Bounds.Size, false, UIScreen.MainScreen.Scale);
+			var renderer = new UIGraphicsImageRenderer(backgroundLayer.Bounds.Size, new UIGraphicsImageRendererFormat()
+			{
+				Opaque = false,
+				Scale = UIScreen.MainScreen.Scale,
+			});
 
-			if (UIGraphics.GetCurrentContext() == null)
-				return null;
-
-			backgroundLayer.RenderInContext(UIGraphics.GetCurrentContext());
-			UIImage gradientImage = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
-
-			return gradientImage;
+			return renderer.CreateImage((context) => backgroundLayer.RenderInContext(context.CGContext));
 		}
 
 		public static void InsertBackgroundLayer(this UIView view, CALayer backgroundLayer, int index = -1)

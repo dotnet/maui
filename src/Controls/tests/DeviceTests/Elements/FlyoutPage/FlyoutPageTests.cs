@@ -252,6 +252,39 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "FlyoutPage as Modal Does Not Leak")]
+		public async Task DoesNotLeakAsModal()
+		{
+			SetupBuilder();
+
+			var references = new List<WeakReference>();
+			var launcherPage = new ContentPage();
+			var window = new Window(launcherPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				var flyoutPage = new FlyoutPage
+				{
+					Flyout = new ContentPage
+					{
+						Title = "Flyout",
+						IconImageSource = "icon.png"
+					},
+					Detail = new ContentPage { Title = "Detail" }
+				};
+
+				await launcherPage.Navigation.PushModalAsync(flyoutPage, true);
+
+				references.Add(new WeakReference(flyoutPage));
+				references.Add(new WeakReference(flyoutPage.Flyout));
+				references.Add(new WeakReference(flyoutPage.Detail));
+
+				await launcherPage.Navigation.PopModalAsync();
+			});
+
+			await AssertionExtensions.WaitForGC(references.ToArray());
+		}
+
 		bool CanDeviceDoSplitMode(FlyoutPage page)
 		{
 			return ((IFlyoutPageController)page).ShouldShowSplitMode;

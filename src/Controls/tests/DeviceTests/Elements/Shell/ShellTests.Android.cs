@@ -470,7 +470,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
-			{				
+			{
 				var initialHeaderPlatformView = initialHeader.ToPlatform();
 				Assert.NotNull(initialHeaderPlatformView);
 				Assert.NotNull(initialHeader.Handler);
@@ -496,7 +496,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var shell = await CreateShellAsync(shell => 
+			var shell = await CreateShellAsync(shell =>
 			{
 				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 1" });
 			});

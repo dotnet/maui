@@ -625,7 +625,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//Add a SimpleValueTargetProvider and register it as IProvideValueTarget, IReferenceProvider and IProvideParentValues
 			if (createAllServices
 				|| requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IProvideParentValues")), TypeRefComparer.Default)
-				|| requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IReferenceProvider")), TypeRefComparer.Default))
+				|| requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IReferenceProvider")), TypeRefComparer.Default)
+				|| requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IRootObjectProvider")), TypeRefComparer.Default))
 			{
 				alreadyContainsProvideValueTarget = true;
 				var pushParentIl = node.PushParentObjectsArray(context).ToList();
@@ -644,9 +645,25 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					foreach (var instruction in PushNamescopes(node, context, module))
 						yield return instruction;
 
-					yield return Create(Ldc_I4_0); //don't ask
+					//rootObject
+					if (context.Root is VariableDefinition rootVariable)
+						yield return Create(Ldloc, rootVariable);
+					else if (context.Root is FieldReference rootField)
+					{
+						yield return Create(Ldarg_0);
+						yield return Create(Ldfld, rootField);
+					}
+					else
+						yield return Create(Ldnull);
+
 					yield return Create(Newobj, module.ImportCtorReference(context.Cache,
-						("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "SimpleValueTargetProvider"), paramCount: 4));
+						type: ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "SimpleValueTargetProvider"),
+						parameterTypes: [
+							("mscorlib", "System", "Object[]"),
+							("mscorlib", "System", "Object"),
+							("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "INameScope[]"),
+							("mscorlib", "System", "Object"),
+						]));
 
 					//store the provider so we can register it again with a different key
 					yield return Create(Dup);
@@ -657,6 +674,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 					yield return Create(Dup); //Keep the serviceProvider on the stack
 					yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IReferenceProvider")));
+					yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
+					yield return Create(Ldloc, refProvider);
+					yield return Create(Callvirt, addService);
+
+					yield return Create(Dup); //Keep the serviceProvider on the stack
+					yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IRootObjectProvider")));
 					yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 					yield return Create(Ldloc, refProvider);
 					yield return Create(Callvirt, addService);

@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android.Enums;
@@ -15,8 +16,6 @@ namespace UITest.Appium
 		/// <summary>
 		/// For desktop, this will perform a mouse click on the target element.
 		/// For mobile, this will tap the element.
-		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
-		/// https://github.com/dotnet/maui/issues/19754
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="element">Target Element.</param>
@@ -28,8 +27,6 @@ namespace UITest.Appium
 		/// <summary>
 		/// For desktop, this will perform a mouse click on the target element.
 		/// For mobile, this will tap the element.
-		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
-		/// https://github.com/dotnet/maui/issues/19754
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
@@ -89,6 +86,20 @@ namespace UITest.Appium
 				{ "element", element },
 			});
 			return (string?)response.Value;
+		}
+
+		public static bool TryGetText(this IUIElement element, [NotNullWhen(true)] out string? text)
+		{
+			try
+			{
+				text = GetText(element);
+				return text is not null;
+			}
+			catch
+			{
+				text = null;
+				return false;
+			}
 		}
 
 		public static string? ReadText(this IUIElement element)
@@ -293,8 +304,6 @@ namespace UITest.Appium
 		/// <summary>
 		/// For desktop, this will perform a mouse click on the target element.
 		/// For mobile, this will tap the element.
-		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
-		/// https://github.com/dotnet/maui/issues/19754
 		/// </summary>
 		/// <param name="element">Target Element.</param>
 		public static void Tap(this IUIElement element)
@@ -394,11 +403,18 @@ namespace UITest.Appium
 		/// <param name="y">The y coordinate to double tap.</param>
 		public static void DoubleTapCoordinates(this IApp app, float x, float y)
 		{
-			app.CommandExecutor.Execute("doubleTapCoordinates", new Dictionary<string, object>
+			if (app is AppiumCatalystApp)
 			{
-				{ "x", x },
-				{ "y", y }
-			});
+				app.DoubleClickCoordinates(x, y); // Directly invoke coordinate-based double click for AppiumCatalystApp.
+			}
+			else
+			{
+				app.CommandExecutor.Execute("doubleTapCoordinates", new Dictionary<string, object>
+				{
+					{ "x", x },
+					{ "y", y }
+				});
+			}
 		}
 
 		/// <summary>
@@ -799,7 +815,8 @@ namespace UITest.Appium
 			while (true)
 			{
 				var element = app.FindElements(automationId).FirstOrDefault();
-				if (element != null && (element.GetText()?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false))
+
+				if (element is not null && element.TryGetText(out var s) && s.Contains(text, StringComparison.OrdinalIgnoreCase))
 				{
 					return true;
 				}
@@ -1406,11 +1423,18 @@ namespace UITest.Appium
 		/// <param name="y">The y coordinate to tap.</param>
 		public static void TapCoordinates(this IApp app, float x, float y)
 		{
-			app.CommandExecutor.Execute("tapCoordinates", new Dictionary<string, object>
+			if (app is AppiumCatalystApp)
 			{
-				{ "x", x },
-				{ "y", y }
-			});
+				app.ClickCoordinates(x, y); // // Directly invoke coordinate-based click for AppiumCatalystApp.
+			}
+			else
+			{
+				app.CommandExecutor.Execute("tapCoordinates", new Dictionary<string, object>
+				{
+					{ "x", x },
+					{ "y", y }
+				});
+			}
 		}
 
 		/// <summary>
@@ -2145,6 +2169,38 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Waits for the flyout icon to disappear in the app.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="automationId">The automation ID of the flyout icon (default is an empty string).</param>
+		/// <param name="isShell">Indicates whether the app is using Shell navigation (default is true).</param>
+		public static void WaitForNoFlyoutIcon(this IApp app, string automationId = "", bool isShell = true)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.WaitForNoElement(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc=\"Open navigation drawer\"]"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumWindowsApp)
+			{
+				if (isShell)
+				{
+					app.WaitForNoElement("OK");
+				}
+				if (!isShell)
+				{
+					if (app is AppiumWindowsApp)
+					{
+						app.WaitForNoElement(AppiumQuery.ByAccessibilityId("TogglePaneButton"));
+					}
+					else
+					{
+						app.WaitForNoElement(automationId);
+					}
+				}
+			}
+		}
+
+		/// <summary>
 		/// Shows the flyout menu in the app.
 		/// </summary>
 		/// <param name="app">The IApp instance representing the application.</param>
@@ -2465,6 +2521,39 @@ namespace UITest.Appium
 			var startupArg = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
 			startupArg.Add(key, value);
 			config.SetProperty("TestConfigurationArgs", startupArg);
+		}
+
+		/// <summary>
+		/// Gets the search handler element for the shell.
+		/// This method is used to find the search handler element in the app.
+		/// It uses different queries based on the app type (Android, iOS, Catalyst, or Windows).
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <returns>The search handler element for the shell.</returns>
+		public static IUIElement GetShellSearchHandler(this IApp app)
+		{
+			IUIElement? element = null;
+
+			if (app is AppiumAndroidApp)
+			{
+				element = app.WaitForElement(AppiumQuery.ByXPath("//android.widget.EditText"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				element = app.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeSearchField"));
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				element = app.WaitForElement("TextBox");
+			}
+
+			// Ensure the element is not null before returning
+			if (element is null)
+			{
+				throw new InvalidOperationException("SearchHandler element not found.");
+			}
+
+			return element;
 		}
 	}
 }

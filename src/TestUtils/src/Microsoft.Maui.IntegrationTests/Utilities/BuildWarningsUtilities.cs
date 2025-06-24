@@ -126,25 +126,7 @@ namespace Microsoft.Maui.IntegrationTests
 		#region Expected warning messages
 
 		// IMPORTANT: Always store expected File information as a relative path to the repo ROOT
-		private static readonly List<WarningsPerFile> expectedNativeAOTWarnings = new()
-		{
-			// NOTE: this one is only expected when rooting all assemblies
-			new WarningsPerFile
-			{
-				File = "/_/src/libraries/System.Text.Json/src/System/Text/Json/Serialization/Converters/Value/EnumConverterFactory.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL3050",
-						Messages = new List<string>
-						{
-							"System.Text.Json.Serialization.Converters.EnumConverterFactory.CreateConverter(Type,JsonSerializerOptions): Using member 'System.Text.Json.Serialization.Converters.EnumConverterFactory.Create(Type,EnumConverterOptions,JsonNamingPolicy,JsonSerializerOptions)' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications.",
-						}
-					},
-				}
-			},
-		};
+		private static readonly List<WarningsPerFile> expectedNativeAOTWarnings = new();
 
 		#region Utility methods for generating the list of expected warnings
 

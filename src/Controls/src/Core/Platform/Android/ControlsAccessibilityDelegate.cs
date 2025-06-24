@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Handler = viewHandler;
 		}
 
-		public override void OnInitializeAccessibilityNodeInfo(PlatformView host, AccessibilityNodeInfoCompat info)
+		public override void OnInitializeAccessibilityNodeInfo(PlatformView? host, AccessibilityNodeInfoCompat? info)
 		{
 			base.OnInitializeAccessibilityNodeInfo(host, info);
 

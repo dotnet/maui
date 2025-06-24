@@ -22,7 +22,7 @@ public class MarkupExtensionBase : IMarkupExtension
 		if (serviceProvider.GetService(typeof(IXamlTypeResolver)) != null)
 			services.Add("IXamlTypeResolver");
 		if (serviceProvider.GetService(typeof(IRootObjectProvider)) != null)
-			services.Add("IRootObjectProvider");
+			services.Add($"IRootObjectProvider({((IRootObjectProvider)serviceProvider.GetService(typeof(IRootObjectProvider))).RootObject.GetType().Name})");
 		if (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) != null)
 			services.Add("IXmlLineInfoProvider");
 		if (serviceProvider.GetService(typeof(IValueConverterProvider)) != null)
@@ -32,7 +32,7 @@ public class MarkupExtensionBase : IMarkupExtension
 		if (serviceProvider.GetService(typeof(IReferenceProvider)) != null)
 			services.Add("IReferenceProvider");
 
-		return string.Join(",", services);
+		return string.Join(", ", services);
 	}
 }
 
@@ -48,6 +48,8 @@ public class SPMarkup2 : MarkupExtensionBase { }
 [RequireService([typeof(IXmlLineInfoProvider)])]
 public class SPMarkup3 : MarkupExtensionBase { }
 
+[RequireService([typeof(IRootObjectProvider)])]
+public class SPMarkup4 : MarkupExtensionBase { }
 
 
 public partial class ServiceProviderTests : ContentPage
@@ -65,17 +67,15 @@ public partial class ServiceProviderTests : ContentPage
 		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		[TestCase(true)]
-		public void TestServiceProviders(bool useCompiledXaml)
+		[Test]
+		public void TestServiceProviders([Values] bool useCompiledXaml)
 		{
 			var page = new ServiceProviderTests(useCompiledXaml);
-			MockCompiler.Compile(typeof(ServiceProviderTests));
 
-			//IValueConverterProvider is builtin for free
 			Assert.AreEqual(null, page.label0.Text);
-			Assert.AreEqual("IProvideValueTarget,IValueConverterProvider", page.label1.Text);
-			Assert.AreEqual("IProvideValueTarget,IValueConverterProvider,IReferenceProvider", page.label2.Text);
-			Assert.AreEqual("IXmlLineInfoProvider,IValueConverterProvider", page.label3.Text);
+			Assert.That(page.label1.Text, Does.Contain("IProvideValueTarget"));
+			Assert.That(page.label3.Text, Does.Contain("IXmlLineInfoProvider"));
+			Assert.That(page.label4.Text, Does.Contain("IRootObjectProvider(ServiceProviderTests)")); //https://github.com/dotnet/maui/issues/16881
 		}
 	}
 }

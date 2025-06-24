@@ -31,47 +31,47 @@ namespace Microsoft.Maui.Platform
 			_originalDelegate = originalDelegate ?? BlankDelegate;
 		}
 
-		public override void OnInitializeAccessibilityNodeInfo(PlatformView host, AccessibilityNodeInfoCompat info)
+		public override void OnInitializeAccessibilityNodeInfo(PlatformView? host, AccessibilityNodeInfoCompat? info)
 		{
 			_originalDelegate.OnInitializeAccessibilityNodeInfo(host, info);
 		}
 
-		public override void SendAccessibilityEvent(PlatformView host, int eventType)
+		public override void SendAccessibilityEvent(PlatformView? host, int eventType)
 		{
 			_originalDelegate.SendAccessibilityEvent(host, eventType);
 		}
 
-		public override void SendAccessibilityEventUnchecked(PlatformView host, AccessibilityEvent e)
+		public override void SendAccessibilityEventUnchecked(PlatformView? host, AccessibilityEvent? e)
 		{
 			_originalDelegate.SendAccessibilityEventUnchecked(host, e);
 		}
 
-		public override bool DispatchPopulateAccessibilityEvent(PlatformView host, AccessibilityEvent e)
+		public override bool DispatchPopulateAccessibilityEvent(PlatformView? host, AccessibilityEvent? e)
 		{
 			return _originalDelegate.DispatchPopulateAccessibilityEvent(host, e);
 		}
 
-		public override void OnPopulateAccessibilityEvent(PlatformView host, AccessibilityEvent e)
+		public override void OnPopulateAccessibilityEvent(PlatformView? host, AccessibilityEvent? e)
 		{
 			_originalDelegate.OnPopulateAccessibilityEvent(host, e);
 		}
 
-		public override void OnInitializeAccessibilityEvent(PlatformView host, AccessibilityEvent e)
+		public override void OnInitializeAccessibilityEvent(PlatformView? host, AccessibilityEvent? e)
 		{
 			_originalDelegate.OnInitializeAccessibilityEvent(host, e);
 		}
 
-		public override bool OnRequestSendAccessibilityEvent(Android.Views.ViewGroup host, PlatformView child, AccessibilityEvent e)
+		public override bool OnRequestSendAccessibilityEvent(Android.Views.ViewGroup? host, PlatformView? child, AccessibilityEvent? e)
 		{
 			return _originalDelegate.OnRequestSendAccessibilityEvent(host, child, e);
 		}
 
-		public override bool PerformAccessibilityAction(PlatformView host, int action, Bundle? args)
+		public override bool PerformAccessibilityAction(PlatformView? host, int action, Bundle? args)
 		{
 			return _originalDelegate.PerformAccessibilityAction(host, action, args);
 		}
 
-		public override AccessibilityNodeProviderCompat? GetAccessibilityNodeProvider(PlatformView host)
+		public override AccessibilityNodeProviderCompat? GetAccessibilityNodeProvider(PlatformView? host)
 		{
 			return _originalDelegate.GetAccessibilityNodeProvider(host);
 		}
