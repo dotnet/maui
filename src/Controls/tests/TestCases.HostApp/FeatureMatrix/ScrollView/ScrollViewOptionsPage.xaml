@@ -10,13 +10,13 @@
     </ContentPage.ToolbarItems>
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
           ColumnDefinitions="Auto,Auto"
-            ColumnSpacing="10"
-            RowSpacing="15"
-            Margin="10,10,0,0">
+          ColumnSpacing="10"
+          RowSpacing="15"
+          Margin="10,10,0,0">
 
         <VerticalStackLayout Grid.Row="0"
                              Grid.ColumnSpan="2"
-                Spacing="10">
+                             Spacing="10">
             <Label Text="Content"
                    FontSize="16"
                    FontAttributes="Bold"/>
@@ -55,7 +55,7 @@
         </VerticalStackLayout>
         <VerticalStackLayout Grid.Row="1"
                              Grid.ColumnSpan="2"
-                Spacing="10">
+                             Spacing="10">
             <Label Text="Orientation"
                    FontSize="16"
                    FontAttributes="Bold"/>
@@ -85,14 +85,19 @@
         </VerticalStackLayout>
         <VerticalStackLayout Grid.Row="2"
                              Grid.ColumnSpan="2"
-                Spacing="10">
+                             Spacing="10">
             <Label Text="HorizontalScrollBarVisibility"
                    FontSize="16"
                    FontAttributes="Bold"/>
             <HorizontalStackLayout>
+                <RadioButton x:Name="HorizontalSBNever"
+                             Content="Never"
+                             IsChecked="True"
+                             GroupName="HorizontalSBGroup"
+                             CheckedChanged="HorizontalSBRadio_CheckedChanged"
+                             AutomationId="HorizontalSBNever"/>
                 <RadioButton x:Name="HorizontalSBDefault"
                              Content="Default"
-                             IsChecked="True"
                              GroupName="HorizontalSBGroup"
                              CheckedChanged="HorizontalSBRadio_CheckedChanged"
                              AutomationId="HorizontalSBDefault"/>
@@ -101,23 +106,23 @@
                              GroupName="HorizontalSBGroup"
                              CheckedChanged="HorizontalSBRadio_CheckedChanged"
                              AutomationId="HorizontalSBAlways"/>
-                <RadioButton x:Name="HorizontalSBNever"
-                             Content="Never"
-                             GroupName="HorizontalSBGroup"
-                             CheckedChanged="HorizontalSBRadio_CheckedChanged"
-                             AutomationId="HorizontalSBNever"/>
             </HorizontalStackLayout>
         </VerticalStackLayout>
         <VerticalStackLayout Grid.Row="3"
                              Grid.ColumnSpan="2"
-                Spacing="10">
+                             Spacing="10">
             <Label Text="VerticalScrollBarVisibility"
                    FontSize="16"
                    FontAttributes="Bold"/>
             <HorizontalStackLayout>
+                <RadioButton x:Name="VerticalSBNever"
+                             Content="Never"
+                             IsChecked="True"
+                             GroupName="VerticalSBGroup"
+                             CheckedChanged="VerticalSBRadio_CheckedChanged"
+                             AutomationId="VerticalSBNever"/>
                 <RadioButton x:Name="VerticalSBDefault"
                              Content="Default"
-                             IsChecked="True"
                              GroupName="VerticalSBGroup"
                              CheckedChanged="VerticalSBRadio_CheckedChanged"
                              AutomationId="VerticalSBDefault"/>
@@ -126,16 +131,11 @@
                              GroupName="VerticalSBGroup"
                              CheckedChanged="VerticalSBRadio_CheckedChanged"
                              AutomationId="VerticalSBAlways"/>
-                <RadioButton x:Name="VerticalSBNever"
-                             Content="Never"
-                             GroupName="VerticalSBGroup"
-                             CheckedChanged="VerticalSBRadio_CheckedChanged"
-                             AutomationId="VerticalSBNever"/>
             </HorizontalStackLayout>
         </VerticalStackLayout>
         <VerticalStackLayout Grid.Row="4"
                              Grid.Column="0"
-                Spacing="10">
+                             Spacing="10">
             <Label Text="FlowDirection"
                    FontSize="16"
                    FontAttributes="Bold"/>
@@ -158,7 +158,7 @@
         </VerticalStackLayout>
         <VerticalStackLayout Grid.Row="4"
                              Grid.Column="1"
-                Spacing="10">
+                             Spacing="10">
             <Label Text="IsVisible"
                    FontSize="16"
                    FontAttributes="Bold"/>
@@ -176,7 +176,7 @@
         </VerticalStackLayout>
         <VerticalStackLayout Grid.Row="5"
                              Grid.Column="0"
-                Spacing="10">
+                             Spacing="10">
             <Label Text="IsEnabled"
                    FontSize="16"
                    FontAttributes="Bold"/>

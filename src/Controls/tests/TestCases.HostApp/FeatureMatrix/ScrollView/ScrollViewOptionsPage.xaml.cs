@@ -34,15 +34,15 @@ public partial class ScrollViewOptionsPage : ContentPage
 				};
 				break;
 			case "Image":
-#if WINDOWS
-                double Imagewidth = 300;
+#if WINDOWS || MACCATALYST
+                double Imagewidth = 1300;
 #else
 				double Imagewidth = 1000;
 #endif
 				vm.Content = new Image
 				{
 					Source = "dotnet_bot.png",
-					HeightRequest = 300,
+					HeightRequest = 1000,
 					WidthRequest = Imagewidth,
 					Aspect = Aspect.AspectFit
 				};

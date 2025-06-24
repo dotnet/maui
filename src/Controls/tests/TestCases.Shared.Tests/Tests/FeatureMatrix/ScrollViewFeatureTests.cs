@@ -26,8 +26,10 @@ public class ScrollViewFeatureTests : UITest
 	public const string ShadowTrue = "ShadowTrue";
 	public const string IsVisibleFalse = "IsVisibleFalse";
 	public const string IsEnabledFalse = "IsEnabledFalse";
-	public const string ScrollToPositionEntry = "ScrollToPositionEntry";
-	public const string ScrollToPositionButton = "ScrollToPositionButton";
+	public const string ScrollToStartPosition = "ScrollToStartPosition";
+	public const string ScrollToCenterPosition = "ScrollToCenterPosition";
+	public const string ScrollToEndPosition = "ScrollToEndPosition";
+	public const string ScrollToMakeVisiblePosition = "ScrollToMakeVisiblePosition";
 	public const string VerticalScrollBarVisibilityAlways = "VerticalSBAlways";
 	public const string VerticalScrollBarVisibilityNever = "VerticalSBNever";
 	public const string HorizontalScrollBarVisibilityAlways = "HorizontalSBAlways";
@@ -48,13 +50,9 @@ public class ScrollViewFeatureTests : UITest
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewWithScrollToPositionEnd()
 	{
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "end");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToEndPosition);
+		App.Tap(ScrollToEndPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -62,13 +60,9 @@ public class ScrollViewFeatureTests : UITest
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewWithScrollToPositionStart()
 	{
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "start");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToStartPosition);
+		App.Tap(ScrollToStartPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -76,13 +70,9 @@ public class ScrollViewFeatureTests : UITest
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewWithScrollToPositionCenter()
 	{
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "center");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToCenterPosition);
+		App.Tap(ScrollToCenterPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -90,13 +80,9 @@ public class ScrollViewFeatureTests : UITest
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewWithScrollToPositionMakeVisible()
 	{
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "makevisible");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToMakeVisiblePosition);
+		App.Tap(ScrollToMakeVisiblePosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -111,13 +97,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentEditor);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "end");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToEndPosition);
+		App.Tap(ScrollToEndPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -131,13 +113,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentEditor);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "start");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToStartPosition);
+		App.Tap(ScrollToStartPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -151,13 +129,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentEditor);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "center");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToCenterPosition);
+		App.Tap(ScrollToCenterPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -171,13 +145,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentEditor);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "makevisible");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToMakeVisiblePosition);
+		App.Tap(ScrollToMakeVisiblePosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 #endif
@@ -192,13 +162,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentImage);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "end");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToEndPosition);
+		App.Tap(ScrollToEndPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -212,13 +178,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentImage);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "start");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToStartPosition);
+		App.Tap(ScrollToStartPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -232,13 +194,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentImage);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "center");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToCenterPosition);
+		App.Tap(ScrollToCenterPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -252,13 +210,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentImage);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "makevisible");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToMakeVisiblePosition);
+		App.Tap(ScrollToMakeVisiblePosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -272,13 +226,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "end");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToEndPosition);
+		App.Tap(ScrollToEndPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -292,13 +242,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "start");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToStartPosition);
+		App.Tap(ScrollToStartPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -312,13 +258,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "center");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToCenterPosition);
+		App.Tap(ScrollToCenterPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -332,13 +274,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "makevisible");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToMakeVisiblePosition);
+		App.Tap(ScrollToMakeVisiblePosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -352,13 +290,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentAbsoluteLayout);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "end");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToEndPosition);
+		App.Tap(ScrollToEndPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -372,13 +306,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentAbsoluteLayout);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "start");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToStartPosition);
+		App.Tap(ScrollToStartPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -392,13 +322,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentAbsoluteLayout);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "center");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToCenterPosition);
+		App.Tap(ScrollToCenterPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -412,13 +338,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentAbsoluteLayout);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "makevisible");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToMakeVisiblePosition);
+		App.Tap(ScrollToMakeVisiblePosition);
+		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(3));
 		VerifyScreenshot();
 	}
 
@@ -432,13 +354,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentVerticalStackLayout);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "end");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToEndPosition);
+		App.Tap(ScrollToEndPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -452,13 +370,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentVerticalStackLayout);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "start");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToStartPosition);
+		App.Tap(ScrollToStartPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -472,13 +386,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentVerticalStackLayout);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "center");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToCenterPosition);
+		App.Tap(ScrollToCenterPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -492,13 +402,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(ContentVerticalStackLayout);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "makevisible");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToMakeVisiblePosition);
+		App.Tap(ScrollToMakeVisiblePosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -514,13 +420,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "end");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToEndPosition);
+		App.Tap(ScrollToEndPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -534,13 +436,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "start");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToStartPosition);
+		App.Tap(ScrollToStartPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -554,13 +452,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "center");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToCenterPosition);
+		App.Tap(ScrollToCenterPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -574,13 +468,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "makevisible");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToMakeVisiblePosition);
+		App.Tap(ScrollToMakeVisiblePosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -596,13 +486,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "end");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToEndPosition);
+		App.Tap(ScrollToEndPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -618,13 +504,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "start");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToStartPosition);
+		App.Tap(ScrollToStartPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -640,13 +522,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "center");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToCenterPosition);
+		App.Tap(ScrollToCenterPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -662,13 +540,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "makevisible");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToMakeVisiblePosition);
+		App.Tap(ScrollToMakeVisiblePosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -684,13 +558,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "end");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToEndPosition);
+		App.Tap(ScrollToEndPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -706,13 +576,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "start");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToStartPosition);
+		App.Tap(ScrollToStartPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -728,13 +594,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "center");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToCenterPosition);
+		App.Tap(ScrollToCenterPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -750,13 +612,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "makevisible");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToMakeVisiblePosition);
+		App.Tap(ScrollToMakeVisiblePosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -772,13 +630,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "end");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToEndPosition);
+		App.Tap(ScrollToEndPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -794,13 +648,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "start");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToStartPosition);
+		App.Tap(ScrollToStartPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -816,13 +666,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "center");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToCenterPosition);
+		App.Tap(ScrollToCenterPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -838,13 +684,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "makevisible");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToMakeVisiblePosition);
+		App.Tap(ScrollToMakeVisiblePosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -860,13 +702,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "end");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToEndPosition);
+		App.Tap(ScrollToEndPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -882,13 +720,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "start");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToStartPosition);
+		App.Tap(ScrollToStartPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -904,13 +738,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "center");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToCenterPosition);
+		App.Tap(ScrollToCenterPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -926,13 +756,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "makevisible");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToMakeVisiblePosition);
+		App.Tap(ScrollToMakeVisiblePosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -948,13 +774,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "end");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToEndPosition);
+		App.Tap(ScrollToEndPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -971,13 +793,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "start");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToStartPosition);
+		App.Tap(ScrollToStartPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -993,13 +811,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "center");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToCenterPosition);
+		App.Tap(ScrollToCenterPosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -1015,13 +829,9 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "makevisible");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(ScrollToMakeVisiblePosition);
+		App.Tap(ScrollToMakeVisiblePosition);
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 #endif
@@ -1197,6 +1007,7 @@ public class ScrollViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link for Android : https://github.com/dotnet/maui/issues/13634 and Windows: https://github.com/dotnet/maui/issues/29805
 	[Test]
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyEditorIsScrolledInsideScrollView()
@@ -1213,6 +1024,7 @@ public class ScrollViewFeatureTests : UITest
 		var scrollY = App.WaitForElement("ScrollYLabel").GetText();
 		Assert.That(scrollY, Is.EqualTo("0"));
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.ScrollView)]
@@ -1243,6 +1055,8 @@ public class ScrollViewFeatureTests : UITest
 		Assert.That(scrollY, Is.EqualTo("0"), "Scrolling Does not work when IsEnabled is false");
 	}
 
+
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link : https://github.com/dotnet/maui/issues/7767, https://github.com/dotnet/maui/issues/7766, https://github.com/dotnet/maui/issues/30158
 #if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/30095
 	[Test]
 	[Category(UITestCategories.ScrollView)]
@@ -1252,9 +1066,11 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(FlowDirectionRTL);
 		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(VerticalScrollBarVisibilityAlways);
+		App.Tap(VerticalScrollBarVisibilityAlways);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -1268,9 +1084,11 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(FlowDirectionRTL);
 		App.WaitForElement(ContentGrid);
 		App.Tap(ContentGrid);
+		App.WaitForElement(VerticalScrollBarVisibilityAlways);
+		App.Tap(VerticalScrollBarVisibilityAlways);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -1284,25 +1102,11 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(FlowDirectionRTL);
 		App.WaitForElement(ContentImage);
 		App.Tap(ContentImage);
+		App.WaitForElement(VerticalScrollBarVisibilityAlways);
+		App.Tap(VerticalScrollBarVisibilityAlways);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
-		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.ScrollView)]
-	public void VerifyScrollViewWithRTLAndHorizontalLayoutContent()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(FlowDirectionRTL);
-		App.Tap(FlowDirectionRTL);
-		App.WaitForElement(ContentHorizontalStackLayout);
-		App.Tap(ContentHorizontalStackLayout);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -1316,9 +1120,11 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(FlowDirectionRTL);
 		App.WaitForElement(ContentAbsoluteLayout);
 		App.Tap(ContentAbsoluteLayout);
+		App.WaitForElement(VerticalScrollBarVisibilityAlways);
+		App.Tap(VerticalScrollBarVisibilityAlways);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl",timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -1333,9 +1139,11 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(FlowDirectionRTL);
 		App.WaitForElement(ContentEditor);
 		App.Tap(ContentEditor);
+		App.WaitForElement(VerticalScrollBarVisibilityAlways);
+		App.Tap(VerticalScrollBarVisibilityAlways);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 #endif
@@ -1352,9 +1160,13 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationBoth);
 		App.WaitForElement(FlowDirectionRTL);
 		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(VerticalScrollBarVisibilityAlways);
+		App.Tap(VerticalScrollBarVisibilityAlways);
+		App.WaitForElement(HorizontalScrollBarVisibilityAlways);
+		App.Tap(HorizontalScrollBarVisibilityAlways);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 #endif
@@ -1370,9 +1182,11 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(OrientationHorizontal);
 		App.WaitForElement(FlowDirectionRTL);
 		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(HorizontalScrollBarVisibilityAlways);
+		App.Tap(HorizontalScrollBarVisibilityAlways);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -1388,9 +1202,11 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(FlowDirectionRTL);
 		App.WaitForElement(ContentImage);
 		App.Tap(ContentImage);
+		App.WaitForElement(HorizontalScrollBarVisibilityAlways);
+		App.Tap(HorizontalScrollBarVisibilityAlways);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -1406,9 +1222,11 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(FlowDirectionRTL);
 		App.WaitForElement(ContentGrid);
 		App.Tap(ContentGrid);
+		App.WaitForElement(HorizontalScrollBarVisibilityAlways);
+		App.Tap(HorizontalScrollBarVisibilityAlways);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -1424,9 +1242,11 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(FlowDirectionRTL);
 		App.WaitForElement(ContentHorizontalStackLayout);
 		App.Tap(ContentHorizontalStackLayout);
+		App.WaitForElement(HorizontalScrollBarVisibilityAlways);
+		App.Tap(HorizontalScrollBarVisibilityAlways);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -1442,9 +1262,11 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(FlowDirectionRTL);
 		App.WaitForElement(ContentAbsoluteLayout);
 		App.Tap(ContentAbsoluteLayout);
+		App.WaitForElement(HorizontalScrollBarVisibilityAlways);
+		App.Tap(HorizontalScrollBarVisibilityAlways);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
@@ -1461,11 +1283,14 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(FlowDirectionRTL);
 		App.WaitForElement(ContentEditor);
 		App.Tap(ContentEditor);
+		App.WaitForElement(HorizontalScrollBarVisibilityAlways);
+		App.Tap(HorizontalScrollBarVisibilityAlways);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
+#endif
 #endif
 #endif
 }

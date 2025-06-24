@@ -10,8 +10,8 @@ public class ScrollViewViewModel : INotifyPropertyChanged
 	private bool _isVisible = true;
 	private bool _isEnabled = true;
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
-	private ScrollBarVisibility _horizontalScrollBarVisibility = ScrollBarVisibility.Default;
-	private ScrollBarVisibility _verticalScrollBarVisibility = ScrollBarVisibility.Default;
+	private ScrollBarVisibility _horizontalScrollBarVisibility = ScrollBarVisibility.Never;
+	private ScrollBarVisibility _verticalScrollBarVisibility = ScrollBarVisibility.Never;
 	private Size _contentSize;
 	private string _contentText;
 	public string ContentSizeString => $"{ContentSize.Width:F0} x {ContentSize.Height:F0}";
