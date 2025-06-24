@@ -16,8 +16,6 @@ namespace UITest.Appium
 		/// <summary>
 		/// For desktop, this will perform a mouse click on the target element.
 		/// For mobile, this will tap the element.
-		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
-		/// https://github.com/dotnet/maui/issues/19754
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="element">Target Element.</param>
@@ -29,8 +27,6 @@ namespace UITest.Appium
 		/// <summary>
 		/// For desktop, this will perform a mouse click on the target element.
 		/// For mobile, this will tap the element.
-		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
-		/// https://github.com/dotnet/maui/issues/19754
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
@@ -308,8 +304,6 @@ namespace UITest.Appium
 		/// <summary>
 		/// For desktop, this will perform a mouse click on the target element.
 		/// For mobile, this will tap the element.
-		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
-		/// https://github.com/dotnet/maui/issues/19754
 		/// </summary>
 		/// <param name="element">Target Element.</param>
 		public static void Tap(this IUIElement element)
@@ -409,11 +403,18 @@ namespace UITest.Appium
 		/// <param name="y">The y coordinate to double tap.</param>
 		public static void DoubleTapCoordinates(this IApp app, float x, float y)
 		{
-			app.CommandExecutor.Execute("doubleTapCoordinates", new Dictionary<string, object>
+			if (app is AppiumCatalystApp)
 			{
-				{ "x", x },
-				{ "y", y }
-			});
+				app.DoubleClickCoordinates(x, y); // Directly invoke coordinate-based double click for AppiumCatalystApp.
+			}
+			else
+			{
+				app.CommandExecutor.Execute("doubleTapCoordinates", new Dictionary<string, object>
+				{
+					{ "x", x },
+					{ "y", y }
+				});
+			}
 		}
 
 		/// <summary>
@@ -1422,11 +1423,18 @@ namespace UITest.Appium
 		/// <param name="y">The y coordinate to tap.</param>
 		public static void TapCoordinates(this IApp app, float x, float y)
 		{
-			app.CommandExecutor.Execute("tapCoordinates", new Dictionary<string, object>
+			if (app is AppiumCatalystApp)
 			{
-				{ "x", x },
-				{ "y", y }
-			});
+				app.ClickCoordinates(x, y); // // Directly invoke coordinate-based click for AppiumCatalystApp.
+			}
+			else
+			{
+				app.CommandExecutor.Execute("tapCoordinates", new Dictionary<string, object>
+				{
+					{ "x", x },
+					{ "y", y }
+				});
+			}
 		}
 
 		/// <summary>

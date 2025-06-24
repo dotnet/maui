@@ -98,19 +98,30 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		protected override void OnInsert(int index, IView view)
+		{
+			base.OnInsert(index, view);
+			ResetIndicatorStylesNonBatch();
+		}
+
+		protected override void OnRemove(int index, IView view)
+		{
+			base.OnRemove(index, view);
+			ResetIndicatorStylesNonBatch();
+		}
+
 		void ResetIndicatorStylesNonBatch()
 		{
 			var indicatorCount = _indicatorView.Count;
 			var childrenCount = Children.Count;
+			var maxVisible = _indicatorView.MaximumVisible;
+			var position = _indicatorView.Position;
+			var selectedIndex = position >= maxVisible ? maxVisible - 1 : position;
 
 			for (int index = 0; index < childrenCount; index++)
 			{
-				var maxVisible = _indicatorView.MaximumVisible;
-				var position = _indicatorView.Position;
-				var selectedIndex = position >= maxVisible ? maxVisible - 1 : position;
 				bool isSelected = index == selectedIndex;
-				var visualElement = Children[index] as VisualElement;
-				if (visualElement is null)
+				if (Children[index] is not VisualElement visualElement)
 				{
 					return;
 				}

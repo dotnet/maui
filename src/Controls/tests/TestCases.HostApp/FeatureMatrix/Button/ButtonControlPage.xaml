@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.ButtonControlMainPage"
+             x:DataType="local:ButtonViewModal"
+             Title="ButtonControlPage">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Options"
+                           Clicked="NavigateToOptionsPage_Clicked"
+                           AutomationId="Options"/>
+       </ContentPage.ToolbarItems>
+
+       <Grid RowDefinitions="*, Auto, Auto, Auto"
+             ColumnDefinitions="0.5*, 0.5*"
+             HorizontalOptions="Center"
+             Padding="10,20,10,20"
+             RowSpacing="10"
+             ColumnSpacing="10">
+              <Button Grid.Row="0"
+                      Grid.ColumnSpan="2"
+                      BackgroundColor="SkyBlue"
+                      HeightRequest="100"
+                      Margin="0,50,0,0"
+                      WidthRequest="200"
+                      VerticalOptions="Center"
+                      AutomationId="ButtonControl"
+                      BorderColor="{Binding BorderColor}"
+                      BorderWidth="{Binding BorderWidth}"
+                      CharacterSpacing="{Binding CharacterSpacing}"
+                      Clicked="OnButtonClicked"
+                      Command="{Binding Command}"
+                      CommandParameter="{Binding Text}"
+                      CornerRadius="{Binding CornerRadius}"
+                      FlowDirection="{Binding FlowDirection}"
+                      FontAttributes="{Binding FontAttributes}"
+                      FontFamily="{Binding FontFamily}"
+                      FontSize="{Binding FontSize}"
+                      IsEnabled="{Binding IsEnabled}"
+                      IsVisible="{Binding IsVisible}"
+                      LineBreakMode="{Binding LineBreakMode}"
+                      Padding="{Binding Padding}"
+                      Pressed="OnButtonPressed"
+                      Released="OnButtonReleased"
+                      Text="{Binding Text}"
+                      TextColor="{Binding TextColor}"
+                      TextTransform="{Binding TextTransform}">
+                     <Button.Shadow>
+                            <Shadow x:Name="ButtonShadow"
+                                    Brush="Blue"
+                                    Offset="0,0"
+                                    Opacity="{Binding ShadowOpacity}"
+                                    Radius="20"/>
+                     </Button.Shadow>
+              </Button>
+
+              <Label Grid.Row="1"
+                     Text="Clicked Event: "/>
+              <Label Grid.Row="1"
+                     Grid.Column="1"
+                     x:Name="ClickedEventLabel"
+                     AutomationId="ClickedEventLabel"/>
+
+              <Label Grid.Row="2"
+                     Text="Pressed Event: "/>
+              <Label Grid.Row="2"
+                     Grid.Column="1"
+                     x:Name="PressedEventLabel"
+                     AutomationId="PressedEventLabel"/>
+
+              <Label Grid.Row="3"
+                     Text="Released Event: "/>
+              <Label Grid.Row="3"
+                     Grid.Column="1"
+                     x:Name="ReleasedEventLabel"
+                     AutomationId="ReleasedEventLabel"/>
+       </Grid>
+</ContentPage>
