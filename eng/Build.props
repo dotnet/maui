@@ -6,6 +6,7 @@
     <ProjectToBuild Include="$(RepoRoot)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj" Condition="'$(BuildDeviceTests)' == 'true'" />
     <ProjectToBuild Include="$(RepoRoot)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj" Condition="'$(BuildDeviceTests)' == 'true'" />
     <ProjectToBuild Include="$(RepoRoot)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj" Condition="'$(BuildDeviceTests)' == 'true'"  />
-    <ProjectToBuild Include="$(RepoRoot)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj" Condition="'$(BuildDeviceTests)' == 'true'"  />
+    <!-- <ProjectToBuild Include="$(RepoRoot)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj" Condition="'$(BuildDeviceTests)' == 'true'"  /> -->
+    <ProjectToBuild Include="$(RepoRoot)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj" Condition="'$(BuildDeviceTests)' == 'true'"  />
   </ItemGroup>
 </Project>
