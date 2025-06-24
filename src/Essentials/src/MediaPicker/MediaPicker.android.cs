@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Media
 					}
 					return new FileResult(path);
 				}
-				
+
 				return null;
 			}
 			catch (OperationCanceledException)
@@ -163,13 +163,13 @@ namespace Microsoft.Maui.Media
 			}
 
 			var path = FileSystemUtils.EnsurePhysicalPath(androidUri);
-			
+
 			// Apply compression/resizing if needed for photos
 			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 			{
 				path = await CompressImageIfNeeded(path, options);
 			}
-			
+
 			return new FileResult(path);
 		}
 
@@ -211,13 +211,13 @@ namespace Microsoft.Maui.Media
 				if (!uri?.Equals(AndroidUri.Empty) ?? false)
 				{
 					var path = FileSystemUtils.EnsurePhysicalPath(uri);
-					
+
 					// Apply compression/resizing if needed for photos
 					if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 					{
 						path = await CompressImageIfNeeded(path, options);
 					}
-					
+
 					resultList.Add(new FileResult(path));
 				}
 			}
@@ -285,10 +285,12 @@ namespace Microsoft.Maui.Media
 					await processedStream.CopyToAsync(outputStream);
 
 					// Delete original file
-					try { originalFile.Delete(); } catch { }
+					try
+					{ originalFile.Delete(); }
+					catch { }
 					return processedPath;
 				}
-				
+
 				// If ImageProcessor returns null (e.g., on .NET Standard), ImageProcessor.IsProcessingNeeded would have returned false,
 				// so we shouldn't reach this point. Return original path as fallback.
 				return imagePath;
@@ -297,7 +299,7 @@ namespace Microsoft.Maui.Media
 			{
 				// If processing fails, return original path
 			}
-			
+
 			return imagePath;
 		}
 
@@ -381,12 +383,12 @@ namespace Microsoft.Maui.Media
 				{
 					var tempResultList = resultList.Select(fr => fr.FullPath).ToList();
 					resultList.Clear();
-					
+
 					var compressionTasks = tempResultList.Select(async path =>
 					{
 						return await CompressImageIfNeeded(path, options);
 					});
-					
+
 					var compressedPaths = await Task.WhenAll(compressionTasks);
 					resultList.AddRange(compressedPaths.Select(path => new FileResult(path)));
 				}

@@ -155,8 +155,8 @@ namespace Microsoft.Maui.Media
 		/// <para>For JPEG images, this controls the lossy compression quality directly.</para>
 		/// <para>For PNG images, values below 90 will convert to JPEG format for better compression. Values 90-99 will scale down the PNG image. Value 100 preserves original PNG format and quality.</para>
 		/// </remarks>
-		public int CompressionQuality 
-		{ 
+		public int CompressionQuality
+		{
 			get => compressionQuality;
 			set => compressionQuality = Math.Max(0, Math.Min(100, value));
 		}
