@@ -56,7 +56,7 @@ parameters:
 
 stages:
 - stage: deviceTests
-  displayName: Run Device Tests
+  displayName: Helix Device Tests
   dependsOn: []
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
@@ -77,7 +77,7 @@ stages:
         clean: all
       jobs:
       - job: device_tests_ios
-        displayName: Controls DeviceTests iOS
+        displayName: DeviceTests iOS
         timeoutInMinutes: 240
         variables:
         - name: _BuildConfig
@@ -109,7 +109,7 @@ stages:
               DisplayNamePrefix: DeviceTestsIOS
 
       - job: device_tests_android
-        displayName: Controls DeviceTests Android
+        displayName: DeviceTests Android
         timeoutInMinutes: 240
         variables:
         - name: _BuildConfig
