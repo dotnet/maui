@@ -5,7 +5,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <HelixType>test/product/</HelixType>
+        <HelixType>test/devices/</HelixType>
         <HelixBuild Condition="'$(HelixBuild)' == ''">$(BUILD_BUILDNUMBER)</HelixBuild>
         <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
         <HelixTargetQueues>OSX.15.ARM64.Open</HelixTargetQueues>
@@ -23,12 +23,6 @@
         <!-- Optional: Specific version of Xcode to use. If omitted, xcode-select is used to
         determine the version -->
         <!-- <XHarnessXcodeVersion>16.3</XHarnessXcodeVersion> -->
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(HelixType)' == ''">
-        <!-- For PRs we want HelixType to be the same for all frameworks except package testing-->
-        <TestScope Condition="'$(TestScope)' == ''">innerloop</TestScope>
-        <HelixType>test/functional/cli/$(TestScope)/</HelixType>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(TargetsAppleMobile)' == 'true'">
@@ -67,7 +61,7 @@
     </ItemGroup>
 
     <!-- Process each scenario individually to avoid metadata evaluation issues -->
-    <Target Name="DiscoverTestBundles" BeforeTargets="BuildHelixWorkItems">
+    <Target Name="DiscoverTestBundles" BeforeTargets="Build">
         <!-- iOS App Bundles -->
         <ItemGroup Condition="'$(TargetOS)' == 'ios'">
             <_ScenarioPaths Include="@(MAUIiOSScenario)">
