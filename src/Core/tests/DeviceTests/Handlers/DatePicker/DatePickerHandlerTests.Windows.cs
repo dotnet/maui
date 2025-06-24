@@ -112,14 +112,31 @@ namespace Microsoft.Maui.DeviceTests
 			var textBlocks = platformDatePicker.GetChildren<Microsoft.UI.Xaml.Controls.TextBlock>();
 			foreach (var textBlock in textBlocks)
 			{
-				if (textBlock != null && textBlock.CharacterSpacing > 0)
+				if (textBlock is not null && textBlock.CharacterSpacing > 0)
 				{
-					// Convert back from Em to original value (reverse of ToEm() calculation)
-					return textBlock.CharacterSpacing / (0.0624 * 1000);
+					// Convert back from Em to original value using the extension method
+					return textBlock.CharacterSpacing.FromEm();
 				}
 			}
 			
 			return 0.0;
+		}
+
+		[Fact]
+		public async Task CharacterSpacingUpdatesCorrectly()
+		{
+			var datePicker = new DatePickerStub()
+			{
+				Date = DateTime.Today,
+				CharacterSpacing = 5
+			};
+
+			await ValidatePropertyUpdatesValue(
+				datePicker,
+				nameof(IDatePicker.CharacterSpacing),
+				GetNativeCharacterSpacing,
+				5.0,
+				15.0);
 		}
 	}
 }

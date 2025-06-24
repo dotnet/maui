@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Platform
 			
 			foreach (var textBlock in textBlocks)
 			{
-				if (textBlock != null)
+				if (textBlock is not null)
 				{
 					textBlock.CharacterSpacing = characterSpacingEm;
 				}
