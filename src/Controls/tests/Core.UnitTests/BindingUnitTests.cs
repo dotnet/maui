@@ -2220,7 +2220,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await TestHelpers.Collect();
 
-			Assert.False(bindingRef.IsAlive, "Binding should not be alive!");
+			Assert.False(await bindingRef.WaitForCollect(), "Binding should not be alive!");
 
 			GC.KeepAlive(viewModel);
 		}
