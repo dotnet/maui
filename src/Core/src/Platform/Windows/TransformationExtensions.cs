@@ -38,7 +38,9 @@ namespace Microsoft.Maui.Platform
 				if (Math.Abs(view.RotationX) != 0 || Math.Abs(view.RotationY) != 0)
 				{
 					if (double.IsNaN(rotationX) || double.IsNaN(rotationY) || double.IsNaN(rotation))
+					{
 						return;
+					}
 					frameworkElement.Projection = new PlaneProjection
 					{
 						CenterOfRotationX = anchorX,
