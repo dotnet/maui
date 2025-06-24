@@ -399,7 +399,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_parentOverride == null)
 			{
-				OnParentChangingCore(ParentOverride ?? GetRealParent(false), value);
+				OnParentChangingCore(ParentOverride ?? realParent, value);
 			}
 
 			if (realParent is IElementDefinition element)
