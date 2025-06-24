@@ -8,6 +8,7 @@ public partial class Issue17010 : ContentPage
     bool _drawerOpened = false;
     AbsoluteLayout _tileDrawer;
     SwipeGestureRecognizer _swipeGesture;
+    Label _directionLabel;
 
     public Issue17010()
     {
@@ -34,7 +35,6 @@ public partial class Issue17010 : ContentPage
             BackgroundColor = Colors.Red,
             RowDefinitions =
             {
-                new RowDefinition { Height = new GridLength(50) },
                 new RowDefinition { Height = GridLength.Star}
             },
             ColumnDefinitions =
@@ -45,16 +45,16 @@ public partial class Issue17010 : ContentPage
         AbsoluteLayout.SetLayoutBounds(grid, new Rect(0, 0, 1, 1));
         AbsoluteLayout.SetLayoutFlags(grid, AbsoluteLayoutFlags.All);
 
-        var label = new Label
+        _directionLabel = new Label
         {
-            AutomationId = "SwipeLabel",
-            Text = "Swipe to Test",
+            AutomationId = "DirectionLabel",
+            Text = "Direction: Right",
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center,
             TextColor = Colors.White,
-            FontSize = 16
+            FontSize = 12
         };
-        grid.Add(label, 0, 0);
+        grid.Add(_directionLabel, 0, 0);
 
         _tileDrawer.Children.Add(grid);
 
@@ -80,6 +80,7 @@ public partial class Issue17010 : ContentPage
             _tileDrawer.TranslateTo(-100, 0, 300, Easing.SinInOut);
 
             _swipeGesture.Direction = SwipeDirection.Left;
+            _directionLabel.Text = "Direction: Left";
 
             _drawerOpened = true;
         }
@@ -88,6 +89,7 @@ public partial class Issue17010 : ContentPage
             _tileDrawer.TranslateTo(0, 0, 300, Easing.SinInOut);
 
             _swipeGesture.Direction = SwipeDirection.Right;
+            _directionLabel.Text = "Direction: Right";
 
             _drawerOpened = false;
         }
