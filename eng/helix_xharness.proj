@@ -9,7 +9,7 @@
         <HelixBuild Condition="'$(HelixBuild)' == ''">$(BUILD_BUILDNUMBER)</HelixBuild>
         <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'ios'">OSX.15.ARM64.Open</HelixTargetQueues>
-        <HelixTargetQueues Condition="'$(TargetOS)' == 'android'">ubuntu.2204.amd64.android.29.open</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'android'">ubuntu.2204.amd64.android.23.open;ubuntu.2204.amd64.android.33.open</HelixTargetQueues>
         <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
 
         <IncludeDotNetCli>true</IncludeDotNetCli>
