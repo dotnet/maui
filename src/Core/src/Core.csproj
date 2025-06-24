@@ -78,12 +78,21 @@
     <TypeScriptNoImplicitAny>true</TypeScriptNoImplicitAny>
     <TypeScriptCompileOnSaveEnabled>true</TypeScriptCompileOnSaveEnabled>
   </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.7.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  
+  <!-- Conditionally disable TypeScript compilation for local development -->
+  <Target Name="DisableTypeScriptForLocalDevelopment" BeforeTargets="CompileTypeScript;PreComputeCompileTypeScript">
+    <PropertyGroup Condition="'$(ContinuousIntegrationBuild)' != 'true' and '$(EnableTypeScriptCompilation)' != 'true'">
+      <CompileTypeScript>false</CompileTypeScript>
+    </PropertyGroup>
+    <Message Condition="'$(CompileTypeScript)' == 'false'" Text="TypeScript compilation is disabled for local development. The existing compiled JavaScript files will be used. To enable TypeScript compilation, set EnableTypeScriptCompilation=true or build in CI." Importance="normal" />
+  </Target>
   <ItemGroup>
     <EmbeddedResource Include="Handlers\HybridWebView\HybridWebView.js" LogicalName="_framework/hybridwebview.js" />
   </ItemGroup>
