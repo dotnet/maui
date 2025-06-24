@@ -45,16 +45,16 @@ public partial class Issue17010 : ContentPage
         AbsoluteLayout.SetLayoutBounds(grid, new Rect(0, 0, 1, 1));
         AbsoluteLayout.SetLayoutFlags(grid, AbsoluteLayoutFlags.All);
 
-        var boxView = new BoxView
+        var label = new Label
         {
-			AutomationId = "BoxView",
+            AutomationId = "SwipeLabel",
+            Text = "Swipe to Test",
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = 50,
-            HeightRequest = 20,
-            BackgroundColor = Colors.DarkGray
+            TextColor = Colors.White,
+            FontSize = 16
         };
-        grid.Add(boxView, 0, 0);
+        grid.Add(label, 0, 0);
 
         _tileDrawer.Children.Add(grid);
 
