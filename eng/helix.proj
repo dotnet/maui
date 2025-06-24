@@ -22,10 +22,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <XUnitProject Include="$(RepoRoot)/src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj" />
-    <XUnitProject Include="$(RepoRoot)/src/Controls/tests/BindingSourceGen.UnitTests/Controls.BindingSourceGen.UnitTests.csproj" />
-    <XUnitProject Include="$(RepoRoot)/src/Core/tests/UnitTests/Core.UnitTests.csproj" />
-    <XUnitProject Include="$(RepoRoot)/src/Essentials/test/UnitTests/Essentials.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Controls/tests/BindingSourceGen.UnitTests/Controls.BindingSourceGen.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Core/tests/UnitTests/Core.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Essentials/test/UnitTests/Essentials.UnitTests.csproj" />
     <!-- <XUnitProject Include="$(RepoRoot)/src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj" /> -->
 
   </ItemGroup>

@@ -9,7 +9,7 @@
       "src\\BlazorWebView\\src\\Maui\\Microsoft.AspNetCore.Components.WebView.Maui.csproj",
       "src\\BlazorWebView\\src\\WindowsForms\\Microsoft.AspNetCore.Components.WebView.WindowsForms.csproj",
       "src\\BlazorWebView\\src\\Wpf\\Microsoft.AspNetCore.Components.WebView.Wpf.csproj",
-      "src\\BlazorWebView\\tests\\MauiDeviceTests\\MauiBlazorWebView.DeviceTests.csproj",
+      "src\\BlazorWebView\\tests\\DeviceTests\\MauiBlazorWebView.DeviceTests.csproj",
       "src\\Controls\\Foldable\\src\\Controls.Foldable.csproj",
       "src\\Controls\\Maps\\src\\Controls.Maps.csproj",
       "src\\Controls\\samples\\Controls.Sample.Profiling\\Maui.Controls.Sample.Profiling.csproj",
