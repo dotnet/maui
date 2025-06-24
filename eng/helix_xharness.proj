@@ -41,7 +41,7 @@
     </ItemGroup>
 
     <ItemGroup>
-     
+    
         <MAUIiOSScenario Include="Controls">
             <ScenarioDirectoryName>Controls.DeviceTests</ScenarioDirectoryName>
             <PayloadDirectory>$(ScenariosDir)Controls.DeviceTests</PayloadDirectory>
@@ -66,48 +66,32 @@
 
     <!-- Process each test scenario individually using direct path construction -->
     <Target Name="DiscoverTestBundles" BeforeTargets="Build">
-        <!-- iOS App Bundles -->
-        <PropertyGroup Condition="'$(TargetOS)' == 'ios'">
-            <_PlatformName>ios</_PlatformName>
-        </PropertyGroup>
-
-        <!-- Android APKs -->
-        <PropertyGroup Condition="'$(TargetOS)' == 'android'">
-            <_PlatformName>android</_PlatformName>
-        </PropertyGroup>
-
         <!-- Print all MAUIiOSScenario -->
         <Message Text="Discovered MAUIiOSScenarios:" Importance="high" />
         <Message Text="Count: @(MAUIiOSScenario->Count())" Importance="high" />
     
-        <!-- iOS: Find app bundles directly using MAUIiOSScenario PayloadDirectory -->
-        <ItemGroup Condition="'$(TargetOS)' == 'ios'">
+        <ItemGroup >
             <!-- Create a special batching task to find app bundles by scenario -->
             <_MAUIScenarioSearch Include="@(MAUIiOSScenario)" />
         </ItemGroup>
         
-        <!-- Print available PayloadDirectory paths -->
-        <Message Condition="'$(TargetOS)' == 'ios'" Text="Looking for .app bundles in PayloadDirectory paths:" Importance="high" />
-        <Message Condition="'$(TargetOS)' == 'ios'" Text="  - %(MAUIiOSScenario.PayloadDirectory)" Importance="high" />
-    
-
         <!-- Add the discovered items to the appropriate Helix test collection -->
         <ItemGroup Condition="'$(TargetOS)' == 'ios'">
             <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Debug/net9.0-ios/', '*.app', System.IO.SearchOption.AllDirectories))" >
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
-                <WorkItemPrefix>%(_TestItem.PackageName)</WorkItemPrefix>
+                <WorkItemPrefix>%(_MAUIScenarioSearch.ScenarioDirectoryName)</WorkItemPrefix>
             </XHarnessAppBundleToTest>
         </ItemGroup>
 
-        <!-- <ItemGroup Condition="'$(TargetOS)' == 'android'">
-            <XHarnessApkToTest Include="@(_TestItem)">
+        <ItemGroup Condition="'$(TargetOS)' == 'android'">
+            <XHarnessApkToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Debug/net9.0-android/', '*.apk', System.IO.SearchOption.AllDirectories))" >
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
-                <AndroidPackageName>%(_TestItem.PackageName)</AndroidPackageName>
+                <AndroidPackageName>%(_MAUIScenarioSearch.ScenarioDirectoryName)</AndroidPackageName>
             </XHarnessApkToTest>
-        </ItemGroup> -->
+        </ItemGroup>
     </Target>
 
 
