@@ -59,4 +59,49 @@ public class WebViewHelperTests
 		var result = WebViewHelper.EscapeJsString(input);
 		Assert.Equal(expected, result);
 	}
+
+	[Fact]
+	public void EscapeJsString_MultipleBackslashesBeforeQuote()
+	{
+		const string input = @"var tricky = 'Backslash: \\\' tricky!';";
+		const string expected = @"var tricky = \'Backslash: \\\\\\\' tricky!\';";
+		var result = WebViewHelper.EscapeJsString(input);
+		Assert.Equal(expected, result);
+	}
+
+	[Fact]
+	public void EscapeJsString_QuoteAtBeginning()
+	{
+		const string input = @"'Start with quote";
+		const string expected = @"\'Start with quote";
+		var result = WebViewHelper.EscapeJsString(input);
+		Assert.Equal(expected, result);
+	}
+
+	[Fact]
+	public void EscapeJsString_QuoteAtEnd()
+	{
+		const string input = @"Ends with a quote'";
+		const string expected = @"Ends with a quote\'";
+		var result = WebViewHelper.EscapeJsString(input);
+		Assert.Equal(expected, result);
+	}
+
+	[Fact]
+	public void EscapeJsString_OnlyQuote()
+	{
+		const string input = @"'";
+		const string expected = @"\'";
+		var result = WebViewHelper.EscapeJsString(input);
+		Assert.Equal(expected, result);
+	}
+
+	[Fact]
+	public void EscapeJsString_RepeatedEscapedQuotes()
+	{
+		const string input = @"'Quote' and again \'Quote\'";
+		const string expected = @"\'Quote\' and again \\\'Quote\\\'";
+		var result = WebViewHelper.EscapeJsString(input);
+		Assert.Equal(expected, result);
+	}
 }
