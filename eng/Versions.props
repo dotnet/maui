@@ -191,7 +191,7 @@
     <AndroidSdkApiLevels Include="31" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
     <AndroidSdkApiLevels Include="32" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
     <AndroidSdkApiLevels Include="33" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
-    <AndroidSdkApiLevels Include="34" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" IsDefault="True" />
+    <AndroidSdkApiLevels Include="34" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
     <AndroidSdkApiLevels Include="35" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" IsDefault="True" />
     <AndroidSdkApiLevels Include="36" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" IsDefault="True" />
   </ItemGroup>
@@ -211,9 +211,9 @@
     <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>9.0.100</DotNetTizenManifestVersionBand>
-    <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet100_184PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet100_154PackageVersion)</MicrosoftmacOSSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>$(MicrosoftiOSSdknet100_184PackageVersion)</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>$(MicrosofttvOSSdknet100_184PackageVersion)</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet100_185PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet100_155PackageVersion)</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>$(MicrosoftiOSSdknet100_185PackageVersion)</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>$(MicrosofttvOSSdknet100_185PackageVersion)</MicrosofttvOSSdkPackageVersion>
   </PropertyGroup>
 </Project>
