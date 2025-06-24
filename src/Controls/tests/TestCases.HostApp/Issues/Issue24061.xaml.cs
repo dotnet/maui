@@ -23,10 +23,21 @@
 
 		private void Button_Clicked(object sender, EventArgs e)
 		{
-			if (scrollView.Background != null)
-				scrollView.Background = null;
+			if (scrollView.Background is LinearGradientBrush)
+			{
+				// Setting background to null will not reset to color on Android, Refer: https://github.com/dotnet/maui/issues/22914
+				//scrollView.Background = null;
+				scrollView.Background = new SolidColorBrush(Colors.White);
+			}
+
 			else
 				scrollView.Background = _linearGradientBrush;
+		}
+
+		private async void ScrollButton_Clicked(object sender, EventArgs e)
+		{
+			// Scroll to the end of the horizontal ScrollView
+			await scrollView.ScrollToAsync(scrollView.ContentSize.Width, 0, false);
 		}
 	}
 }

@@ -39,7 +39,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Thread.Sleep(delay);
 
 			App.SetOrientationPortrait();
-			Thread.Sleep(delay);
+			Thread.Sleep(3000);
 
 			App.WaitForElement(CheckResult);
 			App.Tap(CheckResult);
