@@ -52,8 +52,7 @@ parameters:
   default: 'Debug'
 - name: TargetFrameworkVersion
   type: string
-  default:
-  - tfm: net9.0
+  default: 'net9.0'
 
 stages:
 - stage: deviceTests
