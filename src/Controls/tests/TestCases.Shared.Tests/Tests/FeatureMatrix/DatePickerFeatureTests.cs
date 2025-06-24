@@ -413,7 +413,6 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-        Thread.Sleep(5000);
         VerifyScreenshot();
     }
 #endif
