@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 		}
 
-		public static void MapIsEnabled(IPickerHandler handler, IPicker picker)
+		internal static void MapIsEnabled(IPickerHandler handler, IPicker picker)
 		{
 			var platformView = handler.PlatformView;
 			if (platformView == null)
