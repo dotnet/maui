@@ -86,6 +86,20 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 		}
 
+		public static void MapIsEnabled(IPickerHandler handler, IPicker picker)
+		{
+			var platformView = handler.PlatformView;
+			if (platformView == null)
+				return;
+
+			// Set native enabled state
+			platformView.Enabled = picker.IsEnabled;
+
+			// Ensure touch events propagate to parent views when disabled
+			platformView.Clickable = picker.IsEnabled;
+			platformView.Focusable = picker.IsEnabled;
+		}
+
 		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
 		{
 			if (PlatformView == null)
