@@ -127,10 +127,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateText(UITextField uiTextField)
 		{
-			if (uiTextField is null)
-				return;
+			var newText = _searchHandler.Query ?? string.Empty;
 
-			uiTextField.Text = _searchHandler.Query;
+			if (uiTextField is null || uiTextField.Text == newText)
+			{
+				return;
+			}
+
+			uiTextField.Text = newText;
 			UpdateTextTransform(uiTextField);
 			UpdateCharacterSpacing(uiTextField);
 		}

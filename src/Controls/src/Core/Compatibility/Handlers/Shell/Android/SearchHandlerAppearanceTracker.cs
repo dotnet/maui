@@ -106,10 +106,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateText()
 		{
+			string newText = _searchHandler.Query ?? string.Empty;
+
+			if (_editText.Text == newText)
+			{
+				return;
+			}
+
 			int cursorPosition = _editText.SelectionStart;
 			bool selectionExists = _editText.HasSelection;
 
-			_editText.Text = _searchHandler.Query ?? string.Empty;
+			_editText.Text = newText;
 
 			UpdateTextTransform();
 
