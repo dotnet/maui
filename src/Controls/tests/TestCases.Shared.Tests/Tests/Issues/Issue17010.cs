@@ -16,9 +16,9 @@ public class Issue17010 : _IssuesUITest
 	[Category(UITestCategories.Gestures)]
 	public void SwipeGestureDirectionShouldChangeAtRuntime()
 	{
-		App.WaitForElement("BoxView");
-		App.SwipeLeftToRight("BoxView");
-		App.SwipeRightToLeft("BoxView");
+		App.WaitForElement("SwipeLabel");
+		App.SwipeLeftToRight("SwipeLabel");
+		App.SwipeRightToLeft("SwipeLabel");
 		VerifyScreenshot();
 	}
 }
