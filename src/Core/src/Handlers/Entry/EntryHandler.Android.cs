@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Handlers
 				MapMaxLength(handler, entry);
 			}
 			handler.UpdateValue(nameof(IEntry.Text));
-			if (entry != null)
+			if (entry is not null)
 				handler.PlatformView?.UpdateIsPassword(entry);
 		}
 
