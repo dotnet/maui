@@ -8,6 +8,9 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using WebViewAppShared;
 using Xunit;
+#if IOS || MACCATALYST
+using Microsoft.AspNetCore.Components.WebView.Maui.PlatformConfiguration.iOSSpecific;
+#endif
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 {
@@ -243,6 +246,75 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 				});
 			});
 		}
+
+#if IOS || MACCATALYST
+		[Fact]
+		public async Task BlazorWebViewScrollBounceCanBeDisabled()
+		{
+			EnsureHandlerCreated(additionalCreationActions: appBuilder =>
+			{
+				appBuilder.Services.AddMauiBlazorWebView();
+			});
+
+			var bwv = new BlazorWebViewWithCustomFiles
+			{
+				HostPage = "wwwroot/index.html",
+				CustomFiles = new Dictionary<string, string>
+				{
+					{ "index.html", TestStaticFilesContents.DefaultMauiIndexHtmlContent },
+				},
+			};
+			bwv.RootComponents.Add(new RootComponent { ComponentType = typeof(NoOpComponent), Selector = "#app", });
+
+			// Disable scroll bouncing
+			bwv.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>().SetIsScrollBounceEnabled(false);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var bwvHandler = CreateHandler<BlazorWebViewHandler>(bwv);
+				var platformWebView = bwvHandler.PlatformView;
+				await WebViewHelpers.WaitForWebViewReady(platformWebView);
+
+				// Verify that bounce scrolling is disabled on the platform view
+				Assert.False(platformWebView.ScrollView.Bounces);
+				Assert.False(platformWebView.ScrollView.AlwaysBounceVertical);
+				Assert.False(platformWebView.ScrollView.AlwaysBounceHorizontal);
+			});
+		}
+
+		[Fact]
+		public async Task BlazorWebViewScrollBounceEnabledByDefault()
+		{
+			EnsureHandlerCreated(additionalCreationActions: appBuilder =>
+			{
+				appBuilder.Services.AddMauiBlazorWebView();
+			});
+
+			var bwv = new BlazorWebViewWithCustomFiles
+			{
+				HostPage = "wwwroot/index.html",
+				CustomFiles = new Dictionary<string, string>
+				{
+					{ "index.html", TestStaticFilesContents.DefaultMauiIndexHtmlContent },
+				},
+			};
+			bwv.RootComponents.Add(new RootComponent { ComponentType = typeof(NoOpComponent), Selector = "#app", });
+
+			// Don't set any specific scroll bounce configuration (should use default: enabled)
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var bwvHandler = CreateHandler<BlazorWebViewHandler>(bwv);
+				var platformWebView = bwvHandler.PlatformView;
+				await WebViewHelpers.WaitForWebViewReady(platformWebView);
+
+				// Verify that bounce scrolling is enabled by default
+				Assert.True(platformWebView.ScrollView.Bounces);
+				Assert.True(platformWebView.ScrollView.AlwaysBounceVertical);
+				Assert.True(platformWebView.ScrollView.AlwaysBounceHorizontal);
+			});
+		}
+#endif
 
 		public static class TestStaticFilesContents
 		{
