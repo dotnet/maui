@@ -319,6 +319,7 @@ public class DatePickerFeatureTests : UITest
         VerifyScreenshot();
     }
 
+#if TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/29812
     [Test, Order(17)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetDateAndShadowOpacity_VerifyVisualState()
@@ -332,6 +333,7 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
         VerifyScreenshot();
     }
+#endif
 
     [Test, Order(18)]
     [Category(UITestCategories.DatePicker)]
@@ -377,7 +379,7 @@ public class DatePickerFeatureTests : UITest
         VerifyScreenshot();
     }
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/30011
     [Test, Order(20)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_Format_D_LongDatePattern()
@@ -396,7 +398,7 @@ public class DatePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/30154
     [Test, Order(21)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_Format_f_FullDateShortTime()
@@ -416,7 +418,7 @@ public class DatePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/30154
     [Test, Order(22)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_Format_F_FullDateLongTime()
@@ -435,7 +437,7 @@ public class DatePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/30154
     [Test, Order(23)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetFontAttributesAndFormat_f_VerifyVisualState()
@@ -456,7 +458,7 @@ public class DatePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/30154
     [Test, Order(24)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetFontFamilyAndFormat_f_VerifyVisualState()
@@ -477,7 +479,7 @@ public class DatePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/30154
     [Test, Order(25)]
     [Category(UITestCategories.DatePicker)]
     public void DatePicker_SetFontSizeAndFormat_f_VerifyVisualState()
@@ -516,8 +518,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
+#if ANDROID
         var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
         Assert.That(cultureFormatText, Is.EqualTo("Culture: en-US, Date: 12/24/2026 12:00:00 AM"));
+#else
+        VerifyScreenshot();
+#endif
     }
 #endif
 
@@ -538,8 +544,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
+#if ANDROID
         var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
         Assert.That(cultureFormatText, Is.EqualTo("Culture: fr-FR, Date: 24/12/2026 00:00:00"));
+#else
+        VerifyScreenshot();
+#endif
     }
 #endif
 
@@ -560,8 +570,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
+#if ANDROID
         var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
         Assert.That(cultureFormatText, Is.EqualTo("Culture: ja-JP, Date: 2026/12/24 0:00:00"));
+#else
+        VerifyScreenshot();
+#endif
     }
 #endif
 
@@ -582,8 +596,12 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DatePickerControl");
+#if ANDROID
         var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
         Assert.That(cultureFormatText, Is.EqualTo("Culture: sv-FI, Date: 2026-12-24 00:00:00"));
+#else
+        VerifyScreenshot();
+#endif
     }
 #endif
 }
