@@ -95,7 +95,7 @@ stages:
         # Run on public pipeline
         - ${{ if parameters.runAsPublic }}:
           - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
-            displayName: Build DeviceTests
+            displayName: Build BuildTasks
 
           - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog $(_OfficialBuildIdArgs)
             displayName: Build DeviceTests
