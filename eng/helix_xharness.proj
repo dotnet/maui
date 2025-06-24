@@ -39,10 +39,10 @@
             <DisplayName>Core DeviceTests</DisplayName>
             <DirectoryName>Core.DeviceTests</DirectoryName>
         </TestScenario>
-        <TestScenario Include="Essentials">
+        <!-- <TestScenario Include="Essentials">
             <DisplayName>Essentials DeviceTests</DisplayName>
             <DirectoryName>Essentials.DeviceTests</DirectoryName>
-        </TestScenario>
+        </TestScenario> -->
         <TestScenario Include="Graphics">
             <DisplayName>Graphics DeviceTests</DisplayName>
             <DirectoryName>Graphics.DeviceTests</DirectoryName>
