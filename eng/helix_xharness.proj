@@ -8,7 +8,8 @@
         <HelixType>test/devices/</HelixType>
         <HelixBuild Condition="'$(HelixBuild)' == ''">$(BUILD_BUILDNUMBER)</HelixBuild>
         <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
-        <HelixTargetQueues>OSX.15.ARM64.Open</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'ios'">OSX.15.ARM64.Open</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'android'">ubuntu.2204.amd64.android.29.open</HelixTargetQueues>
         <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
 
         <IncludeDotNetCli>true</IncludeDotNetCli>
@@ -61,6 +62,13 @@
             <PayloadDirectory>$(ScenariosDir)Graphics.DeviceTests</PayloadDirectory>
             <IPAName>Microsoft.Maui.Graphics.DeviceTests</IPAName>
             <PackageName>com.microsoft.maui.graphics.devicetests</PackageName>
+        </MAUIScenario>
+
+        <MAUIScenario Include="MauiBlazorWebView">
+            <ScenarioDirectoryName>MauiBlazorWebView.DeviceTests</ScenarioDirectoryName>
+            <PayloadDirectory>$(ScenariosDir)MauiBlazorWebView.DeviceTests</PayloadDirectory>
+            <IPAName>Microsoft.Maui.MauiBlazorWebView.DeviceTests</IPAName>
+            <PackageName>com.microsoft.maui.mauiblazorwebview.devicetests</PackageName>
         </MAUIScenario>
     </ItemGroup>
 
