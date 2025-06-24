@@ -3,9 +3,17 @@
     <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui.BuildTasks.slnf" />
     <ProjectToBuild Include="$(RepoRoot)eng/Microsoft.Maui.Packages-mac.slnf" Condition="'$(OS)' != 'Windows_NT'" />
     <ProjectToBuild Include="$(RepoRoot)eng/Microsoft.Maui.Packages.slnf" Condition="'$(OS)' == 'Windows_NT'" /> 
-    <ProjectToBuild Include="$(RepoRoot)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj" Condition="'$(BuildDeviceTests)' == 'true'" />
+    <ProjectToBuild Include="$(RepoRoot)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj" Condition="'$(BuildDeviceTests)' == 'true'">
+      <DependsOnTargets>BuildDependencyProject</DependsOnTargets>
+    </ProjectToBuild>
     <ProjectToBuild Include="$(RepoRoot)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj" Condition="'$(BuildDeviceTests)' == 'true'" />
     <ProjectToBuild Include="$(RepoRoot)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj" Condition="'$(BuildDeviceTests)' == 'true'"  />
     <ProjectToBuild Include="$(RepoRoot)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj" Condition="'$(BuildDeviceTests)' == 'true'"  />
   </ItemGroup>
+  
+  <Target Name="BuildDependencyProject">
+    <Message Text="Building dependency project before Controls.DeviceTests.csproj" Importance="high" />
+    <!-- Add commands to build your dependency project here -->
+    <MSBuild Projects="$(RepoRoot)Microsoft.Maui.BuildTasks.slnf" Targets="Build" />
+  </Target>
 </Project>
