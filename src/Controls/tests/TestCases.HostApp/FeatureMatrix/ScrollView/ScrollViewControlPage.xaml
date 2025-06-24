@@ -17,7 +17,6 @@
             Grid.Row="0"
             FlowDirection="{Binding FlowDirection}"
             IsVisible="{Binding IsVisible}"
-            Shadow="{Binding Shadow}"
             IsEnabled="{Binding IsEnabled}"
             Orientation="{Binding Orientation}"
             HorizontalScrollBarVisibility="{Binding HorizontalScrollBarVisibility}"

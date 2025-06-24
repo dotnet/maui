@@ -8,7 +8,6 @@ namespace Maui.Controls.Sample;
 public class ScrollViewViewModel : INotifyPropertyChanged
 {
 	private bool _isVisible = true;
-	private Shadow _shadow = null;
 	private bool _isEnabled = true;
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 	private ScrollBarVisibility _horizontalScrollBarVisibility = ScrollBarVisibility.Default;
@@ -27,7 +26,7 @@ public class ScrollViewViewModel : INotifyPropertyChanged
 	{
 		Content = new Label
 		{
-			Text = string.Join(Environment.NewLine, Enumerable.Range(1, 30).Select(i => $"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
+			Text = string.Join(Environment.NewLine, Enumerable.Range(1, 60).Select(i => $"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.{i}")),
 			FontSize = 18,
 			Padding = 10
 		};
@@ -42,12 +41,6 @@ public class ScrollViewViewModel : INotifyPropertyChanged
 	{
 		get => _isEnabled;
 		set { if (_isEnabled != value) { _isEnabled = value; OnPropertyChanged(); } }
-	}
-
-	public Shadow Shadow
-	{
-		get => _shadow;
-		set { if (_shadow != value) { _shadow = value; OnPropertyChanged(); } }
 	}
 
 	public FlowDirection FlowDirection

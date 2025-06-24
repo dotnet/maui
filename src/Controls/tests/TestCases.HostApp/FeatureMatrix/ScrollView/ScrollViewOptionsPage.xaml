@@ -177,26 +177,6 @@
         <VerticalStackLayout Grid.Row="5"
                              Grid.Column="0"
                 Spacing="10">
-            <Label Text="Shadow"
-                   FontSize="16"
-                   FontAttributes="Bold"/>
-            <HorizontalStackLayout>
-                <RadioButton Content="False"
-                             IsChecked="True"
-                             GroupName="ShadowGroup"
-                             CheckedChanged="ShadowRadio_CheckedChanged"
-                             AutomationId="ShadowFalse"/>
-                <RadioButton Content="True"
-                             GroupName="ShadowGroup"
-                             CheckedChanged="ShadowRadio_CheckedChanged"
-                             AutomationId="ShadowTrue"/>
-
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
-
-        <VerticalStackLayout Grid.Row="5"
-                             Grid.Column="1"
-                Spacing="10">
             <Label Text="IsEnabled"
                    FontSize="16"
                    FontAttributes="Bold"/>

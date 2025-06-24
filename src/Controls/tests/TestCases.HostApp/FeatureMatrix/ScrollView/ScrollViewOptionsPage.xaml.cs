@@ -28,32 +28,58 @@ public partial class ScrollViewOptionsPage : ContentPage
 			case "Label":
 				vm.Content = new Label
 				{
-					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 50).Select(i => $"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
+					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 60).Select(i => $"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.{i}")),
 					FontSize = 16,
 					Padding = 10
 				};
 				break;
 			case "Image":
 #if WINDOWS
-                double Imagewidth = 1200;
+                double Imagewidth = 300;
 #else
 				double Imagewidth = 1000;
 #endif
 				vm.Content = new Image
 				{
 					Source = "dotnet_bot.png",
-					HeightRequest = 1000,
+					HeightRequest = 300,
 					WidthRequest = Imagewidth,
 					Aspect = Aspect.AspectFit
 				};
 				break;
 
 			case "Editor":
-				vm.Content = new Editor
+				var editorLayout = new VerticalStackLayout();
+
+				editorLayout.Children.Add(new Editor
 				{
-					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 50).Select(i => $"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
-					AutoSize = EditorAutoSizeOption.TextChanges
-				};
+					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 15).Select(i => $"Editor 1: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
+					HeightRequest = 250,
+					AutomationId="Editor1"
+				});
+
+				editorLayout.Children.Add(new Editor
+				{
+					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 15).Select(i => $"Editor 2: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
+					HeightRequest = 250,
+					AutomationId="Editor2"
+				});
+
+				editorLayout.Children.Add(new Editor
+				{
+					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 15).Select(i => $"Editor 3: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
+					HeightRequest = 250,
+					AutomationId="Editor3"
+				});
+
+				editorLayout.Children.Add(new Editor
+				{
+					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 15).Select(i => $"Editor 4: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
+					HeightRequest = 250,
+					AutomationId="Editor4"
+				});
+
+				vm.Content = editorLayout;
 				break;
 			case "VerticalStackLayout":
 				var labelLayout = new VerticalStackLayout();
@@ -189,22 +215,6 @@ public partial class ScrollViewOptionsPage : ContentPage
 		if (!(sender is RadioButton rb) || !rb.IsChecked)
 			return;
 		_viewModel.IsVisible = rb.Content?.ToString() == "True";
-	}
-
-	private void ShadowRadio_CheckedChanged(object sender, CheckedChangedEventArgs e)
-	{
-		if (e.Value && BindingContext is ScrollViewViewModel vm)
-		{
-			var rb = sender as RadioButton;
-			if (rb?.Content?.ToString() == "True")
-			{
-				vm.Shadow = new Shadow { Brush = Brush.Black, Offset = new Point(6, 6), Radius = 5, Opacity = 0.6f };
-			}
-			else if (rb?.Content?.ToString() == "False")
-			{
-				vm.Shadow = null!;
-			}
-		}
 	}
 
 	private void OnFlowDirectionChanged(object sender, EventArgs e)

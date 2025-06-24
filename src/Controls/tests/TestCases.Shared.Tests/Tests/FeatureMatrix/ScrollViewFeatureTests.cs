@@ -28,6 +28,10 @@ public class ScrollViewFeatureTests : UITest
 	public const string IsEnabledFalse = "IsEnabledFalse";
 	public const string ScrollToPositionEntry = "ScrollToPositionEntry";
 	public const string ScrollToPositionButton = "ScrollToPositionButton";
+	public const string VerticalScrollBarVisibilityAlways = "VerticalSBAlways";
+	public const string VerticalScrollBarVisibilityNever = "VerticalSBNever";
+	public const string HorizontalScrollBarVisibilityAlways = "HorizontalSBAlways";
+	public const string HorizontalScrollBarVisibilityNever = "HorizontalSBNever";
 
 	public ScrollViewFeatureTests(TestDevice device)
 		: base(device)
@@ -96,6 +100,7 @@ public class ScrollViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29805
 	[Test, Order(9)]
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewWithScrollToPositionEndAndEditorContent()
@@ -175,6 +180,7 @@ public class ScrollViewFeatureTests : UITest
 		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test, Order(13)]
 	[Category(UITestCategories.ScrollView)]
@@ -578,94 +584,6 @@ public class ScrollViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(29)]
-	[Category(UITestCategories.ScrollView)]
-	public void VerifyScrollViewWithScrollToPositionEndAndEditorContentWhenOrientationHorizontal()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ContentEditor);
-		App.Tap(ContentEditor);
-		App.WaitForElement(OrientationHorizontal);
-		App.Tap(OrientationHorizontal);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "end");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
-		VerifyScreenshot();
-	}
-
-	[Test, Order(30)]
-	[Category(UITestCategories.ScrollView)]
-	public void VerifyScrollViewWithScrollToPositionStartAndEditorContentWhenOrientationHorizontal()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ContentEditor);
-		App.Tap(ContentEditor);
-		App.WaitForElement(OrientationHorizontal);
-		App.Tap(OrientationHorizontal);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "start");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
-		VerifyScreenshot();
-	}
-
-	[Test, Order(31)]
-	[Category(UITestCategories.ScrollView)]
-	public void VerifyScrollViewWithScrollToPositionCenterAndEditorContentWhenOrientationHorizontal()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ContentEditor);
-		App.Tap(ContentEditor);
-		App.WaitForElement(OrientationHorizontal);
-		App.Tap(OrientationHorizontal);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "center");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
-		VerifyScreenshot();
-	}
-
-	[Test, Order(32)]
-	[Category(UITestCategories.ScrollView)]
-	public void VerifyScrollViewWithScrollToPositionMakeVisibleAndEditorContentWhenOrientationHorizontal()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ContentEditor);
-		App.Tap(ContentEditor);
-		App.WaitForElement(OrientationHorizontal);
-		App.Tap(OrientationHorizontal);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(ScrollToPositionEntry);
-		App.ClearText(ScrollToPositionEntry);
-		App.EnterText(ScrollToPositionEntry, "makevisible");
-		App.PressEnter();
-		App.WaitForElement(ScrollToPositionButton);
-		App.Tap(ScrollToPositionButton);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
-		VerifyScreenshot();
-	}
-
 	[Test, Order(33)]
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewWithScrollToPositionEndAndImageContentWhenOrientationHorizontal()
@@ -1018,6 +936,95 @@ public class ScrollViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+	[Test, Order(29)]
+	[Category(UITestCategories.ScrollView)]
+	public void VerifyScrollViewWithScrollToPositionEndAndEditorContentWhenOrientationHorizontal()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ContentEditor);
+		App.Tap(ContentEditor);
+		App.WaitForElement(OrientationHorizontal);
+		App.Tap(OrientationHorizontal);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ScrollToPositionEntry);
+		App.ClearText(ScrollToPositionEntry);
+		App.EnterText(ScrollToPositionEntry, "end");
+		App.PressEnter();
+		App.WaitForElement(ScrollToPositionButton);
+		App.Tap(ScrollToPositionButton);
+		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshot();
+	}
+
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29805
+	[Test, Order(30)]
+	[Category(UITestCategories.ScrollView)]
+	public void VerifyScrollViewWithScrollToPositionStartAndEditorContentWhenOrientationHorizontal()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ContentEditor);
+		App.Tap(ContentEditor);
+		App.WaitForElement(OrientationHorizontal);
+		App.Tap(OrientationHorizontal);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ScrollToPositionEntry);
+		App.ClearText(ScrollToPositionEntry);
+		App.EnterText(ScrollToPositionEntry, "start");
+		App.PressEnter();
+		App.WaitForElement(ScrollToPositionButton);
+		App.Tap(ScrollToPositionButton);
+		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshot();
+	}
+
+	[Test, Order(31)]
+	[Category(UITestCategories.ScrollView)]
+	public void VerifyScrollViewWithScrollToPositionCenterAndEditorContentWhenOrientationHorizontal()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ContentEditor);
+		App.Tap(ContentEditor);
+		App.WaitForElement(OrientationHorizontal);
+		App.Tap(OrientationHorizontal);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ScrollToPositionEntry);
+		App.ClearText(ScrollToPositionEntry);
+		App.EnterText(ScrollToPositionEntry, "center");
+		App.PressEnter();
+		App.WaitForElement(ScrollToPositionButton);
+		App.Tap(ScrollToPositionButton);
+		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshot();
+	}
+
+	[Test, Order(32)]
+	[Category(UITestCategories.ScrollView)]
+	public void VerifyScrollViewWithScrollToPositionMakeVisibleAndEditorContentWhenOrientationHorizontal()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ContentEditor);
+		App.Tap(ContentEditor);
+		App.WaitForElement(OrientationHorizontal);
+		App.Tap(OrientationHorizontal);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ScrollToPositionEntry);
+		App.ClearText(ScrollToPositionEntry);
+		App.EnterText(ScrollToPositionEntry, "makevisible");
+		App.PressEnter();
+		App.WaitForElement(ScrollToPositionButton);
+		App.Tap(ScrollToPositionButton);
+		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshot();
+	}
+#endif
 #endif
 
 	[Test, Order(49)]
@@ -1054,7 +1061,7 @@ public class ScrollViewFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.ScrollView)]
-	public void VerifyScrollViewWithContentLabel()
+	public void VerifyScrollViewWithVerticalOrientation()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
@@ -1092,8 +1099,6 @@ public class ScrollViewFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(ContentLabel);
-		App.Tap(ContentLabel);
 		App.WaitForElement(OrientationBoth);
 		App.Tap(OrientationBoth);
 		App.WaitForElement(Apply);
@@ -1110,12 +1115,10 @@ public class ScrollViewFeatureTests : UITest
 	 
 	[Test]
 	[Category(UITestCategories.ScrollView)]
-	public void VerifyScrollViewWithOrientationNeitherAndContentLabel()
+	public void VerifyScrollViewWithOrientationNeither()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(ContentLabel);
-		App.Tap(ContentLabel);
 		App.WaitForElement(OrientationNeither);
 		App.Tap(OrientationNeither);
 		App.WaitForElement(Apply);
@@ -1129,22 +1132,88 @@ public class ScrollViewFeatureTests : UITest
 		Assert.That(scrollY, Is.EqualTo("0"), "Scrolling Does not work when Orientation is Neither");
 	}
 
-#if TEST_FAILS_ON_WINDOWS // Issue Link : https://github.com/dotnet/maui/issues/29812
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS  
+// Issue Link for Windows: https://github.com/dotnet/maui/issues/7766
+// Issue Link for iOS: https://github.com/dotnet/maui/issues/30158
+// Issue Link for Mac Catalyst: https://github.com/dotnet/maui/issues/7767
 	[Test]
 	[Category(UITestCategories.ScrollView)]
-	public void VerifyScrollViewWithShadow()
+	public void VerifyScrollViewWithVerticalScrollBarVisibilityAlways()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(ShadowTrue);
-		App.Tap(ShadowTrue);
+		App.WaitForElement(VerticalScrollBarVisibilityAlways);
+		App.Tap(VerticalScrollBarVisibilityAlways);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
 
+	[Test]
+	[Category(UITestCategories.ScrollView)]
+	public void VerifyScrollViewWithHorizontalScrollBarVisibilityAlways()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(HorizontalScrollBarVisibilityAlways);
+		App.Tap(HorizontalScrollBarVisibilityAlways);
+		App.WaitForElement(OrientationHorizontal);
+		App.Tap(OrientationHorizontal);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ScrollViewControl");
+		VerifyScreenshot();
+	}
 #endif
+
+    [Test]
+	[Category(UITestCategories.ScrollView)]
+	public void VerifyScrollViewWithVerticalScrollBarVisibilityNever()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(VerticalScrollBarVisibilityNever);
+		App.Tap(VerticalScrollBarVisibilityNever);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ScrollViewControl");
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.ScrollView)]
+	public void VerifyScrollViewWithHorizontalScrollBarVisibilityNever()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(HorizontalScrollBarVisibilityNever);
+		App.Tap(HorizontalScrollBarVisibilityNever);
+		App.WaitForElement(OrientationHorizontal);
+		App.Tap(OrientationHorizontal);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ScrollViewControl");
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.ScrollView)]
+	public void VerifyEditorIsScrolledInsideScrollView()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ContentEditor);
+		App.Tap(ContentEditor);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Editor1");
+		App.ScrollDown("Editor1", ScrollStrategy.Gesture, 0.99, 500);
+		App.WaitForElement("ScrollViewControl");
+		var scrollY = App.WaitForElement("ScrollYLabel").GetText();
+		Assert.That(scrollY, Is.EqualTo("0"));
+	}
+
 	[Test]
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewWithIsVisible()
@@ -1223,22 +1292,6 @@ public class ScrollViewFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.ScrollView)]
-	public void VerifyScrollViewWithRTLAndEditor()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(FlowDirectionRTL);
-		App.Tap(FlowDirectionRTL);
-		App.WaitForElement(ContentEditor);
-		App.Tap(ContentEditor);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
-		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewWithRTLAndHorizontalLayoutContent()
 	{
 		App.WaitForElement(Options);
@@ -1266,6 +1319,42 @@ public class ScrollViewFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ScrollViewControl",timeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshot();
+	}
+
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29805
+	[Test]
+	[Category(UITestCategories.ScrollView)]
+	public void VerifyScrollViewWithRTLAndEditor()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(ContentEditor);
+		App.Tap(ContentEditor);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshot();
+	}
+#endif
+#endif
+
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/30081
+	[Test]
+	[Category(UITestCategories.ScrollView)]
+	public void VerifyScrollViewWithRTLWhenOrientationBoth()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(OrientationBoth);
+		App.Tap(OrientationBoth);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
 		VerifyScreenshot();
 	}
 #endif
@@ -1325,24 +1414,6 @@ public class ScrollViewFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.ScrollView)]
-	public void VerifyScrollViewWithRTLWhenHorizontalOrientationAndContentEditor()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(OrientationHorizontal);
-		App.Tap(OrientationHorizontal);
-		App.WaitForElement(FlowDirectionRTL);
-		App.Tap(FlowDirectionRTL);
-		App.WaitForElement(ContentEditor);
-		App.Tap(ContentEditor);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
-		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewWithRTLWhenHorizontalOrientationAndHorizontalLayoutContent()
 	{
 		App.WaitForElement(Options);
@@ -1376,5 +1447,25 @@ public class ScrollViewFeatureTests : UITest
 		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
 		VerifyScreenshot();
 	}
+
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29805
+	[Test]
+	[Category(UITestCategories.ScrollView)]
+	public void VerifyScrollViewWithRTLWhenHorizontalOrientationAndContentEditor()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(OrientationHorizontal);
+		App.Tap(OrientationHorizontal);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(ContentEditor);
+		App.Tap(ContentEditor);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ScrollViewControl", timeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshot();
+	}
+#endif
 #endif
 }
