@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Name="Self"
+             x:Class="Maui.Controls.Sample.Issues.Issue29086">
+    <CollectionView ItemsSource="{Binding Numbers}"
+                    Margin="60">
+        <CollectionView.ItemTemplate>
+            <DataTemplate>
+                <SwipeView>
+                    <SwipeView.LeftItems>
+                        <SwipeItems
+                            Mode="Reveal"
+                            SwipeBehaviorOnInvoked="RemainOpen">
+                            <SwipeItemView>
+                                <Button
+                                    Text="+"
+                                    AutomationId="AddButton"
+                                    WidthRequest="40"
+                                    BackgroundColor="LightGreen"
+                                    Command="{Binding Source={x:Reference Self}, Path=IncrementCommand}"
+                                    CommandParameter="{Binding .}"/>
+                            </SwipeItemView>
+                            <SwipeItemView>
+                                <Button
+                                    Text="-"
+                                    WidthRequest="40"
+                                    BackgroundColor="LightCoral"
+                                    Command="{Binding Source={x:Reference Self}, Path=DecrementCommand}"
+                                    CommandParameter="{Binding .}"/>
+                            </SwipeItemView>
+                        </SwipeItems>
+                    </SwipeView.LeftItems>
+
+                    <Grid Padding="10"
+                          AutomationId="SwipeItem"
+                          BackgroundColor="LightBlue">
+                        <Label Text="{Binding Value}"
+                               FontSize="18"
+                               HorizontalOptions="Center"/>
+                    </Grid>
+                </SwipeView>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+</ContentPage>
