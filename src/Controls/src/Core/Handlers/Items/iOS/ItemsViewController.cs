@@ -209,12 +209,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			base.ViewWillLayoutSubviews();
-			
+
 			if (needsCellLayout || // A cell changed its measure
-			    !_laidOut || // We have never laid out
-			    // With no cells, nothing will trigger a layout when bounds change,
-			    // but we still need to properly lay out supplementary views
-			    ItemsSource.ItemCount == 0)
+				!_laidOut || // We have never laid out
+							 // With no cells, nothing will trigger a layout when bounds change,
+							 // but we still need to properly lay out supplementary views
+				ItemsSource.ItemCount == 0)
 			{
 				// We don't want to mess up with ContentOffset while refreshing, given that's also gonna cause
 				// a change in the content's offset Y.
