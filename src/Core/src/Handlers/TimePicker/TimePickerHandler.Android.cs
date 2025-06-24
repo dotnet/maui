@@ -15,13 +15,17 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiTimePicker CreatePlatformView()
 		{
-			_timePicker = new MauiTimePicker(Context)
-			{
-				ShowPicker = ShowPickerDialog,
-				HidePicker = HidePickerDialog
-			};
+			_timePicker = new MauiTimePicker(Context);
 
 			return _timePicker;
+		}
+
+		protected override void ConnectHandler(MauiTimePicker platformView)
+		{
+			base.ConnectHandler(platformView);
+
+			platformView.ShowPicker = ShowPickerDialog;
+			platformView.HidePicker = HidePickerDialog;
 		}
 
 		protected override void DisconnectHandler(MauiTimePicker platformView)
@@ -32,6 +36,9 @@ namespace Microsoft.Maui.Handlers
 				_dialog.Hide();
 				_dialog = null;
 			}
+			
+			platformView.ShowPicker = null;
+			platformView.HidePicker = null;
 		}
 
 		protected virtual TimePickerDialog CreateTimePickerDialog(int hour, int minute)

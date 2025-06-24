@@ -12,11 +12,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiDatePicker CreatePlatformView()
 		{
-			var mauiDatePicker = new MauiDatePicker(Context)
-			{
-				ShowPicker = ShowPickerDialog,
-				HidePicker = HidePickerDialog
-			};
+			var mauiDatePicker = new MauiDatePicker(Context);
 
 			var date = VirtualView?.Date;
 
@@ -28,12 +24,13 @@ namespace Microsoft.Maui.Handlers
 			return mauiDatePicker;
 		}
 
-		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }
-
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
 			base.ConnectHandler(platformView);
-			
+
+			platformView.ShowPicker = ShowPickerDialog;
+			platformView.HidePicker = HidePickerDialog;
+				
 			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
 
@@ -66,6 +63,10 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
+			
+			platformView.ShowPicker = null;
+			platformView.HidePicker = null;
+			
 			OnViewDetachedFromWindow();
 
 			base.DisconnectHandler(platformView);
