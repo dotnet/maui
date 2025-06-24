@@ -4,7 +4,7 @@ using Maui.Controls.Sample.Issues;
 
 namespace Maui.Controls.Sample
 {
-	internal class CorePageView : ListView
+	internal class CorePageView : CollectionView
 	{
 		internal class GalleryPageFactory
 		{
@@ -49,6 +49,7 @@ namespace Maui.Controls.Sample
 			// Elements
 			new GalleryPageFactory(() => new ActivityIndicatorCoreGalleryPage(), "ActivityIndicator Gallery"),
 			new GalleryPageFactory(() => new BoxViewCoreGalleryPage(), "Box Gallery"),
+			new GalleryPageFactory(() => new ButtonControlPage(), "Button Feature Matrix"),
 			new GalleryPageFactory(() => new ButtonCoreGalleryPage(), "Button Gallery"),
 			new GalleryPageFactory(() => new CarouselViewCoreGalleryPage(), "CarouselView Gallery"),
 			new GalleryPageFactory(() => new CheckBoxCoreGalleryPage(), "CheckBox Gallery"),
@@ -67,22 +68,27 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
 			new GalleryPageFactory(() => new ListViewCoreGalleryPage(), "ListView Gallery"),
 			new GalleryPageFactory(() => new PickerCoreGalleryPage(), "Picker Gallery"),
+			new GalleryPageFactory(() => new ProgressBarControlPage(), "ProgressBar Feature Matrix"),
 			new GalleryPageFactory(() => new ProgressBarCoreGalleryPage(), "Progress Bar Gallery"),
+			new GalleryPageFactory(() => new RadioButtonControlPage(), "RadioButton Feature Matrix"),
 			new GalleryPageFactory(() => new RadioButtonCoreGalleryPage(), "RadioButton Gallery"),
 			new GalleryPageFactory(() => new ScrollViewCoreGalleryPage(), "ScrollView Gallery"),
 			new GalleryPageFactory(() => new ShadowFeaturePage(), "Shadow Feature Matrix"),
 			new GalleryPageFactory(() => new SearchBarCoreGalleryPage(), "Search Bar Gallery"),
 			new GalleryPageFactory(() => new SliderCoreGalleryPage(), "Slider Gallery"),
+			new GalleryPageFactory(() => new StepperControlPage(), "Stepper Feature Matrix"),
 			new GalleryPageFactory(() => new StepperCoreGalleryPage(), "Stepper Gallery"),
 			new GalleryPageFactory(() => new SwitchCoreGalleryPage(), "Switch Gallery"),
 			new GalleryPageFactory(() => new SwipeViewCoreGalleryPage(), "SwipeView Gallery"),
 			new GalleryPageFactory(() => new TimePickerCoreGalleryPage(), "Time Picker Gallery"),
 			new GalleryPageFactory(() => new WebViewCoreGalleryPage(), "WebView Gallery"),
 			new GalleryPageFactory(() => new SliderControlPage(), "Slider Feature Matrix"),
+			new GalleryPageFactory(() => new CheckBoxControlPage(), "CheckBox Feature Matrix"),
 			new GalleryPageFactory(() => new CollectionViewFeaturePage(), "CollectionView Feature Matrix"),
 			new GalleryPageFactory(() => new LabelControlPage(), "Label Feature Matrix"),
 			new GalleryPageFactory(() => new CarouselViewFeaturePage(), "CarouselView Feature Matrix"),
 			new GalleryPageFactory(() => new ImageButtonControlPage(), "ImageButton Feature Matrix"),
+			new GalleryPageFactory(() => new BoxViewControlPage(), "BoxView Feature Matrix"),
 		};
 
 		public CorePageView(Page rootPage)
@@ -93,43 +99,40 @@ namespace Maui.Controls.Sample
 
 			var template = new DataTemplate(() =>
 			{
-				var cell = new TextCell();
-				cell.ContextActions.Add(new MenuItem
+				var cell = new Grid();
+
+				var label = new Label
 				{
-					Text = "Select Visual",
-					Command = new Command(async () =>
-					{
-						var buttons = typeof(VisualMarker).GetProperties().Select(p => p.Name);
-						var selection = await rootPage.DisplayActionSheet("Select Visual", "Cancel", null, buttons.ToArray());
-						if (cell.BindingContext is GalleryPageFactory pageFactory)
-						{
-							var page = pageFactory.Realize();
-							if (typeof(VisualMarker).GetProperty(selection)?.GetValue(null) is IVisual visual)
-							{
-								page.Visual = visual;
-							}
-							await PushPage(page);
-						}
-					})
-				});
+					FontSize = 14,
+					VerticalOptions = LayoutOptions.Center,
+					Margin = new Thickness(6)
+				};
+
+				label.SetBinding(Label.TextProperty, "Title");
+				label.SetBinding(Label.AutomationIdProperty, "TitleAutomationId");
+
+				cell.Add(label);
 
 				return cell;
 			});
 
-			template.SetBinding(TextCell.TextProperty, "Title");
-			template.SetBinding(TextCell.AutomationIdProperty, "TitleAutomationId");
-
 			ItemTemplate = template;
 			ItemsSource = _pages;
+			SelectionMode = SelectionMode.Single;
 
-			ItemSelected += (sender, args) =>
+			SelectionChanged += (sender, args) =>
 			{
 				if (SelectedItem == null)
 				{
 					return;
 				}
 
-				var item = args.SelectedItem;
+				var selection = args.CurrentSelection;
+
+				if (selection.Count == 0)
+					return;
+
+				var item = args.CurrentSelection[0];
 				if (item is GalleryPageFactory page)
 				{
 					var realize = page.Realize();
