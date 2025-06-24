@@ -351,7 +351,8 @@ namespace Microsoft.Maui.Platform
 				var fontManager = services.GetRequiredService<IFontManager>();
 				editText.UpdateFont(textInput, fontManager);
 			}
-
+			// If we implement the OnSelectionChanged method, this method is called after a keyboard layout change with SelectionStart = 0,
+			// Let's restore the cursor position to its previous location.
 			int safeCursorPosition = Math.Min(previousCursorPosition, editText.Text?.Length ?? 0);
 			editText.SetSelection(safeCursorPosition);
 		}
