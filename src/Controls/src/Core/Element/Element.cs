@@ -333,7 +333,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		WeakReference<Element> _realParent;
-		internal Element GetRealParent(bool logWarningIfParentHasBeenCollected = true)
+		Element GetRealParent(bool logWarningIfParentHasBeenCollected = true)
 		{
 			if (_realParent is null)
 			{
