@@ -175,6 +175,7 @@ namespace Microsoft.Maui.Handlers
 				EventHandler? setDateLater = null;
 				setDateLater = (sender, e) => { _dialog!.UpdateDate(year, month, day); _dialog.ShowEvent -= setDateLater; };
 				_dialog.ShowEvent += setDateLater;
+				_dialog.DismissEvent += OnDialogDismiss;
 			}
 
 			_dialog.Show();

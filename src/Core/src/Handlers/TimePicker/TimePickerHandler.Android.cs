@@ -142,11 +142,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			_dialog = null;
-
-			if (VirtualView is not null)
-			{
-				VirtualView.IsOpen = false;
-			}
+			VirtualView.IsOpen = false;
 		}
 
 		void OnDialogDismiss(object? sender, EventArgs e)
