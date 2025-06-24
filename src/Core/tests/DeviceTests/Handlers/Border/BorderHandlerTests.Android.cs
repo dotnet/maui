@@ -53,5 +53,32 @@ namespace Microsoft.Maui.DeviceTests
 
 		ContentViewGroup GetNativeBorder(BorderHandler borderHandler) =>
 			borderHandler.PlatformView;
+
+		[Fact(DisplayName = "BorderHandler sets appropriate layer type")]
+		public async Task BorderHandlerSetsLayerType()
+		{
+			var border = new BorderStub()
+			{
+				Content = new LabelStub { Text = "Test" },
+				Height = 100,
+				Width = 300
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(border);
+				var platformView = handler.PlatformView as ContentViewGroup;
+
+				Assert.NotNull(platformView);
+
+				// Verify that layer type is set appropriately based on hardware acceleration
+				// The exact value depends on system configuration, but it should be either
+				// Hardware (when acceleration enabled) or Software (when disabled)
+				var layerType = platformView.LayerType;
+				Assert.True(layerType == Android.Views.LayerType.Hardware || 
+				           layerType == Android.Views.LayerType.Software,
+				           $"Expected Hardware or Software layer type, but got {layerType}");
+			});
+		}
 	}
 }
