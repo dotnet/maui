@@ -106,7 +106,7 @@ stages:
           - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj' /p:TargetFramework=net9.0-ios /bl:devicetests_graphics.binlog $(_OfficialBuildIdArgs)
             displayName: Build Graphics.DeviceTests
 
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Essentials/tests/DeviceTests/Essentials.DeviceTests.csproj' /p:TargetFramework=net9.0-ios /bl:devicetests_essentials.binlog $(_OfficialBuildIdArgs)
+          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj' /p:TargetFramework=net9.0-ios /bl:devicetests_essentials.binlog $(_OfficialBuildIdArgs)
             displayName: Build Essentials.DeviceTests
 
           - template: /eng/common/templates-official/steps/send-to-helix.yml
@@ -147,7 +147,7 @@ stages:
           - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj' /p:TargetFramework=net9.0-android /bl:devicetests_graphics.binlog $(_OfficialBuildIdArgs)
             displayName: Build Graphics.DeviceTests
 
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Essentials/tests/DeviceTests/Essentials.DeviceTests.csproj' /p:TargetFramework=net9.0-android /bl:devicetests_essentials.binlog $(_OfficialBuildIdArgs)
+          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj' /p:TargetFramework=net9.0-android /bl:devicetests_essentials.binlog $(_OfficialBuildIdArgs)
             displayName: Build Essentials.DeviceTests
 
           - template: /eng/common/templates-official/steps/send-to-helix.yml
