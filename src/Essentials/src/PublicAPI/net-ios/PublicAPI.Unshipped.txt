@@ -1,4 +1,8 @@
 #nullable enable
+Microsoft.Maui.Devices.Sensors.Location.EllipsoidalAltitude.get -> double?
+Microsoft.Maui.Devices.Sensors.Location.EllipsoidalAltitude.set -> void
+Microsoft.Maui.Devices.Sensors.Location.MeanSeaLevelAltitude.get -> double?
+Microsoft.Maui.Devices.Sensors.Location.MeanSeaLevelAltitude.set -> void
 Microsoft.Maui.Devices.Sensors.IGeolocation.IsEnabled.get -> bool
 Microsoft.Maui.Media.IMediaPicker.PickPhotosAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.List<Microsoft.Maui.Storage.FileResult!>!>!
 Microsoft.Maui.Media.IMediaPicker.PickVideosAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.List<Microsoft.Maui.Storage.FileResult!>!>!
