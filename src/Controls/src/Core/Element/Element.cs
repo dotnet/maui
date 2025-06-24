@@ -382,7 +382,7 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>Most application authors will not need to set the parent element by hand.</remarks>
 		public Element Parent
 		{
-			get { return ParentOverride ?? GetRealParent(false); }
+			get { return ParentOverride ?? RealParent; }
 			set => SetParent(value);
 		}
 
@@ -399,7 +399,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_parentOverride == null)
 			{
-				OnParentChangingCore(Parent, value);
+				OnParentChangingCore(ParentOverride ?? GetRealParent(false), value);
 			}
 
 			if (realParent is IElementDefinition element)
