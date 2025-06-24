@@ -1,1 +1,2 @@
 #nullable enable
+*REMOVED*~Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.ItemsViewHandler(Microsoft.Maui.PropertyMapper mapper, Microsoft.Maui.CommandMapper commandMapper = null) -> void
