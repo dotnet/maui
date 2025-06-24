@@ -58,6 +58,19 @@ namespace Microsoft.Maui.Platform
 				// arrangement with an adjusted starting point and recalculating the content offset.
 				if (_previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection)
 				{
+					// In mac platform, Scrollbar is not updated based on FlowDirection, So resetting the scroll indicators
+					if (OperatingSystem.IsMacCatalyst())
+					{
+						bool showsVertical = ShowsVerticalScrollIndicator;
+						bool showsHorizontal = ShowsHorizontalScrollIndicator;
+
+						ShowsVerticalScrollIndicator = false;
+						ShowsHorizontalScrollIndicator = false;
+
+						ShowsVerticalScrollIndicator = showsVertical;
+						ShowsHorizontalScrollIndicator = showsHorizontal;
+					}
+                    
 					if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 					{
 						var horizontalOffset = contentSize.Width - crossPlatformBounds.Width;
