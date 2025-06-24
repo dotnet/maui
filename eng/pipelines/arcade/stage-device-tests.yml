@@ -94,20 +94,8 @@ stages:
 
         # Run on public pipeline
         - ${{ if parameters.runAsPublic }}:
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf'  /bl:pack.binlog $(_OfficialBuildIdArgs)
+          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /bl:pack.binlog $(_OfficialBuildIdArgs)
             displayName: Build BuildTasks
-
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj' /bl:devicetests.binlog $(_OfficialBuildIdArgs)
-            displayName: Build Controls.DeviceTests
-
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj' /bl:devicetests_core.binlog $(_OfficialBuildIdArgs)
-            displayName: Build Core.DeviceTests
-
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj' /p:TargetFramework=net9.0-ios /bl:devicetests_graphics.binlog $(_OfficialBuildIdArgs)
-            displayName: Build Graphics.DeviceTests
-
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj' /p:TargetFramework=net9.0-ios /bl:devicetests_essentials.binlog $(_OfficialBuildIdArgs)
-            displayName: Build Essentials.DeviceTests
 
           - template: /eng/common/templates-official/steps/send-to-helix.yml
             parameters:
