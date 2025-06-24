@@ -65,51 +65,101 @@
         </MAUIiOSScenario>
     </ItemGroup>
 
-    <!-- Process each scenario individually to avoid metadata evaluation issues -->
+    <!-- Process each test scenario individually using direct path construction -->
     <Target Name="DiscoverTestBundles" BeforeTargets="Build">
         <!-- iOS App Bundles -->
+        <PropertyGroup Condition="'$(TargetOS)' == 'ios'">
+            <_PlatformName>ios</_PlatformName>
+        </PropertyGroup>
+
+        <!-- Android APKs -->
+        <PropertyGroup Condition="'$(TargetOS)' == 'android'">
+            <_PlatformName>android</_PlatformName>
+        </PropertyGroup>
+
+        <!-- First discover the actual framework version and locations -->
+        <ItemGroup>
+            <_NetVersionDirs Include="$(ScenariosDir)/Controls.DeviceTests/Debug/*" />
+            <_NetVersionDirs Include="$(ScenariosDir)/Core.DeviceTests/Debug/*" />
+            <_NetVersionDirs Include="$(ScenariosDir)/Graphics.DeviceTests/Debug/*" />
+        </ItemGroup>
+
+        <!-- Debug the discovered directories -->
+        <Message Text="Discovered directory structure:" Importance="high" />
+        <Message Text="  - %(_NetVersionDirs.Identity)" Importance="high" />
+
+        <!-- iOS: Find app bundles directly -->
         <ItemGroup Condition="'$(TargetOS)' == 'ios'">
-            <_ScenarioPaths Include="@(MAUIiOSScenario)">
-                <Path>$(ScenariosDir)/%(ScenarioDirectoryName)/Debug/net*-ios</Path>
-                <PackageName>%(PackageName)</PackageName>
-            </_ScenarioPaths>
+            <!-- Controls DeviceTests -->
+            <_TempDirectories Include="$(ScenariosDir)/Controls.DeviceTests/Debug/**/*.app" />
+            <_TestItem Include="@(_TempDirectories)">
+                <PackageName>com.microsoft.maui.controls.devicetests</PackageName>
+            </_TestItem>
 
-            <_AppBundleDirs
-                Include="@(_ScenarioPaths->'$([System.IO.Directory]::GetDirectories(%(Path), *.app, System.IO.SearchOption.AllDirectories))')">
-                <PackageName>%(_ScenarioPaths.PackageName)</PackageName>
-            </_AppBundleDirs>
+            <!-- Core DeviceTests -->
+            <_TempDirectories Include="$(ScenariosDir)/Core.DeviceTests/Debug/**/*.app" />
+            <_TestItem Include="@(_TempDirectories)">
+                <PackageName>com.microsoft.maui.core.devicetests</PackageName>
+            </_TestItem>
 
-            <XHarnessAppBundleToTest Include="@(_AppBundleDirs)">
+            <!-- Graphics DeviceTests -->
+            <_TempDirectories Include="$(ScenariosDir)/Graphics.DeviceTests/Debug/**/*.app" />
+            <_TestItem Include="@(_TempDirectories)">
+                <PackageName>com.microsoft.maui.graphics.devicetests</PackageName>
+            </_TestItem>
+        </ItemGroup>
+
+        <!-- Android: Find apk files directly -->
+        <ItemGroup Condition="'$(TargetOS)' == 'android'">
+            <!-- Controls DeviceTests -->
+            <_TempDirectories Include="$(ScenariosDir)/Controls.DeviceTests/Debug/**/*.apk" />
+            <_TestItem Include="@(_TempDirectories)">
+                <PackageName>com.microsoft.maui.controls.devicetests</PackageName>
+            </_TestItem>
+
+            <!-- Core DeviceTests -->
+            <_TempDirectories Include="$(ScenariosDir)/Core.DeviceTests/Debug/**/*.apk" />
+            <_TestItem Include="@(_TempDirectories)">
+                <PackageName>com.microsoft.maui.core.devicetests</PackageName>
+            </_TestItem>
+
+            <!-- Graphics DeviceTests -->
+            <_TempDirectories Include="$(ScenariosDir)/Graphics.DeviceTests/Debug/**/*.apk" />
+            <_TestItem Include="@(_TempDirectories)">
+                <PackageName>com.microsoft.maui.graphics.devicetests</PackageName>
+            </_TestItem>
+        </ItemGroup>
+
+        <!-- Debug found items -->
+        <Message Text="ScenariosDir: $(ScenariosDir)" Importance="high" />
+        <Message Text="Found test items:" Importance="high" />
+        <Message Text="  - %(_TestItem.Identity)" Importance="high" />
+
+        <!-- Add the discovered items to the appropriate Helix test collection -->
+        <ItemGroup Condition="'$(TargetOS)' == 'ios'">
+            <XHarnessAppBundleToTest Include="@(_TestItem)">
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
-                <WorkItemPrefix>%(PackageName)</WorkItemPrefix>
+                <WorkItemPrefix>%(_TestItem.PackageName)</WorkItemPrefix>
             </XHarnessAppBundleToTest>
         </ItemGroup>
 
-        <!-- Android APKs - only include when TargetOS is android -->
         <ItemGroup Condition="'$(TargetOS)' == 'android'">
-            <_ScenarioPathsAndroid Include="@(MAUIiOSScenario)">
-                <Path>$(ScenariosDir)/%(ScenarioDirectoryName)/Debug/net*-android</Path>
-                <PackageName>%(PackageName)</PackageName>
-            </_ScenarioPathsAndroid>
-
-            <_ApkDirs
-                Include="@(_ScenarioPathsAndroid->'$([System.IO.Directory]::GetDirectories(%(Path), *.apk, System.IO.SearchOption.AllDirectories))')">
-                <PackageName>%(_ScenarioPathsAndroid.PackageName)</PackageName>
-            </_ApkDirs>
-
-            <XHarnessApkToTest Include="@(_ApkDirs)">
+            <XHarnessApkToTest Include="@(_TestItem)">
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
-                <AndroidPackageName>%(PackageName)</AndroidPackageName>
+                <AndroidPackageName>%(_TestItem.PackageName)</AndroidPackageName>
             </XHarnessApkToTest>
         </ItemGroup>
 
         <!-- Output discovered paths for debugging -->
-        <Message Condition="'$(TargetOS)' == 'ios'" Text="Discovered iOS app bundles: @(XHarnessAppBundleToTest)" Importance="high" />
-        <Message Condition="'$(TargetOS)' == 'android'" Text="Discovered Android APKs: @(XHarnessApkToTest)" Importance="high" />
-        <Message Condition="'$(TargetOS)' != 'android'" Text="Skipping Android APKs as TargetOS is not 'android'" Importance="high" />
+        <Message Condition="'$(TargetOS)' == 'ios'"
+            Text="Discovered iOS app bundles: @(XHarnessAppBundleToTest)" Importance="high" />
+        <Message Condition="'$(TargetOS)' == 'android'"
+            Text="Discovered Android APKs: @(XHarnessApkToTest)" Importance="high" />
+        <Message Condition="'$(TargetOS)' != 'android' and '$(TargetOS)' != 'ios'"
+            Text="TargetOS '$(TargetOS)' is not supported for device tests" Importance="high" />
     </Target>
 
 
