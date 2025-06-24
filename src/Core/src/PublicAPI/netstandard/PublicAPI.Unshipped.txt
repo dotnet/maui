@@ -41,6 +41,8 @@ Microsoft.Maui.IApplication.ActivateWindow(Microsoft.Maui.IWindow! window) -> vo
 *REMOVED*Microsoft.Maui.IDatePicker.Date.get -> System.DateTime
 *REMOVED*Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime
 *REMOVED*Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
+Microsoft.Maui.IDatePicker.IsOpen.get -> bool
+Microsoft.Maui.IDatePicker.IsOpen.set -> void
 Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime?
 Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
 Microsoft.Maui.IDatePicker.Date.get -> System.DateTime?
@@ -56,10 +58,10 @@ Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.set -> void
 Microsoft.Maui.IHybridWebView.RawMessageReceived(string! rawMessage) -> void
 Microsoft.Maui.IHybridWebView.SendRawMessage(string! rawMessage) -> void
 Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
-Microsoft.Maui.IPickerElement
-Microsoft.Maui.IPickerElement.IsOpen.get -> bool
-Microsoft.Maui.IPickerElement.IsOpen.set -> void
-Microsoft.Maui.IPickerElement.OnIsOpenPropertyChanged(bool oldValue, bool newValue) -> void
+Microsoft.Maui.IPicker.IsOpen.get -> bool
+Microsoft.Maui.IPicker.IsOpen.set -> void
+Microsoft.Maui.ITimePicker.IsOpen.get -> bool
+Microsoft.Maui.ITimePicker.IsOpen.set -> void
 Microsoft.Maui.IWebRequestInterceptingWebView
 Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
 Microsoft.Maui.ITitleBar

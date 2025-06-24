@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Handlers
 		public static partial void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker);
 
 		/// <summary>
-		/// Maps the abstract <see cref="IPickerElement.IsOpen"/> property to the platform-specific implementations.
+		/// Maps the abstract <see cref="IDatePicker.IsOpen"/> property to the platform-specific implementations.
 		/// </summary>
 		/// <param name="handler">The associated handler that controls platform behavior.</param>
 		/// <param name="datePicker">The <see cref="IDatePicker"/> instance that determines whether the date picker dropdown is open.</param>

@@ -41,7 +41,9 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
 		/// <summary>Bindable property for <see cref="IsOpen"/>.</summary>
-		public static readonly BindableProperty IsOpenProperty = PickerElement.IsOpenProperty;
+		public static readonly BindableProperty IsOpenProperty =	
+			BindableProperty.Create(nameof(ITimePicker.IsOpen), typeof(bool), typeof(TimePicker), default, BindingMode.TwoWay,
+				propertyChanged: OnIsOpenPropertyChanged);
 
 		readonly Lazy<PlatformConfigurationRegistry<TimePicker>> _platformConfigurationRegistry;
 
@@ -112,7 +114,12 @@ namespace Microsoft.Maui.Controls
 			get => (bool)GetValue(IsOpenProperty);
 			set => SetValue(IsOpenProperty, value);
 		}
-
+		
+		static void OnIsOpenPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			((TimePicker)bindable).OnIsOpenPropertyChanged((bool)oldValue, (bool)newValue);
+		}
+		
 		TextTransform ITextElement.TextTransform
 		{
 			get => TextTransform.Default;
@@ -148,7 +155,7 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
-		void IPickerElement.OnIsOpenPropertyChanged(bool oldValue, bool newValue) =>
+		void OnIsOpenPropertyChanged(bool oldValue, bool newValue) =>
 			HandleIsOpenChanged();
 
 		void HandleIsOpenChanged()

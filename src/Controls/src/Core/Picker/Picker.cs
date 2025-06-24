@@ -66,7 +66,9 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
 		/// <summary>Bindable property for <see cref="IsOpen"/>.</summary>
-		public static readonly BindableProperty IsOpenProperty = PickerElement.IsOpenProperty;
+		public static readonly BindableProperty IsOpenProperty =	
+			BindableProperty.Create(nameof(IPicker.IsOpen), typeof(bool), typeof(Picker), default, BindingMode.TwoWay,
+				propertyChanged: OnIsOpenPropertyChanged);
 
 		readonly Lazy<PlatformConfigurationRegistry<Picker>> _platformConfigurationRegistry;
 
@@ -229,6 +231,11 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(IsOpenProperty, value);
 		}
 
+		static void OnIsOpenPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			((Picker)bindable).OnIsOpenPropertyChanged((bool)oldValue, (bool)newValue);
+		}
+		
 		public event EventHandler SelectedIndexChanged;
 		public event EventHandler<PickerOpenedEventArgs> Opened;
 		public event EventHandler<PickerClosedEventArgs> Closed;
@@ -298,7 +305,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void IPickerElement.OnIsOpenPropertyChanged(bool oldValue, bool newValue) =>
+		void OnIsOpenPropertyChanged(bool oldValue, bool newValue) =>
 			HandleIsOpenChanged();
 
 		void HandleIsOpenChanged()

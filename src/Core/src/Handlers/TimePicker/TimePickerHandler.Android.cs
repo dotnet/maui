@@ -10,8 +10,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
 	{
-		TimePickerDialogDismissListener DialogDismissListener { get; } = new TimePickerDialogDismissListener();
-		
 		MauiTimePicker? _timePicker;
 		TimePickerDialog? _dialog;
 
@@ -30,9 +28,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog != null)
 			{
-				DialogDismissListener.Handler = null;
-				_dialog.SetOnDismissListener(null);
-				
+				_dialog.DismissEvent -= OnDialogDismiss;
 				_dialog.Hide();
 				_dialog = null;
 			}
@@ -55,9 +51,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			var dialog = new TimePickerDialog(Context!, onTimeSetCallback, hour, minute, Use24HourView);
-			
-			DialogDismissListener.Handler = this;
-			dialog.SetOnDismissListener(DialogDismissListener);
+			dialog.DismissEvent += OnDialogDismiss;
 			
 			return dialog;
 		}
@@ -97,7 +91,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			if (handler is TimePickerHandler timePickerHandler)
+			if (handler is TimePickerHandler timePickerHandler  && 
+			    timePickerHandler.PlatformView.IsLoaded())
 			{
 				if (timePicker.IsOpen)
 					timePickerHandler.ShowPickerDialog();
@@ -142,6 +137,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog is not null)
 			{
+				_dialog.DismissEvent -= OnDialogDismiss;
 				_dialog.Hide();
 			}
 
@@ -153,23 +149,12 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		void OnDialogDismiss(object? sender, EventArgs e)
+		{
+			HidePickerDialog();
+		}
+
 		bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(PlatformView?.Context)
 			&& VirtualView.Format == "t" || VirtualView.Format == "HH:mm");
-		
-		static void OnDismiss(ITimePickerHandler? handler, IDialogInterface? dialog)
-		{
-			if (handler is TimePickerHandler timePickerHandler)
-				timePickerHandler.HidePickerDialog();
-		}
-		
-		class TimePickerDialogDismissListener : Java.Lang.Object, IDialogInterfaceOnDismissListener
-		{
-			public TimePickerHandler? Handler { get; set; }
-			
-			public void OnDismiss(IDialogInterface? dialog)
-			{
-				TimePickerHandler.OnDismiss(Handler, dialog);
-			}
-		}
 	}
 }

@@ -7,8 +7,20 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Represents a View for selecting a text item from a list of data.
 	/// </summary>
-	public interface IPicker : IView, IPickerElement, ITextStyle, ITextAlignment, IItemDelegate<string>
+	public interface IPicker : IView, ITextStyle, ITextAlignment, IItemDelegate<string>
 	{
+		/// <summary>
+		/// Gets or sets a value indicating whether the dropdown is currently open.
+		/// </summary>
+		/// <value>
+		/// <c>true</c> if the dropdown is currently open and visible; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		/// Setting this property programmatically will open or close the dropdown.
+		/// Controls may also update this property when the dropdown is opened or closed through user interaction.
+		/// </remarks>
+		bool IsOpen { get; set; }
+		
 		/// <summary>
 		/// Gets the list of choices.
 		/// </summary>

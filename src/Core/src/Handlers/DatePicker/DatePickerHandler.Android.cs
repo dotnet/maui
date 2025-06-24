@@ -8,8 +8,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{		
-		DatePickerDialogDismissListener DialogDismissListener { get; } = new DatePickerDialogDismissListener();
-		
 		DatePickerDialog? _dialog;
 
 		protected override MauiDatePicker CreatePlatformView()
@@ -60,9 +58,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog != null)
 			{	
-				DialogDismissListener.Handler = null;
-				_dialog.SetOnDismissListener(null);
-				
+				_dialog.DismissEvent -= OnDialogDismiss;
 				_dialog.Hide();
 				_dialog.Dispose();
 				_dialog = null;
@@ -85,8 +81,7 @@ namespace Microsoft.Maui.Handlers
 				}
 			}, year, month, day);
 		
-			DialogDismissListener.Handler = this;
-			dialog.SetOnDismissListener(DialogDismissListener);
+			dialog.DismissEvent += OnDialogDismiss;
 			
 			return dialog;
 		}
@@ -138,7 +133,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			if (handler is DatePickerHandler platformHandler)
+			if (handler is DatePickerHandler platformHandler &&
+			    handler.PlatformView.IsLoaded())
 			{
 				if (datePicker.IsOpen)
 					platformHandler.ShowPickerDialog(datePicker.Date);
@@ -186,8 +182,18 @@ namespace Microsoft.Maui.Handlers
 
 		void HidePickerDialog()
 		{
-			_dialog?.Hide();
+			if (_dialog != null)
+			{
+				_dialog.DismissEvent -= OnDialogDismiss;
+				_dialog.Hide();
+			}
+			
 			VirtualView.IsOpen = false;
+		}
+
+		void OnDialogDismiss(object? sender, EventArgs e)
+		{
+			HidePickerDialog();
 		}
 
 		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
@@ -199,22 +205,6 @@ namespace Microsoft.Maui.Handlers
 				currentDialog.Dismiss();
 
 				ShowPickerDialog(currentDialog.DatePicker.DateTime);
-			}
-		}
-
-		static void OnDismiss(IDatePickerHandler? handler, IDialogInterface? dialog)
-		{
-			if (handler is DatePickerHandler datePickerHandler)
-				datePickerHandler.HidePickerDialog();
-		}
-
-		class DatePickerDialogDismissListener : Java.Lang.Object, IDialogInterfaceOnDismissListener
-		{
-			public DatePickerHandler? Handler { get; set; }
-			
-			public void OnDismiss(IDialogInterface? dialog)
-			{
-				DatePickerHandler.OnDismiss(Handler, dialog);
 			}
 		}
 	}

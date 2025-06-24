@@ -46,7 +46,9 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
 		/// <summary>Bindable property for <see cref="IsOpen"/>.</summary>
-		public static readonly BindableProperty IsOpenProperty = PickerElement.IsOpenProperty;
+		public static readonly BindableProperty IsOpenProperty =	
+			BindableProperty.Create(nameof(IDatePicker.IsOpen), typeof(bool), typeof(DatePicker), default, BindingMode.TwoWay,
+				propertyChanged: OnIsOpenPropertyChanged);
 
 		readonly Lazy<PlatformConfigurationRegistry<DatePicker>> _platformConfigurationRegistry;
 
@@ -141,7 +143,12 @@ namespace Microsoft.Maui.Controls
 			get => (bool)GetValue(IsOpenProperty);
 			set => SetValue(IsOpenProperty, value);
 		}
-
+		
+		static void OnIsOpenPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			((DatePicker)bindable).OnIsOpenPropertyChanged((bool)oldValue, (bool)newValue);
+		}
+		
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
 			HandleFontChanged();
 
@@ -167,7 +174,7 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		void IPickerElement.OnIsOpenPropertyChanged(bool oldValue, bool newValue) =>
+		void OnIsOpenPropertyChanged(bool oldValue, bool newValue) =>
 			HandleIsOpenChanged();
 
 		void HandleIsOpenChanged()
