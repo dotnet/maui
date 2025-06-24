@@ -31,6 +31,8 @@ public class DatePickerFeatureTests : UITest
 #elif IOS
         App.WaitForElement("Done");
         App.Tap("Done");
+#elif WINDOWS
+        App.Tap("25");
 #endif
         VerifyScreenshot();
     }
@@ -50,6 +52,8 @@ public class DatePickerFeatureTests : UITest
 #elif IOS
         App.WaitForElement("Done");
         App.Tap("Done");
+#elif WINDOWS
+        App.Tap("26");
 #endif
         VerifyScreenshot();
     }
@@ -76,6 +80,8 @@ public class DatePickerFeatureTests : UITest
 #elif IOS
         App.WaitForElement("Done");
         App.Tap("Done");
+#elif WINDOWS
+        App.Tap("27");
 #endif
         VerifyScreenshot();
     }
