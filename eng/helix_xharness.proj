@@ -42,37 +42,36 @@
 
     <ItemGroup>
     
-        <MAUIiOSScenario Include="Controls">
+        <MAUIScenario Include="Controls">
             <ScenarioDirectoryName>Controls.DeviceTests</ScenarioDirectoryName>
             <PayloadDirectory>$(ScenariosDir)Controls.DeviceTests</PayloadDirectory>
             <IPAName>Microsoft.Maui.Controls.DeviceTests</IPAName>
             <PackageName>com.microsoft.maui.controls.devicetests</PackageName>
-        </MAUIiOSScenario>
+        </MAUIScenario>
         
-        <MAUIiOSScenario Include="Core">
+        <MAUIScenario Include="Core">
             <ScenarioDirectoryName>Core.DeviceTests</ScenarioDirectoryName>
             <PayloadDirectory>$(ScenariosDir)Core.DeviceTests</PayloadDirectory>
             <IPAName>Microsoft.Maui.Core.DeviceTests</IPAName>
             <PackageName>com.microsoft.maui.core.devicetests</PackageName>
-        </MAUIiOSScenario>
+        </MAUIScenario>
         
-        <MAUIiOSScenario Include="Graphics">
+        <MAUIScenario Include="Graphics">
             <ScenarioDirectoryName>Graphics.DeviceTests</ScenarioDirectoryName>
             <PayloadDirectory>$(ScenariosDir)Graphics.DeviceTests</PayloadDirectory>
             <IPAName>Microsoft.Maui.Graphics.DeviceTests</IPAName>
             <PackageName>com.microsoft.maui.graphics.devicetests</PackageName>
-        </MAUIiOSScenario>
+        </MAUIScenario>
     </ItemGroup>
 
     <!-- Process each test scenario individually using direct path construction -->
     <Target Name="DiscoverTestBundles" BeforeTargets="Build">
-        <!-- Print all MAUIiOSScenario -->
-        <Message Text="Discovered MAUIiOSScenarios:" Importance="high" />
-        <Message Text="Count: @(MAUIiOSScenario->Count())" Importance="high" />
+        <!-- Print all MAUIScenarios -->
+        <Message Text="Discovered MAUIScenarios: @(MAUIScenario->Count())" Importance="high" />
     
         <ItemGroup >
             <!-- Create a special batching task to find app bundles by scenario -->
-            <_MAUIScenarioSearch Include="@(MAUIiOSScenario)" />
+            <_MAUIScenarioSearch Include="@(MAUIScenario)" />
         </ItemGroup>
         
         <!-- Add the discovered items to the appropriate Helix test collection -->
@@ -86,10 +85,17 @@
         </ItemGroup>
 
         <ItemGroup Condition="'$(TargetOS)' == 'android'">
-            <XHarnessApkToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Debug/net9.0-android/', '*.apk', System.IO.SearchOption.AllDirectories))" >
+            <_apks Include="%(_MAUIScenarioSearch.PayloadDirectory)/Debug/net9.0-android/**/*Signed.apk" />
+            <XHarnessApkToTest Include="@(_apks)">
+                <Targets>armeabi-v7a</Targets>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
-                <AndroidPackageName>%(_MAUIScenarioSearch.ScenarioDirectoryName)</AndroidPackageName>
+                <AndroidPackageName>%(Filename)</AndroidPackageName>
+            </XHarnessApkToTest>
+            
+            <!-- Update the package name to remove -Signed suffix -->
+            <XHarnessApkToTest Update="@(XHarnessApkToTest)">
+                <AndroidPackageName>$([System.String]::Copy('%(AndroidPackageName)').Replace('-Signed', ''))</AndroidPackageName>
             </XHarnessApkToTest>
         </ItemGroup>
     </Target>
