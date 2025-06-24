@@ -455,18 +455,18 @@ namespace Microsoft.Maui.Media
 				using var originalStream = await originalResult.OpenReadAsync();
 				using var processedStream = await ImageProcessor.ProcessImageAsync(
 					originalStream, maximumWidth, maximumHeight, compressionQuality, originalResult.FileName);
-				
+
 				// If ImageProcessor returns null (e.g., on .NET Standard), return original file
 				if (processedStream is null)
 				{
 					return originalResult;
 				}
-				
+
 				// Read processed stream into memory
 				var memoryStream = new MemoryStream();
 				await processedStream.CopyToAsync(memoryStream);
 				memoryStream.Position = 0;
-				
+
 				return new ProcessedImageFileResult(memoryStream, originalResult.FileName);
 			}
 			catch
@@ -498,12 +498,12 @@ namespace Microsoft.Maui.Media
 			// 1. High quality (>=90) and no resizing needed (preserves original format)
 			// 2. Original file was PNG
 			// 3. Image might have transparency (PNG supports alpha channel)
-			
+
 			bool highQualityNoResize = compressionQuality >= 90 && !maximumWidth.HasValue && !maximumHeight.HasValue;
-			bool originalWasPng = !string.IsNullOrEmpty(originalFileName) && 
+			bool originalWasPng = !string.IsNullOrEmpty(originalFileName) &&
 									(originalFileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
 									 originalFileName.EndsWith(".PNG", StringComparison.OrdinalIgnoreCase));
-			
+
 			// For very high quality or when original was PNG, preserve PNG format
 			return (compressionQuality >= 95 && !maximumWidth.HasValue && !maximumHeight.HasValue) || originalWasPng;
 		}
@@ -513,12 +513,12 @@ namespace Microsoft.Maui.Media
 			if (data == null)
 			{
 				var normalizedImage = uiImage.NormalizeOrientation();
-				
+
 				// First, apply resizing if needed
 				var workingImage = normalizedImage;
 				var originalSize = normalizedImage.Size;
 				var newSize = CalculateResizedDimensions(originalSize.Width, originalSize.Height, maximumWidth, maximumHeight);
-				
+
 				if (newSize.Width != originalSize.Width || newSize.Height != originalSize.Height)
 				{
 					// Resize the image
@@ -527,10 +527,10 @@ namespace Microsoft.Maui.Media
 					workingImage = UIGraphics.GetImageFromCurrentImageContext();
 					UIGraphics.EndImageContext();
 				}
-				
+
 				// Then determine output format and apply compression
 				bool usePng = ShouldUsePngFormat();
-				
+
 				if (usePng)
 				{
 					// Use PNG format - lossless compression, supports transparency
@@ -560,7 +560,7 @@ namespace Microsoft.Maui.Media
 
 			return Task.FromResult(data.AsStream());
 		}
-		
+
 		static CoreGraphics.CGSize CalculateResizedDimensions(nfloat originalWidth, nfloat originalHeight, int? maxWidth, int? maxHeight)
 		{
 			if (!maxWidth.HasValue && !maxHeight.HasValue)
@@ -568,10 +568,10 @@ namespace Microsoft.Maui.Media
 
 			nfloat scaleWidth = maxWidth.HasValue ? (nfloat)maxWidth.Value / originalWidth : nfloat.MaxValue;
 			nfloat scaleHeight = maxHeight.HasValue ? (nfloat)maxHeight.Value / originalHeight : nfloat.MaxValue;
-			
+
 			// Use the smaller scale to ensure both constraints are respected
 			nfloat scale = (nfloat)Math.Min(Math.Min((double)scaleWidth, (double)scaleHeight), 1.0); // Don't scale up
-			
+
 			return new CoreGraphics.CGSize(originalWidth * scale, originalHeight * scale);
 		}
 	}

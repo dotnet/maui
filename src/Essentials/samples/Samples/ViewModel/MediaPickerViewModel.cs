@@ -211,7 +211,7 @@ namespace Samples.ViewModel
 			}
 
 			var stream = await photo.OpenReadAsync();
-			
+
 			// Get image dimensions
 			try
 			{
@@ -223,7 +223,7 @@ namespace Samples.ViewModel
 			{
 				ImageDimensions = $"Unknown dimensions • {stream.Length:N0} bytes";
 			}
-			
+
 			PhotoSource = ImageSource.FromStream(() => stream);
 			ImageByteLength = stream.Length;
 
@@ -247,18 +247,18 @@ namespace Samples.ViewModel
 			foreach (var item in photo)
 			{
 				var stream = await item.OpenReadAsync();
-				
+
 				// Get image dimensions
 				var dimensions = GetImageDimensions(stream);
 				stream.Position = 0; // Reset stream position for ImageSource
-				
+
 				var photoInfo = new PhotoInfo
 				{
 					Source = ImageSource.FromStream(() => stream),
 					Dimensions = $"{dimensions.Width} × {dimensions.Height}",
 					FileSize = $"{stream.Length:N0} bytes"
 				};
-				
+
 				PhotoList.Add(photoInfo);
 				ImageByteLength += stream.Length;
 			}

@@ -83,7 +83,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 			}
 
 			throw new Exception($"Failed to deserialize result from controlDiv: {result}");
-	
+
 			static bool TryDeserialize<TInner>(string? result, out TInner? value)
 			{
 				if (result is null or "null" or "undefined")

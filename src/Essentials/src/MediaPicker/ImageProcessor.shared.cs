@@ -13,22 +13,22 @@ namespace Microsoft.Maui.Essentials;
 /// </summary>
 internal static class ImageProcessor
 {
-    /// <summary>
-    /// Processes an image by applying resizing and compression using MAUI Graphics.
-    /// </summary>
-    /// <param name="inputStream">The input image stream.</param>
-    /// <param name="maxWidth">Maximum width constraint (null for no constraint).</param>
-    /// <param name="maxHeight">Maximum height constraint (null for no constraint).</param>
-    /// <param name="qualityPercent">Compression quality percentage (0-100).</param>
-    /// <param name="originalFileName">Original filename to determine format preservation logic.</param>
-    /// <returns>A new stream containing the processed image.</returns>
-    public static async Task<Stream> ProcessImageAsync(Stream inputStream, 
-        int? maxWidth, int? maxHeight, int qualityPercent, string originalFileName = null)
-    {
+	/// <summary>
+	/// Processes an image by applying resizing and compression using MAUI Graphics.
+	/// </summary>
+	/// <param name="inputStream">The input image stream.</param>
+	/// <param name="maxWidth">Maximum width constraint (null for no constraint).</param>
+	/// <param name="maxHeight">Maximum height constraint (null for no constraint).</param>
+	/// <param name="qualityPercent">Compression quality percentage (0-100).</param>
+	/// <param name="originalFileName">Original filename to determine format preservation logic.</param>
+	/// <returns>A new stream containing the processed image.</returns>
+	public static async Task<Stream> ProcessImageAsync(Stream inputStream,
+		int? maxWidth, int? maxHeight, int qualityPercent, string originalFileName = null)
+	{
 #if !(IOS || ANDROID || WINDOWS)
-        // For platforms without MAUI Graphics support, return null to indicate no processing available
-        await Task.CompletedTask; // Avoid async warning
-        return null;
+		// For platforms without MAUI Graphics support, return null to indicate no processing available
+		await Task.CompletedTask; // Avoid async warning
+		return null;
 #else
         if (inputStream is null)
         {
@@ -76,7 +76,7 @@ internal static class ImageProcessor
             image?.Dispose();
         }
 #endif
-    }
+	}
 
 #if IOS || ANDROID || WINDOWS
     /// <summary>
@@ -140,33 +140,33 @@ internal static class ImageProcessor
     }
 #endif
 
-    /// <summary>
-    /// Determines if image processing is needed based on the provided options.
-    /// </summary>
-    public static bool IsProcessingNeeded(int? maxWidth, int? maxHeight, int qualityPercent)
-    {
+	/// <summary>
+	/// Determines if image processing is needed based on the provided options.
+	/// </summary>
+	public static bool IsProcessingNeeded(int? maxWidth, int? maxHeight, int qualityPercent)
+	{
 #if !(IOS || ANDROID || WINDOWS)
-        // On platforms without MAUI Graphics support, always return false - no processing available
-        return false;
+		// On platforms without MAUI Graphics support, always return false - no processing available
+		return false;
 #else
         return (maxWidth.HasValue || maxHeight.HasValue) || qualityPercent < 100;
 #endif
-    }
+	}
 
-    /// <summary>
-    /// Determines the output file extension based on processed image data and quality settings.
-    /// </summary>
-    /// <param name="imageData">The processed image stream to analyze</param>
-    /// <param name="qualityPercent">Compression quality percentage</param>
-    /// <param name="originalFileName">Original filename for format hints (optional)</param>
-    /// <returns>File extension including the dot (e.g., ".jpg", ".png")</returns>
-    public static string DetermineOutputExtension(Stream imageData, int qualityPercent, string originalFileName = null)
-    {
+	/// <summary>
+	/// Determines the output file extension based on processed image data and quality settings.
+	/// </summary>
+	/// <param name="imageData">The processed image stream to analyze</param>
+	/// <param name="qualityPercent">Compression quality percentage</param>
+	/// <param name="originalFileName">Original filename for format hints (optional)</param>
+	/// <returns>File extension including the dot (e.g., ".jpg", ".png")</returns>
+	public static string DetermineOutputExtension(Stream imageData, int qualityPercent, string originalFileName = null)
+	{
 #if !(IOS || ANDROID)
-        // On platforms without MAUI Graphics support, fall back to simple logic
-        bool originalWasPng = !string.IsNullOrEmpty(originalFileName) && 
-                              originalFileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase);
-        return (qualityPercent >= 95 || originalWasPng) ? ".png" : ".jpg";
+		// On platforms without MAUI Graphics support, fall back to simple logic
+		bool originalWasPng = !string.IsNullOrEmpty(originalFileName) &&
+							  originalFileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase);
+		return (qualityPercent >= 95 || originalWasPng) ? ".png" : ".jpg";
 #else
         // Try to detect format from the actual processed image data
         var detectedFormat = DetectImageFormat(imageData);
@@ -184,7 +184,7 @@ internal static class ImageProcessor
         // Otherwise: use JPEG for better compression
         return (qualityPercent >= 95 || (qualityPercent >= 90 && originalWasPng)) ? ".png" : ".jpg";
 #endif
-    }
+	}
 
 #if IOS || ANDROID || WINDOWS
     /// <summary>

@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Media
 			}
 
 			var fileResult = new FileResult(result);
-			
+
 			// Apply compression/resizing if specified for photos
 			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 			{
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Media
 					var memoryStream = new MemoryStream();
 					await processedStream.CopyToAsync(memoryStream);
 					processedStream.Dispose();
-					
+
 					return new ProcessedImageFileResult(memoryStream, result.Name);
 				}
 			}
@@ -125,9 +125,9 @@ namespace Microsoft.Maui.Media
 			{
 				return [];
 			}
-			
+
 			var fileResults = result.Select(file => new FileResult(file)).ToList();
-			
+
 			// Apply compression/resizing if specified for photos
 			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 			{
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Media
 				{
 					var originalFile = result[i];
 					var fileResult = fileResults[i];
-					
+
 					using var originalStream = await originalFile.OpenStreamForReadAsync();
 					var processedStream = await ImageProcessor.ProcessImageAsync(
 						originalStream,
@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Media
 						var memoryStream = new MemoryStream();
 						await processedStream.CopyToAsync(memoryStream);
 						processedStream.Dispose();
-						
+
 						compressedResults.Add(new ProcessedImageFileResult(memoryStream, originalFile.Name));
 					}
 					else
@@ -207,7 +207,7 @@ namespace Microsoft.Maui.Media
 						var memoryStream = new MemoryStream();
 						await processedStream.CopyToAsync(memoryStream);
 						processedStream.Dispose();
-						
+
 						return new ProcessedImageFileResult(memoryStream, file.Name);
 					}
 				}
