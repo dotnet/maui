@@ -21,12 +21,6 @@ static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.AuthenticateAsyn
 static Microsoft.Maui.Devices.Sensors.Geolocation.IsEnabled.get -> bool
 static Microsoft.Maui.Media.MediaPicker.PickPhotosAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.List<Microsoft.Maui.Storage.FileResult!>!>!
 static Microsoft.Maui.Media.MediaPicker.PickVideosAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.List<Microsoft.Maui.Storage.FileResult!>!>!
-static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue, string? sharedName) -> System.DateTimeOffset
-static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue) -> System.DateTimeOffset
-static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value, string? sharedName) -> void
-static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value) -> void
-Microsoft.Maui.Media.SpeechOptions.Rate.get -> float?
-Microsoft.Maui.Media.SpeechOptions.Rate.set -> void
 *REMOVED*static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>!>!
 static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
 Microsoft.Maui.Devices.Sensors.ISensor
