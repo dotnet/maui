@@ -89,7 +89,7 @@ namespace Microsoft.Maui.IntegrationTests
 		/// TODO: Should these be moved to a library-packs workload folder for testing?
 		/// </summary>
 		/// <exception cref="DirectoryNotFoundException"></exception>
-		[OneTimeSetUp]
+		// TODO: Convert to class constructor or static setup
 		public void BuildTestFxtSetUp()
 		{
 			string[] NuGetOnlyPackages = new string[] {
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.IntegrationTests
 			FileUtilities.ReplaceInFile(TestNuGetConfig, "NUGET_ONLY_PLACEHOLDER", extraPacksDir);
 		}
 
-		[SetUp]
+		// TODO: Convert to test constructor
 		public void BuildTestSetUp()
 		{
 			if (Directory.Exists(TestDirectory))
@@ -132,10 +132,10 @@ namespace Microsoft.Maui.IntegrationTests
 			Directory.CreateDirectory(TestDirectory);
 		}
 
-		[OneTimeTearDown]
+		// TODO: Convert to class finalizer or static cleanup
 		public void BuildTestFxtTearDown() { }
 
-		[TearDown]
+		// TODO: Convert to IDisposable.Dispose()
 		public void BuildTestTearDown()
 		{
 			// Attach test content and logs as artifacts

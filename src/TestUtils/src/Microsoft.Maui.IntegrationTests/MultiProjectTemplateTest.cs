@@ -1,17 +1,13 @@
 ﻿namespace Microsoft.Maui.IntegrationTests;
 
-[Category(Categories.MultiProject)]
+[Trait("Category", Categories.MultiProject)]
 public class MultiProjectTemplateTest : BaseTemplateTests
-{
-	[Fact]
-	[Theory]
-	[InlineData("Debug", "simplemulti")]
-	[Theory]
-	[InlineData("Release", "simplemulti")]
-	[Theory]
-	[InlineData("Debug", "MultiProject@Symbol & More")]
-	[Theory]
-	[InlineData("Release", "MultiProject@Symbol & More")]
+{	[Theory]
+[InlineData("Debug", "simplemulti")]
+[InlineData("Release", "simplemulti")]
+[InlineData("Debug", "MultiProject@Symbol & More")]
+[InlineData("Release", "MultiProject@Symbol & More")]
+
 	public void BuildMultiProject(string config, string projectName)
 	{
 		var projectDir = Path.Combine(TestDirectory, projectName);
@@ -37,17 +33,12 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 
 		Assert.True(DotnetInternal.Build(solutionFile, config, properties: buildProps, msbuildWarningsAsErrors: true),
 			$"Solution {name} failed to build. Check test output/attachments for errors.");
-	}
+	}	[Theory]
+[InlineData("Debug", "--android")]
+[InlineData("Debug", "--ios")]
+[InlineData("Debug", "--windows")]
+[InlineData("Debug", "--macos")]
 
-	[Fact]
-	[Theory]
-	[InlineData("Debug", "--android")]
-	[Theory]
-	[InlineData("Debug", "--ios")]
-	[Theory]
-	[InlineData("Debug", "--windows")]
-	[Theory]
-	[InlineData("Debug", "--macos")]
 	public void BuildMultiProjectSinglePlatform(string config, string platformArg)
 	{
 		var projectDir = TestDirectory;
@@ -65,19 +56,13 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 
 		Assert.True(DotnetInternal.Build(solutionFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
 			$"Solution {name} failed to build. Check test output/attachments for errors.");
-	}
-
-	[Fact]
-	[Theory]
-	[InlineData("--android")]
-	[Theory]
-	[InlineData("--ios")]
-	[Theory]
-	[InlineData("--windows")]
-	[Theory]
-	[InlineData("--macos")]
-	[Theory]
-	[InlineData("")] // no platform arg means all platforms
+	}	[Theory]
+[InlineData("--android")]
+[InlineData("--ios")]
+[InlineData("--windows")]
+[InlineData("--macos")]
+[InlineData("")]
+ // no platform arg means all platforms
 					 // https://github.com/dotnet/maui/issues/28695
 	public void VerifyIncludedPlatformsInSln(string platformArg)
 	{

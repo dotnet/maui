@@ -1,19 +1,14 @@
 ﻿namespace Microsoft.Maui.IntegrationTests;
 
-[Category(Categories.AOT)]
+[Trait("Category", Categories.AOT)]
 public class AOTTemplateTest : BaseTemplateTests
-{
-	[Fact]
-	[Theory]
-	[InlineData("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
-	[Theory]
-	[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
-	[Theory]
-	[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
-	[Theory]
-	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
-	[Theory]
-	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
+{	[Theory]
+[InlineData("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
+[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
+[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
+[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
+[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
+
 	public void PublishNativeAOT(string id, string framework, string runtimeIdentifier)
 	{
 		if (!TestEnvironment.IsMacOS)
@@ -33,19 +28,13 @@ public class AOTTemplateTest : BaseTemplateTests
 
 		var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
 		actualWarnings.AssertNoWarnings();
-	}
+	}	[Theory]
+[InlineData("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
+[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
+[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
+[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
+[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
 
-	[Fact]
-	[Theory]
-	[InlineData("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
-	[Theory]
-	[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
-	[Theory]
-	[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
-	[Theory]
-	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
-	[Theory]
-	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
 	public void PublishNativeAOTRootAllMauiAssemblies(string id, string framework, string runtimeIdentifier)
 	{
 		// This test follows the following guide: https://devblogs.microsoft.com/dotnet/creating-aot-compatible-libraries/#publishing-a-test-application-for-aot

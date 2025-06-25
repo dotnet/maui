@@ -4,13 +4,13 @@ using Microsoft.Maui.IntegrationTests.Android;
 
 namespace Microsoft.Maui.IntegrationTests
 {
-	[Category(Categories.RunOnAndroid)]
+	[Trait("Category", Categories.RunOnAndroid)]
 	public class AndroidTemplateTests : BaseBuildTest
 	{
 		Emulator TestAvd = new Emulator();
 		string testPackage = "";
 
-		[OneTimeSetUp]
+		// TODO: Convert to class constructor or static setup
 		public void AndroidTemplateFxtSetUp()
 		{
 			if (TestEnvironment.IsMacOS && RuntimeInformation.OSArchitecture == Architecture.Arm64)
@@ -20,14 +20,14 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.True(TestAvd.InstallAvd(out var installOutput), $"Failed to install Test AVD.\n{installOutput}");
 		}
 
-		[SetUp]
+		// TODO: Convert to test constructor
 		public void AndroidTemplateSetUp()
 		{
 			var emulatorLog = Path.Combine(TestDirectory, $"emulator-launch-{DateTime.UtcNow.ToFileTimeUtc()}.log");
 			Assert.True(TestAvd.LaunchAndWaitForAvd(600, emulatorLog), "Failed to launch Test AVD.");
 		}
 
-		[OneTimeTearDown]
+		// TODO: Convert to class finalizer or static cleanup
 		public void AndroidTemplateFxtTearDown()
 		{
 			Adb.KillEmulator(TestAvd.Id);
@@ -41,33 +41,22 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 		}
 
-		[TearDown]
+		// TODO: Convert to IDisposable.Dispose()
 		public void AndroidTemplateTearDown()
 		{
 			Adb.UninstallPackage(testPackage);
-		}
+		}		[Theory]
+[InlineData("maui", DotNetPrevious, "Debug", null)]
+[InlineData("maui", DotNetPrevious, "Release", null)]
+[InlineData("maui", DotNetCurrent, "Debug", null)]
+[InlineData("maui", DotNetCurrent, "Release", null)]
+[InlineData("maui", DotNetCurrent, "Release", "full")]
+[InlineData("maui-blazor", DotNetPrevious, "Debug", null)]
+[InlineData("maui-blazor", DotNetPrevious, "Release", null)]
+[InlineData("maui-blazor", DotNetCurrent, "Debug", null)]
+[InlineData("maui-blazor", DotNetCurrent, "Release", null)]
+[InlineData("maui-blazor", DotNetCurrent, "Release", "full")]
 
-		[Fact]
-		[Theory]
-		[InlineData("maui", DotNetPrevious, "Debug", null)]
-		[Theory]
-		[InlineData("maui", DotNetPrevious, "Release", null)]
-		[Theory]
-		[InlineData("maui", DotNetCurrent, "Debug", null)]
-		[Theory]
-		[InlineData("maui", DotNetCurrent, "Release", null)]
-		[Theory]
-		[InlineData("maui", DotNetCurrent, "Release", "full")]
-		[Theory]
-		[InlineData("maui-blazor", DotNetPrevious, "Debug", null)]
-		[Theory]
-		[InlineData("maui-blazor", DotNetPrevious, "Release", null)]
-		[Theory]
-		[InlineData("maui-blazor", DotNetCurrent, "Debug", null)]
-		[Theory]
-		[InlineData("maui-blazor", DotNetCurrent, "Release", null)]
-		[Theory]
-		[InlineData("maui-blazor", DotNetCurrent, "Release", "full")]
 		public void RunOnAndroid(string id, string framework, string config, string trimMode)
 		{
 			var projectDir = TestDirectory;

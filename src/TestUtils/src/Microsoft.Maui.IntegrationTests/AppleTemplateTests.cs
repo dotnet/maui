@@ -3,12 +3,12 @@ using Microsoft.Maui.IntegrationTests.Apple;
 
 namespace Microsoft.Maui.IntegrationTests
 {
-	[Category(Categories.RunOniOS)]
+	[Trait("Category", Categories.RunOniOS)]
 	public class AppleTemplateTests : BaseBuildTest
 	{
 		Simulator TestSimulator = new Simulator();
 
-		[SetUp]
+		// TODO: Convert to test constructor
 		public void AppleTemplateSetup()
 		{
 			if (!TestEnvironment.IsMacOS)
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.IntegrationTests
 			TestSimulator.ShowWindow();
 		}
 
-		[OneTimeTearDown]
+		// TODO: Convert to class finalizer or static cleanup
 		public void AppleTemplateFxtTearDown()
 		{
 			TestSimulator.Shutdown();
@@ -30,24 +30,18 @@ namespace Microsoft.Maui.IntegrationTests
 		[InlineData("maui", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		// [Theory]
 		[InlineData("maui", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		[Theory]
 		[InlineData("maui", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		[Theory]
 		[InlineData("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		[Theory]
 		[InlineData("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "full")]
 		// [Theory]
 		[InlineData("maui-blazor", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		// [Theory]
 		[InlineData("maui-blazor", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		[Theory]
 		[InlineData("maui-blazor", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		[Theory]
 		[InlineData("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		// FIXME: has trimmer warnings
 		//[Theory]
 		[InlineData("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "full")]
-		[Theory]
 		[InlineData("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.NativeAOT, null)]
 		public void RunOniOS(string id, string config, string framework, string runtimeIdentifier, RuntimeVariant runtimeVariant, string trimMode)
 		{

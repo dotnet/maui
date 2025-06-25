@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.IntegrationTests;
 
-[Category(Categories.Build)]
+[Trait("Category", Categories.Build)]
 public class ResizetizerTests : BaseBuildTest
 {
 	const string BlankSvgContents =
@@ -11,24 +11,15 @@ public class ResizetizerTests : BaseBuildTest
 		</svg>
 		""";
 
-	[Fact]
-	// windows unpackaged/exe
 	[Theory]
 	[InlineData("maui", "classlib", true)] // net9.0
-	[Theory]
 	[InlineData("maui", "mauilib", true)] // net9.0-xxx
-	[Theory]
 	[InlineData("maui-blazor", "classlib", true)] // net9.0
-	[Theory]
 	[InlineData("maui-blazor", "mauilib", true)] // net9.0-xxx
-												 // windows packaged/msix
-	[Theory]
+	// windows packaged/msix
 	[InlineData("maui", "classlib", false)] // net9.0
-	[Theory]
 	[InlineData("maui", "mauilib", false)] // net9.0-xxx
-	[Theory]
 	[InlineData("maui-blazor", "classlib", false)] // net9.0
-	[Theory]
 	[InlineData("maui-blazor", "mauilib", false)] // net9.0-xxx
 	public void CollectsAssets(string id, string libid, bool unpackaged)
 	{
