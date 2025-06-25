@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.CarouselViewOptionsPage"
+             Title="CarouselViewOptionsPage">
+
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Apply"
+                           Clicked="ApplyButton_Clicked"
+                           AutomationId="Apply"/>
+       </ContentPage.ToolbarItems>
+
+       <ScrollView>
+              <!-- <StackLayout Padding="20"> -->
+              <Grid Padding="1"
+                    RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
+
+                     <StackLayout Grid.Row="1"
+                                  Padding="1">
+                            <!-- Items Source -->
+                            <Label Text="ItemsSource"
+                                   FontAttributes="Bold"/>
+                            <StackLayout Orientation="Horizontal">
+                                   <RadioButton x:Name="ItemsSourceNone"
+                                                Content="None"
+                                                FontSize="11"
+                                                CheckedChanged="OnItemsSourceChanged"
+                                                AutomationId="ItemsSourceNone"/>
+                                   <RadioButton x:Name="ObservableCollection"
+                                                Content="ObservableCollection"
+                                                IsChecked="True"
+                                                FontSize="11"
+                                                CheckedChanged="OnItemsSourceChanged"
+                                                AutomationId="ItemsSourceObservableCollection"/>
+                            </StackLayout>
+
+                            <!-- Item Template -->
+                            <Label Text="Item Template"
+                                   FontAttributes="Bold"/>
+                            <StackLayout Orientation="Horizontal">
+                                   <RadioButton x:Name="ItemTemplateNone"
+                                                Content="None"
+                                                IsChecked="True"
+                                                GroupName="ItemTemplate"
+                                                FontSize="11"
+                                                CheckedChanged="OnItemTemplateChanged"
+                                                AutomationId="ItemTemplateNone"/>
+                                   <RadioButton x:Name="ItemTemplateGrid"
+                                                Content="Grid Layout"
+                                                GroupName="ItemTemplate"
+                                                FontSize="11"
+                                                CheckedChanged="OnItemTemplateChanged"
+                                                AutomationId="ItemTemplateGrid"/>
+                                   <RadioButton x:Name="ItemTemplateCustomView"
+                                                Content="Image View"
+                                                GroupName="ItemTemplate"
+                                                FontSize="11"
+                                                CheckedChanged="OnItemTemplateChanged"
+                                                AutomationId="ItemTemplateCustomView"/>
+                            </StackLayout>
+
+                            <!-- Empty View -->
+                            <Label Text="Empty View"
+                                   FontAttributes="Bold"/>
+                            <StackLayout Orientation="Horizontal">
+                                   <RadioButton x:Name="EmptyViewNone"
+                                                Content="None"
+                                                IsChecked="True"
+                                                GroupName="EmptyView"
+                                                FontSize="11"
+                                                CheckedChanged="OnEmptyViewChanged"
+                                                AutomationId="EmptViewNone"/>
+                                   <RadioButton x:Name="EmptyViewString"
+                                                Content="String"
+                                                GroupName="EmptyView"
+                                                FontSize="11"
+                                                CheckedChanged="OnEmptyViewChanged"
+                                                AutomationId="EmptyViewString"/>
+                                   <RadioButton x:Name="EmptyViewCustomView"
+                                                Content="Custom View"
+                                                GroupName="EmptyView"
+                                                FontSize="11"
+                                                CheckedChanged="OnEmptyViewChanged"
+                                                AutomationId="EmptyViewCustomView"/>
+                                   <RadioButton x:Name="EmptyViewDataTemplate"
+                                                Content="Template"
+                                                GroupName="EmptyView"
+                                                FontSize="11"
+                                                CheckedChanged="OnEmptyViewChanged"
+                                                AutomationId="EmptyViewDataTemplate"/>
+                            </StackLayout>
+
+                            <Label Text="ItemsLayout:"
+                                   FontAttributes="Bold"/>
+                            <VerticalStackLayout>
+                                   <!-- First Row -->
+                                   <HorizontalStackLayout Spacing="10">
+                                          <RadioButton x:Name="ItemsLayoutHorizontal"
+                                                       IsChecked="True"
+                                                       CheckedChanged="OnItemsLayoutChanged"
+                                                       Content="Horizontal"
+                                                       FontSize="11"
+                                                       GroupName="ItemsLayoutGroup"
+                                                       AutomationId="ItemsLayoutHorizontal"/>
+                                          <RadioButton x:Name="ItemsLayoutVertical"
+                                                       CheckedChanged="OnItemsLayoutChanged"
+                                                       Content="Vertical"
+                                                       FontSize="11"
+                                                       GroupName="ItemsLayoutGroup"
+                                                       AutomationId="ItemsLayoutVertical"/>
+
+                                   </HorizontalStackLayout>
+                            </VerticalStackLayout>
+
+
+                            <!-- Items Updating Scroll Mode -->
+                            <VerticalStackLayout>
+                                   <Label Text="Items Updating Scroll Mode"
+                                          FontAttributes="Bold"/>
+                                   <StackLayout Orientation="Horizontal">
+                                          <RadioButton x:Name="KeepItemsInView"
+                                                       Content="KeepItemsInView"
+                                                       GroupName="ScrollMode"
+                                                       IsChecked="True"
+                                                       FontSize="11"
+                                                       CheckedChanged="OnItemsUpdatingScrollModeChanged"
+                                                       AutomationId="KeepItemsInView"/>
+                                          <RadioButton x:Name="KeepScrollOffset"
+                                                       Content="KeepScrollOffset"
+                                                       GroupName="ScrollMode"
+                                                       FontSize="11"
+                                                       CheckedChanged="OnItemsUpdatingScrollModeChanged"
+                                                       AutomationId="KeepScrollOffset"/>
+                                   </StackLayout>
+                                   <StackLayout Orientation="Horizontal">
+                                          <RadioButton x:Name="KeepLastItemInView"
+                                                       Content="KeepLastItemInView"
+                                                       GroupName="ScrollMode"
+                                                       FontSize="11"
+                                                       CheckedChanged="OnItemsUpdatingScrollModeChanged"
+                                                       AutomationId="KeepLastItemInView"/>
+                                   </StackLayout>
+                            </VerticalStackLayout>
+
+                            <!-- CarouselView Specific Options -->
+                            <Label Text="CarouselView Options"
+                                   FontAttributes="Bold"/>
+                            <StackLayout Orientation="Horizontal"
+                                         Spacing="20">
+                                   <!-- Loop Option -->
+                                   <StackLayout Orientation="Horizontal"
+                                                Spacing="5">
+                                          <CheckBox x:Name="Loop"
+                                                    IsChecked="{Binding Loop}"/>
+                                          <Label Text="Enable Loop"
+                                                 VerticalOptions="Center"
+                                                 AutomationId="LoopLabel"
+                                                 FontSize="11">
+                                                 <Label.GestureRecognizers>
+                                                        <TapGestureRecognizer Tapped="OnLoopLabelTapped"/>
+                                                 </Label.GestureRecognizers>
+                                          </Label>
+                                   </StackLayout>
+
+                                   <!-- Swipe Option -->
+                                   <StackLayout Orientation="Horizontal"
+                                                Spacing="5">
+                                          <CheckBox x:Name="IsSwipeEnabled"
+                                                    IsChecked="{Binding IsSwipeEnabled}"/>
+                                          <Label Text="Enable Swipe"
+                                                 VerticalOptions="Center"
+                                                 AutomationId="SwipeLabel"
+                                                 FontSize="11">
+                                                 <Label.GestureRecognizers>
+                                                        <TapGestureRecognizer Tapped="OnSwipeLabelTapped"/>
+                                                 </Label.GestureRecognizers>
+                                          </Label>
+                                   </StackLayout>
+                            </StackLayout>
+
+                            <!-- Peek Area Insets -->
+                            <StackLayout Orientation="Horizontal"
+                                         Spacing="10">
+                                   <Label Text="Peek Area Insets"
+                                          VerticalOptions="Center"
+                                          FontAttributes="Bold"/>
+                                   <Entry x:Name="PeekAreaInsets"
+                                          Text="{Binding Thickness}"
+                                          Completed="OnPeekAreaInsetsEntryCompleted"
+                                          MaxLength="3"
+                                          AutomationId="PeekAreaInsetsEntry"
+                                          HorizontalOptions="FillAndExpand"/>
+                            </StackLayout>
+
+                            <!-- Position Control -->
+                            <StackLayout Orientation="Horizontal"
+                                         Spacing="10">
+                                   <Label Text="Position:"
+                                          VerticalOptions="Center"
+                                          FontAttributes="Bold"/>
+                                   <Entry x:Name="PositionEntry"
+                                          Text="{Binding Position}"
+                                          Completed="OnPositionEntryCompleted"
+                                          MaxLength="1"
+                                          AutomationId="PositionEntry"
+                                          HorizontalOptions="FillAndExpand"/>
+                            </StackLayout>
+
+                            <!-- Flow Direction -->
+                            <Label Text="Flow Direction:"
+                                   FontSize="15"/>
+                            <StackLayout Orientation="Horizontal">
+                                   <RadioButton x:Name="FlowDirectionLTR"
+                                                AutomationId="FlowDirectionLTR"
+                                                GroupName="FlowDirection"
+                                                Content="LTR"
+                                                IsChecked="True"
+                                                FontSize="14"
+                                                CheckedChanged="OnFlowDirectionChanged"/>
+                                   <RadioButton x:Name="FlowDirectionRTL"
+                                                AutomationId="FlowDirectionRTL"
+                                                GroupName="FlowDirection"
+                                                Content="RTL"
+                                                FontSize="14"
+                                                CheckedChanged="OnFlowDirectionChanged"/>
+                            </StackLayout>
+                     </StackLayout>
+              </Grid>
+       </ScrollView>
+</ContentPage>

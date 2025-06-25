@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Platform
 			{
 				foreach (var pair in state)
 				{
-					userInfo.SetValueForKey(new NSString(pair.Value), new NSString(pair.Key));
+					userInfo.SetValueForKey(new NSString(pair.Value ?? string.Empty), new NSString(pair.Key));
 				}
 			}
 

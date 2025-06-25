@@ -1,5 +1,3 @@
-﻿#if TEST_FAILS_ON_WINDOWS // When using App.Tap to interact with tab items which placed in the more section, the action targets the corner of the tabs, Line No 24
-// which doesn't trigger navigation on Windows. Windows requires tapping directly on the tab title text.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -61,4 +59,3 @@ public class Issue6784 : _IssuesUITest
 #endif
 	}
 }
-#endif

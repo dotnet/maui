@@ -18,6 +18,10 @@ namespace Microsoft.Maui.Controls
 			Platform.WebViewExtensions.UpdateMixedContentMode(handler.PlatformView, webView);
 		}
 
+		public static void MapJavaScriptEnabled(IWebViewHandler handler, WebView webView)
+		{
+			Platform.WebViewExtensions.UpdateJavaScriptEnabled(handler.PlatformView, webView);
+		}
 
 		public static void MapDisplayZoomControls(WebViewHandler handler, WebView webView) =>
 			MapDisplayZoomControls((IWebViewHandler)handler, webView);

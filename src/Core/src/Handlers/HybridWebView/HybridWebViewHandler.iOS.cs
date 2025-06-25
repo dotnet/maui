@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Handlers
 			config.DefaultWebpagePreferences!.AllowsContentJavaScript = true;
 
 			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(this), ScriptMessageHandlerName);
+
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
@@ -161,20 +162,9 @@ namespace Microsoft.Maui.Handlers
 				logger?.LogDebug("Intercepting request for {Url}.", url);
 
 				// 1. First check if the app wants to modify or override the request.
+				if (WebRequestInterceptingWebView.TryInterceptResponseStream(Handler, webView, urlSchemeTask, url, logger))
 				{
-					// 1.a. First, create the event args
-					var platformArgs = new WebResourceRequestedEventArgs(webView, urlSchemeTask);
-
-					// 1.b. Trigger the event for the app
-					var handled = Handler.VirtualView.WebResourceRequested(platformArgs);
-
-					// 1.c. If the app reported that it completed the request, then we do nothing more
-					if (handled)
-					{
-						logger?.LogDebug("Request for {Url} was handled by the user.", url);
-
-						return;
-					}
+					return;
 				}
 
 				// 2. If this is an app request, then assume the request is for a local resource.

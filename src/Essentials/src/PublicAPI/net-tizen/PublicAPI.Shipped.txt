@@ -436,7 +436,6 @@ Microsoft.Maui.Authentication.IAppleSignInAuthenticator.AuthenticateAsync(Micros
 Microsoft.Maui.Authentication.IPlatformWebAuthenticatorCallback
 Microsoft.Maui.Authentication.IWebAuthenticator
 Microsoft.Maui.Authentication.IWebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
-Microsoft.Maui.Authentication.IWebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder
 Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder.DecodeResponse(System.Uri! uri) -> System.Collections.Generic.IDictionary<string!, string!>?
 Microsoft.Maui.Authentication.WebAuthenticator
@@ -850,7 +849,7 @@ Microsoft.Maui.Storage.FileSystemImplementation.FileSystemImplementation() -> vo
 Microsoft.Maui.Storage.FileSystemImplementation.OpenAppPackageFileAsync(string! filename) -> System.Threading.Tasks.Task<System.IO.Stream!>!
 Microsoft.Maui.Storage.IFilePicker
 Microsoft.Maui.Storage.IFilePicker.PickAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
-Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
+Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>!>!
 Microsoft.Maui.Storage.IFileSystem
 Microsoft.Maui.Storage.IFileSystem.AppDataDirectory.get -> string!
 Microsoft.Maui.Storage.IFileSystem.AppPackageFileExistsAsync(string! filename) -> System.Threading.Tasks.Task<bool>!
@@ -1021,12 +1020,9 @@ static Microsoft.Maui.ApplicationModel.VersionTracking.VersionHistory.get -> Sys
 static Microsoft.Maui.Authentication.AppleSignInAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.AppleSignInAuthenticator.Options? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.AppleSignInAuthenticator.Default.get -> Microsoft.Maui.Authentication.IAppleSignInAuthenticator!
 static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
-static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(System.Uri! url, System.Uri! callbackUrl) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
-static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.WebAuthenticator.Default.get -> Microsoft.Maui.Authentication.IWebAuthenticator!
 static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.AuthenticateAsync(this Microsoft.Maui.Authentication.IWebAuthenticator! webAuthenticator, System.Uri! url, System.Uri! callbackUrl) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
-static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.AuthenticateAsync(this Microsoft.Maui.Authentication.IWebAuthenticator! webAuthenticator, System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Devices.Battery.BatteryInfoChanged -> System.EventHandler<Microsoft.Maui.Devices.BatteryInfoChangedEventArgs!>!
 static Microsoft.Maui.Devices.Battery.ChargeLevel.get -> double
 static Microsoft.Maui.Devices.Battery.Default.get -> Microsoft.Maui.Devices.IBattery!
@@ -1204,7 +1200,7 @@ static Microsoft.Maui.Networking.Connectivity.Current.get -> Microsoft.Maui.Netw
 static Microsoft.Maui.Networking.Connectivity.NetworkAccess.get -> Microsoft.Maui.Networking.NetworkAccess
 static Microsoft.Maui.Storage.FilePicker.Default.get -> Microsoft.Maui.Storage.IFilePicker!
 static Microsoft.Maui.Storage.FilePicker.PickAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
-static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
+static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>!>!
 static Microsoft.Maui.Storage.FileSystem.AppDataDirectory.get -> string!
 static Microsoft.Maui.Storage.FileSystem.AppPackageFileExistsAsync(string! filename) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Storage.FileSystem.CacheDirectory.get -> string!
@@ -1231,6 +1227,8 @@ static Microsoft.Maui.Storage.Preferences.Get(string! key, string? defaultValue,
 static Microsoft.Maui.Storage.Preferences.Get(string! key, string? defaultValue) -> string?
 static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTime defaultValue, string? sharedName) -> System.DateTime
 static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTime defaultValue) -> System.DateTime
+static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue, string? sharedName) -> System.DateTimeOffset
+static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue) -> System.DateTimeOffset
 static Microsoft.Maui.Storage.Preferences.Remove(string! key, string? sharedName) -> void
 static Microsoft.Maui.Storage.Preferences.Remove(string! key) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, bool value, string? sharedName) -> void
@@ -1247,6 +1245,8 @@ static Microsoft.Maui.Storage.Preferences.Set(string! key, string? value, string
 static Microsoft.Maui.Storage.Preferences.Set(string! key, string? value) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTime value, string? sharedName) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTime value) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value, string? sharedName) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value) -> void
 static Microsoft.Maui.Storage.SecureStorage.Default.get -> Microsoft.Maui.Storage.ISecureStorage!
 static Microsoft.Maui.Storage.SecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string?>!
 static Microsoft.Maui.Storage.SecureStorage.Remove(string! key) -> bool

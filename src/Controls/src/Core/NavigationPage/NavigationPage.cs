@@ -788,8 +788,8 @@ namespace Microsoft.Maui.Controls
 					() =>
 					{
 						Owner.NavigationType = NavigationType.Pop;
-						Owner.RemoveFromInnerChildren(currentPage);
 						Owner.CurrentPage = newCurrentPage;
+						Owner.RemoveFromInnerChildren(currentPage);
 						if (currentPage.TitleView != null)
 						{
 							currentPage.RemoveLogicalChild(currentPage.TitleView);

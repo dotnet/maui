@@ -47,41 +47,64 @@ When asked to create release notes for a particular branch, follow these steps:
 
 ### 4. Classifying the Commits
 
-To help when doing your category analizing use lower case of the commit messages
-Apply these classification rules:
+To help when doing your category analyzing use lower case of the commit messages
+Apply these classification rules in order of priority:
 
-* **MAUI Product Fixes**:
-  - Bug fixes with platform tags like [iOS], [Android], [Windows], [Mac], [MacCatalyst], [android], [x], [xaml], [core], [ios], [android], [windows], [mac], [maccatalyst]
-  - Feature additions or improvements to MAUI components
-  - Performance improvements
-  - API changes and enhancements
-  - New features or fixes related to Aspire
-  - Remove for fixing pending TODOs
-  - Trimmer and AOT related changes
-  
-* **Testing**:
-  - Has tag [testing], [test], [uitests] or contains terms like "test", "add test", "UI test", "unit test", "UItests", "uitests", if any of these exists the commit is from Testing category
-  - Changes to test infrastructure, test frameworks, or CI test configurations
-  - Test coverage improvements
+* **Dependency Updates** (Highest Priority):
+  - Any commit that updates dependencies, packages, libraries, or SDKs
+  - Commits with titles starting with "Update dependencies from", "Bump", "[net10.0] Update dependencies"
+  - Commits by @dotnet-maestro[bot] or similar automated dependency bots
+  - Package version changes (e.g., "Changed Syncfusion toolkit version")
+  - WindowsAppSDK updates, Android/iOS dependency updates
 
-* **Docs**:
-  - Has tag [docs] or contains terms like "documentation", "docs", "sample", "example"
-  - README updates, API documentation, code comments
-  - No other commits should belong here
+* **Testing** (Second Priority):
+  - Any commit related to tests, testing infrastructure, or test improvements
+  - Commits with "[UI Test]", "[Testing]", "[testing]", "Test case", "UITest" in the title
+  - Commits that contain "test" in lowercase analysis of the title
+  - Test file updates, test fixes, or test infrastructure changes
+  - If a commit mentions "test" it should go here unless it's clearly a dependency update
 
-* **Dependency Updates**:
-  - Updates to package references, dependencies, or SDKs
-  - Commits from automation bots updating dependencies (e.g., @dotnet-maestro)
-  - Version bumps of external libraries
-  - Changes to NuGet packages
+* **Docs** (Third Priority):
+  - Documentation changes, API documentation, samples, and tutorials
+  - Commits with "[docs]", "Add API XML Docs", "documentation" in the title
+  - README updates, documentation fixes, or guide updates
+  - Any commit that primarily changes .md files or documentation
+  - API XML documentation additions
 
-* **Housekeeping**:
-  - CI pipeline changes, formatting fixes, repo maintenance
-  - Build system modifications, tooling updates
-  - Refactoring with no functional changes
-  - Any commit that doesn't clearly fit other categories
-  - Merging a branch to another branch
-  - Has tag [ci]
+* **Housekeeping** (Fourth Priority):
+  - Build system changes, CI pipeline updates, automated formatting, version updates
+  - Commits with "[create-pull-request]", "[ci]", "[api]", "[housekeeping]", "automated change"
+  - Branch merges like "[net10.0] Merge main to net10"
+  - Version updates like "Update Versions.props", release candidate branches
+  - Localization updates, formatting changes, automated PRs by @github-actions[bot] or @dotnet-bot
+  - Infrastructure changes, build configuration updates, repo maintenance
+  - Bug report template updates, workflow changes
+
+* **MAUI Product Fixes** (Default/Lowest Priority):
+  - Bug fixes, improvements, and features related to the MAUI product itself
+  - Platform-specific fixes with "[Android]", "[iOS]", "[Windows]", "[Mac]" tags
+  - Control fixes, UI improvements, performance enhancements
+  - New features, API changes, nullability improvements
+  - HybridWebView features, XAML improvements, binding fixes
+  - Anything that doesn't clearly fit the above categories
+
+**CRITICAL: Apply Classification Rules Strictly**
+- Always check each commit against ALL categories in priority order
+- Many commits in the current incorrect output were miscategorized because the rules weren't followed
+- Examples of common mistakes to avoid:
+  - Testing commits (like "Create a new UITest for...") going to MAUI Product Fixes instead of Testing
+  - Documentation commits (like "Add API XML Docs for...") going to MAUI Product Fixes instead of Docs  
+  - Housekeeping commits (like version updates, CI changes) going to MAUI Product Fixes instead of Housekeeping
+  - Dependency updates going to MAUI Product Fixes instead of Dependency Updates
+- When analyzing commit titles, convert to lowercase and look for category keywords carefully
+- If unsure, re-read the priority rules and choose the highest priority category that matches
+
+**Classification Priority Rules:**
+1. If a commit fits multiple categories, use the highest priority category from the list above
+2. When in doubt between categories, prefer the more specific category over general ones
+3. Automated commits (bots, CI systems) should generally go to their appropriate automated category
+4. Any commit that mentions "test" should go to Testing unless it's clearly a dependency update
+5. Documentation-focused commits should go to Docs even if they also touch code
 
 
 ### 5. Organizing for the Response
@@ -106,11 +129,44 @@ Apply these classification rules:
 * **Breaking changes**: Highlight any breaking changes prominently in the summary
 * **New contributors**: Include a separate section acknowledging first-time contributors
 
+## Concrete Categorization Examples
+
+To help with proper categorization, here are examples from the correct output:
+
+**MAUI Product Fixes:**
+- "[HybridWebView] Fix some issues with the interception, typescript and other features" 
+- "[NET10] Enable Nullability on ShellPageRendererTracker"
+- "Fixed picker allows user input if the keyboard is visible"
+- "[Android] Fix gesture crash navigating"
+
+**Testing:**
+- "[UI Test] Create a new UITest for ModalPageMarginCorrectAfterKeyboardOpens"
+- "[Testing] Fix for UITest Catalyst screenshot dimension inconsistency"
+- "Run Categories Separately"
+
+**Dependency Updates:**
+- "Update dependencies from https://github.com/dotnet/macios build 20250604.8"
+- "Bump to 1.7.250513003 of WindowsAppSDK"
+- "Changed Syncfusion toolkit version from 1.0.4 to 1.0.5"
+
+**Docs:**
+- "Add API XML Docs for Graphics"
+- "[docs] Add doc with info about release process"
+
+**Housekeeping:**
+- "[create-pull-request] automated change"
+- "[net10.0] Merge main to net10"
+- "Update Versions.props to 9.0.80"
+- "[ci] Fix Appium provisioning when no global nom exists"
+
 ## Response Format
 
 Structure your release notes in the following categorized format, and save them to a file like docs/release_notes_{releasename}.md:
 
+**IMPORTANT**: Follow the exact category order and naming as shown below:
+
 ```markdown
+
 ### MAUI Product Fixes
 * [Commit title] by @[correct-github-username] in https://github.com/dotnet/maui/pull/[PR number]
 * ...

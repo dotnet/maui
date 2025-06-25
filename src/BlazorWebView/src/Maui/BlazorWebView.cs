@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -65,6 +66,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// </summary>
 		public event EventHandler<BlazorWebViewInitializedEventArgs>? BlazorWebViewInitialized;
 
+		/// <summary>
+		/// Raised when a web resource is requested. This event allows the application to intercept the request and provide a
+		/// custom response.
+		/// The event handler can set the <see cref="WebViewWebResourceRequestedEventArgs.Handled"/> property to true
+		/// to indicate that the request has been handled and no further processing is needed. If the event handler does set this
+		/// property to true, it must also call the
+		/// <see cref="WebViewWebResourceRequestedEventArgs.SetResponse(int, string, System.Collections.Generic.IReadOnlyDictionary{string, string}?, System.IO.Stream?)"/>
+		/// or <see cref="WebViewWebResourceRequestedEventArgs.SetResponse(int, string, System.Collections.Generic.IReadOnlyDictionary{string, string}?, System.Threading.Tasks.Task{System.IO.Stream?})"/>
+		/// method to provide a response to the request.
+		/// </summary>
+		public event EventHandler<WebViewWebResourceRequestedEventArgs>? WebResourceRequested;
+
 		/// <inheritdoc />
 #if ANDROID
 		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
@@ -108,5 +121,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		void IBlazorWebView.BlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args) =>
 			BlazorWebViewInitialized?.Invoke(this, args);
+
+		/// <inheritdoc />
+		bool IWebRequestInterceptingWebView.WebResourceRequested(WebResourceRequestedEventArgs args)
+		{
+			var platformArgs = new PlatformWebViewWebResourceRequestedEventArgs(args);
+			var e = new WebViewWebResourceRequestedEventArgs(platformArgs);
+			WebResourceRequested?.Invoke(this, e);
+			return e.Handled;
+		}
 	}
 }

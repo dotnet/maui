@@ -1,7 +1,7 @@
 ﻿namespace Microsoft.Maui;
 
 /// <summary>
-/// Provides platform-specific information for the <see cref="IHybridWebView.WebResourceRequested"/> event.
+/// Provides platform-specific information for the <see cref="IWebRequestInterceptingWebView.WebResourceRequested"/> event.
 /// </summary>
 public class WebResourceRequestedEventArgs
 {

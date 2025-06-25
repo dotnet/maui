@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_tintColor = value;
 				if (Page != null)
 				{
-					UpdateToolbarItems();
+					UpdateToolbarItemsTintColors();
 					UpdateLeftBarButtonItem();
 				}
 			}
@@ -410,7 +410,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var text = backButtonHandler.GetPropertyIfSet(BackButtonBehavior.TextOverrideProperty, String.Empty);
 			var command = backButtonHandler.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
 			bool isEnabled = _shell.Toolbar.BackButtonEnabled;
-			var image = GetFlyoutIcon(backButtonHandler, page);
+			//Add the FlyoutIcon only if the FlyoutBehavior is Flyout
+			var image = _flyoutBehavior == FlyoutBehavior.Flyout ? GetFlyoutIcon(backButtonHandler, page) : null;
 			var backButtonVisible = _toolbar.BackButtonVisible;
 
 			DrawerArrowDrawable icon = null;
@@ -628,9 +629,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_toolbar.Handler?.UpdateValue(nameof(Toolbar.TitleView));
 		}
 
+		private void UpdateToolbarItemsTintColors(AToolbar toolbar)
+		{
+			var menu = toolbar.Menu;
+			int _placeholderMenuItemId = 100;
+			if (menu.FindItem(_placeholderMenuItemId) is IMenuItem item)
+			{
+				using (var icon = item.Icon)
+					icon.SetColorFilter(TintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
+			}
+		}
+
 		protected virtual void UpdateToolbarItems(AToolbar toolbar, Page page)
 		{
 			var menu = toolbar.Menu;
+			int _placeholderMenuItemId = 100;
 			SearchHandler = Shell.GetSearchHandler(page);
 			if (SearchHandler != null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
 			{
@@ -650,7 +663,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Collapsible)
 				{
 					var placeholder = new Java.Lang.String(SearchHandler.Placeholder);
-					var item = menu.Add(placeholder);
+					var item = menu.Add(0, _placeholderMenuItemId, 0, placeholder);
 					placeholder.Dispose();
 
 					item.SetEnabled(SearchHandler.IsSearchEnabled);
@@ -723,6 +736,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateToolbarItems()
 		{
 			UpdateToolbarItems(_platformToolbar, Page);
+		}
+
+		void UpdateToolbarItemsTintColors()
+		{
+			UpdateToolbarItemsTintColors(_platformToolbar);
 		}
 
 		class FlyoutIconDrawerDrawable : DrawerArrowDrawable
