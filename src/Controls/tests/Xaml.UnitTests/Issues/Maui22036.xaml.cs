@@ -4,7 +4,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -18,10 +18,7 @@ public partial class Maui22036
 	public Maui22036(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	}	class Test
 	{
 		[SetUp]
 		public void Setup()
@@ -32,7 +29,7 @@ public partial class Maui22036
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public async Task StyleWithTriggerLeak([Values(false, true)] bool useCompiledXaml)
 		{
 			var style = new Style(typeof(ContentPage));
@@ -45,7 +42,7 @@ public partial class Maui22036
 			var pagewr = new WeakReference(new Maui22036(useCompiledXaml));
 			await Task.Delay(10);
 			GC.Collect();
-			Assert.IsNull(pagewr.Target, "Page leaked");
+			Assert.Null(pagewr.Target, "Page leaked");
 		}
 	}
 

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	public class Bz60575Helpers
@@ -62,10 +62,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			get { return (IList<string>)GetValue(Collection2Property); }
 			set { SetValue(Collection2Property, value); }
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
 			[TestCase(true), TestCase(false)]
 			public void CollectionProperties(bool useCompiledXaml)
@@ -74,17 +71,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				//attached BP
 				var col = layout.GetValue(Bz60575Helpers.CollectionProperty) as IList<string>;
-				Assert.That(col.Count, Is.EqualTo(2));
+				Assert.Equal(2, col.Count);
 
 				//attached BP with a single element
 				col = layout.GetValue(Bz60575Helpers.Collection2Property) as IList<string>;
-				Assert.That(col.Count, Is.EqualTo(1));
+				Assert.Equal(1, col.Count);
 
 				//normal BP
-				Assert.That(layout.Collection.Count, Is.EqualTo(3));
+				Assert.Equal(3, layout.Collection.Count);
 
 				//normal BP with a single element
-				Assert.That(layout.Collection2.Count, Is.EqualTo(1));
+				Assert.Equal(1, layout.Collection2.Count);
 			}
 		}
 	}

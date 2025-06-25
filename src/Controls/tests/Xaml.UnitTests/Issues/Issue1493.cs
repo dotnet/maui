@@ -1,12 +1,10 @@
 using System;
 using System.Globalization;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{
-	[TestFixture]
-	public class Issue1493
+{	public class Issue1493
 	{
 		CultureInfo _defaultCulture;
 		[SetUp]

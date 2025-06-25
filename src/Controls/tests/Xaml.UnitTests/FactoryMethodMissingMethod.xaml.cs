@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,13 +15,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public FactoryMethodMissingMethod(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
+			[Theory]
+			[InlineData(false)]
+			[Theory]
+			[InlineData(true)]
 			public void Throw(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

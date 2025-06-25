@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -30,10 +30,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				_text = value;
 				OnPropertyChanged();
 			}
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
@@ -44,7 +41,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var layout = new Gh3821(useCompiledXaml) { Text = "root" };
 				var view = ((Gh3821View)((StackLayout)layout.Content).Children[0]);
 				var label0 = ((Label)((Gh3821View)((StackLayout)layout.Content).Children[0]).Content);
-				Assert.That(label0.Text, Is.EqualTo("root"));
+				Assert.Equal("root", label0.Text);
 			}
 		}
 	}

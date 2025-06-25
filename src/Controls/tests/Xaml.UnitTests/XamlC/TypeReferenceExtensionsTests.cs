@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Graphics;
 using Mono.Cecil;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls
 {
@@ -15,10 +15,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 {
 	using Constraint = Microsoft.Maui.Controls.Compatibility.Constraint;
 	using ConstraintExpression = Microsoft.Maui.Controls.Compatibility.ConstraintExpression;
-	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
-
-	[TestFixture]
-	public class TypeReferenceExtensionsTests
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;	public class TypeReferenceExtensionsTests
 	{
 		class Foo
 		{
@@ -70,7 +67,6 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		class Grault<T> : IGrault<T>
 		{
 		}
-
 
 		class Zoo<T> : IGrault<T[]>
 		{ }
@@ -182,7 +178,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 			return TypeReferenceExtensions.InheritsFromOrImplements(module.ImportReference(typeRef), new XamlCache(), module.ImportReference(baseClass));
 		}
 
-		[Test]
+		[Fact]
 		public void TestSameTypeNamesFromDifferentAssemblies()
 		{
 			var core = typeof(BindableObject).Assembly;
@@ -191,15 +187,15 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 			Assert.False(TestInheritsFromOrImplements(test.GetType("Microsoft.Maui.Controls.Effect"), core.GetType("Microsoft.Maui.Controls.Effect")));
 		}
 
-		[Test]
+		[Fact]
 		public void TestResolveSelectedGenericParameter()
 		{
 			var imported = module.ImportReference(typeof(Bar<byte>));
 			var baseType = (GenericInstanceType)imported.Resolve().BaseType;
 			var resolvedType = baseType.GenericArguments[0].ResolveGenericParameters(imported);
 
-			Assert.AreEqual("System", resolvedType.Namespace);
-			Assert.AreEqual("Byte", resolvedType.Name);
+			Assert.Equal("System", resolvedType.Namespace);
+			Assert.Equal("Byte", resolvedType.Name);
 		}
 
 		[TestCase(typeof(Bar<byte>), 1)]
@@ -215,8 +211,8 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 				resolvedType = ((GenericInstanceType)resolvedType).GenericArguments[0];
 			}
 
-			Assert.AreEqual("System", resolvedType.Namespace);
-			Assert.AreEqual("Byte", resolvedType.Name);
+			Assert.Equal("System", resolvedType.Namespace);
+			Assert.Equal("Byte", resolvedType.Name);
 		}
 
 		public void TestResolveGenericParametersOfGenericMethod()
@@ -239,7 +235,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 			Assert.That(TypeRefComparer.Default.Equals(module.ImportReference(returnType), resolved));
 		}
 
-		[Test]
+		[Fact]
 		public void TestImplementsGenericInterface()
 		{
 			GenericInstanceType igrault;
@@ -248,13 +244,13 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 
 			Assert.That(garply.ImplementsGenericInterface(new XamlCache(), "Microsoft.Maui.Controls.XamlcUnitTests.TypeReferenceExtensionsTests/IGrault`1", out igrault, out arguments));
 
-			Assert.AreEqual("System", igrault.GenericArguments[0].Namespace);
-			Assert.AreEqual("Byte", igrault.GenericArguments[0].Name);
-			Assert.AreEqual("System", arguments[0].Namespace);
-			Assert.AreEqual("Byte", arguments[0].Name);
+			Assert.Equal("System", igrault.GenericArguments[0].Namespace);
+			Assert.Equal("Byte", igrault.GenericArguments[0].Name);
+			Assert.Equal("System", arguments[0].Namespace);
+			Assert.Equal("Byte", arguments[0].Name);
 		}
 
-		[Test]
+		[Fact]
 		//https://github.com/dotnet/maui/issues/10583
 		public void TestImplementsGenericInterfaceWithArray()
 		{
@@ -264,10 +260,10 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 
 			Assert.That(garply.ImplementsGenericInterface(new XamlCache(), "Microsoft.Maui.Controls.XamlcUnitTests.TypeReferenceExtensionsTests/IGrault`1", out igrault, out arguments));
 
-			Assert.AreEqual("System", igrault.GenericArguments[0].Namespace);
-			Assert.AreEqual("Byte[]", igrault.GenericArguments[0].Name);
-			Assert.AreEqual("System", arguments[0].Namespace);
-			Assert.AreEqual("Byte[]", arguments[0].Name);
+			Assert.Equal("System", igrault.GenericArguments[0].Namespace);
+			Assert.Equal("Byte[]", igrault.GenericArguments[0].Name);
+			Assert.Equal("System", arguments[0].Namespace);
+			Assert.Equal("Byte[]", arguments[0].Name);
 		}
 	}
 }

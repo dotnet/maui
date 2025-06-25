@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,13 +15,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz46921(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
+			[Theory]
+			[InlineData(true)]
+			[Theory]
+			[InlineData(false)]
 			public void MultipleWaysToCreateAThicknessResource(bool useCompiledXaml)
 			{
 				var page = new Bz46921(useCompiledXaml);
@@ -30,7 +29,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					var resource = page.Resources[resname];
 					Assert.That(resource, Is.TypeOf<Thickness>());
 					var thickness = (Thickness)resource;
-					Assert.AreEqual(new Thickness(4, 20, 4, 20), thickness);
+					Assert.Equal(new Thickness(4, 20, 4, 20), thickness);
 
 				}
 			}

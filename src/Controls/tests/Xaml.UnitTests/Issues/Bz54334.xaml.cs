@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -55,19 +55,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz54334(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TearDown]
-			public void TearDown()
+		}		class Tests
+		{			public void TearDown()
 			{
 				Application.Current = null;
 			}
 
-			[TestCase(true)]
-			[TestCase(false, Ignore = "This is failing on CI on macOS: https://github.com/dotnet/maui/issues/15054")]
+			[Theory]
+			[InlineData(true)]
+			[Theory]
+			[InlineData(false, Ignore = "This is failing on CI on macOS: https://github.com/dotnet/maui/issues/15054")]
 			public void FooBz54334(bool useCompiledXaml)
 			{
 				var app = Application.Current = new Bz54334App(useCompiledXaml);
@@ -75,16 +72,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var l0 = page.label;
 				var l1 = page.themedLabel;
 
-				Assert.That(l0.TextColor, Is.EqualTo(Colors.Black));
-				Assert.That(l1.TextColor, Is.EqualTo(Colors.Blue));
+				Assert.Equal(Colors.Black, l0.TextColor);
+				Assert.Equal(Colors.Blue, l1.TextColor);
 
 				WeakReferenceMessenger.Default.Send<ContentPage, string>(page, "ChangeTheme");
-				Assert.That(l0.TextColor, Is.EqualTo(Colors.Black));
-				Assert.That(l1.TextColor, Is.EqualTo(Colors.Red));
+				Assert.Equal(Colors.Black, l0.TextColor);
+				Assert.Equal(Colors.Red, l1.TextColor);
 
 				WeakReferenceMessenger.Default.Send<ContentPage, string>(page, "ChangeTheme");
-				Assert.That(l0.TextColor, Is.EqualTo(Colors.Black));
-				Assert.That(l1.TextColor, Is.EqualTo(Colors.Blue));
+				Assert.Equal(Colors.Black, l0.TextColor);
+				Assert.Equal(Colors.Blue, l1.TextColor);
 
 			}
 		}

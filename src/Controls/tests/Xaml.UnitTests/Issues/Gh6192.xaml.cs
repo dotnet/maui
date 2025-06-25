@@ -1,7 +1,7 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -11,15 +11,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh6192(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[Test]
+			[Fact]
 			public void XamlCDoesntFail([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh6192(useCompiledXaml);

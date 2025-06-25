@@ -6,17 +6,14 @@ using System.Runtime.ConstrainedExecution;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	public class BasePage : ContentPage
 	{
 
-	}
-
-	[TestFixture]
-	public class TestCases
+	}	public class TestCases
 	{
 		CultureInfo _defaultCulture;
 
@@ -46,7 +43,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			bindable.SetValue(InnerViewProperty, value);
 		}
 
-		[Test]
+		[Fact]
 		public void TestCase001()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
@@ -76,14 +73,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			Assert.NotNull(GetInnerView(contentPage));
 			//			Assert.AreEqual ("innerView", GetInnerView (contentPage).Name);
-			Assert.AreEqual(GetInnerView(contentPage), ((Microsoft.Maui.Controls.Internals.INameScope)contentPage).FindByName("innerView"));
+			Assert.Equal(GetInnerView(contentPage), ((Microsoft.Maui.Controls.Internals.INameScope)contentPage).FindByName("innerView"));
 			Assert.NotNull(label0);
 			Assert.NotNull(label1);
-			Assert.AreEqual(4, contentPage.Content.Descendants().Count());
+			Assert.Equal(4, contentPage.Content.Descendants().Count());
 		}
 
-
-		[Test]
+		[Fact]
 		public void TestCase002()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
@@ -100,7 +96,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.That(contentPage.Content, Is.InstanceOf<Label>());
 		}
 
-		[Test]
+		[Fact]
 		public void TestCase003()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
@@ -155,7 +151,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.AreSame(model[0], cell.BindingContext);
 		}
 
-		[Test]
+		[Fact]
 		public void TestCase004()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
@@ -185,7 +181,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.DoesNotThrow(() => page.LoadFromXaml(xaml));
 		}
 
-		[Test]
+		[Fact]
 		public void Issue1415()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
@@ -200,7 +196,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var label = page.FindByName<Label>("label");
 			Assert.NotNull(label);
 			label.BindingContext = "foo";
-			Assert.AreEqual("oof", label.Text);
+			Assert.Equal("oof", label.Text);
 		}
 
 		[TestCase("en-US"), TestCase("tr-TR"), TestCase("fr-FR")]

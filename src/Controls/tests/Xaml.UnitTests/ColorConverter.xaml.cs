@@ -1,12 +1,11 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	public partial class ColorConverter : ContentPage
 	{
-
 
 		public ColorConverter()
 		{
@@ -16,20 +15,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public ColorConverter(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
+			[Theory]
+			[InlineData(false)]
+			[Theory]
+			[InlineData(true)]
 			public void StringsAreValidAsColor(bool useCompiledXaml)
 			{
 				var page = new ColorConverter(useCompiledXaml);
 				page.BindingContext = new ColorConverterVM();
 
 				var expected = Color.FromArgb("#fc87ad");
-				Assert.AreEqual(expected, page.Button0.BackgroundColor);
+				Assert.Equal(expected, page.Button0.BackgroundColor);
 			}
 		}
 	}

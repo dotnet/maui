@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -34,10 +34,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		void OnTextChanged(object sender, EventArgs e)
 		{
 			Assert.Pass();
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
 			[TestCase(false), TestCase(true)]
 			public void NonGenericEventHanlders(bool useCompiledXaml)

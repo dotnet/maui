@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -13,13 +13,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public FindByName(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class FindByNameTests
+		}		public class FindByNameTests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
+			[Theory]
+			[InlineData(false)]
+			[Theory]
+			[InlineData(true)]
 			public void TestRootName(bool useCompiledXaml)
 			{
 				var page = new FindByName(useCompiledXaml);
@@ -27,8 +26,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreSame(page, page.FindByName<FindByName>("root"));
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[Theory]
+			[InlineData(false)]
+			[Theory]
+			[InlineData(true)]
 			public void TestName(bool useCompiledXaml)
 			{
 				var page = new FindByName(useCompiledXaml);

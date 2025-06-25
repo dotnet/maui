@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -8,12 +8,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public DuplicatePropertyElements(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public static class Tests
+		}		public static class Tests
 		{
-			[Test]
+			[Fact]
 			public static void ThrowXamlParseException([Values] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

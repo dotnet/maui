@@ -1,6 +1,6 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -14,10 +14,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz44213(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
@@ -25,26 +22,25 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
-			}
-
-			[TearDown]
-			public void TearDown()
+			}			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[TestCase(true)]
-			[TestCase(false)]
+			[Theory]
+			[InlineData(true)]
+			[Theory]
+			[InlineData(false)]
 			public void BindingInOnPlatform(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;
 				var p = new Bz44213(useCompiledXaml);
 				p.BindingContext = new { Foo = "Foo", Bar = "Bar" };
-				Assert.AreEqual("Foo", p.label.Text);
+				Assert.Equal("Foo", p.label.Text);
 				mockDeviceInfo.Platform = DevicePlatform.Android;
 				p = new Bz44213(useCompiledXaml);
 				p.BindingContext = new { Foo = "Foo", Bar = "Bar" };
-				Assert.AreEqual("Bar", p.label.Text);
+				Assert.Equal("Bar", p.label.Text);
 			}
 		}
 	}

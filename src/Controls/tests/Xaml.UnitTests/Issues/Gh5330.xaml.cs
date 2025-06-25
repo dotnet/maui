@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -9,23 +9,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh5330(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[Test]
+			[Fact]
 			public void DoesntFailOnxType([Values(true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh5330)));
 			}
 
-			[Test]
+			[Fact]
 			public void CompiledBindingWithxType([Values(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh5330(useCompiledXaml) { BindingContext = new Button { Text = "Foo" } };
-				Assert.That(layout.label.Text, Is.EqualTo("Foo"));
+				Assert.Equal("Foo", layout.label.Text);
 			}
 		}
 	}

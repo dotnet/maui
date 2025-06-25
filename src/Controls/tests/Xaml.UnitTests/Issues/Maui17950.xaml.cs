@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -37,15 +37,12 @@ public partial class Maui17950 : ContentPage
 	{
 		Console.WriteLine("normal method called");
 		Assert.Fail("wrong method invoked");
-	}
-
-	[TestFixture]
-	class Test
+	}	class Test
 	{
 		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void AmbiguousMatch([Values(false, true)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)

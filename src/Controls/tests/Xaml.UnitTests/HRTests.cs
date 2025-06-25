@@ -1,11 +1,9 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{
-	[TestFixture]
-	public class HRTests
+{	public class HRTests
 	{
 		[TearDown]
 		public void TearDown()
@@ -14,7 +12,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Application.ClearCurrent();
 		}
 
-		[Test]
+		[Fact]
 		public void LoadResources()
 		{
 			var app = @"
@@ -27,18 +25,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					</Application.Resources>
 				</Application>
 			";
-			Assert.That(Application.Current, Is.Null);
+			Assert.Null(Application.Current);
 			var mockApplication = new MockApplication();
 			var rd = XamlLoader.LoadResources(app, mockApplication);
 			Assert.That(rd, Is.TypeOf<ResourceDictionary>());
-			Assert.That(((ResourceDictionary)rd).Count, Is.EqualTo(1));
+			Assert.Equal(1, ((ResourceDictionary)rd).Count);
 
 			//check that the live app hasn't ben modified
-			Assert.That(Application.Current, Is.EqualTo(mockApplication));
-			Assert.That(Application.Current.Resources.Count, Is.EqualTo(0));
+			Assert.Equal(mockApplication, Application.Current);
+			Assert.Equal(0, Application.Current.Resources.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void LoadMultipleResources()
 		{
 			var app = @"
@@ -51,18 +49,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</Application>
 			";
 
-			Assert.That(Application.Current, Is.Null);
+			Assert.Null(Application.Current);
 			var mockApplication = new MockApplication();
 			var rd = XamlLoader.LoadResources(app, mockApplication);
 			Assert.That(rd, Is.TypeOf<ResourceDictionary>());
-			Assert.That(((ResourceDictionary)rd).Count, Is.EqualTo(2));
+			Assert.Equal(2, ((ResourceDictionary)rd).Count);
 
 			//check that the live app hasn't ben modified
-			Assert.That(Application.Current, Is.EqualTo(mockApplication));
-			Assert.That(Application.Current.Resources.Count, Is.EqualTo(0));
+			Assert.Equal(mockApplication, Application.Current);
+			Assert.Equal(0, Application.Current.Resources.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void LoadSingleImplicitResources()
 		{
 			var app = @"
@@ -74,15 +72,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</Application>
 			";
 
-			Assert.That(Application.Current, Is.Null);
+			Assert.Null(Application.Current);
 			var mockApplication = new MockApplication();
 			var rd = XamlLoader.LoadResources(app, mockApplication);
 			Assert.That(rd, Is.TypeOf<ResourceDictionary>());
-			Assert.That(((ResourceDictionary)rd).Count, Is.EqualTo(1));
+			Assert.Equal(1, ((ResourceDictionary)rd).Count);
 
 			//check that the live app hasn't ben modified
-			Assert.That(Application.Current, Is.EqualTo(mockApplication));
-			Assert.That(Application.Current.Resources.Count, Is.EqualTo(0));
+			Assert.Equal(mockApplication, Application.Current);
+			Assert.Equal(0, Application.Current.Resources.Count);
 		}
 	}
 }

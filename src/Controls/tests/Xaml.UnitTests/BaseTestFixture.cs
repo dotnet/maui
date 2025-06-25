@@ -9,15 +9,16 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	public class BaseTestFixture
+	public class BaseTestFixture : IDisposable
 	{
 		CultureInfo _defaultCulture;
 		CultureInfo _defaultUICulture;
 
-		public virtual void Setup()
+		public BaseTestFixture()
 		{
 			Microsoft.Maui.Controls.Hosting.CompatibilityCheck.UseCompatibility();
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
@@ -28,15 +29,30 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			AppInfo.SetCurrent(null);
 		}
 
-
-		public virtual void TearDown()
+		public void Dispose()
 		{
-			AppInfo.SetCurrent(null);
-			DeviceDisplay.SetCurrent(null);
-			DeviceInfo.SetCurrent(null);
-			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
-			System.Threading.Thread.CurrentThread.CurrentUICulture = _defaultUICulture;
-			DispatcherProvider.SetCurrent(null);
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		bool _disposed;
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (_disposed)
+				return;
+
+			if (disposing)
+			{
+				AppInfo.SetCurrent(null);
+				DeviceDisplay.SetCurrent(null);
+				DeviceInfo.SetCurrent(null);
+				System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
+				System.Threading.Thread.CurrentThread.CurrentUICulture = _defaultUICulture;
+				DispatcherProvider.SetCurrent(null);
+			}
+
+			_disposed = true;
 		}
 	}
 }

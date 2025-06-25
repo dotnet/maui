@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -25,10 +25,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Maui18976(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Test
+		}		class Test
 		{
 			[SetUp]
 			public void Setup()
@@ -37,23 +34,22 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			}
 
-
 			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Test]
+			[Fact]
 			public void DataTriggerRestoreValue([Values(false, true)] bool useCompiledXaml)
 			{
 				var page = new Maui18976(useCompiledXaml);
-				Assert.That(page.checkbox.IsChecked, Is.False);
-				Assert.That(page.button.IsEnabled, Is.True);
+				Assert.False(page.checkbox.IsChecked);
+				Assert.True(page.button.IsEnabled);
 
 				page.checkbox.IsChecked = true;
-				Assert.That(page.checkbox.IsChecked, Is.True);
-				Assert.That(page.button.IsEnabled, Is.False);
+				Assert.True(page.checkbox.IsChecked);
+				Assert.False(page.button.IsEnabled);
 
 				page.checkbox.IsChecked = false;
-				Assert.That(page.checkbox.IsChecked, Is.False);
-				Assert.That(page.button.IsEnabled, Is.True);
+				Assert.False(page.checkbox.IsChecked);
+				Assert.True(page.button.IsEnabled);
 			}
 		}
 	}

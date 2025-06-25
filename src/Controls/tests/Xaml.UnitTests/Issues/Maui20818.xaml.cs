@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -25,10 +25,7 @@ public partial class Maui20818
 	public Maui20818(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	}	class Test
 	{
 		[SetUp]
 		public void Setup()
@@ -39,20 +36,20 @@ public partial class Maui20818
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void TypeLiteralAndXTypeCanBeUsedInterchangeably([Values(false, true)] bool useCompiledXaml)
 		{
 			var page = new Maui20818(useCompiledXaml);
 
-			Assert.That((page.Resources["A"] as Style).TargetType, Is.EqualTo(typeof(Label)));
-			Assert.That((page.Resources["B"] as Style).TargetType, Is.EqualTo(typeof(Label)));
+			Assert.Equal(typeof(Label, (page.Resources["A"] as Style).TargetType));
+			Assert.Equal(typeof(Label, (page.Resources["B"] as Style).TargetType));
 
-			Assert.That(page.TriggerC.TargetType, Is.EqualTo(typeof(Label)));
-			Assert.That(page.TriggerD.TargetType, Is.EqualTo(typeof(Label)));
-			Assert.That(page.TriggerE.TargetType, Is.EqualTo(typeof(Label)));
-			Assert.That(page.TriggerF.TargetType, Is.EqualTo(typeof(Label)));
-			Assert.That(page.TriggerG.TargetType, Is.EqualTo(typeof(Label)));
-			Assert.That(page.TriggerH.TargetType, Is.EqualTo(typeof(Label)));
+			Assert.Equal(typeof(Label, page.TriggerC.TargetType));
+			Assert.Equal(typeof(Label, page.TriggerD.TargetType));
+			Assert.Equal(typeof(Label, page.TriggerE.TargetType));
+			Assert.Equal(typeof(Label, page.TriggerF.TargetType));
+			Assert.Equal(typeof(Label, page.TriggerG.TargetType));
+			Assert.Equal(typeof(Label, page.TriggerH.TargetType));
 		}
 	}
 }

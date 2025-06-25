@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -13,19 +13,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz55347(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TearDown]
-			public void TearDown()
+		}		class Tests
+		{			public void TearDown()
 			{
 				Application.Current = null;
 			}
 
-			[TestCase(true)]
-			[TestCase(false)]
+			[Theory]
+			[InlineData(true)]
+			[Theory]
+			[InlineData(false)]
 			public void PaddingThicknessResource(bool useCompiledXaml)
 			{
 				Application.Current = new MockApplication

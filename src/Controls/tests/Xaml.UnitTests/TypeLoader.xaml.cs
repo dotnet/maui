@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -16,10 +16,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public TypeLoader(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
 			[SetUp]
 			public void SetUp()
@@ -27,8 +24,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Application.Current = new MockApplication();
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[Theory]
+			[InlineData(false)]
+			[Theory]
+			[InlineData(true)]
 			public void LoadTypeFromXmlns(bool useCompiledXaml)
 			{
 				TypeLoader layout = null;
@@ -37,8 +36,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.That(layout.customview0, Is.TypeOf<CustomView>());
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[Theory]
+			[InlineData(false)]
+			[Theory]
+			[InlineData(true)]
 			public void LoadTypeFromXmlnsWithoutAssembly(bool useCompiledXaml)
 			{
 				TypeLoader layout = null;

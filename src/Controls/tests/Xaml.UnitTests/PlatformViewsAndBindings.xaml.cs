@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Internals;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -234,10 +234,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public PlatformViewsAndBindings(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		[Ignore("fails for now")]
+		}		[Ignore("fails for now")]
 		public class Tests
 		{
 			MockDeviceInfo mockDeviceInfo;
@@ -246,10 +243,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
-			}
-
-			[TearDown]
-			public void TearDown()
+			}			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
 			}
@@ -273,10 +267,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				return p;
 			}
 
-			[TestCase(false, "iOS")]
-			[TestCase(false, "Android")]
+			[Theory]
+			[InlineData(false, "iOS")]
+			[Theory]
+			[InlineData(false, "Android")]
 			[Ignore("fails for now")]
-			//[TestCase(true)]
+			//[Theory]
+			[InlineData(true)]
 			public void PlatformInContentView(bool useCompiledXaml, string platform)
 			{
 				var realPlatform = SetUpPlatform(platform);
@@ -304,11 +301,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					platformView = ((MockAndroidViewWrapper)view.Content).PlatformView;
 				}
 
-				Assert.AreEqual("foo", platformView.Foo);
-				Assert.AreEqual(42, platformView.Bar);
-				Assert.AreEqual("Bound Value", platformView.Baz);
-				Assert.AreEqual(LayoutOptions.End, view.Content.GetValue(View.HorizontalOptionsProperty));
-				Assert.AreEqual(LayoutOptions.EndAndExpand, view.Content.GetValue(View.VerticalOptionsProperty));
+				Assert.Equal("foo", platformView.Foo);
+				Assert.Equal(42, platformView.Bar);
+				Assert.Equal("Bound Value", platformView.Baz);
+				Assert.Equal(LayoutOptions.End, view.Content.GetValue(View.HorizontalOptionsProperty));
+				Assert.Equal(LayoutOptions.EndAndExpand, view.Content.GetValue(View.VerticalOptionsProperty));
 			}
 		}
 	}

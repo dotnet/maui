@@ -12,7 +12,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -26,10 +26,7 @@ public partial class Maui21839
 	public Maui21839(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	}	class Test
 	{
 		[SetUp]
 		public void Setup()
@@ -40,7 +37,7 @@ public partial class Maui21839
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public async Task VSMLeak([Values(false, true)] bool useCompiledXaml)
 		{
 			Application.Current.Resources.Add("buttonStyle",
@@ -62,7 +59,7 @@ public partial class Maui21839
 			var pagewr = new WeakReference(new Maui21839(useCompiledXaml));
 			await Task.Delay(10);
 			GC.Collect();
-			Assert.IsNull(pagewr.Target, "Page leaked");
+			Assert.Null(pagewr.Target, "Page leaked");
 		}
 	}
 }

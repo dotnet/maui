@@ -1,22 +1,19 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[TestFixture]
 	public class OnPlatformTests : BaseTestFixture
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
-		public override void Setup()
+		public OnPlatformTests()
 		{
-			base.Setup();
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
-		[Test]
+		[Fact]
 		public void ApplyToProperty()
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
@@ -35,7 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.NotNull(layout.Content);
 		}
 
-		[Test]
+		[Fact]
 		public void UseTypeConverters()
 		{
 			var xaml = @"
@@ -61,18 +58,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			layout = new ContentPage().LoadFromXaml(xaml);
-			Assert.AreEqual(new Thickness(0, 20, 0, 0), layout.Padding);
+			Assert.Equal(new Thickness(0, 20, 0, 0), layout.Padding);
 
 			mockDeviceInfo.Platform = DevicePlatform.Android;
 			layout = new ContentPage().LoadFromXaml(xaml);
-			Assert.AreEqual(new Thickness(0, 0, 10, 0), layout.Padding);
+			Assert.Equal(new Thickness(0, 0, 10, 0), layout.Padding);
 
 			mockDeviceInfo.Platform = DevicePlatform.UWP;
 			layout = new ContentPage().LoadFromXaml(xaml);
-			Assert.AreEqual(new Thickness(0, 20, 0, 20), layout.Padding);
+			Assert.Equal(new Thickness(0, 20, 0, 20), layout.Padding);
 		}
 
-		[Test]
+		[Fact]
 		//Issue 1480
 		public void TypeConverterAndDerivedTypes()
 		{

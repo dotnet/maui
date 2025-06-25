@@ -1,6 +1,6 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -16,19 +16,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Unreported007(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
 			[SetUp]
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
-			}
-
-			[TearDown]
-			public void TearDown()
+			}			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
 			}
@@ -38,7 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var page = new Unreported007(useCompiledXaml);
 				Assert.That(RelativeLayout.GetXConstraint(page.label), Is.TypeOf<Constraint>());
-				Assert.AreEqual(3, RelativeLayout.GetXConstraint(page.label).Compute(null));
+				Assert.Equal(3, RelativeLayout.GetXConstraint(page.label).Compute(null));
 			}
 		}
 	}

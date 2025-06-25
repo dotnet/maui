@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -18,10 +18,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh1346(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
 
 			[TestCase(true), TestCase(false)]
@@ -30,9 +27,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var layout = new Gh1346(useCompiledXaml);
 				var style = layout.Resources["TestIconStyle"] as Style;
 				var setter = style.Setters[0];
-				Assert.That(setter.Property, Is.EqualTo(Gh1346FontIcon.IconProperty));
+				Assert.Equal(Gh1346FontIcon.IconProperty, setter.Property);
 				Assert.That(setter.Value, Is.TypeOf<Gh1346FontAwesome>());
-				Assert.That(layout.fontIcon.Icon.Icon, Is.EqualTo("\uf2dc"));
+				Assert.Equal("\uf2dc", layout.fontIcon.Icon.Icon);
 			}
 		}
 	}

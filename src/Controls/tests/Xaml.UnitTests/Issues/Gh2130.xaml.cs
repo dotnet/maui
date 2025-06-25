@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -35,10 +35,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh2130(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
 			[TestCase(false), TestCase(true)]
 			public void AttachedBPWithEventName(bool useCompiledXaml)

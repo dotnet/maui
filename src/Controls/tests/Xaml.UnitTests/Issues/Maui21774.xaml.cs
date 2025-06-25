@@ -12,7 +12,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -26,10 +26,7 @@ public partial class Maui21774
 	public Maui21774(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	}	class Test
 	{
 		[SetUp]
 		public void Setup()
@@ -40,7 +37,7 @@ public partial class Maui21774
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void AppThemeChangeOnUnparentedPage([Values(false, true)] bool useCompiledXaml)
 		{
 			Application.Current.Resources.Add("labelColor", Colors.LimeGreen);
@@ -48,22 +45,22 @@ public partial class Maui21774
 			var page = new Maui21774(useCompiledXaml);
 			Application.Current.MainPage = page;
 
-			Assert.That(page.label0.TextColor, Is.EqualTo(Colors.LimeGreen));
-			Assert.That(page.label1.TextColor, Is.EqualTo(Colors.LimeGreen));
+			Assert.Equal(Colors.LimeGreen, page.label0.TextColor);
+			Assert.Equal(Colors.LimeGreen, page.label1.TextColor);
 
 			//unparent the page, change the resource and the theme
 			Application.Current.MainPage = null;
 			Application.Current.Resources["labelColor"] = Colors.HotPink;
 			Application.Current.UserAppTheme = AppTheme.Dark;
 			//labels should not change
-			Assert.That(page.label0.TextColor, Is.EqualTo(Colors.LimeGreen));
-			Assert.That(page.label1.TextColor, Is.EqualTo(Colors.LimeGreen));
+			Assert.Equal(Colors.LimeGreen, page.label0.TextColor);
+			Assert.Equal(Colors.LimeGreen, page.label1.TextColor);
 
 			//reparent the page
 			Application.Current.MainPage = page;
 			//labels should change
-			Assert.That(page.label0.TextColor, Is.EqualTo(Colors.HotPink));
-			Assert.That(page.label1.TextColor, Is.EqualTo(Colors.HotPink));
+			Assert.Equal(Colors.HotPink, page.label0.TextColor);
+			Assert.Equal(Colors.HotPink, page.label1.TextColor);
 		}
 	}
 }

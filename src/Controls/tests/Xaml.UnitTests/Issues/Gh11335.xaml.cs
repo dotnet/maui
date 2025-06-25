@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -20,10 +20,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			int index = stack.Children.IndexOf(label);
 			Label newLabel = new Label { Text = "New Inserted Label" };
 			stack.Children.Insert(index + 1, newLabel);
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
 			bool _debuggerinitialstate;
 
@@ -32,10 +29,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				_debuggerinitialstate = DebuggerHelper._mockDebuggerIsAttached;
 				DebuggerHelper._mockDebuggerIsAttached = true;
-			}
-
-			[TearDown]
-			public void TearDown()
+			}			public void TearDown()
 			{
 				DebuggerHelper._mockDebuggerIsAttached = _debuggerinitialstate;
 				VisualDiagnostics.VisualTreeChanged -= OnVTChanged;
@@ -43,12 +37,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			void OnVTChanged(object sender, VisualTreeChangeEventArgs e)
 			{
-				Assert.That(e.ChangeType, Is.EqualTo(VisualTreeChangeType.Add));
-				Assert.That(e.ChildIndex, Is.EqualTo(1));
+				Assert.Equal(VisualTreeChangeType.Add, e.ChangeType);
+				Assert.Equal(1, e.ChildIndex);
 				Assert.Pass();
 			}
 
-			[Test]
+			[Fact]
 			public void ChildIndexOnAdd([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh11335(useCompiledXaml);

@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -14,23 +14,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz56852(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TearDown]
-			public void TearDown()
+		}		class Tests
+		{			public void TearDown()
 			{
 				Application.Current = null;
 			}
 
-			[TestCase(true)]
-			[TestCase(false)]
+			[Theory]
+			[InlineData(true)]
+			[Theory]
+			[InlineData(false)]
 			public void DynamicResourceApplyingOrder(bool useCompiledXaml)
 			{
 				var layout = new Bz56852(useCompiledXaml);
-				Assert.That(layout.label.FontSize, Is.EqualTo(50));
+				Assert.Equal(50, layout.label.FontSize);
 			}
 		}
 	}

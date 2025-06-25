@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -12,12 +12,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public TypeMismatch(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[Test]
+			[Fact]
 			public void ThrowsOnMismatchingType([Values(true, false)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

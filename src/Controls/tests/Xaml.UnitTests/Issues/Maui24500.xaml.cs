@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -25,10 +25,7 @@ public partial class Maui24500 : ContentPage
 	public Maui24500(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	}	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
@@ -38,29 +35,24 @@ public partial class Maui24500 : ContentPage
 			Application.SetCurrentApplication(new MockApplication());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		}
-
-
-		[TearDown]
-		public void TearDown()
+		}		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test]
+		[Fact]
 		public void OnIdiomBindingValueTypeRelease([Values(false, true)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				MockCompiler.Compile(typeof(Maui24500));
 			mockDeviceInfo.Idiom = DeviceIdiom.Phone;
 			var page = new Maui24500(useCompiledXaml) { BindingContext = new { EditingMode = true } };
-			Assert.That(page.label0.IsVisible, Is.EqualTo(false));
+			Assert.Equal(false, page.label0.IsVisible);
 
 			mockDeviceInfo.Idiom = DeviceIdiom.Desktop;
 			page = new Maui24500(useCompiledXaml) { BindingContext = new { EditingMode = true } };
-			Assert.That(page.label0.IsVisible, Is.EqualTo(true));
-
+			Assert.Equal(true, page.label0.IsVisible);
 
 		}
 	}

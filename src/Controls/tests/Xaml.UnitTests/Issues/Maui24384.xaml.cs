@@ -2,7 +2,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -15,14 +15,10 @@ public partial class Maui24384 : ContentPage
 		InitializeComponent();
 	}
 
-
 	public Maui24384(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	}	class Test
 	{
 		[SetUp]
 		public void Setup()
@@ -33,7 +29,7 @@ public partial class Maui24384 : ContentPage
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void ImmutableToIList([Values] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)

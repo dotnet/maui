@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -13,10 +13,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh7156(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
@@ -24,23 +21,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
-			}
-
-			[TearDown]
-			public void TearDown()
+			}			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[Test]
+			[Fact]
 			public void OnPlatformDefaultToBPDefaultValue([Values(true, false)] bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.Android;
 				var layout = new Gh7156(useCompiledXaml);
-				Assert.That(layout.l0.Text, Is.EqualTo(Label.TextProperty.DefaultValue));
-				Assert.That(layout.l0.WidthRequest, Is.EqualTo(VisualElement.WidthRequestProperty.DefaultValue));
-				Assert.That(layout.l1.Text, Is.EqualTo("bar"));
-				Assert.That(layout.l1.WidthRequest, Is.EqualTo(20d));
+				Assert.Equal(Label.TextProperty.DefaultValue, layout.l0.Text);
+				Assert.Equal(VisualElement.WidthRequestProperty.DefaultValue, layout.l0.WidthRequest);
+				Assert.Equal("bar", layout.l1.Text);
+				Assert.Equal(20d, layout.l1.WidthRequest);
 			}
 		}
 	}

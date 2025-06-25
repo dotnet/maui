@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -32,30 +32,26 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-
 		string notification;
 		public void OnNotified(object sender, Bz57574NotificationEventArgs<string> args)
 		{
 			notification = args.Message;
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TearDown]
-			public void TearDown()
+		}		class Tests
+		{			public void TearDown()
 			{
 				Application.Current = null;
 			}
 
-			[TestCase(true)]
-			[TestCase(false)]
+			[Theory]
+			[InlineData(true)]
+			[Theory]
+			[InlineData(false)]
 			public void EventWithGenericEventHandlers(bool useCompiledXaml)
 			{
 				var layout = new Bz57574(useCompiledXaml);
 				Assume.That(layout.notification, Is.Null);
 				layout.notificator.Notify("Foo");
-				Assert.That(layout.notification, Is.EqualTo("Foo"));
+				Assert.Equal("Foo", layout.notification);
 			}
 		}
 	}

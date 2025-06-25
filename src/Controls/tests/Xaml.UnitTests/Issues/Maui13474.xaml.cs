@@ -12,7 +12,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -26,10 +26,7 @@ public partial class Maui13474
 	public Maui13474(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	}	class Test
 	{
 		[SetUp]
 		public void Setup()
@@ -40,13 +37,13 @@ public partial class Maui13474
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void FontImageSourceIsAppliedFromSharedResources([Values(false, true)] bool useCompiledXaml)
 		{
 			var page = new Maui13474(useCompiledXaml);
 			var fontImageSource = page.imageButton.Source as FontImageSource;
-			Assert.AreEqual(fontImageSource.Color, Colors.Red);
-			Assert.AreEqual(fontImageSource.FontFamily, "FontAwesome");
+			Assert.Equal(fontImageSource.Color, Colors.Red);
+			Assert.Equal(fontImageSource.FontFamily, "FontAwesome");
 		}
 	}
 }
