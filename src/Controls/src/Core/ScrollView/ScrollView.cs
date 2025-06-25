@@ -426,7 +426,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		void IScrollView.ScrollFinished() => SendScrollFinished();
-	
+
 
 		// Don't delete this override. At some point in the future we'd like to delete Compatibility.Layout
 		// and this is the only way to ensure binary compatibility with code that's already compiled against MAUI
@@ -463,7 +463,7 @@ namespace Microsoft.Maui.Controls
 			content.Measure(widthConstraint, heightConstraint);
 			return content.DesiredSize;
 		}
-	
+
 
 		// Don't delete this override. At some point in the future we'd like to delete Compatibility.Layout
 		// and this is the only way to ensure binary compatibility with code that's already compiled against MAUI
@@ -474,7 +474,7 @@ namespace Microsoft.Maui.Controls
 			Handler?.PlatformArrange(Frame);
 
 			return Frame.Size;
-		}		
+		}
 
 		// Don't delete this override. At some point in the future we'd like to delete Compatibility.Layout
 		// and this is the only way to ensure binary compatibility with code that's already compiled against MAUI
