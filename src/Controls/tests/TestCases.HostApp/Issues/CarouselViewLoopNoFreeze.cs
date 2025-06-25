@@ -48,7 +48,7 @@ namespace Maui.Controls.Sample.Issues
 				_carouselView.ScrollTo(_viewModel.CurrentPosition);
 			};
 
-			_carouselView = new CarouselView2
+			_carouselView = new CarouselView
 			{
 				AutomationId = _carouselAutomationId,
 				Margin = new Thickness(30),
