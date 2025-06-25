@@ -3,11 +3,13 @@ using System;
 using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="Type[@FullName='Microsoft.Maui.Controls.DatePicker']/Docs/*" />
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler<DatePickerHandler>]
 	public partial class DatePicker : View, IFontElement, ITextElement, IElementConfiguration<DatePicker>, IDatePicker
 	{
 		/// <summary>Bindable property for <see cref="Format"/>.</summary>
@@ -277,6 +279,17 @@ namespace Microsoft.Maui.Controls
 		private protected override string GetDebuggerDisplay()
 		{
 			return $"{base.GetDebuggerDisplay()}, Date = {Date}";
+		}
+
+		internal override bool TrySetValue(string text)
+		{
+			if (DateTime.TryParse(text, out DateTime dpResult))
+			{
+				Date = dpResult;
+				return true;
+			}
+
+			return false;
 		}
 	}
 }

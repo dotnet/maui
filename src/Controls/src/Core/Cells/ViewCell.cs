@@ -8,6 +8,11 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ViewCell.xml" path="Type[@FullName='Microsoft.Maui.Controls.ViewCell']/Docs/*" />
 	[Obsolete("The controls which use ViewCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
 	[ContentProperty("View")]
+#if WINDOWS || IOS || MACCATALYST || ANDROID || TIZEN
+#pragma warning disable CS0618 // Type or member is obsolete
+	[ElementHandler<Handlers.Compatibility.ViewCellRenderer>]
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
 	public class ViewCell : Cell
 	{
 		View _view;
