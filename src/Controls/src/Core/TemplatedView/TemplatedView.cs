@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls
 		{
 			Handler?.UpdateValue(nameof(IContentView.Content));
 		}
-	
+
 		// Don't delete this override. At some point in the future we'd like to delete Compatibility.Layout
 		// and this is the only way to ensure binary compatibility with code that's already compiled against MAUI
 		// and is overriding MeasureOverride.
@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnSizeAllocated(width, height);
 		}
-	
+
 
 		// Don't delete this override. At some point in the future we'd like to delete Compatibility.Layout
 		// and this is the only way to ensure binary compatibility with code that's already compiled against MAUI

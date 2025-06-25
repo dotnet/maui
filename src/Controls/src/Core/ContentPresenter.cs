@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls
 				newView.ParentOverride = await TemplateUtilities.FindTemplatedParentAsync((Element)bindable);
 			}
 		}
-	
+
 
 		// Don't delete this override. At some point in the future we'd like to delete Compatibility.Layout
 		// and this is the only way to ensure binary compatibility with code that's already compiled against MAUI
