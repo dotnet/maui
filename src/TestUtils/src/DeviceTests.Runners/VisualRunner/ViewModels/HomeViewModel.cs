@@ -27,7 +27,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 
 			CreditsCommand = new Command(CreditsExecute);
 			RunEverythingCommand = new Command(RunEverythingExecute, () => !_isBusy);
-			NavigateToTestAssemblyCommand = new Command<TestAssemblyViewModel?>(NavigateToTestAssemblyExecute);
+			NavigateToTestAssemblyCommand = new Command<SelectionChangedEventArgs>(NavigateToTestAssemblyExecute);
 		}
 
 		public ObservableCollection<TestAssemblyViewModel> TestAssemblies { get; private set; }
@@ -100,8 +100,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			}
 		}
 
-		async void NavigateToTestAssemblyExecute(TestAssemblyViewModel? vm)
+		async void NavigateToTestAssemblyExecute(SelectionChangedEventArgs args)
 		{
+			var vm = args.CurrentSelection?.FirstOrDefault() as TestAssemblyViewModel;
 			if (vm == null)
 				return;
 
