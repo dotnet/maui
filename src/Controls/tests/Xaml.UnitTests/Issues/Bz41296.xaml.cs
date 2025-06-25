@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void MarkupExtensionInDefaultNamespace(bool useCompiledXaml)
 			{
 				var layout = new Bz41296(useCompiledXaml);
-				Assert.Equal("FooBar", layout.TestLabel.Text.ToString());
+				Assert.Equal("FooBar", layout.TestLabel.Text.ToString();
 			}
 		}
 	}

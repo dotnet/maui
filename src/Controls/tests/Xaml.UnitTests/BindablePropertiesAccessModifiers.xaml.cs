@@ -55,8 +55,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var page = new BindablePropertiesAccessModifiers(useCompiledXaml);
 				page.BindingContext = new BindablePropertiesAccessModifiersVM();
-				Assert.Equal("Bar", page.AMC.GetValue(AccessModifiersControl.InternalBarProperty));
-				Assert.Equal("Foo", page.AMC.GetValue(AccessModifiersControl.PublicFooProperty));
+				Assert.Equal("Bar", page.AMC.GetValue(AccessModifiersControl.InternalBarProperty);
+				Assert.Equal("Foo", page.AMC.GetValue(AccessModifiersControl.PublicFooProperty);
 			}
 		}
 	}

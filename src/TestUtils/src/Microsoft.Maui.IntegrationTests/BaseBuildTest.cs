@@ -83,7 +83,6 @@ namespace Microsoft.Maui.IntegrationTests
 			"TreatWarningsAsErrors=true",
 		};
 
-
 		/// <summary>
 		/// Copy NuGet packages that are not installed as part of the workload and set up NuGet.config
 		/// See: `PrepareSeparateBuildContext` in `eng/cake/dotnet.cake`.

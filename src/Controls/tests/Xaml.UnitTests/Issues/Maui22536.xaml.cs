@@ -32,7 +32,7 @@ public partial class Maui22536
 		public void TestNonCompiledResourceDictionary([Values(false, true)] bool useCompiledXaml)
 		{
 			var page = new Maui22536(useCompiledXaml);
-			Assert.Equal(page.Button.BackgroundColor, Color.FromArgb("#010203"));
+			Assert.Equal(page.Button.BackgroundColor, Color.FromArgb("#010203");
 		}
 	}
 }

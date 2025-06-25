@@ -41,15 +41,15 @@ public partial class Maui20818
 		{
 			var page = new Maui20818(useCompiledXaml);
 
-			Assert.Equal(typeof(Label, (page.Resources["A"] as Style).TargetType));
-			Assert.Equal(typeof(Label, (page.Resources["B"] as Style).TargetType));
+			Assert.Equal(typeof(Label), (page.Resources["A"] as Style).TargetType));
+			Assert.Equal(typeof(Label), (page.Resources["B"] as Style).TargetType));
 
-			Assert.Equal(typeof(Label, page.TriggerC.TargetType));
-			Assert.Equal(typeof(Label, page.TriggerD.TargetType));
-			Assert.Equal(typeof(Label, page.TriggerE.TargetType));
-			Assert.Equal(typeof(Label, page.TriggerF.TargetType));
-			Assert.Equal(typeof(Label, page.TriggerG.TargetType));
-			Assert.Equal(typeof(Label, page.TriggerH.TargetType));
+			Assert.Equal(typeof(Label), page.TriggerC.TargetType);
+			Assert.Equal(typeof(Label), page.TriggerD.TargetType);
+			Assert.Equal(typeof(Label), page.TriggerE.TargetType);
+			Assert.Equal(typeof(Label), page.TriggerF.TargetType);
+			Assert.Equal(typeof(Label), page.TriggerG.TargetType);
+			Assert.Equal(typeof(Label), page.TriggerH.TargetType);
 		}
 	}
 }

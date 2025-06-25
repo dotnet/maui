@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;
 				var p = new Bz45891(useCompiledXaml);
-				Assert.Equal("Foo", p.List.First());
+				Assert.Equal("Foo", p.List.First();
 			}
 		}
 	}

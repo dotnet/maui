@@ -51,7 +51,7 @@ public partial class Maui24849 : ContentPage
 			app.MainPage = page;
 
 			Assert.False(page.button.IsEnabled);
-			Assert.Equal(Color.FromHex("#3c3c3b", page.button.TextColor));
+			Assert.Equal(Color.FromHex("#3c3c3b", page.button.TextColor);
 
 			page.button.IsEnabled = true;
 			Assert.True(page.button.IsEnabled);
@@ -59,7 +59,7 @@ public partial class Maui24849 : ContentPage
 
 			page.button.IsEnabled = false;
 			Assert.False(page.button.IsEnabled);
-			Assert.Equal(Color.FromHex("#3c3c3b", page.button.TextColor));
+			Assert.Equal(Color.FromHex("#3c3c3b", page.button.TextColor);
 		}
 	}
 }

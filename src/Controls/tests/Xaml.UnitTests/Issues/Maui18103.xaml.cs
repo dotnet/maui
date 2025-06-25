@@ -28,7 +28,7 @@ public partial class Maui18103 : ContentPage
 		public void VSMOverride([Values(false, true)] bool useCompiledXaml)
 		{
 			var page = new Maui18103(useCompiledXaml);
-			Assert.Equal(new SolidColorBrush(Colors.Orange, page.button.Background));
+			Assert.Equal(new SolidColorBrush(Colors.Orange, page.button.Background);
 		}
 	}
 }

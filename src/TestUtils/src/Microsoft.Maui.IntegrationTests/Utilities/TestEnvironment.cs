@@ -12,7 +12,6 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static bool IsRunningOnCI => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AGENT_NAME"));
 
-
 		static string _mauiDir = "";
 		public static string GetMauiDirectory()
 		{

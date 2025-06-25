@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var layout = new TypeConverterTests(useCompiledXaml);
 				Assert.That(layout.imageSource.Uri, Is.TypeOf<Uri>());
-				Assert.Equal("https://xamarin.com/content/images/pages/branding/assets/xamagon.png", layout.imageSource.Uri.ToString());
+				Assert.Equal("https://xamarin.com/content/images/pages/branding/assets/xamagon.png", layout.imageSource.Uri.ToString();
 			}
 		}
 	}

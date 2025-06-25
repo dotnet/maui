@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var label = layout.constantConstraint;
 				var constraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(label);
 				Assert.NotNull(constraint);
-				Assert.Equal(42, constraint.Compute(null));
+				Assert.Equal(42, constraint.Compute(null);
 			}
 
 			[Theory]
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var label = layout.constraintRelativeToParent;
 				var constraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(label);
 				Assert.NotNull(constraint);
-				Assert.Equal(102, constraint.Compute(layout.relativeLayout));
+				Assert.Equal(102, constraint.Compute(layout.relativeLayout);
 			}
 
 			[Theory]
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var label = layout.constraintRelativeToView;
 				var constraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(label);
 				Assert.NotNull(constraint);
-				Assert.Equal(97, constraint.Compute(layout.relativeLayout));
+				Assert.Equal(97, constraint.Compute(layout.relativeLayout);
 			}
 		}
 	}

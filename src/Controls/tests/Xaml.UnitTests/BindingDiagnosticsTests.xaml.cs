@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public BindingDiagnosticsTests(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}#if !DEBUG
+		}
+#if !DEBUG
 		[Ignore("This test runs only in debug")]
 #endif
 		public class Tests

@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var page = new TypeExtension(useCompiledXaml);
 				var button = page.button0;
-				Assert.Equal(typeof(TypeExtension, button.CommandParameter));
+				Assert.Equal(typeof(TypeExtension), button.CommandParameter);
 			}
 		}
 	}

@@ -36,11 +36,11 @@ public partial class Maui16538
 			var page = new Maui16538(useCompiledXaml);
 			Application.Current.MainPage = page;
 			Button button = page.button0;
-			Assert.Equal(Color.FromHex("404040", button.BackgroundColor));
+			Assert.Equal(Color.FromHex("404040", button.BackgroundColor);
 			button.IsEnabled = true;
 			Assert.Equal(Colors.White, button.BackgroundColor);
 			Application.Current.UserAppTheme = AppTheme.Light;
-			Assert.Equal(Color.FromHex("512BD4", button.BackgroundColor));
+			Assert.Equal(Color.FromHex("512BD4", button.BackgroundColor);
 		}
 	}
 }

@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var page = new Unreported004(useCompiledXaml);
 				Assert.NotNull(page.label);
-				Assert.Equal("foo", GetSomeProperty(page.label));
+				Assert.Equal("foo", GetSomeProperty(page.label);
 			}
 		}
 	}

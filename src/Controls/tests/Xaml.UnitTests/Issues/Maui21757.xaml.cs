@@ -43,15 +43,15 @@ public partial class Maui21757
 
 			var styleA = resourceDictionary["A"] as Style;
 			Assert.NotNull(styleA);
-			Assert.Equal(typeof(BoxView, styleA.TargetType));
+			Assert.Equal(typeof(BoxView), styleA.TargetType);
 			Assert.Equal(BoxView.ColorProperty, styleA.Setters[0].Property);
-			Assert.Equal(Color.FromArgb("#C8C8C8", styleA.Setters[0].Value));
+			Assert.Equal(Color.FromArgb("#C8C8C8", styleA.Setters[0].Value);
 
 			var styleB = resourceDictionary["B"] as Style;
 			Assert.NotNull(styleB);
-			Assert.Equal(typeof(BoxView, styleB.TargetType));
+			Assert.Equal(typeof(BoxView), styleB.TargetType);
 			Assert.Equal(BoxView.ColorProperty, styleB.Setters[0].Property);
-			Assert.Equal(Color.FromArgb("#C8C8C8", styleB.Setters[0].Value));
+			Assert.Equal(Color.FromArgb("#C8C8C8", styleB.Setters[0].Value);
 		}
 	}
 }

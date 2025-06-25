@@ -43,11 +43,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var page = new FontSize(useCompiledXaml);
 				Assert.Equal(42, page.l42.FontSize);
-
 #pragma warning disable CS0612 // Type or member is obsolete
-				Assert.Equal(Device.GetNamedSize(NamedSize.Medium, page.lmedium, page.lmedium.FontSize));
-				Assert.Equal(Device.GetNamedSize(NamedSize.Default, page.ldefault, page.ldefault.FontSize));
-				Assert.Equal(Device.GetNamedSize(NamedSize.Default, page.bdefault, page.bdefault.FontSize));
+				Assert.Equal(Device.GetNamedSize(NamedSize.Medium, page.lmedium, page.lmedium.FontSize);
+				Assert.Equal(Device.GetNamedSize(NamedSize.Default, page.ldefault, page.ldefault.FontSize);
+				Assert.Equal(Device.GetNamedSize(NamedSize.Default, page.bdefault, page.bdefault.FontSize);
 #pragma warning restore CS0612 // Type or member is obsolete
 
 			}

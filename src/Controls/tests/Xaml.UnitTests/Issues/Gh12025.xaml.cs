@@ -28,8 +28,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh12025)));
 				var layout = new Gh12025(useCompiledXaml);
-				Assert.Equal(NavigationPage.IconColorProperty.DefaultValue, NavigationPage.GetIconColor(layout));
-				Assert.Equal(Colors.HotPink, Gh12025NavPage.GetIconColor(layout));
+				Assert.Equal(NavigationPage.IconColorProperty.DefaultValue, NavigationPage.GetIconColor(layout);
+				Assert.Equal(Colors.HotPink, Gh12025NavPage.GetIconColor(layout);
 			}
 		}
 	}

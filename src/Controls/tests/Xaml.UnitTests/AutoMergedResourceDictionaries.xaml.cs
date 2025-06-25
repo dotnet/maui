@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var layout = new AutoMergedResourceDictionaries(useCompiledXaml);
 				Assert.Equal(Colors.Purple, layout.label.TextColor);
-				Assert.Equal(Color.FromArgb("#FF96F3", layout.label.BackgroundColor));
+				Assert.Equal(Color.FromArgb("#FF96F3", layout.label.BackgroundColor);
 			}
 		}
 	}

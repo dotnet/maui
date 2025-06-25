@@ -41,7 +41,6 @@ public partial class Maui25871 : ContentPage
 		}
 	}
 }
-
 #nullable enable
 public class Maui25871ViewModel
 {

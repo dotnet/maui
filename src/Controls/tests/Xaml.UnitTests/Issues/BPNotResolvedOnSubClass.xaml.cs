@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var button = new Button();
 				button.Style = style;
 
-				Assert.Equal(Color.FromArgb("#dddddd"), button.GetValue(ShadowColorProperty));
+				Assert.Equal(Color.FromArgb("#dddddd"), button.GetValue(ShadowColorProperty);
 			}
 		}
 	}

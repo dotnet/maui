@@ -246,7 +246,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.That(bindable.FooBar, Is.TypeOf<FooBar>());
 			Assert.Equal("foobar", bindable.FooBar.Value);
 		}
-
 #if !WINDOWS_PHONE
 		[TestCase("en-GB"), TestCase("fr-FR")]
 		public void TestCultureOnThickness(string culture)

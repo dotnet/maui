@@ -46,12 +46,12 @@ public partial class Maui20244 : ContentPage
 			var grid = page.grid;
 
 			Assert.Equal(6, grid.RowDefinitions.Count);
-			Assert.Equal(new GridLength(1, GridUnitType.Star, grid.RowDefinitions[0].Height));
-			Assert.Equal(new GridLength(1, GridUnitType.Star, grid.RowDefinitions[1].Height));
-			Assert.Equal(new GridLength(1, GridUnitType.Star, grid.RowDefinitions[2].Height));
-			Assert.Equal(new GridLength(1, GridUnitType.Star, grid.RowDefinitions[3].Height));
-			Assert.Equal(new GridLength(1, GridUnitType.Star, grid.RowDefinitions[4].Height));
-			Assert.Equal(new GridLength(1, GridUnitType.Auto, grid.RowDefinitions[5].Height));
+			Assert.Equal(new GridLength(1, GridUnitType.Star, grid.RowDefinitions[0].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Star, grid.RowDefinitions[1].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Star, grid.RowDefinitions[2].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Star, grid.RowDefinitions[3].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Star, grid.RowDefinitions[4].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Auto, grid.RowDefinitions[5].Height);
 
 			Assert.Equal(3, grid.ColumnDefinitions.Count);
 		}

@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var page = new Bz24910(useCompiledXaml);
 				var control = page.control4;
-				Assert.Equal(3, Bz24910Control.GetAttachedNullableInt(control));
+				Assert.Equal(3, Bz24910Control.GetAttachedNullableInt(control);
 			}
 
 			[TestCase(true), TestCase(false)]

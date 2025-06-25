@@ -56,7 +56,7 @@ public partial class Maui26369 : ContentPage
 			}
 
 			var page = new Maui26369(useCompiledXaml);
-			Assert.Equal(new GridLength(30, page.NullableGridLength));
+			Assert.Equal(new GridLength(30, page.NullableGridLength);
 		}
 
 		private bool ContainsBoxToNullable(MethodDefinition methodDef)

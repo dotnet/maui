@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Xaml.Internals;
 using Xunit;
-using Xunit;.Internal;
+using Xunit;
 using static System.String;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;

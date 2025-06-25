@@ -3,7 +3,6 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Xunit;
-
 #pragma warning disable CS0067 // The event 'event' is never used
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests

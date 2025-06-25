@@ -42,7 +42,7 @@ public partial class Maui23711 : ContentPage
 		{
 			MockCompiler.Compile(typeof(Maui23711), out MethodDefinition methodDefinition, out bool hasLoggedErrors, compileBindingsWithSource: compileBindingsWithSource);
 			Assert.That(!hasLoggedErrors);
-			Assert.Equal(compileBindingsWithSource, ContainsTypedBindingInstantiation(methodDefinition));
+			Assert.Equal(compileBindingsWithSource, ContainsTypedBindingInstantiation(methodDefinition);
 		}
 
 		static bool ContainsTypedBindingInstantiation(MethodDefinition methodDef)

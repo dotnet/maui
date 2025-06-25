@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var layout = new Bz28545(useCompiledXaml);
 				Assert.Equal(Colors.Pink, layout.label.TextColor);
-				Assert.Equal(AbsoluteLayoutFlags.PositionProportional, AbsoluteLayout.GetLayoutFlags(layout.label));
+				Assert.Equal(AbsoluteLayoutFlags.PositionProportional, AbsoluteLayout.GetLayoutFlags(layout.label);
 				Assert.Equal(new Rect(1, 1, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), AbsoluteLayout.GetLayoutBounds(layout.label));
 			}
 		}

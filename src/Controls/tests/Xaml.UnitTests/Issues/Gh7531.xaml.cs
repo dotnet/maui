@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Gh7531 layout = null;
 				Assert.DoesNotThrow(() => layout = new Gh7531(useCompiledXaml));
 				var style = ((ResourceDictionary)layout.Resources["Colors"])["style"] as Style;
-				Assert.Equal(typeof(Gh7531, style.TargetType));
+				Assert.Equal(typeof(Gh7531), style.TargetType);
 			}
 		}
 	}

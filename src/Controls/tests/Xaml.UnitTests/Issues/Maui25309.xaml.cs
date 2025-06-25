@@ -40,11 +40,10 @@ public partial class Maui25309 : ContentPage
 			var page = new Maui25309(useCompiledXaml) { BindingContext = new { IsValid = true } };
 			var converter = page.Resources["IsValidConverter"] as Maui25309BoolToObjectConverter;
 			Assert.NotNull(converter);
-			Assert.Equal(Color.Parse("#140F4B", page.label.BackgroundColor));
+			Assert.Equal(Color.Parse("#140F4B", page.label.BackgroundColor);
 		}
 	}
 }
-
 #nullable enable
 class Maui25309BoolToObjectConverter : Maui25309BoolToObjectConverter<object>
 {

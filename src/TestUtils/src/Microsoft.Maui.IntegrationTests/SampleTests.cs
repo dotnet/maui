@@ -24,7 +24,7 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 		}
 
-		[Test]
+		[Fact]
 		[TestCaseSource(nameof(SampleTestMatrix))]
 		public void Build(string relativeProj, string config)
 		{
@@ -38,12 +38,11 @@ namespace Microsoft.Maui.IntegrationTests
 				"TreatWarningsAsErrors=true",
 			};
 
-			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: sampleProps, binlogPath: binlog),
+			Assert.True(DotnetInternal.Build(projectFile, config, properties: sampleProps, binlogPath: binlog),
 					$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
 	}
-
 
 	public class SolutionFile
 	{

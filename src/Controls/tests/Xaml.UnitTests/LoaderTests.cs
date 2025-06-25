@@ -528,8 +528,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					<Grid.Row>2</Grid.Row>
 				</View>";
 			var view = new View().LoadFromXaml(xaml);
-			Assert.Equal(1, Grid.GetColumn(view));
-			Assert.Equal(2, Grid.GetRow(view));
+			Assert.Equal(1, Grid.GetColumn(view);
+			Assert.Equal(2, Grid.GetRow(view);
 		}
 
 		[Fact]
@@ -613,7 +613,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				<Label Text=""foo""></Label>
 				</ContentPage>";
 			var contentPage = new ContentPage().LoadFromXaml(xaml);
-			Assert.Equal(1, Grid.GetRow(contentPage));
+			Assert.Equal(1, Grid.GetRow(contentPage);
 			Assert.NotNull(contentPage.Content);
 		}
 

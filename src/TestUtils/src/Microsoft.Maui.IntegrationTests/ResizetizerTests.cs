@@ -11,17 +11,25 @@ public class ResizetizerTests : BaseBuildTest
 		</svg>
 		""";
 
-	[Test]
+	[Fact]
 	// windows unpackaged/exe
-	[TestCase("maui", "classlib", true)] // net9.0
-	[TestCase("maui", "mauilib", true)] // net9.0-xxx
-	[TestCase("maui-blazor", "classlib", true)] // net9.0
-	[TestCase("maui-blazor", "mauilib", true)] // net9.0-xxx
+	[Theory]
+		[InlineData("maui", "classlib", true)] // net9.0
+	[Theory]
+		[InlineData("maui", "mauilib", true)] // net9.0-xxx
+	[Theory]
+		[InlineData("maui-blazor", "classlib", true)] // net9.0
+	[Theory]
+		[InlineData("maui-blazor", "mauilib", true)] // net9.0-xxx
 											   // windows packaged/msix
-	[TestCase("maui", "classlib", false)] // net9.0
-	[TestCase("maui", "mauilib", false)] // net9.0-xxx
-	[TestCase("maui-blazor", "classlib", false)] // net9.0
-	[TestCase("maui-blazor", "mauilib", false)] // net9.0-xxx
+	[Theory]
+		[InlineData("maui", "classlib", false)] // net9.0
+	[Theory]
+		[InlineData("maui", "mauilib", false)] // net9.0-xxx
+	[Theory]
+		[InlineData("maui-blazor", "classlib", false)] // net9.0
+	[Theory]
+		[InlineData("maui-blazor", "mauilib", false)] // net9.0-xxx
 	public void CollectsAssets(string id, string libid, bool unpackaged)
 	{
 		// TODO: fix the tests as they have been disabled too long!
@@ -31,13 +39,13 @@ public class ResizetizerTests : BaseBuildTest
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
 		var appFile = Path.Combine(appDir, $"{Path.GetFileName(appDir)}.csproj");
-		Assert.IsTrue(DotnetInternal.New(id, appDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(id, appDir, DotNetCurrent),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		// new lib
 		var libDir = Path.Combine(TestDirectory, "thelib");
 		var libFile = Path.Combine(libDir, $"{Path.GetFileName(libDir)}.csproj");
-		Assert.IsTrue(DotnetInternal.New(libid, libDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(libid, libDir, DotNetCurrent),
 			$"Unable to create template {libid}. Check test output for errors.");
 
 		// add a project reference
@@ -82,7 +90,7 @@ public class ResizetizerTests : BaseBuildTest
 			""");
 
 		// build
-		Assert.IsTrue(DotnetInternal.Build(appFile, "Debug", properties: BuildProps),
+		Assert.True(DotnetInternal.Build(appFile, "Debug", properties: BuildProps),
 			$"Project {Path.GetFileName(appFile)} failed to build. Check test output/attachments for errors.");
 
 		// assert

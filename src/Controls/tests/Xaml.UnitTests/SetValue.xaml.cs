@@ -217,8 +217,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void SetAttachedBP(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal(1, Grid.GetColumn(page.label2));
-				Assert.Equal(2, Grid.GetRow(page.label2));
+				Assert.Equal(1, Grid.GetColumn(page.label2);
+				Assert.Equal(2, Grid.GetRow(page.label2);
 			}
 
 			[Theory]
@@ -341,7 +341,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void FlagsAreApplied(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal(AbsoluteLayoutFlags.PositionProportional | AbsoluteLayoutFlags.WidthProportional, AbsoluteLayout.GetLayoutFlags(page.label14));
+				Assert.Equal(AbsoluteLayoutFlags.PositionProportional | AbsoluteLayoutFlags.WidthProportional, AbsoluteLayout.GetLayoutFlags(page.label14);
 			}
 
 			[Theory]
@@ -403,7 +403,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void SetValueWithImplicitOperatorOnSource(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal("Bar", page.implicit0.GetValue(MockViewWithValues.BPBarProperty));
+				Assert.Equal("Bar", page.implicit0.GetValue(MockViewWithValues.BPBarProperty);
 			}
 
 			[Theory]

@@ -304,8 +304,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("foo", platformView.Foo);
 				Assert.Equal(42, platformView.Bar);
 				Assert.Equal("Bound Value", platformView.Baz);
-				Assert.Equal(LayoutOptions.End, view.Content.GetValue(View.HorizontalOptionsProperty));
-				Assert.Equal(LayoutOptions.EndAndExpand, view.Content.GetValue(View.VerticalOptionsProperty));
+				Assert.Equal(LayoutOptions.End, view.Content.GetValue(View.HorizontalOptionsProperty);
+				Assert.Equal(LayoutOptions.EndAndExpand, view.Content.GetValue(View.VerticalOptionsProperty);
 			}
 		}
 	}

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void XamlCDoesntFail([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Maui2304Closed(useCompiledXaml);
-				Assert.Equal(typeof(OnPlatform<string>), typeof(Maui2304Closed).BaseType);
+				Assert.Equal(typeof(OnPlatform<string>)), typeof(Maui2304Closed).BaseType);
 			}
 		}
 	}

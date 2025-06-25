@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var label = new Label();
 			label.LoadFromXaml(xaml);
-			Assert.Equal("FooBar", label.Text.ToString());
+			Assert.Equal("FooBar", label.Text.ToString();
 		}
 
 		[Fact]
@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var label = new Label();
 			label.LoadFromXaml(xaml);
-			Assert.Equal("FooBar", label.Text.ToString());
+			Assert.Equal("FooBar", label.Text.ToString();
 		}
 
 		[Fact]

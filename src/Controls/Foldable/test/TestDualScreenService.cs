@@ -39,7 +39,6 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			return new Rectangle(490, 0, 20, DeviceInfo.ScaledScreenSize.Height);
 		}
 
-
 		public Point? GetLocationOnScreen(VisualElement visualElement) => _location;
 
 		public Point? SetLocationOnScreen(Point point) => _location = point;

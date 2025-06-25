@@ -180,7 +180,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			overrideClicked++;
 		}
-
 #pragma warning disable 1998 // considered for removal
 		async void HandleClickedPrivateAsync(object sender, EventArgs e)
 #pragma warning restore 1998

@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var vm = new Gh5290VM { Time = TimeSpan.FromMinutes(42) };
 				var layout = new Gh5290(useCompiledXaml) { BindingContext = vm };
-				Assert.Equal(TimeSpan.FromMinutes(42, layout.NullableTime));
+				Assert.Equal(TimeSpan.FromMinutes(42, layout.NullableTime);
 
 				layout.SetValueFromRenderer(NullableTimeProperty, null);
 				Assert.Null(vm.Time);
