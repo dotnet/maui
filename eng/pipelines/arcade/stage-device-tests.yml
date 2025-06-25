@@ -55,8 +55,8 @@ parameters:
   default: 'net9.0'
 
 stages:
-- stage: deviceTests
-  displayName: Helix Device Tests
+- stage: deviceTests_ios_android_${{ parameters.TargetFrameworkVersion }}
+  displayName: Helix ${{ parameters.TargetFrameworkVersion }} iOS/Android Device Tests
   dependsOn: []
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
