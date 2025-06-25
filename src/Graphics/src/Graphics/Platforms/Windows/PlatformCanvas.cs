@@ -390,7 +390,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			if (paint is ImagePaint imagePaint)
 			{
-				if (imagePaint.Image is PlatformImage image)
+				if (imagePaint.Image is Platform.PlatformImage image)
 				{
 					var bitmapBrush = new CanvasImageBrush(_session, image.PlatformRepresentation)
 					{
