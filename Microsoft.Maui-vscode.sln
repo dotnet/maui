@@ -188,6 +188,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.TestCases.HostApp"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.IntegrationTests", "src\TestUtils\src\Microsoft.Maui.IntegrationTests\Microsoft.Maui.IntegrationTests.csproj", "{A6976D43-B3A4-47AF-89D9-FA388B56B52B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.DeviceTemplateTests", "src\TestUtils\src\Microsoft.Maui.DeviceTemplateTests\Microsoft.Maui.DeviceTemplateTests.csproj", "{C8D6E3F4-A1B2-4C5D-9E7F-A3B4C5D6E7F8}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.Core", "src\TestUtils\src\UITest.Core\UITest.Core.csproj", "{401CA2F5-EAD1-4414-AE8F-42444BF458EB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.Appium", "src\TestUtils\src\UITest.Appium\UITest.Appium.csproj", "{5BC29B1A-1EBC-41BF-A0B6-D1B73F8A4991}"
