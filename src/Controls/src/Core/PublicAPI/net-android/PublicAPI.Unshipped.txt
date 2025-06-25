@@ -249,3 +249,19 @@ static Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync(this Microsoft.Maui.C
 static Microsoft.Maui.Controls.ViewExtensions.ScaleXToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.ScaleYToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double x, double y, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
+~Microsoft.Maui.Controls.IInputTransparentContainerElement.CascadeInputTransparent.get -> bool
+~Microsoft.Maui.Controls.IInputTransparentContainerElement.InputTransparent.get -> bool
+~Microsoft.Maui.Controls.IInputTransparentContainerElement.Parent.get -> Microsoft.Maui.Controls.Element!
+~Microsoft.Maui.Controls.Layout.CascadeInputTransparent.get -> bool
+~Microsoft.Maui.Controls.Layout.CascadeInputTransparent.set -> void
+~Microsoft.Maui.Controls.Layout.IsClippedToBounds.get -> bool
+~Microsoft.Maui.Controls.Layout.IsClippedToBounds.set -> void
+~static readonly Microsoft.Maui.Controls.Layout.CascadeInputTransparentProperty -> Microsoft.Maui.Controls.BindableProperty!
+~static readonly Microsoft.Maui.Controls.Layout.IsClippedToBoundsProperty -> Microsoft.Maui.Controls.BindableProperty!
+~Microsoft.Maui.Controls.Compatibility.Layout.CascadeInputTransparent.get -> bool
+~Microsoft.Maui.Controls.Compatibility.Layout.CascadeInputTransparent.set -> void
+~Microsoft.Maui.Controls.Compatibility.Layout.IsClippedToBounds.get -> bool
+~Microsoft.Maui.Controls.Compatibility.Layout.IsClippedToBounds.set -> void
+~static readonly Microsoft.Maui.Controls.Compatibility.Layout.CascadeInputTransparentProperty -> Microsoft.Maui.Controls.BindableProperty!
+~static readonly Microsoft.Maui.Controls.Compatibility.Layout.IsClippedToBoundsProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.IInputTransparentContainerElement
