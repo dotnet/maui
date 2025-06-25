@@ -1,13 +1,4 @@
 #nullable enable
-Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView
-Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.MauiCollectionView(CoreGraphics.CGRect frame, UIKit.UICollectionViewLayout! layout) -> void
-override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.MovedToWindow() -> void
-override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.ScrollRectToVisible(CoreGraphics.CGRect rect, bool animated) -> void
-Microsoft.Maui.Controls.LayoutConstraint
-Microsoft.Maui.Controls.LayoutConstraint.Fixed = Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed | Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed -> Microsoft.Maui.Controls.LayoutConstraint
-Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Controls.LayoutConstraint
-Microsoft.Maui.Controls.LayoutConstraint.None = 0 -> Microsoft.Maui.Controls.LayoutConstraint
-Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed = 2 -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.Performance.IImagePerformanceTracker
 Microsoft.Maui.Controls.Performance.IImagePerformanceTracker.Configure(Microsoft.Maui.Controls.Performance.ImageTrackingOptions! options) -> void
 Microsoft.Maui.Controls.Performance.IImagePerformanceTracker.GetStats() -> Microsoft.Maui.Controls.Performance.ImageStats!
@@ -163,7 +154,6 @@ Microsoft.Maui.Controls.Performance.WarningOptions.MinimumLevel.set -> void
 Microsoft.Maui.Controls.Performance.WarningOptions.Thresholds.get -> Microsoft.Maui.Controls.Performance.PerformanceThresholds!
 Microsoft.Maui.Controls.Performance.WarningOptions.Thresholds.set -> void
 Microsoft.Maui.Controls.Performance.WarningOptions.WarningOptions() -> void
-Microsoft.Maui.Controls.HybridWebView.WebResourceRequested -> System.EventHandler<Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs!>?
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Handled.get -> bool
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Handled.set -> void
@@ -176,33 +166,6 @@ Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.QueryParameters.get
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.IO.Stream? content) -> void
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Uri.get -> System.Uri!
-Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs
-Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Request.get -> Foundation.NSUrlRequest!
-Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Sender.get -> WebKit.WKWebView!
-Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.UrlSchemeTask.get -> WebKit.IWKUrlSchemeTask!
-Microsoft.Maui.Controls.ShadowTypeConverter
-Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
-*REMOVED*Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime
-*REMOVED*Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime
-*REMOVED*Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime
-Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime?
-Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime?
-*REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime oldDate, System.DateTime newDate) -> void
-Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime? oldDate, System.DateTime? newDate) -> void
-*REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.NewDate.get -> System.DateTime
-Microsoft.Maui.Controls.DateChangedEventArgs.NewDate.get -> System.DateTime?
-*REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.OldDate.get -> System.DateTime
-Microsoft.Maui.Controls.DateChangedEventArgs.OldDate.get -> System.DateTime?
-Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime?
-Microsoft.Maui.Controls.StyleableElement.Style.get -> Microsoft.Maui.Controls.Style?
-Microsoft.Maui.Controls.Internals.TextTransformUtilities
-Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan?
-Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan?
-Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan? oldTime, System.TimeSpan? newTime) -> void
-override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType) -> bool
-override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
-override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
-override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
 static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.AddPerformanceMonitoring(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions!>? configure = null) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.ConfigureImage(this Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions! options, System.Action<Microsoft.Maui.Controls.Performance.ImageTrackingOptions!>! configure) -> Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions!
 static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.ConfigureLayout(this Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions! options, System.Action<Microsoft.Maui.Controls.Performance.LayoutTrackingOptions!>! configure) -> Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions!
@@ -361,21 +324,6 @@ Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan?
 Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan? oldTime, System.TimeSpan? newTime) -> void
 *REMOVED*Microsoft.Maui.Controls.TimePicker.Time.get -> System.TimeSpan
 Microsoft.Maui.Controls.TimePicker.Time.get -> System.TimeSpan?
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Handled.get -> bool
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Handled.set -> void
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Headers.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Method.get -> string!
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs?
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.QueryParameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, string! contentType, System.IO.Stream? content) -> void
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, string! contentType, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.IO.Stream? content) -> void
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason) -> void
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Uri.get -> System.Uri!
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.WebViewWebResourceRequestedEventArgs(Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs! platformArgs) -> void
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.WebViewWebResourceRequestedEventArgs(System.Uri! uri, string! method) -> void
 Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute
 Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.Allow.get -> bool
 Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.AllowImplicitXmlnsDeclarationAttribute(bool allow = true) -> void
