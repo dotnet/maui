@@ -8,29 +8,8 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// <summary>
 	/// The OrientationSensor API lets you monitor the orientation of a device in three dimensional space.
 	/// </summary>
-	public interface IOrientationSensor
+	public interface IOrientationSensor : ISensor
 	{
-		/// <summary>
-		/// Gets a value indicating whether reading the orientation sensor is supported on this device.
-		/// </summary>
-		bool IsSupported { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether the orientation sensor is actively being monitored.
-		/// </summary>
-		bool IsMonitoring { get; }
-
-		/// <summary>
-		/// Start monitoring for changes to the orientation.
-		/// </summary>
-		/// <param name="sensorSpeed">The speed to listen for changes.</param>
-		void Start(SensorSpeed sensorSpeed);
-
-		/// <summary>
-		/// Stop monitoring for changes to the orientation.
-		/// </summary>
-		void Stop();
-
 		/// <summary>
 		/// Occurs when the orientation reading changes.
 		/// </summary>
