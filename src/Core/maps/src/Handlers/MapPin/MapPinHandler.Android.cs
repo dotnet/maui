@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			UpdateMarker(handler, marker => marker.Snippet = mapPin.Address);
 		}
 
-		private static void UpdateMarker(IMapPinHandler handler, Action<Marker> updateAction)
+		static void UpdateMarker(IMapPinHandler handler, Action<Marker> updateAction)
 		{
 			if (handler is MapPinHandler mapPinHandler && mapPinHandler.Marker is Marker marker)
 			{
