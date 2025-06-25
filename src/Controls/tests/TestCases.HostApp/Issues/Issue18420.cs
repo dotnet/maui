@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 18420, "[Windows]ViewExtensions RotateYTo and RotateXTo with length 0 crashes on Windows", PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 18420, "[Windows] ViewExtensions RotateYTo and RotateXTo with length 0 crashes on Windows", PlatformAffected.UWP)]
 public class Issue18420 : ContentPage
 {
 	int count = 0;
