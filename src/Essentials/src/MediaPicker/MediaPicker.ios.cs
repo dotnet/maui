@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Storage;
 using MobileCoreServices;
 using Photos;
@@ -137,7 +139,7 @@ namespace Microsoft.Maui.Media
 				{
 					CompletedHandler = async info =>
 					{
-						GetFileResult(info, tcs);
+						GetFileResult(info, tcs, options);
 						await vc.DismissViewControllerAsync(true);
 					}
 				};
@@ -213,8 +215,11 @@ namespace Microsoft.Maui.Media
 				{
 					Delegate = new Media.PhotoPickerDelegate
 					{
-						CompletedHandler = res =>
-							tcs.TrySetResult(PickerResultsToMediaFiles(res))
+						CompletedHandler = async res =>
+						{
+							var result = await PickerResultsToMediaFiles(res, options);
+							tcs.TrySetResult(result);
+						}
 					}
 				};
 
@@ -258,18 +263,32 @@ namespace Microsoft.Maui.Media
 				: new PHPickerFileResult(file.ItemProvider);
 		}
 
-		static List<FileResult> PickerResultsToMediaFiles(PHPickerResult[] results)
+		static async Task<List<FileResult>> PickerResultsToMediaFiles(PHPickerResult[] results, MediaPickerOptions options = null)
 		{
-			return results?
+			var fileResults = results?
 				.Select(file => (FileResult)new PHPickerFileResult(file.ItemProvider))
 				.ToList() ?? [];
+
+			// Apply resizing and compression if specified and dealing with images
+			if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+			{
+				var compressedResults = new List<FileResult>();
+				foreach (var result in fileResults)
+				{
+					var compressedResult = await CompressedUIImageFileResult.CreateCompressedFromFileResult(result, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100);
+					compressedResults.Add(compressedResult);
+				}
+				return compressedResults;
+			}
+
+			return fileResults;
 		}
 
-		static void GetFileResult(NSDictionary info, TaskCompletionSource<FileResult> tcs)
+		static void GetFileResult(NSDictionary info, TaskCompletionSource<FileResult> tcs, MediaPickerOptions options = null)
 		{
 			try
 			{
-				tcs.TrySetResult(DictionaryToMediaFile(info));
+				tcs.TrySetResult(DictionaryToMediaFile(info, options));
 			}
 			catch (Exception ex)
 			{
@@ -277,7 +296,7 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		static FileResult DictionaryToMediaFile(NSDictionary info)
+		static FileResult DictionaryToMediaFile(NSDictionary info, MediaPickerOptions options = null)
 		{
 			// This method should only be called for iOS < 14
 			if (!OperatingSystem.IsIOSVersionAtLeast(14))
@@ -329,7 +348,7 @@ namespace Microsoft.Maui.Media
 
 				if (img is not null)
 				{
-					return new UIImageFileResult(img);
+					return new CompressedUIImageFileResult(img, null, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100);
 				}
 			}
 
@@ -414,5 +433,189 @@ namespace Microsoft.Maui.Media
 
 		protected internal static string GetTag(string identifier, string tagClass)
 			   => UTType.CopyAllTags(identifier, tagClass)?.FirstOrDefault();
+	}
+
+	class CompressedUIImageFileResult : FileResult
+	{
+		readonly UIImage uiImage;
+		readonly int? maximumWidth;
+		readonly int? maximumHeight;
+		readonly int compressionQuality;
+		readonly string originalFileName;
+		NSData data;
+
+		// Static factory method to create compressed result from existing FileResult
+		internal static async Task<FileResult> CreateCompressedFromFileResult(FileResult originalResult, int? maximumWidth, int? maximumHeight, int compressionQuality = 100)
+		{
+			if (originalResult is null || !ImageProcessor.IsProcessingNeeded(maximumWidth, maximumHeight, compressionQuality))
+				return originalResult;
+
+			try
+			{
+				using var originalStream = await originalResult.OpenReadAsync();
+				using var processedStream = await ImageProcessor.ProcessImageAsync(
+					originalStream, maximumWidth, maximumHeight, compressionQuality, originalResult.FileName);
+
+				// If ImageProcessor returns null (e.g., on .NET Standard), return original file
+				if (processedStream is null)
+				{
+					return originalResult;
+				}
+
+				// Read processed stream into memory
+				var memoryStream = new MemoryStream();
+				await processedStream.CopyToAsync(memoryStream);
+				memoryStream.Position = 0;
+
+				return new ProcessedImageFileResult(memoryStream, originalResult.FileName);
+			}
+			catch
+			{
+				// If compression fails, return original
+			}
+
+			return originalResult;
+		}
+
+		internal CompressedUIImageFileResult(UIImage image, string originalFileName = null, int? maximumWidth = null, int? maximumHeight = null, int compressionQuality = 100)
+			: base()
+		{
+			uiImage = image;
+			this.originalFileName = originalFileName;
+			this.maximumWidth = maximumWidth;
+			this.maximumHeight = maximumHeight;
+			this.compressionQuality = Math.Max(0, Math.Min(100, compressionQuality));
+
+			// Determine output format: preserve PNG when appropriate, otherwise use JPEG
+			var extension = ShouldUsePngFormat() ? FileExtensions.Png : FileExtensions.Jpg;
+			FullPath = Guid.NewGuid().ToString() + extension;
+			FileName = FullPath;
+		}
+
+		bool ShouldUsePngFormat()
+		{
+			// Use PNG if:
+			// 1. High quality (>=90) and no resizing needed (preserves original format)
+			// 2. Original file was PNG
+			// 3. Image might have transparency (PNG supports alpha channel)
+
+			bool highQualityNoResize = compressionQuality >= 90 && !maximumWidth.HasValue && !maximumHeight.HasValue;
+			bool originalWasPng = !string.IsNullOrEmpty(originalFileName) &&
+									(originalFileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+									 originalFileName.EndsWith(".PNG", StringComparison.OrdinalIgnoreCase));
+
+			// For very high quality or when original was PNG, preserve PNG format
+			return (compressionQuality >= 95 && !maximumWidth.HasValue && !maximumHeight.HasValue) || originalWasPng;
+		}
+
+		internal override Task<Stream> PlatformOpenReadAsync()
+		{
+			if (data == null)
+			{
+				var normalizedImage = uiImage.NormalizeOrientation();
+
+				// First, apply resizing if needed
+				var workingImage = normalizedImage;
+				var originalSize = normalizedImage.Size;
+				var newSize = CalculateResizedDimensions(originalSize.Width, originalSize.Height, maximumWidth, maximumHeight);
+
+				if (newSize.Width != originalSize.Width || newSize.Height != originalSize.Height)
+				{
+					// Resize the image
+					UIGraphics.BeginImageContextWithOptions(newSize, false, normalizedImage.CurrentScale);
+					normalizedImage.Draw(new CoreGraphics.CGRect(CoreGraphics.CGPoint.Empty, newSize));
+					workingImage = UIGraphics.GetImageFromCurrentImageContext();
+					UIGraphics.EndImageContext();
+				}
+
+				// Then determine output format and apply compression
+				bool usePng = ShouldUsePngFormat();
+
+				if (usePng)
+				{
+					// Use PNG format - lossless compression, supports transparency
+					data = workingImage.AsPNG();
+				}
+				else
+				{
+					// Use JPEG with quality-based compression
+					if (compressionQuality < 90)
+					{
+						// Use JPEG compression with quality setting for aggressive compression
+						var qualityFloat = compressionQuality / 100.0f;
+						data = workingImage.AsJPEG(qualityFloat);
+					}
+					else if (compressionQuality < 100)
+					{
+						// Use JPEG with high quality
+						data = workingImage.AsJPEG(0.9f);
+					}
+					else
+					{
+						// Use JPEG with maximum quality
+						data = workingImage.AsJPEG(0.95f);
+					}
+				}
+			}
+
+			return Task.FromResult(data.AsStream());
+		}
+
+		static CoreGraphics.CGSize CalculateResizedDimensions(nfloat originalWidth, nfloat originalHeight, int? maxWidth, int? maxHeight)
+		{
+			if (!maxWidth.HasValue && !maxHeight.HasValue)
+				return new CoreGraphics.CGSize(originalWidth, originalHeight);
+
+			nfloat scaleWidth = maxWidth.HasValue ? (nfloat)maxWidth.Value / originalWidth : nfloat.MaxValue;
+			nfloat scaleHeight = maxHeight.HasValue ? (nfloat)maxHeight.Value / originalHeight : nfloat.MaxValue;
+
+			// Use the smaller scale to ensure both constraints are respected
+			nfloat scale = (nfloat)Math.Min(Math.Min((double)scaleWidth, (double)scaleHeight), 1.0); // Don't scale up
+
+			return new CoreGraphics.CGSize(originalWidth * scale, originalHeight * scale);
+		}
+	}
+
+	/// <summary>
+	/// FileResult implementation for processed images using MAUI Graphics
+	/// </summary>
+	internal class ProcessedImageFileResult : FileResult, IDisposable
+	{
+		readonly MemoryStream imageData;
+		readonly string originalFileName;
+
+		internal ProcessedImageFileResult(MemoryStream imageData, string originalFileName = null)
+			: base()
+		{
+			this.imageData = imageData;
+			this.originalFileName = originalFileName;
+
+			// Determine output format extension using ImageProcessor's improved logic
+			var extension = ImageProcessor.DetermineOutputExtension(imageData, 75, originalFileName);
+			FullPath = Guid.NewGuid().ToString() + extension;
+			FileName = FullPath;
+		}
+
+		internal override Task<Stream> PlatformOpenReadAsync()
+		{
+			// Reset position and return a copy of the stream
+			imageData.Position = 0;
+			var copyStream = new MemoryStream(imageData.ToArray());
+			return Task.FromResult<Stream>(copyStream);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				imageData?.Dispose();
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 	}
 }
