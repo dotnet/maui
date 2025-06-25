@@ -1,10 +1,5 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
     <PropertyGroup>
-        <ScenariosDir>$(BUILD_SOURCESDIRECTORY)/artifacts/bin/</ScenariosDir>
-        <TargetsAppleMobile Condition="'$(TargetOS)' == 'ios'">true</TargetsAppleMobile>
-    </PropertyGroup>
-
-    <PropertyGroup>
         <HelixType>test/devices/</HelixType>
         <HelixBuild Condition="'$(HelixBuild)' == ''">$(BUILD_BUILDNUMBER)</HelixBuild>
         <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
@@ -12,10 +7,8 @@
         <HelixTargetQueues Condition="'$(TargetOS)' == 'android'">
             ubuntu.2204.amd64.android.23.open;ubuntu.2204.amd64.android.33.open</HelixTargetQueues>
         <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
-
         <IncludeDotNetCli>true</IncludeDotNetCli>
         <DotNetCliPackageType>sdk</DotNetCliPackageType>
-
         <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
         <FailOnTestFailure>true</FailOnTestFailure>
     </PropertyGroup>
@@ -28,6 +21,11 @@
         <EnableAzurePipelinesReporter>false</EnableAzurePipelinesReporter>
         <HelixSource>maui/localbuild/</HelixSource>
         <HelixBuild>t001</HelixBuild>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <ScenariosDir>$(BUILD_SOURCESDIRECTORY)/artifacts/bin/</ScenariosDir>
+        <TargetsAppleMobile Condition="'$(TargetOS)' == 'ios'">true</TargetsAppleMobile>
     </PropertyGroup>
 
     <PropertyGroup>
