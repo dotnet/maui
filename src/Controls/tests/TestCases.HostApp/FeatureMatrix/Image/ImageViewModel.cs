@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 namespace Maui.Controls.Sample;
 
 public class ImageViewModel : INotifyPropertyChanged
@@ -117,40 +117,40 @@ public class ImageViewModel : INotifyPropertyChanged
 		}
 	}
 
-    public bool HasShadow
-    {
-        get => _hasShadow;
-        set
-        {
-            if (_hasShadow != value)
-            {
-                _hasShadow = value;
-                ImageShadow = value
-                    ? new Shadow
-                    {
-                        Radius = 10,
-                        Opacity = 1.0f,
-                        Brush = Colors.Black.AsPaint(),
-                        Offset = new Point(5, 5)
-                    }
-                    : null;
-                OnPropertyChanged(nameof(HasShadow));
-            }
-        }
-    }
+	public bool HasShadow
+	{
+		get => _hasShadow;
+		set
+		{
+			if (_hasShadow != value)
+			{
+				_hasShadow = value;
+				ImageShadow = value
+					? new Shadow
+					{
+						Radius = 10,
+						Opacity = 1.0f,
+						Brush = Colors.Black.AsPaint(),
+						Offset = new Point(5, 5)
+					}
+					: null;
+				OnPropertyChanged(nameof(HasShadow));
+			}
+		}
+	}
 
-    public Shadow ImageShadow
-    {
-        get => _imageShadow;
-        private set
-        {
-            if (_imageShadow != value)
-            {
-                _imageShadow = value;
-                OnPropertyChanged(nameof(ImageShadow));
-            }
-        }
-    }
+	public Shadow ImageShadow
+	{
+		get => _imageShadow;
+		private set
+		{
+			if (_imageShadow != value)
+			{
+				_imageShadow = value;
+				OnPropertyChanged(nameof(ImageShadow));
+			}
+		}
+	}
 
 	public event PropertyChangedEventHandler PropertyChanged;
 
