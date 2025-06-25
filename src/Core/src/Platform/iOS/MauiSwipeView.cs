@@ -802,10 +802,12 @@ namespace Microsoft.Maui.Platform
 					() =>
 					{
 						_swipeOffset = Math.Abs(GetSwipeThreshold());
-						if(_swipeDirection == SwipeDirection.Left || _swipeDirection == SwipeDirection.Up)
+						
+						// If the user swiped left or up, we need a negative offset to move content in the correct direction on the screen.
+						if (_swipeDirection == SwipeDirection.Left || _swipeDirection == SwipeDirection.Up)
 							_swipeOffset = -_swipeOffset;
 
-						double swipeThreshold =  _swipeOffset;
+						double swipeThreshold = _swipeOffset;
 
 						switch (_swipeDirection)
 						{
