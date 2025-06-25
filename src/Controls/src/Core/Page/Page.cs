@@ -50,8 +50,6 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public const string ActionSheetSignalName = "Microsoft.Maui.Controls.ShowActionSheet";
 
-		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create(nameof(IgnoresContainerArea), typeof(bool), typeof(Page), false);
-
 		/// <summary>Bindable property for <see cref="BackgroundImageSource"/>.</summary>
 		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
@@ -68,10 +66,6 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(Page), default(ImageSource), propertyChanged: OnImageSourceChanged);
 
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
-
-		Rect _containerArea;
-
-		bool _containerAreaSet;
 
 		bool _hasAppeared;
 		private protected bool HasAppeared => _hasAppeared;
@@ -172,35 +166,6 @@ namespace Microsoft.Maui.Controls
 		/// Gets the <see cref="MenuBarItem"/> objects for this page, implemented in a platform-specific manner.
 		/// </summary>
 		public IList<MenuBarItem> MenuBarItems { get; internal set; }
-
-		/// <summary>
-		/// Gets or sets the area this page is contained in.
-		/// </summary>
-		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Rect ContainerArea
-		{
-			get { return _containerArea; }
-			set
-			{
-				if (_containerArea == value)
-					return;
-				_containerAreaSet = true;
-				_containerArea = value;
-				ForceLayout();
-			}
-		}
-
-		/// <summary>
-		/// Gets or sets a value that determines whether to ignore the <see cref="ContainerArea"/>. This is a bindable property.
-		/// </summary>
-		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool IgnoresContainerArea
-		{
-			get { return (bool)GetValue(IgnoresContainerAreaProperty); }
-			set { SetValue(IgnoresContainerAreaProperty, value); }
-		}
 
 		/// <summary>
 		/// Gets the internal collection of child elements contained in this page.
@@ -422,17 +387,6 @@ namespace Microsoft.Maui.Controls
 		protected virtual void LayoutChildren(double x, double y, double width, double height)
 		{
 			var area = new Rect(x, y, width, height);
-			Rect originalArea = area;
-			if (_containerAreaSet)
-			{
-				area = ContainerArea;
-				area.X += Padding.Left;
-				area.Y += Padding.Right;
-				area.Width -= Padding.HorizontalThickness;
-				area.Height -= Padding.VerticalThickness;
-				area.Width = Math.Max(0, area.Width);
-				area.Height = Math.Max(0, area.Height);
-			}
 
 			IList<Element> elements = this.InternalChildren;
 			foreach (Element element in elements)
@@ -441,12 +395,8 @@ namespace Microsoft.Maui.Controls
 				if (child == null)
 					continue;
 
-				var page = child as Page;
 #pragma warning disable CS0618 // Type or member is obsolete
-				if (page != null && page.IgnoresContainerArea)
-					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
-				else
-					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, area);
+				Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, area);
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}

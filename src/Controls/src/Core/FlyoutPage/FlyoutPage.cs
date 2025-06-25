@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls
 				_detailBounds = value;
 				if (_detail == null)
 					throw new InvalidOperationException("Detail must be set before using a FlyoutPage");
-				_detail.Layout(value);
+				_detail.Arrange(value);
 			}
 		}
 
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls
 				_flyoutBounds = value;
 				if (_flyout == null)
 					throw new InvalidOperationException("Flyout must be set before using a FlyoutPage");
-				_flyout.Layout(value);
+				_flyout.Arrange(value);
 			}
 		}
 
@@ -201,8 +201,8 @@ namespace Microsoft.Maui.Controls
 				throw new InvalidOperationException("Flyout and Detail must be set before using a FlyoutPage");
 
 #if !ANDROID
-			_flyout.Layout(_flyoutBounds);
-			_detail.Layout(_detailBounds);
+			_flyout.Arrange(_flyoutBounds);
+			_detail.Arrange(_detailBounds);
 #endif
 		}
 

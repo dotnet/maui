@@ -1,22 +1,35 @@
 #nullable disable
 using System;
 using System.ComponentModel;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPresenter']/Docs/*" />
-#pragma warning disable CS0618 // Type or member is obsolete
-	public class ContentPresenter : Compatibility.Layout, IContentView
-#pragma warning restore CS0618 // Type or member is obsolete
+	/// <summary>
+	/// An element used to display a content object within a templated control. This allows you to customize how content is displayed. 
+	/// </summary>
+	public class ContentPresenter : Layout, IContentView, IControlsView, IClippedToBoundsElement, IInputTransparentContainerElement
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='ContentProperty']/Docs/*" />
+		/// <summary>
+		/// Bindable property for Content.
+		/// </summary>
 		public static BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
 			typeof(ContentPresenter), null, propertyChanged: OnContentChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Bindable property for ClippedToBounds.
+		/// </summary>
+		public static readonly BindableProperty ClippedToBoundsProperty = ClippedToBoundsElement.ClippedToBoundsProperty;
+
+		/// <summary>
+		/// Bindable property for InputTransparentContainer.
+		/// </summary>
+		public static readonly BindableProperty InputTransparentContainerProperty = InputTransparentContainerElement.InputTransparentContainerProperty;
+
+		/// <summary>
+		/// Initializes a new instance of the ContentPresenter class.
+		/// </summary>
 		public ContentPresenter()
 		{
 			this.SetBinding(
@@ -27,63 +40,53 @@ namespace Microsoft.Maui.Controls
 				converterParameter: this);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='Content']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the content to be displayed.
+		/// </summary>
 		public View Content
 		{
 			get { return (View)GetValue(ContentProperty); }
 			set { SetValue(ContentProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets a value indicating whether the content should be clipped to its bounds.
+		/// </summary>
+		public bool ClippedToBounds
+		{
+			get => (bool)GetValue(ClippedToBoundsProperty);
+			set => SetValue(ClippedToBoundsProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets a value indicating whether the container should have input transparency.
+		/// </summary>
+		public bool InputTransparentContainer
+		{
+			get => (bool)GetValue(InputTransparentContainerProperty);
+			set => SetValue(InputTransparentContainerProperty, value);
+		}
+
 		object IContentView.Content => Content;
 		IView IContentView.PresentedContent => Content;
 
-		[Obsolete("Use InvalidateArrange if you need to trigger a new arrange and then put your arrange logic inside ArrangeOverride instead")]
-		protected override void LayoutChildren(double x, double y, double width, double height)
-		{
-			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
-			{
-				Element element = LogicalChildrenInternal[i];
-				var child = element as View;
-				child?.Arrange(new Rect(x, y, width, height));
-			}
-		}
+		bool IInputTransparentContainerElement.InputTransparent => InputTransparent;
+		bool IInputTransparentContainerElement.CascadeInputTransparent => CascadeInputTransparent;
+		Element IInputTransparentContainerElement.Parent => Parent;
 
-		[Obsolete("Use MeasureOverride instead")]
-		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
-		{
-			double widthRequest = WidthRequest;
-			double heightRequest = HeightRequest;
-			var childRequest = new SizeRequest();
-			if ((widthRequest == -1 || heightRequest == -1) && Content != null)
-			{
-				childRequest = Content.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins);
-			}
-
-			return new SizeRequest
-			{
-				Request = new Size { Width = widthRequest != -1 ? widthRequest : childRequest.Request.Width, Height = heightRequest != -1 ? heightRequest : childRequest.Request.Height },
-				Minimum = childRequest.Minimum
-			};
-		}
-
+		/// <summary>
+		/// Clears the content.
+		/// </summary>
 		internal virtual void Clear()
 		{
 			Content = null;
 		}
 
-		internal override void ComputeConstraintForView(View view)
-		{
-			bool isFixedHorizontally = (Constraint & LayoutConstraint.HorizontallyFixed) != 0;
-			bool isFixedVertically = (Constraint & LayoutConstraint.VerticallyFixed) != 0;
-
-			var result = LayoutConstraint.None;
-			if (isFixedVertically && view.VerticalOptions.Alignment == LayoutAlignment.Fill)
-				result |= LayoutConstraint.VerticallyFixed;
-			if (isFixedHorizontally && view.HorizontalOptions.Alignment == LayoutAlignment.Fill)
-				result |= LayoutConstraint.HorizontallyFixed;
-			view.ComputedConstraint = result;
-		}
-
+		/// <summary>
+		/// Sets the inherited binding context for a child element.
+		/// </summary>
+		/// <param name="child">The child element.</param>
+		/// <param name="context">The binding context.</param>
 		internal override void SetChildInheritedBindingContext(Element child, object context)
 		{
 			// We never want to use the standard inheritance mechanism, we will get this set by our parent
@@ -97,21 +100,23 @@ namespace Microsoft.Maui.Controls
 			var newView = (View)newValue;
 			if (oldView != null)
 			{
-				self.InternalChildren.Remove(oldView);
+				self.Remove(oldView);
 				oldView.ParentOverride = null;
 			}
 
 			if (newView != null)
 			{
-				self.InternalChildren.Add(newView);
+				self.Add(newView);
 				newView.ParentOverride = await TemplateUtilities.FindTemplatedParentAsync((Element)bindable);
 			}
 		}
 
-
-		// Don't delete this override. At some point in the future we'd like to delete Compatibility.Layout
-		// and this is the only way to ensure binary compatibility with code that's already compiled against MAUI
-		// and is overriding MeasureOverride.
+		/// <summary>
+		/// Measures the desired size of the content.
+		/// </summary>
+		/// <param name="widthConstraint">The width constraint.</param>
+		/// <param name="heightConstraint">The height constraint.</param>
+		/// <returns>The desired size.</returns>
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			return this.ComputeDesiredSize(widthConstraint, heightConstraint);
@@ -122,17 +127,11 @@ namespace Microsoft.Maui.Controls
 			return this.MeasureContent(widthConstraint, heightConstraint);
 		}
 
-		// Don't delete this override. At some point in the future we'd like to delete Compatibility.Layout
-		// and this is the only way to ensure binary compatibility with code that's already compiled against MAUI
-		// and is overriding OnSizeAllocated.
-		protected override void OnSizeAllocated(double width, double height)
-		{
-			base.OnSizeAllocated(width, height);
-		}
-
-		// Don't delete this override. At some point in the future we'd like to delete Compatibility.Layout
-		// and this is the only way to ensure binary compatibility with code that's already compiled against MAUI
-		// and is overriding ArrangeOverride.
+		/// <summary>
+		/// Arranges the content within the specified bounds.
+		/// </summary>
+		/// <param name="bounds">The bounds for arrangement.</param>
+		/// <returns>The arranged size.</returns>
 		protected override Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
