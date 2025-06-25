@@ -17,7 +17,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Issue2578(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests
 		{
 			[Ignore("[Bug] NamedSizes don't work in triggers: https://github.com/xamarin/Microsoft.Maui.Controls/issues/13831")]
 			[Theory]

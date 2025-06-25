@@ -23,7 +23,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void OnButtonClicked(object sender, EventArgs e)
 		{
 			clickcount++;
-		}		public class Tests
+		}
+		public class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);

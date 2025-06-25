@@ -36,7 +36,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz24485(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[Theory]
 			[InlineData(true)]

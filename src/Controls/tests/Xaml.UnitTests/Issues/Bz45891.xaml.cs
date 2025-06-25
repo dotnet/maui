@@ -25,7 +25,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			get { return (IEnumerable<string>)GetValue(ListProperty); }
 			set { SetValue(ListProperty, value); }
-		}		class Tests
+		}
+		class Tests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
@@ -33,7 +34,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
-			}			public void TearDown()
+			}
+			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
 			}

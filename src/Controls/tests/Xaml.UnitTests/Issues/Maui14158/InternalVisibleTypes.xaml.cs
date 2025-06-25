@@ -13,12 +13,13 @@ public partial class InternalVisibleTypes : ContentPage
 	public InternalVisibleTypes(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Tests
+	}
+	class Tests
 	{
 		[Theory]
-			[InlineData(true)]
+		[InlineData(true)]
 		[Theory]
-			[InlineData(false)]
+		[InlineData(false)]
 		public void VerifyCorrectTypesUsed(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)

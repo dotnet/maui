@@ -22,7 +22,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		void Maui12566View_MyEvent(System.Object sender, System.EventArgs e)
 		{
-		}		class Tests
+		}
+		class Tests
 		{
 			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);

@@ -15,8 +15,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz54717(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
-		{			public void TearDown()
+		}
+		class Tests
+		{
+			public void TearDown()
 			{
 				Application.Current = null;
 			}

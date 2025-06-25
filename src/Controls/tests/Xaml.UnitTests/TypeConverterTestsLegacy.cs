@@ -120,7 +120,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			return "";
 		}
-	}	public class TypeConverterTestsLegacy : BaseTestFixture
+	}
+	public class TypeConverterTestsLegacy : BaseTestFixture
 	{
 		[Fact]
 		public void TestSetPropertyWithoutConverter()

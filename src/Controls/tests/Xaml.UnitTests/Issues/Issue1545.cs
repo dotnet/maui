@@ -7,7 +7,8 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;	public class Issue1545
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+	public class Issue1545
 	{
 		MockDeviceInfo mockDeviceInfo;
 

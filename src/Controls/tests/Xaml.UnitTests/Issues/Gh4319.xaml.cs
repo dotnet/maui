@@ -13,7 +13,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh4319(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
@@ -21,7 +22,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
-			}			public void TearDown()
+			}
+			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
 			}

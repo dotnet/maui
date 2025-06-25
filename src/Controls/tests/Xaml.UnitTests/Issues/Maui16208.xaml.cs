@@ -26,7 +26,8 @@ public partial class Maui16208
 	public Maui16208(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 		[SetUp]
@@ -36,7 +37,8 @@ public partial class Maui16208
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
-		}		public void TearDown()
+		}
+		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 			mockDeviceInfo = null;

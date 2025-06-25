@@ -41,7 +41,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public XStatic(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests
 		{
 			//{x:Static Member=prefix:typeName.staticMemberName}
 			//{x:Static prefix:typeName.staticMemberName}

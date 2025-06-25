@@ -4,7 +4,8 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class Issue1493
+{
+	public class Issue1493
 	{
 		CultureInfo _defaultCulture;
 		[SetUp]

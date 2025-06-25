@@ -83,7 +83,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			return "BaaExtension";
 		}
-	}	public class MarkupExtensionTests : BaseTestFixture
+	}
+	public class MarkupExtensionTests : BaseTestFixture
 	{
 		IXamlTypeResolver typeResolver;
 

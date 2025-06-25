@@ -15,7 +15,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh10803(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			bool debuggerinitialstate;
 			int failures = 0;
@@ -27,7 +28,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				VisualDiagnostics.VisualTreeChanged += VTChanged;
 				debuggerinitialstate = DebuggerHelper._mockDebuggerIsAttached;
 				DebuggerHelper._mockDebuggerIsAttached = true;
-			}			public void TearDown()
+			}
+			public void TearDown()
 			{
 				DebuggerHelper._mockDebuggerIsAttached = debuggerinitialstate;
 				DispatcherProvider.SetCurrent(null);

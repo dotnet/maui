@@ -26,7 +26,8 @@ public partial class Maui22001
 	public Maui22001(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	class Test
 	{
 		MockDeviceDisplay mockDeviceDisplay;
 		MockDeviceInfo mockDeviceInfo;
@@ -38,7 +39,8 @@ public partial class Maui22001
 
 			DeviceDisplay.SetCurrent(mockDeviceDisplay = new MockDeviceDisplay());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
-		}		public void TearDown()
+		}
+		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 			mockDeviceDisplay = null;

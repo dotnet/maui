@@ -2,7 +2,8 @@ using System;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class Issue1637
+{
+	public class Issue1637
 	{
 		[Fact]
 		public void ImplicitCollectionWithSingleElement()

@@ -85,7 +85,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		Bar = 1 << 1,
 		Baz = 1 << 2,
 		Qux = 1 << 3,
-	}	public class LoaderTests : BaseTestFixture
+	}
+	public class LoaderTests : BaseTestFixture
 	{
 		[Fact]
 		public void TestRootName()

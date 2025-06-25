@@ -145,7 +145,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		void onButtonClicked(object sender, EventArgs args)
 		{
 			fired = true;
-		}		public class Tests
+		}
+		public class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);

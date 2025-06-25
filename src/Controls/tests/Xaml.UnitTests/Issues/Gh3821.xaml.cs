@@ -30,7 +30,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				_text = value;
 				OnPropertyChanged();
 			}
-		}		class Tests
+		}
+		class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);

@@ -234,7 +234,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public PlatformViewsAndBindings(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		[Ignore("fails for now")]
+		}
+		[Ignore("fails for now")]
 		public class Tests
 		{
 			MockDeviceInfo mockDeviceInfo;
@@ -243,7 +244,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
-			}			public void TearDown()
+			}
+			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
 			}

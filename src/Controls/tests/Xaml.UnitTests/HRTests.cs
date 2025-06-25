@@ -3,7 +3,8 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class HRTests
+{
+	public class HRTests
 	{
 		[TearDown]
 		public void TearDown()

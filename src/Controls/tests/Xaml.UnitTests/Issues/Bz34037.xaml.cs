@@ -66,14 +66,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz34037(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[SetUp]
 			public void Setup()
 			{
 				Bz34037Converter0.Invoked = 0;
 				Bz34037Converter1.Invoked = 0;
-			}			public void TearDown()
+			}
+			public void TearDown()
 			{
 				Application.Current = null;
 			}

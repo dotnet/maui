@@ -11,7 +11,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public DO817710(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[Fact]
 			public void EmptyResourcesElement([Values(false, true)] bool useCompiledXaml)

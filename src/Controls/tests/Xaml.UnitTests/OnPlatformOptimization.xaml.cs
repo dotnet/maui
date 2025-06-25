@@ -20,7 +20,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public OnPlatformOptimization(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests
 		{
 			[Fact]
 			public void OnPlatformExtensionsAreSimplified([Values("net7.0-ios", "net7.0-android")] string targetFramework)

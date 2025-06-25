@@ -27,7 +27,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		public string ANonBindableProperty { get; set; }		class Tests
+		public string ANonBindableProperty { get; set; }
+		class Tests
 		{
 			[Theory]
 			[InlineData(true)]

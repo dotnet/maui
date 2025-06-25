@@ -13,7 +13,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	public class BasePage : ContentPage
 	{
 
-	}	public class TestCases
+	}
+	public class TestCases
 	{
 		CultureInfo _defaultCulture;
 

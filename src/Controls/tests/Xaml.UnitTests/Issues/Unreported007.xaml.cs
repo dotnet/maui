@@ -16,13 +16,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Unreported007(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[SetUp]
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
-			}			public void TearDown()
+			}
+			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
 			}

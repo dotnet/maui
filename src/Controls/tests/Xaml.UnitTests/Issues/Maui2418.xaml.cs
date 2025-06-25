@@ -10,7 +10,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Maui2418(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[Fact]
 			public void SourceInfoIsRelative([Values(false)] bool useCompiledXaml)

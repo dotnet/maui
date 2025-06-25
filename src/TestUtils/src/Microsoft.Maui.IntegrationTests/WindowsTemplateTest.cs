@@ -5,21 +5,21 @@ public class WindowsTemplateTest : BaseTemplateTests
 {
 	[Fact]
 	[Theory]
-		[InlineData("maui", DotNetPrevious, "Debug")]
+	[InlineData("maui", DotNetPrevious, "Debug")]
 	[Theory]
-		[InlineData("maui", DotNetPrevious, "Release")]
+	[InlineData("maui", DotNetPrevious, "Release")]
 	[Theory]
-		[InlineData("maui", DotNetCurrent, "Debug")]
+	[InlineData("maui", DotNetCurrent, "Debug")]
 	[Theory]
-		[InlineData("maui", DotNetCurrent, "Release")]
+	[InlineData("maui", DotNetCurrent, "Release")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetPrevious, "Debug")]
+	[InlineData("maui-blazor", DotNetPrevious, "Debug")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetPrevious, "Release")]
+	[InlineData("maui-blazor", DotNetPrevious, "Release")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetCurrent, "Debug")]
+	[InlineData("maui-blazor", DotNetCurrent, "Debug")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetCurrent, "Release")]
+	[InlineData("maui-blazor", DotNetCurrent, "Release")]
 	public void BuildPackaged(string id, string framework, string config)
 	{
 		var projectDir = TestDirectory;
@@ -54,21 +54,21 @@ public class WindowsTemplateTest : BaseTemplateTests
 
 	[Fact]
 	[Theory]
-		[InlineData("maui", true, true, "None")]
+	[InlineData("maui", true, true, "None")]
 	[Theory]
-		[InlineData("maui", true, true, "MSIX")]
+	[InlineData("maui", true, true, "MSIX")]
 	[Theory]
-		[InlineData("maui", true, false, "None")]
+	[InlineData("maui", true, false, "None")]
 	[Theory]
-		[InlineData("maui", true, false, "MSIX")]
+	[InlineData("maui", true, false, "MSIX")]
 	[Theory]
-		[InlineData("maui", false, true, "None")]
+	[InlineData("maui", false, true, "None")]
 	[Theory]
-		[InlineData("maui", false, true, "MSIX")]
+	[InlineData("maui", false, true, "MSIX")]
 	[Theory]
-		[InlineData("maui", false, false, "None")]
+	[InlineData("maui", false, false, "None")]
 	[Theory]
-		[InlineData("maui", false, false, "MSIX")]
+	[InlineData("maui", false, false, "MSIX")]
 	public void BuildWindowsAppSDKSelfContained(string id, bool wasdkself, bool netself, string packageType)
 	{
 		if (TestEnvironment.IsMacOS)
@@ -99,13 +99,13 @@ public class WindowsTemplateTest : BaseTemplateTests
 
 	[Fact]
 	[Theory]
-		[InlineData("maui", true, "None")]
+	[InlineData("maui", true, "None")]
 	[Theory]
-		[InlineData("maui", true, "MSIX")]
+	[InlineData("maui", true, "MSIX")]
 	[Theory]
-		[InlineData("maui", false, "None")]
+	[InlineData("maui", false, "None")]
 	[Theory]
-		[InlineData("maui", false, "MSIX")]
+	[InlineData("maui", false, "MSIX")]
 	public void BuildWindowsRidGraph(string id, bool useRidGraph, string packageType)
 	{
 		if (TestEnvironment.IsMacOS)
@@ -135,13 +135,13 @@ public class WindowsTemplateTest : BaseTemplateTests
 
 	[Fact]
 	[Theory]
-		[InlineData("maui", DotNetCurrent, "Release")]
+	[InlineData("maui", DotNetCurrent, "Release")]
 	[Theory]
-		[InlineData("maui", DotNetPrevious, "Release")]
+	[InlineData("maui", DotNetPrevious, "Release")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetCurrent, "Release")]
+	[InlineData("maui-blazor", DotNetCurrent, "Release")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetPrevious, "Release")]
+	[InlineData("maui-blazor", DotNetPrevious, "Release")]
 	public void PublishUnpackaged(string id, string framework, string config)
 	{
 		if (!TestEnvironment.IsWindows)
@@ -190,13 +190,13 @@ public class WindowsTemplateTest : BaseTemplateTests
 
 	[Fact]
 	[Theory]
-		[InlineData("maui", DotNetCurrent, "Release")]
+	[InlineData("maui", DotNetCurrent, "Release")]
 	[Theory]
-		[InlineData("maui", DotNetPrevious, "Release")]
+	[InlineData("maui", DotNetPrevious, "Release")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetCurrent, "Release")]
+	[InlineData("maui-blazor", DotNetCurrent, "Release")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetPrevious, "Release")]
+	[InlineData("maui-blazor", DotNetPrevious, "Release")]
 	public void PublishPackaged(string id, string framework, string config)
 	{
 		if (!TestEnvironment.IsWindows)

@@ -5,7 +5,8 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class TypeExtensionTests : BaseTestFixture
+{
+	public class TypeExtensionTests : BaseTestFixture
 	{
 		IXamlTypeResolver typeResolver;
 		Internals.XamlServiceProvider serviceProvider;

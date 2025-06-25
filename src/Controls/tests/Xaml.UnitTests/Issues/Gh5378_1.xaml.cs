@@ -14,7 +14,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh5378_1(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[Fact]
 			public void ReportSyntaxError([Values(false/*, true*/)] bool useCompiledXaml)

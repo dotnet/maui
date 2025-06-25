@@ -18,7 +18,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh5254(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[Fact]
 			public void BindToIntIndexer([Values(false, true)] bool useCompiledXaml)

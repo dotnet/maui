@@ -14,7 +14,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public FieldModifier(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class FindByNameTests
+		}
+		public class FindByNameTests
 		{
 			[Theory]
 			[InlineData(false)]

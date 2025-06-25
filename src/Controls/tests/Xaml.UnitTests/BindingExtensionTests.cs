@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;public class BindingExtensionTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests; public class BindingExtensionTests
 {
 	[Fact]
 	public void ProvideValue_Null()

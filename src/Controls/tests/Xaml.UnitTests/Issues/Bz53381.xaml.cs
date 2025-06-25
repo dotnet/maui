@@ -19,9 +19,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz53381(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());			public void TearDown()
+			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub()); public void TearDown()
 			{
 				Application.Current = null;
 				DispatcherProvider.SetCurrent(null);

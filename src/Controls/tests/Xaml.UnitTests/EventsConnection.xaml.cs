@@ -84,7 +84,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		static void HandleStaticClicked(object sender, EventArgs e)
 		{
 			staticClicked++;
-		}		public class Tests
+		}
+		public class Tests
 		{
 			[Theory]
 			[InlineData(false)]

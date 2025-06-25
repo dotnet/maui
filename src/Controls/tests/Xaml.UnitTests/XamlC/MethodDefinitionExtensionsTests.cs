@@ -7,7 +7,8 @@ using Mono.Cecil;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.XamlcUnitTests
-{	public class MethodDefinitionExtensionsTests
+{
+	public class MethodDefinitionExtensionsTests
 	{
 		public class NonGenericClass
 		{

@@ -8,11 +8,11 @@ public class BlazorTemplateTest : BaseTemplateTests
 
 	// First, default scenarios
 	[Theory]
-		[InlineData(DotNetCurrent, "Debug", "", false, "")]
+	[InlineData(DotNetCurrent, "Debug", "", false, "")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Release", "", false, "TrimMode=partial")]
+	[InlineData(DotNetCurrent, "Release", "", false, "TrimMode=partial")]
 	//[Theory]
-		[InlineData(DotNetCurrent, "Release", "", false, "TrimMode=full")]
+	[InlineData(DotNetCurrent, "Release", "", false, "TrimMode=full")]
 
 	// Then, scenarios with additional template parameters:
 	// - Interactivity Location: None/WASM/Server/Auto
@@ -22,45 +22,45 @@ public class BlazorTemplateTest : BaseTemplateTests
 	// additionalDotNetBuildParams is a space-separated list of additional properties to pass to .NET MAUI build
 	// Like "TrimMode=partial" for faster builds with AOT
 	[Theory]
-		[InlineData(DotNetCurrent, "Debug", "-I None --Empty", false, "")]
+	[InlineData(DotNetCurrent, "Debug", "-I None --Empty", false, "")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Release", "-I WebAssembly --Empty", false, "TrimMode=partial")]
+	[InlineData(DotNetCurrent, "Release", "-I WebAssembly --Empty", false, "TrimMode=partial")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Debug", "-I Server --Empty", false, "")]
+	[InlineData(DotNetCurrent, "Debug", "-I Server --Empty", false, "")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Release", "-I Auto --Empty", false, "TrimMode=partial")]
+	[InlineData(DotNetCurrent, "Release", "-I Auto --Empty", false, "TrimMode=partial")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Debug", "-I None", false, "")]
+	[InlineData(DotNetCurrent, "Debug", "-I None", false, "")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Release", "-I WebAssembly", false, "TrimMode=partial")]
+	[InlineData(DotNetCurrent, "Release", "-I WebAssembly", false, "TrimMode=partial")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Debug", "-I Server", false, "")]
+	[InlineData(DotNetCurrent, "Debug", "-I Server", false, "")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Release", "-I Auto", false, "TrimMode=partial")]
+	[InlineData(DotNetCurrent, "Release", "-I Auto", false, "TrimMode=partial")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Debug", "-I None --Empty --UseProgramMain", false, "")]
+	[InlineData(DotNetCurrent, "Debug", "-I None --Empty --UseProgramMain", false, "")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Release", "-I WebAssembly --Empty --UseProgramMain", false, "TrimMode=partial")]
+	[InlineData(DotNetCurrent, "Release", "-I WebAssembly --Empty --UseProgramMain", false, "TrimMode=partial")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Debug", "-I Server --Empty --UseProgramMain", false, "")]
+	[InlineData(DotNetCurrent, "Debug", "-I Server --Empty --UseProgramMain", false, "")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Release", "-I Auto --Empty --UseProgramMain", false, "TrimMode=partial")]
+	[InlineData(DotNetCurrent, "Release", "-I Auto --Empty --UseProgramMain", false, "TrimMode=partial")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Debug", "-I None --UseProgramMain", false, "")]
+	[InlineData(DotNetCurrent, "Debug", "-I None --UseProgramMain", false, "")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Release", "-I WebAssembly --UseProgramMain", false, "TrimMode=partial")]
+	[InlineData(DotNetCurrent, "Release", "-I WebAssembly --UseProgramMain", false, "TrimMode=partial")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Debug", "-I Server --UseProgramMain", false, "")]
+	[InlineData(DotNetCurrent, "Debug", "-I Server --UseProgramMain", false, "")]
 	[Theory]
-		[InlineData(DotNetCurrent, "Release", "-I Auto --UseProgramMain", false, "TrimMode=partial")]
+	[InlineData(DotNetCurrent, "Release", "-I Auto --UseProgramMain", false, "TrimMode=partial")]
 
 	// Then, some scenarios with tricky names in Debug builds only
 	// This doesn't work on Android in Release, so we skip that for now
 	// See https://github.com/dotnet/android/issues/9107
 	// [Theory]
-		[InlineData(DotNetCurrent, "Debug", "", true)]
+	[InlineData(DotNetCurrent, "Debug", "", true)]
 	// [Theory]
-		[InlineData(DotNetCurrent, "Debug", "-I Server --UseProgramMain", true)]
+	[InlineData(DotNetCurrent, "Debug", "-I Server --UseProgramMain", true)]
 	public void BuildMauiBlazorWebSolution(string framework, string config, string additionalDotNetNewParams, bool useTrickyProjectName, string additionalDotNetBuildParams)
 	{
 		const string templateShortName = "maui-blazor-web";

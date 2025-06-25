@@ -1,7 +1,8 @@
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	[XamlCompilation(XamlCompilationOptions.Compile)]
+{
+	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class Gh4238
 	{
 		public System.Collections.ArrayList Property { get; set; }

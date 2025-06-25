@@ -8,37 +8,37 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[Fact]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetNewParams, additionalDotNetBuildParams
 	[Theory]
-		[InlineData("maui", DotNetPrevious, "Debug", false, "", "")]
+	[InlineData("maui", DotNetPrevious, "Debug", false, "", "")]
 	[Theory]
-		[InlineData("maui", DotNetPrevious, "Release", false, "", "")]
+	[InlineData("maui", DotNetPrevious, "Release", false, "", "")]
 	[Theory]
-		[InlineData("maui", DotNetCurrent, "Debug", false, "", "")]
+	[InlineData("maui", DotNetCurrent, "Debug", false, "", "")]
 	[Theory]
-		[InlineData("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
+	[InlineData("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[Theory]
-		[InlineData("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
+	[InlineData("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
 	[Theory]
-		[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
+	[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
+	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
+	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "--Empty", "")]
+	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "--Empty", "")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetCurrent, "Release", false, "--Empty", "TrimMode=partial")]
+	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "--Empty", "TrimMode=partial")]
 	[Theory]
-		[InlineData("mauilib", DotNetPrevious, "Debug", true, "", "")]
+	[InlineData("mauilib", DotNetPrevious, "Debug", true, "", "")]
 	[Theory]
-		[InlineData("mauilib", DotNetPrevious, "Release", true, "", "")]
+	[InlineData("mauilib", DotNetPrevious, "Release", true, "", "")]
 	[Theory]
-		[InlineData("mauilib", DotNetCurrent, "Debug", true, "", "")]
+	[InlineData("mauilib", DotNetCurrent, "Debug", true, "", "")]
 	[Theory]
-		[InlineData("mauilib", DotNetCurrent, "Release", true, "", "TrimMode=partial")]
+	[InlineData("mauilib", DotNetCurrent, "Release", true, "", "TrimMode=partial")]
 	public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams, string additionalDotNetBuildParams)
 	{
 		var projectDir = TestDirectory;
@@ -80,7 +80,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 	[Fact]
 	[Theory]
-		[InlineData("maui", DotNetPrevious, "Debug")]
+	[InlineData("maui", DotNetPrevious, "Debug")]
 	public void InstallPackagesIntoUnsupportedTfmFails(string id, string framework, string config)
 	{
 		var projectDir = TestDirectory;
@@ -100,18 +100,18 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[Fact]
 	// with spaces
 	[Theory]
-		[InlineData("maui", "Project Space", "projectspace")]
+	[InlineData("maui", "Project Space", "projectspace")]
 	[Theory]
-		[InlineData("maui-blazor", "Project Space", "projectspace")]
+	[InlineData("maui-blazor", "Project Space", "projectspace")]
 	[Theory]
-		[InlineData("mauilib", "Project Space", "projectspace")]
+	[InlineData("mauilib", "Project Space", "projectspace")]
 	// with invalid characters
 	[Theory]
-		[InlineData("maui", "Project@Symbol", "projectsymbol")]
+	[InlineData("maui", "Project@Symbol", "projectsymbol")]
 	[Theory]
-		[InlineData("maui-blazor", "Project@Symbol", "projectsymbol")]
+	[InlineData("maui-blazor", "Project@Symbol", "projectsymbol")]
 	[Theory]
-		[InlineData("mauilib", "Project@Symbol", "projectsymbol")]
+	[InlineData("mauilib", "Project@Symbol", "projectsymbol")]
 	public void BuildsWithSpecialCharacters(string id, string projectName, string expectedId)
 	{
 		var projectDir = Path.Combine(TestDirectory, projectName);
@@ -151,29 +151,29 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[Fact]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetBuildParams
 	[Theory]
-		[InlineData("maui", DotNetPrevious, "Debug", false, "")]
+	[InlineData("maui", DotNetPrevious, "Debug", false, "")]
 	[Theory]
-		[InlineData("maui", DotNetPrevious, "Release", false, "")]
+	[InlineData("maui", DotNetPrevious, "Release", false, "")]
 	[Theory]
-		[InlineData("maui", DotNetCurrent, "Debug", false, "")]
+	[InlineData("maui", DotNetCurrent, "Debug", false, "")]
 	[Theory]
-		[InlineData("maui", DotNetCurrent, "Release", false, "TrimMode=partial")]
+	[InlineData("maui", DotNetCurrent, "Release", false, "TrimMode=partial")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetPrevious, "Release", false, "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Release", false, "")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "")]
+	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetCurrent, "Release", false, "TrimMode=partial")]
+	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "TrimMode=partial")]
 	[Theory]
-		[InlineData("mauilib", DotNetPrevious, "Debug", true, "")]
+	[InlineData("mauilib", DotNetPrevious, "Debug", true, "")]
 	[Theory]
-		[InlineData("mauilib", DotNetPrevious, "Release", true, "")]
+	[InlineData("mauilib", DotNetPrevious, "Release", true, "")]
 	[Theory]
-		[InlineData("mauilib", DotNetCurrent, "Debug", true, "")]
+	[InlineData("mauilib", DotNetCurrent, "Debug", true, "")]
 	[Theory]
-		[InlineData("mauilib", DotNetCurrent, "Release", true, "TrimMode=partial")]
+	[InlineData("mauilib", DotNetCurrent, "Release", true, "TrimMode=partial")]
 	public void BuildWithMauiVersion(string id, string framework, string config, bool shouldPack, string additionalDotNetBuildParams)
 	{
 		var projectDir = TestDirectory;
@@ -279,13 +279,13 @@ public class SimpleTemplateTest : BaseTemplateTests
 	/// </summary>
 	[Fact]
 	[Theory]
-		[InlineData("mauilib", DotNetPrevious, "Debug")]
+	[InlineData("mauilib", DotNetPrevious, "Debug")]
 	[Theory]
-		[InlineData("mauilib", DotNetPrevious, "Release")]
+	[InlineData("mauilib", DotNetPrevious, "Release")]
 	[Theory]
-		[InlineData("mauilib", DotNetCurrent, "Debug")]
+	[InlineData("mauilib", DotNetCurrent, "Debug")]
 	[Theory]
-		[InlineData("mauilib", DotNetCurrent, "Release")]
+	[InlineData("mauilib", DotNetCurrent, "Release")]
 	public void PackCoreLib(string id, string framework, string config)
 	{
 		var projectDir = TestDirectory;
@@ -319,11 +319,11 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 	[Fact]
 	[Theory]
-		[InlineData("maui", DotNetCurrent, "Debug")]
+	[InlineData("maui", DotNetCurrent, "Debug")]
 	[Theory]
-		[InlineData("mauilib", DotNetCurrent, "Debug")]
+	[InlineData("mauilib", DotNetCurrent, "Debug")]
 	[Theory]
-		[InlineData("maui-blazor", DotNetCurrent, "Debug")]
+	[InlineData("maui-blazor", DotNetCurrent, "Debug")]
 	public void BuildWithoutPackageReference(string id, string framework, string config)
 	{
 		var projectDir = TestDirectory;
@@ -346,17 +346,17 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 	[Fact]
 	[Theory]
-		[InlineData("maui", "Debug", "2.0", "2", "")]
+	[InlineData("maui", "Debug", "2.0", "2", "")]
 	[Theory]
-		[InlineData("maui", "Release", "2.0", "2", "TrimMode=partial")]
+	[InlineData("maui", "Release", "2.0", "2", "TrimMode=partial")]
 	[Theory]
-		[InlineData("maui", "Release", "0.3", "3", "TrimMode=partial")]
+	[InlineData("maui", "Release", "0.3", "3", "TrimMode=partial")]
 	[Theory]
-		[InlineData("maui-blazor", "Debug", "2.0", "2", "")]
+	[InlineData("maui-blazor", "Debug", "2.0", "2", "")]
 	[Theory]
-		[InlineData("maui-blazor", "Release", "2.0", "2", "TrimMode=partial")]
+	[InlineData("maui-blazor", "Release", "2.0", "2", "TrimMode=partial")]
 	[Theory]
-		[InlineData("maui-blazor", "Release", "0.3", "3", "TrimMode=partial")]
+	[InlineData("maui-blazor", "Release", "0.3", "3", "TrimMode=partial")]
 	public void BuildWithDifferentVersionNumber(string id, string config, string display, string version, string additionalDotNetBuildParams)
 	{
 		var projectDir = TestDirectory;
@@ -389,9 +389,9 @@ public class SimpleTemplateTest : BaseTemplateTests
 	// ship it as the default, this test will fail and can be deleted.
 	[Fact]
 	[Theory]
-		[InlineData("maui", DotNetCurrent, "", false)]
+	[InlineData("maui", DotNetCurrent, "", false)]
 	[Theory]
-		[InlineData("maui", DotNetCurrent, "--sample-content", true)]
+	[InlineData("maui", DotNetCurrent, "--sample-content", true)]
 	public void SampleShouldHaveHandler2Registered(string id, string framework, string additionalDotNetNewParams, bool shouldHaveHandler2)
 	{
 		var projectDir = TestDirectory;

@@ -6,7 +6,8 @@ using Mono.Cecil;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.XamlcUnitTests
-{	public class FieldReferenceExtensionsTests
+{
+	public class FieldReferenceExtensionsTests
 	{
 		public class NonGenericClass
 		{

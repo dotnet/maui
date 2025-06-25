@@ -19,7 +19,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh3280(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[TestCase(false), TestCase(true)]
 			public void SizeHasConverter(bool useCompiledXaml)

@@ -18,7 +18,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh1346(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 
 			[TestCase(true), TestCase(false)]

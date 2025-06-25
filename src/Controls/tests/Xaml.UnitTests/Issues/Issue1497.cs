@@ -3,7 +3,8 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class Issue1497
+{
+	public class Issue1497
 	{
 		[Fact]
 		public void BPCollectionsWithSingleElement()

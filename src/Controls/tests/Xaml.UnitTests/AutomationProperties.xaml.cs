@@ -14,13 +14,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public AutomationProperties(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests
 		{
 			[SetUp]
 			public void Setup()
 			{
 				Application.Current = new MockApplication();
-			}			public void TearDown()
+			}
+			public void TearDown()
 			{
 				Application.Current = null;
 			}

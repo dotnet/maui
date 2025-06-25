@@ -19,7 +19,8 @@ public partial class Maui17222 : ContentPage
 	public Maui17222(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	class Test
 	{
 #if DEBUG
 		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());

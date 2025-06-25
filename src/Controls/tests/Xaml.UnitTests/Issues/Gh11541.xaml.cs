@@ -12,7 +12,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh11541(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[Fact]
 			public void RectangleGeometryDoesntThrow([Values(false, true)] bool useCompiledXaml)

@@ -33,7 +33,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public SimpleContentPage(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests
 		{
 			[Fact]
 			[Ignore(nameof(XamlCIs20TimesFasterThanXaml))]

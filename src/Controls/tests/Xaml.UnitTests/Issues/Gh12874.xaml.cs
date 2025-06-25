@@ -12,7 +12,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh12874(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[Fact]
 			public void RevertToStyleValue([Values(false, true)] bool useCompiledXaml)

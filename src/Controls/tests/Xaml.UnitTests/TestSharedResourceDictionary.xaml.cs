@@ -14,7 +14,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public TestSharedResourceDictionary(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests
 		{
 			[SetUp]
 			public void Setup()
@@ -26,7 +27,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 						new MyRD()
 					}
 				};
-			}			public void TearDown()
+			}
+			public void TearDown()
 			{
 				Application.ClearCurrent();
 			}

@@ -34,7 +34,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		void OnTextChanged(object sender, EventArgs e)
 		{
 			Assert.Pass();
-		}		class Tests
+		}
+		class Tests
 		{
 			[TestCase(false), TestCase(true)]
 			public void NonGenericEventHanlders(bool useCompiledXaml)

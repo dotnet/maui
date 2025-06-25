@@ -23,7 +23,8 @@ public partial class Maui18324 : ContentPage
 	public Maui18324(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	class Test
 	{
 		[SetUp]
 		public void Setup()

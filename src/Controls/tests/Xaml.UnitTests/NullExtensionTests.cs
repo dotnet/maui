@@ -3,7 +3,8 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class NullExtensionTests : BaseTestFixture
+{
+	public class NullExtensionTests : BaseTestFixture
 	{
 		[Fact]
 		public void TestxNull()

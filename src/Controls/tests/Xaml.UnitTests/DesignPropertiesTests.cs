@@ -3,7 +3,8 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class DesignPropertiesTests
+{
+	public class DesignPropertiesTests
 	{
 		[Fact]
 		public void DesignProperties()

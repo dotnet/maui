@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public StyleSheet(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests
 		{
 			[TestCase(false), TestCase(true)]
 			public void EmbeddedStyleSheetsAreLoaded(bool useCompiledXaml)

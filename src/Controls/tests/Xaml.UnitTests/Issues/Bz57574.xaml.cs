@@ -36,8 +36,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void OnNotified(object sender, Bz57574NotificationEventArgs<string> args)
 		{
 			notification = args.Message;
-		}		class Tests
-		{			public void TearDown()
+		}
+		class Tests
+		{
+			public void TearDown()
 			{
 				Application.Current = null;
 			}

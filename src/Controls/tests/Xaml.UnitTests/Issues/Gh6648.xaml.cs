@@ -12,7 +12,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh6648(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[Fact]
 			public void DoesntFailOnNullDataType([Values(true)] bool useCompiledXaml)

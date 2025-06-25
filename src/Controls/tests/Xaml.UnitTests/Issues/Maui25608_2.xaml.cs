@@ -18,7 +18,8 @@ public partial class Maui25608_2
 	public Maui25608_2(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	class Test
 	{
 		EventHandler<BindingBaseErrorEventArgs> _bindingFailureHandler;
 
@@ -27,7 +28,8 @@ public partial class Maui25608_2
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		}		public void TearDown()
+		}
+		public void TearDown()
 		{
 			if (_bindingFailureHandler is not null)
 			{

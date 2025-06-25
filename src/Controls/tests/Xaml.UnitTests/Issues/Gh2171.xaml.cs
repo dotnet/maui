@@ -14,7 +14,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh2171(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[TestCase(false), TestCase(true)]
 			public void ParsingNestedMarkups(bool useCompiledXaml)

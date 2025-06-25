@@ -58,7 +58,8 @@ public partial class ServiceProviderTests : ContentPage
 	public ServiceProviderTests(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	public class Tests
+	}
+	public class Tests
 	{
 		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);

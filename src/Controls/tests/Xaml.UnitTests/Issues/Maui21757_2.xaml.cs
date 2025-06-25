@@ -26,7 +26,8 @@ public partial class Maui21757_2
 	public Maui21757_2(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	class Test
 	{
 		[SetUp]
 		public void Setup()

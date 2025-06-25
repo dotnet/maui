@@ -15,7 +15,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh6996(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[Fact]
 			public void FontImageSourceColorWithDynamicResource([Values(false, true)] bool useCompiledXaml)

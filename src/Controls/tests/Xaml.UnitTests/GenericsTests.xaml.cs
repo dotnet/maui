@@ -17,7 +17,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public GenericsTests(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests
 		{
 			[Fact]
 			public void NoGenericsOnXaml2006()

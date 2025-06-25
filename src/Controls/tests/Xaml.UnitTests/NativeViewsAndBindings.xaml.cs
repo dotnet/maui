@@ -281,7 +281,8 @@ public partial class NativeViewsAndBindings : ContentPage
 	public NativeViewsAndBindings(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	class Test
 	{
 		[SetUp]
 		public void Setup()

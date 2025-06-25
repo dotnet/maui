@@ -32,7 +32,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh4438(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[TestCase(true), TestCase(false)]
 			public void GenericBaseClassResolution(bool useCompiledXaml)

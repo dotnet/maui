@@ -2,7 +2,8 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class FontConverterTests : BaseTestFixture
+{
+	public class FontConverterTests : BaseTestFixture
 	{
 		[Theory]
 		[InlineData("Bold", Controls.FontAttributes.Bold)]

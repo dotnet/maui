@@ -13,7 +13,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public XNull(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests
 		{
 			[Theory]
 			[InlineData(false)]

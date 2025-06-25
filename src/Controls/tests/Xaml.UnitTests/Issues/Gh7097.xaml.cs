@@ -15,13 +15,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh7097(bool useCompiledXaml) : base(useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[SetUp]
 			public void Setup()
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			}			public void TearDown()
+			}
+			public void TearDown()
 			{
 				DispatcherProvider.SetCurrent(null);
 			}

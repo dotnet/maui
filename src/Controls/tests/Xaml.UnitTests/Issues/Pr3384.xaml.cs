@@ -19,14 +19,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Pr3384(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests
 		{
 			[SetUp]
 			public void Setup()
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
-			}			public void TearDown()
+			}
+			public void TearDown()
 			{
 				DispatcherProvider.SetCurrent(null);
 				DeviceInfo.SetCurrent(null);

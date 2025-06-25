@@ -37,7 +37,8 @@ public partial class Maui17950 : ContentPage
 	{
 		Console.WriteLine("normal method called");
 		Assert.Fail("wrong method invoked");
-	}	class Test
+	}
+	class Test
 	{
 		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);

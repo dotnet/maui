@@ -27,7 +27,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh5256(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[Fact]
 			public void EventOverriding([Values(false, true)] bool useCompiledXaml)

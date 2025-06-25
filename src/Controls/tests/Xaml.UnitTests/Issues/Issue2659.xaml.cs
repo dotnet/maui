@@ -60,7 +60,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			foreach (View view in stackLayout.Children)
 				action((Button)view);
-		}		public class Tests
+		}
+		public class Tests
 		{
 			void AssertStyleApplied(Button button)
 			{

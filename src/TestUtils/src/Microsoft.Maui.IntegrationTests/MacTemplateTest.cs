@@ -7,13 +7,13 @@ public class MacTemplateTest : BaseTemplateTests
 {
 	[Fact]
 	[Theory]
-		[InlineData("maui", "ios")]
+	[InlineData("maui", "ios")]
 	[Theory]
-		[InlineData("maui", "maccatalyst")]
+	[InlineData("maui", "maccatalyst")]
 	[Theory]
-		[InlineData("maui-blazor", "ios")]
+	[InlineData("maui-blazor", "ios")]
 	[Theory]
-		[InlineData("maui-blazor", "maccatalyst")]
+	[InlineData("maui-blazor", "maccatalyst")]
 	public void BuildWithCustomBundleResource(string id, string framework)
 	{
 		var projectDir = TestDirectory;
@@ -42,9 +42,9 @@ public class MacTemplateTest : BaseTemplateTests
 
 	//[Fact]
 	//[Theory]
-		[InlineData("maui-blazor", "Debug", DotNetCurrent, true)]
+	[InlineData("maui-blazor", "Debug", DotNetCurrent, true)]
 	//[Theory]
-		[InlineData("maui-blazor", "Release", DotNetCurrent, true)]
+	[InlineData("maui-blazor", "Release", DotNetCurrent, true)]
 	public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework, bool sign)
 	{
 		if (TestEnvironment.IsWindows)
@@ -81,17 +81,17 @@ public class MacTemplateTest : BaseTemplateTests
 
 	[Fact]
 	[Theory]
-		[InlineData("maui-blazor", "Debug", DotNetCurrent, false)]
+	[InlineData("maui-blazor", "Debug", DotNetCurrent, false)]
 	[Theory]
-		[InlineData("maui-blazor", "Release", DotNetCurrent, false)]
+	[InlineData("maui-blazor", "Release", DotNetCurrent, false)]
 	[Theory]
-		[InlineData("maui", "Debug", DotNetCurrent, false)]
+	[InlineData("maui", "Debug", DotNetCurrent, false)]
 	[Theory]
-		[InlineData("maui", "Release", DotNetCurrent, false)]
+	[InlineData("maui", "Release", DotNetCurrent, false)]
 	[Theory]
-		[InlineData("maui-multiproject", "Debug", DotNetCurrent, false)]
+	[InlineData("maui-multiproject", "Debug", DotNetCurrent, false)]
 	[Theory]
-		[InlineData("maui-multiproject", "Release", DotNetCurrent, false)]
+	[InlineData("maui-multiproject", "Release", DotNetCurrent, false)]
 	public void CheckPrivacyManifestForiOS(string id, string config, string framework, bool sign)
 	{
 		if (TestEnvironment.IsWindows)

@@ -5,13 +5,13 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 {
 	[Fact]
 	[Theory]
-		[InlineData("Debug", "simplemulti")]
+	[InlineData("Debug", "simplemulti")]
 	[Theory]
-		[InlineData("Release", "simplemulti")]
+	[InlineData("Release", "simplemulti")]
 	[Theory]
-		[InlineData("Debug", "MultiProject@Symbol & More")]
+	[InlineData("Debug", "MultiProject@Symbol & More")]
 	[Theory]
-		[InlineData("Release", "MultiProject@Symbol & More")]
+	[InlineData("Release", "MultiProject@Symbol & More")]
 	public void BuildMultiProject(string config, string projectName)
 	{
 		var projectDir = Path.Combine(TestDirectory, projectName);
@@ -41,13 +41,13 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 
 	[Fact]
 	[Theory]
-		[InlineData("Debug", "--android")]
+	[InlineData("Debug", "--android")]
 	[Theory]
-		[InlineData("Debug", "--ios")]
+	[InlineData("Debug", "--ios")]
 	[Theory]
-		[InlineData("Debug", "--windows")]
+	[InlineData("Debug", "--windows")]
 	[Theory]
-		[InlineData("Debug", "--macos")]
+	[InlineData("Debug", "--macos")]
 	public void BuildMultiProjectSinglePlatform(string config, string platformArg)
 	{
 		var projectDir = TestDirectory;
@@ -69,16 +69,16 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 
 	[Fact]
 	[Theory]
-		[InlineData("--android")]
+	[InlineData("--android")]
 	[Theory]
-		[InlineData("--ios")]
+	[InlineData("--ios")]
 	[Theory]
-		[InlineData("--windows")]
+	[InlineData("--windows")]
 	[Theory]
-		[InlineData("--macos")]
+	[InlineData("--macos")]
 	[Theory]
-		[InlineData("")] // no platform arg means all platforms
-				   // https://github.com/dotnet/maui/issues/28695
+	[InlineData("")] // no platform arg means all platforms
+					 // https://github.com/dotnet/maui/issues/28695
 	public void VerifyIncludedPlatformsInSln(string platformArg)
 	{
 		var projectDir = TestDirectory;

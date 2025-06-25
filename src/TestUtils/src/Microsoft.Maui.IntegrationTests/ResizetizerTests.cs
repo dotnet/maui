@@ -14,22 +14,22 @@ public class ResizetizerTests : BaseBuildTest
 	[Fact]
 	// windows unpackaged/exe
 	[Theory]
-		[InlineData("maui", "classlib", true)] // net9.0
+	[InlineData("maui", "classlib", true)] // net9.0
 	[Theory]
-		[InlineData("maui", "mauilib", true)] // net9.0-xxx
+	[InlineData("maui", "mauilib", true)] // net9.0-xxx
 	[Theory]
-		[InlineData("maui-blazor", "classlib", true)] // net9.0
+	[InlineData("maui-blazor", "classlib", true)] // net9.0
 	[Theory]
-		[InlineData("maui-blazor", "mauilib", true)] // net9.0-xxx
-											   // windows packaged/msix
+	[InlineData("maui-blazor", "mauilib", true)] // net9.0-xxx
+												 // windows packaged/msix
 	[Theory]
-		[InlineData("maui", "classlib", false)] // net9.0
+	[InlineData("maui", "classlib", false)] // net9.0
 	[Theory]
-		[InlineData("maui", "mauilib", false)] // net9.0-xxx
+	[InlineData("maui", "mauilib", false)] // net9.0-xxx
 	[Theory]
-		[InlineData("maui-blazor", "classlib", false)] // net9.0
+	[InlineData("maui-blazor", "classlib", false)] // net9.0
 	[Theory]
-		[InlineData("maui-blazor", "mauilib", false)] // net9.0-xxx
+	[InlineData("maui-blazor", "mauilib", false)] // net9.0-xxx
 	public void CollectsAssets(string id, string libid, bool unpackaged)
 	{
 		// TODO: fix the tests as they have been disabled too long!

@@ -3,7 +3,8 @@ using Microsoft.Maui.Controls.Internals;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class TextTransformTests : BaseTestFixture
+{
+	public class TextTransformTests : BaseTestFixture
 	{
 		[Theory]
 		[InlineData(TextTransform.None)]

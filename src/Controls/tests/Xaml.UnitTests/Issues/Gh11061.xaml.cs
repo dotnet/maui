@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh11061(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[Fact]
 			public void XamlCBindingOnNonBP([Values(false, true)] bool useCompiledXaml)

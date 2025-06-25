@@ -13,7 +13,8 @@ namespace Foo.Microsoft.Maui.Controls.Bar
 		public Bz43301(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[Theory]
 			[InlineData(true)]

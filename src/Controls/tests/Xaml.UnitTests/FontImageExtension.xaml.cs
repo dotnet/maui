@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public static string FontFamily => "MyFontFamily";
 		public static string Glyph => "MyGlyph";
 		public static Color Color => Colors.Black;
-		public static double Size = 50d;		class Tests
+		public static double Size = 50d; class Tests
 		{
 			[TestCase(true), TestCase(false)]
 			public void FontImageExtension_Positive(bool useCompiledXaml)

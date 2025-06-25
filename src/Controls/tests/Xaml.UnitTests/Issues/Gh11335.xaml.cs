@@ -20,7 +20,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			int index = stack.Children.IndexOf(label);
 			Label newLabel = new Label { Text = "New Inserted Label" };
 			stack.Children.Insert(index + 1, newLabel);
-		}		class Tests
+		}
+		class Tests
 		{
 			bool _debuggerinitialstate;
 
@@ -29,7 +30,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				_debuggerinitialstate = DebuggerHelper._mockDebuggerIsAttached;
 				DebuggerHelper._mockDebuggerIsAttached = true;
-			}			public void TearDown()
+			}
+			public void TearDown()
 			{
 				DebuggerHelper._mockDebuggerIsAttached = _debuggerinitialstate;
 				VisualDiagnostics.VisualTreeChanged -= OnVTChanged;

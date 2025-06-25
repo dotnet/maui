@@ -26,7 +26,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz47950(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[Fact]
 			public void BehaviorAndStaticResource([Values(false, true)] bool useCompiledXaml)

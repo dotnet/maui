@@ -16,8 +16,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public TestXmlnsUsing(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
-		{			public void TearDown()
+		}
+		class Tests
+		{
+			public void TearDown()
 			{
 				Application.Current = null;
 			}

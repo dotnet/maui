@@ -6,7 +6,8 @@ using Xunit;
 using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class CecilExtensionsTests : IAssemblyResolver
+{
+	public class CecilExtensionsTests : IAssemblyResolver
 	{
 		const string testNamespace = "Microsoft.Maui.Controls.Xaml.UnitTests";
 		AssemblyDefinition assembly;

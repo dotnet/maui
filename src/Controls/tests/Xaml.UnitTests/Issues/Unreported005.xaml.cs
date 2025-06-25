@@ -66,7 +66,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Unreported005(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[TestCase(true), TestCase(false)]
 			public void CustomMarkupExtensionWorks(bool useCompiledXaml)

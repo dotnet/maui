@@ -8,7 +8,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public MultipleDataTemplateChildElements(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public static class Tests
+		}
+		public static class Tests
 		{
 			[Fact]
 			public static void ThrowXamlParseException([Values] bool useCompiledXaml)

@@ -19,7 +19,8 @@ public partial class Maui16327 : ContentPage
 	public Maui16327(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
@@ -29,7 +30,8 @@ public partial class Maui16327 : ContentPage
 			AppInfo.SetCurrent(new MockAppInfo());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 
-		}		public void TearDown()
+		}
+		public void TearDown()
 		{
 			DeviceInfo.SetCurrent(mockDeviceInfo = null);
 			AppInfo.SetCurrent(null);

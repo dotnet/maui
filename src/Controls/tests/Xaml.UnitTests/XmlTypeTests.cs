@@ -1,7 +1,8 @@
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class XmlTypeTests : BaseTestFixture
+{
+	public class XmlTypeTests : BaseTestFixture
 	{
 		[Fact]
 		public void TestXmlTypeEquality()

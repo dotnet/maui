@@ -7,7 +7,8 @@ using Microsoft.Maui.Devices;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class MarkupExpressionParserTests : BaseTestFixture
+{
+	public class MarkupExpressionParserTests : BaseTestFixture
 	{
 		IXamlTypeResolver typeResolver;
 		MockDeviceInfo mockDeviceInfo;

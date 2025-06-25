@@ -12,7 +12,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public TypeMismatch(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests
 		{
 			[Fact]
 			public void ThrowsOnMismatchingType([Values(true, false)] bool useCompiledXaml)

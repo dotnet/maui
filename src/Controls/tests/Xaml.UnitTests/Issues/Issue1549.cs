@@ -52,7 +52,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			get;
 			set;
 		}
-	}	public class Issue1549
+	}
+	public class Issue1549
 	{
 		[SetUp]
 		public void Setup()

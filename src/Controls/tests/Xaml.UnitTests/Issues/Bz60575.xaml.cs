@@ -62,7 +62,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			get { return (IList<string>)GetValue(Collection2Property); }
 			set { SetValue(Collection2Property, value); }
-		}		class Tests
+		}
+		class Tests
 		{
 			[TestCase(true), TestCase(false)]
 			public void CollectionProperties(bool useCompiledXaml)

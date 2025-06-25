@@ -11,9 +11,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Maui4509(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Test
+		}
+		class Test
 		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());			public void TearDown()
+			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo()); public void TearDown()
 			{
 				AppInfo.SetCurrent(null);
 				DeviceInfo.SetCurrent(null);

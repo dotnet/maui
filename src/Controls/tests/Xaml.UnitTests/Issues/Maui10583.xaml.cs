@@ -35,7 +35,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Maui10583(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[SetUp]
 			public void Setup()
@@ -43,7 +44,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				AppInfo.SetCurrent(new MockAppInfo());
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 
-			}			public void TearDown()
+			}
+			public void TearDown()
 			{
 				DispatcherProvider.SetCurrent(null);
 				AppInfo.SetCurrent(null);

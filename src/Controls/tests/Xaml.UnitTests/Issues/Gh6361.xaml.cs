@@ -12,7 +12,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh6361(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[Fact]
 			public void CSSBorderRadiusDoesNotFail([Values(false, true)] bool useCompiledXaml)

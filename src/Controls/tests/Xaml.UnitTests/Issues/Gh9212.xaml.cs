@@ -22,7 +22,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh9212(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		class Tests
 		{
 			[Fact]
 			public void SingleQuoteAndTrailingSpaceInMarkupValue([Values(false, true)] bool useCompiledXaml)
