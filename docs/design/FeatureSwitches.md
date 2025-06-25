@@ -76,3 +76,15 @@ XamlC skipped compilation of bindings with the `Source` property set to any valu
 ```
 
 This feature is disabled by default, unless `TrimMode=true` or `PublishAot=true`. For fully trimmed and NativeAOT apps, the feature is enabled.
+
+## EnableDiagnostics
+
+Turn on various diagnostics at runtime and Maui level.
+
+Defaults to `false`
+
+## EnableMauiDiagnostics
+
+Enable VisualDiagnostics and BindingDiagnostics
+
+Defaults to `EnableDiagnostics`
