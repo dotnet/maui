@@ -116,8 +116,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			int cursorPosition = _editText.SelectionStart;
 			bool selectionExists = _editText.HasSelection;
 
-			_editText.Text = newText;
-
 			UpdateTextTransform();
 
 			// If we had a selection, place the cursor at the end of text

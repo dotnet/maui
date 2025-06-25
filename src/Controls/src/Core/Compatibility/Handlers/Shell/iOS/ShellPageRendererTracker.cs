@@ -9,6 +9,7 @@ using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
@@ -734,7 +735,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_searchController.SetSearchResultsUpdater(sc =>
 			{
-				SearchHandler.SetValue(SearchHandler.QueryProperty, sc.SearchBar.Text);
+				SearchHandler.SetValue(SearchHandler.QueryProperty, TextTransformUtilites.GetTransformedText(sc.SearchBar.Text, SearchHandler.TextTransform));
 			});
 
 			searchBar.BookmarkButtonClicked += BookmarkButtonClicked;

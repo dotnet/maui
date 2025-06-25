@@ -12,6 +12,7 @@ using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CardView.Widget;
 using Java.Lang;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using AColor = Android.Graphics.Color;
 using AImageButton = Android.Widget.ImageButton;
@@ -66,7 +67,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			UpdateClearButtonState();
 
-			SearchHandler.SetValue(SearchHandler.QueryProperty, text);
+			SearchHandler.SetValue(SearchHandler.QueryProperty, TextTransformUtilites.GetTransformedText(text, SearchHandler.TextTransform));
 
 			if (SearchHandler.ShowsResults)
 			{
