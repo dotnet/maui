@@ -28,61 +28,55 @@
                          SizeChanged="ScrollViewContent_SizeChanged"
                          AutomationId="ScrollViewContent"/>
         </ScrollView>
-        <HorizontalStackLayout Grid.Row="1">
+        <HorizontalStackLayout Grid.Row="1"
+                               HorizontalOptions="Center">
             <Label Text="ContentSize: "
-                   FontSize="14"
-                   Margin="100,5,0,0"/>
+                   FontSize="14"/>
             <Label Text="{Binding ContentSizeString}"
                    FontSize="14"
-                   Margin="0,5,0,0"
                    AutomationId="ContentSizeLabel"/>
         </HorizontalStackLayout>
-        <HorizontalStackLayout Grid.Row="2">
+        <HorizontalStackLayout Grid.Row="2"
+                               HorizontalOptions="Center">
             <Label Text="Scroll X: "
-                   FontSize="14"
-                   Margin="100,5,0,0"/>
+                   FontSize="14"/>
             <Label
                 Text="{Binding ScrollXInt ,Mode=TwoWay}"
                 FontSize="14"
-                Margin="0,5,0,0"
                 AutomationId="ScrollXLabel"/>
         </HorizontalStackLayout>
-        <HorizontalStackLayout Grid.Row="3">
+        <HorizontalStackLayout Grid.Row="3"
+                               HorizontalOptions="Center">
             <Label
                 Text="Scroll Y: "
-                FontSize="14"
-                Margin="100,5,0,0"/>
+                FontSize="14"/>
             <Label
                 Text="{Binding ScrollYInt, Mode=TwoWay}"
                 FontSize="14"
-                Margin="0,5,0,0"
                 AutomationId="ScrollYLabel"/>
         </HorizontalStackLayout>
-        <HorizontalStackLayout Grid.Row="4">
+        <HorizontalStackLayout Grid.Row="4"
+                               HorizontalOptions="Center"
+                Spacing="2">
             <Label Text="Scroll To:"
-                    FontSize="14"
-                    Margin="10,10,0,0"/>
-            <RadioButton x:Name="ScrollToStartRadio"
-                         Content="Start"
-                         IsChecked="True"
-                         GroupName="ScrollToPosition"
-                         CheckedChanged="OnScrollToPositionChanged"
-                         AutomationId="ScrollToStartPosition"/>
-            <RadioButton x:Name="ScrollToCenterRadio"
-                         Content="Center"
-                         GroupName="ScrollToPosition"
-                         CheckedChanged="OnScrollToPositionChanged"
-                         AutomationId="ScrollToCenterPosition"/>
-            <RadioButton x:Name="ScrollToEndRadio"
-                         Content="End"
-                         GroupName="ScrollToPosition"
-                         CheckedChanged="OnScrollToPositionChanged"
-                         AutomationId="ScrollToEndPosition"/>
-            <RadioButton x:Name="ScrollToMakeVisibleRadio"
-                         Content="Visible"
-                         GroupName="ScrollToPosition"
-                         CheckedChanged="OnScrollToPositionChanged"
-                         AutomationId="ScrollToMakeVisiblePosition"/>
+                   FontSize="14"
+                   VerticalOptions="Center"/>
+            <Button Text="Visible"
+                    Clicked="OnScrollToPositionButtonClicked"
+                    AutomationId="ScrollToMakeVisiblePosition"
+                    WidthRequest="80"/>
+            <Button Text="Start"
+                    Clicked="OnScrollToPositionButtonClicked"
+                    AutomationId="ScrollToStartPosition"
+                    WidthRequest="80"/>
+            <Button Text="Center"
+                    Clicked="OnScrollToPositionButtonClicked"
+                    AutomationId="ScrollToCenterPosition"
+                    WidthRequest="80"/>
+            <Button Text="End"
+                    Clicked="OnScrollToPositionButtonClicked"
+                    AutomationId="ScrollToEndPosition"
+                    WidthRequest="80"/>
         </HorizontalStackLayout>
     </Grid>
 </ContentPage>

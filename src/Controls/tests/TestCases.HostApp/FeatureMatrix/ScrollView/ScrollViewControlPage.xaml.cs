@@ -30,13 +30,12 @@ public partial class ScrollViewControlMainPage : ContentPage
 		BindingContext = _viewModel = new ScrollViewViewModel();
 		_viewModel.ScrollX = 0;
 		_viewModel.ScrollY = 0;
-		 ScrollToStartRadio.IsChecked = true;
 		_viewModel.ContentSize = new Size(0, 0);
 		Dispatcher.Dispatch(async () =>
 		{
 			if (_viewModel.Content != null)
 			{
-				await MyScrollView.ScrollToAsync(_viewModel.Content, ScrollToPosition.Start, false);
+				await MyScrollView.ScrollToAsync(_viewModel.Content, ScrollToPosition.MakeVisible, false);
 			}
 		});
 		await Navigation.PushAsync(new ScrollViewOptionsPage(_viewModel));
@@ -59,24 +58,26 @@ public partial class ScrollViewControlMainPage : ContentPage
 	}
 
 
-	private async void OnScrollToPositionChanged(object sender, CheckedChangedEventArgs e)
+	private async void OnScrollToPositionButtonClicked(object sender, EventArgs e)
 	{
-		if (!e.Value)
-			return;
-
-		if (BindingContext is ScrollViewViewModel vm)
+		if (BindingContext is ScrollViewViewModel vm && sender is Button btn)
 		{
 			ScrollToPosition position = ScrollToPosition.MakeVisible;
-
-			if (sender == ScrollToStartRadio)
-				position = ScrollToPosition.Start;
-			else if (sender == ScrollToCenterRadio)
-				position = ScrollToPosition.Center;
-			else if (sender == ScrollToEndRadio)
-				position = ScrollToPosition.End;
-			else if (sender == ScrollToMakeVisibleRadio)
-				position = ScrollToPosition.MakeVisible;
-
+			switch (btn.Text.ToLowerInvariant())
+			{
+				case "start":
+					position = ScrollToPosition.Start;
+					break;
+				case "center":
+					position = ScrollToPosition.Center;
+					break;
+				case "end":
+					position = ScrollToPosition.End;
+					break;
+				case "visible":
+					position = ScrollToPosition.MakeVisible;
+					break;
+			}
 			if (vm.Content != null)
 				await MyScrollView.ScrollToAsync(vm.Content, position, true);
 		}
