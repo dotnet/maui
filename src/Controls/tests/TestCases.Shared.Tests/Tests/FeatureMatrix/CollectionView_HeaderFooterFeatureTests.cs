@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
+
 public class CollectionView_HeaderFooterFeatureTests : UITest
 {
 	public const string HeaderFooterFeatureMatrix = "CollectionView Feature Matrix";
