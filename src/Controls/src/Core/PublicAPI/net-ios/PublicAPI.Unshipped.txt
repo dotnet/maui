@@ -1,10 +1,4 @@
 #nullable enable
-Microsoft.Maui.Controls.ContentPresenter.ClippedToBounds.get -> bool
-Microsoft.Maui.Controls.ContentPresenter.ClippedToBounds.set -> void
-Microsoft.Maui.Controls.ContentPresenter.InputTransparentContainer.get -> bool
-Microsoft.Maui.Controls.ContentPresenter.InputTransparentContainer.set -> void
-override Microsoft.Maui.Controls.ContentPresenter.CreateLayoutManager() -> Microsoft.Maui.Layouts.ILayoutManager
-static Microsoft.Maui.Controls.ContentPresenter.ClippedToBoundsProperty -> Microsoft.Maui.Controls.BindableProperty
-static Microsoft.Maui.Controls.ContentPresenter.InputTransparentContainerProperty -> Microsoft.Maui.Controls.BindableProperty
+~override Microsoft.Maui.Controls.ContentPresenter.CreateLayoutManager() -> Microsoft.Maui.Layouts.ILayoutManager
 override Microsoft.Maui.Controls.ScrollView.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, double height) -> void

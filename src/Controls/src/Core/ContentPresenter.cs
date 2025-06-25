@@ -9,25 +9,13 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// An element used to display a content object within a templated control. This allows you to customize how content is displayed. 
 	/// </summary>
-	public class ContentPresenter : Layout, IContentView, IControlsView, IClippedToBoundsElement, IInputTransparentContainerElement
+	public class ContentPresenter : Layout, IContentView, IControlsView
 	{
 		/// <summary>
 		/// Bindable property for Content.
 		/// </summary>
 		public static BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
 			typeof(ContentPresenter), null, propertyChanged: OnContentChanged);
-
-		/// <summary>
-		/// Bindable property for ClippedToBounds.
-		/// </summary>
-		public static readonly BindableProperty ClippedToBoundsProperty = 
-			BindableProperty.Create(nameof(ClippedToBounds), typeof(bool), typeof(ContentPresenter), false);
-
-		/// <summary>
-		/// Bindable property for InputTransparentContainer.
-		/// </summary>
-		public static readonly BindableProperty InputTransparentContainerProperty = 
-			BindableProperty.Create(nameof(InputTransparentContainer), typeof(bool), typeof(ContentPresenter), false);
 
 		/// <summary>
 		/// Initializes a new instance of the ContentPresenter class.
@@ -51,30 +39,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ContentProperty, value); }
 		}
 
-		/// <summary>
-		/// Gets or sets a value indicating whether the content should be clipped to its bounds.
-		/// </summary>
-		public bool ClippedToBounds
-		{
-			get => (bool)GetValue(ClippedToBoundsProperty);
-			set => SetValue(ClippedToBoundsProperty, value);
-		}
-
-		/// <summary>
-		/// Gets or sets a value indicating whether the container should have input transparency.
-		/// </summary>
-		public bool InputTransparentContainer
-		{
-			get => (bool)GetValue(InputTransparentContainerProperty);
-			set => SetValue(InputTransparentContainerProperty, value);
-		}
-
 		object IContentView.Content => Content;
 		IView IContentView.PresentedContent => Content;
-
-		bool IInputTransparentContainerElement.InputTransparent => InputTransparent;
-		bool IInputTransparentContainerElement.CascadeInputTransparent => CascadeInputTransparent;
-		Element IInputTransparentContainerElement.Parent => Parent;
 
 		/// <summary>
 		/// Clears the content.
