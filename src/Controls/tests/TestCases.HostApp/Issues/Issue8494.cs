@@ -21,6 +21,7 @@ public class Issue8494 : ContentPage
 		var emptyViewLayout = new StackLayout
 		{
 			Margin = new Thickness(40),
+			Background = Colors.Yellow,
 			Children =
 				{
 					new Label
