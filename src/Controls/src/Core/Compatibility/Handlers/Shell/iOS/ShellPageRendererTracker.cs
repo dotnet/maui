@@ -415,9 +415,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UIImage? icon = null;
 
-				if (image != null)
+				if (image is not null)
 				{
 					icon = result?.Value;
+					if ((!AppContext.TryGetSwitch("iOSDisableFlyoutIconAutoResizing", out bool disableResizing) || !disableResizing) && icon is not null)
+					{
+						icon = FlyoutViewExtensions.AutoResizeFlyoutIcon(icon);
+					}
 				}
 				else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
 				{
