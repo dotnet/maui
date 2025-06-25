@@ -45,7 +45,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 					h += RowSpacing + structure.Rows[r + i].ActualHeight;
 
 				// in the future we can might maybe optimize by passing the already calculated size request
+#pragma warning disable CS0618 // Type or member is obsolete
 				LayoutChildIntoBoundingRegion(child, new Rect(posx, posy, w, h));
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 

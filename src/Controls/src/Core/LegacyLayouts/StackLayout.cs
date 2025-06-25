@@ -71,7 +71,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				var child = (View)LogicalChildrenInternal[i];
 				if (child.IsVisible && layoutInformationCopy.Plots != null)
+#pragma warning disable CS0618 // Type or member is obsolete
 					LayoutChildIntoBoundingRegion(child, layoutInformationCopy.Plots[i], layoutInformationCopy.Requests[i]);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 #pragma warning restore CS0672 // Member overrides obsolete member
