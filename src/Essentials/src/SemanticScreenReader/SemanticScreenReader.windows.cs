@@ -14,6 +14,13 @@ namespace Microsoft.Maui.Accessibility
 
 			var peer = FindAutomationPeer(window.Content);
 
+			// If no automation peer is found (e.g., when called early in app lifecycle
+			// before window content is set), returns without error
+			if (peer is null)
+			{
+				return;
+			}
+
 			// This GUID correlates to the internal messages used by UIA to perform an announce
 			// You can extract it  by using accessibility insights to monitor UIA events
 			// If you're curious how this works then do a google search for the GUID
