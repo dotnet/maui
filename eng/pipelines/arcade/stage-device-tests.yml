@@ -103,7 +103,7 @@ stages:
           - template: /eng/common/templates-official/steps/send-to-helix.yml
             parameters:
               HelixProjectPath: ${{ parameters.helixProject }}
-              HelixProjectArguments: /p:TargetOS=ios
+              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix="_$(_BuildConfig)" /p:TestRunNamePrefix="DeviceTestsIOS_"
               HelixConfiguration: $(_BuildConfig)
               IncludeDotNetCli: true
               DisplayNamePrefix: DeviceTestsIOS
@@ -129,25 +129,13 @@ stages:
           - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:buidltasks.binlog $(_OfficialBuildIdArgs)
             displayName: Build BuildTasks
 
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj' /bl:devicetests.binlog $(_OfficialBuildIdArgs)
-            displayName: Build Controls.DeviceTests
-
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj' /bl:devicetests_core.binlog $(_OfficialBuildIdArgs)
-            displayName: Build Core.DeviceTests
-
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj' /bl:devicetests_graphics.binlog $(_OfficialBuildIdArgs)
-            displayName: Build Graphics.DeviceTests
-
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj' /p:CodesignRequireProvisioningProfile=false /bl:devicetests_essentials.binlog $(_OfficialBuildIdArgs)
-            displayName: Build Essentials.DeviceTests
-
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj' /bl:devicetests_blazorwebview.binlog $(_OfficialBuildIdArgs)
-            displayName: Build BlazorWebView.DeviceTests
+          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog $(_OfficialBuildIdArgs)
+            displayName: Build DeviceTests
 
           - template: /eng/common/templates-official/steps/send-to-helix.yml
             parameters:
               HelixProjectPath: ${{ parameters.helixProject }}
-              HelixProjectArguments: /p:TargetOS=android
+              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix="_$(_BuildConfig)" /p:TestRunNamePrefix="DeviceTestsAndroid_"
               HelixConfiguration: $(_BuildConfig)
               IncludeDotNetCli: true
               DisplayNamePrefix: DeviceTestsAndroid
