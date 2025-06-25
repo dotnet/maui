@@ -6,19 +6,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue17204 : _IssuesUITest
 {
-    public override string Issue => "SwipeView does not work correctly on iOS when opened programmatically";
+	public override string Issue => "SwipeView does not work correctly on iOS when opened programmatically";
 
-    public Issue17204(TestDevice device)
-    : base(device)
-    { }
+	public Issue17204(TestDevice device)
+	: base(device)
+	{ }
 
-    [Test]
-    [Category(UITestCategories.SwipeView)]
-    public void ProgrammaticallyOpenedSwipeViewShouldBeVisible()
-    {
-        App.WaitForElement("OpenSwipeViewButton");
-        App.Tap("OpenSwipeViewButton");
-        VerifyScreenshot();
-    }
+	[Test]
+	[Category(UITestCategories.SwipeView)]
+	public void ProgrammaticallyOpenedSwipeViewShouldBeVisible()
+	{
+		App.WaitForElement("OpenSwipeViewButton");
+		App.Tap("OpenSwipeViewButton");
+		VerifyScreenshot();
+	}
 }
 #endif
