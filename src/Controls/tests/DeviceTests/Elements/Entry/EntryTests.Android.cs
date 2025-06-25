@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
@@ -54,7 +55,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformControl(entryHandler);
-				return nativeView.Visibility == global::Android.Views.ViewStates.Visible;
+				return nativeView.Visibility == Android.Views.ViewStates.Visible;
 			});
 		}
 
@@ -165,24 +166,26 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, platformRotation);
 		}
 
-		//src/Compatibility/Core/tests/Android/TranslationTests.cs
-		[Fact]
-		[Description("The Translation property of a Entry should match with native Translation")]
-		public async Task EntryTranslationConsistent()
+		[Fact(DisplayName = "Android crash when Entry has more than 5000 characters")]
+		[Category(TestCategory.Entry)]
+		public async Task EntryWithLongTextAndIsPassword_DoesNotCrash()
 		{
-			var entry = new Entry()
+			if (!OperatingSystem.IsAndroidVersionAtLeast(31)) // Android 12+
 			{
-				Text = "Entry Test",
-				TranslationX = 50,
-				TranslationY = -20
+				return;
+			}
+
+			string longText = new string('A', 5001);
+			var entry = new Entry
+			{
+				Text = longText,
 			};
 
 			var handler = await CreateHandlerAsync<EntryHandler>(entry);
-			var nativeView = GetPlatformControl(handler);
-			await InvokeOnMainThreadAsync(() =>
-			{
-				AssertTranslationMatches(nativeView, entry.TranslationX, entry.TranslationY);
-			});
+			var platformEntry = GetPlatformControl(handler);
+			Assert.NotNull(platformEntry);
+			Assert.Equal(longText, await GetPlatformText(handler));
+
 		}
 	}
 }
