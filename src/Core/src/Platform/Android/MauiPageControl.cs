@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Platform
 
 		IIndicatorView? _indicatorView;
 
+		bool _isTemplateIndicator;
+
 		public MauiPageControl(Context? context) : base(context)
 		{
 		}
@@ -37,6 +39,7 @@ namespace Microsoft.Maui.Platform
 		{
 			_pageShape = null;
 			_currentPageShape = null;
+			_isTemplateIndicator = false;
 
 			if ((_indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride == null)
 				UpdateShapes();
@@ -63,7 +66,7 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateIndicatorCount()
 		{
-			if (_indicatorView == null || Context == null)
+			if (_indicatorView == null || Context == null || _isTemplateIndicator)
 				return;
 
 			var index = GetIndexFromPosition();
@@ -107,6 +110,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			AView? handler = layout.ToPlatform(_indicatorView.Handler.MauiContext);
+			_isTemplateIndicator = true;
 
 			RemoveAllViews();
 			AddView(handler);
@@ -170,7 +174,11 @@ namespace Microsoft.Maui.Platform
 
 		void RemoveViews(int startAt)
 		{
-			for (int i = startAt; i < ChildCount; i++)
+			if (_isTemplateIndicator)
+				return;
+
+			var count = ChildCount;
+			for (int i = startAt; i < count; i++)
 			{
 				var imageView = GetChildAt(ChildCount - 1);
 				imageView?.SetOnClickListener(null);

@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
