@@ -86,6 +86,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsPassword(IEntryHandler handler, IEntry entry)
 		{
 			handler.UpdateValue(nameof(IEntry.Text));
+
 			handler.PlatformView?.UpdateIsPassword(entry);
 		}
 
