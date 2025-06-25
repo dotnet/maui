@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -856,13 +857,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.False(vm.IsWindowActive);
 		}
-	}
 
-	class ViewModel
-	{
-		public bool IsWindowActive
+		[Fact]
+		public void WindowServiceScopeIsDisposedOnDestroying()
 		{
-			get; set;
+			var serviceCollection = new ServiceCollection();
+			serviceCollection.AddTransient<TestScopedService>();
+			var serviceProvider = serviceCollection.BuildServiceProvider();
+
+			var scope = serviceProvider.CreateScope();
+			var mauiContext = new MauiContext(scope.ServiceProvider);
+			mauiContext.SetWindowScope(scope);
+
+			var window = new TestWindow(new ContentPage());
+			var handler = new WindowHandlerStub();
+			handler.SetMauiContext(mauiContext);
+			window.Handler = handler;
+
+			// Verify the scope service works before disposal
+			var service = mauiContext.Services.GetService<TestScopedService>();
+			Assert.NotNull(service);
+
+			// Destroy the window - this should dispose the scope
+			((IWindow)window).Destroying();
+
+			// After disposal, the scope should be disposed
+			// We can't directly test if scope is disposed, but we can test that trying to use it throws
+			Assert.Throws<ObjectDisposedException>(() => scope.ServiceProvider.GetService<TestScopedService>());
+		}
+
+		class ViewModel
+		{
+			public bool IsWindowActive
+			{
+				get;
+				set;
+			}
+		}
+
+		class TestScopedService
+		{
+			public string TestProperty { get; set; } = "test";
 		}
 	}
 }
