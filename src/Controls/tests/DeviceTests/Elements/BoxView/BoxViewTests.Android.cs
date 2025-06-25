@@ -126,7 +126,7 @@ namespace Microsoft.Maui.DeviceTests
 				return nativeView.Visibility == Android.Views.ViewStates.Visible;
 			});
 		}
-        
+
 		//src/Compatibility/Core/tests/Android/TranslationTests.cs
 		[Fact]
 		[Description("The Translation property of a BoxView should match with native Translation")]
