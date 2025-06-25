@@ -17,12 +17,18 @@ Microsoft.Maui.Hosting.MauiHostEnvironment.MauiHostEnvironment() -> void
 *REMOVED*Microsoft.Maui.IDatePicker.Date.get -> System.DateTime
 Microsoft.Maui.IDatePicker.Date.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime
+Microsoft.Maui.IDatePicker.IsOpen.get -> bool
+Microsoft.Maui.IDatePicker.IsOpen.set -> void
 Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
+Microsoft.Maui.IPicker.IsOpen.get -> bool
+Microsoft.Maui.IPicker.IsOpen.set -> void
 Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
 Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
 *REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
+Microsoft.Maui.ITimePicker.IsOpen.get -> bool
+Microsoft.Maui.ITimePicker.IsOpen.set -> void
 Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
 Microsoft.Maui.IWebRequestInterceptingWebView
 Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
@@ -41,7 +47,6 @@ Microsoft.Maui.WebResourceRequestedEventArgs.Sender.get -> WebKit.WKWebView!
 Microsoft.Maui.WebResourceRequestedEventArgs.UrlSchemeTask.get -> WebKit.IWKUrlSchemeTask!
 *REMOVED*readonly Microsoft.Maui.PropertyMapper._mapper -> System.Collections.Generic.Dictionary<string!, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>!>!
 static Microsoft.Maui.Handlers.ButtonHandler.MapBackground(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IButton! button) -> void
-static Microsoft.Maui.Handlers.DatePickerHandler.MapIsOpen(Microsoft.Maui.Handlers.IDatePickerHandler! handler, Microsoft.Maui.IDatePicker! datePicker) -> void
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapBackground(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureEnvironmentVariables(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
@@ -65,3 +70,6 @@ virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisional
 virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
 *REMOVED*virtual Microsoft.Maui.PropertyMapper.ClearKeyCache() -> void
 *REMOVED*virtual Microsoft.Maui.PropertyMapper.UpdateKeys.get -> System.Collections.Generic.IReadOnlyCollection<string!>!
+~static Microsoft.Maui.Handlers.DatePickerHandler.MapIsOpen(Microsoft.Maui.Handlers.IDatePickerHandler handler, Microsoft.Maui.IDatePicker datePicker) -> void
+~static Microsoft.Maui.Handlers.TimePickerHandler.MapIsOpen(Microsoft.Maui.Handlers.ITimePickerHandler handler, Microsoft.Maui.ITimePicker timePicker) -> void
+~static Microsoft.Maui.Platform.DatePickerExtensions.UpdateIsOpen(this Microsoft.Maui.Platform.MauiDatePicker platformDatePicker, Microsoft.Maui.IDatePicker datePicker) -> void

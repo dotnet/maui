@@ -5,6 +5,20 @@
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Subscribe<TSender>(object subscriber, string message, System.Action<TSender> callback, TSender source = null) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void
+Microsoft.Maui.Controls.DatePicker.Closed -> System.EventHandler<Microsoft.Maui.Controls.PickerClosedEventArgs>
+Microsoft.Maui.Controls.DatePicker.IsOpen.get -> bool
+Microsoft.Maui.Controls.DatePicker.IsOpen.set -> void
+Microsoft.Maui.Controls.DatePicker.Opened -> System.EventHandler<Microsoft.Maui.Controls.PickerOpenedEventArgs>
+Microsoft.Maui.Controls.Picker.Closed -> System.EventHandler<Microsoft.Maui.Controls.PickerClosedEventArgs>
+Microsoft.Maui.Controls.Picker.IsOpen.get -> bool
+Microsoft.Maui.Controls.Picker.IsOpen.set -> void
+Microsoft.Maui.Controls.Picker.Opened -> System.EventHandler<Microsoft.Maui.Controls.PickerOpenedEventArgs>
+Microsoft.Maui.Controls.PickerClosedEventArgs
+Microsoft.Maui.Controls.PickerClosedEventArgs.PickerClosedEventArgs() -> void
+Microsoft.Maui.Controls.PickerOpenedEventArgs
+Microsoft.Maui.Controls.PickerOpenedEventArgs.PickerOpenedEventArgs() -> void
+Microsoft.Maui.Controls.TimePicker.Closed -> System.EventHandler<Microsoft.Maui.Controls.PickerClosedEventArgs>
+Microsoft.Maui.Controls.TimePicker.Opened -> System.EventHandler<Microsoft.Maui.Controls.PickerOpenedEventArgs>
 ~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
 ~Microsoft.Maui.Controls.ITextElement.TextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string
