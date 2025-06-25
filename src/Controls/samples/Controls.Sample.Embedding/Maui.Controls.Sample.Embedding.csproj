@@ -4,7 +4,6 @@
     <TargetFrameworks>$(MauiEmbeddingPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>Maui.Controls.Sample</RootNamespace>
-    <UseMauiCompat>false</UseMauiCompat>
     <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

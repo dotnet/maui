@@ -19,10 +19,6 @@ using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
-#if COMPATIBILITY_ENABLED
-using Microsoft.Maui.Controls.Compatibility.Hosting;
-#endif
-
 #if ANDROID
 using Android.Gms.Common;
 using Android.Gms.Maps;
