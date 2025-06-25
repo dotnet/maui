@@ -90,7 +90,7 @@ namespace Microsoft.Maui.IntegrationTests
 		/// </summary>
 		/// <exception cref="DirectoryNotFoundException"></exception>
 		// TODO: Convert to class constructor or static setup
-		public void BuildTestFxtSetUp()
+		private void BuildTestFxtSetUp()
 		{
 			string[] NuGetOnlyPackages = new string[] {
 				"Microsoft.Maui.Controls.*.nupkg",
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		// TODO: Convert to test constructor
-		public void BuildTestSetUp()
+		private void BuildTestSetUp()
 		{
 			if (Directory.Exists(TestDirectory))
 				Directory.Delete(TestDirectory, recursive: true);
@@ -133,10 +133,10 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		// TODO: Convert to class finalizer or static cleanup
-		public void BuildTestFxtTearDown() { }
+		private void BuildTestFxtTearDown() { }
 
 		// TODO: Convert to IDisposable.Dispose()
-		public void BuildTestTearDown()
+		private void BuildTestTearDown()
 		{
 			// Attach test content and logs as artifacts
 			foreach (var log in Directory.GetFiles(Path.Combine(TestDirectory), "*log", SearchOption.AllDirectories))

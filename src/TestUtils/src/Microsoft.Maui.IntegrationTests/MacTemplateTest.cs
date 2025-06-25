@@ -36,10 +36,8 @@ public class MacTemplateTest : BaseTemplateTests
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	//[Fact]
-	//[Theory]
+	[Theory]
 	[InlineData("maui-blazor", "Debug", DotNetCurrent, true)]
-	//[Theory]
 	[InlineData("maui-blazor", "Release", DotNetCurrent, true)]
 	public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework, bool sign)
 	{

@@ -11,7 +11,7 @@ namespace Microsoft.Maui.IntegrationTests
 		string testPackage = "";
 
 		// TODO: Convert to class constructor or static setup
-		public void AndroidTemplateFxtSetUp()
+		private void AndroidTemplateFxtSetUp()
 		{
 			if (TestEnvironment.IsMacOS && RuntimeInformation.OSArchitecture == Architecture.Arm64)
 				TestAvd.Abi = "arm64-v8a";
@@ -21,14 +21,14 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		// TODO: Convert to test constructor
-		public void AndroidTemplateSetUp()
+		private void AndroidTemplateSetUp()
 		{
 			var emulatorLog = Path.Combine(TestDirectory, $"emulator-launch-{DateTime.UtcNow.ToFileTimeUtc()}.log");
 			Assert.True(TestAvd.LaunchAndWaitForAvd(600, emulatorLog), "Failed to launch Test AVD.");
 		}
 
 		// TODO: Convert to class finalizer or static cleanup
-		public void AndroidTemplateFxtTearDown()
+		private void AndroidTemplateFxtTearDown()
 		{
 			Adb.KillEmulator(TestAvd.Id);
 
@@ -42,20 +42,22 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		// TODO: Convert to IDisposable.Dispose()
-		public void AndroidTemplateTearDown()
+		private void AndroidTemplateTearDown()
 		{
 			Adb.UninstallPackage(testPackage);
-		}		[Theory]
-[InlineData("maui", DotNetPrevious, "Debug", null)]
-[InlineData("maui", DotNetPrevious, "Release", null)]
-[InlineData("maui", DotNetCurrent, "Debug", null)]
-[InlineData("maui", DotNetCurrent, "Release", null)]
-[InlineData("maui", DotNetCurrent, "Release", "full")]
-[InlineData("maui-blazor", DotNetPrevious, "Debug", null)]
-[InlineData("maui-blazor", DotNetPrevious, "Release", null)]
-[InlineData("maui-blazor", DotNetCurrent, "Debug", null)]
-[InlineData("maui-blazor", DotNetCurrent, "Release", null)]
-[InlineData("maui-blazor", DotNetCurrent, "Release", "full")]
+		}
+
+		[Theory]
+		[InlineData("maui", DotNetPrevious, "Debug", "")]
+		[InlineData("maui", DotNetPrevious, "Release", "")]
+		[InlineData("maui", DotNetCurrent, "Debug", "")]
+		[InlineData("maui", DotNetCurrent, "Release", "")]
+		[InlineData("maui", DotNetCurrent, "Release", "full")]
+		[InlineData("maui-blazor", DotNetPrevious, "Debug", "")]
+		[InlineData("maui-blazor", DotNetPrevious, "Release", "")]
+		[InlineData("maui-blazor", DotNetCurrent, "Debug", "")]
+		[InlineData("maui-blazor", DotNetCurrent, "Release", "")]
+		[InlineData("maui-blazor", DotNetCurrent, "Release", "full")]
 
 		public void RunOnAndroid(string id, string framework, string config, string trimMode)
 		{

@@ -232,10 +232,11 @@ public class SimpleTemplateTest : BaseTemplateTests
 	/// <summary>
 	/// Tests the scenario where a .NET MAUI Library specifically uses UseMauiCore instead of UseMaui.
 	/// </summary>	[Theory]
-[InlineData("mauilib", DotNetPrevious, "Debug")]
-[InlineData("mauilib", DotNetPrevious, "Release")]
-[InlineData("mauilib", DotNetCurrent, "Debug")]
-[InlineData("mauilib", DotNetCurrent, "Release")]
+	[Theory]
+	[InlineData("mauilib", DotNetPrevious, "Debug")]
+	[InlineData("mauilib", DotNetPrevious, "Release")]
+	[InlineData("mauilib", DotNetCurrent, "Debug")]
+	[InlineData("mauilib", DotNetCurrent, "Release")]
 
 	public void PackCoreLib(string id, string framework, string config)
 	{
@@ -326,9 +327,10 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 	// This test is super temporary and is just for the interim
 	// while we productize the CollectionViewHandler2. Once we
-	// ship it as the default, this test will fail and can be deleted.	[Theory]
-[InlineData("maui", DotNetCurrent, "", false)]
-[InlineData("maui", DotNetCurrent, "--sample-content", true)]
+	// ship it as the default, this test will fail and can be deleted.
+	[Theory]
+	[InlineData("maui", DotNetCurrent, "", false)]
+	[InlineData("maui", DotNetCurrent, "--sample-content", true)]
 
 	public void SampleShouldHaveHandler2Registered(string id, string framework, string additionalDotNetNewParams, bool shouldHaveHandler2)
 	{

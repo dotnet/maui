@@ -3,7 +3,7 @@
 public abstract class BaseTemplateTests : BaseBuildTest
 {
 	// TODO: Convert to test constructor
-	public void TemplateTestsSetUp()
+	private void TemplateTestsSetUp()
 	{
 		File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "tests", "Directory.Build.props"),
 			Path.Combine(TestDirectory, "Directory.Build.props"), true);

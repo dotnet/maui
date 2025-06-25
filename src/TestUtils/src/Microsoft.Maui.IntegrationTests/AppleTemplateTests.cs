@@ -9,7 +9,7 @@ namespace Microsoft.Maui.IntegrationTests
 		Simulator TestSimulator = new Simulator();
 
 		// TODO: Convert to test constructor
-		public void AppleTemplateSetup()
+		private void AppleTemplateSetup()
 		{
 			if (!TestEnvironment.IsMacOS)
 				Assert.Ignore("Running Apple templates is only supported on macOS.");
@@ -20,29 +20,24 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		// TODO: Convert to class finalizer or static cleanup
-		public void AppleTemplateFxtTearDown()
+		private void AppleTemplateFxtTearDown()
 		{
 			TestSimulator.Shutdown();
 		}
 
-		[Fact]
-		// [Theory]
-		[InlineData("maui", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [Theory]
-		[InlineData("maui", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		[InlineData("maui", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		[InlineData("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
+		[Theory]
+		[InlineData("maui", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, "")]
+		[InlineData("maui", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, "")]
+		[InlineData("maui", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "")]
+		[InlineData("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "")]
 		[InlineData("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "full")]
-		// [Theory]
-		[InlineData("maui-blazor", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [Theory]
-		[InlineData("maui-blazor", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		[InlineData("maui-blazor", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		[InlineData("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
+		[InlineData("maui-blazor", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, "")]
+		[InlineData("maui-blazor", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, "")]
+		[InlineData("maui-blazor", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "")]
+		[InlineData("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "")]
 		// FIXME: has trimmer warnings
-		//[Theory]
 		[InlineData("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "full")]
-		[InlineData("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.NativeAOT, null)]
+		[InlineData("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.NativeAOT, "")]
 		public void RunOniOS(string id, string config, string framework, string runtimeIdentifier, RuntimeVariant runtimeVariant, string trimMode)
 		{
 			var projectDir = TestDirectory;

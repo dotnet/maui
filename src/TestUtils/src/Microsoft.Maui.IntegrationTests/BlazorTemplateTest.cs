@@ -35,13 +35,18 @@ public class BlazorTemplateTest : BaseTemplateTests
 	[InlineData(DotNetCurrent, "Release", "-I WebAssembly --UseProgramMain", false, "TrimMode=partial")]
 	[InlineData(DotNetCurrent, "Debug", "-I Server --UseProgramMain", false, "")]
 	[InlineData(DotNetCurrent, "Release", "-I Auto --UseProgramMain", false, "TrimMode=partial")]
+	public void BuildMauiBlazorSolution(string framework, string config, string additionalDotNetNewParams, bool useTrickyProjectName, string additionalDotNetBuildParams)
+	{
+		// TODO: Implement first method or merge with BuildMauiBlazorWebSolution
+		throw new NotImplementedException("Method needs to be implemented after NUnit to xUnit conversion");
+	}
+
 	// Then, some scenarios with tricky names in Debug builds only
 	// This doesn't work on Android in Release, so we skip that for now
 	// See https://github.com/dotnet/android/issues/9107
-	// [Theory]
-	[InlineData(DotNetCurrent, "Debug", "", true)]
-	// [Theory]
-	[InlineData(DotNetCurrent, "Debug", "-I Server --UseProgramMain", true)]
+	[Theory]
+	[InlineData(DotNetCurrent, "Debug", "", true, "")]
+	[InlineData(DotNetCurrent, "Debug", "-I Server --UseProgramMain", true, "")]
 	public void BuildMauiBlazorWebSolution(string framework, string config, string additionalDotNetNewParams, bool useTrickyProjectName, string additionalDotNetBuildParams)
 	{
 		const string templateShortName = "maui-blazor-web";
