@@ -3,9 +3,10 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiBorderAutomationPeer : FrameworkElementAutomationPeer
+	// TODO: Make this class public in .NET 10.0. Issue Link: https://github.com/dotnet/maui/issues/30205
+	internal class MauiBorderAutomationPeer : FrameworkElementAutomationPeer
 	{
-		public MauiBorderAutomationPeer(Panel owner) : base(owner) { }
+		internal MauiBorderAutomationPeer(Panel owner) : base(owner) { }
 
 		protected override AutomationControlType GetAutomationControlTypeCore()
 		{
