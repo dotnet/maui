@@ -200,6 +200,7 @@ Microsoft.Maui.ApplicationModel.Communication.IEmail
 Microsoft.Maui.ApplicationModel.Communication.IEmail.ComposeAsync(Microsoft.Maui.ApplicationModel.Communication.EmailMessage? message) -> System.Threading.Tasks.Task!
 Microsoft.Maui.ApplicationModel.Communication.IEmail.IsComposeSupported.get -> bool
 Microsoft.Maui.ApplicationModel.Communication.IPhoneDialer
+Microsoft.Maui.ApplicationModel.Communication.IPhoneDialer.IsSupported.get -> bool
 Microsoft.Maui.ApplicationModel.Communication.IPhoneDialer.Open(string! number) -> void
 Microsoft.Maui.ApplicationModel.Communication.ISms
 Microsoft.Maui.ApplicationModel.Communication.ISms.ComposeAsync(Microsoft.Maui.ApplicationModel.Communication.SmsMessage? message) -> System.Threading.Tasks.Task!
@@ -269,6 +270,7 @@ Microsoft.Maui.ApplicationModel.FeatureNotSupportedException.FeatureNotSupported
 Microsoft.Maui.ApplicationModel.IAppActions
 Microsoft.Maui.ApplicationModel.IAppActions.AppActionActivated -> System.EventHandler<Microsoft.Maui.ApplicationModel.AppActionEventArgs!>?
 Microsoft.Maui.ApplicationModel.IAppActions.GetAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.ApplicationModel.AppAction!>!>!
+Microsoft.Maui.ApplicationModel.IAppActions.IsSupported.get -> bool
 Microsoft.Maui.ApplicationModel.IAppActions.SetAsync(System.Collections.Generic.IEnumerable<Microsoft.Maui.ApplicationModel.AppAction!>! actions) -> System.Threading.Tasks.Task!
 Microsoft.Maui.ApplicationModel.IAppInfo
 Microsoft.Maui.ApplicationModel.IAppInfo.BuildString.get -> string!
@@ -532,9 +534,11 @@ Microsoft.Maui.Devices.IFlashlight.IsSupportedAsync() -> System.Threading.Tasks.
 Microsoft.Maui.Devices.IFlashlight.TurnOffAsync() -> System.Threading.Tasks.Task!
 Microsoft.Maui.Devices.IFlashlight.TurnOnAsync() -> System.Threading.Tasks.Task!
 Microsoft.Maui.Devices.IHapticFeedback
+Microsoft.Maui.Devices.IHapticFeedback.IsSupported.get -> bool
 Microsoft.Maui.Devices.IHapticFeedback.Perform(Microsoft.Maui.Devices.HapticFeedbackType type) -> void
 Microsoft.Maui.Devices.IVibration
 Microsoft.Maui.Devices.IVibration.Cancel() -> void
+Microsoft.Maui.Devices.IVibration.IsSupported.get -> bool
 Microsoft.Maui.Devices.IVibration.Vibrate() -> void
 Microsoft.Maui.Devices.IVibration.Vibrate(System.TimeSpan duration) -> void
 Microsoft.Maui.Devices.Sensors.Accelerometer
@@ -624,13 +628,25 @@ Microsoft.Maui.Devices.Sensors.GyroscopeData.GyroscopeData() -> void
 Microsoft.Maui.Devices.Sensors.GyroscopeData.GyroscopeData(double x, double y, double z) -> void
 Microsoft.Maui.Devices.Sensors.GyroscopeData.GyroscopeData(float x, float y, float z) -> void
 Microsoft.Maui.Devices.Sensors.IAccelerometer
+Microsoft.Maui.Devices.Sensors.IAccelerometer.IsMonitoring.get -> bool
+Microsoft.Maui.Devices.Sensors.IAccelerometer.IsSupported.get -> bool
 Microsoft.Maui.Devices.Sensors.IAccelerometer.ReadingChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.AccelerometerChangedEventArgs!>?
 Microsoft.Maui.Devices.Sensors.IAccelerometer.ShakeDetected -> System.EventHandler?
+Microsoft.Maui.Devices.Sensors.IAccelerometer.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
+Microsoft.Maui.Devices.Sensors.IAccelerometer.Stop() -> void
 Microsoft.Maui.Devices.Sensors.IBarometer
+Microsoft.Maui.Devices.Sensors.IBarometer.IsMonitoring.get -> bool
+Microsoft.Maui.Devices.Sensors.IBarometer.IsSupported.get -> bool
 Microsoft.Maui.Devices.Sensors.IBarometer.ReadingChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.BarometerChangedEventArgs!>?
+Microsoft.Maui.Devices.Sensors.IBarometer.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
+Microsoft.Maui.Devices.Sensors.IBarometer.Stop() -> void
 Microsoft.Maui.Devices.Sensors.ICompass
+Microsoft.Maui.Devices.Sensors.ICompass.IsMonitoring.get -> bool
+Microsoft.Maui.Devices.Sensors.ICompass.IsSupported.get -> bool
 Microsoft.Maui.Devices.Sensors.ICompass.ReadingChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.CompassChangedEventArgs!>!
 Microsoft.Maui.Devices.Sensors.ICompass.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed, bool applyLowPassFilter) -> void
+Microsoft.Maui.Devices.Sensors.ICompass.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
+Microsoft.Maui.Devices.Sensors.ICompass.Stop() -> void
 Microsoft.Maui.Devices.Sensors.IGeocoding
 Microsoft.Maui.Devices.Sensors.IGeocoding.GetLocationsAsync(string! address) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Devices.Sensors.Location!>!>!
 Microsoft.Maui.Devices.Sensors.IGeocoding.GetPlacemarksAsync(double latitude, double longitude) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Devices.Sensors.Placemark!>!>!
@@ -643,11 +659,23 @@ Microsoft.Maui.Devices.Sensors.IGeolocation.LocationChanged -> System.EventHandl
 Microsoft.Maui.Devices.Sensors.IGeolocation.StartListeningForegroundAsync(Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest! request) -> System.Threading.Tasks.Task<bool>!
 Microsoft.Maui.Devices.Sensors.IGeolocation.StopListeningForeground() -> void
 Microsoft.Maui.Devices.Sensors.IGyroscope
+Microsoft.Maui.Devices.Sensors.IGyroscope.IsMonitoring.get -> bool
+Microsoft.Maui.Devices.Sensors.IGyroscope.IsSupported.get -> bool
 Microsoft.Maui.Devices.Sensors.IGyroscope.ReadingChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GyroscopeChangedEventArgs!>!
+Microsoft.Maui.Devices.Sensors.IGyroscope.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
+Microsoft.Maui.Devices.Sensors.IGyroscope.Stop() -> void
 Microsoft.Maui.Devices.Sensors.IMagnetometer
+Microsoft.Maui.Devices.Sensors.IMagnetometer.IsMonitoring.get -> bool
+Microsoft.Maui.Devices.Sensors.IMagnetometer.IsSupported.get -> bool
 Microsoft.Maui.Devices.Sensors.IMagnetometer.ReadingChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.MagnetometerChangedEventArgs!>!
+Microsoft.Maui.Devices.Sensors.IMagnetometer.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
+Microsoft.Maui.Devices.Sensors.IMagnetometer.Stop() -> void
 Microsoft.Maui.Devices.Sensors.IOrientationSensor
+Microsoft.Maui.Devices.Sensors.IOrientationSensor.IsMonitoring.get -> bool
+Microsoft.Maui.Devices.Sensors.IOrientationSensor.IsSupported.get -> bool
 Microsoft.Maui.Devices.Sensors.IOrientationSensor.ReadingChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.OrientationSensorChangedEventArgs!>!
+Microsoft.Maui.Devices.Sensors.IOrientationSensor.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
+Microsoft.Maui.Devices.Sensors.IOrientationSensor.Stop() -> void
 Microsoft.Maui.Devices.Sensors.IPlatformCompass
 Microsoft.Maui.Devices.Sensors.IPlatformGeocoding
 Microsoft.Maui.Devices.Sensors.Location
