@@ -895,7 +895,54 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		class TestScopedService
+		[Fact]
+		public void WindowServiceScopeHandlesNullScope()
+		{
+			// Test that destroying a window without a scope doesn't throw
+			var mauiContext = new MockMauiContext();
+			var window = new TestWindow(new ContentPage());
+			var handler = new WindowHandlerStub();
+			handler.SetMauiContext(mauiContext);
+			window.Handler = handler;
+
+			// This should not throw even though there's no scope to dispose
+			((IWindow)window).Destroying();
+		}
+
+		[Fact]
+		public void WindowServiceScopeWorksWithWindowCreationFlow()
+		{
+			// Test the full flow as it would happen in real usage
+			var serviceCollection = new ServiceCollection();
+			serviceCollection.AddScoped<TestScopedService>();
+			var rootServiceProvider = serviceCollection.BuildServiceProvider();
+
+			var appContext = new MauiContext(rootServiceProvider);
+			
+			// Simulate the window creation flow
+			var windowContext = appContext.MakeWindowScope(new object(), out var scope);
+			
+			// Verify we can get scoped services
+			var service1 = windowContext.Services.GetRequiredService<TestScopedService>();
+			var service2 = windowContext.Services.GetRequiredService<TestScopedService>();
+			
+			// Should be the same instance since it's scoped
+			Assert.Same(service1, service2);
+			
+			// Create window and set up handler
+			var window = new TestWindow(new ContentPage());
+			var handler = new WindowHandlerStub();
+			handler.SetMauiContext(windowContext);
+			window.Handler = handler;
+
+			// Destroy the window
+			((IWindow)window).Destroying();
+
+			// Scope should be disposed
+			Assert.Throws<ObjectDisposedException>(() => scope.ServiceProvider.GetService<TestScopedService>());
+		}
+
+		private class TestScopedService
 		{
 			public string TestProperty { get; set; } = "test";
 		}
