@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls
 #pragma warning disable CS0618 // Type or member is obsolete
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		#region IScrollViewController
 
@@ -30,7 +31,9 @@ namespace Microsoft.Maui.Controls
 					return;
 				_layoutAreaOverride = value;
 				// Dont invalidate here, we can relayout immediately since this only impacts our innards
+#pragma warning disable CS0618 // Type or member is obsolete
 				UpdateChildrenLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 
@@ -277,7 +280,9 @@ namespace Microsoft.Maui.Controls
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => false;
 
 		[Obsolete("Use ArrangeOverride instead")]
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected override void LayoutChildren(double x, double y, double width, double height)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 		}
 
@@ -483,5 +488,4 @@ namespace Microsoft.Maui.Controls
 			return $"{base.GetDebuggerDisplay()}, {debugText}";
 		}
 	}
-#pragma warning restore CS0618 // Type or member is obsolete
 }

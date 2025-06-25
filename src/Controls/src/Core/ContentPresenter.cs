@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPresenter']/Docs/*" />
 #pragma warning disable CS0618 // Type or member is obsolete
 	public class ContentPresenter : Compatibility.Layout, IContentView
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='ContentProperty']/Docs/*" />
 		public static BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
@@ -37,7 +38,9 @@ namespace Microsoft.Maui.Controls
 		IView IContentView.PresentedContent => Content;
 
 		[Obsolete("Use InvalidateArrange if you need to trigger a new arrange and then put your arrange logic inside ArrangeOverride instead")]
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected override void LayoutChildren(double x, double y, double width, double height)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
 			{
@@ -130,5 +133,4 @@ namespace Microsoft.Maui.Controls
 			return bounds.Size;
 		}
 	}
-#pragma warning restore CS0618 // Type or member is obsolete
 }
