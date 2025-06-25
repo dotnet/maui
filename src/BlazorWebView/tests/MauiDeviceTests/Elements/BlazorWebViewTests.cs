@@ -13,7 +13,7 @@ public partial class BlazorWebViewTests : Microsoft.Maui.DeviceTests.ControlsHan
 	{
 		Output = output;
 	}
-		
+
 	public ITestOutputHelper Output { get; }
 
 	sealed class BlazorWebViewWithCustomFiles : BlazorWebView

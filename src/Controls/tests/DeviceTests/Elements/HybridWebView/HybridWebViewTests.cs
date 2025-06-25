@@ -730,7 +730,7 @@ namespace Microsoft.Maui.DeviceTests
 					hybridWebView.InvokeJavaScriptAsync<ResponseObject>(
 						function,
 						HybridWebViewTestContext.Default.ResponseObject));
-						
+
 				Assert.True(intercepted, "Request was not intercepted");
 			});
 

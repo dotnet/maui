@@ -154,9 +154,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					fired = true;
 			};
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 			GC.KeepAlive(visual);
 
 			gradient.GradientStops.Add(new GradientStop(Colors.CornflowerBlue, 1));
@@ -187,9 +185,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					fired = true;
 			};
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 			GC.KeepAlive(visual);
 
 			geometry.Rect = new Rect(1, 2, 3, 4);
@@ -209,9 +205,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					fired = true;
 			};
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 			GC.KeepAlive(visualElement);
 
 			shadow.Brush = new SolidColorBrush(Colors.Green);
@@ -230,11 +224,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var reference = new WeakReference(new VisualElement { Shadow = shadow });
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			Assert.False(reference.IsAlive, "VisualElement should not be alive!");
+			Assert.False(await reference.WaitForCollect(), "VisualElement should not be alive!");
 		}
 
 		[Fact]

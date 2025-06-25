@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Platform;
 using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel;
 using Windows.Storage.Streams;
-using Microsoft.Maui.Platform;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui

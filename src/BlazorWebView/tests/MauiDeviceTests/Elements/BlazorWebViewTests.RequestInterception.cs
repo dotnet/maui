@@ -307,7 +307,7 @@ public partial class BlazorWebViewTests
 
 					// 1. Create the response
 					e.SetResponse(403, "Forbidden");
-					
+
 					// 2. Let the app know we are handling it entirely
 					e.Handled = true;
 				}

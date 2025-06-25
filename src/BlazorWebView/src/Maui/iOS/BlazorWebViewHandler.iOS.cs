@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 
 				var logger = _webViewHandler.Logger;
-				
+
 				logger.LogDebug("Intercepting request for {Url}.", url);
 
 				// 1. First check if the app wants to modify or override the request.
