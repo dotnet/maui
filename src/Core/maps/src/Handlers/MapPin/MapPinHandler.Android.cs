@@ -1,4 +1,5 @@
-﻿using Android.Gms.Maps;
+﻿using System;
+using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
 using Microsoft.Maui.Handlers;
 
@@ -6,26 +7,29 @@ namespace Microsoft.Maui.Maps.Handlers
 {
 	public partial class MapPinHandler : ElementHandler<IMapPin, MarkerOptions>
 	{
-		// Keep track of the actual marker associated with this handler
-		internal Marker? Marker { get; set; }
+		// Keep track of the actual marker associated with this handler using a weak reference
+		// to avoid potential memory leaks (the Marker is owned by the Google Maps view)
+		WeakReference<Marker>? _markerWeakReference;
+
+		internal Marker? Marker
+		{
+			get => _markerWeakReference?.TryGetTarget(out var marker) == true ? marker : null;
+			set => _markerWeakReference = value is not null ? new WeakReference<Marker>(value) : null;
+		}
 
 		protected override MarkerOptions CreatePlatformElement() => new MarkerOptions();
 
 		public static void MapLocation(IMapPinHandler handler, IMapPin mapPin)
 		{
-			var mapPinHandler = handler as MapPinHandler;
-			if (mapPin.Location != null)
-			{
-				// Always update the MarkerOptions
-				var position = new LatLng(mapPin.Location.Latitude, mapPin.Location.Longitude);
-				handler.PlatformView.SetPosition(position);
+			if (mapPin.Location is null)
+				return;
 
-				// If we have a reference to the actual Marker on the map, update it too
-				if (mapPinHandler?.Marker != null)
-				{
-					mapPinHandler.Marker.Position = position;
-				}
-			}
+			// Always update the MarkerOptions
+			var position = new LatLng(mapPin.Location.Latitude, mapPin.Location.Longitude);
+			handler.PlatformView.SetPosition(position);
+
+			// Update the actual marker if available
+			UpdateMarker(handler, marker => marker.Position = position);
 		}
 
 		public static void MapLabel(IMapPinHandler handler, IMapPin mapPin)
@@ -33,11 +37,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			handler.PlatformView.SetTitle(mapPin.Label);
 
 			// Update the actual marker if available
-			var mapPinHandler = handler as MapPinHandler;
-			if (mapPinHandler?.Marker != null)
-			{
-				mapPinHandler.Marker.Title = mapPin.Label;
-			}
+			UpdateMarker(handler, marker => marker.Title = mapPin.Label);
 		}
 
 		public static void MapAddress(IMapPinHandler handler, IMapPin mapPin)
@@ -45,10 +45,14 @@ namespace Microsoft.Maui.Maps.Handlers
 			handler.PlatformView.SetSnippet(mapPin.Address);
 
 			// Update the actual marker if available
-			var mapPinHandler = handler as MapPinHandler;
-			if (mapPinHandler?.Marker != null)
+			UpdateMarker(handler, marker => marker.Snippet = mapPin.Address);
+		}
+
+		private static void UpdateMarker(IMapPinHandler handler, Action<Marker> updateAction)
+		{
+			if (handler is MapPinHandler mapPinHandler && mapPinHandler.Marker is Marker marker)
 			{
-				mapPinHandler.Marker.Snippet = mapPin.Address;
+				updateAction(marker);
 			}
 		}
 	}
