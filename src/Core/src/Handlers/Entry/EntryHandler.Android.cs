@@ -86,10 +86,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsPassword(IEntryHandler handler, IEntry entry)
 		{
 			handler.UpdateValue(nameof(IEntry.Text));
-			if (entry is not null)
-			{
-				handler.PlatformView?.UpdateIsPassword(entry);
-			}
+			handler.PlatformView?.UpdateIsPassword(entry);
 		}
 
 		public static void MapHorizontalTextAlignment(IEntryHandler handler, IEntry entry) =>
