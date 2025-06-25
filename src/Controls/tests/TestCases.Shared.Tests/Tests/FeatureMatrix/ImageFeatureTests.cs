@@ -393,7 +393,7 @@ public class ImageFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
 	}
-	
+
 	[Test]
 	[Category(UITestCategories.Image)]
 	public void VerifyImageWithoutAnimation()

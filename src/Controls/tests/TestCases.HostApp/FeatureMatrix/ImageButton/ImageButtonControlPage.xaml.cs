@@ -35,17 +35,17 @@ public partial class ImageButtonControlMainPage : ContentPage
 	{
 		_viewModel.ClickTotal++;
 		_viewModel.IsButtonClicked = true;
-    }
+	}
 
 	private void OnImageButtonPressed(object sender, EventArgs e)
 	{
 		_viewModel.PressedTotal++;
 		_viewModel.IsButtonClicked = true;
-    }
+	}
 
 	private void OnImageButtonReleased(object sender, EventArgs e)
 	{
 		_viewModel.ReleasedTotal++;
 		_viewModel.IsButtonClicked = true;
-    }
+	}
 }

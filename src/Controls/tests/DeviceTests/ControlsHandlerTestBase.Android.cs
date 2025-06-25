@@ -222,10 +222,10 @@ namespace Microsoft.Maui.DeviceTests
 		protected void AssertTranslationMatches(Android.Views.View nativeView, double expectedTranslationX, double expectedTranslationY)
 		{
 			var context = nativeView?.Context ?? throw new InvalidOperationException("Context cannot be null.");
-			
+
 			var expectedXInPixels = context.ToPixels(expectedTranslationX);
 			Assert.Equal(expectedXInPixels, nativeView.TranslationX, precision: 1);
-			
+
 			var expectedYInPixels = context.ToPixels(expectedTranslationY);
 			Assert.Equal(expectedYInPixels, nativeView.TranslationY, precision: 1);
 		}
