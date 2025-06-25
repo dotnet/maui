@@ -134,8 +134,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			uiTextField.Text = newText;
-			UpdateTextTransform(uiTextField);
+			uiTextField.Text = _searchHandler.UpdateFormsText(newText, _searchHandler.TextTransform);
 			UpdateCharacterSpacing(uiTextField);
 		}
 
