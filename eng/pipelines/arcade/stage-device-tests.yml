@@ -55,7 +55,7 @@ parameters:
   default: 'net9.0'
 
 stages:
-- stage: deviceTests_ios_android_${{ parameters.TargetFrameworkVersion }}
+- stage: deviceTests_ios_android
   displayName: ${{ parameters.TargetFrameworkVersion }} ios/android Helix Tests
   dependsOn: []
   jobs:
