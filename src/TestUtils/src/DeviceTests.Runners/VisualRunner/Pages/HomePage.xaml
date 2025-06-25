@@ -1,5 +1,6 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner"
              x:Class="Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages.HomePage"
              Title="Test Runner">
 
@@ -10,13 +11,13 @@
         <Grid Margin="-20,0" Grid.Row="1">
 
             <!-- assembly list -->
-            <CollectionView x:Name="assemblyList"
-                            ItemsSource="{Binding TestAssemblies}"
-                            SelectionMode="Single"
-                            SelectionChangedCommand="{Binding NavigateToTestAssemblyCommand}"
-                            SelectionChangedCommandParameter="{Binding SelectedItem, Source={Reference assemblyList}}">
+            <StackLayout x:DataType="vm:HomeViewModel">
+                <CollectionView x:Name="assemblyList"
+                                ItemsSource="{Binding TestAssemblies}"
+                                SelectionMode="Single"
+                                SelectionChangedCommand="{Binding NavigateToTestAssemblyCommand}">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="vm:TestAssemblyViewModel">
                         <StackLayout Padding="20,10" Spacing="5">
                             <Label Text="{Binding DisplayName}" TextColor="{Binding RunStatus, Converter={StaticResource RunStatusToColorConverter}}" />
                             <StackLayout Orientation="Horizontal" Spacing="5">
@@ -38,10 +39,13 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+            </StackLayout>
 
             <!-- busy indicator -->
-            <Grid IsVisible="{Binding IsBusy}" Background="#CCFFFFFF" InputTransparent="False">
-                <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="20">
+            <Grid IsVisible="{Binding IsBusy}" Background="#CCFFFFFF" InputTransparent="False"
+                  x:DataType="vm:HomeViewModel">
+                <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="20"
+                             x:DataType="vm:HomeViewModel">
                     <Label Text="Working..." />
                     <ActivityIndicator IsRunning="{Binding IsBusy}" />
                 </StackLayout>
@@ -50,14 +54,15 @@
         </Grid>
 
         <!-- additional controls -->
-        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Grid.Row="2" Spacing="5">
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Grid.Row="2" Spacing="5"
+                     x:DataType="vm:HomeViewModel">
             <Button Text="Run All Tests" Command="{Binding RunEverythingCommand}" />
             <Button Text="Credits" Command="{Binding CreditsCommand}" />
         </StackLayout>
 
         <!-- additional output -->
         <Label Text="Diagnostic Information:" FontAttributes="Bold" Grid.Row="3" />
-        <ScrollView Grid.Row="4">
+        <ScrollView Grid.Row="4" x:DataType="vm:HomeViewModel">
             <Label Text="{Binding DiagnosticMessages}" />
         </ScrollView>
 
