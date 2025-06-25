@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
@@ -163,6 +164,28 @@ namespace Microsoft.Maui.DeviceTests
 			var platformEntry = GetPlatformControl(handler);
 			var platformRotation = await InvokeOnMainThreadAsync(() => platformEntry.Rotation);
 			Assert.Equal(expected, platformRotation);
+		}
+
+		[Fact(DisplayName = "Android crash when Entry has more than 5000 characters")]
+		[Category(TestCategory.Entry)]
+		public async Task EntryWithLongTextAndIsPassword_DoesNotCrash()
+		{
+			if (!OperatingSystem.IsAndroidVersionAtLeast(31)) // Android 12+
+			{
+				return;
+			}
+
+			string longText = new string('A', 5001);
+			var entry = new Entry
+			{
+				Text = longText,
+			};
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var platformEntry = GetPlatformControl(handler);
+			Assert.NotNull(platformEntry);
+			Assert.Equal(longText, await GetPlatformText(handler));
+
 		}
 	}
 }
