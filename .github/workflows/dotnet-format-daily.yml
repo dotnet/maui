@@ -53,7 +53,7 @@ jobs:
           git reset --hard HEAD
 
       - name: Run dotnet format
-        run: dotnet format .\Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
+        run: dotnet format .\Microsoft.Maui.sln --exclude Templates/src --exclude-diagnostics CA1822
     
       - name: Create Pull Request
         uses: dotnet/actions-create-pull-request@v4
