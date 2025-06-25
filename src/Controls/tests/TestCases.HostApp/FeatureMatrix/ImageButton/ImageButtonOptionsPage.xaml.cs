@@ -186,7 +186,7 @@ public partial class ImageButtonOptionsPage : ContentPage
 				int.TryParse(parts[2], out int bottomLeft) &&
 				int.TryParse(parts[3], out int bottomRight))
 			{
-				_viewModel.CornerRadius = topLeft;  
+				_viewModel.CornerRadius = topLeft;
 			}
 			else if (parts.Length == 1 && int.TryParse(parts[0], out int uniform))
 			{
