@@ -15,7 +15,8 @@
                 <CollectionView x:Name="assemblyList"
                                 ItemsSource="{Binding TestAssemblies}"
                                 SelectionMode="Single"
-                                SelectionChangedCommand="{Binding NavigateToTestAssemblyCommand}">
+                                SelectionChangedCommand="{Binding NavigateToTestAssemblyCommand}"
+                                SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference assemblyList}, x:DataType=CollectionView}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:TestAssemblyViewModel">
                         <StackLayout Padding="20,10" Spacing="5">

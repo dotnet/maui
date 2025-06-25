@@ -45,7 +45,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 
 			RunAllTestsCommand = new Command(RunAllTestsExecute, () => !_isBusy);
 			RunFilteredTestsCommand = new Command(RunFilteredTestsExecute, () => !_isBusy && (_filteredTests != null && _filteredTests.Any()));
-			NavigateToResultCommand = new Command<SelectionChangedEventArgs>(NavigateToResultExecute, args => !_isBusy);
+			NavigateToResultCommand = new Command<TestCaseViewModel?>(NavigateToResultExecute, tc => !_isBusy);
 
 			DisplayName = Path.GetFileNameWithoutExtension(runInfo.AssemblyFileName);
 
@@ -244,9 +244,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			}
 		}
 
-		async void NavigateToResultExecute(SelectionChangedEventArgs args)
+		async void NavigateToResultExecute(TestCaseViewModel? testCase)
 		{
-			var testCase = args.CurrentSelection?.FirstOrDefault() as TestCaseViewModel;
 			if (testCase == null)
 				return;
 
