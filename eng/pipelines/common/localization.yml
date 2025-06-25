@@ -25,7 +25,8 @@ stages:
               locProj: 'eng/automation/LocProject.json'
               outDir: '$(Build.ArtifactStagingDirectory)'
               packageSourceAuth: patAuth
-              patVariable: ${{ parameters.CeapexPat }}
+              patVariable: $(System.AccessToken)
+              dependencyPackageSource: 'https://devdiv.pkgs.visualstudio.com/DevDiv/_packaging/ceapex.LocTools/nuget/v3/index.json'
               isCreatePrSelected: true                            # Create the PR with the Localization changes if there are any
               isShouldReusePrSelected: true                       # Make sure to not keep creating new PRs if one is already open
               isAutoCompletePrSelected: false                     # Allow us to review the created PR instead of auto-merging it
