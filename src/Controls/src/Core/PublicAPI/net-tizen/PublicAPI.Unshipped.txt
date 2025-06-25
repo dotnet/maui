@@ -1,4 +1,6 @@
 #nullable enable
+Microsoft.Maui.Controls.SearchHandler.HideKeyboard() -> void
+Microsoft.Maui.Controls.SearchHandler.ShowKeyboard() -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Send<TSender>(TSender sender, string message) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Subscribe<TSender, TArgs>(object subscriber, string message, System.Action<TSender, TArgs> callback, TSender source = null) -> void
