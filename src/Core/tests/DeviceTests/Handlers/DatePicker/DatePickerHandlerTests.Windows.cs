@@ -59,7 +59,46 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyInitValue(datePicker, () => datePicker.Format, GetNativeFormat, format, nativeFormat);
 		}
+		[Theory(DisplayName = "Standard Format Strings Initialize Correctly")]
+		[InlineData("D", "{dayofweek.full} {month.full} {day.integer} {year.full}")]
+		[InlineData("f", "{dayofweek.full} {month.full} {day.integer}, {year.full} {hour.integer}:{minute.integer(2)} {period.abbreviated}")]
+		[InlineData("F", "{dayofweek.full} {month.full} {day.integer}, {year.full} {hour.integer}:{minute.integer(2)} {period.abbreviated}")]
+		[InlineData("m", "{month.full} {day.integer}")]
+		[InlineData("M", "{month.full} {day.integer}")]
+		[InlineData("r", "{dayofweek.abbreviated}, {day.integer(2)} {month.abbreviated} {year.full} {hour.integer(2)}:{minute.integer(2)}:{second.integer(2)} GMT")]
+		[InlineData("R", "{dayofweek.abbreviated}, {day.integer(2)} {month.abbreviated} {year.full} {hour.integer(2)}:{minute.integer(2)}:{second.integer(2)} GMT")]
+		[InlineData("s", "{year.full}-{month.integer(2)}-{day.integer(2)}T{hour.integer(2)}:{minute.integer(2)}:{second.integer(2)}")]
+		[InlineData("U", "{dayofweek.full} {month.full} {day.integer} {year.full} {hour.integer(2)}:{minute.integer(2)}:{second.integer(2)}")]
+		[InlineData("y", "{year.full} {month.full}")]
+		[InlineData("Y", "{year.full} {month.full}")]
+		[InlineData("g", "{month.integer}/{day.integer}/{year.abbreviated} {hour.integer}:{minute.integer(2)} {period.abbreviated}")]
+		[InlineData("G", "{month.integer}/{day.integer}/{year.abbreviated} {hour.integer}:{minute.integer(2)}:{second.integer(2)} {period.abbreviated}")]
+		public async Task StandardFormatInitializesCorrectly(string format, string nativeFormat)
+		{
+			var datePicker = new DatePickerStub();
 
+			datePicker.Date = new DateTime(2025, 12, 25);
+			datePicker.MinimumDate = DateTime.Today.AddDays(-1);
+			datePicker.MaximumDate = DateTime.Today.AddDays(1);
+			// Use a specific date to ensure consistent results
+			datePicker.Format = format;
+
+			await ValidatePropertyInitValue(datePicker, () => datePicker.Format, GetNativeFormat, format, nativeFormat);
+		}
+
+		[Theory(DisplayName = "Standard Format Strings That Use Default Initialize Correctly")]
+		[InlineData("d", "")]
+		public async Task StandardFormatDefaultInitializesCorrectly(string format, string nativeFormat)
+		{
+			var datePicker = new DatePickerStub();
+
+			datePicker.Date = DateTime.Today;
+			datePicker.MinimumDate = DateTime.Today.AddDays(-1);
+			datePicker.MaximumDate = DateTime.Today.AddDays(1);
+			datePicker.Format = format;
+
+			await ValidatePropertyInitValue(datePicker, () => datePicker.Format, GetNativeFormat, format, nativeFormat);
+		}
 		CalendarDatePicker GetNativeDatePicker(DatePickerHandler datePickerHandler) =>
 			datePickerHandler.PlatformView;
 
