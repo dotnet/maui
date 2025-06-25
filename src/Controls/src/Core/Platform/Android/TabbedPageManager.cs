@@ -331,7 +331,6 @@ namespace Microsoft.Maui.Controls.Handlers
 					bottomNavigationView.SetOnItemSelectedListener(_listeners);
 				}
 
-				UpdateIgnoreContainerAreas();
 			}
 			else
 			{
@@ -359,7 +358,6 @@ namespace Microsoft.Maui.Controls.Handlers
 #pragma warning restore CS0618 // Type or member is obsolete
 				}
 
-				UpdateIgnoreContainerAreas();
 			}
 		}
 
@@ -465,12 +463,6 @@ namespace Microsoft.Maui.Controls.Handlers
 			//{
 			//	Platform.NavAnimationInProgress = false;
 			//}
-		}
-
-		void UpdateIgnoreContainerAreas()
-		{
-			foreach (IPageController child in Element.Children)
-				child.IgnoresContainerArea = child is NavigationPage;
 		}
 
 		void UpdateOffscreenPageLimit()

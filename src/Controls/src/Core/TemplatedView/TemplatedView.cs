@@ -7,7 +7,9 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedView.xml" path="Type[@FullName='Microsoft.Maui.Controls.TemplatedView']/Docs/*" />
+	/// <summary>
+	/// A base class for creating templated views.
+	/// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
 	public partial class TemplatedView : Compatibility.Layout, IControlTemplated, IContentView
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -16,7 +18,9 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ControlTemplateProperty = BindableProperty.Create(nameof(ControlTemplate), typeof(ControlTemplate), typeof(TemplatedView), null,
 			propertyChanged: TemplateUtilities.OnControlTemplateChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedView.xml" path="//Member[@MemberName='ControlTemplate']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the control template for this view.
+		/// </summary>
 		public ControlTemplate ControlTemplate
 		{
 			get { return (ControlTemplate)GetValue(ControlTemplateProperty); }
@@ -26,6 +30,8 @@ namespace Microsoft.Maui.Controls
 		IList<Element> IControlTemplated.InternalChildren => InternalChildren;
 
 		Element IControlTemplated.TemplateRoot { get; set; }
+
+		ContentPresenter IControlTemplated.ContentPresenter { get; set; }
 
 		[Obsolete("Use InvalidateArrange if you need to trigger a new arrange and then put your arrange logic inside ArrangeOverride instead")]
 		protected override void LayoutChildren(double x, double y, double width, double height)
@@ -110,7 +116,10 @@ namespace Microsoft.Maui.Controls
 
 		protected object GetTemplateChild(string name) => TemplateUtilities.GetTemplateChild(this, name);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedView.xml" path="//Member[@MemberName='ResolveControlTemplate']/Docs/*" />
+		/// <summary>
+		/// Resolves the control template for this view.
+		/// </summary>
+		/// <returns>The control template to use.</returns>
 		public virtual ControlTemplate ResolveControlTemplate()
 		{
 			return ControlTemplate;

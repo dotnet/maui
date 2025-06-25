@@ -20,12 +20,14 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Bindable property for ClippedToBounds.
 		/// </summary>
-		public static readonly BindableProperty ClippedToBoundsProperty = ClippedToBoundsElement.ClippedToBoundsProperty;
+		public static readonly BindableProperty ClippedToBoundsProperty = 
+			BindableProperty.Create(nameof(ClippedToBounds), typeof(bool), typeof(ContentPresenter), false);
 
 		/// <summary>
 		/// Bindable property for InputTransparentContainer.
 		/// </summary>
-		public static readonly BindableProperty InputTransparentContainerProperty = InputTransparentContainerElement.InputTransparentContainerProperty;
+		public static readonly BindableProperty InputTransparentContainerProperty = 
+			BindableProperty.Create(nameof(InputTransparentContainer), typeof(bool), typeof(ContentPresenter), false);
 
 		/// <summary>
 		/// Initializes a new instance of the ContentPresenter class.
@@ -77,7 +79,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Clears the content.
 		/// </summary>
-		internal virtual void Clear()
+		internal new virtual void Clear()
 		{
 			Content = null;
 		}
@@ -143,6 +145,36 @@ namespace Microsoft.Maui.Controls
 		{
 			this.ArrangeContent(bounds);
 			return bounds.Size;
+		}
+
+		/// <summary>
+		/// Creates the layout manager for this ContentPresenter.
+		/// </summary>
+		/// <returns>The layout manager.</returns>
+		protected override ILayoutManager CreateLayoutManager()
+		{
+			return new ContentLayoutManager(this);
+		}
+
+		private class ContentLayoutManager : ILayoutManager
+		{
+			private readonly IContentView _contentView;
+
+			public ContentLayoutManager(IContentView contentView)
+			{
+				_contentView = contentView;
+			}
+
+			public Size Measure(double widthConstraint, double heightConstraint)
+			{
+				return _contentView.MeasureContent(widthConstraint, heightConstraint);
+			}
+
+			public Size ArrangeChildren(Rect bounds)
+			{
+				_contentView.ArrangeContent(bounds);
+				return bounds.Size;
+			}
 		}
 	}
 }

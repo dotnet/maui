@@ -5799,10 +5799,6 @@ Microsoft.Maui.Controls.IPaddingElement.OnPaddingPropertyChanged(Microsoft.Maui.
 Microsoft.Maui.Controls.IPaddingElement.Padding.get -> Microsoft.Maui.Thickness
 Microsoft.Maui.Controls.IPaddingElement.PaddingDefaultValueCreator() -> Microsoft.Maui.Thickness
 Microsoft.Maui.Controls.IPageController
-Microsoft.Maui.Controls.IPageController.ContainerArea.get -> Microsoft.Maui.Graphics.Rect
-Microsoft.Maui.Controls.IPageController.ContainerArea.set -> void
-Microsoft.Maui.Controls.IPageController.IgnoresContainerArea.get -> bool
-Microsoft.Maui.Controls.IPageController.IgnoresContainerArea.set -> void
 Microsoft.Maui.Controls.IPageController.SendAppearing() -> void
 Microsoft.Maui.Controls.IPageController.SendDisappearing() -> void
 Microsoft.Maui.Controls.IPanGestureController
@@ -6196,12 +6192,8 @@ Microsoft.Maui.Controls.OrientationStateTrigger.Orientation.set -> void
 Microsoft.Maui.Controls.OrientationStateTrigger.OrientationStateTrigger() -> void
 Microsoft.Maui.Controls.Page
 Microsoft.Maui.Controls.Page.Appearing -> System.EventHandler
-Microsoft.Maui.Controls.Page.ContainerArea.get -> Microsoft.Maui.Graphics.Rect
-Microsoft.Maui.Controls.Page.ContainerArea.set -> void
 Microsoft.Maui.Controls.Page.Disappearing -> System.EventHandler
 Microsoft.Maui.Controls.Page.ForceLayout() -> void
-Microsoft.Maui.Controls.Page.IgnoresContainerArea.get -> bool
-Microsoft.Maui.Controls.Page.IgnoresContainerArea.set -> void
 Microsoft.Maui.Controls.Page.IsBusy.get -> bool
 Microsoft.Maui.Controls.Page.IsBusy.set -> void
 Microsoft.Maui.Controls.Page.LayoutChanged -> System.EventHandler
@@ -7786,9 +7778,7 @@ override Microsoft.Maui.Controls.ContentPage.LayoutChildren(double x, double y, 
 override Microsoft.Maui.Controls.ContentPage.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.ContentPage.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.ContentPresenter.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
-override Microsoft.Maui.Controls.ContentPresenter.LayoutChildren(double x, double y, double width, double height) -> void
 override Microsoft.Maui.Controls.ContentPresenter.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
-override Microsoft.Maui.Controls.ContentPresenter.OnMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
 override Microsoft.Maui.Controls.ContentView.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Editor.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.Editor.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
