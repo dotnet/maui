@@ -2,7 +2,10 @@
 
 namespace Microsoft.Maui.Controls
 {
-	// There are 2 Layout types: Controls and Compatibility
+	/// <summary>
+	/// Interface for elements that support input transparency for their container.
+	/// There are 2 Layout types: Controls and Compatibility
+	/// </summary>
 	interface IInputTransparentContainerElement
 	{
 		bool InputTransparent { get; }

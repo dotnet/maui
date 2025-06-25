@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls
 
 		//note to implementor: but implement this method explicitly
 		void OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue);
+
 		Thickness PaddingDefaultValueCreator();
 	}
 }

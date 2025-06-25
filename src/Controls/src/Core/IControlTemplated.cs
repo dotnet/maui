@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Controls
 
 		Element TemplateRoot { get; set; }
 
+		ContentPresenter ContentPresenter { get; set; }
+
 		void OnControlTemplateChanged(ControlTemplate oldValue, ControlTemplate newValue);
 
 		void OnApplyTemplate();
