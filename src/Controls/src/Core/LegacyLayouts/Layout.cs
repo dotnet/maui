@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 	/// </summary>
 	/// <typeparam name="T">The type of <see cref="View"/> that can be added to the layout.</typeparam>
 	[ContentProperty(nameof(Children))]
-	[Obsolete("Use Microsoft.Maui.Controls.Layout instead. For more information, see https://learn.microsoft.com/dotnet/maui/user-interface/layouts/custom", true)]
+	[Obsolete("Use Microsoft.Maui.Controls.Layout instead. For more information, see https://learn.microsoft.com/dotnet/maui/user-interface/layouts/custom")]
 	public abstract partial class Layout<T> : Layout, Microsoft.Maui.ILayout, ILayoutManager, IBindableLayout, IViewContainer<T> where T : View
 	{
 		readonly ElementCollection<T> _children;
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 	/// <summary>
 	/// Base class for layouts that allow you to arrange and group UI controls in your application.
 	/// </summary>
-	[Obsolete("Use Microsoft.Maui.Controls.Layout instead. For more information, see https://learn.microsoft.com/dotnet/maui/user-interface/layouts/custom", true)]
+	[Obsolete("Use Microsoft.Maui.Controls.Layout instead. For more information, see https://learn.microsoft.com/dotnet/maui/user-interface/layouts/custom")]
 	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement
 	{
 		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>

@@ -15,7 +15,6 @@ namespace Microsoft.Maui.Controls
 #pragma warning disable CS0618 // Type or member is obsolete
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView
-#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		#region IScrollViewController
 
@@ -484,4 +483,5 @@ namespace Microsoft.Maui.Controls
 			return $"{base.GetDebuggerDisplay()}, {debugText}";
 		}
 	}
+#pragma warning restore CS0618 // Type or member is obsolete
 }

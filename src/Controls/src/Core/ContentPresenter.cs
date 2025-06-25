@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPresenter']/Docs/*" />
 #pragma warning disable CS0618 // Type or member is obsolete
 	public class ContentPresenter : Compatibility.Layout, IContentView
-#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='ContentProperty']/Docs/*" />
 		public static BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
@@ -131,4 +130,5 @@ namespace Microsoft.Maui.Controls
 			return bounds.Size;
 		}
 	}
+#pragma warning restore CS0618 // Type or member is obsolete
 }

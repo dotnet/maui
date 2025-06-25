@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedView.xml" path="Type[@FullName='Microsoft.Maui.Controls.TemplatedView']/Docs/*" />
 #pragma warning disable CS0618 // Type or member is obsolete
 	public partial class TemplatedView : Compatibility.Layout, IControlTemplated, IContentView
-#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		/// <summary>Bindable property for <see cref="ControlTemplate"/>.</summary>
 		public static readonly BindableProperty ControlTemplateProperty = BindableProperty.Create(nameof(ControlTemplate), typeof(ControlTemplate), typeof(TemplatedView), null,
@@ -153,4 +152,5 @@ namespace Microsoft.Maui.Controls
 #nullable disable
 
 	}
+#pragma warning restore CS0618 // Type or member is obsolete
 }
