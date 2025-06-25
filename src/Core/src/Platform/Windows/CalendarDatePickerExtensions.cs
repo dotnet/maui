@@ -80,8 +80,6 @@ namespace Microsoft.Maui.Platform
 
 		}
 
-
-
 		internal static string GetSeparator(string format)
 		{
 			string separator;
