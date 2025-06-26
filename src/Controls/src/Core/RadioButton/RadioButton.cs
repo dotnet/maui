@@ -289,7 +289,7 @@ namespace Microsoft.Maui.Controls
 			base.ChangeVisualState();
 		}
 
-		[Obsolete("Use MeasureOverride instead")]
+		[Obsolete("Use MeasureOverride instead", true)]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (ControlTemplate == null)

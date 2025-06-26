@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ItemsSourceProperty, value);
 		}
 
-		[Obsolete("Use MeasureOverride instead")]
+		[Obsolete("Use MeasureOverride instead", true)]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (IndicatorTemplate == null)

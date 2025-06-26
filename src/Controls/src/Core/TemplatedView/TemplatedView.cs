@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 
 		Element IControlTemplated.TemplateRoot { get; set; }
 
-		[Obsolete("Use InvalidateArrange if you need to trigger a new arrange and then put your arrange logic inside ArrangeOverride instead")]
+		[Obsolete("Use InvalidateArrange if you need to trigger a new arrange and then put your arrange logic inside ArrangeOverride instead", true)]
 #pragma warning disable CS0618 // Type or member is obsolete
 		protected override void LayoutChildren(double x, double y, double width, double height)
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		[Obsolete("Use MeasureOverride instead")]
+		[Obsolete("Use MeasureOverride instead", true)]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			double widthRequest = WidthRequest;
