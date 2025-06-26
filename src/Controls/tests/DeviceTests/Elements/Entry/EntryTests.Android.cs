@@ -170,11 +170,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Category(TestCategory.Entry)]
 		public async Task EntryWithLongTextAndIsPassword_DoesNotCrash()
 		{
-			if (!OperatingSystem.IsAndroidVersionAtLeast(31)) // Android 12+
-			{
-				return;
-			}
-
 			string longText = new string('A', 5001);
 			var entry = new Entry
 			{
