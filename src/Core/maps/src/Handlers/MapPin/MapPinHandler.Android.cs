@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static void MapLocation(IMapPinHandler handler, IMapPin mapPin)
 		{
 			if (mapPin.Location is null)
+			{
 				return;
+			}
 
 			// Always update the MarkerOptions
 			var position = new LatLng(mapPin.Location.Latitude, mapPin.Location.Longitude);
