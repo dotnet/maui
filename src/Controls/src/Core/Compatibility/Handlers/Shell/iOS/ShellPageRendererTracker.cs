@@ -735,7 +735,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_searchController.SetSearchResultsUpdater(sc =>
 			{
-				SearchHandler.SetValue(SearchHandler.QueryProperty, TextTransformUtilites.GetTransformedText(sc.SearchBar.Text, SearchHandler.TextTransform));
+				SearchHandler.SetValue(SearchHandler.QueryProperty, sc.SearchBar.Text);
 			});
 
 			searchBar.BookmarkButtonClicked += BookmarkButtonClicked;

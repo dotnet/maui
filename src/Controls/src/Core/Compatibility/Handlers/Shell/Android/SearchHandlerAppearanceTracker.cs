@@ -106,25 +106,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateText()
 		{
-			string newText = _searchHandler.Query ?? string.Empty;
+			string newText = _searchHandler.UpdateFormsText(_searchHandler.Query ?? string.Empty, _searchHandler.TextTransform);
 
 			if (_editText.Text == newText)
 			{
 				return;
 			}
 
-			int cursorPosition = _editText.SelectionStart;
-			bool selectionExists = _editText.HasSelection;
-
-			_editText.Text = _searchHandler.UpdateFormsText(newText, _searchHandler.TextTransform);
-
-			// If we had a selection, place the cursor at the end of text
-			// Otherwise try to maintain the cursor at its previous position
-			int textLength = _editText.Text?.Length ?? 0;
-			int newPosition = selectionExists ? textLength : Math.Min(cursorPosition, textLength);
-
-			// Prevents the cursor from resetting to position zero when text is set programmatically
-			_editText.SetSelection(newPosition);
+			_editText.SetTextKeepState(newText);
 		}
 
 		void EditTextFocusChange(object s, AView.FocusChangeEventArgs args)
