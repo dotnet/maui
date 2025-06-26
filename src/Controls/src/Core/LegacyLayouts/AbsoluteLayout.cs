@@ -156,7 +156,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (e.PropertyName == LayoutFlagsProperty.PropertyName || e.PropertyName == LayoutBoundsProperty.PropertyName)
 			{
 				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+#pragma warning disable CS0618 // Type or member is obsolete
 				UpdateChildrenLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 

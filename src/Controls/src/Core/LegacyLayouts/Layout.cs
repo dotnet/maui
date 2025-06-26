@@ -81,7 +81,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		Size ILayoutManager.ArrangeChildren(Rect bounds)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			LayoutChildren(bounds.X, bounds.Y, bounds.Width, bounds.Height);
+#pragma warning restore CS0618 // Type or member is obsolete
 			return bounds.Size;
 		}
 	}
@@ -473,7 +475,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			_lastLayoutSize = new Size(width, height);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			LayoutChildren(x, y, w, h);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			for (var i = 0; i < oldBounds.Length; i++)
 			{

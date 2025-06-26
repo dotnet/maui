@@ -12,11 +12,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		/// <summary>Bindable property for <see cref="Orientation"/>.</summary>
 		public static readonly BindableProperty OrientationProperty = BindableProperty.Create(nameof(Orientation), typeof(StackOrientation), typeof(StackLayout), StackOrientation.Vertical,
+#pragma warning disable CS0618 // Type or member is obsolete
 			propertyChanged: (bindable, oldvalue, newvalue) => ((StackLayout)bindable).InvalidateLayout());
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		/// <summary>Bindable property for <see cref="Spacing"/>.</summary>
 		public static readonly BindableProperty SpacingProperty = BindableProperty.Create(nameof(Spacing), typeof(double), typeof(StackLayout), 6d,
+#pragma warning disable CS0618 // Type or member is obsolete
 			propertyChanged: (bindable, oldvalue, newvalue) => ((StackLayout)bindable).InvalidateLayout());
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		LayoutInformation _layoutInformation = new LayoutInformation();
 		readonly Lazy<PlatformConfigurationRegistry<StackLayout>> _platformConfigurationRegistry;
@@ -98,7 +102,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		internal override void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
 		{
 			_layoutInformation = new LayoutInformation();
+#pragma warning disable CS0618 // Type or member is obsolete
 			base.OnChildMeasureInvalidated(child, trigger);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		protected override void ComputeConstraintForView(View view)
