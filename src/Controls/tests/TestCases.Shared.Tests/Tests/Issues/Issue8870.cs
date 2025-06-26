@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnWindowsWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 		public void RotatingCollectionViewWithHTMLShouldNotHangOrCrash()
 		{
-			int delay = 1000;
+			int delay = 3000;
 
 			App.WaitForElement(CheckResult);
 

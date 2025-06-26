@@ -110,6 +110,20 @@ dotnet cake --target=dotnet-pack
   - `src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj`
   - `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
 
+### Code Formatting
+
+Before committing any changes, format the codebase using the following command to ensure consistent code style:
+
+```bash
+dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
+```
+
+This command:
+- Formats all code files according to the repository's `.editorconfig` settings
+- Excludes the Templates/src directory from formatting
+- Excludes the CA1822 diagnostic (member can be marked as static)
+- Uses `--no-restore` for faster execution when dependencies are already restored
+
 ### Local Development with Branch-Specific .NET
 
 For compatibility with specific branches:
