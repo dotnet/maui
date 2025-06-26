@@ -90,13 +90,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 	/// Base class for layouts that allow you to arrange and group UI controls in your application.
 	/// </summary>
 	[Obsolete("Use Microsoft.Maui.Controls.Layout instead. For more information, see https://learn.microsoft.com/dotnet/maui/user-interface/layouts/custom")]
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, ICrossPlatformLayout
+	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, ICrossPlatformLayout, IClippedToBoundsElement
 	{
-		
+
 		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
-		public static readonly BindableProperty IsClippedToBoundsProperty =
-			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false,
-				propertyChanged: IsClippedToBoundsPropertyChanged);
+		public static readonly BindableProperty IsClippedToBoundsProperty = ClippedToBoundsElement.IsClippedToBoundsProperty;
 
 		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
 		public static readonly BindableProperty CascadeInputTransparentProperty = InputTransparentContainerElement.CascadeInputTransparentProperty;
@@ -165,14 +163,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		Thickness IPaddingElement.PaddingDefaultValueCreator() => default(Thickness);
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue) => InvalidateLayout();
-
-		static void IsClippedToBoundsPropertyChanged(BindableObject bindableObject, object oldValue, object newValue)
-		{
-			if (bindableObject is IView view)
-			{
-				view.Handler?.UpdateValue(nameof(Maui.ILayout.ClipsToBounds));
-			}
-		}
 
 		private protected override IList<Element> LogicalChildrenInternalBackingStore
 			=> UseCompatibilityMode ? InternalChildren : base.LogicalChildrenInternalBackingStore;
