@@ -86,19 +86,40 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 		}
 
+		public static void MapIsOpen(IPickerHandler handler, IPicker picker)
+		{
+			if (handler is PickerHandler pickerHandler &&
+			    pickerHandler.PlatformView.IsLoaded())
+			{
+				if (picker.IsOpen)
+					pickerHandler.ShowDialog();
+				else
+					pickerHandler.HideDialog();
+			}
+		}
+
 		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
 		{
 			if (PlatformView == null)
 				return;
 
 			if (e.HasFocus)
-			{
-				if (PlatformView.Clickable)
-					PlatformView.CallOnClick();
-				else
-					OnClick(PlatformView, EventArgs.Empty);
-			}
+				ShowDialog();
 			else if (_dialog != null)
+				HideDialog();
+		}
+
+		void ShowDialog()
+		{
+			if (PlatformView.Clickable)
+				PlatformView.CallOnClick();
+			else
+				OnClick(PlatformView, EventArgs.Empty);
+		}
+		
+		void HideDialog()
+		{
+			if (_dialog != null)
 			{
 				_dialog.Hide();
 				_dialog = null;
@@ -155,9 +176,12 @@ namespace Microsoft.Maui.Handlers
 				_dialog.DismissEvent += (sender, args) =>
 				{
 					_dialog = null;
+					VirtualView.IsOpen = false;
 				};
 
 				_dialog.Show();
+
+				VirtualView.IsOpen = true;		
 			}
 		}
 

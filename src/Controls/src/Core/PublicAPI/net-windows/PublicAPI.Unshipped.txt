@@ -5,6 +5,9 @@
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Subscribe<TSender>(object subscriber, string message, System.Action<TSender> callback, TSender source = null) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void
+Microsoft.Maui.Controls.DatePicker.Closed -> System.EventHandler<Microsoft.Maui.Controls.PickerClosedEventArgs>
+Microsoft.Maui.Controls.DatePicker.IsOpen.get -> bool
+Microsoft.Maui.Controls.DatePicker.IsOpen.set -> void
 ~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
 ~Microsoft.Maui.Controls.ITextElement.TextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string
@@ -60,6 +63,8 @@
 ~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverSourceView(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config) -> Microsoft.Maui.Controls.View
 ~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetModalPopoverRect(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config, System.Drawing.Rectangle value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page>
 ~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetModalPopoverView(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config, Microsoft.Maui.Controls.View value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page>
+~static readonly Microsoft.Maui.Controls.DatePicker.IsOpenProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Picker.IsOpenProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.RippleColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.RippleColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WebView.JavaScriptEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -68,6 +73,7 @@
 ~static readonly Microsoft.Maui.Controls.SearchBar.ReturnTypeProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.SearchBar.SearchIconColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Switch.OffColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.TimePicker.IsOpenProperty -> Microsoft.Maui.Controls.BindableProperty
 ~virtual Microsoft.Maui.Controls.VisualElement.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 const Microsoft.Maui.Controls.BrushTypeConverter.Hsl = "hsl" -> string!
 const Microsoft.Maui.Controls.BrushTypeConverter.Hsla = "hsla" -> string!
@@ -89,6 +95,7 @@ Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime?
 Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime?
+Microsoft.Maui.Controls.DatePicker.Opened -> System.EventHandler<Microsoft.Maui.Controls.PickerOpenedEventArgs>
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.HybridWebView.WebResourceRequested -> System.EventHandler<Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs!>?
 Microsoft.Maui.Controls.ICornerElement
@@ -109,6 +116,18 @@ Microsoft.Maui.Controls.ITextElement.OnCharacterSpacingPropertyChanged(double ol
 Microsoft.Maui.Controls.ITextElement.OnTextTransformChanged(Microsoft.Maui.TextTransform oldValue, Microsoft.Maui.TextTransform newValue) -> void
 Microsoft.Maui.Controls.ITextElement.TextTransform.get -> Microsoft.Maui.TextTransform
 Microsoft.Maui.Controls.ITextElement.TextTransform.set -> void
+Microsoft.Maui.Controls.Picker.Closed -> System.EventHandler<Microsoft.Maui.Controls.PickerClosedEventArgs>
+Microsoft.Maui.Controls.Picker.IsOpen.get -> bool
+Microsoft.Maui.Controls.Picker.IsOpen.set -> void
+Microsoft.Maui.Controls.Picker.Opened -> System.EventHandler<Microsoft.Maui.Controls.PickerOpenedEventArgs>
+Microsoft.Maui.Controls.PickerClosedEventArgs
+Microsoft.Maui.Controls.PickerClosedEventArgs.PickerClosedEventArgs() -> void
+Microsoft.Maui.Controls.PickerOpenedEventArgs
+Microsoft.Maui.Controls.PickerOpenedEventArgs.PickerOpenedEventArgs() -> void
+Microsoft.Maui.Controls.TimePicker.Closed -> System.EventHandler<Microsoft.Maui.Controls.PickerClosedEventArgs>
+Microsoft.Maui.Controls.TimePicker.IsOpen.get -> bool
+Microsoft.Maui.Controls.TimePicker.IsOpen.set -> void
+Microsoft.Maui.Controls.TimePicker.Opened -> System.EventHandler<Microsoft.Maui.Controls.PickerOpenedEventArgs>
 Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.Fixed = Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed | Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Controls.LayoutConstraint
