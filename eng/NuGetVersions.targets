@@ -155,18 +155,6 @@
         Version="$(MicrosoftGraphicsWin2DPackageVersion)"
     />
     <PackageReference
-        Update="Xamarin.Android.Glide"
-        Version="$(_XamarinAndroidGlideVersion)"
-    />
-    <PackageReference
-        Update="Xamarin.AndroidX.Security.SecurityCrypto"
-        Version="$(_XamarinAndroidXSecurityVersion)"
-    />
-    <PackageReference
-        Update="Xamarin.Google.Crypto.Tink.Android"
-        Version="$(_XamarinGoogleCryptoTinkAndroidVersion)"
-    />
-    <PackageReference
         Update="Microsoft.AspNetCore.Authorization"
         Version="$(MicrosoftAspNetCoreAuthorizationPackageVersion)"
     />
