@@ -52,8 +52,8 @@
 
               <Label Grid.Row="3"
                      Grid.Column="0"
-                     Text="Culture Format Display:"
-                     Margin="10,0,0,0"/>
+                     HorizontalOptions="Center"
+                     Text="Culture Format Display:"/>
               <Label Grid.Row="3"
                      Grid.Column="1"
                      x:Name="CultureFormatLabel"

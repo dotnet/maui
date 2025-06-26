@@ -18,7 +18,8 @@ public class TimePickerFeatureTests : UITest
         App.NavigateToGallery(TimePickerFeatureMatrix);
     }
 
-#if TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_CATALYST
+
     [Test, Order(1)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_InitialState_VerifyVisualState()
@@ -35,7 +36,8 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+
     [Test, Order(2)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_ModifyOldTimeAndNewTime_VerifyVisualState()
@@ -56,7 +58,8 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+
     [Test, Order(3)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_OldTimeAndNewTime_VerifyVisualState()
@@ -79,7 +82,8 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_MACCATALYST && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30199
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30199
+
     [Test, Order(4)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetTimeAndCharacterSpacing_VerifyVisualState()
@@ -96,7 +100,8 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30192
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30192
+
     [Test, Order(5)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetFlowDirectionAndTime_VerifyVisualState()
@@ -112,7 +117,8 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_CATALYST
+
     [Test, Order(6)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetTimeAndTextColor_VerifyVisualState()
@@ -128,7 +134,8 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_CATALYST
+
     [Test, Order(7)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetFontAttributesAndFontFamily_VerifyVisualState()
@@ -146,7 +153,8 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_CATALYST
+
     [Test, Order(8)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetFontAttributesAndFontSize_VerifyVisualState()
@@ -165,7 +173,8 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_CATALYST
+
     [Test, Order(9)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetFontAttributesAndFormat_VerifyVisualState()
@@ -191,7 +200,8 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_CATALYST
+
     [Test, Order(10)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetFontFamilyAndFontSize_VerifyVisualState()
@@ -210,7 +220,8 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_CATALYST
+
     [Test, Order(11)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetFontFamilyAndFormat_VerifyVisualState()
@@ -236,7 +247,8 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_CATALYST
+
     [Test, Order(12)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetFontSizeAndFormat_VerifyVisualState()
@@ -287,6 +299,7 @@ public class TimePickerFeatureTests : UITest
     }
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/29812
+
     [Test, Order(15)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetShadow_VerifyVisualState()
@@ -302,7 +315,8 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_CATALYST
+
     [Test, Order(16)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetFormat_t_AndTime_VerifyVisualState()
@@ -321,10 +335,11 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_CATALYST
+
     [Test, Order(17)]
     [Category(UITestCategories.TimePicker)]
-    public void TimePicker_SetFormat_T_AndTime_VerifyVisualState()
+    public void TimePicker_SetFormatTAndTime_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -340,7 +355,8 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_CATALYST
+
     [Test, Order(18)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetFormat_T_WithFontAttributes_VerifyVisualState()
@@ -361,7 +377,8 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_CATALYST
+
     [Test, Order(19)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetFormat_T_WithFontFamily_VerifyVisualState()
@@ -382,7 +399,8 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_CATALYST
+
     [Test, Order(20)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetFormat_T_WithFontSize_VerifyVisualState()
@@ -405,6 +423,7 @@ public class TimePickerFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30197
+
     [Test, Order(21)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetCulture_enUS_VerifyTimeFormat()
@@ -428,6 +447,7 @@ public class TimePickerFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30197
+
     [Test, Order(22)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetCulture_arEG_VerifyTimeFormat()
@@ -451,6 +471,7 @@ public class TimePickerFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30197
+
     [Test, Order(23)]
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_SetCulture_jaJP_VerifyTimeFormat()
