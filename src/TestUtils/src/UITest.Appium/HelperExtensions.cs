@@ -2600,7 +2600,7 @@ namespace UITest.Appium
 				app.WaitForElement(elementName);
 				return true;
 			}
-			catch
+			catch (TimeoutException)
 			{
 				return false;
 			}
