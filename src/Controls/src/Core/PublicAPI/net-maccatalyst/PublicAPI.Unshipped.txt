@@ -254,3 +254,22 @@ static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Ma
 virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.RemoveSearchController(UIKit.UINavigationItem! navigationItem) -> void
 virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateSearchIsEnabled(UIKit.UISearchController! searchController) -> void
 virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateSearchVisibility(UIKit.UISearchController! searchController) -> void
+*REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.get -> System.Collections.Generic.IEnumerable<string>
+*REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.set -> void
+*REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.get -> System.Collections.Generic.IEnumerable<string>
+*REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
+*REMOVED*~override Microsoft.Maui.Controls.Accelerator.Equals(object obj) -> bool
+*REMOVED*~override Microsoft.Maui.Controls.Accelerator.ToString() -> string
+*REMOVED*~override Microsoft.Maui.Controls.AcceleratorTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Type sourceType) -> bool
+*REMOVED*~override Microsoft.Maui.Controls.AcceleratorTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Type destinationType) -> bool
+*REMOVED*~override Microsoft.Maui.Controls.AcceleratorTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) -> object
+*REMOVED*~override Microsoft.Maui.Controls.AcceleratorTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) -> object
+*REMOVED*~static Microsoft.Maui.Controls.Accelerator.FromString(string text) -> Microsoft.Maui.Controls.Accelerator
+*REMOVED*~static Microsoft.Maui.Controls.Accelerator.implicit operator Microsoft.Maui.Controls.Accelerator(string accelerator) -> Microsoft.Maui.Controls.Accelerator
+*REMOVED*~static Microsoft.Maui.Controls.MenuItem.GetAccelerator(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.Accelerator
+*REMOVED*~static Microsoft.Maui.Controls.MenuItem.SetAccelerator(Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Controls.Accelerator value) -> void
+*REMOVED*~static readonly Microsoft.Maui.Controls.MenuItem.AcceleratorProperty -> Microsoft.Maui.Controls.BindableProperty
+*REMOVED*Microsoft.Maui.Controls.Accelerator
+*REMOVED*Microsoft.Maui.Controls.AcceleratorTypeConverter
+*REMOVED*Microsoft.Maui.Controls.AcceleratorTypeConverter.AcceleratorTypeConverter() -> void
+*REMOVED*override Microsoft.Maui.Controls.Accelerator.GetHashCode() -> int
