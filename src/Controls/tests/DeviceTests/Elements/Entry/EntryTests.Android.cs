@@ -167,7 +167,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact(DisplayName = "Android crash when Entry has more than 5000 characters")]
 		[Category(TestCategory.Entry)]
-		public async Task EntryWithLongTextAndIsPassword_DoesNotCrash()
+		public async Task EntryWithLongTextDoesNotCrash()
 		{
 			string longText = new string('A', 5001);
 			var entry = new Entry
@@ -180,6 +180,21 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(platformEntry);
 			Assert.Equal(longText, await GetPlatformText(handler));
 
+		}
+
+		[Fact(DisplayName = "Entry with text longer text and short text updates correctly")]
+		[Category(TestCategory.Entry)]
+		public async Task EntryWithLongTextAndShortText_UpdatesTextCorrectly()
+		{
+			string longText = new string('A', 5001);
+			var entry = new Entry
+			{
+				Text = longText
+			};
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			SetPlatformText(handler, "short");
+			Assert.Equal("short", await GetPlatformText(handler));
 		}
 	}
 }
