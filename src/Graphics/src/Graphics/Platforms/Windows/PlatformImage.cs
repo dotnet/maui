@@ -65,9 +65,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			return ResizeInternal(maxWidth, maxHeight, 0, 0, maxWidth, maxHeight, disposeOriginal);
 		}
 
-		
+
 		IImage ResizeInternal(float canvasWidth, float canvasHeight, float drawX, float drawY, float drawWidth, float drawHeight, bool disposeOriginal)
-		{ 
+		{
 			using var renderTarget = new CanvasRenderTarget(_creator, canvasWidth, canvasHeight, _bitmap.Dpi);
 
 			using (var drawingSession = renderTarget.CreateDrawingSession())
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				{
 					throw saveException;
 				}
-				
+
 				resizedStream.Seek(0);
 
 				var newImage = FromStream(resizedStream.AsStreamForRead());
