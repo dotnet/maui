@@ -17,6 +17,7 @@ Microsoft.Maui.Controls.ScrollView.Padding.set -> void
 Microsoft.Maui.Controls.ScrollView.UpdateChildrenLayout() -> void
 Microsoft.Maui.Controls.TemplatedView.CascadeInputTransparent.get -> bool
 Microsoft.Maui.Controls.TemplatedView.CascadeInputTransparent.set -> void
+Microsoft.Maui.Controls.TemplatedView.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element!>!
 Microsoft.Maui.Controls.TemplatedView.IsClippedToBounds.get -> bool
 Microsoft.Maui.Controls.TemplatedView.IsClippedToBounds.set -> void
 Microsoft.Maui.Controls.TemplatedView.LowerChild(Microsoft.Maui.Controls.View! view) -> void
@@ -34,6 +35,7 @@ override Microsoft.Maui.Controls.TemplatedView.InvalidateLayout() -> void
 override Microsoft.Maui.Controls.TemplatedView.OnChildMeasureInvalidated() -> void
 override Microsoft.Maui.Controls.TemplatedView.ShouldInvalidateOnChildAdded(Microsoft.Maui.Controls.View! child) -> bool
 override Microsoft.Maui.Controls.TemplatedView.ShouldInvalidateOnChildRemoved(Microsoft.Maui.Controls.View! child) -> bool
+~Microsoft.Maui.Controls.ContentPresenter.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~Microsoft.Maui.Controls.ContentPresenter.LowerChild(Microsoft.Maui.Controls.View view) -> void
 ~Microsoft.Maui.Controls.ContentPresenter.RaiseChild(Microsoft.Maui.Controls.View view) -> void
 ~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
@@ -45,13 +47,13 @@ override Microsoft.Maui.Controls.TemplatedView.ShouldInvalidateOnChildRemoved(Mi
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string accept, string cancel) -> System.Threading.Tasks.Task<bool>
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string cancel, Microsoft.Maui.FlowDirection flowDirection) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string cancel) -> System.Threading.Tasks.Task
+~Microsoft.Maui.Controls.ScrollView.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~Microsoft.Maui.Controls.ScrollView.LowerChild(Microsoft.Maui.Controls.View view) -> void
 ~Microsoft.Maui.Controls.ScrollView.RaiseChild(Microsoft.Maui.Controls.View view) -> void
 ~Microsoft.Maui.Controls.SearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.SearchBar.SearchIconColor.set -> void
 ~Microsoft.Maui.Controls.Switch.OffColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.Switch.OffColor.set -> void
-~Microsoft.Maui.Controls.TemplatedView.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.Target.get -> string
 *REMOVED*~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.XmlnsDefinitionAttribute(string xmlNamespace, string clrNamespace) -> void
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.XmlnsDefinitionAttribute(string xmlNamespace, string target) -> void
@@ -284,6 +286,3 @@ static Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync(this Microsoft.Maui.C
 static Microsoft.Maui.Controls.ViewExtensions.ScaleXToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.ScaleYToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double x, double y, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
-*REMOVED*Microsoft.Maui.Controls.ScrollView.LayoutAreaOverride.get -> Microsoft.Maui.Graphics.Rect
-*REMOVED*Microsoft.Maui.Controls.ScrollView.LayoutAreaOverride.set -> void
-*REMOVED*~Microsoft.Maui.Controls.Compatibility.Layout.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>

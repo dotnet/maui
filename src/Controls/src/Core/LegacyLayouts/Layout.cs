@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <summary>
 		/// Gets the child objects contained in this layout.
 		/// </summary>
-		public IList<T> Children => _children;
+		public new IList<T> Children => _children;
 
 		/// <summary>
 		/// Gets the associated handler for this layout.
@@ -176,7 +176,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public event EventHandler LayoutChanged;
 
 		/// <summary>The children contained in this layout.</summary>
-		IReadOnlyList<Element> ILayoutController.Children => InternalChildren;
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public IReadOnlyList<Element> Children => InternalChildren;
 
 		/// <summary>
 		/// Forces a layout cycle on the element and all of its descendants.

@@ -20,8 +20,8 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='LayoutAreaOverride']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		[Obsolete]
-		Rect IScrollViewController.LayoutAreaOverride
+		[Obsolete("This API doesn't do anything", true)]
+		public Rect LayoutAreaOverride
 		{
 			get => _layoutAreaOverride;
 			set
@@ -29,8 +29,6 @@ namespace Microsoft.Maui.Controls
 				if (_layoutAreaOverride == value)
 					return;
 				_layoutAreaOverride = value;
-				// Dont invalidate here, we can relayout immediately since this only impacts our innards
-				InvalidateMeasure();
 			}
 		}
 
@@ -570,5 +568,9 @@ namespace Microsoft.Maui.Controls
 		{
 			return base.OnMeasure(widthConstraint, heightConstraint);
 		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Use IVisualTreeElement.GetVisualChildren() instead.", true)]
+		public new IReadOnlyList<Element> Children => base.Children;
 	}
 }

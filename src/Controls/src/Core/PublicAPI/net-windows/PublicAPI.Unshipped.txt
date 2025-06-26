@@ -279,7 +279,6 @@ override Microsoft.Maui.Controls.TemplatedView.ShouldInvalidateOnChildRemoved(Mi
 ~Microsoft.Maui.Controls.ContentPresenter.RaiseChild(Microsoft.Maui.Controls.View view) -> void
 ~Microsoft.Maui.Controls.ScrollView.LowerChild(Microsoft.Maui.Controls.View view) -> void
 ~Microsoft.Maui.Controls.ScrollView.RaiseChild(Microsoft.Maui.Controls.View view) -> void
-~Microsoft.Maui.Controls.TemplatedView.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~override Microsoft.Maui.Controls.ContentPresenter.ShouldInvalidateOnChildAdded(Microsoft.Maui.Controls.View child) -> bool
 ~override Microsoft.Maui.Controls.ContentPresenter.ShouldInvalidateOnChildRemoved(Microsoft.Maui.Controls.View child) -> bool
 ~override Microsoft.Maui.Controls.ScrollView.ShouldInvalidateOnChildAdded(Microsoft.Maui.Controls.View child) -> bool
@@ -291,6 +290,6 @@ override Microsoft.Maui.Controls.TemplatedView.ShouldInvalidateOnChildRemoved(Mi
 ~static readonly Microsoft.Maui.Controls.TemplatedView.CascadeInputTransparentProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.TemplatedView.IsClippedToBoundsProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.TemplatedView.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty
-*REMOVED*Microsoft.Maui.Controls.ScrollView.LayoutAreaOverride.get -> Microsoft.Maui.Graphics.Rect
-*REMOVED*Microsoft.Maui.Controls.ScrollView.LayoutAreaOverride.set -> void
-*REMOVED*~Microsoft.Maui.Controls.Compatibility.Layout.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
+~Microsoft.Maui.Controls.ContentPresenter.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
+~Microsoft.Maui.Controls.ScrollView.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
+Microsoft.Maui.Controls.TemplatedView.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element!>!

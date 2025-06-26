@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -145,7 +146,7 @@ namespace Microsoft.Maui.Controls
 		Size IContentView.CrossPlatformArrange(Rect bounds) =>
 			((ICrossPlatformLayout)this).CrossPlatformArrange(bounds);
 
-		
+
 
 		[Obsolete("Use ArrangeOverride instead")]
 		protected override void LayoutChildren(double x, double y, double width, double height)
@@ -158,7 +159,7 @@ namespace Microsoft.Maui.Controls
 			return base.Measure(widthConstraint, heightConstraint);
 		}
 
-		
+
 		/// <summary>
 		/// Sends a child to the back of the visual stack.
 		/// </summary>
@@ -225,11 +226,15 @@ namespace Microsoft.Maui.Controls
 		protected new void UpdateChildrenLayout()
 		{
 		}
-		
+
 		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			return base.OnMeasure(widthConstraint, heightConstraint);
 		}
+		
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Use IVisualTreeElement.GetVisualChildren() instead.", true)]
+		public new IReadOnlyList<Element> Children => base.Children;
 	}
 }
