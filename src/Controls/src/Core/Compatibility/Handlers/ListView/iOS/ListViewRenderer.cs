@@ -1147,7 +1147,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 				UITableViewCell platformCell;
 
-				Performance.Start(out string reference);
+				Internals.Performance.Start(out string reference);
 
 				if (!_list.TryGetTarget(out var list))
 					return null;
@@ -1199,7 +1199,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var bgColor = tableView.IndexPathForSelectedRow != null && tableView.IndexPathForSelectedRow.Equals(indexPath) ? UIColor.Clear : DefaultBackgroundColor;
 				SetCellBackgroundColor(platformCell, bgColor);
 				PreserveActivityIndicatorState(cell);
-				Performance.Stop(reference);
+				Internals.Performance.Stop(reference);
 
 				if (platformCell is ContextActionsCell contextActionsCell)
 					_contextActionsCells.Add(contextActionsCell);

@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Controls.PerformanceTracker;
+namespace Microsoft.Maui.Performance;
 
 /// <summary>
 /// Provides access to performance tracking.

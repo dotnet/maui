@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.Maui.Controls.PerformanceTracker;
+namespace Microsoft.Maui.Performance;
 
 /// <summary>
 /// Controls whether performance monitoring features are enabled.

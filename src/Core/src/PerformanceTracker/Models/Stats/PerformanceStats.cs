@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Controls.PerformanceTracker;
+namespace Microsoft.Maui.Performance;
 
 /// <summary>
 /// Represents performance statistics.

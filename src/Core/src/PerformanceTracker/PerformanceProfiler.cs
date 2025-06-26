@@ -1,7 +1,7 @@
 #nullable disable
 using System;
 
-namespace Microsoft.Maui.Controls.PerformanceTracker;
+namespace Microsoft.Maui.Performance;
 
 /// <summary>
 /// Implementation of <see cref="IPerformanceProfiler"/> that provides access to performance tracking.

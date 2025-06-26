@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Controls.PerformanceTracker;
+namespace Microsoft.Maui.Performance;
 
 /// <summary>
 /// Defines an interface for tracking the performance of layout operations such as

@@ -1909,7 +1909,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Arrange(Rect bounds)
 		{
-			return PerformanceTracker.PerformanceTracker.TrackArrange(
+			return Performance.PerformanceTracker.TrackArrange(
 				this.FindMauiContext(),
 				() => ArrangeOverride(bounds),
 				GetType().Name);
@@ -1957,7 +1957,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Measure(double widthConstraint, double heightConstraint)
 		{
-			DesiredSize = PerformanceTracker.PerformanceTracker.TrackMeasure(
+			DesiredSize = Performance.PerformanceTracker.TrackMeasure(
 				this.FindMauiContext(),
 				() => MeasureOverride(widthConstraint, heightConstraint),
 				GetType().Name

@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
-namespace Microsoft.Maui.Controls.PerformanceTracker
+namespace Microsoft.Maui.Performance
 {
 	internal class LayoutPerformanceTracker : ILayoutPerformanceTracker
 	{

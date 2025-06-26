@@ -2,12 +2,12 @@ using System.Diagnostics.Metrics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 
-namespace Microsoft.Maui.Controls.PerformanceTracker
+namespace Microsoft.Maui.Performance
 {
     /// <summary>
     /// Extension methods to register and configure performance monitoring services for a MAUI application.
     /// </summary>
-    public static class PerformanceMauiAppBuilderExtensions
+    internal static class PerformanceMauiAppBuilderExtensions
     {
         /// <summary>
         /// Adds .NET MAUI performance monitoring services to the application's dependency injection container.

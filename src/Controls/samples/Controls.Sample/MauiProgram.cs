@@ -14,7 +14,6 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Controls.PerformanceTracker;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Hosting;
@@ -300,9 +299,6 @@ namespace Maui.Controls.Sample
 #endif
 				}
 			});
-			
-			// Enables performance monitoring for the application.
-			appBuilder.ConfigurePerformance();
 			
 			return appBuilder.Build();
 		}

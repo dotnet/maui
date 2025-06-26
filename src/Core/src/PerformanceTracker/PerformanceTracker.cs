@@ -4,10 +4,8 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-#pragma warning disable CS0618 // Type or member is obsolete
 
-namespace Microsoft.Maui.Controls.PerformanceTracker;
+namespace Microsoft.Maui.Performance;
 
 /// <summary>
 /// Internal performance tracking utility for measuring operations in .NET MAUI.
@@ -84,10 +82,7 @@ internal class PerformanceTracker
 	{		
 		// Check if the performance profiling feature is enabled.
 		if (!PerformanceFeature.Guard())
-		{		
-			Application.Current?.FindMauiContext()?.CreateLogger<PerformanceTracker>()?.LogWarning(
-				".NET MAUI Performance Monitoring is disabled.");
-
+		{
 			return null;
 		}
 
