@@ -12,8 +12,6 @@ Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.Deconstruct(out int Index
 Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.MenuFlyoutSubItemHandlerUpdate(Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.OpenWindowRequest.Deconstruct(out Microsoft.Maui.IPersistedState? State) -> void
 Microsoft.Maui.Handlers.OpenWindowRequest.OpenWindowRequest(Microsoft.Maui.Handlers.OpenWindowRequest! original) -> void
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.OnMauiContextCreated
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.OnPlatformWindowCreated
 Microsoft.Maui.ScrollToRequest.Deconstruct(out double HorizontalOffset, out double VerticalOffset, out bool Instant) -> void
 Microsoft.Maui.ScrollToRequest.ScrollToRequest(Microsoft.Maui.ScrollToRequest! original) -> void
 Microsoft.Maui.SwipeViewCloseRequest.Deconstruct(out bool Animated) -> void
@@ -86,7 +84,6 @@ static Microsoft.Maui.SwipeViewSwipeEnded.operator !=(Microsoft.Maui.SwipeViewSw
 static Microsoft.Maui.SwipeViewSwipeEnded.operator ==(Microsoft.Maui.SwipeViewSwipeEnded? left, Microsoft.Maui.SwipeViewSwipeEnded? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator !=(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator ==(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
-virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.<Clone>$() -> Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Equals(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? other) -> bool
@@ -111,6 +108,31 @@ virtual Microsoft.Maui.Handlers.OpenWindowRequest.<Clone>$() -> Microsoft.Maui.H
 virtual Microsoft.Maui.Handlers.OpenWindowRequest.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.Handlers.OpenWindowRequest.Equals(Microsoft.Maui.Handlers.OpenWindowRequest? other) -> bool
 virtual Microsoft.Maui.Handlers.OpenWindowRequest.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.ApplicationSignificantTimeChange.Invoke(UIKit.UIApplication! application) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.ContinueUserActivity.Invoke(UIKit.UIApplication! application, Foundation.NSUserActivity! userActivity, UIKit.UIApplicationRestorationHandler! completionHandler) -> bool
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.DidEnterBackground.Invoke(UIKit.UIApplication! application) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.FinishedLaunching.Invoke(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.OnActivated.Invoke(UIKit.UIApplication! application) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.OnResignActivation.Invoke(UIKit.UIApplication! application) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.OpenUrl.Invoke(UIKit.UIApplication! app, Foundation.NSUrl! url, Foundation.NSDictionary! options) -> bool
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformActionForShortcutItem.Invoke(UIKit.UIApplication! application, UIKit.UIApplicationShortcutItem! shortcutItem, UIKit.UIOperationHandler! completionHandler) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformFetch.Invoke(UIKit.UIApplication! application, System.Action<UIKit.UIBackgroundFetchResult>! completionHandler) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneContinueUserActivity.Invoke(UIKit.UIScene! scene, Foundation.NSUserActivity! userActivity) -> bool
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidDisconnect.Invoke(UIKit.UIScene! scene) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidEnterBackground.Invoke(UIKit.UIScene! scene) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidFailToContinueUserActivity.Invoke(UIKit.UIScene! scene, string! userActivityType, Foundation.NSError! error) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidUpdateUserActivity.Invoke(UIKit.UIScene! scene, Foundation.NSUserActivity! userActivity) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOnActivated.Invoke(UIKit.UIScene! scene) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOnResignActivation.Invoke(UIKit.UIScene! scene) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOpenUrl.Invoke(UIKit.UIScene! scene, Foundation.NSSet<UIKit.UIOpenUrlContext!>! urlContexts) -> bool
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneRestoreInteractionState.Invoke(UIKit.UIScene! scene, Foundation.NSUserActivity! stateRestorationActivity) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillConnect.Invoke(UIKit.UIScene! scene, UIKit.UISceneSession! session, UIKit.UISceneConnectionOptions! connectionOptions) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillContinueUserActivity.Invoke(UIKit.UIScene! scene, string! userActivityType) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillEnterForeground.Invoke(UIKit.UIScene! scene) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillEnterForeground.Invoke(UIKit.UIApplication! application) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillFinishLaunching.Invoke(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillTerminate.Invoke(UIKit.UIApplication! application) -> void
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WindowSceneDidUpdateCoordinateSpace.Invoke(UIKit.UIWindowScene! windowScene, UIKit.IUICoordinateSpace! previousCoordinateSpace, UIKit.UIInterfaceOrientation previousInterfaceOrientation, UIKit.UITraitCollection! previousTraitCollection) -> void
 virtual Microsoft.Maui.ScrollToRequest.<Clone>$() -> Microsoft.Maui.ScrollToRequest!
 virtual Microsoft.Maui.ScrollToRequest.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.ScrollToRequest.Equals(Microsoft.Maui.ScrollToRequest? other) -> bool
