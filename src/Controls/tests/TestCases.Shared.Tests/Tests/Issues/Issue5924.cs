@@ -1,5 +1,5 @@
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Test]
-		[Category(UITestCategories.Entry)]
+		[Fact]
+		[Trait("Category", UITestCategories.Entry)]
 		public void TableViewViewCellVanishesAfterContentIsUpdated()
 		{
 			App.WaitForElement("entry");
@@ -22,10 +22,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var entry = App.WaitForElement("entry").GetRect();
 			var label = App.WaitForElement("label").GetRect();
 
-			ClassicAssert.Greater(entry.Height, 0);
-			ClassicAssert.Greater(entry.Width, 0);
-			ClassicAssert.Greater(label.Height, 0);
-			ClassicAssert.Greater(label.Width, 0);
+			Assert.Greater(entry.Height, 0);
+			Assert.Greater(entry.Width, 0);
+			Assert.Greater(label.Height, 0);
+			Assert.Greater(label.Width, 0);
 		}
 	}
 }

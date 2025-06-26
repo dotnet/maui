@@ -1,5 +1,5 @@
 ﻿#if ANDROID
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Android] WindowSoftInputModeAdjust is not working for modal pages";
 
 		[Test, Order(1)]
-		[Category(UITestCategories.Page)]
+		[Trait("Category", UITestCategories.Page)]
 		public void WindowSoftInputModeAdjustSetToResizeForModalPage()
 		{
 			App.WaitForElement(Button1);
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test, Order(2)]
-		[Category(UITestCategories.Page)]
+		[Trait("Category", UITestCategories.Page)]
 		public void WindowSoftInputModeAdjustSetToPanForModalpage()
 		{
 			App.WaitForElement(Button2);

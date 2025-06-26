@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,20 +10,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Button sizes content with respect to the BorderWidth";
 
-		[Test]
-		[Category(UITestCategories.Button)]
+		[Fact]
+		[Trait("Category", UITestCategories.Button)]
 		public void BorderWidthAffectsTheImageSizing()
 		{
 			App.WaitForElement("Change_BorderWidth_Button");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original");
+			VerifyScreenshot(GetCurrentTestName() + "Original");
 			App.Tap("Change_BorderWidth_Button");
 
 			App.WaitForElement("Change_BorderWidth_Button");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "BorderWidth");
+			VerifyScreenshot(GetCurrentTestName() + "BorderWidth");
 			App.Tap("Change_BorderWidth_Button");
 
 			App.WaitForElement("Change_BorderWidth_Button");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original");
+			VerifyScreenshot(GetCurrentTestName() + "Original");
 		}
 	}
 }

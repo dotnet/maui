@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class NestedCollectionView : _IssuesUITest
 
 	public override string Issue => "[iOS] Crash when creating a CollectionView inside a CollectionView";
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void NestedCollectionViewsShouldNotCrash()
 	{
 		// If this page loaded and didn't crash, we're good.

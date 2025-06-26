@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue2767 : _IssuesUITest
 
 	public override string Issue => "ArgumentException: NaN not valid for height";
 
-	[Test]
-	[Category(UITestCategories.Layout)]
+	[Fact]
+	[Trait("Category", UITestCategories.Layout)]
 
 	public void Issue2767Test()
 	{

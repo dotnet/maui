@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,9 @@ public class Issue1426 : _IssuesUITest
 
 	public override string Issue => "SetHasNavigationBar screen height wrong";
 
-	[Test]
-	[Category(UITestCategories.LifeCycle)]
-	[Category(UITestCategories.Compatibility)]
+	[Fact]
+	[Trait("Category", UITestCategories.LifeCycle)]
+	[Trait("Category", UITestCategories.Compatibility)]
 	public void Issue1426Test()
 	{
 		var beforeRect = App.WaitForElement("CoffeeImageId").GetRect();

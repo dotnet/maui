@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "v2.4.0: Adding inserting section to ListView causes crash IF first section is empty";
 
-		[Test]
-		[Category(UITestCategories.ListView)]
+		[Fact]
+		[Trait("Category", UITestCategories.ListView)]
 		public void Bugzilla59896Test()
 		{
 			App.WaitForElement(BtnAdd);

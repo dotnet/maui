@@ -1,5 +1,5 @@
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS    //FlyoutLayoutBehavior changes are not supported on Android and iOS
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue18158 : _IssuesUITest
 
 	public override string Issue => "FlyoutPage does not respond to changes in the FlyoutLayoutBehavior property";
 
-	[Test]
-	[Category(UITestCategories.FlyoutPage)]
+	[Fact]
+	[Trait("Category", UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutLayoutBehaviorChanges()
 	{
 		App.WaitForElement("Button");

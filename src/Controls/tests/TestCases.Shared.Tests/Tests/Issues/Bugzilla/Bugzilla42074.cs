@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST // TimePicker not opens the dialog, issue: https://github.com/dotnet/maui/issues/10827 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,8 +22,8 @@ public class Bugzilla42074 : _IssuesUITest
 
 	public override string Issue => "[Android] Clicking cancel on a TimePicker does not cause it to unfocus";
 
-	[Test]
-	[Category(UITestCategories.TimePicker)]
+	[Fact]
+	[Trait("Category", UITestCategories.TimePicker)]
 	public void TimePickerCancelShouldUnfocus()
 	{
 		App.WaitForElement("TimePicker");

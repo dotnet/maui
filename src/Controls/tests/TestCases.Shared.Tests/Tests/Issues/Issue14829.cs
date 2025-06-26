@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "DisplayActionSheet still not working on Windows";
 
-		[Test]
-		[Category(UITestCategories.ActionSheet)]
+		[Fact]
+		[Trait("Category", UITestCategories.ActionSheet)]
 		public void DisplayActionSheetStillNotWorkingOnWindows()
 		{
 			App.WaitForElement("DisplayActionSheetButton", timeout: TimeSpan.FromSeconds(4)).Click();

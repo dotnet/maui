@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue1028 : _IssuesUITest
 
 	public override string Issue => "ViewCell in TableView raises exception - root page is ContentPage, Content is TableView";
 
-	[Test]
-	[Category(UITestCategories.TableView)]
+	[Fact]
+	[Trait("Category", UITestCategories.TableView)]
 	public void ViewCellInTableViewDoesNotCrash()
 	{
 		// If we can see this element, then we didn't crash.

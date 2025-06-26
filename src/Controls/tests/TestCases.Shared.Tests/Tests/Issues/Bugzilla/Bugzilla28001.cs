@@ -1,5 +1,5 @@
 /*
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ public class Bugzilla28001 : _IssuesUITest
 
 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	[FailsOnAndroidWhenRunningOnXamarinUITest]
-	[Test]
-	[Category(UITestCategories.TabbedPage)]
+	[Fact]
+	[Trait("Category", UITestCategories.TabbedPage)]
 	public void Bugzilla28001Test()
 	{
 		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)

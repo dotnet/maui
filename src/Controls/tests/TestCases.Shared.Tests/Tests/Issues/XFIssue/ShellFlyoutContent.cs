@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,8 +21,8 @@ public class ShellFlyoutContent : _IssuesUITest
 
 	public override string Issue => "Shell Flyout Content";
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void FlyoutContentTests()
 	{
 		App.WaitForElement("PageLoaded");

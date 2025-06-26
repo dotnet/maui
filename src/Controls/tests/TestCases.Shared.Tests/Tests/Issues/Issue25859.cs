@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue25859(TestDevice device) : base(device)
 		{ }
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void CVHorizontalLinearItemsLayoutItemSpacing()
 		{
 			App.WaitForElement("collectionView");

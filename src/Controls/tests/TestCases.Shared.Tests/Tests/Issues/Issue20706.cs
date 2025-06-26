@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Test]
-		[Category(UITestCategories.Stepper)]
+		[Fact]
+		[Trait("Category", UITestCategories.Stepper)]
 		public void ChangeIncrementValue()
 		{
 			App.WaitForElement("entry");

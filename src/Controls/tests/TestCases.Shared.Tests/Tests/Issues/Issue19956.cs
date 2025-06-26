@@ -1,22 +1,22 @@
 ﻿#if IOS || (ANDROID && TEST_FAILS_ON_ANDROID)//android related issue: https://github.com/dotnet/maui/issues/27951
 //The test is applicable only to mobile platforms like iOS and Android.
 using System.Drawing;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 using OpenQA.Selenium.Interactions;
-using NUnit.Framework.Legacy;
+using Xunit;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.Entry)]
+[Trait("Category", UITestCategories.Entry)]
 public class Issue19956: _IssuesUITest
 {
     public Issue19956(TestDevice device) : base(device) { }
 
     public override string Issue => "Sticky headers and bottom content insets";
 
-    [Test]
+    [Fact]
 	public void ContentAccountsForStickyHeaders()
     {
 		// This is an iOS Keyboard Scrolling issue.
@@ -43,15 +43,15 @@ public class Issue19956: _IssuesUITest
         var entryRect = App.WaitForElement(entryName).GetRect();
         var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
 
-        ClassicAssert.AreEqual(App.WaitForElement("StickyHeader").GetRect(), stickyHeaderRect);
-		ClassicAssert.Less(stickyHeaderRect.Bottom, entryRect.Top);
-        ClassicAssert.NotNull(keyboardPos);
-		ClassicAssert.Less(entryRect.Bottom, keyboardPos!.Value.Y);
+        Assert.Equal(App.WaitForElement("StickyHeader").GetRect(), stickyHeaderRect);
+		Assert.Less(stickyHeaderRect.Bottom, entryRect.Top);
+        Assert.NotNull(keyboardPos);
+		Assert.Less(entryRect.Bottom, keyboardPos!.Value.Y);
 
         KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
     }
 
-    [Test]
+    [Fact]
     public void BottomInsetsSetCorrectly()
     {
         var app = App as AppiumApp;
@@ -100,8 +100,8 @@ public class Issue19956: _IssuesUITest
     {
         var bottomEntryRect = App.WaitForElement("Entry12").GetRect();
         var keyboardPosition = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
-        ClassicAssert.NotNull(keyboardPosition);
-		ClassicAssert.Less(bottomEntryRect.Bottom, keyboardPosition!.Value.Y);
+        Assert.NotNull(keyboardPosition);
+		Assert.Less(bottomEntryRect.Bottom, keyboardPosition!.Value.Y);
     }
 }
 #endif

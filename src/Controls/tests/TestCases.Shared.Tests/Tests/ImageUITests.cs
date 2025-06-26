@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.Image)]
+[Trait("Category", UITestCategories.Image)]
 internal class ImageUITests : _ViewUITests
 {
 	const string ImageGallery = "Image Gallery";
@@ -25,7 +25,7 @@ internal class ImageUITests : _ViewUITests
 	}
 
 #if TEST_FAILS_ON_CATALYST
-	[Test]
+	[Fact]
 	public void Source_FontImageSource()
 	{
 		var remote = GoToStateRemote();
@@ -39,7 +39,7 @@ internal class ImageUITests : _ViewUITests
 	}
 #endif
 
-	[Test]
+	[Fact]
 	public async Task IsAnimationPlaying()
 	{
 		var remote = GoToStateRemote();

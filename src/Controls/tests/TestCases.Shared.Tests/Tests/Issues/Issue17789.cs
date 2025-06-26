@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ContentPage BackgroundImageSource not working";
 
-		[Test]
-		[Category(UITestCategories.Page)]
+		[Fact]
+		[Trait("Category", UITestCategories.Page)]
 		public void ContentPageBackgroundImageSourceWorks()
 		{
 			App.WaitForElement("WaitForStubControl");

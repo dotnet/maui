@@ -1,7 +1,7 @@
 #if IOS //This sample is specific to the iOS platform and handles text input behavior by accessing the native UITextView.
 using System.Drawing;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Interactions;
 using UITest.Appium;
@@ -16,8 +16,8 @@ public class Issue19214_2 : _IssuesUITest
 
     public override string Issue => "iOS Editor Cursor stays above keyboard - Top level Grid";
 
-    [Test]
-    [Category(UITestCategories.Entry)]
+    [Fact]
+    [Trait("Category", UITestCategories.Entry)]
     public void KeepEditorCursorAboveKeyboardInGrid ()
     {
         var app = App as AppiumApp;
@@ -60,16 +60,16 @@ public class Issue19214_2 : _IssuesUITest
 
         if (keyboardLocation is Point keyboardPoint)
         {
-            ClassicAssert.True(cursorHeight1 > 0);
-            ClassicAssert.True(cursorHeight2 > 0);
-            ClassicAssert.True(cursorHeight3 > 0);
-            ClassicAssert.True(cursorHeight1 < keyboardPoint.Y);
-            ClassicAssert.True(cursorHeight2 < keyboardPoint.Y);
-            ClassicAssert.True(cursorHeight3 < keyboardPoint.Y);
+            Assert.True(cursorHeight1 > 0);
+            Assert.True(cursorHeight2 > 0);
+            Assert.True(cursorHeight3 > 0);
+            Assert.True(cursorHeight1 < keyboardPoint.Y);
+            Assert.True(cursorHeight2 < keyboardPoint.Y);
+            Assert.True(cursorHeight3 < keyboardPoint.Y);
         }
         else
         {
-            ClassicAssert.Fail("keyboardLocation is null");
+            throw new InvalidOperationException("keyboardLocation is null");
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,8 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Image Source in Button initializes correctly";
 
-		[Test]
-		[Category(UITestCategories.Button)]
+		[Fact]
+		[Trait("Category", UITestCategories.Button)]
 		public void ImageSourceInitializesCorrectly()
 		{
 			App.WaitForElement("label");

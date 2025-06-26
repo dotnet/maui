@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,9 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ListViews for lists with many elements regressed in performance on iOS";
 
-		[Test]
-		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.ListView)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		[FailsOnIOSWhenRunningOnXamarinUITest]
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void ListViewsWithManyElementsPerformanceCheck()
@@ -28,9 +28,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(ConstructorCountId);
 			App.WaitForElement(TimeId);
 			int.TryParse(App.WaitForElement(ConstructorCountId).GetText(), out int count);
-			ClassicAssert.IsTrue(count < 100); // Failing test makes ~15000 constructor calls
+			Assert.True(count < 100); // Failing test makes ~15000 constructor calls
 			int.TryParse(App.WaitForElement(TimeId).GetText(), out int time);
-			ClassicAssert.IsTrue(count < 2000); // Failing test takes ~4000ms
+			Assert.True(count < 2000); // Failing test takes ~4000ms
 		}
 	}
 }

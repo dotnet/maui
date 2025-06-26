@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Wrong gray color using transparent in iOS gradients";
 
-		[Test]
-		[Category(UITestCategories.Brush)]
+		[Fact]
+		[Trait("Category", UITestCategories.Brush)]
 		public void Issue17366Test()
 		{
 			// The bug only happens on iOS; see https://github.com/dotnet/maui/pull/17789

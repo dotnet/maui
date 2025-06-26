@@ -1,8 +1,7 @@
 using Microsoft.Maui.Controls.Shapes;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
-
 
 namespace Microsoft.Maui.TestCases.Tests;
 
@@ -46,7 +45,6 @@ public class LabelFeatureTests : UITest
 	public const string LineBreakModeNoWrap = "LineBreakModeNoWrap";
 	public const string MainLabel = "MainLabel";
 
-
 	public LabelFeatureTests(TestDevice device)
 		: base(device)
 	{
@@ -59,7 +57,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(1)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedText()
 	{
 		App.WaitForElement("This is a Basic Label");
@@ -74,7 +72,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWhenFormattedTextWithHorizontalAndVerticalAlignmentStart()
 	{
 		App.WaitForElement(Options);
@@ -90,7 +88,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(3)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenHorizontalAndVerticalAlignmentCenter()
 	{
 		App.WaitForElement(Options);
@@ -106,7 +104,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(4)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenHorizontalAndVerticalAlignmentEnd()
 	{
 		App.WaitForElement(Options);
@@ -122,7 +120,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(5)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextAndTextTransformLower()
 	{
 		App.WaitForElement(Options);
@@ -138,7 +136,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(6)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenTextTransformUpper()
 	{
 		App.WaitForElement(Options);
@@ -154,7 +152,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(7)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenTextColor()
 	{
 		App.WaitForElement(Options);
@@ -170,7 +168,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(8)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWhenFormattedTextWithPadding()
 	{
 		App.WaitForElement(Options);
@@ -190,9 +188,8 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-
 	[Test, Order(9)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenMaxLines()
 	{
 		App.WaitForElement(Options);
@@ -210,7 +207,7 @@ public class LabelFeatureTests : UITest
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/27828
 	[Test, Order(10)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextAndLineHeight()
 	{
 		App.WaitForElement(Options);
@@ -227,7 +224,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(11)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenTextDecorationsUnderLine()
 	{
 		App.WaitForElement(Options);
@@ -243,7 +240,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(12)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenTextDecorationsStrikethrough()
 	{
 		App.WaitForElement(Options);
@@ -260,7 +257,7 @@ public class LabelFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/27828
 	[Test, Order(13)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextAndCharacterSpacing()
 	{
 		App.WaitForElement(Options);
@@ -277,7 +274,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(14)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenFontAttributesBold()
 	{
 		App.WaitForElement(Options);
@@ -293,7 +290,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(15)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenFontAttributesItalic()
 	{
 		App.WaitForElement(Options);
@@ -309,7 +306,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(16)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenFontFamilyDokdo()
 	{
 		App.WaitForElement(Options);
@@ -325,7 +322,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(17)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenFontFamilyMonserratBold()
 	{
 		App.WaitForElement(Options);
@@ -344,7 +341,7 @@ public class LabelFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/27828
 	[Test, Order(18)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenFontSize()
 	{
 		App.WaitForElement(Options);
@@ -363,7 +360,7 @@ public class LabelFeatureTests : UITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/22594, https://github.com/dotnet/maui/issues/21294
     [Test, Order(19)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextAndLineBreakModeCharacterWrap()
 	{
 		App.WaitForElement(Options);
@@ -379,7 +376,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(42)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextAndLineBreakModeCharacterWrap()
 	{
 		App.WaitForElement(Options);
@@ -398,7 +395,7 @@ public class LabelFeatureTests : UITest
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/23159
 	[Test, Order(20)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenLineBreakModeTailTruncation()
 	{
 		App.WaitForElement(Options);
@@ -414,7 +411,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(41)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextAndLineBreakModeTailTruncation()
 	{
 		App.WaitForElement(Options);
@@ -431,7 +428,7 @@ public class LabelFeatureTests : UITest
 #endif
 
 	[Test, Order(21)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenLineBreakModeWordWrap()
 	{
 		App.WaitForElement(Options);
@@ -447,7 +444,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(22)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextAndLineBreakModeNoWrap()
 	{
 		App.WaitForElement(Options);
@@ -464,7 +461,7 @@ public class LabelFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/21294
 	[Test, Order(23)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenLineBreakModeHeadTruncation()
 	{
 		App.WaitForElement(Options);
@@ -480,7 +477,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(24)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenLineBreakModeMiddleTruncation()
 	{
 		App.WaitForElement(Options);
@@ -497,7 +494,7 @@ public class LabelFeatureTests : UITest
 #endif
 
 	[Test, Order(25)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithText()
 	{
 		App.WaitForElement(Options);
@@ -511,7 +508,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(26)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextAndFontSize()
 	{
 		App.WaitForElement(Options);
@@ -528,7 +525,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(27)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextAndFontColor()
 	{
 		App.WaitForElement(Options);
@@ -544,7 +541,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(28)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextAndTextTransform()
 	{
 		App.WaitForElement(Options);
@@ -560,7 +557,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(29)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextAndCharacterSpacing()
 	{
 		App.WaitForElement(Options);
@@ -577,7 +574,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(30)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextAndTextDecorations()
 	{
 		App.WaitForElement(Options);
@@ -593,7 +590,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(31)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextAndFontFamily()
 	{
 		App.WaitForElement(Options);
@@ -609,7 +606,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(32)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextAndFontAttributes()
 	{
 		App.WaitForElement(Options);
@@ -625,7 +622,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(33)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextWhenVerticalAndHorizontalAlignmentStart()
 	{
 		App.WaitForElement(Options);
@@ -643,7 +640,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(34)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextWhenVerticalAndHorizontalAlignmentCenter()
 	{
 		App.WaitForElement(Options);
@@ -661,7 +658,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(35)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextWhenVerticalAndHorizontalAlignmentEnd()
 	{
 		App.WaitForElement(Options);
@@ -679,7 +676,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(36)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextWhenPaddingApplied()
 	{
 		App.WaitForElement(Options);
@@ -700,7 +697,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(37)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextAndMaxlines()
 	{
 		App.WaitForElement(Options);
@@ -717,7 +714,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(59)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextWhenLineHeight()
 	{
 		App.WaitForElement(Options);
@@ -734,7 +731,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(38)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextAndLineBreakModeNoWrap()
 	{
 		App.WaitForElement(Options);
@@ -751,7 +748,7 @@ public class LabelFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/21294
 	[Test, Order(39)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextAndLineBreakModeHeadTruncation()
 	{
 		App.WaitForElement(Options);
@@ -767,7 +764,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(40)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextAndLineBreakModeMiddleTruncation()
 	{
 		App.WaitForElement(Options);
@@ -784,7 +781,7 @@ public class LabelFeatureTests : UITest
 #endif
 
 	[Test, Order(45)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFontAttributesAndFontFamily()
 	{
 		App.WaitForElement(Options);
@@ -802,7 +799,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(46)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFontAttributesAndFontSize()
 	{
 		App.WaitForElement(Options);
@@ -821,7 +818,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(47)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFontAttributesAndTextColor()
 	{
 		App.WaitForElement(Options);
@@ -839,7 +836,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(48)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFontAttributesAndTextTransform()
 	{
 		App.WaitForElement(Options);
@@ -857,7 +854,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(49)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFontAttributesAndTextDecorations()
 	{
 		App.WaitForElement(Options);
@@ -876,7 +873,7 @@ public class LabelFeatureTests : UITest
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/20372,  https://github.com/dotnet/maui/issues/29672, https://github.com/dotnet/maui/issues/29668 
 	[Test, Order(44)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextAndTextType()
 	{
 		App.WaitForElement(Options);
@@ -892,7 +889,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(50)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFontAttributesAndTextType()
 	{
 		App.WaitForElement(Options);
@@ -910,7 +907,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(56)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndTextColor()
 	{
 		App.WaitForElement(Options);
@@ -928,7 +925,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(57)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndFontSize()
 	{
 		App.WaitForElement(Options);
@@ -947,7 +944,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(58)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndLineBreakModeNoWrap()
 	{
 		App.WaitForElement(Options);
@@ -965,7 +962,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(43)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndLineBreakModeWordWrap()
 	{
 		App.WaitForElement(Options);
@@ -983,7 +980,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(60)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFontFamilyAndTextType()
 	{
 		App.WaitForElement(Options);
@@ -1002,7 +999,7 @@ public class LabelFeatureTests : UITest
 
 #if TEST_FAILS_ON_ANDROID// Issue Link:  https://github.com/dotnet/maui/issues/29672, https://github.com/dotnet/maui/issues/29668, https://github.com/dotnet/maui/issues/22594
 	[Test, Order(67)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndLineHeight()
 	{
 		App.WaitForElement(Options);
@@ -1021,7 +1018,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(68)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndCharacterSpacing()
 	{
 		App.WaitForElement(Options);
@@ -1041,7 +1038,7 @@ public class LabelFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/21294
 	[Test, Order(66)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndLineBreakModeCharacterWrap()
 	{
 		App.WaitForElement(Options);
@@ -1062,7 +1059,7 @@ public class LabelFeatureTests : UITest
 #endif
 
 	[Test, Order(51)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFontFamilyAndFontColor()
 	{
 		App.WaitForElement(Options);
@@ -1080,7 +1077,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(52)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFontFamilyAndFontSize()
 	{
 		App.WaitForElement(Options);
@@ -1099,7 +1096,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(53)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFontFamilyAndTextDecorations()
 	{
 		App.WaitForElement(Options);
@@ -1117,7 +1114,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(54)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithFontFamilyAndTextTransform()
 	{
 		App.WaitForElement(Options);
@@ -1135,7 +1132,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(55)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextDecorationsAndTextTransform()
 	{
 		App.WaitForElement(Options);
@@ -1154,7 +1151,7 @@ public class LabelFeatureTests : UITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/24298 , https://github.com/dotnet/maui/issues/29673, https://github.com/dotnet/maui/issues/29674
     [Test, Order(61)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndLineBreakModeTailTruncation()
 	{
 		App.WaitForElement(Options);
@@ -1172,7 +1169,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(62)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndTextDecorations()
 	{
 		App.WaitForElement(Options);
@@ -1191,7 +1188,7 @@ public class LabelFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/21294
 	[Test, Order(63)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndLineBreakModeHeadTruncation()
 	{
 		App.WaitForElement(Options);
@@ -1209,7 +1206,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(64)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndLineBreakModeMiddleTruncation()
 	{
 		App.WaitForElement(Options);
@@ -1227,7 +1224,7 @@ public class LabelFeatureTests : UITest
 	}
 
 	[Test, Order(65)]
-	[Category(UITestCategories.Label)]
+	[Trait("Category", UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndTextTransform()
 	{
 		App.WaitForElement(Options);

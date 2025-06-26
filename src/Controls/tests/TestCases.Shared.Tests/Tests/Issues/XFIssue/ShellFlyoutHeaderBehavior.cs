@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Scroll not supported on MacCatalyst and On Windows, AutomationId is not working for Stacklayout, Hence we measure the layout height here so we can't use the inner elements AutomationId. More Information:https://github.com/dotnet/maui/issues/4715
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class ShellFlyoutHeaderBehavior : _IssuesUITest
 
 	public override string Issue => "Shell Flyout Header Behavior";
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void FlyoutHeaderBehaviorFixed()
 	{
 		App.WaitForElement("Fixed");
@@ -26,8 +26,8 @@ public class ShellFlyoutHeaderBehavior : _IssuesUITest
 		Assert.That(startingHeight, Is.EqualTo(endHeight).Within(1));
 	}
 #if !IOS // For iOS, getting incorrect Rect values from GetRect method in Appium even though the size is reduced in UI.
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void FlyoutHeaderBehaviorCollapseOnScroll()
 	{
 		App.WaitForElement("CollapseOnScroll");
@@ -39,8 +39,8 @@ public class ShellFlyoutHeaderBehavior : _IssuesUITest
 		Assert.That(startingHeight, Is.GreaterThan(endHeight));
 	}
 
-	[Test] // Skip this for iOS, because FindElements returns count eventhough the element is scrolled up and hidded from the UI.
-	[Category(UITestCategories.Shell)]
+	[Fact] // Skip this for iOS, because FindElements returns count eventhough the element is scrolled up and hidded from the UI.
+	[Trait("Category", UITestCategories.Shell)]
 	public void FlyoutHeaderBehaviorScroll()
 	{
 		App.WaitForElement("Scroll");

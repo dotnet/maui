@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ public class Bugzilla44886 : _IssuesUITest
 
 	public override string Issue => "UWP Listview ItemSelected event triggered twice for each selection";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void Bugzilla44886Test()
 	{
 		App.WaitForElement("Item 1");

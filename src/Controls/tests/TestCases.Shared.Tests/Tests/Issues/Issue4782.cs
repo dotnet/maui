@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,9 +14,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] Null drawable crashes Image Button";
 
-		[Test]
-		[Category(UITestCategories.ImageButton)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.ImageButton)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void ImageButtonNullDrawable()
 		{
 			App.WaitForElement(Success);

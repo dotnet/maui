@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // To fix the issue in ios https://github.com/dotnet/maui/pull/25749#pullrequestreview-2554186362
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "OnNavigating wrong target when tapping the same tab";
 
-		[Test]
-		[Category(UITestCategories.Navigation)]
+		[Fact]
+		[Trait("Category", UITestCategories.Navigation)]
 		public void NavigatingEventFired()
 		{
 			App.WaitForElement("HomePageButton");

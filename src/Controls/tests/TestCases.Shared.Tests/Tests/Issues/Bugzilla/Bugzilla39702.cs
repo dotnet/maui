@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,10 +15,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Cannot enter text when Entry is focus()'d from an editor completed event";
 
-		[Test]
-		[Category(UITestCategories.Entry)]
-		[Category(UITestCategories.Focus)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Entry)]
+		[Trait("Category", UITestCategories.Focus)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void ControlCanBeFocusedByUnfocusedEvent()
 		{
 			App.WaitForElementTillPageNavigationSettled(TheEntry);

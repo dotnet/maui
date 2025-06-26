@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Shadows not rendering as expected on Android and iOS";
 
-		[Test]
-		[Category(UITestCategories.Visual)]
+		[Fact]
+		[Trait("Category", UITestCategories.Visual)]
 		public void Issue24414Test()
 		{
 			App.WaitForElement("TheLabel");

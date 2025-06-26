@@ -1,5 +1,5 @@
 #if TEST_FAILS_ON_ANDROID //more information: https://github.com/dotnet/maui/issues/26050
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Page and control Unloaded events firing on iOS when navigating to another page"; 
 		
-		[Test]
-		[Category(UITestCategories.Shell)]
+		[Fact]
+		[Trait("Category", UITestCategories.Shell)]
 		public void Shell_Issue21916()
 		{
 			App.WaitForElement("Button");

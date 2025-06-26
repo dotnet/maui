@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,8 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Button with images measures correctly";
 
-		[Test]
-		[Category(UITestCategories.Button)]
+		[Fact]
+		[Trait("Category", UITestCategories.Button)]
 		public async Task ButtonMeasuresLargerThanDefault()
 		{
 			// seems possible in CI that the iOS Button is not arranged before the height evaluation
@@ -22,24 +22,24 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.That(rotateButtonRect.Height > button3Rect.Height, $"rotateButtonRect.Height is {rotateButtonRect.Height} is not greater than button3Rect.Height {button3Rect.Height}");
 		}
 
-		[Test]
-		[Category(UITestCategories.Button)]
+		[Fact]
+		[Trait("Category", UITestCategories.Button)]
 		public void ButtonLayoutResizesWithImagePosition()
 		{
 			App.WaitForElement("RotateButton");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Top");
+			VerifyScreenshot(GetCurrentTestName() + "Top");
 
 			App.WaitForElement("RotateButton").Tap();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Right");
+			VerifyScreenshot(GetCurrentTestName() + "Right");
 
 			App.WaitForElement("RotateButton").Tap();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Bottom");
+			VerifyScreenshot(GetCurrentTestName() + "Bottom");
 
 			App.WaitForElement("RotateButton").Tap();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Left");
+			VerifyScreenshot(GetCurrentTestName() + "Left");
 
 			App.WaitForElement("RotateButton").Tap();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Top");
+			VerifyScreenshot(GetCurrentTestName() + "Top");
 		}
 	}
 }

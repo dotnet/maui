@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Make sure setting ItemSource to null doesn't blow up";
 
-		[Test]
-		[Category(UITestCategories.ListView)]
+		[Fact]
+		[Trait("Category", UITestCategories.ListView)]
 		public void SettingItemsSourceToNullDoesNotCrash()
 		{
 			App.WaitForElement(Go);

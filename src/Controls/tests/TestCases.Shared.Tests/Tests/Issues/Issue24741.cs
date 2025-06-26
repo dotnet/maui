@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Unable to select tab after backing out of page and returning";
 
-		[Test]
-		[Category(UITestCategories.TabbedPage)]
+		[Fact]
+		[Trait("Category", UITestCategories.TabbedPage)]
 		public void SelectTabAfterNavigation()
 		{
 			const string Page2Title = "Page 2";

@@ -1,7 +1,7 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //BoxView automation ID isn't working on the Windows platform, causing a TimeoutException.
 //Issue Link: https://github.com/dotnet/maui/issues/27195
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Wrong anchor behavior when setting HeightRequest ";
 
-		[Test]
-		[Category(UITestCategories.Layout)]
+		[Fact]
+		[Trait("Category", UITestCategories.Layout)]
 		public void WrongTranslationBehaviorWhenChangingHeightRequestAndSettingAnchor()
 		{
 			var rect = App.WaitForElement(BoxViewId).GetRect();

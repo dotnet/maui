@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue23158 : _IssuesUITest
 	{
 	}
 
-	[Test]
-	[Category(UITestCategories.Entry)]
+	[Fact]
+	[Trait("Category", UITestCategories.Entry)]
 	public void ValidateEntryClearButtonVisibilityBehavior()
 	{
 		App.WaitForElement("TestInstructions");

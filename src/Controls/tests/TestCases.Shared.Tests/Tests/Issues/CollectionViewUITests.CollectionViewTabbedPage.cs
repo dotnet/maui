@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,8 +19,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 		public override string Issue => "If CollectionView in other Tab gets changed before it's displayed, it stays invisible";
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void AddingItemToUnviewedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement(Add1);
@@ -29,8 +29,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElementTillPageNavigationSettled(Success);
 		}
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement(Add2);

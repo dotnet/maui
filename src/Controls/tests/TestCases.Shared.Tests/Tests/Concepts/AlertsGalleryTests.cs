@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,8 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery("Alerts Gallery");
 		}
 
-		[Test]
-		[Category(UITestCategories.DisplayAlert)]
+		[Fact]
+		[Trait("Category", UITestCategories.DisplayAlert)]
 		public void AlertCancel()
 		{
 			var test = Test.Alerts.AlertCancel;
@@ -27,48 +27,50 @@ namespace Microsoft.Maui.TestCases.Tests
 			remote.GoTo(test.ToString());
 
 			var textBeforeClick = remote.GetEventLabel().GetText();
-			ClassicAssert.AreEqual($"Event: {test} (none)", textBeforeClick);
+			Assert.Equal($"Event: {test} (none)", textBeforeClick);
 
 			remote.TapView();
 
 			var alert = App.WaitForElement(() => App.GetAlert());
-			ClassicAssert.NotNull(alert);
+			Assert.NotNull(alert);
 
 			var alertText = alert.GetAlertText();
 			CollectionAssert.Contains(alertText, "Alert Title Here");
 			CollectionAssert.Contains(alertText, "Alert Message Here");
 
 			var buttons = alert.GetAlertButtons();
-			CollectionAssert.IsNotEmpty(buttons);
-			ClassicAssert.True(buttons.Count == 1, $"Expected 1 buttonText, found {buttons.Count}.");
+			CollectionAssert.NotEmpty(buttons);
+			Assert.True(buttons.Count == 1, $"Expected 1 buttonText, found {buttons.Count}.");
 
 			var cancel = buttons.First();
-			ClassicAssert.AreEqual("CANCEL", cancel.GetText());
+			Assert.Equal("CANCEL", cancel.GetText());
 
 			cancel.Click();
 
 			App.WaitForNoElement(() => App.GetAlert());
 
 			var textAfterClick = remote.GetEventLabel().GetText();
-			ClassicAssert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
+			Assert.Equal($"Event: {test} (SUCCESS 1)", textAfterClick);
 		}
 
-		[Test]
-		[Category(UITestCategories.DisplayAlert)]
-		[TestCase(Test.Alerts.AlertAcceptCancelClickAccept, "ACCEPT")]
-		[TestCase(Test.Alerts.AlertAcceptCancelClickCancel, "CANCEL")]
+		[Fact]
+		[Trait("Category", UITestCategories.DisplayAlert)]
+		[Theory]
+		[InlineData(Test.Alerts.AlertAcceptCancelClickAccept, "ACCEPT")]
+		[Theory]
+		[InlineData(Test.Alerts.AlertAcceptCancelClickCancel, "CANCEL")]
 		public void AlertAcceptCancel(Test.Alerts test, string buttonText)
 		{
 			var remote = new EventViewContainerRemote(UITestContext, test);
 			remote.GoTo(test.ToString());
 
 			var textBeforeClick = remote.GetEventLabel().GetText();
-			ClassicAssert.AreEqual($"Event: {test} (none)", textBeforeClick);
+			Assert.Equal($"Event: {test} (none)", textBeforeClick);
 
 			remote.TapView();
 
 			var alert = App.WaitForElement(() => App.GetAlert());
-			ClassicAssert.NotNull(alert);
+			Assert.NotNull(alert);
 
 			var alertText = alert.GetAlertText();
 			CollectionAssert.Contains(alertText, "Alert Title Here");
@@ -77,8 +79,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			var buttons = alert.GetAlertButtons()
 				.Select(b => (Element: b, Text: b.GetText()))
 				.ToList();
-			CollectionAssert.IsNotEmpty(buttons);
-			ClassicAssert.True(buttons.Count == 2, $"Expected 2 buttons, found {buttons.Count}.");
+			CollectionAssert.NotEmpty(buttons);
+			Assert.True(buttons.Count == 2, $"Expected 2 buttons, found {buttons.Count}.");
 			CollectionAssert.Contains(buttons.Select(b => b.Text), "ACCEPT");
 			CollectionAssert.Contains(buttons.Select(b => b.Text), "CANCEL");
 
@@ -88,26 +90,29 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement(() => App.GetAlert());
 
 			var textAfterClick = remote.GetEventLabel().GetText();
-			ClassicAssert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
+			Assert.Equal($"Event: {test} (SUCCESS 1)", textAfterClick);
 		}
 
-		[Test]
-		[Category(UITestCategories.ActionSheet)]
-		[TestCase(Test.Alerts.ActionSheetClickItem, "ITEM 2")]
-		[TestCase(Test.Alerts.ActionSheetClickCancel, "CANCEL")]
-		[TestCase(Test.Alerts.ActionSheetClickDestroy, "DESTROY")]
+		[Fact]
+		[Trait("Category", UITestCategories.ActionSheet)]
+		[Theory]
+		[InlineData(Test.Alerts.ActionSheetClickItem, "ITEM 2")]
+		[Theory]
+		[InlineData(Test.Alerts.ActionSheetClickCancel, "CANCEL")]
+		[Theory]
+		[InlineData(Test.Alerts.ActionSheetClickDestroy, "DESTROY")]
 		public void ActionSheetClickItem(Test.Alerts test, string itemText)
 		{
 			var remote = new EventViewContainerRemote(UITestContext, test);
 			remote.GoTo(test.ToString());
 
 			var textBeforeClick = remote.GetEventLabel().GetText();
-			ClassicAssert.AreEqual($"Event: {test} (none)", textBeforeClick);
+			Assert.Equal($"Event: {test} (none)", textBeforeClick);
 
 			remote.TapView();
 
 			var alert = App.WaitForElement(() => App.GetAlert());
-			ClassicAssert.NotNull(alert);
+			Assert.NotNull(alert);
 
 			var alertText = alert.GetAlertText();
 			CollectionAssert.Contains(alertText, "Action Sheet Title Here");
@@ -115,8 +120,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			var buttons = alert.GetAlertButtons()
 				.Select(b => (Element: b, Text: b.GetText()))
 				.ToList();
-			CollectionAssert.IsNotEmpty(buttons);
-			ClassicAssert.True(buttons.Count >= 4 && buttons.Count <= 5, $"Expected 4 or 5 buttons, found {buttons.Count}.");
+			CollectionAssert.NotEmpty(buttons);
+			Assert.True(buttons.Count >= 4 && buttons.Count <= 5, $"Expected 4 or 5 buttons, found {buttons.Count}.");
 			CollectionAssert.Contains(buttons.Select(b => b.Text), "DESTROY");
 			CollectionAssert.Contains(buttons.Select(b => b.Text), "ITEM 1");
 			CollectionAssert.Contains(buttons.Select(b => b.Text), "ITEM 2");
@@ -143,7 +148,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement(() => App.GetAlert());
 
 			var textAfterClick = remote.GetEventLabel().GetText();
-			ClassicAssert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
+			Assert.Equal($"Event: {test} (SUCCESS 1)", textAfterClick);
 		}
 	}
 }

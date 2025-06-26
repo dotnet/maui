@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST // Multiselection not working in Catalyst , Issue: https://github.com/dotnet/maui/issues/26942 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		// ItemsFromViewModelShouldBeSelected (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewBoundMultiSelection.cs)
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void ItemsFromViewModelShouldBeSelected()
 		{
 			// Navigate to the selection galleries

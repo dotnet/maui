@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,8 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public Issue25436(TestDevice testDevice) : base(testDevice) { }
 
-		[Test]
-		[Category(UITestCategories.Shell)]
+		[Fact]
+		[Trait("Category", UITestCategories.Shell)]
 		public void FlyoutMenuShouldNotDisappearWhenNavigateUsingServices()
 		{
 			App.WaitForElement("BackButton");

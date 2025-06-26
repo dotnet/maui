@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST //ScrollDown is not working on Catalyst
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,12 +13,11 @@ public class Issue7167 : _IssuesUITest
 
 	public override string Issue => "[Bug] improved observablecollection. a lot of collectionchanges. a reset is sent and listview scrolls to the top";
 
-
 	const string ListViewId = "ListViewId";
 	const string AddRangeCommandId = "AddRangeCommandId";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void Issue7167Test()
 	{
 		// add items to the list and scroll down till item "23"

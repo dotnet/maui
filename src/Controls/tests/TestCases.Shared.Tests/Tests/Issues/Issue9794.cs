@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST // This test fails on catalyst, unable to click the back button as its does not have an identifier.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,8 +23,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Tabbar Disappears with linker";
 
-		[Test]
-		[Category(UITestCategories.Shell)]
+		[Fact]
+		[Trait("Category", UITestCategories.Shell)]
 		public void EnsureTabBarStaysVisibleAfterPoppingPage()
 		{
 			App.WaitForElement(GoForward);

@@ -1,6 +1,6 @@
 ﻿#if !WINDOWS
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,8 +22,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(CarouselViewGallery);
 		}
 
-		[Test]
-		[Category(UITestCategories.CarouselView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CarouselView)]
 		public void CarouselViewSetPosition()
 		{
 
@@ -32,8 +32,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			CheckLabelValue("lblPosition", "3");
 		}
 
-		[Test]
-		[Category(UITestCategories.CarouselView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CarouselView)]
 		public void CarouselViewGoToNextCurrentItem()
 		{
 			int indexToTest = 3;
@@ -51,8 +51,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("btnPrev");
 		}
 
-		[Test]
-		[Category(UITestCategories.CarouselView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CarouselView)]
 		public void CarouselViewGoToPreviousCurrentItem()
 		{
 			int indexToTest = 3;
@@ -71,8 +71,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// Catalyst doesn't support orientation changes
 #if !MACCATALYST
-		[Test]
-		[Category(UITestCategories.CarouselView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CarouselView)]
 		public void CarouselViewKeepPositionChangingOrientation()
 		{
 
@@ -88,16 +88,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.SetOrientationPortrait();
 			App.WaitForElement($"CarouselItem{index}");
 
-
-
 			CheckLabelValue("lblPosition", index);
 			CheckLabelValue("lblCurrentItem", index);
 		}
 #endif
 
 #if IOS || WINDOWS
-		[Test]
-		[Category(UITestCategories.CarouselView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CarouselView)]
 		public void NavigateBackWhenLooped()
 		{
 			int index = 3;
@@ -115,8 +113,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		[Test]
-		[Category(UITestCategories.CarouselView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CarouselView)]
 		public void NavigateForwardWhenLooped()
 		{
 			int index = 3;
@@ -138,7 +136,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		void CheckLabelValue(string labelAutomationId, string value)
 		{
 			var result = App.FindElement(labelAutomationId).GetText();
-			ClassicAssert.AreEqual(value, result);
+			Assert.Equal(value, result);
 		}
 	}
 }

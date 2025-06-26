@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	[Category(UITestCategories.Fonts)]
+	[Trait("Category", UITestCategories.Fonts)]
 	public class FontsGalleryTests : CoreGalleryBasePageTest
 	{
 		public FontsGalleryTests(TestDevice device)
@@ -17,19 +17,19 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery("Fonts Gallery");
 		}
 
-		[Test]
+		[Fact]
 		public void FromEmbedded_Image() => LoadAndVerify(Test.Fonts.FromEmbedded_Image);
 
-		[Test]
+		[Fact]
 		public void FromEmbedded_Label() => LoadAndVerify(Test.Fonts.FromEmbedded_Label);
 
-		[Test]
+		[Fact]
 		public void FromBundle_Image() => LoadAndVerify(Test.Fonts.FromBundle_Image);
 
 #if WINDOWS
 		[Ignore("Windows App SDK 1.6 broke this test. See more details in https://github.com/dotnet/maui/issues/26749")]
 #endif
-		[Test]
+		[Fact]
 		public void FromBundle_Label() => LoadAndVerify(Test.Fonts.FromBundle_Label);
 
 		void LoadAndVerify(Test.Fonts test)

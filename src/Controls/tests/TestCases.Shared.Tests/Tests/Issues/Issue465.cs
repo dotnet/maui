@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Change in Navigation.PushModal";
 
-		[Test]
-		[Category(UITestCategories.Navigation)]
+		[Fact]
+		[Trait("Category", UITestCategories.Navigation)]
 		public void Issue465TestsPushPopModal()
 		{
 			App.WaitForElement("PopPage");

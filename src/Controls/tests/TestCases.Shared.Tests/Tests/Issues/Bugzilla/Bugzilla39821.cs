@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ViewExtension.TranslateTo cannot be invoked on Main thread";
 
-		[Test]
-		[Category(UITestCategories.Animation)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Animation)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void DoesNotCrash()
 		{
 			App.WaitForElement("Animate");

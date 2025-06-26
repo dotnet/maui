@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,8 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ScrollView always has a scroll bar on iOS";
 
-		[Test]
-		[Category(UITestCategories.ScrollView)]
+		[Fact]
+		[Trait("Category", UITestCategories.ScrollView)]
 		public void NoScrollbarsTest()
 		{
 			App.WaitForElement("WaitForStubControl");

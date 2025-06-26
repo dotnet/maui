@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Github1776 : _IssuesUITest
 
 	public override string Issue => "Button Released not being triggered";
 
-	[Test]
-	[Category(UITestCategories.Button)]
+	[Fact]
+	[Trait("Category", UITestCategories.Button)]
 	public void GitHub1776Test()
 	{
 		App.WaitForElement("TheButton");

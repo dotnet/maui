@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,10 +14,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// Crash after navigation
 		/*
-		[Test]
+		[Fact]
 		[Ignore("The sample is crashing.")]
-		[Category(UITestCategories.FlyoutPage)]
-		[Category(UITestCategories.Compatibility)]
+		[Trait("Category", UITestCategories.FlyoutPage)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("The sample is crashing. More information: https://github.com/dotnet/maui/issues/21205")]
 		public void Bugzilla41842Test()
 		{

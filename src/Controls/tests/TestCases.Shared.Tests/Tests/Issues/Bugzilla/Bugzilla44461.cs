@@ -1,13 +1,13 @@
 ﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST   //When clicking Button0 (the first button) incorrectly centers it in the ScrollView instead of maintaining its left alignment.                                                                                                                                 
 //Issue Link: https://github.com/dotnet/maui/issues/26760
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.ScrollView)]
+	[Trait("Category", UITestCategories.ScrollView)]
 	public class Bugzilla44461UITests : _IssuesUITest
 	{
 		public Bugzilla44461UITests(TestDevice device)
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ScrollToPosition.Center works differently on Android and iOS";
 
-		[Test]
+		[Fact]
 		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void Bugzilla44461Test()

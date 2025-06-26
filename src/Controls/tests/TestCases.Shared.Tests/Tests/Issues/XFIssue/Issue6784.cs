@@ -1,10 +1,10 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.Shell)]
+[Trait("Category", UITestCategories.Shell)]
 public class Issue6784 : _IssuesUITest
 {
 	public Issue6784(TestDevice testDevice) : base(testDevice)
@@ -13,7 +13,7 @@ public class Issue6784 : _IssuesUITest
 
 	public override string Issue => "ShellItem.CurrentItem is not set when selecting shell section aggregated in more tab";
 
-	[Test]
+	[Fact]
 	public void CurrentItemIsSetWhenSelectingShellSectionAggregatedInMoreTab()
 	{
 		App.WaitForElement("More");
@@ -23,7 +23,7 @@ public class Issue6784 : _IssuesUITest
 		App.WaitForElementTillPageNavigationSettled("Success");
 	}
 
-	[Test]
+	[Fact]
 	public void OneMoreControllerOpensOnFirstClick()
 	{
 		App.WaitForElement("More");
@@ -42,7 +42,7 @@ public class Issue6784 : _IssuesUITest
 		App.Tap("Tab 12");
 	}
 
-	[Test]
+	[Fact]
 	public void TwoMoreControllerDoesNotShowEditButton()
 	{
 		App.WaitForElement("More");

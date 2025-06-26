@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ListView with DataTemplateSelector can have only 17 Templates, even with CachingStrategy=RetainElement";
 
-		[Test]
-		[Category(UITestCategories.ListView)]
+		[Fact]
+		[Trait("Category", UITestCategories.ListView)]
 		public void Bugzilla42956Test()
 		{
 			App.WaitForElement(Success);

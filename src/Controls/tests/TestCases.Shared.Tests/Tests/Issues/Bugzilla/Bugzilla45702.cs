@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Disabling back press on modal page causes app to crash";
 
-		[Test]
-		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Navigation)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void Issue45702Test()
 		{
 			App.WaitForElement("ClickMe");

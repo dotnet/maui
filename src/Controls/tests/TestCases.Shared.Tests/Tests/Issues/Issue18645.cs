@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Editor MaxLength property works as expected";
 
-		[Test]
-		[Category(UITestCategories.Editor)]
+		[Fact]
+		[Trait("Category", UITestCategories.Editor)]
 		public void EditorMaxLengthWorks()
 		{
 			App.WaitForElement("WaitForStubControl");
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var editorText = App.FindElement("IssueEditor").GetText();
 
 			// MaxLines = 5
-			ClassicAssert.AreEqual("12345", editorText);
+			Assert.Equal("12345", editorText);
 		}
 	}
 }

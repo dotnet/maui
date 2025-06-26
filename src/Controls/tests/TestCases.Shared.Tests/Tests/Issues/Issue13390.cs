@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Custom SlideFlyoutTransition is not working";
 
-		[Test]
-		[Category(UITestCategories.Shell)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Shell)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void CustomSlideFlyoutTransitionCausesCrash()
 		{
 			// If this hasn't already crashed, the test is passing

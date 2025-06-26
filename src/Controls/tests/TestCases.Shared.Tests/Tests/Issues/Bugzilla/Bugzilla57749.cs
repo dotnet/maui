@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Bugzilla57749 : _IssuesUITest
 
 	public override string Issue => "After enabling a disabled button it is not clickable";
 
-	[Test]
-	[Category(UITestCategories.Button)]
+	[Fact]
+	[Trait("Category", UITestCategories.Button)]
 	public void Bugzilla57749Test()
 	{
 		App.WaitForElement("btnClick");

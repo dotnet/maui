@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,12 +12,11 @@ public class Bugzilla60122 : _IssuesUITest
 
 	public override string Issue => "LongClick on image not working";
 
-
 	const string ImageId = "60122Image";
 	const string Success = "Success";
 
-	[Test]
-	[Category(UITestCategories.Gestures)]
+	[Fact]
+	[Trait("Category", UITestCategories.Gestures)]
 	public void LongClickFiresOnCustomImageRenderer()
 	{
 		App.WaitForElement(ImageId);

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // Fails on windows, More information :https://github.com/dotnet/maui/issues/24243
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,9 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Pushing and then popping a page modally causes ArgumentOutOfRangeException";
 
-		[Test]
-		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Navigation)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void Issue31366PushingAndPoppingModallyCausesArgumentOutOfRangeException()
 		{
 			App.WaitForElement("StartPopOnAppearingTest");
@@ -23,8 +23,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("If this is visible, the PopOnAppearing test has passed.");
 		}
 
-		[Test]
-		[Category(UITestCategories.Navigation)]
+		[Fact]
+		[Trait("Category", UITestCategories.Navigation)]
 		public void Issue31366PushingWithModalStackCausesIncorrectStackOrder()
 		{
 			App.WaitForElement("StartModalStackTest");

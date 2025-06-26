@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.Shell)]
+[Trait("Category", UITestCategories.Shell)]
 public class ShellItemIsVisible : _IssuesUITest
 {
 	public ShellItemIsVisible(TestDevice testDevice) : base(testDevice)
@@ -39,7 +39,6 @@ public class ShellItemIsVisible : _IssuesUITest
 		App.WaitForElement("Welcome to Tab 1");
 		App.WaitForNoElement("ToggleItem1");
 	}
-
 
 	[Test, Order(5)]
 	public void HideFlyoutItem()

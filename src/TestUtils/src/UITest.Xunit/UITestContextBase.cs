@@ -1,6 +1,6 @@
 ﻿using UITest.Core;
 
-namespace UITest.Appium.NUnit
+namespace UITest.Appium.Xunit
 {
 	public abstract class UITestContextBase
 	{

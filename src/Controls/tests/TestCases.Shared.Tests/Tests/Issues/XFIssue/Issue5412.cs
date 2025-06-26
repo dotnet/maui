@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue5412 : _IssuesUITest
 
 	public override string Issue => "5412 - (NavigationBar disappears on FlyoutPage)";
 
-	[Test]
-	[Category(UITestCategories.FlyoutPage)]
+	[Fact]
+	[Trait("Category", UITestCategories.FlyoutPage)]
 	public void Issue5412Test()
 	{
 		App.WaitForElementTillPageNavigationSettled("Index Page");

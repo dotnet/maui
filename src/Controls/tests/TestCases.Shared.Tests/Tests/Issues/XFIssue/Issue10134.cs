@@ -2,7 +2,7 @@
 // DragCoordinates is not supported on MacCatalyst
 // On Windows this test case is not valid due to the tob tabs are visbile in drop-down.
 // On Android FindElements are not working as expected in Appium. It always returns 0 elements.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +16,8 @@ public class Github10134 : _IssuesUITest
 
 	public override string Issue => "Shell Top Tabbar focus issue";
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void TopTabsDontScrollBackToStartWhenSelected()
 	{
 		App.WaitForElement("Tab 1");

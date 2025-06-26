@@ -1,5 +1,5 @@
 ﻿#if !ANDROID
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,9 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Hiding navigation bar causes layouts to shift during navigation";
 
-		[Test]
-		[Category(UITestCategories.LifeCycle)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.LifeCycle)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void Bugzilla32830Test()
 		{

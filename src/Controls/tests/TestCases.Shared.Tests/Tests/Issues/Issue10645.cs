@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Image is not centered in AspectFill mode";
 
-		[Test]
-		[Category(UITestCategories.ActionSheet)]
+		[Fact]
+		[Trait("Category", UITestCategories.ActionSheet)]
 		public void Issue10645Test()
 		{
 			App.WaitForElement("AspectFillImage", timeout: TimeSpan.FromSeconds(4));

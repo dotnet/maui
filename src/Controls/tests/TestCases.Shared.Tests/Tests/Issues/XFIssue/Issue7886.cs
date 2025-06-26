@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +16,8 @@ public class Issue7886 : _IssuesUITest
 
 	public override string Issue => "PushModalAsync modal page with Entry crashes on close for MacOS (NRE)";
 
-	[Test]
-	[Category(UITestCategories.Navigation)]
+	[Fact]
+	[Trait("Category", UITestCategories.Navigation)]
 	public void NoNREOnPushModalAsyncAndBack()
 	{
 		App.WaitForElement(TriggerModalAutomationId);

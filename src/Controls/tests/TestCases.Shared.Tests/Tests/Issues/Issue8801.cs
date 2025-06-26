@@ -1,5 +1,5 @@
 ﻿#if ANDROID
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,9 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// Crash after navigation
 		/*
-		[Test]
-		[Category(UITestCategories.Layout)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Layout)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void NotAddingElementsNativelyDoesntCrashAndroid()
 		{
 			App.WaitForElement("Success");

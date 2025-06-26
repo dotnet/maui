@@ -1,5 +1,5 @@
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void HeaderFooterStringWorks()
 		{
 			// Navigate to the selection galleries
@@ -30,8 +30,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("This footer is also a string");
 		}
 #if IOS || ANDROID
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public async Task HeaderFooterViewWorks()
 		{
 			// Navigate to the selection galleries
@@ -55,11 +55,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Clear All Items").Tap();
 			await Task.Delay(300);
 
-			ClassicAssert.IsTrue(App.WaitForElement("This Is A Footer").IsDisplayed());
+			Assert.True(App.WaitForElement("This Is A Footer").IsDisplayed());
 		}
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void HeaderFooterHorizontalViewWorks()
 		{
 			// Navigate to the selection galleries
@@ -81,8 +81,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("This Is A Footer");
 		}
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void HeaderFooterTemplateWorks()
 		{
 			// Navigate to the selection galleries
@@ -94,8 +94,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void HeaderFooterGridWorks()
 		{
 			// Navigate to the selection galleries
@@ -118,8 +118,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		// The screenshot that's currently generated for this test is wrong
 		// So, we're ignoring this test due to it causing confusion when other changes
 		// cause this test to fail.
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void HeaderFooterGridHorizontalWorks()
 		{
 			// Navigate to the selection galleries

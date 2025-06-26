@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -24,9 +24,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string ToggleIsEnabled = "disabled";
 		const string Original = "Original";
 
-		[Test]
-		[Category(UITestCategories.Layout)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Layout)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		[FailsOnIOSWhenRunningOnXamarinUITest]
 		[FailsOnMacWhenRunningOnXamarinUITest]
@@ -37,9 +37,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			TestControl(Grid);
 		}
 
-		[Test]
-		[Category(UITestCategories.Layout)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Layout)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		[FailsOnIOSWhenRunningOnXamarinUITest]
 		[FailsOnMacWhenRunningOnXamarinUITest]
@@ -50,9 +50,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			TestControl(ContentView);
 		}
 
-		[Test]
-		[Category(UITestCategories.Layout)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Layout)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		[FailsOnIOSWhenRunningOnXamarinUITest]
 		[FailsOnMacWhenRunningOnXamarinUITest]
@@ -63,10 +63,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			TestControl(StackLayout);
 		}
 
-
-		[Test]
-		[Category(UITestCategories.Layout)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Layout)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void TestRelativeLayout()
 		{

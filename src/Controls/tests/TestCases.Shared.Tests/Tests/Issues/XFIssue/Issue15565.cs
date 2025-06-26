@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.TitleView)]
+[Trait("Category", UITestCategories.TitleView)]
 public class Issue15565 : _IssuesUITest
 {
 
@@ -18,7 +18,7 @@ public class Issue15565 : _IssuesUITest
 
 	public override string Issue => "[Bug] Shell TitleView and ToolBarItems rendering strange display on iOS 16";
 
-	[Test]
+	[Fact]
 	public void TitleViewHeightIsNotZero()
 	{
 		App.TapTab(Page1, true);
@@ -34,15 +34,14 @@ public class Issue15565 : _IssuesUITest
 		Assert.That(topTabTop, Is.GreaterThanOrEqualTo(titleViewBottom), "Title View is incorrectly positioned in iOS 16");
 	}
 
-
-	[Test]
+	[Fact]
 	public void ToolbarItemsWithTitleViewAreRendering()
 	{
 		App.WaitForElement("Item 1");
 		App.WaitForElement("Item 2");
 	}
 
-	[Test]
+	[Fact]
 	public void NoDuplicateTitleViews()
 	{
 		App.WaitForElement("title 1");
@@ -52,7 +51,6 @@ public class Issue15565 : _IssuesUITest
 		App.TapTab(Page3, true);
 		ValidateElementsCount("title 3");
 	}
-
 
 	void ValidateElementsCount(string element)
 	{

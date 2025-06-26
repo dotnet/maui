@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.Shell)]
+[Trait("Category", UITestCategories.Shell)]
 public class ShellInsets : _IssuesUITest
 {
 	const string EntryTest = nameof(EntryTest);

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ public class Bugzilla43663 : _IssuesUITest
 
 	public override string Issue => "ModalPushed and ModalPopped not working on WinRT";
 
-	[Test]
-	[Category(UITestCategories.Navigation)]
+	[Fact]
+	[Trait("Category", UITestCategories.Navigation)]
 	public void ModalNavigation()
 	{
 		App.WaitForElement("Click to push Modal");

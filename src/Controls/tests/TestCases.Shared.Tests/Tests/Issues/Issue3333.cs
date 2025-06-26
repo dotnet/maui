@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,10 +14,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[UWP] with ListView on page, Navigation.PopAsync() throws exception";
 
-		[Test]
-		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.ListView)]
+		[Trait("Category", UITestCategories.Navigation)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void SettingBindingContextToNullBeforingPoppingPageCrashes()
 		{
 			App.WaitForElement(KSuccess);

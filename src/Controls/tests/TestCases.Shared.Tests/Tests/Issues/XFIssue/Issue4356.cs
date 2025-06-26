@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue4356 : _IssuesUITest
 
 	public override string Issue => "[iOS] NSInternalInconsistencyException thrown when adding item to ListView after clearing bound ObservableCollection";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void Issue4356Test()
 	{
 		App.WaitForElement("Will this repo work?");

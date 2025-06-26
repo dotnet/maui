@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue1439 : _IssuesUITest
 
 	public override string Issue => "ItemTapped event for a grouped ListView is not working as expected.";
 
-	[Test]
-	[Category(UITestCategories.TableView)]
+	[Fact]
+	[Trait("Category", UITestCategories.TableView)]
 	public void Issue1439Test()
 	{
 		App.WaitForElement("A");

@@ -1,5 +1,5 @@
 ﻿#if ANDROID // <!-- This test case applies only to Android due to the use of android-specific configurations
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue1455 : _IssuesUITest
 
 	public override string Issue => "Context action are not changed when selected item changed on Android";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void RefreshContextActions()
 	{
 		App.WaitForElement("Cell 1");

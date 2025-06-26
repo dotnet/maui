@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.Shell)]
+[Trait("Category", UITestCategories.Shell)]
 public class ShellBackButtonBehavior : _IssuesUITest
 {
 	public ShellBackButtonBehavior(TestDevice testDevice) : base(testDevice)
@@ -14,7 +14,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	public override string Issue => "Shell Back Button Behavior Test";
 
 	// TODO: HostApp UI pushes some ControlGallery specific page? Commented out now, fix that first!
-	//[Test]
+	//[Fact]
 	//	[FailsOnAndroid]
 	//	public void CommandTest()
 	//	{
@@ -32,7 +32,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	//			return null;
 	//		})?.FirstOrDefault()?.ReadText();
 
-	//		Assert.AreEqual("parameter", commandResult);
+	//		Assert.Equal("parameter", commandResult);
 	//		App.EnterText(EntryCommandParameter, "canexecutetest");
 	//		App.Tap(ToggleCommandCanExecuteId);
 
@@ -44,10 +44,10 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	//			return null;
 	//		})?.FirstOrDefault()?.ReadText();
 
-	//		Assert.AreEqual("parameter", commandResult);
+	//		Assert.Equal("parameter", commandResult);
 	//	}
 
-	//	[Test]
+	//	[Fact]
 	//	public void CommandWorksWhenItsTheOnlyThingSet()
 	//	{
 	//		App.Tap(PushPageId);
@@ -70,10 +70,10 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	//			return null;
 	//		})?.FirstOrDefault()?.ReadText();
 
-	//		Assert.AreEqual(commandResult, "parameter");
+	//		Assert.Equal(commandResult, "parameter");
 	//	}
 
-	//	[Test]
+	//	[Fact]
 	//	[FailsOnIOSWhenRunningOnXamarinUITest]
 	//	public void BackButtonSetToTextStillNavigatesBack()
 	//	{
@@ -84,7 +84,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	//		App.WaitForElement("Page 0");
 	//	}
 
-	//	[Test]
+	//	[Fact]
 	//	[FailsOnIOSWhenRunningOnXamarinUITest]
 	//	public void BackButtonSetToTextStillOpensFlyout()
 	//	{
@@ -95,7 +95,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	//	}
 
 	//#if __ANDROID__
-	//	[Test]
+	//	[Fact]
 	//	public void FlyoutDisabledDoesntOpenFlyoutWhenSetToText()
 	//	{
 	//		App.WaitForElement("ToggleFlyoutBehavior");
@@ -107,7 +107,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	//		App.WaitForNoElement(FlyoutOpen);
 	//	}
 	//#else
-	//	[Test]
+	//	[Fact]
 	//	[FailsOnIOSWhenRunningOnXamarinUITest]
 	//	public void FlyoutDisabledDoesntOpenFlyoutWhenSetToText()
 	//	{
@@ -122,7 +122,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	//		App.WaitForNoElement(FlyoutOpen);
 	//	}
 	//#endif
-	//	[Test]
+	//	[Fact]
 	//	public void AutomationIdOnIconOverride()
 	//	{
 	//		App.WaitForElement("ToggleFlyoutBehavior");

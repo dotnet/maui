@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,10 +21,8 @@ public class Issue892 : _IssuesUITest
 
 	public override string Issue => "NavigationPages as details in FlyoutPage don't work as expected";
 
-
-	[Test]
-	[Category(UITestCategories.FlyoutPage)]
-	[Description("Change pages in the Flyout ListView, and navigate to the end and back")]
+	[Fact]
+	[Trait("Category", UITestCategories.FlyoutPage)]
 	public void Issue892TestsNavigateChangePagesNavigate()
 	{
 		NavigateToEndAndBack(InitialPage);

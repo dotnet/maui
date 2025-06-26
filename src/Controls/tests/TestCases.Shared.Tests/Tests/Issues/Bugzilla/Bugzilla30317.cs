@@ -1,10 +1,10 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.TabbedPage)]
+[Trait("Category", UITestCategories.TabbedPage)]
 public class Bugzilla30317 : _IssuesUITest
 {
 
@@ -43,7 +43,7 @@ public class Bugzilla30317 : _IssuesUITest
 
 	public override string Issue => "https://bugzilla.xamarin.com/show_bug.cgi?id=30137";
 
-	[Test]
+	[Fact]
 	public void Bugzilla30317ItemSourceOnAppearingContentPage()
 	{
 		App.WaitForElement(PageOne);
@@ -55,7 +55,7 @@ public class Bugzilla30317 : _IssuesUITest
 		TouchAndHold(PageOneItem5);
 	}
 
-	[Test]
+	[Fact]
 	public void Bugzilla30317ItemSourceCtorContentPage()
 	{
 		App.WaitForElement(PageTwoButton);
@@ -69,7 +69,7 @@ public class Bugzilla30317 : _IssuesUITest
 		TouchAndHold(PageTwoItem5);
 	}
 
-	[Test]
+	[Fact]
 	public void Bugzilla30317ItemSourceTabbedPage()
 	{
 		App.WaitForElement(PageTwoButton);

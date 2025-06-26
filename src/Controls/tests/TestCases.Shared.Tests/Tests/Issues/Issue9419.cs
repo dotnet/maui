@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,9 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "Crash when toolbar item removed then page changed";
-		[Test]
-		[Category(UITestCategories.ToolbarItem)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.ToolbarItem)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void TestIssue9419()
 		{
 			App.WaitForElementTillPageNavigationSettled(OkResult);

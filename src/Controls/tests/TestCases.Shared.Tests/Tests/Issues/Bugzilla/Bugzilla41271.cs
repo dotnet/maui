@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ public class Bugzilla41271 : _IssuesUITest
 
 	string _cell = string.Empty;
 
-	// [Test]
-	// [Category(UITestCategories.ListView)]
+	// [Fact]
+	// [Trait("Category", UITestCategories.ListView)]
 	// public void MemoryLeakInListViewTabbedPageUWP()
 	// {
 	// 	_cell = "California #60";

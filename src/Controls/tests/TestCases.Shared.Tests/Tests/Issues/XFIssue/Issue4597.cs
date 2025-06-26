@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.Cells)]
+[Trait("Category", UITestCategories.Cells)]
 public class Issue4597 : _IssuesUITest
 {
 	public Issue4597(TestDevice testDevice) : base(testDevice)
@@ -13,14 +13,14 @@ public class Issue4597 : _IssuesUITest
 
 	public override string Issue => "[Android] ImageCell not loading images and setting ImageSource to null has no effect";
 
-	//[Test]
+	//[Fact]
 	//[FailsOnIOS]
 	//public void ImageFromFileSourceAppearsAndDisappearsCorrectly()
 	//{
 	//	RunTest(nameof(Image), true);
 	//}
 
-	//[Test]
+	//[Fact]
 	//[FailsOnIOS]
 	//[FailsOnAndroid]
 	//public void ImageFromUriSourceAppearsAndDisappearsCorrectly()
@@ -28,15 +28,14 @@ public class Issue4597 : _IssuesUITest
 	//	RunTest(nameof(Image), false);
 	//}
 
-
-	//[Test]
+	//[Fact]
 	//[FailsOnIOS]
 	//public void ButtonFromFileSourceAppearsAndDisappearsCorrectly()
 	//{
 	//	RunTest(nameof(Button), true);
 	//}
 
-	//[Test]
+	//[Fact]
 	//[FailsOnIOS]
 	//[FailsOnAndroid]
 	//public void ButtonFromUriSourceAppearsAndDisappearsCorrectly()
@@ -44,15 +43,14 @@ public class Issue4597 : _IssuesUITest
 	//	RunTest(nameof(Button), false);
 	//}
 
-
-	//[Test]
+	//[Fact]
 	//[FailsOnIOS]
 	//public void ImageButtonFromFileSourceAppearsAndDisappearsCorrectly()
 	//{
 	//	RunTest(nameof(ImageButton), true);
 	//}
 
-	//[Test]
+	//[Fact]
 	//[FailsOnIOS]
 	//[FailsOnAndroid]
 	//public void ImageButtonFromUriSourceAppearsAndDisappearsCorrectly()
@@ -60,14 +58,14 @@ public class Issue4597 : _IssuesUITest
 	//	RunTest(nameof(ImageButton), false);
 	//}
 
-	//[Test]
+	//[Fact]
 	//[FailsOnIOS]
 	//public void ImageCellFromFileSourceAppearsAndDisappearsCorrectly()
 	//{
 	//	ImageCellTest(true);
 	//}
 
-	//[Test]
+	//[Fact]
 	//[FailsOnIOS]
 	//[FailsOnAndroid]
 	//public void ImageCellFromUriSourceAppearsAndDisappearsCorrectly()
@@ -83,11 +81,11 @@ public class Issue4597 : _IssuesUITest
 	//	var imageVisible =
 	//		App.QueryUntilPresent(GetImage, 10, 2000);
 
-	//	Assert.AreEqual(1, imageVisible.Length);
+	//	Assert.Equal(1, imageVisible.Length);
 	//	SetImageSourceToNull();
 
 	//	imageVisible = GetImage();
-	//	Assert.AreEqual(0, imageVisible.Length);
+	//	Assert.Equal(0, imageVisible.Length);
 
 	//	Xamarin.UITest.Queries.AppResult[] GetImage()
 	//	{
@@ -97,7 +95,6 @@ public class Issue4597 : _IssuesUITest
 	//	}
 	//}
 
-
 	//void RunTest(string testName, bool fileSource)
 	//{
 	//	SetupTest(testName, fileSource);
@@ -105,7 +102,6 @@ public class Issue4597 : _IssuesUITest
 	//	SetImageSourceToNull();
 	//	TestForImageNotVisible(foundImage);
 	//}
-
 
 	//void SetImageSourceToNull()
 	//{
@@ -125,7 +121,7 @@ public class Issue4597 : _IssuesUITest
 	//		return Array.Empty<Xamarin.UITest.Queries.AppResult>();
 	//	}, 10, 4000);
 
-	//	Assert.AreEqual(1, images.Length);
+	//	Assert.Equal(1, images.Length);
 	//	var imageVisible = images[0];
 
 	//	Assert.Greater(imageVisible.Rect.Height, 1);

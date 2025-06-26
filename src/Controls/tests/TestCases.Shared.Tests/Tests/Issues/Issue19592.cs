@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //This span.LineHeight property has no effect on windows, For more Information - https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/label?view=net-maui-9.0#use-formatted-text
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Test]
-		[Category(UITestCategories.Label)]
+		[Fact]
+		[Trait("Category", UITestCategories.Label)]
 		public void SpanLineHeightShouldNotGrowProgressively()
 		{
 			_ = App.WaitForElement("label");

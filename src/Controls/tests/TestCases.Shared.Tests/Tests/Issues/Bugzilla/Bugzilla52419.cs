@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,8 +23,8 @@ public class Bugzilla52419 : _IssuesUITest
 
 	public override string Issue => "[A] OnAppearing called for previous pages in a tab's navigation when switching active tabs";
 
-	[Test]
-	[Category(UITestCategories.TabbedPage)]
+	[Fact]
+	[Trait("Category", UITestCategories.TabbedPage)]
 	public void Bugzilla52419Test()
 	{
 		App.WaitForElementTillPageNavigationSettled(PushNewPage);

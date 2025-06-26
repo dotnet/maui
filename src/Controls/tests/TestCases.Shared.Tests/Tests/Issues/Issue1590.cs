@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ListView.IsGroupingEnabled results ins ArguementOutOfRangeException";
 
-		[Test]
-		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.ListView)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void ListViewIsGroupingEnabledDoesNotCrash()
 		{
 			App.WaitForElement("First");

@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -42,7 +42,7 @@ public class CarouselViewFeatureTests : UITest
 	}
 
 	[Test, Order(1)]
-	[Category(UITestCategories.CarouselView)]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepItemInView()
 	{
 		App.WaitForElement("CarouselViewButton");
@@ -60,8 +60,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //In windows related issue link: https://github.com/dotnet/maui/issues/29529
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepItemInViewAndCurrentItem()
 	{
 		App.WaitForElement(Options);
@@ -78,8 +78,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(CurrentItemLabel).GetText(), Is.EqualTo("Item 6"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepItemInViewAndCurrentPosition()
 	{
 		App.WaitForElement(Options);
@@ -96,8 +96,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(CurrentPositionLabel).GetText(), Is.EqualTo("0"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepItemInViewAndPreviousItem()
 	{
 		App.WaitForElement(Options);
@@ -115,8 +115,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In CV2 related issue link: https://github.com/dotnet/maui/issues/29524 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepItemInViewAndPreviousPosition()
 	{
 		App.WaitForElement(Options);
@@ -138,8 +138,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_WINDOWS //In windows related issue link: https://github.com/dotnet/maui/issues/29462
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithGridLayout()
 	{
 		App.WaitForElement(Options);
@@ -151,8 +151,8 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 1 (Grid Template)");
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithImageView()
 	{
 		App.WaitForElement(Options);
@@ -166,8 +166,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/28334 && https://github.com/dotnet/maui/issues/28022 && https://github.com/dotnet/maui/issues/29463 && https://github.com/dotnet/maui/issues/29472
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithEmptyViewString()
 	{
 		App.WaitForElement(Options);
@@ -181,8 +181,8 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("No items available");
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithEmptyViewImageView()
 	{
 		App.WaitForElement(Options);
@@ -196,8 +196,8 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("No items available(Custom View)");
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithEmptyViewTemplate()
 	{
 		App.WaitForElement(Options);
@@ -213,8 +213,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID //In android related issue: https://github.com/dotnet/maui/issues/29415
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepScrollOffset()
 	{
 		App.WaitForElement(Options);
@@ -230,8 +230,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //In CV2 related issue link: https://github.com/dotnet/maui/issues/29524 && In windows related issue link: https://github.com/dotnet/maui/issues/29529
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepScrollOffsetAndCurrentItem()
 	{
 		App.WaitForElement(Options);
@@ -248,8 +248,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(CurrentItemLabel).GetText(), Is.EqualTo("Item 1"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepScrollOffsetAndCurrentPosition()
 	{
 		App.WaitForElement(Options);
@@ -266,8 +266,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(CurrentPositionLabel).GetText(), Is.EqualTo("1"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepScrollOffsetAndPreviousItem()
 	{
 		App.WaitForElement(Options);
@@ -285,8 +285,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In CV2 related issue link: https://github.com/dotnet/maui/issues/29524
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepScrollOffsetAndPreviousPosition()
 	{
 		App.WaitForElement(Options);
@@ -307,8 +307,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/29420 && https://github.com/dotnet/maui/issues/29529
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepLastItemInView()
 	{
 		App.WaitForElement(Options);
@@ -323,8 +323,8 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 5");
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepLastItemInViewAndCurrentItem()
 	{
 		App.WaitForElement(Options);
@@ -341,8 +341,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(CurrentItemLabel).GetText(), Is.EqualTo("Item 5"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepLastItemInViewAndCurrentPosition()
 	{
 		App.WaitForElement(Options);
@@ -360,8 +360,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID // Issue link: https://github.com/dotnet/maui/issues/29544
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepLastItemInViewAndPreviousItem()
 	{
 		App.WaitForElement(Options);
@@ -380,8 +380,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID//In CV2 related issue link: https://github.com/dotnet/maui/issues/29529 Android related issue link: https://github.com/dotnet/maui/issues/29544
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepLastItemInViewAndPreviousPosition()
 	{
 		App.WaitForElement(Options);
@@ -401,8 +401,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In windows related issue : https://github.com/dotnet/maui/issues/29420 && In android related issue: https://github.com/dotnet/maui/issues/29415 && In CV2 related issue:https://github.com/dotnet/maui/issues/29449
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithIsLoopEnabledAndKeepItemInView()
 	{
 		App.WaitForElement(Options);
@@ -419,8 +419,8 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 6");
 	}
 	
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithIsLoopEnabledAndKeepScrollOffset()
 	{
 		App.WaitForElement(Options);
@@ -437,8 +437,8 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 1");
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithIsLoopEnabledAndKeepLastItemInView()
 	{
 		App.WaitForElement(Options);
@@ -457,8 +457,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link:https://github.com/dotnet/maui/issues/29412 && CV2 related issue:https://github.com/dotnet/maui/issues/29449 && https://github.com/dotnet/maui/issues/29261
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithIsLoopEnabled()
 	{
 		App.WaitForElement(Options);
@@ -477,8 +477,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // related issue link:https://github.com/dotnet/maui/issues/29391
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithIsSwipeDisable()
 	{
 		App.WaitForElement(Options);
@@ -497,8 +497,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS//In CV2 related issue link: https://github.com/dotnet/maui/issues/29312 and In windows related issue link: https://github.com/dotnet/maui/issues/15443
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithPosition()
 	{
 		App.WaitForElement(Options);
@@ -512,8 +512,8 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 3");
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithPositionAndCurrentItem()
 	{
 		App.WaitForElement(Options);
@@ -528,8 +528,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(CurrentItemLabel).GetText(), Is.EqualTo("Item 2"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithPositionAndCurrentPosition()
 	{
 		App.WaitForElement(Options);
@@ -545,8 +545,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID //In android related issue link: https://github.com/dotnet/maui/issues/29544
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithPositionAndPreviousItem()
 	{
 		App.WaitForElement(Options);
@@ -561,8 +561,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(PreviousItemLabel).GetText(), Is.EqualTo("Item 1"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithPositionAndPreviousPosition()
 	{
 		App.WaitForElement(Options);
@@ -579,10 +579,9 @@ public class CarouselViewFeatureTests : UITest
 #endif
 #endif
 
-
 #if TEST_FAILS_ON_WINDOWS //In windows related issue link:  https://github.com/dotnet/maui/issues/15443
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithScrollToAndCurrentItem()
 	{
 		App.WaitForElement(Options);
@@ -599,8 +598,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(CurrentItemLabel).GetText(), Is.EqualTo("Item 2"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithScrollToAndCurrentPosition()
 	{
 		App.WaitForElement(Options);
@@ -619,8 +618,8 @@ public class CarouselViewFeatureTests : UITest
 
 #if TEST_FAILS_ON_ANDROID //In android related issue link: https://github.com/dotnet/maui/issues/29544  
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithScrollToAndPreviousItem()
 	{
 		App.WaitForElement(Options);
@@ -637,8 +636,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(PreviousItemLabel).GetText(), Is.EqualTo("Item 1"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithScrollToAndPreviousPosition()
 	{
 		App.WaitForElement(Options);
@@ -657,8 +656,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 #endif
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithPeekAreaInsets()
 	{
 		App.WaitForElement(Options);
@@ -674,8 +673,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //In windows related issue link: https://github.com/dotnet/maui/issues/29529
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithCurrentItems()
 	{
 		App.WaitForElement(Options);
@@ -690,8 +689,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link: https://github.com/dotnet/maui/issues/29412 && CV2 related issue link:https://github.com/dotnet/maui/issues/29449 && https://github.com/dotnet/maui/issues/29261
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithEnableLoopAndCurrentItem()
 	{
 		App.WaitForElement(Options);
@@ -709,8 +708,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_WINDOWS //In windows related issue link:https://github.com/dotnet/maui/issues/29529
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithCurrentPosition()
 	{
 		App.WaitForElement(Options);
@@ -726,8 +725,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link:https://github.com/dotnet/maui/issues/29412 && In CV2 related issue link:https://github.com/dotnet/maui/issues/29449
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithEnableLoopAndCurrentPosition()
 	{
 		App.WaitForElement(Options);
@@ -745,8 +744,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 #endif
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithPreviousItem()
 	{
 		App.WaitForElement(Options);
@@ -762,8 +761,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link:https://github.com/dotnet/maui/issues/29412 && CV2 related issue link:https://github.com/dotnet/maui/issues/29449
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithEnableLoopAndPreviousItem()
 	{
 		App.WaitForElement(Options);
@@ -782,8 +781,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //In CV2 related issue link: https://github.com/dotnet/maui/issues/29524
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithPreviousPosition()
 	{
 		App.WaitForElement(Options);
@@ -801,8 +800,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link:https://github.com/dotnet/maui/issues/29412 && CV2 related issue link: https://github.com/dotnet/maui/issues/29449 && https://github.com/dotnet/maui/issues/29524
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithEnableLoopAndPreviousPosition()
 	{
 		App.WaitForElement(Options);
@@ -821,8 +820,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_WINDOWS //In windows related issue link: https://github.com/dotnet/maui/issues/29448
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithScrollTo()
 	{
 		App.WaitForElement(Options);
@@ -838,8 +837,8 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 4");
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithIsSwipeDisableAndScrollTo()
 	{
 		App.WaitForElement(Options);
@@ -859,8 +858,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In CV2 related issue link: https://github.com/dotnet/maui/issues/27711
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithRTLFlowDirection()
 	{
 		App.WaitForElement(Options);
@@ -875,10 +874,9 @@ public class CarouselViewFeatureTests : UITest
 	}
 #endif
 
-
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // related issue link: https://github.com/dotnet/maui/issues/29372
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayout()
 	{
 		App.WaitForElement(Options);
@@ -897,8 +895,8 @@ public class CarouselViewFeatureTests : UITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS
 // Android related issue link: https://github.com/dotnet/maui/issues/29544 In CV2 related issue link: https://github.com/dotnet/maui/issues/29312 and In windows related issue link: https://github.com/dotnet/maui/issues/15443
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndPosition()
 	{
 		App.WaitForElement(Options);
@@ -914,8 +912,8 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 2");
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewCurrentItemWithVerticalLayoutAndPosition()
 	{
 		App.WaitForElement(Options);
@@ -932,8 +930,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(CurrentItemLabel).GetText(), Is.EqualTo("Item 2"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewPreviousItemWithVerticalLayoutAndPosition()
 	{
 		App.WaitForElement(Options);
@@ -950,8 +948,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(PreviousItemLabel).GetText(), Is.EqualTo("Item 1"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewPreviousPositionWithVerticalLayoutAndPosition()
 	{
 		App.WaitForElement(Options);
@@ -968,8 +966,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(PreviousPositionLabel).GetText(), Is.EqualTo("0"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewCurrentPositionWithVerticalLayoutAndPosition()
 	{
 		App.WaitForElement(Options);
@@ -986,8 +984,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(CurrentPositionLabel).GetText(), Is.EqualTo("1"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewCurrentItemWithVerticalLayoutAndScrollTo()
 	{
 		App.WaitForElement(Options);
@@ -1006,8 +1004,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(CurrentItemLabel).GetText(), Is.EqualTo("Item 2"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewPreviousItemWithVerticalLayoutAndScrollTo()
 	{
 		App.WaitForElement(Options);
@@ -1026,8 +1024,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(PreviousItemLabel).GetText(), Is.EqualTo("Item 1"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewCurrentPositionWithVerticalLayoutAndScrollTo()
 	{
 		App.WaitForElement(Options);
@@ -1046,8 +1044,8 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(CurrentPositionLabel).GetText(), Is.EqualTo("1"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewPreviousPositionWithVerticalLayoutAndScrollTo()
 	{
 		App.WaitForElement(Options);
@@ -1068,8 +1066,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link:https://github.com/dotnet/maui/issues/29412 && CV2 related issue link: https://github.com/dotnet/maui/issues/29449 && https://github.com/dotnet/maui/issues/29524
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndEnableLoop()
 	{
 		App.WaitForElement(Options);
@@ -1089,8 +1087,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 #endif
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndKeepItemInView()
 	{
 		App.WaitForElement(Options);
@@ -1107,8 +1105,8 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 6");
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndKeepScrollOffset()
 	{
 		App.WaitForElement(Options);
@@ -1125,8 +1123,8 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 1");
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndKeepLastItemInView()
 	{
 		App.WaitForElement(Options);
@@ -1144,8 +1142,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link:https://github.com/dotnet/maui/issues/29412 && CV2 related issue link: https://github.com/dotnet/maui/issues/29449 && https://github.com/dotnet/maui/issues/29524
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndIsLoopEnabled()
 	{
 		App.WaitForElement(Options);
@@ -1165,8 +1163,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 #endif
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndIsSwipeEnabled()
 	{
 		App.WaitForElement(Options);
@@ -1185,8 +1183,8 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 1");
 	}
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndPeekAreaInsets()
 	{
 		App.WaitForElement(Options);
@@ -1204,8 +1202,8 @@ public class CarouselViewFeatureTests : UITest
 	}
  
 #if TEST_FAILS_ON_WINDOWS //In windows related issue link: https://github.com/dotnet/maui/issues/29529
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndCurrentItems()
 	{
 		App.WaitForElement(Options);
@@ -1223,8 +1221,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link:https://github.com/dotnet/maui/issues/29412 && CV2 related issue link: https://github.com/dotnet/maui/issues/29449 && https://github.com/dotnet/maui/issues/29524
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndEnableLoopAndCurrentItem()
 	{
 		App.WaitForElement(Options);
@@ -1244,8 +1242,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 #endif
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndCurrentPosition()
 	{
 		App.WaitForElement(Options);
@@ -1263,8 +1261,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link:https://github.com/dotnet/maui/issues/29412 && CV2 related issue link: https://github.com/dotnet/maui/issues/29449 && https://github.com/dotnet/maui/issues/29524
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndEnableLoopAndCurrentPosition()
 	{
 		App.WaitForElement(Options);
@@ -1284,8 +1282,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 #endif
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndPreviousItem()
 	{
 		App.WaitForElement(Options);
@@ -1304,8 +1302,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link:https://github.com/dotnet/maui/issues/29412 && CV2 related issue link: https://github.com/dotnet/maui/issues/29449 && https://github.com/dotnet/maui/issues/29524
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndEnableLoopAndPreviousItem()
 	{
 		App.WaitForElement(Options);
@@ -1326,8 +1324,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In CV2 related issue link: https://github.com/dotnet/maui/issues/29524
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndPreviousPosition()
 	{
 		App.WaitForElement(Options);
@@ -1344,10 +1342,9 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(PreviousPositionLabel).GetText(), Is.EqualTo("1"));
 	}
 
-
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link:https://github.com/dotnet/maui/issues/29412 && CV2 related issue link: https://github.com/dotnet/maui/issues/29449 && https://github.com/dotnet/maui/issues/29524
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndEnableLoopAndPreviousPosition()
 	{
 		App.WaitForElement(Options);
@@ -1369,8 +1366,8 @@ public class CarouselViewFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_WINDOWS //In windows related issue link: https://github.com/dotnet/maui/issues/29448
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndScrollTo()
 	{
 		App.WaitForElement(Options);
@@ -1389,8 +1386,8 @@ public class CarouselViewFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link:https://github.com/dotnet/maui/issues/29412 && CV2 related issue link: https://github.com/dotnet/maui/issues/29449 && https://github.com/dotnet/maui/issues/29524
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndIsLoopEnableAndScrollTo()
 	{
 		App.WaitForElement(Options);
@@ -1410,8 +1407,8 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 4");
 	}
 	
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndIsSwipeDisableAndScrollTo()
 	{
 		App.WaitForElement(Options);

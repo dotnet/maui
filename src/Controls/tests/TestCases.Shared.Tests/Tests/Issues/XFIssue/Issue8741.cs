@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue8741 : _IssuesUITest
 
 	public override string Issue => "[Bug] [Shell] [Android] ToolbarItem Enabled/Disabled behavior does not work for Shell apps";
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void Issue8741Test()
 	{
 		App.WaitForElement("Add");

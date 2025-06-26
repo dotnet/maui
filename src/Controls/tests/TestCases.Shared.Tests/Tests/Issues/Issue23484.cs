@@ -1,5 +1,5 @@
 #if !WINDOWS // https://github.com/dotnet/maui/issues/24661
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "TabbedPage Clear and Adding existing page does not display across the entire screen";
 
-		[Test]
-		[Category(UITestCategories.Layout)]
+		[Fact]
+		[Trait("Category", UITestCategories.Layout)]
 		public void ReusingNavigationPageDoesntBreakLayout()
 		{
 			var originalSize = App.WaitForElement("SizeLabel").GetText();

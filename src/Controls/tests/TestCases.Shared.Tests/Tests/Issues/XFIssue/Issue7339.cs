@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,8 @@ public class Issue7339 : _IssuesUITest
 
 	public override string Issue => "[iOS] Material frame renderer not being cleared";
 
-
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void MaterialFrameDisposesCorrectly()
 	{
 		App.WaitForElement("InstructionLabel");

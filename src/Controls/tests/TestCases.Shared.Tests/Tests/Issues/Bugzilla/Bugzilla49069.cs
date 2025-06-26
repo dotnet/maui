@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.ScrollView)]
+	[Trait("Category", UITestCategories.ScrollView)]
 	public class Bugzilla49069UITests : _IssuesUITest
 	{
 		public Bugzilla49069UITests(TestDevice device)
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Java.Lang.ArrayIndexOutOfBoundsException when rendering long Label on Android";
 
 		// Bugzilla49069 (src\Compatibility\ControlGallery\src\Issues.Shared\Bugzilla49069.cs)
-		[Test]
+		[Fact]
 		public void Bugzilla49069Test()
 		{
 			App.WaitForElement("lblLong");

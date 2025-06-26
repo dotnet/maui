@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,10 +14,9 @@ public class Issue1700 : _IssuesUITest
 
 	public override string Issue => "Image fails loading from long URL";
 
-
-	[Test]
-	[Category(UITestCategories.Image)]
-	[Category(UITestCategories.Compatibility)]
+	[Fact]
+	[Trait("Category", UITestCategories.Image)]
+	[Trait("Category", UITestCategories.Compatibility)]
 	public void LongImageURLsShouldNotCrash()
 	{
 		// Give the images some time to load (or fail)

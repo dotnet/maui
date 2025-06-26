@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST  //More Info: https://github.com/dotnet/maui/issues/29099
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue10805 : _IssuesUITest
 
 	public override string Issue => "Date Format property in DatePicker not working on Windows with date Format";
 
-	[Test]
-	[Category(UITestCategories.DatePicker)]
+	[Fact]
+	[Trait("Category", UITestCategories.DatePicker)]
 	public void VerifyDatePickerDotBasedDateFormat()
 	{
 		App.WaitForElement("Label");

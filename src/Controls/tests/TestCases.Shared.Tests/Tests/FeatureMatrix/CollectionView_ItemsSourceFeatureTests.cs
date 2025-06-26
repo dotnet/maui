@@ -1,7 +1,6 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
-
 
 namespace Microsoft.Maui.TestCases.Tests;
 
@@ -36,7 +35,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 	}
 
 	[Test, Order(1)]
-	[Category(UITestCategories.CollectionView)]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsObservableCollectionWhenAddItems()
 	{
 		App.WaitForElement("ItemsSourceButton");
@@ -51,8 +50,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(AddItems);
 		App.WaitForElement("Kiwi");
 	}
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsObservableCollectionWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -67,8 +66,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("Broccoli");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsListWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -82,8 +81,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("Kiwi");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsListWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -98,8 +97,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForElement("Broccoli");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsEmptyGroupedListWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -113,8 +112,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("Kiwi");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsEmptyGroupedListWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -128,8 +127,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("Broccoli");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsEmptyObservableCollectionWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -143,8 +142,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("Kiwi");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsEmptyObservableCollectionWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -158,8 +157,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("Broccoli");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsItemsSourceNoneWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -171,8 +170,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("Kiwi");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsItemsSourceNoneWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -184,8 +183,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("Broccoli");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsObservableCollectionWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -201,8 +200,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForElement("green.png");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsObservableCollectionWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -219,8 +218,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("avatar.png");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsListWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -236,8 +235,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("green.png");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsListWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -254,8 +253,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForElement("calculator.png");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsEmptyGroupedListWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -271,8 +270,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("green.png");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsEmptyGroupedListWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -288,8 +287,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("calculator.png");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsEmptyObservableCollectionWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -305,8 +304,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("green.png");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsEmptyObservableCollectionWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -322,8 +321,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("calculator.png");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsItemsSourceNoneWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -337,8 +336,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("green.png");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsItemsSourceNoneWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -352,8 +351,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("calculator.png");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsObservableCollectionWhenAddIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -372,8 +371,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForElement("Kiwi");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsObservableCollectionWhenRemoveIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -389,8 +388,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("Carrot");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsObservableCollectionWhenAddIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -407,8 +406,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForElement("oasis.jpg");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsObservableCollectionWhenRemoveIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -426,8 +425,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("dotnet_bot.png");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsGroupedListWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -445,8 +444,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForElement("Kiwi");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsGroupedListWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -465,8 +464,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("Orange");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsGroupedListWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -486,8 +485,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForElement("green.png");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsGroupedListWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -508,8 +507,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("dotnet_bot.png");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsGroupedListWhenAddIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -528,8 +527,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForElement("Chikoo");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsGroupedListWhenRemoveIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -549,8 +548,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("Orange");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsGroupedListWhenAddIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -571,8 +570,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForElement("groceries.png");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsGroupedListWhenRemoveIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -594,8 +593,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("dotnet_bot.png");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsObservableCollectionWhenSingleModePreSelection()
 	{
 		App.WaitForElement(Options);
@@ -614,8 +613,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsObservableCollectionWhenMultipleModePreSelection()
 	{
 		App.WaitForElement(Options);
@@ -634,8 +633,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsObservableCollectionWhenSingleModePreSelection()
 	{
 		App.WaitForElement(Options);
@@ -656,8 +655,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsObservableCollectionWhenMultipleModePreSelection()
 	{
 		App.WaitForElement(Options);
@@ -678,8 +677,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsGroupedListWhenSingleModePreSelection()
 	{
 		App.WaitForElement(Options);
@@ -702,8 +701,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("No current items"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyStringItemsGroupedListWhenMultipleModePreSelection()
 	{
 		App.WaitForElement(Options);
@@ -726,8 +725,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsGroupedListWhenSingleModePreSelection()
 	{
 		App.WaitForElement(Options);
@@ -752,8 +751,8 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifyModelItemsGroupedListWhenMultipleModePreSelection()
 	{
 		App.WaitForElement(Options);

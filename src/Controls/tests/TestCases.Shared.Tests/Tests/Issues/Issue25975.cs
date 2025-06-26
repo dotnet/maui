@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Double tapping Editor control locks app";
 
-		[Test]
-		[Category(UITestCategories.Editor)]
+		[Fact]
+		[Trait("Category", UITestCategories.Editor)]
 		public void PerformDoubleTapActionOnEditor()
 		{
 			App.WaitForElement("DoubleTapEditor");

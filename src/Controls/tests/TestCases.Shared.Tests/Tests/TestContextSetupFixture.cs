@@ -1,6 +1,7 @@
 ﻿using UITest.Appium;
+using UITest.Appium.Xunit;
 
-// SetupFixture runs once for all tests under the same namespace, if placed outside the namespace it will run once for all tests in the assembly
+// xUnit collection fixture for assembly-level setup
 public class AssemblySetupFixture : UITestContextSetupFixture
 {
 	AppiumServerContext? _appiumServerContext;

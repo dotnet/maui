@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // TimePicker not opens the dialog, issue: https://github.com/dotnet/maui/issues/10827 
 // Picker popup layout is inconsistent on IOS , issue: https://github.com/dotnet/maui/issues/27898
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		: base(device)
 		{ }
 
-		[Test]
-		[Category(UITestCategories.TimePicker)]
+		[Fact]
+		[Trait("Category", UITestCategories.TimePicker)]
 		[FlakyTest("More details here: https://github.com/dotnet/maui/issues/27999")]
 		public void VerifyTimePickerAppearance()
 		{

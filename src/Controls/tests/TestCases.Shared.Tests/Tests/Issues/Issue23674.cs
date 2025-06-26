@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,8 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public Issue23674(TestDevice device) : base(device) { }
 
-		[Test]
-		[Category(UITestCategories.Page)]
+		[Fact]
+		[Trait("Category", UITestCategories.Page)]
 		public void Issue23674Test()
 		{
 			App.WaitForElement("button1");

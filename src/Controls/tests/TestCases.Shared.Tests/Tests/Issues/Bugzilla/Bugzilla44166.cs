@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Bugzilla44166 : _IssuesUITest
 
 	public override string Issue => "FlyoutPage instances do not get disposed upon GC";
 
-	[Test]
-	[Category(UITestCategories.Performance)]
+	[Fact]
+	[Trait("Category", UITestCategories.Performance)]
 	public void Bugzilla44166Test()
 	{
 		App.WaitForElement("Go");
@@ -38,6 +38,6 @@ public class Bugzilla44166 : _IssuesUITest
 		// The previous content retrieves the value of the page that was still allocated,
 		// which is only used for displaying in the error message.
 		// We can ignore this in Appium tests since we can't access those properties from the sample.
-		Assert.Fail($"At least one of the pages was not collected");
+		throw new InvalidOperationException($"At least one of the pages was not collected");
 	}
 }

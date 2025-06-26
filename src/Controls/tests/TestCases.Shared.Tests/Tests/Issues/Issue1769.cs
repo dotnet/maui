@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,9 +16,9 @@ public class Issue1769 : _IssuesUITest
 
 	public override string Issue => "PushAsync with Switch produces NRE";
 
-	[Test]
-	[Category(UITestCategories.Switch)]
-	[Category(UITestCategories.Compatibility)]
+	[Fact]
+	[Trait("Category", UITestCategories.Switch)]
+	[Trait("Category", UITestCategories.Compatibility)]
 	public void Issue1769Test()
 	{
 		App.WaitForElement(GoToPageTwoButtonText);

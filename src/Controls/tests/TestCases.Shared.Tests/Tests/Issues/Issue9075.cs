@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue9075 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Test]
-	[Category(UITestCategories.Layout)]
+	[Fact]
+	[Trait("Category", UITestCategories.Layout)]
 
 	public void FlexLayoutCycleException()
 	{

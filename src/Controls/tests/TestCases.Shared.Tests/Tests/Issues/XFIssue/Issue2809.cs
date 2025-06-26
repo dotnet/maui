@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue2809 : _IssuesUITest
 
 	public override string Issue => "Secondary ToolbarItems cause app to hang during PushAsync";
 
-	[Test]
-	[Category(UITestCategories.ToolbarItem)]
+	[Fact]
+	[Trait("Category", UITestCategories.ToolbarItem)]
 	public void TestPageDoesntCrash()
 	{
 		if (App is AppiumAndroidApp || App is AppiumWindowsApp) // WaitForMoreButton is only supported on Android and Windows

@@ -1,5 +1,5 @@
 #if TEST_FAILS_ON_WINDOWS // Cannot open programatically a SwipeView on Windows.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues;
@@ -12,8 +12,8 @@ public class Issue17204 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[Test]
-	[Category(UITestCategories.SwipeView)]
+	[Fact]
+	[Trait("Category", UITestCategories.SwipeView)]
 	public void ProgrammaticallyOpenedSwipeViewShouldBeVisible()
 	{
 		App.WaitForElement("OpenSwipeViewButton");

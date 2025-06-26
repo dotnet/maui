@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST // TouchAndHold not supported on Mac, Also using LongPress is not applicable on this case, while LongPress does not open the context menu for Entry/Editor control.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue8291 : _IssuesUITest
 
 	public override string Issue => "[Android] Editor - Text selection menu does not appear when selecting text on an editor placed within a ScrollView";
 
-	[Test]
-	[Category(UITestCategories.Editor)]
+	[Fact]
+	[Trait("Category", UITestCategories.Editor)]
 	public void ContextMenuShowsUpWhenPressAndHoldTextOnEditorAndEntryField()
 	{
 		App.WaitForElement("PressEditor");

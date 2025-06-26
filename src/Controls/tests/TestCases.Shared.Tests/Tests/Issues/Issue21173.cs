@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue21173 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Test]
-	[Category(UITestCategories.Border)]
+	[Fact]
+	[Trait("Category", UITestCategories.Border)]
 	public void BorderWithRoundRectangleShouldRoundCornersOfContentWithinIt()
 	{
 		_ = App.WaitForElement("image");

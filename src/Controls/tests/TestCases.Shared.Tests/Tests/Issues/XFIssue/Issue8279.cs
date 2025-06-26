@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.ListView)]
+[Trait("Category", UITestCategories.ListView)]
 public class Issue8279 : _IssuesUITest
 {
 	public Issue8279(TestDevice testDevice) : base(testDevice)
@@ -18,7 +18,7 @@ public class Issue8279 : _IssuesUITest
 	const string ResetButton = "Reset";
 	public override string Issue => "[Feature requested] ListView do not ScrollTo a group when there is no child of this group";
 
-	[Test]
+	[Fact]
 	public void AScrollWithNoItemButGroupTest()
 	{
 		App.WaitForElement(ResetButton);
@@ -29,7 +29,7 @@ public class Issue8279 : _IssuesUITest
 		App.WaitForElement("Header 3");
 	}
 
-	[Test]
+	[Fact]
 	public void BScrollWithItemButNoGroupTest()
 	{
 		App.WaitForElement(ResetButton);
@@ -40,7 +40,7 @@ public class Issue8279 : _IssuesUITest
 		App.WaitForElement("title 1");
 	}
 
-	[Test]
+	[Fact]
 	public void CScrollWithItemWithGroupTest()
 	{
 		App.WaitForElement(ResetButton);
@@ -51,7 +51,7 @@ public class Issue8279 : _IssuesUITest
 		App.WaitForElement("Header 3");
 	}
 
-	[Test]
+	[Fact]
 	public void DScrollWithNoItemNoGroupTest()
 	{
 		App.WaitForElement(ResetButton);
@@ -62,7 +62,7 @@ public class Issue8279 : _IssuesUITest
 		App.WaitForElement("Header 1");
 	}
 
-	[Test]
+	[Fact]
 	public void EScrollWithNoItemEmptyGroupTest()
 	{
 		App.WaitForElement(ResetButton);

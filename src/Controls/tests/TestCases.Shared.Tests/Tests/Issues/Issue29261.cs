@@ -1,6 +1,6 @@
 #if TEST_FAILS_ON_CATALYST
 // On Catalyst, Swipe actions not supported in Appium.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue29261 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void VerifyCarouselViewBounceTest()
 	{
 		App.WaitForElement("carouselview");

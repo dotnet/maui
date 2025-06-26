@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ public class Issue3012 : _IssuesUITest
 
 	public override string Issue => "[macOS] Entry focus / unfocus behavior";
 
-	[Test]
-	[Category(UITestCategories.Entry)]
+	[Fact]
+	[Trait("Category", UITestCategories.Entry)]
 	public void Issue3012Test()
 	{
 		App.WaitForElement(OtherEntry);

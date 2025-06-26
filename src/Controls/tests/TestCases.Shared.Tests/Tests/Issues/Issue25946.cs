@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "App crashes on iOS 18 when placing html label in carousel view with > 2 elements";
 
-		[Test]
-		[Category(UITestCategories.CarouselView)]
-		[Category(UITestCategories.Label)]
+		[Fact]
+		[Trait("Category", UITestCategories.CarouselView)]
+		[Trait("Category", UITestCategories.Label)]
 		public void AppShouldNotCrash()
 		{
 			App.WaitForElement("btnScrollToLastItem");

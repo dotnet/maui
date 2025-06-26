@@ -1,5 +1,5 @@
 #if ANDROID || IOS
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,9 +13,9 @@ public class Issue28485 : _IssuesUITest
 
 	public override string Issue => "Back-navigation with swipe-back navigates back twice";
 
-	[Test]
-	[Category(UITestCategories.Shell)]
-	[Category(UITestCategories.Navigation)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
+	[Trait("Category", UITestCategories.Navigation)]
 	public void SwipeBackGestureShouldNavigateOnce()
 	{
 		App.WaitForElement("GotoPage2");

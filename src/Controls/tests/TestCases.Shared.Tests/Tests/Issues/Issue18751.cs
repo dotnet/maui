@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //related issues: https://github.com/dotnet/maui/issues/15994
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Can scroll CollectionView inside RefreshView";
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public async Task Issue18751Test()
 		{
 			VerifyInternetConnectivity();

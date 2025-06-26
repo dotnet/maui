@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue29462 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void TestDynamicItemTemplateChangeInCarouselView()
 	{
 		App.WaitForElement("ChangeItemTemplate");

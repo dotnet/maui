@@ -1,6 +1,6 @@
 #if ANDROID || IOS //This test is only valid for Android and iOS as it measures the layout passes.
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Layout passes should not increase";
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public async Task LayoutPassesShouldNotIncrease()
 		{
 			App.WaitForElement("RegenerateItems");
@@ -65,8 +65,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// Then assert that the measure passes and arrange passes are less than the expected values.
 			// Let's give a 5% margin of error.
-			ClassicAssert.LessOrEqual(measurePasses, maxMeasurePasses * 1.05);
-			ClassicAssert.LessOrEqual(arrangePasses, maxArrangePasses * 1.05);
+			Assert.LessOrEqual(measurePasses, maxMeasurePasses * 1.05);
+			Assert.LessOrEqual(arrangePasses, maxArrangePasses * 1.05);
 		}
 
 		async Task ScrollDown()

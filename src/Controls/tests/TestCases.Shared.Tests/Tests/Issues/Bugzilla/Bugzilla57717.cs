@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ public class Bugzilla57717 : _IssuesUITest
 
 	public override string Issue => "Setting background color on Button in Android FormsApplicationActivity causes NRE";
 
-	[Test]
-	[Category(UITestCategories.Button)]
+	[Fact]
+	[Trait("Category", UITestCategories.Button)]
 	public void ButtonBackgroundColorAutomatedTest()
 	{
 		App.WaitForElement(ButtonText);

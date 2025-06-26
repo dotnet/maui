@@ -1,5 +1,5 @@
 ﻿#if ANDROID //This sample includes Android-specific customization for the CollectionView handler using conditional compilation. 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Collection view has no scroll bar";
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void CollectionViewShouldHaveScrollBar()
 		{
 			App.WaitForElement("1");

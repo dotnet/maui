@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[regression/8.0.3] Cannot control unselected text color of tabs within TabbedPage";
 
-		[Test]
-		[Category(UITestCategories.TabbedPage)]
+		[Fact]
+		[Trait("Category", UITestCategories.TabbedPage)]
 		public void TabbedPageUnselectedBarTextColorConsistency()
 		{
 			App.WaitForElement("MauiLabel");

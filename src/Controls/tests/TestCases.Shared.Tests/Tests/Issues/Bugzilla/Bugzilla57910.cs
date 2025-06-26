@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ObjectDisposedException in Microsoft.Maui.Controls.Platform.Android.Renderers.ProgressBarRenderer";
 
 		// Crash after navigation
-		[Test]
-		[Category(UITestCategories.ListView)]
+		[Fact]
+		[Trait("Category", UITestCategories.ListView)]
 		public void Bugzilla57910Test()
 		{
 			for (int i = 0; i < 10; i++)

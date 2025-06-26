@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Test]
-		[Category(UITestCategories.Frame)]
+		[Fact]
+		[Trait("Category", UITestCategories.Frame)]
 		public void ContentOfFrameShouldChange()
 		{
 			_ = App.WaitForElement("button");

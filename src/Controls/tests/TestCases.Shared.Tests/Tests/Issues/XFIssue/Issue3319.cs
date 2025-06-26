@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue3319 : _IssuesUITest
 
 	public override string Issue => "[iOS] Clear and adding rows exception";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void Issue3319Test()
 	{
 		App.WaitForElement("Will this repo work?");

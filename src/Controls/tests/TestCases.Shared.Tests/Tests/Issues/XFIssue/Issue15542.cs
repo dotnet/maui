@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue15542 : _IssuesUITest
 
 	public override string Issue => "[Bug] Shell.TitleView does not render on iOS 16";
 
-	[Test]
-	[Category(UITestCategories.TitleView)]
+	[Fact]
+	[Trait("Category", UITestCategories.TitleView)]
 	public void TitleViewHeightDoesntOverflow()
 	{
 		var titleView = App.WaitForElement("title 1").GetRect();

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // This test is only applicable for iOS as here tested the native property behavior.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,8 +17,8 @@ public class Issue5503 : _IssuesUITest
 
 	public override string Issue => "[iOS] UITableView.Appearance.BackgroundColor ignored or overridden for ListView";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void ToggleAppearanceApiBackgroundColorListView()
 	{
 		App.WaitForElement(GoToTestPage);

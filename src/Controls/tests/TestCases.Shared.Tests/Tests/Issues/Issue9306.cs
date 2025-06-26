@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // On Windows AutomationId is not working for Stacklayout, Hence we used to swipe the layout here so we can't use the inner elements AutomationId. More Information:https://github.com/dotnet/maui/issues/4715
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Cannot un-reveal swipe view items on iOS / Inconsistent swipe view behaviour";
 
-		[Test]
-		[Category(UITestCategories.SwipeView)]
+		[Fact]
+		[Trait("Category", UITestCategories.SwipeView)]
 		public void Issue9306SwipeViewCloseSwiping()
 		{
 			App.WaitForElement(SwipeViewId);

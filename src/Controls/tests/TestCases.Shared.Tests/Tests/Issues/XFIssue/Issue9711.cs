@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // In the sample, frequent changes to cell height and visibility cause rendering issues for the Group0 element in the UI, resulting in test failures on iOS and Catalyst. However, this does not thrown the reported exception.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue9711 : _IssuesUITest
 
 	public override string Issue => "[Bug] iOS Failed to marshal the Objective-C object HeaderWrapperView";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void TestTappingHeaderDoesNotCrash()
 	{
 		// Usually, tapping one header is sufficient to produce the exception.

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(CollectionViewGallery);
 		}
 
-		[TearDown]
 		public void CollectionViewUITestTearDown()
 		{
 			if (Device != TestDevice.Windows)

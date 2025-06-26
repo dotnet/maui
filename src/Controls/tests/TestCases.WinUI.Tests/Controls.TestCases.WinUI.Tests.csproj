@@ -11,8 +11,11 @@
   
   <ItemGroup>
     <PackageReference Include="Appium.WebDriver" Version="8.0.0" />
-    <PackageReference Include="NUnit" Version="4.0.1" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -24,7 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.Appium\UITest.Appium.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.Core\UITest.Core.csproj" />
-    <ProjectReference Include="..\..\..\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\UITest.Xunit\UITest.Xunit.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.Analyzers\UITest.Analyzers.csproj"
       PrivateAssets="all"
       ReferenceOutputAssembly="false"

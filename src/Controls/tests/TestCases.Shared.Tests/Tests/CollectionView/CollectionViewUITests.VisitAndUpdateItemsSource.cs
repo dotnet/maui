@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -25,17 +25,27 @@ namespace Microsoft.Maui.TestCases.Tests
 		protected override bool ResetAfterEachTest => true;
 
 		// VisitAndUpdateItemsSource (src\Compatibility\ControlGallery\src\UITests.Shared\Tests\CollectionViewUITests.cs)
-		[TestCase("Observable Collection", "Add/RemoveItemsList", 19, 6)]
-		[TestCase("Observable Collection", "Add/RemoveItemsGrid", 19, 6)]
-		[TestCase("Default Text", "VerticalListCode", 101, 11)]
-		[TestCase("Default Text", "HorizontalListCode", 101, 11)]
-		[TestCase("Default Text", "VerticalGridCode", 101, 11)]
-		[TestCase("Default Text", "HorizontalGridCode", 101, 11)]
-		[TestCase("DataTemplate", "VerticalListCode", 19, 6)]
-		[TestCase("DataTemplate", "HorizontalListCode", 19, 6)]
-		[TestCase("DataTemplate", "VerticalGridCode", 19, 6)]
-		[TestCase("DataTemplate", "HorizontalGridCode", 19, 6)]
-		[Category(UITestCategories.CollectionView)]
+		[Theory]
+		[InlineData("Observable Collection", "Add/RemoveItemsList", 19, 6)]
+		[Theory]
+		[InlineData("Observable Collection", "Add/RemoveItemsGrid", 19, 6)]
+		[Theory]
+		[InlineData("Default Text", "VerticalListCode", 101, 11)]
+		[Theory]
+		[InlineData("Default Text", "HorizontalListCode", 101, 11)]
+		[Theory]
+		[InlineData("Default Text", "VerticalGridCode", 101, 11)]
+		[Theory]
+		[InlineData("Default Text", "HorizontalGridCode", 101, 11)]
+		[Theory]
+		[InlineData("DataTemplate", "VerticalListCode", 19, 6)]
+		[Theory]
+		[InlineData("DataTemplate", "HorizontalListCode", 19, 6)]
+		[Theory]
+		[InlineData("DataTemplate", "VerticalGridCode", 19, 6)]
+		[Theory]
+		[InlineData("DataTemplate", "HorizontalGridCode", 19, 6)]
+		[Trait("Category", UITestCategories.CollectionView)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue.")]
 		public void VisitAndUpdateItemsSource(string collectionTestName, string subGallery, int firstItem, int lastItem)
 		{

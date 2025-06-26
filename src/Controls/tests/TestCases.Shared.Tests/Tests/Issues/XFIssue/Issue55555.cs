@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue55555 : _IssuesUITest
 
 	public override string Issue => "Header problem";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void TGroupDisplayBindingPresentRecycleElementTest()
 	{
 		App.WaitForElement("vegetables");

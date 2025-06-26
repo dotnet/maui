@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Unreported1 : _IssuesUITest
 
 	public override string Issue => "NRE when switching page on Appearing";
 
-	[Test]
-	[Category(UITestCategories.FlyoutPage)]
+	[Fact]
+	[Trait("Category", UITestCategories.FlyoutPage)]
 	public void Unreported1Test()
 	{
 		App.WaitForElement("Label");

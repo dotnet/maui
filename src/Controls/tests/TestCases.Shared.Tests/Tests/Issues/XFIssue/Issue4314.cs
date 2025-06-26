@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
 //For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ public class Issue4314 : _IssuesUITest
 
 	public override string Issue => "When ListView items is removed and it is empty, Xamarin Forms crash";
 
-	[Test]
-	[Category(UITestCategories.ContextActions)]
+	[Fact]
+	[Trait("Category", UITestCategories.ContextActions)]
 	public void Issue4341Test()
 	{
 		App.WaitForElement("Email");

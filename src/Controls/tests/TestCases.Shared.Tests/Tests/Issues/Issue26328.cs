@@ -1,5 +1,5 @@
 ﻿#if ANDROID // Crash only happened on Android
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		: base(device)
 		{ }
 
-		[Test]
-		[Category(UITestCategories.SwipeView)]
+		[Fact]
+		[Trait("Category", UITestCategories.SwipeView)]
 		public void NoCrashRemovingSwipeItems()
 		{
 			App.WaitForElement("TestCollectionView");

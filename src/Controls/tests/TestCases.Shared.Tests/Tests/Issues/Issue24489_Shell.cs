@@ -1,6 +1,6 @@
 #if MACCATALYST || WINDOWS // This test verifies that "the class defines a custom TitleBar for a ContentPage" that works on Desktop platforms only.
 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,61 +16,61 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		protected override bool ResetAfterEachTest => true;
 
-		[Test]
-		[Category(UITestCategories.Window)]
+		[Fact]
+		[Trait("Category", UITestCategories.Window)]
 		public void TitleBarWithSmallHeightShell()
 		{
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
+			VerifyScreenshot(GetCurrentTestName() + "_Initial");
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallHeightRequest");
+			VerifyScreenshot(GetCurrentTestName() + "_SmallHeightRequest");
 			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_StartPageWithSmallTitleBar");
+			VerifyScreenshot(GetCurrentTestName() + "_StartPageWithSmallTitleBar");
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallHeightRequest");
+			VerifyScreenshot(GetCurrentTestName() + "_SmallHeightRequest");
 			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("SetTitleBarToNull").Tap();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
+			VerifyScreenshot(GetCurrentTestName() + "_Initial");
 
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallHeightRequest");
+			VerifyScreenshot(GetCurrentTestName() + "_SmallHeightRequest");
 		}
 
-		[Test]
-		[Category(UITestCategories.Window)]
+		[Fact]
+		[Trait("Category", UITestCategories.Window)]
 		public void TitleBarWithLargeHeightShell()
 		{
 			Exception? exception = null;
 
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest");
-			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Initial");
+			VerifyScreenshotOrSetException(ref exception, GetCurrentTestName() + "_Initial");
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
 			App.WaitForElement("WelcomeLabel").Tap(); // Move the cursor from the Back Button to avoid the cursor.
-			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
+			VerifyScreenshotOrSetException(ref exception, GetCurrentTestName() + "_LargeHeightRequest");
 			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest");
-			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_StartPageWithSmallTitleBar");
+			VerifyScreenshotOrSetException(ref exception, GetCurrentTestName() + "_StartPageWithSmallTitleBar");
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
 			App.WaitForElement("WelcomeLabel").Tap(); // Move the cursor from the Back Button to avoid the cursor.
-			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
+			VerifyScreenshotOrSetException(ref exception, GetCurrentTestName() + "_LargeHeightRequest");
 			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("SetTitleBarToNull").Tap();
-			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Initial");
+			VerifyScreenshotOrSetException(ref exception, GetCurrentTestName() + "_Initial");
 
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
 			App.WaitForElement("WelcomeLabel").Tap(); // Move the cursor from the Back Button to avoid the cursor.
-			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
+			VerifyScreenshotOrSetException(ref exception, GetCurrentTestName() + "_LargeHeightRequest");
 		
 			if (exception != null)
 			{
@@ -78,8 +78,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			}
 		}
 
-		[Test]
-		[Category(UITestCategories.Window)]
+		[Fact]
+		[Trait("Category", UITestCategories.Window)]
 		public void NavBarResetsColorAfterSmallTitleBarShell()
 		{
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest").Tap();
@@ -89,8 +89,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Test]
-		[Category(UITestCategories.Window)]
+		[Fact]
+		[Trait("Category", UITestCategories.Window)]
 		public void NavBarResetsColorAfterLargeTitleBarShell()
 		{
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();

@@ -1,5 +1,5 @@
 #if MACCATALYST || IOS || ANDROID
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,18 +13,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionViewHandler2 assigns Accessibility Traits with SelectionMode correctly";
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void AccessibilityTraitsSetCorrectly()
 		{
 			App.WaitForElement("ToggleSelectionModeButton").Click();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "None");
+			VerifyScreenshot(GetCurrentTestName() + "None");
 			App.WaitForElement("ToggleSelectionModeButton").Click();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Single");
+			VerifyScreenshot(GetCurrentTestName() + "Single");
 			App.WaitForElement("ToggleSelectionModeButton").Click();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Multiple");
+			VerifyScreenshot(GetCurrentTestName() + "Multiple");
 			App.WaitForElement("ToggleSelectionModeButton").Click();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "None");
+			VerifyScreenshot(GetCurrentTestName() + "None");
 		}
 	}
 }

@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,8 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue14557(TestDevice device) : base(device) { }
 		public override string Issue => "CollectionView header and footer not displaying on Windows";
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void HeaderAndFooterRender()
 		{
 			App.WaitForElement("collectionView");
@@ -19,8 +19,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var headerText = App.FindElement("headerLabel").GetText();
 			var footerText = App.FindElement("footerLabel").GetText();
 
-			ClassicAssert.IsNotEmpty(headerText);
-			ClassicAssert.IsNotEmpty(footerText);
+			Assert.NotEmpty(headerText);
+			Assert.NotEmpty(footerText);
 		}
 	}
 }

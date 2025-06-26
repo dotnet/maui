@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] XF 4.3 UWP Crash - Element not found";
 
-		[Test]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void ThreadpoolBindingUpdateShouldNotCrash()
 		{
 			App.WaitForElement(Run);

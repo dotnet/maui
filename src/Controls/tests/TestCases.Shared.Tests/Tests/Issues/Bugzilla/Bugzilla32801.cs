@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,15 +12,14 @@ public class Bugzilla32801 : _IssuesUITest
 	const string Level3StackButton = "Level3StackButton";
 	const string SecondTabStackButton = "SecondTabStackButton";
 
-
 	public Bugzilla32801(TestDevice testDevice) : base(testDevice)
 	{
 	}
 
 	public override string Issue => "Memory Leak in TabbedPage + NavigationPage";
 
-	[Test]
-	[Category(UITestCategories.TabbedPage)]
+	[Fact]
+	[Trait("Category", UITestCategories.TabbedPage)]
 	public void Bugzilla32801Test()
 	{
 		App.WaitForElement(FirstTabAddButton);

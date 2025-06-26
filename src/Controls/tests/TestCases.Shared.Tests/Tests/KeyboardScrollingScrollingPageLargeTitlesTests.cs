@@ -1,5 +1,5 @@
 ﻿#if IOS
-using NUnit.Framework;
+using Xunit;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
@@ -18,19 +18,19 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		/*
-		[Test]
+		[Fact]
 		public void EntriesScrollingPageTest()
 		{
 			KeyboardScrolling.EntriesScrollingTest(App, KeyboardScrollingGallery);
 		}
 
-		[Test]
+		[Fact]
 		public void EditorsScrollingPageTest()
 		{
 			KeyboardScrolling.EditorsScrollingTest(App, KeyboardScrollingGallery);
 		}
 
-		[Test]
+		[Fact]
 		public void EntryNextEditorTest()
 		{
 			KeyboardScrolling.EntryNextEditorScrollingTest(App, KeyboardScrollingGallery);

@@ -1,5 +1,5 @@
 ﻿#if iOS
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,9 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[CustomRenderer]Crash when navigating back from page with custom renderer control";
 
-		[Test]
-		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Navigation)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void Issue6368Test()
 		{

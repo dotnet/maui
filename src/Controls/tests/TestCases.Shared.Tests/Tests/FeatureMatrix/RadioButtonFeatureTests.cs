@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,7 +20,7 @@ public class RadioButtonFeatureTests : UITest
 	}
 
 	[Test, Order(1)]
-	[Category(UITestCategories.RadioButton)]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_Checking_Default_Configuration_VerifyVisualState()
 	{
 		App.WaitForElement("RadioButtonControlOne");
@@ -28,7 +28,7 @@ public class RadioButtonFeatureTests : UITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.RadioButton)]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_Checking_Initial_Configuration_VerifyVisualState()
 	{
 		App.WaitForElement("RadioButtonControlOne");
@@ -43,8 +43,8 @@ public class RadioButtonFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // This test fails on Windows and Android because the RadioButton control does not update the BorderColor at runtime. Issue Link - https://github.com/dotnet/maui/issues/15806
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_SetTextColorAndBorderColor_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -64,8 +64,8 @@ public class RadioButtonFeatureTests : UITest
 	}
 #endif
 
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_SetFontAttributesAndTextColor_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -80,8 +80,8 @@ public class RadioButtonFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_SetFontFamilyAndFontSize_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -99,8 +99,8 @@ public class RadioButtonFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // This test fails on Windows and Android because the RadioButton control does not update the BorderColor at runtime. Issue Link - https://github.com/dotnet/maui/issues/15806
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_SetBorderWidthAndCornerRadius_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -123,8 +123,8 @@ public class RadioButtonFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // This test fails on Android and Windows because the text transform is not applied correctly. Issue Link - https://github.com/dotnet/maui/issues/29729
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_SetFontFamilyAndTextTransform_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -141,8 +141,8 @@ public class RadioButtonFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID // On Android, the View object is not supported, so it falls back to a string representation of the object. https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/radiobutton?view=net-maui-9.0#create-radiobuttons
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_SetContentWithView()
 	{
 		App.WaitForElement("Options");
@@ -156,8 +156,8 @@ public class RadioButtonFeatureTests : UITest
 	}
 #endif
 
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_SetContentAndTextColor_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -175,8 +175,8 @@ public class RadioButtonFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS // This test fails on Windows because the character spacing is not applied correctly.
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_SetContentAndCharacterSpacing_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -196,8 +196,8 @@ public class RadioButtonFeatureTests : UITest
 	}
 #endif
 
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_SetContentAndFontSize_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -216,8 +216,8 @@ public class RadioButtonFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_SetContentAndFontAttributes_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -235,8 +235,8 @@ public class RadioButtonFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // This test fails on Android and Windows because the text transform is not applied correctly. Issue Link - https://github.com/dotnet/maui/issues/29729
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_SetContentAndTextTransform()
 	{
 		App.WaitForElement("Options");
@@ -253,8 +253,8 @@ public class RadioButtonFeatureTests : UITest
 	}
 #endif
 
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_SetFontFamilyAndFontAttributes_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -269,8 +269,8 @@ public class RadioButtonFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_SetFontSizeAndFontAttributes_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -287,8 +287,8 @@ public class RadioButtonFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_IsVisibleAndContent_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -303,8 +303,8 @@ public class RadioButtonFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForNoElement("RadioButtonControlOne");
 	}
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_IsEnabledAndContent_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -335,8 +335,8 @@ public class RadioButtonFeatureTests : UITest
 		Assert.That(App.WaitForElement("SelectedValueLabelOne").GetText(), Is.EqualTo(string.Empty));
 	}
 
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_FlowDirectionAndContent_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -353,8 +353,8 @@ public class RadioButtonFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_SetGroupAndContent_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -378,8 +378,8 @@ public class RadioButtonFeatureTests : UITest
 		Assert.That(App.WaitForElement("SelectedValueLabelTwo").GetText(), Is.EqualTo("Important Only"));
 	}
 
-	[Test]
-	[Category(UITestCategories.RadioButton)]
+	[Fact]
+	[Trait("Category", UITestCategories.RadioButton)]
 	public void RadioButton_SetSelectedValueAndContent()
 	{
 		App.WaitForElement("Options");

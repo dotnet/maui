@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Scroll view doesn't scroll when its height is explicitly set";
 
-		[Test]
-		[Category(UITestCategories.ScrollView)]
+		[Fact]
+		[Trait("Category", UITestCategories.ScrollView)]
 		public void ScrollViewShouldScroll()
 		{
 			App.WaitForElement("label1");

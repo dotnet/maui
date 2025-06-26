@@ -1,5 +1,5 @@
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue18526 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Test]
-	[Category(UITestCategories.Frame)]
+	[Fact]
+	[Trait("Category", UITestCategories.Frame)]
 	public void BorderShouldRender()
 	{
 		var label = App.WaitForElement("label");

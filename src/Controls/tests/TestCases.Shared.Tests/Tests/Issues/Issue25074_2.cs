@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,16 +10,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Button title can extend past previously truncated size";
 
-		[Test]
-		[Category(UITestCategories.Button)]
+		[Fact]
+		[Trait("Category", UITestCategories.Button)]
 		public void ButtonTitleFillsSpaceWhenImageChanges()
 		{
 			App.WaitForElement("Button1");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original");
+			VerifyScreenshot(GetCurrentTestName() + "Original");
 			App.Tap("Button1");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Altered");
+			VerifyScreenshot(GetCurrentTestName() + "Altered");
 			App.Tap("Button1");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original");
+			VerifyScreenshot(GetCurrentTestName() + "Original");
 		}
 	}
 }

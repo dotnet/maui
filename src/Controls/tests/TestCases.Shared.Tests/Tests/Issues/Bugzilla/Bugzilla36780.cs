@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,8 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Multiple TapGestureRecognizers on an Object Are Not Fired";
 
-		[Test]
-		[Category(UITestCategories.Gestures)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
 		public void MultipleTapGestures()
 		{
 			App.WaitForElement(TestImage);

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,9 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] Editor with MaxLength";
 
-		[Test]
-		[Category(UITestCategories.Editor)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Editor)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void Issue5367Test()
 		{
 			App.WaitForElement(MaxLengthEditor);

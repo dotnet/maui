@@ -1,11 +1,11 @@
 #if MACCATALYST || WINDOWS // MenuBarItems are only supported on desktop platforms
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.Shell)]
+[Trait("Category", UITestCategories.Shell)]
 public class Issue20685 : _IssuesUITest
 {
 
@@ -29,21 +29,21 @@ public class Issue20685 : _IssuesUITest
         App.Tap(menuItem);
     }
 
-    [Test]
+    [Fact]
     public void MenuFlyoutItem_ClickedEventWorks()
     {
         OpenMenuAndTapItem(ClickedEventItem);
         Assert.That(App.WaitForElement(ResultLabel)?.GetText(), Is.EqualTo("Clicked event handler executed"));
     }
 
-    [Test]
+    [Fact]
     public void MenuFlyoutItem_CommandWorks()
     {
         OpenMenuAndTapItem(CommandItem);
         Assert.That(App.WaitForElement(ResultLabel)?.GetText(), Is.EqualTo("Command executed"));
     }
 
-    [Test]
+    [Fact]
     public void MenuFlyoutItem_CommandWithParameterWorks()
     {
         OpenMenuAndTapItem(CommandWithParamItem);

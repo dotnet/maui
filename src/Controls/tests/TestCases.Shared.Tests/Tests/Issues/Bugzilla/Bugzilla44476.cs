@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] Unwanted margin at top of details page when nested in a NavigationPage";
 
-		[Test]
-		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Navigation)]
+		[Trait("Category", UITestCategories.Compatibility)]
 
 		public void Issue44476TestUnwantedMargin()
 		{

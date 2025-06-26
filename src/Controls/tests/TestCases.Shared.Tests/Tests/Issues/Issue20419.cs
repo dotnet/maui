@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue20419 : _IssuesUITest
 
 	public override string Issue => "Argument Exception raised when the GetStringSize method of ICanvas called with default font";
 
-	[Test]
-	[Category(UITestCategories.GraphicsView)]
+	[Fact]
+	[Trait("Category", UITestCategories.GraphicsView)]
 	public void Issue20419ArgumentException()
 	{
 		App.WaitForElement("descriptionLabel");

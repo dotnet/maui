@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,16 +12,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Enhancement] Add On/Off VisualStates for Switch";
 
-		[Test]
-		[Category(UITestCategories.Switch)]
+		[Fact]
+		[Trait("Category", UITestCategories.Switch)]
 		public void SwitchOnOffVisualStatesTest()
 		{
 			App.WaitForElement("Switch");
 			App.Tap("Switch");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SwitchOff");
+			VerifyScreenshot(GetCurrentTestName() + "_SwitchOff");
 			App.WaitForElement("Switch");
 			App.Tap("Switch");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SwitchOn");
+			VerifyScreenshot(GetCurrentTestName() + "_SwitchOn");
 		}
 	}
 }

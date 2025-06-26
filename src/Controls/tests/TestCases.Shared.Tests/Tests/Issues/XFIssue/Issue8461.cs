@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST // Using SwipeLeftToRight leads to exception of type 'OpenQA.Selenium.WebDriverException'. "Only pointer type 'mouse' is supported.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,8 +17,8 @@ public class Issue8461 : _IssuesUITest
 
 	public override string Issue => "[Bug] [iOS] [Shell] Nav Stack consistency error";
 
-	// [Test]
-	// [Category(UITestCategories.Navigation)]
+	// [Fact]
+	// [Trait("Category", UITestCategories.Navigation)]
 
 	public void ShellSwipeToDismiss()
 	{

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue2981 : _IssuesUITest
 
 	public override string Issue => "Long Press on ListView causes crash";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void Issue2981Test()
 	{
 		App.WaitForElement("Cell1");

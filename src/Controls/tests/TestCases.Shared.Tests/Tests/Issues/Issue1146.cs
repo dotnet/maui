@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Disabled Switch in Button Gallery not rendering on all devices";
 
-		[Test]
-		[Category(UITestCategories.Switch)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Switch)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void TestSwitchDisable()
 		{
 			App.WaitForElement("switch");

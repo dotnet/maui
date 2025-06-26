@@ -1,6 +1,6 @@
 ﻿#if ANDROID || IOS //This test case verifies "IsKeyboardShown method" exclusively on the Android and IOS platforms
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,11 +14,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Virtual keyboard appears with focus on Entry";
 
-		[Test]
-		[Category(UITestCategories.Entry)]
-		[TestCase("Entry")]
-		[TestCase("Editor")]
-		[TestCase("SearchBar")]
+		[Fact]
+		[Trait("Category", UITestCategories.Entry)]
+		[Theory]
+		[InlineData("Entry")]
+		[Theory]
+		[InlineData("Editor")]
+		[Theory]
+		[InlineData("SearchBar")]
 		public void Issue18740Test(string view)
 		{
 			try

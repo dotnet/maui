@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue2964 : _IssuesUITest
 
 	public override string Issue => "TabbedPage toolbar item crash";
 
-	[Test]
-	[Category(UITestCategories.ToolbarItem)]
+	[Fact]
+	[Trait("Category", UITestCategories.ToolbarItem)]
 	public void Issue2964Test()
 	{
 		App.WaitForElement("FlyoutButton");

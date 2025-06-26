@@ -1,11 +1,11 @@
 ﻿#if TEST_FAILS_ON_WINDOWS   //BoxView automation ID isn't working on the Windows platform, causing a TimeoutException.                                                                                             
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.Gestures)]
+[Trait("Category", UITestCategories.Gestures)]
 public class Bugzilla59863_2 : _IssuesUITest
 {
 	const string MixedTapBoxId = "mixedTapView";

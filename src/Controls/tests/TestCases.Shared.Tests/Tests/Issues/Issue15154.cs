@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms iOS and Android.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue15154 : _IssuesUITest
 
 	public override string Issue => "iOS Flyout title is not broken over multiple lines when you rotate your screen";
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void ShouldFlyoutTextWrapsInLandscape()
 	{
 		App.WaitForElement("OpenFlyoutButton");

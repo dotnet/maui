@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Unable to Remove Thumb Image in Slider Control ";
 
-		[Test]
-		[Category(UITestCategories.Slider)]
+		[Fact]
+		[Trait("Category", UITestCategories.Slider)]
 		public void SliderShouldChangeThumbImageAndResetIt()
 		{
 			App.WaitForElement("ChangeThumbImageSourceButton");

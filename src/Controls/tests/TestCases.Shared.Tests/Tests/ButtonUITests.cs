@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,20 +19,20 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(ButtonGallery);
 		}
 
-		[Test]
-		[Category(UITestCategories.Button)]
+		[Fact]
+		[Trait("Category", UITestCategories.Button)]
 		public void Clicked()
 		{
 			var remote = GoToEventRemote();
 
 			var textBeforeClick = remote.GetEventLabel().GetText();
-			ClassicAssert.AreEqual("Event: Clicked (none)", textBeforeClick);
+			Assert.Equal("Event: Clicked (none)", textBeforeClick);
 
 			// Click Button
 			remote.TapView();
 
 			var textAfterClick = remote.GetEventLabel().GetText();
-			ClassicAssert.AreEqual("Event: Clicked (fired 1)", textAfterClick);
+			Assert.Equal("Event: Clicked (fired 1)", textAfterClick);
 		}
 	}
 }

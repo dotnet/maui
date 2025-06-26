@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,7 +21,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 	}
 
 	[Test, Order(1)]
-	[Category(UITestCategories.CollectionView)]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void ValidateDynamicItemTemplateDisplayed()
 	{
 		App.WaitForElement("DynamicButton");
@@ -45,8 +45,8 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 
 #if TEST_FAILS_ON_ANDROID
 //Dynamic Updates to CollectionView Header/Footer and Templates Are Not Displayed Issue Link: https://github.com/dotnet/maui/issues/28676
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void ValidateDynamicHeaderStringDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -63,8 +63,8 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("Header String2");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void ValidateDynamicHeaderGridDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -81,8 +81,8 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("Header Grid2");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void ValidateDynamicHeaderTemplateDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -99,8 +99,8 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("Header Template2");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void ValidateDynamicFooterStringDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -117,8 +117,8 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("Footer String2");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void ValidateDynamicFooterGridDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -135,8 +135,8 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("Footer Grid2");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void ValidateDynamicFooterTemplateDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -154,8 +154,8 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 	}
 #endif
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void ValidateDynamicGroupHeaderTemplateDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -176,8 +176,8 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("GroupHeaderTemplate2");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void ValidateDynamicGroupFooterTemplateDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -201,8 +201,8 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 #if TEST_FAILS_ON_WINDOWS
 	//[Testing] EmptyView(null ItemsSource) elements Not Accessible via Automation on Windows Platform Issue Link:  https://github.com/dotnet/maui/issues/28022
 	//EmptyViewTemplate not shown in Windows Issue Link: https://github.com/dotnet/maui/issues/28334
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void ValidateDynamicEmptyViewStringDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -221,8 +221,8 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("EmptyView String2: No items available");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void ValidateDynamicEmptyViewGridDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -241,8 +241,8 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("EmptyView Grid2: No items available");
 	}
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void ValidateDynamicEmptyViewTemplateDisplayed()
 	{
 		App.WaitForElement(Options);

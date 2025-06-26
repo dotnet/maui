@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Call unfocus entry crashes app";
 
-		[Test]
-		[Category(UITestCategories.Entry)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Entry)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void Issue5376Test()
 		{
 			App.WaitForElement("Success");

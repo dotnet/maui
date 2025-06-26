@@ -1,5 +1,5 @@
 ﻿#if WINDOWS
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Fix for wrong secondary ToolbarItem size on Windows";
 
-		[Test]
-		[Category(UITestCategories.ToolbarItem)]
+		[Fact]
+		[Trait("Category", UITestCategories.ToolbarItem)]
 		public void ToolbarItemCorrectSizeTest()
 		{
 			App.ToggleSecondaryToolbarItems();

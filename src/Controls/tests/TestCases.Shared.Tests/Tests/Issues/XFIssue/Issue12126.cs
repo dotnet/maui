@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,8 @@ public class Issue12126 : _IssuesUITest
 
 	public override string Issue => "[iOS] TabBarIsVisible = True/False breaking for multiple nested pages";
 
-
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void NavigatingBackFromMultiplePushPagesChangesTabVisibilityCorrectly()
 	{
 		App.WaitForElement("TestReady");

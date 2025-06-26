@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.Layout)]
+[Trait("Category", UITestCategories.Layout)]
 public class Issue6932_emptyviewstring : _IssuesUITest
 {
 	const int Count = 10;
@@ -20,7 +20,7 @@ public class Issue6932_emptyviewstring : _IssuesUITest
 
 	public override string Issue => "EmptyView for BindableLayout (string)";
 
-	[Test]
+	[Fact]
 	public void BEmptyViewStringBecomesVisibleWhenItemsSourceIsCleared()
 	{
 		App.WaitForElement(AddAutomationId);
@@ -30,7 +30,7 @@ public class Issue6932_emptyviewstring : _IssuesUITest
 		App.WaitForElement(EmptyViewStringDescription);
 	}
 
-	[Test]
+	[Fact]
 	public void AEmptyViewStringBecomesVisibleWhenItemsSourceIsEmptiedOneByOne()
 	{
 		App.WaitForElement(LayoutAutomationId);
@@ -41,7 +41,7 @@ public class Issue6932_emptyviewstring : _IssuesUITest
 		App.WaitForElement(EmptyViewStringDescription);
 	}
 
-	[Test]
+	[Fact]
 	public void CEmptyViewStringHidesWhenItemsSourceIsFilled()
 	{
 		App.WaitForElement(EmptyViewStringDescription);

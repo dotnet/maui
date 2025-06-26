@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.TableView)]
+[Trait("Category", UITestCategories.TableView)]
 public class Bugzilla31333 : _IssuesUITest
 {
 	public Bugzilla31333(TestDevice testDevice) : base(testDevice)
@@ -13,7 +13,7 @@ public class Bugzilla31333 : _IssuesUITest
 
 	public override string Issue => "Focus() on Entry in ViewCell brings up keyboard, but doesn't have cursor in EditText";
 
-	[Test]
+	[Fact]
 	public void Issue31333FocusEntryInListViewCell()
 	{
 		App.WaitForElement("Focus Entry in ListView");
@@ -23,7 +23,7 @@ public class Bugzilla31333 : _IssuesUITest
 		App.Tap("Focus Entry in ListView");
 	}
 
-	[Test]
+	[Fact]
 	public void Issue31333FocusEditorInListViewCell()
 	{
 		App.WaitForElement("Focus Editor in ListView");
@@ -33,7 +33,7 @@ public class Bugzilla31333 : _IssuesUITest
 		App.Tap("Focus Editor in ListView");
 	}
 
-	[Test]
+	[Fact]
 	public void Issue31333FocusEntryInTableViewCell()
 	{
 		App.WaitForElement("Focus Entry in Table");
@@ -43,7 +43,7 @@ public class Bugzilla31333 : _IssuesUITest
 		App.Tap("Focus Entry in Table");
 	}
 #if TEST_FAILS_ON_IOS //Once Editor text is entered the cursor move to second line when using App.EnterText method in appium which results retrived text is not as expected one. 
-	[Test]
+	[Fact]
 	public void Issue31333FocusEditorInTableViewCell()
 	{
 		App.WaitForElement("Focus Editor in Table");

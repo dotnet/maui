@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,9 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] Invalid item param value for ScrollTo throws an error";
 
-		[Test]
-		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.ListView)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void Bugzilla41600Test()
 		{
 			App.WaitForElement(BtnScrollToNonExistentItem);

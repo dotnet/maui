@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,10 +12,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] ImageRenderer still being accessed after control destroyed";
 
-		[Test]
-		[Category(UITestCategories.Image)]
-		[Category(UITestCategories.LifeCycle)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Image)]
+		[Trait("Category", UITestCategories.LifeCycle)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void ScrollingQuicklyOnCollectionViewDoesntCrashOnDestroyedImage()
 		{

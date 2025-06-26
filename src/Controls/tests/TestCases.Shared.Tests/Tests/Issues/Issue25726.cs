@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +16,8 @@ internal class Issue25726 : _IssuesUITest
 
 	public override string Issue => "NullReferenceException in WillMoveToParentViewController When Removing Page During Navigation on iOS";
 
-	[Test]
-	[Category(UITestCategories.Navigation)]
+	[Fact]
+	[Trait("Category", UITestCategories.Navigation)]
 	public void NavigationShouldNotCrashWhenRemovingPageDuringNavigation()
 	{
 		App.WaitForElement("NavigateToPage2Button");

@@ -1,11 +1,11 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.ScrollView)]
-	[Category(UITestCategories.Compatibility)]
+	[Trait("Category", UITestCategories.ScrollView)]
+	[Trait("Category", UITestCategories.Compatibility)]
 	public class Bugzilla41415UITests : _IssuesUITest
 	{
 		const string ButtonId = "ClickId";
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ScrollX and ScrollY values at the ScrollView.Scrolled event are not consistent in ScrollOrientation.Both mode";
 
-		[Test]
+		[Fact]
 		public void Bugzilla41415Test()
 		{
 			App.WaitForElement(ButtonId);

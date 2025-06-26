@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ public class Bugzilla60045 : _IssuesUITest
 
 	public override string Issue => "ListView with RecycleElement strategy doesn't handle CanExecute of TextCell Command properly";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void CommandDoesNotFire()
 	{
 		App.WaitForElement(ClickThis);

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Select items traces are preserved Issue Link - https://github.com/dotnet/maui/issues/26187
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue10025 : _IssuesUITest
 
 	public override string Issue => "Assigning null to the SelectedItem of the CollectionView in the SelectionChanged event does not clear the selection as expected";
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void VerifySelectedItemClearsOnNullAssignment()
 	{
 		App.Tap("Item1");

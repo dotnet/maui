@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue28949 : _IssuesUITest
 
 	public override string Issue => "On iOS GestureRecognizers don't work on Span in a Label, which doesn't get IsVisible (=true) update from its parent";
 
-	[Test]
-	[Category(UITestCategories.Label)]
+	[Fact]
+	[Trait("Category", UITestCategories.Label)]
 	public void GestureRecognizersOnLabelSpanShouldWork()
 	{
 		App.WaitForElement("ToggleButton");

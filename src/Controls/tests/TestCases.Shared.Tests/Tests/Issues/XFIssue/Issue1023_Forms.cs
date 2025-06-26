@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue1023_Forms : _IssuesUITest
 
 	public override string Issue => "Automate GC checks of picker disposals";
 
-	[Test]
-	[Category(UITestCategories.Picker)]
+	[Fact]
+	[Trait("Category", UITestCategories.Picker)]
 	public void Bugzilla1023Test()
 	{
 		for (var n = 0; n < 10; n++)

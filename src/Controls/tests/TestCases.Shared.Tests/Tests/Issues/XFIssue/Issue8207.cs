@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue8207 : _IssuesUITest
 
 	public override string Issue => "[Bug] Shell Flyout Items on UWP aren't showing the Title";
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void FlyoutItemShouldShowTitle()
 	{
 		App.TapInShellFlyout("Dashboard");

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ public class Issue29851 : _IssuesUITest
 
 	public override string Issue => "[iOS] FormattedText with text color causes stack overflow";
 
-	[Test]
-	[Category(UITestCategories.Label)]
+	[Fact]
+	[Trait("Category", UITestCategories.Label)]
 	public void FormattedTextWithTextColorDoesNotCrash()
 	{
 		App.WaitForElement("label");

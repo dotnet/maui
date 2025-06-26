@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "~VisualElement crashes with System.Runtime.InteropServices.COMException";
 
-		[Test]
-		[Category(UITestCategories.ViewBaseTests)]
+		[Fact]
+		[Trait("Category", UITestCategories.ViewBaseTests)]
 		public void ForcingGCDoesNotCrash()
 		{
 			App.WaitForElement("Clear");

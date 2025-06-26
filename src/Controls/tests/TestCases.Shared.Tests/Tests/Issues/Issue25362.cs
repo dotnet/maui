@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ public class Issue25362 : _IssuesUITest
 	public Issue25362(TestDevice device) : base(device)
 	{ }
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void HeaderShouldNotCollapseWithItems()
 	{
 		App.WaitForElement("button");

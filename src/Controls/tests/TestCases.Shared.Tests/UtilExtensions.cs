@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
-using UITest.Appium.NUnit;
+using UITest.Appium.Xunit;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				var failure = app.FindElement("Failed")?.GetText();
 				if (failure is not null)
 				{
-					Assert.Fail(failure);
+					throw new InvalidOperationException(failure);
 				}
 
 				throw;

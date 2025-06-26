@@ -1,11 +1,11 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.ScrollView)]
+	[Trait("Category", UITestCategories.ScrollView)]
 	public class ScrollViewIsEnabledTests : _IssuesUITest
 	{
 		const string InitiallyEnabled = "InitiallyEnabled";
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ScrollView set to disabled will still allow scrolling";
 
 		// ScrollViewInitiallyEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
-		[Test]
+		[Fact]
 		public void ScrollViewInitiallyEnabled()
 		{
 			// 1. Enable the ScrollView.
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		// ScrollViewInitiallyEnabledThenDisabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
-		[Test]
+		[Fact]
 		public void ScrollViewInitiallyEnabledThenDisabled()
 		{
 			// 1. Enable the ScrollView.
@@ -62,7 +62,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(ScrollView);
 			App.ScrollDown("Item10", ScrollStrategy.Gesture);
 
-
 			var success = App.WaitForElement(Success).GetText();
 			Assert.That("Initial Text", Is.EqualTo(success));
 
@@ -70,7 +69,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		// ScrollViewInitiallyNotEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
-		[Test]
+		[Fact]
 		public void ScrollViewInitiallyNotEnabled()
 		{
 			// 1. Disable the ScrollView.
@@ -89,7 +88,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		// ScrollViewInitiallyNotEnabledThenEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
-		[Test]
+		[Fact]
 		public void ScrollViewInitiallyNotEnabledThenEnabled()
 		{
 			// 1. Disable the ScrollView.

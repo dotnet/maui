@@ -1,5 +1,5 @@
 ﻿#if ANDROID || IOS
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue28523 : _IssuesUITest
 
 	public override string Issue => "Different behavior on iOS and Android when Loop = False";
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void CarouselViewItemShouldScaleProperly()
 	{
 		App.WaitForElement("Baboon");
@@ -22,7 +22,6 @@ public class Issue28523 : _IssuesUITest
 		VerifyScreenshot();
 	}
 
-	[TearDown]
 	public void TearDown()
 	{
 		App.SetOrientationPortrait();

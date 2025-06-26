@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue3019 : _IssuesUITest
 
 	public override string Issue => "Grouped ListView Header empty for adding items";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void MakeSureListGroupShowsUpAndItemsAreClickable()
 	{
 		App.WaitForElement("Grouped Item: 0");

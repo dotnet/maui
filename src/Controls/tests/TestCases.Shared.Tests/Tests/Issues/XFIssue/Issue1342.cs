@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue1342 : _IssuesUITest
 
 	public override string Issue => "[iOS] ListView throws Exception on ObservableCollection.Add/Remove for non visible list view";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void AddingItemsToNonVisibleListViewDoesntCrash()
 	{
 		App.Tap("add2");

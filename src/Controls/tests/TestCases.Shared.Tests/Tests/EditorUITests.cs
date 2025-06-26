@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
@@ -17,8 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(EditorGallery);
 		}
 
-		[Test]
-		[Category(UITestCategories.Gestures)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
 		public override void IsEnabled()
 		{
 			if (Device == TestDevice.Mac ||

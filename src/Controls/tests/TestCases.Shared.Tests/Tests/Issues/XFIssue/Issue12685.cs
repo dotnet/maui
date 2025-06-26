@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ public class Issue12685 : _IssuesUITest
 
 	public override string Issue => "[iOs][Bug] TapGestureRecognizer in Path does not work on iOS";
 
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shape)]
 	public void ShapesPathReceiveGestureRecognizers()
 	{
 		var testLabel = App.WaitForFirstElement(StatusLabelId);

@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] BoxView Opacity not working";
 
-		[Test]
-		[Category(UITestCategories.BoxView)]
+		[Fact]
+		[Trait("Category", UITestCategories.BoxView)]
 		public void WhenChangingBoxViewOpacityThenValueIsCorrectlySet()
 		{
 			App.WaitForElement(buttonId);
@@ -26,9 +26,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var secondOpacity = ChangeOpacityAndGetCurrentStatus();
 			var thirdOpacity = ChangeOpacityAndGetCurrentStatus();
 
-			ClassicAssert.AreEqual(GetExpectedCurrentOpacityStatus(0.7), initialOpacity);
-			ClassicAssert.AreEqual(GetExpectedCurrentOpacityStatus(1), secondOpacity);
-			ClassicAssert.AreEqual(GetExpectedCurrentOpacityStatus(0), thirdOpacity);
+			Assert.Equal(GetExpectedCurrentOpacityStatus(0.7), initialOpacity);
+			Assert.Equal(GetExpectedCurrentOpacityStatus(1), secondOpacity);
+			Assert.Equal(GetExpectedCurrentOpacityStatus(0), thirdOpacity);
 		}
 
 		string? ChangeOpacityAndGetCurrentStatus()

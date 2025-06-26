@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // This test is only applicable for iOS and Catalyst platforms.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,10 +15,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] [iOS] UpdateClip throws NullReferenceException when the Name of the Mask of the Layer is null";
 
-
-		[Test]
-		[Description("Verify that can use a CustomRenderer overriding the iOS View Layer properties")]	
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void Issue11132CustomRendererLayerAndClip()
 		{
 			App.WaitForElement(InstructionsId);

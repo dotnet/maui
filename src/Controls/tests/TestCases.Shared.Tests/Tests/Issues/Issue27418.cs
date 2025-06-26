@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,8 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CarouselView Rendering Issue with PeekAreaInsets on Android Starting from .NET MAUI 9.0.21";
 
-		[Test]
-		[Category(UITestCategories.CarouselView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CarouselView)]
 		public void CarouselItemsShouldRenderProperly()
 		{
 			App.WaitForElement("CarouselView");

@@ -1,8 +1,8 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class FailsOnAllPlatformsWhenRunningOnXamarinUITest : IgnoreAttribute
+	public class FailsOnAllPlatformsWhenRunningOnXamarinUITest : SkipAttribute
 	{
 		public FailsOnAllPlatformsWhenRunningOnXamarinUITest() : base(nameof(FailsOnAllPlatformsWhenRunningOnXamarinUITest))
 		{
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests
 	}
 
 #if ANDROID
-	public class FailsOnAndroidWhenRunningOnXamarinUITest : IgnoreAttribute
+	public class FailsOnAndroidWhenRunningOnXamarinUITest : SkipAttribute
 	{
 		public FailsOnAndroidWhenRunningOnXamarinUITest() : base(nameof(FailsOnAndroidWhenRunningOnXamarinUITest))
 		{
@@ -23,19 +23,19 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 	}
 #else
-	public class FailsOnAndroidWhenRunningOnXamarinUITest : CategoryAttribute
+	public class FailsOnAndroidWhenRunningOnXamarinUITest : TraitAttribute
 	{
-		public FailsOnAndroidWhenRunningOnXamarinUITest() : base(nameof(FailsOnAndroidWhenRunningOnXamarinUITest))
+		public FailsOnAndroidWhenRunningOnXamarinUITest() : base("FailsOnPlatform", nameof(FailsOnAndroidWhenRunningOnXamarinUITest))
 		{
 		}
-		public FailsOnAndroidWhenRunningOnXamarinUITest(string description) : base(description)
+		public FailsOnAndroidWhenRunningOnXamarinUITest(string description) : base("FailsOnPlatform", description)
 		{
 		}
 	}
 #endif
 
 #if IOS
-	public class FailsOnIOSWhenRunningOnXamarinUITest : IgnoreAttribute
+	public class FailsOnIOSWhenRunningOnXamarinUITest : SkipAttribute
 	{
 		public FailsOnIOSWhenRunningOnXamarinUITest() : base(nameof(FailsOnIOSWhenRunningOnXamarinUITest))
 		{
@@ -45,9 +45,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 	}
 #else
-	public class FailsOnIOSWhenRunningOnXamarinUITest : CategoryAttribute
+	public class FailsOnIOSWhenRunningOnXamarinUITest : TraitAttribute
 	{
-		public FailsOnIOSWhenRunningOnXamarinUITest() : base(nameof(FailsOnIOSWhenRunningOnXamarinUITest))
+		public FailsOnIOSWhenRunningOnXamarinUITest() : base("FailsOnPlatform", nameof(FailsOnIOSWhenRunningOnXamarinUITest))
 		{
 		}
 		public FailsOnIOSWhenRunningOnXamarinUITest(string description) : base(description)
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 
 #if MACCATALYST
-	public class FailsOnMacWhenRunningOnXamarinUITest : IgnoreAttribute
+	public class FailsOnMacWhenRunningOnXamarinUITest : SkipAttribute
 	{
 		public FailsOnMacWhenRunningOnXamarinUITest() : base(nameof(FailsOnMacWhenRunningOnXamarinUITest))
 		{
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 	}
 #else
-	public class FailsOnMacWhenRunningOnXamarinUITest : CategoryAttribute
+	public class FailsOnMacWhenRunningOnXamarinUITest : TraitAttribute
 	{
 		public FailsOnMacWhenRunningOnXamarinUITest() : base(nameof(FailsOnMacWhenRunningOnXamarinUITest))
 		{
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 
 #if WINDOWS
-	public class FailsOnWindowsWhenRunningOnXamarinUITest : IgnoreAttribute
+	public class FailsOnWindowsWhenRunningOnXamarinUITest : SkipAttribute
 	{
 		public FailsOnWindowsWhenRunningOnXamarinUITest() : base(nameof(FailsOnWindowsWhenRunningOnXamarinUITest))
 		{
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 	}
 #else
-	public class FailsOnWindowsWhenRunningOnXamarinUITest : CategoryAttribute
+	public class FailsOnWindowsWhenRunningOnXamarinUITest : TraitAttribute
 	{
 		public FailsOnWindowsWhenRunningOnXamarinUITest() : base(nameof(FailsOnWindowsWhenRunningOnXamarinUITest))
 		{

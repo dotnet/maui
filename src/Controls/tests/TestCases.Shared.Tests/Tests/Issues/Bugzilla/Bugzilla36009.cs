@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // BoxView automation is not supported in windows.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,9 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Children of Layouts with data bound IsVisible are not displayed";
 
-		[Test]
-		[Category(UITestCategories.BoxView)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.BoxView)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void Bugzilla36009Test()
 		{
 			App.WaitForElementTillPageNavigationSettled("Victory");

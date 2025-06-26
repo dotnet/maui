@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -8,8 +8,8 @@ public class Issue24034(TestDevice device) : _IssuesUITest(device)
 {
 	public override string Issue => "Shadow is not updating on change of parent control";
 
-	[Test]
-	[Category(UITestCategories.Border)]
+	[Fact]
+	[Trait("Category", UITestCategories.Border)]
 	public void ShadowShouldUpdate()
 	{
 		App.WaitForElement("button");

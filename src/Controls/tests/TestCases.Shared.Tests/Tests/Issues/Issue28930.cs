@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_WINDOWS
 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue28930 : _IssuesUITest
 
 	public override string Issue => "Incorrect label LineBreakMode in IOS inside CarouselView";
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void LineBreakModeInCarouselViewShouldWork()
 	{
 		App.WaitForElement("dotnetbot1");

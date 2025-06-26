@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue6484 : _IssuesUITest
 
 	public override string Issue => "[iOS] Shell - Go back two pages crashes the app with a NullReferenceException";
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void RemovingIntermediatePagesBreaksShell()
 	{
 		App.WaitForElementTillPageNavigationSettled("Success");

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Span text-decoration is incorrect whereas the Label behaves properly";
 
-		[Test]
-		[Category(UITestCategories.Label)]
+		[Fact]
+		[Trait("Category", UITestCategories.Label)]
 		public void LabelHyperlinkUnderlineColor()
 		{
 			App.WaitForElement("WaitForLabelControl");

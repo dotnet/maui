@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ public class Issue20903 : _IssuesUITest
 
 	public override string Issue => "Double-tap behavior should work correctly when adding a new double-tap handler";
 
-	[Test]
-	[Category(UITestCategories.Gestures)]
+	[Fact]
+	[Trait("Category", UITestCategories.Gestures)]
 	public async Task RegisterTwoDoubleTapHandlersAndCheckNumberOfFiredEventsAsync()
 	{
 		_ = App.WaitForElement("AddDoubleTapHandlerButton");
@@ -30,6 +30,6 @@ public class Issue20903 : _IssuesUITest
 
 		IUIElement element = App.FindElement("EventCountLabel");
 		string? count = element.GetText();
-		ClassicAssert.AreEqual("4", count);
+		Assert.Equal("4", count);
 	}
 }

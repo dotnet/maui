@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,9 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Font size does not change vertical height of Entry on iOS";
 
-		[Test]
-		[Category(UITestCategories.Entry)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Entry)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void Bugzilla59925Test()
 		{
 			App.WaitForElement(BiggerButton);

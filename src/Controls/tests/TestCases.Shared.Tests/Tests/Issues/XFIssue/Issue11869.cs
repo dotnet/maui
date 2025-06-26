@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -24,16 +24,14 @@ public class Issue11869 : _IssuesUITest
 	const string Tab3 = "Tab 3";
 	const string ShowAllTabs = "ShowAllTabs";
 
-
-
 	public Issue11869(TestDevice testDevice) : base(testDevice)
 	{
 	}
 
 	public override string Issue => "[Bug] ShellContent.IsVisible issue on Android";
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void IsVisibleWorksForShowingHidingTabs()
 	{
 		// Ignored on Windows: The BottomTabs are displayed as a popup with a dropdown icon on Windows. 

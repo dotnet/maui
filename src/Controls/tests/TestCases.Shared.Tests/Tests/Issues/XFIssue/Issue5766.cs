@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -39,8 +39,8 @@ public class Issue5766 : _IssuesUITest
 	//	return true;
 	//}
 
-	//[Test]
-	//[Category(UITestCategories.Layout)]
+	//[Fact]
+	//[Trait("Category", UITestCategories.Layout)]
 	//[Ignore("Fails sometimes - needs a better test")]
 	//public void FrameSizeGetsCorruptedWhenListViewIsScrolled()
 	//{
@@ -53,11 +53,11 @@ public class Issue5766 : _IssuesUITest
 	//	App.ScrollUpTo(StartText1, List1, ScrollStrategy.Gesture, 0.9, 15000, timeout: TimeSpan.FromMinutes(1));
 
 	//	var startAfter = GetLabels(RunningApp, StartText1);
-	//	Assert.IsTrue(RectIsEquals(start, startAfter));
+	//	Assert.True(RectIsEquals(start, startAfter));
 	//	var smallAfter = GetLabels(RunningApp, SmallText1);
-	//	Assert.IsTrue(RectIsEquals(smalls, smallAfter));
+	//	Assert.True(RectIsEquals(smalls, smallAfter));
 	//	var bigAfter = GetLabels(RunningApp, BigText1);
-	//	Assert.IsTrue(RectIsEquals(bigs, bigAfter));
+	//	Assert.True(RectIsEquals(bigs, bigAfter));
 
 	//	// list2 with ListViewCachingStrategy.RecycleElement - issue 6297
 	//	App.WaitForElement(StartText2);
@@ -69,10 +69,10 @@ public class Issue5766 : _IssuesUITest
 	//	App.ScrollUpTo(StartText2, List2, ScrollStrategy.Gesture, 0.9, 15000, timeout: TimeSpan.FromMinutes(1));
 
 	//	startAfter = GetLabels(RunningApp, StartText2);
-	//	Assert.IsTrue(RectIsEquals(start, startAfter));
+	//	Assert.True(RectIsEquals(start, startAfter));
 	//	smallAfter = GetLabels(RunningApp, SmallText2);
-	//	Assert.IsTrue(RectIsEquals(smalls, smallAfter));
+	//	Assert.True(RectIsEquals(smalls, smallAfter));
 	//	bigAfter = GetLabels(RunningApp, BigText2);
-	//	Assert.IsTrue(RectIsEquals(bigs, bigAfter));
+	//	Assert.True(RectIsEquals(bigs, bigAfter));
 	//}
 }

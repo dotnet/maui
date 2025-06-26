@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Test]
-		[Category(UITestCategories.Shell)]
-		[Category(UITestCategories.SearchBar)]
+		[Fact]
+		[Trait("Category", UITestCategories.Shell)]
+		[Trait("Category", UITestCategories.SearchBar)]
 		public void SearchHandlerFocusAndUnfocusEventsShouldWork()
 		{
 			App.WaitForElement("searchHandler");

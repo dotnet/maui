@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ public class Issue28303 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[Test]
-	[Category(UITestCategories.WebView)]
+	[Fact]
+	[Trait("Category", UITestCategories.WebView)]
 	public void VerifyWebViewNavigatedEventTriggered()
 	{
 		VerifyInternetConnectivity();

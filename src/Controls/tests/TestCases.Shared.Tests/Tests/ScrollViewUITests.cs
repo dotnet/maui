@@ -1,10 +1,10 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	[Category(UITestCategories.ScrollView)]
+	[Trait("Category", UITestCategories.ScrollView)]
 	public class ScrollToUITests : CoreGalleryBasePageTest
 	{
 		const string LayoutGallery = "ScrollView Gallery";
@@ -19,9 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(LayoutGallery);
 		}
 
-
-		[Test]
-		[Description("Scroll element to the start")]
+		[Fact]
 		public void ScrollToElement1Start()
 		{
 			App.WaitForElement("WaitForStubControl");
@@ -34,8 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
-		[Description("Scroll element to the center")]
+		[Fact]
 		public void ScrollToElement2Center()
 		{
 			App.WaitForElement("WaitForStubControl");
@@ -50,8 +47,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
-		[Description("Scroll element to the end")]
+		[Fact]
 		public void ScrollToElement3End()
 		{
 			App.WaitForElement("WaitForStubControl");
@@ -64,8 +60,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
-		[Description("ScrollTo Y = 100")]
+		[Fact]
 		public void ScrollToY()
 		{
 			App.WaitForElement("WaitForStubControl");
@@ -75,8 +70,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		// ScrollToYTwice (src\Compatibility\ControlGallery\src\UITests.Shared\Tests\ScrollViewUITests.cs)
-		[Test]
-		[Description("ScrollTo Y = 100")]
+		[Fact]
 		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue, More Information: https://github.com/dotnet/maui/issues/27250")]
 		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue, More Information: https://github.com/dotnet/maui/issues/27250")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue, More Information: https://github.com/dotnet/maui/issues/27250")]
@@ -93,8 +87,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("completed");
 		}
 
-		[Test]
-		[Description("Scroll down the ScrollView using a gesture")]
+		[Fact]
 		public void ScrollUpAndDownWithGestures()
 		{
 			var text = App.WaitForElement("WaitForStubControl").GetText();

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue264 : _IssuesUITest
 
 	public override string Issue => "PopModal NRE";
 
-	[Test]
-	[Category(UITestCategories.Navigation)]
+	[Fact]
+	[Trait("Category", UITestCategories.Navigation)]
 	public void Issue264TestsPushAndPopModal()
 	{
 		App.WaitForElement("Home");

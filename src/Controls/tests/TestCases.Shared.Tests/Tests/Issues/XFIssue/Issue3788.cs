@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST //In MacCatalyst, Timeout Exception in the label line no 20. tried by using App.QueryUntilPresent, and adding delay also won't work. 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue3788 : _IssuesUITest
 
 	public override string Issue => "[UWP] ListView with observable collection always seems to refresh the entire list";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void ReplaceItemScrollsListToTop()
 	{
 		App.WaitForElement("Replace Me");

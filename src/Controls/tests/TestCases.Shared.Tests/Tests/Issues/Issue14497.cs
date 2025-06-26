@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ public class Issue14497 : _IssuesUITest
 	public override string Issue => "Dynamically setting SearchHandler Query property does not update text in the search box";
 	const string ChangeSearchText = "ChangeSearchText";
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void DynamicallyQueryNotUpdating()
 	{
 		App.WaitForElement(ChangeSearchText);

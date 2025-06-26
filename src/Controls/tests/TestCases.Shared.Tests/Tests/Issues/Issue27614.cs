@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Label not sized correctly on Android";
 
 		[Test, Order(1)]
-		[Category(UITestCategories.Label)]
+		[Trait("Category", UITestCategories.Label)]
 		public void LabelShouldSizeCorrectlyOnHorizontalStartLayoutOptions()
 		{
 			App.WaitForElement("Label");
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test, Order(2)]
-		[Category(UITestCategories.Label)]
+		[Trait("Category", UITestCategories.Label)]
 		public void LabelShouldSizeCorrectlyOnHorizontalCenterLayoutOptions()
 		{
 			App.WaitForElement("CenterButton");
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test, Order(3)]
-		[Category(UITestCategories.Label)]
+		[Trait("Category", UITestCategories.Label)]
 		public void LabelShouldSizeCorrectlyOnHorizontalEndLayoutOptions()
 		{
 			App.WaitForElement("EndButton");

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,15 +15,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Add a ScaleXTo and ScaleYTo animation extension method";
 
-		[Test]
-		[Category(UITestCategories.Animation)]
+		[Fact]
+		[Trait("Category", UITestCategories.Animation)]
 		public void AnimateScaleOfBoxView()
 		{
 			App.WaitForElement("TestReady");
 			//The BoxView's AutomationId doesn't work correctly on the Windows platform, and using a Label also doesn't ensure the BoxView's size changes.
 			//Issue Link: https://github.com/dotnet/maui/issues/27195
 #if WINDOWS
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallBox");
+			VerifyScreenshot(GetCurrentTestName() + "_SmallBox");
 #else
 			var rect = App.WaitForElement(BoxToScale).GetRect();
 #endif
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Wait for animation to finish.
 			Thread.Sleep(500);
 #if WINDOWS
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_BigBox");
+			VerifyScreenshot(GetCurrentTestName() + "_BigBox");
 #else
 			var scaledRect = App.WaitForElement(BoxToScale).GetRect();
 			Assert.That(scaledRect.Width, Is.GreaterThan(rect.Width));

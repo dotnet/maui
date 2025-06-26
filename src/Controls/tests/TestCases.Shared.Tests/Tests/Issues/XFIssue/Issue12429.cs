@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // On Windows AutomationId is not working for Stacklayout, Hence we measure the layout height here so we can't use the inner elements AutomationId. More Information:https://github.com/dotnet/maui/issues/4715
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -27,12 +27,10 @@ public class Issue12429 : _IssuesUITest
 #endif
 	const string ResizeMe = "Default Flyout Item. Height is 44 on iOS and UWP. Height is 50 on Android)";
 
-
-
 	public override string Issue => "[Bug] Shell flyout items have a minimum height";
 
 	[Test, Order(1)]
-	[Category(UITestCategories.Shell)]
+	[Trait("Category", UITestCategories.Shell)]
 	public void FlyoutItemSizesToExplicitHeight()
 	{
 		App.WaitForElement("PageLoaded");
@@ -42,7 +40,7 @@ public class Issue12429 : _IssuesUITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.Shell)]
+	[Trait("Category", UITestCategories.Shell)]
 	public void FlyoutItemHeightAndWidthIncreaseAndDecreaseCorrectly()
 	{
 		App.WaitForElement(ResizeMe);

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue5793 : _IssuesUITest
 
 	public override string Issue => "[CollectionView/ListView] Not listening for Reset command";
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void CollectionViewResetTest()
 	{
 		App.WaitForElement("Reset");

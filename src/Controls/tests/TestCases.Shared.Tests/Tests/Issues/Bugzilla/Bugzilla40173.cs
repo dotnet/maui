@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_ANDROID //Issue reproduced on android and logged the issue: https://github.com/dotnet/maui/issues/26026
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Bugzilla40173 : _IssuesUITest
 
 	public override string Issue => "Android BoxView/Frame not clickthrough in ListView";
 
-	[Test]
-	[Category(UITestCategories.InputTransparent)]
+	[Fact]
+	[Trait("Category", UITestCategories.InputTransparent)]
 	public void ButtonBlocked()
 	{
 		App.WaitForElement("CantTouchButtonId");

@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,13 +13,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[WP] Navigating to a ContentPage with a Grid inside a TableView affects Entry heights";
 
-		[Test]
-		[Category(UITestCategories.Entry)]
+		[Fact]
+		[Trait("Category", UITestCategories.Entry)]
 		public void Bugzilla36559Test()
 		{
 			App.WaitForElement("entry");
 			var result = App.WaitForElement("entry");
-			ClassicAssert.AreNotEqual(result.GetRect().Height, -1);
+			Assert.NotEqual(result.GetRect().Height, -1);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "App crashes when quickly adding/removing Image views (Windows UWP)";
 
-		[Test]
-		[Category(UITestCategories.Image)]
+		[Fact]
+		[Trait("Category", UITestCategories.Image)]
 		public void Bugzilla37625Test()
 		{
 			App.WaitForElement("success");

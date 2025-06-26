@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Memory leak when TabbedPage is popped out ";
 
-		[Test]
-		[Category(UITestCategories.LifeCycle)]
+		[Fact]
+		[Trait("Category", UITestCategories.LifeCycle)]
 		public void Issu32898Test()
 		{
 			var timeout = Timeout; // Give this a little slop to set the result text

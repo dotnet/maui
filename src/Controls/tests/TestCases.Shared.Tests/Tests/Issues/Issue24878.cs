@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,8 +10,8 @@ public class Issue24878 : _IssuesUITest
 
 	public override string Issue => "AppThemeBinding does not work on ToolbarItems";
 
-	[Test]
-	[Category(UITestCategories.ToolbarItem)]
+	[Fact]
+	[Trait("Category", UITestCategories.ToolbarItem)]
 	public void ToolbarItemsShouldBeVisible()
 	{
 		App.WaitForElement("label");

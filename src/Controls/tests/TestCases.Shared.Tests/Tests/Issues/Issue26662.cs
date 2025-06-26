@@ -1,7 +1,7 @@
 // FontImageSource color is not applied to the Tab Icon on Windows for the Tabbedpage 
 // Issue: https://github.com/dotnet/maui/issues/26752
 #if TEST_FAILS_ON_WINDOWS
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Unable to dynamically set unselected IconImageSource Color on Android";
 
 		[Test, Order(1)]
-		[Category(UITestCategories.TabbedPage)]
+		[Trait("Category", UITestCategories.TabbedPage)]
 		public void FontImageSourceColorShouldApplyOnTabIcon()
 		{
 			App.WaitForElement("Button");
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test, Order(2)]
-		[Category(UITestCategories.TabbedPage)]
+		[Trait("Category", UITestCategories.TabbedPage)]
 		public void DynamicFontImageSourceColorShouldApplyOnTabIcon()
 		{
 			App.WaitForElement("Button");

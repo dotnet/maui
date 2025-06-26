@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Drag and Drop Gesture Fails on Runtime Changes of CanDrag and AllowDrop in Windows";
 
-		[Test]
-		[Category(UITestCategories.DragAndDrop)]
+		[Fact]
+		[Trait("Category", UITestCategories.DragAndDrop)]
 		public void DragAndDropShouldWorkRunTime()
 		{
 			App.WaitForElement("EnableDragAndDrop");

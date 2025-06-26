@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ public class Issue198 : _IssuesUITest
 
 	public override string Issue => "TabbedPage shouldn't proxy content of NavigationPage";
 
-	[Test]
-	[Category(UITestCategories.TabbedPage)]
+	[Fact]
+	[Trait("Category", UITestCategories.TabbedPage)]
 	public void Issue198TestsNREWithPopModal()
 	{
 		App.WaitForTabElement(PageOne);

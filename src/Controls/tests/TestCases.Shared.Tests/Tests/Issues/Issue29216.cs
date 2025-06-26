@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue29216 : _IssuesUITest
 
 	public override string Issue => "Carousel view scrolling on button click";
 
-	[Test]
-	[Category(UITestCategories.CarouselView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CarouselView)]
 	public void Issue29216CarouselViewScrollingIssue()
 	{
 		App.WaitForElement("button");

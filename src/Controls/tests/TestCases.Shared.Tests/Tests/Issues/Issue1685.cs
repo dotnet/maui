@@ -1,5 +1,5 @@
 ﻿
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,9 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Entry clears when updating text from native with one-way binding";
 
-		[Test]
-		[Category(UITestCategories.Entry)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Entry)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void EntryOneWayBindingShouldUpdate()
 		{
 			App.WaitForElement(ButtonId);

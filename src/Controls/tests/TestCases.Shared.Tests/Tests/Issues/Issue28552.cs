@@ -1,5 +1,5 @@
 ﻿#if ANDROID
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue28552 : _IssuesUITest
 
 	public override string Issue => "Changing StatusBar and NavigationBar background color doesn't work with Modal pages";
 
-	[Test]
-	[Category(UITestCategories.Navigation)]
+	[Fact]
+	[Trait("Category", UITestCategories.Navigation)]
 	public void StatusBarAndNavigationBarShouldInheritColor()
 	{
 		App.WaitForElement("OpenModalButton");

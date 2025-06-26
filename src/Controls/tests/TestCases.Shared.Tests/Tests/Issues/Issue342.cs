@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,15 +12,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "NRE when Image is not assigned source";
 
-		[Test]
-		[Category(UITestCategories.Page)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Page)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void Issue342NoSourceTestsLablePresentNoImage()
 		{
 			App.WaitForElement("Uninitialized image");
 		}
 	}
-
 
 	public class Issue342DelayedSource : _IssuesUITest
 	{
@@ -30,8 +29,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "NRE when Image is delayed source";
 
-		[Test]
-		[Category(UITestCategories.Page)]
+		[Fact]
+		[Trait("Category", UITestCategories.Page)]
 		public void Issue342DelayedLoadTestsImageLoads()
 		{
 			App.WaitForElement("Delayed image");

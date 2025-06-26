@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,14 +12,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] TapGestureRecognizer does not work with a nested StackLayout";
 
-
 		const string InnerLayout = "innerlayout";
 		const string OuterLayout = "outerlayout";
 		const string Success = "Success";
 
-		[Test]
-		[Category(UITestCategories.Gestures)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void VerifyNestedStacklayoutTapsBubble()
 		{
 			App.WaitForElement(InnerLayout);

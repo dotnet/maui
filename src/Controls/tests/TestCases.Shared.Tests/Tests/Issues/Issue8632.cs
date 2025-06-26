@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS// https://github.com/dotnet/maui/issues/28910
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ public class Issue8632 : _IssuesUITest
 
 	public override string Issue => "ScalingCanvas.SetBlur not working on Android";
 
-	[Test]
-	[Category(UITestCategories.Gestures)]
+	[Fact]
+	[Trait("Category", UITestCategories.Gestures)]
 	public void CanvasShouldHonorBlur()
 	{
 		App.WaitForElement("label");

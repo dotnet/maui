@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,9 +11,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Description("Single Selection Binding")]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void SelectionShouldUpdateBinding()
 		{
 			// Navigate to the selection galleries

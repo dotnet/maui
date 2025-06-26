@@ -1,5 +1,5 @@
 ﻿//using Microsoft.Maui.Appium;
-//using NUnit.Framework;
+//using Xunit;
 //using Xamarin.UITest.Queries;
 
 //namespace Microsoft.Maui.TestCases.Tests.Issues
@@ -10,10 +10,10 @@
 
 //		public override string Issue => "Carousel View does not behave properly in Windows";
 
-//		[Test]
+//		[Fact]
 //		public void WhenQueryingCarouselItemsInViewThenSingleItemIsRetrieved()
 //		{
-//			// TODO: Investigate and remove the need for this. Currently all platforms fail the "ClassicAssert.AreEqual(10, itemNumber)",
+//			// TODO: Investigate and remove the need for this. Currently all platforms fail the "Assert.Equal(10, itemNumber)",
 //			// though failures are a bit different on different platforms.
 //			Assert.Ignore("WhenQueryingCarouselItemsInViewThenSingleItemIsRetrieved is newly added but fails; need to investigate and fix");
 
@@ -28,7 +28,7 @@
 
 //			var itemNumber = GetCurrentItemNumber();
 
-//			ClassicAssert.AreEqual(10, itemNumber);
+//			Assert.Equal(10, itemNumber);
 //		}
 
 //		int GetCurrentItemNumber()
@@ -43,10 +43,10 @@
 //			// Get the visible labels in the carousel (should be one if everything is OK)
 //			var labels = App.FindElement(element => element.Marked("NameLabel")).Where(IsActiveCarouselItem);
 
-//			ClassicAssert.NotNull(labels);
-//			Assert.IsNotEmpty(labels);
+//			Assert.NotNull(labels);
+//			Assert.NotEmpty(labels);
 //			//Only one item should be visible at a time in the carousel
-//			ClassicAssert.AreEqual(1, labels.Count());
+//			Assert.Equal(1, labels.Count());
 //		}
 
 //		//Only the active item in the window should have a size greater than zero

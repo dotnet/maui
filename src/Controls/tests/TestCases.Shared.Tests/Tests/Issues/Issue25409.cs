@@ -1,5 +1,5 @@
 #if IOS //This test case verifies "UIButton CurrentImage can be set without crashing" in iOS platform only.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue25409 : _IssuesUITest
 
 	public override string Issue => "UIButton CurrentImage can be set without crashing";
 
-	[Test]
-	[Category(UITestCategories.Button)]
+	[Fact]
+	[Trait("Category", UITestCategories.Button)]
 	public void CurrentImageSet()
 	{
 		App.WaitForElement("button1");

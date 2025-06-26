@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Interfaces;
+﻿using Xunit;
+using Xunit.Abstractions;
 using NUnit.Framework.Internal;
 using NUnit.Framework.Internal.Commands;
 

@@ -1,5 +1,5 @@
 ﻿#if ANDROID && TEST_FAILS_ON_ANDROID // Related issue: https://github.com/dotnet/maui/issues/26159
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		: base(device)
 		{ }
 
-		[Test]
-		[Category(UITestCategories.ImageButton)]
+		[Fact]
+		[Trait("Category", UITestCategories.ImageButton)]
 		public void ImageButtonAspectFitWorks()
 		{
 			App.WaitForElement("WaitForStubControl");

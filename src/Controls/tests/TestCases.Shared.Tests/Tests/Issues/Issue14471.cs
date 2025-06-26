@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_ANDROID // This test fails randomly, likely because the image source has disappeared sometimes in CI, not able to reproduce locally. For now, we have ignored the test for Android. Issue for re-enabling: https://github.com/dotnet/maui/issues/24243
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ public class Issue14471 : _IssuesUITest
 
 	public override string Issue => "Image can disappear when going back to the page";
 
-	[Test]
-	[Category(UITestCategories.Image)]
+	[Fact]
+	[Trait("Category", UITestCategories.Image)]
 	public void ImageDoesntDisappearWhenNavigatingBack()
 	{
 		App.WaitForElement("image");

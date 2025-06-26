@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Background layer frame mapping has poor performance";
 
-		[Test]
-		[Category(UITestCategories.Visual)]
+		[Fact]
+		[Trait("Category", UITestCategories.Visual)]
 		public void BackgroundFrameResizesFastAndCorrectly()
 		{
 			App.WaitForElement("ChangeSizeBtn");

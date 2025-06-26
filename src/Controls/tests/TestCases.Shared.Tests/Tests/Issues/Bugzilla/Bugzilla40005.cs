@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Navigation Bar back button does not show when using InsertPageBefore";
 
-		[Test]
-		[Category(UITestCategories.Navigation)]
+		[Fact]
+		[Trait("Category", UITestCategories.Navigation)]
 		public void Bugzilla40005Test()
 		{
 			App.WaitForElement(PageOneLabel);

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue2597 : _IssuesUITest
 
 	public override string Issue => "Stepper control .IsEnabled doesn't work";
 
-	[Test]
-	[Category(UITestCategories.Stepper)]
+	[Fact]
+	[Trait("Category", UITestCategories.Stepper)]
 	public void Issue2597Test()
 	{
 		App.WaitForElement("Stepper");

@@ -1,5 +1,5 @@
 #if IOS
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CursorPosition Property Not Applied Correctly to Entry Control on iOS Platform";
 
-		[Test]
-		[Category(UITestCategories.Entry)]
+		[Fact]
+		[Trait("Category", UITestCategories.Entry)]
 		public void EntryShouldApplyCursorPositionCorrectly()
 		{
 			App.WaitForElement("EntryControl");

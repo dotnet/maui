@@ -1,7 +1,6 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
-
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
@@ -13,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Picker on windows shows \"Microsoft.Maui.Controls.Picker\" if ItemsSource has an empty string";
 
-		[Test]
-		[Category(UITestCategories.Picker)]
+		[Fact]
+		[Trait("Category", UITestCategories.Picker)]
 		public void PickerShouldDisplayValueFromItemDisplayBinding()
 		{
 			App.WaitForElement("UpdateButton");

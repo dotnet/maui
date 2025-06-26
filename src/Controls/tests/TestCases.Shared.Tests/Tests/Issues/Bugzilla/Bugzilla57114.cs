@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,9 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Forms gestures are not supported on UIViews that have native gestures";
 
-		[Test]
-		[Category(UITestCategories.Gestures)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void _57114BothTypesOfGesturesFire()
 		{
 			App.WaitForElement(Testing);

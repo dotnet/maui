@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue12500 : _IssuesUITest
 	{
 	}
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void ShellNavigatingShouldTrigger()
 	{
 		App.WaitForElement("Issue12500MainPage");

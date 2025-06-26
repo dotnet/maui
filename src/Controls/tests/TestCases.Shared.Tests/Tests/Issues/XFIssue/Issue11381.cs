@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_IOS // On iOS the app get freez and getting an exception 'System.IO.FileNotFoundException' in System.Private.CoreLib.dll while using the images from url in HostApp. But in simple sample it works fine.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue11381 : _IssuesUITest
 
 	public override string Issue => "[Bug] [iOS] NRE on grouped ListView when removing cells with gesture recognizers";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void Issue11381RemoveListViewGroups()
 	{
 		App.WaitForElement("ListViewId", "Timed out waiting for the ListView.");

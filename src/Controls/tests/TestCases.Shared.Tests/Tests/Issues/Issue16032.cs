@@ -1,5 +1,5 @@
 #if ANDROID
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Improve the customization of WebView on Android";
 
-		[Test]
-		[Category(UITestCategories.WebView)]
+		[Fact]
+		[Trait("Category", UITestCategories.WebView)]
 		public void EnsureSupportForCustomWebViewClients()
 		{
 			VerifyInternetConnectivity();

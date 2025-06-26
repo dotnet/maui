@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Secondary ToolBar still not supported of iOS and Catalyst https://github.com/dotnet/maui/issues/815
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ public class Issue6127 : _IssuesUITest
 
 	public override string Issue => "[Bug] ToolbarItem Order property ignored";
 
-	[Test]
-	[Category(UITestCategories.ToolbarItem)]
+	[Fact]
+	[Trait("Category", UITestCategories.ToolbarItem)]
 	public void Issue6127Test()
 	{
 		//AutomationId for ToolBarIcon is not works in android

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ public class Issue1557 : _IssuesUITest
 
 	public override string Issue => "Setting source crashes if view was detached from visual tree";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void SettingSourceWhenDetachedDoesNotCrash()
 	{
 		App.WaitForElement("Bug Repro");

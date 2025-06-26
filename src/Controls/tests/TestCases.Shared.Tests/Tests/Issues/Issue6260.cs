@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] infinite layout loop";
 
-		[Test]
-		[Category(UITestCategories.Layout)]
+		[Fact]
+		[Trait("Category", UITestCategories.Layout)]
 		public void NonAppCompatBasicSwitchTest()
 		{
 			App.WaitForElement(success);

@@ -1,5 +1,5 @@
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Rendering performance";
 
-		[Test]
-		[Category(UITestCategories.Performance)]
+		[Fact]
+		[Trait("Category", UITestCategories.Performance)]
 		public async Task RenderingPerformanceRun()
 		{
 			const string automationId = "StartButton";

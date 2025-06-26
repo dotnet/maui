@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue1024 : _IssuesUITest
 
 	public override string Issue => "Entry and Editor are leaking when used in ViewCell";
 
-	[Test]
-	[Category(UITestCategories.Performance)]
+	[Fact]
+	[Trait("Category", UITestCategories.Performance)]
 	public void Bugzilla1024Test()
 	{
 		for (var n = 0; n < 10; n++)

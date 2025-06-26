@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 		public override string Issue => "TableView TextCell command executes only once";
 
-		[Test]
-		[Category(UITestCategories.TableView)]
+		[Fact]
+		[Trait("Category", UITestCategories.TableView)]
 		public void TableViewTextCellCommand()
 		{
 			App.WaitForElement("MainPageButton");

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,8 +19,8 @@ public class Issue3475 : _IssuesUITest
 
 	public override string Issue => "[iOS] LayoutCompression Performance Issues";
 
-	[Test]
-	[Category(UITestCategories.Layout)]
+	[Fact]
+	[Trait("Category", UITestCategories.Layout)]
 	public void Issue3475TestsLayoutCompressionPerformance()
 	{
 		App.WaitForElement(_titleLabelId);
@@ -37,7 +37,6 @@ public class Issue3475 : _IssuesUITest
 
 		App.Tap(_withCompressionBtnId);
 		App.WaitForElement(DoneLabelId);
-
 
 		int elapsedWithCompression = GetMs(App.WaitForElement(ElapsedLabelId).GetText()!);
 		var delta = elapsedWithCompression - elapsedWithoutCompression;

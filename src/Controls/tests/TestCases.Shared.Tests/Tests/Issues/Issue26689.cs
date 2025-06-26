@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Radiobutton not visible in .Net Maui";
 
-		[Test]
-		[Category(UITestCategories.RadioButton)]
+		[Fact]
+		[Trait("Category", UITestCategories.RadioButton)]
 		public void RadioButtonShouldApplyPropertiesCorrectly()
 		{
 			App.WaitForElement("radioButton");

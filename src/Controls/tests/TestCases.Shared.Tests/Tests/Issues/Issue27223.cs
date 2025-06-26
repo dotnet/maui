@@ -1,5 +1,5 @@
 #if WINDOWS // mac does not respond to the window size change. so, ignored test on mac.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
         public override string Issue => "SizeChanged event fires when size hasn't changed";
 
-        [Test]
-        [Category(UITestCategories.Layout)]
+        [Fact]
+        [Trait("Category", UITestCategories.Layout)]
         public void SizeChangedOnlyFiresWhenSizeChanges()
         {
             App.WaitForElement("Label");

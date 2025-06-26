@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,8 +20,8 @@ public class Bugzilla45926 : _IssuesUITest
 
 	public override string Issue => "MessagingCenter prevents subscriber from being collected";
 
-	[Test]
-	[Category(UITestCategories.Page)]
+	[Fact]
+	[Trait("Category", UITestCategories.Page)]
 	public void Issue45926Test()
 	{
 		App.WaitForElement("New Page");

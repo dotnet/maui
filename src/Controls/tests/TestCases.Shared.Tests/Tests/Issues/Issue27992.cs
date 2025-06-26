@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,9 +13,8 @@ public class Issue27992 : _IssuesUITest
 
 	public override string Issue => "Entry Completed Event Triggered Twice";
 
-
-	[Test]
-	[Category(UITestCategories.Entry)]
+	[Fact]
+	[Trait("Category", UITestCategories.Entry)]
 	public void EntryCompletedShouldOnlyFireOnce()
 	{
 		App.WaitForElement("MauiEntry");

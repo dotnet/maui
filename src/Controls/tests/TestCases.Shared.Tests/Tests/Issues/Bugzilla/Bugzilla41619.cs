@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,9 +14,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[WinRT/UWP] Slider binding works incorrectly";
 
-		[Test]
-		[Category(UITestCategories.LifeCycle)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.LifeCycle)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void SliderBinding()
 		{
 			App.WaitForElement(Success.ToString());

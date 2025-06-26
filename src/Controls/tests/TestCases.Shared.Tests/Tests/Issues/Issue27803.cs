@@ -1,5 +1,5 @@
 #if TEST_FAILS_ON_CATALYST //https://github.com/dotnet/maui/issues/20904
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue27803 : _IssuesUITest
 
 	public override string Issue => "DatePicker default format on iOS";
 
-	[Test]
-	[Category(UITestCategories.DatePicker)]
+	[Fact]
+	[Trait("Category", UITestCategories.DatePicker)]
 	public void DatePickerTextColorShouldUpdate()
 	{
 		App.WaitForElement("MauiButton");

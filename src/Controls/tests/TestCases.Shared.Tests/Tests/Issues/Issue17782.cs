@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue17782 : _IssuesUITest
 
 	public override string Issue => "[ManualMauiTests] New text in the Editor character spacing test sometimes uses the previous spacing";
 
-	[Test]
-	[Category(UITestCategories.Editor)]
+	[Fact]
+	[Trait("Category", UITestCategories.Editor)]
 	public void VerifyEditorCharacterSpacingWithText()
 	{
 		App.WaitForElement("SliderCharacterSpacing");

@@ -1,27 +1,35 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using NUnit.Framework;
-using NUnit.Framework.Interfaces;
+using Xunit;
+using Xunit.Abstractions;
 using UITest.Core;
 
-namespace UITest.Appium.NUnit
+namespace UITest.Appium.Xunit
 {
-	public abstract class UITestBase : UITestContextBase
+	public abstract class UITestBase : UITestContextBase, IDisposable
 	{
 		protected virtual bool ResetAfterEachTest => false;
+		private readonly ITestOutputHelper? _testOutput;
+		private bool _disposed = false;
 
-		public UITestBase(TestDevice testDevice)
+		public UITestBase(TestDevice testDevice, ITestOutputHelper? testOutput = null)
 			: base(testDevice)
 		{
+			_testOutput = testOutput;
+			
+			// Equivalent to OneTimeSetUp - run once when the test class is instantiated
+			OneTimeSetup();
+			
+			// Equivalent to SetUp - run before each test (if ResetAfterEachTest is true)
+			TestSetup();
 		}
 
 		public void RecordTestSetup()
 		{
-			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {name} Start");
+			var name = GetCurrentTestName();
+			_testOutput?.WriteLine($">>>>> {DateTime.Now} {name} Start");
 		}
 
-		[SetUp]
 		public virtual void TestSetup()
 		{
 			RecordTestSetup();
@@ -31,7 +39,6 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
-		[TearDown]
 		public virtual void TestTearDown()
 		{
 			RecordTestTeardown();
@@ -44,14 +51,14 @@ namespace UITest.Appium.NUnit
 
 		public void RecordTestTeardown()
 		{
-			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {name} Stop");
+			var name = GetCurrentTestName();
+			_testOutput?.WriteLine($">>>>> {DateTime.Now} {name} Stop");
 		}
 
 		protected virtual void FixtureSetup()
 		{
-			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureSetup)} for {name}");
+			var name = GetCurrentTestName();
+			_testOutput?.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureSetup)} for {name}");
 		}
 
 		protected virtual void FixtureOneTimeTearDown()
@@ -63,8 +70,8 @@ namespace UITest.Appium.NUnit
 			}
 			catch (Exception e)
 			{
-				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+				var name = GetCurrentTestName();
+				_testOutput?.WriteLine($">>>>> {DateTime.Now} The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
 			}
 		}
 
@@ -82,24 +89,26 @@ namespace UITest.Appium.NUnit
 						FixtureSetup();
 					}
 
-					// Assert.Fail will immediately exit the test which is desirable as the app is not
-					// running anymore so we can't capture any UI structures or any screenshots
-					Assert.Fail("The app was expected to be running still, investigate as possible crash");
+					// xUnit equivalent: throw exception will fail the test
+					throw new InvalidOperationException("The app was expected to be running still, investigate as possible crash");
 				}
 			}
 			finally
 			{
-				var testOutcome = TestContext.CurrentContext.Result.Outcome;
-				if (testOutcome == ResultState.Error ||
-					testOutcome == ResultState.Failure)
+				// In xUnit, we don't have direct access to test outcome from NUnit
+				// We'll need to handle this differently - let exceptions bubble up
+				try
 				{
 					SaveDeviceDiagnosticInfo();
 					SaveUIDiagnosticInfo();
 				}
+				catch
+				{
+					// Log but don't interfere with the actual test result
+				}
 			}
 		}
 
-		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
 			InitialSetup(UITestContextSetupFixture.ServerContext);
@@ -119,22 +128,47 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
-		[OneTimeTearDown]
 		public void OneTimeTearDown()
 		{
-			var outcome = TestContext.CurrentContext.Result.Outcome;
-
-			// We only care about setup failures as regular test failures will already do logging
-			if (outcome.Status == ResultState.SetUpFailure.Status &&
-				outcome.Site == ResultState.SetUpFailure.Site)
-			{
-				SaveDeviceDiagnosticInfo();
-
-				if (App.AppState == ApplicationState.Running)
-					SaveUIDiagnosticInfo();
-			}
-
+			// In xUnit, we can't easily detect setup failures like NUnit
+			// We'll just perform the cleanup
 			FixtureOneTimeTearDown();
+		}
+
+		// IDisposable implementation - equivalent to OneTimeTearDown
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!_disposed && disposing)
+			{
+				OneTimeTearDown();
+				_disposed = true;
+			}
+		}
+
+		private string GetCurrentTestName()
+		{
+			// In xUnit, getting current test name is more complex
+			// We'll use the calling method name as a fallback
+			var stackTrace = new System.Diagnostics.StackTrace();
+			for (int i = 1; i < stackTrace.FrameCount; i++)
+			{
+				var method = stackTrace.GetFrame(i)?.GetMethod();
+				if (method != null && method.GetCustomAttributes(typeof(FactAttribute), false).Any())
+				{
+					return method.Name;
+				}
+				if (method != null && method.GetCustomAttributes(typeof(TheoryAttribute), false).Any())
+				{
+					return method.Name;
+				}
+			}
+			return "UnknownTest";
 		}
 
 		void SaveDeviceDiagnosticInfo([CallerMemberName] string? note = null)
@@ -142,7 +176,7 @@ namespace UITest.Appium.NUnit
 			try
 			{
 				var types = App.GetLogTypes().ToArray();
-				TestContext.Progress.WriteLine($">>>>> {DateTime.Now} Log types: {string.Join(", ", types)}");
+				_testOutput?.WriteLine($">>>>> {DateTime.Now} Log types: {string.Join(", ", types)}");
 
 				foreach (var logType in new[] { "logcat" })
 				{
@@ -161,8 +195,8 @@ namespace UITest.Appium.NUnit
 			}
 			catch (Exception e)
 			{
-				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The SaveDeviceDiagnosticInfo threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+				var name = GetCurrentTestName();
+				_testOutput?.WriteLine($">>>>> {DateTime.Now} The SaveDeviceDiagnosticInfo threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
 			}
 		}
 
@@ -208,8 +242,7 @@ namespace UITest.Appium.NUnit
 				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
 
 			var name =
-				TestContext.CurrentContext.Test.MethodName ??
-				TestContext.CurrentContext.Test.Name;
+				GetCurrentTestName();
 
 			return Path.Combine(logDir, $"{name}-{_testDevice}{note}{filename}");
 		}
@@ -218,7 +251,9 @@ namespace UITest.Appium.NUnit
 		{
 			try
 			{
-				TestContext.AddTestAttachment(filePath, description);
+				// xUnit doesn't have direct equivalent to TestContext.AddTestAttachment
+				// We'll just log the file path for now
+				_testOutput?.WriteLine($"Test attachment: {filePath} - {description}");
 			}
 			catch (FileNotFoundException e) when (e.Message == "Test attachment file path could not be found.")
 			{

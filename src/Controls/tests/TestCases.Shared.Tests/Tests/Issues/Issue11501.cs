@@ -1,5 +1,5 @@
 ﻿#if ANDROID || IOS//The test fails on Windows and MacCatalyst because the BackgroundApp and ForegroundApp method, which is only supported on mobile platforms iOS and Android.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,10 +13,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Making Fragment Changes While App is Backgrounded Fails";
 
-		[TestCase("SwapMainPage", Category = UITestCategories.Navigation)]
-		[TestCase("SwapFlyoutPage", Category = UITestCategories.FlyoutPage)]
-		[TestCase("SwapTabbedPage", Category = UITestCategories.TabbedPage)]
-		[TestCase("RemoveAddTabs", Category = UITestCategories.TabbedPage)]
+		[Theory]
+		[InlineData("SwapMainPage", Category = UITestCategories.Navigation)]
+		[Theory]
+		[InlineData("SwapFlyoutPage", Category = UITestCategories.FlyoutPage)]
+		[Theory]
+		[InlineData("SwapTabbedPage", Category = UITestCategories.TabbedPage)]
+		[Theory]
+		[InlineData("RemoveAddTabs", Category = UITestCategories.TabbedPage)]
 		public void MakingFragmentRelatedChangesWhileAppIsBackgroundedFails(string scenario)
 		{
 			try

@@ -1,5 +1,5 @@
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		: base(device)
 		{ }
 
-		[Test]
-		[Category(UITestCategories.ScrollView)]
+		[Fact]
+		[Trait("Category", UITestCategories.ScrollView)]
 		public void ScrollViewResizesWhenContentChanges()
 		{
 			var sizeLabel = App.WaitForElement("SizeLabel");
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			addLabelButton.Tap();
 			App.WaitForElement("Label1");
 			var newSize = double.Parse(sizeLabel.GetText()!);
-			ClassicAssert.Greater(newSize, initialSize);
+			Assert.Greater(newSize, initialSize);
 
 			for (int i = 0; i < 12; i++)
 			{
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Verify that the ScrollView is now scrollable
 			App.ScrollDown("TheScrollView");
 			var scrollY = double.Parse(App.WaitForElement("ScrollOffsetLabel").GetText()!);
-			ClassicAssert.Greater(scrollY, 0);
+			Assert.Greater(scrollY, 0);
 		}
 	}
 }

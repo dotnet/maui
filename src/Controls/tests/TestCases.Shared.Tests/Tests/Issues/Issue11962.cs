@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Cannot access a disposed object. Object name: 'WkWebViewRenderer";
 
-		[Test]
-		[Category(UITestCategories.WebView)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.WebView)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void WebViewDisposesProperly()
 		{
 			VerifyInternetConnectivity();

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ public class Issue5749 : _IssuesUITest
 
 	public override string Issue => "Disable horizontal scroll in the custom listview in android";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void DisableScrollingOnCustomHorizontalListView()
 	{
 		App.WaitForElement("Button");

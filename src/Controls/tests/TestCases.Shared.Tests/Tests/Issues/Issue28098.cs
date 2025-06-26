@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,8 +10,8 @@ public class Issue28098 : _IssuesUITest
 	{
 	}
 
-	[Test]
-	[Category(UITestCategories.Picker)]
+	[Fact]
+	[Trait("Category", UITestCategories.Picker)]
 	public void BlankScreenOnNavigationBack()
 	{
 		App.WaitForElement("Button");

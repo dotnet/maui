@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Bugzilla33870 : _IssuesUITest
 
 	public override string Issue => "[W] Crash when the ListView Selection is set to null";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void Bugzilla33870Test()
 	{
 		App.WaitForElement("ListViewAutomatedId");

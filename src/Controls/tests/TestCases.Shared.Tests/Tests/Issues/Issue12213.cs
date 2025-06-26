@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Controls;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,9 +14,9 @@ public class Issue12213 : _IssuesUITest
 
 	public override string Issue => "[Windows] TapGestureRecognizer not working on Entry";
 
-	[Test]
-	[Category(UITestCategories.Entry)]
-	[Category(UITestCategories.Gestures)]
+	[Fact]
+	[Trait("Category", UITestCategories.Entry)]
+	[Trait("Category", UITestCategories.Gestures)]
 	public void TapGestureRecognizerNotWorkingOnEntry()
 	{
 		// The button is placed on a stack layout. Button is tapped but the stack layout itself must NOT be tapped.
@@ -28,6 +28,6 @@ public class Issue12213 : _IssuesUITest
 		App.Tap("Entry");
 		App.WaitForElement("EntryTapped");
 
-		ClassicAssert.Null(App.FindElement("StackLayoutTapped"));
+		Assert.Null(App.FindElement("StackLayoutTapped"));
 	}
 }

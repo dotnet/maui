@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[D9] Editor IsReadOnly works";
 
-		[Test]
-		[Category(UITestCategories.Editor)]
+		[Fact]
+		[Trait("Category", UITestCategories.Editor)]
 		[FailsOnMacWhenRunningOnXamarinUITest("Currently IsKeyboardShown is not implemented.")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Currently IsKeyboardShown is not implemented.")]
 		public void Issue18754Test()
@@ -23,13 +23,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("ReadOnlyEditor");
 
 			// 2. The test fails if the editor displays the input.
-			ClassicAssert.IsFalse(App.IsKeyboardShown());
+			Assert.False(App.IsKeyboardShown());
 
 			// 3. Attempt to edit the text in the editor below.
 			App.Tap("FilledReadOnlyEditor");
 
 			// 4. The test fails if the editor displays the input.
-			ClassicAssert.IsFalse(App.IsKeyboardShown());
+			Assert.False(App.IsKeyboardShown());
 		}
 	}
 }

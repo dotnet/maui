@@ -1,5 +1,5 @@
 ﻿#if IOS || WINDOWS
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,9 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		: base(device)
 		{ }
 
-		[Test]
-		[Category(UITestCategories.Editor)]
-		[Category(UITestCategories.Border)]
+		[Fact]
+		[Trait("Category", UITestCategories.Editor)]
+		[Trait("Category", UITestCategories.Border)]
 		public void EditorScrollingWhenEnclosedInBorder()
 		{
 			App.WaitForElement("editor");

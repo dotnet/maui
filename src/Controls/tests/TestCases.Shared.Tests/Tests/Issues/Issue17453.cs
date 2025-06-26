@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Clear Entry text tapping the clear button not working";
 		protected override bool ResetAfterEachTest => true;
 
-		[Test]
-		[Category(UITestCategories.Entry)]
+		[Fact]
+		[Trait("Category", UITestCategories.Entry)]
 		public void EntryClearButtonWorksEntryDoesntClearWhenNotClickingOnClear()
 		{
 			// https://github.com/dotnet/maui/issues/17453
@@ -35,11 +35,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			rtlEntryText = App.WaitForElement("RtlEntry").GetText();
 
-			ClassicAssert.IsNotEmpty(rtlEntryText);
+			Assert.NotEmpty(rtlEntryText);
 		}
 
-		[Test]
-		[Category(UITestCategories.Entry)]
+		[Fact]
+		[Trait("Category", UITestCategories.Entry)]
 		public void EntryClearButtonWorks()
 		{
 			// https://github.com/dotnet/maui/issues/17453
@@ -63,11 +63,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			rtlEntryText = App.WaitForElement("RtlEntry").GetText();
 
-			ClassicAssert.IsEmpty(rtlEntryText);
+			Assert.Empty(rtlEntryText);
 		}
 
-		[Test]
-		[Category(UITestCategories.Entry)]
+		[Fact]
+		[Trait("Category", UITestCategories.Entry)]
 		public void EntryWithMarginClearButtonWorks()
 		{
 			// https://github.com/dotnet/maui/issues/25225
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			entryText = App.WaitForElement("EntryWithMargin").GetText();
 
-			ClassicAssert.IsEmpty(entryText);
+			Assert.Empty(entryText);
 		}
 	}
 }

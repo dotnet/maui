@@ -1,5 +1,5 @@
 #if IOS
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue28657 : _IssuesUITest
     {
     }
 
-    [Test]
-    [Category(UITestCategories.CollectionView)]
+    [Fact]
+    [Trait("Category", UITestCategories.CollectionView)]
     public void CellLayoutUpdatesCorrectlyAfterDeviceOrientationChanges()
     {
         App.WaitForElement("StubLabel");

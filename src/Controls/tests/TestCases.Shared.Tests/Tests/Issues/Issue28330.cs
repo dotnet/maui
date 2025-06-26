@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ public class Issue28330 : _IssuesUITest
 
 	public override string Issue => "Stepper allows to increment when value equals to maximum";
 
-	[Test]
-	[Category(UITestCategories.Stepper)]
+	[Fact]
+	[Trait("Category", UITestCategories.Stepper)]
 	public void Issue28330StepperIncrementShouldBeDisabled()
 	{
 		App.WaitForElement("Incrementlabel");

@@ -1,5 +1,5 @@
 ﻿#if ANDROID
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,9 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Unable to set ControlTemplate for TemplatedView in Xamarin.Forms version 5.0";
 
-		[Test]
-		[Category(UITestCategories.ViewBaseTests)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.ViewBaseTests)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		public void Issue12484ControlTemplateRendererTest()
 		{

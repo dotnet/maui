@@ -1,7 +1,7 @@
 ﻿#if !WINDOWS
 // https://github.com/dotnet/maui/issues/11320
 // Item spacing on the Windows platform is currently not functioning correctly
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		: base(device)
 		{ }
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void CollectionViewHorizontalItemSpacing()
 		{
 			App.WaitForElement("collectionView");

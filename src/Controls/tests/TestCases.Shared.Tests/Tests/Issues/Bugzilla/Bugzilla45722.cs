@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //The issue with the label count not incrementing correctly may be caused by multiple instances of objects being created, leading to inconsistent label values. 
 //For more information : https://github.com/dotnet/maui/issues/12090
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,10 +18,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Memory leak in Xamarin Forms ListView";
 
-		[Test]
-		[Category(UITestCategories.Label)]
-		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Label)]
+		[Trait("Category", UITestCategories.ListView)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void LabelsInListViewTemplatesShouldBeCollected()
 		{
 			App.WaitForElement(Update);

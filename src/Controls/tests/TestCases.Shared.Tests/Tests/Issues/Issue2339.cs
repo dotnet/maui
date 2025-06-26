@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Picker not shown when .Focus() is called";
 
-		[Test]
-		[Category(UITestCategories.Picker)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Picker)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Focus Behavior is different")]
 		public void FocusAndUnFocusMultipleTimes()
 		{

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // On Windows, sometimes destructor calls requires two or more navigation, due to this test fails randomly. 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,8 +22,8 @@ public class Bugzilla40955 : _IssuesUITest
 
 	public override string Issue => "Memory leak with FormsAppCompatActivity and NavigationPage";
 
-	[Test]
-	[Category(UITestCategories.Performance)]
+	[Fact]
+	[Trait("Category", UITestCategories.Performance)]
 	public void MemoryLeakInFormsAppCompatActivity()
 	{
 		App.WaitForElement(Page1Title);

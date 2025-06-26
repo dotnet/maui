@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,9 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Entry: Position and color of caret";
 
-		[Test]
-		[Category(UITestCategories.Entry)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Entry)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void TestCursorPositionAndSelection()
 		{
 			App.WaitForElement("CursorTextEntry");
@@ -34,8 +34,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// This test is iOS-specific due to platform-specific cursor color setting in the sample.
 		// Note: Visual validation of cursor color is required as automation is challenging
 		// due to cursor blinking, which prevents reliable image comparison.
-		[Test]
-		[Category(UITestCategories.Entry)]
+		[Fact]
+		[Trait("Category", UITestCategories.Entry)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void TestCursorColorOniOS()
 		{

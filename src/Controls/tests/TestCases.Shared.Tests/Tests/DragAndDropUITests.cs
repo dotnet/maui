@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Graphics;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,8 +21,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// https://github.com/dotnet/maui/issues/24914
 #if !MACCATALYST
-		[Test]
-		[Category(UITestCategories.Gestures)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
 		public void DragEvents()
 		{
 			App.WaitForElement("TargetView");
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			if (string.IsNullOrEmpty(textAfterDragStart))
 			{
-				Assert.Fail("Text was expected: Drag start event");
+				throw new InvalidOperationException("Text was expected: Drag start event");
 			}
 			else
 			{
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var textAfterDragOver = App.FindElement("DragOverEventsLabel").GetText();
 			if (string.IsNullOrEmpty(textAfterDragOver))
 			{
-				Assert.Fail("Text was expected: Drag over event");
+				throw new InvalidOperationException("Text was expected: Drag over event");
 			}
 			else
 			{
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var textAfterDragComplete = App.FindElement("DragCompletedEventsLabel").GetText();
 			if (string.IsNullOrEmpty(textAfterDragComplete))
 			{
-				Assert.Fail("Text was expected: Drag complete event");
+				throw new InvalidOperationException("Text was expected: Drag complete event");
 			}
 			else
 			{
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var textAfterDrop = App.FindElement("DropEventsLabel").GetText();
 			if (string.IsNullOrEmpty(textAfterDrop))
 			{
-				Assert.Fail("Text was expected: Drop event");
+				throw new InvalidOperationException("Text was expected: Drop event");
 			}
 			else
 			{
@@ -78,8 +78,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		[Test]
-		[Category(UITestCategories.Gestures)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
 		public void DragAndDropBetweenLayouts()
 		{
 			App.WaitForElement("TargetView");
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			if (string.IsNullOrEmpty(textAfterDragStart))
 			{
-				Assert.Fail("Text was expected: Drag start event");
+				throw new InvalidOperationException("Text was expected: Drag start event");
 			}
 			else
 			{
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var textAfterDragOver = App.FindElement("DragOverEventsLabel").GetText();
 			if (string.IsNullOrEmpty(textAfterDragOver))
 			{
-				Assert.Fail("Text was expected: Drag over event");
+				throw new InvalidOperationException("Text was expected: Drag over event");
 			}
 			else
 			{
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var textAfterDragComplete = App.FindElement("DragCompletedEventsLabel").GetText();
 			if (string.IsNullOrEmpty(textAfterDragComplete))
 			{
-				Assert.Fail("Text was expected: Drag complete event");
+				throw new InvalidOperationException("Text was expected: Drag complete event");
 			}
 			else
 			{
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var rainbowColorText = App.FindElement("RainBowColorsLabel").GetText();
 			if (string.IsNullOrEmpty(rainbowColorText))
 			{
-				Assert.Fail("Text was expected");
+				throw new InvalidOperationException("Text was expected");
 			}
 			else
 			{
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var textAfterDrop = App.FindElement("DropEventsLabel").GetText();
 			if (string.IsNullOrEmpty(textAfterDrop))
 			{
-				Assert.Fail("Text was expected: Drop event");
+				throw new InvalidOperationException("Text was expected: Drop event");
 			}
 			else
 			{
@@ -150,8 +150,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		[Test]
-		[Category(UITestCategories.Gestures)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
 		public void PlatformDragEventArgs()
 		{
 			App.WaitForElement("TargetView");
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			if (string.IsNullOrEmpty(textAfterDragStart))
 			{
-				Assert.Fail("Text was expected: Drag start event");
+				throw new InvalidOperationException("Text was expected: Drag start event");
 			}
 			else
 			{
@@ -196,7 +196,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var textAfterDragOver = App.FindElement("DragOverEventsLabel").GetText();
 			if (string.IsNullOrEmpty(textAfterDragOver))
 			{
-				Assert.Fail("Text was expected: Drag over event");
+				throw new InvalidOperationException("Text was expected: Drag over event");
 			}
 			else
 			{
@@ -222,7 +222,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var textAfterDropComplete = App.FindElement("DropCompletedEventsLabel").GetText();
 			if (string.IsNullOrEmpty(textAfterDropComplete))
 			{
-				Assert.Fail("Text was expected: Drop complete event");
+				throw new InvalidOperationException("Text was expected: Drop complete event");
 			}
 			else
 			{
@@ -250,7 +250,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			if (string.IsNullOrEmpty(textAfterDrop))
 			{
-				Assert.Fail("Text was expected: drop event");
+				throw new InvalidOperationException("Text was expected: drop event");
 			}
 			else
 			{
@@ -274,8 +274,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		[Test]
-		[Category(UITestCategories.Gestures)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
 		public void DragStartEventCoordinates()
 		{
 			App.WaitForElement("TargetView");
@@ -308,8 +308,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(dragStartRelativeToLabel!.Value.Y < 0);
 		}
 
-		[Test]
-		[Category(UITestCategories.Gestures)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
 		public void DragEventCoordinates()
 		{
 			App.WaitForElement("TargetView");
@@ -349,8 +349,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if TEST_FAILS_ON_WINDOWS || TEST_FAILS_ON_MACCATALYST
 		// TODO: Flaky test, disabling for Win and Mac.
-		[Test]
-		[Category(UITestCategories.Gestures)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
 		public void DropEventCoordinates()
 		{
 			App.WaitForElement("TargetView");

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "NullReferenceException in ViewRenderer<TView, TNativeView> (Microsoft.Maui.Controls.Platform.Android)";
 
-		[Test]
-		[Category(UITestCategories.Page)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Page)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void Bugzilla30935DoesntThrowException()
 		{
 			App.WaitForNoElement("IssuePageLabel");

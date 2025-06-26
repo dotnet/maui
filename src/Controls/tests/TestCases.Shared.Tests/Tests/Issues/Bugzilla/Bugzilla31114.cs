@@ -2,7 +2,7 @@
 // DragCoordinates not supported on Catalyst. 
 // On IOS the cells are disapper randomly https://github.com/dotnet/maui/issues/25656, 
 // On Android scroll positions not reseted on Android Issue: https://github.com/dotnet/maui/issues/26661.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +16,8 @@ public class Bugzilla31114 : _IssuesUITest
 
 	public override string Issue => "iOS ContextAction leaves blank line after swiping in ListView";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void Bugzilla31114Test()
 	{
 		for (int i = 0; i < 5; i++)

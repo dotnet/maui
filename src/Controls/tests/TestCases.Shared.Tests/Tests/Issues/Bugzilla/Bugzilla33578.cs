@@ -1,7 +1,7 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID
 // As this test cases ensures the virutal keyboard so it is not applicable for desktop platforms.
 // Need a reliable way to verify the keyboard type in the test. follow ups: https://github.com/dotnet/maui/issues/26968.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ public class Bugzilla33578 : _IssuesUITest
 
 	public override string Issue => "TableView EntryCell shows DefaultKeyboard, but after scrolling down and back a NumericKeyboard";
 
-	[Test]
-	[Category(UITestCategories.TableView)]
+	[Fact]
+	[Trait("Category", UITestCategories.TableView)]
 	public void TableViewEntryCellShowsDefaultKeyboardThenNumericKeyboardAfterScrolling()
 	{
 		WaitForEntryCell("Enter text here 1");
@@ -49,7 +49,6 @@ public class Bugzilla33578 : _IssuesUITest
 		App.WaitForElement(AppiumQuery.ByXPath($"//XCUIElementTypeTextField[@value='{name}']"));
 #endif
 	}
-
 
 	void TapEntryCell(string name)
 	{

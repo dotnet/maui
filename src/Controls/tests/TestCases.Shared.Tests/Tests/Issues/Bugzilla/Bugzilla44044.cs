@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST// This test uses a platform-specific API relevant only to Android. 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +16,8 @@ public class Bugzilla44044 : _IssuesUITest
 
 	public override string Issue => "TabbedPage steals swipe gestures";
 
-	[Test]
-	[Category(UITestCategories.TabbedPage)]
+	[Fact]
+	[Trait("Category", UITestCategories.TabbedPage)]
 	public void Bugzilla44044Test()
 	{
 		App.WaitForElement(_btnToggleSwipe);

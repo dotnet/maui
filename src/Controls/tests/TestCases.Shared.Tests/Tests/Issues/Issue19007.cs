@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ public class Issue19007 : _IssuesUITest
 
 	public override string Issue => "Incomplete Label Display on macOS and IOS When Padding is Applied";
 
-	[Test]
-	[Category(UITestCategories.Label)]
+	[Fact]
+	[Trait("Category", UITestCategories.Label)]
 	public void LabelWithPadding()
 	{
 		App.WaitForElement("Label");

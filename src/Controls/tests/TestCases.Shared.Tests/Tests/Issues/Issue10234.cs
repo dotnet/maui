@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //related issue: https://github.com/dotnet/maui/issues/27843
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Test]
-		[Category(UITestCategories.CarouselView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CarouselView)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void ScrollCarouselViewAfterDispose()
 		{

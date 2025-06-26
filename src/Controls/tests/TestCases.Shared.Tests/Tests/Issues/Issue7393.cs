@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //Test failing on windows for more information see https://github.com/dotnet/maui/issues/18481
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] CollectionView problems and crashes with IsGrouped is true";
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void AddingItemsToGroupedCollectionViewShouldNotCrash()
 		{

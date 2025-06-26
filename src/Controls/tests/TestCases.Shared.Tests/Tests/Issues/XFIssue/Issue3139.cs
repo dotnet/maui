@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue3139 : _IssuesUITest
 
 	public override string Issue => "DisplayActionSheet is hiding behind Dialogs";
 
-	[Test]
-	[Category(UITestCategories.ActionSheet)]
+	[Fact]
+	[Trait("Category", UITestCategories.ActionSheet)]
 	public void Issue3139Test()
 	{
 		App.TapDisplayAlertButton("Yes", buttonIndex: 2);

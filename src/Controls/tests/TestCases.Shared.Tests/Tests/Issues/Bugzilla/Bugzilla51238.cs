@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Transparent Grid causes Java.Lang.IllegalStateException: Unable to create layer for Platform_DefaultRenderer";
 
-		[Test]
-		[Category(UITestCategories.Layout)]
+		[Fact]
+		[Trait("Category", UITestCategories.Layout)]
 		public void Issue1Test()
 		{
 			App.WaitForElement("TapMe");

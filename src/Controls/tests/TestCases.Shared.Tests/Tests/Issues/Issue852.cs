@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Async loading of Content causes UI element to be unclickable";
 
-		[Test]
-		[Category(UITestCategories.Entry)]
+		[Fact]
+		[Trait("Category", UITestCategories.Entry)]
 		public void Issue852TestsEntriesClickable()
 		{
 			App.WaitForElement("WelcomeLabel");

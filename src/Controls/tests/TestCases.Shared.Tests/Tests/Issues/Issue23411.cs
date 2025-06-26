@@ -1,6 +1,6 @@
 ﻿#if IOS //This sample is working in IOS platform only due to the use ofiOS-specific modal presentation style.
-using NUnit.Framework.Legacy;
-using NUnit.Framework;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Test]
-		[Category(UITestCategories.Page)]
+		[Fact]
+		[Trait("Category", UITestCategories.Page)]
 		public void ThemeUnspecifiedDoesNotAffectModalPageSheet()
 		{
 			// Is a iOS issue; see https://github.com/dotnet/maui/issues/23411

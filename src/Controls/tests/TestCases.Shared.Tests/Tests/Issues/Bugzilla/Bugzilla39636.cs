@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Cannot use XamlC with OnPlatform in resources, it throws System.InvalidCastException";
 
-		[Test]
-		[Category(UITestCategories.LifeCycle)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.LifeCycle)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void DoesNotCrash()
 		{
 			App.WaitForElement("Success");

@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ public class Issue3524 : _IssuesUITest
 
 	public override string Issue => "ICommand binding from a TapGestureRecognizer on a Span doesn't work";
 
-	[Test]
-	[Category(UITestCategories.Gestures)]
+	[Fact]
+	[Trait("Category", UITestCategories.Gestures)]
 	public void SpanGestureCommand()
 	{
 		App.WaitForElement(kText);

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST //related issue: https://github.com/dotnet/maui/issues/27206
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Test]
-		[Category(UITestCategories.Shell)]
+		[Fact]
+		[Trait("Category", UITestCategories.Shell)]
 		public void ShellNavigationShouldWorkInMoreTab()
 		{
 			App.WaitForElementTillPageNavigationSettled("Navigate to page 6");

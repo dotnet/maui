@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ShellContent Title doesn't observe changes to bound properties";
 
-		[Test]
-		[Category(UITestCategories.Shell)]
+		[Fact]
+		[Trait("Category", UITestCategories.Shell)]
 		public void ChangeShellContentTitle()
 		{
 			App.WaitForElement("ChangeShellContentTitle");

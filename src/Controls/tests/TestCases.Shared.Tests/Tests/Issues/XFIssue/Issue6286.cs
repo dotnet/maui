@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ internal class Issue6286 : _IssuesUITest
 
 	public override string Issue => "ObjectDisposedException in Android WebView.EvaluateJavascriptAsync";
 
-	[Test]
-	[Category(UITestCategories.WebView)]
+	[Fact]
+	[Trait("Category", UITestCategories.WebView)]
 	public void Issue6286_WebView_Test()
 	{
 		VerifyInternetConnectivity();

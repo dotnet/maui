@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,9 +19,8 @@ public class FlyoutBehaviorShell : _IssuesUITest
 
 	public override string Issue => "Shell Flyout Behavior";
 
-
-	//	[Test]
-	// 	[Category(UITestCategories.Shell)]
+	//	[Fact]
+	// 	[Trait("Category", UITestCategories.Shell)]
 	public void FlyoutTests()
 	{
 		// Flyout is visible
@@ -43,7 +42,6 @@ public class FlyoutBehaviorShell : _IssuesUITest
 		App.WaitForNoElement(FlyoutIconAutomationId, "Flyout Icon Visible after being Disabled");
 		App.ShowFlyout(usingSwipe: true, waitForFlyoutIcon: false);
 		App.WaitForNoElement(FlyoutItem, "Flyout Visible after being Disabled");
-
 
 		// enable flyout and make sure disabling back button behavior doesn't hide icon
 		App.Tap(EnableFlyoutBehavior);
@@ -79,8 +77,8 @@ public class FlyoutBehaviorShell : _IssuesUITest
 
 	}
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void WhenFlyoutIsLockedButtonsAreStillVisible()
 	{
 		// FlyoutLocked ensure that the flyout and buttons are still visible

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Related Issue : https://github.com/dotnet/maui/issues/27959
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ObjectDisposedException When Toggling Header/Footer in CollectionView Dynamically";
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void CollectionViewDynamicHeaderShouldNotCrashOnDisplay()
 		{
 			App.WaitForElement("This Is A Header");

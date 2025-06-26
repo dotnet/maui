@@ -1,12 +1,12 @@
 ﻿#if !ANDROID
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.ScrollView)]
-	[Category(UITestCategories.Compatibility)]
+	[Trait("Category", UITestCategories.ScrollView)]
+	[Trait("Category", UITestCategories.Compatibility)]
 	public class Bugzilla28570UITests : _IssuesUITest
 	{
 		public Bugzilla28570UITests(TestDevice device)
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "https://bugzilla.xamarin.com/show_bug.cgi?id=28570";
 
 		// Bugzilla28570 (src\Compatibility\ControlGallery\src\Issues.Shared\Bugzilla28570.cs)
-		[Test]
+		[Fact]
 		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void Bugzilla28570Test()
 		{

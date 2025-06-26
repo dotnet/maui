@@ -1,6 +1,6 @@
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
 //For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +18,8 @@ public class Bugzilla58875 : _IssuesUITest
 
 	public override string Issue => "Back navigation disables Context Action in whole app, if Context Action left open";
 
-	[Test]
-	[Category(UITestCategories.ContextActions)]
+	[Fact]
+	[Trait("Category", UITestCategories.ContextActions)]
 	public void Bugzilla58875Test()
 	{
 		App.WaitForElement(Button1Id);

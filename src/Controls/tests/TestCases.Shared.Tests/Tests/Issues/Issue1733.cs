@@ -1,8 +1,8 @@
 ﻿#nullable disable
 using System.Drawing;
 using System.Globalization;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -29,9 +29,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string BtnChangeToNoText = "Change to Has No Text";
 		const string BtnChangeSizeOption = "Change the Size Option";
 
-		[Test]
-		[Category(UITestCategories.Editor)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Editor)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		[FailsOnAndroid]
 		[FailsOnIOSWhenRunningOnXamarinUITest]
 		[FailsOnMacWhenRunningOnXamarinUITest]
@@ -65,8 +65,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			foreach (var editor in editors)
 			{
 				var allTheSame = GetDimensions(editor);
-				ClassicAssert.AreEqual(allTheSame.Width, _results[editor].Width, editor);
-				ClassicAssert.AreEqual(allTheSame.Height, _results[editor].Height, editor);
+				Assert.Equal(allTheSame.Width, _results[editor].Width, editor);
+				Assert.Equal(allTheSame.Height, _results[editor].Height, editor);
 			}
 
 			// This sets it back to not auto size and we click everything again to see if it grows
@@ -78,35 +78,35 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			foreach (var editor in editors)
 			{
 				var allTheSame = GetDimensions(editor);
-				ClassicAssert.AreEqual(allTheSame.Width, _results[editor].Width, editor);
-				ClassicAssert.AreEqual(allTheSame.Height, _results[editor].Height, editor);
+				Assert.Equal(allTheSame.Width, _results[editor].Width, editor);
+				Assert.Equal(allTheSame.Height, _results[editor].Height, editor);
 			}
 		}
 
 		void TestGrowth(bool heightPressureShrink)
 		{
 			var testSizes = GetDimensions(EditorHeightShrinkWithPressureId);
-			ClassicAssert.AreEqual(testSizes.Width, _results[EditorHeightShrinkWithPressureId].Width, EditorHeightShrinkWithPressureId);
+			Assert.Equal(testSizes.Width, _results[EditorHeightShrinkWithPressureId].Width, EditorHeightShrinkWithPressureId);
 
 			if (heightPressureShrink)
-				ClassicAssert.Less(testSizes.Height, _results[EditorHeightShrinkWithPressureId].Height, EditorHeightShrinkWithPressureId);
+				Assert.Less(testSizes.Height, _results[EditorHeightShrinkWithPressureId].Height, EditorHeightShrinkWithPressureId);
 			else
-				ClassicAssert.Greater(testSizes.Height, _results[EditorHeightShrinkWithPressureId].Height, EditorHeightShrinkWithPressureId);
+				Assert.Greater(testSizes.Height, _results[EditorHeightShrinkWithPressureId].Height, EditorHeightShrinkWithPressureId);
 
 			testSizes = GetDimensions(EditorHeightGrowId);
-			ClassicAssert.AreEqual(testSizes.Width, _results[EditorHeightGrowId].Width, EditorHeightGrowId);
-			ClassicAssert.Greater(testSizes.Height, _results[EditorHeightGrowId].Height, EditorHeightGrowId);
+			Assert.Equal(testSizes.Width, _results[EditorHeightGrowId].Width, EditorHeightGrowId);
+			Assert.Greater(testSizes.Height, _results[EditorHeightGrowId].Height, EditorHeightGrowId);
 
 			var grow1 = GetDimensions(EditorWidthGrow1Id);
-			ClassicAssert.Greater(grow1.Width, _results[EditorWidthGrow1Id].Width, EditorWidthGrow1Id);
-			ClassicAssert.Greater(grow1.Height, _results[EditorWidthGrow1Id].Height, EditorWidthGrow1Id);
+			Assert.Greater(grow1.Width, _results[EditorWidthGrow1Id].Width, EditorWidthGrow1Id);
+			Assert.Greater(grow1.Height, _results[EditorWidthGrow1Id].Height, EditorWidthGrow1Id);
 
 			var grow2 = GetDimensions(EditorWidthGrow2Id);
-			ClassicAssert.Greater(grow2.Width, _results[EditorWidthGrow2Id].Width, EditorWidthGrow2Id);
-			ClassicAssert.Greater(grow2.Height, _results[EditorWidthGrow2Id].Height, EditorWidthGrow2Id);
+			Assert.Greater(grow2.Width, _results[EditorWidthGrow2Id].Width, EditorWidthGrow2Id);
+			Assert.Greater(grow2.Height, _results[EditorWidthGrow2Id].Height, EditorWidthGrow2Id);
 
 			// Grow 1 has a lower minimum width request so it's width should be smaller than grow 2
-			ClassicAssert.Greater(grow2.Width, grow1.Width, "grow2.Width > grow1.Width");
+			Assert.Greater(grow2.Width, grow1.Width, "grow2.Width > grow1.Width");
 		}
 
 		Size GetDimensions(string editorName)

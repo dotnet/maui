@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // For more information, see : https://github.com/dotnet/maui/issues/27638
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,9 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "SwipeView crash if Text not is set on SwipeItem";
 
-		[Test]
-		[Category(UITestCategories.SwipeView)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.SwipeView)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void SwipeItemNoTextWindows()
 		{
 			App.WaitForElement(SwipeViewId);

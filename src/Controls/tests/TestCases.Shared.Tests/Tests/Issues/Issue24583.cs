@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ public class Issue24583 : _IssuesUITest
 	{
 	}
 
-	[Test]
-	[Category(UITestCategories.Editor)]
+	[Fact]
+	[Trait("Category", UITestCategories.Editor)]
 	public void TextInEditorShouldBeCorrectlyPositionedAfterResizing()
 	{
 		App.WaitForElement("button");

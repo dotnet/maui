@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Bugzilla25662 : _IssuesUITest
 
 	public override string Issue => "Setting IsEnabled does not disable SwitchCell";
 
-	[Test]
-	[Category(UITestCategories.Cells)]
+	[Fact]
+	[Trait("Category", UITestCategories.Cells)]
 	public void Bugzilla25662Test()
 	{
 		App.WaitForElement("One");

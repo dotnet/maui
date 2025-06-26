@@ -1,5 +1,5 @@
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CarouselView reverts to displaying first item in collection when collection modified";
 
-		[Test]
-		[Category(UITestCategories.CarouselView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CarouselView)]
 		public void Issue25991Test()
 		{
 			App.WaitForElement("WaitForStubControl");
@@ -31,7 +31,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.Click("KeepItemsInViewButton");
 			App.Click(AddItemButton);
-
 
 			App.WaitForElement("Issue25991Item1");
 

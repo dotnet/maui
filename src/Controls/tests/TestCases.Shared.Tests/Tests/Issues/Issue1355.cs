@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,9 +13,9 @@ public class Issue1355 : _IssuesUITest
 
 	public override string Issue => "Setting Main Page in quick succession causes crash on Android";
 
-	[Test]
-	[Category(UITestCategories.LifeCycle)]
-	[Category(UITestCategories.Compatibility)]
+	[Fact]
+	[Trait("Category", UITestCategories.LifeCycle)]
+	[Trait("Category", UITestCategories.Compatibility)]
 	public void SwitchMainPageOnAppearing()
 	{
 		// Without the fix, this would crash. If we're here at all, the test passed.

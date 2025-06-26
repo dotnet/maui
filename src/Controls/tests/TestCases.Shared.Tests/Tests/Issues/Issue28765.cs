@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,14 +12,14 @@ public class Issue28765 : _IssuesUITest
 	}
 
 	[Test, Order(1)]
-	[Category(UITestCategories.CollectionView)]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void EmptyViewStringWithHeaderAndFooterAsView()
 	{
 		App.WaitForElement("Footer View");
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.CollectionView)]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void EmptyViewStringWithHeaderAndFooterString()
 	{
 		App.WaitForElement("Footer String");

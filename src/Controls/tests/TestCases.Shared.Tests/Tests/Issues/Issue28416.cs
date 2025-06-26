@@ -1,11 +1,11 @@
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // "DropCompletedResult" does not appear on Windows. Issues: https://github.com/dotnet/maui/issues/28448 and https://github.com/dotnet/maui/issues/17554
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.DragAndDrop)]
+[Trait("Category", UITestCategories.DragAndDrop)]
 public class Issue28416 : _IssuesUITest
 {
 	public Issue28416(TestDevice testDevice) : base(testDevice)
@@ -16,7 +16,7 @@ public class Issue28416 : _IssuesUITest
 
 	public override string Issue => "Crash in drag-n-drop with dragged element destroyed before drop is completed";
 
-	[Test]
+	[Fact]
 	public void DragAndDropWithAnElementThatIsRemoved()
 	{
 		App.WaitForElement("InstructionsLabel");

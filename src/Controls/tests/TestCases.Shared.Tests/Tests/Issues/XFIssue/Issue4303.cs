@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // Test ignored on Windows due to rendering issues. The documentation specifies that TabbedPage should contain NavigationPage or ContentPage, but this sample uses nested TabbedPages. Getting System.InvalidOperationException: 'Collection was modified; enumeration operation may not execute.' exception.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue4303 : _IssuesUITest
 
 	public override string Issue => "[Android] TabbedPage's child is appearing before it should be";
 
-	[Test]
-	[Category(UITestCategories.LifeCycle)]
+	[Fact]
+	[Trait("Category", UITestCategories.LifeCycle)]
 	public void Issue4303Test()
 	{
 		Assert.That(App.WaitForElement("lblAssert").GetText(), Is.EqualTo("Success"));

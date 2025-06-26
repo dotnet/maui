@@ -1,6 +1,6 @@
 #if TEST_FAILS_ON_ANDROID
 // https://github.com/dotnet/maui/issues/28676
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +15,7 @@ public class Issue28509 : _IssuesUITest
 	}
 
 	[Test, Order(1)]
-	[Category(UITestCategories.CollectionView)]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void UpdateGroupHeaderAndFooterDynamically()
 	{
 		App.WaitForElement("GroupHeaderFooterButton");
@@ -29,7 +29,7 @@ public class Issue28509 : _IssuesUITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.CollectionView)]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void UpdateHeaderFooterTemplateDynamically()
 	{
 		App.WaitForElement("ItemsViewTemplatedHeaderFooterButton");
@@ -43,7 +43,7 @@ public class Issue28509 : _IssuesUITest
 	}
 
 	[Test, Order(3)]
-	[Category(UITestCategories.CollectionView)]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void UpdateHeaderFooterDynamically()
 	{
 		App.WaitForElement("ItemsViewHeaderFooterButton");

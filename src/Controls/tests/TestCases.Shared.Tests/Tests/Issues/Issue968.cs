@@ -1,5 +1,5 @@
 ﻿#if IOS || ANDROID //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms iOS and Android.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,10 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string StackLabel = "You should see me after rotating";
 		public override string Issue => "StackLayout does not relayout on device rotation";
 
-		[Test]
-		[Description("Verify the layout lays out on rotations")]
-		[Category(UITestCategories.Layout)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Layout)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		[FailsOnMacWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 		public void Issue968TestsRotationRelayoutIssue()

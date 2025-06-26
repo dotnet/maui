@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.Shell)]
+[Trait("Category", UITestCategories.Shell)]
 public class ShellTitleView : _IssuesUITest
 {
 	public ShellTitleView(TestDevice testDevice) : base(testDevice)
@@ -25,7 +25,7 @@ public class ShellTitleView : _IssuesUITest
 
 	public override string Issue => "Shell Title View Tests";
 
-	[Test]
+	[Fact]
 	public void TitleWidthMeasuresCorrectly_13949()
 	{
 		App.TapInShellFlyout("Width Measure (13949)");
@@ -34,7 +34,7 @@ public class ShellTitleView : _IssuesUITest
 		App.WaitForElement("B2");
 	}
 
-	[Test]
+	[Fact]
 	public void TitleWidthWithToolBarItemMeasuresCorrectly_13949()
 	{
 		App.TapInShellFlyout("Width Measure and ToolBarItem (13949)");
@@ -43,7 +43,7 @@ public class ShellTitleView : _IssuesUITest
 		App.WaitForElement("B2");
 	}
 
-	[Test]
+	[Fact]
 	public void TitleViewPositionsCorrectly()
 	{
 		var titleView = App.WaitForElement(TitleViewId).GetRect();
@@ -53,7 +53,7 @@ public class ShellTitleView : _IssuesUITest
 		Assert.That(topTabTop, Is.GreaterThanOrEqualTo(titleViewBottom), "Title View is incorrectly positioned behind tabs");
 	}
 
-	[Test]
+	[Fact]
 	public void NoDuplicateTitleViews()
 	{
 		App.WaitForElement(TitleViewId);

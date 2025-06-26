@@ -1,25 +1,17 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using ImageMagick;
-using NUnit.Framework;
-using NUnit.Framework.Constraints;
+using Xunit;
+using Xunit.Abstractions;
 using UITest.Appium;
-using UITest.Appium.NUnit;
+using UITest.Appium.Xunit;
 using UITest.Core;
 using VisualTestUtils;
 using VisualTestUtils.MagickNet;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-#if ANDROID
-	[TestFixture(TestDevice.Android)]
-#elif IOSUITEST
-		[TestFixture(TestDevice.iOS)]
-#elif MACUITEST
-		[TestFixture(TestDevice.Mac)]
-#elif WINTEST
-		[TestFixture(TestDevice.Windows)]
-#endif
+	[Collection("UITestCollection")]
 	public abstract class UITest : UITestBase
 	{
 		protected const int SetupMaxRetries = 1;
@@ -27,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		readonly IImageEditorFactory _imageEditorFactory;
 		readonly VisualTestContext _visualTestContext;
 
-		protected UITest(TestDevice testDevice) : base(testDevice)
+		protected UITest(TestDevice testDevice, ITestOutputHelper? testOutput = null) : base(testDevice, testOutput)
 		{
 			string? ciArtifactsDirectory = Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY");
 			if (ciArtifactsDirectory != null)
@@ -231,7 +223,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 						if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
 						{
-							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
+							throw new InvalidOperationException($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}
 						break;
 
@@ -255,7 +247,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						}
 						else
 						{
-							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
+							throw new InvalidOperationException($"iOS visual tests should be run on iPhone Xs (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
 						}
 						break;
 
@@ -271,7 +263,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						throw new NotImplementedException($"Unknown device type {_testDevice}");
 				}
 
-				name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+				name ??= GetCurrentTestName() ?? GetCurrentTestName();
 
 				// Currently Android is the OS with the ripple animations, but Windows may also have some animations
 				// that need to finish before taking a screenshot.

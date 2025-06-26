@@ -1,5 +1,5 @@
 ﻿#if !MACCATALYST
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,9 +13,9 @@ public class Bugzilla40858 : _IssuesUITest
 
 	public override string Issue => "Long clicking a text entry in a ListView header/footer cause a crash";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
-	[Category(UITestCategories.Compatibility)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
+	[Trait("Category", UITestCategories.Compatibility)]
 	public void ListViewDoesNotCrashOnTextEntryHeaderOrFooterLongClick()
 	{
 		App.TouchAndHold("Header");

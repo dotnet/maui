@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS     //BoxView automation ID isn't working on the Windows platform, causing a TimeoutException.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] Calling PopAsync via TapGestureRecognizer causes an application crash";
 
-		[Test]
-		[Category(UITestCategories.Gestures)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
 		public void Bugzilla59097Test()
 		{
 			App.WaitForElement("boxView");

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "BoxView corner radius";
 
-		[Test]
-		[Category(UITestCategories.BoxView)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.BoxView)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void Issue3884Test()
 		{
 			App.WaitForElement("You should see a blue circle");

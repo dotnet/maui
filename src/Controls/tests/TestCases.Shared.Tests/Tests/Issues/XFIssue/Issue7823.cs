@@ -1,7 +1,7 @@
 ﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 // On iOS and Catalyst BoxView is not rendered, issue: https://github.com/dotnet/maui/issues/18746, 
 // On Windows Clip is not properly working, issue: https://github.com/dotnet/maui/issues/14078
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ public class Issue7823_XF : _IssuesUITest
 
 	public override string Issue => "[Bug] Frame corner radius.";
 
-	[Test]
-	[Category(UITestCategories.Frame)]
+	[Fact]
+	[Trait("Category", UITestCategories.Frame)]
 	public void Issue7823TestIsClippedIssue()
 	{
 		App.WaitForElement("Frame Corner Radius");

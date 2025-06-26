@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //DoubleTap not performing by appium, using DoubleClick also not working for windows getting "OpenQA.Selenium.WebDriverException : Currently only pen and touch pointer input source types are supported" exception. But in manual testing more tap closes the flyout. 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue9440 : _IssuesUITest
 
 	public override string Issue => "Flyout closes with two or more taps";
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void GitHubIssue9440()
 	{
 		App.TapShellFlyoutIcon();

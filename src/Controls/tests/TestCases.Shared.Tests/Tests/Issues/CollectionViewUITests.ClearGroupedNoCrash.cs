@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,9 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Clearing Grouped CollectionView crashes application";
 
 		// ClearingGroupedCollectionViewShouldNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue8899.cs)
-		[Test]
-		[Description("Clearing CollectionView IsGrouped=\"True\" no crashes application")]
-		[Category(UITestCategories.CollectionView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CollectionView)]
 		public void ClearingGroupedNoCrash()
 		{
 			App.WaitForElement(Go);

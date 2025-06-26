@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,16 +12,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		: base(device)
 		{ }
 
-		[Test]
-		[Category(UITestCategories.Shell), Order(1)]
+		[Fact]
+		[Trait("Category", UITestCategories.Shell), Order(1)]
 		public void VerifyHamburgerIcon()
 		{
 			App.WaitForElement("Tab1Page");
 			VerifyScreenshot();
 		}
 
-		[Test]
-		[Category(UITestCategories.Shell), Order(2)]
+		[Fact]
+		[Trait("Category", UITestCategories.Shell), Order(2)]
 		public void VerifyFlyoutBackgroundColor()
 		{
 			App.WaitForElement("Tab1Page");

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // The transparent background color is not working on Windows, refer to https://github.com/microsoft/microsoft-ui-xaml/issues/6527
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ public class Issue28714 : _IssuesUITest
 	{ }
 
 	[Test, Order(1)]
-	[Category(UITestCategories.WebView)]
+	[Trait("Category", UITestCategories.WebView)]
 	public void VerifyWebViewBackgroundColor()
 	{
 		App.WaitForElement("button");
@@ -21,7 +21,7 @@ public class Issue28714 : _IssuesUITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.WebView)]
+	[Trait("Category", UITestCategories.WebView)]
 	public void VerifyWebViewDynamicBackgroundColor()
 	{
 		App.WaitForElement("button");

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //NullReferenceException throws on iOS and mac Issue link - https://github.com/dotnet/maui/issues/19642
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,16 +12,16 @@ public class Issue16767_Resize : _IssuesUITest
 
 	public override string Issue => "Resize function in W2DImage class";
 
-	[Test]
-	[Category(UITestCategories.GraphicsView)]
+	[Fact]
+	[Trait("Category", UITestCategories.GraphicsView)]
 	public void ImagePaintWithResizeModeFit()
 	{
 		App.WaitForElement("ResizeModeFit");
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.GraphicsView)]
+	[Fact]
+	[Trait("Category", UITestCategories.GraphicsView)]
 	public void ImagePaintWithResizeModeBleed()
 	{
 		App.WaitForElement("ResizeModeBleed");
@@ -29,8 +29,8 @@ public class Issue16767_Resize : _IssuesUITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.GraphicsView)]
+	[Fact]
+	[Trait("Category", UITestCategories.GraphicsView)]
 	public void ImagePaintWithResizeModeStretch()
 	{
 		App.WaitForElement("ResizeModeStretch");

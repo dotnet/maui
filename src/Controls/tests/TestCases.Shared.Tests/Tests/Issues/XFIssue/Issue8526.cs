@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue8526 : _IssuesUITest
 
 	public override string Issue => "[Bug] DisplayPromptAsync hangs app, doesn't display when called in page load";
 
-	//[Test]
-	//[Category(UITestCategories.DisplayPrompt)]
+	//[Fact]
+	//[Trait("Category", UITestCategories.DisplayPrompt)]
 	//[FailsOnIOS]
 	//public void DisplayPromptShouldWorkInPageLoad()
 	//{

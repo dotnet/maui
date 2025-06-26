@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //Pending Navigations still processing exception when navigating to the page on windows. Issue Link: https://github.com/dotnet/maui/issues/17608
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,8 +23,8 @@ public class Issue10608 : _IssuesUITest
 
 	public override string Issue => "[Bug] [Shell] [iOS] Locked flyout causes application to freezes when quickly switching between tabs";
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void ShellWithTopTabsFreezesWhenNavigatingFlyoutItems()
 	{
 		App.WaitForElement(FlyoutItem6);

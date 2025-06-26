@@ -1,7 +1,7 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
 // Orientation nott supported in MacCatalyt and Windows. 
 // on iOS detail page elements are not accessible through appium when flyout is open. Issue: https://github.com/dotnet/maui/issues/16245
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ public class Issue7556 : _IssuesUITest
 
 	public override string Issue => "[iOS] Masterbehavior.popover not being observed on iOS 13";
 
-	[Test]
-	[Category(UITestCategories.FlyoutPage)]
+	[Fact]
+	[Trait("Category", UITestCategories.FlyoutPage)]
 	public void MasterStillVisibleAfterPushingAndPoppingModalPage()
 	{
 		App.SetOrientationLandscape();
@@ -30,8 +30,8 @@ public class Issue7556 : _IssuesUITest
 		App.WaitForElement("Flyout Visible");
 	}
 
-	[Test]
-	[Category(UITestCategories.FlyoutPage)]
+	[Fact]
+	[Trait("Category", UITestCategories.FlyoutPage)]
 	public void SplitOnLandscapeFailsToDetectClose()
 	{
 		while (App.WaitForElement("CurrentMasterBehavior").ReadText() != Microsoft.Maui.Controls.FlyoutLayoutBehavior.SplitOnLandscape.ToString())
@@ -65,7 +65,6 @@ public class Issue7556 : _IssuesUITest
 		App.WaitForElement("Flyout Visible");
 	}
 
-	[TearDown]
 	public void TearDown()
 	{
 		App.SetOrientationPortrait();

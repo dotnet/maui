@@ -1,5 +1,5 @@
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,16 +11,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Soft Input Extension Methods";
 
-		[Test]
-		[Category(UITestCategories.Entry)]
+		[Fact]
+		[Trait("Category", UITestCategories.Entry)]
 		public void SoftInputExtensionsPageTest()
 		{
 			// Make sure the buttons appear on the screen.
 			Task.Delay(1000).Wait();
 			App.Tap("ShowKeyboard");
-			ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement("Result", "True"));
+			Assert.True(App.WaitForTextToBePresentInElement("Result", "True"));
 			App.Tap("HideKeyboard");
-			ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement("Result", "False"));
+			Assert.True(App.WaitForTextToBePresentInElement("Result", "False"));
 		}
 	}
 }

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //For more information, see : https://github.com/dotnet/maui/issues/27899
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,10 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ViewCell.ItemTapped only fires once for ListView.SelectedItem";
 
-		[Test]
-		[Description("Verify that OnTapped is fired every time a ViewCell is tapped")]
-		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.ListView)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void Issue935TestsMultipleOnTappedViewCell()
 		{
 			App.WaitForElement("TestLabel");

@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue19500 : _IssuesUITest
 	{
 	}
 
-	[Test]
-	[Category(UITestCategories.Editor)]
+	[Fact]
+	[Trait("Category", UITestCategories.Editor)]
 	public void TextInEditorShouldScroll()
 	{
 		var yPosLabel = App.WaitForElement(yPositionLabel);

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // The test fails on Windows because the ListView text is not visible, Issue: https://github.com/dotnet/maui/issues/26488
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue1763 : _IssuesUITest
 
 	public override string Issue => "First item of grouped ListView not firing ItemTapped";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void TestIssue1763ItemTappedFiring()
 	{
 		App.WaitForElement("Egor1");

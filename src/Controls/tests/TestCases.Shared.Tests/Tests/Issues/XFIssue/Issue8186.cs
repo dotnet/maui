@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue8186 : _IssuesUITest
 
 	public override string Issue => "[UWP] Setting IsRefreshing from OnAppearing on RefreshView crashes UWP";
 
-	[Test]
-	[Category(UITestCategories.RefreshView)]
+	[Fact]
+	[Trait("Category", UITestCategories.RefreshView)]
 	public void SetIsRefreshingToTrueInOnAppearingDoesntCrash()
 	{
 		App.WaitForElement("PushPage");

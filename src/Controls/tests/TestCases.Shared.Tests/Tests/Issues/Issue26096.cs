@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "The TabbedPage selection indicator is not updated properly when reloading the TabbedPage with a new instance";
 
-		[Test]
-		[Category(UITestCategories.TabbedPage)]
+		[Fact]
+		[Trait("Category", UITestCategories.TabbedPage)]
 		public void UpdatedSelectionIndicatorProperly()
 		{
 			App.WaitForElement("OpenTabbedPage");

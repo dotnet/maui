@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,9 +19,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "DataTemplate System.InvalidCastException crash in 2.3.1-pre1";
 
-		[Test]
-		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.ListView)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void Bugzilla42277Test()
 		{
 			App.WaitForElement(Success1);

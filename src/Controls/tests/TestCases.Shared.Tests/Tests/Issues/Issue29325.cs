@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,8 +10,8 @@ public class Issue29325 : _IssuesUITest
 
 	public override string Issue => "Button Shadow Color Transparency Not Applied Correctly";
 
-	[Test]
-	[Category(UITestCategories.Button)]
+	[Fact]
+	[Trait("Category", UITestCategories.Button)]
 	public void ShouldUpdateButtonShadowWithTransparentColor()
 	{
 		App.WaitForElement("withoutAlphaOpacityButton");

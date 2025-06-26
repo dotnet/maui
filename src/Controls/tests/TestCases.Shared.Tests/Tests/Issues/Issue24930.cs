@@ -1,5 +1,5 @@
 #if ANDROID // This test is only for Android, Since the edit text is base view for Picker in Android
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues
@@ -19,8 +19,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			29,30,31,32
 		};
 
-		[Test]
-		[Category(UITestCategories.Picker)]
+		[Fact]
+		[Trait("Category", UITestCategories.Picker)]
 		public void PickerShouldNotAllowUserInputThroughKeyboard()
 		{
 			App.WaitForElement(PickerId);

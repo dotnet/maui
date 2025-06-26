@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Bugzilla33612 : _IssuesUITest
 
 	public override string Issue => "(A) Removing a page from the navigation stack causes an 'Object reference' exception in Android only";
 
-	[Test]
-	[Category(UITestCategories.Navigation)]
+	[Fact]
+	[Trait("Category", UITestCategories.Navigation)]
 	public void Issue33612RemovePagesWithoutRenderers()
 	{
 		App.WaitForElement("Go To Page 2");

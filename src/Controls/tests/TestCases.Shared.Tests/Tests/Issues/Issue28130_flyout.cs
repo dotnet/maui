@@ -1,5 +1,5 @@
 ﻿#if WINDOWS
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Windows] Flyout Menu Icon disappears from Window Title Bar after Navigation";
 
-		[Test]
-		[Category(UITestCategories.FlyoutPage)]
+		[Fact]
+		[Trait("Category", UITestCategories.FlyoutPage)]
 		public void FlyoutMenuShouldNotDisappearAfterNavigation_FlyoutPage()
 		{
 			App.WaitForElement("detailLabel");

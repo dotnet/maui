@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Interactions;
@@ -79,12 +79,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			if (!app.IsKeyboardShown())
 				return false;
 
-			ClassicAssert.NotNull(views);
+			Assert.NotNull(views);
 			var rect = views.GetRect();
 
 			var testApp = app as AppiumApp;
 			var keyboardPositionNullable = FindiOSKeyboardLocation(testApp?.Driver);
-			ClassicAssert.NotNull(keyboardPositionNullable);
+			Assert.NotNull(keyboardPositionNullable);
 
 			var keyboardPosition = (System.Drawing.Point)keyboardPositionNullable!;
 			if (isEditor)
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				keyboardPosition.Y -= defaultSizeAccessoryView;
 
 			}
-			ClassicAssert.Less(rect.CenterY(), keyboardPosition.Y);
+			Assert.Less(rect.CenterY(), keyboardPosition.Y);
 
 			return true;
 		}

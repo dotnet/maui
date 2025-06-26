@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "The checkbox's checked state color does not update when the IsEnabled property is changed dynamically";
 
-		[Test]
-		[Category(UITestCategories.CheckBox)]
+		[Fact]
+		[Trait("Category", UITestCategories.CheckBox)]
 		public void UpdatedIsEnabledProperty()
 		{
 			App.WaitForElement("Label");

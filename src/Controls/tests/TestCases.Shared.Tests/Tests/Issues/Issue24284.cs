@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,14 +11,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "FlyoutHeaderAdaptsToMinimumHeight";
 
-		[Test]
-		[Category(UITestCategories.Shell)]
+		[Fact]
+		[Trait("Category", UITestCategories.Shell)]
 		public void FlyoutHeaderAdaptsToMinimumHeight()
 		{
 			var heightReferenceLabel = App.WaitForElement("HeightReferenceLabel").GetRect();
 			var headerLabel = App.WaitForElement("HeaderLabel").GetRect();
 
-			ClassicAssert.True(Math.Abs(headerLabel.Height - heightReferenceLabel.Height) < 0.2);
+			Assert.True(Math.Abs(headerLabel.Height - heightReferenceLabel.Height) < 0.2);
 		}
 	}
 }

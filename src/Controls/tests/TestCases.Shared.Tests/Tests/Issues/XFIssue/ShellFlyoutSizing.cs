@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -31,7 +31,7 @@ public class ShellFlyoutSizing : _IssuesUITest
 #endif
 
 	[Test, Order(1)]
-	[Category(UITestCategories.Shell)]
+	[Trait("Category", UITestCategories.Shell)]
 	public void FlyoutHeightAndWidthResetsBackToOriginalSize()
 	{
 		App.WaitForElement("PageLoaded");
@@ -47,7 +47,7 @@ public class ShellFlyoutSizing : _IssuesUITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.Shell)]
+	[Trait("Category", UITestCategories.Shell)]
 	public void FlyoutHeightAndWidthIncreaseAndDecreaseCorrectly()
 	{
 		App.WaitForElement(ChangeFlyoutSizes);

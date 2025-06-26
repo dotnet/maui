@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView)]
+[Trait("Category", UITestCategories.CollectionView)]
 public class ScrollToGroup : _IssuesUITest
 {
 	public ScrollToGroup(TestDevice testDevice) : base(testDevice)

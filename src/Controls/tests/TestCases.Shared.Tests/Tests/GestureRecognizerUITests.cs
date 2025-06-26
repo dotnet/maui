@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(GestureRecognizerGallery);
 		}
 
-		[Test]
-		[Category(UITestCategories.Gestures)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
 		public void PointerGestureTest()
 		{
 			App.WaitForElement("TargetView");
@@ -35,8 +35,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(secondaryLabelText, Is.Not.Null);
 		}
 
-		[Test]
-		[Category(UITestCategories.Gestures)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
 		public void DoubleTap()
 		{
 			App.WaitForElement("TargetView");
@@ -47,11 +47,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.DoubleTap("DoubleTapSurface");
 
 			var result = App.FindElement("DoubleTapResults").GetText();
-			ClassicAssert.AreEqual("Success", result);
+			Assert.Equal("Success", result);
 		}
 
-		[Test]
-		[Category(UITestCategories.Gestures)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
 		public void SingleTap()
 		{
 			App.WaitForElement("TargetView");
@@ -62,11 +62,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("SingleTapSurface");
 
 			var result = App.FindElement("SingleTapGestureResults").GetText();
-			ClassicAssert.AreEqual("Success", result);
+			Assert.Equal("Success", result);
 		}
 
-		[Test]
-		[Category(UITestCategories.Gestures)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
 		public void DisabledSingleTap()
 		{
 			App.WaitForElement("TargetView");
@@ -77,11 +77,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("DisabledTapSurface");
 
 			var result = App.FindElement("DisabledTapGestureResults").GetText();
-			ClassicAssert.AreNotEqual("Failed", result);
+			Assert.NotEqual("Failed", result);
 		}
 
-		[Test]
-		[Category(UITestCategories.Gestures)]
+		[Fact]
+		[Trait("Category", UITestCategories.Gestures)]
 		public void DynamicallyAddedTapGesturesDontCauseMultipleTapEvents()
 		{
 			App.WaitForElement("TargetView");
@@ -97,11 +97,11 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			if (int.TryParse(result, out var resultInt))
 			{
-				ClassicAssert.AreEqual(3, resultInt);
+				Assert.Equal(3, resultInt);
 			}
 			else
 			{
-				ClassicAssert.Fail("Failed to parse result as int");
+				throw new InvalidOperationException("Failed to parse result as int");
 			}
 		}
 	}

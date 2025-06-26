@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.Shell)]
+[Trait("Category", UITestCategories.Shell)]
 public class HeaderFooterShellFlyout : _IssuesUITest
 {
 
@@ -27,7 +27,7 @@ public class HeaderFooterShellFlyout : _IssuesUITest
 	public override string Issue => "Shell Flyout Header Footer";
 
 #if IOS
-    [Test]
+    [Fact]
     public void FlyoutHeaderWithZeroMarginShouldHaveNoY()
     {
         App.Tap("ZeroMarginHeader");
@@ -36,7 +36,7 @@ public class HeaderFooterShellFlyout : _IssuesUITest
     }
 #endif
 
-	[Test]
+	[Fact]
 	public void AFlyoutTests()
 	{
 		App.WaitForElement("PageLoaded");

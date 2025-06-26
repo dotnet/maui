@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue28536 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[Test]
-	[Category(UITestCategories.Picker)]
+	[Fact]
+	[Trait("Category", UITestCategories.Picker)]
 	public void CheckNavigationBreaksVisualStatesForPicker()
 	{
 		App.WaitForElement("VisualStatePicker");

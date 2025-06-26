@@ -1,5 +1,5 @@
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS   //More information - https://github.com/dotnet/maui/issues/27494
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[iOS] Fix ShellContent Title Does Not Update at Runtime";
 
 		[Test, Order(1)]
-		[Category(UITestCategories.Shell)]
+		[Trait("Category", UITestCategories.Shell)]
 		public void VerifyFirstShellContentTitle()
 		{
 			App.WaitForElement("ChangeShellContentTitle");
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test, Order(2)]
-		[Category(UITestCategories.Shell)]
+		[Trait("Category", UITestCategories.Shell)]
 		public void VerifyNewlyAddedShellContentTitle()
 		{
 			App.WaitForElement("AddShellContent");
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test, Order(3)]
-		[Category(UITestCategories.Shell)]
+		[Trait("Category", UITestCategories.Shell)]
 		public void VerifyExistingTabTitle()
 		{
 			App.WaitForElement("RemoveShellContent");

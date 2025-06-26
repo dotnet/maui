@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_ANDROID // IsPresented value is not reflected when change this on list view item tapped in flyout. Issue: https://github.com/dotnet/maui/issues/26324
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,9 +15,8 @@ public class Issue973 : _IssuesUITest
 
 	public override string Issue => "ActionBar doesn't immediately update when nested TabbedPage is changed";
 
-	[Test]
-	[Category(UITestCategories.TabbedPage)]
-	[Description("Test tab reset when swapping out detail")]
+	[Fact]
+	[Trait("Category", UITestCategories.TabbedPage)]
 	public void Issue973TestsTabResetAfterDetailSwap()
 	{
 		App.WaitForElement("Initial Page Left aligned");

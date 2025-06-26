@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,15 +20,15 @@ public class CheckBoxFeatureTests : UITest
 	}
 
 	[Test, Order(1)]
-	[Category(UITestCategories.CheckBox)]
+	[Trait("Category", UITestCategories.CheckBox)]
 	public void CheckBox_ValidateDefaultValues_VerifyLabels()
 	{
 		Assert.That(App.FindElement("IsCheckedLabel").GetText(), Is.EqualTo("True"));
 		App.WaitForElement("CheckBoxControl");
 	}
 
-	[Test]
-	[Category(UITestCategories.CheckBox)]
+	[Fact]
+	[Trait("Category", UITestCategories.CheckBox)]
 	public void CheckBox_SetIsCheckedState()
 	{
 		App.WaitForElement("ResetButton");
@@ -44,8 +44,8 @@ public class CheckBoxFeatureTests : UITest
 		Assert.That(App.FindElement("IsCheckedLabel").GetText(), Is.EqualTo("True"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CheckBox)]
+	[Fact]
+	[Trait("Category", UITestCategories.CheckBox)]
 	public void CheckBox_VerifyCheckedChangedEvent()
 	{
 		App.WaitForElement("ResetButton");
@@ -66,8 +66,8 @@ public class CheckBoxFeatureTests : UITest
 		Assert.That(App.FindElement("CheckedChangedStatusLabel").GetText(), Is.EqualTo("CheckedChanged Triggered"));
 	}
 
-	[Test]
-	[Category(UITestCategories.CheckBox)]
+	[Fact]
+	[Trait("Category", UITestCategories.CheckBox)]
 	public void CheckBox_SetVisibilityToFalse_VerifyVisualState()
 	{
 		App.WaitForElement("ResetButton");
@@ -84,8 +84,8 @@ public class CheckBoxFeatureTests : UITest
 		Assert.That(App.FindElements("CheckBoxControl"), Is.Not.Empty);
 	}
 
-	[Test]
-	[Category(UITestCategories.CheckBox)]
+	[Fact]
+	[Trait("Category", UITestCategories.CheckBox)]
 	public void CheckBox_ChangeColor_VerifyVisualState()
 	{
 		App.WaitForElement("ResetButton");
@@ -97,8 +97,8 @@ public class CheckBoxFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.CheckBox)]
+	[Fact]
+	[Trait("Category", UITestCategories.CheckBox)]
 	public void CheckBox_SetIsCheckedAndColor_VerifyVisualState()
 	{
 		App.WaitForElement("ResetButton");
@@ -115,8 +115,8 @@ public class CheckBoxFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.CheckBox)]
+	[Fact]
+	[Trait("Category", UITestCategories.CheckBox)]
 	public void CheckBox_SetAllProperties_VerifyVisualState()
 	{
 		App.WaitForElement("ResetButton");

@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.TabbedPage)]
+[Trait("Category", UITestCategories.TabbedPage)]
 public class TabbedPageTests : _IssuesUITest
 {
 	const string Page1 = "Page 1";
@@ -19,8 +19,8 @@ public class TabbedPageTests : _IssuesUITest
 
 	public override string Issue => "TabbedPage nav basic tests";
 
-	[Test]
-	[Category(UITestCategories.TabbedPage)]
+	[Fact]
+	[Trait("Category", UITestCategories.TabbedPage)]
 	public void TabbedPageWithModalIssueTestsAllElementsPresent()
 	{
 		App.WaitForElement(HomePage);
@@ -30,8 +30,8 @@ public class TabbedPageTests : _IssuesUITest
 		App.WaitForElement(Pop);
 	}
 
-	[Test]
-	[Category(UITestCategories.TabbedPage)]
+	[Fact]
+	[Trait("Category", UITestCategories.TabbedPage)]
 	public void TabbedPageWithModalIssueTestsPopFromFirstTab()
 	{
 		App.WaitForElement(Pop);
@@ -39,8 +39,8 @@ public class TabbedPageTests : _IssuesUITest
 		App.WaitForElement(HomePage);
 	}
 
-	[Test]
-	[Category(UITestCategories.TabbedPage)]
+	[Fact]
+	[Trait("Category", UITestCategories.TabbedPage)]
 	public void TabbedPageWithModalIssueTestsPopFromSecondTab()
 	{
 		App.WaitForElement(HomePage);

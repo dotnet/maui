@@ -1,10 +1,10 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.Stepper)]
+[Trait("Category", UITestCategories.Stepper)]
 public class StepperFeatureTests : UITest
 {
 	public const string StepperFeatureMatrix = "Stepper Feature Matrix";
@@ -29,7 +29,7 @@ public class StepperFeatureTests : UITest
 		Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("0.00"));
 	}
 
-	[Test]
+	[Fact]
 	public void Stepper_SetMinimumValue_VerifyMinimumLabel()
 	{
 		App.WaitForElement("Options");
@@ -43,7 +43,7 @@ public class StepperFeatureTests : UITest
 		Assert.That(App.FindElement("MinimumLabel").GetText(), Is.EqualTo("2.00"));
 	}
 
-	[Test]
+	[Fact]
 	public void Stepper_SetMaximumValue_VerifyMaximumLabel()
 	{
 		App.WaitForElement("Options");
@@ -57,7 +57,7 @@ public class StepperFeatureTests : UITest
 		Assert.That(App.FindElement("MaximumLabel").GetText(), Is.EqualTo("20.00"));
 	}
 
-	[Test]
+	[Fact]
 	public void Stepper_SetValueWithinRange_VerifyValueLabel()
 	{
 		App.WaitForElement("Options");
@@ -71,7 +71,7 @@ public class StepperFeatureTests : UITest
 		Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("5.00"));
 	}
 
-	[Test]
+	[Fact]
 	public void Stepper_SetIncrementValue_VerifyIncrement()
 	{
 		App.WaitForElement("Options");
@@ -86,7 +86,7 @@ public class StepperFeatureTests : UITest
 		Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("2.00"));
 	}
 
-	[Test]
+	[Fact]
 	public void Stepper_SetValueExceedsMaximum()
 	{
 		App.WaitForElement("Options");
@@ -106,7 +106,7 @@ public class StepperFeatureTests : UITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS
 // Related Issue Link : https://github.com/dotnet/maui/issues/12243
-        [Test]
+        [Fact]
         public void Stepper_SetValueBelowMinimum()
         {
             App.WaitForElement("Options");
@@ -124,7 +124,7 @@ public class StepperFeatureTests : UITest
             Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("10.00"));
         }
 
-        [Test]
+        [Fact]
         public void Stepper_MinimumExceedsMaximum_SetsMinimumToMaximum()
         {
             App.WaitForElement("Options");
@@ -144,7 +144,7 @@ public class StepperFeatureTests : UITest
         }
 #endif
 
-	[Test]
+	[Fact]
 	public void Stepper_SetEnabledStateToFalse_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -158,7 +158,7 @@ public class StepperFeatureTests : UITest
 		Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("0.00"));
 	}
 
-	[Test]
+	[Fact]
 	public void Stepper_SetVisibilityToFalse_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -172,7 +172,7 @@ public class StepperFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST     //Related Issue Link : https://github.com/dotnet/maui/issues/29704
-	[Test]
+	[Fact]
 	public void Stepper_ChangeFlowDirection_RTL_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -185,7 +185,7 @@ public class StepperFeatureTests : UITest
 		VerifyScreenshot();
 	}
 #endif
-	[Test]
+	[Fact]
 	public void Stepper_AtMinimumValue_DecrementButtonDisabled()
 	{
 		App.WaitForElement("Options");
@@ -215,7 +215,7 @@ public class StepperFeatureTests : UITest
 		Assert.That(newValue, Is.EqualTo("10.00"));
 	}
 
-	[Test]
+	[Fact]
 	public void Stepper_AtMaximumValue_IncrementButtonDisabled()
 	{
 		App.WaitForElement("Options");
@@ -243,7 +243,7 @@ public class StepperFeatureTests : UITest
 		Assert.That(newValue, Is.EqualTo("10.00"));
 	}
 
-	[Test]
+	[Fact]
 	public void Stepper_SetIncrementAndVerifyValueChange()
 	{
 		App.WaitForElement("Options");
@@ -260,8 +260,7 @@ public class StepperFeatureTests : UITest
 		Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("10.00"));
 	}
 
-
-	[Test]
+	[Fact]
 	public void Stepper_ResetToInitialState_VerifyDefaultValues()
 	{
 		App.WaitForElement("Options");
@@ -282,7 +281,7 @@ public class StepperFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS // Related Issue Link : https://github.com/dotnet/maui/issues/29740
-	[Test]
+	[Fact]
 	public void Stepper_IncrementDoesNotExceedMaximum()
 	{
 		App.WaitForElement("Options");
@@ -313,7 +312,7 @@ public class StepperFeatureTests : UITest
 	}
 #endif
 
-	[Test]
+	[Fact]
 	public void Stepper_DecrementDoesNotGoBelowMinimum()
 	{
 		App.WaitForElement("Options");

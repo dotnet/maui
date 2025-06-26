@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Gray Line Appears on the Right Side of GraphicsView with Decimal WidthRequest on iOS Platform";
 
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
+		[Fact]
+		[Trait("Category", UITestCategories.GraphicsView)]
 		public void VerifyGraphicsViewWithoutGrayLine()
 		{
 			App.WaitForElement("ChangeColorButton");

@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //VerifyScreenShot() is not implemented on Mac, and the DatePicker UI behaves differently on iOS and doesn't have a DatePickerDialog like on other platforms.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] DatePicker Graphical Bug";
 
-		[Test]
-		[Category(UITestCategories.DatePicker)]
+		[Fact]
+		[Trait("Category", UITestCategories.DatePicker)]
 		public void DatePickerShouldDisplayProperSelectedDate()
 		{
 			App.WaitForElement("DatePicker");

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,8 +10,8 @@ public class Issue17521 : _IssuesUITest
 
 	public override string Issue => "Shell.SearchHandler visible in details page on Windows 11";
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void ShouldUpdateSearchHandlerOnPageNavigation()
 	{
 		App.WaitForElement("MainButton");

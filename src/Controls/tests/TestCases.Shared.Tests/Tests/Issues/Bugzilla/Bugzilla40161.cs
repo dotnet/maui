@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //Image rendering size inside AbsoluteLayout is inconsistent on Windows. Created a issue report: https://github.com/dotnet/maui/issues/26094.
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Bugzilla40161 : _IssuesUITest
 
 	public override string Issue => "Issue Bugzilla40161";
 
-	[Test]
-	[Category(UITestCategories.Layout)]
+	[Fact]
+	[Trait("Category", UITestCategories.Layout)]
 	public void Issue1Test()
 	{
 		App.WaitForElement("REFRESH");

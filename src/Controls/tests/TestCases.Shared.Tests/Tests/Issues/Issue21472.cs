@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,7 +11,7 @@ public class Issue21472 : _IssuesUITest
 	public override string Issue => "Shell FlyoutBackgroundImage doesn't shown";
 
 	[Test, Order(1)]
-	[Category(UITestCategories.Shell)]
+	[Trait("Category", UITestCategories.Shell)]
 	public void VerifyShellFlyoutBackgroundImage()
 	{
 		App.WaitForElement("button");
@@ -22,7 +22,7 @@ public class Issue21472 : _IssuesUITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.Shell)]
+	[Trait("Category", UITestCategories.Shell)]
 	public void VerifyShellFlyoutBackgroundImageSetNull()
 	{
 		App.WaitForElement("button");

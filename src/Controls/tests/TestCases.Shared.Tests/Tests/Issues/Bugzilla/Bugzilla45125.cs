@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ public class Bugzilla45125 : _IssuesUITest
 
 	public override string Issue => "ListView lacks a way to get information about visible elements (such as FirstVisibleItem) to restore visual positions of elements";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void Bugzilla45125Test()
 	{
 		RunTest();

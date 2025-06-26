@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,8 +10,8 @@ public class Issue20294 : _IssuesUITest
 
 	public override string Issue => "CollectionView containing a Footer and a Border with StrokeThickness set to decimal value crashes on scroll";
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void ScrollToEndDoesntCrash()
 	{
 		App.ScrollTo("FOOTER");

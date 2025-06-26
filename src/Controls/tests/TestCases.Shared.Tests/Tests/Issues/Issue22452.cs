@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ public class Issue22452 : _IssuesUITest
 
 	public override string Issue => "Fix error when running new template maui app on iOS";
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void NavigationBetweenFlyoutItems()
 	{
 		App.WaitForElement("TabContent");

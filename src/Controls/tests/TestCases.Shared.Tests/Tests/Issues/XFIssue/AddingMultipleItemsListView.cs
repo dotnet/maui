@@ -1,10 +1,10 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.ListView)]
+[Trait("Category", UITestCategories.ListView)]
 public class AddingMultipleItemsListView : _IssuesUITest
 {
 
@@ -14,7 +14,7 @@ public class AddingMultipleItemsListView : _IssuesUITest
 
 	public override string Issue => "Adding Multiple Items to a ListView";
 
-	[Test]
+	[Fact]
 	public void AddingMultipleListViewTests1AllElementsPresent()
 	{
 		App.WaitForElement("Big Job");
@@ -30,7 +30,7 @@ public class AddingMultipleItemsListView : _IssuesUITest
 		App.FindElement("23");
 	}
 
-	[Test]
+	[Fact]
 	public void AddingMultipleListViewTests2AddOneElementToList()
 	{
 		App.WaitForElement("Add One");
@@ -39,7 +39,7 @@ public class AddingMultipleItemsListView : _IssuesUITest
 		App.WaitForElement("1234", timeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Fact]
 	public void AddingMultipleListViewTests3AddTwoElementToList()
 	{
 		App.WaitForElement("Add Two");

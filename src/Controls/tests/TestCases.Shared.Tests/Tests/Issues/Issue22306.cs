@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,8 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Resizing buttons' parents resolves layout";
 
-		[Test]
-		[Category(UITestCategories.Button)]
+		[Fact]
+		[Trait("Category", UITestCategories.Button)]
 		public void ButtonsLayoutResolveWhenParentSizeChanges()
 		{
 #if IOS || ANDROID
@@ -21,25 +21,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #endif
 				WaitForAllElements();
 				var changeBoundsButton = App.WaitForElement("ChangeBoundsButton");
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original");
+				VerifyScreenshot(GetCurrentTestName() + "Original");
 
 				changeBoundsButton.Click();
 
 				WaitForAllElements();
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownPortrait");
+				VerifyScreenshot(GetCurrentTestName() + "SizeButtonsDownPortrait");
 
 #if IOS || ANDROID
 				App.SetOrientationLandscape();
 
 				WaitForAllElements();
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape");
+				VerifyScreenshot(GetCurrentTestName() + "SizeButtonsDownLandscape");
 				changeBoundsButton.Click();
 				WaitForAllElements();
 
 				App.SetOrientationPortrait();
 				WaitForAllElements();
 				// Cannot use the original screenshot as the black bar on bottom is not as dark after rotation
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original2");
+				VerifyScreenshot(GetCurrentTestName() + "Original2");
 			}
 			finally
 			{

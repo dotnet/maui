@@ -1,7 +1,7 @@
 ﻿#if TEST_FAILS_ON_WINDOWS
 //The BoxView's AutomationId doesn't work correctly on the Windows platform, and using a Label also doesn't ensure the BoxView's drag-and-drop functionality works.
 //for more information: https://github.com/dotnet/maui/issues/27195 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,9 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Bug] DragGestureRecognizer shows 'Copy' tag when dragging in UWP";
 
-		[Test]
-		[Category(UITestCategories.DragAndDrop)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.DragAndDrop)]
+		[Trait("Category", UITestCategories.Compatibility)]
 
 		public void AcceptedOperationNoneDisablesDropOperation()
 		{

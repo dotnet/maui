@@ -1,6 +1,6 @@
 ﻿#if ANDROID //This test case verifies "that the KeyListener is being set to handle numeric keyboard" exclusively on Android platform
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Android] MAUI 8.0.3 -> 8.0.6 regression: custom handler with key listener no longer works";
 
 		[Test, Order(1)]
-		[Category(UITestCategories.Entry)]
+		[Trait("Category", UITestCategories.Entry)]
 		public void VerifyInitialEntryReturnTypeChange()
 		{
 			App.WaitForElement("WaitForStubControl");
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test, Order(2)]
-		[Category(UITestCategories.Entry)]
+		[Trait("Category", UITestCategories.Entry)]
 		public void VerifyDynamicEntryReturnTypeChange()
 		{
 			App.WaitForElement("WaitForStubControl");
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("ReturnTypeEntry");
 			App.EnterText("ReturnTypeEntry", "a");
 			var returnType2 = App.FindElement("ReturnTypeResult").GetText();
-			ClassicAssert.AreNotEqual(returnType1, returnType2);
+			Assert.NotEqual(returnType1, returnType2);
 		}
 	}
 }

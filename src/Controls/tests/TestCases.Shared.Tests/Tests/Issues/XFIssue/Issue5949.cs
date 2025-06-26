@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ public class Issue5949 : _IssuesUITest
 
 	public override string Issue => "CollectionView cannot access a disposed object.";
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void DoNotAccessDisposedCollectionView()
 	{
 		App.WaitForElement(ToolBarItem);

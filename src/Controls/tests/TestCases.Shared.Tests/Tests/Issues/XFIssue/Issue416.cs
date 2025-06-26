@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue416 : _IssuesUITest
 
 	public override string Issue => "NavigationPage in PushModal does not show NavigationBar";
 
-	[Test]
-	[Category(UITestCategories.Navigation)]
+	[Fact]
+	[Trait("Category", UITestCategories.Navigation)]
 	public void Issue416TestsNavBarPresent()
 	{
 		App.WaitForElement("Test Page");

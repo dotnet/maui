@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS //In Windows platform, CarouselView has issues with the initial rendering of items and doesn't scroll to the correct position when Loop is enabled, for more information: https://github.com/dotnet/maui/issues/24482
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public Issue17283(TestDevice testDevice) : base(testDevice) { }
 
-		[Test]
-		[Category(UITestCategories.CarouselView)]
+		[Fact]
+		[Trait("Category", UITestCategories.CarouselView)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Currently fails on Windows; see https://github.com/dotnet/maui/issues/24482")]
 		public void CarouselViewShouldScrollToRightPosition()
 		{

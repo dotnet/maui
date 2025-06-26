@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.ScrollView)]
+	[Trait("Category", UITestCategories.ScrollView)]
 	public class ScrollViewNoContentUITests : _IssuesUITest
 	{
 		public ScrollViewNoContentUITests(TestDevice device)
@@ -14,8 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Scrollview with null content crashes on Windows";
 
 		// NullContentOnScrollViewDoesntCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue3507.cs)
-		[Test]
-		[Description("ScrollView without Content no crash.")]
+		[Fact]
 		public void ScrollViewNoContentTest()
 		{
 			// 1. If the ScrollView is created without having Content, the test has passed.

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue5500 : _IssuesUITest
 
 	public override string Issue => "[iOS] Editor with material visuals value binding not working on physical device";
 
-	[Test]
-	[Category(UITestCategories.Editor)]
+	[Fact]
+	[Trait("Category", UITestCategories.Editor)]
 	public void VerifyEditorTextChangeEventsAreFiring()
 	{
 		App.WaitForElement("EditorAutomationId");

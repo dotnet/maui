@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ public class Issue2470 : _IssuesUITest
 
 	public override string Issue => "ObservableCollection changes do not update ListView";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ListView)]
 	public void ObservableCollectionChangeListView()
 	{
 		App.WaitForElement("Switch");
@@ -41,7 +41,6 @@ public class Issue2470 : _IssuesUITest
 		// Tab 2
 		App.WaitForElementTillPageNavigationSettled("Entry 0 of 2");
 		App.WaitForElement("Entry 1 of 2");
-
 
 		// Tab 1
 		App.TapTab(Generate, isTopTab: true);

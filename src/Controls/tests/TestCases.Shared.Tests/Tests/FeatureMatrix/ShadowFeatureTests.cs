@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(1)]
-		[Category(UITestCategories.Shadow)]
+		[Trait("Category", UITestCategories.Shadow)]
 		public void Shadow_SetColor()
 		{
 			App.WaitForElement("ResetButton").Tap();
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(2)]
-		[Category(UITestCategories.Shadow)]
+		[Trait("Category", UITestCategories.Shadow)]
 		public void Shadow_SetColor_UpdateValue()
 		{
 			Exception? exception = null;
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(3)]
-		[Category(UITestCategories.Shadow)]
+		[Trait("Category", UITestCategories.Shadow)]
 		public void Shadow_SetOffset_PositiveValues()
 		{
 			App.WaitForElement("ResetButton").Tap();
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(4)]
-		[Category(UITestCategories.Shadow)]
+		[Trait("Category", UITestCategories.Shadow)]
 		public void Shadow_SetOffset_Zero()
 		{
 			App.WaitForElement("ResetButton").Tap();
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(5)]
-		[Category(UITestCategories.Shadow)]
+		[Trait("Category", UITestCategories.Shadow)]
 		public void Shadow_SetRadius()
 		{
 			App.WaitForElement("ResetButton").Tap();
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(6)]
-		[Category(UITestCategories.Shadow)]
+		[Trait("Category", UITestCategories.Shadow)]
 		public void Shadow_SetRadius_Zero()
 		{
 			App.WaitForElement("ResetButton").Tap();
@@ -126,8 +126,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
-		[Category(UITestCategories.Shadow)]
+		[Fact]
+		[Trait("Category", UITestCategories.Shadow)]
 		public void Shadow_SetOpacity()
 		{
 			App.WaitForElement("ResetButton").Tap();
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(7)]
-		[Category(UITestCategories.Shadow)]
+		[Trait("Category", UITestCategories.Shadow)]
 		public void Shadow_SetOpacity_Zero()
 		{
 			App.WaitForElement("ResetButton").Tap();
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(7)]
-		[Category(UITestCategories.Shadow)]
+		[Trait("Category", UITestCategories.Shadow)]
 		public void Shadow_SetEnabledStateToFalse_VerifyScreenshot()
 		{
 			App.WaitForElement("ResetButton").Tap();
@@ -167,7 +167,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(8)]
-		[Category(UITestCategories.Shadow)]
+		[Trait("Category", UITestCategories.Shadow)]
 		public void Shadow_ChangeFlowDirection_RTL_VerifyScreenshot()
 		{
 			App.WaitForElement("ResetButton").Tap();
@@ -177,7 +177,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(9)]
-		[Category(UITestCategories.Shadow)]
+		[Trait("Category", UITestCategories.Shadow)]
 		public void Shadow_SetVisibilityToFalse_VerifyScreenshot()
 		{
 			App.WaitForElement("ResetButton").Tap();
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if !WINDOWS // Shadow not updated when Clipping a View: https://github.com/dotnet/maui/issues/27730
 		[Test, Order(10)]
-		[Category(UITestCategories.Shadow)]
+		[Trait("Category", UITestCategories.Shadow)]
 		public void Shadow_AddClip_VerifyShadow()
 		{
 			App.WaitForElement("ResetButton").Tap();
@@ -198,7 +198,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(11)]
-		[Category(UITestCategories.Shadow)]
+		[Trait("Category", UITestCategories.Shadow)]
 		public void Shadow_AddRemoveClip_VerifyShadow()
 		{
 			Exception? exception = null;
@@ -219,8 +219,8 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 
 #if !IOS && !WINDOWS // Fails iOS: https://github.com/dotnet/maui/issues/27879 and Windows: https://github.com/dotnet/maui/issues/27732
-		[Test]
-		[Category(UITestCategories.Shadow)]
+		[Fact]
+		[Trait("Category", UITestCategories.Shadow)]
 		public void Shadow_Remove_AtRuntime()
 		{
 			App.WaitForElement("ResetButton").Tap();
@@ -229,8 +229,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
-		[Category(UITestCategories.Shadow)]
+		[Fact]
+		[Trait("Category", UITestCategories.Shadow)]
 		public void Shadow_RemoveAdd_AtRuntime()
 		{
 			Exception? exception = null;
@@ -250,8 +250,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-		[Test]
-		[Category(UITestCategories.Shadow)]
+		[Fact]
+		[Trait("Category", UITestCategories.Shadow)]
 		[Ignore("Fails on all the platforms. Get lower fps especially on Android and Windows (below 24 fps at times).")]
 		public void Shadow_Resize_Benchmark()
 		{

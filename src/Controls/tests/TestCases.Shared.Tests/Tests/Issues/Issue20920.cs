@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,8 +11,8 @@ public class Issue20920 : _IssuesUITest
 
 	public override string Issue => "Nested ScrollView does not work in Android";
 
-	[Test]
-	[Category(UITestCategories.ScrollView)]
+	[Fact]
+	[Trait("Category", UITestCategories.ScrollView)]
 	public void ScrollingBothDirectionsWithNestedScrollViews()
 	{
 		// TODO: Correct this test for other platforms
@@ -23,7 +23,7 @@ public class Issue20920 : _IssuesUITest
 
 		var afterScrollPosition = App.WaitForElement("dotnet_bot").GetRect();
 
-		ClassicAssert.Less(afterScrollPosition.X, initialPosition.X);
-		ClassicAssert.Less(afterScrollPosition.Y, initialPosition.Y);
+		Assert.Less(afterScrollPosition.X, initialPosition.X);
+		Assert.Less(afterScrollPosition.Y, initialPosition.Y);
 	}
 }

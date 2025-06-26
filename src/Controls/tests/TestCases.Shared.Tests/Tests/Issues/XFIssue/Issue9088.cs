@@ -1,7 +1,7 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 // On Catalyst, Swipe actions not supported in Appium.
 // On Windows, StackLayout AutomationId not works in Automation. 
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,8 +19,8 @@ public class Issue9088 : _IssuesUITest
 
 	public override string Issue => "[Bug] SwipeView items conflict with Shell menu swipe in from left, on real iOS devices";
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+	[Fact]
+	[Trait("Category", UITestCategories.Shell)]
 	public void Issue9088SwipeViewConfictWithShellMenuSwipeInFromLeft()
 	{
 		App.WaitForElement(SwipeViewId);
@@ -34,7 +34,6 @@ public class Issue9088 : _IssuesUITest
 		App.SwipeRightToLeft(SwipeViewId, 0.67, 200);
 		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("3"));
 
-
 		App.SwipeLeftToRight(SwipeViewId, 0.67, 200);
 		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("1"));
 
@@ -43,7 +42,6 @@ public class Issue9088 : _IssuesUITest
 
 		App.SwipeLeftToRight(SwipeViewId, 0.67, 500);
 		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("3"));
-
 
 		App.SwipeRightToLeft(SwipeViewId);
 		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("4"));

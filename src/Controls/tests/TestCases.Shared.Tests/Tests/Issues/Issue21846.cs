@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Fix crash closing Popup with WebView";
 
-		[Test]
-		[Category(UITestCategories.WebView)]
+		[Fact]
+		[Trait("Category", UITestCategories.WebView)]
 		public void WebViewNoCrashPopup()
 		{
 			VerifyInternetConnectivity();

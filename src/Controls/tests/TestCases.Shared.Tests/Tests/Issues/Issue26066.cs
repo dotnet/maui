@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,8 +10,8 @@ public class Issue26066(TestDevice testDevice) : _IssuesUITest(testDevice)
 
 	public override string Issue => "CollectionViewHandler2 RelativeSource binding to AncestorType not working";
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void CollectionView2ShouldFindAncestorType()
 	{
 		App.WaitForElement(CV2Item1);

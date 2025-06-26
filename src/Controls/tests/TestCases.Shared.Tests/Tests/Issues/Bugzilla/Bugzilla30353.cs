@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // Setting orientation is not supported on Windows and mac
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,8 +17,8 @@ public class Bugzilla30353 : _IssuesUITest
 	}
 
 	public override string Issue => "FlyoutPage.IsPresentedChanged is not raised";
-	[Test]
-	[Category(UITestCategories.FlyoutPage)]
+	[Fact]
+	[Trait("Category", UITestCategories.FlyoutPage)]
 	public void FlyoutPageIsPresentedChangedRaised()
 	{
 		App.SetOrientationPortrait();
@@ -41,7 +41,6 @@ public class Bugzilla30353 : _IssuesUITest
 		App.SetOrientationLandscape();
 	}
 
-	[TearDown]
 	public void TearDown()
 	{
 		App.SetOrientationPortrait();

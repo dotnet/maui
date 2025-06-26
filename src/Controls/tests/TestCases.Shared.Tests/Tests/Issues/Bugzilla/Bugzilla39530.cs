@@ -1,12 +1,12 @@
 ﻿#if TEST_FAILS_ON_CATALYST //Pan is not working on the MacCatalyst.
 using System.Drawing;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.Gestures)]
+[Trait("Category", UITestCategories.Gestures)]
 public class Bugzilla39530 : _IssuesUITest
 {
 	public Bugzilla39530(TestDevice testDevice) : base(testDevice)
@@ -15,7 +15,7 @@ public class Bugzilla39530 : _IssuesUITest
 
 	public override string Issue => "Frames do not handle pan or pinch gestures under AppCompat";
 
-	[Test]
+	[Fact]
 	public void Bugzilla39530PanTest()
 	{
 		App.WaitForElement("frameLabel");
@@ -24,8 +24,7 @@ public class Bugzilla39530 : _IssuesUITest
 		App.WaitForElement("Panning: Completed");
 	}
 
-
-	[Test]
+	[Fact]
 	public void Bugzilla39530PinchTest()
 	{
 		//The PinchToZoomIn gesture doesn't work on the Frame for other platforms, so it should be applied to the children of the Frame instead.
@@ -37,7 +36,7 @@ public class Bugzilla39530 : _IssuesUITest
 		App.WaitForElement("Pinching: Completed");
 	}
 
-	[Test]
+	[Fact]
 	public void Bugzilla39530TapTest()
 	{
 		App.WaitForElement("frameLabel");

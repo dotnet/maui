@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ public class Bugzilla43469 : _IssuesUITest
 
 	public override string Issue => "Calling DisplayAlert twice in WinRT causes a crash";
 
-	[Test]
-	[Category(UITestCategories.DisplayAlert)]
+	[Fact]
+	[Trait("Category", UITestCategories.DisplayAlert)]
 	public void Bugzilla43469Test()
 	{
 		App.WaitForElement("kButton");

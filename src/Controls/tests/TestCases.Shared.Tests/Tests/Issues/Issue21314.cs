@@ -1,5 +1,5 @@
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,12 +13,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Test]
-		[Category(UITestCategories.Image)]
+		[Fact]
+		[Trait("Category", UITestCategories.Image)]
 		public void ImageShouldBePortrait()
 		{
 			var image = App.WaitForElement("theImage").GetRect();
-			ClassicAssert.Greater(image.Height, image.Width);
+			Assert.Greater(image.Height, image.Width);
 		}
 	}
 }

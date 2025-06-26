@@ -1,6 +1,6 @@
 ﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
 //For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +18,8 @@ public class GitHub1331 : _IssuesUITest
 
 	public override string Issue => "[Android] ViewCell shows ContextActions on tap instead of long press";
 
-	[Test]
-	[Category(UITestCategories.Gestures)]
+	[Fact]
+	[Trait("Category", UITestCategories.Gestures)]
 	public void SingleTapOnCellDoesNotActivateContext()
 	{
 		App.WaitForElement(Action);

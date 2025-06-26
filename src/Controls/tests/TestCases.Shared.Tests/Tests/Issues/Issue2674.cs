@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Exception occurs when giving null values in picker itemsource collection";
 
-		[Test]
-		[Category(UITestCategories.Picker)]
+		[Fact]
+		[Trait("Category", UITestCategories.Picker)]
 		public void Issue2674Test()
 		{
 			App.WaitForElement("picker");

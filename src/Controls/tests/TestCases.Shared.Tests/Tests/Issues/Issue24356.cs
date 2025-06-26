@@ -1,5 +1,5 @@
 ﻿#if ANDROID || IOS // Using AppThemeBinding and changing theme not working on Windows and ThemeChangeAction not implemented in Appium Catalyst
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "AppThemeBinding BarBackground with Brush in TabbedPage not working";
 
-		[Test]
-		[Category(UITestCategories.TabbedPage)]
+		[Fact]
+		[Trait("Category", UITestCategories.TabbedPage)]
 		public void GradientInTabBarShouldChange()
 		{
 			try

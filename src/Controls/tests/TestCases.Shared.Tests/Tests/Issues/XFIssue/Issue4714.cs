@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue4714 : _IssuesUITest
 	}
 	public override string Issue => "SingleTapGesture called once on DoubleTap";
 
-	[Test]
-	[Category(UITestCategories.Gestures)]
+	[Fact]
+	[Trait("Category", UITestCategories.Gestures)]
 	public void Issue4714Test()
 	{
 		App.WaitForElement(InitialText);

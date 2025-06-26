@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,8 @@ public class Issue19926 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Test]
-	[Category(UITestCategories.BoxView)]
+	[Fact]
+	[Trait("Category", UITestCategories.BoxView)]
 	public async Task PropertiesShouldBeCorrectlyApplied()
 	{
 		App.WaitForElement("button");

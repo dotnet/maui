@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS // Maps Control not supported in Windows
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,10 +13,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Memory leak when using NavigationPage with Maps";
 
-		[Test]
-		[Category(UITestCategories.Maps)]
-		[Category(UITestCategories.Performance)]
-		[Category(UITestCategories.Compatibility)]
+		[Fact]
+		[Trait("Category", UITestCategories.Maps)]
+		[Trait("Category", UITestCategories.Performance)]
+		[Trait("Category", UITestCategories.Compatibility)]
 		public void Bugzilla39489Test()
 		{
 			// Original bug report (https://bugzilla.xamarin.com/show_bug.cgi?id=39489) had a crash (OOM) after 25-30

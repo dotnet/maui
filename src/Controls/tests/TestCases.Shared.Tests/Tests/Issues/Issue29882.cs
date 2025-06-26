@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,8 @@ public class Issue29882 : _IssuesUITest
 
 	public override string Issue => "[iOS] Crash occurs when ItemsSource is set to null in the SelectionChanged handler";
 
-	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[Fact]
+	[Trait("Category", UITestCategories.CollectionView)]
 	public void SettingItemSourceToNullShouldNotCrash()
 	{
 		App.WaitForElement("Item1");

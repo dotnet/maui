@@ -1,8 +1,8 @@
 #if (IOS && TEST_FAILS_ON_IOS) || (ANDROID && TEST_FAILS_ON_ANDROID) // Android related issue: https://github.com/dotnet/maui/issues/27951, iOS related issue: https://github.com/dotnet/maui/issues/28760
 //The test is applicable only to mobile platforms like iOS and Android.
 using System.Drawing;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+using Xunit;
+using Xunit;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Interactions;
 using UITest.Appium;
@@ -15,8 +15,8 @@ public class Issue19214 : _IssuesUITest
 
     public override string Issue => "iOS Keyboard Scrolling ContentInset Tests";
 
-    [Test]
-    [Category(UITestCategories.Entry)]
+    [Fact]
+    [Trait("Category", UITestCategories.Entry)]
     public void TestMultipleScrollViews ()
     {
         var app = App as AppiumApp;
@@ -51,7 +51,7 @@ public class Issue19214 : _IssuesUITest
         }
         
         var queryRect = app.WaitForElement(queryEntry).GetRect();
-        ClassicAssert.NotNull(queryRect, "Could not find the initial entry.");
+        Assert.NotNull(queryRect, "Could not find the initial entry.");
 
         app.Click(queryEntry);
         queryRect = app.WaitForElement(queryEntry).GetRect();
@@ -83,14 +83,14 @@ public class Issue19214 : _IssuesUITest
     {
         var scrollViewRect = app.WaitForElement(scrollView).GetRect();
         KeyboardScrolling.CheckIfViewAboveKeyboard(app, entry, false);
-        // ClassicAssert.True(rect.Y > scrollViewRect.Y && rect.Bottom < scrollViewRect.Bottom, $"{entry} was not visible in {scrollView}");
+        // Assert.True(rect.Y > scrollViewRect.Y && rect.Bottom < scrollViewRect.Bottom, $"{entry} was not visible in {scrollView}");
         if (isTopField)
         {
-            ClassicAssert.Greater(rect.Y, scrollViewRect.Y, $"rect.Y: {rect.Y} was not greater than scrollViewRect.Y: {scrollViewRect.Y}");
+            Assert.Greater(rect.Y, scrollViewRect.Y, $"rect.Y: {rect.Y} was not greater than scrollViewRect.Y: {scrollViewRect.Y}");
         }
         else
         {
-            ClassicAssert.Less(rect.Bottom, scrollViewRect.Bottom, $"rect.Bottom: {rect.Bottom} was not less than scrollViewRect.Bottom: {scrollViewRect.Bottom}");
+            Assert.Less(rect.Bottom, scrollViewRect.Bottom, $"rect.Bottom: {rect.Bottom} was not less than scrollViewRect.Bottom: {scrollViewRect.Bottom}");
         }
     }
 

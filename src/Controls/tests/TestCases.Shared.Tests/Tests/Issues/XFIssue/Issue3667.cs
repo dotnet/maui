@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +14,8 @@ public class Issue3667 : _IssuesUITest
 
 	public override string Issue => "[Enhancement] Add text-transforms to Label";
 
-	[Test]
-	[Category(UITestCategories.Label)]
+	[Fact]
+	[Trait("Category", UITestCategories.Label)]
 	public void Issue3667Tests()
 	{
 		App.WaitForElement(text);

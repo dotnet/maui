@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,8 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Picker ItemsSource Change Triggers Exception: 'Value Does Not Fall Within the Expected Range";
 
-		[Test]
-		[Category(UITestCategories.Picker)]
+		[Fact]
+		[Trait("Category", UITestCategories.Picker)]
 		public void PickerShouldNotCrashWhenSelectedIndexExceedsItemsSourceCount()
 		{
 			App.WaitForElement("Picker");

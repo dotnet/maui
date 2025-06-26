@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +15,8 @@ public class Bugzilla58779 : _IssuesUITest
 
 	public override string Issue => "[MacOS] DisplayActionSheet on MacOS needs scroll bars if list is long";
 
-	[Test]
-	[Category(UITestCategories.DisplayAlert)]
+	[Fact]
+	[Trait("Category", UITestCategories.DisplayAlert)]
 	public void Bugzilla58779Test()
 	{
 		App.WaitForElement(ButtonId);
