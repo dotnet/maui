@@ -80,6 +80,11 @@ namespace Microsoft.Maui.Platform
 
 			if (_contentView != null && _contentView.Frame.IsEmpty)
 				_contentView.Frame = Bounds;
+
+			if (_isOpen)
+			{
+				Swipe(animated: false);
+			}
 		}
 
 		public override void TouchesEnded(NSSet touches, UIEvent? evt)
@@ -581,7 +586,7 @@ namespace Microsoft.Maui.Platform
 
 			if (_swipeTransitionMode == SwipeTransitionMode.Reveal)
 			{
-				Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
+				void SetFrame()
 				{
 					switch (_swipeDirection)
 					{
@@ -598,7 +603,16 @@ namespace Microsoft.Maui.Platform
 							_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + offset, _originalBounds.Width, _originalBounds.Height);
 							break;
 					}
-				}, null);
+				}
+
+				if (animated)
+				{
+					Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, SetFrame, null);
+				}
+				else
+				{
+					SetFrame();
+				}
 			}
 
 			if (_swipeTransitionMode == SwipeTransitionMode.Drag)
@@ -1144,11 +1158,17 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			UpdateIsOpen(true);
+			UpdateSwipeItems();
 
 			var swipeThreshold = GetSwipeThreshold();
 			UpdateOffset(swipeThreshold);
 
-			UpdateSwipeItems();
+			// Set the background on the swipe view, we need to update the layout.
+			if (_contentView is WrapperView)
+			{
+				LayoutIfNeeded();
+			}
+
 			Swipe(animated);
 
 			_swipeOffset = Math.Abs(_swipeOffset);

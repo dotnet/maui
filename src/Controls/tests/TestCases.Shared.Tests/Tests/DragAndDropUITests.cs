@@ -161,6 +161,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
 
+			// Add an additional drag and drop to avoid the flakiness in CI.
+			App.DragAndDrop("LabelDragElement", "DragTarget");
+
 			App.WaitForElement("DragStartEventsLabel");
 			var textAfterDragStart = App.FindElement("DragStartEventsLabel").GetText();
 
