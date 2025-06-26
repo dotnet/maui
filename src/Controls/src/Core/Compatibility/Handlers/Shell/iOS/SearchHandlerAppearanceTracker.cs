@@ -114,31 +114,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.Is(SearchHandler.VerticalTextAlignmentProperty))
 			{
 				UpdateSearchBarVerticalTextAlignment(_uiSearchBar.FindDescendantView<UITextField>());
-			}
-			else if (e.Is(SearchHandler.CharacterSpacingProperty))
-			{
-				UpdateCharacterSpacing(_uiSearchBar.FindDescendantView<UITextField>());
-			}
-		}
-
-		void UpdateCharacterSpacing(UITextField textField)
-		{
-			if (textField is null)
-			{
-				return;
-			}
-
-			var attributedText = textField.AttributedText?.WithCharacterSpacing(_searchHandler.CharacterSpacing);
-			if (attributedText is not null)
-			{
-				textField.AttributedText = attributedText;
-			}
-
-			var placeholderAttributedText = textField.AttributedPlaceholder?.WithCharacterSpacing(_searchHandler.CharacterSpacing);
-			if (placeholderAttributedText is not null)
-			{
-				textField.AttributedPlaceholder = placeholderAttributedText;
-			}
+			}			
 		}
 
 		void GetDefaultSearchBarColors(UISearchBar searchBar)
