@@ -29,17 +29,19 @@ public partial class Maui13474
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void FontImageSourceIsAppliedFromSharedResources([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void FontImageSourceIsAppliedFromSharedResources([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			var page = new Maui13474(useCompiledXaml);
 			var fontImageSource = page.imageButton.Source as FontImageSource;

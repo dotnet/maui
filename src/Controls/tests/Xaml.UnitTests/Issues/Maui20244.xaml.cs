@@ -28,17 +28,19 @@ public partial class Maui20244 : ContentPage
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void RowDefStaticResource([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void RowDefStaticResource([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				MockCompiler.Compile(typeof(Maui20244));
@@ -47,12 +49,12 @@ public partial class Maui20244 : ContentPage
 			var grid = page.grid;
 
 			Assert.Equal(6, grid.RowDefinitions.Count);
-			Assert.Equal(new GridLength(1, GridUnitType.Star, grid.RowDefinitions[0].Height);
-			Assert.Equal(new GridLength(1, GridUnitType.Star, grid.RowDefinitions[1].Height);
-			Assert.Equal(new GridLength(1, GridUnitType.Star, grid.RowDefinitions[2].Height);
-			Assert.Equal(new GridLength(1, GridUnitType.Star, grid.RowDefinitions[3].Height);
-			Assert.Equal(new GridLength(1, GridUnitType.Star, grid.RowDefinitions[4].Height);
-			Assert.Equal(new GridLength(1, GridUnitType.Auto, grid.RowDefinitions[5].Height);
+			Assert.Equal(new GridLength(1), GridUnitType.Star, grid.RowDefinitions[0].Height);
+			Assert.Equal(new GridLength(1), GridUnitType.Star, grid.RowDefinitions[1].Height);
+			Assert.Equal(new GridLength(1), GridUnitType.Star, grid.RowDefinitions[2].Height);
+			Assert.Equal(new GridLength(1), GridUnitType.Star, grid.RowDefinitions[3].Height);
+			Assert.Equal(new GridLength(1), GridUnitType.Star, grid.RowDefinitions[4].Height);
+			Assert.Equal(new GridLength(1), GridUnitType.Auto, grid.RowDefinitions[5].Height);
 
 			Assert.Equal(3, grid.ColumnDefinitions.Count);
 		}

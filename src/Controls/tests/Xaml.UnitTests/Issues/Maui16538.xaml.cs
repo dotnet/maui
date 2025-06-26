@@ -20,28 +20,30 @@ public partial class Maui16538
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void VSMandAppTheme([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void VSMandAppTheme([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 
 			Application.Current.UserAppTheme = AppTheme.Dark;
 			var page = new Maui16538(useCompiledXaml);
 			Application.Current.MainPage = page;
 			Button button = page.button0;
-			Assert.Equal(Color.FromHex("404040", button.BackgroundColor);
+			Assert.Equal(Color.FromHex("404040"), button.BackgroundColor);
 			button.IsEnabled = true;
 			Assert.Equal(Colors.White, button.BackgroundColor);
 			Application.Current.UserAppTheme = AppTheme.Light;
-			Assert.Equal(Color.FromHex("512BD4", button.BackgroundColor);
+			Assert.Equal(Color.FromHex("512BD4"), button.BackgroundColor);
 		}
 	}
 }

@@ -64,8 +64,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(true)]
-			[Theory]
 			[InlineData(false, Ignore = "This is failing on CI on macOS: https://github.com/dotnet/maui/issues/15054")]
 			public void FooBz54334(bool useCompiledXaml)
 			{

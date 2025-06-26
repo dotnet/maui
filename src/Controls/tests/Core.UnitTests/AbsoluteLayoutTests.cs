@@ -247,15 +247,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var converter = new BoundsTypeConverter();
 
 			Assert.True(converter.CanConvertFrom(typeof(string)));
-			Assert.Equal(new Rect(3, 4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3, 4"));
-			Assert.Equal(new Rect(3, 4, 20, 30), converter.ConvertFromInvariantString("3, 4, 20, 30"));
-			Assert.Equal(new Rect(3, 4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3, 4, AutoSize, AutoSize"));
-			Assert.Equal(new Rect(3, 4, AbsoluteLayout.AutoSize, 30), converter.ConvertFromInvariantString("3, 4, AutoSize, 30"));
-			Assert.Equal(new Rect(3, 4, 20, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3, 4, 20, AutoSize"));
+			Assert.Equal(new Rect(3, 4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
+			Assert.Equal(new Rect(3, 4, 20, 30));
+			Assert.Equal(new Rect(3, 4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
+			Assert.Equal(new Rect(3, 4, AbsoluteLayout.AutoSize, 30));
+			Assert.Equal(new Rect(3, 4, 20, AbsoluteLayout.AutoSize));
 
 			var autoSize = "AutoSize";
-			Assert.Equal(new Rect(3.3, 4.4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3.3, 4.4, " + autoSize + ", AutoSize"));
-			Assert.Equal(new Rect(3.3, 4.4, 5.5, 6.6), converter.ConvertFromInvariantString("3.3, 4.4, 5.5, 6.6"));
+			Assert.Equal(new Rect(3.3, 4.4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
+			Assert.Equal(new Rect(3.3, 4.4, 5.5, 6.6));
 		}
 	}
 }

@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("FocusButton");
 			App.Click("FocusButton");
 			App.Click("UnfocusButton");
-			Assert.Equal("Triggered", App.FindElement("Label").GetText());
+			Assert.Equal("Triggered", App.FindElement("Label").GetText();
 		}
 	}
 }

@@ -46,7 +46,7 @@
 //			Assert.NotNull(labels);
 //			Assert.NotEmpty(labels);
 //			//Only one item should be visible at a time in the carousel
-//			Assert.Equal(1, labels.Count());
+//			Assert.Equal(1, labels.Count();
 //		}
 
 //		//Only the active item in the window should have a size greater than zero

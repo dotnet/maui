@@ -33,8 +33,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// Constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// IDisposable public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 			[TestCase(true), TestCase(false)]
 			public void NoConflictsInNamescopes(bool useCompiledXaml)

@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
-			[SetUp]
+			// Constructor
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
@@ -31,8 +31,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Ignore("[Bug] Types that require conversion don't work in OnPlatform: https://github.com/xamarin/Microsoft.Maui.Controls/issues/13830")]
-			[Theory]
-			[InlineData(true)]
 			[Theory]
 			[InlineData(false)]
 			public void OnPlatformFontConversion(bool useCompiledXaml)

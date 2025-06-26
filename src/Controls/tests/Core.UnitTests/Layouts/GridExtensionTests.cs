@@ -15,8 +15,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			grid.Add(label, 3, 4);
 
-			Assert.Equal(3, grid.GetColumn(label));
-			Assert.Equal(4, grid.GetRow(label));
+			Assert.Equal(3, grid.GetColumn(label);
+			Assert.Equal(4, grid.GetRow(label);
 		}
 
 		[Fact]
@@ -28,8 +28,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			grid.Add(label, 3);
 
-			Assert.Equal(3, grid.GetColumn(label));
-			Assert.Equal(0, grid.GetRow(label));
+			Assert.Equal(3, grid.GetColumn(label);
+			Assert.Equal(0, grid.GetRow(label);
 		}
 
 		[Fact]
@@ -41,8 +41,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			grid.Add(label, row: 3);
 
-			Assert.Equal(0, grid.GetColumn(label));
-			Assert.Equal(3, grid.GetRow(label));
+			Assert.Equal(0, grid.GetColumn(label);
+			Assert.Equal(3, grid.GetRow(label);
 		}
 
 		[Fact]

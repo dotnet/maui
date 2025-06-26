@@ -15,15 +15,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void DoesntFailOnNullDataType([Values(true)] bool useCompiledXaml)
+			[Theory]
+			public void DoesntFailOnNullDataType([Theory]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh6648)));
 			}
 
-			[Fact]
-			public void BindingsOnxNullDataTypeWorks([Values(true, false)] bool useCompiledXaml)
+			[Theory]
+			public void BindingsOnxNullDataTypeWorks([Theory]
+		[InlineData(true)]
+		[InlineData(false)] bool useCompiledXaml)
 			{
 				var layout = new Gh6648(useCompiledXaml);
 				layout.stack.BindingContext = new { foo = "Foo" };

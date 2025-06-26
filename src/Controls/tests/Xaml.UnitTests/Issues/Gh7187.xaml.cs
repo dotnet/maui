@@ -17,8 +17,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void InvalidMarkupAssignmentThrowsXPE([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void InvalidMarkupAssignmentThrowsXPE([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh7187)));

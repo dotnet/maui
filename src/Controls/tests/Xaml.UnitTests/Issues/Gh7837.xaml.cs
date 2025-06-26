@@ -29,8 +29,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void BindingWithMultipleIndexers([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void BindingWithMultipleIndexers([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					MockCompiler.Compile(typeof(Gh7837));

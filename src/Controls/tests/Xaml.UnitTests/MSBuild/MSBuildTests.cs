@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		string tempDirectory;
 		string intermediateDirectory;
 
-		[SetUp]
+		// Constructor
 		public void SetUp()
 		{
 			testDirectory = TestContext.CurrentContext.TestDirectory;
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			File.Copy(targets, IOPath.Combine(tempDirectory, "Directory.Build.targets"), true);
 		}
 
-		[TearDown]
+		// IDisposable
 		public void TearDown()
 		{
 			// Leave log files behind on test failures
@@ -260,8 +260,11 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		// Tests the MauiXamlCValidateOnly=True MSBuild property
-		[Fact]
-		public void ValidateOnly([Values("Debug", "Release", "ReleaseProd")] string configuration)
+		[Theory]
+		public void ValidateOnly([Theory]
+		[InlineData("Debug")]
+		[InlineData("Release")]
+		[InlineData("ReleaseProd")] string configuration)
 		{
 			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));

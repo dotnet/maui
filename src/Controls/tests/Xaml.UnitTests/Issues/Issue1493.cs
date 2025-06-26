@@ -8,13 +8,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	public class Issue1493
 	{
 		CultureInfo _defaultCulture;
-		[SetUp]
+		// Constructor
 		public virtual void Setup()
 		{
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 		}
 
-		[TearDown]
+		// IDisposable
 		public virtual void TearDown()
 		{
 			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;

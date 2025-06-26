@@ -65,11 +65,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.StyleSheets
 		public void TestCase(string selectorString, bool label0match, bool label1match, bool customLabel0match, bool customLabel1match, bool absoluteLayout0match)
 		{
 			var selector = Selector.Parse(new CssReader(new StringReader(selectorString)));
-			Assert.Equal(label0match, selector.Matches(Label0));
-			Assert.Equal(label1match, selector.Matches(Label1));
-			Assert.Equal(customLabel0match, selector.Matches(CustomLabel0));
-			Assert.Equal(customLabel1match, selector.Matches(CustomLabel1));
-			Assert.Equal(absoluteLayout0match, selector.Matches(AbsoluteLayout0));
+			Assert.Equal(label0match, selector.Matches(Label0);
+			Assert.Equal(label1match, selector.Matches(Label1);
+			Assert.Equal(customLabel0match, selector.Matches(CustomLabel0);
+			Assert.Equal(customLabel1match, selector.Matches(CustomLabel1);
+			Assert.Equal(absoluteLayout0match, selector.Matches(AbsoluteLayout0);
 		}
 	}
 }

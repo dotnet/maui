@@ -36,7 +36,7 @@ public partial class Maui26369 : ContentPage
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -47,7 +47,7 @@ public partial class Maui26369 : ContentPage
 			AppInfo.SetCurrent(null);
 		}
 
-		[Fact]
+		[Theory]
 		public void CompilationDoesNotFail([Values] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
@@ -58,7 +58,7 @@ public partial class Maui26369 : ContentPage
 			}
 
 			var page = new Maui26369(useCompiledXaml);
-			Assert.Equal(new GridLength(30, page.NullableGridLength);
+			Assert.Equal(new GridLength(30), page.NullableGridLength);
 		}
 
 		private bool ContainsBoxToNullable(MethodDefinition methodDef)

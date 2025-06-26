@@ -17,8 +17,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void GenericBPCompiles([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void GenericBPCompiles([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					MockCompiler.Compile(typeof(Gh7559));

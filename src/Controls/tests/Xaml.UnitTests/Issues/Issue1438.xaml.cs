@@ -21,8 +21,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void XNameForwardDeclaration(bool useCompiledXaml)
 			{

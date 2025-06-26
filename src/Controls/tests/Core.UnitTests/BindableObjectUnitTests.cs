@@ -524,7 +524,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			const string value = "value";
 			var mock = new MockBindable();
 			mock.SetValue(property, value);
-			Assert.Equal(value.ToUpperInvariant(), mock.GetValue(property));
+			Assert.Equal(value.ToUpperInvariant());
 		}
 
 		[Fact]

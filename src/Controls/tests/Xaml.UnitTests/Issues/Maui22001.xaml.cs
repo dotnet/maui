@@ -31,7 +31,7 @@ public partial class Maui22001
 	{
 		MockDeviceDisplay mockDeviceDisplay;
 		MockDeviceInfo mockDeviceInfo;
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -47,8 +47,10 @@ public partial class Maui22001
 			mockDeviceInfo = null;
 		}
 
-		[Fact]
-		public void StateTriggerTargetName([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void StateTriggerTargetName([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			var page = new Maui22001(useCompiledXaml);
 

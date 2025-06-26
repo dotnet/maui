@@ -40,11 +40,13 @@ public partial class Maui17950 : ContentPage
 	}
 	class Test
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// Constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void AmbiguousMatch([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void AmbiguousMatch([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui17950)));

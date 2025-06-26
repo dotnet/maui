@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
-			[SetUp]
+			// Constructor
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
@@ -28,8 +28,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[Fact]
-			public void OnPlatformDefaultToBPDefaultValue([Values(true, false)] bool useCompiledXaml)
+			[Theory]
+			public void OnPlatformDefaultToBPDefaultValue([Theory]
+		[InlineData(true)]
+		[InlineData(false)] bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.Android;
 				var layout = new Gh7156(useCompiledXaml);

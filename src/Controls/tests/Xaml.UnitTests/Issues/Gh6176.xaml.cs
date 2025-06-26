@@ -25,8 +25,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void XamlCDoesntFail([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void XamlCDoesntFail([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh6176(useCompiledXaml);
 			}

@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var button = new Button();
 
 			button.FontFamily = "CrazyFont";
-			Assert.Equal((button as ITextStyle).Font, Font.OfSize("CrazyFont", button.FontSize));
+			Assert.Equal((button as ITextStyle).Font, Font.OfSize("CrazyFont", button.FontSize);
 		}
 
 		[Fact]
@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var button = new Button();
 
 			button.FontSize = 1000;
-			Assert.Equal((button as ITextStyle).Font, Font.SystemFontOfSize(1000));
+			Assert.Equal((button as ITextStyle).Font, Font.SystemFontOfSize(1000);
 		}
 
 		[Fact]
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var button = new Button();
 
 			button.FontAttributes = FontAttributes.Italic | FontAttributes.Bold;
-			Assert.Equal((button as ITextStyle).Font, Font.SystemFontOfSize(button.FontSize, FontWeight.Bold, FontSlant.Italic));
+			Assert.Equal((button as ITextStyle).Font, Font.SystemFontOfSize(button.FontSize, FontWeight.Bold, FontSlant.Italic);
 		}
 
 		[Fact]

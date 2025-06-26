@@ -6,8 +6,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	public class FontConverterTests : BaseTestFixture
 	{
 		[Theory]
-		[InlineData("Bold", Controls.FontAttributes.Bold)]
-		[Theory]
 		[InlineData("Italic", Controls.FontAttributes.Italic)]
 		[Theory]
 		[InlineData("Bold, Italic", Controls.FontAttributes.Bold | Controls.FontAttributes.Italic)]

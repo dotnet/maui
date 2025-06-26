@@ -14,11 +14,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Test
 		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+			// Constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+			// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Fact]
-			public void NestedTriggers([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void NestedTriggers([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				Maui6367 view = new Maui6367(useCompiledXaml);
 			}

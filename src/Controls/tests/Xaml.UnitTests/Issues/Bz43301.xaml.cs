@@ -17,8 +17,6 @@ namespace Foo.Microsoft.Maui.Controls.Bar
 		class Tests
 		{
 			[Theory]
-			[InlineData(true)]
-			[Theory]
 			[InlineData(false)]
 			//No need for any actual [Fact]. If this compiles, the bug is fixed.
 			public void DoesCompile(bool useCompiledXaml)

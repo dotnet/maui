@@ -17,6 +17,6 @@ public class Issue15815 : _IssuesUITest
 	public void LastItemIsVisilbe()
 	{
 		var lastItem = App.WaitForElement("id-2");
-		Assert.Equal("Item 2", lastItem.GetText());
+		Assert.Equal("Item 2", lastItem.GetText();
 	}
 }

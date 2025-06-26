@@ -18,9 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void SettingSliderToSpecificValueWorks()
 		{
 			App.WaitForElement("LabelValue");
-			Assert.Equal("5", App.WaitForElement("LabelValue").GetText());
+			Assert.Equal("5", App.WaitForElement("LabelValue").GetText();
 			App.Tap("SetTo7");
-			Assert.Equal("7", App.WaitForElement("LabelValue").GetText());
+			Assert.Equal("7", App.WaitForElement("LabelValue").GetText();
 		}
 	}
 }

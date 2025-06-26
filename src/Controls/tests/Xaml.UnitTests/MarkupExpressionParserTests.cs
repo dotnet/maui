@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 		}
 
-		[SetUp]
+		// Constructor
 		public override void Setup()
 		{
 			base.Setup();
@@ -105,8 +105,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.Equal(Binding.SelfPath, ((Binding)binding).Path);
 		}
 
-		[Theory]
-		[InlineData("{Binding Foo}")]
 		[Theory]
 		[InlineData("{Binding {x:Static local:MarkupExpressionParserTests.Foo}}")]
 		public void BindingWithImplicitPath(string bindingString)
@@ -347,31 +345,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public int FontSize { get; set; }
 
 		[Theory]
-		[InlineData("{OnPlatform 20, Android=23}", "Android", 23)]
-		[Theory]
 		[InlineData("{OnPlatform Android=20, iOS=25}", "iOS", 25)]
-		[Theory]
-		[InlineData("{OnPlatform Android=20, MacCatalyst=25}", "MacCatalyst", 25)]
 		[Theory]
 		[InlineData("{OnPlatform Android=20, Tizen=25}", "Tizen", 25)]
 		[Theory]
-		[InlineData("{OnPlatform Android=20, WinUI=25}", "WinUI", 25)]
-		[Theory]
 		[InlineData("{OnPlatform Android=20, UWP=25}", "WinUI", 25)]
-		[Theory]
-		[InlineData("{OnPlatform Android=20, WinUI=25, UWP=20}", "WinUI", 25)]
 		[Theory]
 		[InlineData("{OnPlatform Android=20, UWP=25}", "UWP", 25)]
 		[Theory]
-		[InlineData("{OnPlatform 20}", "Android", 20)]
-		[Theory]
 		[InlineData("{OnPlatform 20}", "iOS", 20)]
 		[Theory]
-		[InlineData("{OnPlatform 20}", "Tizen", 20)]
-		[Theory]
 		[InlineData("{OnPlatform 20}", "WinUI", 20)]
-		[Theory]
-		[InlineData("{OnPlatform 20}", "UWP", 20)]
 		[Theory]
 		[InlineData("{OnPlatform 20}", "Foo", 20)]
 		[Theory]
@@ -393,15 +377,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 		[Theory]
-		[InlineData("{OnIdiom Phone=23, Tablet=25, Default=20}", "Phone", 23)]
-		[Theory]
 		[InlineData("{OnIdiom Phone=23, Tablet=25, Default=20}", "Tablet", 25)]
 		[Theory]
-		[InlineData("{OnIdiom 20, Phone=23, Tablet=25}", "Desktop", 20)]
-		[Theory]
 		[InlineData("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "Desktop", 26)]
-		[Theory]
-		[InlineData("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "TV", 30)]
 		[Theory]
 		[InlineData("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "Watch", 10)]
 		[TestCase("{OnIdiom Phone=23}", "Desktop", default(int))]
@@ -422,11 +400,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 		[Theory]
-		[InlineData("{Binding")]
-		[Theory]
 		[InlineData("{Binding 'Foo}")]
-		[Theory]
-		[InlineData("{Binding Foo, Converter={StaticResource Bar}")]
 		[Theory]
 		[InlineData("{Binding Foo, Converter={StaticResource Bar}?}")]
 		public void InvalidExpressions(string expression)

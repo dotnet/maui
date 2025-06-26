@@ -21,17 +21,19 @@ public partial class Maui21038
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void XamlParseErrorsHaveFileInfo([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void XamlParseErrorsHaveFileInfo([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 			{

@@ -20,20 +20,22 @@ public partial class Maui22536
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void TestNonCompiledResourceDictionary([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void TestNonCompiledResourceDictionary([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			var page = new Maui22536(useCompiledXaml);
-			Assert.Equal(page.Button.BackgroundColor, Color.FromArgb("#010203");
+			Assert.Equal(page.Button.BackgroundColor, Color.FromArgb("#010203"));
 		}
 	}
 }

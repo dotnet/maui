@@ -449,7 +449,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, testPage.AppliedQueryAttributes.Count);
 			Assert.Equal(3, testPage.AppliedQueryAttributes[0].Count);
 			Assert.Single(testPage.AppliedQueryAttributes[1]);
-			Assert.Equal($"{nameof(ShellTestPage.SomeQueryParameter)}", testPage.AppliedQueryAttributes[1].Keys.First());
+			Assert.Equal($"{nameof(ShellTestPage.SomeQueryParameter)}", testPage.AppliedQueryAttributes[1].Keys.First();
 		}
 
 		[Fact]

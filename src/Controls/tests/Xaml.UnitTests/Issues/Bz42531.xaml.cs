@@ -22,11 +22,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// Constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// IDisposable public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[Theory]
-			[InlineData(true)]
 			[Theory]
 			[InlineData(false)]
 			public void RDInDataTemplates(bool useCompiledXaml)

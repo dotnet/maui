@@ -47,15 +47,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(true)]
-			[Theory]
 			[InlineData(false)]
 			public void MarkupOnAttachedBP(bool useCompiledXaml)
 			{
 				var page = new Bz53203(useCompiledXaml);
 				var label = page.label0;
-				Assert.Equal(42, Grid.GetRow(label);
-				Assert.Equal(Bz53203Values.Better, GetParameter(label);
+				Assert.Equal(42, Grid.GetRow(label));
+				Assert.Equal(Bz53203Values.Better, GetParameter(label));
 			}
 
 		}

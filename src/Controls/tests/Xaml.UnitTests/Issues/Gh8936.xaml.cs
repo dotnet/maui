@@ -24,8 +24,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void IndexerBindingOnSubclasses([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void IndexerBindingOnSubclasses([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh8936(useCompiledXaml) { BindingContext = new Gh8936VM() };
 				Assert.Equal("Value", layout.entry0.Text);

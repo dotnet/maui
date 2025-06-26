@@ -17,11 +17,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+			// Constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+			// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Fact]
-			public void TriggerWithDynamicResource([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void TriggerWithDynamicResource([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var page = new Maui13585(useCompiledXaml);
 				Assert.Equal(Colors.Green, page.styleTriggerWithStaticResources.BackgroundColor);

@@ -35,7 +35,7 @@ public partial class Maui25141 : ContentPage
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());

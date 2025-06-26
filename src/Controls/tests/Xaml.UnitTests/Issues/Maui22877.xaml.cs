@@ -30,7 +30,7 @@ public partial class Maui22877 : ContentPage
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -43,8 +43,10 @@ public partial class Maui22877 : ContentPage
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Fact]
-		public void OnBindingRelease([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void OnBindingRelease([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Phone;
 			var page = new Maui22877(useCompiledXaml) { BindingContext = new { BoundString = "BoundString" } };

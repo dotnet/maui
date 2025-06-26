@@ -26,17 +26,19 @@ public partial class Maui18545 : ContentPage
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void DynamicResourcesOnGradient([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void DynamicResourcesOnGradient([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			var lighttheme = new ResourceDictionary
 			{

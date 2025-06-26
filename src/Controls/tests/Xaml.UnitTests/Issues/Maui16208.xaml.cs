@@ -30,7 +30,7 @@ public partial class Maui16208
 	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -44,8 +44,10 @@ public partial class Maui16208
 			mockDeviceInfo = null;
 		}
 
-		[Fact]
-		public void SetterAndTargetName([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void SetterAndTargetName([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 
 			Assert.DoesNotThrow(() => new Maui16208(useCompiledXaml));

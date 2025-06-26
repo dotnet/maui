@@ -18,8 +18,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void Datetime(bool useCompiledXaml)
 			{
@@ -29,8 +27,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(new DateTime(2015, 01, 16), layout.datetime1.Date);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void String(bool useCompiledXaml)

@@ -55,8 +55,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			// All other cases should throw
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void StaticProperty(bool useCompiledXaml)
 			{
@@ -64,8 +62,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("Property", layout.staticproperty.Text);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void MemberOptional(bool useCompiledXaml)
@@ -75,8 +71,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void FieldColor(bool useCompiledXaml)
 			{
@@ -85,8 +79,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void Constant(bool useCompiledXaml)
 			{
@@ -94,8 +86,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("Constant", layout.constant.Text);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			//https://bugzilla.xamarin.com/show_bug.cgi?id=49228
@@ -106,8 +96,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void Field(bool useCompiledXaml)
 			{
@@ -115,8 +103,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("Field", layout.field.Text);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void Enum(bool useCompiledXaml)
@@ -126,8 +112,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void FieldRef(bool useCompiledXaml)
 			{
@@ -135,8 +119,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("ic_close.png", layout.field2.Text);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			// https://bugzilla.xamarin.com/show_bug.cgi?id=48242
@@ -146,8 +128,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("ic_close.png", (layout.ToolbarItems[0].IconImageSource as FileImageSource).File);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			// https://bugzilla.xamarin.com/show_bug.cgi?id=55096

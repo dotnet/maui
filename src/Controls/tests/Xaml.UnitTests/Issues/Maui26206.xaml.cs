@@ -19,7 +19,7 @@ public partial class Maui26206 : ContentPage
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -30,7 +30,7 @@ public partial class Maui26206 : ContentPage
 			AppInfo.SetCurrent(null);
 		}
 
-		[Fact]
+		[Theory]
 		public void MultipleResourcesInRD([Values] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)

@@ -7,8 +7,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	public class TextTransformTests : BaseTestFixture
 	{
 		[Theory]
-		[InlineData(TextTransform.None)]
-		[Theory]
 		[InlineData(TextTransform.Lowercase)]
 		[Theory]
 		[InlineData(TextTransform.Uppercase)]

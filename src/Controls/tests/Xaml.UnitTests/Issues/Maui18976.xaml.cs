@@ -28,17 +28,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Test
 		{
-			[SetUp]
+			// Constructor
 			public void Setup()
 			{
 				Application.SetCurrentApplication(new MockApplication());
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			}
 
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+			// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Fact]
-			public void DataTriggerRestoreValue([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void DataTriggerRestoreValue([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var page = new Maui18976(useCompiledXaml);
 				Assert.False(page.checkbox.IsChecked);

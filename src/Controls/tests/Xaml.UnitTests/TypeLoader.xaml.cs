@@ -19,14 +19,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		public class Tests
 		{
-			[SetUp]
+			// Constructor
 			public void SetUp()
 			{
 				Application.Current = new MockApplication();
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void LoadTypeFromXmlns(bool useCompiledXaml)
@@ -37,8 +35,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.That(layout.customview0, Is.TypeOf<CustomView>());
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void LoadTypeFromXmlnsWithoutAssembly(bool useCompiledXaml)

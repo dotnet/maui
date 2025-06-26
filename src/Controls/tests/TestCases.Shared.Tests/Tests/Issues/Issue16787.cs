@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Trait("Category", UITestCategories.CollectionView)]
 		public void CollectionViewBindingContextOnlyChangesOnce()
 		{
-			Assert.Equal("1", App.WaitForElement("LabelBindingCount").GetText());
+			Assert.Equal("1", App.WaitForElement("LabelBindingCount").GetText();
 		}
 	}
 }

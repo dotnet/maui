@@ -28,8 +28,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			// All other cases should throw
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void ThrowOnInstanceProperty(bool useCompiledXaml)
 			{

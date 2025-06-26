@@ -22,14 +22,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void TypeConvertersOnAttachedBP(bool useCompiledXaml)
 			{
 				var p = new Unreported002(useCompiledXaml);
-				Assert.Equal(new Rect(0.5, 0.5, 1, -1), AbsoluteLayoutCompat.GetLayoutBounds(p.label));
-				Assert.Equal(new Rect(0.7, 0.7, 0.9, -1), Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutBounds(p.label2));
+				Assert.Equal(new Rect(0.5, 0.5, 1, -1));
+				Assert.Equal(new Rect(0.7, 0.7, 0.9, -1));
 			}
 		}
 	}

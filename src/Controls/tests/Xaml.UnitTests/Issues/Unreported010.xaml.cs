@@ -22,17 +22,19 @@ public partial class Unreported010
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void LocalDynamicResources([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void LocalDynamicResources([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			var page = new Unreported010(useCompiledXaml);
 			Assert.Equal(Colors.Blue, page.button0.BackgroundColor);

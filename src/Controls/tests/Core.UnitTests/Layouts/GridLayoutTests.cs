@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			gl.SetRow(view, 2);
 
 			// Check our assumptions
-			Assert.Equal(2, gl.GetRow(view));
+			Assert.Equal(2, gl.GetRow(view);
 
 			// Okay, removing the View from the Grid should mean that any attempt to get row/column info
 			// for that View should fail
@@ -37,10 +37,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			var view = new Label();
 
 			gl.Add(view);
-			Assert.Equal(0, gl.GetRow(view));
-			Assert.Equal(0, gl.GetColumn(view));
-			Assert.Equal(1, gl.GetRowSpan(view));
-			Assert.Equal(1, gl.GetColumnSpan(view));
+			Assert.Equal(0, gl.GetRow(view);
+			Assert.Equal(0, gl.GetColumn(view);
+			Assert.Equal(1, gl.GetRowSpan(view);
+			Assert.Equal(1, gl.GetColumnSpan(view);
 		}
 
 		[Fact]
@@ -50,10 +50,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			var view = NSubstitute.Substitute.For<IView>();
 
 			gl.Add(view);
-			Assert.Equal(0, gl.GetRow(view));
-			Assert.Equal(0, gl.GetColumn(view));
-			Assert.Equal(1, gl.GetRowSpan(view));
-			Assert.Equal(1, gl.GetColumnSpan(view));
+			Assert.Equal(0, gl.GetRow(view);
+			Assert.Equal(0, gl.GetColumn(view);
+			Assert.Equal(1, gl.GetRowSpan(view);
+			Assert.Equal(1, gl.GetColumnSpan(view);
 		}
 
 		[Fact]

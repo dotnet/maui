@@ -16,8 +16,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Test
 		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+			// Constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+			// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 		}
 	}
 

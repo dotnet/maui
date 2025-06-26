@@ -21,8 +21,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void ReportSyntaxError([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void ReportSyntaxError([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh5378_2)));

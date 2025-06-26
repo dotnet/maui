@@ -25,8 +25,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void SupportsXArray(bool useCompiledXaml)
 			{
@@ -39,8 +37,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("World", ((string[])layout.Content)[1]);
 			}
 
-			[Fact]
-			public void ArrayExtensionNotPresentInGeneratedCode([Values(false)] bool useCompiledXaml)
+			[Theory]
+			public void ArrayExtensionNotPresentInGeneratedCode([Theory]
+		[InlineData(false)] bool useCompiledXaml)
 			{
 				MockCompiler.Compile(typeof(XArray), out var methodDef, out var hasLoggedErrors);
 				Assert.That(!hasLoggedErrors);

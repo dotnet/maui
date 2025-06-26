@@ -12,8 +12,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void BindingToNullable([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void BindingToNullable([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var vm = new Issue6280ViewModel();
 				var page = new Issue6280(useCompiledXaml) { BindingContext = vm };

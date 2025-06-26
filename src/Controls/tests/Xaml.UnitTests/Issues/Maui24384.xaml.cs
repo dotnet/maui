@@ -21,16 +21,16 @@ public partial class Maui24384 : ContentPage
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
+		[Theory]
 		public void ImmutableToIList([Values] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)

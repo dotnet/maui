@@ -22,12 +22,15 @@ public partial class Maui17461 : ContentPage
 	}
 	class Test
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+		// Constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void MissingKeyException([Values("net7.0-ios", "net7.0-android", "net7.0-macos")] string targetFramework)
+		[Theory]
+		public void MissingKeyException([Theory]
+		[InlineData("net7.0-ios")]
+		[InlineData("net7.0-android")]
+		[InlineData("net7.0-macos")] string targetFramework)
 		{
 			MockCompiler.Compile(typeof(Maui17461), out var methodDef, targetFramework: targetFramework);
 		}

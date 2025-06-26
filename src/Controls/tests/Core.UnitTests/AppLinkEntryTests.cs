@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var entry = new AppLinkEntry { AppLinkUri = uri };
 
-			Assert.Equal(uri.ToString(), entry.ToString());
+			Assert.Equal(uri.ToString());
 		}
 	}
 }

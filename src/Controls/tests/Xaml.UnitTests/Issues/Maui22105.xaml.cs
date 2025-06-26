@@ -21,17 +21,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Test
 		{
-			[SetUp]
+			// Constructor
 			public void Setup()
 			{
 				Application.SetCurrentApplication(new MockApplication());
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			}
 
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+			// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Fact]
-			public void DefaultValueShouldBeApplied([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void DefaultValueShouldBeApplied([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var page = new Maui22105(useCompiledXaml);
 				Assert.Equal(100, page.label.FontSize);

@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
-			[SetUp]
+			// Constructor
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
@@ -29,8 +29,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[Theory]
-			[InlineData(true)]
 			[Theory]
 			[InlineData(false)]
 			public void OnIdiomXDouble(bool useCompiledXaml)

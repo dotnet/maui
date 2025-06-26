@@ -35,7 +35,7 @@ public partial class Maui24900 : ContentPage
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -48,8 +48,10 @@ public partial class Maui24900 : ContentPage
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Fact]
-		public void OnPlatformDownNotThrow([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void OnPlatformDownNotThrow([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.WinUI;
 			Assert.DoesNotThrow(() => new Maui24900(useCompiledXaml));

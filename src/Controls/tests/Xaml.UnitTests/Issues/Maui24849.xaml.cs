@@ -30,7 +30,7 @@ public partial class Maui24849 : ContentPage
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -43,8 +43,10 @@ public partial class Maui24849 : ContentPage
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Fact]
-		public void VSGReturnsToNormal([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void VSGReturnsToNormal([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			var app = new MockApplication();
 			app.Resources.Add(new Style24849());
@@ -53,7 +55,7 @@ public partial class Maui24849 : ContentPage
 			app.MainPage = page;
 
 			Assert.False(page.button.IsEnabled);
-			Assert.Equal(Color.FromHex("#3c3c3b", page.button.TextColor);
+			Assert.Equal(Color.FromHex("#3c3c3b"), page.button.TextColor);
 
 			page.button.IsEnabled = true;
 			Assert.True(page.button.IsEnabled);
@@ -61,7 +63,7 @@ public partial class Maui24849 : ContentPage
 
 			page.button.IsEnabled = false;
 			Assert.False(page.button.IsEnabled);
-			Assert.Equal(Color.FromHex("#3c3c3b", page.button.TextColor);
+			Assert.Equal(Color.FromHex("#3c3c3b"), page.button.TextColor);
 		}
 	}
 }

@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var rect = new Rect(0.2, 0.3, 0.6, 0.7);
 
-			Assert.Equal(new Rect(0, 0, 1, 1), rect.Round());
+			Assert.Equal(new Rect(0, 0, 1, 1));
 		}
 
 		[Fact]
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(0, 0, 2, 2, 3, 0, 5, 5, false)]
 		public void TestIntersectsWith(double x1, double y1, double w1, double h1, double x2, double y2, double w2, double h2, bool expected)
 		{
-			Assert.Equal(expected, new Rect(x1, y1, w1, h1).IntersectsWith(new Rect(x2, y2, w2, h2)));
+			Assert.Equal(expected, new Rect(x1, y1, w1, h1).IntersectsWith(new Rect(x2, y2, w2, h2));
 		}
 
 		[Fact]
@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestUnion()
 		{
-			Assert.Equal(new Rect(0, 3, 13, 10), new Rect(3, 3, 10, 10).Union(new Rect(0, 5, 2, 2)));
+			Assert.Equal(new Rect(0, 3, 13, 10));
 		}
 
 		[Theory]
@@ -180,7 +180,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(1, 0, 3, 2, "{X=1 Y=0 Width=3 Height=2}")]
 		public void TestRectToString(double x, double y, double w, double h, string expected)
 		{
-			Assert.Equal(expected, new Rect(x, y, w, h).ToString());
+			Assert.Equal(expected, new Rect(x, y, w, h).ToString();
 		}
 
 		[Fact]

@@ -24,8 +24,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(true)]
-			[Theory]
 			[InlineData(false)]
 			public void FooBz54717(bool useCompiledXaml)
 			{

@@ -12,15 +12,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void DoesntFailOnxType([Values(true)] bool useCompiledXaml)
+			[Theory]
+			public void DoesntFailOnxType([Theory]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh5330)));
 			}
 
-			[Fact]
-			public void CompiledBindingWithxType([Values(true)] bool useCompiledXaml)
+			[Theory]
+			public void CompiledBindingWithxType([Theory]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh5330(useCompiledXaml) { BindingContext = new Button { Text = "Foo" } };
 				Assert.Equal("Foo", layout.label.Text);

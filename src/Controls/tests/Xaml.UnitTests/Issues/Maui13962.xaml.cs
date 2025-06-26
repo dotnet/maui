@@ -29,11 +29,13 @@ public partial class Maui13962 : ContentView
 	}
 	class Test
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// Constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void ResolutionOfOverridenBP([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void ResolutionOfOverridenBP([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			//shouln't throw
 			var page = new Maui13962(useCompiledXaml);

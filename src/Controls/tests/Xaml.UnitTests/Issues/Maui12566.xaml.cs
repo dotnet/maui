@@ -25,11 +25,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+			// Constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+			// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Fact]
-			public void AccessInternalEvent([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void AccessInternalEvent([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				//shouldn't throw
 				new Maui12566(useCompiledXaml);

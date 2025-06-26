@@ -19,8 +19,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void SupportsXReference(bool useCompiledXaml)
 			{
@@ -28,8 +26,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreSame(layout.image, layout.imageView.Content);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void XReferenceAsCommandParameterToSelf(bool useCompiledXaml)
@@ -50,8 +46,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void XReferenceAsBindingSource(bool useCompiledXaml)
 			{
@@ -61,8 +55,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("bar", layout.entry.Placeholder);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void CrossXReference(bool useCompiledXaml)

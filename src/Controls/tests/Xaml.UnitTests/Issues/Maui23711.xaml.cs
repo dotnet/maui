@@ -26,7 +26,7 @@ public partial class Maui23711 : ContentPage
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -39,12 +39,14 @@ public partial class Maui23711 : ContentPage
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Fact]
-		public void UsesReflectionBasedBindingsWhenCompilationOfBindingsWithSourceIsDisabled([Values(false, true)] bool compileBindingsWithSource)
+		[Theory]
+		public void UsesReflectionBasedBindingsWhenCompilationOfBindingsWithSourceIsDisabled([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool compileBindingsWithSource)
 		{
 			MockCompiler.Compile(typeof(Maui23711), out MethodDefinition methodDefinition, out bool hasLoggedErrors, compileBindingsWithSource: compileBindingsWithSource);
 			Assert.That(!hasLoggedErrors);
-			Assert.Equal(compileBindingsWithSource, ContainsTypedBindingInstantiation(methodDefinition);
+			Assert.Equal(compileBindingsWithSource, ContainsTypedBindingInstantiation(methodDefinition));
 		}
 
 		static bool ContainsTypedBindingInstantiation(MethodDefinition methodDef)

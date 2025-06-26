@@ -21,8 +21,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void ConstantConstraint(bool useCompiledXaml)
 			{
@@ -30,11 +28,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var label = layout.constantConstraint;
 				var constraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(label);
 				Assert.NotNull(constraint);
-				Assert.Equal(42, constraint.Compute(null);
+				Assert.Equal(42, constraint.Compute(null));
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void ConstraintRelativeToParent(bool useCompiledXaml)
@@ -44,11 +40,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var label = layout.constraintRelativeToParent;
 				var constraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(label);
 				Assert.NotNull(constraint);
-				Assert.Equal(102, constraint.Compute(layout.relativeLayout);
+				Assert.Equal(102, constraint.Compute(layout.relativeLayout));
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void ContraintRelativeToView(bool useCompiledXaml)
@@ -63,7 +57,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var label = layout.constraintRelativeToView;
 				var constraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(label);
 				Assert.NotNull(constraint);
-				Assert.Equal(97, constraint.Compute(layout.relativeLayout);
+				Assert.Equal(97, constraint.Compute(layout.relativeLayout));
 			}
 		}
 	}

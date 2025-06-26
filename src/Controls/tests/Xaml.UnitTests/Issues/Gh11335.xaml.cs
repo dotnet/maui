@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			bool _debuggerinitialstate;
 
-			[SetUp]
+			// Constructor
 			public void Setup()
 			{
 				_debuggerinitialstate = DebuggerHelper._mockDebuggerIsAttached;
@@ -44,8 +44,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Pass();
 			}
 
-			[Fact]
-			public void ChildIndexOnAdd([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void ChildIndexOnAdd([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh11335(useCompiledXaml);
 				VisualDiagnostics.VisualTreeChanged += OnVTChanged;

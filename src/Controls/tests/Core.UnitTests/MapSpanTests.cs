@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void HashCode()
 		{
-			Assert.Equal(new MapSpan(new Location(1, 2), 3, 4).GetHashCode(), new MapSpan(new Location(1, 2), 3, 4).GetHashCode());
+			Assert.Equal(new MapSpan(new Location(1, 2), 3, 4).GetHashCode());
 		}
 
 		[Fact]

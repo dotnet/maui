@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var bo = new MockBindable { BindingContext = vm };
 			bo.SetBinding(property, binding);
 
-			Assert.Equal("Foo Bar", bo.GetValue(property));
+			Assert.Equal("Foo Bar", bo.GetValue(property);
 		}
 
 		[Fact]
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			vm.Text = "Baz";
 
-			Assert.Equal("Foo Baz", bo.GetValue(property));
+			Assert.Equal("Foo Baz", bo.GetValue(property);
 		}
 
 		[Fact("StringFormat should not be applied to OneWayToSource bindings")]
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bo.SetValue(property, "Baz", SetterSpecificity.FromHandler);
 
 			Assert.Equal("Baz", vm.Text);
-			Assert.Equal("Foo Baz", bo.GetValue(property));
+			Assert.Equal("Foo Baz", bo.GetValue(property);
 		}
 
 		[Fact("You should get an exception when trying to change a binding after it's been applied")]
@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var bo = new MockBindable { BindingContext = vm };
 			bo.SetBinding(property, binding);
 
-			Assert.Equal(bo.GetValue(property), string.Format(new System.Globalization.CultureInfo(culture), "{0:P2}", .95d)); //%95,00 or 95.00%
+			Assert.Equal(bo.GetValue(property)); //%95,00 or 95.00%
 		}
 
 		[Fact]
@@ -561,7 +561,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.SetBinding(property, binding);
 
 			bindable.BindingContext = new MockViewModel();
-			Assert.Equal(property.DefaultValue, bindable.GetValue(property));
+			Assert.Equal(property.DefaultValue, bindable.GetValue(property);
 
 			viewmodel.Text = newvalue;
 			Assert.True(property.DefaultValue == bindable.GetValue(property),
@@ -588,11 +588,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.SetBinding(property, binding);
 
 			viewmodel.Text = newvalue;
-			Assert.Equal(newvalue, bindable.GetValue(property));
+			Assert.Equal(newvalue, bindable.GetValue(property);
 
 			const string newValue2 = "new value 2";
 			viewmodel.Text = newValue2;
-			Assert.Equal(newValue2, bindable.GetValue(property));
+			Assert.Equal(newValue2, bindable.GetValue(property);
 			var messages = MockApplication.MockLogger.Messages;
 			Assert.True(messages.Count == 0,
 				"An error was logged: " + messages.FirstOrDefault());

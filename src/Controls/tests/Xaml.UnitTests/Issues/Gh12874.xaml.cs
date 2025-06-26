@@ -15,8 +15,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void RevertToStyleValue([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void RevertToStyleValue([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh12874(useCompiledXaml);
 				Assert.Equal(LayoutOptions.Start, layout.label0.HorizontalOptions);

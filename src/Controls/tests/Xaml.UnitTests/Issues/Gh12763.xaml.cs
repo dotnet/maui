@@ -17,8 +17,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void QuotesInStringFormat([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void QuotesInStringFormat([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh12763(useCompiledXaml);
 				Assert.Equal("\"Foo\"", layout.label.Text);

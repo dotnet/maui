@@ -25,7 +25,7 @@ public partial class Maui25819 : ContentPage
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -36,7 +36,7 @@ public partial class Maui25819 : ContentPage
 			AppInfo.SetCurrent(null);
 		}
 
-		[Fact]
+		[Theory]
 		public void DoesntThrow([Values] bool inflator)
 		{
 			MockCompiler.Compile(typeof(Maui25819));

@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
-			[SetUp]
+			// Constructor
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
@@ -33,8 +33,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void BoolToVisibility(bool useCompiledXaml)
@@ -48,8 +46,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(false, layout.label0.IsVisible);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void DoubleToWidth(bool useCompiledXaml)
@@ -68,8 +64,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void StringToText(bool useCompiledXaml)
 			{
@@ -87,8 +81,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void OnPlatformAsResource(bool useCompiledXaml)
 			{
@@ -103,8 +95,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(FontAttributes.None, (FontAttributes)onplat);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void OnPlatformAsResourceAreApplied(bool useCompiledXaml)
@@ -122,8 +112,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(FontAttributes.Italic, layout.label0.FontAttributes);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void OnPlatform2Syntax(bool useCompiledXaml)
@@ -146,8 +134,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void OnPlatformDefault(bool useCompiledXaml)
 			{
@@ -156,8 +142,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(63, layout.label0.HeightRequest);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void OnPlatformInStyle0(bool useCompiledXaml)
@@ -172,8 +156,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void OnPlatformInStyle1(bool useCompiledXaml)
 			{
@@ -186,8 +168,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(0.0, layout.button1.FontSize);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void OnPlatformInline(bool useCompiledXaml)

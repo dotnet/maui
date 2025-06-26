@@ -28,17 +28,19 @@ public partial class Maui21757
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void TypeLiteralAndXTypeCanBeUsedInterchangeably([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void TypeLiteralAndXTypeCanBeUsedInterchangeably([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			var resourceDictionary = new Maui21757(useCompiledXaml);
 
@@ -46,13 +48,13 @@ public partial class Maui21757
 			Assert.NotNull(styleA);
 			Assert.Equal(typeof(BoxView), styleA.TargetType);
 			Assert.Equal(BoxView.ColorProperty, styleA.Setters[0].Property);
-			Assert.Equal(Color.FromArgb("#C8C8C8", styleA.Setters[0].Value);
+			Assert.Equal(Color.FromArgb("#C8C8C8"), styleA.Setters[0].Value);
 
 			var styleB = resourceDictionary["B"] as Style;
 			Assert.NotNull(styleB);
 			Assert.Equal(typeof(BoxView), styleB.TargetType);
 			Assert.Equal(BoxView.ColorProperty, styleB.Setters[0].Property);
-			Assert.Equal(Color.FromArgb("#C8C8C8", styleB.Setters[0].Value);
+			Assert.Equal(Color.FromArgb("#C8C8C8"), styleB.Setters[0].Value);
 		}
 	}
 }

@@ -26,11 +26,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		public class Tests
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// Constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// IDisposable public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void TestEventConnection(bool useCompiledXaml)

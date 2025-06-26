@@ -30,8 +30,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void EventOverriding([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void EventOverriding([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh5256(useCompiledXaml) { BindingContext = new { CompletedCommand = new Command(() => Assert.Pass()) } };
 				layout.entry.SendCompleted();

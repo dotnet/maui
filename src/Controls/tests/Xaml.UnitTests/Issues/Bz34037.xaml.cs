@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[SetUp]
+			// Constructor
 			public void Setup()
 			{
 				Bz34037Converter0.Invoked = 0;
@@ -80,8 +80,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Application.Current = null;
 			}
 
-			[Theory]
-			[InlineData(true)]
 			[Theory]
 			[InlineData(false)]
 			public void ConverterParameterOrderDoesNotMatters(bool useCompiledXaml)

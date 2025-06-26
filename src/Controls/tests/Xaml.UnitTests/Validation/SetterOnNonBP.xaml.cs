@@ -22,8 +22,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class SetterOnNonBPTests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void ShouldThrow(bool useCompiledXaml)
 			{

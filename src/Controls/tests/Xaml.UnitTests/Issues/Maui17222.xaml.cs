@@ -23,11 +23,12 @@ public partial class Maui17222 : ContentPage
 	class Test
 	{
 #if DEBUG
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// Constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void GetsourceInfo([Values(false)] bool useCompiledXaml)
+		[Theory]
+		public void GetsourceInfo([Theory]
+		[InlineData(false)] bool useCompiledXaml)
 		{
 			var app = new MockApplication();
 			app.Resources.Add(new Maui17222BaseStyle(useCompiledXaml));

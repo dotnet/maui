@@ -12,8 +12,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void HtmlInCDATA([Values(true, false)] bool useCompiledXaml)
+			[Theory]
+			public void HtmlInCDATA([Theory]
+		[InlineData(true)]
+		[InlineData(false)] bool useCompiledXaml)
 			{
 				var html = "<h1>Hello World!</h1><br/>SecondLine";
 				var layout = new LabelHtml(useCompiledXaml);

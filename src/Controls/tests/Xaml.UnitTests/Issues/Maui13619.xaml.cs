@@ -17,11 +17,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+			// Constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+			// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Fact]
-			public void AppThemeBindingAndDynamicResource([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void AppThemeBindingAndDynamicResource([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var page = new Maui13619(useCompiledXaml);
 				Assert.Equal(Colors.HotPink, page.label0.TextColor);

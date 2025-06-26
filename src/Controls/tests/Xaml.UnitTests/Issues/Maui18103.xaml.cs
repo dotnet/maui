@@ -22,14 +22,16 @@ public partial class Maui18103 : ContentPage
 	}
 	class Test
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// Constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void VSMOverride([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void VSMOverride([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			var page = new Maui18103(useCompiledXaml);
-			Assert.Equal(new SolidColorBrush(Colors.Orange, page.button.Background);
+			Assert.Equal(new SolidColorBrush(Colors.Orange), page.button.Background);
 		}
 	}
 }

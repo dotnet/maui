@@ -29,17 +29,19 @@ public partial class Maui21495
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public async Task AppThemeLeak([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public async Task AppThemeLeak([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			Application.Current.Resources.Add("labelColor", Colors.HotPink);
 			var page = new Maui21495(useCompiledXaml);

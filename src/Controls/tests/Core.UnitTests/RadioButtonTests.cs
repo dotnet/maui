@@ -230,11 +230,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			layout.Children.Add(radioButton2);
 			layout.Children.Add(radioButton3);
 
-			Assert.Equal(1, layout.GetValue(RadioButtonGroup.SelectedValueProperty));
+			Assert.Equal(1, layout.GetValue(RadioButtonGroup.SelectedValueProperty);
 
 			radioButton1.Value = "updated";
 
-			Assert.Equal("updated", layout.GetValue(RadioButtonGroup.SelectedValueProperty));
+			Assert.Equal("updated", layout.GetValue(RadioButtonGroup.SelectedValueProperty);
 		}
 	}
 }

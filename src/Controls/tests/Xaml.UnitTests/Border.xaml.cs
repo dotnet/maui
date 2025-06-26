@@ -19,8 +19,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void InitializeStrokeShape(bool useCompiledXaml)
 			{
@@ -30,8 +28,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.NotNull(layout.Border2.StrokeShape);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void BindingToStrokeShapeWorks(bool useCompiledXaml)

@@ -15,11 +15,13 @@ public partial class Maui7744 : ContentPage
 	}
 	class Test
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// Constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void ConvertersAreExecutedWhileApplyingSetter([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void ConvertersAreExecutedWhileApplyingSetter([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			var page = new Maui7744(useCompiledXaml);
 			Assert.That(page.border0.StrokeShape, Is.TypeOf<RoundRectangle>());

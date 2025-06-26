@@ -15,11 +15,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void XamlCDoesntFail([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void XamlCDoesntFail([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Maui2304Closed(useCompiledXaml);
-				Assert.Equal(typeof(OnPlatform<string>)), typeof(Maui2304Closed).BaseType);
+				Assert.Equal(typeof(OnPlatform<string>), typeof(Maui2304Closed).BaseType);
 			}
 		}
 	}

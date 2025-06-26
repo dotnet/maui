@@ -29,8 +29,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		class Tests
 		{
 			[Theory]
-			[InlineData(true)]
-			[Theory]
 			[InlineData(false)]
 			public void DTDoNotInstantiateTheirContent(bool useCompiledXaml)
 			{

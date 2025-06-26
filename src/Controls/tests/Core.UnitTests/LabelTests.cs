@@ -106,8 +106,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void FontSizeConverterTests()
 		{
 			var converter = new FontSizeConverter();
-			Assert.Equal(12d, converter.ConvertFromInvariantString("12"));
-			Assert.Equal(10.7, converter.ConvertFromInvariantString("10.7"));
+			Assert.Equal(12d, converter.ConvertFromInvariantString("12");
+			Assert.Equal(10.7, converter.ConvertFromInvariantString("10.7");
 		}
 
 		[Fact]
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ManuallySetFontSizeNotOverridenByStyle()
 		{
 			var label = new Label();
-			Assert.Equal(label.FontSize, label.GetDefaultFontSize());
+			Assert.Equal(label.FontSize, label.GetDefaultFontSize();
 
 			label.SetValue(Label.FontSizeProperty, 2.0);
 			Assert.Equal(2.0, label.FontSize);
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ManuallySetFontSizeNotOverridenByFontSetInStyle()
 		{
 			var label = new Label();
-			Assert.Equal(label.FontSize, label.GetDefaultFontSize());
+			Assert.Equal(label.FontSize, label.GetDefaultFontSize();
 
 			label.SetValue(Label.FontSizeProperty, 2.0);
 			Assert.Equal(2.0, label.FontSize);

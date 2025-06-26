@@ -284,7 +284,7 @@ public partial class NativeViewsAndBindings : ContentPage
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			AppInfo.SetCurrent(new Core.UnitTests.MockAppInfo());
@@ -292,10 +292,11 @@ public partial class NativeViewsAndBindings : ContentPage
 			DependencyService.Register<INativeBindingService, MockNativeBindingService>();
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void NativeInContentView([Values(false)] bool useCompiledXaml)
+		[Theory]
+		public void NativeInContentView([Theory]
+		[InlineData(false)] bool useCompiledXaml)
 		{
 			var layout = new NativeViewsAndBindings(useCompiledXaml);
 			layout.BindingContext = new

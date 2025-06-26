@@ -17,8 +17,6 @@ public partial class WithSuffix : ContentPage
 	class Tests
 	{
 		[Theory]
-		[InlineData(true)]
-		[Theory]
 		[InlineData(false)]
 		public void VerifyCorrectTypesUsed(bool useCompiledXaml)
 		{

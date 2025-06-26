@@ -42,7 +42,7 @@
 //			Assert.Equal("CustomView", generator.RootType);
 //			Assert.Equal("Microsoft.Maui.Controls.Xaml.UnitTests", generator.RootClrNamespace);
 //			Assert.Equal("Microsoft.Maui.Controls.View", generator.BaseType.BaseType);
-//			Assert.Equal(1, generator.NamedFields.Count();
+//			Assert.Equal(1, generator.NamedFields.Count());
 //			Assert.Equal("label0", generator.NamedFields.First().Name);
 //			Assert.Equal("Microsoft.Maui.Controls.Label", generator.NamedFields.First().Type.BaseType);
 //		}
@@ -78,7 +78,7 @@
 //			Assert.Equal("CustomView", generator.RootType);
 //			Assert.Equal("Microsoft.Maui.Controls.Xaml.UnitTests", generator.RootClrNamespace);
 //			Assert.Equal("Microsoft.Maui.Controls.View", generator.BaseType.BaseType);
-//			Assert.Equal(1, generator.NamedFields.Count();
+//			Assert.Equal(1, generator.NamedFields.Count());
 //			Assert.Equal("label0", generator.NamedFields.First().Name);
 //			Assert.Equal("Microsoft.Maui.Controls.Label", generator.NamedFields.First().Type.BaseType);
 //		}
@@ -117,7 +117,7 @@
 //			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 //			generator.ParseXaml(reader);
 //
-//			Assert.Equal(2, generator.NamedFields.Count();
+//			Assert.Equal(2, generator.NamedFields.Count());
 //			Assert.Equal("listView", generator.NamedFields.ToArray()[0].Name);
 //			Assert.Equal("CustomListViewSample.CustomListView", generator.NamedFields.ToArray()[0].Type.BaseType);
 //			Assert.Equal("listViewusing", generator.NamedFields.ToArray()[1].Name);
@@ -158,7 +158,7 @@
 //
 //			Assert.Contains("included", generator.NamedFields.Select(cmf => cmf.Name).ToList());
 //			Assert.False(generator.NamedFields.Select(cmf => cmf.Name).Contains("notincluded"));
-//			Assert.Equal(1, generator.NamedFields.Count();
+//			Assert.Equal(1, generator.NamedFields.Count());
 //		}
 //
 //		[Fact]
@@ -195,7 +195,7 @@
 //			generator.ParseXaml(reader);
 //
 //			Assert.False(generator.NamedFields.Select(cmf => cmf.Name).Contains("notincluded"));
-//			Assert.Equal(0, generator.NamedFields.Count();
+//			Assert.Equal(0, generator.NamedFields.Count());
 //		}
 //
 //		[Fact]
@@ -441,7 +441,7 @@
 //			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 //			generator.ParseXaml(new StringReader(xaml));
 //
-//			Assert.Equal(1, generator.NamedFields.Count();
+//			Assert.Equal(1, generator.NamedFields.Count());
 //			Assert.Equal("bar", generator.NamedFields.First().Name);
 //			Assert.Equal("Microsoft.Maui.Controls.ContentPage", generator.NamedFields.First().Type.BaseType);
 //		}

@@ -21,17 +21,19 @@ public partial class Maui21434
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void BindingsDoNotResolveStaticProperties([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void BindingsDoNotResolveStaticProperties([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			var page = new Maui21434(useCompiledXaml);
 			Assert.Equal("ParentText", page.ParentTextLabel?.Text);

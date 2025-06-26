@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(one);
 			shell.Items.Add(two);
 
-			Assert.Equal("//one/tabone/content", shell.CurrentState.Location.ToString());
+			Assert.Equal("//one/tabone/content", shell.CurrentState.Location.ToString();
 
 			shell.Navigating += (s, e) =>
 			{
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			shell.GoToAsync(new ShellNavigationState("//two/tabfour/"));
 
-			Assert.Equal("//one/tabone/content", shell.CurrentState.Location.ToString());
+			Assert.Equal("//one/tabone/content", shell.CurrentState.Location.ToString();
 		}
 
 		[Fact]
@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("//item/middle/last");
 			await shell.GoToAsync("//item/pagefirstmiddle/middle/pagesecondmiddle/last");
 
-			Assert.Equal("//item/pagefirstmiddle/middle/pagesecondmiddle/last", shell.CurrentState.Location.ToString());
+			Assert.Equal("//item/pagefirstmiddle/middle/pagesecondmiddle/last", shell.CurrentState.Location.ToString();
 		}
 
 		[Fact]
@@ -400,7 +400,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			tab.NavigationsFired.Clear();
 
 			await testShell.GoToAsync("../..");
-			Assert.Equal($"//rootpage", testShell.CurrentState.Location.ToString());
+			Assert.Equal($"//rootpage", testShell.CurrentState.Location.ToString();
 
 			Assert.Equal("OnRemovePage", tab.NavigationsFired[0]);
 			Assert.Equal("OnPopModal", tab.NavigationsFired[1]);
@@ -452,7 +452,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			tab.NavigationsFired.Clear();
 
 			await testShell.GoToAsync($"../pageToSwapIn");
-			Assert.Equal($"//rootpage/pageToSwapIn", testShell.CurrentState.Location.ToString());
+			Assert.Equal($"//rootpage/pageToSwapIn", testShell.CurrentState.Location.ToString();
 
 			Assert.Equal("OnPushAsync", tab.NavigationsFired[0]);
 			Assert.Equal("OnRemovePage", tab.NavigationsFired[1]);
@@ -477,10 +477,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await testShell.GoToAsync("firstPage/secondPage/thirdPage/fourthPage/fifthPage");
 			tab.NavigationsFired.Clear();
 
-			Assert.Equal($"//rootpage/firstPage/secondPage/thirdPage/fourthPage/fifthPage", testShell.CurrentState.Location.ToString());
+			Assert.Equal($"//rootpage/firstPage/secondPage/thirdPage/fourthPage/fifthPage", testShell.CurrentState.Location.ToString();
 
 			await testShell.GoToAsync($"//rootpage/thirdPage/fifthPage");
-			Assert.Equal($"//rootpage/thirdPage/fifthPage", testShell.CurrentState.Location.ToString());
+			Assert.Equal($"//rootpage/thirdPage/fifthPage", testShell.CurrentState.Location.ToString();
 
 			Assert.Equal("OnRemovePage", tab.NavigationsFired[0]);
 			Assert.Equal("OnRemovePage", tab.NavigationsFired[1]);
@@ -531,7 +531,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(item1);
 
 			await shell.GoToAsync("details");
-			Assert.Equal("//animals/monkeys/details", shell.CurrentState.Location.ToString());
+			Assert.Equal("//animals/monkeys/details", shell.CurrentState.Location.ToString();
 		}
 
 		[Theory]
@@ -551,7 +551,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await shell.GoToAsync("details");
 			await shell.GoToAsync("details");
-			Assert.Equal("//animals/monkeys/details/details", shell.CurrentState.Location.ToString());
+			Assert.Equal("//animals/monkeys/details/details", shell.CurrentState.Location.ToString();
 		}
 
 		[Fact]
@@ -567,7 +567,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("//rootlevelcontent1/edit"));
 
 			Assert.Single(request.Request.GlobalRoutes);
-			Assert.Equal("edit", request.Request.GlobalRoutes.First());
+			Assert.Equal("edit", request.Request.GlobalRoutes.First();
 		}
 
 		[Fact]
@@ -618,7 +618,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Routing.RegisterRoute("catdetails", typeof(ContentPage));
 			await shell.GoToAsync("//cats/catdetails?name=3");
 
-			Assert.Equal("//animals/domestic/cats/catdetails", shell.CurrentState.Location.ToString());
+			Assert.Equal("//animals/domestic/cats/catdetails", shell.CurrentState.Location.ToString();
 		}
 
 		[Theory]
@@ -692,7 +692,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			shell.Items.Add(item1);
 
-			Assert.Equal("//rootlevelcontent1", shell.CurrentState.Location.ToString());
+			Assert.Equal("//rootlevelcontent1", shell.CurrentState.Location.ToString();
 		}
 
 		[Fact]
@@ -709,9 +709,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("cat");
 			await shell.GoToAsync("details");
 
-			Assert.Equal("//rootlevelcontent1/cat/details", shell.CurrentState.Location.ToString());
+			Assert.Equal("//rootlevelcontent1/cat/details", shell.CurrentState.Location.ToString();
 			await shell.GoToAsync("//rootlevelcontent1/details");
-			Assert.Equal("//rootlevelcontent1/details", shell.CurrentState.Location.ToString());
+			Assert.Equal("//rootlevelcontent1/details", shell.CurrentState.Location.ToString();
 		}
 
 		[Fact]
@@ -726,14 +726,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await shell.GoToAsync("//MainPage/first/second");
 
-			Assert.Equal(typeof(TestPage1), shell.Navigation.NavigationStack[1].GetType());
-			Assert.Equal(typeof(TestPage2), shell.Navigation.NavigationStack[2].GetType());
+			Assert.Equal(typeof(TestPage1));
+			Assert.Equal(typeof(TestPage2));
 
 			await shell.GoToAsync("//MainPage/first/second/third");
 
-			Assert.Equal(typeof(TestPage1), shell.Navigation.NavigationStack[1].GetType());
-			Assert.Equal(typeof(TestPage2), shell.Navigation.NavigationStack[2].GetType());
-			Assert.Equal(typeof(TestPage3), shell.Navigation.NavigationStack[3].GetType());
+			Assert.Equal(typeof(TestPage1));
+			Assert.Equal(typeof(TestPage2));
+			Assert.Equal(typeof(TestPage3));
 		}
 
 		[Fact]
@@ -748,7 +748,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await shell.GoToAsync("//animals/monkeys/monkeyDetails?id=123");
 			await shell.GoToAsync("monkeygenome");
-			Assert.Equal("//animals/monkeys/monkeyDetails/monkeygenome", shell.CurrentState.Location.ToString());
+			Assert.Equal("//animals/monkeys/monkeyDetails/monkeygenome", shell.CurrentState.Location.ToString();
 		}
 
 		[Fact]
@@ -764,7 +764,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("//animals/monkeys/monkeyDetails?id=123");
 			await shell.GoToAsync("monkeygenome");
 			await shell.GoToAsync("../..");
-			Assert.Equal("//animals/monkeys", shell.CurrentState.Location.ToString());
+			Assert.Equal("//animals/monkeys", shell.CurrentState.Location.ToString();
 		}
 
 		[Fact]
@@ -776,7 +776,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			);
 
 			await shell.GoToAsync("//animals/monkeys/monkeyDetails?id=123");
-			Assert.Equal("//animals/monkeys/monkeyDetails", shell.CurrentState.Location.ToString());
+			Assert.Equal("//animals/monkeys/monkeyDetails", shell.CurrentState.Location.ToString();
 		}
 
 
@@ -811,7 +811,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(CreateShellContent(shellContentRoute: "about"));
 			await shell.GoToAsync("//animals/monkeys/monkeyDetails?id=123");
 			await shell.GoToAsync("monkeygenome");
-			Assert.Equal("//animals/monkeys/monkeyDetails/monkeygenome", shell.CurrentState.Location.ToString());
+			Assert.Equal("//animals/monkeys/monkeyDetails/monkeygenome", shell.CurrentState.Location.ToString();
 		}
 
 		[Fact]

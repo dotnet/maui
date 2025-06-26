@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Bugzilla35736Editor");
 			App.EnterText("Bugzilla35736Editor", "Testig");
 			App.Tap("Bugzilla35736Button");
-			Assert.Equal("Testing", App.FindElement("Bugzilla35736Label").GetText());
+			Assert.Equal("Testing", App.FindElement("Bugzilla35736Label").GetText();
 		}
 	}
 }

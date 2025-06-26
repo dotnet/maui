@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		IXamlTypeResolver typeResolver;
 		Internals.XamlServiceProvider serviceProvider;
 
-		[SetUp]
+		// Constructor
 		public override void Setup()
 		{
 			base.Setup();
@@ -33,21 +33,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void TestxType()
 		{
 			var markupString = @"{x:Type sys:String}";
-			Assert.Equal(typeof(string)), (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider));
+			Assert.Equal(typeof(string), (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider));
 		}
 
 		[Fact]
 		public void TestWithoutPrefix()
 		{
 			var markupString = @"{x:Type Grid}";
-			Assert.Equal(typeof(Grid)), (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider));
+			Assert.Equal(typeof(Grid), (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider));
 		}
 
 		[Fact]
 		public void TestWithExplicitTypeName()
 		{
 			var markupString = @"{x:Type TypeName=sys:String}";
-			Assert.Equal(typeof(string)), (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider));
+			Assert.Equal(typeof(string), (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider));
 		}
 	}
 }

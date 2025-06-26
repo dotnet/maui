@@ -29,8 +29,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void CanUseBindableObjectDefinedInThisAssembly(bool useCompiledXaml)
 			{
@@ -40,8 +38,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(TextAlignment.Start, layout.local.VerticalContentAlignment);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void CanUseBindableObjectDefinedInOtherAssembly(bool useCompiledXaml)

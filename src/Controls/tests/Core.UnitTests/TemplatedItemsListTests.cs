@@ -611,9 +611,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			items.Move(0, 2); // foo, bar, baz becomes bar (1), baz (2), foo (0)
 
-			Assert.Equal(2, GetIndex(item0));
-			Assert.Equal(0, GetIndex(item1));
-			Assert.Equal(1, GetIndex(item2));
+			Assert.Equal(2, GetIndex(item0);
+			Assert.Equal(0, GetIndex(item1);
+			Assert.Equal(1, GetIndex(item2);
 		}
 
 		[Fact]
@@ -628,8 +628,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			items.RemoveAt(0);
 
-			Assert.Equal(0, GetIndex(item1));
-			Assert.Equal(1, GetIndex(item2));
+			Assert.Equal(0, GetIndex(item1);
+			Assert.Equal(1, GetIndex(item2);
 		}
 
 		[Fact]
@@ -758,10 +758,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			items.Move(0, 3);
 			items.Move(3, 2);
 
-			Assert.Equal(0, GetIndex(bindable.TemplatedItems[0]));
-			Assert.Equal(1, GetIndex(bindable.TemplatedItems[1]));
-			Assert.Equal(2, GetIndex(bindable.TemplatedItems[2]));
-			Assert.Equal(3, GetIndex(bindable.TemplatedItems[3]));
+			Assert.Equal(0, GetIndex(bindable.TemplatedItems[0]);
+			Assert.Equal(1, GetIndex(bindable.TemplatedItems[1]);
+			Assert.Equal(2, GetIndex(bindable.TemplatedItems[2]);
+			Assert.Equal(3, GetIndex(bindable.TemplatedItems[3]);
 		}
 
 		[Fact]
@@ -1086,11 +1086,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var group1 = bindable.TemplatedItems.GetGroup(0);
 			var cell = group1[1];
 
-			Assert.Equal(1, group1.IndexOf(cell));
+			Assert.Equal(1, group1.IndexOf(cell);
 
 			var group2 = bindable.TemplatedItems.GetGroup(1);
 
-			Assert.Equal(-1, group2.IndexOf(cell));
+			Assert.Equal(-1, group2.IndexOf(cell);
 		}
 	}
 }

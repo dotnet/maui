@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Time = new TimeSpan(1000, 0, 0)
 			};
-			Assert.Equal(picker.Time, new TimeSpan());
+			Assert.Equal(picker.Time, new TimeSpan();
 
 			picker.Time = new TimeSpan(8, 30, 0);
 			Assert.Equal(new TimeSpan(8, 30, 0), picker.Time);

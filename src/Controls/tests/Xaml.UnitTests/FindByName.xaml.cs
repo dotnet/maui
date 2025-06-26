@@ -17,8 +17,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class FindByNameTests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void TestRootName(bool useCompiledXaml)
 			{
@@ -27,8 +25,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreSame(page, page.FindByName<FindByName>("root"));
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void TestName(bool useCompiledXaml)

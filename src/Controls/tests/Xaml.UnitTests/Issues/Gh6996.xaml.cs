@@ -18,8 +18,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void FontImageSourceColorWithDynamicResource([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void FontImageSourceColorWithDynamicResource([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh6996(useCompiledXaml);
 				Image image = layout.image;

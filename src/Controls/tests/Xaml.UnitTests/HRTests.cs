@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	public class HRTests
 	{
-		[TearDown]
+		// IDisposable
 		public void TearDown()
 		{
 			Maui.Controls.Internals.ResourceLoader.ExceptionHandler2 = null;

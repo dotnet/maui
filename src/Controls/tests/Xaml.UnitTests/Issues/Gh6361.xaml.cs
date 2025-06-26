@@ -15,8 +15,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void CSSBorderRadiusDoesNotFail([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void CSSBorderRadiusDoesNotFail([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh6361(useCompiledXaml);
 			}

@@ -108,8 +108,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var mixedContentWebView = new WebView();
 			mixedContentWebView.On<Android>().SetMixedContentMode(MixedContentHandling.AlwaysAllow);
 
-			Assert.Equal(MixedContentHandling.NeverAllow, defaultWebView.On<Android>().MixedContentMode());
-			Assert.Equal(MixedContentHandling.AlwaysAllow, mixedContentWebView.On<Android>().MixedContentMode());
+			Assert.Equal(MixedContentHandling.NeverAllow, defaultWebView.On<Android>().MixedContentMode();
+			Assert.Equal(MixedContentHandling.AlwaysAllow, mixedContentWebView.On<Android>().MixedContentMode();
 		}
 
 		[Fact]

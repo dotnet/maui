@@ -24,7 +24,7 @@ public partial class Maui16327 : ContentPage
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			AppInfo.SetCurrent(new MockAppInfo());
@@ -37,8 +37,10 @@ public partial class Maui16327 : ContentPage
 			AppInfo.SetCurrent(null);
 		}
 
-		[Fact]
-		public void ConversionOfResources([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void ConversionOfResources([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 

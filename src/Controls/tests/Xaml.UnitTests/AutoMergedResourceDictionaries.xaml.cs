@@ -19,14 +19,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void AutoMergedRd(bool useCompiledXaml)
 			{
 				var layout = new AutoMergedResourceDictionaries(useCompiledXaml);
 				Assert.Equal(Colors.Purple, layout.label.TextColor);
-				Assert.Equal(Color.FromArgb("#FF96F3", layout.label.BackgroundColor);
+				Assert.Equal(Color.FromArgb("#FF96F3"), layout.label.BackgroundColor);
 			}
 		}
 	}

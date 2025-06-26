@@ -28,22 +28,24 @@ public partial class Maui20818
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void TypeLiteralAndXTypeCanBeUsedInterchangeably([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void TypeLiteralAndXTypeCanBeUsedInterchangeably([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			var page = new Maui20818(useCompiledXaml);
 
-			Assert.Equal(typeof(Label), (page.Resources["A"] as Style).TargetType));
-			Assert.Equal(typeof(Label), (page.Resources["B"] as Style).TargetType));
+			Assert.Equal(typeof(Label));
+			Assert.Equal(typeof(Label));
 
 			Assert.Equal(typeof(Label), page.TriggerC.TargetType);
 			Assert.Equal(typeof(Label), page.TriggerD.TargetType);

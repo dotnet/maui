@@ -29,17 +29,19 @@ public partial class Maui21839
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public async Task VSMLeak([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public async Task VSMLeak([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			Application.Current.Resources.Add("buttonStyle",
 				new Style(typeof(Button))

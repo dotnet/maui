@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[TearDown] public void TearDown() => ResourceDictionary.ClearCache();
+			// IDisposable public void TearDown() => ResourceDictionary.ClearCache();
 
 			[TestCase(true), TestCase(false)]
 			public void RdWithSource(bool useCompiledXaml)

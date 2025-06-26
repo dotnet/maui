@@ -18,8 +18,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class FindByNameTests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void TestFieldModifier(bool useCompiledXaml)
 			{

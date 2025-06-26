@@ -29,17 +29,19 @@ public partial class Maui21774
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void AppThemeChangeOnUnparentedPage([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void AppThemeChangeOnUnparentedPage([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			Application.Current.Resources.Add("labelColor", Colors.LimeGreen);
 			Application.Current.UserAppTheme = AppTheme.Light;

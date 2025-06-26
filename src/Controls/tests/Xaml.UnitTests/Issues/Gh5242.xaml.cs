@@ -23,8 +23,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void BindingToNullable([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void BindingToNullable([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh5242(useCompiledXaml) { BindingContext = new Gh5242VM { Value = 42 } };
 				Assert.Equal(42, layout.NullableInt);

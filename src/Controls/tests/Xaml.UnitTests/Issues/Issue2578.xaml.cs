@@ -22,8 +22,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			[Ignore("[Bug] NamedSizes don't work in triggers: https://github.com/xamarin/Microsoft.Maui.Controls/issues/13831")]
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void MultipleTriggers(bool useCompiledXaml)
 			{

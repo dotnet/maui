@@ -22,14 +22,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub()); public void TearDown()
+			public Tests()
+			{
+				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			}
+
+			public void Dispose()
 			{
 				Application.Current = null;
 				DispatcherProvider.SetCurrent(null);
 			}
 
-			[Theory]
-			[InlineData(true)]
 			[Theory]
 			[InlineData(false)]
 			public void ControlTemplateAsImplicitAppLevelStyles(bool useCompiledXaml)

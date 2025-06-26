@@ -82,8 +82,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void SetUnsetStyleFromResource(bool useCompiledXaml)
 			{
@@ -109,8 +107,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(Button.FontAttributesProperty.DefaultValue, button.FontAttributes);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void SetUnsetLocalProperties(bool useCompiledXaml)

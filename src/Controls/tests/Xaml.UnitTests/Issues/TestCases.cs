@@ -18,14 +18,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	{
 		CultureInfo _defaultCulture;
 
-		[SetUp]
+		// Constructor
 		public virtual void Setup()
 		{
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
+		// IDisposable
 		public virtual void TearDown()
 		{
 			DispatcherProvider.SetCurrent(null);
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			Assert.NotNull(GetInnerView(contentPage));
 			//			Assert.AreEqual ("innerView", GetInnerView (contentPage).Name);
-			Assert.Equal(GetInnerView(contentPage), ((Microsoft.Maui.Controls.Internals.INameScope)contentPage).FindByName("innerView"));
+			Assert.Equal(GetInnerView(contentPage));
 			Assert.NotNull(label0);
 			Assert.NotNull(label1);
 			Assert.Equal(4, contentPage.Content.Descendants().Count());

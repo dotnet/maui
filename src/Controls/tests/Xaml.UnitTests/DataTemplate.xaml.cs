@@ -17,11 +17,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		public class Tests
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// Constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// IDisposable public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void EmptyTextCell(bool useCompiledXaml)
@@ -39,8 +37,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreNotSame(cell0, cell1);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void TextCell(bool useCompiledXaml)
@@ -62,8 +58,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void FromResource(bool useCompiledXaml)
 			{
@@ -84,8 +78,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void TextCellAccessResources(bool useCompiledXaml)
 			{
@@ -105,8 +97,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreNotSame(cell0, cell1);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void ViewCellAccessResources(bool useCompiledXaml)

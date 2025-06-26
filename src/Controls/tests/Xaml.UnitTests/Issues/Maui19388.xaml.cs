@@ -30,7 +30,7 @@ public partial class Maui19388 : ContentPage
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -43,8 +43,10 @@ public partial class Maui19388 : ContentPage
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Fact]
-		public void OnPlatformAppThemeBindingRelease([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void OnPlatformAppThemeBindingRelease([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			Application.Current.UserAppTheme = AppTheme.Light;
 			mockDeviceInfo.Platform = DevicePlatform.iOS;

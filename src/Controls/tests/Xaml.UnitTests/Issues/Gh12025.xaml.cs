@@ -23,14 +23,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void FindMostDerivedABP([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void FindMostDerivedABP([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh12025)));
 				var layout = new Gh12025(useCompiledXaml);
-				Assert.Equal(NavigationPage.IconColorProperty.DefaultValue, NavigationPage.GetIconColor(layout);
-				Assert.Equal(Colors.HotPink, Gh12025NavPage.GetIconColor(layout);
+				Assert.Equal(NavigationPage.IconColorProperty.DefaultValue, NavigationPage.GetIconColor(layout));
+				Assert.Equal(Colors.HotPink, Gh12025NavPage.GetIconColor(layout));
 			}
 		}
 	}

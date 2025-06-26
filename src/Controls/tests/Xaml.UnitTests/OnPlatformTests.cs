@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
+		// Constructor
 		public override void Setup()
 		{
 			base.Setup();

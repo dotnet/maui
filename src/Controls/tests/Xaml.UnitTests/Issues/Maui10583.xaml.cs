@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[SetUp]
+			// Constructor
 			public void Setup()
 			{
 				AppInfo.SetCurrent(new MockAppInfo());
@@ -51,8 +51,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				AppInfo.SetCurrent(null);
 			}
 
-			[Fact]
-			public void GenericMarkupExtensions([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void GenericMarkupExtensions([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				if (true)
 				{

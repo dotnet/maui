@@ -61,10 +61,10 @@ public partial class ServiceProviderTests : ContentPage
 	}
 	public class Tests
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		// Constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		// IDisposable public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		[Fact]
+		[Theory]
 		public void TestServiceProviders([Values] bool useCompiledXaml)
 		{
 			var page = new ServiceProviderTests(useCompiledXaml);

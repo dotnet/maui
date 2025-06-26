@@ -18,8 +18,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void StyleClassCanBeChanged([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void StyleClassCanBeChanged([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh2678(useCompiledXaml);
 				var label = layout.label0;

@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
-			[SetUp]
+			// Constructor
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
@@ -41,14 +41,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(true)]
-			[Theory]
 			[InlineData(false)]
 			public void LookForInheritanceOnOpImplicit(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;
 				var p = new Bz45891(useCompiledXaml);
-				Assert.Equal("Foo", p.List.First();
+				Assert.Equal("Foo", p.List.First());
 			}
 		}
 	}

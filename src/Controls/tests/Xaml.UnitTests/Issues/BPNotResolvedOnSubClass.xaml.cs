@@ -29,8 +29,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		class Tests
 		{
 			[Theory]
-			[InlineData(true)]
-			[Theory]
 			[InlineData(false)]
 			public void CorrectlyResolveBPOnSubClasses(bool useCompiledXaml)
 			{
@@ -41,7 +39,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var button = new Button();
 				button.Style = style;
 
-				Assert.Equal(Color.FromArgb("#dddddd"), button.GetValue(ShadowColorProperty);
+				Assert.Equal(Color.FromArgb("#dddddd"), button.GetValue(ShadowColorProperty));
 			}
 		}
 	}

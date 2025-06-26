@@ -192,7 +192,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.Core", "src\TestUtil
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.Appium", "src\TestUtils\src\UITest.Appium\UITest.Appium.csproj", "{5BC29B1A-1EBC-41BF-A0B6-D1B73F8A4991}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.NUnit", "src\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj", "{A7B4FF91-8AF6-4A36-805C-B73D888AC1BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.Xunit", "src\TestUtils\src\UITest.Xunit\UITest.Xunit.csproj", "{A7B4FF91-8AF6-4A36-805C-B73D888AC1BE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.TestCases.Shared.Tests", "src\Controls\tests\TestCases.Shared.Tests\Controls.TestCases.Shared.Tests.csproj", "{34DC60C1-C722-4134-99A4-E69B9AF1EAE3}"
 EndProject

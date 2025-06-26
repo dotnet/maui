@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				Gh3280 layout = null;
 				Assert.DoesNotThrow(() => layout = new Gh3280(useCompiledXaml));
-				Assert.Equal(new Size(15, 25, layout.Foo);
+				Assert.Equal(new Size(15), 25, layout.Foo);
 			}
 		}
 	}

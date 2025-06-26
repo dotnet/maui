@@ -38,8 +38,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void GenericSupportOnXaml2009(bool useCompiledXaml)
 			{
@@ -50,8 +48,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(2, ((List<Button>)list).Count);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void FindGenericByName(bool useCompiledXaml)
@@ -68,8 +64,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(1, nestedGenericList.Count);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void TestGenericParsing(bool useCompiledXaml)
@@ -91,8 +85,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.That(queue, Is.TypeOf<List<KeyValuePair<string, string>>>());
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void TestXamlPrimitives(bool useCompiledXaml)

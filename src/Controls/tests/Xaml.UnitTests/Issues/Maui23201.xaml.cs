@@ -22,17 +22,19 @@ public partial class Maui23201
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void ToolBarItemAppThemeBinding([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void ToolBarItemAppThemeBinding([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			Application.Current.Resources.Add("Black", Colors.DarkGray);
 			Application.Current.Resources.Add("White", Colors.LightGray);

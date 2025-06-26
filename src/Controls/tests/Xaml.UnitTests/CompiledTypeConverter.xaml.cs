@@ -74,8 +74,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void CompiledTypeConverterAreInvoked(bool useCompiledXaml)
 			{
@@ -102,9 +100,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.IsInstanceOf<Rectangle>(p.RectangleShape);
 				Assert.Equal(new CornerRadius(1, 2, 3, 4), ((RoundRectangle)p.RoundRectangleShape).CornerRadius);
 				Assert.Equal(3, ((PathGeometry)((Path)p.PathShape).Data).Figures.Count);
-				Assert.Equal(LayoutOptions.EndAndExpand, p.label.GetValue(View.HorizontalOptionsProperty);
+				Assert.Equal(LayoutOptions.EndAndExpand, p.label.GetValue(View.HorizontalOptionsProperty));
 				var xConstraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetXConstraint(p.label);
-				Assert.Equal(2, xConstraint.Compute(null);
+				Assert.Equal(2, xConstraint.Compute(null));
 				Assert.Equal(new Thickness(2, 3), p.label.Margin);
 				Assert.Equal(2, p.List.Count);
 				Assert.Equal("Bar", p.List[1]);

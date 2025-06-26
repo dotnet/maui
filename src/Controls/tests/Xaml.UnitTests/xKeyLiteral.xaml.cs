@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			[Fact]
 			//this requirement might change, see https://github.com/xamarin/Microsoft.Maui.Controls/issues/12425
-			public void xKeyRequireStringLiteral([Values(false, true)] bool useCompiledXaml)
+			public void xKeyRequireStringLiteral([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(xKeyLiteral)));

@@ -23,7 +23,7 @@ public partial class Maui25608_2
 	{
 		EventHandler<BindingBaseErrorEventArgs> _bindingFailureHandler;
 
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -39,8 +39,10 @@ public partial class Maui25608_2
 			AppInfo.SetCurrent(null);
 		}
 
-		[Fact]
-		public void TestInvalidBindingWithRelativeSource([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void TestInvalidBindingWithRelativeSource([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			bool bindingFailureReported = false;
 			_bindingFailureHandler = (sender, args) =>

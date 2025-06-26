@@ -7,8 +7,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	public class Issue1794
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		// Constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		// IDisposable public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 		[Fact]
 		public void FindNameInDT()

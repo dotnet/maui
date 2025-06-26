@@ -43,7 +43,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.True(buttons.Count == 1, $"Expected 1 buttonText, found {buttons.Count}.");
 
 			var cancel = buttons.First();
-			Assert.Equal("CANCEL", cancel.GetText());
+			Assert.Equal("CANCEL", cancel.GetText();
 
 			cancel.Click();
 

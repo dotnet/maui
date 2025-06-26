@@ -20,14 +20,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		public class Tests
 		{
-			[SetUp]
+			// Constructor
 			public void SetUp()
 			{
 				Application.Current = new MockApplication();
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void TestStyle(bool useCompiledXaml)
@@ -38,8 +36,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("FooBar", layout.label0.Text);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void TestConversionOnSetters(bool useCompiledXaml)
@@ -65,8 +61,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void ImplicitStyleAreApplied(bool useCompiledXaml)
 			{
@@ -74,8 +68,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(Colors.Red, layout.label1.TextColor);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void PropertyDoesNotNeedTypes(bool useCompiledXaml)
@@ -90,8 +82,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			//issue #2406
 			public void StylesDerivedFromDynamicStylesThroughStaticResource(bool useCompiledXaml)
@@ -105,8 +95,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(Colors.Red, label.TextColor);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			//issue #2406

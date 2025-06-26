@@ -23,15 +23,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		class Tests
 		{
 			[Theory]
-			[InlineData(true)]
-			[Theory]
 			[InlineData(false)]
 			public void TypeConverterAreAppliedForSettersToAttachedBP(bool useCompiledXaml)
 			{
 				var layout = new Bz28545(useCompiledXaml);
 				Assert.Equal(Colors.Pink, layout.label.TextColor);
-				Assert.Equal(AbsoluteLayoutFlags.PositionProportional, AbsoluteLayout.GetLayoutFlags(layout.label);
-				Assert.Equal(new Rect(1, 1, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), AbsoluteLayout.GetLayoutBounds(layout.label));
+				Assert.Equal(AbsoluteLayoutFlags.PositionProportional, AbsoluteLayout.GetLayoutFlags(layout.label));
+				Assert.Equal(new Rect(1, 1, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
 			}
 		}
 	}

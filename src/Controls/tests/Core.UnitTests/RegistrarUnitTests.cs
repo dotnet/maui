@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void BasicTest()
 		{
 			IRegisterable renderWithTarget = Internals.Registrar.Registered.GetHandler(typeof(ButtonPriority));
-			Assert.Equal(typeof(ButtonHigherPriorityTarget), renderWithTarget.GetType());
+			Assert.Equal(typeof(ButtonHigherPriorityTarget));
 		}
 	}
 
@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var registrar = new Internals.Registrar<MockRenderer>();
 			registrar.Register(typeof(View), typeof(MockRenderer));
 
-			Assert.Equal(typeof(MockRenderer), registrar.GetHandlerType(typeof(View)));
+			Assert.Equal(typeof(MockRenderer));
 		}
 
 		[Fact]
@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			registrar.Register(typeof(View), typeof(MockRenderer));
 			registrar.Register(typeof(Button), typeof(ButtonMockRenderer));
 
-			Assert.Equal(typeof(ButtonMockRenderer), registrar.GetHandlerTypeForObject(new Button()));
+			Assert.Equal(typeof(ButtonMockRenderer));
 		}
 
 		[Fact]

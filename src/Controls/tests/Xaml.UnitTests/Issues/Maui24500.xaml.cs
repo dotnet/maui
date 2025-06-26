@@ -30,7 +30,7 @@ public partial class Maui24500 : ContentPage
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -43,8 +43,10 @@ public partial class Maui24500 : ContentPage
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Fact]
-		public void OnIdiomBindingValueTypeRelease([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void OnIdiomBindingValueTypeRelease([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				MockCompiler.Compile(typeof(Maui24500));

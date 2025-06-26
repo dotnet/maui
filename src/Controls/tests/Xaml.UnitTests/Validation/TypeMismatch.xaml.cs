@@ -15,8 +15,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		public class Tests
 		{
-			[Fact]
-			public void ThrowsOnMismatchingType([Values(true, false)] bool useCompiledXaml)
+			[Theory]
+			public void ThrowsOnMismatchingType([Theory]
+		[InlineData(true)]
+		[InlineData(false)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.Throws(new BuildExceptionConstraint(7, 16, m => m.Contains("No property, BindableProperty", StringComparison.Ordinal)), () => MockCompiler.Compile(typeof(TypeMismatch)));

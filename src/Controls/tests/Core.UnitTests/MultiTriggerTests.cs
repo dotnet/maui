@@ -29,9 +29,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			element.SetValue(setterbp, "default");
 			element.SetValue(conditionbp, "foobar");
 			element.BindingContext = new { baz = "foobaz" };
-			Assert.Equal("default", element.GetValue(setterbp));
+			Assert.Equal("default", element.GetValue(setterbp);
 			element.Triggers.Add(multiTrigger);
-			Assert.Equal("qux", element.GetValue(setterbp));
+			Assert.Equal("qux", element.GetValue(setterbp);
 		}
 
 		[Fact]
@@ -54,9 +54,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			element.SetValue(setterbp, "default");
 			element.SetValue(conditionbp, "foobar");
 			element.BindingContext = new { baz = "foobazXX" };
-			Assert.Equal("default", element.GetValue(setterbp));
+			Assert.Equal("default", element.GetValue(setterbp);
 			element.Triggers.Add(multiTrigger);
-			Assert.Equal("default", element.GetValue(setterbp));
+			Assert.Equal("default", element.GetValue(setterbp);
 		}
 
 		[Fact]
@@ -79,15 +79,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			element.SetValue(setterbp, "default");
 			element.BindingContext = new { baz = "" };
 			element.Triggers.Add(multiTrigger);
-			Assert.Equal("default", element.GetValue(setterbp)); //both conditions false
+			Assert.Equal("default", element.GetValue(setterbp); //both conditions false
 
 			element.SetValue(conditionbp, "foobar");
-			Assert.Equal("default", element.GetValue(setterbp)); //one condition false
+			Assert.Equal("default", element.GetValue(setterbp); //one condition false
 
 			element.BindingContext = new { baz = "foobaz" };
-			Assert.Equal("qux", element.GetValue(setterbp)); //both condition true
+			Assert.Equal("qux", element.GetValue(setterbp); //both condition true
 			element.Triggers.Remove(multiTrigger);
-			Assert.Equal("default", element.GetValue(setterbp));
+			Assert.Equal("default", element.GetValue(setterbp);
 		}
 
 		[Fact]
@@ -110,29 +110,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			element.SetValue(setterbp, "default");
 			element.BindingContext = new { baz = "" };
 			element.Triggers.Add(multiTrigger);
-			Assert.Equal("default", element.GetValue(setterbp)); //both conditions false
+			Assert.Equal("default", element.GetValue(setterbp); //both conditions false
 
 			element.SetValue(conditionbp, "foobar");
-			Assert.Equal("default", element.GetValue(setterbp)); //one condition false
+			Assert.Equal("default", element.GetValue(setterbp); //one condition false
 
 			element.BindingContext = new { baz = "foobaz" };
-			Assert.Equal("qux", element.GetValue(setterbp)); //both condition true
+			Assert.Equal("qux", element.GetValue(setterbp); //both condition true
 
 			element.BindingContext = new { baz = "" };
-			Assert.Equal("default", element.GetValue(setterbp)); //one condition false
+			Assert.Equal("default", element.GetValue(setterbp); //one condition false
 
 			element.BindingContext = new { baz = "foobaz" };
-			Assert.Equal("qux", element.GetValue(setterbp)); //both condition true
+			Assert.Equal("qux", element.GetValue(setterbp); //both condition true
 
 			element.SetValue(conditionbp, "");
-			Assert.Equal("default", element.GetValue(setterbp)); //one condition false
+			Assert.Equal("default", element.GetValue(setterbp); //one condition false
 
 			element.SetValue(conditionbp, "foobar");
-			Assert.Equal("qux", element.GetValue(setterbp)); //both condition true
+			Assert.Equal("qux", element.GetValue(setterbp); //both condition true
 
 			element.SetValue(conditionbp, "");
 			element.BindingContext = new { baz = "foobaz" };
-			Assert.Equal("default", element.GetValue(setterbp)); //both conditions false
+			Assert.Equal("default", element.GetValue(setterbp); //both conditions false
 		}
 	}
 }

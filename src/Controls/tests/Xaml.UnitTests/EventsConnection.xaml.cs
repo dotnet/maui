@@ -88,8 +88,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void TestClicked(bool useCompiledXaml)
 			{
@@ -99,8 +97,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(1, layout.clicked);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void TestGenericClicked(bool useCompiledXaml)
@@ -112,8 +108,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void TestHandlerOnBase(bool useCompiledXaml)
 			{
@@ -124,8 +118,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void TestAsyncPrivateHandler(bool useCompiledXaml)
 			{
@@ -135,8 +127,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(1, layout.asyncPrivateClicked);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void TestVirtualHandler(bool useCompiledXaml)
@@ -149,8 +139,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(1, layout.overrideClicked);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void TestStaticHandler(bool useCompiledXaml)

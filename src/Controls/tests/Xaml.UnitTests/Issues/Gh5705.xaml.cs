@@ -16,8 +16,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		class Tests
 		{
 
-			[Fact]
-			public void SearchHandlerIneritBC([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void SearchHandlerIneritBC([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var vm = new object();
 				var shell = new Gh5705(useCompiledXaml) { BindingContext = vm };

@@ -29,17 +29,19 @@ public partial class Maui20616
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void XDataTypeCanBeGeneric([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void XDataTypeCanBeGeneric([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			var page = new Maui20616(useCompiledXaml);
 

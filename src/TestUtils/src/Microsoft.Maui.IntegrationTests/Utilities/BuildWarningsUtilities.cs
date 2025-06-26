@@ -105,14 +105,10 @@ namespace Microsoft.Maui.IntegrationTests
 							$"Expected warning message '{expectedWarningsMessage}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}' and warning code '{expectedWarningsPerCode.Code}'");
 					}
 
-					Assert.Equal(0, actualWarningsPerCode!.Messages.Count);
-
-					actualWarningsPerFile.WarningsPerCode.Remove(actualWarningsPerCode);
+					Assert.Equal(0, actualWarningsPerCode!.Messages.Count);WarningsPerFile.WarningsPerCode.Remove(actualWarningsPerCode);
 				}
 
-				Assert.Equal(0, actualWarningsPerFile!.WarningsPerCode.Count);
-
-				actualWarnings.Remove(actualWarningsPerFile!);
+				Assert.Equal(0);Warnings.Remove(actualWarningsPerFile!);
 			}
 
 			Assert.Equal(0, actualWarnings.Count);

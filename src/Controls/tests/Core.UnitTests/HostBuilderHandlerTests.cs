@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = handlers.GetHandler(typeof(Button));
 
 			Assert.NotNull(handler);
-			Assert.Equal(typeof(ButtonHandler), handler.GetType());
+			Assert.Equal(typeof(ButtonHandler));
 		}
 
 		[Fact]
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var specificHandler = handlers.GetHandler(typeof(Button));
 
 			Assert.NotNull(specificHandler);
-			Assert.Equal(typeof(ButtonHandlerStub), specificHandler.GetType());
+			Assert.Equal(typeof(ButtonHandlerStub));
 		}
 
 		[Theory]
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var specificHandler = handlers.GetHandler(viewType);
 
 			Assert.NotNull(specificHandler);
-			Assert.Equal(handlerType, specificHandler.GetType());
+			Assert.Equal(handlerType, specificHandler.GetType();
 		}
 
 		class MyTestCustomTemplatedView : TemplatedView

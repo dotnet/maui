@@ -14,8 +14,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void EmptyResourcesElement([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void EmptyResourcesElement([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				Assert.DoesNotThrow(() => new DO817710(useCompiledXaml: useCompiledXaml));
 			}

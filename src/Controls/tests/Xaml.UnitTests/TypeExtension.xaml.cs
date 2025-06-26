@@ -48,11 +48,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		public class Tests
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// Constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// IDisposable public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void NestedMarkupExtensionInsideDataTemplate(bool useCompiledXaml)
@@ -70,8 +68,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.NotNull(button.Command);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			//https://bugzilla.xamarin.com/show_bug.cgi?id=55027

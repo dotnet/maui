@@ -27,12 +27,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void TwoWayBindingToNullable([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void TwoWayBindingToNullable([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var vm = new Gh5290VM { Time = TimeSpan.FromMinutes(42) };
 				var layout = new Gh5290(useCompiledXaml) { BindingContext = vm };
-				Assert.Equal(TimeSpan.FromMinutes(42, layout.NullableTime);
+				Assert.Equal(TimeSpan.FromMinutes(42), layout.NullableTime);
 
 				layout.SetValueFromRenderer(NullableTimeProperty, null);
 				Assert.Null(vm.Time);

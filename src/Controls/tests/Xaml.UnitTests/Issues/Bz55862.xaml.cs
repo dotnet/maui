@@ -26,8 +26,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void BindingContextWithConverter([Values(false/*, true*/)] bool useCompiledXaml)
+			[Theory]
+			public void BindingContextWithConverter([Theory]
+		[InlineData(false/*)]
+		[InlineData(true*/)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Bz55862)));

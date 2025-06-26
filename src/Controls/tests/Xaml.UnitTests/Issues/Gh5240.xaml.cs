@@ -16,8 +16,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void FailOnUnresolvedDataType([Values(true)] bool useCompiledXaml)
+			[Theory]
+			public void FailOnUnresolvedDataType([Theory]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh5240)));

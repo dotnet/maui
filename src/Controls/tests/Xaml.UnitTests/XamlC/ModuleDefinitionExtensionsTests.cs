@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		ModuleDefinition module;
 		XamlCAssemblyResolver resolver;
 
-		[SetUp]
+		// Constructor
 		public void SetUp()
 		{
 			resolver = new XamlCAssemblyResolver();
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 			});
 		}
 
-		[TearDown]
+		// IDisposable
 		public void TearDown()
 		{
 			resolver?.Dispose();

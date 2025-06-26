@@ -24,16 +24,18 @@ public partial class Maui17597 : ContentPage
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-		[Fact]
-		public void DataTriggerInStyle([Values(false, true)] bool useCompiledXaml)
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
+		[Theory]
+		public void DataTriggerInStyle([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			var page = new Maui17597(useCompiledXaml);
 			Assert.Equal("Remove Text To Disable Button", page.Test_Entry.Text);

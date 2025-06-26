@@ -14,21 +14,31 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Test
 		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo()); public void TearDown()
+			public Test()
+			{
+				AppInfo.SetCurrent(new MockAppInfo());
+			}
+
+			public void Dispose()
 			{
 				AppInfo.SetCurrent(null);
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[Fact]
-			public void OnPlatformAsCollectionElementiOS([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			[InlineData(false)]
+			[InlineData(true)]
+			public void OnPlatformAsCollectionElementiOS(bool useCompiledXaml)
 			{
 				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
 				var page = new Maui4509(useCompiledXaml);
 				Assert.Equal(2, page.layout.Children.Count);
 			}
-			[Fact]
-			public void OnPlatformAsCollectionElementAndroid([Values(false, true)] bool useCompiledXaml)
+
+			[Theory]
+			[InlineData(false)]
+			[InlineData(true)]
+			public void OnPlatformAsCollectionElementAndroid(bool useCompiledXaml)
 			{
 				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.Android));
 				var page = new Maui4509(useCompiledXaml);

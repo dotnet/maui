@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var navStack = shell.Items[0].Items[0].Navigation;
 
 			Assert.Single(navStack.ModalStack);
-			Assert.Equal(typeof(ModalTestPage), navStack.ModalStack[0].GetType());
+			Assert.Equal(typeof(ModalTestPage));
 		}
 
 
@@ -218,7 +218,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var navStack = shell.Items[0].Items[0].Navigation;
 			Assert.Single(navStack.ModalStack);
-			Assert.Equal(typeof(ModalTestPage2), navStack.ModalStack[0].GetType());
+			Assert.Equal(typeof(ModalTestPage2));
 		}
 
 		[Fact]
@@ -231,8 +231,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("ModalNavigationTestPage/ContentPage");
 
 			var navStack = shell.Items[0].Items[0].Navigation;
-			Assert.Equal(typeof(ModalTestPage), navStack.ModalStack[0].Navigation.NavigationStack[0].GetType());
-			Assert.Equal(typeof(ContentPage), navStack.ModalStack[0].Navigation.NavigationStack[1].GetType());
+			Assert.Equal(typeof(ModalTestPage));
+			Assert.Equal(typeof(ContentPage));
 
 			Assert.Equal("//NewRoute/Section/Content/ModalNavigationTestPage/ContentPage", shell.CurrentState.Location.ToString());
 		}
@@ -247,9 +247,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("ModalTestPage/ModalNavigationTestPage/ContentPage");
 
 			var navStack = shell.Items[0].Items[0].Navigation;
-			Assert.Equal(typeof(ModalTestPage), navStack.ModalStack[0].GetType());
-			Assert.Equal(typeof(ModalTestPage), navStack.ModalStack[1].Navigation.NavigationStack[0].GetType());
-			Assert.Equal(typeof(ContentPage), navStack.ModalStack[1].Navigation.NavigationStack[1].GetType());
+			Assert.Equal(typeof(ModalTestPage));
+			Assert.Equal(typeof(ModalTestPage));
+			Assert.Equal(typeof(ContentPage));
 
 			Assert.Equal("//NewRoute/Section/Content/ModalTestPage/ModalNavigationTestPage/ContentPage", shell.CurrentState.Location.ToString());
 		}

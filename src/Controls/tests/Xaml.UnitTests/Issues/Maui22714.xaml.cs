@@ -20,19 +20,23 @@ public partial class Maui22714
 	}
 	public class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
+		[Theory]
 		public void TestNonCompiledResourceDictionary(
-			[Values(false, true)] bool useCompiledXaml,
-			[Values(false, true)] bool treatWarningsAsErrors)
+			[Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml,
+			[Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool treatWarningsAsErrors)
 		{
 			if (useCompiledXaml)
 			{

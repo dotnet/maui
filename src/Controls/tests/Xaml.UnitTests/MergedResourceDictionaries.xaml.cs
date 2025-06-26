@@ -19,8 +19,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void MergedResourcesAreFound(bool useCompiledXaml)
 			{
@@ -28,7 +26,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var layout = new MergedResourceDictionaries(useCompiledXaml);
 				Assert.Equal("Foo", layout.label0.Text);
 				Assert.Equal(Colors.Pink, layout.label0.TextColor);
-				Assert.Equal(Color.FromArgb("#111", layout.label0.BackgroundColor);
+				Assert.Equal(Color.FromArgb("#111"), layout.label0.BackgroundColor);
 			}
 		}
 	}

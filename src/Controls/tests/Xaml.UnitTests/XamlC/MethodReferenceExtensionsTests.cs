@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 			public abstract void UnresolvedGenericInstanceTypeMethod(TestClass<T> unresolved);
 		}
 
-		[SetUp]
+		// Constructor
 		public void SetUp()
 		{
 			module = ModuleDefinition.CreateModule("foo", new ModuleParameters()
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 			});
 		}
 
-		[TearDown]
+		// IDisposable
 		public void TearDown()
 		{
 			module?.Dispose();

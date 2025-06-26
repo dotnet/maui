@@ -22,11 +22,13 @@ public partial class Maui17354 : ContentPage
 	}
 	class Test
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// Constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void VSMandAppTheme([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void VSMandAppTheme([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			var page = new Maui17354(useCompiledXaml);
 			var grid = page.grid;

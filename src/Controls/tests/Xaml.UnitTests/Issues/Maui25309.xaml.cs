@@ -22,7 +22,7 @@ public partial class Maui25309 : ContentPage
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -33,8 +33,10 @@ public partial class Maui25309 : ContentPage
 			AppInfo.SetCurrent(null);
 		}
 
-		[Fact]
-		public void GenericConvertersDoesNotThrowNRE([Values(true, false)] bool useCompiledXaml)
+		[Theory]
+		public void GenericConvertersDoesNotThrowNRE([Theory]
+		[InlineData(true)]
+		[InlineData(false)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui25309)));
@@ -42,7 +44,7 @@ public partial class Maui25309 : ContentPage
 			var page = new Maui25309(useCompiledXaml) { BindingContext = new { IsValid = true } };
 			var converter = page.Resources["IsValidConverter"] as Maui25309BoolToObjectConverter;
 			Assert.NotNull(converter);
-			Assert.Equal(Color.Parse("#140F4B", page.label.BackgroundColor);
+			Assert.Equal(Color.Parse("#140F4B"), page.label.BackgroundColor);
 		}
 	}
 }

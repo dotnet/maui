@@ -25,8 +25,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void SingleQuoteAndTrailingSpaceInMarkupValue([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void SingleQuoteAndTrailingSpaceInMarkupValue([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh9212(useCompiledXaml);
 				Assert.Equal("Foo, Bar", layout.label.Text);

@@ -109,12 +109,12 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 		public void TestCase(string selectorString, bool label0match, bool label1match, bool label2match, bool label3match, bool label4match, bool content0match)
 		{
 			var selector = Selector.Parse(new CssReader(new StringReader(selectorString)));
-			Assert.Equal(label0match, selector.Matches(Label0));
-			Assert.Equal(label1match, selector.Matches(Label1));
-			Assert.Equal(label2match, selector.Matches(Label2));
-			Assert.Equal(label3match, selector.Matches(Label3));
-			Assert.Equal(label4match, selector.Matches(Label4));
-			Assert.Equal(content0match, selector.Matches(ContentView0));
+			Assert.Equal(label0match, selector.Matches(Label0);
+			Assert.Equal(label1match, selector.Matches(Label1);
+			Assert.Equal(label2match, selector.Matches(Label2);
+			Assert.Equal(label3match, selector.Matches(Label3);
+			Assert.Equal(label4match, selector.Matches(Label4);
+			Assert.Equal(content0match, selector.Matches(ContentView0);
 		}
 	}
 }

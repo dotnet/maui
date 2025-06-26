@@ -15,8 +15,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void RectangleGeometryDoesntThrow([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void RectangleGeometryDoesntThrow([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				Assert.DoesNotThrow(() => new Gh11541(useCompiledXaml));
 			}

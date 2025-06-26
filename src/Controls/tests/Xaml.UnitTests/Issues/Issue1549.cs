@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	}
 	public class Issue1549
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			SeverityColorConverter.count = 0;
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		// IDisposable public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 		[Fact]
 		public void ConverterIsInvoked()

@@ -401,8 +401,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("Title", args.Title);
 			Assert.Equal("Destruction", args.Destruction);
 			Assert.Equal("Cancel", args.Cancel);
-			Assert.Equal("Other 1", args.Buttons.First());
-			Assert.Equal("Other 2", args.Buttons.Skip(1).First());
+			Assert.Equal("Other 1", args.Buttons.First();
+			Assert.Equal("Other 2", args.Buttons.Skip(1).First();
 
 			bool completed = false;
 			var continueTask = task.ContinueWith(t => completed = true);

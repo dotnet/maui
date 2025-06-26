@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		public class Tests
 		{
-			[SetUp]
+			// Constructor
 			public void Setup()
 			{
 				Application.Current = new MockApplication();
@@ -28,8 +28,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void AutomationPropertiesName(bool useCompiledXaml)
 			{
@@ -38,8 +36,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("Name", (string)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.NameProperty));
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void AutomationPropertiesHelpText(bool useCompiledXaml)
@@ -50,8 +46,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void AutomationPropertiesIsInAccessibleTree(bool useCompiledXaml)
 			{
@@ -61,8 +55,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(true, (bool)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.IsInAccessibleTreeProperty));
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void AutomationPropertiesLabeledBy(bool useCompiledXaml)

@@ -39,11 +39,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Layout(new Rect(0, 0, 912, 912));
 
-			Assert.Equal(layout.Bounds, new Rect(0, 0, 912, 912));
-			Assert.Equal(label3.Bounds, new Rect(0, 0, 912, 20));
-			Assert.Equal(label2.Bounds, new Rect(0, 20, 912, 20));
-			Assert.Equal(label1.Bounds, new Rect(0, 40, 912, 20));
-			Assert.Equal(label0.Bounds, new Rect(0, 60, 912, 20));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 912, 912);
+			Assert.Equal(label3.Bounds, new Rect(0, 0, 912, 20);
+			Assert.Equal(label2.Bounds, new Rect(0, 20, 912, 20);
+			Assert.Equal(label1.Bounds, new Rect(0, 40, 912, 20);
+			Assert.Equal(label0.Bounds, new Rect(0, 60, 912, 20);
 		}
 	}
 }

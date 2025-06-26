@@ -20,8 +20,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void SupportsXString(bool useCompiledXaml)
 			{
@@ -35,8 +33,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void SupportsXObject(bool useCompiledXaml)
 			{
@@ -47,8 +43,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.That(value, Is.TypeOf<object>());
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void SupportsXBoolean(bool useCompiledXaml)
@@ -75,8 +69,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void SupportsXChar(bool useCompiledXaml)
 			{
@@ -101,8 +93,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(default(char), (char)defaultChar);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void SupportsXNumbers(bool useCompiledXaml)
@@ -225,8 +215,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void SupportsXTimeSpan(bool useCompiledXaml)
 			{
@@ -245,8 +233,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(default(TimeSpan), (TimeSpan)defaultTimeSpan);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void SupportsXUri(bool useCompiledXaml)

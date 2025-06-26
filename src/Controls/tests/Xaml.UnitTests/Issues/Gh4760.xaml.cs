@@ -30,8 +30,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void GenericBaseClassForMarkups([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void GenericBaseClassForMarkups([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh4760)));

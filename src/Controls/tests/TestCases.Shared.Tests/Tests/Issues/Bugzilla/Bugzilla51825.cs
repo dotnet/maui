@@ -26,12 +26,12 @@ public class Bugzilla51825 : _IssuesUITest
 		// Windows App Driver and the Search Bar are a bit buggy
 		// It randomly doesn't enter the first letter
 #if !WINDOWS
-		Assert.Equal("Hello", label.ReadText());
+		Assert.Equal("Hello", label.ReadText();
 #endif
 
 		App.Tap("Bugzilla51825Button");
 
 		var labelChange2 = App.WaitForFirstElement("Bugzilla51825Label");
-		Assert.Equal("Test", labelChange2.ReadText());
+		Assert.Equal("Test", labelChange2.ReadText();
 	}
 }

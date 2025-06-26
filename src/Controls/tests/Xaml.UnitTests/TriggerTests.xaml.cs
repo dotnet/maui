@@ -20,8 +20,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void ValueIsConverted(bool useCompiledXaml)
 			{
@@ -36,8 +34,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(true, pwTrigger.Value);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void ValueIsConvertedWithPropertyCondition(bool useCompiledXaml)

@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			};
 		}
 
-		[SetUp]
+		// Constructor
 		public void SetUp()
 		{
 			assembly = AssemblyDefinition.ReadAssembly(GetType().Assembly.Location, readerParameters);
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			return assembly;
 		}
 
-		[TearDown]
+		// IDisposable
 		public void Dispose()
 		{
 			foreach (var assembly in assemblies)

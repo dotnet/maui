@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		public class Tests
 		{
-			[SetUp]
+			// Constructor
 			public void SetUp()
 			{
 				Application.Current = new MockApplication();
@@ -28,8 +28,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Application.Current = null;
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void VisualStatesFromStyleXaml(bool useCompiledXaml)
@@ -68,8 +66,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void UnapplyVisualState(bool useCompiledXaml)
 			{
@@ -96,8 +92,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void VisualStateGroupsDirectlyOnElement(bool useCompiledXaml)
 			{
@@ -112,8 +106,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void EmptyGroupDirectlyOnElement(bool useCompiledXaml)
 			{
@@ -127,8 +119,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.True(groups.Count == 1);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void VisualStateGroupsFromStylesAreDistinct(bool useCompiledXaml)
@@ -156,8 +146,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void SettersAreAddedToCorrectState(bool useCompiledXaml)
 			{
@@ -179,8 +167,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void VisualElementGoesToCorrectStateWhenAvailable(bool useCompiledXaml)
 			{
@@ -191,8 +177,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(Colors.Lime, button.BackgroundColor);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void TargetedVisualElementGoesToCorrectState(bool useCompiledXaml)

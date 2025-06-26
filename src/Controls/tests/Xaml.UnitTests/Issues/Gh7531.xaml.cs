@@ -14,8 +14,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void XamlOnlyResourceResolvesLocalAssembly([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void XamlOnlyResourceResolvesLocalAssembly([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				Gh7531 layout = null;
 				Assert.DoesNotThrow(() => layout = new Gh7531(useCompiledXaml));

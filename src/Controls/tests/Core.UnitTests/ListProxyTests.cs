@@ -342,7 +342,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void IndexOfValueTypeNonList()
 		{
 			var proxy = new ListProxy(Enumerable.Range(0, 100));
-			Assert.Equal(1, proxy.IndexOf(1));
+			Assert.Equal(1, proxy.IndexOf(1);
 		}
 
 		[Fact]

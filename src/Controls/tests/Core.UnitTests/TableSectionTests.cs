@@ -74,8 +74,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			section.Add(first = new TextCell { Text = "Text" });
 			section.Add(second = new TextCell { Text = "Text" });
 
-			Assert.Equal(0, section.IndexOf(first));
-			Assert.Equal(1, section.IndexOf(second));
+			Assert.Equal(0, section.IndexOf(first);
+			Assert.Equal(1, section.IndexOf(second);
 		}
 
 		[Fact]

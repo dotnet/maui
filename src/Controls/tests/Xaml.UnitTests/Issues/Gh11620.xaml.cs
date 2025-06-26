@@ -15,8 +15,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void BoxOnAdd([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void BoxOnAdd([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh11620(useCompiledXaml);
 				var arr = layout.Resources["myArray"];

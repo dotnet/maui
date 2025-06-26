@@ -61,7 +61,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 				App.WaitForElement("EmptySpace");
 				App.Click("EmptySpace");
-				Assert.Equal(!hideOnTapped, App.IsFocused(control));
+				Assert.Equal(!hideOnTapped, App.IsFocused(control);
 			}
 			finally
 			{
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 				App.WaitForElement("EmptySpace");
 				App.Tap("EmptySpace");
-				Assert.Equal(!hideOnTapped, App.IsKeyboardShown());
+				Assert.Equal(!hideOnTapped, App.IsKeyboardShown();
 			}
 			finally
 			{
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 					App.WaitForElement("EmptySpace");
 					App.Click("EmptySpace");
-					Assert.Equal(false, App.IsFocused("HideKeyboardWhenTappingPage"));
+					Assert.Equal(false, App.IsFocused("HideKeyboardWhenTappingPage");
 
 					App.WaitForElement("DontHideKeyboardWhenTappingPage");
 					App.Click("DontHideKeyboardWhenTappingPage");
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 					App.WaitForElement("EmptySpace");
 					App.Click("EmptySpace");
-					Assert.Equal(true, App.IsFocused("DontHideKeyboardWhenTappingPage"));
+					Assert.Equal(true, App.IsFocused("DontHideKeyboardWhenTappingPage");
 				}
 			}
 			finally
@@ -170,14 +170,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 					Assert.True(App.IsKeyboardShown());
 					App.WaitForElement("EmptySpace");
 					App.Tap("EmptySpace");
-					Assert.Equal(false, App.IsKeyboardShown());
+					Assert.Equal(false, App.IsKeyboardShown();
 
 					App.WaitForElement("DontHideKeyboardWhenTappingPage");
 					App.Tap("DontHideKeyboardWhenTappingPage");
 					Assert.True(App.IsKeyboardShown());
 					App.WaitForElement("EmptySpace");
 					App.Tap("EmptySpace");
-					Assert.Equal(true, App.IsKeyboardShown());
+					Assert.Equal(true, App.IsKeyboardShown();
 				}
 			}
 			finally

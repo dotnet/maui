@@ -20,17 +20,19 @@ public partial class Maui16960
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void VSMandAppTheme([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void VSMandAppTheme([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 
 			Application.Current.UserAppTheme = AppTheme.Light;

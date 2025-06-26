@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) =>
 			{
-				Assert.Equal(2, e.Values.Count());
+				Assert.Equal(2, e.Values.Count();
 				Assert.Equal("FOO", e.Values.First(kvp => kvp.Key == "foo").Value);
 				Assert.Equal("BAZ", e.Values.First(kvp => kvp.Key == "baz").Value);
 				passed = true;
@@ -244,7 +244,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) =>
 			{
-				Assert.Equal(3, e.Values.Count());
+				Assert.Equal(3, e.Values.Count();
 				passed = true;
 			});
 			elt.Resources = new ResourceDictionary {
@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) =>
 			{
-				Assert.Equal(2, e.Values.Count());
+				Assert.Equal(2, e.Values.Count();
 				passed = true;
 			});
 

@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			bool debuggerinitialstate;
 			int failures = 0;
 
-			[SetUp]
+			// Constructor
 			public void Setup()
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
@@ -37,8 +37,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				failures = 0;
 			}
 
-			[Fact]
-			public void SourceInfoForElementsInDT([Values(false)] bool useCompiledXaml)
+			[Theory]
+			public void SourceInfoForElementsInDT([Theory]
+		[InlineData(false)] bool useCompiledXaml)
 			{
 				var layout = new Gh10803(useCompiledXaml);
 				var listview = layout.listview;

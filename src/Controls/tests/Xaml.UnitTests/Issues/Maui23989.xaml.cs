@@ -22,17 +22,19 @@ public partial class Maui23989
 	}
 	public class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void ItemDisplayBindingWithoutDataTypeFails([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		public void ItemDisplayBindingWithoutDataTypeFails([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				Assert.Throws(new BuildExceptionConstraint(12, 13, s => s.Contains("0022", StringComparison.Ordinal)), () => MockCompiler.Compile(typeof(Maui23989), treatWarningsAsErrors: true));

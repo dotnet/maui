@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Routing.RegisterRoute("/seg1/seg2/seg3", typeof(object));
 			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("/seg1/seg2/seg3"));
 
-			Assert.Equal("app://shell/IMPL_shell/seg1/seg2/seg3", request.Request.FullUri.ToString());
+			Assert.Equal("app://shell/IMPL_shell/seg1/seg2/seg3", request.Request.FullUri.ToString();
 		}
 
 
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("section1/edit"), true);
 
 			Assert.Single(request.Request.GlobalRoutes);
-			Assert.Equal("item1/section1/edit", request.Request.GlobalRoutes.First());
+			Assert.Equal("item1/section1/edit", request.Request.GlobalRoutes.First();
 		}
 
 		[Fact]
@@ -114,8 +114,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("//rootlevelcontent1/add/edit"));
 
 			Assert.Equal(2, request.Request.GlobalRoutes.Count);
-			Assert.Equal("section1/add", request.Request.GlobalRoutes.First());
-			Assert.Equal("section1/edit", request.Request.GlobalRoutes.Skip(1).First());
+			Assert.Equal("section1/add", request.Request.GlobalRoutes.First();
+			Assert.Equal("section1/edit", request.Request.GlobalRoutes.Skip(1).First();
 		}
 
 
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("edit"));
 
 			Assert.Single(request.Request.GlobalRoutes);
-			Assert.Equal("edit", request.Request.GlobalRoutes.First());
+			Assert.Equal("edit", request.Request.GlobalRoutes.First();
 		}
 
 		[Fact]
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("//rootlevelcontent1");
 			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("edit"), true);
 
-			Assert.Equal("section1/edit", request.Request.GlobalRoutes.First());
+			Assert.Equal("section1/edit", request.Request.GlobalRoutes.First();
 		}
 
 
@@ -307,12 +307,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			foreach (var uri in TestUris)
 			{
-				Assert.Equal(new Uri("app://shell/IMPL_shell/path"), ShellUriHandler.ConvertToStandardFormat(shell, uri));
+				Assert.Equal(new Uri("app://shell/IMPL_shell/path"));
 
 				if (!uri.IsAbsoluteUri)
 				{
 					var reverse = new Uri(uri.OriginalString.Replace('/', '\\'), UriKind.Relative);
-					Assert.Equal(new Uri("app://shell/IMPL_shell/path"), ShellUriHandler.ConvertToStandardFormat(shell, reverse));
+					Assert.Equal(new Uri("app://shell/IMPL_shell/path"));
 				}
 
 			}

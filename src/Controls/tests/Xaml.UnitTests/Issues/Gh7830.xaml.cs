@@ -20,11 +20,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// Constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// IDisposable public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[Fact]
-			public void CanResolvexStaticWithShortName([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void CanResolvexStaticWithShortName([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh7830(useCompiledXaml);
 				var cell = layout.listView.ItemTemplate.CreateContent() as ViewCell;

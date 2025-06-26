@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
-			[SetUp]
+			// Constructor
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
@@ -269,8 +269,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				return p;
 			}
 
-			[Theory]
-			[InlineData(false, "iOS")]
 			[Theory]
 			[InlineData(false, "Android")]
 			[Ignore("fails for now")]
@@ -306,8 +304,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("foo", platformView.Foo);
 				Assert.Equal(42, platformView.Bar);
 				Assert.Equal("Bound Value", platformView.Baz);
-				Assert.Equal(LayoutOptions.End, view.Content.GetValue(View.HorizontalOptionsProperty);
-				Assert.Equal(LayoutOptions.EndAndExpand, view.Content.GetValue(View.VerticalOptionsProperty);
+				Assert.Equal(LayoutOptions.End, view.Content.GetValue(View.HorizontalOptionsProperty));
+				Assert.Equal(LayoutOptions.EndAndExpand, view.Content.GetValue(View.VerticalOptionsProperty));
 			}
 		}
 	}

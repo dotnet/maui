@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			BindableLayout.SetItemTemplate(layout, new DataTemplateBoxView());
 
 			Assert.True(IsLayoutWithItemsSource(itemsSource, layout));
-			Assert.Equal(itemsSource.Count, layout.Children.Cast<BoxView>().Count());
+			Assert.Equal(itemsSource.Count, layout.Children.Cast<BoxView>().Count();
 		}
 
 		[Fact]
@@ -193,7 +193,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			BindableLayout.SetItemTemplateSelector(layout, new DataTemplateSelectorFrame());
 
 			Assert.True(IsLayoutWithItemsSource(itemsSource, layout));
-			Assert.Equal(itemsSource.Count, layout.Children.Cast<Frame>().Count());
+			Assert.Equal(itemsSource.Count, layout.Children.Cast<Frame>().Count();
 		}
 
 		[Fact]
@@ -335,7 +335,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			BindableLayout.SetItemTemplateSelector(layout, new DataTemplateSelectorFrame());
 
 			Assert.True(IsLayoutWithItemsSource(itemsSource, layout));
-			Assert.Equal(itemsSource.Count, layout.Children.Cast<BoxView>().Count());
+			Assert.Equal(itemsSource.Count, layout.Children.Cast<BoxView>().Count();
 		}
 
 		[Fact]
@@ -504,38 +504,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			object emptyView = new object();
 			BindableLayout.SetEmptyView(layout, emptyView);
 
-			Assert.Equal(emptyView, BindableLayout.GetEmptyView(layout));
-			Assert.Equal(emptyView, layout.GetValue(BindableLayout.EmptyViewProperty));
+			Assert.Equal(emptyView, BindableLayout.GetEmptyView(layout);
+			Assert.Equal(emptyView, layout.GetValue(BindableLayout.EmptyViewProperty);
 
 			// EmptyViewTemplateProperty
 			DataTemplate emptyViewTemplate = new DataTemplate(typeof(Label));
 			BindableLayout.SetEmptyViewTemplate(layout, emptyViewTemplate);
 
-			Assert.Equal(emptyViewTemplate, BindableLayout.GetEmptyViewTemplate(layout));
-			Assert.Equal(emptyViewTemplate, layout.GetValue(BindableLayout.EmptyViewTemplateProperty));
+			Assert.Equal(emptyViewTemplate, BindableLayout.GetEmptyViewTemplate(layout);
+			Assert.Equal(emptyViewTemplate, layout.GetValue(BindableLayout.EmptyViewTemplateProperty);
 
 
 			// ItemsSourceProperty
 			IEnumerable itemsSource = Array.Empty<object>();
 			BindableLayout.SetItemsSource(layout, itemsSource);
 
-			Assert.Equal(itemsSource, BindableLayout.GetItemsSource(layout));
-			Assert.Equal(itemsSource, layout.GetValue(BindableLayout.ItemsSourceProperty));
+			Assert.Equal(itemsSource, BindableLayout.GetItemsSource(layout);
+			Assert.Equal(itemsSource, layout.GetValue(BindableLayout.ItemsSourceProperty);
 
 			// ItemTemplateProperty
 			DataTemplate itemTemplate = new DataTemplate(typeof(Label));
 			BindableLayout.SetItemTemplate(layout, itemTemplate);
 
-			Assert.Equal(itemTemplate, BindableLayout.GetItemTemplate(layout));
-			Assert.Equal(itemTemplate, layout.GetValue(BindableLayout.ItemTemplateProperty));
+			Assert.Equal(itemTemplate, BindableLayout.GetItemTemplate(layout);
+			Assert.Equal(itemTemplate, layout.GetValue(BindableLayout.ItemTemplateProperty);
 
 
 			// ItemTemplateSelectorProperty
 			var itemTemplateSelector = new DataTemplateSelectorFrame();
 			BindableLayout.SetItemTemplateSelector(layout, itemTemplateSelector);
 
-			Assert.Equal(itemTemplateSelector, BindableLayout.GetItemTemplateSelector(layout));
-			Assert.Equal(itemTemplateSelector, layout.GetValue(BindableLayout.ItemTemplateSelectorProperty));
+			Assert.Equal(itemTemplateSelector, BindableLayout.GetItemTemplateSelector(layout);
+			Assert.Equal(itemTemplateSelector, layout.GetValue(BindableLayout.ItemTemplateSelectorProperty);
 		}
 
 		[Fact]

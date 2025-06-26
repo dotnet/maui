@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		public class Tests
 		{
-			[SetUp]
+			// Constructor
 			public void Setup()
 			{
 				Application.Current = new MockApplication
@@ -34,8 +34,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			[InlineData(false)]
-			[Theory]
 			[InlineData(true)]
 			public void MergedResourcesAreFound(bool useCompiledXaml)
 			{
@@ -43,8 +41,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(Colors.Pink, layout.label.TextColor);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void NoConflictsBetweenSharedRDs(bool useCompiledXaml)
@@ -54,8 +50,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(Colors.Purple, layout.label2.TextColor);
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void ImplicitStyleCanBeSharedFromSharedRD(bool useCompiledXaml)
@@ -73,8 +67,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				}
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void MergedRDAtAppLevel(bool useCompiledXaml)

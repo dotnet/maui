@@ -20,8 +20,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void DefinitionCollectionsParsedFromMarkup([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void DefinitionCollectionsParsedFromMarkup([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new DefinitionCollectionTests(useCompiledXaml);
 				var coldef = layout.grid.ColumnDefinitions;
@@ -29,18 +31,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				Assert.Equal(5, coldef.Count);
 
-				Assert.Equal(new GridLength(1, GridUnitType.Star, coldef[0].Width);
-				Assert.Equal(new GridLength(2, GridUnitType.Star, coldef[1].Width);
-				Assert.Equal(new GridLength(1, GridUnitType.Auto, coldef[2].Width);
-				Assert.Equal(new GridLength(1, GridUnitType.Star, coldef[3].Width);
-				Assert.Equal(new GridLength(300, GridUnitType.Absolute, coldef[4].Width);
+				Assert.Equal(new GridLength(1), GridUnitType.Star, coldef[0].Width);
+				Assert.Equal(new GridLength(2), GridUnitType.Star, coldef[1].Width);
+				Assert.Equal(new GridLength(1), GridUnitType.Auto, coldef[2].Width);
+				Assert.Equal(new GridLength(1), GridUnitType.Star, coldef[3].Width);
+				Assert.Equal(new GridLength(300), GridUnitType.Absolute, coldef[4].Width);
 
 				Assert.Equal(5, rowdef.Count);
-				Assert.Equal(new GridLength(1, GridUnitType.Star, rowdef[0].Height);
-				Assert.Equal(new GridLength(1, GridUnitType.Auto, rowdef[1].Height);
-				Assert.Equal(new GridLength(25, GridUnitType.Absolute, rowdef[2].Height);
-				Assert.Equal(new GridLength(14, GridUnitType.Absolute, rowdef[3].Height);
-				Assert.Equal(new GridLength(20, GridUnitType.Absolute, rowdef[4].Height);
+				Assert.Equal(new GridLength(1), GridUnitType.Star, rowdef[0].Height);
+				Assert.Equal(new GridLength(1), GridUnitType.Auto, rowdef[1].Height);
+				Assert.Equal(new GridLength(25), GridUnitType.Absolute, rowdef[2].Height);
+				Assert.Equal(new GridLength(14), GridUnitType.Absolute, rowdef[3].Height);
+				Assert.Equal(new GridLength(20), GridUnitType.Absolute, rowdef[4].Height);
 
 			}
 

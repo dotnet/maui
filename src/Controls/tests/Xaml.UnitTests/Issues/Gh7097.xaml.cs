@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[SetUp]
+			// Constructor
 			public void Setup()
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
@@ -28,8 +28,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				DispatcherProvider.SetCurrent(null);
 			}
 
-			[Fact]
-			public void CanXReferenceRoot([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void CanXReferenceRoot([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh7097(useCompiledXaml)
 				{
@@ -47,7 +49,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			[Fact]
 			//this was later reported as https://github.com/xamarin/Microsoft.Maui.Controls/issues/7286
-			public void RegisteringXNameOnSubPages([Values(false, true)] bool useCompiledXaml)
+			public void RegisteringXNameOnSubPages([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh7097(useCompiledXaml);
 				var s = layout.FindByName("self");

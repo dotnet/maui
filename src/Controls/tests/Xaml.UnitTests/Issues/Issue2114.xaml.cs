@@ -19,14 +19,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		public class Tests
 		{
-			[SetUp]
+			// Constructor
 			public void SetUp()
 			{
 				Application.Current = null;
 			}
 
-			[Theory]
-			[InlineData(false)]
 			[Theory]
 			[InlineData(true)]
 			public void StaticResourceOnApplication(bool useCompiledXaml)

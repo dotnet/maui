@@ -29,8 +29,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void BehaviorAndStaticResource([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void BehaviorAndStaticResource([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var page = new Bz47950(useCompiledXaml);
 			}

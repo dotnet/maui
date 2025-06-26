@@ -167,8 +167,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 			Assert.Single(events);
 			var (name, args) = events[0];
 			Assert.Equal(nameof(IMenuBarHandler.Add), name);
-			Assert.Equal(0, GetIndex(args!));
-			Assert.Equal(child0, GetItem(args!));
+			Assert.Equal(0, GetIndex(args!);
+			Assert.Equal(child0, GetItem(args!);
 		}
 
 		[Fact]
@@ -189,8 +189,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 			Assert.Single(events);
 			var (name, args) = events[0];
 			Assert.Equal(nameof(IMenuBarHandler.Remove), name);
-			Assert.Equal(0, GetIndex(args!));
-			Assert.Equal(child0, GetItem(args!));
+			Assert.Equal(0, GetIndex(args!);
+			Assert.Equal(child0, GetItem(args!);
 		}
 
 		[Fact]
@@ -215,8 +215,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 			Assert.Single(events);
 			var (name, args) = events[0];
 			Assert.Equal(nameof(IMenuBarHandler.Insert), name);
-			Assert.Equal(1, GetIndex(args!));
-			Assert.Equal(child1, GetItem(args!));
+			Assert.Equal(1, GetIndex(args!);
+			Assert.Equal(child1, GetItem(args!);
 		}
 	}
 }

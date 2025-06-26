@@ -19,7 +19,7 @@ public partial class Maui25172 : CoreContentPage<VM25172>
 	}
 	class Test
 	{
-		[SetUp]
+		// Constructor
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -30,8 +30,10 @@ public partial class Maui25172 : CoreContentPage<VM25172>
 			AppInfo.SetCurrent(null);
 		}
 
-		[Fact]
-		public void CompilationWithGenericBaseClassSucceeds([Values(true, false)] bool useCompiledXaml)
+		[Theory]
+		public void CompilationWithGenericBaseClassSucceeds([Theory]
+		[InlineData(true)]
+		[InlineData(false)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 			{

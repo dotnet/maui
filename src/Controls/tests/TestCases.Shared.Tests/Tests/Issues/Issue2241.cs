@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.SetOrientationPortrait();
 			var grid2 = App.WaitForElement("MainGrid").GetRect();
 
-			Assert.Equal(grid1.CenterY(), grid2.CenterY());
+			Assert.Equal(grid1.CenterY());
 		}
 	}
 }

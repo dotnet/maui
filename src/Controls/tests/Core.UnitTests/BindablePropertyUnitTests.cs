@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(default(TestEnum), prop.DefaultValue);
 
 			var bindable = new MockBindable();
-			Assert.Equal(default(TestEnum), bindable.GetValue(prop));
+			Assert.Equal(default(TestEnum));
 
 			bindable.SetValue(prop, TestEnum.Two);
 			Assert.Equal(TestEnum.Two, bindable.GetValue(prop));

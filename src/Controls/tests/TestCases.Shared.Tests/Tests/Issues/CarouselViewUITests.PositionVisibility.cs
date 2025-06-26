@@ -24,12 +24,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.SwipeRightToLeft("TestCarouselView");
 			var position1 = App.FindElement("CarouselPosition").GetText();
 			Assert.NotNull(position1);
-			Assert.Equal(1, int.Parse(position1!));
+			Assert.Equal(1, int.Parse(position1!);
 			App.Click("HideButton");
 			App.Click("ShowButton");
 			var position2 = App.FindElement("CarouselPosition").GetText();
 			Assert.NotNull(position2);
-			Assert.Equal(1, int.Parse(position2!));
+			Assert.Equal(1, int.Parse(position2!);
 			App.Screenshot("Test passed");
 		}
 	}

@@ -21,8 +21,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Tests
 		{
-			[Fact]
-			public void BindToIntIndexer([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void BindToIntIndexer([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var layout = new Gh5254(useCompiledXaml)
 				{

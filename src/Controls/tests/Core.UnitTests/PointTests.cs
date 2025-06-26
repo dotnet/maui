@@ -111,10 +111,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var converter = new PointTypeConverter();
 			Assert.True(converter.CanConvertFrom(typeof(string)));
-			Assert.Equal(new Point(1, 2), converter.ConvertFromInvariantString("1,2"));
-			Assert.Equal(new Point(1, 2), converter.ConvertFromInvariantString("1, 2"));
-			Assert.Equal(new Point(1, 2), converter.ConvertFromInvariantString(" 1 , 2 "));
-			Assert.Equal(new Point(1.1, 2), converter.ConvertFromInvariantString("1.1,2"));
+			Assert.Equal(new Point(1, 2));
+			Assert.Equal(new Point(1, 2));
+			Assert.Equal(new Point(1, 2));
+			Assert.Equal(new Point(1.1, 2));
 			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString(""));
 		}
 

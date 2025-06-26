@@ -14,11 +14,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		class Test
 		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+			// Constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+			// IDisposable public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Fact]
-			public void ContentPropertyAttributeOnLayoutSubclass([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void ContentPropertyAttributeOnLayoutSubclass([Theory]
+		[InlineData(false)]
+		[InlineData(true)] bool useCompiledXaml)
 			{
 				var page = new Maui6944(useCompiledXaml);
 				Assert.NotNull(page.layout);
