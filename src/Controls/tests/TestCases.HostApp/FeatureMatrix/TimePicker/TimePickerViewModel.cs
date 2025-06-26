@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace Maui.Controls.Sample;
@@ -17,6 +18,7 @@ public class TimePickerViewModel : INotifyPropertyChanged
     private Shadow _shadow;
     private TimeSpan _time = new TimeSpan(10, 0, 0);
     private Color _textColor;
+    private CultureInfo _culture;
 
     public double CharacterSpacing
     {
@@ -157,10 +159,28 @@ public class TimePickerViewModel : INotifyPropertyChanged
         }
     }
 
+    public CultureInfo Culture
+    {
+        get => _culture;
+        set
+        {
+            if (_culture != value)
+            {
+                _culture = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public event PropertyChangedEventHandler PropertyChanged;
 
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    public TimePickerViewModel()
+    {
+        Culture = new CultureInfo("en-US");
     }
 }

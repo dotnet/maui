@@ -93,4 +93,21 @@ public partial class TimePickerOptionsPage : ContentPage
 			_viewModel.TextColor = radioButton.Content.ToString() == "Red" ? Colors.Red : Colors.Green;
 		}
 	}
+
+	private void OnCultureButtonClicked(object sender, EventArgs e)
+	{
+		if (sender is Button button)
+		{
+			string cultureName = button.Text;
+			try
+			{
+				var culture = new System.Globalization.CultureInfo(cultureName);
+				_viewModel.Culture = culture;
+			}
+			catch (Exception ex)
+			{
+				DisplayAlert("Culture Error", $"Failed to set culture {cultureName}: {ex.Message}", "OK");
+			}
+		}
+	}
 }
