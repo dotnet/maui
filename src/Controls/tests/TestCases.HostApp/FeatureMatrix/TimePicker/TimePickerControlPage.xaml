@@ -52,10 +52,12 @@
 
               <Label Grid.Row="3"
                      Grid.Column="0"
-                     Text="Culture Format Display:"/>
+                     Text="Culture Format Display:"
+                     Margin="10,0,0,0"/>
               <Label Grid.Row="3"
                      Grid.Column="1"
                      x:Name="CultureFormatLabel"
-                     AutomationId="CultureFormatLabel"/>
+                     AutomationId="CultureFormatLabel"
+                     Margin="0,0,0,50"/>
        </Grid>
 </ContentPage>
