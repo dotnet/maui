@@ -58,8 +58,9 @@ namespace Microsoft.Maui.Platform
 				// arrangement with an adjusted starting point and recalculating the content offset.
 				if (_previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection)
 				{
-					// In mac platform, Scrollbar is not updated based on FlowDirection, So resetting the scroll indicators
-					if (OperatingSystem.IsMacCatalyst())
+					// In mac platform, Scrollbar is not updated based on FlowDirection, so resetting the scroll indicators
+					// It's a native limitation; to maintain platform consistency, a hack fix is applied to show the Scrollbar based on the FlowDirection.
+					if (OperatingSystem.IsMacCatalyst() && _previousEffectiveUserInterfaceLayoutDirection is not null)
 					{
 						bool showsVertical = ShowsVerticalScrollIndicator;
 						bool showsHorizontal = ShowsHorizontalScrollIndicator;
