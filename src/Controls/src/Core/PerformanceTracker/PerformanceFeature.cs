@@ -13,6 +13,9 @@ internal class PerformanceFeature
 	/// <summary>
 	/// Indicates whether performance monitoring is enabled.
 	/// </summary>
+#if NET9_0_OR_GREATER
+	[FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
+#endif
 	internal static bool IsSupported { get; }
 		= InitializeIsMeterSupported();
 	
