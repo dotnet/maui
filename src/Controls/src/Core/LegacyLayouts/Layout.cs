@@ -661,6 +661,21 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 		}
+		protected override void OnChildAdded(Element child)
+		{
+			base.OnChildAdded(child);
+
+			if (!UseCompatibilityMode)
+				InternalChildren.Add(child);
+		}
+
+		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
+		{
+			base.OnChildRemoved(child, oldLogicalIndex);
+			
+			if (!UseCompatibilityMode)
+				InternalChildren.Remove(child);
+		}
 
 		void OnInternalAdded(View view)
 		{
