@@ -1,1 +1,2 @@
 #nullable enable
+override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
