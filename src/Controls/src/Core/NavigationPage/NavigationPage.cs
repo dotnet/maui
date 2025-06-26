@@ -695,7 +695,9 @@ namespace Microsoft.Maui.Controls
 				var visiblePage = Navigation.NavigationStack[NavigationStack.Count - 1];
 				RootPage = navStack[0];
 				CurrentPage = visiblePage;
-
+				
+				var navigationType = DetermineNavigationType();
+				
 				SendHandlerUpdateAsync(false, null,
 				() =>
 				{
@@ -703,7 +705,7 @@ namespace Microsoft.Maui.Controls
 				},
 				() =>
 				{
-					SendNavigated(null, NavigationType);
+					SendNavigated(null, navigationType);
 				})
 				.FireAndForget(Handler);
 			}
@@ -715,7 +717,21 @@ namespace Microsoft.Maui.Controls
 				((IStackNavigation)this).NavigationFinished(this.NavigationStack);
 			}
 		}
+		
+		NavigationType DetermineNavigationType()
+		{
+			var parentPages = this.GetParentPages();
 
+			bool hasTabOrFlyout = parentPages.Any(page => page is FlyoutPage or TabbedPage);
+    
+			if (hasTabOrFlyout)
+			{
+				return NavigationType.Replace;
+			}
+
+			return NavigationType.Push;
+		}
+		
 		// Once we get all platforms over to the new APIs
 		// we can just delete all the code inside NavigationPage.cs that fires "requested" events
 		class MauiNavigationImpl : NavigationProxy
@@ -851,23 +867,24 @@ namespace Microsoft.Maui.Controls
 				if (Owner.InternalChildren.Contains(root))
 					return Task.CompletedTask;
 
+				var navigationType = Owner.DetermineNavigationType();
 				var previousPage = Owner.CurrentPage;
 
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
-						Owner.NavigationType = NavigationType.Push;
+						Owner.NavigationType = navigationType;
 						Owner.PushPage(root);
 					},
 					() =>
 					{
-						Owner.SendNavigating(NavigationType.Push, previousPage);
+						Owner.SendNavigating(navigationType, previousPage);
 						Owner.FireDisappearing(previousPage);
 						Owner.FireAppearing(root);
 					},
 					() =>
 					{
-						Owner.SendNavigated(previousPage, NavigationType.Push);
+						Owner.SendNavigated(previousPage, navigationType);
 						Owner?.Pushed?.Invoke(Owner, new NavigationEventArgs(root));
 					});
 			}
