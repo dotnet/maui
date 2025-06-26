@@ -12,33 +12,8 @@ Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.Deconstruct(out int Index
 Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.MenuFlyoutSubItemHandlerUpdate(Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.OpenWindowRequest.Deconstruct(out Microsoft.Maui.IPersistedState? State) -> void
 Microsoft.Maui.Handlers.OpenWindowRequest.OpenWindowRequest(Microsoft.Maui.Handlers.OpenWindowRequest! original) -> void
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.ApplicationSignificantTimeChange
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.ContinueUserActivity
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.DidEnterBackground
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.FinishedLaunching
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.OnActivated
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.OnMauiContextCreated
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.OnPlatformWindowCreated
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.OnResignActivation
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.OpenUrl
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformActionForShortcutItem
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformFetch
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneContinueUserActivity
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidDisconnect
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidEnterBackground
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidFailToContinueUserActivity
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidUpdateUserActivity
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOnActivated
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOnResignActivation
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOpenUrl
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneRestoreInteractionState
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillConnect
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillContinueUserActivity
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillEnterForeground
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillEnterForeground
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillFinishLaunching
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillTerminate
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.WindowSceneDidUpdateCoordinateSpace
 Microsoft.Maui.ScrollToRequest.Deconstruct(out double HorizontalOffset, out double VerticalOffset, out bool Instant) -> void
 Microsoft.Maui.ScrollToRequest.ScrollToRequest(Microsoft.Maui.ScrollToRequest! original) -> void
 Microsoft.Maui.SwipeViewCloseRequest.Deconstruct(out bool Animated) -> void
@@ -111,7 +86,6 @@ static Microsoft.Maui.SwipeViewSwipeEnded.operator !=(Microsoft.Maui.SwipeViewSw
 static Microsoft.Maui.SwipeViewSwipeEnded.operator ==(Microsoft.Maui.SwipeViewSwipeEnded? left, Microsoft.Maui.SwipeViewSwipeEnded? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator !=(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator ==(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
-virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.<Clone>$() -> Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Equals(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? other) -> bool
