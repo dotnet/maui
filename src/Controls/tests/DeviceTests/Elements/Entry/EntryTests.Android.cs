@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
