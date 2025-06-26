@@ -16,14 +16,22 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ScrollView)]
 		public void ScrollViewGradientBackgroundShouldWorkWithScrollView()
 		{
-			App.WaitForElement("Item2");
-			App.SwipeRightToLeft("Item2", 0.99);
+			Exception? exception = null;
 
-			VerifyScreenshot("ScrollViewGradientBackground");
+			App.WaitForElement("scrollButton");
+
+			App.Click("scrollButton");
+			VerifyScreenshotOrSetException(ref exception, "ScrollViewGradientBackground");
 			App.Click("button");
-			VerifyScreenshot("ScrollViewWithoutGradientBackground");
+			App.WaitForElement("scrollButton");
+			VerifyScreenshotOrSetException(ref exception, "ScrollViewWithoutGradientBackground");
 			App.Click("button");
-			VerifyScreenshot("ScrollViewGradientBackground");
+			App.WaitForElement("scrollButton");
+			VerifyScreenshotOrSetException(ref exception, "ScrollViewGradientBackground");
+			if (exception != null)
+			{
+				throw exception;
+			}
 		}
 	}
 }
