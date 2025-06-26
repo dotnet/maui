@@ -22,6 +22,7 @@
     <PackageReference Update="Xamarin.AndroidX.Navigation.UI" Version="2.9.0" />
     <PackageReference Update="Xamarin.AndroidX.Palette" Version="1.0.0.33" />
     <PackageReference Update="Xamarin.AndroidX.RecyclerView" Version="1.4.0.2" />
+    <PackageReference Update="Xamarin.AndroidX.SavedState" Version="1.3.0.1" />
     <PackageReference Update="Xamarin.AndroidX.Security.SecurityCrypto" Version="1.1.0.4-alpha07" />
     <PackageReference Update="Xamarin.AndroidX.SwipeRefreshLayout" Version="1.1.0.28" />
     <PackageReference Update="Xamarin.AndroidX.Transition" Version="1.6.0" />
