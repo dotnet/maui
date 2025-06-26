@@ -12,7 +12,6 @@ Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.Deconstruct(out int Index
 Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.MenuFlyoutSubItemHandlerUpdate(Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.OpenWindowRequest.Deconstruct(out Microsoft.Maui.IPersistedState? State) -> void
 Microsoft.Maui.Handlers.OpenWindowRequest.OpenWindowRequest(Microsoft.Maui.Handlers.OpenWindowRequest! original) -> void
-Microsoft.Maui.LifecycleEvents.WindowsLifecycle.OnWindowCreated
 Microsoft.Maui.ScrollToRequest.Deconstruct(out double HorizontalOffset, out double VerticalOffset, out bool Instant) -> void
 Microsoft.Maui.ScrollToRequest.ScrollToRequest(Microsoft.Maui.ScrollToRequest! original) -> void
 Microsoft.Maui.SwipeViewCloseRequest.Deconstruct(out bool Animated) -> void
