@@ -55,6 +55,7 @@
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx" />
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" />
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" />
+    <PackageReference Include="Xamarin.AndroidX.SavedState" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" />
     <PackageReference Include="Xamarin.AndroidX.Navigation.UI" />
