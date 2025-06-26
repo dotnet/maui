@@ -330,7 +330,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			if (!_hasDoneLayout)
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				ForceLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 
@@ -485,7 +487,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				Rect newBound = ((VisualElement)LogicalChildrenInternal[i]).Bounds;
 				if (oldBound != newBound)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					LayoutChanged?.Invoke(this, EventArgs.Empty);
+#pragma warning restore CS0618 // Type or member is obsolete
 					return;
 				}
 			}
@@ -622,19 +626,23 @@ namespace Microsoft.Maui.Controls.Compatibility
 			parent?.InternalChildren.Remove(view);
 
 			OnChildAdded(view);
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (ShouldInvalidateOnChildAdded(view))
 			{
 				InvalidateLayout();
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void OnInternalRemoved(View view, int oldIndex)
 		{
 			OnChildRemoved(view, oldIndex);
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (ShouldInvalidateOnChildRemoved(view))
 			{
 				InvalidateLayout();
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		bool ShouldLayoutChildren()

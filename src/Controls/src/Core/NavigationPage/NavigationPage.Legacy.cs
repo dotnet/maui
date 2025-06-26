@@ -141,7 +141,9 @@ namespace Microsoft.Maui.Controls
 
 			// Shouldn't be required?
 			if (Width > 0 && Height > 0)
+#pragma warning disable CS0618 // Type or member is obsolete
 				ForceLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		async Task PopToRootAsyncInner(bool animated)
