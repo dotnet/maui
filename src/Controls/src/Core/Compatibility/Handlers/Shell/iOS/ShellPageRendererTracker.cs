@@ -9,7 +9,6 @@ using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
