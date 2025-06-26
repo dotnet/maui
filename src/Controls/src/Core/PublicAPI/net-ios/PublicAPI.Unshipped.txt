@@ -6,7 +6,7 @@
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void
 Microsoft.Maui.Controls.PerformanceTracker.PerformanceMauiAppBuilderExtensions
-static Microsoft.Maui.Controls.PerformanceTracker.PerformanceMauiAppBuilderExtensions.ConfigurePerformance(this MauiAppBuilder! builder) -> MauiAppBuilder!
+static Microsoft.Maui.Controls.PerformanceTracker.PerformanceMauiAppBuilderExtensions.ConfigurePerformance(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 ~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
 ~Microsoft.Maui.Controls.ITextElement.TextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string
