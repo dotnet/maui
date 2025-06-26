@@ -13,6 +13,10 @@ namespace Microsoft.Maui.Platform
 	{
 		public const double PlatformMaxValue = int.MaxValue;
 
+		//Material 2 design spec - https://m2.material.io/components/sliders/android#discrete-slider
+		//Additional info - https://github.com/material-components/material-components-android/blob/60b0325b39741784fca4d7aba079b65453bc7c66/lib/java/com/google/android/material/slider/res/values/dimens.xml#L27
+		const int TARGET_SIZE = 20; // 10 radius * 2
+
 		public static void UpdateMinimum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
 
 		public static void UpdateMaximum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
@@ -50,7 +54,7 @@ namespace Microsoft.Maui.Platform
 		public static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider)
 		{
 			var context = seekBar.Context;
-			if (context is null || !seekBar.IsAlive())
+			if (context is null)
 			{
 				return;
 			}
@@ -62,13 +66,16 @@ namespace Microsoft.Maui.Platform
 				var result = await service.GetDrawableAsync(thumbImageSource, context);
 				var thumbDrawable = result?.Value;
 
-				if (thumbDrawable is not null)
+				if (seekBar.IsAlive())
 				{
-					SetThumbDrawable(seekBar, context, thumbDrawable);
-				}
-				else
-				{
-					SetDefaultThumb(seekBar, slider, context);
+					if (thumbDrawable is not null)
+					{
+						SetThumbDrawable(seekBar, context, thumbDrawable);
+					}
+					else
+					{
+						SetDefaultThumb(seekBar, slider, context);
+					}
 				}
 			}
 			else
@@ -79,8 +86,6 @@ namespace Microsoft.Maui.Platform
 
 		static void SetThumbDrawable(SeekBar seekBar, Android.Content.Context context, Drawable thumbDrawable)
 		{
-			//Material 2 design spec - https://m2.material.io/components/sliders/android#discrete-slider
-			const int TARGET_SIZE = 20; // 10 radius * 2
 			int thumbSize = (int)context.ToPixels(TARGET_SIZE);
 
 			using (Bitmap bitmap = Bitmap.CreateBitmap(thumbSize, thumbSize, Bitmap.Config.Argb8888!))
