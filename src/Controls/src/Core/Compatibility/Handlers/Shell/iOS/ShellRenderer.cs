@@ -131,6 +131,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Mapper.UpdateProperties(this, Element);
 		}
 
+		[Obsolete]
 		public virtual void SetElementSize(Size size)
 		{
 			Element.Layout(new Rect(Element.X, Element.Y, size.Width, size.Height));
@@ -141,8 +142,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.ViewDidLayoutSubviews();
 			if (_currentShellItemRenderer != null)
 				_currentShellItemRenderer.ViewController.View.Frame = View.Bounds;
-
-			SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
 		}
 
 		public override void ViewDidLoad()
