@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var oldElement = Element;
 			Element = element;
 
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			if (oldElement != null)
 				oldElement.PropertyChanged -= _propertyChangedHandler;
@@ -232,7 +232,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			SetAccessibilityHint();
 			SetIsAccessibilityElement();
 			SetAccessibilityElementsHidden();
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 		}
 
 #if __MOBILE__

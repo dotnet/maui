@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public static SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			var renderView = GetRenderer(view);
 			if (renderView == null || renderView.NativeView == null)
@@ -228,11 +228,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
 				}
 
-				Performance.Stop(reference);
+				Internals.Performance.Stop(reference);
 				return new SizeRequest(Size.Zero);
 			}
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 			return renderView.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			var viewCell = (ViewCell)item;
 
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			SetAccessibility(cell, item);
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 			return cell;
 		}
 
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			public override void LayoutSubviews()
 			{
-				Performance.Start(out string reference);
+				Internals.Performance.Start(out string reference);
 
 				//This sets the content views frame.
 				base.LayoutSubviews();
@@ -107,12 +107,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (_rendererRef.TryGetTarget(out renderer))
 					renderer.NativeView.Frame = view.Bounds.ToRectangleF();
 
-				Performance.Stop(reference);
+				Internals.Performance.Stop(reference);
 			}
 
 			public override SizeF SizeThatFits(SizeF size)
 			{
-				Performance.Start(out string reference);
+				Internals.Performance.Start(out string reference);
 
 				IVisualElementRenderer renderer;
 				if (!_rendererRef.TryGetTarget(out renderer))
@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// make sure to add in the separator if needed
 				var finalheight = (float)result.Request.Height + (SupressSeparator ? 0f : 1f) / UIScreen.MainScreen.Scale;
 
-				Performance.Stop(reference);
+				Internals.Performance.Stop(reference);
 
 				return new SizeF(size.Width, finalheight);
 			}
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			void UpdateCell(ViewCell cell)
 			{
-				Performance.Start(out string reference);
+				Internals.Performance.Start(out string reference);
 
 				var oldCell = _viewCell;
 				if (oldCell != null)
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Platform.SetRenderer(_viewCell.View, renderer);
 				UpdateIsEnabled(_viewCell.IsEnabled);
 				_viewCell.View.MeasureInvalidated += OnMeasureInvalidated;
-				Performance.Stop(reference);
+				Internals.Performance.Stop(reference);
 			}
 
 			void OnMeasureInvalidated(object sender, EventArgs e)

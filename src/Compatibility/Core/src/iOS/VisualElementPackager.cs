@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			if (_isDisposed)
 				return;
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 			if (CompressedLayout.GetIsHeadless(view))
 			{
 				var packager = new VisualElementPackager(Renderer, view, isHeadless: true);
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				EnsureChildrenOrder();
 			}
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 		}
 
 		protected virtual void OnChildRemoved(VisualElement view)
@@ -193,7 +193,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (oldElement == newElement)
 				return;
 
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			_element = newElement;
 
@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				newElement.ChildRemoved += OnChildRemoved;
 				newElement.ChildrenReordered += UpdateChildrenOrder;
 			}
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 		}
 
 		void UpdateChildrenOrder(object sender, EventArgs e)

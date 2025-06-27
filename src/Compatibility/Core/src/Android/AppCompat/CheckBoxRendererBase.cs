@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			CheckBox oldElement = Element;
 			Element = checkBox;
 
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			if (oldElement != null)
 			{
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			OnElementChanged(new ElementChangedEventArgs<CheckBox>(oldElement as CheckBox, Element));
 			Element?.SendViewInitialized(Control);
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 		}
 
 		protected virtual void OnElementChanged(ElementChangedEventArgs<CheckBox> e)

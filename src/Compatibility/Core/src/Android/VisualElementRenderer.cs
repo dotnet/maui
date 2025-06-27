@@ -122,9 +122,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public void UpdateLayout()
 		{
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 			Tracker?.UpdateLayout();
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 		}
 
 		AView IVisualElementRenderer.View => this;
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			TElement oldElement = Element;
 			Element = element ?? throw new ArgumentNullException(nameof(element));
 
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			if (oldElement != null)
 			{
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			UpdateInputTransparent();
 			UpdateInputTransparentInherited();
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 		}
 
 		/// <summary>
