@@ -255,8 +255,11 @@ namespace Microsoft.Maui.Handlers
 				// Mapped through _InitializeBatchedProperties
 				return;
 			}
-#else
-			if (handler.IsConnectingHandler() && double.IsNaN(view.MinimumHeight)) return;
+#elif !WINDOWS // TODO: Investigate why we can't skip this on Windows
+			if (handler.IsConnectingHandler() && double.IsNaN(view.MinimumHeight))
+			{
+				return;
+			}
 #endif
 
 			((PlatformView?)handler.PlatformView)?.UpdateMinimumHeight(view);
@@ -269,7 +272,10 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapMaximumHeight(IViewHandler handler, IView view)
 		{
-			if (handler.IsConnectingHandler() && double.IsPositiveInfinity(view.MaximumHeight)) return;
+			if (handler.IsConnectingHandler() && double.IsPositiveInfinity(view.MaximumHeight))
+			{
+				return;
+			}
 
 			((PlatformView?)handler.PlatformView)?.UpdateMaximumHeight(view);
 		}
@@ -287,8 +293,11 @@ namespace Microsoft.Maui.Handlers
 				// Mapped through _InitializeBatchedProperties
 				return;
 			}
-#else
-			if (handler.IsConnectingHandler() && double.IsNaN(view.MinimumWidth)) return;
+#elif !WINDOWS // TODO: Investigate why we can't skip this on Windows
+			if (handler.IsConnectingHandler() && double.IsNaN(view.MinimumWidth))
+			{
+				return;
+			}
 #endif
 
 			((PlatformView?)handler.PlatformView)?.UpdateMinimumWidth(view);
@@ -301,7 +310,10 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapMaximumWidth(IViewHandler handler, IView view)
 		{
-			if (handler.IsConnectingHandler() && double.IsPositiveInfinity(view.MaximumWidth)) return;
+			if (handler.IsConnectingHandler() && double.IsPositiveInfinity(view.MaximumWidth))
+			{
+				return;
+			}
 
 			((PlatformView?)handler.PlatformView)?.UpdateMaximumWidth(view);
 		}
