@@ -1302,6 +1302,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				_tracker.Target = Child;
 				_tracker.AdditionalTargets = Child.GetParentPages();
+				_tracker.PagePropertyChanged += OnToolbarItemPropertyChanged;
 
 				UpdateToolbarItems();
 			}
@@ -1332,10 +1333,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (parent is null)
 				{
 					_tracker.CollectionChanged -= TrackerOnCollectionChanged;
+					_tracker.PagePropertyChanged -= OnToolbarItemPropertyChanged;
 				}
 				else
 				{
 					_tracker.CollectionChanged += TrackerOnCollectionChanged;
+					_tracker.PagePropertyChanged += OnToolbarItemPropertyChanged;
 				}
 			}
 
@@ -1352,6 +1355,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					_tracker.Target = null;
 					_tracker.CollectionChanged -= TrackerOnCollectionChanged;
+					_tracker.PagePropertyChanged -= OnToolbarItemPropertyChanged;
 					_tracker = null;
 				}
 
@@ -1632,6 +1636,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateToolbarItems();
 			}
 
+			void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				// Handle ToolbarItem property changes, especially IsVisible
+				if (e.PropertyName == nameof(ToolbarItem.IsVisible) ||
+					e.PropertyName == nameof(ToolbarItem.Text) ||
+					e.PropertyName == nameof(ToolbarItem.IconImageSource) ||
+					e.PropertyName == nameof(ToolbarItem.Order) ||
+					e.PropertyName == nameof(ToolbarItem.Priority))
+				{
+					UpdateToolbarItems();
+				}
+			}
+
 			void UpdateHasBackButton()
 			{
 				if (Child is not Page child || NavigationItem.HidesBackButton == !NavigationPage.GetHasBackButton(child))
@@ -1683,7 +1700,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				List<UIBarButtonItem> primaries = null;
 				List<UIBarButtonItem> secondaries = null;
-				var toolbarItems = _tracker.ToolbarItems;
+				var toolbarItems = _tracker.ToolbarItems.Where(item => item.IsVisible);
 				foreach (var item in toolbarItems)
 				{
 					if (item.Order == ToolbarItemOrder.Secondary)
