@@ -36,14 +36,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Single(page.ToolbarItems);
 			Assert.Contains(toolbarItem, page.ToolbarItems);
 			
-			// Setting IsVisible to false should remove it from the collection
+			// Setting IsVisible to false should NOT remove it from the collection
+			// It should remain in the collection but be filtered out at the platform level
 			toolbarItem.IsVisible = false;
-			Assert.Empty(page.ToolbarItems);
+			Assert.Single(page.ToolbarItems);
+			Assert.Contains(toolbarItem, page.ToolbarItems);
+			Assert.False(toolbarItem.IsVisible);
 			
-			// Setting IsVisible to true should add it back
+			// Setting IsVisible to true should keep it in the collection
 			toolbarItem.IsVisible = true;
 			Assert.Single(page.ToolbarItems);
 			Assert.Contains(toolbarItem, page.ToolbarItems);
+			Assert.True(toolbarItem.IsVisible);
 		}
 
 		[Fact]
@@ -60,19 +64,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			page.ToolbarItems.Add(item3);
 			Assert.Equal(3, page.ToolbarItems.Count);
 			
-			// Hide item2 (middle priority)
+			// Hide item2 (middle priority) - should remain in collection
 			item2.IsVisible = false;
-			Assert.Equal(2, page.ToolbarItems.Count);
+			Assert.Equal(3, page.ToolbarItems.Count);
 			Assert.Contains(item1, page.ToolbarItems);
-			Assert.DoesNotContain(item2, page.ToolbarItems);
+			Assert.Contains(item2, page.ToolbarItems);
 			Assert.Contains(item3, page.ToolbarItems);
+			Assert.False(item2.IsVisible);
 			
-			// Show item2 again - should be inserted in correct position
+			// Show item2 again - should still be in same position
 			item2.IsVisible = true;
 			Assert.Equal(3, page.ToolbarItems.Count);
 			Assert.Equal(item1, page.ToolbarItems[0]);
 			Assert.Equal(item2, page.ToolbarItems[1]);
 			Assert.Equal(item3, page.ToolbarItems[2]);
+			Assert.True(item2.IsVisible);
 		}
 	}
 }

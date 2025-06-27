@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Controls
 			commandBar.PrimaryCommands.Clear();
 			commandBar.SecondaryCommands.Clear();
 
-			List<ToolbarItem> toolbarItems = new List<ToolbarItem>(ToolbarItems ?? Array.Empty<ToolbarItem>());
+			List<ToolbarItem> toolbarItems = new List<ToolbarItem>(ToolbarItems?.Where(item => item.IsVisible) ?? Array.Empty<ToolbarItem>());
 
 			foreach (ToolbarItem item in toolbarItems)
 			{
@@ -98,7 +99,7 @@ namespace Microsoft.Maui.Controls
 
 			if (e.PropertyName == nameof(ToolbarItem.Text) || e.PropertyName == nameof(ToolbarItem.IconImageSource))
 			{
-				var toolbarItems = new List<ToolbarItem>(ToolbarItems ?? Array.Empty<ToolbarItem>());
+				var toolbarItems = new List<ToolbarItem>(ToolbarItems?.Where(item => item.IsVisible) ?? Array.Empty<ToolbarItem>());
 				SetDefaultLabelPosition(commandBar, toolbarItems);
 			}
 		}
