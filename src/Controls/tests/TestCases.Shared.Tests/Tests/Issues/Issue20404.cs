@@ -14,18 +14,11 @@ public class Issue20404 : _IssuesUITest
 	[Category(UITestCategories.Layout)]
 	public void DynamicGridRowColumnChangeShouldInvalidate()
 	{
-		Exception? exception = null;
-
 		App.WaitForElement("ToggleRowButton");
 		App.Tap("ToggleRowButton");
-		VerifyScreenshotOrSetException(ref exception, "AfterGridRowToggled");
+		VerifyScreenshot("AfterGridRowToggled");
 		App.WaitForElement("ToggleColumnButton");
 		App.Tap("ToggleColumnButton");
-		VerifyScreenshotOrSetException(ref exception, "AfterGridColumnToggled");
-
-		if (exception != null)
-		{
-			throw exception;
-		}
+		VerifyScreenshot("AfterGridColumnToggled");
 	}
 }
