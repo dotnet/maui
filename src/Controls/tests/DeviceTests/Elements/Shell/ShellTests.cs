@@ -1139,6 +1139,23 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if !ANDROID
+		[Fact(DisplayName = "Initialize Empty Shell Throws InvalidOperationException")]
+		public async Task InitializeEmptyShellThrowsInvalidOperationException()
+		{
+			SetupBuilder();
+			var shell = new Shell();
+
+			await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+			{
+				await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+				{
+					return Task.CompletedTask;
+				});
+			});
+		}
+#endif
+
 		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>
 			{

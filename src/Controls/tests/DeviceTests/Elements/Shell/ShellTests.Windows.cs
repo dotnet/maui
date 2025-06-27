@@ -819,21 +819,5 @@ namespace Microsoft.Maui.DeviceTests
 
 			return animatedIcon;
 		}
-
-		[Fact(DisplayName = "Initialize Empty Shell Throws InvalidOperationException")]
-		public async Task InitializeEmptyShellThrowsInvalidOperationException()
-		{
-			SetupBuilder();
-
-			var shell = new Shell();
-
-			await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-			{
-				await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
-				{
-					return Task.CompletedTask;
-				});
-			});
-		}
 	}
 }
