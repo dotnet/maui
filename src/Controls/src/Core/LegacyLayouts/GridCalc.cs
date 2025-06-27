@@ -45,10 +45,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 					h += RowSpacing + structure.Rows[r + i].ActualHeight;
 
 				// in the future we can might maybe optimize by passing the already calculated size request
+#pragma warning disable CS0618 // Type or member is obsolete
 				LayoutChildIntoBoundingRegion(child, new Rect(posx, posy, w, h));
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 
+		[Obsolete("Use MeasureOverride instead", true)]
 #pragma warning disable CS0672 // Member overrides obsolete member
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 #pragma warning restore CS0672 // Member overrides obsolete member

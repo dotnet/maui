@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ItemsSourceProperty, value);
 		}
 
-		[Obsolete("Use MeasureOverride instead")]
+		[Obsolete("Use MeasureOverride instead", true)]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (IndicatorTemplate == null)
@@ -141,7 +141,9 @@ namespace Microsoft.Maui.Controls
 				return Handler?.GetDesiredSize(widthConstraint, heightConstraint) ?? new();
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			return base.OnMeasure(widthConstraint, heightConstraint);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		static void UpdateIndicatorLayout(IndicatorView indicatorView, object newValue)

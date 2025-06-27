@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='LayoutAreaOverride']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		[Obsolete]
+		[Obsolete("This property is obsolete and currently doesn't do anything.", true)]
 		public Rect LayoutAreaOverride
 		{
 			get => _layoutAreaOverride;
@@ -31,7 +31,9 @@ namespace Microsoft.Maui.Controls
 					return;
 				_layoutAreaOverride = value;
 				// Dont invalidate here, we can relayout immediately since this only impacts our innards
+#pragma warning disable CS0618 // Type or member is obsolete
 				UpdateChildrenLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 
@@ -277,12 +279,14 @@ namespace Microsoft.Maui.Controls
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => false;
 
-		[Obsolete("Use ArrangeOverride instead")]
+		[Obsolete("Use ArrangeOverride instead", true)]
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected override void LayoutChildren(double x, double y, double width, double height)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 		}
 
-		[Obsolete("Use MeasureOverride instead")]
+		[Obsolete("Use MeasureOverride instead", true)]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (Content == null)
