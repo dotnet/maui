@@ -308,7 +308,21 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateOpacity(this AView platformView, IView view) => platformView.UpdateOpacity(view.Opacity);
 
-		internal static void UpdateOpacity(this AView platformView, double opacity) => platformView.Alpha = (float)opacity;
+		internal static void UpdateOpacity(this AView platformView, double opacity)
+		{
+			platformView.Alpha = (float)opacity;
+
+			if (platformView is WrapperView wrapperView && wrapperView.Shadow != null)
+			{
+				if (wrapperView.IsLoaded())
+				{
+					wrapperView.Post(() =>
+					{
+						wrapperView.Invalidate();
+					});
+				}
+			}
+		}
 
 		public static void UpdateFlowDirection(this AView platformView, IView view)
 		{
