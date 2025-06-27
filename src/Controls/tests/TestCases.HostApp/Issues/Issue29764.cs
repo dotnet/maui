@@ -26,9 +26,29 @@ public class Issue29764 : ContentPage
 		var mainButton = new Button
 		{
 			AutomationId = "MainButton",
-			Text = "Show Label with Shadow (Opacity = 1)",
+			Text = "Update Label Opacity",
 		};
-		mainButton.Clicked += (sender, e) => labelToAnimate.Opacity = 1;
+		mainButton.Clicked += (sender, e) =>
+		{
+			var timer = Application.Current.Dispatcher.CreateTimer();
+			double deltaTime = 1 / 60.0;
+			double fadeDuration = 0.5;
+
+			timer.Tick += delegate (object s, EventArgs e)
+			{
+				if (labelToAnimate.Opacity < 1)
+				{
+					labelToAnimate.Opacity += deltaTime / fadeDuration;
+				}
+				if (labelToAnimate.Opacity > 1)
+				{
+					labelToAnimate.Opacity = 1;
+				}
+			};
+
+			timer.Interval = TimeSpan.FromSeconds(deltaTime);
+			timer.Start();
+		};
 
 		mainLayout.Add(mainButton);
 		mainLayout.Add(shadowLabel);
