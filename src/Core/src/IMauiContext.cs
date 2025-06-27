@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 	{
 		IServiceProvider Services { get; }
 
-		IMauiHandlersFactory Handlers { get; }
+		IMauiHandlersFactory Handlers { gets; }
 
 #if __ANDROID__
 		Android.Content.Context? Context { get; }
