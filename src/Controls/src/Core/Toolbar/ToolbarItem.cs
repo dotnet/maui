@@ -59,9 +59,16 @@ namespace Microsoft.Maui.Controls
 
 		static void OnIsVisiblePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			// The IsVisible property change doesn't need to do anything special.
-			// The platform implementations will filter toolbar items based on IsVisible 
-			// when they rebuild the UI, so we don't need to manage the collection here.
+			if (bindable is not ToolbarItem item)
+				return;
+
+			// Find the page that contains this toolbar item and trigger an update
+			if (item.Parent is Page page)
+			{
+				// Trigger a toolbar items refresh by notifying that the collection has "changed"
+				// This will cause the platform to rebuild the toolbar with current visible items
+				page.Handler?.UpdateValue(nameof(Toolbar.ToolbarItems));
+			}
 		}
 	}
 }
