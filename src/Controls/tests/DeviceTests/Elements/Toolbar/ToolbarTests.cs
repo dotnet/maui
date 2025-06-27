@@ -278,5 +278,72 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return ((Toolbar)(navPage.Window as IToolbarElement).Toolbar).ToolbarItems.ToArray();
 		}
+
+		[Fact(DisplayName = "Toolbar Items IsVisible Property Filters Items Correctly")]
+		public async Task ToolbarItemsIsVisiblePropertyFiltersItemsCorrectly()
+		{
+			SetupBuilder();
+			var visibleItem = new ToolbarItem() { Text = "Visible Item", IsVisible = true };
+			var hiddenItem = new ToolbarItem() { Text = "Hidden Item", IsVisible = false };
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				ToolbarItems =
+				{
+					visibleItem,
+					hiddenItem
+				}
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
+			{
+				var toolbar = (Toolbar)(navPage.Window as IToolbarElement).Toolbar;
+				var actualToolbarItems = toolbar.ToolbarItems.Where(item => item.IsVisible).ToArray();
+				
+				// Only the visible item should be included
+				Assert.Single(actualToolbarItems);
+				Assert.Equal("Visible Item", actualToolbarItems[0].Text);
+				Assert.DoesNotContain(hiddenItem, actualToolbarItems);
+				
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "Toolbar Items IsVisible Property Changes Update UI")]
+		public async Task ToolbarItemsIsVisiblePropertyChangesUpdateUI()
+		{
+			SetupBuilder();
+			var item1 = new ToolbarItem() { Text = "Item 1", IsVisible = true };
+			var item2 = new ToolbarItem() { Text = "Item 2", IsVisible = false };
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				ToolbarItems =
+				{
+					item1,
+					item2
+				}
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var toolbar = (Toolbar)(navPage.Window as IToolbarElement).Toolbar;
+				
+				// Initially only item1 should be visible
+				var visibleItems = toolbar.ToolbarItems.Where(item => item.IsVisible).ToArray();
+				Assert.Single(visibleItems);
+				Assert.Equal("Item 1", visibleItems[0].Text);
+				
+				// Change visibility
+				await InvokeOnMainThreadAsync(() =>
+				{
+					item1.IsVisible = false;
+					item2.IsVisible = true;
+				});
+				
+				// Now only item2 should be visible
+				visibleItems = toolbar.ToolbarItems.Where(item => item.IsVisible).ToArray();
+				Assert.Single(visibleItems);
+				Assert.Equal("Item 2", visibleItems[0].Text);
+			});
+		}
 	}
 }
