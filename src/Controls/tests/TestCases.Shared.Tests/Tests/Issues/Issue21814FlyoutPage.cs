@@ -39,7 +39,7 @@ public class Issue21814FlyoutPage : _IssuesUITest
 
 		var onNavigatedToText = App.FindElement(FlyoutItem1OnNavigatedToLabel).GetText();
 		Assert.That(onNavigatedToText, Does.Contain("PreviousPage: Null"));
-		Assert.That(onNavigatedToText, Does.Contain("NavigationType: Push"));
+		Assert.That(onNavigatedToText, Does.Contain("NavigationType: Replace"));
 
 		// Initially, OnNavigatingFrom and OnNavigatedFrom should show "-"
 		var onNavigatedFromText = App.FindElement(FlyoutItem1OnNavigatedFromLabel).GetText();
@@ -62,7 +62,7 @@ public class Issue21814FlyoutPage : _IssuesUITest
 		// Verify Item 2 navigation parameters
 		var item2OnNavigatedToText = App.FindElement(FlyoutItem2OnNavigatedToLabel).GetText();
 		Assert.That(item2OnNavigatedToText, Does.Contain("PreviousPage: Issue21814FlyoutItem1"));
-		Assert.That(item2OnNavigatedToText, Does.Contain("NavigationType: Push"));
+		Assert.That(item2OnNavigatedToText, Does.Contain("NavigationType: Replace"));
 	}
 
 	[Test, Order(3)]
@@ -78,7 +78,7 @@ public class Issue21814FlyoutPage : _IssuesUITest
 		// Verify Item 3 navigation parameters
 		var item3OnNavigatedToText = App.FindElement(FlyoutItem3OnNavigatedToLabel).GetText();
 		Assert.That(item3OnNavigatedToText, Does.Contain("PreviousPage: Issue21814FlyoutItem1"));
-		Assert.That(item3OnNavigatedToText, Does.Contain("NavigationType: Push"));
+		Assert.That(item3OnNavigatedToText, Does.Contain("NavigationType: Replace"));
 	}
 	
 	void OpenFlyoutMenu()
