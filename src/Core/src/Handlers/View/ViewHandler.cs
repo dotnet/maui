@@ -331,18 +331,26 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapVisibility(IViewHandler handler, IView view)
 		{
+			var isConnectingHandler = handler.IsConnectingHandler();
+
+			if (isConnectingHandler && view.Visibility == Visibility.Visible)
+			{
+				// Views are visible by default, so we don't need to map this property
+				return;
+			}
+
+			if (handler.HasContainer)
+			{
+				((PlatformView?)handler.ContainerView)?.UpdateVisibility(view);
+			}
+
 #if ANDROID
-			if (handler.IsConnectingHandler())
+			if (isConnectingHandler)
 			{
 				// Mapped through _InitializeBatchedProperties
 				return;
 			}
-#else
-			if (handler.IsConnectingHandler() && view.Visibility == Visibility.Visible) return;
 #endif
-
-			if (handler.HasContainer)
-				((PlatformView?)handler.ContainerView)?.UpdateVisibility(view);
 
 			((PlatformView?)handler.PlatformView)?.UpdateVisibility(view);
 		}
@@ -377,7 +385,13 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapFlowDirection(IViewHandler handler, IView view)
 		{
-			if (handler.IsConnectingHandler() && view.FlowDirection == FlowDirection.MatchParent) return;
+#if !(IOS || MACCATALYST)
+			// All platforms match parent's flow direction by default, except for iOS/macOS where we have to manually set it.
+			if (handler.IsConnectingHandler() && view.FlowDirection == FlowDirection.MatchParent)
+			{
+				return;
+			}
+#endif
 
 			((PlatformView?)handler.PlatformView)?.UpdateFlowDirection(view);
 		}
