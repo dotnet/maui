@@ -26,12 +26,12 @@ namespace Microsoft.Maui.TestCases.Tests
 		public override IConfig GetTestConfig()
 		{
 			var config = base.GetTestConfig();
-			
+
 #if MACCATALYST
 			// For Catalyst, pass the test name as a startup argument
 			config.SetTestConfigurationArg("test", Issue);
 #endif
-			
+
 			return config;
 		}
 

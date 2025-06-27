@@ -67,13 +67,13 @@ namespace Maui.Controls.Sample
 		{
 			Page mainPage = null;
 			OverrideMainPage(ref mainPage);
-			
+
 			// Check for startup test argument from environment variables (passed by test runner)
 			var testName = System.Environment.GetEnvironmentVariable("test");
 			if (!string.IsNullOrEmpty(testName))
 			{
 				App.StartupTestName = testName;
-				
+
 				// Try to navigate directly to the test
 				var testCaseScreen = new TestCases.TestCaseScreen();
 				if (testCaseScreen.TryToNavigateTo(testName))
@@ -83,7 +83,7 @@ namespace Maui.Controls.Sample
 					return new ContentPage { Title = "Loading Test..." };
 				}
 			}
-			
+
 			return mainPage ?? new CoreNavigationPage();
 		}
 	}
