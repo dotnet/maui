@@ -52,7 +52,7 @@ parameters:
 
   - name: UseProvisionator
     type: boolean
-    default: false
+    default: true
 
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
