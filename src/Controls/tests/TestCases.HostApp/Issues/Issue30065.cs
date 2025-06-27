@@ -7,12 +7,14 @@ public class Issue30065 : ContentPage
 	{
 		DatePicker rtlDatePicker = new DatePicker
 		{
+			Date = new DateTime(2002, 5, 14),
 			WidthRequest = 300,
 			FlowDirection = FlowDirection.RightToLeft,
 		};
 
 		DatePicker ltrDatePicker = new DatePicker
 		{
+			Date = new DateTime(2002, 5, 14),
 			WidthRequest = 300,
 			FlowDirection = FlowDirection.LeftToRight,
 		};
