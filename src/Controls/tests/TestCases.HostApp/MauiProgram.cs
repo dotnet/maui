@@ -67,6 +67,23 @@ namespace Maui.Controls.Sample
 		{
 			Page mainPage = null;
 			OverrideMainPage(ref mainPage);
+			
+			// Check for startup test argument from environment variables (passed by test runner)
+			var testName = System.Environment.GetEnvironmentVariable("test");
+			if (!string.IsNullOrEmpty(testName))
+			{
+				App.StartupTestName = testName;
+				
+				// Try to navigate directly to the test
+				var testCaseScreen = new TestCases.TestCaseScreen();
+				if (testCaseScreen.TryToNavigateTo(testName))
+				{
+					// If navigation succeeded, the page was already set by the action
+					// Return a dummy page that will be replaced
+					return new ContentPage { Title = "Loading Test..." };
+				}
+			}
+			
 			return mainPage ?? new CoreNavigationPage();
 		}
 	}
@@ -81,6 +98,7 @@ namespace Maui.Controls.Sample
 		}
 
 		public static bool PreloadTestCasesIssuesList { get; set; } = true;
+		public static string StartupTestName { get; set; }
 
 		protected override void OnAppLinkRequestReceived(Uri uri)
 		{
