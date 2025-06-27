@@ -19,7 +19,7 @@
                     VerticalOptions="Center">
                      <TimePicker AutomationId="TimePickerControl"
                                  CharacterSpacing="{Binding CharacterSpacing}"
-                                 FlowDirection="RightToLeft"
+                                 FlowDirection="{Binding FlowDirection}"
                                  Format="{Binding Format}"
                                  FontAttributes="{Binding FontAttributes}"
                                  FontFamily="{Binding FontFamily}"
