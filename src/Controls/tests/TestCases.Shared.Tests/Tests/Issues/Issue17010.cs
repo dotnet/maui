@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_CATALYST // On Catalyst, Swipe actions not supported in Appium.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -25,3 +26,4 @@ public class Issue17010 : _IssuesUITest
 		Assert.That(App.WaitForElement("DirectionLabel").GetText(), Is.EqualTo("Direction: Right"));
 	}
 }
+#endif
