@@ -117,22 +117,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 
 #if !__MOBILE__
-		Action<NSClickGestureRecognizer> CreateRecognizerHandler(WeakReference weakEventTracker, WeakReference weakRecognizer, ClickGestureRecognizer clickRecognizer)
-		{
-			return new Action<NSClickGestureRecognizer>((sender) =>
-			{
-				var eventTracker = weakEventTracker.Target as EventTracker;
-				var view = eventTracker?._renderer?.Element as View;
-				var childGestures = GetChildGestures(sender, weakEventTracker, weakRecognizer, eventTracker, view);
-
-				if (childGestures?.GetChildGesturesFor<TapGestureRecognizer>(x => x.NumberOfTapsRequired == (int)sender.NumberOfClicksRequired).Count() > 0)
-					return;
-
-				if (weakRecognizer.Target is ClickGestureRecognizer clickGestureRecognizer && view != null)
-					clickGestureRecognizer.SendClicked(view, clickRecognizer.Buttons);
-			});
-		}
-
 		NSGestureProbe CreateTapRecognizerHandler(WeakReference weakEventTracker, WeakReference weakRecognizer)
 		{
 			return new NSGestureProbe((gesturerecognizer) =>
@@ -149,23 +133,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				}
 
 				return handled;
-			});
-		}
-
-		Action<NSClickGestureRecognizer> CreateChildRecognizerHandler(WeakReference weakEventTracker, WeakReference weakRecognizer)
-		{
-			return new Action<NSClickGestureRecognizer>((sender) =>
-			{
-				var eventTracker = weakEventTracker.Target as EventTracker;
-				var view = eventTracker?._renderer?.Element as View;
-				var childGestures = GetChildGestures(sender, weakEventTracker, weakRecognizer, eventTracker, view);
-
-				var clickGestureRecognizer = ((ChildGestureRecognizer)weakRecognizer.Target).GestureRecognizer as ClickGestureRecognizer;
-				var recognizers = childGestures?.GetChildGesturesFor<ClickGestureRecognizer>(x => x.NumberOfClicksRequired == (int)sender.NumberOfClicksRequired);
-
-				foreach (var item in recognizers)
-					if (item == clickGestureRecognizer && view != null)
-						clickGestureRecognizer.SendClicked(view, clickGestureRecognizer.Buttons);
 			});
 		}
 
@@ -246,13 +213,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var tapRecognizer = recognizer as TapGestureRecognizer;
 
 #if !__MOBILE__
-			if (recognizer is ClickGestureRecognizer clickRecognizer)
-			{
-				var returnAction = CreateRecognizerHandler(weakEventTracker, weakRecognizer, clickRecognizer);
-				var uiRecognizer = CreateClickRecognizer((int)clickRecognizer.Buttons, clickRecognizer.NumberOfClicksRequired, returnAction);
-				return uiRecognizer;
-			}
-
 			if (tapRecognizer != null)
 			{
 				var returnAction = CreateTapRecognizerHandler(weakEventTracker, weakRecognizer);
@@ -288,13 +248,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (recognizer is ChildGestureRecognizer childRecognizer)
 			{
 #if !__MOBILE__
-				if (childRecognizer.GestureRecognizer is ClickGestureRecognizer clickChildRecognizer)
-				{
-					var returnAction = CreateChildRecognizerHandler(weakEventTracker, weakRecognizer);
-					var uiRecognizer = CreateClickRecognizer((int)clickChildRecognizer.Buttons, clickChildRecognizer.NumberOfClicksRequired, returnAction);
-					return uiRecognizer;
-				}
-
 				if (childRecognizer.GestureRecognizer is TapGestureRecognizer tapChildRecognizer)
 				{
 					var returnAction = CreateChildTapRecognizerHandler(weakEventTracker, weakRecognizer);
@@ -478,14 +431,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			return result;
 		}
 #else
-		NativeGestureRecognizer CreateClickRecognizer(int buttonMask, int numberOfClicksRequired, Action<NSClickGestureRecognizer> returnAction)
-		{
-			var result = new NSClickGestureRecognizer(returnAction);
-			result.ButtonMask = (nuint)buttonMask;
-			result.NumberOfClicksRequired = numberOfClicksRequired;
-			return result;
-		}
-
 		NSPanGestureRecognizer CreatePanRecognizer(int numTouches, Action<NSPanGestureRecognizer> action)
 		{
 			var result = new NSPanGestureRecognizer(action);
