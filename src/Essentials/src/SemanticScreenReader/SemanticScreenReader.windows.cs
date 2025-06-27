@@ -12,14 +12,13 @@ namespace Microsoft.Maui.Accessibility
 			if (WindowStateManager.Default.GetActiveWindow() is not Window window)
 				return;
 
-			var peer = FindAutomationPeer(window.Content);
-
-			// If no automation peer is found (e.g., when called early in app lifecycle
-			// before window content is set), returns without error
-			if (peer is null)
+			if(window.Content is null)
 			{
+				// If the window content is null, we can't announce anything yet.
+				// This can happen if the app is still starting up.
 				return;
 			}
+			var peer = FindAutomationPeer(window.Content);
 
 			// This GUID correlates to the internal messages used by UIA to perform an announce
 			// You can extract it  by using accessibility insights to monitor UIA events
