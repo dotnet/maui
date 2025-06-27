@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Maps;
 using Position = Microsoft.Maui.Devices.Sensors.Location;
 
 namespace Maui.Controls.Sample.Pages.MapsGalleries
@@ -81,6 +82,11 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			AddPin();
 		}
 
+		void OnMovePinClicked(object sender, EventArgs e)
+		{
+			MovePin();
+		}
+
 		void OnRemovePinClicked(object sender, EventArgs e)
 		{
 			if (pinsMap.Pins.Count > 0)
@@ -100,12 +106,33 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 
 		void AddPin()
 		{
-			pinsMap.Pins.Add(new Pin()
+			var randomLocation = GetRandomLocation();
+			var pin = new Pin
 			{
 				Label = $"Location {_locationIncrement++}",
-				Location = _randomLocations[_locationRandomSeed.Next(0, _randomLocations.Length)],
-			});
+				Location = randomLocation,
+			};
+			pinsMap.Pins.Add(pin);
+			MoveMapTo(randomLocation);
 		}
+
+		void MovePin()
+		{
+			if (pinsMap.Pins.Count == 0)
+			{
+				return;
+			}
+
+			var randomLocation = GetRandomLocation();
+			pinsMap.Pins[0].Location = randomLocation;
+			MoveMapTo(randomLocation);
+		}
+
+		Position GetRandomLocation() =>
+			_randomLocations[_locationRandomSeed.Next(_randomLocations.Length)];
+
+		void MoveMapTo(Position location) =>
+			pinsMap.MoveToRegion(MapSpan.FromCenterAndRadius(location, Distance.FromKilometers(5)));
 
 		void OnMapClicked(object sender, MapClickedEventArgs e)
 		{
