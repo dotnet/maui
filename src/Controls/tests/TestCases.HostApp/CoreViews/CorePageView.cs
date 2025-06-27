@@ -133,7 +133,7 @@ namespace Maui.Controls.Sample
 				{
 					var realize = page.Realize();
 
-					Application.Current.MainPage = realize;
+				  Dispatcher.Dispatch(() => Application.Current.MainPage = realize);
 				}
 
 				SelectedItem = null;
