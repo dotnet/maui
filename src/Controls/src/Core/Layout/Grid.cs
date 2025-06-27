@@ -326,7 +326,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (bindable is Grid grid)
 			{
-#if Windows
+#if WINDOWS
 				// Windows requires explicit parent invalidation for Grid.Row/Column/RowSpan/ColumnSpan changes.
 				// Unlike iOS/Android, Windows doesn't auto-propagate layout invalidation up the hierarchy,
 				// causing dynamic attached property changes to not arrange its children correctly.
