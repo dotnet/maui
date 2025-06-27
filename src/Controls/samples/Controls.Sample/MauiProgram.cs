@@ -299,7 +299,7 @@ namespace Maui.Controls.Sample
 #endif
 				}
 			});
-
+			
 			return appBuilder.Build();
 		}
 	}
