@@ -749,6 +749,8 @@ void RunMSBuildWithDotNet(
        // .SetVerbosity(Verbosity.Diagnostic)
         ;
 
+    var loggerArg = GetMSBuildForwardingLoggerPath();
+    if (loggerArg != null)
     {
         msbuildSettings.WithArgumentCustomization(args => args.Append(loggerArg));
     }
