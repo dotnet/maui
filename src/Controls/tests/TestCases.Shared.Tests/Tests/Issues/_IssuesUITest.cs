@@ -17,7 +17,23 @@ namespace Microsoft.Maui.TestCases.Tests
 		protected const string BackButtonAutomationId = "Navigate up";
 #endif
 
+#if MACCATALYST
+		protected override bool ResetAfterEachTest => true;
+#endif
+
 		public _IssuesUITest(TestDevice device) : base(device) { }
+
+		public override IConfig GetTestConfig()
+		{
+			var config = base.GetTestConfig();
+			
+#if MACCATALYST
+			// For Catalyst, pass the test name as a startup argument
+			config.SetTestConfigurationArg("test", Issue);
+#endif
+			
+			return config;
+		}
 
 		protected override void FixtureSetup()
 		{
@@ -30,7 +46,14 @@ namespace Microsoft.Maui.TestCases.Tests
 #if ANDROID || MACCATALYST
 					App.ToggleSystemAnimations(false);
 #endif
+#if !MACCATALYST
+					// For non-Catalyst platforms, navigate via UI
 					NavigateToIssue(Issue);
+#else
+					// For Catalyst, navigation is handled via startup arguments
+					// Just wait for the test to load
+					App.WaitForElement("*", timeout: TimeSpan.FromSeconds(10));
+#endif
 					break;
 				}
 				catch (Exception e)
