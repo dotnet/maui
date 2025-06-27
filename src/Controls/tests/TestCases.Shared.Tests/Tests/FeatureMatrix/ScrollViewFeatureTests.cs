@@ -1,3 +1,4 @@
+using System.Reflection.Emit;
 using Microsoft.Maui.Controls.Shapes;
 using NUnit.Framework;
 using UITest.Appium;
@@ -987,10 +988,14 @@ public class ScrollViewFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
+		App.WaitForElement(ContentLabel);
+		App.Tap(ContentLabel);
 		App.WaitForElement(VerticalScrollBarVisibilityNever);
 		App.Tap(VerticalScrollBarVisibilityNever);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElement(ScrollToStartPosition);
+		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
 		VerifyScreenshot();
 	}
