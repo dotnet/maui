@@ -51,7 +51,7 @@
                             AutomationId="FormatEntry"
                             HeightRequest="37"
                             HorizontalOptions="Start"
-                            Text="t"
+                            Text="hh:mm tt"
                             VerticalOptions="Center"
                             WidthRequest="100"/>
                      <Button AutomationId="SetFormatButton"
