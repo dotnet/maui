@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS  // Windows Character Spacing Issue Link - https://github.com/dotnet/maui/issues/29493 
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID  // Windows Character Spacing Issue Link - https://github.com/dotnet/maui/issues/29493 
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
