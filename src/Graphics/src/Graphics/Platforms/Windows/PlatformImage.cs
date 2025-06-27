@@ -102,7 +102,6 @@ namespace Microsoft.Maui.Graphics.Platform
 				{
 					throw saveException;
 				}
-
 				resizedStream.Seek(0);
 
 				var newImage = FromStream(resizedStream.AsStreamForRead());

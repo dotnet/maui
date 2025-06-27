@@ -4,7 +4,6 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
-
 public class Issue16767_Downsize : _IssuesUITest
 {
 	public Issue16767_Downsize(TestDevice testDevice) : base(testDevice)

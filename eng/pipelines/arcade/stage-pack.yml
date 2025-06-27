@@ -26,7 +26,7 @@ stages:
   displayName: Pack .NET MAUI
   dependsOn: []
   jobs:
-  - template: /eng/common/templates-official/jobs/jobs.yml
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
       pool: ${{ parameters.pool }}
@@ -68,14 +68,14 @@ stages:
 
         # Run on public pipeline
         - ${{ if parameters.runAsPublic }}:
-          - script: $(_buildScript) -restore -pack -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)pack.binlog $(_OfficialBuildIdArgs)
+          - script: $(_buildScript) -restore -pack -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack.binlog $(_OfficialBuildIdArgs)
             displayName: Pack & Publish
 
         # Run on internal pipeline
         - ${{ if and(not(parameters.runAsPublic) , notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - script: $(_buildScript) -restore -pack -sign $(_SignArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)pack.binlog $(_OfficialBuildIdArgs)
+          - script: $(_buildScript) -restore -pack -sign $(_SignArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack.binlog $(_OfficialBuildIdArgs)
             displayName: Pack, Sign
 
           # only for workloads
-          - script: $(_buildScript) -restore -build -sign $(_SignArgs) -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/build-workloads.binlog -projects src/Workload/workloads.csproj $(_OfficialBuildIdArgs)
+          - script: $(_buildScript) -restore -build -sign $(_SignArgs) -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/build-workloads.binlog -projects src/Workload/workloads.csproj $(_OfficialBuildIdArgs)
             displayName: Build Workloads, Sign & Publish
