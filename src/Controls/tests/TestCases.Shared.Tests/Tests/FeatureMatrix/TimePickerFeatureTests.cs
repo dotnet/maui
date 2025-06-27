@@ -45,13 +45,22 @@ public class TimePickerFeatureTests : UITest
 #if ANDROID
         App.WaitForElement("OK");
         App.Tap("OK");
-#endif
+		App.WaitForElement("TimePickerControl");
+		App.Tap("TimePickerControl");
+		App.WaitForElement(AppiumQuery.ByAccessibilityId("6"));
+		App.Tap(AppiumQuery.ByAccessibilityId("6"));
+		App.WaitForElement("OK");
+		App.Tap("OK");
+#elif WINDOWS
+        App.WaitForElement("AcceptButton");
+        App.Tap("AcceptButton");
         App.WaitForElement("TimePickerControl");
         App.Tap("TimePickerControl");
-        App.WaitForElement(AppiumQuery.ByAccessibilityId("6"));
-        App.Tap(AppiumQuery.ByAccessibilityId("6"));
-        App.WaitForElement("OK");
-        App.Tap("OK");
+        App.WaitForElement("6");
+        App.Tap("6");
+        App.WaitForElement("AcceptButton");
+        App.Tap("AcceptButton");
+#endif
         Assert.That(App.WaitForElement("NewTimeSelectedLabel").GetText(), Is.EqualTo("06:00:00"));
         Assert.That(App.WaitForElement("OldTimeSelectedLabel").GetText(), Is.EqualTo("10:00:00"));
         VerifyScreenshot();
@@ -64,18 +73,33 @@ public class TimePickerFeatureTests : UITest
     [Category(UITestCategories.TimePicker)]
     public void TimePicker_OldTimeAndNewTime_VerifyVisualState()
     {
+#if ANDROID
+		App.WaitForElement("TimePickerControl");
+		App.Tap("TimePickerControl");
+		App.WaitForElement(AppiumQuery.ByAccessibilityId("7"));
+		App.Tap(AppiumQuery.ByAccessibilityId("7"));
+		App.WaitForElement("OK");
+		App.Tap("OK");
+		App.WaitForElement("TimePickerControl");
+		App.Tap("TimePickerControl");
+		App.WaitForElement(AppiumQuery.ByAccessibilityId("8"));
+		App.Tap(AppiumQuery.ByAccessibilityId("8"));
+		App.WaitForElement("Cancel");
+		App.Tap("Cancel");
+#elif WINDOWS
         App.WaitForElement("TimePickerControl");
         App.Tap("TimePickerControl");
-        App.WaitForElement(AppiumQuery.ByAccessibilityId("7"));
-        App.Tap(AppiumQuery.ByAccessibilityId("7"));
-        App.WaitForElement("OK");
-        App.Tap("OK");
+        App.WaitForElement("7");
+        App.Tap("7");
+        App.WaitForElement("AcceptButton");
+        App.Tap("AcceptButton");
         App.WaitForElement("TimePickerControl");
         App.Tap("TimePickerControl");
-        App.WaitForElement(AppiumQuery.ByAccessibilityId("8"));
-        App.Tap(AppiumQuery.ByAccessibilityId("8"));
-        App.WaitForElement("Cancel");
-        App.Tap("Cancel");
+        App.WaitForElement("8");
+        App.Tap("8");
+        App.WaitForElement("DismissButton");
+        App.Tap("DismissButton");
+#endif
         Assert.That(App.WaitForElement("NewTimeSelectedLabel").GetText(), Is.EqualTo("07:00:00"));
         Assert.That(App.WaitForElement("OldTimeSelectedLabel").GetText(), Is.EqualTo("06:00:00"));
         VerifyScreenshot();
@@ -315,7 +339,7 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST // For more information : https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/timepicker?view=net-maui-9.0&tabs=macios#tabpanel_1_macios
 
     [Test, Order(16)]
     [Category(UITestCategories.TimePicker)]
@@ -335,7 +359,7 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // For more information : https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/timepicker?view=net-maui-9.0&tabs=macios#tabpanel_1_macios
 
     [Test, Order(17)]
     [Category(UITestCategories.TimePicker)]
@@ -355,7 +379,7 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // For more information : https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/timepicker?view=net-maui-9.0&tabs=macios#tabpanel_1_macios
 
     [Test, Order(18)]
     [Category(UITestCategories.TimePicker)]
@@ -377,7 +401,7 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // For more information : https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/timepicker?view=net-maui-9.0&tabs=macios#tabpanel_1_macios
 
     [Test, Order(19)]
     [Category(UITestCategories.TimePicker)]
@@ -399,7 +423,7 @@ public class TimePickerFeatureTests : UITest
     }
 #endif
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // For more information : https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/timepicker?view=net-maui-9.0&tabs=macios#tabpanel_1_macios
 
     [Test, Order(20)]
     [Category(UITestCategories.TimePicker)]

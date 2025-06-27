@@ -12,7 +12,7 @@ public class TimePickerViewModel : INotifyPropertyChanged
     private FontAttributes _fontAttributes;
     private string _fontFamily;
     private double _fontSize = -1.0d;
-    private string _format = "t";
+    private string _format = "hh:mm tt";
     private bool _isEnabled = true;
     private bool _isVisible = true;
     private Shadow _shadow;
