@@ -1139,7 +1139,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !ANDROID
+#if !ANDROID // On Android, the exception causes the app to terminate, resulting in a device test failure.
 		[Fact(DisplayName = "Initialize Empty Shell Throws InvalidOperationException")]
 		public async Task InitializeEmptyShellThrowsInvalidOperationException()
 		{
