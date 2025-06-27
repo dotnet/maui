@@ -1,5 +1,3 @@
-using System.Reflection.Emit;
-using Microsoft.Maui.Controls.Shapes;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -729,7 +727,7 @@ public class ScrollViewFeatureTests : UITest
 
 	[Test, Order(47)]
 	[Category(UITestCategories.ScrollView)]
-	public void VerifyScrollViewWithScrollToPositionCenterAndHorizontalLayoutontentWhenOrientationHorizontal()
+	public void VerifyScrollViewWithScrollToPositionCenterAndHorizontalLayoutContentWhenOrientationHorizontal()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
