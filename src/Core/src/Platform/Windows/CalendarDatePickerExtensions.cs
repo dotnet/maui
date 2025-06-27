@@ -52,8 +52,8 @@ namespace Microsoft.Maui.Platform
 					return "{year.full} {month.full}";
 				case "f": // Full date/time pattern (short time) - use long date since time is not applicable
 					return "{dayofweek.full} {month.full} {day.integer}, {year.full} {hour.integer}:{minute.integer(2)} {period.abbreviated}";
-				case "F": // Full date/time pattern (long time) - use long date since time is not applicable
-					return "{dayofweek.full} {month.full} {day.integer}, {year.full} {hour.integer}:{minute.integer(2)} {period.abbreviated}";
+				case "F": // Full date/time pattern (long time) - include seconds as per .NET standard
+					return "{dayofweek.full} {month.full} {day.integer}, {year.full} {hour.integer}:{minute.integer(2)}:{second.integer(2)} {period.abbreviated}";
 				case "g": // General date/time pattern (short time) - use short date since time is not applicable  
 					return "{month.integer}/{day.integer}/{year.abbreviated} {hour.integer}:{minute.integer(2)} {period.abbreviated}"; // Let it fall back to default short date
 				case "G": // General date/time pattern (long time) - use short date since time is not applicable
