@@ -1,20 +1,7 @@
 #nullable enable
-Microsoft.Maui.ElementHandlerExtensions
-Microsoft.Maui.HandlerDisconnectPolicy
-Microsoft.Maui.HandlerDisconnectPolicy.Automatic = 0 -> Microsoft.Maui.HandlerDisconnectPolicy
-Microsoft.Maui.HandlerDisconnectPolicy.Manual = 1 -> Microsoft.Maui.HandlerDisconnectPolicy
 Microsoft.Maui.Handlers.DataFlowDirection
 Microsoft.Maui.Handlers.DataFlowDirection.FromPlatform = 1 -> Microsoft.Maui.Handlers.DataFlowDirection
 Microsoft.Maui.Handlers.DataFlowDirection.ToPlatform = 0 -> Microsoft.Maui.Handlers.DataFlowDirection
-Microsoft.Maui.Handlers.HybridWebViewHandler
-Microsoft.Maui.Handlers.HybridWebViewHandler.HybridWebViewHandler() -> void
-Microsoft.Maui.Handlers.HybridWebViewHandler.HybridWebViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
-Microsoft.Maui.Handlers.IHybridPlatformWebView
-Microsoft.Maui.Handlers.IHybridPlatformWebView.SendRawMessage(string! rawMessage) -> void
-Microsoft.Maui.Handlers.IHybridWebViewHandler
-Microsoft.Maui.Handlers.IHybridWebViewHandler.PlatformView.get -> WebKit.WKWebView!
-Microsoft.Maui.Handlers.IHybridWebViewHandler.VirtualView.get -> Microsoft.Maui.IHybridWebView!
-Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions
 Microsoft.Maui.Hosting.MauiAppBuilder.Environment.get -> Microsoft.Maui.Hosting.MauiHostEnvironment!
 Microsoft.Maui.Hosting.MauiAppBuilder.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
 Microsoft.Maui.Hosting.MauiHostEnvironment
@@ -27,131 +14,50 @@ Microsoft.Maui.Hosting.MauiHostEnvironment.ContentRootPath.set -> void
 Microsoft.Maui.Hosting.MauiHostEnvironment.EnvironmentName.get -> string!
 Microsoft.Maui.Hosting.MauiHostEnvironment.EnvironmentName.set -> void
 Microsoft.Maui.Hosting.MauiHostEnvironment.MauiHostEnvironment() -> void
-Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest
-Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.HybridWebViewInvokeJavaScriptRequest(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo? returnTypeJsonTypeInfo, object?[]? paramValues, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos) -> void
-Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.MethodName.get -> string!
-Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ParamJsonTypeInfos.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]?
-Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ParamValues.get -> object?[]?
-Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ReturnTypeJsonTypeInfo.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo?
-Microsoft.Maui.HybridWebViewRawMessage
-Microsoft.Maui.HybridWebViewRawMessage.HybridWebViewRawMessage() -> void
-Microsoft.Maui.HybridWebViewRawMessage.Message.get -> string?
-Microsoft.Maui.HybridWebViewRawMessage.Message.set -> void
-Microsoft.Maui.IApplication.ActivateWindow(Microsoft.Maui.IWindow! window) -> void
 *REMOVED*Microsoft.Maui.IDatePicker.Date.get -> System.DateTime
 Microsoft.Maui.IDatePicker.Date.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime
-*REMOVED*Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime?
+*REMOVED*Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
-Microsoft.Maui.IHybridWebView
-Microsoft.Maui.IHybridWebView.DefaultFile.get -> string?
-Microsoft.Maui.IHybridWebView.EvaluateJavaScriptAsync(string! script) -> System.Threading.Tasks.Task<string?>!
-Microsoft.Maui.IHybridWebView.HybridRoot.get -> string?
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptAsync<TReturnType>(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TReturnType>! returnTypeJsonTypeInfo, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task<TReturnType?>!
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.get -> object?
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.set -> void
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.get -> System.Type?
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.set -> void
-Microsoft.Maui.IHybridWebView.RawMessageReceived(string! rawMessage) -> void
-Microsoft.Maui.IHybridWebView.SendRawMessage(string! rawMessage) -> void
-Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
-Microsoft.Maui.IHybridWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
-Microsoft.Maui.ITitleBar
-Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
-Microsoft.Maui.ITitleBar.Subtitle.get -> string?
-Microsoft.Maui.ITitleBar.Title.get -> string?
-Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
-*REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
-Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
+Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
+Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
+*REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
+Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
+Microsoft.Maui.IWebRequestInterceptingWebView
+Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
 Microsoft.Maui.Platform.IAutoSizableCALayer
 Microsoft.Maui.Platform.IAutoSizableCALayer.AutoSizeToSuperLayer() -> void
-Microsoft.Maui.Platform.MauiHybridWebView
-Microsoft.Maui.Platform.MauiHybridWebView.MauiHybridWebView(Microsoft.Maui.Handlers.HybridWebViewHandler! handler, CoreGraphics.CGRect frame, WebKit.WKWebViewConfiguration! configuration) -> void
-Microsoft.Maui.Platform.MauiHybridWebView.SendRawMessage(string! rawMessage) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiTimePicker.UpdateTime(System.TimeSpan time) -> void
 Microsoft.Maui.Platform.MauiTimePicker.UpdateTime(System.TimeSpan? time) -> void
-Microsoft.Maui.Platform.MauiWKWebView.ContentProcessDidTerminate(WebKit.WKWebView! webView) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKit.WKWebView! webView, WebKit.WKNavigationAction! navigationAction, System.Action<WebKit.WKNavigationActionPolicy>! decisionHandler) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisionalNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
+Microsoft.Maui.Platform.TextInputExtensions
 Microsoft.Maui.Platform.UIApplicationExtensions
-Microsoft.Maui.Platform.UIWindowExtensions
-Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
-Microsoft.Maui.WebProcessTerminatedEventArgs
-Microsoft.Maui.WebProcessTerminatedEventArgs.Sender.get -> WebKit.WKWebView!
 Microsoft.Maui.WebResourceRequestedEventArgs
 Microsoft.Maui.WebResourceRequestedEventArgs.Sender.get -> WebKit.WKWebView!
 Microsoft.Maui.WebResourceRequestedEventArgs.UrlSchemeTask.get -> WebKit.IWKUrlSchemeTask!
-override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(WebKit.WKWebView! platformView) -> void
-override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> WebKit.WKWebView!
-override Microsoft.Maui.Handlers.HybridWebViewHandler.DisconnectHandler(WebKit.WKWebView! platformView) -> void
-override Microsoft.Maui.Platform.MauiScrollView.LayoutSubviews() -> void
-override Microsoft.Maui.Platform.MauiScrollView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
-*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
-*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
-static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T
-static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler) -> T
-static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T?
-static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler) -> T?
-static Microsoft.Maui.ElementHandlerExtensions.GetServiceProvider(this Microsoft.Maui.IElementHandler! handler) -> System.IServiceProvider!
-static Microsoft.Maui.ElementHandlerExtensions.IsConnected(this Microsoft.Maui.IElementHandler! handler) -> bool
-static Microsoft.Maui.Handlers.ApplicationHandler.MapActivateWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
-static Microsoft.Maui.Handlers.GraphicsViewHandler.MapBackground(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void
-static Microsoft.Maui.Handlers.HybridWebViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
-static Microsoft.Maui.Handlers.HybridWebViewHandler.MapEvaluateJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
-static Microsoft.Maui.Handlers.HybridWebViewHandler.MapInvokeJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
-static Microsoft.Maui.Handlers.HybridWebViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
-static Microsoft.Maui.Handlers.HybridWebViewHandler.MapSendRawMessage(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
-static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureEnvironmentVariables(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
-static Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions.AddHybridWebViewDeveloperTools(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
-static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
-static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 *REMOVED*readonly Microsoft.Maui.PropertyMapper._mapper -> System.Collections.Generic.Dictionary<string!, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>!>!
-*REMOVED*virtual Microsoft.Maui.PropertyMapper.ClearKeyCache() -> void
-*REMOVED*virtual Microsoft.Maui.PropertyMapper.UpdateKeys.get -> System.Collections.Generic.IReadOnlyCollection<string!>!
-*REMOVED*static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement! view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!
+static Microsoft.Maui.Handlers.GraphicsViewHandler.MapBackground(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureEnvironmentVariables(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
+*REMOVED*static Microsoft.Maui.Platform.ApplicationExtensions.CreatePlatformWindow(this UIKit.IUIApplicationDelegate! platformApplication, Microsoft.Maui.IApplication! application, UIKit.UIApplication! uiApplication, Foundation.NSDictionary! launchOptions) -> void
 static Microsoft.Maui.Platform.ApplicationExtensions.CreatePlatformWindow(this UIKit.IUIApplicationDelegate! platformApplication, Microsoft.Maui.IApplication! application, UIKit.UIApplication! uiApplication, Foundation.NSDictionary? launchOptions) -> void
-static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement? view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!
+static Microsoft.Maui.Platform.SearchBarExtensions.UpdateReturnType(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.TextInputExtensions.GetCursorPosition(this UIKit.IUITextInput! platformView, int cursorOffset = 0) -> int
 static Microsoft.Maui.Platform.TextInputExtensions.GetSelectedTextLength(this UIKit.IUITextInput! platformView) -> int
 static Microsoft.Maui.Platform.TextInputExtensions.SetTextRange(this UIKit.IUITextInput! platformView, int start, int selectedTextLength) -> void
 static Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(this UIKit.UIApplication! application) -> UIKit.UIWindow?
 static Microsoft.Maui.Platform.UIApplicationExtensions.GetWindow(this UIKit.UIApplication! application) -> Microsoft.Maui.IWindow?
-static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindow? platformWindow) -> Microsoft.Maui.IWindow?
-static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindowScene? windowScene) -> Microsoft.Maui.IWindow?
-static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
-override Microsoft.Maui.Platform.MauiCALayer.AddAnimation(CoreAnimation.CAAnimation! animation, string? key) -> void
-*REMOVED*override Microsoft.Maui.Handlers.BorderHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
-override Microsoft.Maui.Platform.MauiCALayer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Platform.MauiCALayer.RemoveFromSuperLayer() -> void
-override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
-override Microsoft.Maui.Handlers.EditorHandler.NeedsContainer.get -> bool
-override Microsoft.Maui.Handlers.WindowHandler.DisconnectHandler(UIKit.UIWindow! platformView) -> void
-*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> bool
-Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
-*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> boolormView) -> void
-*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> boolormView) -> void
-*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> boolormView) -> void
-*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> bool
-Microsoft.Maui.Platform.TextInputExtensions
-*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKit.WKWebView! webView, WebKit.WKNavigationAction! navigationAction, System.Action<WebKit.WKNavigationActionPolicy>! decisionHandler) -> void
-*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
-*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisionalNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
-*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
+*REMOVED*virtual Microsoft.Maui.MauiUIApplicationDelegate.FinishedLaunching(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
 virtual Microsoft.Maui.MauiUIApplicationDelegate.FinishedLaunching(UIKit.UIApplication! application, Foundation.NSDictionary? launchOptions) -> bool
+*REMOVED*virtual Microsoft.Maui.MauiUIApplicationDelegate.WillFinishLaunching(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
 virtual Microsoft.Maui.MauiUIApplicationDelegate.WillFinishLaunching(UIKit.UIApplication! application, Foundation.NSDictionary? launchOptions) -> bool
 virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKit.WKWebView! webView, WebKit.WKNavigationAction! navigationAction, System.Action<WebKit.WKNavigationActionPolicy>! decisionHandler) -> void
 virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
 virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisionalNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
 virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
-static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
-static Microsoft.Maui.Platform.SearchBarExtensions.UpdateReturnType(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void
-Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
-override Microsoft.Maui.Handlers.ImageButtonHandler.SetupContainer() -> void
-*REMOVED*virtual Microsoft.Maui.MauiUIApplicationDelegate.FinishedLaunching(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
-*REMOVED*virtual Microsoft.Maui.MauiUIApplicationDelegate.WillFinishLaunching(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
-*REMOVED*static Microsoft.Maui.Platform.ApplicationExtensions.CreatePlatformWindow(this UIKit.IUIApplicationDelegate! platformApplication, Microsoft.Maui.IApplication! application, UIKit.UIApplication! uiApplication, Foundation.NSDictionary! launchOptions) -> void
-*REMOVED*override Microsoft.Maui.Handlers.PageHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
-*REMOVED*override Microsoft.Maui.Platform.WrapperView.SetNeedsLayout() -> void
-*REMOVED*override Microsoft.Maui.Platform.MauiView.SetNeedsLayout() -> void
-*REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
-Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
+*REMOVED*virtual Microsoft.Maui.PropertyMapper.ClearKeyCache() -> void
+*REMOVED*virtual Microsoft.Maui.PropertyMapper.UpdateKeys.get -> System.Collections.Generic.IReadOnlyCollection<string!>!

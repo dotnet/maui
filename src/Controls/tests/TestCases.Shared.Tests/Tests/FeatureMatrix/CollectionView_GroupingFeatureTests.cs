@@ -3,7 +3,8 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
-public class GroupingFeatureTests : UITest
+
+public class CollectionView_GroupingFeatureTests : UITest
 {
 	public const string GroupingFeatureMatrix = "CollectionView Feature Matrix";
 	public const string Options = "Options";
@@ -20,7 +21,7 @@ public class GroupingFeatureTests : UITest
 	public const string ItemsLayoutVerticalGrid = "ItemsLayoutVerticalGrid";
 
 
-	public GroupingFeatureTests(TestDevice device)
+	public CollectionView_GroupingFeatureTests(TestDevice device)
 		: base(device)
 	{
 	}

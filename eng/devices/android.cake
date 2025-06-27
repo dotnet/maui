@@ -15,7 +15,7 @@ if (EnvironmentVariable("JAVA_HOME") == null)
 }
 
 string DEFAULT_ANDROID_PROJECT = "../../src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj";
-var projectPath = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? "");
+var projectPath = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_ANDROID_PROJECT);
 var testDevice = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-64_{DefaultApiLevel}");
 var targetFramework = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{DotnetVersion}-android");
 var binlogArg = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? "");
@@ -111,6 +111,13 @@ Task("test")
 Task("buildAndTest")
 	.IsDependentOn("buildOnly")
 	.IsDependentOn("testOnly");
+
+Task("uitest-build")
+	.IsDependentOn("dotnet-buildtasks")
+	.Does(() =>
+	{
+		ExecuteBuildUITestApp(testAppProjectPath, testDevice, binlogDirectory, configuration, targetFramework, "", dotnetToolPath);
+	});
 
 Task("uitest-prepare")
 	.IsDependentOn("connectToDevice")
@@ -288,6 +295,31 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 		}
 	}
 	Information("UI Tests completed.");
+}
+
+void ExecuteBuildUITestApp(string appProject, string device, string binDir, string config, string tfm, string rid, string toolPath)
+{
+	Information($"Building UI Test app: {appProject}");
+	var projectName = System.IO.Path.GetFileNameWithoutExtension(appProject);
+	var binlog = $"{binDir}/{projectName}-{config}-android.binlog";
+
+	DotNetBuild(appProject, new DotNetBuildSettings
+	{
+		Configuration = config,
+		Framework = tfm,
+		ToolPath = toolPath,
+		ArgumentCustomization = args =>
+		{
+			args
+			.Append("/p:EmbedAssembliesIntoApk=true")
+			.Append("/bl:" + binlog)
+			.Append("/tl");
+
+			return args;
+		}
+	});
+
+	Information("UI Test app build completed.");
 }
 
 // Helper methods

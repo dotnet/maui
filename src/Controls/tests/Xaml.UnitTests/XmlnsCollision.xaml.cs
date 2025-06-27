@@ -5,9 +5,9 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
 [assembly: XmlnsDefinition("http://companyone.com/schemas/toolkit", "CompanyOne.Controls")]
-[assembly: XmlnsPrefix("c1", "http://companyone.com/schemas/toolkit")]
+[assembly: XmlnsPrefix("http://companyone.com/schemas/toolkit", "c1")]
 [assembly: XmlnsDefinition("http://companytwo.com/schemas/toolkit", "CompanyTwo.Controls")]
-[assembly: XmlnsPrefix("c2", "http://companytwo.com/schemas/toolkit")]
+[assembly: XmlnsPrefix("http://companytwo.com/schemas/toolkit", "c2")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "http://companyone.com/schemas/toolkit")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "http://companytwo.com/schemas/toolkit")]
 
