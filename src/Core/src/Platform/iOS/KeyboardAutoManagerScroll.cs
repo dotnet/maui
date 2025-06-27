@@ -19,10 +19,10 @@ namespace Microsoft.Maui.Platform;
 public static class KeyboardAutoManagerScroll
 {
 	internal static bool IsKeyboardAutoScrollHandling;
+	internal static bool IsKeyboardAutoScrollAnimating;
 	static UIScrollView? LastScrollView;
 	static UIScrollView? ScrolledView;
 	static CGPoint StartingContentOffset;
-	static UIEdgeInsets StartingScrollIndicatorInsets;
 	static UIEdgeInsets StartingContentInsets;
 	internal static CGRect KeyboardFrame = CGRect.Empty;
 	static CGPoint TopViewBeginOrigin = new(nfloat.MaxValue, nfloat.MaxValue);
@@ -38,6 +38,7 @@ public static class KeyboardAutoManagerScroll
 	static NSObject? DidHideToken;
 	static NSObject? TextFieldToken;
 	static NSObject? TextViewToken;
+	static NSObject? DidChangeFrameToken;
 	internal static bool ShouldDisconnectLifecycle;
 	internal static bool ShouldIgnoreSafeAreaAdjustment;
 	internal static bool ShouldScrollAgain;
@@ -57,15 +58,25 @@ public static class KeyboardAutoManagerScroll
 			return;
 		}
 
-		TextFieldToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UITextFieldTextDidBeginEditingNotification"), DidUITextBeginEditing);
+		TextFieldToken = NSNotificationCenter.DefaultCenter.AddObserver(UITextField.TextDidBeginEditingNotification, DidUITextBeginEditing);
 
-		TextViewToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UITextViewTextDidBeginEditingNotification"), DidUITextBeginEditing);
+		TextViewToken = NSNotificationCenter.DefaultCenter.AddObserver(UITextView.TextDidBeginEditingNotification, DidUITextBeginEditing);
 
-		WillShowToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardWillShowNotification"), WillKeyboardShow);
+		WillShowToken = NSNotificationCenter.DefaultCenter.AddObserver(UIKeyboard.WillShowNotification, WillKeyboardShow);
 
-		WillHideToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardWillHideNotification"), WillHideKeyboard);
+		WillHideToken = NSNotificationCenter.DefaultCenter.AddObserver(UIKeyboard.WillHideNotification, WillHideKeyboard);
 
-		DidHideToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardDidHideNotification"), DidHideKeyboard);
+		DidHideToken = NSNotificationCenter.DefaultCenter.AddObserver(UIKeyboard.DidHideNotification, DidHideKeyboard);
+
+		DidChangeFrameToken = NSNotificationCenter.DefaultCenter.AddObserver(UIKeyboard.DidChangeFrameNotification, DidChangeFrame);
+	}
+
+	static async void DidChangeFrame(NSNotification obj)
+	{
+		// Give UIKit time to run its UIAutoRespondingScrollViewControllerKeyboardSupport methods before resetting the flag
+		// so that we can prevent them from interfering with our own scrolling logic.
+		await Task.Delay(30);
+		IsKeyboardAutoScrollAnimating = false;
 	}
 
 	/// <summary>
@@ -90,6 +101,11 @@ public static class KeyboardAutoManagerScroll
 			NSNotificationCenter.DefaultCenter.RemoveObserver(WillHideToken);
 			WillHideToken = null;
 		}
+		if (DidChangeFrameToken is not null)
+		{
+			NSNotificationCenter.DefaultCenter.RemoveObserver(DidChangeFrameToken);
+			DidChangeFrameToken = null;
+		}
 		if (DidHideToken is not null)
 		{
 			NSNotificationCenter.DefaultCenter.RemoveObserver(DidHideToken);
@@ -107,11 +123,13 @@ public static class KeyboardAutoManagerScroll
 		}
 
 		IsKeyboardAutoScrollHandling = false;
+		IsKeyboardAutoScrollAnimating = false;
 	}
 
 	static void DidUITextBeginEditing(NSNotification notification)
 	{
 		IsKeyboardAutoScrollHandling = true;
+		IsKeyboardAutoScrollAnimating = true;
 
 		if (notification.Object is not null)
 		{
@@ -120,6 +138,7 @@ public static class KeyboardAutoManagerScroll
 			if (View is null || View.FindResponder<UIAlertController>() is not null)
 			{
 				IsKeyboardAutoScrollHandling = false;
+				IsKeyboardAutoScrollAnimating = false;
 				return;
 			}
 
@@ -182,6 +201,8 @@ public static class KeyboardAutoManagerScroll
 
 	static void WillHideKeyboard(NSNotification notification)
 	{
+		IsKeyboardAutoScrollAnimating = true;
+
 		notification.UserInfo?.SetAnimationDuration();
 
 		if (LastScrollView?.Window is not null)
@@ -199,7 +220,6 @@ public static class KeyboardAutoManagerScroll
 		LastScrollView = null;
 		KeyboardFrame = CGRect.Empty;
 		StartingContentInsets = new UIEdgeInsets();
-		StartingScrollIndicatorInsets = new UIEdgeInsets();
 		StartingContentInsets = new UIEdgeInsets();
 	}
 
@@ -233,7 +253,6 @@ public static class KeyboardAutoManagerScroll
 		if (LastScrollView is not null && LastScrollView.ContentInset != StartingContentInsets)
 		{
 			LastScrollView.ContentInset = StartingContentInsets;
-			LastScrollView.ScrollIndicatorInsets = StartingScrollIndicatorInsets;
 		}
 
 		var superScrollView = LastScrollView;
@@ -333,6 +352,7 @@ public static class KeyboardAutoManagerScroll
 			|| !View.IsDescendantOfView(ContainerView))
 		{
 			IsKeyboardAutoScrollHandling = false;
+			IsKeyboardAutoScrollAnimating = false;
 			return;
 		}
 
@@ -347,6 +367,7 @@ public static class KeyboardAutoManagerScroll
 		if (window is null)
 		{
 			IsKeyboardAutoScrollHandling = false;
+			IsKeyboardAutoScrollAnimating = false;
 			return;
 		}
 
@@ -361,6 +382,7 @@ public static class KeyboardAutoManagerScroll
 			if (View.IsDescendantOfView(navigationController.NavigationBar))
 			{
 				IsKeyboardAutoScrollHandling = false;
+				IsKeyboardAutoScrollAnimating = false;
 				return;
 			}
 
@@ -384,6 +406,7 @@ public static class KeyboardAutoManagerScroll
 		if (CursorRect is null)
 		{
 			IsKeyboardAutoScrollHandling = false;
+			IsKeyboardAutoScrollAnimating = false;
 			return;
 		}
 
@@ -499,7 +522,6 @@ public static class KeyboardAutoManagerScroll
 				}
 
 				StartingContentInsets = new UIEdgeInsets();
-				StartingScrollIndicatorInsets = new UIEdgeInsets();
 				StartingContentOffset = new CGPoint(0, 0);
 				LastScrollView = null;
 			}
@@ -510,9 +532,6 @@ public static class KeyboardAutoManagerScroll
 			LastScrollView = superScrollView;
 			StartingContentInsets = superScrollView.ContentInset;
 			StartingContentOffset = superScrollView.ContentOffset;
-
-			StartingScrollIndicatorInsets = OperatingSystem.IsIOSVersionAtLeast(11, 1) ?
-				superScrollView.VerticalScrollIndicatorInsets : superScrollView.ScrollIndicatorInsets;
 		}
 
 		// Calculate the move for the ScrollViews
@@ -688,7 +707,7 @@ public static class KeyboardAutoManagerScroll
 			{
 				ApplyContentInset(superScrollView, LastScrollView, false, false);
 				// if our View is an editor, we can adjust the ContentInset.Bottom so that the text cursor will stay above the keyboard
-				if (superScrollView != View && View is UITextView textView)
+				if (superScrollView != View && View is UITextView { ScrollEnabled: true } textView)
 				{
 					ApplyContentInset(textView, textView, false, true);
 				}
@@ -697,7 +716,7 @@ public static class KeyboardAutoManagerScroll
 			{
 				ApplyContentInset(ScrolledView, LastScrollView, true, false);
 				// if our View is an editor, we can adjust the ContentInset.Bottom so that the text cursor will stay above the keyboard
-				if (ScrolledView != View && View is UITextView textView)
+				if (ScrolledView != View && View is UITextView { ScrollEnabled: true } textView)
 				{
 					ApplyContentInset(textView, textView, true, true);
 				}
@@ -741,7 +760,7 @@ public static class KeyboardAutoManagerScroll
 		}
 	}
 
-	static void AnimateInset(UIScrollView? scrollView, UIEdgeInsets movedInsets, nfloat bottomScrollIndicatorInset)
+	static void AnimateInset(UIScrollView? scrollView, UIEdgeInsets movedInsets)
 	{
 		if (scrollView is null)
 		{
@@ -749,19 +768,6 @@ public static class KeyboardAutoManagerScroll
 		}
 
 		scrollView.ContentInset = movedInsets;
-		UIEdgeInsets newscrollIndicatorInset;
-
-		if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
-		{
-			newscrollIndicatorInset = scrollView.VerticalScrollIndicatorInsets;
-		}
-		else
-		{
-			newscrollIndicatorInset = scrollView.ScrollIndicatorInsets;
-		}
-
-		newscrollIndicatorInset.Bottom = bottomScrollIndicatorInset;
-		scrollView.ScrollIndicatorInsets = newscrollIndicatorInset;
 	}
 
 	static void AnimateStartingLastScrollView()
@@ -769,7 +775,6 @@ public static class KeyboardAutoManagerScroll
 		if (LastScrollView is not null)
 		{
 			LastScrollView.ContentInset = StartingContentInsets;
-			LastScrollView.ScrollIndicatorInsets = StartingScrollIndicatorInsets;
 		}
 	}
 
@@ -810,12 +815,10 @@ public static class KeyboardAutoManagerScroll
 		bool isMauiTextViewInCV = scrolledView is UITextView && LastScrollView is UICollectionView;
 
 		bottomInset = isMauiTextViewInCV ? bottomInset : nfloat.Max(StartingContentInsets.Bottom, bottomInset);
-		bottomScrollIndicatorInset = nfloat.Max(StartingScrollIndicatorInsets.Bottom, bottomScrollIndicatorInset);
 
 		if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
 		{
 			bottomInset -= scrolledView.SafeAreaInsets.Bottom;
-			bottomScrollIndicatorInset -= scrolledView.SafeAreaInsets.Bottom;
 		}
 
 		var movedInsets = scrolledView.ContentInset;
@@ -832,13 +835,12 @@ public static class KeyboardAutoManagerScroll
 			{
 				var editorBottomInset = frameInWindow.Bottom - cursor.Bottom - TextViewDistanceFromBottom;
 				movedInsets.Bottom = nfloat.Max(0, editorBottomInset);
-				bottomScrollIndicatorInset = nfloat.Max(0, editorBottomInset);
 			}
 		}
 
 		if (lastScrollView.ContentInset != movedInsets)
 		{
-			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateInset(scrolledView, movedInsets, bottomScrollIndicatorInset), () => { });
+			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateInset(scrolledView, movedInsets), () => { });
 		}
 	}
 
@@ -932,12 +934,12 @@ public static class KeyboardAutoManagerScroll
 
 		if (ScrolledView is not null && ScrolledView.ContentInset != UIEdgeInsets.Zero)
 		{
-			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateInset(ScrolledView, UIEdgeInsets.Zero, 0), () => { });
+			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateInset(ScrolledView, UIEdgeInsets.Zero), () => { });
 		}
 
 		if (View is not null && View is UIScrollView editorScrollView && editorScrollView.ContentInset != UIEdgeInsets.Zero && View is UITextView textView)
 		{
-			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateInset(editorScrollView, UIEdgeInsets.Zero, 0), () => { });
+			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateInset(editorScrollView, UIEdgeInsets.Zero), () => { });
 		}
 
 		ScrolledView = null;
@@ -978,6 +980,101 @@ public static class KeyboardAutoManagerScroll
 		else
 		{
 			return null;
+		}
+	}
+
+	internal static async void EnsureTextViewCursorIsVisible()
+	{
+		// Guard conditions
+		if (!IsKeyboardAutoScrollHandling || View is not UITextView textView || ContainerView is null || LastScrollView is null)
+		{
+			return;
+		}
+
+		// Recalculate boundaries
+		var window = ContainerView.Window;
+		if (window is null)
+		{
+			return;
+		}
+		
+		await Task.Delay(5);
+
+		var intersectRect = CGRect.Intersect(KeyboardFrame, window.Frame);
+		var kbSize = intersectRect == CGRect.Empty ? new CGSize(KeyboardFrame.Width, 0) : intersectRect.Size;
+
+		nfloat statusBarHeight;
+		nfloat navigationBarAreaHeight;
+
+		if (View.FindResponder<UINavigationController>() is UINavigationController navigationController)
+		{
+			navigationBarAreaHeight = navigationController.NavigationBar.Frame.GetMaxY();
+		}
+		else
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(13, 0))
+			{
+				statusBarHeight = window.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? 0;
+			}
+			else
+			{
+				statusBarHeight = UIApplication.SharedApplication.StatusBarFrame.Height;
+			}
+
+			navigationBarAreaHeight = statusBarHeight;
+		}
+
+		var topLayoutGuide = Math.Max(navigationBarAreaHeight, ContainerView.LayoutMargins.Top);
+		var keyboardYPosition = window.Frame.Height - kbSize.Height - TextViewDistanceFromBottom;
+		var bottomBoundary = (double)keyboardYPosition;
+
+		// Get current cursor position
+		var cursorRect = FindCursorPosition();
+
+		if (cursorRect is null)
+		{
+			return;
+		}
+
+		var currentCursorRect = (CGRect)cursorRect;
+
+		// Check for misalignment and apply corrective scroll
+		var currentScrollOffset = LastScrollView.ContentOffset;
+		var newScrollOffsetY = currentScrollOffset.Y;
+		var needsCorrection = false;
+
+		// Check if cursor is below the bottom boundary
+		if (currentCursorRect.Bottom > bottomBoundary)
+		{
+			var deltaY = currentCursorRect.Bottom - (nfloat)bottomBoundary;
+			newScrollOffsetY = currentScrollOffset.Y + deltaY;
+			needsCorrection = true;
+		}
+		// Check if cursor is above the top boundary
+		else if (currentCursorRect.Y < topLayoutGuide)
+		{
+			var deltaY = currentCursorRect.Y - (nfloat)topLayoutGuide;
+			newScrollOffsetY = currentScrollOffset.Y + deltaY;
+			needsCorrection = true;
+		}
+
+		if (!needsCorrection)
+		{
+			return;
+		}
+
+		// Ensure new offset is within valid bounds
+		newScrollOffsetY = (nfloat)Math.Max(newScrollOffsetY, -LastScrollView.ContentInset.Top);
+		var maxScrollY = LastScrollView.ContentSize.Height - LastScrollView.Bounds.Height + LastScrollView.ContentInset.Bottom;
+		newScrollOffsetY = (nfloat)Math.Min(newScrollOffsetY, maxScrollY);
+
+		// Apply the correction with animation
+		if (Math.Abs(currentScrollOffset.Y - newScrollOffsetY) > 0.1) // Check if change is meaningful
+		{
+			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () =>
+			{
+				LastScrollView.ContentOffset = new CGPoint(currentScrollOffset.X, newScrollOffsetY);
+			}, () => { });
 		}
 	}
 }
