@@ -334,11 +334,6 @@ namespace Microsoft.Maui.Controls
 
 		WeakReference<Element> _realParent;
 		
-		/// <summary>
-		/// Gets the real parent element with optional warning logging when the parent has been garbage collected.
-		/// </summary>
-		/// <param name="logWarningIfParentHasBeenCollected">If true, logs a warning when the parent reference is invalid due to garbage collection.</param>
-		/// <returns>The real parent element, or null if no parent exists or has been garbage collected.</returns>
 		Element GetRealParent(bool logWarningIfParentHasBeenCollected = true)
 		{
 			if (_realParent is null)
@@ -352,8 +347,9 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				// Clear the weak reference since the target has been garbage collected
+				// This prevents repeated checks and warnings on subsequent accesses
 				_realParent = null;
-				
+
 				if (logWarningIfParentHasBeenCollected)
 				{
 					Application.Current?
