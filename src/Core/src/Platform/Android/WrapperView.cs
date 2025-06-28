@@ -3,14 +3,16 @@ using System;
 using Android.Content;
 using Android.Graphics;
 using Android.Views;
+using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using APath = Android.Graphics.Path;
 using AView = Android.Views.View;
+using Rectangle = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : PlatformWrapperView
+	public partial class WrapperView : PlatformWrapperView, IVisualTreeElementProvidable
 	{
 		APath _currentPath;
 		SizeF _lastPathSize;
@@ -34,12 +36,18 @@ namespace Microsoft.Maui.Platform
 			if (ChildCount == 0 || GetChildAt(0) is not AView child)
 				return;
 
-			var widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(right - left);
-			var heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(bottom - top);
+			// Apply safe area adjustments if needed  
+			var destination = new Rectangle(0, 0, right - left, bottom - top);
+			destination = AdjustForSafeArea(destination);
+
+			var widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec((int)destination.Width);
+			var heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec((int)destination.Height);
 
 			child.Measure(widthMeasureSpec, heightMeasureSpec);
-			child.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
-			_borderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
+			child.Layout((int)destination.X, (int)destination.Y, 
+				(int)(destination.X + destination.Width), (int)(destination.Y + destination.Height));
+			_borderView?.Layout((int)destination.X, (int)destination.Y, 
+				(int)(destination.X + destination.Width), (int)(destination.Y + destination.Height));
 		}
 
 		public override bool DispatchTouchEvent(MotionEvent e)
@@ -213,6 +221,74 @@ namespace Microsoft.Maui.Platform
 
 				clearWrapperView.Invoke();
 			}
+		}
+
+		Rectangle AdjustForSafeArea(Rectangle bounds)
+		{
+			// Get the virtual view from the child if available
+			var virtualView = ((IVisualTreeElementProvidable)this).GetElement();
+			
+			if (virtualView is not ISafeAreaView sav || sav.IgnoreSafeArea)
+			{
+				return bounds;
+			}
+
+			var insets = ViewCompat.GetRootWindowInsets(this);
+			if (insets == null)
+			{
+				return bounds;
+			}
+
+			// Get system window insets (status bar, navigation bar, etc.)
+			var systemInsets = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+			var safeAreaInsets = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+
+			// Use the maximum of system insets and cutout insets for true safe area
+			var left = Math.Max(systemInsets?.Left ?? 0, safeAreaInsets?.Left ?? 0);
+			var top = Math.Max(systemInsets?.Top ?? 0, safeAreaInsets?.Top ?? 0);
+			var right = Math.Max(systemInsets?.Right ?? 0, safeAreaInsets?.Right ?? 0);
+			var bottom = Math.Max(systemInsets?.Bottom ?? 0, safeAreaInsets?.Bottom ?? 0);
+
+			// Convert Android pixels to device-independent units
+			var context = Context;
+			var leftDip = context?.FromPixels(left) ?? 0;
+			var topDip = context?.FromPixels(top) ?? 0;
+			var rightDip = context?.FromPixels(right) ?? 0;
+			var bottomDip = context?.FromPixels(bottom) ?? 0;
+
+			// Apply safe area insets to bounds
+			return new Rectangle(
+				bounds.X + leftDip,
+				bounds.Y + topDip,
+				bounds.Width - leftDip - rightDip,
+				bounds.Height - topDip - bottomDip);
+		}
+
+		
+#nullable enable
+		public override WindowInsets? OnApplyWindowInsets(WindowInsets? insets)
+		{
+			// Store the insets and trigger a layout pass if the layout cares about safe area
+			var virtualView = ((IVisualTreeElementProvidable)this).GetElement();
+			if (virtualView is ISafeAreaView sav && !sav.IgnoreSafeArea)
+			{
+				RequestLayout();
+			}
+
+			// Let the base implementation handle the insets
+			return base.OnApplyWindowInsets(insets);
+		}
+#nullable disable
+
+		IVisualTreeElement IVisualTreeElementProvidable.GetElement()
+		{
+			// Try to get the virtual view from the first child if it implements IVisualTreeElementProvidable
+			if (ChildCount > 0 && GetChildAt(0) is IVisualTreeElementProvidable childProvider)
+			{
+				return childProvider.GetElement();
+			}
+
+			return null;
 		}
 	}
 }
