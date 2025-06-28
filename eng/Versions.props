@@ -173,6 +173,7 @@
     <JavaJdkVersion>17.0.12</JavaJdkVersion>
     <!-- Android SDK package versions and info -->
     <!-- Build Tools and CmdLine Tools versions -->
+    <AndroidSdkPlatformToolsVersion>35.0.2</AndroidSdkPlatformToolsVersion>
     <AndroidSdkBuildToolsVersion>33.0.0</AndroidSdkBuildToolsVersion>
     <AndroidSdkCmdLineToolsVersion>13.0</AndroidSdkCmdLineToolsVersion>
     <!-- Device Type for creating AVD's -->
