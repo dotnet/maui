@@ -333,6 +333,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		WeakReference<Element> _realParent;
+		
+		/// <summary>
+		/// Gets the real parent element with optional warning logging when the parent has been garbage collected.
+		/// </summary>
+		/// <param name="logWarningIfParentHasBeenCollected">If true, logs a warning when the parent reference is invalid due to garbage collection.</param>
+		/// <returns>The real parent element, or null if no parent exists or has been garbage collected.</returns>
 		Element GetRealParent(bool logWarningIfParentHasBeenCollected = true)
 		{
 			if (_realParent is null)
@@ -347,7 +353,7 @@ namespace Microsoft.Maui.Controls
 			{
 				// Clear the weak reference since the target has been garbage collected
 				_realParent = null;
-
+				
 				if (logWarningIfParentHasBeenCollected)
 				{
 					Application.Current?
@@ -394,9 +400,9 @@ namespace Microsoft.Maui.Controls
 
 		void SetParent(Element value)
 		{
-			Element currentParent = Parent;
+			Element realParent = GetRealParent(false);
 
-			if (currentParent == value)
+			if (realParent == value)
 			{
 				return;
 			}
@@ -405,10 +411,10 @@ namespace Microsoft.Maui.Controls
 
 			if (_parentOverride == null)
 			{
-				OnParentChangingCore(currentParent, value);
+				OnParentChangingCore(ParentOverride ?? realParent, value);
 			}
 
-			if (currentParent is IElementDefinition element)
+			if (realParent is IElementDefinition element)
 			{
 				element.RemoveResourcesChangedListener(OnParentResourcesChanged);
 
