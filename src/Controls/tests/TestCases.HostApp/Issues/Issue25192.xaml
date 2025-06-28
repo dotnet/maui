@@ -4,28 +4,26 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.Issues.Issue25192">
     <Grid>
-        <!-- This functionality failed in CarouselView2. Reference: https://github.com/dotnet/maui/issues/27025 -->    
-        <!-- TODO: Replace CarouselView1 with CarouselView once the issues mentioned in the GitHub issue are resolved. -->    
-        <local:CarouselView1 Margin="2,9,2,20"
+        <CarouselView Margin="2,9,2,20"
                       HeightRequest="180"
                       Loop="False"
                       PeekAreaInsets="20"
                       VerticalOptions="End"
                       HorizontalScrollBarVisibility="Never">
-            <local:CarouselView1.ItemsSource>
+            <CarouselView.ItemsSource>
                 <x:Array Type="{x:Type x:String}">
                     <x:String>Item1</x:String>
                     <x:String>Item2</x:String>
                     <x:String>Item3</x:String>
                 </x:Array>
-            </local:CarouselView1.ItemsSource>
-            <local:CarouselView1.ItemsLayout>
+            </CarouselView.ItemsSource>
+            <CarouselView.ItemsLayout>
                 <LinearItemsLayout ItemSpacing="5"
                                    Orientation="Horizontal"
                                    SnapPointsAlignment="Center"
                                    SnapPointsType="MandatorySingle"/>
-            </local:CarouselView1.ItemsLayout>
-            <local:CarouselView1.ItemTemplate>
+            </CarouselView.ItemsLayout>
+            <CarouselView.ItemTemplate>
                 <DataTemplate
                     x:DataType="{x:Null}">
                     <Border BackgroundColor="Red"
@@ -103,7 +101,7 @@
                         </Grid>
                     </Border>
                 </DataTemplate>
-            </local:CarouselView1.ItemTemplate>
-        </local:CarouselView1>
+            </CarouselView.ItemTemplate>
+        </CarouselView>
     </Grid>
 </ContentPage>
