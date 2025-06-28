@@ -9,7 +9,7 @@ using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
 {
-	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
+	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;
@@ -133,15 +133,6 @@ namespace Microsoft.Maui.Platform
 			return platformPath;
 		}
 
-		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
-		{
-			if (CrossPlatformLayout is IVisualTreeElement layoutElement &&
-				layoutElement.IsThisMyPlatformView(this))
-			{
-				return layoutElement;
-			}
 
-			return null;
-		}
 	}
 }
