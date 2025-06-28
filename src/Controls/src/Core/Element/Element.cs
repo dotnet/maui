@@ -349,10 +349,16 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
+					// Clear the weak reference since the target has been garbage collected
+					_realParent = null;
+
+					// Only log warning in debug builds to reduce noise in production
+#if DEBUG
 					Application.Current?
 						.FindMauiContext()?
 						.CreateLogger<Element>()?
 						.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+#endif
 				}
 
 				return null;
