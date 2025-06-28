@@ -394,9 +394,9 @@ namespace Microsoft.Maui.Controls
 
 		void SetParent(Element value)
 		{
-			Element realParent = GetRealParent(false);
+			Element currentParent = Parent;
 
-			if (realParent == value)
+			if (currentParent == value)
 			{
 				return;
 			}
@@ -405,10 +405,10 @@ namespace Microsoft.Maui.Controls
 
 			if (_parentOverride == null)
 			{
-				OnParentChangingCore(ParentOverride ?? realParent, value);
+				OnParentChangingCore(currentParent, value);
 			}
 
-			if (realParent is IElementDefinition element)
+			if (currentParent is IElementDefinition element)
 			{
 				element.RemoveResourcesChangedListener(OnParentResourcesChanged);
 
