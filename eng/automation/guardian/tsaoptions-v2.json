@@ -5,7 +5,7 @@
     ],
     "instanceUrl": "https://devdiv.visualstudio.com/",
     "projectName": "DevDiv",
-    "areaPath": "DevDiv\\VS Client - Runtime SDKs\\MAUI",
+    "areaPath": "DevDiv\\.NET MAUI\\MAUI",
     "iterationPath": "DevDiv",
     "allTools": true
 }

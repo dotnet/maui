@@ -368,7 +368,10 @@ public static class KeyboardAutoManagerScroll
 		}
 		else
 		{
-			statusBarHeight = window.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? 0;
+			if (OperatingSystem.IsIOSVersionAtLeast(13, 0))
+				statusBarHeight = window.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? 0;
+			else
+				statusBarHeight = UIApplication.SharedApplication.StatusBarFrame.Height;
 
 			navigationBarAreaHeight = statusBarHeight;
 		}
