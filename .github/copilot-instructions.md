@@ -163,6 +163,20 @@ Since coding agents function as both CI and pair programmers, they need to handl
 - **Always reset changes to `cgmanifest.json` files** - These are generated during CI builds and should not be committed by coding agents
 - **Always reset changes to `templatestrings.json` files** - These localization files are auto-generated and should not be committed by coding agents
 
+### Handling Existing PRs for Assigned Issues
+When working on an issue that already has an open PR created by someone else:
+
+1. **Review the existing PR thoroughly** - Examine the proposed changes, implementation approach, and any discussion in comments
+2. **Provide analysis and opinion** - Evaluate whether the existing solution addresses the issue effectively and follows best practices
+3. **Use existing PR as foundation** - If the existing solution is valid, use it as the starting point and foundation for your work
+4. **Identify improvement opportunities** - Look for areas where you can enhance the solution, such as:
+   - Adding comprehensive test coverage
+   - Improving code quality, performance, or maintainability
+   - Enhancing error handling or edge case coverage
+   - Better documentation or code comments
+   - More robust implementation patterns
+5. **Build upon, don't duplicate** - Extend and improve the existing work rather than creating a competing solution from scratch
+
 ### Branching
 - `main` - For bug fixes without API changes
 - `net10.0` - For new features and API changes
