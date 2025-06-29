@@ -362,6 +362,11 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
+		Element GetParent(bool logWarningIfParentHasBeenCollected = true)
+		{
+			return ParentOverride ?? GetRealParent(logWarningIfParentHasBeenCollected);
+		}
+
 		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element RealParent
@@ -390,13 +395,13 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>Most application authors will not need to set the parent element by hand.</remarks>
 		public Element Parent
 		{
-			get { return ParentOverride ?? RealParent; }
+			get { return GetParent(); }
 			set => SetParent(value);
 		}
 
 		void SetParent(Element value)
 		{
-			Element currentParent = ParentOverride ?? GetRealParent(false);
+			Element currentParent = GetParent(false);
 
 			if (currentParent == value)
 			{
