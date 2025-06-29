@@ -37,6 +37,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<BoxView, BoxViewHandler>();
+				handlers.AddHandler<Button, ButtonHandler>();
 				handlers.AddHandler<CarouselView, CarouselViewHandler>();
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
 #if IOS || MACCATALYST
@@ -60,6 +61,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Picker, PickerHandler>();
 				handlers.AddHandler<Polygon, PolygonHandler>();
 				handlers.AddHandler<Polyline, PolylineHandler>();
+				handlers.AddHandler<ProgressBar, ProgressBarHandler>();
 				handlers.AddHandler<IContentView, ContentViewHandler>();
 				handlers.AddHandler<Image, ImageHandler>();
 				handlers.AddHandler<ImageButton, ImageButtonHandler>();
@@ -145,6 +147,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(ActivityIndicator))]
 	[InlineData(typeof(Border))]
 	[InlineData(typeof(BoxView))]
+	[InlineData(typeof(Button))]
 	[InlineData(typeof(CarouselView))]
 	[InlineData(typeof(ContentView))]
 	[InlineData(typeof(CheckBox))]
@@ -168,6 +171,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Picker))]
 	[InlineData(typeof(Polygon))]
 	[InlineData(typeof(Polyline))]
+	[InlineData(typeof(ProgressBar))]
 	[InlineData(typeof(RadioButton))]
 	[InlineData(typeof(Rectangle))]
 	[InlineData(typeof(RefreshView))]
