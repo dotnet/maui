@@ -161,3 +161,19 @@ virtual Microsoft.Maui.SwipeViewSwipeStarted.<Clone>$() -> Microsoft.Maui.SwipeV
 virtual Microsoft.Maui.SwipeViewSwipeStarted.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.SwipeViewSwipeStarted.Equals(Microsoft.Maui.SwipeViewSwipeStarted? other) -> bool
 virtual Microsoft.Maui.SwipeViewSwipeStarted.PrintMembers(System.Text.StringBuilder! builder) -> bool
+Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyDown
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyDown.Invoke(Android.App.Activity! activity, Android.Views.Keycode keyCode, Android.Views.KeyEvent? keyEvent) -> bool
+Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyUp
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyUp.Invoke(Android.App.Activity! activity, Android.Views.Keycode keyCode, Android.Views.KeyEvent? keyEvent) -> bool
+Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyLongPress
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyLongPress.Invoke(Android.App.Activity! activity, Android.Views.Keycode keyCode, Android.Views.KeyEvent? keyEvent) -> bool
+Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyMultiple
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyMultiple.Invoke(Android.App.Activity! activity, Android.Views.Keycode keyCode, int repeatCount, Android.Views.KeyEvent? keyEvent) -> bool
+static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnKeyDown(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyDown! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnKeyUp(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyUp! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnKeyLongPress(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyLongPress! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnKeyMultiple(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyMultiple! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
+override Microsoft.Maui.MauiAppCompatActivity.OnKeyDown(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
+override Microsoft.Maui.MauiAppCompatActivity.OnKeyUp(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
+override Microsoft.Maui.MauiAppCompatActivity.OnKeyLongPress(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
+override Microsoft.Maui.MauiAppCompatActivity.OnKeyMultiple(Android.Views.Keycode keyCode, int repeatCount, Android.Views.KeyEvent? e) -> bool

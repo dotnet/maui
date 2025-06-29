@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
 using Android.OS;
+using Android.Views;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -88,6 +89,62 @@ namespace Microsoft.Maui
 			base.OnRestoreInstanceState(savedInstanceState);
 
 			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnRestoreInstanceState>(del => del(this, savedInstanceState));
+		}
+
+		public override bool OnKeyDown(Keycode keyCode, KeyEvent? e)
+		{
+			var preventKeyPropagation = false;
+			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyDown>(del =>
+			{
+				preventKeyPropagation = del(this, keyCode, e) || preventKeyPropagation;
+			});
+
+			if (!preventKeyPropagation)
+				return base.OnKeyDown(keyCode, e);
+
+			return true;
+		}
+
+		public override bool OnKeyUp(Keycode keyCode, KeyEvent? e)
+		{
+			var preventKeyPropagation = false;
+			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyUp>(del =>
+			{
+				preventKeyPropagation = del(this, keyCode, e) || preventKeyPropagation;
+			});
+
+			if (!preventKeyPropagation)
+				return base.OnKeyUp(keyCode, e);
+
+			return true;
+		}
+
+		public override bool OnKeyLongPress(Keycode keyCode, KeyEvent? e)
+		{
+			var preventKeyPropagation = false;
+			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyLongPress>(del =>
+			{
+				preventKeyPropagation = del(this, keyCode, e) || preventKeyPropagation;
+			});
+
+			if (!preventKeyPropagation)
+				return base.OnKeyLongPress(keyCode, e);
+
+			return true;
+		}
+
+		public override bool OnKeyMultiple(Keycode keyCode, int repeatCount, KeyEvent? e)
+		{
+			var preventKeyPropagation = false;
+			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyMultiple>(del =>
+			{
+				preventKeyPropagation = del(this, keyCode, repeatCount, e) || preventKeyPropagation;
+			});
+
+			if (!preventKeyPropagation)
+				return base.OnKeyMultiple(keyCode, repeatCount, e);
+
+			return true;
 		}
 	}
 }

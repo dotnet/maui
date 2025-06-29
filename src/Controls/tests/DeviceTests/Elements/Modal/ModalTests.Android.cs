@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Java.Lang;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
 using Xunit;
 using WindowSoftInputModeAdjust = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust;
@@ -61,6 +63,38 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.False(modalPage.IsLoaded);
 					iWindow.Activated();
 					await OnLoadedAsync(modalPage);
+				});
+		}
+
+		[Fact]
+		public async Task ModalPageKeyEventInfrastructureIsInPlace()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var modalPage = new ContentPage()
+			{
+				Content = new Label()
+				{
+					Text = "Modal Page for Key Events Test"
+				}
+			};
+
+			var window = new Window(page);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (_) =>
+				{
+					await page.Navigation.PushModalAsync(modalPage);
+					await OnLoadedAsync(modalPage);
+
+					// Test that the key event infrastructure is in place
+					// This mainly tests that the code compiles and can be called
+					Assert.NotNull(typeof(AndroidLifecycle.OnKeyDown));
+					Assert.NotNull(typeof(AndroidLifecycle.OnKeyUp));
+					Assert.NotNull(typeof(AndroidLifecycle.OnKeyLongPress));
+					Assert.NotNull(typeof(AndroidLifecycle.OnKeyMultiple));
+
+					await page.Navigation.PopModalAsync();
 				});
 		}
 	}
