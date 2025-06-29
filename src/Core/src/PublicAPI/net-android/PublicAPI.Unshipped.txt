@@ -6,6 +6,7 @@
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyDown(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyLongPress(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyMultiple(Android.Views.Keycode keyCode, int repeatCount, Android.Views.KeyEvent? e) -> bool
+override Microsoft.Maui.MauiAppCompatActivity.OnKeyShortcut(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyUp(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiDatePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
 override Microsoft.Maui.Platform.MauiPickerBase.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?

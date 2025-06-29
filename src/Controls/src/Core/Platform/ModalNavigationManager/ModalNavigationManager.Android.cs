@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal class ModalFragment : DialogFragment, IDialogInterfaceOnKeyListener
+		internal class ModalFragment : DialogFragment
 		{
 			Page _modal;
 			IMauiContext _mauiWindowContext;
@@ -230,7 +230,6 @@ namespace Microsoft.Maui.Controls.Platform
 				if (dialog is null || dialog.Window is null)
 					throw new InvalidOperationException($"{dialog} or {dialog?.Window} is null, and it's invalid");
 
-				dialog.SetOnKeyListener(this);
 				dialog.Window.SetBackgroundDrawable(TransparentColorDrawable);
 
 				var mainActivityWindow = Context?.GetActivity()?.Window;
@@ -362,7 +361,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_modal.PropertyChanged -= OnModalPagePropertyChanged;
 				_modal.HandlerChanged -= OnPageHandlerChanged;
-				Dialog?.SetOnKeyListener(null);
 
 				if (_modal.Toolbar?.Handler is not null)
 				{
@@ -394,35 +392,67 @@ namespace Microsoft.Maui.Controls.Platform
 				AnimationEnded?.Invoke(this, EventArgs.Empty);
 			}
 
-			public bool OnKey(IDialogInterface? dialog, [GeneratedEnum] Keycode keyCode, KeyEvent? e)
-			{
-				var mainActivity = Context?.GetActivity();
-				if (e is null || mainActivity is null)
-				{
-					return false;
-				}
-
-				// Use internal methods that call user overrides without base to avoid side effects
-				if (mainActivity is MauiAppCompatActivity mauiActivity)
-				{
-					return e.Action switch
-					{
-						KeyEventActions.Down => mauiActivity.InternalOnKeyDown(keyCode, e),
-						KeyEventActions.Up => mauiActivity.InternalOnKeyUp(keyCode, e),
-						KeyEventActions.Multiple => mauiActivity.InternalOnKeyMultiple(keyCode, e.RepeatCount, e),
-						_ => false,
-					};
-				}
-
-				return false;
-			}
-
 
 			sealed class CustomComponentDialog : ComponentDialog
 			{
 				public CustomComponentDialog(Context context, int themeResId) : base(context, themeResId)
 				{
 					this.OnBackPressedDispatcher.AddCallback(new CallBack(true, this));
+				}
+
+				public override bool OnKeyDown(Keycode keyCode, KeyEvent? e)
+				{
+					var mainActivity = Context?.GetActivity();
+					if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
+					{
+						return mauiActivity.InternalOnKeyDown(keyCode, e);
+					}
+
+					return e is not null ? base.OnKeyDown(keyCode, e) : false;
+				}
+
+				public override bool OnKeyUp(Keycode keyCode, KeyEvent? e)
+				{
+					var mainActivity = Context?.GetActivity();
+					if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
+					{
+						return mauiActivity.InternalOnKeyUp(keyCode, e);
+					}
+
+					return e is not null ? base.OnKeyUp(keyCode, e) : false;
+				}
+
+				public override bool OnKeyLongPress(Keycode keyCode, KeyEvent? e)
+				{
+					var mainActivity = Context?.GetActivity();
+					if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
+					{
+						return mauiActivity.InternalOnKeyLongPress(keyCode, e);
+					}
+
+					return e is not null ? base.OnKeyLongPress(keyCode, e) : false;
+				}
+
+				public override bool OnKeyMultiple(Keycode keyCode, int repeatCount, KeyEvent? e)
+				{
+					var mainActivity = Context?.GetActivity();
+					if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
+					{
+						return mauiActivity.InternalOnKeyMultiple(keyCode, repeatCount, e);
+					}
+
+					return e is not null ? base.OnKeyMultiple(keyCode, repeatCount, e) : false;
+				}
+
+				public override bool OnKeyShortcut(Keycode keyCode, KeyEvent? e)
+				{
+					var mainActivity = Context?.GetActivity();
+					if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
+					{
+						return mauiActivity.InternalOnKeyShortcut(keyCode, e);
+					}
+
+					return e is not null ? base.OnKeyShortcut(keyCode, e) : false;
 				}
 
 				sealed class CallBack : OnBackPressedCallback

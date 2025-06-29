@@ -79,6 +79,14 @@ namespace Microsoft.Maui
 			return true;
 		}
 
+		public override bool OnKeyShortcut(Keycode keyCode, KeyEvent? e)
+		{
+			if (!_processingKeyEvent)
+				return base.OnKeyShortcut(keyCode, e);
+
+			return true;
+		}
+
 		// Internal methods for key event forwarding from modal dialogs
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		internal bool InternalOnKeyDown(Keycode keyCode, KeyEvent? e)
@@ -141,6 +149,23 @@ namespace Microsoft.Maui
 			try
 			{
 				return OnKeyMultiple(keyCode, repeatCount, e);
+			}
+			finally
+			{
+				_processingKeyEvent = false;
+			}
+		}
+
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		internal bool InternalOnKeyShortcut(Keycode keyCode, KeyEvent? e)
+		{
+			if (_processingKeyEvent)
+				return false;
+
+			_processingKeyEvent = true;
+			try
+			{
+				return OnKeyShortcut(keyCode, e);
 			}
 			finally
 			{
