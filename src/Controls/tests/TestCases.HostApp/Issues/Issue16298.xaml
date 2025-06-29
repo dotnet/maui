@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       x:Class="Maui.Controls.Sample.Issues.Issue16298">
+    <ShellContent
+        Title="Home"
+        Route="MainPage">
+        <ContentPage>
+            <Shell.SearchHandler>
+                <SearchHandler x:Name="searchHandler"
+                               Placeholder="Type a player's name to search"
+                               ShowsResults="true"
+                               Keyboard="Plain"/>
+            </Shell.SearchHandler>
+            <StackLayout>
+                <Button
+                    AutomationId="FocusBtn"
+                    Text="Focus Button"
+                    Clicked="FocusBtnClicked"/>
+                <Button
+                    AutomationId="UnFocusBtn"
+                    Text="UnFocus Button"
+                    Clicked="UnFocusBtnClicked"/>
+            </StackLayout>
+        </ContentPage>
+    </ShellContent>
+</Shell>
