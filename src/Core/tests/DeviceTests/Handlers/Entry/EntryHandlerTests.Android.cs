@@ -416,5 +416,61 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeButton(CreateHandler<ButtonHandler>(button)).PerformClick();
 			});
 		}
+
+		[Fact(DisplayName = "Entry with >5000 characters does not crash when IsPassword is enabled")]
+		public async Task EntryWithLongTextDoesNotCrashWhenIsPasswordEnabled()
+		{
+			// Create a string with more than 5000 characters
+			var longText = new string('A', 6000);
+
+			var entry = new EntryStub()
+			{
+				Text = longText,
+				MaxLength = 10000, // Allow long text
+				IsPassword = false
+			};
+
+			// This should not crash
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
+				
+				// Set IsPassword to true - this would previously crash
+				entry.IsPassword = true;
+				
+				// Verify the handler still works
+				Assert.NotNull(handler.PlatformView);
+				Assert.Equal(longText, GetNativeText(handler));
+				Assert.True(GetNativeIsPassword(handler));
+			});
+		}
+
+		[Theory(DisplayName = "Entry with varying text lengths works correctly with IsPassword")]
+		[InlineData(4999)] // Just under 5000
+		[InlineData(5000)] // Exactly 5000
+		[InlineData(5001)] // Just over 5000
+		[InlineData(7500)] // Well over 5000
+		public async Task EntryWithVaryingTextLengthsWorksWithIsPassword(int textLength)
+		{
+			var longText = new string('B', textLength);
+
+			var entry = new EntryStub()
+			{
+				Text = longText,
+				MaxLength = textLength + 1000, // Set MaxLength appropriately
+				IsPassword = true // Set IsPassword to true immediately
+			};
+
+			// This should not crash regardless of text length
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
+				
+				// Verify the handler works correctly
+				Assert.NotNull(handler.PlatformView);
+				Assert.Equal(longText, GetNativeText(handler));
+				Assert.True(GetNativeIsPassword(handler));
+			});
+		}
 	}
 }
