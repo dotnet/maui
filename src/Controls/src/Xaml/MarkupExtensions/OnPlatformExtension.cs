@@ -13,7 +13,6 @@ namespace Microsoft.Maui.Controls.Xaml
 		 typeof(IValueConverterProvider),
 		 typeof(IXmlLineInfoProvider),
 		 typeof(IConverterOptions)])]
-	[RequiresUnreferencedCode("The OnPlatformExtension is not trim safe. Use OnPlatform<T> instead.")]
 	public class OnPlatformExtension : IMarkupExtension
 	{
 		static object s_notset = new object();
@@ -81,7 +80,9 @@ namespace Microsoft.Maui.Controls.Xaml
 						return bp.GetDefaultValue(targetObject as BindableObject);
 				}
 				if (propertyType.IsValueType)
-					return Activator.CreateInstance(propertyType);
+				{
+					throw new XamlParseException($"Missing value for platform {DeviceInfo.Platform} or Default", serviceProvider);
+				}
 				return null;
 			}
 

@@ -386,7 +386,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "Desktop", 26)]
 		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "TV", 30)]
 		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "Watch", 10)]
-		[TestCase("{OnIdiom Phone=23}", "Desktop", default(int))]
 		public void OnIdiomExtension(string markup, string idiom, int expected)
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Create(idiom);
@@ -401,6 +400,40 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			});
 
 			Assert.AreEqual(expected, actual);
+		}
+
+		[TestCase("{OnIdiom Phone=23}", "Desktop")]
+		public void OnIdiomExtensionMissingValue(string markup, string idiom)
+		{
+			mockDeviceInfo.Idiom = DeviceIdiom.Create(idiom);
+
+			var serviceProvider = new Internals.XamlServiceProvider(null, null)
+			{
+				IXamlTypeResolver = typeResolver,
+				IProvideValueTarget = new MockValueProvider("foo", new object())
+				{
+					TargetProperty = GetType().GetProperty(nameof(FontSize))
+				}
+			};
+
+			Assert.Throws<XamlParseException>(() => (new MarkupExtensionParser()).ParseExpression(ref markup, serviceProvider));
+		}
+
+		[TestCase("{OnPlatform Android=23}", "iOS")]
+		public void OnPlatformExtensionMissingValue(string markup, string platform)
+		{
+			mockDeviceInfo.Platform = DevicePlatform.Create(platform);
+
+			var serviceProvider = new Internals.XamlServiceProvider(null, null)
+			{
+				IXamlTypeResolver = typeResolver,
+				IProvideValueTarget = new MockValueProvider("foo", new object())
+				{
+					TargetProperty = GetType().GetProperty(nameof(FontSize))
+				}
+			};
+
+			Assert.Throws<XamlParseException>(() => (new MarkupExtensionParser()).ParseExpression(ref markup, serviceProvider));
 		}
 
 		[TestCase("{Binding")]
