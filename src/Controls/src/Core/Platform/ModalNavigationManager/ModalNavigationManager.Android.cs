@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal class ModalFragment : DialogFragment, IDialogInterfaceOnKeyListener
+		internal class ModalFragment : DialogFragment
 		{
 			Page _modal;
 			IMauiContext _mauiWindowContext;
@@ -229,7 +229,6 @@ namespace Microsoft.Maui.Controls.Platform
 				if (dialog is null || dialog.Window is null)
 					throw new InvalidOperationException($"{dialog} or {dialog?.Window} is null, and it's invalid");
 
-				dialog.SetOnKeyListener(this);
 				dialog.Window.SetBackgroundDrawable(TransparentColorDrawable);
 
 				var mainActivityWindow = Context?.GetActivity()?.Window;
@@ -361,7 +360,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_modal.PropertyChanged -= OnModalPagePropertyChanged;
 				_modal.HandlerChanged -= OnPageHandlerChanged;
-				Dialog?.SetOnKeyListener(null);
 
 				if (_modal.Toolbar?.Handler is not null)
 				{
@@ -393,29 +391,56 @@ namespace Microsoft.Maui.Controls.Platform
 				AnimationEnded?.Invoke(this, EventArgs.Empty);
 			}
 
-			public bool OnKey(IDialogInterface? dialog, [GeneratedEnum] Keycode keyCode, KeyEvent? e)
-			{
-				var mainActivity = Context?.GetActivity();
-				if (e is null || mainActivity is null)
-				{
-					return false;
-				}
-
-				return e.Action switch
-				{
-					KeyEventActions.Down => mainActivity.OnKeyDown(keyCode, e),
-					KeyEventActions.Up => mainActivity.OnKeyUp(keyCode, e),
-					KeyEventActions.Multiple => mainActivity.OnKeyMultiple(keyCode, e.RepeatCount, e),
-					_ => false,
-				};
-			}
-
-
 			sealed class CustomComponentDialog : ComponentDialog
 			{
 				public CustomComponentDialog(Context context, int themeResId) : base(context, themeResId)
 				{
 					this.OnBackPressedDispatcher.AddCallback(new CallBack(true, this));
+				}
+
+				public override bool OnKeyDown([GeneratedEnum] Keycode keyCode, KeyEvent? e)
+				{
+					var activity = Context?.GetActivity();
+					if (activity is null || e is null)
+						return false;
+
+					return activity.OnKeyDown(keyCode, e);
+				}
+
+				public override bool OnKeyUp([GeneratedEnum] Keycode keyCode, KeyEvent? e)
+				{
+					var activity = Context?.GetActivity();
+					if (activity is null || e is null)
+						return false;
+
+					return activity.OnKeyUp(keyCode, e);
+				}
+
+				public override bool OnKeyLongPress([GeneratedEnum] Keycode keyCode, KeyEvent? e)
+				{
+					var activity = Context?.GetActivity();
+					if (activity is null || e is null)
+						return false;
+
+					return activity.OnKeyLongPress(keyCode, e);
+				}
+
+				public override bool OnKeyMultiple([GeneratedEnum] Keycode keyCode, int repeatCount, KeyEvent? e)
+				{
+					var activity = Context?.GetActivity();
+					if (activity is null || e is null)
+						return false;
+
+					return activity.OnKeyMultiple(keyCode, repeatCount, e);
+				}
+
+				public override bool OnKeyShortcut([GeneratedEnum] Keycode keyCode, KeyEvent? e)
+				{
+					var activity = Context?.GetActivity();
+					if (activity is null || e is null)
+						return false;
+
+					return activity.OnKeyShortcut(keyCode, e);
 				}
 
 				sealed class CallBack : OnBackPressedCallback
