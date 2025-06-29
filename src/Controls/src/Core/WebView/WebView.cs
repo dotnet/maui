@@ -295,6 +295,8 @@ namespace Microsoft.Maui.Controls
 			if (js == null)
 				return null;
 
+			js = Regex.Replace(js, @"\r\n|\r|\n", " ");
+
 			if (js.IndexOf("'", StringComparison.Ordinal) == -1)
 				return js;
 
