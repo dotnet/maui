@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -18,15 +18,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]]
+			[InlineData(true)]]
 			public void ResourcesDirectoriesCanBeXamlRoots(bool useCompiledXaml)
 			{
 				var layout = new SharedResourceDictionary(useCompiledXaml);
-				Assert.AreEqual(5, layout.Count);
+				Assert.Equal(5, layout.Count);
 			}
 		}
 	}

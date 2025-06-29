@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -20,10 +20,9 @@ public partial class Maui21434
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	class Test
 	{
-		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -32,12 +31,12 @@ public partial class Maui21434
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void BindingsDoNotResolveStaticProperties([Values(false, true)] bool useCompiledXaml)
 		{
 			var page = new Maui21434(useCompiledXaml);
-			Assert.That(page.ParentTextLabel?.Text, Is.EqualTo("ParentText"));
-			Assert.That(page.ChildTextLabel?.Text, Is.EqualTo("ChildText"));
+			Assert.Equal("ParentText", page.ParentTextLabel?.Text);
+			Assert.Equal("ChildText", page.ChildTextLabel?.Text);
 		}
 	}
 }

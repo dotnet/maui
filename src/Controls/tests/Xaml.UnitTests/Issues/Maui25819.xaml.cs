@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 public partial class Maui25819 : ContentPage
@@ -24,30 +24,28 @@ public partial class Maui25819 : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	class Test
 	{
-		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
 		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 		}
 
 
-		[Test]
+		[Fact]
 		public void DoesntThrow([Values] bool inflator)
 		{
 			MockCompiler.Compile(typeof(Maui25819));
 			var layout = new Maui25819(inflator);
 			layout.BindingContext = new Maui25819UserDataViewModel();
-			Assert.That(layout.label0.Text, Is.EqualTo("2023"));
+			Assert.Equal("2023", layout.label0.Text);
 		}
 	}
 }

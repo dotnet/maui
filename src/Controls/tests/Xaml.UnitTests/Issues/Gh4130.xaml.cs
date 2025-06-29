@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -36,10 +36,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.Pass();
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[TestCase(false), TestCase(true)]
+			[InlineData(false)], TestCase(true)]
 			public void NonGenericEventHanlders(bool useCompiledXaml)
 			{
 				var layout = new Gh4130(useCompiledXaml);

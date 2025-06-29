@@ -1,13 +1,13 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class Issue1497
 	{
-		[Test]
+		[Fact]
 		public void BPCollectionsWithSingleElement()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					    </Grid>";
 
 			var grid = new Grid().LoadFromXaml(xaml);
-			Assert.AreEqual(1, grid.ColumnDefinitions.Count);
+			Assert.Equal(1, grid.ColumnDefinitions.Count);
 			Assert.True(grid.ColumnDefinitions[0].Width.IsStar);
 		}
 	}

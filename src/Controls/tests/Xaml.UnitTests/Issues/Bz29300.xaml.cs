@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -73,16 +73,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]]
+			[InlineData(false)]]
 			public void AccessUserDefinedBindableProperties(bool useCompiledXaml)
 			{
 				var layout = new Bz29300(useCompiledXaml);
-				Assert.AreEqual(4, layout.dummy.NumOfRepeat);
-				Assert.AreEqual("Test", layout.dummy.Text);
+				Assert.Equal(4, layout.dummy.NumOfRepeat);
+				Assert.Equal("Test", layout.dummy.Text);
 			}
 		}
 	}

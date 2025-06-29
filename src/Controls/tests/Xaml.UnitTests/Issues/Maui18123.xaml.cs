@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -34,10 +34,9 @@ public partial class Maui18123 : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	class Test
 	{
-		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -46,20 +45,20 @@ public partial class Maui18123 : ContentPage
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void MultiBindingShouldNotThrow([Values(false, true)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
-				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui18123)));
+				() => MockCompiler.Compile(typeof(Maui18123))
 
 			var page = new Maui18123(useCompiledXaml);
 			page.BindingContext = new Maui18123VM();
 			page.editBtn.SendClicked();
-			Assert.That(page.editBtn.Text, Is.EqualTo("SUBMIT"));
-			Assert.That(page.deleteBtn.Text, Is.EqualTo("CANCEL"));
+			Assert.Equal("SUBMIT", page.editBtn.Text);
+			Assert.Equal("CANCEL", page.deleteBtn.Text);
 			page.deleteBtn.SendClicked();
-			Assert.That(page.editBtn.Text, Is.EqualTo("Edit"));
-			Assert.That(page.deleteBtn.Text, Is.EqualTo("Delete"));
+			Assert.Equal("Edit", page.editBtn.Text);
+			Assert.Equal("Delete", page.deleteBtn.Text);
 		}
 	}
 }
