@@ -85,6 +85,13 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsPassword(IEntryHandler handler, IEntry entry)
 		{
+			// If text length is greater than 5000 characters, ensure MaxLength is applied first
+			// to prevent Android's default 5000 character limit from causing a crash
+			if (entry.Text?.Length > 5000)
+			{
+				handler.UpdateValue(nameof(IEntry.MaxLength));
+			}
+
 			handler.UpdateValue(nameof(IEntry.Text));
 
 			handler.PlatformView?.UpdateIsPassword(entry);
