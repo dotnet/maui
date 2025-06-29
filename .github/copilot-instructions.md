@@ -172,7 +172,6 @@ When working on an issue:
    - Enhancing error handling or edge case coverage
    - Better documentation or code comments
    - More robust implementation patterns
-10. **Build upon, don't duplicate** - When using an existing approach, extend and improve the existing work rather than creating a competing solution from scratch
 
 ### Files to Never Commit
 - **Never** check in changes to `cgmanifest.json` files
