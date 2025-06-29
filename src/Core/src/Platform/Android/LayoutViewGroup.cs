@@ -4,6 +4,7 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
 using Rectangle = Microsoft.Maui.Graphics.Rect;
@@ -96,6 +97,18 @@ namespace Microsoft.Maui.Platform
 			SetMeasuredDimension((int)platformWidth, (int)platformHeight);
 		}
 
+		Rectangle AdjustForSafeArea(Rectangle bounds)
+		{
+			// Only apply safe area adjustments if we're not inside a WrapperView
+			// (WrapperView handles safe areas when it exists for visual effects)
+			if (Parent is WrapperView)
+			{
+				return bounds;
+			}
+
+			return AndroidSafeAreaHelper.AdjustForSafeArea(this, _context, bounds, CrossPlatformLayout);
+		}
+
 		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
 		// If you make changes here please review if those changes should also
 		// apply to ViewHandlerExtensions.MeasureVirtualView
@@ -107,6 +120,9 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var destination = _context.ToCrossPlatformRectInReferenceFrame(l, t, r, b);
+
+			// Apply safe area adjustments if needed
+			destination = AdjustForSafeArea(destination);
 
 			CrossPlatformArrange(destination);
 
@@ -120,6 +136,18 @@ namespace Microsoft.Maui.Platform
 			{
 				ClipBounds = null;
 			}
+		}
+
+		public override WindowInsets? OnApplyWindowInsets(WindowInsets? insets)
+		{
+			// Only handle insets if we're not inside a WrapperView (which handles them instead)
+			if (!(Parent is WrapperView) && AndroidSafeAreaHelper.ShouldHandleWindowInsets(CrossPlatformLayout))
+			{
+				RequestLayout();
+			}
+
+			// Let the base implementation handle the insets
+			return base.OnApplyWindowInsets(insets);
 		}
 
 		public override bool OnTouchEvent(MotionEvent? e)

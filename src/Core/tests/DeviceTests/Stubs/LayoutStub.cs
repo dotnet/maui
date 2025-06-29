@@ -80,7 +80,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		protected virtual ILayoutManager CreateLayoutManager() => new LayoutManagerStub();
 
-		public bool IgnoreSafeArea => false;
+		public bool IgnoreSafeArea { get; set; }
 
 		public bool ClipsToBounds { get; set; }
 

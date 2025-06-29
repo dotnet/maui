@@ -3,14 +3,16 @@ using System;
 using Android.Content;
 using Android.Graphics;
 using Android.Views;
+using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using APath = Android.Graphics.Path;
 using AView = Android.Views.View;
+using Rectangle = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : PlatformWrapperView
+	public partial class WrapperView : PlatformWrapperView, IVisualTreeElementProvidable
 	{
 		APath _currentPath;
 		SizeF _lastPathSize;
@@ -34,12 +36,22 @@ namespace Microsoft.Maui.Platform
 			if (ChildCount == 0 || GetChildAt(0) is not AView child)
 				return;
 
-			var widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(right - left);
-			var heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(bottom - top);
+			// Apply safe area adjustments for WrapperView since it handles visual effects
+			var contentBounds = new Rectangle(0, 0, right - left, bottom - top);
+			var adjustedBounds = AdjustForSafeArea(contentBounds);
+
+			// Convert adjusted bounds to pixels and position the child
+			var leftPx = (int)Context.ToPixels(adjustedBounds.X);
+			var topPx = (int)Context.ToPixels(adjustedBounds.Y);
+			var rightPx = (int)Context.ToPixels(adjustedBounds.Right);
+			var bottomPx = (int)Context.ToPixels(adjustedBounds.Bottom);
+
+			var widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(rightPx - leftPx);
+			var heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(bottomPx - topPx);
 
 			child.Measure(widthMeasureSpec, heightMeasureSpec);
-			child.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
-			_borderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
+			child.Layout(leftPx, topPx, rightPx, bottomPx);
+			_borderView?.Layout(leftPx, topPx, rightPx, bottomPx);
 		}
 
 		public override bool DispatchTouchEvent(MotionEvent e)
@@ -145,6 +157,29 @@ namespace Microsoft.Maui.Platform
 			return _currentPath;
 		}
 
+		Rectangle AdjustForSafeArea(Rectangle bounds)
+		{
+			// Only apply safe area adjustments if the child is a layout that cares about safe areas
+			if (ChildCount > 0 && GetChildAt(0) is LayoutViewGroup layout)
+			{
+				return AndroidSafeAreaHelper.AdjustForSafeArea(this, Context, bounds, layout.CrossPlatformLayout);
+			}
+
+			return bounds;
+		}
+
+		public override WindowInsets OnApplyWindowInsets(WindowInsets insets)
+		{
+			// Trigger layout update if we have a layout that cares about safe area
+			if (ChildCount > 0 && GetChildAt(0) is LayoutViewGroup layout &&
+				AndroidSafeAreaHelper.ShouldHandleWindowInsets(layout.CrossPlatformLayout))
+			{
+				RequestLayout();
+			}
+
+			return base.OnApplyWindowInsets(insets);
+		}
+
 		public override ViewStates Visibility
 		{
 			get => base.Visibility;
@@ -213,6 +248,17 @@ namespace Microsoft.Maui.Platform
 
 				clearWrapperView.Invoke();
 			}
+		}
+
+		IVisualTreeElement IVisualTreeElementProvidable.GetElement()
+		{
+			// Return the element from the wrapped layout if it exists
+			if (ChildCount > 0 && GetChildAt(0) is IVisualTreeElementProvidable provider)
+			{
+				return provider.GetElement();
+			}
+
+			return null;
 		}
 	}
 }
