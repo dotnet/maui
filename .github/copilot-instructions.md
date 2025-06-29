@@ -165,7 +165,7 @@ When working on an issue:
 5. **Always document your decision** - In your PR description, always include a summary comparing your solution to any other open PRs for the issue you are working on, and explain why you chose your approach over the alternatives
 6. **Report on why you didn't choose other solutions** - Always make sure to explain the specific reasons why you didn't go with other existing solutions, including any concerns or issues you identified
 7. **It's OK to abandon existing PRs** - If you're not confident enough in the existing PR's approach, it's completely acceptable to abandon it and implement your own solution
-8. **Use existing PR as foundation when appropriate** - If the existing solution is solid and you determine it's better than your approach, use it as the starting point and foundation for your work
+8. **Pull existing changes when you prefer them** - If you determine the existing solution is better than your approach, pull those changes into your PR as the foundation for your work, then find areas to improve and add tests
 9. **Identify improvement opportunities** - Whether you use your solution or an existing one, look for areas where you can enhance it, such as:
    - Adding comprehensive test coverage
    - Improving code quality, performance, or maintainability
