@@ -45,8 +45,41 @@ namespace Microsoft.Maui
 			return handled || implHandled;
 		}
 
+		// Override key methods to support modal dialog forwarding
+		// When _processingKeyEvent is true, we don't call base to avoid side effects
+		public override bool OnKeyDown(Keycode keyCode, KeyEvent? e)
+		{
+			if (!_processingKeyEvent)
+				return base.OnKeyDown(keyCode, e);
+
+			return true;
+		}
+
+		public override bool OnKeyUp(Keycode keyCode, KeyEvent? e)
+		{
+			if (!_processingKeyEvent)
+				return base.OnKeyUp(keyCode, e);
+
+			return true;
+		}
+
+		public override bool OnKeyLongPress(Keycode keyCode, KeyEvent? e)
+		{
+			if (!_processingKeyEvent)
+				return base.OnKeyLongPress(keyCode, e);
+
+			return true;
+		}
+
+		public override bool OnKeyMultiple(Keycode keyCode, int repeatCount, KeyEvent? e)
+		{
+			if (!_processingKeyEvent)
+				return base.OnKeyMultiple(keyCode, repeatCount, e);
+
+			return true;
+		}
+
 		// Internal methods for key event forwarding from modal dialogs
-		// These call the user's overrides without calling base to avoid side effects
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		internal bool InternalOnKeyDown(Keycode keyCode, KeyEvent? e)
 		{
