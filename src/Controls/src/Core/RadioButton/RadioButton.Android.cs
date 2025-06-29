@@ -4,6 +4,8 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class RadioButton
 	{
+		ContentViewGroup? contentViewGroup { get; set; }
+
 		public static void MapContent(RadioButtonHandler handler, RadioButton radioButton)
 			=> MapContent((IRadioButtonHandler)handler, radioButton);
 
@@ -13,11 +15,17 @@ namespace Microsoft.Maui.Controls
 			{
 				if (handler.PlatformView is ContentViewGroup vg && handler.MauiContext != null)
 				{
+					radioButton.contentViewGroup = vg;
+
 					// Cleanup the old view when reused
 					vg.RemoveAllViews();
 
 					if (handler.VirtualView.PresentedContent is IView view)
 						vg.AddView(view.ToPlatform(handler.MauiContext));
+
+					// Ensure the ContentViewGroup is focusable and can handle key events
+					vg.Focusable = true;
+					vg.KeyPress += radioButton.OnKeyPressed;
 				}
 
 				return;
@@ -43,6 +51,26 @@ namespace Microsoft.Maui.Controls
 			};
 
 			return viewGroup;
+		}
+
+		private protected override void OnHandlerChangedCore()
+		{
+			base.OnHandlerChangedCore();
+
+			if (Handler is null && contentViewGroup is not null)
+			{
+				contentViewGroup.KeyPress -= OnKeyPressed;
+			}
+		}
+
+		void OnKeyPressed(object? sender, AView.KeyEventArgs e)
+		{
+			e.Handled = false;
+			if (e?.Event is not null && e.Event.Action == Android.Views.KeyEventActions.Down &&
+			   (e.Event.KeyCode == Android.Views.Keycode.Enter || e.Event.KeyCode == Android.Views.Keycode.Space))
+			{
+				IsChecked = !IsChecked;
+			}
 		}
 	}
 }
