@@ -783,6 +783,8 @@ namespace Microsoft.Maui.Controls
 				await Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						Owner.SendNavigating(currentPage);
+						Owner.FireDisappearing(currentPage);
 						Owner.RemoveFromInnerChildren(currentPage);
 						Owner.CurrentPage = newCurrentPage;
 						if (currentPage.TitleView != null)
@@ -792,8 +794,6 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
-						Owner.SendNavigating(currentPage);
-						Owner.FireDisappearing(currentPage);
 						Owner.FireAppearing(newCurrentPage);
 					},
 					() =>
@@ -817,6 +817,8 @@ namespace Microsoft.Maui.Controls
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						Owner.SendNavigating(previousPage);
+						Owner.FireDisappearing(previousPage);
 						var lastIndex = NavigationStack.Count - 1;
 						while (lastIndex > 0)
 						{
@@ -829,8 +831,6 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
-						Owner.SendNavigating(previousPage);
-						Owner.FireDisappearing(previousPage);
 						Owner.FireAppearing(newPage);
 					},
 					() =>
