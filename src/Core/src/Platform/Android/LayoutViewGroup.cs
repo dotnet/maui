@@ -106,39 +106,7 @@ namespace Microsoft.Maui.Platform
 				return bounds;
 			}
 
-			if (CrossPlatformLayout is not ISafeAreaView sav || sav.IgnoreSafeArea)
-			{
-				return bounds;
-			}
-
-			var insets = ViewCompat.GetRootWindowInsets(this);
-			if (insets == null)
-			{
-				return bounds;
-			}
-
-			// Get system window insets (status bar, navigation bar, etc.)
-			var systemInsets = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
-			var safeAreaInsets = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
-
-			// Use the maximum of system insets and cutout insets for true safe area
-			var left = Math.Max(systemInsets?.Left ?? 0, safeAreaInsets?.Left ?? 0);
-			var top = Math.Max(systemInsets?.Top ?? 0, safeAreaInsets?.Top ?? 0);
-			var right = Math.Max(systemInsets?.Right ?? 0, safeAreaInsets?.Right ?? 0);
-			var bottom = Math.Max(systemInsets?.Bottom ?? 0, safeAreaInsets?.Bottom ?? 0);
-
-			// Convert Android pixels to device-independent units
-			var leftDip = _context?.FromPixels(left) ?? 0;
-			var topDip = _context?.FromPixels(top) ?? 0;
-			var rightDip = _context?.FromPixels(right) ?? 0;
-			var bottomDip = _context?.FromPixels(bottom) ?? 0;
-
-			// Apply safe area insets to bounds
-			return new Rectangle(
-				bounds.X + leftDip,
-				bounds.Y + topDip,
-				bounds.Width - leftDip - rightDip,
-				bounds.Height - topDip - bottomDip);
+			return AndroidSafeAreaHelper.AdjustForSafeArea(this, _context, bounds, CrossPlatformLayout);
 		}
 
 		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
@@ -173,7 +141,7 @@ namespace Microsoft.Maui.Platform
 		public override WindowInsets? OnApplyWindowInsets(WindowInsets? insets)
 		{
 			// Only handle insets if we're not inside a WrapperView (which handles them instead)
-			if (!(Parent is WrapperView) && CrossPlatformLayout is ISafeAreaView sav && !sav.IgnoreSafeArea)
+			if (!(Parent is WrapperView) && AndroidSafeAreaHelper.ShouldHandleWindowInsets(CrossPlatformLayout))
 			{
 				RequestLayout();
 			}
