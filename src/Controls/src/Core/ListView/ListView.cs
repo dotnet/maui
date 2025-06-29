@@ -521,7 +521,7 @@ namespace Microsoft.Maui.Controls
 
 			// Set SelectedItem before any events so we don't override any changes they may have made.
 			if (SelectionMode != ListViewSelectionMode.None)
-				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0), SetValuePrivateFlags.Default, SetterSpecificity.FromHandler);
+				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0), SetValuePrivateFlags.Default, SetterSpecificity.FromUnknown);
 
 			cell?.OnTapped();
 
@@ -547,7 +547,7 @@ namespace Microsoft.Maui.Controls
 
 			// Set SelectedItem before any events so we don't override any changes they may have made.
 			if (SelectionMode != ListViewSelectionMode.None)
-				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0), SetValuePrivateFlags.Default, SetterSpecificity.FromHandler);
+				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0), SetValuePrivateFlags.Default, SetterSpecificity.FromUnknown);
 
 			if (isContextMenuRequested || cell == null)
 			{
