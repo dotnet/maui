@@ -21,6 +21,7 @@ namespace Microsoft.Maui
 		private const bool AreBindingInterceptorsSupportedByDefault = true;
 		private const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
 		private const bool IsHybridWebViewSupportedByDefault = true;
+		private const bool IsVisualElementProfilerEnabledByDefault = false;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER
@@ -31,6 +32,15 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled", out bool isEnabled)
 				? isEnabled
 				: IsIVisualAssemblyScanningEnabledByDefault;
+
+#if NET9_0_OR_GREATER
+		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.IsVisualElementProfilerEnabled")]
+		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
+#endif
+		internal static bool IsVisualElementProfilerEnabled =>
+			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsVisualElementProfilerEnabled", out bool isEnabled)
+				? isEnabled
+				: IsVisualElementProfilerEnabledByDefault;
 
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported")]
