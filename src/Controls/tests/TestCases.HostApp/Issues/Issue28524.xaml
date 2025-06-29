@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue28524">
+    <Grid RowDefinitions="*,Auto">
+        <CarouselView
+            PeekAreaInsets="25"
+            AutomationId="CarouselView"
+            x:Name="CarouselView">
+            <CarouselView.ItemsLayout>
+                <LinearItemsLayout
+                    Orientation="Horizontal"
+                    SnapPointsType="MandatorySingle"/>
+            </CarouselView.ItemsLayout>
+            <CarouselView.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Label
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            Text="{Binding}"/>
+                    </Grid>
+                </DataTemplate>
+            </CarouselView.ItemTemplate>
+            <CarouselView.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>Baboon</x:String>
+                    <x:String>Capuchin Monkey</x:String>
+                    <x:String>Blue Monkey</x:String>
+                </x:Array>
+            </CarouselView.ItemsSource>
+        </CarouselView>
+
+        <Label Grid.Row="1"
+               Text="{Binding Source={x:Reference CarouselView}, Path=CurrentItem, StringFormat='CurrentItem={0}'}"/>
+    </Grid>
+</ContentPage>
