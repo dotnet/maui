@@ -160,35 +160,9 @@ namespace Microsoft.Maui.Platform
 		Rectangle AdjustForSafeArea(Rectangle bounds)
 		{
 			// Only apply safe area adjustments if the child is a layout that cares about safe areas
-			if (ChildCount > 0 && GetChildAt(0) is LayoutViewGroup layout && 
-				layout.CrossPlatformLayout is ISafeAreaView sav && !sav.IgnoreSafeArea)
+			if (ChildCount > 0 && GetChildAt(0) is LayoutViewGroup layout)
 			{
-				var insets = ViewCompat.GetRootWindowInsets(this);
-				if (insets != null)
-				{
-					// Get system window insets (status bar, navigation bar, etc.)
-					var systemInsets = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
-					var safeAreaInsets = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
-
-					// Use the maximum of system insets and cutout insets for true safe area
-					var left = Math.Max(systemInsets?.Left ?? 0, safeAreaInsets?.Left ?? 0);
-					var top = Math.Max(systemInsets?.Top ?? 0, safeAreaInsets?.Top ?? 0);
-					var right = Math.Max(systemInsets?.Right ?? 0, safeAreaInsets?.Right ?? 0);
-					var bottom = Math.Max(systemInsets?.Bottom ?? 0, safeAreaInsets?.Bottom ?? 0);
-
-					// Convert Android pixels to device-independent units
-					var leftDip = Context?.FromPixels(left) ?? 0;
-					var topDip = Context?.FromPixels(top) ?? 0;
-					var rightDip = Context?.FromPixels(right) ?? 0;
-					var bottomDip = Context?.FromPixels(bottom) ?? 0;
-
-					// Apply safe area insets to bounds
-					return new Rectangle(
-						bounds.X + leftDip,
-						bounds.Y + topDip,
-						bounds.Width - leftDip - rightDip,
-						bounds.Height - topDip - bottomDip);
-				}
+				return AndroidSafeAreaHelper.AdjustForSafeArea(this, Context, bounds, layout.CrossPlatformLayout);
 			}
 
 			return bounds;
@@ -197,8 +171,8 @@ namespace Microsoft.Maui.Platform
 		public override WindowInsets OnApplyWindowInsets(WindowInsets insets)
 		{
 			// Trigger layout update if we have a layout that cares about safe area
-			if (ChildCount > 0 && GetChildAt(0) is LayoutViewGroup layout && 
-				layout.CrossPlatformLayout is ISafeAreaView sav && !sav.IgnoreSafeArea)
+			if (ChildCount > 0 && GetChildAt(0) is LayoutViewGroup layout &&
+				AndroidSafeAreaHelper.ShouldHandleWindowInsets(layout.CrossPlatformLayout))
 			{
 				RequestLayout();
 			}
