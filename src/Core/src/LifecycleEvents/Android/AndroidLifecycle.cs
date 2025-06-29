@@ -3,7 +3,6 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
 using Android.OS;
-using Android.Views;
 
 namespace Microsoft.Maui.LifecycleEvents
 {
@@ -37,12 +36,6 @@ namespace Microsoft.Maui.LifecycleEvents
 		public delegate void OnNewIntent(Activity activity, Intent? intent);
 		public delegate void OnRequestPermissionsResult(Activity activity, int requestCode, string[] permissions, Permission[] grantResults);
 		public delegate void OnRestoreInstanceState(Activity activity, Bundle savedInstanceState);
-
-		// Events called by Activity key overrides (calling base is optional)
-		public delegate bool OnKeyDown(Activity activity, Android.Views.Keycode keyCode, Android.Views.KeyEvent? keyEvent);
-		public delegate bool OnKeyUp(Activity activity, Android.Views.Keycode keyCode, Android.Views.KeyEvent? keyEvent);
-		public delegate bool OnKeyLongPress(Activity activity, Android.Views.Keycode keyCode, Android.Views.KeyEvent? keyEvent);
-		public delegate bool OnKeyMultiple(Activity activity, Android.Views.Keycode keyCode, int repeatCount, Android.Views.KeyEvent? keyEvent);
 
 		// Internal events
 		internal delegate void OnMauiContextCreated(IMauiContext mauiContext);

@@ -25,11 +25,6 @@
 		public static IAndroidLifecycleBuilder OnStart(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnStart del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnStop(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnStop del) => lifecycle.OnEvent(del);
 
-		public static IAndroidLifecycleBuilder OnKeyDown(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnKeyDown del) => lifecycle.OnEvent(del);
-		public static IAndroidLifecycleBuilder OnKeyUp(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnKeyUp del) => lifecycle.OnEvent(del);
-		public static IAndroidLifecycleBuilder OnKeyLongPress(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnKeyLongPress del) => lifecycle.OnEvent(del);
-		public static IAndroidLifecycleBuilder OnKeyMultiple(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnKeyMultiple del) => lifecycle.OnEvent(del);
-
 		internal static IAndroidLifecycleBuilder OnMauiContextCreated(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnMauiContextCreated del) => lifecycle.OnEvent(del);
 	}
 }

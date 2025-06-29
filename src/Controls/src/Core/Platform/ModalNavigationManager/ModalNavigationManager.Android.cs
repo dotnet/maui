@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
+using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Activity;
@@ -200,7 +201,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal class ModalFragment : DialogFragment
+		internal class ModalFragment : DialogFragment, IDialogInterfaceOnKeyListener
 		{
 			Page _modal;
 			IMauiContext _mauiWindowContext;
@@ -228,6 +229,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (dialog is null || dialog.Window is null)
 					throw new InvalidOperationException($"{dialog} or {dialog?.Window} is null, and it's invalid");
 
+				dialog.SetOnKeyListener(this);
 				dialog.Window.SetBackgroundDrawable(TransparentColorDrawable);
 
 				var mainActivityWindow = Context?.GetActivity()?.Window;
@@ -359,6 +361,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_modal.PropertyChanged -= OnModalPagePropertyChanged;
 				_modal.HandlerChanged -= OnPageHandlerChanged;
+				Dialog?.SetOnKeyListener(null);
 
 				if (_modal.Toolbar?.Handler is not null)
 				{
@@ -390,80 +393,29 @@ namespace Microsoft.Maui.Controls.Platform
 				AnimationEnded?.Invoke(this, EventArgs.Empty);
 			}
 
+			public bool OnKey(IDialogInterface? dialog, [GeneratedEnum] Keycode keyCode, KeyEvent? e)
+			{
+				var mainActivity = Context?.GetActivity();
+				if (e is null || mainActivity is null)
+				{
+					return false;
+				}
+
+				return e.Action switch
+				{
+					KeyEventActions.Down => mainActivity.OnKeyDown(keyCode, e),
+					KeyEventActions.Up => mainActivity.OnKeyUp(keyCode, e),
+					KeyEventActions.Multiple => mainActivity.OnKeyMultiple(keyCode, e.RepeatCount, e),
+					_ => false,
+				};
+			}
+
 
 			sealed class CustomComponentDialog : ComponentDialog
 			{
 				public CustomComponentDialog(Context context, int themeResId) : base(context, themeResId)
 				{
 					this.OnBackPressedDispatcher.AddCallback(new CallBack(true, this));
-				}
-
-				public override bool OnKeyDown(global::Android.Views.Keycode keyCode, global::Android.Views.KeyEvent? e)
-				{
-					if (Context.GetActivity() is global::Android.App.Activity activity)
-					{
-						var preventKeyPropagation = false;
-						IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyDown>(del =>
-						{
-							preventKeyPropagation = del(activity, keyCode, e) || preventKeyPropagation;
-						});
-
-						if (preventKeyPropagation)
-							return true;
-					}
-
-					return e != null ? base.OnKeyDown(keyCode, e) : false;
-				}
-
-				public override bool OnKeyUp(global::Android.Views.Keycode keyCode, global::Android.Views.KeyEvent? e)
-				{
-					if (Context.GetActivity() is global::Android.App.Activity activity)
-					{
-						var preventKeyPropagation = false;
-						IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyUp>(del =>
-						{
-							preventKeyPropagation = del(activity, keyCode, e) || preventKeyPropagation;
-						});
-
-						if (preventKeyPropagation)
-							return true;
-					}
-
-					return e != null ? base.OnKeyUp(keyCode, e) : false;
-				}
-
-				public override bool OnKeyLongPress(global::Android.Views.Keycode keyCode, global::Android.Views.KeyEvent? e)
-				{
-					if (Context.GetActivity() is global::Android.App.Activity activity)
-					{
-						var preventKeyPropagation = false;
-						IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyLongPress>(del =>
-						{
-							preventKeyPropagation = del(activity, keyCode, e) || preventKeyPropagation;
-						});
-
-						if (preventKeyPropagation)
-							return true;
-					}
-
-					return e != null ? base.OnKeyLongPress(keyCode, e) : false;
-				}
-
-				public override bool OnKeyMultiple(global::Android.Views.Keycode keyCode, int repeatCount, global::Android.Views.KeyEvent? e)
-				{
-					if (Context.GetActivity() is global::Android.App.Activity activity)
-					{
-						var preventKeyPropagation = false;
-						IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyMultiple>(del =>
-						{
-							preventKeyPropagation = del(activity, keyCode, repeatCount, e) || preventKeyPropagation;
-						});
-
-						if (preventKeyPropagation)
-							return true;
-					}
-
-					return e != null ? base.OnKeyMultiple(keyCode, repeatCount, e) : false;
 				}
 
 				sealed class CallBack : OnBackPressedCallback
