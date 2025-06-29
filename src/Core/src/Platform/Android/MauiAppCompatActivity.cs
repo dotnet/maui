@@ -44,5 +44,77 @@ namespace Microsoft.Maui
 
 			return handled || implHandled;
 		}
+
+		// Internal methods for key event forwarding from modal dialogs
+		// These call the user's overrides without calling base to avoid side effects
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		internal bool InternalOnKeyDown(Keycode keyCode, KeyEvent? e)
+		{
+			if (_processingKeyEvent)
+				return false;
+
+			_processingKeyEvent = true;
+			try
+			{
+				return OnKeyDown(keyCode, e);
+			}
+			finally
+			{
+				_processingKeyEvent = false;
+			}
+		}
+
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		internal bool InternalOnKeyUp(Keycode keyCode, KeyEvent? e)
+		{
+			if (_processingKeyEvent)
+				return false;
+
+			_processingKeyEvent = true;
+			try
+			{
+				return OnKeyUp(keyCode, e);
+			}
+			finally
+			{
+				_processingKeyEvent = false;
+			}
+		}
+
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		internal bool InternalOnKeyLongPress(Keycode keyCode, KeyEvent? e)
+		{
+			if (_processingKeyEvent)
+				return false;
+
+			_processingKeyEvent = true;
+			try
+			{
+				return OnKeyLongPress(keyCode, e);
+			}
+			finally
+			{
+				_processingKeyEvent = false;
+			}
+		}
+
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		internal bool InternalOnKeyMultiple(Keycode keyCode, int repeatCount, KeyEvent? e)
+		{
+			if (_processingKeyEvent)
+				return false;
+
+			_processingKeyEvent = true;
+			try
+			{
+				return OnKeyMultiple(keyCode, repeatCount, e);
+			}
+			finally
+			{
+				_processingKeyEvent = false;
+			}
+		}
+
+		private bool _processingKeyEvent;
 	}
 }

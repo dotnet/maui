@@ -10,6 +10,7 @@ using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Activity;
 using AndroidX.Fragment.App;
+using Microsoft.Maui;
 using Microsoft.Maui.LifecycleEvents;
 using AAnimation = Android.Views.Animations.Animation;
 using AColor = Android.Graphics.Color;
@@ -401,13 +402,19 @@ namespace Microsoft.Maui.Controls.Platform
 					return false;
 				}
 
-				return e.Action switch
+				// Use internal methods that call user overrides without base to avoid side effects
+				if (mainActivity is MauiAppCompatActivity mauiActivity)
 				{
-					KeyEventActions.Down => mainActivity.OnKeyDown(keyCode, e),
-					KeyEventActions.Up => mainActivity.OnKeyUp(keyCode, e),
-					KeyEventActions.Multiple => mainActivity.OnKeyMultiple(keyCode, e.RepeatCount, e),
-					_ => false,
-				};
+					return e.Action switch
+					{
+						KeyEventActions.Down => mauiActivity.InternalOnKeyDown(keyCode, e),
+						KeyEventActions.Up => mauiActivity.InternalOnKeyUp(keyCode, e),
+						KeyEventActions.Multiple => mauiActivity.InternalOnKeyMultiple(keyCode, e.RepeatCount, e),
+						_ => false,
+					};
+				}
+
+				return false;
 			}
 
 
