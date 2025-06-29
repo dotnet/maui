@@ -58,8 +58,9 @@ variables:
   value: ''
 
 # Variable groups required for private builds but not prs
-- ${{ if ne(variables['Build.DefinitionName'], 'maui-pr') }}:
-  - group: Xamarin-Secrets
+# Variable group for maui release pipelines
+- ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+  - group: maui-nuget-release
 
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
   - name: internalProvisioning
