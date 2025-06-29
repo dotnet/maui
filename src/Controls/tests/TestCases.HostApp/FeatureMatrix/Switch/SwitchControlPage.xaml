@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.SwitchControlMainPage"
+             x:DataType="local:SwitchViewModel"
+             Title="SwitchControlPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options"
+                     Clicked="NavigateToOptionsPage_Clicked"
+                     AutomationId="Options"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="*,Auto">
+        <Grid x:Name="SwitchGrid"
+              Grid.Row="0">
+            <Switch AutomationId="SwitchControl"
+                    FlowDirection="{Binding FlowDirection}"
+                    IsEnabled="{Binding IsEnabled}"
+                    IsVisible="{Binding IsVisible}"
+                    IsToggled="{Binding IsToggled}"
+                    OnColor="{Binding OnColor}"
+                    Shadow="{Binding Shadow}"
+                    ThumbColor="{Binding ThumbColor}"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    Toggled="Switch_Toggled">
+            </Switch>
+        </Grid>
+        <HorizontalStackLayout Grid.Row="1"
+                               HorizontalOptions="Center"
+                               Padding="0,0,0,40"
+                               Spacing="10">
+            <Label Text="Toggled Event: "/>
+            <Label x:Name="EventLabel"
+                   AutomationId="ToggledEventLabel"
+                   Text="False"/>
+        </HorizontalStackLayout>
+    </Grid>
+</ContentPage>
