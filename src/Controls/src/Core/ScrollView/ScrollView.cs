@@ -245,21 +245,28 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollToAsync'][1]/Docs/*" />
-		public Task ScrollToAsync(double x, double y, bool animated)
+		public async Task ScrollToAsync(double x, double y, bool animated)
 		{
 			if (Orientation == ScrollOrientation.Neither)
-				return Task.FromResult(false);
+				return;
+
+			if (!IsLoaded)
+			{
+				// Yield to ensure the ScrollView has time to load
+				await Task.Yield();
+				await ScrollToAsync(x, y, animated);
+				return;
+			}
 
 			var args = new ScrollToRequestedEventArgs(x, y, animated);
 			OnScrollToRequested(args);
-			return _scrollCompletionSource.Task;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollToAsync'][2]/Docs/*" />
-		public Task ScrollToAsync(Element element, ScrollToPosition position, bool animated)
+		public async Task ScrollToAsync(Element element, ScrollToPosition position, bool animated)
 		{
 			if (Orientation == ScrollOrientation.Neither)
-				return Task.FromResult(false);
+				return;
 
 			if (!Enum.IsDefined(typeof(ScrollToPosition), position))
 				throw new ArgumentException("position is not a valid ScrollToPosition", nameof(position));
@@ -270,9 +277,16 @@ namespace Microsoft.Maui.Controls
 			if (!CheckElementBelongsToScrollViewer(element))
 				throw new ArgumentException("element does not belong to this ScrollView", nameof(element));
 
+			if (!IsLoaded || !element.IsLoadedOnPlatform())
+			{
+				// Yield to ensure the ScrollView has time to load
+				await Task.Yield();
+				await ScrollToAsync(element, position, animated);
+				return;
+			}
+			
 			var args = new ScrollToRequestedEventArgs(element, position, animated);
 			OnScrollToRequested(args);
-			return _scrollCompletionSource.Task;
 		}
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => false;
