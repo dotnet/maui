@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
+using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Activity;
@@ -396,6 +397,54 @@ namespace Microsoft.Maui.Controls.Platform
 				public CustomComponentDialog(Context context, int themeResId) : base(context, themeResId)
 				{
 					this.OnBackPressedDispatcher.AddCallback(new CallBack(true, this));
+				}
+
+				public override bool OnKeyLongPress([GeneratedEnum] Keycode keyCode, KeyEvent e)
+				{
+					var activity = Context?.GetActivity();
+
+					if (activity is null)
+					{
+						return false;
+					}
+
+					return activity.OnKeyLongPress(keyCode, e);
+				}
+
+				public override bool OnKeyDown([GeneratedEnum] Keycode keyCode, KeyEvent e)
+				{
+					var activity = Context?.GetActivity();
+
+					if (activity is null)
+					{
+						return false;
+					}
+
+					return activity.OnKeyDown(keyCode, e);
+				}
+
+				public override bool OnKeyMultiple([GeneratedEnum] Keycode keyCode, int repeatCount, KeyEvent e)
+				{
+					var activity = Context?.GetActivity();
+
+					if (activity is null)
+					{
+						return false;
+					}
+
+					return activity.OnKeyMultiple(keyCode, repeatCount, e);
+				}
+
+				public override bool OnKeyUp([GeneratedEnum] Keycode keyCode, KeyEvent e)
+				{
+					var activity = Context?.GetActivity();
+
+					if (activity is null)
+					{
+						return false;
+					}
+
+					return activity.OnKeyUp(keyCode, e);
 				}
 
 				sealed class CallBack : OnBackPressedCallback
