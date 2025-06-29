@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
@@ -319,6 +320,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return success;
 		}
 
+
+		Task<bool> popTask;
+
 		protected virtual async Task<bool> OnPopViewAsync(Page page, bool animated)
 		{
 			if (_ignorePopCall)
@@ -332,13 +336,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (page != ((ParentingViewController)TopViewController).Child)
 				throw new NotSupportedException("Popped page does not appear on top of current navigation stack, please file a bug.");
 
-			var task = GetAppearedOrDisappearedTask(page);
-
 			UIViewController poppedViewController;
 			_ignorePopCall = true;
-			poppedViewController = base.PopViewController(animated);
+			poppedViewController = PopViewController(animated);
 
-			var actuallyRemoved = poppedViewController == null ? true : !await task;
+			// The `popTask` should NOT be null here, since it's set during the `PopViewController` call.
+			Debug.Assert(popTask is not null);
+
+			// var tcs = new TaskCompletionSource<bool>();
+			// popTask = tcs.Task;
+
+			var actuallyRemoved = poppedViewController == null || !await popTask;
 			_ignorePopCall = false;
 
 			if (poppedViewController is ParentingViewController pvc)
@@ -700,7 +708,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 
 			// Gesture in progress, lets not be proactive and just wait for it to finish
-			var task = GetAppearedOrDisappearedTask(child);
+			var task = popTask = GetAppearedOrDisappearedTask(child);
 
 			task.ContinueWith(t =>
 			{
@@ -1692,8 +1700,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem());
 				}
 
-				if (primaries != null)
-					primaries.Reverse();
+				
+				primaries?.Reverse();
 				NavigationItem.SetRightBarButtonItems(primaries == null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
 				ToolbarItems = secondaries == null ? Array.Empty<UIBarButtonItem>() : secondaries.ToArray();
 
@@ -2010,8 +2018,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				set
 				{
-					if (_icon != null)
-						_icon.RemoveFromSuperview();
+					
+					_icon?.RemoveFromSuperview();
 
 					_icon = value;
 
