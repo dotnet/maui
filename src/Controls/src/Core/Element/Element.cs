@@ -333,30 +333,45 @@ namespace Microsoft.Maui.Controls
 		}
 
 		WeakReference<Element> _realParent;
-		/// <summary>For internal use by .NET MAUI.</summary>
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Element RealParent
+		
+		Element GetRealParent(bool logWarningIfParentHasBeenCollected = true)
 		{
-			get
+			if (_realParent is null)
 			{
-				if (_realParent is null)
-				{
-					return null;
-				}
-				if (_realParent.TryGetTarget(out var parent))
-				{
-					return parent;
-				}
-				else
+				return null;
+			}
+			if (_realParent.TryGetTarget(out var parent))
+			{
+				return parent;
+			}
+			else
+			{
+				// Clear the weak reference since the target has been garbage collected
+				// This prevents repeated checks and warnings on subsequent accesses
+				_realParent = null;
+
+				if (logWarningIfParentHasBeenCollected)
 				{
 					Application.Current?
 						.FindMauiContext()?
 						.CreateLogger<Element>()?
 						.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
 				}
-
-				return null;
 			}
+
+			return null;
+		}
+
+		Element GetParent(bool logWarningIfParentHasBeenCollected = true)
+		{
+			return ParentOverride ?? GetRealParent(logWarningIfParentHasBeenCollected);
+		}
+
+		/// <summary>For internal use by .NET MAUI.</summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public Element RealParent
+		{
+			get => GetRealParent();
 			private set
 			{
 				if (value is null)
@@ -380,15 +395,15 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>Most application authors will not need to set the parent element by hand.</remarks>
 		public Element Parent
 		{
-			get { return ParentOverride ?? RealParent; }
+			get { return GetParent(); }
 			set => SetParent(value);
 		}
 
 		void SetParent(Element value)
 		{
-			Element realParent = RealParent;
+			Element currentParent = GetParent(false);
 
-			if (realParent == value)
+			if (currentParent == value)
 			{
 				return;
 			}
@@ -397,10 +412,10 @@ namespace Microsoft.Maui.Controls
 
 			if (_parentOverride == null)
 			{
-				OnParentChangingCore(Parent, value);
+				OnParentChangingCore(currentParent, value);
 			}
 
-			if (realParent is IElementDefinition element)
+			if (currentParent is IElementDefinition element)
 			{
 				element.RemoveResourcesChangedListener(OnParentResourcesChanged);
 
