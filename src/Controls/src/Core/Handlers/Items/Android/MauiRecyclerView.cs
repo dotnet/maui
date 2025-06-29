@@ -43,10 +43,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		ItemTouchHelper _itemTouchHelper;
 		SimpleItemTouchHelperCallback _itemTouchHelperCallback;
-		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
-		PropertyChangedEventHandler _layoutPropertyChanged;
 
-		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
+		//TODO: Remove this in .NET 10
+		~MauiRecyclerView() {}
 
 		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(new ContextThemeWrapper(context, Resource.Style.collectionViewTheme))
 		{
@@ -59,13 +58,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public virtual void TearDownOldElement(TItemsView oldElement)
 		{
-			// Stop listening for layout property changes
-			if (_layoutPropertyChangedProxy is not null)
-			{
-				_layoutPropertyChangedProxy.Unsubscribe();
-				_layoutPropertyChanged = null;
-			}
-
 			// Stop listening for ScrollTo requests
 			oldElement.ScrollToRequested -= ScrollToRequested;
 
@@ -286,21 +278,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public virtual void UpdateLayoutManager()
 		{
-			_layoutPropertyChangedProxy?.Unsubscribe();
-
 			ItemsLayout = _getItemsLayout();
-
-			// Keep track of the ItemsLayout's property changes
-			if (ItemsLayout != null)
-			{
-				_layoutPropertyChanged ??= LayoutPropertyChanged;
-				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(ItemsLayout, _layoutPropertyChanged);
-			}
 
 			SetLayoutManager(SelectLayoutManager(ItemsLayout));
 
 			UpdateFlowDirection();
-			UpdateItemSpacing();
+			UpdateItemsLayoutProperties();
 		}
 
 		protected virtual RecyclerViewScrollListener<TItemsView, TItemsViewSource> CreateScrollListener() => new(ItemsView, ItemsViewAdapter);
@@ -506,24 +489,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ScrollTo(args);
 		}
 
+		//TODO: Remove this in .NET 10
 		protected virtual void LayoutPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
 		{
-			if (propertyChanged.Is(GridItemsLayout.SpanProperty))
+			
+		}
+
+		void UpdateItemsLayoutProperties()
+		{
+			if (ItemsLayout is GridItemsLayout gridItemsLayout && GetLayoutManager() is GridLayoutManager gridLayoutManager)
 			{
-				if (GetLayoutManager() is GridLayoutManager gridLayoutManager)
-				{
-					gridLayoutManager.SpanCount = ((GridItemsLayout)ItemsLayout).Span;
-				}
+				gridLayoutManager.SpanCount = gridItemsLayout.Span;
 			}
-			else if (propertyChanged.IsOneOf(Microsoft.Maui.Controls.ItemsLayout.SnapPointsTypeProperty, Microsoft.Maui.Controls.ItemsLayout.SnapPointsAlignmentProperty))
-			{
-				UpdateSnapBehavior();
-			}
-			else if (propertyChanged.IsOneOf(LinearItemsLayout.ItemSpacingProperty,
-				GridItemsLayout.HorizontalItemSpacingProperty, GridItemsLayout.VerticalItemSpacingProperty))
-			{
-				UpdateItemSpacing();
-			}
+
+			UpdateSnapBehavior();
+
+			UpdateItemSpacing();
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
