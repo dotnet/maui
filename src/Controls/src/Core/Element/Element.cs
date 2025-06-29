@@ -396,7 +396,7 @@ namespace Microsoft.Maui.Controls
 
 		void SetParent(Element value)
 		{
-			Element currentParent = Parent;
+			Element currentParent = ParentOverride ?? GetRealParent(false);
 
 			if (currentParent == value)
 			{
