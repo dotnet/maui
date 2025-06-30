@@ -18,7 +18,7 @@ public class Issue29961 : _IssuesUITest
 	public void VerifyResizeMethodReturnsValidImage()
 	{
 		App.WaitForElement("ConvertedImageStatusLabel");
-		App.Tap("Issue21886_1ResizeBtn");
+		App.Tap("Issue29961_ResizeBtn");
 
 		var resizeLabelText = App.FindElement("ConvertedImageStatusLabel").GetText();
 		Assert.That(resizeLabelText, Is.EqualTo("Success"));
