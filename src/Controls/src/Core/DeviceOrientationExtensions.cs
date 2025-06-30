@@ -5,11 +5,15 @@ namespace Microsoft.Maui.Controls.Internals
 {
 	static class DeviceOrientationExtensions
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/DeviceOrientationExtensions.xml" path="//Member[@MemberName='IsLandscape']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="orientation">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
 		public static bool IsLandscape(this DisplayOrientation orientation) =>
 			orientation == DisplayOrientation.Landscape;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/DeviceOrientationExtensions.xml" path="//Member[@MemberName='IsPortrait']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="orientation">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
 		public static bool IsPortrait(this DisplayOrientation orientation) =>
 			orientation == DisplayOrientation.Portrait;
 	}

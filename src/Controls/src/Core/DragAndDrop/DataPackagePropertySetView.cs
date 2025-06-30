@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackagePropertySetView.xml" path="//Member[@MemberName='_dataPackagePropertySet']/Docs/*" />
 		public DataPackagePropertySet _dataPackagePropertySet;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackagePropertySetView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <param name="dataPackagePropertySet">To be added.</param>
 		public DataPackagePropertySetView(DataPackagePropertySet dataPackagePropertySet)
 		{
 			_ = dataPackagePropertySet ?? throw new global::System.ArgumentNullException(nameof(dataPackagePropertySet));
@@ -28,13 +28,14 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackagePropertySetView.xml" path="//Member[@MemberName='Count']/Docs/*" />
 		public int Count => _dataPackagePropertySet.Count;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackagePropertySetView.xml" path="//Member[@MemberName='ContainsKey']/Docs/*" />
+		/// <param name="key">To be added.</param>
 		public bool ContainsKey(string key) => _dataPackagePropertySet.ContainsKey(key);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackagePropertySetView.xml" path="//Member[@MemberName='GetEnumerator']/Docs/*" />
 		public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => _dataPackagePropertySet.GetEnumerator();
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackagePropertySetView.xml" path="//Member[@MemberName='TryGetValue']/Docs/*" />
+		/// <param name="key">To be added.</param>
+		/// <param name="value">To be added.</param>
 		public bool TryGetValue(string key, out object value) => _dataPackagePropertySet.TryGetValue(key, out value);
 
 		IEnumerator IEnumerable.GetEnumerator() => _dataPackagePropertySet.GetEnumerator();
