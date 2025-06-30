@@ -7,9 +7,9 @@ public class Issue25921 : ContentPage
 	{
 		var layout = new VerticalStackLayout();
 		layout.VerticalOptions = LayoutOptions.Center;
+		layout.Spacing = 20;
 		var slider = new Slider()
 		{
-			AutomationId = "testSlider",
 			WidthRequest = 300,
 			Maximum = 100,
 			Minimum = 0,
@@ -19,7 +19,28 @@ public class Issue25921 : ContentPage
 			MinimumTrackColor = Colors.Fuchsia,
 		};
 
+		var secondSlider = new Slider()
+		{
+			WidthRequest = 300,
+			Maximum = 100,
+			Minimum = 0,
+			Value = 50,
+			Background = Colors.Grey,
+			MaximumTrackColor = Colors.SpringGreen,
+			MinimumTrackColor = Colors.BlueViolet,
+		};
+
+		var button = new Button()
+		{
+			Text = "Change Background Color",
+			AutomationId = "ColorChangeButton",
+			Command = new Command(() => secondSlider.Background = Colors.Salmon)
+		};
+
 		layout.Children.Add(slider);
+		layout.Children.Add(secondSlider);
+		layout.Children.Add(button);
+
 		Content = layout;
 	}
 }
