@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static partial void MapInputTransparent(ILayoutHandler handler, ILayout layout)
 		{
-			handler.PlatformView?.UpdatePlatformViewBackground(layout);
+			handler.PlatformView?.UpdateInputTransparent(layout);
 		}
 	}
 }
