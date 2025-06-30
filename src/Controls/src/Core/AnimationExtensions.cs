@@ -34,7 +34,7 @@ using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>Extension methods for <see cref="T:Microsoft.Maui.Controls.IAnimatable"/> objects.</summary>
+	/// <summary>Extension methods for <see cref="Microsoft.Maui.Controls.IAnimatable"/> objects.</summary>
 	public static class AnimationExtensions
 	{
 		// We use a ConcurrentDictionary because Tweener relies on being able to remove
@@ -219,7 +219,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="end">The fraction into the current animation at which to stop the animation.</param>
 		/// <param name="reverseVal">The inverse scale factor to use if <paramref name="reverse"/> is <see langword="true"/>.</param>
 		/// <param name="reverse">Whether to use the inverse scale factor in <paramref name="reverseVal"/> to deinterpolate.</param>
-		/// <returns>A function that performs a linear interpolation between <paramref name="start"/> and <paramref name="end"/>. Application developers can pass values between 0.0f and 1.0f to this function in order to recieve a value that is offset from <paramref name="start"/> or <paramref name="end"/>, depending on the value of <paramref name="reverse"/>, by the passed value times the distance between <paramref name="start"/> and <paramref name="end"/>.</returns>
+		/// <returns>A function that performs a linear interpolation between <paramref name="start"/> and <paramref name="end"/>. Application developers can pass values between 0.0f and 1.0f to this function in order to receive a value that is offset from <paramref name="start"/> or <paramref name="end"/>, depending on the value of <paramref name="reverse"/>, by the passed value times the distance between <paramref name="start"/> and <paramref name="end"/>.</returns>
 		/// <remarks>If <paramref name="reverse"/> is <see langword="true"/>, then the interpolation happens between <paramref name="start"/> and <paramref name="reverseVal"/>.</remarks>
 		public static Func<double, double> Interpolate(double start, double end = 1.0f, double reverseVal = 0.0f, bool reverse = false)
 		{
@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Controls
 			return x => start + (target - start) * x;
 		}
 
-		/// <param name="self">To be added.</param>
+		/// <param name="self">The object instance.</param>
 		public static IDisposable Batch(this IAnimatable self) => new BatchObject(self);
 
 		static void AbortAnimation(AnimatableKey key)

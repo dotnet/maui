@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 		Italic = 1 << 1
 	}
 
-	/// <summary>Converts a string into a <see cref="T:Microsoft.Maui.Controls.FontAttributes"/> object.</summary>
+	/// <summary>Converts a string into a <see cref="Microsoft.Maui.Controls.FontAttributes"/> object.</summary>
 	public sealed class FontAttributesConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

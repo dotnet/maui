@@ -30,21 +30,21 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackagePropertySet.xml" path="//Member[@MemberName='Values']/Docs/*" />
 		public IEnumerable<object> Values => _propertyBag.Values;
 
-		/// <param name="key">To be added.</param>
-		/// <param name="value">To be added.</param>
+		/// <param name="key">The key parameter.</param>
+		/// <param name="value">The value to set.</param>
 		public void Add(string key, object value)
 		{
 			_propertyBag.Add(key, value);
 		}
 
-		/// <param name="key">To be added.</param>
+		/// <param name="key">The key parameter.</param>
 		public bool ContainsKey(string key) => _propertyBag.ContainsKey(key);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackagePropertySet.xml" path="//Member[@MemberName='GetEnumerator']/Docs/*" />
 		public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => _propertyBag.GetEnumerator();
 
-		/// <param name="key">To be added.</param>
-		/// <param name="value">To be added.</param>
+		/// <param name="key">The key parameter.</param>
+		/// <param name="value">The value to set.</param>
 		public bool TryGetValue(string key, out object value) => _propertyBag.TryGetValue(key, out value);
 
 		IEnumerator IEnumerable.GetEnumerator()

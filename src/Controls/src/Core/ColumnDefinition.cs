@@ -3,14 +3,14 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>An <see cref="T:Microsoft.Maui.Controls.IDefinition"/> that defines properties for a column in a <see cref="T:Microsoft.Maui.Controls.Grid"/>.</summary>
+	/// <summary>An <see cref="Microsoft.Maui.Controls.IDefinition"/> that defines properties for a column in a <see cref="Microsoft.Maui.Controls.Grid"/>.</summary>
 	public sealed class ColumnDefinition : BindableObject, IDefinition, IGridColumnDefinition
 	{
 		/// <summary>Bindable property for <see cref="Width"/>.</summary>
 		public static readonly BindableProperty WidthProperty = BindableProperty.Create(nameof(Width), typeof(GridLength), typeof(ColumnDefinition), GridLength.Star,
 			propertyChanged: (bindable, oldValue, newValue) => ((ColumnDefinition)bindable).OnSizeChanged());
 
-		/// <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.ColumnDefinition"/> object with default values.</summary>
+		/// <summary>Creates a new <see cref="Microsoft.Maui.Controls.ColumnDefinition"/> object with default values.</summary>
 		public ColumnDefinition()
 		{
 		}

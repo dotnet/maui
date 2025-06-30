@@ -26,16 +26,16 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="InputView.FontAutoScalingEnabledProperty"/>
 		public new static readonly BindableProperty FontAutoScalingEnabledProperty = InputView.FontAutoScalingEnabledProperty;
 
-		/// <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.InputView.TextColor"/> property.</summary>
+		/// <summary>Backing store for the <see cref="Microsoft.Maui.Controls.InputView.TextColor"/> property.</summary>
 		public new static readonly BindableProperty TextColorProperty = InputView.TextColorProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="//Member[@MemberName='CharacterSpacingProperty']/Docs/*" />
 		public new static readonly BindableProperty CharacterSpacingProperty = InputView.CharacterSpacingProperty;
 
-		/// <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.InputView.Placeholder"/> property.</summary>
+		/// <summary>Backing store for the <see cref="Microsoft.Maui.Controls.InputView.Placeholder"/> property.</summary>
 		public new static readonly BindableProperty PlaceholderProperty = InputView.PlaceholderProperty;
 
-		/// <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.InputView.PlaceholderColor"/> property.</summary>
+		/// <summary>Backing store for the <see cref="Microsoft.Maui.Controls.InputView.PlaceholderColor"/> property.</summary>
 		public new static readonly BindableProperty PlaceholderColorProperty = InputView.PlaceholderColorProperty;
 
 		/// <inheritdoc cref="InputView.IsTextPredictionEnabledProperty"/>

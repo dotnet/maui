@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		readonly GestureRecognizerCollection _gestureRecognizers = new GestureRecognizerCollection();
 		internal event NotifyCollectionChangedEventHandler GestureRecognizersCollectionChanged;
 
-		/// <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.GestureElement"/> object with default values.</summary>
+		/// <summary>Creates a new <see cref="Microsoft.Maui.Controls.GestureElement"/> object with default values.</summary>
 		public GestureElement()
 		{
 			_gestureRecognizers.CollectionChanged += (sender, args) =>

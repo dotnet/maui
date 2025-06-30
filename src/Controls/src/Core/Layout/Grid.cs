@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls
 		IReadOnlyList<IGridRowDefinition> IGridLayout.RowDefinitions => _rowDefs ??= new(RowDefinitions);
 		IReadOnlyList<IGridColumnDefinition> IGridLayout.ColumnDefinitions => _colDefs ??= new(ColumnDefinitions);
 
-		/// <summary>Provides the interface for the bound property that gets or sets the ordered collection of <see cref="T:Microsoft.Maui.Controls.ColumnDefinition"/> objects that control the layout of columns in the <see cref="T:Microsoft.Maui.Controls.Grid"/>.</summary>
+		/// <summary>Provides the interface for the bound property that gets or sets the ordered collection of <see cref="Microsoft.Maui.Controls.ColumnDefinition"/> objects that control the layout of columns in the <see cref="Microsoft.Maui.Controls.Grid"/>.</summary>
 		[System.ComponentModel.TypeConverter(typeof(ColumnDefinitionCollectionTypeConverter))]
 		public ColumnDefinitionCollection ColumnDefinitions
 		{

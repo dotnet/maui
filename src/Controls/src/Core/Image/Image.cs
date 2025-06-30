@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary><see cref="T:Microsoft.Maui.Controls.View"/> that holds an image.</summary>
+	/// <summary><see cref="Microsoft.Maui.Controls.View"/> that holds an image.</summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Image : View, IImageController, IElementConfiguration<Image>, IViewController, IImageElement, IImage
 	{

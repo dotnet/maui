@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="T:Microsoft.Maui.Controls.Cell"/> with a label and an on/off switch.</summary>
+	/// <summary>A <see cref="Microsoft.Maui.Controls.Cell"/> with a label and an on/off switch.</summary>
 	public class SwitchCell : Cell
 	{
 		/// <summary>Bindable property for <see cref="On"/>.</summary>

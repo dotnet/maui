@@ -12,7 +12,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="T:Microsoft.Maui.Controls.View"/> that displays text.</summary>
+	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that displays text.</summary>
 	[ContentProperty(nameof(Text))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Label : View, IFontElement, ITextElement, ITextAlignmentElement, ILineHeightElement, IElementConfiguration<Label>, IDecorableTextElement, IPaddingElement, ILabel
@@ -93,8 +93,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextTransformProperty, value); }
 		}
 
-		/// <param name="source">To be added.</param>
-		/// <param name="textTransform">To be added.</param>
+		/// <param name="source">The source parameter.</param>
+		/// <param name="textTransform">The textTransform parameter.</param>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextProperty, value); }
 		}
 
-		/// <summary>Gets or sets the <see cref="T:Microsoft.Maui.Graphics.Color"/> for the text of this Label. This is a bindable property.</summary>
+		/// <summary>Gets or sets the <see cref="Microsoft.Maui.Graphics.Color"/> for the text of this Label. This is a bindable property.</summary>
 		public Color TextColor
 		{
 			get { return (Color)GetValue(TextElement.TextColorProperty); }
@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontAttributesProperty, value); }
 		}
 
-		/// <summary>Gets or sets the <see cref="T:Microsoft.Maui.TextDecorations"/> applied to <see cref="P:Microsoft.Maui.Controls.Label.Text"/>.</summary>
+		/// <summary>Gets or sets the <see cref="Microsoft.Maui.TextDecorations"/> applied to <see cref="Microsoft.Maui.Controls.Label.Text"/>.</summary>
 		public TextDecorations TextDecorations
 		{
 			get { return (TextDecorations)GetValue(TextDecorationsProperty); }
@@ -225,7 +225,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(LineHeightProperty, value); }
 		}
 
-		/// <summary>Gets or sets the maximum number of lines allowed in the <see cref="T:Microsoft.Maui.Controls.Label"/>.</summary>
+		/// <summary>Gets or sets the maximum number of lines allowed in the <see cref="Microsoft.Maui.Controls.Label"/>.</summary>
 		public int MaxLines
 		{
 			get => (int)GetValue(MaxLinesProperty);

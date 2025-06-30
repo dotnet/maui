@@ -115,8 +115,8 @@ namespace Microsoft.Maui.Controls
 		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask) =>
 			Application.Current.FindDispatcher().DispatchAsync(funcTask);
 
-		/// <summary>Returns the current <see cref="T:System.Threading.SynchronizationContext"/> from the main thread.</summary>
-		/// <returns>The current <see cref="T:System.Threading.SynchronizationContext"/> from the main thread.</returns>
+		/// <summary>Returns the current <see cref="System.Threading.SynchronizationContext"/> from the main thread.</summary>
+		/// <returns>The current <see cref="System.Threading.SynchronizationContext"/> from the main thread.</returns>
 		[Obsolete("Use BindableObject.Dispatcher.GetSynchronizationContextAsync() instead.")]
 		public static Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync() =>
 			Application.Current.FindDispatcher().GetSynchronizationContextAsync();

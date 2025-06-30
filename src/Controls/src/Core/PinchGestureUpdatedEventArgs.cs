@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>Event arguments for the <see cref="E:Microsoft.Maui.Controls.PinchGestureRecognizer.PinchUpdated"/> event.</summary>
+	/// <summary>Event arguments for the <see cref="Microsoft.Maui.Controls.PinchGestureRecognizer.PinchUpdated"/> event.</summary>
 	public class PinchGestureUpdatedEventArgs : EventArgs
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/PinchGestureUpdatedEventArgs.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />

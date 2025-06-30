@@ -10,7 +10,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	// Don't add IElementConfiguration<Cell> because it kills performance on UWP structures that use Cells
-	/// <summary>Provides base class and capabilities for all Microsoft.Maui.Controls cells. Cells are elements meant to be added to <see cref="T:Microsoft.Maui.Controls.ListView"/> or <see cref="T:Microsoft.Maui.Controls.TableView"/>.</summary>
+	/// <summary>Provides base class and capabilities for all Microsoft.Maui.Controls cells. Cells are elements meant to be added to <see cref="Microsoft.Maui.Controls.ListView"/> or <see cref="Microsoft.Maui.Controls.TableView"/>.</summary>
 	public abstract class Cell : Element, ICellController, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IVisualTreeElement
 	{
 		/// <summary>The default height of cells.</summary>
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <summary>Gets a value that indicates whether the cell has at least one menu item in its <see cref="P:Microsoft.Maui.Controls.Cell.ContextActions"/> list property.</summary>
+		/// <summary>Gets a value that indicates whether the cell has at least one menu item in its <see cref="Microsoft.Maui.Controls.Cell.ContextActions"/> list property.</summary>
 		public bool HasContextActions
 		{
 			get { return _contextActions != null && _contextActions.Count > 0 && IsEnabled; }

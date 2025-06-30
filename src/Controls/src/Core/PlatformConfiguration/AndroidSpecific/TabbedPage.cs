@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			typeof(TabbedPage), true);
 
 		/// <summary>Gets whether smooth scrolling is enabled for <paramref name="element"/>.</summary>
-		/// <param name="element">To be added.</param>
+		/// <param name="element">The element parameter.</param>
 		public static bool GetIsSmoothScrollEnabled(BindableObject element)
 		{
 			return (bool)element.GetValue(IsSmoothScrollEnabledProperty);
@@ -77,8 +77,8 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			element.SetValue(IsSmoothScrollEnabledProperty, value);
 		}
 
-		/// <summary>Gets whether smooth scrolling is enabled for <c>this</c><see cref="T:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage"/>.</summary>
-		/// <param name="config">To be added.</param>
+		/// <summary>Gets whether smooth scrolling is enabled for <c>this</c><see cref="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage"/>.</summary>
+		/// <param name="config">The config parameter.</param>
 		public static bool IsSmoothScrollEnabled(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetIsSmoothScrollEnabled(config.Element);
@@ -91,16 +91,16 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return config;
 		}
 
-		/// <summary>Turns on smooth scrolling for <c>this</c><see cref="T:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage"/>.</summary>
-		/// <param name="config">To be added.</param>
+		/// <summary>Turns on smooth scrolling for <c>this</c><see cref="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage"/>.</summary>
+		/// <param name="config">The config parameter.</param>
 		public static IPlatformElementConfiguration<Android, FormsElement> EnableSmoothScroll(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			SetIsSmoothScrollEnabled(config.Element, true);
 			return config;
 		}
 
-		/// <summary>Turns off smooth scrolling for <c>this</c><see cref="T:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage"/>.</summary>
-		/// <param name="config">To be added.</param>
+		/// <summary>Turns off smooth scrolling for <c>this</c><see cref="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage"/>.</summary>
+		/// <param name="config">The config parameter.</param>
 		public static IPlatformElementConfiguration<Android, FormsElement> DisableSmoothScroll(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			SetIsSmoothScrollEnabled(config.Element, false);

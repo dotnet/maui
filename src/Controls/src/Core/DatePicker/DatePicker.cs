@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="T:Microsoft.Maui.Controls.View"/> that allows date picking.</summary>
+	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that allows date picking.</summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class DatePicker : View, IFontElement, ITextElement, IElementConfiguration<DatePicker>, IDatePicker
 	{
@@ -155,8 +155,8 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		/// <param name="source">To be added.</param>
-		/// <param name="textTransform">To be added.</param>
+		/// <param name="source">The source parameter.</param>
+		/// <param name="textTransform">The textTransform parameter.</param>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 

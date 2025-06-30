@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ColorProperty, value);
 		}
 
-		/// <param name="obj">To be added.</param>
+		/// <param name="obj">The obj parameter.</param>
 		public override bool Equals(object obj)
 		{
 			if (!(obj is SolidColorBrush dest))

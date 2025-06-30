@@ -13,7 +13,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="T:Microsoft.Maui.Controls.View"/> that serves as a base class for views that contain a templated list of items.</summary>
+	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that serves as a base class for views that contain a templated list of items.</summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public abstract class ItemsView : View
 	{
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls
 			OnRemainingItemsThresholdReached();
 		}
 
-		/// <param name="e">To be added.</param>
+		/// <param name="e">The event arguments.</param>
 		public void SendScrolled(ItemsViewScrolledEventArgs e)
 		{
 			Scrolled?.Invoke(this, e);

@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="T:System.ComponentModel.TypeConverter"/> that converts strings into <see cref="T:Microsoft.Maui.Controls.Shapes.Rectangle"/>s for use with <see cref="T:Microsoft.Maui.Controls.AbsoluteLayout"/>s.</summary>
+	/// <summary>A <see cref="System.ComponentModel.TypeConverter"/> that converts strings into <see cref="Microsoft.Maui.Controls.Shapes.Rectangle"/>s for use with <see cref="Microsoft.Maui.Controls.AbsoluteLayout"/>s.</summary>
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.BoundsTypeConverter")]
 	public sealed class BoundsTypeConverter : TypeConverter
 	{

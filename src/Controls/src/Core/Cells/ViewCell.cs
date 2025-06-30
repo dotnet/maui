@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="T:Microsoft.Maui.Controls.Cell"/> containing a developer-defined <see cref="T:Microsoft.Maui.Controls.View"/>.</summary>
+	/// <summary>A <see cref="Microsoft.Maui.Controls.Cell"/> containing a developer-defined <see cref="Microsoft.Maui.Controls.View"/>.</summary>
 	[ContentProperty("View")]
 	public class ViewCell : Cell
 	{

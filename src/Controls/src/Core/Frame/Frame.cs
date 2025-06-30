@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 		readonly Lazy<PlatformConfigurationRegistry<Frame>> _platformConfigurationRegistry;
 
 		/// <summary>Initializes a new instance of the Frame class.</summary>
-		/// <remarks>A Frame has a default <see cref="P:Microsoft.Maui.Controls.Layout.Padding"/> of 20.</remarks>
+		/// <remarks>A Frame has a default <see cref="Microsoft.Maui.Controls.Layout.Padding"/> of 20.</remarks>
 		public Frame()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Frame>>(() => new PlatformConfigurationRegistry<Frame>(this));

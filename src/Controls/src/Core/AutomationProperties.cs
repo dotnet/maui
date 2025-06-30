@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls
 			bindable.SetValue(ExcludedWithChildrenProperty, value);
 		}
 
-		/// <summary>Sets another element, such as a <see cref="T:Microsoft.Maui.Controls.Label"/> as the label for <paramref name="bindable"/>.</summary>
+		/// <summary>Sets another element, such as a <see cref="Microsoft.Maui.Controls.Label"/> as the label for <paramref name="bindable"/>.</summary>
 		/// <param name="bindable">The object whose label to set.</param>
 		/// <param name="value">The visual element that will name <paramref name="bindable"/>, or <see langword="null"/> to make <paramref name="bindable"/> its own label.</param>
 		public static void SetLabeledBy(BindableObject bindable, VisualElement value)

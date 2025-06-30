@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(DropCommandParameterProperty, value); }
 		}
 
-		/// <param name="args">To be added.</param>
+		/// <param name="args">The event arguments.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendDragOver(DragEventArgs args)
 		{

@@ -15,7 +15,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>An <see cref="T:Microsoft.Maui.Controls.ItemsView`1"/> that displays a collection of data as a vertical list.</summary>
+	/// <summary>An <see cref="Microsoft.Maui.Controls.ItemsView{T}"/> that displays a collection of data as a vertical list.</summary>
 	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement
 	{
 		// The ListViewRenderer has some odd behavior with LogicalChildren
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<ListView>>(() => new PlatformConfigurationRegistry<ListView>(this));
 		}
 
-		/// <summary>Creates and initializes a new instance of the <see cref="T:Microsoft.Maui.Controls.ListView"/> class.</summary>
+		/// <summary>Creates and initializes a new instance of the <see cref="Microsoft.Maui.Controls.ListView"/> class.</summary>
 		public ListView([Parameter("CachingStrategy")] ListViewCachingStrategy cachingStrategy) : this()
 		{
 			// Unknown => UnitTest "platform"
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <summary>Gets or sets a <see cref="T:Microsoft.Maui.Controls.DataTemplate"/> for group headers.</summary>
+		/// <summary>Gets or sets a <see cref="Microsoft.Maui.Controls.DataTemplate"/> for group headers.</summary>
 		/// <remarks>Use this property to define a template for a
 		/// GroupHeaderTemplate is mutually exclusive with
 		/// Empty groups will still display a group header.</remarks>
@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <summary>Gets or sets a Boolean value that indicates whether this <see cref="T:Microsoft.Maui.Controls.ListView"/> element has uneven rows.</summary>
+		/// <summary>Gets or sets a Boolean value that indicates whether this <see cref="Microsoft.Maui.Controls.ListView"/> element has uneven rows.</summary>
 		public bool HasUnevenRows
 		{
 			get { return (bool)GetValue(HasUnevenRowsProperty); }
@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(HeaderTemplateProperty, value); }
 		}
 
-		/// <summary>Gets or sets whether or not grouping is enabled for <see cref="T:Microsoft.Maui.Controls.ListView"/>.</summary>
+		/// <summary>Gets or sets whether or not grouping is enabled for <see cref="Microsoft.Maui.Controls.ListView"/>.</summary>
 		public bool IsGroupingEnabled
 		{
 			get { return (bool)GetValue(IsGroupingEnabledProperty); }
@@ -258,7 +258,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(RowHeightProperty, value); }
 		}
 
-		/// <summary>Gets or sets the currently selected item from the <see cref="P:Microsoft.Maui.Controls.ItemsView`1.ItemsSource"/>.</summary>
+		/// <summary>Gets or sets the currently selected item from the <see cref="Microsoft.Maui.Controls.ItemsView{T}.ItemsSource"/>.</summary>
 		public object SelectedItem
 		{
 			get { return GetValue(SelectedItemProperty); }
@@ -273,7 +273,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Gets or sets the color of the bar that separates list items.</summary>
-		/// <remarks>The default value is <c>Color.Default</c>. This property has no effect if <see cref="P:Microsoft.Maui.Controls.ListView.SeparatorVisibility"/> is <see langword="false"/>.</remarks>
+		/// <remarks>The default value is <c>Color.Default</c>. This property has no effect if <see cref="Microsoft.Maui.Controls.ListView.SeparatorVisibility"/> is <see langword="false"/>.</remarks>
 		public Color SeparatorColor
 		{
 			get { return (Color)GetValue(SeparatorColorProperty); }
@@ -351,7 +351,7 @@ namespace Microsoft.Maui.Controls
 		public void SendCellDisappearing(Cell cell)
 			=> ItemDisappearing?.Invoke(this, new ItemVisibilityEventArgs(cell.BindingContext, TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
 
-		/// <param name="args">To be added.</param>
+		/// <param name="args">The event arguments.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendScrolled(ScrolledEventArgs args)
 			=> Scrolled?.Invoke(this, args);
@@ -363,7 +363,7 @@ namespace Microsoft.Maui.Controls
 			BeginRefresh();
 		}
 
-		/// <summary>Enters the refreshing state by setting the <see cref="P:Microsoft.Maui.Controls.ListView.IsRefreshing"/> property to <see langword="true"/>.</summary>
+		/// <summary>Enters the refreshing state by setting the <see cref="Microsoft.Maui.Controls.ListView.IsRefreshing"/> property to <see langword="true"/>.</summary>
 		public void BeginRefresh()
 		{
 			if (!RefreshAllowed)
@@ -376,7 +376,7 @@ namespace Microsoft.Maui.Controls
 			command?.Execute(null);
 		}
 
-		/// <summary>Exits the refreshing state by setting the <see cref="P:Microsoft.Maui.Controls.ListView.IsRefreshing"/> property to <see langword="false"/>.</summary>
+		/// <summary>Exits the refreshing state by setting the <see cref="Microsoft.Maui.Controls.ListView.IsRefreshing"/> property to <see langword="false"/>.</summary>
 		public void EndRefresh()
 		{
 			SetValue(IsRefreshingProperty, false);

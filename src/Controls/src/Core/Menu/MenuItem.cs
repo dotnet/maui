@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls
 		public static void SetAccelerator(BindableObject bindable, Accelerator value) => bindable.SetValue(AcceleratorProperty, value);
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 
-		/// <summary>Intitializes a new <see cref="T:Microsoft.Maui.Controls.MenuItem"/> instance.</summary>
+		/// <summary>Intitializes a new <see cref="Microsoft.Maui.Controls.MenuItem"/> instance.</summary>
 		public MenuItem()
 		{
 		}

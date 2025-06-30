@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="T:Microsoft.Maui.Controls.View"/> that serves as a base class for views that contain a templated list of items.</summary>
+	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that serves as a base class for views that contain a templated list of items.</summary>
 	public abstract class ItemsView<[DynamicallyAccessedMembers(BindableProperty.DeclaringTypeMembers | BindableProperty.ReturnTypeMembers)] TVisual> : View, ITemplatedItemsView<TVisual> where TVisual : BindableObject
 	{
 		/*

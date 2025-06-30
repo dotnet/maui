@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		}
 
 		/// <param name="config">The platform configuration for the element on which to perform the operation.</param>
-		/// <param name="value">To be added.</param>
+		/// <param name="value">The value to set.</param>
 		public static void EnableZoomControls(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
 			SetEnableZoomControls(config.Element, value);
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		}
 
 		/// <param name="config">The platform configuration for the element on which to perform the operation.</param>
-		/// <param name="value">To be added.</param>
+		/// <param name="value">The value to set.</param>
 		public static void DisplayZoomControls(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
 			SetDisplayZoomControls(config.Element, value);

@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>Base class for <see cref="T:Microsoft.Maui.Controls.DataTemplate"/> and <see cref="T:Microsoft.Maui.Controls.ControlTemplate"/> classes.</summary>
+	/// <summary>Base class for <see cref="Microsoft.Maui.Controls.DataTemplate"/> and <see cref="Microsoft.Maui.Controls.ControlTemplate"/> classes.</summary>
 	public class ElementTemplate : IElementDefinition
 	{
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;

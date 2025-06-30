@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Buttons"/>.</summary>
 		public static readonly BindableProperty ButtonsProperty = BindableProperty.Create(nameof(Buttons), typeof(ButtonsMask), typeof(ClickGestureRecognizer), ButtonsMask.Primary);
 
-		/// <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.ClickGestureRecognizer"/> with default values.</summary>
+		/// <summary>Creates a new <see cref="Microsoft.Maui.Controls.ClickGestureRecognizer"/> with default values.</summary>
 		public ClickGestureRecognizer()
 		{
 		}

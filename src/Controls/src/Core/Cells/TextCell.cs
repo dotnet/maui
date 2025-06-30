@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="T:Microsoft.Maui.Controls.Cell"/> with primary <see cref="P:Microsoft.Maui.Controls.TextCell.Text"/>  and <see cref="P:Microsoft.Maui.Controls.TextCell.Detail"/> text.</summary>
+	/// <summary>A <see cref="Microsoft.Maui.Controls.Cell"/> with primary <see cref="Microsoft.Maui.Controls.TextCell.Text"/>  and <see cref="Microsoft.Maui.Controls.TextCell.Detail"/> text.</summary>
 	public class TextCell : Cell, ICommandElement
 	{
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>

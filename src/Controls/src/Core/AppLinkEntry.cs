@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	{
 		readonly Dictionary<string, string> keyValues;
 
-		/// <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.AppLinkEntry"/> with default values.</summary>
+		/// <summary>Creates a new <see cref="Microsoft.Maui.Controls.AppLinkEntry"/> with default values.</summary>
 		public AppLinkEntry()
 		{
 			keyValues = new(StringComparer.Ordinal);
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Gets or sets a value that tells whether the item that is identified by the link entry is currently open.</summary>
-		/// <remarks>Application developers can set this value in <see cref="E:Microsoft.Maui.Controls.Application.PageAppearing"/> and <see cref="E:Microsoft.Maui.Controls.Application.PageDisappearing"/> methods to control whether the app link is shown for indexing or Handoff.</remarks>
+		/// <remarks>Application developers can set this value in <see cref="Microsoft.Maui.Controls.Application.PageAppearing"/> and <see cref="Microsoft.Maui.Controls.Application.PageDisappearing"/> methods to control whether the app link is shown for indexing or Handoff.</remarks>
 		public bool IsLinkActive
 		{
 			get { return (bool)GetValue(IsLinkActiveProperty); }
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TitleProperty, value); }
 		}
 
-		/// <summary>Creates and returns a new <see cref="T:Microsoft.Maui.Controls.AppLinkEntry"/> for the specified <paramref name="uri"/>.</summary>
+		/// <summary>Creates and returns a new <see cref="Microsoft.Maui.Controls.AppLinkEntry"/> for the specified <paramref name="uri"/>.</summary>
 		/// <param name="uri">A URI that can be parsed by the target appliction to recreate a specific state.</param>
 		public static AppLinkEntry FromUri(Uri uri)
 		{
@@ -82,8 +82,8 @@ namespace Microsoft.Maui.Controls
 			return appEntry;
 		}
 
-		/// <summary>Returns a string representation of this <see cref="T:Microsoft.Maui.Controls.AppLinkEntry"/>.</summary>
-		/// <returns>A  string representation of this <see cref="T:Microsoft.Maui.Controls.AppLinkEntry"/>.</returns>
+		/// <summary>Returns a string representation of this <see cref="Microsoft.Maui.Controls.AppLinkEntry"/>.</summary>
+		/// <returns>A  string representation of this <see cref="Microsoft.Maui.Controls.AppLinkEntry"/>.</returns>
 		public override string ToString()
 		{
 			return AppLinkUri.ToString();

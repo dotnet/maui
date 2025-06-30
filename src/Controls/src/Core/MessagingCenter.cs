@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 	[Obsolete("We recommend migrating to `CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger`: https://www.nuget.org/packages/CommunityToolkit.Mvvm")]
 	public class MessagingCenter : IMessagingCenter
 	{
-		/// <summary>Gets the singleton instance of the <see cref="T:Microsoft.Maui.Controls.MessagingCenter"/>.</summary>
+		/// <summary>Gets the singleton instance of the <see cref="Microsoft.Maui.Controls.MessagingCenter"/>.</summary>
 		public static IMessagingCenter Instance { get; } = new MessagingCenter();
 
 		class Sender : Tuple<string, Type, Type>

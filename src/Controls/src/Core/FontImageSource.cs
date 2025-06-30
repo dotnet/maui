@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/FontImageSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.FontImageSource']/Docs/*" />
 	public partial class FontImageSource : ImageSource
 	{
-		/// <summary>Indicates whether the <see cref="P:Microsoft.Maui.Controls.FontImageSource"/> property is null or empty.</summary>
+		/// <summary>Indicates whether the <see cref="Microsoft.Maui.Controls.FontImageSource"/> property is null or empty.</summary>
 		public override bool IsEmpty => string.IsNullOrEmpty(Glyph);
 
 		/// <summary>Bindable property for <see cref="Color"/>.</summary>

@@ -6,12 +6,12 @@ namespace Microsoft.Maui.Controls
 	{
 	}
 
-	/// <summary>An <see cref="T:Microsoft.Maui.Controls.ImageSource"/> that reads an image from a file.</summary>
+	/// <summary>An <see cref="Microsoft.Maui.Controls.ImageSource"/> that reads an image from a file.</summary>
 	public partial class FileImageSource : IFileImageSource
 	{
 	}
 
-	/// <summary><see cref="T:Microsoft.Maui.Controls.ImageSource"/> that loads an image from a <see cref="T:System.IO.Stream"/>.</summary>
+	/// <summary><see cref="Microsoft.Maui.Controls.ImageSource"/> that loads an image from a <see cref="System.IO.Stream"/>.</summary>
 	public partial class StreamImageSource : IStreamImageSource
 	{
 	}

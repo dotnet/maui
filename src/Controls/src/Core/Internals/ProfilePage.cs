@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <param name="page">To be added.</param>
+		/// <param name="page">The page parameter.</param>
 		public static void LoadProfile(this ContentPage page)
 		{
 			Profile.Stop();

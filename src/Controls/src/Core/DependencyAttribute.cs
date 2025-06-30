@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	public sealed class DependencyAttribute : Attribute
 	{
-		/// <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.DependencyAttribute"/> with default values.</summary>
+		/// <summary>Creates a new <see cref="Microsoft.Maui.Controls.DependencyAttribute"/> with default values.</summary>
 		/// <param name="implementorType">The type of the implementor of the dependency.</param>
 		public DependencyAttribute(
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type implementorType)

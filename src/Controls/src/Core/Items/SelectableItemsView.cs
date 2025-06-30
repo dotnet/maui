@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<SelectionChangedEventArgs> SelectionChanged;
 
-		/// <param name="newSelection">To be added.</param>
+		/// <param name="newSelection">The newSelection parameter.</param>
 		public void UpdateSelectedItems(IList<object> newSelection)
 		{
 			var oldSelection = new List<object>(SelectedItems);

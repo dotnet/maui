@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="T:Microsoft.Maui.Controls.SelectableItemsView"/> that presents a collection of items.</summary>
+	/// <summary>A <see cref="Microsoft.Maui.Controls.SelectableItemsView"/> that presents a collection of items.</summary>
 	public class CollectionView : ReorderableItemsView
 	{
 	}

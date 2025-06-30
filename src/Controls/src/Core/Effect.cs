@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls
 
 		#region Statics
 
-		/// <summary>Returns an <see cref="T:Microsoft.Maui.Controls.Effect"/> for the specified name, which is of the form <c>ResolutionGroupName.ExportEffect</c>.</summary>
+		/// <summary>Returns an <see cref="Microsoft.Maui.Controls.Effect"/> for the specified name, which is of the form <c>ResolutionGroupName.ExportEffect</c>.</summary>
 		/// <param name="name">The name of the effect to get.</param>
 		/// <returns>The uniquely identified effect.</returns>
 		public static Effect Resolve(string name)

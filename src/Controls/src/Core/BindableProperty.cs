@@ -12,7 +12,7 @@ using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A BindableProperty is a backing store for properties allowing bindings on <see cref="T:Microsoft.Maui.Controls.BindableObject"/>.</summary>
+	/// <summary>A BindableProperty is a backing store for properties allowing bindings on <see cref="Microsoft.Maui.Controls.BindableObject"/>.</summary>
 	[DebuggerDisplay("{PropertyName}")]
 	[System.ComponentModel.TypeConverter(typeof(BindablePropertyConverter))]
 	public sealed class BindableProperty

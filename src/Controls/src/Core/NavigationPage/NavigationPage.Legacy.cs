@@ -11,7 +11,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	// This contains the messaging required to communicate with legacy renderers
-	/// <summary>A <see cref="T:Microsoft.Maui.Controls.Page"/> that manages the navigation and user-experience of a stack of other pages.</summary>
+	/// <summary>A <see cref="Microsoft.Maui.Controls.Page"/> that manages the navigation and user-experience of a stack of other pages.</summary>
 	public partial class NavigationPage : INavigationPageController
 	{
 		async Task<Page> PopAsyncInner(

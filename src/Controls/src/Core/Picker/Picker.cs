@@ -14,7 +14,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="T:Microsoft.Maui.Controls.View"/> control for picking an element in a list.</summary>
+	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> control for picking an element in a list.</summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>, IPicker
 	{
@@ -107,8 +107,8 @@ namespace Microsoft.Maui.Controls
 			set { }
 		}
 
-		/// <param name="source">To be added.</param>
-		/// <param name="textTransform">To be added.</param>
+		/// <param name="source">The source parameter.</param>
+		/// <param name="textTransform">The textTransform parameter.</param>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 

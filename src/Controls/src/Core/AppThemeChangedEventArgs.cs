@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/AppThemeChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.AppThemeChangedEventArgs']/Docs/*" />
 	public class AppThemeChangedEventArgs : EventArgs
 	{
-		/// <param name="appTheme">To be added.</param>
+		/// <param name="appTheme">The appTheme parameter.</param>
 		public AppThemeChangedEventArgs(AppTheme appTheme) =>
 			RequestedTheme = appTheme;
 

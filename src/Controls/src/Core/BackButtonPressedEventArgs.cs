@@ -3,10 +3,10 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>Internal use only. Contains arguments for the event that is raised when a back button is pressed.</summary>
+	/// <summary>Internal API that may change or be removed without notice.</summary>
 	public class BackButtonPressedEventArgs : EventArgs
 	{
-		/// <summary>Internal use only. Gets or sets a value that indicates whether the back button event has already been handled.</summary>
+		/// <summary>Internal API that may change or be removed without notice.</summary>
 		public bool Handled { get; set; }
 	}
 }

@@ -3,7 +3,7 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>Base class for <see cref="T:Microsoft.Maui.Controls.ModalPushedEventArgs"/>, <see cref="T:Microsoft.Maui.Controls.ModalPushingEventArgs"/>, <see cref="T:Microsoft.Maui.Controls.ModalPoppedEventArgs"/>, and <see cref="T:Microsoft.Maui.Controls.ModalPoppingEventArgs"/>.</summary>
+	/// <summary>Base class for <see cref="Microsoft.Maui.Controls.ModalPushedEventArgs"/>, <see cref="Microsoft.Maui.Controls.ModalPushingEventArgs"/>, <see cref="Microsoft.Maui.Controls.ModalPoppedEventArgs"/>, and <see cref="Microsoft.Maui.Controls.ModalPoppingEventArgs"/>.</summary>
 	public abstract class ModalEventArgs : EventArgs
 	{
 		protected ModalEventArgs(Page modal)

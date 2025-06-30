@@ -47,9 +47,9 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <param name="propertyName">To be added.</param>
-		/// <param name="target">To be added.</param>
-		/// <param name="source">To be added.</param>
+		/// <param name="propertyName">The propertyName parameter.</param>
+		/// <param name="target">The target parameter.</param>
+		/// <param name="source">The source parameter.</param>
 		public static void PropagatePropertyChanged(string propertyName, Element target, Element source)
 		{
 			if (propertyName == null || propertyName == VisualElement.FlowDirectionProperty.PropertyName)

@@ -5,7 +5,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="T:Microsoft.Maui.Controls.Cell"/> with a label and a single line text entry field.</summary>
+	/// <summary>A <see cref="Microsoft.Maui.Controls.Cell"/> with a label and a single line text entry field.</summary>
 	public class EntryCell : Cell, ITextAlignmentElement, IEntryCellController, ITextAlignment
 	{
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>

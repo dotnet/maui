@@ -3,7 +3,7 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>Event arguments for the <see cref="E:Microsoft.Maui.Controls.ListView.ItemTapped"/> event.</summary>
+	/// <summary>Event arguments for the <see cref="Microsoft.Maui.Controls.ListView.ItemTapped"/> event.</summary>
 	public class ItemTappedEventArgs : EventArgs
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/ItemTappedEventArgs.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />

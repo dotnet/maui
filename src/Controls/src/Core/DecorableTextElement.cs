@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TextDecorationsProperty = BindableProperty.Create(nameof(IDecorableTextElement.TextDecorations), typeof(TextDecorations), typeof(IDecorableTextElement), TextDecorations.None);
 	}
 
-	/// <summary>A <see cref="T:System.ComponentModel.TypeConverter"/> subclass that can convert between a string and a <see cref="T:Microsoft.Maui.TextDecorations"/> object.</summary>
+	/// <summary>A <see cref="System.ComponentModel.TypeConverter"/> subclass that can convert between a string and a <see cref="Microsoft.Maui.TextDecorations"/> object.</summary>
 	public class TextDecorationConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>Bindable property for <see cref="DefaultBackgroundColor"/>.</summary>
 		public static readonly BindableProperty DefaultBackgroundColorProperty = BindableProperty.Create(nameof(DefaultBackgroundColor), typeof(Color), typeof(Cell), null);
 
-		/// <param name="element">To be added.</param>
+		/// <param name="element">The element parameter.</param>
 		public static Color GetDefaultBackgroundColor(BindableObject element)
 			=> (Color)element.GetValue(DefaultBackgroundColorProperty);
 
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		public static void SetDefaultBackgroundColor(BindableObject element, Color value)
 			=> element.SetValue(DefaultBackgroundColorProperty, value);
 
-		/// <param name="config">To be added.</param>
+		/// <param name="config">The config parameter.</param>
 		public static Color DefaultBackgroundColor(this IPlatformElementConfiguration<iOS, FormsElement> config)
 			=> GetDefaultBackgroundColor(config.Element);
 

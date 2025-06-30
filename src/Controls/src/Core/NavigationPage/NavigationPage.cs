@@ -11,7 +11,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="T:Microsoft.Maui.Controls.Page"/> that manages the navigation and user-experience of a stack of other pages.</summary>
+	/// <summary>A <see cref="Microsoft.Maui.Controls.Page"/> that manages the navigation and user-experience of a stack of other pages.</summary>
 	public partial class NavigationPage : Page, IPageContainer<Page>, IBarElement, IElementConfiguration<NavigationPage>, IStackNavigationView, IToolbarElement
 	{
 		/// <summary>Bindable property for attached property <c>BackButtonTitle</c>.</summary>
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls
 		internal Task CurrentNavigationTask { get; set; }
 
 		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="depth">To be added.</param>
+		/// <param name="depth">The depth parameter.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Page Peek(int depth)
 		{
@@ -137,14 +137,14 @@ namespace Microsoft.Maui.Controls
 			get { return InternalChildren.Count; }
 		}
 
-		/// <summary>The <see cref="T:Microsoft.Maui.Controls.Page"/> that is currently top-most on the navigation stack.</summary>
+		/// <summary>The <see cref="Microsoft.Maui.Controls.Page"/> that is currently top-most on the navigation stack.</summary>
 		public Page CurrentPage
 		{
 			get { return (Page)GetValue(CurrentPageProperty); }
 			private set { SetValue(CurrentPagePropertyKey, value); }
 		}
 
-		/// <summary>The <see cref="T:Microsoft.Maui.Controls.Page"/> that is the root of the navigation stack.</summary>
+		/// <summary>The <see cref="Microsoft.Maui.Controls.Page"/> that is the root of the navigation stack.</summary>
 		public Page RootPage
 		{
 			get { return (Page)GetValue(RootPageProperty); }
@@ -163,15 +163,15 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>The title of the back button for the specified <paramref name="page"/>.</summary>
-		/// <param name="page">The <see cref="T:Microsoft.Maui.Controls.Page"/> whose back-button's title is being requested.</param>
-		/// <returns>The title of the back button that would be shown if the specified <paramref name="page"/> were the <see cref="P:Microsoft.Maui.Controls.NavigationPage.CurrentPage"/>.</returns>
+		/// <param name="page">The <see cref="Microsoft.Maui.Controls.Page"/> whose back-button's title is being requested.</param>
+		/// <returns>The title of the back button that would be shown if the specified <paramref name="page"/> were the <see cref="Microsoft.Maui.Controls.NavigationPage.CurrentPage"/>.</returns>
 		public static string GetBackButtonTitle(BindableObject page)
 		{
 			return (string)page.GetValue(BackButtonTitleProperty);
 		}
 
 		/// <summary>Returns a value that indicates whether <paramref name="page"/> has a back button.</summary>
-		/// <param name="page">To be added.</param>
+		/// <param name="page">The page parameter.</param>
 		public static bool GetHasBackButton(Page page)
 		{
 			if (page == null)
@@ -180,14 +180,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Returns a value that indicates whether the <paramref name="page"/> has a navigation bar.</summary>
-		/// <param name="page">The <see cref="T:Microsoft.Maui.Controls.Page"/> being queried.</param>
-		/// <returns><see langword="true"/> if <paramref name="page"/> would display a navigation bar were it the <see cref="P:Microsoft.Maui.Controls.NavigationPage.CurrentPage"/>.</returns>
+		/// <param name="page">The <see cref="Microsoft.Maui.Controls.Page"/> being queried.</param>
+		/// <returns><see langword="true"/> if <paramref name="page"/> would display a navigation bar were it the <see cref="Microsoft.Maui.Controls.NavigationPage.CurrentPage"/>.</returns>
 		public static bool GetHasNavigationBar(BindableObject page)
 		{
 			return (bool)page.GetValue(HasNavigationBarProperty);
 		}
 
-		/// <param name="bindable">To be added.</param>
+		/// <param name="bindable">The bindable parameter.</param>
 		public static ImageSource GetTitleIconImageSource(BindableObject bindable)
 		{
 			return (ImageSource)bindable.GetValue(TitleIconImageSourceProperty);
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls
 			return (View)bindable.GetValue(TitleViewProperty);
 		}
 
-		/// <param name="bindable">To be added.</param>
+		/// <param name="bindable">The bindable parameter.</param>
 		public static Color GetIconColor(BindableObject bindable)
 		{
 			if (bindable == null)
@@ -331,16 +331,16 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<NavigationEventArgs> Pushed;
 
 		/// <summary>Sets the title that appears on the back button for <paramref name="page"/>.</summary>
-		/// <param name="page">To be added.</param>
-		/// <param name="value">To be added.</param>
+		/// <param name="page">The page parameter.</param>
+		/// <param name="value">The value to set.</param>
 		public static void SetBackButtonTitle(BindableObject page, string value)
 		{
 			page.SetValue(BackButtonTitleProperty, value);
 		}
 
 		/// <summary>Adds or removes a back button to <paramref name="page"/>, with optional animation.</summary>
-		/// <param name="page">To be added.</param>
-		/// <param name="value">To be added.</param>
+		/// <param name="page">The page parameter.</param>
+		/// <param name="value">The value to set.</param>
 		public static void SetHasBackButton(Page page, bool value)
 		{
 			if (page == null)
@@ -348,16 +348,16 @@ namespace Microsoft.Maui.Controls
 			page.SetValue(HasBackButtonProperty, value);
 		}
 
-		/// <summary>Sets a value that indicates whether or not this <see cref="T:Microsoft.Maui.Controls.NavigationPage"/> element has a navigation bar.</summary>
-		/// <param name="page">To be added.</param>
-		/// <param name="value">To be added.</param>
+		/// <summary>Sets a value that indicates whether or not this <see cref="Microsoft.Maui.Controls.NavigationPage"/> element has a navigation bar.</summary>
+		/// <param name="page">The page parameter.</param>
+		/// <param name="value">The value to set.</param>
 		public static void SetHasNavigationBar(BindableObject page, bool value)
 		{
 			page.SetValue(HasNavigationBarProperty, value);
 		}
 
-		/// <param name="bindable">To be added.</param>
-		/// <param name="value">To be added.</param>
+		/// <param name="bindable">The bindable parameter.</param>
+		/// <param name="value">The value to set.</param>
 		public static void SetTitleIconImageSource(BindableObject bindable, ImageSource value)
 		{
 			bindable.SetValue(TitleIconImageSourceProperty, value);
@@ -371,8 +371,8 @@ namespace Microsoft.Maui.Controls
 			bindable.SetValue(TitleViewProperty, value);
 		}
 
-		/// <param name="bindable">To be added.</param>
-		/// <param name="value">To be added.</param>
+		/// <param name="bindable">The bindable parameter.</param>
+		/// <param name="value">The value to set.</param>
 		public static void SetIconColor(BindableObject bindable, Color value)
 		{
 			bindable.SetValue(IconColorProperty, value);

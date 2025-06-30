@@ -3,7 +3,7 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="T:Microsoft.Maui.Controls.TextCell"/> that has an image.</summary>
+	/// <summary>A <see cref="Microsoft.Maui.Controls.TextCell"/> that has an image.</summary>
 	public class ImageCell : TextCell
 	{
 		/// <summary>Bindable property for <see cref="ImageSource"/>.</summary>

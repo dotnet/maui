@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls
 			Offset = offset;
 		}
 
-		/// <param name="obj">To be added.</param>
+		/// <param name="obj">The obj parameter.</param>
 		public override bool Equals(object obj)
 		{
 			if (!(obj is GradientStop dest))

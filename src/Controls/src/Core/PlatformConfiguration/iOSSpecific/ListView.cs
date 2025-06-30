@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>Bindable property for <see cref="RowAnimationsEnabled"/>.</summary>
 		public static readonly BindableProperty RowAnimationsEnabledProperty = BindableProperty.Create(nameof(RowAnimationsEnabled), typeof(bool), typeof(ListView), true);
 
-		/// <param name="element">To be added.</param>
+		/// <param name="element">The element parameter.</param>
 		public static bool GetRowAnimationsEnabled(BindableObject element)
 		{
 			return (bool)element.GetValue(RowAnimationsEnabledProperty);
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <param name="config">To be added.</param>
+		/// <param name="config">The config parameter.</param>
 		public static bool RowAnimationsEnabled(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetRowAnimationsEnabled(config.Element);

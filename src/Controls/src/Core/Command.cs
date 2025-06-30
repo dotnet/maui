@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	/// <summary>Defines an <see cref="T:System.Windows.Input.ICommand"/> implementation that wraps a <see cref="T:System.Action"/>.</summary>
+	/// <summary>Defines an <see cref="System.Windows.Input.ICommand"/> implementation that wraps a <see cref="System.Action"/>.</summary>
 	public class Command : ICommand
 	{
 		readonly Func<object, bool> _canExecute;
@@ -101,8 +101,8 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(canExecute));
 		}
 
-		/// <summary>Returns a <see cref="T:System.Boolean"/> indicating if the Command can be exectued with the given parameter.</summary>
-		/// <param name="parameter">An <see cref="T:System.Object"/> used as parameter to determine if the Command can be executed.</param>
+		/// <summary>Returns a <see cref="System.Boolean"/> indicating if the Command can be exectued with the given parameter.</summary>
+		/// <param name="parameter">An <see cref="System.Object"/> used as parameter to determine if the Command can be executed.</param>
 		/// <returns><see langword="true"/> if the Command can be executed, <see langword="false"/> otherwise.</returns>
 		/// <remarks>If no canExecute parameter was passed to the Command constructor, this method always returns
 		/// If the Command was created with non-generic execute parameter, the parameter of this method is ignored.</remarks>
@@ -121,14 +121,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Invokes the execute Action</summary>
-		/// <param name="parameter">An <see cref="T:System.Object"/> used as parameter for the execute Action.</param>
+		/// <param name="parameter">An <see cref="System.Object"/> used as parameter for the execute Action.</param>
 		/// <remarks>If the Command was created with non-generic execute parameter, the parameter of this method is ignored.</remarks>
 		public void Execute(object parameter)
 		{
 			_execute(parameter);
 		}
 
-		/// <summary>Send a <see cref="E:System.Windows.Input.ICommand.CanExecuteChanged"/></summary>
+		/// <summary>Send a <see cref="System.Windows.Input.ICommand.CanExecuteChanged"/></summary>
 		public void ChangeCanExecute()
 		{
 			_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(CanExecuteChanged));
