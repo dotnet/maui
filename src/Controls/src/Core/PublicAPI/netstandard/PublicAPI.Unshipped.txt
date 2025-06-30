@@ -24,3 +24,4 @@ Microsoft.Maui.Controls.SafeAreaGuides
 ~static Microsoft.Maui.Controls.SafeAreaGuides.GetIgnoreSafeAreaForEdge(Microsoft.Maui.Controls.BindableObject bindable, int edge) -> Microsoft.Maui.Controls.SafeAreaGroup
 ~static readonly Microsoft.Maui.Controls.SafeAreaGuides.IgnoreSafeAreaProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static Microsoft.Maui.Controls.SafeAreaGuides.SetIgnoreSafeArea(Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Controls.SafeAreaGroup[] value) -> void
+Microsoft.Maui.Controls.Layout.IgnoreSafeAreaForEdge(int edge) -> bool

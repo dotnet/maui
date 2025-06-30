@@ -40,6 +40,13 @@ namespace Microsoft.Maui.Platform
 				KeyboardAutoManagerScroll.ShouldScrollAgain = true;
 			}
 
+			// Check for new per-edge safe area control first
+			if (View is ISafeAreaView3 sav3)
+			{
+				return AdjustForSafeAreaPerEdge(bounds, sav3);
+			}
+
+			// Fall back to legacy ISafeAreaView behavior
 			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea || !RespondsToSafeArea())
 			{
 				return bounds;
@@ -47,6 +54,29 @@ namespace Microsoft.Maui.Platform
 
 #pragma warning disable CA1416 // TODO 'UIView.SafeAreaInsets' is only supported on: 'ios' 11.0 and later, 'maccatalyst' 11.0 and later, 'tvos' 11.0 and later.
 			return SafeAreaInsets.InsetRect(bounds);
+#pragma warning restore CA1416
+		}
+
+		protected CGRect AdjustForSafeAreaPerEdge(CGRect bounds, ISafeAreaView3 safeAreaView)
+		{
+			if (!RespondsToSafeArea())
+			{
+				return bounds;
+			}
+
+#pragma warning disable CA1416 // TODO 'UIView.SafeAreaInsets' is only supported on: 'ios' 11.0 and later, 'maccatalyst' 11.0 and later, 'tvos' 11.0 and later.
+			var insets = SafeAreaInsets;
+
+			// Selectively apply insets based on per-edge settings
+			// If IgnoreSafeAreaForEdge returns true, we set that inset to 0
+			var adjustedInsets = new UIKit.UIEdgeInsets(
+				top: safeAreaView.IgnoreSafeAreaForEdge(1) ? 0 : insets.Top,       // Top = 1
+				left: safeAreaView.IgnoreSafeAreaForEdge(0) ? 0 : insets.Left,     // Left = 0  
+				bottom: safeAreaView.IgnoreSafeAreaForEdge(3) ? 0 : insets.Bottom, // Bottom = 3
+				right: safeAreaView.IgnoreSafeAreaForEdge(2) ? 0 : insets.Right    // Right = 2
+			);
+
+			return adjustedInsets.InsetRect(bounds);
 #pragma warning restore CA1416
 		}
 

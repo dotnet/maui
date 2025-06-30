@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Children))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement
+	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, ISafeAreaView3, IInputTransparentContainerElement
 	{
 		protected ILayoutManager _layoutManager;
 
@@ -124,6 +124,35 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc cref="ISafeAreaView.IgnoreSafeArea"/>
 		public bool IgnoreSafeArea { get; set; }
+
+		/// <inheritdoc cref="ISafeAreaView3.IgnoreSafeAreaForEdge"/>
+		public bool IgnoreSafeAreaForEdge(int edge)
+		{
+			// Check if SafeAreaGuides attached property has been explicitly set
+			var safeAreaGuides = SafeAreaGuides.GetIgnoreSafeArea(this);
+			var defaultValue = (SafeAreaGroup[])SafeAreaGuides.IgnoreSafeAreaProperty.DefaultValue;
+			
+			// Only use attached property if it's different from default (meaning it was explicitly set)
+			if (safeAreaGuides != null && !ReferenceEquals(safeAreaGuides, defaultValue) && 
+			    (safeAreaGuides.Length != defaultValue.Length || !AreArraysEqual(safeAreaGuides, defaultValue)))
+			{
+				var groupForEdge = SafeAreaGuides.GetIgnoreSafeAreaForEdge(this, edge);
+				return groupForEdge.HasFlag(SafeAreaGroup.All);
+			}
+
+			// Fall back to the legacy IgnoreSafeArea property
+			return IgnoreSafeArea;
+		}
+
+		private static bool AreArraysEqual(SafeAreaGroup[] arr1, SafeAreaGroup[] arr2)
+		{
+			if (arr1.Length != arr2.Length) return false;
+			for (int i = 0; i < arr1.Length; i++)
+			{
+				if (arr1[i] != arr2[i]) return false;
+			}
+			return true;
+		}
 
 		/// <summary>
 		/// Creates a manager object that can measure this layout and arrange its children.

@@ -100,5 +100,43 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			
 			Assert.Equal(SafeAreaGroup.None, SafeAreaGuides.GetIgnoreSafeAreaForEdge(layout, 0));
 		}
+
+		[Fact]
+		public void Layout_ImplementsISafeAreaView3()
+		{
+			var layout = new Grid();
+			
+			Assert.IsAssignableFrom<ISafeAreaView3>(layout);
+		}
+
+		[Fact]
+		public void Layout_IgnoreSafeAreaForEdge_UsesAttachedProperty()
+		{
+			var layout = new Grid();
+			SafeAreaGuides.SetIgnoreSafeArea(layout, new[] { SafeAreaGroup.All, SafeAreaGroup.None, SafeAreaGroup.All, SafeAreaGroup.None });
+
+			// Test via ISafeAreaView3 interface
+			var safeAreaView3 = (ISafeAreaView3)layout;
+			
+			Assert.True(safeAreaView3.IgnoreSafeAreaForEdge(0));  // Left = All
+			Assert.False(safeAreaView3.IgnoreSafeAreaForEdge(1)); // Top = None  
+			Assert.True(safeAreaView3.IgnoreSafeAreaForEdge(2));  // Right = All
+			Assert.False(safeAreaView3.IgnoreSafeAreaForEdge(3)); // Bottom = None
+		}
+
+		[Fact]
+		public void Layout_IgnoreSafeAreaForEdge_FallsBackToLegacyProperty()
+		{
+			var layout = new Grid();
+			layout.IgnoreSafeArea = true; // Legacy property
+
+			// Should fall back to legacy property when no attached property is set
+			var safeAreaView3 = (ISafeAreaView3)layout;
+			
+			Assert.True(safeAreaView3.IgnoreSafeAreaForEdge(0));
+			Assert.True(safeAreaView3.IgnoreSafeAreaForEdge(1));
+			Assert.True(safeAreaView3.IgnoreSafeAreaForEdge(2));
+			Assert.True(safeAreaView3.IgnoreSafeAreaForEdge(3));
+		}
 	}
 }
