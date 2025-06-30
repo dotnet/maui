@@ -16,7 +16,8 @@ public class Issue25921 : _IssuesUITest
 	[Category(UITestCategories.Slider)]
 	public void VerifySliderColors()
 	{
-		App.WaitForElement("testSlider");
+		App.WaitForElement("ColorChangeButton");
+		App.Tap("ColorChangeButton");
 		VerifyScreenshot();
 	}
 }
