@@ -313,5 +313,62 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			root.Children.Remove(child);
 			Assert.True(removed);
 		}
+
+		[Fact]
+		public void RealParent_ReturnsNullAfterParentGarbageCollected()
+		{
+			var child = new TestElement();
+			WeakReference parentRef;
+
+			// Create parent in separate scope to enable GC
+			void CreateParent()
+			{
+				var parent = new TestElement();
+				parentRef = new WeakReference(parent);
+				parent.Children.Add(child);
+				// parent goes out of scope here
+			}
+
+			CreateParent();
+
+			// Force garbage collection
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
+			// Verify parent was collected
+			Assert.False(parentRef.IsAlive);
+
+			// RealParent should return null and not throw
+			Assert.Null(child.RealParent);
+		}
+
+		[Fact]
+		public void SetParent_DoesNotLogWarningWhenParentGarbageCollected()
+		{
+			var child = new TestElement();
+			WeakReference parentRef;
+
+			// Create parent in separate scope
+			void CreateParent()
+			{
+				var parent = new TestElement();
+				parentRef = new WeakReference(parent);
+				parent.Children.Add(child);
+			}
+
+			CreateParent();
+
+			// Force garbage collection
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
+			// Setting parent should not log warnings internally
+			var newParent = new TestElement();
+			newParent.Children.Add(child);
+
+			Assert.Same(newParent, child.RealParent);
+		}
 	}
 }

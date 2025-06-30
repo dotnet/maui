@@ -343,12 +343,19 @@ namespace Microsoft.Maui.Controls
 			{
 				return parent;
 			}
-			else if (logWarningIfParentHasBeenCollected)
+			else
 			{
-				Application.Current?
-					.FindMauiContext()?
-					.CreateLogger<Element>()?
-					.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+				// Clear the weak reference since the target has been garbage collected
+				// This prevents repeated checks and warnings on subsequent accesses
+				_realParent = null;
+				if (logWarningIfParentHasBeenCollected)
+				{
+					Application.Current?
+										.FindMauiContext()?
+										.CreateLogger<Element>()?
+										.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+				}
+
 			}
 
 			return null;
