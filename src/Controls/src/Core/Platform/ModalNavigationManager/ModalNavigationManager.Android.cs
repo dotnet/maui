@@ -402,10 +402,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 				public override bool OnKeyDown(Keycode keyCode, KeyEvent? e)
 				{
-					var mainActivity = Context?.GetActivity();
-					if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
+					if (RuntimeFeature.PropagateKeyEventsToMainActivity)
 					{
-						return mauiActivity.InternalOnKeyDown(keyCode, e);
+						var mainActivity = Context?.GetActivity();
+						if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
+						{
+							return mauiActivity.InternalOnKeyDown(keyCode, e);
+						}
 					}
 
 					return e is not null ? base.OnKeyDown(keyCode, e) : false;
@@ -413,10 +416,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 				public override bool OnKeyUp(Keycode keyCode, KeyEvent? e)
 				{
-					var mainActivity = Context?.GetActivity();
-					if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
+					if (RuntimeFeature.PropagateKeyEventsToMainActivity)
 					{
-						return mauiActivity.InternalOnKeyUp(keyCode, e);
+						var mainActivity = Context?.GetActivity();
+						if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
+						{
+							return mauiActivity.InternalOnKeyUp(keyCode, e);
+						}
 					}
 
 					return e is not null ? base.OnKeyUp(keyCode, e) : false;
@@ -424,10 +430,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 				public override bool OnKeyLongPress(Keycode keyCode, KeyEvent? e)
 				{
-					var mainActivity = Context?.GetActivity();
-					if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
+					if (RuntimeFeature.PropagateKeyEventsToMainActivity)
 					{
-						return mauiActivity.InternalOnKeyLongPress(keyCode, e);
+						var mainActivity = Context?.GetActivity();
+						if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
+						{
+							return mauiActivity.InternalOnKeyLongPress(keyCode, e);
+						}
 					}
 
 					return e is not null ? base.OnKeyLongPress(keyCode, e) : false;
@@ -435,10 +444,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 				public override bool OnKeyMultiple(Keycode keyCode, int repeatCount, KeyEvent? e)
 				{
-					var mainActivity = Context?.GetActivity();
-					if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
+					if (RuntimeFeature.PropagateKeyEventsToMainActivity)
 					{
-						return mauiActivity.InternalOnKeyMultiple(keyCode, repeatCount, e);
+						var mainActivity = Context?.GetActivity();
+						if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
+						{
+							return mauiActivity.InternalOnKeyMultiple(keyCode, repeatCount, e);
+						}
 					}
 
 					return e is not null ? base.OnKeyMultiple(keyCode, repeatCount, e) : false;
@@ -446,10 +458,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 				public override bool OnKeyShortcut(Keycode keyCode, KeyEvent? e)
 				{
-					var mainActivity = Context?.GetActivity();
-					if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
+					if (RuntimeFeature.PropagateKeyEventsToMainActivity)
 					{
-						return mauiActivity.InternalOnKeyShortcut(keyCode, e);
+						var mainActivity = Context?.GetActivity();
+						if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
+						{
+							return mauiActivity.InternalOnKeyShortcut(keyCode, e);
+						}
 					}
 
 					return e is not null ? base.OnKeyShortcut(keyCode, e) : false;

@@ -21,6 +21,7 @@ namespace Microsoft.Maui
 		private const bool AreBindingInterceptorsSupportedByDefault = true;
 		private const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
 		private const bool IsHybridWebViewSupportedByDefault = true;
+		private const bool PropagateKeyEventsToMainActivityByDefault = false;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER
@@ -84,6 +85,14 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported", out bool isSupported)
 				? isSupported
 				: IsHybridWebViewSupportedByDefault;
+
+#if NET9_0_OR_GREATER
+		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.PropagateKeyEventsToMainActivity")]
+#endif
+		internal static bool PropagateKeyEventsToMainActivity =>
+			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.PropagateKeyEventsToMainActivity", out bool isEnabled)
+				? isEnabled
+				: PropagateKeyEventsToMainActivityByDefault;
 #pragma warning restore IL4000
 	}
 }
