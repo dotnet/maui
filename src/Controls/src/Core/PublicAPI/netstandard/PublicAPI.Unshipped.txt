@@ -15,3 +15,12 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 ~virtual Microsoft.Maui.Controls.CollectionSynchronizationCallback.Invoke(System.Collections.IEnumerable collection, object context, System.Action accessMethod, bool writeAccess) -> void
 ~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
+Microsoft.Maui.Controls.SafeAreaGroup
+Microsoft.Maui.Controls.SafeAreaGroup.All = 1 -> Microsoft.Maui.Controls.SafeAreaGroup
+Microsoft.Maui.Controls.SafeAreaGroup.Keyboard = 2 -> Microsoft.Maui.Controls.SafeAreaGroup
+Microsoft.Maui.Controls.SafeAreaGroup.None = 0 -> Microsoft.Maui.Controls.SafeAreaGroup
+Microsoft.Maui.Controls.SafeAreaGuides
+~static Microsoft.Maui.Controls.SafeAreaGuides.GetIgnoreSafeArea(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.SafeAreaGroup[]
+~static Microsoft.Maui.Controls.SafeAreaGuides.GetIgnoreSafeAreaForEdge(Microsoft.Maui.Controls.BindableObject bindable, int edge) -> Microsoft.Maui.Controls.SafeAreaGroup
+~static readonly Microsoft.Maui.Controls.SafeAreaGuides.IgnoreSafeAreaProperty -> Microsoft.Maui.Controls.BindableProperty
+~static Microsoft.Maui.Controls.SafeAreaGuides.SetIgnoreSafeArea(Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Controls.SafeAreaGroup[] value) -> void
