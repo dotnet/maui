@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ColumnDefinitionCollection.xml" path="Type[@FullName='Microsoft.Maui.Controls.ColumnDefinitionCollection']/Docs/*" />
+	/// <summary>A <see cref="T:Microsoft.Maui.Controls.DefinitionCollection`1"/> for <see cref="T:Microsoft.Maui.Controls.ColumnDefinition"/>s.</summary>
 	public sealed class ColumnDefinitionCollection : DefinitionCollection<ColumnDefinition>
 	{
 		public ColumnDefinitionCollection() : base()
