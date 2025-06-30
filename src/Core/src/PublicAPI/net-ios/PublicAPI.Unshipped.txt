@@ -52,6 +52,8 @@ static Microsoft.Maui.Platform.TextInputExtensions.SetTextRange(this UIKit.IUITe
 static Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(this UIKit.UIApplication! application) -> UIKit.UIWindow?
 static Microsoft.Maui.Platform.UIApplicationExtensions.GetWindow(this UIKit.UIApplication! application) -> Microsoft.Maui.IWindow?
 *REMOVED*virtual Microsoft.Maui.MauiUIApplicationDelegate.FinishedLaunching(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillFinishLaunching.Invoke(UIKit.UIApplication! application, Foundation.NSDictionary? launchOptions) -> bool
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillTerminate.Invoke(UIKit.UIApplication! application) -> void
 virtual Microsoft.Maui.MauiUIApplicationDelegate.FinishedLaunching(UIKit.UIApplication! application, Foundation.NSDictionary? launchOptions) -> bool
 *REMOVED*virtual Microsoft.Maui.MauiUIApplicationDelegate.WillFinishLaunching(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
 virtual Microsoft.Maui.MauiUIApplicationDelegate.WillFinishLaunching(UIKit.UIApplication! application, Foundation.NSDictionary? launchOptions) -> bool
@@ -192,8 +194,6 @@ virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillConnect.Invoke(UIKi
 virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillContinueUserActivity.Invoke(UIKit.UIScene! scene, string! userActivityType) -> void
 virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillEnterForeground.Invoke(UIKit.UIScene! scene) -> void
 virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillEnterForeground.Invoke(UIKit.UIApplication! application) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillFinishLaunching.Invoke(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillTerminate.Invoke(UIKit.UIApplication! application) -> void
 virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WindowSceneDidUpdateCoordinateSpace.Invoke(UIKit.UIWindowScene! windowScene, UIKit.IUICoordinateSpace! previousCoordinateSpace, UIKit.UIInterfaceOrientation previousInterfaceOrientation, UIKit.UITraitCollection! previousTraitCollection) -> void
 virtual Microsoft.Maui.ScrollToRequest.<Clone>$() -> Microsoft.Maui.ScrollToRequest!
 virtual Microsoft.Maui.ScrollToRequest.EqualityContract.get -> System.Type!
