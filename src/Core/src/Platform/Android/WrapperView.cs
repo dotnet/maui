@@ -36,22 +36,10 @@ namespace Microsoft.Maui.Platform
 			if (ChildCount == 0 || GetChildAt(0) is not AView child)
 				return;
 
-			// Apply safe area adjustments for WrapperView since it handles visual effects
-			var contentBounds = new Rectangle(0, 0, right - left, bottom - top);
-			var adjustedBounds = AdjustForSafeArea(contentBounds);
-
-			// Convert adjusted bounds to pixels and position the child
-			var leftPx = (int)Context.ToPixels(adjustedBounds.X);
-			var topPx = (int)Context.ToPixels(adjustedBounds.Y);
-			var rightPx = (int)Context.ToPixels(adjustedBounds.Right);
-			var bottomPx = (int)Context.ToPixels(adjustedBounds.Bottom);
-
-			var widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(rightPx - leftPx);
-			var heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(bottomPx - topPx);
-
-			child.Measure(widthMeasureSpec, heightMeasureSpec);
-			child.Layout(leftPx, topPx, rightPx, bottomPx);
-			_borderView?.Layout(leftPx, topPx, rightPx, bottomPx);
+			// Standard layout for all children - no safe area adjustments in WrapperView
+			// Safe area handling is done by the LayoutViewGroup itself
+			child.Layout(0, 0, right - left, bottom - top);
+			_borderView?.Layout(0, 0, right - left, bottom - top);
 		}
 
 		public override bool DispatchTouchEvent(MotionEvent e)
@@ -157,28 +145,7 @@ namespace Microsoft.Maui.Platform
 			return _currentPath;
 		}
 
-		Rectangle AdjustForSafeArea(Rectangle bounds)
-		{
-			// Only apply safe area adjustments if the child is a layout that cares about safe areas
-			if (ChildCount > 0 && GetChildAt(0) is LayoutViewGroup layout)
-			{
-				return AndroidSafeAreaHelper.AdjustForSafeArea(this, Context, bounds, layout.CrossPlatformLayout);
-			}
 
-			return bounds;
-		}
-
-		public override WindowInsets OnApplyWindowInsets(WindowInsets insets)
-		{
-			// Trigger layout update if we have a layout that cares about safe area
-			if (ChildCount > 0 && GetChildAt(0) is LayoutViewGroup layout &&
-				AndroidSafeAreaHelper.ShouldHandleWindowInsets(layout.CrossPlatformLayout))
-			{
-				RequestLayout();
-			}
-
-			return base.OnApplyWindowInsets(insets);
-		}
 
 		public override ViewStates Visibility
 		{

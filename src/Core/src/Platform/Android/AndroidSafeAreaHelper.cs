@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Platform
 			var rightDip = context.FromPixels(right);
 			var bottomDip = context.FromPixels(bottom);
 
-			// Apply safe area insets to bounds
+			// Apply safe area insets to bounds (inset the bounds to avoid system UI)
 			return new Rectangle(
 				bounds.X + leftDip,
 				bounds.Y + topDip,

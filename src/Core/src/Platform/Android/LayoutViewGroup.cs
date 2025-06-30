@@ -99,13 +99,6 @@ namespace Microsoft.Maui.Platform
 
 		Rectangle AdjustForSafeArea(Rectangle bounds)
 		{
-			// Only apply safe area adjustments if we're not inside a WrapperView
-			// (WrapperView handles safe areas when it exists for visual effects)
-			if (Parent is WrapperView)
-			{
-				return bounds;
-			}
-
 			return AndroidSafeAreaHelper.AdjustForSafeArea(this, _context, bounds, CrossPlatformLayout);
 		}
 
@@ -140,8 +133,8 @@ namespace Microsoft.Maui.Platform
 
 		public override WindowInsets? OnApplyWindowInsets(WindowInsets? insets)
 		{
-			// Only handle insets if we're not inside a WrapperView (which handles them instead)
-			if (!(Parent is WrapperView) && AndroidSafeAreaHelper.ShouldHandleWindowInsets(CrossPlatformLayout))
+			// Handle insets for any layout that cares about safe areas
+			if (AndroidSafeAreaHelper.ShouldHandleWindowInsets(CrossPlatformLayout))
 			{
 				RequestLayout();
 			}
