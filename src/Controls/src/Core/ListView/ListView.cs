@@ -307,10 +307,12 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(VerticalScrollBarVisibilityProperty, value); }
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public ListViewCachingStrategy CachingStrategy { get; private set; }
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool RefreshAllowed
 		{
@@ -325,28 +327,32 @@ namespace Microsoft.Maui.Controls
 			get { return _refreshAllowed; }
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element FooterElement
 		{
 			get { return _footerElement; }
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element HeaderElement
 		{
 			get { return _headerElement; }
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="cell">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="cell">Internal parameter for platform use.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendCellAppearing(Cell cell)
 			=> ItemAppearing?.Invoke(this, new ItemVisibilityEventArgs(cell.BindingContext, TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="cell">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="cell">Internal parameter for platform use.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendCellDisappearing(Cell cell)
 			=> ItemDisappearing?.Invoke(this, new ItemVisibilityEventArgs(cell.BindingContext, TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
@@ -356,7 +362,8 @@ namespace Microsoft.Maui.Controls
 		public void SendScrolled(ScrolledEventArgs args)
 			=> Scrolled?.Invoke(this, args);
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendRefreshing()
 		{
@@ -482,16 +489,18 @@ namespace Microsoft.Maui.Controls
 
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="item">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="item">Internal parameter for platform use.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Cell CreateDefaultCell(object item)
 		{
 			return CreateDefault(item);
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="cell">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="cell">Internal parameter for platform use.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public string GetDisplayTextFromGroup(object cell)
 		{

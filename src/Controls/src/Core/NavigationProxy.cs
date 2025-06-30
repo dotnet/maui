@@ -26,7 +26,8 @@ namespace Microsoft.Maui.Controls.Internals
 
 		Lazy<List<Page>> _pushStack = new Lazy<List<Page>>(() => new List<Page>());
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public INavigation Inner
 		{
 			get { return _inner; }
@@ -67,21 +68,24 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
-		/// <param name="before">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="page">Internal parameter for platform use.</param>
+		/// <param name="before">Internal parameter for platform use.</param>
 		public void InsertPageBefore(Page page, Page before)
 		{
 			OnInsertPageBefore(page, before);
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public IReadOnlyList<Page> ModalStack
 		{
 			get { return GetModalStack(); }
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public IReadOnlyList<Page> NavigationStack
 		{
 			get { return GetNavigationStack(); }
@@ -151,8 +155,9 @@ namespace Microsoft.Maui.Controls.Internals
 			return OnPushModal(modal, animated);
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="page">Internal parameter for platform use.</param>
 		public void RemovePage(Page page)
 		{
 			OnRemovePage(page);

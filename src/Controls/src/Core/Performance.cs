@@ -14,17 +14,20 @@ namespace Microsoft.Maui.Controls.Internals
 		void Start(string reference, string tag, string path, string member);
 	}
 
-	/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+	/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class Performance
 	{
 		static long Reference;
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public static IPerformanceProvider Provider { get; private set; }
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="instance">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="instance">Internal parameter for platform use.</param>
 		public static void SetProvider(IPerformanceProvider instance)
 		{
 			Provider = instance;
@@ -50,11 +53,12 @@ namespace Microsoft.Maui.Controls.Internals
 			Provider?.Start(reference, tag, path, member);
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="reference">For internal use by the Microsoft.Maui.Controls platform.</param>
-		/// <param name="tag">For internal use by the Microsoft.Maui.Controls platform.</param>
-		/// <param name="path">For internal use by the Microsoft.Maui.Controls platform.</param>
-		/// <param name="member">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="reference">Internal parameter for platform use.</param>
+		/// <param name="tag">Internal parameter for platform use.</param>
+		/// <param name="path">Internal parameter for platform use.</param>
+		/// <param name="member">Internal parameter for platform use.</param>
 		public static void Stop(string reference, string tag = null, [CallerFilePath] string path = null, [CallerMemberName] string member = null)
 		{
 			Provider?.Stop(reference, tag, path, member);

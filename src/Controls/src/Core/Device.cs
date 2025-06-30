@@ -83,7 +83,8 @@ namespace Microsoft.Maui.Controls
 				? FlowDirection.RightToLeft
 				: FlowDirection.LeftToRight;
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[Obsolete("Use BindableObject.Dispatcher.IsDispatchRequired instead.")]
 		public static bool IsInvokeRequired =>
 			Application.Current.FindDispatcher().IsDispatchRequired;

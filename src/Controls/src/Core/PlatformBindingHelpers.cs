@@ -12,7 +12,8 @@ using static System.String;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>	
+	/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>	
 	internal static class PlatformBindingHelpers
 	{
 		[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]

@@ -4,15 +4,17 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+	/// <summary>Contains configuration arguments for displaying platform-specific alert dialogs.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class AlertArguments
 	{
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="title">For internal use by the Microsoft.Maui.Controls platform.</param>
-		/// <param name="message">For internal use by the Microsoft.Maui.Controls platform.</param>
-		/// <param name="accept">For internal use by the Microsoft.Maui.Controls platform.</param>
-		/// <param name="cancel">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Initializes a new instance of the AlertArguments class with the specified dialog configuration.</summary>
+		/// <param name="title">The title text to display in the alert dialog header.</param>
+		/// <param name="message">The message text to display in the alert dialog body.</param>
+		/// <param name="accept">The text for the positive/accept button in the alert dialog.</param>
+		/// <param name="cancel">The text for the negative/cancel button in the alert dialog.</param>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public AlertArguments(string title, string message, string accept, string cancel)
 		{
 			Title = title;
@@ -38,7 +40,8 @@ namespace Microsoft.Maui.Controls.Internals
 		/// </summary>
 		public string Message { get; private set; }
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Gets the TaskCompletionSource used to handle the async result of the alert dialog interaction.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public TaskCompletionSource<bool> Result { get; }
 
 		public FlowDirection FlowDirection { get; set; }
@@ -48,8 +51,9 @@ namespace Microsoft.Maui.Controls.Internals
 		/// </summary>
 		public string Title { get; private set; }
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="result">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Sets the result of the alert dialog interaction.</summary>
+		/// <param name="result">True if the user selected the accept button, false if they selected cancel or dismissed the dialog.</param>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public void SetResult(bool result)
 		{
 			Result.TrySetResult(result);

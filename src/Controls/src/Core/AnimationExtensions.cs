@@ -195,9 +195,8 @@ namespace Microsoft.Maui.Controls
 		/// <param name="velocity">The amount that the animation progresses in each animation step. For example, a velocity of <c>1</c> progresses at the default speed.</param>
 		/// <param name="drag">The amount that the progression speed is reduced per frame. Can be negative.</param>
 		/// <param name="finished">An action to call when the animation is finished.</param>
-#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+		/// <param name="animationManager">The animation manager to use for this animation. If null, the default animation manager for the target object will be used.</param>
 		public static void AnimateKinetic(this IAnimatable self, string name, Func<double, double, bool> callback, double velocity, double drag, Action finished = null, IAnimationManager animationManager = null)
-#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			animationManager ??= self.GetAnimationManager();
 

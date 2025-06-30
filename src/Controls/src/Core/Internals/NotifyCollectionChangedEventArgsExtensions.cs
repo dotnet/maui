@@ -88,8 +88,8 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		/// <summary>For internal use by platform renderers.</summary>
-		/// <param name="e">For internal use by the Microsoft.Maui.Controls platform.</param>
-		/// <param name="count">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <param name="e">Internal parameter for platform use.</param>
+		/// <param name="count">Internal parameter for platform use.</param>
 		/// <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
 		public static NotifyCollectionChangedEventArgsEx WithCount(this NotifyCollectionChangedEventArgs e, int count)
 		{

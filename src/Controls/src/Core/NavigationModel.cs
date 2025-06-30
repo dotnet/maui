@@ -10,7 +10,8 @@ namespace Microsoft.Maui.Controls.Internals
 		readonly List<Page> _modalStack = new List<Page>();
 		readonly List<List<Page>> _navTree = new List<List<Page>>();
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public Page CurrentPage
 		{
 			get
@@ -33,13 +34,15 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public IReadOnlyList<Page> Modals
 		{
 			get { return _modalStack.AsReadOnly(); }
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public IEnumerable<Page> Roots
 		{
 			get
@@ -51,22 +54,25 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public IReadOnlyList<IReadOnlyList<Page>> Tree
 		{
 			get { return _navTree; }
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public void Clear()
 		{
 			_navTree.Clear();
 			_modalStack.Clear();
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
-		/// <param name="before">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="page">Internal parameter for platform use.</param>
+		/// <param name="before">Internal parameter for platform use.</param>
 		public void InsertPageBefore(Page page, Page before)
 		{
 			List<Page> currentStack = _navTree.Last();
@@ -78,8 +84,9 @@ namespace Microsoft.Maui.Controls.Internals
 			currentStack.Insert(index, page);
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="ancestralNav">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="ancestralNav">Internal parameter for platform use.</param>
 		/// <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
 		public Page Pop(Page ancestralNav)
 		{
@@ -99,7 +106,8 @@ namespace Microsoft.Maui.Controls.Internals
 			throw new InvalidNavigationException("Popped from unpushed item?");
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		/// <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
 		public Page PopModal()
 		{
@@ -126,7 +134,8 @@ namespace Microsoft.Maui.Controls.Internals
 			return modal;
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		/// <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
 		public Page PopTopPage()
 		{
@@ -150,8 +159,9 @@ namespace Microsoft.Maui.Controls.Internals
 			return itemToRemove;
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="ancestralNav">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="ancestralNav">Internal parameter for platform use.</param>
 		public void PopToRoot(Page ancestralNav)
 		{
 			ancestralNav = ancestralNav.AncestorToRoot();
@@ -169,9 +179,10 @@ namespace Microsoft.Maui.Controls.Internals
 			throw new InvalidNavigationException("Popped from unpushed item?");
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
-		/// <param name="ancestralNav">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="page">Internal parameter for platform use.</param>
+		/// <param name="ancestralNav">Internal parameter for platform use.</param>
 		public void Push(Page page, Page ancestralNav)
 		{
 			if (ancestralNav == null)
@@ -196,8 +207,9 @@ namespace Microsoft.Maui.Controls.Internals
 			throw new InvalidNavigationException("Invalid ancestor passed");
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="page">Internal parameter for platform use.</param>
 		public void PushModal(Page page)
 		{
 			var previousPage = CurrentPage;
@@ -217,8 +229,9 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-		/// <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="page">Internal parameter for platform use.</param>
 		/// <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
 		public bool RemovePage(Page page)
 		{

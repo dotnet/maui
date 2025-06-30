@@ -29,7 +29,8 @@ namespace Microsoft.Maui.Controls.Internals
 		/// <summary>For internal use by platform renderers.</summary>
 		public Task<bool> Task { get; set; }
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public NavigationRequestType RequestType { get; set; } = NavigationRequestType.Unknown;
 	}
 }
