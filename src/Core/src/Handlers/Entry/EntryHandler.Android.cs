@@ -87,7 +87,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.UpdateValue(nameof(IEntry.Text));
 
-			handler.PlatformView?.UpdateIsPassword(entry);
+			// If the text is longer than 5000 characters, apply MaxLength first
+			// to prevent Android from truncating the text when setting the input type
+			if (entry?.Text?.Length > 5000)
+			{
+				handler.UpdateValue(nameof(IEntry.MaxLength));
+			}
+
+			if (handler.PlatformView != null && entry != null)
+				handler.PlatformView.UpdateIsPassword(entry);
 		}
 
 		public static void MapHorizontalTextAlignment(IEntryHandler handler, IEntry entry) =>
