@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		Lazy<List<Page>> _pushStack = new Lazy<List<Page>>(() => new List<Page>());
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='Inner']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		public INavigation Inner
 		{
 			get { return _inner; }
@@ -67,19 +67,21 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='InsertPageBefore']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <param name="before">For internal use by the Microsoft.Maui.Controls platform.</param>
 		public void InsertPageBefore(Page page, Page before)
 		{
 			OnInsertPageBefore(page, before);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='ModalStack']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		public IReadOnlyList<Page> ModalStack
 		{
 			get { return GetModalStack(); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='NavigationStack']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		public IReadOnlyList<Page> NavigationStack
 		{
 			get { return GetNavigationStack(); }
@@ -149,7 +151,8 @@ namespace Microsoft.Maui.Controls.Internals
 			return OnPushModal(modal, animated);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='RemovePage']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
 		public void RemovePage(Page page)
 		{
 			OnRemovePage(page);

@@ -12,7 +12,8 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ListProxyChangedEventArgs.xml" path="//Member[@MemberName='NewList']/Docs/*" />
 		public IReadOnlyCollection<object> NewList { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListProxyChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <param name="oldList">To be added.</param>
+		/// <param name="newList">To be added.</param>
 		public ListProxyChangedEventArgs(IReadOnlyCollection<object> oldList, IReadOnlyCollection<object> newList)
 		{
 			OldList = oldList;

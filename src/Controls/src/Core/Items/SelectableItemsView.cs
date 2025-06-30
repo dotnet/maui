@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<SelectionChangedEventArgs> SelectionChanged;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectableItemsView.xml" path="//Member[@MemberName='UpdateSelectedItems']/Docs/*" />
+		/// <param name="newSelection">To be added.</param>
 		public void UpdateSelectedItems(IList<object> newSelection)
 		{
 			var oldSelection = new List<object>(SelectedItems);

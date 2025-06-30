@@ -12,7 +12,7 @@ using static System.String;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PlatformBindingHelpers.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.PlatformBindingHelpers']/Docs/*" />	
+	/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>	
 	internal static class PlatformBindingHelpers
 	{
 		[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]

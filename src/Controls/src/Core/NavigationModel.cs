@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Internals
 		readonly List<Page> _modalStack = new List<Page>();
 		readonly List<List<Page>> _navTree = new List<List<Page>>();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='CurrentPage']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		public Page CurrentPage
 		{
 			get
@@ -33,13 +33,13 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='Modals']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		public IReadOnlyList<Page> Modals
 		{
 			get { return _modalStack.AsReadOnly(); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='Roots']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		public IEnumerable<Page> Roots
 		{
 			get
@@ -51,20 +51,22 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='Tree']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		public IReadOnlyList<IReadOnlyList<Page>> Tree
 		{
 			get { return _navTree; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='Clear']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		public void Clear()
 		{
 			_navTree.Clear();
 			_modalStack.Clear();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='InsertPageBefore']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <param name="before">For internal use by the Microsoft.Maui.Controls platform.</param>
 		public void InsertPageBefore(Page page, Page before)
 		{
 			List<Page> currentStack = _navTree.Last();
@@ -76,7 +78,9 @@ namespace Microsoft.Maui.Controls.Internals
 			currentStack.Insert(index, page);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='Pop']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="ancestralNav">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
 		public Page Pop(Page ancestralNav)
 		{
 			ancestralNav = ancestralNav.AncestorToRoot();
@@ -95,7 +99,8 @@ namespace Microsoft.Maui.Controls.Internals
 			throw new InvalidNavigationException("Popped from unpushed item?");
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='PopModal']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
 		public Page PopModal()
 		{
 			if (_navTree.Count <= 1)
@@ -121,7 +126,8 @@ namespace Microsoft.Maui.Controls.Internals
 			return modal;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='PopTopPage']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
 		public Page PopTopPage()
 		{
 			Page itemToRemove;
@@ -144,7 +150,8 @@ namespace Microsoft.Maui.Controls.Internals
 			return itemToRemove;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='PopToRoot']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="ancestralNav">For internal use by the Microsoft.Maui.Controls platform.</param>
 		public void PopToRoot(Page ancestralNav)
 		{
 			ancestralNav = ancestralNav.AncestorToRoot();
@@ -162,7 +169,9 @@ namespace Microsoft.Maui.Controls.Internals
 			throw new InvalidNavigationException("Popped from unpushed item?");
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='Push']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <param name="ancestralNav">For internal use by the Microsoft.Maui.Controls platform.</param>
 		public void Push(Page page, Page ancestralNav)
 		{
 			if (ancestralNav == null)
@@ -187,7 +196,8 @@ namespace Microsoft.Maui.Controls.Internals
 			throw new InvalidNavigationException("Invalid ancestor passed");
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='PushModal']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
 		public void PushModal(Page page)
 		{
 			var previousPage = CurrentPage;
@@ -207,7 +217,9 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='RemovePage']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
 		public bool RemovePage(Page page)
 		{
 			bool found;

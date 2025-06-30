@@ -3,11 +3,13 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/PageExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.PageExtensions']/Docs/*" />
+	/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class PageExtensions
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/PageExtensions.xml" path="//Member[@MemberName='AncestorToRoot']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
 		public static Page AncestorToRoot(this Page page)
 		{
 			Element parent = page;

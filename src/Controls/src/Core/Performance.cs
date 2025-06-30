@@ -14,16 +14,17 @@ namespace Microsoft.Maui.Controls.Internals
 		void Start(string reference, string tag, string path, string member);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Performance.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Performance']/Docs/*" />
+	/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class Performance
 	{
 		static long Reference;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Performance.xml" path="//Member[@MemberName='Provider']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		public static IPerformanceProvider Provider { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Performance.xml" path="//Member[@MemberName='SetProvider']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="instance">For internal use by the Microsoft.Maui.Controls platform.</param>
 		public static void SetProvider(IPerformanceProvider instance)
 		{
 			Provider = instance;
@@ -49,7 +50,11 @@ namespace Microsoft.Maui.Controls.Internals
 			Provider?.Start(reference, tag, path, member);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Performance.xml" path="//Member[@MemberName='Stop']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="reference">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <param name="tag">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <param name="path">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <param name="member">For internal use by the Microsoft.Maui.Controls platform.</param>
 		public static void Stop(string reference, string tag = null, [CallerFilePath] string path = null, [CallerMemberName] string member = null)
 		{
 			Provider?.Stop(reference, tag, path, member);

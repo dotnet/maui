@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 {
 	using FormsElement = Maui.Controls.NavigationPage;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific.NavigationPage']/Docs/*" />
+	/// <summary>Provides access to the back button icon on navigation pages on the GTK platform.</summary>
 	public static class NavigationPage
 	{
 		/// <summary>Bindable property for attached property <c>BackButtonIcon</c>.</summary>

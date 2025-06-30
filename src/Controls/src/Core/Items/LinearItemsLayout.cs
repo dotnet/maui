@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/LinearItemsLayout.xml" path="Type[@FullName='Microsoft.Maui.Controls.LinearItemsLayout']/Docs/*" />
 	public class LinearItemsLayout : ItemsLayout
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/LinearItemsLayout.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <param name="orientation">To be added.</param>
 		public LinearItemsLayout([Parameter("Orientation")] ItemsLayoutOrientation orientation) : base(orientation)
 		{
 		}

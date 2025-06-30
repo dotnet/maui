@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
 	using FormsElement = Maui.Controls.Entry;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Entry.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Entry']/Docs/*" />
+	/// <summary>Provides access to the font weight for entry controls on the Tizen platform.</summary>
 	public static class Entry
 	{
 		/// <summary>Bindable property for <see cref="FontWeight"/>.</summary>
