@@ -123,6 +123,10 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <inheritdoc cref="ISafeAreaView.IgnoreSafeArea"/>
+		/// <remarks>
+		/// This property is deprecated. Use SafeAreaGuides.IgnoreSafeArea attached property instead for per-edge safe area control.
+		/// </remarks>
+		[System.Obsolete("Use SafeAreaGuides.IgnoreSafeArea attached property instead for per-edge safe area control.")]
 		public bool IgnoreSafeArea { get; set; }
 
 		/// <inheritdoc cref="ISafeAreaView3.IgnoreSafeAreaForEdge"/>
@@ -141,7 +145,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			// Fall back to the legacy IgnoreSafeArea property
+#pragma warning disable CS0618 // Type or member is obsolete
 			return IgnoreSafeArea;
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		private static bool AreArraysEqual(SafeAreaGroup[] arr1, SafeAreaGroup[] arr2)
