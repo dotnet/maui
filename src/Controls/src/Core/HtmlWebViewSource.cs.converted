@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BaseUrlProperty = BindableProperty.Create(nameof(BaseUrl), typeof(string), typeof(HtmlWebViewSource), default(string),
 			propertyChanged: (bindable, oldvalue, newvalue) => ((HtmlWebViewSource)bindable).OnSourceChanged());
 
-		/// <summary>The base URL for the source HTML document. This is a bindable property.</summary>
+		/// <summary>The base URL for the source HTML document.</summary>
 		public string BaseUrl
 		{
 			get { return (string)GetValue(BaseUrlProperty); }
