@@ -97,10 +97,7 @@ namespace Microsoft.Maui.Platform
 			SetMeasuredDimension((int)platformWidth, (int)platformHeight);
 		}
 
-		Rectangle AdjustForSafeArea(Rectangle bounds)
-		{
-			return AndroidSafeAreaHelper.AdjustForSafeArea(this, _context, bounds, CrossPlatformLayout);
-		}
+
 
 		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
 		// If you make changes here please review if those changes should also
@@ -114,8 +111,8 @@ namespace Microsoft.Maui.Platform
 
 			var destination = _context.ToCrossPlatformRectInReferenceFrame(l, t, r, b);
 
-			// Apply safe area adjustments if needed
-			destination = AdjustForSafeArea(destination);
+			// Apply safe area adjustments as padding if needed
+			ApplySafeAreaAsPadding();
 
 			CrossPlatformArrange(destination);
 
@@ -131,11 +128,44 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		void ApplySafeAreaAsPadding()
+		{
+			// Only apply safe area adjustments when IgnoreSafeArea = false
+			if (CrossPlatformLayout is not ISafeAreaView sav || sav.IgnoreSafeArea)
+			{
+				// Reset padding when ignoring safe area
+				SetPadding(0, 0, 0, 0);
+				return;
+			}
+
+			var insets = ViewCompat.GetRootWindowInsets(this);
+			if (insets == null)
+			{
+				SetPadding(0, 0, 0, 0);
+				return;
+			}
+
+			// Get system window insets (status bar, navigation bar, etc.)
+			var systemInsets = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+			var safeAreaInsets = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+
+			// Use the maximum of system insets and cutout insets for true safe area
+			var left = Math.Max(systemInsets?.Left ?? 0, safeAreaInsets?.Left ?? 0);
+			var top = Math.Max(systemInsets?.Top ?? 0, safeAreaInsets?.Top ?? 0);
+			var right = Math.Max(systemInsets?.Right ?? 0, safeAreaInsets?.Right ?? 0);
+			var bottom = Math.Max(systemInsets?.Bottom ?? 0, safeAreaInsets?.Bottom ?? 0);
+
+			// Apply as padding to the view group
+			SetPadding(left, top, right, bottom);
+		}
+
 		public override WindowInsets? OnApplyWindowInsets(WindowInsets? insets)
 		{
 			// Handle insets for any layout that cares about safe areas
 			if (AndroidSafeAreaHelper.ShouldHandleWindowInsets(CrossPlatformLayout))
 			{
+				// Apply padding and request layout instead of modifying bounds
+				ApplySafeAreaAsPadding();
 				RequestLayout();
 			}
 
