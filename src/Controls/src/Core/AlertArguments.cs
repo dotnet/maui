@@ -4,11 +4,15 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/AlertArguments.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.AlertArguments']/Docs/*" />
+	/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class AlertArguments
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/AlertArguments.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="title">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <param name="message">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <param name="accept">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <param name="cancel">For internal use by the Microsoft.Maui.Controls platform.</param>
 		public AlertArguments(string title, string message, string accept, string cancel)
 		{
 			Title = title;
@@ -34,7 +38,7 @@ namespace Microsoft.Maui.Controls.Internals
 		/// </summary>
 		public string Message { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/AlertArguments.xml" path="//Member[@MemberName='Result']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		public TaskCompletionSource<bool> Result { get; }
 
 		public FlowDirection FlowDirection { get; set; }
@@ -44,7 +48,8 @@ namespace Microsoft.Maui.Controls.Internals
 		/// </summary>
 		public string Title { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/AlertArguments.xml" path="//Member[@MemberName='SetResult']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="result">For internal use by the Microsoft.Maui.Controls platform.</param>
 		public void SetResult(bool result)
 		{
 			Result.TrySetResult(result);
