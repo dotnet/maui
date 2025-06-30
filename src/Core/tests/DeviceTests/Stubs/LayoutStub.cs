@@ -6,7 +6,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class LayoutStub : StubBase, ILayout
+	public class LayoutStub : StubBase, ILayout, ISafeAreaView
 	{
 		ILayoutManager _layoutManager;
 

@@ -1,5 +1,4 @@
 #nullable enable
-override Microsoft.Maui.Platform.LayoutViewGroup.OnApplyWindowInsets(Android.Views.WindowInsets? insets) -> Android.Views.WindowInsets?
 ~override Microsoft.Maui.Platform.MauiWebChromeClient.OnShowCustomView(Android.Views.View view, Android.Webkit.WebChromeClient.ICustomViewCallback callback) -> void
 Microsoft.Maui.Graphics.MauiDrawable.SetEmptyBorderBrush() -> void
 Microsoft.Maui.Handlers.DataFlowDirection

@@ -111,9 +111,6 @@ namespace Microsoft.Maui.Platform
 
 			var destination = _context.ToCrossPlatformRectInReferenceFrame(l, t, r, b);
 
-			// Apply safe area adjustments as padding if needed
-			ApplySafeAreaAsPadding();
-
 			CrossPlatformArrange(destination);
 
 			if (ClipsToBounds)
@@ -128,55 +125,20 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void ApplySafeAreaAsPadding()
+		protected override void OnAttachedToWindow()
 		{
-			// Only apply safe area adjustments when IgnoreSafeArea = false
-			if (CrossPlatformLayout is not ISafeAreaView sav || sav.IgnoreSafeArea)
-			{
-				// Reset padding when ignoring safe area
-				SetPadding(0, 0, 0, 0);
-				return;
-			}
-
-			var insets = ViewCompat.GetRootWindowInsets(this);
-			if (insets == null)
-			{
-				SetPadding(0, 0, 0, 0);
-				return;
-			}
-
-			// Get system window insets (status bar, navigation bar, etc.)
-			var systemInsets = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
-			var safeAreaInsets = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
-
-			// Use the maximum of system insets and cutout insets for true safe area
-			var left = Math.Max(systemInsets?.Left ?? 0, safeAreaInsets?.Left ?? 0);
-			var top = Math.Max(systemInsets?.Top ?? 0, safeAreaInsets?.Top ?? 0);
-			var right = Math.Max(systemInsets?.Right ?? 0, safeAreaInsets?.Right ?? 0);
-			var bottom = Math.Max(systemInsets?.Bottom ?? 0, safeAreaInsets?.Bottom ?? 0);
-
-			// Apply as padding to the view group
-			SetPadding(left, top, right, bottom);
+			base.OnAttachedToWindow();
+			
+			// Set up modern window insets handling when attached to window
+			AndroidSafeAreaHelper.SetupWindowInsetsHandling(this, CrossPlatformLayout);
 		}
 
-		public override WindowInsets? OnApplyWindowInsets(WindowInsets? insets)
+		protected override void OnDetachedFromWindow()
 		{
-			// Handle insets for any layout that cares about safe areas
-			if (AndroidSafeAreaHelper.ShouldHandleWindowInsets(CrossPlatformLayout))
-			{
-				// Apply padding and request layout instead of modifying bounds
-				ApplySafeAreaAsPadding();
-				RequestLayout();
-			}
-			else if (CrossPlatformLayout is ISafeAreaView sav && sav.IgnoreSafeArea)
-			{
-				// When ignoring safe areas, still call ApplySafeAreaAsPadding to reset padding
-				ApplySafeAreaAsPadding();
-				RequestLayout();
-			}
-
-			// Let the base implementation handle the insets
-			return base.OnApplyWindowInsets(insets);
+			base.OnDetachedFromWindow();
+			
+			// Clean up insets listener when detached
+			ViewCompat.SetOnApplyWindowInsetsListener(this, null);
 		}
 
 		public override bool OnTouchEvent(MotionEvent? e)
