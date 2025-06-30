@@ -168,6 +168,12 @@ namespace Microsoft.Maui.Platform
 				ApplySafeAreaAsPadding();
 				RequestLayout();
 			}
+			else if (CrossPlatformLayout is ISafeAreaView sav && sav.IgnoreSafeArea)
+			{
+				// When ignoring safe areas, still call ApplySafeAreaAsPadding to reset padding
+				ApplySafeAreaAsPadding();
+				RequestLayout();
+			}
 
 			// Let the base implementation handle the insets
 			return base.OnApplyWindowInsets(insets);

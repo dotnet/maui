@@ -5,7 +5,6 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
         android:id="@+id/navigation_layout"
-		android:fitsSystemWindows="true"
 		>
 
     <com.google.android.material.appbar.AppBarLayout
@@ -14,6 +13,7 @@
             android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
 			android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+			android:fitsSystemWindows="true"
 				>
 
         <androidx.fragment.app.FragmentContainerView
