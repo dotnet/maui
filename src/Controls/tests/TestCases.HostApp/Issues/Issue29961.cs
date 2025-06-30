@@ -32,7 +32,7 @@ public class Issue29961 : ContentPage
 	{
 		Button button = new Button
 		{
-			AutomationId = $"Issue21886_1ResizeBtn",
+			AutomationId = $"Issue29961_ResizeBtn",
 			Text = text,
 			HorizontalOptions = LayoutOptions.Fill
 		};
