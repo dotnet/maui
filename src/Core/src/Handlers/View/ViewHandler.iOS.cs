@@ -42,12 +42,49 @@ namespace Microsoft.Maui.Handlers
 				if (contextFlyoutContainer.ContextFlyout != null)
 				{
 					if (currentInteraction == null)
-						uiView.AddInteraction(new MauiUIContextMenuInteraction(handler));
+					{
+						if (uiView is WebKit.WKWebView webView)
+						{
+							// If the view is a WKWebView, we need to intercept right-clicks
+							// to show the context menu, so we add a mask view that intercepts
+							// right-clicks and passes them to the context menu interaction.
+							var maskView = new InterceptRightClickWebViewMaskView(uiView.Bounds)
+							{
+								BackgroundColor = UIColor.Clear,
+								AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight,
+								UserInteractionEnabled = true
+							};
+
+							webView.AddSubview(maskView);
+							maskView.AddInteraction(new MauiUIContextMenuInteraction(handler));
+						}
+						else
+						{
+							uiView.AddInteraction(new MauiUIContextMenuInteraction(handler));
+						}
+
+					}
 				}
 				else if (currentInteraction != null)
 				{
 					uiView.RemoveInteraction(currentInteraction);
 				}
+			}
+		}
+
+		class InterceptRightClickWebViewMaskView : PlatformView
+		{
+			public InterceptRightClickWebViewMaskView(CGRect frame) : base(frame) { }
+
+			public override PlatformView? HitTest(CGPoint point, UIEvent? uievent)
+			{
+				if (uievent is UIEvent { Type: UIEventType.Touches } touch)
+				{
+					if (touch.ButtonMask.HasFlag(UIEventButtonMask.Secondary))
+						return base.HitTest(point, uievent);
+				}
+
+				return null;
 			}
 		}
 #endif
