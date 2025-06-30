@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WinPoint = Windows.Foundation.Point;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Platform
 {
@@ -278,7 +279,22 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)
 		{
-			layoutPanel.UpdateInputTransparent(layout.InputTransparent, layout?.Background?.ToPlatform());
+			if (layoutPanel is null || layout is null)
+			{
+				return;
+			}
+
+			var background = layout.Background?.ToPlatform();
+			if (background is null)
+			{
+				// We can't have a null background, because that would allow input through
+				// So we'll make the background color transparent (visually the same as null, but consumes input)
+				layoutPanel.Background = new WSolidColorBrush(UI.Colors.Transparent);
+			}
+			else
+			{
+				layoutPanel.Background = background;
+			}
 		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
@@ -425,9 +441,16 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateInputTransparent(this LayoutPanel layoutPanel, ILayoutHandler handler, ILayout layout)
+		// TODO : Make public in NET 10.
+		internal static void UpdateInputTransparent(this LayoutPanel layoutPanel, ILayoutHandler handler, ILayout layout)
 		{
-			// Nothing to do yet, but we might need to adjust the wrapper view 
+			if (layoutPanel is null || layout is null)
+			{
+				return;
+			}
+
+			// Set hit test visibility based on input transparency
+			layoutPanel.IsHitTestVisible = !layout.InputTransparent;
 		}
 	}
 }
