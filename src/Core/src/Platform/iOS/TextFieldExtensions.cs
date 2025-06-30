@@ -25,9 +25,14 @@ namespace Microsoft.Maui.Platform
 		{
 			if (entry.IsPassword && textField.IsFirstResponder)
 			{
+				// Store the current text before disabling to prevent text loss
+				var currentText = textField.Text;
 				textField.Enabled = false;
 				textField.SecureTextEntry = true;
 				textField.Enabled = entry.IsEnabled;
+				// Restore the text after re-enabling if it was cleared
+				if (textField.Text != currentText)
+					textField.Text = currentText;
 				textField.BecomeFirstResponder();
 			}
 			else
