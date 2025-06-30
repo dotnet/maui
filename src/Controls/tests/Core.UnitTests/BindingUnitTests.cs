@@ -1245,24 +1245,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			;
 			create();
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
 			if (mode == BindingMode.TwoWay || mode == BindingMode.OneWay)
-				Assert.False(weakViewModel.IsAlive, "ViewModel wasn't collected");
+				Assert.False(await weakViewModel.WaitForCollect(), "ViewModel wasn't collected");
 
 			if (mode == BindingMode.TwoWay || mode == BindingMode.OneWayToSource)
-				Assert.False(weakBindable.IsAlive, "Bindable wasn't collected");
-
-			// WeakPropertyChangedProxy won't go away until the second GC, BindingExpressionPart unsubscribes in its finalizer
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+				Assert.False(await weakBindable.WaitForCollect(), "Bindable wasn't collected");
 
 			foreach (var proxy in proxies)
 			{
-				Assert.False(proxy.IsAlive, "WeakPropertyChangedProxy wasn't collected");
+				Assert.False(await proxy.WaitForCollect(), "WeakPropertyChangedProxy wasn't collected");
 			}
 		}
 
@@ -2229,7 +2220,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await TestHelpers.Collect();
 
-			Assert.False(bindingRef.IsAlive, "Binding should not be alive!");
+			Assert.False(await bindingRef.WaitForCollect(), "Binding should not be alive!");
 
 			GC.KeepAlive(viewModel);
 		}

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.BoxViewControlMainPage"
+             x:DataType="local:BoxViewViewModel"
+             Title="BoxViewControlPage">
+
+        <Grid>
+                <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- BoxView at top center -->
+                <BoxView Grid.Row="0"
+                         Color="{Binding Color}"
+                         WidthRequest="{Binding Width}"
+                         Opacity="{Binding Opacity}"
+                         HeightRequest="{Binding Height}"
+                         CornerRadius="{Binding CornerRadius}"
+                         IsVisible="{Binding IsVisible}"
+                         Shadow="{Binding BoxShadow}"
+                         VerticalOptions="Center"
+                         FlowDirection="{Binding FlowDirection}"
+                         HorizontalOptions="Center"/>
+
+                <!-- Controls at bottom -->
+                <Grid Grid.Row="1"
+                      ColumnSpacing="20"
+                      VerticalOptions="End"
+                      HorizontalOptions="Center">
+
+                        <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left Column - Entry Controls -->
+                        <StackLayout Grid.Column="0"
+                                     Grid.Row="0"
+                                     Padding="20"
+                                     Spacing="10">
+                                <Label FontAttributes="Bold"
+                                       AutomationId="CornerRadiusLabel"
+                                       Text="Corner Radius"/>
+                                <local:UITestEntry x:Name="CornerRadiusEntry"
+                                                   AutomationId="CornerRadiusEntry"
+                                                   Placeholder="e.g. 10,20,30,40"
+                                                   IsCursorVisible="False"
+                                                   Text="{Binding CornerRadiusEntryText, Mode=TwoWay}"
+                                                   TextChanged="OnCornerRadiusEntryChanged"/>
+                                <Label FontAttributes="Bold"
+                                       AutomationId="OpacityLabel"
+                                       Text="Opacity"/>
+                                <local:UITestEntry x:Name="OpacityEntry"
+                                                   Placeholder="Enter opacity (0.0 - 1.0)"
+                                                   AutomationId="OpacityEntry"
+                                                   IsCursorVisible="False"
+                                                   Text="{Binding OpacityEntryText, Mode=TwoWay}"
+                                                   TextChanged="OnOpacityChanged"/>
+
+                                <Button Text="Reset Changes"
+                                        WidthRequest="150"
+                                        AutomationId="ResetButton"
+                                        Clicked="OnResetChangesClicked"/>
+                        </StackLayout>
+
+                        <!-- Right Column - Controls -->
+                        <StackLayout Grid.Column="1"
+                                     Grid.Row="0"
+                                     Padding="20"
+                                     Spacing="1">
+                                <Label FontAttributes="Bold"
+                                       Text="Box Color"/>
+                                <VerticalStackLayout>
+                                        <RadioButton Content="Red"
+                                                     Value="Red"
+                                                     GroupName="Colors"
+                                                     AutomationId="RedRadioButton"
+                                                     IsChecked="{Binding IsRedChecked, Mode=TwoWay}"/>
+
+                                        <RadioButton Content="Blue"
+                                                     Value="Blue"
+                                                     GroupName="Colors"
+                                                     AutomationId="BlueRadioButton"
+                                                     IsChecked="{Binding IsBlueChecked, Mode=TwoWay}"/>
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout Spacing="5">
+                                        <HorizontalStackLayout
+                                                Spacing="10">
+                                                <CheckBox IsChecked="{Binding IsVisible}"
+                                                          AutomationId="VisibilityCheckBox"/>
+                                                <Label Text="Is Visible"
+                                                       VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                        <HorizontalStackLayout Spacing="10">
+                                                <CheckBox
+                                                        IsChecked="{Binding HasShadow}"
+                                                        AutomationId="ShadowCheckBox"/>
+                                                <Label Text="Has Shadow"
+                                                       VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+
+                                        <Label Text="Flow Direction:"
+                                                FontAttributes="Bold"
+                                                        FontSize="15"/>
+                                        <StackLayout Orientation="Horizontal"
+                                                        Spacing="10">
+
+                                                <CheckBox x:Name="FlowDirectionRTLCheckBox"
+                                                          AutomationId="FlowDirectionRTLCheckBox"
+                                                          IsChecked="False"
+                                                          CheckedChanged="OnFlowDirectionCheckBoxChanged"/>
+                                                <Label Text="RTL"
+                                                                VerticalOptions="Center"/>
+                                        </StackLayout>
+
+                                </VerticalStackLayout>
+                        </StackLayout>
+                </Grid>
+        </Grid>
+</ContentPage>

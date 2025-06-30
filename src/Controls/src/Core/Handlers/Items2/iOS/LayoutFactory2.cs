@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using CoreGraphics;
+using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
@@ -261,6 +263,137 @@ internal static class LayoutFactory2
 			gridItemsLayout.Span);
 
 
+#nullable disable
+	public static UICollectionViewLayout CreateCarouselLayout(
+		WeakReference<CarouselView> weakItemsView,
+		WeakReference<CarouselViewController2> weakController)
+	{
+		NSCollectionLayoutDimension itemWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
+		NSCollectionLayoutDimension itemHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
+		NSCollectionLayoutDimension groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
+		NSCollectionLayoutDimension groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
+		nfloat itemSpacing = 0;
+		NSCollectionLayoutGroup group = null;
+
+		var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
+		{
+			if (!weakItemsView.TryGetTarget(out var itemsView))
+			{
+				return null;
+			}
+
+			bool isHorizontal = itemsView.ItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
+			var peekAreaInsets = itemsView.PeekAreaInsets;
+
+			double sectionMargin = 0.0;
+
+			if (!isHorizontal)
+			{
+				sectionMargin = peekAreaInsets.VerticalThickness / 2;
+				var newGroupHeight = environment.Container.ContentSize.Height - peekAreaInsets.VerticalThickness;
+				groupHeight = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupHeight);
+				groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
+			}
+			else
+			{
+				sectionMargin = peekAreaInsets.HorizontalThickness / 2;
+				var newGroupWidth = environment.Container.ContentSize.Width - peekAreaInsets.HorizontalThickness;
+				groupWidth = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupWidth);
+				groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
+			}
+
+			// Each item has a size
+			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
+			// Create the item itself from the size
+			var item = NSCollectionLayoutItem.Create(layoutSize: itemSize);
+
+			//item.ContentInsets = new NSDirectionalEdgeInsets(0, itemInset, 0, 0);
+
+			var groupSize = NSCollectionLayoutSize.Create(groupWidth, groupHeight);
+
+			if (OperatingSystem.IsIOSVersionAtLeast(16))
+			{
+				group = isHorizontal
+					? NSCollectionLayoutGroup.GetHorizontalGroup(groupSize, item, 1)
+					: NSCollectionLayoutGroup.GetVerticalGroup(groupSize, item, 1);
+			}
+			else
+			{
+				group = isHorizontal
+					? NSCollectionLayoutGroup.CreateHorizontal(groupSize, item, 1)
+					: NSCollectionLayoutGroup.CreateVertical(groupSize, item, 1);
+			}
+
+			var section = NSCollectionLayoutSection.Create(group: group);
+			section.InterGroupSpacing = itemSpacing;
+			section.OrthogonalScrollingBehavior = isHorizontal
+				? UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered
+				: UICollectionLayoutSectionOrthogonalScrollingBehavior.None;
+
+			section.VisibleItemsInvalidationHandler = (items, offset, env) =>
+			{
+				if (!weakItemsView.TryGetTarget(out var itemsView) || !weakController.TryGetTarget(out var cv2Controller))
+				{
+					return;
+				}
+
+				var page = (offset.X + sectionMargin) / env.Container.ContentSize.Width;
+
+				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
+				{
+					return;
+				}
+
+				var pageIndex = (int)page;
+				var carouselPosition = pageIndex;
+
+				if (itemsView.Loop && cv2Controller.ItemsSource is ILoopItemsViewSource loopSource)
+				{
+					var maxIndex = loopSource.LoopCount - 1;
+
+					//To mimic looping, we needed to modify the ItemSource and inserted a new item at the beginning and at the end
+					if (pageIndex == maxIndex)
+					{
+						//When at last item, we need to change to 2nd item, so we can scroll right or left
+						pageIndex = 1;
+					}
+					else if (pageIndex == 0)
+					{
+						//When at first item, need to change to one before last, so we can scroll right or left
+						pageIndex = maxIndex - 1;
+					}
+
+					//since we added one item at the beginning of our ItemSource, we need to subtract one
+					carouselPosition = pageIndex - 1;
+
+					if (itemsView.Position != carouselPosition)
+					{
+						//If we are updating the ItemsSource, we don't want to scroll the CollectionView
+						if (cv2Controller.IsUpdating())
+						{
+							return;
+						}
+
+						var goToIndexPath = cv2Controller.GetScrollToIndexPath(carouselPosition);
+
+						//This will move the carousel to fake the loop
+						cv2Controller.CollectionView.ScrollToItem(
+							NSIndexPath.FromItemSection(pageIndex, 0),
+							UICollectionViewScrollPosition.Left,
+							false);
+					}
+				}
+
+				//Update the CarouselView position
+				cv2Controller?.SetPosition(carouselPosition);
+			};
+
+			return section;
+		});
+
+		return layout;
+	}
+#nullable enable
 	class CustomUICollectionViewCompositionalLayout : UICollectionViewCompositionalLayout
 	{
 		LayoutSnapInfo _snapInfo;

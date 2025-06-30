@@ -28,9 +28,9 @@ parameters:
   default: true
 
 - name: pushPackages
-  displayName: "Controls the script, allows for dry run"
+  displayName: "Controls the script, allows for dry run if false"
   type: boolean
-  default: false
+  default: true
 
 - name: nugetIncludeFilters
   displayName: "[OPTIONAL] Semi-colon (';') separated list of nugets packages to include"
@@ -59,6 +59,7 @@ variables:
 - group: DotNetBuilds storage account read tokens
 - group: AzureDevOps-Artifact-Feeds-Pats
 - group: DotNet-Maui-Release
+- group: .NET Core Nuget API Keys
 
 resources:
   repositories:
@@ -217,7 +218,7 @@ extends:
             displayName: list downloaded artifacts
 
           - powershell: >-
-              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "*Manifest*.nupkg;${{ parameters.nugetExcludeFilters }}"
+              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(DotNetNugetApiKey-A9)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "*Manifest*.nupkg;${{ parameters.nugetExcludeFilters }}" -NuGetOrgApiKey2 "$(DotNetNugetApiKey-A8)" -NuGetOrgApiKey3 "$(pat--nuget--xamarinc--push--wildcard)"
             displayName: Push workload packs to NuGet.org
             env:
               PUSH_PACKAGES: ${{ parameters.pushPackages }}
@@ -284,7 +285,7 @@ extends:
             displayName: list downloaded artifacts
 
           - powershell: >-
-              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "*Manifest*.nupkg;${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "${{ parameters.nugetExcludeFilters }}"
+              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(DotNetNugetApiKey-A9)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "*Manifest*.nupkg;${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "${{ parameters.nugetExcludeFilters }}"  -NuGetOrgApiKey2 "$(DotNetNugetApiKey-A8)" -NuGetOrgApiKey3 "$(pat--nuget--xamarinc--push--wildcard)"
             displayName: Push workload manifests to NuGet.org
             env:
               PUSH_PACKAGES: ${{ parameters.pushPackages }}

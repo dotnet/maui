@@ -2,6 +2,7 @@
 using Android.Content;
 using Android.Runtime;
 using Android.Text;
+using Android.Text.Method;
 using Android.Util;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
@@ -31,6 +32,10 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
+		// MovementMethod handles cursor positioning, scrolling, and text selection (per Android docs).
+		// Since text is readonly, we disable it to avoid unnecessary cursor navigation during keyboard input.
+		protected override IMovementMethod? DefaultMovementMethod => null;
+
 		public Action? ShowPicker { get; set; }
 		public Action? HidePicker { get; set; }
 
@@ -44,10 +49,7 @@ namespace Microsoft.Maui.Platform
 			if (Background != null)
 				DrawableCompat.Wrap(Background);
 
-			Focusable = true;
-			FocusableInTouchMode = false;
-			Clickable = true;
-			InputType = InputTypes.Null;
+			PickerManager.Init(this);
 
 			SetOnClickListener(this);
 		}

@@ -336,7 +336,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (String.IsNullOrWhiteSpace(text) && image == null)
 			{
-				image = _context.Shell.FlyoutIcon;
+				//Add the FlyoutIcon only if the FlyoutBehavior is Flyout
+				if (_flyoutBehavior == FlyoutBehavior.Flyout)
+				{
+					image = _context.Shell.FlyoutIcon;
+				}
 			}
 
 			if (!IsRootPage)
@@ -803,7 +807,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void SetSearchBarIcon(UISearchBar searchBar, ImageSource source, UISearchBarIcon icon)
 		{
-			source.LoadImage(source.FindMauiContext(), image =>
+			var mauiContext = source.FindMauiContext(true);
+
+			if (mauiContext is null)
+			{
+				return;
+			}
+
+			source.LoadImage(mauiContext, image =>
 			{
 				var result = image?.Value;
 				if (result != null)
@@ -829,6 +840,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			UpdateToolbarItemsInternal();
+
+			//UIKIt will try to override our colors when the SearchController is inside the NavigationBar
+			//Best way was to force them to be set again when page is loaded / ViewDidLoad
+			_searchHandlerAppearanceTracker?.UpdateSearchBarColors();
+
 			CheckAppeared();
 		}
 
@@ -850,9 +866,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			_isVisiblePage = true;
-			//UIKIt will try to override our colors when the SearchController is inside the NavigationBar
-			//Best way was to force them to be set again when page is Appearing / ViewDidLoad
-			_searchHandlerAppearanceTracker?.UpdateSearchBarColors();
 			UpdateShellToMyPage();
 
 			if (_context.Shell.Toolbar != null)

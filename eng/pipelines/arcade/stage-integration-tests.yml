@@ -1,6 +1,6 @@
 parameters:
   stageDependsOn: []
-  jobMatrix: []  # Should define jobMatrix.name, jobMatrix.displayName, jobMatrix.pool, jobMatrix.timeout, jobMatrix.testCategory
+  jobMatrix: [] # Should define jobMatrix.name, jobMatrix.displayName, jobMatrix.pool, jobMatrix.timeout, jobMatrix.testCategory
   mauiSourcePath: $(Build.SourcesDirectory)
   buildConfig: Debug
   repoLogPath: $(Build.Arcade.LogsPath)
@@ -31,6 +31,9 @@ stages:
           project: ${{ parameters.mauiSourcePath }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
           arguments: '-c ${{ parameters.buildConfig }} --filter "Category=${{ job.testCategory }}" --logger trx --results-directory $(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests'
           useExitCodeForErrors: true
+          ${{ if eq(job.testCategory, 'RunOniOS') }}:
+            envVariables:
+              IOS_TEST_DEVICE: ios-simulator-64_18.0
 
       - task: PublishTestResults@2
         inputs:
