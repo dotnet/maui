@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 	{
 		/// <summary>
 		/// Adjusts the given bounds to account for safe areas if the layout implements ISafeAreaView
-		/// and has IgnoreSafeArea set to false.
+		/// and has IgnoreSafeArea set to false (content should respect safe areas).
 		/// </summary>
 		/// <param name="view">The Android view to get window insets from</param>
 		/// <param name="context">The Android context for unit conversion</param>
@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Platform
 		/// <returns>Adjusted bounds with safe area insets applied, or original bounds if no adjustment needed</returns>
 		public static Rectangle AdjustForSafeArea(View view, Context? context, Rectangle bounds, ICrossPlatformLayout? layout)
 		{
+			// Only apply safe area adjustments when IgnoreSafeArea = false (content should respect safe areas)
+			// When IgnoreSafeArea = true, content can go edge-to-edge without adjustments
 			if (layout is not ISafeAreaView sav || sav.IgnoreSafeArea || context == null)
 			{
 				return bounds;
@@ -62,6 +64,7 @@ namespace Microsoft.Maui.Platform
 		/// <returns>True if the layout cares about safe areas and should update on inset changes</returns>
 		public static bool ShouldHandleWindowInsets(ICrossPlatformLayout? layout)
 		{
+			// Handle window insets when IgnoreSafeArea = false (content should respect safe areas)
 			return layout is ISafeAreaView sav && !sav.IgnoreSafeArea;
 		}
 	}
