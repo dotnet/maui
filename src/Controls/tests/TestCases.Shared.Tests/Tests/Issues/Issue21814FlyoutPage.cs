@@ -70,6 +70,10 @@ public class Issue21814FlyoutPage : _IssuesUITest
 	[Category(UITestCategories.Navigation)]
 	public void NavigationFromItem2ToItem3ShowsCorrectParameters()
 	{
+#if IOS || MACCATALYST
+		App.TapBackArrow("Item 1");
+#endif
+		
 		// Navigate to Item 3
 		OpenFlyoutMenu();
 		App.Tap(Item3MenuItem);
