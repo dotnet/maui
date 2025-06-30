@@ -1,4 +1,5 @@
 #nullable enable
+override Microsoft.Maui.Platform.LayoutViewGroup.OnApplyWindowInsets(Android.Views.WindowInsets? insets) -> Android.Views.WindowInsets?
 ~override Microsoft.Maui.Platform.MauiWebChromeClient.OnShowCustomView(Android.Views.View view, Android.Webkit.WebChromeClient.ICustomViewCallback callback) -> void
 Microsoft.Maui.Graphics.MauiDrawable.SetEmptyBorderBrush() -> void
 Microsoft.Maui.Handlers.DataFlowDirection
@@ -64,3 +65,4 @@ static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateRippleColor(this Goog
 static Microsoft.Maui.Platform.SearchViewExtensions.UpdateReturnType(this AndroidX.AppCompat.Widget.SearchView! searchView, Microsoft.Maui.ISearchBar! searchBar) -> void
 *REMOVED*virtual Microsoft.Maui.PropertyMapper.ClearKeyCache() -> void
 *REMOVED*virtual Microsoft.Maui.PropertyMapper.UpdateKeys.get -> System.Collections.Generic.IReadOnlyCollection<string!>!
+~override Microsoft.Maui.Platform.WrapperView.OnApplyWindowInsets(Android.Views.WindowInsets insets) -> Android.Views.WindowInsets
