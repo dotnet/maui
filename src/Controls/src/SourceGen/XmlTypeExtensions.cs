@@ -63,11 +63,11 @@ static class XmlTypeExtensions
 		var xmlnsDefinitions = xmlnsCache.XmlnsDefinitions;
 		var symbols = xmlType.GetTypeReferences(
 			xmlnsDefinitions,
-			compilation.AssemblyName!, 
+			compilation.AssemblyName!,
 			typeInfo =>
 			{
 				var ts = compilation.GetTypesByMetadataName($"{typeInfo.clrNamespace}.{typeInfo.typeName}")
-						.Where(t=>t.IsPublicOrVisibleInternal(xmlnsCache.InternalsVisible));
+						.Where(t => t.IsPublicOrVisibleInternal(xmlnsCache.InternalsVisible));
 				if (ts.Count() == 1)
 					return ts.Single();
 				if (ts.Count() > 1 && reportDiagnostic is not null)
@@ -75,7 +75,7 @@ static class XmlTypeExtensions
 
 				return null;
 			}
-		);
+		).Distinct(SymbolEqualityComparer.Default).Cast<INamedTypeSymbol>();
 
 		if (symbols is null || !symbols.Any())
 		{

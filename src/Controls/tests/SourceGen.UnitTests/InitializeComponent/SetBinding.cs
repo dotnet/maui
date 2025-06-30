@@ -46,14 +46,16 @@ public partial class TestPage : ContentPage
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+#if _MAUIXAML_SG_NULLABLE_ENABLE
 #nullable enable
+#endif
 
 namespace Test;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", "1.0.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=10.0.0.0, Culture=neutral, PublicKeyToken=null", "10.0.0.0")]
 public partial class TestPage
 {
-	private partial void InitializeComponentSourceGen()
+	private partial void InitializeComponent()
 	{
 		var bindingExtension = new global::Microsoft.Maui.Controls.Xaml.BindingExtension();
 #if _MAUIXAML_SG_SOURCEINFO
@@ -68,7 +70,7 @@ public partial class TestPage
 #line 1 "Test.xaml"
 		bindingExtension.Path = "Title";
 #line default
-		var bindingBase = new global::Microsoft.Maui.Controls.Binding(bindingExtension.Path, bindingExtension.Mode, bindingExtension.Converter, bindingExtension.ConverterParameter, bindingExtension.StringFormat, bindingExtension.Source) { UpdateSourceEventName = bindingExtension.UpdateSourceEventName, FallbackValue = bindingExtension.FallbackValue, TargetNullValue = bindingExtension.TargetNullValue, DataType = null };
+		var bindingBase = new global::Microsoft.Maui.Controls.Binding(bindingExtension.Path, bindingExtension.Mode, bindingExtension.Converter, bindingExtension.ConverterParameter, bindingExtension.StringFormat, bindingExtension.Source) { UpdateSourceEventName = bindingExtension.UpdateSourceEventName, FallbackValue = bindingExtension.FallbackValue, TargetNullValue = bindingExtension.TargetNullValue };
 #if _MAUIXAML_SG_SOURCEINFO
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(bindingBase!) == null)
 			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingBase!, new global::System.Uri("Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), -1, -1);

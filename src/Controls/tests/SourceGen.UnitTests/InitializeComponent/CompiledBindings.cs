@@ -62,14 +62,16 @@ public struct Bar
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+#if _MAUIXAML_SG_NULLABLE_ENABLE
 #nullable enable
+#endif
 
 namespace Test;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", "1.0.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=10.0.0.0, Culture=neutral, PublicKeyToken=null", "10.0.0.0")]
 public partial class TestPage
 {
-	private partial void InitializeComponentSourceGen()
+	private partial void InitializeComponent()
 	{
 		var bindingExtension = new global::Microsoft.Maui.Controls.Xaml.BindingExtension();
 #if _MAUIXAML_SG_SOURCEINFO
@@ -102,7 +104,7 @@ public partial class TestPage
 		extension.FallbackValue,
 		extension.TargetNullValue);
 
-	[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.BindingSourceGen, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", "1.0.0.0")]
+	[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.BindingSourceGen, Version=10.0.0.0, Culture=neutral, PublicKeyToken=null", "10.0.0.0")]
 	static global::Microsoft.Maui.Controls.BindingBase Create(
 		global::System.Func<global::Test.TestPage, string> getter,
 		global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,

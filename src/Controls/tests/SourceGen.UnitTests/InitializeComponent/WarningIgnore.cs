@@ -49,16 +49,18 @@ public partial class TestPage : ContentPage
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+#if _MAUIXAML_SG_NULLABLE_ENABLE
 #nullable enable
+#endif
 
 #pragma warning disable 0168, CS0612, FOOBAR
 
 namespace Test;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", "1.0.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=10.0.0.0, Culture=neutral, PublicKeyToken=null", "10.0.0.0")]
 public partial class TestPage
 {
-	private partial void InitializeComponentSourceGen()
+	private partial void InitializeComponent()
 	{
 		var button = new global::Microsoft.Maui.Controls.Button();
 #if _MAUIXAML_SG_SOURCEINFO
