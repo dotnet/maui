@@ -129,7 +129,7 @@ stages:
           - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:buidltasks.binlog $(_OfficialBuildIdArgs)
             displayName: Build BuildTasks
 
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog $(_OfficialBuildIdArgs)
+          - script: $(_buildScriptMacOS) -restore -build -a x64 -configuration $(_BuildConfig) /p:BuildDeviceTests=true  /bl:BuildDeviceTests.binlog $(_OfficialBuildIdArgs)
             displayName: Build DeviceTests
 
           - template: /eng/common/templates-official/steps/send-to-helix.yml
