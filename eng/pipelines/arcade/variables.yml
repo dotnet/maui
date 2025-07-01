@@ -5,11 +5,21 @@ variables:
 - name: Build.Arcade.ArtifactsPath
   value: $(Build.SourcesDirectory)/artifacts/
 - name: Build.Arcade.LogsPath
-  value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
+  value: $(Build.Arcade.ArtifactsPath)log/
 - name: Build.Arcade.TestResultsPath
-  value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
+  value: $(Build.Arcade.ArtifactsPath)TestResults/
 - name: _buildScript
-  value: $(Build.SourcesDirectory)/build.cmd -ci
+  value: $(Build.SourcesDirectory)\build.cmd -ci
+- name: _buildScriptMacOS
+  value: $(Build.SourcesDirectory)/build.sh -ci -warnAsError 0
+- name: _helixScriptMacOS
+  value: $(Build.SourcesDirectory)/helix.sh
+- name: _helixScript
+  value: $(Build.SourcesDirectory)\helix.cmd
+- name: _msbuildCommand
+  value: powershell -ExecutionPolicy ByPass -NoProfile $(Build.SourcesDirectory)\eng\common\msbuild.ps1 -ci
+- name: _msbuildMacOsCommand
+  value: $(Build.SourcesDirectory)/eng/common/msbuild.sh --ci
 - name: _BuildOfficalId
   value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
 - name: TreatWarningsAsErrors
@@ -33,7 +43,7 @@ variables:
   # needed for darc (dependency flow) publishing
   - name: _PublishArgs
     value: >-
-          /p:DotNetPublishUsingPipelines=true
+      /p:DotNetPublishUsingPipelines=true
   # - name: _OfficialBuildIdArgs
   #   value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
   # needed for signing

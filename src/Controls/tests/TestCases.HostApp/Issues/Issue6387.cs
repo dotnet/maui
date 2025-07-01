@@ -1,4 +1,4 @@
-﻿namespace Controls.TestCases.HostApp.Issues;
+﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 6387, "ArgumentException thrown when a negative value is set for the padding of a label", PlatformAffected.UWP)]
 public class Issue6387 : ContentPage
