@@ -35,60 +35,18 @@ public class Issue27666_NavigationPage : TestNavigationPage
 	}
 }
 
-public partial class Issue27666 : TestContentPage
+public partial class Issue27666 : ContentPage
 {
 	ObservableCollection<string> items;
-	CollectionView collectionView;
-	protected override void Init()
+
+	public Issue27666()
 	{
+		InitializeComponent();
 		items = new ObservableCollection<string>(Enumerable.Range(1, 30).Select(i => $"Item {i}"));
-		Button itemSpacingButton = CreateButton("Update ItemSpacing", "UpdateItemSpacingButton", OnItemSpacingButtonClicked);
-
-		collectionView = new CollectionView
-		{
-			AutomationId = "ItemsLayoutCollectionView",
-			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
-			ItemsSource = items,
-			ItemTemplate = new DataTemplate(() =>
-			{
-				var label = new Label();
-				label.SetBinding(Label.TextProperty, ".");
-				return new Border
-				{
-					Content = label,
-					Padding = 10,
-					Margin = new Thickness(5),
-					BackgroundColor = Colors.LightGray,
-				};
-			})
-		};
-
-		Grid grid = new Grid
-		{
-			RowDefinitions =
-			{
-				new RowDefinition { Height = GridLength.Auto },
-				new RowDefinition { Height = GridLength.Star }
-			},
-			RowSpacing = 5
-		};
-		grid.Add(itemSpacingButton, 0, 0);
-		grid.Add(collectionView, 0, 1);
-
-		Content = grid;
+		collectionView.ItemsSource = items;
 	}
 
-	Button CreateButton(string text, string automationId, EventHandler onClick)
-	{
-		return new Button
-		{
-			Text = text,
-			AutomationId = automationId,
-			Command = new Command(_ => onClick(this, EventArgs.Empty))
-		};
-	}
-
-	void OnItemSpacingButtonClicked(object sender, EventArgs e)
+	private void OnItemSpacingButtonClicked(object sender, EventArgs e)
 	{
 		if (collectionView.ItemsLayout is LinearItemsLayout layout)
 		{
