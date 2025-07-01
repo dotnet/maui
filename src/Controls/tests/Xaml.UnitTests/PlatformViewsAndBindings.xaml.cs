@@ -223,17 +223,10 @@ public class MockAndroidPlatformBindingService : INativeBindingService
 	}
 }
 
+[XamlProcessing(XamlInflator.Default, true)]
 public partial class PlatformViewsAndBindings : ContentPage
 {
-	public PlatformViewsAndBindings()
-	{
-		InitializeComponent();
-	}
-
-	public PlatformViewsAndBindings(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
+	public PlatformViewsAndBindings() => InitializeComponent();
 
 	[TestFixture]
 	[Ignore("fails for now")]
@@ -272,15 +265,14 @@ public partial class PlatformViewsAndBindings : ContentPage
 			return p;
 		}
 
-		[TestCase(false, "iOS")]
-		[TestCase(false, "Android")]
+		[Test]
 		[Ignore("fails for now")]
 		//[TestCase(true)]
-		public void PlatformInContentView(bool useCompiledXaml, string platform)
+		public void PlatformInContentView([Values] XamlInflator inflator, [Values("iOS", "Android")]string platform)
 		{
 			var realPlatform = SetUpPlatform(platform);
 
-			var layout = new PlatformViewsAndBindings(useCompiledXaml);
+			var layout = new PlatformViewsAndBindings(inflator);
 			layout.BindingContext = new
 			{
 				Baz = "Bound Value",
