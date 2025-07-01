@@ -3,7 +3,7 @@
         <HelixType>test/devices/</HelixType>
         <HelixBuild Condition="'$(HelixBuild)' == ''">$(BUILD_BUILDNUMBER)</HelixBuild>
         <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
-        <HelixTargetQueues Condition="'$(TargetOS)' == 'ios'">osx.arm64.scouting.Open</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'ios'">osx.15.arm64.Open</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'android'">ubuntu.2204.amd64.android.29.open</HelixTargetQueues>
         <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
         <IncludeDotNetCli>true</IncludeDotNetCli>
@@ -31,7 +31,7 @@
         <IncludeXHarnessCli>true</IncludeXHarnessCli>
         <!-- Optional: Specific version of Xcode to use. If omitted, xcode-select is used to
         determine the version -->
-        <XHarnessXcodeVersion>16.3</XHarnessXcodeVersion>
+        <!-- <XHarnessXcodeVersion>16.3</XHarnessXcodeVersion> -->
     </PropertyGroup>
 
     <ItemGroup Condition="'$(TargetsAppleMobile)' == 'true'">
