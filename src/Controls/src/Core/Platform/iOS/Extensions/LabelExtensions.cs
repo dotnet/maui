@@ -14,7 +14,22 @@ namespace Microsoft.Maui.Controls.Platform
 			switch (label.TextType)
 			{
 				case TextType.Html:
-					platformLabel.UpdateTextHtml(label);
+					// NOTE: Setting HTML text this will crash with some sort of consistency error.
+					// https://github.com/dotnet/maui/issues/25946
+					// Here we have to dispatch back the the main queue to avoid the crash.
+					// This is observed with CarouselView 1 but not with 2, so hopefully this
+					// will be just disappear once we switch.
+					CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
+					{
+						platformLabel.UpdateTextHtml(label);
+
+						if (label.Handler is LabelHandler labelHandler)
+							Label.MapFormatting(labelHandler, label);
+
+						// NOTE: Because we are updating text outside the normal layout
+						// pass, we need to invalidate the measure for the next pass.
+						label.InvalidateMeasure();
+					});
 					break;
 
 				default:

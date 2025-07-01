@@ -1,6 +1,13 @@
 name: "Copilot Setup Steps"
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
 
 jobs:
   copilot-setup-steps:
@@ -21,3 +28,22 @@ jobs:
         shell: pwsh
         continue-on-error: true
         run: .\build.ps1
+
+      - name: Add the local .NET to the envvars (PATH, DOTNET_ROOT)
+        shell: bash
+        run: |
+          echo "$GITHUB_WORKSPACE/.dotnet" >> "$GITHUB_PATH"
+          echo "DOTNET_ROOT=$GITHUB_WORKSPACE/.dotnet" >> "$GITHUB_ENV"
+          echo "DOTNET_INSTALL_DIR=$GITHUB_WORKSPACE/.dotnet" >> "$GITHUB_ENV"
+
+      - name: Ensure we are using the correct .NET
+        shell: pwsh
+        run: |
+          dotnet --version
+          dotnet --info
+          dotnet workload --info
+
+      - name: Reset tracked files to clean workspace
+        shell: bash
+        run: |
+          git reset --hard HEAD
