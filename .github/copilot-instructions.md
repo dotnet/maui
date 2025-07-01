@@ -152,6 +152,27 @@ For compatibility with specific branches:
 
 ## Contribution Guidelines
 
+### Handling Existing PRs for Assigned Issues
+
+**🚨 CRITICAL REQUIREMENT: Always develop your own solution first, then compare with existing PRs.**
+
+When working on an issue:
+
+1. **FIRST: Develop your own solution** - Come up with your own implementation approach without looking at existing PRs. Analyze the issue, understand the requirements, and design your solution independently
+2. **THEN: Search for existing PRs** - After you have developed your solution approach, search for open PRs that address the same issue using GitHub search or issue links
+3. **Compare solutions thoroughly** - Examine the existing PR's proposed changes, implementation approach, and any discussion in comments. Compare this to your own solution
+4. **Evaluate and choose the best approach** - Decide which solution (yours or the existing PR's) better addresses the issue and follows best practices
+5. **Always document your decision** - In your PR description, always include a summary comparing your solution to any other open PRs for the issue you are working on, and explain why you chose your approach over the alternatives
+6. **Report on why you didn't choose other solutions** - Always make sure to explain the specific reasons why you didn't go with other existing solutions, including any concerns or issues you identified
+7. **It's OK to abandon existing PRs** - If you're not confident enough in the existing PR's approach, it's completely acceptable to abandon it and implement your own solution
+8. **Pull existing changes when you prefer them** - If you determine the existing solution is better than your approach, pull those changes into your PR as the foundation for your work, then find areas to improve and add tests
+9. **Identify improvement opportunities** - Whether you use your solution or an existing one, look for areas where you can enhance it, such as:
+   - Adding comprehensive test coverage
+   - Improving code quality, performance, or maintainability
+   - Enhancing error handling or edge case coverage
+   - Better documentation or code comments
+   - More robust implementation patterns
+
 ### Files to Never Commit
 - **Never** check in changes to `cgmanifest.json` files
 - **Never** check in changes to `templatestrings.json` files
@@ -162,24 +183,6 @@ Since coding agents function as both CI and pair programmers, they need to handl
 
 - **Always reset changes to `cgmanifest.json` files** - These are generated during CI builds and should not be committed by coding agents
 - **Always reset changes to `templatestrings.json` files** - These localization files are auto-generated and should not be committed by coding agents
-
-### Handling Existing PRs for Assigned Issues
-When working on an issue that already has an open PR created by someone else:
-
-1. **Review the existing PR thoroughly** - Examine the proposed changes, implementation approach, and any discussion in comments
-2. **Provide analysis and opinion** - Evaluate whether the existing solution addresses the issue effectively and follows best practices
-3. **Always include a summary** - In your PR description, always include a summary of what you think about any other open PRs for the issue you are working on
-4. **Don't force using existing approach** - Don't try too hard to base your work off the existing PR if you're not confident in that approach
-5. **It's OK to abandon existing PRs** - If you're not confident enough in the existing PR's approach, it's completely acceptable to abandon it and implement a different solution
-6. **Document abandonment reasoning** - If you do abandon an existing PR approach, make sure to add clear notes explaining why you abandoned that approach and what concerns or issues you identified
-7. **Use existing PR as foundation when valid** - If the existing solution is solid and you're confident in the approach, use it as the starting point and foundation for your work
-8. **Identify improvement opportunities** - Look for areas where you can enhance the solution, such as:
-   - Adding comprehensive test coverage
-   - Improving code quality, performance, or maintainability
-   - Enhancing error handling or edge case coverage
-   - Better documentation or code comments
-   - More robust implementation patterns
-9. **Build upon, don't duplicate** - When using an existing approach, extend and improve the existing work rather than creating a competing solution from scratch
 
 ### Branching
 - `main` - For bug fixes without API changes
