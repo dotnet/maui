@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -252,6 +253,27 @@ namespace Microsoft.Maui.Controls
 		{
 			PassthroughElements = new List<IView>();
 			PropertyChanged += TitleBar_PropertyChanged;
+			SizeChanged += (s, e) =>
+            {
+                #if MACCATALYST
+                if (Window?.Handler?.PlatformView is UIKit.UIWindow uiwindow)
+                {
+                    if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
+                    {
+                        var windowScene = uiwindow.WindowScene;
+                        if (windowScene != null)
+                        {
+                            var fullScreen = windowScene.FullScreen;
+                            if (_templateRoot is Grid contentGrid)
+                            {
+                                // If in fullscreen, remove left margin, otherwise set 80px margin
+                                contentGrid.Margin = fullScreen ? new Thickness(0) : new Thickness(80, 0, 0, 0);
+                            }
+                        }
+                    }
+                }
+                #endif
+            };
 
 			if (ControlTemplate is null)
 			{
@@ -347,9 +369,6 @@ namespace Microsoft.Maui.Controls
 			#region Root Grid
 			var contentGrid = new Grid()
 			{
-#if MACCATALYST
-				Margin = new Thickness(80, 0, 0, 0),
-#endif
 				HorizontalOptions = LayoutOptions.Fill,
 				ColumnDefinitions =
 				{
