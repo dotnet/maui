@@ -98,7 +98,7 @@
         </ItemGroup>
 
         <ItemGroup Condition="'$(TargetOS)' == 'android'">
-            <_apks Include="%(_MAUIScenarioSearch.PayloadDirectory)/Debug/net9.0-android/**/*Signed.apk" />
+            <_apks Include="%(_MAUIScenarioSearch.PayloadDirectory)/Debug/net9.0-android/**/*.apk" />
             <XHarnessApkToTest Include="@(_apks)">
                 <Targets>arm64-v8a</Targets>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
