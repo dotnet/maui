@@ -276,7 +276,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			try
 			{
-				using var httpClient = new HttpClient();
+				using var httpClient = HttpClientUtilities.CreateHttpClient();
 				httpClient.Timeout = TimeSpan.FromSeconds(5);
 				using var response = await httpClient.GetAsync("https://1.1.1.1");
 				return response.IsSuccessStatusCode;

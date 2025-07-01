@@ -13,6 +13,7 @@ using GMap.NET.MapProviders;
 using Newtonsoft.Json;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform.GTK;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Maps.GTK
 {
@@ -318,7 +319,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.GTK
 			string uri = "http://checkip.dyndns.org/";
 			string ip = string.Empty;
 
-			using (var client = new HttpClient())
+			using (var client = HttpClientUtilities.CreateHttpClient())
 			{
 				var result = client.GetAsync(uri).Result.Content.ReadAsStringAsync().Result;
 

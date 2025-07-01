@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 {
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 
 		public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
 		{
-			using (var client = new HttpClient())
+			using (var client = HttpClientUtilities.CreateHttpClient())
 			{
 				// Do not remove this await otherwise the client will dispose before
 				// the stream even starts

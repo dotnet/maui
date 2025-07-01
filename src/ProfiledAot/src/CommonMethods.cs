@@ -14,6 +14,8 @@
 // Opt out of this warning, because we actually *want* culture-aware string behavior in the AOT profile
 #pragma warning disable CA1307
 
+using Microsoft.Maui.Platform;
+
 static class CommonMethods
 {
 	// Returns '200 OK' if the caller wants to set that on the UI
@@ -41,7 +43,7 @@ static class CommonMethods
 		Color c = Color.Parse("MistyRose");
 		c = Color.Parse("#663399");
 
-		using var client = new HttpClient();
+		using var client = HttpClientUtilities.CreateHttpClient();
 		var send = client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url));
 		var getstring = client.GetStringAsync(url);
 		await Task.WhenAll(send, getstring, Task.CompletedTask, Task.Delay(1));
