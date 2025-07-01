@@ -318,9 +318,17 @@ namespace Microsoft.Maui.Controls
 		{
 			PassthroughElements = new List<IView>();
 			PropertyChanged += TitleBar_PropertyChanged;
-			SizeChanged += (s, e) =>
-            {
-                #if MACCATALYST
+			SizeChanged += OnSizeChanged;
+
+			if (ControlTemplate is null)
+			{
+				ControlTemplate = DefaultTemplate;
+			}
+		}
+
+		void OnSizeChanged(object sender, EventArgs e)
+		{
+#if MACCATALYST
                 if (Window?.Handler?.PlatformView is UIKit.UIWindow uiwindow)
                 {
                     if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
@@ -337,18 +345,13 @@ namespace Microsoft.Maui.Controls
                         }
                     }
                 }
-                #endif
-            };
-
-			if (ControlTemplate is null)
-			{
-				ControlTemplate = DefaultTemplate;
-			}
+#endif
 		}
 
 		internal void Cleanup()
 		{
 			PropertyChanged -= TitleBar_PropertyChanged;
+			SizeChanged -= OnSizeChanged;
 			if (Window is not null)
 			{
 				Window.Activated -= Window_Activated;
