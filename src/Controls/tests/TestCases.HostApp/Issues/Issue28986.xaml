@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue28986"
+             x:Name="TestPage"
+             Title="SafeAreaGuides Test">
+    
+    <Grid x:Name="MainGrid" BackgroundColor="Red">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
+        <!-- Content area with colored background to show safe area effects -->
+        <Grid Grid.Row="0" x:Name="ContentGrid">
+            <Border BackgroundColor="LightBlue" Stroke="Blue" StrokeThickness="4">
+                <VerticalStackLayout Spacing="20" Padding="20">
+                    <Label Text="SafeAreaGuides Test Page" 
+                           FontSize="24" 
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           TextColor="DarkBlue" />
+                    
+                    <Label Text="The red background shows areas outside safe area. The blue border shows the content area."
+                           FontSize="14"
+                           HorizontalOptions="Center"
+                           TextColor="DarkBlue" />
+                    
+                    <Label x:Name="CurrentSettingsLabel"
+                           Text="Current: All edges ignore safe area"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           TextColor="DarkBlue"
+                           AutomationId="CurrentSettings" />
+                    
+                    <Frame BackgroundColor="Yellow" Padding="10" Margin="20">
+                        <Label Text="This yellow frame should show safe area behavior effects. When safe area is respected, content stays away from screen edges, notches, and toolbars."
+                               FontSize="12"
+                               TextColor="Black" />
+                    </Frame>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+        
+        <!-- Control panel -->
+        <Frame Grid.Row="1" BackgroundColor="White" Padding="15" Margin="10">
+            <VerticalStackLayout Spacing="15">
+                <Label Text="Toggle Safe Area per Edge:" 
+                       FontSize="18" 
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center" />
+                
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Top -->
+                    <StackLayout Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
+                        <Label Text="Top:" VerticalOptions="Center" />
+                        <CheckBox x:Name="TopCheckBox" 
+                                  IsChecked="True" 
+                                  CheckedChanged="OnEdgeCheckBoxChanged"
+                                  AutomationId="TopCheckBox" />
+                    </StackLayout>
+                    
+                    <!-- Left and Right -->
+                    <StackLayout Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalOptions="Center">
+                        <Label Text="Left:" VerticalOptions="Center" />
+                        <CheckBox x:Name="LeftCheckBox" 
+                                  IsChecked="True" 
+                                  CheckedChanged="OnEdgeCheckBoxChanged"
+                                  AutomationId="LeftCheckBox" />
+                    </StackLayout>
+                    
+                    <StackLayout Grid.Row="1" Grid.Column="2" Orientation="Horizontal" HorizontalOptions="Center">
+                        <Label Text="Right:" VerticalOptions="Center" />
+                        <CheckBox x:Name="RightCheckBox" 
+                                  IsChecked="True" 
+                                  CheckedChanged="OnEdgeCheckBoxChanged"
+                                  AutomationId="RightCheckBox" />
+                    </StackLayout>
+                    
+                    <!-- Bottom -->
+                    <StackLayout Grid.Row="2" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
+                        <Label Text="Bottom:" VerticalOptions="Center" />
+                        <CheckBox x:Name="BottomCheckBox" 
+                                  IsChecked="True" 
+                                  CheckedChanged="OnEdgeCheckBoxChanged"
+                                  AutomationId="BottomCheckBox" />
+                    </StackLayout>
+                </Grid>
+                
+                <Label Text="✓ Checked = Ignore Safe Area (content can extend to edge)" 
+                       FontSize="12" 
+                       TextColor="Green"
+                       HorizontalOptions="Center" />
+                <Label Text="✗ Unchecked = Respect Safe Area (content stays in safe area)" 
+                       FontSize="12" 
+                       TextColor="Red"
+                       HorizontalOptions="Center" />
+                
+                <Button Text="Reset All to Ignore" 
+                        Clicked="OnResetAllClicked"
+                        AutomationId="ResetAllButton" />
+                <Button Text="Reset All to Respect" 
+                        Clicked="OnResetNoneClicked"
+                        AutomationId="ResetNoneButton" />
+            </VerticalStackLayout>
+        </Frame>
+    </Grid>
+</ContentPage>

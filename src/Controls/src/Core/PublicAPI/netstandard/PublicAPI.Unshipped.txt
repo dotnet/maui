@@ -17,7 +17,6 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
 Microsoft.Maui.Controls.SafeAreaGroup
 Microsoft.Maui.Controls.SafeAreaGroup.All = 1 -> Microsoft.Maui.Controls.SafeAreaGroup
-Microsoft.Maui.Controls.SafeAreaGroup.Keyboard = 2 -> Microsoft.Maui.Controls.SafeAreaGroup
 Microsoft.Maui.Controls.SafeAreaGroup.None = 0 -> Microsoft.Maui.Controls.SafeAreaGroup
 Microsoft.Maui.Controls.SafeAreaGuides
 ~static Microsoft.Maui.Controls.SafeAreaGuides.GetIgnoreSafeArea(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.SafeAreaGroup[]
