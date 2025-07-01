@@ -9,18 +9,48 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedView.xml" path="Type[@FullName='Microsoft.Maui.Controls.TemplatedView']/Docs/*" />
 #pragma warning disable CS0618 // Type or member is obsolete
-	public partial class TemplatedView : Compatibility.Layout, IControlTemplated, IContentView
+	public partial class TemplatedView : Compatibility.Layout, IControlTemplated, IContentView, IClippedToBoundsElement
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
 		/// <summary>Bindable property for <see cref="ControlTemplate"/>.</summary>
 		public static readonly BindableProperty ControlTemplateProperty = BindableProperty.Create(nameof(ControlTemplate), typeof(ControlTemplate), typeof(TemplatedView), null,
 			propertyChanged: TemplateUtilities.OnControlTemplateChanged);
 
+		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
+		public new static readonly BindableProperty IsClippedToBoundsProperty = ClippedToBoundsElement.IsClippedToBoundsProperty;
+
+		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
+		public new static readonly BindableProperty CascadeInputTransparentProperty = InputTransparentContainerElement.CascadeInputTransparentProperty;
+
+		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
+		public new static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedView.xml" path="//Member[@MemberName='ControlTemplate']/Docs/*" />
 		public ControlTemplate ControlTemplate
 		{
 			get { return (ControlTemplate)GetValue(ControlTemplateProperty); }
 			set { SetValue(ControlTemplateProperty, value); }
+		}
+
+		/// <inheritdoc cref="IClippedToBoundsElement.IsClippedToBounds"/>
+		public new bool IsClippedToBounds
+		{
+			get => (bool)GetValue(ClippedToBoundsElement.IsClippedToBoundsProperty);
+			set => SetValue(ClippedToBoundsElement.IsClippedToBoundsProperty, value);
+		}
+
+		/// <inheritdoc cref="IInputTransparentContainerElement.CascadeInputTransparent"/>
+		public new bool CascadeInputTransparent
+		{
+			get => (bool)GetValue(InputTransparentContainerElement.CascadeInputTransparentProperty);
+			set => SetValue(InputTransparentContainerElement.CascadeInputTransparentProperty, value);
+		}
+
+		/// <inheritdoc cref="IPaddingElement.Padding"/>
+		public new Thickness Padding
+		{
+			get => (Thickness)GetValue(PaddingProperty);
+			set => SetValue(PaddingProperty, value);
 		}
 
 		IList<Element> IControlTemplated.InternalChildren => InternalChildren;
