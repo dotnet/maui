@@ -6,6 +6,10 @@ using OpenTelemetry;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using System;
+using System.Net.Http;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.Extensions.Hosting;
@@ -78,16 +82,32 @@ public static class Extensions
 #endif
     public static IHttpClientBuilder DisableDevCertSecurityCheck(this IHttpClientBuilder builder)
     {
-        builder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+        builder.ConfigurePrimaryHttpMessageHandler(() =>
         {
-            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
+            var handler = new SocketsHttpHandler();
+            
+            // Configure certificate chain policy to handle revocation check failures
+            handler.SslOptions.CertificateChainPolicy = new X509ChainPolicy
+            {
+                RevocationMode = X509RevocationMode.Online,
+                RevocationFlag = X509RevocationFlag.ExcludeRoot,
+                VerificationFlags =
+                    X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown |
+                    X509VerificationFlags.IgnoreEndRevocationUnknown,
+                VerificationTimeIgnored = true,
+            };
+
+            // Custom validation for development certificates
+            handler.SslOptions.RemoteCertificateValidationCallback = (message, cert, chain, errors) =>
             {
                 if (cert is not null && cert.Issuer.Equals("CN=localhost", StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
-                return errors == System.Net.Security.SslPolicyErrors.None;
-            }
+                return errors == SslPolicyErrors.None;
+            };
+
+            return handler;
         });
 
         return builder;
