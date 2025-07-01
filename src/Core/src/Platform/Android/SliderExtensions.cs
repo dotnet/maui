@@ -86,7 +86,19 @@ namespace Microsoft.Maui.Platform
 
 		static void SetThumbDrawable(SeekBar seekBar, Android.Content.Context context, Drawable thumbDrawable)
 		{
+			// Check if we're setting the same drawable to avoid unnecessary work
+			if (ReferenceEquals(seekBar.Thumb, thumbDrawable))
+			{
+				return;
+			}
+
 			int thumbSize = (int)context.ToPixels(TARGET_SIZE);
+
+			if (thumbSize <= 0)
+			{
+				return;
+			}
+
 
 			using (Bitmap bitmap = Bitmap.CreateBitmap(thumbSize, thumbSize, Bitmap.Config.Argb8888!))
 			using (Canvas canvas = new Canvas(bitmap))
