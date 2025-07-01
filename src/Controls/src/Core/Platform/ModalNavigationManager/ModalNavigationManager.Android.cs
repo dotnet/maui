@@ -400,74 +400,47 @@ namespace Microsoft.Maui.Controls.Platform
 					this.OnBackPressedDispatcher.AddCallback(new CallBack(true, this));
 				}
 
-				public override bool OnKeyDown(Keycode keyCode, KeyEvent? e)
+				private bool TryPropagateKeyEvent(KeyEvent? e, Func<MauiAppCompatActivity, bool> internalMethod)
 				{
 					if (RuntimeFeature.PropagateKeyEventsToMainActivity)
 					{
 						var mainActivity = Context?.GetActivity();
 						if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
 						{
-							return mauiActivity.InternalOnKeyDown(keyCode, e);
+							return internalMethod(mauiActivity);
 						}
 					}
+					return false;
+				}
 
-					return e is not null ? base.OnKeyDown(keyCode, e) : false;
+				public override bool OnKeyDown(Keycode keyCode, KeyEvent? e)
+				{
+					return TryPropagateKeyEvent(e, activity => activity.InternalOnKeyDown(keyCode, e!)) ||
+						   (e is not null ? base.OnKeyDown(keyCode, e) : false);
 				}
 
 				public override bool OnKeyUp(Keycode keyCode, KeyEvent? e)
 				{
-					if (RuntimeFeature.PropagateKeyEventsToMainActivity)
-					{
-						var mainActivity = Context?.GetActivity();
-						if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
-						{
-							return mauiActivity.InternalOnKeyUp(keyCode, e);
-						}
-					}
-
-					return e is not null ? base.OnKeyUp(keyCode, e) : false;
+					return TryPropagateKeyEvent(e, activity => activity.InternalOnKeyUp(keyCode, e!)) ||
+						   (e is not null ? base.OnKeyUp(keyCode, e) : false);
 				}
 
 				public override bool OnKeyLongPress(Keycode keyCode, KeyEvent? e)
 				{
-					if (RuntimeFeature.PropagateKeyEventsToMainActivity)
-					{
-						var mainActivity = Context?.GetActivity();
-						if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
-						{
-							return mauiActivity.InternalOnKeyLongPress(keyCode, e);
-						}
-					}
-
-					return e is not null ? base.OnKeyLongPress(keyCode, e) : false;
+					return TryPropagateKeyEvent(e, activity => activity.InternalOnKeyLongPress(keyCode, e!)) ||
+						   (e is not null ? base.OnKeyLongPress(keyCode, e) : false);
 				}
 
 				public override bool OnKeyMultiple(Keycode keyCode, int repeatCount, KeyEvent? e)
 				{
-					if (RuntimeFeature.PropagateKeyEventsToMainActivity)
-					{
-						var mainActivity = Context?.GetActivity();
-						if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
-						{
-							return mauiActivity.InternalOnKeyMultiple(keyCode, repeatCount, e);
-						}
-					}
-
-					return e is not null ? base.OnKeyMultiple(keyCode, repeatCount, e) : false;
+					return TryPropagateKeyEvent(e, activity => activity.InternalOnKeyMultiple(keyCode, repeatCount, e!)) ||
+						   (e is not null ? base.OnKeyMultiple(keyCode, repeatCount, e) : false);
 				}
 
 				public override bool OnKeyShortcut(Keycode keyCode, KeyEvent? e)
 				{
-					if (RuntimeFeature.PropagateKeyEventsToMainActivity)
-					{
-						var mainActivity = Context?.GetActivity();
-						if (mainActivity is MauiAppCompatActivity mauiActivity && e is not null)
-						{
-							return mauiActivity.InternalOnKeyShortcut(keyCode, e);
-						}
-					}
-
-					return e is not null ? base.OnKeyShortcut(keyCode, e) : false;
+					return TryPropagateKeyEvent(e, activity => activity.InternalOnKeyShortcut(keyCode, e!)) ||
+						   (e is not null ? base.OnKeyShortcut(keyCode, e) : false);
 				}
 
 				sealed class CallBack : OnBackPressedCallback
