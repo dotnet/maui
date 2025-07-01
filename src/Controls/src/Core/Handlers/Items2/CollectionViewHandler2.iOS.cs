@@ -209,7 +209,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 //TODO Make this public in .NET10
 internal static void MapItemsLayoutPropertyChanged(CollectionViewHandler2 handler, CollectionView view, object arg3)
 {
-handler.UpdateLayout();
+	// Defensive programming: ensure handler is valid before updating layout
+	if (handler?.VirtualView == null || handler.PlatformView == null)
+		return;
+
+	handler.UpdateLayout();
 }
 }
 }

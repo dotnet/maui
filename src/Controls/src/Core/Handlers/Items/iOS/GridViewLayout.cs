@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class GridViewLayout : ItemsViewLayout
 	{
-		readonly  WeakReference<GridItemsLayout> itemsLayout  = new WeakReference<GridItemsLayout>(null);
+		readonly WeakReference<GridItemsLayout> _itemsLayout = new WeakReference<GridItemsLayout>(null);
 
 		GridItemsLayout ItemsLayout
 		{
@@ -46,8 +46,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		public override void ConstrainTo(CGSize size)
-		var itemsLayout = ItemsLayout;
 		{
+			var itemsLayout = ItemsLayout;
+			if (itemsLayout == null)
+				return;
+
 			var availableSpace = ScrollDirection == UICollectionViewScrollDirection.Vertical
 					? size.Width : size.Height;
 
@@ -209,6 +212,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
 			var itemsLayout = ItemsLayout;
+			if (itemsLayout == null)
+				return (nfloat)0.0;
+
 			var requestedSpacing = ScrollDirection == UICollectionViewScrollDirection.Horizontal
 				? (nfloat)itemsLayout.VerticalItemSpacing
 				: (nfloat)itemsLayout.HorizontalItemSpacing;
@@ -222,10 +228,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CenterAlignCellsInColumn(UICollectionViewLayoutAttributes preferredAttributes)
 		{
-			var span = ItemsLayout.Span;
+			var itemsLayout = ItemsLayout;
+			if (itemsLayout == null)
+				return;
+
+			var span = itemsLayout.Span;
 			// Determine the set of cells above this one
 			var index = preferredAttributes.IndexPath;
-			var span = itemsLayout.Span;
 
 			var column = index.Item / span;
 			var start = (int)column * span;
@@ -272,8 +281,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		bool NeedsPartialColumnAdjustment(int section = 0)
-			var itemsLayout = ItemsLayout;
 		{
+			var itemsLayout = ItemsLayout;
+			if (itemsLayout == null)
+				return false;
+
 			if (ScrollDirection == UICollectionViewScrollDirection.Vertical)
 			{
 				// The bug only occurs with Horizontal scrolling

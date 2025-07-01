@@ -58,14 +58,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
+			var baseInsets = base.GetInsetForSection(collectionView, layout, section);
+			
 			if (!_carouselView.TryGetTarget(out var carouselView))
-				return default;
+				return baseInsets;
 
-			var insets = base.GetInsetForSection(collectionView, layout, section);
-			var left = insets.Left + (float)carouselView.PeekAreaInsets.Left;
-			var right = insets.Right + (float)carouselView.PeekAreaInsets.Right;
-			var top = insets.Top + (float)carouselView.PeekAreaInsets.Top;
-			var bottom = insets.Bottom + (float)carouselView.PeekAreaInsets.Bottom;
+			var left = baseInsets.Left + (float)carouselView.PeekAreaInsets.Left;
+			var right = baseInsets.Right + (float)carouselView.PeekAreaInsets.Right;
+			var top = baseInsets.Top + (float)carouselView.PeekAreaInsets.Top;
+			var bottom = baseInsets.Bottom + (float)carouselView.PeekAreaInsets.Bottom;
 
 			return new UIEdgeInsets(top, left, bottom, right);
 		}

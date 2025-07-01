@@ -9,10 +9,41 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	/// <summary>
+	/// Helper class for safely handling WeakReference targets
+	/// </summary>
+	internal static class WeakReferenceExtensions
+	{
+		/// <summary>
+		/// Safely gets the target from a WeakReference, returning null if the target has been collected
+		/// </summary>
+		/// <typeparam name="T">The type of the target</typeparam>
+		/// <param name="weakRef">The WeakReference</param>
+		/// <returns>The target instance or null if it has been collected</returns>
+		public static T GetTargetOrNull<T>(this WeakReference<T> weakRef) where T : class
+		{
+			weakRef?.TryGetTarget(out var target);
+			return target;
+		}
+		
+		/// <summary>
+		/// Safely executes an action if the WeakReference target is available
+		/// </summary>
+		/// <typeparam name="T">The type of the target</typeparam>
+		/// <param name="weakRef">The WeakReference</param>
+		/// <param name="action">The action to execute with the target</param>
+		public static void WithTarget<T>(this WeakReference<T> weakRef, Action<T> action) where T : class
+		{
+			if (weakRef?.TryGetTarget(out var target) == true && target != null)
+			{
+				action(target);
+			}
+		}
+	}
+
 	public abstract class ItemsViewLayout : UICollectionViewFlowLayout
 	{
-
-		readonly WeakReference<ItemsLayout> ItemsLayout = new WeakReference<ItemsLayout>(null);
+		readonly WeakReference<ItemsLayout> _itemsLayout = new WeakReference<ItemsLayout>(null);
 
 		ItemsLayout ItemsLayout
 		{
@@ -293,7 +324,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override CGPoint TargetContentOffset(CGPoint proposedContentOffset, CGPoint scrollingVelocity)
 		{
 			var itemsLayout = ItemsLayout;
-		var snapPointsType = itemsLayout.SnapPointsType;
+			if (itemsLayout == null)
+				return base.TargetContentOffset(proposedContentOffset, scrollingVelocity);
+
+			var snapPointsType = itemsLayout.SnapPointsType;
 
 			if (snapPointsType == SnapPointsType.None)
 			{
