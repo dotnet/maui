@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var layout = new Gh7494(useCompiledXaml);
 				var view = layout.Content as Gh7494Content;
-				var templatedLabel = ((StackLayout)view.Children[0]).Children[0] as Label;
+				var templatedLabel = ((StackLayout)(view as IVisualTreeElement).GetVisualChildren()[0]).Children[0] as Label;
 
 				Assert.That(templatedLabel.FormattedText.Spans[0].Text, Is.EqualTo(view.Title));
 			}

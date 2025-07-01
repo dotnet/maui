@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls
 			elements.Add(TopItems);
 			elements.Add(BottomItems);
 
-			foreach (var item in InternalChildren)
+			foreach (var item in LogicalChildrenInternal)
 			{
 				if (item is IVisualTreeElement vte)
 				{

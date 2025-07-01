@@ -110,6 +110,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Element.SizeChanged += PageOnSizeChanged;
 		}
 
+		[Obsolete]
 		public void SetElementSize(Size size)
 		{
 			Element.Layout(new Rect(Element.X, Element.Y, size.Width, size.Height));
