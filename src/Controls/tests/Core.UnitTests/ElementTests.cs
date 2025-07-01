@@ -370,5 +370,69 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Same(newParent, child.RealParent);
 		}
+
+		[Fact]
+		public void RealParent_ReturnsNull_WhenNoParentSet()
+		{
+			var element = new TestElement();
+			Assert.Null(element.RealParent);
+		}
+
+		[Fact]
+		public void RealParent_IsThreadSafe_WhenAccessedConcurrently()
+		{
+			var element = new TestElement();
+			var parent = new TestElement();
+			parent.Children.Add(element);
+
+			// Act - Create multiple threads accessing and modifying RealParent concurrently
+			const int ThreadCount = 10;
+			var threads = new System.Threading.Thread[ThreadCount];
+			var exceptions = new List<Exception>();
+			var threadBarrier = new System.Threading.Barrier(ThreadCount);
+
+			for (int i = 0; i < ThreadCount; i++)
+			{
+				threads[i] = new System.Threading.Thread(() =>
+				{
+					try
+					{
+						// Synchronize threads to increase chance of concurrent access
+						threadBarrier.SignalAndWait();
+
+						// Some threads read the parent
+						element.RealParent?.ToString();
+
+						// Clear reference to parent so GC can collect it
+						parent = null;
+
+						// Force garbage collection on some threads
+						GC.Collect();
+						GC.WaitForPendingFinalizers();
+						GC.Collect();
+
+						// Try to access the parent again after potential collection
+						element.RealParent?.ToString();
+					}
+					catch (Exception ex)
+					{
+						lock (exceptions)
+						{
+							exceptions.Add(ex);
+						}
+					}
+				});
+				threads[i].Start();
+			}
+
+			// Wait for all threads to complete
+			foreach (var thread in threads)
+			{
+				thread.Join();
+			}
+
+			// Assert - No exceptions should be thrown during concurrent access
+			Assert.Empty(exceptions);
+		}
 	}
 }
