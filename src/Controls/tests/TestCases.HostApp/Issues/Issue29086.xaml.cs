@@ -3,7 +3,7 @@ using System.Windows.Input;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 29086, "SwipeView Closes when Content Changes even with SwipeBehaviorOnInvoked='RemainOpen'", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 29086, "SwipeView Closes when Content Changes even with SwipeBehaviorOnInvoked is set to RemainOpen", PlatformAffected.iOS)]
 public partial class Issue29086 : ContentPage
 {
 	public ObservableCollection<NumberItem> Numbers { get; set; }
