@@ -10,15 +10,24 @@ namespace Microsoft.Maui.Controls
 		public static void OnCommandChanging(BindableObject bo, object o, object n)
 		{
 			var commandElement = (ICommandElement)bo;
-			if (o is ICommand oldCommand)
-				oldCommand.CanExecuteChanged -= commandElement.CanExecuteChanged;
+			commandElement.CleanupTracker?.Dispose();
+			commandElement.CleanupTracker = null;
 		}
 
 		public static void OnCommandChanged(BindableObject bo, object o, object n)
 		{
 			var commandElement = (ICommandElement)bo;
-			if (n is ICommand newCommand)
-				newCommand.CanExecuteChanged += commandElement.CanExecuteChanged;
+
+			if (n is null)
+			{
+				commandElement.CleanupTracker?.Dispose();
+				commandElement.CleanupTracker = null;
+			}
+			else
+			{
+				commandElement.CleanupTracker = new WeakCommandSubscription(bo, (ICommand)n, commandElement.CanExecuteChanged);
+			}
+
 			commandElement.CanExecuteChanged(bo, EventArgs.Empty);
 		}
 
