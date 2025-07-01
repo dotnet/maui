@@ -368,7 +368,6 @@ namespace Microsoft.Maui.Controls
 			get => TryGetRealParent();
 			private set
 			{
-
 				if (value is null)
 					_realParent = null;
 				else
