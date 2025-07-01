@@ -90,17 +90,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 	/// Base class for layouts that allow you to arrange and group UI controls in your application.
 	/// </summary>
 	[Obsolete("Use Microsoft.Maui.Controls.Layout instead. For more information, see https://learn.microsoft.com/dotnet/maui/user-interface/layouts/custom")]
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement
+	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, ICrossPlatformLayout, IClippedToBoundsElement
 	{
 		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
-		public static readonly BindableProperty IsClippedToBoundsProperty =
-			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false,
-				propertyChanged: IsClippedToBoundsPropertyChanged);
+		public static readonly BindableProperty IsClippedToBoundsProperty = ClippedToBoundsElement.IsClippedToBoundsProperty;
 
 		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
-		public static readonly BindableProperty CascadeInputTransparentProperty =
-			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true,
-				propertyChanged: OnCascadeInputTransparentPropertyChanged);
+		public static readonly BindableProperty CascadeInputTransparentProperty = InputTransparentContainerElement.CascadeInputTransparentProperty;
 
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
@@ -108,16 +104,23 @@ namespace Microsoft.Maui.Controls.Compatibility
 		bool _hasDoneLayout;
 		Size _lastLayoutSize = new Size(-1, -1);
 
+		private protected bool UseCompatibilityMode { get; }
+
 		protected Layout()
 		{
-			//if things were added in base ctor (through implicit styles), the items added aren't properly parented
-			if (InternalChildren.Count > 0)
-			{
-				InternalChildrenOnCollectionChanged(this,
-					new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, InternalChildren));
-			}
+			UseCompatibilityMode = !(this is ScrollView || this is TemplatedView || this is ContentPresenter);
 
-			InternalChildren.CollectionChanged += InternalChildrenOnCollectionChanged;
+			if (UseCompatibilityMode)
+			{
+				//if things were added in base ctor (through implicit styles), the items added aren't properly parented
+				if (InternalChildren.Count > 0)
+				{
+					InternalChildrenOnCollectionChanged(this,
+						new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, InternalChildren));
+				}
+
+				InternalChildren.CollectionChanged += InternalChildrenOnCollectionChanged;
+			}
 		}
 
 		/// <summary>
@@ -152,24 +155,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// </value>
 		public bool CascadeInputTransparent
 		{
-			get => (bool)GetValue(CascadeInputTransparentProperty);
-			set => SetValue(CascadeInputTransparentProperty, value);
+			get => (bool)GetValue(InputTransparentContainerElement.CascadeInputTransparentProperty);
+			set => SetValue(InputTransparentContainerElement.CascadeInputTransparentProperty, value);
 		}
 
 		Thickness IPaddingElement.PaddingDefaultValueCreator() => default(Thickness);
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue) => InvalidateLayout();
 
-		static void IsClippedToBoundsPropertyChanged(BindableObject bindableObject, object oldValue, object newValue)
-		{
-			if (bindableObject is IView view)
-			{
-				view.Handler?.UpdateValue(nameof(Maui.ILayout.ClipsToBounds));
-			}
-		}
-
 		private protected override IList<Element> LogicalChildrenInternalBackingStore
-			=> InternalChildren;
+			=> UseCompatibilityMode ? InternalChildren : base.LogicalChildrenInternalBackingStore;
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
@@ -189,28 +184,33 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// </summary>
 		/// <remarks>Calling this method frequently can have negative impacts on performance.</remarks>
 		[Obsolete("Call InvalidateMeasure instead depending on your scenario.")]
-		public void ForceLayout() => SizeAllocated(Width, Height);
-
-		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.ToList().AsReadOnly();
-
-#pragma warning disable CS0672 // Member overrides obsolete member
-#pragma warning disable CS0618 // Type or member is obsolete
-		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
-#pragma warning restore CS0618 // Type or member is obsolete
+		public void ForceLayout()
 		{
-#pragma warning disable CS0618 // Type or member is obsolete
+			if (UseCompatibilityMode)
+				SizeAllocated(Width, Height);
+			else
+				InvalidateMeasure();
+		}
+
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren()
+			=> UseCompatibilityMode ? InternalChildren.ToList().AsReadOnly() : base.LogicalChildrenInternal;
+
+		[Obsolete("Use Measure with no flags.")]
+		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
+		{
+			if (!UseCompatibilityMode)
+			{
+				return MeasureOverride(widthConstraint, heightConstraint);
+			}
+
 			SizeRequest size = base.Measure(widthConstraint - Padding.HorizontalThickness, heightConstraint - Padding.VerticalThickness, flags);
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
 			var request = new Size(size.Request.Width + Padding.HorizontalThickness, size.Request.Height + Padding.VerticalThickness);
 			var minimum = new Size(size.Minimum.Width + Padding.HorizontalThickness, size.Minimum.Height + Padding.VerticalThickness);
 
 			DesiredSize = request;
 
 			return new SizeRequest(request, minimum);
-#pragma warning restore CS0618 // Type or member is obsolete
 		}
-#pragma warning restore CS0672 // Member overrides obsolete member
 
 		/// <summary>
 		/// Positions a child element into a bounding region while respecting the child elements <see cref="View.HorizontalOptions" /> and <see cref="View.VerticalOptions" />.
@@ -222,6 +222,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 		[Obsolete("Use the Arrange method on child instead.")]
 		public static void LayoutChildIntoBoundingRegion(VisualElement child, Rect region)
 		{
+			if (child?.Parent is Layout layout && !layout.UseCompatibilityMode)
+			{
+				return;
+			}
 			bool isRightToLeft = false;
 			if (child.Parent is IFlowDirectionController parent &&
 				(isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer &&
@@ -287,9 +291,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <param name="view">The view to lower in the visual stack.</param>
 		/// <remarks>Children are internally stored in visual stack order.
 		/// This means that raising or lowering a child also changes the order in which the children are enumerated.</remarks>
-		[Obsolete("Use the ZIndex Property instead")]
+		[Obsolete("Use the ZIndex Property instead. This property no longer works on .NET 10 and later.")]
 		public void LowerChild(View view)
 		{
+			if (!UseCompatibilityMode)
+				return;
+
 			if (!InternalChildren.Contains(view) || InternalChildren.First() == view)
 			{
 				return;
@@ -305,9 +312,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <param name="view">The view to raise in the visual stack.</param>
 		/// <remarks>Children are internally stored in visual stack order.
 		/// This means that raising or lowering a child also changes the order in which the children are enumerated.</remarks>
-		[Obsolete("Use the ZIndex Property instead")]
+		[Obsolete("Use the ZIndex Property instead. This property no longer works on .NET 10 and later.")]
 		public void RaiseChild(View view)
 		{
+			if (!UseCompatibilityMode)
+				return;
+
 			if (!InternalChildren.Contains(view) || InternalChildren.Last() == view)
 			{
 				return;
@@ -324,6 +334,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 		[Obsolete("Use InvalidateMeasure depending on your scenario")]
 		protected virtual void InvalidateLayout()
 		{
+			if (!UseCompatibilityMode)
+			{
+				this.InvalidateMeasure();
+				return;
+			}
+
 			SetNeedsLayout();
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			if (!_hasDoneLayout)
