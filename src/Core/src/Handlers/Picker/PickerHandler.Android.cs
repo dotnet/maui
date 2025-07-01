@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Specialized;
 using Android.App;
 using Android.Content.Res;
@@ -83,13 +83,25 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 		}
+		
+		public static void MapIsOpen(IPickerHandler handler, IPicker picker)
+		{
+			if (handler is PickerHandler pickerHandler &&
+			    pickerHandler.PlatformView.IsLoaded())
+			{
+				if (picker.IsOpen)
+					pickerHandler.ShowDialog();
+				else
+					pickerHandler.DismissDialog();
+			}
+		}
 
 		internal static void MapFocus(IPickerHandler handler, IPicker picker, object? args)
 		{
-			if (handler.IsConnected())
+			if (handler.IsConnected() && handler is PickerHandler pickerHandler)
 			{
 				ViewHandler.MapFocus(handler, picker, args);
-				handler.PlatformView.CallOnClick();
+				pickerHandler.ShowDialog();
 			}
 		}
 
@@ -102,6 +114,14 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		void ShowDialog()
+		{
+			if (PlatformView.Clickable)
+				PlatformView.CallOnClick();
+			else
+				OnClick(PlatformView, EventArgs.Empty);
+		}
+		
 		void DismissDialog()
 		{
 			_dialog?.Dismiss();
