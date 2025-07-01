@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -14,9 +15,17 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Content))]
 #pragma warning disable CS0618 // Type or member is obsolete
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView
+	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, IClippedToBoundsElement
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
+		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
+		public new static readonly BindableProperty IsClippedToBoundsProperty = ClippedToBoundsElement.IsClippedToBoundsProperty;
+
+		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
+		public new static readonly BindableProperty CascadeInputTransparentProperty = InputTransparentContainerElement.CascadeInputTransparentProperty;
+
+		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
+		public new static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 		#region IScrollViewController
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='LayoutAreaOverride']/Docs/*" />
@@ -133,6 +142,27 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ContentSizeProperty = ContentSizePropertyKey.BindableProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<ScrollView>> _platformConfigurationRegistry;
+
+		/// <inheritdoc cref="IClippedToBoundsElement.IsClippedToBounds"/>
+		public new bool IsClippedToBounds
+		{
+			get => (bool)GetValue(ClippedToBoundsElement.IsClippedToBoundsProperty);
+			set => SetValue(ClippedToBoundsElement.IsClippedToBoundsProperty, value);
+		}
+
+		/// <inheritdoc cref="IInputTransparentContainerElement.CascadeInputTransparent"/>
+		public new bool CascadeInputTransparent
+		{
+			get => (bool)GetValue(InputTransparentContainerElement.CascadeInputTransparentProperty);
+			set => SetValue(InputTransparentContainerElement.CascadeInputTransparentProperty, value);
+		}
+
+		/// <inheritdoc cref="IPaddingElement.Padding"/>
+		public new Thickness Padding
+		{
+			get => (Thickness)GetValue(PaddingProperty);
+			set => SetValue(PaddingProperty, value);
+		}
 
 		/// <summary>Bindable property for <see cref="HorizontalScrollBarVisibility"/>.</summary>
 		public static readonly BindableProperty HorizontalScrollBarVisibilityProperty = BindableProperty.Create(nameof(HorizontalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ScrollView), ScrollBarVisibility.Default);
@@ -493,6 +523,86 @@ namespace Microsoft.Maui.Controls
 
 			return bounds.Size;
 		}
+
+		/// <summary>
+		/// Sends a child to the back of the visual stack.
+		/// </summary>
+		/// <param name="view">The view to lower in the visual stack.</param>
+		/// <remarks>Children are internally stored in visual stack order.
+		/// This means that raising or lowering a child also changes the order in which the children are enumerated.</remarks>
+		[Obsolete("Use the ZIndex Property instead. This property no longer works on .NET 10 and later.")]
+		public new void LowerChild(View view)
+		{
+			base.LowerChild(view);
+		}
+
+		/// <summary>
+		/// Sends a child to the front of the visual stack.
+		/// </summary>
+		/// <param name="view">The view to raise in the visual stack.</param>
+		/// <remarks>Children are internally stored in visual stack order.
+		/// This means that raising or lowering a child also changes the order in which the children are enumerated.</remarks>
+		[Obsolete("Use the ZIndex Property instead. This property no longer works on .NET 10 and later.")]
+		public new void RaiseChild(View view)
+		{
+			base.RaiseChild(view);
+		}
+
+		/// <summary>
+		/// Invalidates the current layout.
+		/// </summary>
+		/// <remarks>Calling this method will invalidate the measure and triggers a new layout cycle.</remarks>
+		[Obsolete("Use InvalidateMeasure depending on your scenario. This method will no longer work on .NET 10 and later.")]
+		protected override void InvalidateLayout()
+		{
+			base.InvalidateLayout();
+		}
+
+		/// <summary>
+		/// Invoked whenever a child of the layout has emitted <see cref="VisualElement.MeasureInvalidated" />.
+		/// Implement this method to add class handling for this event.
+		/// </summary>
+		[Obsolete("Subscribe to the MeasureInvalidated Event on the Children.")]
+		protected override void OnChildMeasureInvalidated()
+		{
+		}
+
+		/// <summary>
+		/// When implemented, should return <see langword="true" /> if <paramref name="child" /> should call <see cref="VisualElement.InvalidateMeasure" /> when added,
+		/// and should return <see langword="false" /> if it should not call <see cref="VisualElement.InvalidateMeasure" />. The default value is <see langword="true" />.
+		/// </summary>
+		/// <param name="child">The child for which to specify whether or not to track invalidation.</param>
+		/// <returns><see langword="true" /> if <paramref name="child" /> should call <see cref="VisualElement.InvalidateMeasure" />, otherwise <see langword="false"/>.</returns>
+		[Obsolete("If you want to influence invalidation override InvalidateMeasureOverride. This method will no longer work on .NET 10 and later.")]
+		protected override bool ShouldInvalidateOnChildAdded(View child) => true;
+
+		/// <summary>
+		/// When implemented, should return <see langword="true" /> if <paramref name="child" /> should call <see cref="VisualElement.InvalidateMeasure" /> when removed,
+		/// and should return <see langword="false" /> if it should not call <see cref="VisualElement.InvalidateMeasure" />. The default value is <see langword="true" />.
+		/// </summary>
+		/// <param name="child">The child for which to specify whether or not to track invalidation.</param>
+		/// <returns><see langword="true" /> if <paramref name="child" /> should call <see cref="VisualElement.InvalidateMeasure" />, otherwise <see langword="false"/>.</returns>
+		[Obsolete("If you want to influence invalidation override InvalidateMeasureOverride. This method will no longer work on .NET 10 and later.")]
+		protected override bool ShouldInvalidateOnChildRemoved(View child) => true;
+
+		/// <summary>
+		/// Instructs the layout to relayout all of its children.
+		/// </summary>
+		/// <remarks>This method starts a new layout cycle for the layout. Invoking this method frequently can negatively impact performance.</remarks>
+		[Obsolete("Use InvalidateMeasure depending on your scenario. This method will no longer work on .NET 10 and later.")]
+		protected new void UpdateChildrenLayout()
+		{
+		}
+
+		[Obsolete("Use Measure with no flags.")]
+		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
+		{
+			return base.Measure(widthConstraint, heightConstraint);
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Use IVisualTreeElement.GetVisualChildren() instead.", true)]
+		public new IReadOnlyList<Element> Children => base.Children;
 
 		private protected override string GetDebuggerDisplay()
 		{
