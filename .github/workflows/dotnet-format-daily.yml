@@ -3,6 +3,9 @@ on:
   workflow_dispatch:
   schedule:
     - cron: 0 0 * * * # Every day at midnight (UTC)
+  pull_request:
+    paths:
+      - .github/workflows/dotnet-format-daily.yml
 
 permissions:
   pull-requests: write
@@ -21,12 +24,38 @@ jobs:
           ref: ${{ matrix.branch }}
 
       - name: Setup .NET Core SDK
-        uses: actions/setup-dotnet@v3.2.0
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.x
+          dotnet-version: 9.x
+
+      - name: Run a pre-work build
+        shell: pwsh
+        continue-on-error: true
+        run: .\build.ps1
+
+      - name: Add the local .NET to the envvars (PATH, DOTNET_ROOT)
+        shell: pwsh
+        run: |
+          Add-Content -Path $env:GITHUB_PATH -Value "$env:GITHUB_WORKSPACE/.dotnet"
+          Add-Content -Path $env:GITHUB_ENV -Value "DOTNET_ROOT=$env:GITHUB_WORKSPACE/.dotnet"
+          Add-Content -Path $env:GITHUB_ENV -Value "DOTNET_INSTALL_DIR=$env:GITHUB_WORKSPACE/.dotnet"
+
+      - name: Ensure we are using the correct .NET
+        shell: pwsh
+        run: |
+          dotnet --version
+          dotnet --info
+          dotnet workload --info
+
+      - name: Reset tracked files to clean workspace
+        shell: bash
+        run: |
+          git reset --hard HEAD
 
       - name: Run dotnet format
-        run: dotnet format .\Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
+        run: |
+          dotnet restore Microsoft.Maui.sln 
+          dotnet format Microsoft.Maui.sln --exclude Templates/src --exclude-diagnostics CA1822
     
       - name: Create Pull Request
         uses: dotnet/actions-create-pull-request@v4
@@ -39,7 +68,7 @@ jobs:
           labels: |
             t/housekeeping ♻︎
             area-infrastructure
-          assignees: rmarinho, jsuarezruiz
-          reviewers: rmarinho, jsuarezruiz
+          assignees: rmarinho, jsuarezruiz, mattleibow
+          reviewers: rmarinho, jsuarezruiz, mattleibow
           branch: housekeeping/fix-codeformatting/${{ matrix.branch }}
           base: ${{ matrix.branch }}

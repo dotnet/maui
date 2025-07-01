@@ -1,4 +1,5 @@
 ﻿namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 28838, "Incorrect Text Color Applied to Selected Tab in TabbedPage on Android", PlatformAffected.Android)]
 public class Issue28838 : TabbedPage
 {
