@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Platform
 	/// Utilities for creating HttpClient instances with proper SSL certificate handling.
 	/// Based on fix from dotnet/android for certificate revocation check failures.
 	/// </summary>
-	internal static class HttpClientUtilities
+	public static class HttpClientUtilities
 	{
 		/// <summary>
 		/// Creates an HttpClient with proper SSL certificate revocation handling to avoid
