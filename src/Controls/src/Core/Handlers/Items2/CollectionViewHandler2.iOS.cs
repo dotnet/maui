@@ -1,7 +1,6 @@
 ﻿#nullable disable
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Text;
 using Foundation;
 using Microsoft.Maui.Handlers;
@@ -36,12 +35,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	public partial class CollectionViewHandler2
 	{
 
-		public CollectionViewHandler2() : base(Mapper)
+		public CollectionViewHandler2() : base(Mapper,CommandMapper)
 		{
 
 
 		}
-		public CollectionViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper)
+		public CollectionViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper,CommandMapper)
 		{
 
 		}
@@ -59,19 +58,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[StructuredItemsView.FooterProperty.PropertyName] = MapFooterTemplate,
 			[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 			[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapFooterTemplate,
+			[SelectableItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout
+		};
+
+		//TODO Make this public in .NET10
+		internal static CommandMapper<CollectionView, CollectionViewHandler2> CommandMapper = new(ViewCommandMapper)
+		{
+			[nameof(StructuredItemsView.ItemsLayout.PropertyChanged)] = MapItemsLayoutPropertyChanged
 		};
 	}
 
 	public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
 	{
-		IItemsLayout _subscribedItemsLayout;
-		
-		protected override void DisconnectHandler(UIView platformView)
-		{
-			UnsubscribeFromItemsLayoutPropertyChanged();
-			base.DisconnectHandler(platformView);
-		}
-		
 		// Reorderable
 		protected override ItemsViewController2<ReorderableItemsView> CreateController(ReorderableItemsView itemsView, UICollectionViewLayout layout)
 			 => new ReorderableItemsViewController2<ReorderableItemsView>(itemsView, layout);
@@ -167,7 +165,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var itemSizingStrategy = ItemsView.ItemSizingStrategy;
 			var itemsLayout = ItemsView.ItemsLayout;
 
-			SubscribeToItemsLayoutPropertyChanged(itemsLayout);
+	
 
 			if (itemsLayout is GridItemsLayout gridItemsLayout)
 			{
@@ -208,38 +206,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			handler.UpdateLayout();
 		}
 
-		void SubscribeToItemsLayoutPropertyChanged(IItemsLayout itemsLayout)
-		{
-			// Unsubscribe from previous layout if any
-			UnsubscribeFromItemsLayoutPropertyChanged();
-			
-			if (itemsLayout is not null)
-			{
-				_subscribedItemsLayout = itemsLayout;
-				itemsLayout.PropertyChanged += OnItemsLayoutPropertyChanged;
-			}
-		}
-		
-		void UnsubscribeFromItemsLayoutPropertyChanged()
-		{
-			if (_subscribedItemsLayout is not null)
-			{
-				_subscribedItemsLayout.PropertyChanged -= OnItemsLayoutPropertyChanged;
-				_subscribedItemsLayout = null;
-			}
-		}
-		
-		void OnItemsLayoutPropertyChanged(object sender, PropertyChangedEventArgs args)
-		{
-			if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
-				args.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
-				args.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
-				args.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) ||
-				args.PropertyName == nameof(GridItemsLayout.Span) ||
-				args.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
-			{
-				UpdateLayout();
-			}
-		}
-	}
+//TODO Make this public in .NET10
+internal static void MapItemsLayoutPropertyChanged(CollectionViewHandler2 handler, CollectionView view, object arg3)
+{
+handler.UpdateLayout();
+}
+}
 }
