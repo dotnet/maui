@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Platform
 #pragma warning restore CA1416
 		}
 
-		protected CGRect AdjustForSafeAreaPerEdge(CGRect bounds, ISafeAreaView2 safeAreaView)
+		private CGRect AdjustForSafeAreaPerEdge(CGRect bounds, ISafeAreaView2 safeAreaView)
 		{
 			if (!RespondsToSafeArea())
 			{
