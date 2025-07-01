@@ -309,31 +309,6 @@ static class KnownTypeConverters
                         break;
                 }
             }
-            else if (value.Contains(' '))
-            { //CSS
-                var thickness = value.Split(' ');
-                switch (thickness.Length)
-                {
-                    case 2:
-                        if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double v)
-                            && double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double h))
-                            return $"new global::Microsoft.Maui.Thickness({h}, {v})";
-                        break;
-                    case 3:
-                        if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double t)
-                            && double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out h)
-                            && double.TryParse(thickness[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double b))
-                            return $"new global::Microsoft.Maui.Thickness({h}, {t}, {h}, {b})";
-                        break;
-                    case 4:
-                        if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out t)
-                            && double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double r)
-                            && double.TryParse(thickness[2], NumberStyles.Number, CultureInfo.InvariantCulture, out b)
-                            && double.TryParse(thickness[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
-                            return $"new global::Microsoft.Maui.Thickness({l}, {t}, {r}, {b})";
-                        break;
-                }
-            }
             else
             { //single uniform thickness
                 if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
@@ -368,26 +343,6 @@ static class KnownTypeConverters
                     && cornerRadius.Length < 4
                     && double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
                     return $"new global::Microsoft.Maui.CornerRadius({l})";
-            }
-            else if (value.Contains(' '))
-            { //CSS
-                var cornerRadius = value.Split(' ');
-                if (cornerRadius.Length == 2
-                    && double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double t)
-                    && double.TryParse(cornerRadius[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double b))
-                    return $"new global::Microsoft.Maui.CornerRadius({t}, {b}, {b}, {t})";
-                if (cornerRadius.Length == 3
-                    && double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double tl)
-                    && double.TryParse(cornerRadius[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double trbl)
-                    && double.TryParse(cornerRadius[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double br))
-                    return $"new global::Microsoft.Maui.CornerRadius({tl}, {trbl}, {trbl}, {br})";
-                if (cornerRadius.Length == 4
-                    && double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out tl)
-                    && double.TryParse(cornerRadius[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double tr)
-                    && double.TryParse(cornerRadius[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double bl)
-                    && double.TryParse(cornerRadius[3], NumberStyles.Number, CultureInfo.InvariantCulture, out br))
-                    return $"new global::Microsoft.Maui.CornerRadius({tl}, {tr}, {bl}, {br})";
-
             }
             else
             { //single uniform CornerRadius

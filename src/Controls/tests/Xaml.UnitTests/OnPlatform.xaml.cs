@@ -26,14 +26,14 @@ public partial class OnPlatform : ContentPage
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test] public void BoolToVisibility([Values] XamlInflator useCompiledXaml)
+		[Test] public void BoolToVisibility([Values] XamlInflator inflator)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
-			var layout = new OnPlatform(useCompiledXaml);
+			var layout = new OnPlatform(inflator);
 			Assert.AreEqual(true, layout.label0.IsVisible);
 
 			mockDeviceInfo.Platform = DevicePlatform.Android;
-			layout = new OnPlatform(useCompiledXaml);
+			layout = new OnPlatform(inflator);
 			Assert.AreEqual(false, layout.label0.IsVisible);
 		}
 

@@ -16,11 +16,6 @@ public partial class Maui25608
 		InitializeComponent();
 	}
 
-	public Maui25608(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
 	[TestFixture]
 	class Test
 	{

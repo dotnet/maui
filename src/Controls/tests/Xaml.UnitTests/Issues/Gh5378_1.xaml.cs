@@ -3,7 +3,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
 	[XamlProcessing(XamlInflator.Runtime, true)]
 	public partial class Gh5378_1 : ContentPage
 	{

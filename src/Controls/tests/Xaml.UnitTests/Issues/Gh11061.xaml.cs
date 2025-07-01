@@ -5,7 +5,6 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 [XamlProcessing(XamlInflator.Runtime, true)]
-[XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class Gh11061 : ContentPage
 {
 	public DateTime MyDateTime { get; set; }

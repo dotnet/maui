@@ -9,7 +9,6 @@ public class FakeView : View
 }
 
 [XamlProcessing(XamlInflator.Runtime, true)]
-[XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class SetterOnNonBP : ContentPage
 {
 	public SetterOnNonBP() => InitializeComponent();

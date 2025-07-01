@@ -9,7 +9,6 @@ public class Gh4751VM
 	public Gh4751VM(string title = null) => Title = title; //a .ctor with a default value IS NOT a default .ctor
 }
 
-[XamlCompilation(XamlCompilationOptions.Skip)]
 [XamlProcessing(XamlInflator.Runtime, true)]
 public partial class Gh4751 : ContentPage
 {

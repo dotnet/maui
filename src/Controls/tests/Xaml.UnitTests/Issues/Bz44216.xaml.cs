@@ -18,8 +18,7 @@ public class Bz44216Behavior : Behavior<ContentPage>
 	}
 }
 
-[XamlCompilation(XamlCompilationOptions.Skip)]
-[XamlProcessing(XamlInflator.Runtime, true)] //this should be enough to disable XamlC and SG
+[XamlProcessing(XamlInflator.Runtime, true)]
 public partial class Bz44216 : ContentPage
 {
 	public Bz44216()

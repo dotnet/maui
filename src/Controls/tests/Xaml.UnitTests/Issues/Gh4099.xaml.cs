@@ -1,31 +1,23 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
+using System.Linq;
 using Microsoft.Maui.Controls.Build.Tasks;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class Gh4099 : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh4099 : ContentPage
+	public Gh4099() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
 	{
-		public Gh4099() => InitializeComponent();
-
-		public Gh4099(bool useCompiledXaml)
+		[Test]
+		public void BetterExceptionReport([Values] XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			[Ignore("Ignore for now, Compiled Converters are disabled")]
-			public void BetterExceptionReport(bool useCompiledXaml)
+			switch (inflator)
 			{
-				if (useCompiledXaml)
-				{
+				case XamlInflator.XamlC:
 					try
 					{
 						MockCompiler.Compile(typeof(Gh4099));
@@ -36,8 +28,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 						Assert.Pass();
 					}
 					Assert.Fail();
-				}
+					break;
+				case XamlInflator.SourceGen:
+					var result = MockSourceGenerator.CreateMauiCompilation().RunMauiSourceGenerator(typeof(Gh4099));
+					Assert.That(result.Diagnostics.Any());
+					return;
+				default:
+					Assert.Ignore();
+					break;
 			}
 		}
 	}
 }
+

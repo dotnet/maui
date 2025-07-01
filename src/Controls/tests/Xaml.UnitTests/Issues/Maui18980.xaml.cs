@@ -28,7 +28,7 @@ public partial class Maui18980 : ContentPage
 		public void CSSnotOverridenbyImplicitStyle([Values] XamlInflator inflator)
 		{
 			// var app = new MockApplication();
-			// app.Resources.Add(new Maui18980Style(useCompiledXaml));
+			// app.Resources.Add(new Maui18980Style(inflator));
 			// Application.SetCurrentApplication(app);
 
 			var page = new Maui18980(inflator);

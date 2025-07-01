@@ -7,7 +7,6 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 [XamlProcessing(XamlInflator.Runtime, true)]
-[XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class FactoryMethodMissingCtor : MockView
 {
 	public FactoryMethodMissingCtor() => InitializeComponent();

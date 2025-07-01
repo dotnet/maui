@@ -5,7 +5,6 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 //this covers Issue2125 as well
-[XamlCompilation(XamlCompilationOptions.Skip)]
 [XamlProcessing(XamlInflator.Runtime, true)]
 public partial class Issue2450 : ContentPage
 {

@@ -14,10 +14,6 @@ public partial class Maui26206 : ContentPage
 		InitializeComponent();
 	}
 
-	public Maui26206(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
 
 	[TestFixture]
 	class Test

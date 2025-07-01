@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	{
 	}
 
-	[XamlCompilation(XamlCompilationOptions.Skip)]
 	[XamlProcessing(XamlInflator.Runtime, true)]
 	public partial class Bz55862 : ContentPage
 	{

@@ -3,7 +3,6 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 [XamlProcessing(XamlInflator.Runtime, true)]
-[XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class ResourceDictionaryWithInvalidSource : ContentPage
 {
 	public ResourceDictionaryWithInvalidSource() => InitializeComponent();

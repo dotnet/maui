@@ -3,14 +3,10 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlCompilation(XamlCompilationOptions.Skip)]
 [XamlProcessing(XamlInflator.Runtime, true)]
 public partial class DuplicatePropertyElements : BindableObject
 {
-	public DuplicatePropertyElements(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
+	public DuplicatePropertyElements() => InitializeComponent();
 
 	[TestFixture]
 	public static class Tests

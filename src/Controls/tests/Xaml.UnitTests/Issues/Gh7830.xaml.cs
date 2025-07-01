@@ -19,9 +19,9 @@ public partial class Gh7830 : ContentPage
 		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 		[Test]
-		public void CanResolvexStaticWithShortName([Values] XamlInflator useCompiledXaml)
+		public void CanResolvexStaticWithShortName([Values] XamlInflator inflator)
 		{
-			var layout = new Gh7830(useCompiledXaml);
+			var layout = new Gh7830(inflator);
 			var cell = layout.listView.ItemTemplate.CreateContent() as ViewCell;
 			Assert.That((cell.View as Label).Text, Is.EqualTo(StaticText));
 		}
