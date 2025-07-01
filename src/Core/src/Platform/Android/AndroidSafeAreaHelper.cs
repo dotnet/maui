@@ -1,7 +1,6 @@
 using System;
 using Android.Content;
 using Android.Views;
-using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 
@@ -59,11 +58,9 @@ namespace Microsoft.Maui.Platform
 			// When respecting safe areas, apply them as margins for modern, flexible layout
 			ApplySafeAreaAsMargins(view, insets);
 
-			// Consume the system bars and cutout insets since we've handled them
-			var systemBarsConsumed = insets.InsetIgnoringInsets(insets.GetInsets(WindowInsetsCompat.Type.SystemBars()));
-			var cutoutConsumed = systemBarsConsumed.InsetIgnoringInsets(insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout()));
-
-			return cutoutConsumed;
+			// Return the original insets since we've handled them by applying margins
+			// This allows proper inset dispatch to children while indicating we've processed them
+			return insets;
 		}
 
 		/// <summary>
@@ -79,7 +76,7 @@ namespace Microsoft.Maui.Platform
 			var cutoutInsets = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
 
 			// Use the maximum of system and cutout insets for comprehensive safe area
-			var safeInsets = InsetsCompat.Max(systemInsets, cutoutInsets);
+			var safeInsets = MaxInsets(systemInsets, cutoutInsets);
 
 			// Apply as margins which are more flexible than padding for complex layouts
 			if (view.LayoutParameters is ViewGroup.MarginLayoutParams marginParams)
@@ -121,7 +118,7 @@ namespace Microsoft.Maui.Platform
 
 			var systemInsets = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 			var cutoutInsets = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
-			var safeInsets = InsetsCompat.Max(systemInsets, cutoutInsets);
+			var safeInsets = MaxInsets(systemInsets, cutoutInsets);
 
 			return new Thickness(
 				context.FromPixels(safeInsets.Left),
@@ -139,6 +136,32 @@ namespace Microsoft.Maui.Platform
 		public static bool ShouldHandleWindowInsets(ICrossPlatformLayout? layout)
 		{
 			return layout is ISafeAreaView;
+		}
+
+		/// <summary>
+		/// Calculates the maximum insets from two Android.Graphics.Insets objects.
+		/// Uses the built-in Android.Graphics.Insets.Max() method when available.
+		/// </summary>
+		/// <param name="first">The first insets object</param>
+		/// <param name="second">The second insets object</param>
+		/// <returns>Insets containing the maximum values from both inputs</returns>
+		private static Android.Graphics.Insets MaxInsets(Android.Graphics.Insets first, Android.Graphics.Insets second)
+		{
+			if (OperatingSystem.IsAndroidVersionAtLeast(29))
+			{
+				// Use the built-in Max method available in API 29+
+				return Android.Graphics.Insets.Max(first, second);
+			}
+			else
+			{
+				// For older Android versions, calculate manually
+				return Android.Graphics.Insets.Of(
+					Math.Max(first.Left, second.Left),
+					Math.Max(first.Top, second.Top),
+					Math.Max(first.Right, second.Right),
+					Math.Max(first.Bottom, second.Bottom)
+				);
+			}
 		}
 	}
 }
