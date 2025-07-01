@@ -80,6 +80,21 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateFont(timePicker, fontManager);
 		}
 
+		public static void MapFlowDirection(ITimePickerHandler handler, ITimePicker timePicker)
+		{
+			if (handler.PlatformView is not null)
+			{
+				handler.PlatformView.UpdateFlowDirection(timePicker);
+
+				// For 12-hour format, also apply text alignment to handle AM/PM positioning
+				// For 24-hour format, UpdateFlowDirection alone is sufficient
+				if (handler is TimePickerHandler timePickerHandler && !timePickerHandler.Use24HourView)
+				{
+					handler.PlatformView.UpdateTextAlignment(timePicker);
+				}
+			}
+		}
+
 		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateTextColor(timePicker);
