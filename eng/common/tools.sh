@@ -483,23 +483,41 @@ function MSBuild-Core {
   function RunBuildTool {
     export ARCADE_BUILD_TOOL_COMMAND="$_InitializeBuildTool $@"
 
-    "$_InitializeBuildTool" "$@" || {
-      local exit_code=$?
-      # We should not Write-PipelineTaskError here because that message shows up in the build summary
-      # The build already logged an error, that's the reason it failed. Producing an error here only adds noise.
-      echo "Build failed with exit code $exit_code. Check errors above."
+    local max_retries=5
+    local retry_count=0
+    local exit_code=0
 
-      # When running on Azure Pipelines, override the returned exit code to avoid double logging.
-      # Skip this when the build is a child of the VMR build.
-      if [[ "$ci" == true && -n ${SYSTEM_TEAMPROJECT:-} && "$from_vmr" != true ]]; then
-        Write-PipelineSetResult -result "Failed" -message "msbuild execution failed."
-        # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
-        # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
-        ExitWithExitCode 0
+    while [[ $retry_count -lt $max_retries ]]; do
+      if "$_InitializeBuildTool" "$@"; then
+        # Command succeeded, break out of retry loop
+        return 0
       else
-        ExitWithExitCode $exit_code
+        exit_code=$?
+        retry_count=$((retry_count + 1))
+        
+        if [[ $retry_count -lt $max_retries ]]; then
+          echo "Build attempt $retry_count failed with exit code $exit_code. Retrying in 5 seconds... (attempt $retry_count of $max_retries)"
+          sleep 5
+        else
+          echo "Build failed after $max_retries attempts with exit code $exit_code. Check errors above."
+        fi
       fi
-    }
+    done
+
+    # All retries exhausted, handle the failure
+    # We should not Write-PipelineTaskError here because that message shows up in the build summary
+    # The build already logged an error, that's the reason it failed. Producing an error here only adds noise.
+
+    # When running on Azure Pipelines, override the returned exit code to avoid double logging.
+    # Skip this when the build is a child of the VMR build.
+    if [[ "$ci" == true && -n ${SYSTEM_TEAMPROJECT:-} && "$from_vmr" != true ]]; then
+      Write-PipelineSetResult -result "Failed" -message "msbuild execution failed."
+      # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
+      # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
+      ExitWithExitCode 0
+    else
+      ExitWithExitCode $exit_code
+    fi
   }
 
   RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
