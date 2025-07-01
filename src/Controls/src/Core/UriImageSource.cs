@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls
 {
@@ -115,7 +114,7 @@ namespace Microsoft.Maui.Controls
 		{
 			try
 			{
-				using var client = HttpClientUtilities.CreateHttpClient();
+				using var client = new HttpClient();
 
 				// Do not remove this await otherwise the client will dispose before
 				// the stream even starts
