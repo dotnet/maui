@@ -140,21 +140,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void View_ImplementsISafeAreaView2()
+		public void Page_ImplementsISafeAreaView2()
 		{
-			var label = new Label();
+			var page = new ContentPage();
 			
-			Assert.IsAssignableFrom<ISafeAreaView2>(label);
+			Assert.IsAssignableFrom<ISafeAreaView2>(page);
 		}
 
 		[Fact]
-		public void View_IgnoreSafeAreaForEdge_UsesAttachedProperty()
+		public void ContentView_ImplementsISafeAreaView2()
 		{
-			var label = new Label();
-			SafeAreaGuides.SetIgnoreSafeArea(label, new[] { SafeAreaGroup.All, SafeAreaGroup.None, SafeAreaGroup.All, SafeAreaGroup.None });
+			var contentView = new ContentView();
+			
+			Assert.IsAssignableFrom<ISafeAreaView2>(contentView);
+		}
+
+		[Fact]
+		public void Page_IgnoreSafeAreaForEdge_UsesAttachedProperty()
+		{
+			var page = new ContentPage();
+			SafeAreaGuides.SetIgnoreSafeArea(page, new[] { SafeAreaGroup.All, SafeAreaGroup.None, SafeAreaGroup.All, SafeAreaGroup.None });
 
 			// Test via ISafeAreaView2 interface
-			var safeAreaView2 = (ISafeAreaView2)label;
+			var safeAreaView2 = (ISafeAreaView2)page;
 			
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));  // Left = All
 			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top = None  
@@ -163,12 +171,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void View_IgnoreSafeAreaForEdge_FallsBackToDefaultWhenNoLegacySupport()
+		public void ContentView_IgnoreSafeAreaForEdge_FallsBackToDefaultWhenNoLegacySupport()
 		{
-			var label = new Label(); // Label doesn't implement ISafeAreaView
+			var contentView = new ContentView(); // ContentView doesn't implement ISafeAreaView
 
 			// Should default to false when no attached property is set and no legacy support
-			var safeAreaView2 = (ISafeAreaView2)label;
+			var safeAreaView2 = (ISafeAreaView2)contentView;
 			
 			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0));
 			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1));
@@ -181,17 +189,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SafeAreaGuides_CanReplaceUseSafeAreaScenario()
 		{
 			// This test mimics the usage pattern from Issue3809 and ShellTests.iOS
-			var contentPage = new ContentPage() 
+			var contentView = new ContentView() 
 			{ 
-				Content = new Label() { Text = "Test Page" },
-				Padding = new Thickness(25, 25, 25, 25)
+				Content = new Label() { Text = "Test Page" }
 			};
 
 			// Legacy approach: contentPage.On<iOS>().SetUseSafeArea(true);
 			// New approach: use SafeAreaGuides attached property
-			SafeAreaGuides.SetIgnoreSafeArea(contentPage.Content, new[] { SafeAreaGroup.None }); // Respect all safe areas
+			SafeAreaGuides.SetIgnoreSafeArea(contentView, new[] { SafeAreaGroup.None }); // Respect all safe areas
 
-			var safeAreaView2 = (ISafeAreaView2)contentPage.Content;
+			var safeAreaView2 = (ISafeAreaView2)contentView;
 			
 			// All edges should respect safe area (false)
 			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0));

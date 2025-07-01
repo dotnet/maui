@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	/// This is the base class for <see cref="Layout"/> and most of the controls.
 	/// Because <see cref="View" /> ultimately inherits from <see cref="BindableObject" />, application developers can use the Model-View-ViewModel architecture, as well as XAML, to develop portable user interfaces.
 	/// </remarks>
-	public partial class View : VisualElement, IViewController, IGestureController, IGestureRecognizers, IView, IPropertyMapperView, IHotReloadableView, IControlsView, ISafeAreaView2
+	public partial class View : VisualElement, IViewController, IGestureController, IGestureRecognizers, IView, IPropertyMapperView, IHotReloadableView, IControlsView
 	{
 		protected internal IGestureController GestureController => this;
 
@@ -331,48 +331,6 @@ namespace Microsoft.Maui.Controls
 				reloadHandler?.Reload();
 				//TODO: if reload handler is null, Do a manual reload?
 			});
-		}
-
-		#endregion
-
-		#region ISafeAreaView2
-
-		/// <inheritdoc cref="ISafeAreaView2.SafeAreaInsets"/>
-		Thickness ISafeAreaView2.SafeAreaInsets { set { } } // Default no-op implementation for views
-
-		/// <inheritdoc cref="ISafeAreaView2.IgnoreSafeAreaForEdge"/>
-		bool ISafeAreaView2.IgnoreSafeAreaForEdge(int edge)
-		{
-			// Check if SafeAreaGuides attached property has been explicitly set
-			var safeAreaGuides = SafeAreaGuides.GetIgnoreSafeArea(this);
-			var defaultValue = (SafeAreaGroup[])SafeAreaGuides.IgnoreSafeAreaProperty.DefaultValue;
-			
-			// Only use attached property if it's different from default (meaning it was explicitly set)
-			if (safeAreaGuides != null && !ReferenceEquals(safeAreaGuides, defaultValue) && 
-			    (safeAreaGuides.Length != defaultValue.Length || !AreArraysEqual(safeAreaGuides, defaultValue)))
-			{
-				var groupForEdge = SafeAreaGuides.GetIgnoreSafeAreaForEdge(this, edge);
-				return groupForEdge.HasFlag(SafeAreaGroup.All);
-			}
-
-			// Fall back to legacy behavior if available
-			if (this is ISafeAreaView legacySafeAreaView)
-			{
-				return legacySafeAreaView.IgnoreSafeArea;
-			}
-
-			// Default to false (respect safe area)
-			return false;
-		}
-
-		private static bool AreArraysEqual(SafeAreaGroup[] arr1, SafeAreaGroup[] arr2)
-		{
-			if (arr1.Length != arr2.Length) return false;
-			for (int i = 0; i < arr1.Length; i++)
-			{
-				if (arr1[i] != arr2[i]) return false;
-			}
-			return true;
 		}
 
 		#endregion

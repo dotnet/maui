@@ -80,5 +80,46 @@ namespace Microsoft.Maui.Controls
 				_ => SafeAreaGroup.None
 			};
 		}
+
+		/// <summary>
+		/// Gets the effective safe area behavior for a specific edge for elements that implement ISafeAreaView2.
+		/// This method handles the logic for checking attached properties and falling back to legacy behavior.
+		/// </summary>
+		/// <param name="bindable">The bindable object that implements ISafeAreaView2.</param>
+		/// <param name="edge">The edge to get the behavior for (0=Left, 1=Top, 2=Right, 3=Bottom).</param>
+		/// <returns>True if safe area should be ignored for this edge, false otherwise.</returns>
+		internal static bool ShouldIgnoreSafeAreaForEdge(BindableObject bindable, int edge)
+		{
+			// Check if SafeAreaGuides attached property has been explicitly set
+			var safeAreaGuides = GetIgnoreSafeArea(bindable);
+			var defaultValue = (SafeAreaGroup[])IgnoreSafeAreaProperty.DefaultValue;
+			
+			// Only use attached property if it's different from default (meaning it was explicitly set)
+			if (safeAreaGuides != null && !ReferenceEquals(safeAreaGuides, defaultValue) && 
+			    (safeAreaGuides.Length != defaultValue.Length || !AreArraysEqual(safeAreaGuides, defaultValue)))
+			{
+				var groupForEdge = GetIgnoreSafeAreaForEdge(bindable, edge);
+				return groupForEdge.HasFlag(SafeAreaGroup.All);
+			}
+
+			// Fall back to legacy behavior if available
+			if (bindable is ISafeAreaView legacySafeAreaView)
+			{
+				return legacySafeAreaView.IgnoreSafeArea;
+			}
+
+			// Default to false (respect safe area)
+			return false;
+		}
+
+		private static bool AreArraysEqual(SafeAreaGroup[] arr1, SafeAreaGroup[] arr2)
+		{
+			if (arr1.Length != arr2.Length) return false;
+			for (int i = 0; i < arr1.Length; i++)
+			{
+				if (arr1[i] != arr2[i]) return false;
+			}
+			return true;
+		}
 	}
 }
