@@ -58,5 +58,13 @@ public static class TimePickerExtensions
 				platformTimePicker.SetTextColor(cs);
 			}
 		}
+
+		// Make it public in .NET 10.
+		internal static void UpdateTextAlignment(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
+		{
+			mauiTimePicker.TextAlignment = timePicker.FlowDirection == FlowDirection.RightToLeft
+					? Android.Views.TextAlignment.TextEnd
+					: Android.Views.TextAlignment.TextStart;
+		}
 	}
 }

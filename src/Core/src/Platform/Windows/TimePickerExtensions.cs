@@ -134,4 +134,26 @@ public static class TimePickerExtensions
 			parent?.Focus(FocusState.Programmatic);
 		}
 	}
+
+	// Make it public in .NET 10.
+	internal static void UpdateTextAlignment(this TimePicker platformTimePicker, ITimePicker timePicker)
+	{
+		var flowDirection = timePicker.FlowDirection;
+		var textAlignment = flowDirection == FlowDirection.RightToLeft
+			? UI.Xaml.TextAlignment.Right
+			: UI.Xaml.TextAlignment.Left;
+
+		SetTextAlignment(platformTimePicker, "HourTextBlock", textAlignment);
+		SetTextAlignment(platformTimePicker, "MinuteTextBlock", textAlignment);
+		SetTextAlignment(platformTimePicker, "PeriodTextBlock", textAlignment);
+	}
+
+	static void SetTextAlignment(TimePicker platformTimePicker, string elementName, UI.Xaml.TextAlignment textAlignment)
+	{
+		var textBlock = platformTimePicker.GetDescendantByName<TextBlock>(elementName);
+		if (textBlock is not null)
+		{
+			textBlock.TextAlignment = textAlignment;
+		}
+	}
 }
