@@ -138,5 +138,99 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2));
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(3));
 		}
+
+		[Fact]
+		public void View_ImplementsISafeAreaView2()
+		{
+			var label = new Label();
+			
+			Assert.IsAssignableFrom<ISafeAreaView2>(label);
+		}
+
+		[Fact]
+		public void View_IgnoreSafeAreaForEdge_UsesAttachedProperty()
+		{
+			var label = new Label();
+			SafeAreaGuides.SetIgnoreSafeArea(label, new[] { SafeAreaGroup.All, SafeAreaGroup.None, SafeAreaGroup.All, SafeAreaGroup.None });
+
+			// Test via ISafeAreaView2 interface
+			var safeAreaView2 = (ISafeAreaView2)label;
+			
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));  // Left = All
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top = None  
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2));  // Right = All
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom = None
+		}
+
+		[Fact]
+		public void View_IgnoreSafeAreaForEdge_FallsBackToDefaultWhenNoLegacySupport()
+		{
+			var label = new Label(); // Label doesn't implement ISafeAreaView
+
+			// Should default to false when no attached property is set and no legacy support
+			var safeAreaView2 = (ISafeAreaView2)label;
+			
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0));
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1));
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2));
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3));
+		}
+
+		// Tests based on existing iOS safe area usage patterns
+		[Fact]
+		public void SafeAreaGuides_CanReplaceUseSafeAreaScenario()
+		{
+			// This test mimics the usage pattern from Issue3809 and ShellTests.iOS
+			var contentPage = new ContentPage() 
+			{ 
+				Content = new Label() { Text = "Test Page" },
+				Padding = new Thickness(25, 25, 25, 25)
+			};
+
+			// Legacy approach: contentPage.On<iOS>().SetUseSafeArea(true);
+			// New approach: use SafeAreaGuides attached property
+			SafeAreaGuides.SetIgnoreSafeArea(contentPage.Content, new[] { SafeAreaGroup.None }); // Respect all safe areas
+
+			var safeAreaView2 = (ISafeAreaView2)contentPage.Content;
+			
+			// All edges should respect safe area (false)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0));
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1));
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2));
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3));
+		}
+
+		[Fact]
+		public void SafeAreaGuides_SupportsPerEdgeControl_IgnoreTopAndBottom()
+		{
+			// Common use case: ignore safe area for top and bottom edges only (e.g., for full-width background)
+			var stackLayout = new VerticalStackLayout();
+			
+			// Ignore safe area for top and bottom, respect for left and right
+			SafeAreaGuides.SetIgnoreSafeArea(stackLayout, new[] { SafeAreaGroup.None, SafeAreaGroup.All, SafeAreaGroup.None, SafeAreaGroup.All });
+
+			var safeAreaView2 = (ISafeAreaView2)stackLayout;
+			
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0)); // Left = None (respect)
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(1));  // Top = All (ignore)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2)); // Right = None (respect)  
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(3));  // Bottom = All (ignore)
+		}
+
+		[Fact]
+		public void SafeAreaGuides_TwoValueShorthand_LeftRightTopBottom()
+		{
+			// Test two-value shorthand: first value for left/right, second for top/bottom
+			var grid = new Grid();
+			
+			SafeAreaGuides.SetIgnoreSafeArea(grid, new[] { SafeAreaGroup.All, SafeAreaGroup.None });
+
+			var safeAreaView2 = (ISafeAreaView2)grid;
+			
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));  // Left = All  
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top = None
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2));  // Right = All
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom = None
+		}
 	}
 }

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Children))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, ISafeAreaView2, IInputTransparentContainerElement
+	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement
 	{
 		protected ILayoutManager _layoutManager;
 
@@ -128,40 +128,6 @@ namespace Microsoft.Maui.Controls
 		/// </remarks>
 		[System.Obsolete("Use SafeAreaGuides.IgnoreSafeArea attached property instead for per-edge safe area control.")]
 		public bool IgnoreSafeArea { get; set; }
-
-		/// <inheritdoc cref="ISafeAreaView2.IgnoreSafeAreaForEdge"/>
-		bool ISafeAreaView2.IgnoreSafeAreaForEdge(int edge)
-		{
-			// Check if SafeAreaGuides attached property has been explicitly set
-			var safeAreaGuides = SafeAreaGuides.GetIgnoreSafeArea(this);
-			var defaultValue = (SafeAreaGroup[])SafeAreaGuides.IgnoreSafeAreaProperty.DefaultValue;
-			
-			// Only use attached property if it's different from default (meaning it was explicitly set)
-			if (safeAreaGuides != null && !ReferenceEquals(safeAreaGuides, defaultValue) && 
-			    (safeAreaGuides.Length != defaultValue.Length || !AreArraysEqual(safeAreaGuides, defaultValue)))
-			{
-				var groupForEdge = SafeAreaGuides.GetIgnoreSafeAreaForEdge(this, edge);
-				return groupForEdge.HasFlag(SafeAreaGroup.All);
-			}
-
-			// Fall back to the legacy IgnoreSafeArea property
-#pragma warning disable CS0618 // Type or member is obsolete
-			return IgnoreSafeArea;
-#pragma warning restore CS0618 // Type or member is obsolete
-		}
-
-		/// <inheritdoc cref="ISafeAreaView2.SafeAreaInsets"/>
-		Thickness ISafeAreaView2.SafeAreaInsets { set { } } // No-op for Layout - SafeAreaInsets is only used by Page
-
-		private static bool AreArraysEqual(SafeAreaGroup[] arr1, SafeAreaGroup[] arr2)
-		{
-			if (arr1.Length != arr2.Length) return false;
-			for (int i = 0; i < arr1.Length; i++)
-			{
-				if (arr1[i] != arr2[i]) return false;
-			}
-			return true;
-		}
 
 		/// <summary>
 		/// Creates a manager object that can measure this layout and arrange its children.
