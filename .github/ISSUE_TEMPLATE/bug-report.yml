@@ -70,7 +70,7 @@ body:
         - 9.0.0-preview.3.10457
         - 9.0.0-preview.2.10293
         - 9.0.0-preview.1.9973
-        - .NET 8 (Our of support, please specify exact version)
+        - .NET 8 (Out of support, please specify exact version)
         - Nightly / CI build (Please specify exact version)
         - Unknown/Other
     validations:
