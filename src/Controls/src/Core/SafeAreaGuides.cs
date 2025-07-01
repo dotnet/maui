@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 				"IgnoreSafeArea",
 				typeof(SafeAreaGroup[]),
 				typeof(SafeAreaGuides),
-				new SafeAreaGroup[] { SafeAreaGroup.None },
+				new SafeAreaGroup[] { SafeAreaGroup.All },
 				propertyChanged: OnIgnoreSafeAreaChanged
 			);
 
@@ -108,8 +108,8 @@ namespace Microsoft.Maui.Controls
 				return legacySafeAreaView.IgnoreSafeArea;
 			}
 
-			// Default to false (respect safe area)
-			return false;
+			// Default to true (ignore safe area) since the default is now SafeAreaGroup.All
+			return true;
 		}
 
 		private static bool AreArraysEqual(SafeAreaGroup[] arr1, SafeAreaGroup[] arr2)

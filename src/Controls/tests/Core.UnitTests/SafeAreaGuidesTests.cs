@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class SafeAreaGuidesTests : BaseTestFixture
 	{
 		[Fact]
-		public void GetIgnoreSafeArea_DefaultValue_ReturnsNoneArray()
+		public void GetIgnoreSafeArea_DefaultValue_ReturnsAllArray()
 		{
 			var layout = new Grid();
 			
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			
 			Assert.NotNull(result);
 			Assert.Single(result);
-			Assert.Equal(SafeAreaGroup.None, result[0]);
+			Assert.Equal(SafeAreaGroup.All, result[0]);
 		}
 
 		[Fact]
@@ -175,13 +175,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var contentView = new ContentView(); // ContentView doesn't implement ISafeAreaView
 
-			// Should default to false when no attached property is set and no legacy support
+			// Should default to true when no attached property is set and no legacy support (default is now SafeAreaGroup.All)
 			var safeAreaView2 = (ISafeAreaView2)contentView;
 			
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0));
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1));
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2));
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3));
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(1));
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2));
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(3));
 		}
 
 		// Tests based on existing iOS safe area usage patterns
