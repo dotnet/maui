@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Microsoft.Maui.Platform;
 
 namespace Maui.Controls.Sample
 {
@@ -19,7 +18,7 @@ namespace Maui.Controls.Sample
 			{
 				try
 				{
-					using (var httpClient = HttpClientUtilities.CreateHttpClient())
+					using (var httpClient = new HttpClient())
 					{
 						httpClient.Timeout = TimeSpan.FromSeconds(5);
 						using (var httpResponse = httpClient.GetAsync(@"https://www.github.com", HttpCompletionOption.ResponseHeadersRead))

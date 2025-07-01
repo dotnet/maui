@@ -2566,5 +2566,3 @@ virtual Microsoft.Maui.WindowOverlay.HandleUIChange() -> void
 virtual Microsoft.Maui.WindowOverlay.Initialize() -> bool
 virtual Microsoft.Maui.WindowOverlay.RemoveWindowElement(Microsoft.Maui.IWindowOverlayElement! drawable) -> bool
 virtual Microsoft.Maui.WindowOverlay.RemoveWindowElements() -> void
-Microsoft.Maui.Platform.HttpClientUtilities
-static Microsoft.Maui.Platform.HttpClientUtilities.CreateHttpClient() -> System.Net.Http.HttpClient!
