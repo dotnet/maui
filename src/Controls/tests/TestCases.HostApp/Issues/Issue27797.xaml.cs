@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 27797, "CollectionView with grouped data crashes on iOS when the groups change", PlatformAffected.iOS)]
 public class Issue27797NavigationPage : NavigationPage
 {
