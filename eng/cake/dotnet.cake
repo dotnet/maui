@@ -486,7 +486,26 @@ Task("VSCode")
 
         UseLocalNuGetCacheFolder();
 
-        StartVisualStudioCodeForDotNet();
+        StartVisualStudioCodeForDotNet(false);
+    });
+
+Task("Insiders")
+    .Description("Provisions .NET, and launches an instance of Visual Studio Code using it.")
+    .IsDependentOn("Clean")
+    .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
+    .IsDependentOn("dotnet-pack") // Run conditionally
+    .Does(() =>
+    {
+        if (pendingException != null)
+        {
+            Error($"{pendingException}");
+            Error("!!!!BUILD TASKS FAILED: !!!!!");
+        }
+
+        UseLocalNuGetCacheFolder();
+
+        StartVisualStudioCodeForDotNet(true);
     });
 
 // Tasks for Local Development
@@ -632,7 +651,7 @@ void UseLocalNuGetCacheFolder(bool reset = false)
     SetEnvironmentVariable("NUGET_PACKAGES", packages.FullPath);
 }
 
-void StartVisualStudioCodeForDotNet()
+void StartVisualStudioCodeForDotNet(bool useInsiders)
 {
     if (IsCIBuild())
     {
@@ -645,7 +664,9 @@ void StartVisualStudioCodeForDotNet()
         SetDotNetEnvironmentVariables();
     }
 
-    StartProcess("code", new ProcessSettings{ EnvironmentVariables = GetDotNetEnvironmentVariables() });
+    string codeProcessName = useInsiders ? "code-insiders" : "code";
+
+    StartProcess(codeProcessName, new ProcessSettings{ EnvironmentVariables = GetDotNetEnvironmentVariables() });
 }
 
 void StartVisualStudioForDotNet()

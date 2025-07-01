@@ -12,6 +12,7 @@ using Mono.Cecil.Cil;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
 public partial class Maui25819 : ContentPage
 {
 	public Maui25819()

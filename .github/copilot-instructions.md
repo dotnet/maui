@@ -110,6 +110,20 @@ dotnet cake --target=dotnet-pack
   - `src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj`
   - `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
 
+### Code Formatting
+
+Before committing any changes, format the codebase using the following command to ensure consistent code style:
+
+```bash
+dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
+```
+
+This command:
+- Formats all code files according to the repository's `.editorconfig` settings
+- Excludes the Templates/src directory from formatting
+- Excludes the CA1822 diagnostic (member can be marked as static)
+- Uses `--no-restore` for faster execution when dependencies are already restored
+
 ### Local Development with Branch-Specific .NET
 
 For compatibility with specific branches:
@@ -159,6 +173,19 @@ Since coding agents function as both CI and pair programmers, they need to handl
 - Update XML documentation for public APIs
 - Follow existing code documentation patterns
 - Update relevant docs in `docs/` folder when needed
+
+### Opening PRs
+
+All PRs are required to have this at the top of the description:
+
+```
+<!-- Please let the below note in for people that find this PR -->
+> [!NOTE]
+> Are you waiting for the changes in this PR to be merged?
+> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
+```
+
+Always put that at the top, without the block quotes. Without it, the users will NOT be able to try the PR and your work will have been in vain!
 
 ## Additional Resources
 

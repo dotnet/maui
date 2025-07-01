@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Issue24583 : _IssuesUITest
 {
 	public override string Issue => "Text in the Editor control disappeared when reducing the Scale";

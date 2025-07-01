@@ -183,5 +183,11 @@ namespace Microsoft.Maui.Controls
 			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(SearchCommand), SearchCommand);
 			return $"{base.GetDebuggerDisplay()}, {debugText}";
 		}
+
+		WeakCommandSubscription ICommandElement.CleanupTracker
+		{
+			get;
+			set;
+		}
 	}
 }

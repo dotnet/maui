@@ -9,6 +9,7 @@ using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
 public partial class Maui25309 : ContentPage
 {
 	public Maui25309()

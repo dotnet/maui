@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 29661, "[iOS, Mac] StrokeDashArray Property not Rendering", PlatformAffected.iOS)]
 public class Issue29661 : ContentPage
 {

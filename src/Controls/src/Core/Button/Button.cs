@@ -616,5 +616,7 @@ namespace Microsoft.Maui.Controls
 			var commandText = DebuggerDisplayHelpers.GetDebugText(nameof(Command), Command, false);
 			return $"{base.GetDebuggerDisplay()}, {textString}, {commandText}";
 		}
+
+		WeakCommandSubscription ICommandElement.CleanupTracker { get; set; }
 	}
 }

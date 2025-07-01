@@ -2555,5 +2555,55 @@ namespace UITest.Appium
 
 			return element;
 		}
+
+		/// <summary>
+		/// Taps an element and retries until another element appears and is ready for interaction.
+		/// Sometimes elements may appear but are not yet ready for interaction; this helper method retries the tap until the target element is interactable or the retry limit is reached.
+		/// </summary>
+		/// <param name="app">The app instance</param>
+		/// <param name="elementToTap">The element to tap</param>
+		/// <param name="elementToWaitFor">The element to wait for after tapping</param>
+		/// <param name="maxRetries">Maximum number of retry attempts</param>
+		/// <param name="retryDelayMs">Delay between retries in milliseconds</param>
+		/// <returns>True if the target element appeared and is ready, false otherwise</returns>
+		public static bool TapWithRetriesUntilElementReady(this IApp app, string elementToTap, string elementToWaitFor,
+			int maxRetries = 5, int retryDelayMs = 500)
+		{
+			// Initial tap
+			app.Tap(elementToTap);
+
+			for (int retry = 0; retry < maxRetries - 1; retry++)
+			{
+				// Check if target element is visible
+				if (IsElementVisible(app, elementToWaitFor))
+					return true;
+
+				// Element not found, wait and tap again
+				System.Threading.Thread.Sleep(retryDelayMs);
+				app.Tap(elementToTap);
+			}
+
+			// Final check
+			return IsElementVisible(app, elementToWaitFor);
+		}
+
+		/// <summary>
+		/// Determines whether a UI element with the specified name is currently visible in the app.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="elementName">The name or identifier of the element to check for visibility.</param>
+		/// <returns>True if the element is visible; otherwise, false.</returns>
+		public static bool IsElementVisible(IApp app, string elementName)
+		{
+			try
+			{
+				app.WaitForElement(elementName);
+				return true;
+			}
+			catch (TimeoutException)
+			{
+				return false;
+			}
+		}
 	}
 }

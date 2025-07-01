@@ -5,6 +5,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Issue29261 : _IssuesUITest
 {
 	public override string Issue => "CarouselViewHandler2 for iOS does not properly bounce back when reaching the end with Loop=false";

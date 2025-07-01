@@ -1,4 +1,5 @@
 namespace Microsoft.Maui.Controls.BindingSourceGen;
+
 using static Microsoft.Maui.Controls.BindingSourceGen.UnsafeAccessorsMethodName;
 
 

@@ -288,5 +288,13 @@ namespace Microsoft.Maui.Controls
 		Color IButtonStroke.StrokeColor => (Color)GetValue(BorderColorProperty);
 
 		int IButtonStroke.CornerRadius => (int)GetValue(CornerRadiusProperty);
+
+
+		WeakCommandSubscription ICommandElement.CleanupTracker
+		{
+			get;
+			set;
+		}
+
 	}
 }

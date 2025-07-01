@@ -156,5 +156,11 @@ namespace Microsoft.Maui.Controls
 			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Command), Command, nameof(IsRefreshing), IsRefreshing, false);
 			return $"{base.GetDebuggerDisplay()}, {debugText}";
 		}
+
+		WeakCommandSubscription ICommandElement.CleanupTracker
+		{
+			get;
+			set;
+		}
 	}
 }
