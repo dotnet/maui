@@ -263,6 +263,13 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <inheritdoc cref="ISafeAreaView2.IgnoreSafeAreaForEdge"/>
+		bool ISafeAreaView2.IgnoreSafeAreaForEdge(int edge)
+		{
+			// Page doesn't use the SafeAreaGuides attached property, so always fall back to legacy behavior
+			return ((ISafeAreaView)this).IgnoreSafeArea;
+		}
+
 		/// <summary>
 		/// Raised when the children of this page, and thus potentially the layout, have changed.
 		/// </summary>

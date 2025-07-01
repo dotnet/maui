@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Children))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, ISafeAreaView3, IInputTransparentContainerElement
+	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, ISafeAreaView2, IInputTransparentContainerElement
 	{
 		protected ILayoutManager _layoutManager;
 
@@ -129,8 +129,8 @@ namespace Microsoft.Maui.Controls
 		[System.Obsolete("Use SafeAreaGuides.IgnoreSafeArea attached property instead for per-edge safe area control.")]
 		public bool IgnoreSafeArea { get; set; }
 
-		/// <inheritdoc cref="ISafeAreaView3.IgnoreSafeAreaForEdge"/>
-		public bool IgnoreSafeAreaForEdge(int edge)
+		/// <inheritdoc cref="ISafeAreaView2.IgnoreSafeAreaForEdge"/>
+		bool ISafeAreaView2.IgnoreSafeAreaForEdge(int edge)
 		{
 			// Check if SafeAreaGuides attached property has been explicitly set
 			var safeAreaGuides = SafeAreaGuides.GetIgnoreSafeArea(this);
@@ -149,6 +149,9 @@ namespace Microsoft.Maui.Controls
 			return IgnoreSafeArea;
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
+
+		/// <inheritdoc cref="ISafeAreaView2.SafeAreaInsets"/>
+		Thickness ISafeAreaView2.SafeAreaInsets { set { } } // No-op for Layout - SafeAreaInsets is only used by Page
 
 		private static bool AreArraysEqual(SafeAreaGroup[] arr1, SafeAreaGroup[] arr2)
 		{

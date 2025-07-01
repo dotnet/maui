@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Ignore all insets for this edge - content may be positioned anywhere on the screen, 
 		/// including behind toolbars, screen cutouts, etc.
+		/// Currently equivalent to ignoring platform safe area insets.
 		/// </summary>
 		All = 1 << 0,
 
@@ -24,5 +25,8 @@ namespace Microsoft.Maui.Controls
 		/// Reserved for future use to ignore keyboard (IME) insets.
 		/// </summary>
 		Keyboard = 1 << 1
+
+		// Note: When adding new flags in the future, update the 'All' value to include all applicable flags:
+		// All = (1 << 0) | (new flags...)
 	}
 }

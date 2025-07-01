@@ -41,9 +41,9 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Check for new per-edge safe area control first
-			if (View is ISafeAreaView3 sav3)
+			if (View is ISafeAreaView2 sav2)
 			{
-				return AdjustForSafeAreaPerEdge(bounds, sav3);
+				return AdjustForSafeAreaPerEdge(bounds, sav2);
 			}
 
 			// Fall back to legacy ISafeAreaView behavior
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Platform
 #pragma warning restore CA1416
 		}
 
-		protected CGRect AdjustForSafeAreaPerEdge(CGRect bounds, ISafeAreaView3 safeAreaView)
+		protected CGRect AdjustForSafeAreaPerEdge(CGRect bounds, ISafeAreaView2 safeAreaView)
 		{
 			if (!RespondsToSafeArea())
 			{

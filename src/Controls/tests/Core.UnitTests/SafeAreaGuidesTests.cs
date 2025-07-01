@@ -102,11 +102,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void Layout_ImplementsISafeAreaView3()
+		public void Layout_ImplementsISafeAreaView2()
 		{
 			var layout = new Grid();
 			
-			Assert.IsAssignableFrom<ISafeAreaView3>(layout);
+			Assert.IsAssignableFrom<ISafeAreaView2>(layout);
 		}
 
 		[Fact]
@@ -115,13 +115,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var layout = new Grid();
 			SafeAreaGuides.SetIgnoreSafeArea(layout, new[] { SafeAreaGroup.All, SafeAreaGroup.None, SafeAreaGroup.All, SafeAreaGroup.None });
 
-			// Test via ISafeAreaView3 interface
-			var safeAreaView3 = (ISafeAreaView3)layout;
+			// Test via ISafeAreaView2 interface
+			var safeAreaView2 = (ISafeAreaView2)layout;
 			
-			Assert.True(safeAreaView3.IgnoreSafeAreaForEdge(0));  // Left = All
-			Assert.False(safeAreaView3.IgnoreSafeAreaForEdge(1)); // Top = None  
-			Assert.True(safeAreaView3.IgnoreSafeAreaForEdge(2));  // Right = All
-			Assert.False(safeAreaView3.IgnoreSafeAreaForEdge(3)); // Bottom = None
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));  // Left = All
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top = None  
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2));  // Right = All
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom = None
 		}
 
 		[Fact]
@@ -131,12 +131,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			layout.IgnoreSafeArea = true; // Legacy property
 
 			// Should fall back to legacy property when no attached property is set
-			var safeAreaView3 = (ISafeAreaView3)layout;
+			var safeAreaView2 = (ISafeAreaView2)layout;
 			
-			Assert.True(safeAreaView3.IgnoreSafeAreaForEdge(0));
-			Assert.True(safeAreaView3.IgnoreSafeAreaForEdge(1));
-			Assert.True(safeAreaView3.IgnoreSafeAreaForEdge(2));
-			Assert.True(safeAreaView3.IgnoreSafeAreaForEdge(3));
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(1));
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2));
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(3));
 		}
 	}
 }
