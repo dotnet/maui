@@ -70,21 +70,13 @@ namespace Microsoft.Maui.TestCases.Tests
 					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? _defaultiOSVersion);
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
+				case TestDevice.Mac:
+					var macAppPath = GetMacAppPath(configuration, frameworkVersion);
+					config.SetProperty("AppPath", macAppPath);
+					break;
 				case TestDevice.Windows:
-					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.HostApp");
-					var windowsExe = "Controls.TestCases.HostApp.exe";
-					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win-x64\\{windowsExe}");
-					var windowsExePath19041 = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win-x64\\{windowsExe}");
-
-					if (!File.Exists(windowsExePath) && File.Exists(windowsExePath19041))
-					{
-						windowsExePath = windowsExePath19041;
-					}
-
-					var appPath = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WINDOWS_APP_PATH"))
-					   ? windowsExePath
-					   : Environment.GetEnvironmentVariable("WINDOWS_APP_PATH");
-					config.SetProperty("AppPath", appPath);
+					var windowsAppPath = GetWindowsAppPath(configuration, frameworkVersion);
+					config.SetProperty("AppPath", windowsAppPath);
 					break;
 			}
 
@@ -102,7 +94,46 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			return config;
 		}
+		
+		string GetMacAppPath(string configuration, string frameworkVersion)
+		{
+			var appProjectFolder = GetAppProjectFolder();
+			var macAppBundle = "Controls.TestCases.HostApp.app";
+    
+			var candidatePaths = new[]
+			{
+				Path.Combine(appProjectFolder, $"{configuration}/{frameworkVersion}-maccatalyst/maccatalyst-x64/{macAppBundle}"),
+				Path.Combine(appProjectFolder, $"{configuration}/{frameworkVersion}-maccatalyst/maccatalyst-arm64/{macAppBundle}")
+			};
 
+			var defaultPath = candidatePaths.FirstOrDefault(Directory.Exists) ?? candidatePaths[0];
+    
+			return Environment.GetEnvironmentVariable("MAC_APP_PATH") ?? defaultPath;
+		}
+
+		string GetWindowsAppPath(string configuration, string frameworkVersion)
+		{
+			var appProjectFolder = GetAppProjectFolder();
+			var windowsExe = "Controls.TestCases.HostApp.exe";
+    
+			var candidatePaths = new[]
+			{
+				Path.Combine(appProjectFolder, $@"{configuration}\{frameworkVersion}-windows10.0.20348.0\win-x64\{windowsExe}"),
+				Path.Combine(appProjectFolder, $@"{configuration}\{frameworkVersion}-windows10.0.19041.0\win-x64\{windowsExe}")
+			};
+
+			var defaultPath = candidatePaths.FirstOrDefault(File.Exists) ?? candidatePaths[0];
+    
+			return Environment.GetEnvironmentVariable("WINDOWS_APP_PATH") ?? defaultPath;
+		}
+
+		string GetAppProjectFolder()
+		{
+			var assemblyLocation = Assembly.GetExecutingAssembly().Location;
+			var assemblyDirectory = Path.GetDirectoryName(assemblyLocation) ?? throw new InvalidOperationException("Unable to determine assembly directory");
+			return Path.Combine(assemblyDirectory, "..", "..", "..", "Controls.TestCases.HostApp");
+		}
+		
 		public override void Reset()
 		{
 			App.ResetApp();
