@@ -104,6 +104,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void TestGetImageBrushHashCode()
+		{
+			var imageBrush = new ImageBrush();
+			_ = imageBrush.GetHashCode();
+		}
+
+		[Fact]
 		public void ImmutableBrushDoesntSetParent()
 		{
 			var grid = new Grid();
