@@ -1,10 +1,7 @@
 #nullable enable
-using System;
 using System.IO;
 using System.Threading.Tasks;
-using CoreGraphics;
 using Foundation;
-using ImageIO;
 using UIKit;
 
 namespace Microsoft.Maui.Essentials;

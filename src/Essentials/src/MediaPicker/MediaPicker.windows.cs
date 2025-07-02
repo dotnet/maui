@@ -13,7 +13,6 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Storage;
 using Windows.Foundation.Collections;
-using Windows.Graphics.Imaging;
 using Windows.Media.Capture;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -102,7 +101,7 @@ namespace Microsoft.Maui.Media
 					options?.MaximumWidth,
 					options?.MaximumHeight,
 					options?.CompressionQuality ?? 100,
-					result.Name,
+					result!.Name,
 					options?.RotateImage ?? false);
 
 				if (processedStream != null)
@@ -252,7 +251,7 @@ namespace Microsoft.Maui.Media
 				var fileResult = new FileResult(file);
 
 				// Apply rotation if needed for photos
-				if (photo && ImageProcessor.IsRotationNeeded(options) && file != null)
+				if (photo && ImageProcessor.IsRotationNeeded(options) && file is not null)
 				{
 					try
 					{
@@ -271,8 +270,8 @@ namespace Microsoft.Maui.Media
 					}
 					catch (Exception ex)
 					{
-						System.Diagnostics.Debug.WriteLine($"Failed to rotate image: {ex.Message}");
 						// If rotation fails, continue with the original file
+						System.Diagnostics.Debug.WriteLine($"Failed to rotate image: {ex.Message}");
 					}
 				}
 
@@ -285,10 +284,10 @@ namespace Microsoft.Maui.Media
 						options?.MaximumWidth,
 						options?.MaximumHeight,
 						options?.CompressionQuality ?? 100,
-						file.Name,
+						file!.Name,
 						options?.RotateImage ?? false);
 
-					if (processedStream != null)
+					if (processedStream is not null)
 					{
 						// Convert to MemoryStream for ProcessedImageFileResult
 						var memoryStream = new MemoryStream();
