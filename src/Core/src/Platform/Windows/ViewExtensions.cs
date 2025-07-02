@@ -442,7 +442,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// TODO : Make public in NET 10.
-		internal static void UpdateInputTransparent(this LayoutPanel layoutPanel, ILayoutHandler handler, ILayout layout)
+		internal static void UpdateInputTransparent(this LayoutPanel layoutPanel, ILayout layout)
 		{
 			if (layoutPanel is null || layout is null)
 			{
