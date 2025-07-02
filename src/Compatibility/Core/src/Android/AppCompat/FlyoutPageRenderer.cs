@@ -260,8 +260,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (!this.IsDisposed())
 					RemoveDrawerListener(this);
 
-				_tracker?.Dispose();
-				_tracker = null;
+				if (_tracker != null)
+				{
+					_tracker.Dispose();
+					_tracker = null;
+				}
 
 				if (_detailLayout != null)
 				{
@@ -277,8 +280,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					_flyoutLayout = null;
 				}
 
-				Element?.ClearValue(Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.RendererProperty);
-				Element = null;
+				if (Element != null)
+				{
+					Element.ClearValue(Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.RendererProperty);
+					Element = null;
+				}
 			}
 
 			base.Dispose(disposing);

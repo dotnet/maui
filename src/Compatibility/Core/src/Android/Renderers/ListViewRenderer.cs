@@ -86,8 +86,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					Control.SetOnScrollListener(null);
 				}
 
-				_adapter?.Dispose();
-				_adapter = null;
+				if (_adapter != null)
+				{
+					_adapter.Dispose();
+					_adapter = null;
+				}
 			}
 
 			base.Dispose(disposing);
@@ -142,8 +145,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					Control.SetOnScrollListener(null);
 				}
 
-				_adapter?.Dispose();
-				_adapter = null;
+				if (_adapter != null)
+				{
+					_adapter.Dispose();
+					_adapter = null;
+				}
 			}
 
 			if (e.NewElement != null)

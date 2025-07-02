@@ -673,8 +673,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 						_modal = null;
 					}
 
-					_backgroundView?.Dispose();
-					_backgroundView = null;
+					if (_backgroundView != null)
+					{
+						_backgroundView.Dispose();
+						_backgroundView = null;
+					}
 				}
 
 				_disposed = true;

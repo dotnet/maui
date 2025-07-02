@@ -78,8 +78,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_carouselViewLoopManager?.SetItemsSource(null);
 				_carouselViewLoopManager = null;
 
-				_itemDecoration?.Dispose();
-				_itemDecoration = null;
+				if (_itemDecoration != null)
+				{
+					_itemDecoration.Dispose();
+					_itemDecoration = null;
+				}
 
 				ClearLayoutListener();
 			}
@@ -187,7 +190,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			var adapter = GetAdapter();
 
-			adapter?.NotifyItemChanged(_oldPosition);
+			if (adapter != null)
+			{
+				adapter.NotifyItemChanged(_oldPosition);
+			}
 
 			base.UpdateItemSpacing();
 		}

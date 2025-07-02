@@ -217,11 +217,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					Element.PropertyChanged -= _propertyChangeHandler;
 				}
 
-				Tracker?.Dispose();
-				Tracker = null;
+				if (Tracker != null)
+				{
+					Tracker.Dispose();
+					Tracker = null;
+				}
 
-				_packager?.Dispose();
-				_packager = null;
+				if (_packager != null)
+				{
+					_packager.Dispose();
+					_packager = null;
+				}
 
 				if (ManageNativeControlLifetime)
 				{

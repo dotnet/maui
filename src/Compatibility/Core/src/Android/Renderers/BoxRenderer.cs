@@ -118,8 +118,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (disposing)
 			{
-				_backgroundDrawable?.Dispose();
-				_backgroundDrawable = null;
+				if (_backgroundDrawable != null)
+				{
+					_backgroundDrawable.Dispose();
+					_backgroundDrawable = null;
+				}
 
 				if (Element != null)
 				{
