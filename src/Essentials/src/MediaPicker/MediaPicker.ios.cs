@@ -269,6 +269,38 @@ namespace Microsoft.Maui.Media
 				.Select(file => (FileResult)new PHPickerFileResult(file.ItemProvider))
 				.ToList() ?? [];
 
+			// Apply rotation if needed for images
+			if (ExifImageRotator.IsRotationNeeded(options))
+			{
+				var rotatedResults = new List<FileResult>();
+				foreach (var result in fileResults)
+				{
+					try
+					{
+						using var originalStream = await result.OpenReadAsync();
+						using var rotatedStream = await ExifImageRotator.RotateImageAsync(originalStream, result.FileName);
+						
+						// Create a temp file for the rotated image
+						var tempFileName = $"{Guid.NewGuid()}{Path.GetExtension(result.FileName)}";
+						var tempFilePath = Path.Combine(Path.GetTempPath(), tempFileName);
+						
+						using (var fileStream = File.Create(tempFilePath))
+						{
+							rotatedStream.Position = 0;
+							await rotatedStream.CopyToAsync(fileStream);
+						}
+						
+						rotatedResults.Add(new FileResult(tempFilePath, result.FileName));
+					}
+					catch
+					{
+						// If rotation fails, use the original file
+						rotatedResults.Add(result);
+					}
+				}
+				fileResults = rotatedResults;
+			}
+
 			// Apply resizing and compression if specified and dealing with images
 			if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 			{
@@ -323,7 +355,24 @@ namespace Microsoft.Maui.Media
 				{
 					if (!assetUrl.Scheme.Equals("assets-library", StringComparison.OrdinalIgnoreCase))
 					{
-						return new UIDocumentFileResult(assetUrl);
+						var docResult = new UIDocumentFileResult(assetUrl);
+						
+						// Apply rotation if needed and this is a photo
+						if (ExifImageRotator.IsRotationNeeded(options) && IsImageFile(docResult.FileName))
+						{
+							try
+							{
+								var rotatedResult = RotateImageFile(docResult).GetAwaiter().GetResult();
+								if (rotatedResult != null)
+									return rotatedResult;
+							}
+							catch
+							{
+								// If rotation fails, continue with the original file
+							}
+						}
+						
+						return docResult;
 					}
 
 					phAsset = info.ValueForKey(UIImagePickerController.PHAsset) as PHAsset;
@@ -348,6 +397,12 @@ namespace Microsoft.Maui.Media
 
 				if (img is not null)
 				{
+					// Apply rotation if needed for the UIImage
+					if (ExifImageRotator.IsRotationNeeded(options) && img.Orientation != UIImageOrientation.Up)
+					{
+						img = img.NormalizeOrientation();
+					}
+					
 					return new CompressedUIImageFileResult(img, null, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100);
 				}
 			}
@@ -358,9 +413,66 @@ namespace Microsoft.Maui.Media
 			}
 
 			string originalFilename = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault()?.OriginalFilename;
-			return new PHAssetFileResult(assetUrl, phAsset, originalFilename);
+			var assetResult = new PHAssetFileResult(assetUrl, phAsset, originalFilename);
+			
+			// Apply rotation if needed and this is a photo
+			if (ExifImageRotator.IsRotationNeeded(options) && IsImageFile(assetResult.FileName))
+			{
+				try
+				{
+					var rotatedResult = RotateImageFile(assetResult).GetAwaiter().GetResult();
+					if (rotatedResult != null)
+						return rotatedResult;
+				}
+				catch
+				{
+					// If rotation fails, continue with the original file
+				}
+			}
+			
+			return assetResult;
 		}
-
+		
+		// Helper method to check if a file is an image based on extension
+		static bool IsImageFile(string fileName)
+		{
+			if (string.IsNullOrEmpty(fileName))
+				return false;
+				
+			var ext = Path.GetExtension(fileName)?.ToLowerInvariant();
+			return ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".heic" || ext == ".heif";
+		}
+		
+		// Helper method to rotate an image file
+		static async Task<FileResult> RotateImageFile(FileResult original)
+		{
+			if (original == null)
+				return null;
+				
+			try
+			{
+				using var originalStream = await original.OpenReadAsync();
+				using var rotatedStream = await ExifImageRotator.RotateImageAsync(originalStream, original.FileName);
+				
+				// Create a temp file for the rotated image
+				var tempFileName = $"{Guid.NewGuid()}{Path.GetExtension(original.FileName)}";
+				var tempFilePath = Path.Combine(Path.GetTempPath(), tempFileName);
+				
+				using (var fileStream = File.Create(tempFilePath))
+				{
+					rotatedStream.Position = 0;
+					await rotatedStream.CopyToAsync(fileStream);
+				}
+				
+				return new FileResult(tempFilePath, original.FileName);
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Error rotating image: {ex.Message}");
+				return original;
+			}
+		}
+		
 		class PhotoPickerDelegate : UIImagePickerControllerDelegate
 		{
 			public Action<NSDictionary> CompletedHandler { get; set; }
