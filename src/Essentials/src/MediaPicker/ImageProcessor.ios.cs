@@ -14,100 +14,61 @@ internal static partial class ImageProcessor
 	public static partial async Task<Stream> RotateImageAsync(Stream inputStream, string? originalFileName)
 	{
 		using var data = NSData.FromStream(inputStream);
-		if (data == null)
+
+		if (data is null)
+		{
 			return inputStream;
-			
+		}
+
 		using var image = UIImage.LoadFromData(data);
 		
-		if (image?.CGImage == null)
+		if (image?.CGImage is null)
+		{
 			return inputStream;
+		}
 
 		// Check if rotation is needed based on image orientation
 		if (image.Orientation == UIImageOrientation.Up)
+		{
 			return inputStream;
+		}
 
-		// Get the size for the corrected orientation
-		var (width, height) = GetSizeForOrientation(image);
+		// Create a new image with corrected orientation metadata (no pixel manipulation)
+		// This preserves the original image data while fixing the display orientation
+		var correctedImage = UIImage.FromImage(image.CGImage, image.CurrentScale, UIImageOrientation.Up);
 		
-		// Create a new image with correct orientation
-		var renderer = new UIGraphicsImageRenderer(new CGSize(width, height));
-		var correctedImage = renderer.CreateImage((context) =>
-		{
-			ApplyOrientationTransformation(context.CGContext, image, width, height);
-			image.Draw(new CGRect(0, 0, image.Size.Width, image.Size.Height));
-		});
+		// Write the corrected image back to a stream, preserving original quality
+		var outputStream = new MemoryStream();
 		
-		if (correctedImage != null && correctedImage.CGImage != null)
+		// Determine output format based on original file
+		NSData? imageData = null;
+		if (!string.IsNullOrEmpty(originalFileName))
 		{
-			// Create image with Up orientation
-			var finalImage = UIImage.FromImage(correctedImage.CGImage, correctedImage.CurrentScale, UIImageOrientation.Up);
-			
-			var outputStream = new MemoryStream();
-			var imageData = finalImage.AsJPEG(1.0f);
-			if (imageData != null)
+			var extension = Path.GetExtension(originalFileName).ToLowerInvariant();
+			if (extension == ".png")
 			{
-				await imageData.AsStream().CopyToAsync(outputStream);
-				outputStream.Position = 0;
-				
-				return outputStream;
+				imageData = correctedImage.AsPNG();
 			}
+			else
+			{
+				// For JPEG and other formats, use maximum quality (1.0)
+				// People can downscale themselves through the MediaPickerOptions
+				imageData = correctedImage.AsJPEG(1f);
+			}
+		}
+		else
+		{
+			// Default to JPEG with maximum quality (1.0)
+			imageData = correctedImage.AsJPEG(1f);
+		}
+		
+		if (imageData is not null)
+		{
+			await imageData.AsStream().CopyToAsync(outputStream);
+			outputStream.Position = 0;
+			return outputStream;
 		}
 
 		return inputStream;
-	}
-
-	static (nfloat width, nfloat height) GetSizeForOrientation(UIImage image)
-	{
-		return image.Orientation switch
-		{
-			UIImageOrientation.Left or
-			UIImageOrientation.LeftMirrored or
-			UIImageOrientation.Right or
-			UIImageOrientation.RightMirrored => (image.Size.Height, image.Size.Width),
-			_ => (image.Size.Width, image.Size.Height)
-		};
-	}
-
-	static void ApplyOrientationTransformation(CGContext context, UIImage image, nfloat width, nfloat height)
-	{
-		switch (image.Orientation)
-		{
-			case UIImageOrientation.Down:
-			case UIImageOrientation.DownMirrored:
-				context.TranslateCTM(width, height);
-				context.RotateCTM((nfloat)Math.PI);
-				break;
-
-			case UIImageOrientation.Left:
-			case UIImageOrientation.LeftMirrored:
-				context.TranslateCTM(width, 0);
-				context.RotateCTM((nfloat)(Math.PI / 2));
-				break;
-
-			case UIImageOrientation.Right:
-			case UIImageOrientation.RightMirrored:
-				context.TranslateCTM(0, height);
-				context.RotateCTM((nfloat)(-Math.PI / 2));
-				break;
-
-			case UIImageOrientation.Up:
-			case UIImageOrientation.UpMirrored:
-				break;
-		}
-
-		switch (image.Orientation)
-		{
-			case UIImageOrientation.UpMirrored:
-			case UIImageOrientation.DownMirrored:
-				context.TranslateCTM(width, 0);
-				context.ScaleCTM(-1, 1);
-				break;
-
-			case UIImageOrientation.LeftMirrored:
-			case UIImageOrientation.RightMirrored:
-				context.TranslateCTM(height, 0);
-				context.ScaleCTM(-1, 1);
-				break;
-		}
 	}
 }
