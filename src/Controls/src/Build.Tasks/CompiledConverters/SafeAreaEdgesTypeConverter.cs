@@ -44,18 +44,19 @@ namespace Microsoft.Maui.Controls.XamlC
 				{
 					// Constructor(SafeAreaRegions uniformValue)
 					result.Add(Instruction.Create(OpCodes.Ldc_I4, (int)regions[0]));
-					result.Add(Instruction.Create(OpCodes.Newobj, module.ImportReference(
-						context.Cache.GetTypeReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SafeAreaEdges"))
-							.Resolve().GetConstructors().First(c => c.Parameters.Count == 1))));
+					result.Add(Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, 
+						("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SafeAreaEdges"), 
+						parameterTypes: new[] { ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SafeAreaRegions") })));
 				}
 				else if (parts.Length == 2)
 				{
 					// Constructor(SafeAreaRegions horizontal, SafeAreaRegions vertical)
 					result.Add(Instruction.Create(OpCodes.Ldc_I4, (int)regions[0])); // horizontal
 					result.Add(Instruction.Create(OpCodes.Ldc_I4, (int)regions[1])); // vertical
-					result.Add(Instruction.Create(OpCodes.Newobj, module.ImportReference(
-						context.Cache.GetTypeReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SafeAreaEdges"))
-							.Resolve().GetConstructors().First(c => c.Parameters.Count == 2))));
+					result.Add(Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, 
+						("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SafeAreaEdges"), 
+						parameterTypes: new[] { ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SafeAreaRegions"), 
+											   ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SafeAreaRegions") })));
 				}
 				else if (parts.Length == 4)
 				{
@@ -64,9 +65,12 @@ namespace Microsoft.Maui.Controls.XamlC
 					result.Add(Instruction.Create(OpCodes.Ldc_I4, (int)regions[1])); // top
 					result.Add(Instruction.Create(OpCodes.Ldc_I4, (int)regions[2])); // right
 					result.Add(Instruction.Create(OpCodes.Ldc_I4, (int)regions[3])); // bottom
-					result.Add(Instruction.Create(OpCodes.Newobj, module.ImportReference(
-						context.Cache.GetTypeReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SafeAreaEdges"))
-							.Resolve().GetConstructors().First(c => c.Parameters.Count == 4))));
+					result.Add(Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, 
+						("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SafeAreaEdges"), 
+						parameterTypes: new[] { ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SafeAreaRegions"), 
+											   ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SafeAreaRegions"), 
+											   ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SafeAreaRegions"), 
+											   ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SafeAreaRegions") })));
 				}
 				else
 				{

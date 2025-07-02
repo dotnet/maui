@@ -142,7 +142,14 @@ namespace Microsoft.Maui.Controls
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(Left, Top, Right, Bottom);
+			unchecked
+			{
+				int hashCode = Left.GetHashCode();
+				hashCode = (hashCode * 397) ^ Top.GetHashCode();
+				hashCode = (hashCode * 397) ^ Right.GetHashCode();
+				hashCode = (hashCode * 397) ^ Bottom.GetHashCode();
+				return hashCode;
+			}
 		}
 
 		public override string ToString()
