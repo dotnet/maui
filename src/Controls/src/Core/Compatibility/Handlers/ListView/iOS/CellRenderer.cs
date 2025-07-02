@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS0619 // Type or member is obsolete
+﻿
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public virtual UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
-			Performance.Start(out string reference);
+			
 
 			var tvc = reusableCell as CellTableViewCell ?? new CellTableViewCell(UITableViewCellStyle.Default, item.GetType().FullName);
 
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			SetAccessibility(tvc, item);
 
-			Performance.Stop(reference);
+			
 			return tvc;
 		}
 

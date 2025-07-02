@@ -1,5 +1,5 @@
 #nullable disable
-#pragma warning disable CS0619 // Type or member is obsolete
+
 using System;
 using System.Linq;
 using Android.Content;
@@ -17,14 +17,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
-			Performance.Start(out string reference, "GetCellCore");
 			var cell = (ViewCell)item;
 
 			var container = convertView as ViewCellContainer;
 			if (container is not null)
 			{
 				container.Update(cell);
-				Performance.Stop(reference, "GetCellCore");
 				return container;
 			}
 
@@ -63,8 +61,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			var newContainer = new ViewCellContainer(context, (IPlatformViewHandler)cell.View.Handler, cell, ParentView, unevenRows, rowHeight);
-
-			Performance.Stop(reference, "GetCellCore");
 
 			return newContainer;
 		}
@@ -198,16 +194,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// This cell could have a handler that was used for the measure pass for the ListView height calculations
 				//cell.View.Handler.DisconnectHandler();
 
-				Performance.Start(out string reference);
+				
 				var viewHandlerType = _viewHandler.MauiContext.Handlers.GetHandlerType(cell.View.GetType());
 				var reflectableType = _viewHandler as System.Reflection.IReflectableType;
 				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : (_viewHandler != null ? _viewHandler.GetType() : typeof(System.Object));
 				if (_viewHandler != null && rendererType == viewHandlerType)
 				{
-					Performance.Start(reference, "Reuse");
+					
 					_viewCell = cell;
 
-					Performance.Start(reference, "Reuse.SetElement");
+					
 
 					if (_viewHandler != cell.View.Handler)
 					{
@@ -226,12 +222,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						AddView(_viewHandler.PlatformView);
 					}
 
-					Performance.Stop(reference, "Reuse.SetElement");
+					
 
 					Invalidate();
 
-					Performance.Stop(reference, "Reuse");
-					Performance.Stop(reference);
+					
+					
 					return;
 				}
 
@@ -251,7 +247,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateIsEnabled();
 				UpdateWatchForLongPress();
 
-				Performance.Stop(reference);
+				
 			}
 
 			public void UpdateIsEnabled()
@@ -295,7 +291,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 			{
-				Performance.Start(out string reference);
+				
 
 				int width = MeasureSpec.GetSize(widthMeasureSpec);
 				int height;
@@ -320,7 +316,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				SetMeasuredDimension(width, height);
 
-				Performance.Stop(reference);
+				
 			}
 
 			bool WatchForSwipeViewTap()
