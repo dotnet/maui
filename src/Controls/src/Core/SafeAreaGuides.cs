@@ -84,10 +84,10 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets the effective safe area behavior for a specific edge for elements that implement ISafeAreaView2.
+		/// Gets the effective safe area behavior for a specific edge for elements that implement ISafeAreaView.
 		/// This method handles the logic for checking attached properties and falling back to legacy behavior.
 		/// </summary>
-		/// <param name="bindable">The bindable object that implements ISafeAreaView2.</param>
+		/// <param name="bindable">The bindable object that implements ISafeAreaView.</param>
 		/// <param name="edge">The edge to get the behavior for (0=Left, 1=Top, 2=Right, 3=Bottom).</param>
 		/// <returns>True if safe area should be ignored for this edge, false otherwise.</returns>
 		internal static bool ShouldIgnoreSafeAreaForEdge(BindableObject bindable, int edge)

@@ -19,9 +19,6 @@ namespace Microsoft.Maui.Controls
 		/// including behind toolbars, screen cutouts, etc.
 		/// Currently equivalent to ignoring platform safe area insets.
 		/// </summary>
-		All = 1 << 0
-
-		// Note: When adding new flags in the future, update the 'All' value to include all applicable flags:
-		// All = (1 << 0) | (new flags...)
+		All = int.MaxValue
 	}
 }

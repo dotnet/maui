@@ -14,6 +14,8 @@ Microsoft.Maui.Hosting.MauiHostEnvironment.ContentRootPath.set -> void
 Microsoft.Maui.Hosting.MauiHostEnvironment.EnvironmentName.get -> string!
 Microsoft.Maui.Hosting.MauiHostEnvironment.EnvironmentName.set -> void
 Microsoft.Maui.Hosting.MauiHostEnvironment.MauiHostEnvironment() -> void
+Microsoft.Maui.ISafeAreaView.IgnoreSafeAreaForEdge(int edge) -> bool
+Microsoft.Maui.ISafeAreaView.SafeAreaInsets.set -> void
 *REMOVED*Microsoft.Maui.IDatePicker.Date.get -> System.DateTime
 Microsoft.Maui.IDatePicker.Date.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime
