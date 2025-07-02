@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 				strValue = strValue.Trim();
 
 				// Handle comma-separated values
-				if (strValue.Contains(','))
+				if (strValue.Contains(',', StringComparison.Ordinal))
 				{
 					var parts = strValue.Split(',');
 					var result = new SafeAreaGroup[parts.Length];
