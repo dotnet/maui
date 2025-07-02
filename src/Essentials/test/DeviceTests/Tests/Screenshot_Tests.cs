@@ -136,7 +136,31 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 					Assert.True(stream.Length > 0);
 			});
 		}
+		
+		[Fact]
+		public Task CaptureLayerWithZeroSizeAsync()
+		{
+			return Utils.OnMainThread(async () =>
+			{
+				await Task.Delay(100);
 
+				var window = WindowStateManager.Default.GetCurrentUIWindow();
+				var view = window.RootViewController.View;
+				Assert.NotNull(view);
+				
+				var layer = view.Layer;
+			
+				// Intentionally set the layer bounds to empty (zero width/height)
+				// This simulates an edge case where the drawable area is non-existent
+				layer.Bounds = CoreGraphics.CGRect.Empty;
+				
+				IScreenshotResult mediaFile = await Screenshot.Default.CaptureAsync(layer, false);
+				
+				// Assert that the capture still produces a non-null result
+				// Important: the implementation should gracefully handle null contexts
+				Assert.NotNull(mediaFile);
+			});
+		}
 #endif
 	}
 }
