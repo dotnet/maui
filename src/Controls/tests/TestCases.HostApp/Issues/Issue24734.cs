@@ -13,7 +13,7 @@ public class Issue24734 : ContentPage
 
 		Label label = new Label
 		{
-			Text = "Tap the label for the TapGestureRecognizer to be triggered.",
+			Text = "Failure",
 			AutomationId = "TapLabel",
 		};
 
@@ -26,7 +26,7 @@ public class Issue24734 : ContentPage
 		{
 			if (e.Buttons == ButtonsMask.Primary)
 			{
-				label.Text = "Primary button clicked";
+				label.Text = "Success";
 			}
 		};
 

@@ -18,6 +18,6 @@ public class Issue24734 : _IssuesUITest
     {
         App.WaitForElement("TapLabel");
         App.Tap("TapLabel");
-        App.WaitForElement("Primary button clicked");
+        App.WaitForElement("Success");
     }
 }
