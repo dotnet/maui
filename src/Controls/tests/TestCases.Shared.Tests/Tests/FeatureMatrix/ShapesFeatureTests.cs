@@ -33,6 +33,9 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("StrokeColorRedRadioButton");
 		App.Tap("StrokeColorRedRadioButton");
 
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -55,6 +58,9 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("StrokeColorRedRadioButton");
 		App.Tap("StrokeColorRedRadioButton");
 
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -70,6 +76,9 @@ public class ShapesFeatureTests : UITest
 
 		App.WaitForElement("LineRadioButton");
 		App.Tap("LineRadioButton");
+
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
 
 		App.WaitForElement("StrokeThicknessEntry");
 		App.Tap("StrokeThicknessEntry");
@@ -112,13 +121,13 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Options");
 		App.Tap("Options");
 
-		App.WaitForElement("LineRadioButton");
-		App.Tap("LineRadioButton");
-
 		App.WaitForElement("StrokeThicknessEntry");
 		App.Tap("StrokeThicknessEntry");
 		App.ClearText("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "4");
+
+		App.WaitForElement("LineRadioButton");
+		App.Tap("LineRadioButton");
 
 		App.WaitForElement("StrokeDashArrayEntry");
 		App.Tap("StrokeDashArrayEntry");
@@ -178,6 +187,9 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("StrokeColorRedRadioButton");
 		App.Tap("StrokeColorRedRadioButton");
 
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -200,6 +212,9 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("StrokeColorRedRadioButton");
 		App.Tap("StrokeColorRedRadioButton");
 
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -221,6 +236,9 @@ public class ShapesFeatureTests : UITest
 
 		App.WaitForElement("StrokeColorRedRadioButton");
 		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -448,6 +466,26 @@ public class ShapesFeatureTests : UITest
 		App.Tap("StrokeDashOffsetEntry");
 		App.ClearText("StrokeDashOffsetEntry");
 		App.EnterText("StrokeDashOffsetEntry", "5");
+
+		App.WaitForElement("X1Entry");
+		App.Tap("X1Entry");
+		App.ClearText("X1Entry");
+		App.EnterText("X1Entry", "50");
+
+		App.WaitForElement("Y1Entry");
+		App.Tap("Y1Entry");
+		App.ClearText("Y1Entry");
+		App.EnterText("Y1Entry", "50");
+
+		App.WaitForElement("X2Entry");
+		App.Tap("X2Entry");
+		App.ClearText("X2Entry");
+		App.EnterText("X2Entry", "200");
+
+		App.WaitForElement("Y2Entry");
+		App.Tap("Y2Entry");
+		App.ClearText("Y2Entry");
+		App.EnterText("Y2Entry", "150");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
