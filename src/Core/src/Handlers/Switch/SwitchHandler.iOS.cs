@@ -1,5 +1,8 @@
 using System;
 using Microsoft.Maui.Graphics;
+using System.Threading.Tasks;
+using CoreFoundation;
+using Foundation;
 using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -60,21 +63,81 @@ namespace Microsoft.Maui.Handlers
 
 			ISwitch? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
 
+			WeakReference<UISwitch>? _platformView;
+
+			UISwitch? PlatformView => _platformView is not null && _platformView.TryGetTarget(out var p) ? p : null;
+
+			NSObject? _willEnterForegroundObserver;
+			NSObject? _windowDidBecomeKeyObserver;
+
 			public void Connect(ISwitch virtualView, UISwitch platformView)
 			{
 				_virtualView = new(virtualView);
+				_platformView = new(platformView);
 				platformView.ValueChanged += OnControlValueChanged;
+
+#if MACCATALYST
+				_windowDidBecomeKeyObserver = NSNotificationCenter.DefaultCenter.AddObserver(
+					new NSString("NSWindowDidBecomeKeyNotification"), _ =>
+					{
+						if (PlatformView is not null)
+						{
+							UpdateTrackOffColor(PlatformView);
+						}
+					});
+#elif IOS
+				_willEnterForegroundObserver = NSNotificationCenter.DefaultCenter.AddObserver(
+					UIApplication.WillEnterForegroundNotification, _ =>
+					{
+						if (PlatformView is not null)
+						{
+							UpdateTrackOffColor(PlatformView);
+						}
+					});
+#endif
+			}
+
+			// Ensures the Switch track "OFF" color is updated correctly after system-level UI resets.
+			// This is necessary because UIKit may re-apply default styles to internal views during certain lifecycle events,
+			// especially when the app enters the background and returns to the foreground.
+			void UpdateTrackOffColor(UISwitch platformView)
+			{
+				DispatchQueue.MainQueue.DispatchAsync(async () =>
+				{
+					if (!platformView.On)
+					{
+						await Task.Delay(10); // Small delay, necessary to allow UIKit to complete its internal layout and styling processes before re-applying the custom color
+
+						if (VirtualView is ISwitch view && view.TrackColor is not null)
+						{
+							platformView.UpdateTrackColor(view);
+						}
+					}
+				});
 			}
 
 			public void Disconnect(UISwitch platformView)
 			{
 				platformView.ValueChanged -= OnControlValueChanged;
+
+				if (_willEnterForegroundObserver is not null)
+				{
+					NSNotificationCenter.DefaultCenter.RemoveObserver(_willEnterForegroundObserver);
+					_willEnterForegroundObserver = null;
+				}
+				if (_windowDidBecomeKeyObserver is not null)
+				{
+					NSNotificationCenter.DefaultCenter.RemoveObserver(_windowDidBecomeKeyObserver);
+					_windowDidBecomeKeyObserver = null;
+				}
 			}
 
 			void OnControlValueChanged(object? sender, EventArgs e)
 			{
 				if (VirtualView is ISwitch virtualView && sender is UISwitch platformView && virtualView.IsOn != platformView.On)
+				{
 					virtualView.IsOn = platformView.On;
+				}
 			}
 		}
 	}
