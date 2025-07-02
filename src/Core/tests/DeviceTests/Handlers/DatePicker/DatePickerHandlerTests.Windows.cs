@@ -62,7 +62,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory(DisplayName = "Standard Format Strings Initialize Correctly")]
 		[InlineData("D", "{dayofweek.full} {month.full} {day.integer} {year.full}")]
 		[InlineData("f", "{dayofweek.full} {month.full} {day.integer}, {year.full} {hour.integer}:{minute.integer(2)} {period.abbreviated}")]
-		[InlineData("F", "{dayofweek.full} {month.full} {day.integer}, {year.full} {hour.integer}:{minute.integer(2)} {period.abbreviated}")]
+		[InlineData("F", "{dayofweek.full} {month.full} {day.integer}, {year.full} {hour.integer}:{minute.integer(2)}:{second.integer(2)} {period.abbreviated}")]
 		[InlineData("m", "{month.full} {day.integer}")]
 		[InlineData("M", "{month.full} {day.integer}")]
 		[InlineData("r", "{dayofweek.abbreviated}, {day.integer(2)} {month.abbreviated} {year.full} {hour.integer(2)}:{minute.integer(2)}:{second.integer(2)} GMT")]
