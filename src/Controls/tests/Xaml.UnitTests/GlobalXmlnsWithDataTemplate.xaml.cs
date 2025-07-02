@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Runtime, true)]
+[XamlProcessing(XamlInflator.Default, true)]
 public partial class GlobalXmlnsWithDataTemplate : ContentPage
 {
 	public GlobalXmlnsWithDataTemplate() => InitializeComponent();

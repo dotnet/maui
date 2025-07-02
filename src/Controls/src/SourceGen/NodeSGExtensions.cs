@@ -552,78 +552,83 @@ static class NodeSGExtensions
         }
     }
 
-    public static IFieldSymbol GetBindableProperty(this ValueNode node, SourceGenContext context)
-    {
+	static bool IsOfAnyType(XmlType xmlType, params string[] types)
+	{
+		if (types == null || types.Length == 0)
+			return false;
+		if (xmlType == null)
+			return false;
+		if (xmlType.NamespaceUri != XamlParser.MauiUri && xmlType.NamespaceUri != XamlParser.MauiGlobalUri)
+			return false;
+		if (types.Contains(xmlType.Name))
+			return true;
+		return false;
+	}
+
+	public static IFieldSymbol GetBindableProperty(this ValueNode node, SourceGenContext context)
+	{
 		static ITypeSymbol? GetTargetTypeSymbol(INode node, SourceGenContext context)
 		{
-            var ttnode = (node as ElementNode)?.Properties[new XmlName("", "TargetType")];
-            //it's either a value
-            if (ttnode is ValueNode { Value: string tt })
-                return  XmlTypeExtensions.GetTypeSymbol(tt, context.ReportDiagnostic, context.Compilation, context.XmlnsCache, node);
-            //or a x:Type that we parsed earlier
-            if (context.Types.TryGetValue(ttnode!, out var typeSymbol))
-                return typeSymbol;
-            //FIXME: report diagnostic on missing TargetType
-            return null;
+			var ttnode = (node as ElementNode)?.Properties[new XmlName("", "TargetType")];
+			//it's either a value
+			if (ttnode is ValueNode { Value: string tt })
+				return XmlTypeExtensions.GetTypeSymbol(tt, context.ReportDiagnostic, context.Compilation, context.XmlnsCache, node);
+			//or a x:Type that we parsed earlier
+			if (context.Types.TryGetValue(ttnode!, out var typeSymbol))
+				return typeSymbol;
+			//FIXME: report diagnostic on missing TargetType
+			return null;
 		}
 
 		var parts = ((string)node.Value).Split('.');
-        if (parts.Length == 1)
-        {
-            ITypeSymbol? typeSymbol = null;
-            var parent = node.Parent?.Parent as IElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as IElementNode;
-            if (   node.Parent is ElementNode { XmlType.NamespaceUri: XamlParser.MauiUri }
-                && (   node.Parent is ElementNode { XmlType.Name: "Setter" }
-                    || node.Parent is ElementNode { XmlType.Name: "PropertyCondition" }))
-            {
-                if (parent!.XmlType.NamespaceUri == XamlParser.MauiUri &&
-                    (      parent.XmlType.Name == "Trigger"
-                        || parent.XmlType.Name == "DataTrigger"
-                        || parent.XmlType.Name == "MultiTrigger"
-                        || parent.XmlType.Name == "Style"))
-                    typeSymbol = GetTargetTypeSymbol(parent, context);
-                else if (parent.XmlType.NamespaceUri == XamlParser.MauiUri && parent.XmlType.Name == "VisualState")
-                    typeSymbol = FindTypeSymbolForVisualState(parent, context, node);
-            }
-            else if (node.Parent is ElementNode { XmlType.NamespaceUri: XamlParser.MauiUri } && node.Parent is ElementNode { XmlType.Name: "Trigger" })
-                typeSymbol = GetTargetTypeSymbol(node.Parent!, context);
+		if (parts.Length == 1)
+		{
+			ITypeSymbol? typeSymbol = null;
+			var parent = node.Parent?.Parent as IElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as IElementNode;
+			if (IsOfAnyType((node.Parent as ElementNode)?.XmlType!, "Setter", "PropertyCondition"))
+			{
+				if (IsOfAnyType(parent!.XmlType, "Trigger", "DataTrigger", "MultiTrigger", "Style"))
+					typeSymbol = GetTargetTypeSymbol(parent, context);
+				else if (IsOfAnyType(parent.XmlType, "VisualState"))
+					typeSymbol = FindTypeSymbolForVisualState(parent, context, node);
+			}
+			else if (IsOfAnyType((node.Parent as ElementNode)?.XmlType!, "Trigger"))
+				typeSymbol = GetTargetTypeSymbol(node.Parent!, context);
 
-            var propertyName = parts[0];
-            return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
-        }
-        else if (parts.Length == 2)
-        {
-            var typeSymbol = XmlTypeExtensions.GetTypeSymbol(parts[0], context.ReportDiagnostic, context.Compilation, context.XmlnsCache, node);
-            string propertyName = parts[1];
-            return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
-        }
-        else
-        {
-            throw new Exception();
-            // FIXME context.ReportDiagnostic
-        }
-    }
+			var propertyName = parts[0];
+			return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
+		}
+		else if (parts.Length == 2)
+		{
+			var typeSymbol = XmlTypeExtensions.GetTypeSymbol(parts[0], context.ReportDiagnostic, context.Compilation, context.XmlnsCache, node);
+			string propertyName = parts[1];
+			return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
+		}
+		else
+		{
+			throw new Exception();
+			// FIXME context.ReportDiagnostic
+		}
+	}
 
     static ITypeSymbol? FindTypeSymbolForVisualState(IElementNode parent, SourceGenContext context, IXmlLineInfo lineInfo)
     {
         //1. parent is VisualState, don't check that
 
         //2. check that the VS is in a VSG
-        if (!(parent.Parent is IElementNode target) || target.XmlType.NamespaceUri != XamlParser.MauiUri || target.XmlType.Name != "VisualStateGroup")
-            //FIXME context.RreportDiagnostic
+		if (!(parent.Parent is IElementNode target) || !IsOfAnyType(target.XmlType, "VisualStateGroup"))
             throw new Exception($"Expected VisualStateGroup but found {parent.Parent}");
 
         //3. if the VSG is in a VSGL, skip that as it could be implicit
         if (target.Parent is ListNode
-            || ((target.Parent as IElementNode)?.XmlType.NamespaceUri == XamlParser.MauiUri
-                && (target.Parent as IElementNode)?.XmlType.Name == "VisualStateGroupList"))
+            || IsOfAnyType((target.Parent as IElementNode)?.XmlType!, "VisualStateGroupList"))
             target = (IElementNode)target.Parent.Parent;
         else
             target = (IElementNode)target.Parent;
 
         string? typeName = null;
         //4. target is now a Setter in a Style, or a VE
-        if (target.XmlType.NamespaceUri == XamlParser.MauiUri && target.XmlType.Name == "Setter")
+        if (IsOfAnyType(target.XmlType, "Setter"))
             typeName = ((target?.Parent as IElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
         else
             typeName = target.XmlType.Name;

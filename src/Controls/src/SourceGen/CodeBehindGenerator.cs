@@ -51,7 +51,7 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		
 		var xamlProjectItemProviderForIC = projectItemProvider
 			.Where(static p => p?.Kind == "Xaml")
-			// .Combine(xmlnsDefinitionsProvider)
+			.Combine(xmlnsDefinitionsProvider)
 			.Select(ComputeXamlProjectItemForIC)
 			.WithTrackingName(TrackingNames.XamlProjectItemProviderForIC);
 

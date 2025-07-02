@@ -62,15 +62,16 @@ static class GeneratorHelpers
 		};
 	}
 
-	public static XamlProjectItemForIC? ComputeXamlProjectItemForIC(ProjectItem? projectItem, CancellationToken cancellationToken)
+	public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem? , AssemblyCaches) itemAdnCaches, CancellationToken cancellationToken)
 	{
+		var(projectItem, assemblyCaches) = itemAdnCaches;
 		var text = projectItem?.AdditionalText.GetText(cancellationToken);
 		if (text == null)
 		{
 			return null;
 		}
 		try { 
-			return new XamlProjectItemForIC(projectItem!, ParseXaml(text.ToString()));
+			return new XamlProjectItemForIC(projectItem!, ParseXaml(text.ToString(), assemblyCaches));
 		}
 		catch (Exception e)
 		{
@@ -78,11 +79,21 @@ static class GeneratorHelpers
 		}
 	}
 
-	static SGRootNode? ParseXaml(string xaml)
+	static SGRootNode? ParseXaml(string xaml, AssemblyCaches assemblyCaches)
     {
 		List<string> warningDisableList = [];
-		using (var stringreader = new StringReader(xaml))
-        using (var reader = XmlReader.Create(stringreader))
+		var nsmgr = new XmlNamespaceManager(new NameTable());
+		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
+		nsmgr.AddNamespace("__g__", XamlParser.MauiGlobalUri);
+		if (assemblyCaches.AllowImplicitXmlns)
+		{
+			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+			foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
+				nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+		}
+		using var reader = XmlReader.Create(new StringReader(xaml),
+											new XmlReaderSettings { ConformanceLevel = assemblyCaches.AllowImplicitXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
+											new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None));	
         {
             while (reader.Read())
             {
@@ -163,7 +174,6 @@ static class GeneratorHelpers
 
 	public static (XmlNode?, XmlNamespaceManager) LoadXmlDocument(SourceText text, AssemblyCaches assemblyCaches, CancellationToken cancellationToken)
 	{
-
 		var nsmgr = new XmlNamespaceManager(new NameTable());
 		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
 		nsmgr.AddNamespace("__g__", XamlParser.MauiGlobalUri);

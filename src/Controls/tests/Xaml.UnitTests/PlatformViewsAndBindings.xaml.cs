@@ -223,7 +223,7 @@ public class MockAndroidPlatformBindingService : INativeBindingService
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
+[XamlProcessing(XamlInflator.Runtime, true)]
 public partial class PlatformViewsAndBindings : ContentPage
 {
 	public PlatformViewsAndBindings() => InitializeComponent();
