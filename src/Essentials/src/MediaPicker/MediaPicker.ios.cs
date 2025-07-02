@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Media
 				.ToList() ?? [];
 
 			// Apply rotation if needed for images
-			if (ExifImageRotator.IsRotationNeeded(options))
+			if (ImageProcessor.IsRotationNeeded(options))
 			{
 				var rotatedResults = new List<FileResult>();
 				foreach (var result in fileResults)
@@ -278,7 +278,7 @@ namespace Microsoft.Maui.Media
 					try
 					{
 						using var originalStream = await result.OpenReadAsync();
-						using var rotatedStream = await ExifImageRotator.RotateImageAsync(originalStream, result.FileName);
+						using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, result.FileName);
 						
 						// Create a temp file for the rotated image
 						var tempFileName = $"{Guid.NewGuid()}{Path.GetExtension(result.FileName)}";
@@ -307,7 +307,7 @@ namespace Microsoft.Maui.Media
 				var compressedResults = new List<FileResult>();
 				foreach (var result in fileResults)
 				{
-					var compressedResult = await CompressedUIImageFileResult.CreateCompressedFromFileResult(result, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100);
+					var compressedResult = await CompressedUIImageFileResult.CreateCompressedFromFileResult(result, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100, options?.RotateImage ?? false);
 					compressedResults.Add(compressedResult);
 				}
 				return compressedResults;
@@ -358,7 +358,7 @@ namespace Microsoft.Maui.Media
 						var docResult = new UIDocumentFileResult(assetUrl);
 						
 						// Apply rotation if needed and this is a photo
-						if (ExifImageRotator.IsRotationNeeded(options) && IsImageFile(docResult.FileName))
+						if (ImageProcessor.IsRotationNeeded(options) && IsImageFile(docResult.FileName))
 						{
 							try
 							{
@@ -398,7 +398,7 @@ namespace Microsoft.Maui.Media
 				if (img is not null)
 				{
 					// Apply rotation if needed for the UIImage
-					if (ExifImageRotator.IsRotationNeeded(options) && img.Orientation != UIImageOrientation.Up)
+					if (ImageProcessor.IsRotationNeeded(options) && img.Orientation != UIImageOrientation.Up)
 					{
 						img = img.NormalizeOrientation();
 					}
@@ -416,7 +416,7 @@ namespace Microsoft.Maui.Media
 			var assetResult = new PHAssetFileResult(assetUrl, phAsset, originalFilename);
 			
 			// Apply rotation if needed and this is a photo
-			if (ExifImageRotator.IsRotationNeeded(options) && IsImageFile(assetResult.FileName))
+			if (ImageProcessor.IsRotationNeeded(options) && IsImageFile(assetResult.FileName))
 			{
 				try
 				{
@@ -452,7 +452,7 @@ namespace Microsoft.Maui.Media
 			try
 			{
 				using var originalStream = await original.OpenReadAsync();
-				using var rotatedStream = await ExifImageRotator.RotateImageAsync(originalStream, original.FileName);
+				using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, original.FileName);
 				
 				// Create a temp file for the rotated image
 				var tempFileName = $"{Guid.NewGuid()}{Path.GetExtension(original.FileName)}";
@@ -557,7 +557,7 @@ namespace Microsoft.Maui.Media
 		NSData data;
 
 		// Static factory method to create compressed result from existing FileResult
-		internal static async Task<FileResult> CreateCompressedFromFileResult(FileResult originalResult, int? maximumWidth, int? maximumHeight, int compressionQuality = 100)
+		internal static async Task<FileResult> CreateCompressedFromFileResult(FileResult originalResult, int? maximumWidth, int? maximumHeight, int compressionQuality = 100, bool rotateImage = false)
 		{
 			if (originalResult is null || !ImageProcessor.IsProcessingNeeded(maximumWidth, maximumHeight, compressionQuality))
 				return originalResult;
@@ -566,7 +566,7 @@ namespace Microsoft.Maui.Media
 			{
 				using var originalStream = await originalResult.OpenReadAsync();
 				using var processedStream = await ImageProcessor.ProcessImageAsync(
-					originalStream, maximumWidth, maximumHeight, compressionQuality, originalResult.FileName);
+					originalStream, maximumWidth, maximumHeight, compressionQuality, originalResult.FileName, rotateImage);
 
 				// If ImageProcessor returns null (e.g., on .NET Standard), return original file
 				if (processedStream is null)
