@@ -305,7 +305,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var converter = new SafeAreaGroupArrayTypeConverter();
 			
-			Assert.Throws<InvalidOperationException>(() => 
+			Assert.Throws<FormatException>(() => 
 				converter.ConvertFrom(null, null, "InvalidValue"));
 		}
 

@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls
 						}
 						else
 						{
-							throw new InvalidOperationException($"Cannot convert \"{part}\" to SafeAreaGroup");
+							throw new FormatException($"Cannot convert \"{part}\" to SafeAreaGroup");
 						}
 					}
 
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(SafeAreaGroup[])}");
+			throw new FormatException($"Cannot convert \"{strValue}\" into {typeof(SafeAreaGroup[])}");
 		}
 
 		public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
