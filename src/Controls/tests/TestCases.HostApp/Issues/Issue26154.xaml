@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue26154"
+             Title="Issue 26154">
+  <VerticalStackLayout
+    Padding="12">
+    <Label
+      Text="Add Mac Idiom (edit Platforms/MacCatalyst/Info.plist key of UIDeviceFamily to value 6)" />
+    <HorizontalStackLayout Spacing="10" Padding="20" >
+      <Button Text="Button 1" />
+      <Button Text="Button 2" />
+    </HorizontalStackLayout>
+  </VerticalStackLayout>
+</ContentPage>
