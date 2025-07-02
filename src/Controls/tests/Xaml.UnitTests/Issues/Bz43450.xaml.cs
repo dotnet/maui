@@ -20,10 +20,8 @@ public partial class Bz43450 : ContentPage
 			else if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new Bz43450(inflator));
 			else if (inflator == XamlInflator.SourceGen)
-			{
-				var result = MockSourceGenerator.CreateMauiCompilation().RunMauiSourceGenerator(typeof(Bz43450));
-				Assert.That(result.Diagnostics.Any() );
-			} else
+				Assert.That(MockSourceGenerator.CreateMauiCompilation().RunMauiSourceGenerator(typeof(Bz43450)).Diagnostics.Any() );
+			else
 				Assert.Ignore("Unknown inflator");
 		}
 	}

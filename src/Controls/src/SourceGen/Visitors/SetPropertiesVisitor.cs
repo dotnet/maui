@@ -182,7 +182,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
             var parentVar = Context.Variables[(IElementNode)parentNode.Parent];
             if (parentNode is IElementNode node1 && node1.SkipProperties.Contains(propertyName))
-					return;
+				return;
             var elementType = parentVar.Type;
             var localName = parentList.XmlName.LocalName;
             var bpFieldSymbol = parentVar.Type.GetBindableProperty(parentList.XmlName.NamespaceURI, ref localName, out System.Boolean attached, context, node as IXmlLineInfo);        
@@ -190,9 +190,14 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(context);
 
             var propertyType =  typeandconverter?.type ?? propertySymbol?.Type;
-            if (propertyType == null)
-                return;
-
+			if (propertyType == null)
+			{
+				var location = LocationCreate(Context.FilePath!, (IXmlLineInfo)node, localName);
+				//FIXME error should be "propertyType does not support Add()"
+				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
+				return;
+			}
+		
             if (!context.VariablesProperties.TryGetValue((parentVar, bpFieldSymbol, propertySymbol), out var variable))
             {
                 variable = new LocalVariable(propertyType, NamingHelpers.CreateUniqueVariableName(Context, propertyType));
