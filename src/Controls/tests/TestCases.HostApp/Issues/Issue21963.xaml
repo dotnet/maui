@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:local="clr-namespace:Maui.Controls.Sample"
+       FlyoutIsPresented="True"
+       AutomationId="Issue21963Shell"
+       x:Class="Maui.Controls.Sample.Issues.Issue21963">
+
+    <Shell.ItemTemplate>
+        <DataTemplate>
+            <ContentView>
+                <Label Text="{Binding Title}"
+                       x:DataType="BaseShellItem"/>
+            </ContentView>
+        </DataTemplate>
+    </Shell.ItemTemplate>
+    <Shell.MenuItemTemplate>
+        <DataTemplate>
+            <ContentView>
+                <Label Text="{Binding Title}"
+                       x:DataType="BaseShellItem"/>
+            </ContentView>
+        </DataTemplate>
+    </Shell.MenuItemTemplate>
+    <ShellContent Title="ShellContent 1"
+                  AutomationId="Issue21963ShellContent1"
+                  ContentTemplate="{DataTemplate local:Issues.Issue21963InnerPage}"/>
+    <ShellContent Title="ShellContent 2"
+                  AutomationId="Issue21963ShellContent2"
+                  ContentTemplate="{DataTemplate local:Issues.Issue21963MenuPage}"/>
+    <MenuItem     Text="MenuItem 1"
+                  AutomationId="Issue21963MenuItem1"/>
+    <MenuItem     Text="MenuItem 2"
+                  AutomationId="Issue21963MenuItem2"/>
+    <ShellContent Title="ShellContent 3"
+                  AutomationId="Issue21963ShellContent3"
+                  ContentTemplate="{DataTemplate local:Issues.Issue21963FlyoutPage}"/>
+</Shell>
