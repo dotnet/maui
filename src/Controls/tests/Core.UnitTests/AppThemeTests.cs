@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -203,10 +204,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		void validateRadioButtonColors(RadioButton button, SolidColorBrush desiredBrush)
 		{
-			var border = (Border)button.Children[0];
+			var border = (Border)(button as IVisualTreeElement).GetVisualChildren()[0];
 			var grid = (Grid)border.Content;
-			var outerEllipse = (Shapes.Ellipse)grid.Children[0];
-			var innerEllipse = (Shapes.Ellipse)grid.Children[1];
+			var outerEllipse = (Ellipse)grid[0];
+			var innerEllipse = (Ellipse)grid[1];
 
 			Assert.Equal(desiredBrush, outerEllipse.Stroke);
 			Assert.Equal(desiredBrush, innerEllipse.Fill);

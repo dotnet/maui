@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -19,16 +18,6 @@ namespace Microsoft.Maui.Controls
 		public static BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
 			typeof(ContentPresenter), null, propertyChanged: OnContentChanged);
 
-		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
-		public new static readonly BindableProperty CascadeInputTransparentProperty = InputTransparentContainerElement.CascadeInputTransparentProperty;
-
-		/// <inheritdoc cref="IInputTransparentContainerElement.CascadeInputTransparent"/>
-		public new bool CascadeInputTransparent
-		{
-			get => (bool)GetValue(InputTransparentContainerElement.CascadeInputTransparentProperty);
-			set => SetValue(InputTransparentContainerElement.CascadeInputTransparentProperty, value);
-		}
-
 		/// <summary>
 		/// Creates a new empty <see cref="ContentPresenter"/> with default values.
 		/// </summary>
@@ -40,6 +29,16 @@ namespace Microsoft.Maui.Controls
 				source: RelativeBindingSource.TemplatedParent,
 				converter: new ContentConverter(),
 				converterParameter: this);
+		}
+
+		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
+		public new static readonly BindableProperty CascadeInputTransparentProperty = InputTransparentContainerElement.CascadeInputTransparentProperty;
+
+		/// <inheritdoc cref="IInputTransparentContainerElement.CascadeInputTransparent"/>
+		public new bool CascadeInputTransparent
+		{
+			get => (bool)GetValue(InputTransparentContainerElement.CascadeInputTransparentProperty);
+			set => SetValue(InputTransparentContainerElement.CascadeInputTransparentProperty, value);
 		}
 
 		/// <summary>
@@ -71,50 +70,27 @@ namespace Microsoft.Maui.Controls
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue) => InvalidateMeasure();
 
-		[Obsolete("Use InvalidateArrange if you need to trigger a new arrange and then put your arrange logic inside ArrangeOverride instead")]
-		protected override void LayoutChildren(double x, double y, double width, double height)
-		{
-			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
-			{
-				Element element = LogicalChildrenInternal[i];
-				var child = element as View;
-				child?.Arrange(new Rect(x, y, width, height));
-			}
-		}
-
-		[Obsolete("Use MeasureOverride instead")]
-		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
-		{
-			double widthRequest = WidthRequest;
-			double heightRequest = HeightRequest;
-			var childRequest = new SizeRequest();
-			if ((widthRequest == -1 || heightRequest == -1) && Content != null)
-			{
-				childRequest = Content.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins);
-			}
-
-			return new SizeRequest
-			{
-				Request = new Size { Width = widthRequest != -1 ? widthRequest : childRequest.Request.Width, Height = heightRequest != -1 ? heightRequest : childRequest.Request.Height },
-				Minimum = childRequest.Minimum
-			};
-		}
-
 		internal virtual void Clear()
 		{
 			Content = null;
 		}
 
-		internal override void ComputeConstraintForView(View view)
+		protected override void ComputeConstraintForView(View view)
 		{
 			bool isFixedHorizontally = (Constraint & LayoutConstraint.HorizontallyFixed) != 0;
 			bool isFixedVertically = (Constraint & LayoutConstraint.VerticallyFixed) != 0;
 
 			var result = LayoutConstraint.None;
 			if (isFixedVertically && view.VerticalOptions.Alignment == LayoutAlignment.Fill)
+			{
 				result |= LayoutConstraint.VerticallyFixed;
+			}
+
 			if (isFixedHorizontally && view.HorizontalOptions.Alignment == LayoutAlignment.Fill)
+			{
 				result |= LayoutConstraint.HorizontallyFixed;
+			}
+
 			view.ComputedConstraint = result;
 		}
 
@@ -129,15 +105,15 @@ namespace Microsoft.Maui.Controls
 
 			var oldView = (View)oldValue;
 			var newView = (View)newValue;
-			if (oldView != null)
+			if (oldView is not null)
 			{
-				self.InternalChildren.Remove(oldView);
+				self.RemoveLogicalChild(oldView);
 				oldView.ParentOverride = null;
 			}
 
-			if (newView != null)
+			if (newView is not null)
 			{
-				self.InternalChildren.Add(newView);
+				self.AddLogicalChild(newView);
 				newView.ParentOverride = await TemplateUtilities.FindTemplatedParentAsync((Element)bindable);
 			}
 		}
@@ -185,11 +161,19 @@ namespace Microsoft.Maui.Controls
 		Size IContentView.CrossPlatformArrange(Rect bounds) =>
 			((ICrossPlatformLayout)this).CrossPlatformArrange(bounds);
 
+
+
+		[Obsolete("Use ArrangeOverride instead")]
+		protected override void LayoutChildren(double x, double y, double width, double height)
+		{
+		}
+
 		[Obsolete("Use Measure with no flags.")]
 		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
 			return base.Measure(widthConstraint, heightConstraint);
 		}
+
 
 		/// <summary>
 		/// Sends a child to the back of the visual stack.
@@ -256,6 +240,12 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("Use InvalidateMeasure depending on your scenario. This method will no longer work on .NET 10 and later.")]
 		protected new void UpdateChildrenLayout()
 		{
+		}
+
+		[Obsolete("Use MeasureOverride instead")]
+		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
+		{
+			return base.OnMeasure(widthConstraint, heightConstraint);
 		}
 		
 		[EditorBrowsable(EditorBrowsableState.Never)]

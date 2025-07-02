@@ -211,9 +211,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			DesiredSize = request;
 
 			return new SizeRequest(request, minimum);
-#pragma warning restore CS0618 // Type or member is obsolete
 		}
-#pragma warning restore CS0672 // Member overrides obsolete member
 
 		/// <summary>
 		/// Positions a child element into a bounding region while respecting the child elements <see cref="View.HorizontalOptions" /> and <see cref="View.VerticalOptions" />.
@@ -616,17 +614,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		static int GetElementDepth(Element view)
-		{
-			var result = 0;
-			while (view.Parent != null)
-			{
-				result++;
-				view = view.Parent;
-			}
-			return result;
-		}
-
 		void InternalChildrenOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			if(!UseCompatibilityMode)
@@ -799,16 +786,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public Size CrossPlatformArrange(Rect bounds)
 		{
 			return ((ICrossPlatformLayout)this).CrossPlatformArrange(bounds);
-		}
-
-		static void OnCascadeInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			// We only need to update if the cascade changes anything, namely when InputTransparent=true.
-			// When InputTransparent=false, then the cascade property has no effect.
-			if (bindable is Layout layout && layout.InputTransparent)
-			{
-				layout.RefreshInputTransparentProperty();
-			}
 		}
 	}
 }
