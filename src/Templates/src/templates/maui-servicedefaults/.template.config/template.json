@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [ "MAUI", "Aspire", "ServiceDefaults", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Mobile" ],
+  "identity": "Microsoft.Maui.ServiceDefaults.CSharp.DOTNET_TFM_VERSION_VALUE",
+  "groupIdentity": "Microsoft.Maui.ServiceDefaults",
+  "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
+  "name": ".NET MAUI for .NET Aspire Service Defaults",
+  "description": "A project for creating a .NET MAUI service defaults project for .NET Aspire integration",
+  "shortName": "maui-servicedefaults",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "MauiApp.ServiceDefaults",
+  "primaryOutputs": [
+    { "path": "MauiApp.ServiceDefaults.csproj" },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "Extensions.cs"
+    }
+  ],
+  "postActions": [
+    {
+      "id": "openInEditor",
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\")",
+      "description": "Opens Extensions.cs in the editor.",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "1"
+      },
+      "continueOnError": true
+    }
+  ],
+  "preferNameDirectory": true,
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "DOTNET_TFM_VALUE",
+          "description": "Target DOTNET_TFM_VALUE"
+        }
+      ],
+      "replaces": "DOTNET_TFM",
+      "defaultValue": "DOTNET_TFM_VALUE"
+    },
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    }
+  },
+  "defaultName": "MauiApp.ServiceDefaults"
+}
