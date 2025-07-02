@@ -43,11 +43,11 @@ namespace Microsoft.Maui.Controls
 		/// Sets the safe area behavior for the specified bindable object.
 		/// </summary>
 		/// <param name="bindable">The bindable object to set the safe area behavior for.</param>
-		/// <param name="value">An array of <see cref="SafeAreaGroup"/> values in padding order (Left, Top, Right, Bottom).</param>
+		/// <param name="value">An array of <see cref="SafeAreaGroup"/> values in Thickness order (HorizontalVertical, LeftTopRightBottom).</param>
 		/// <remarks>
 		/// <para>Supports 1, 2, or 4 values:</para>
 		/// <para>• 1 value: Applies to all four edges</para>
-		/// <para>• 2 values: First applies to Left &amp; Right, second to Top &amp; Bottom</para>
+		/// <para>• 2 values: First applies to Left &amp; Right (horizontal), second to Top &amp; Bottom (vertical)</para>
 		/// <para>• 4 values: Applies in order: Left, Top, Right, Bottom</para>
 		/// </remarks>
 		public static void SetIgnoreSafeArea(BindableObject bindable, SafeAreaGroup[] value)
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls
 		/// Gets the effective safe area behavior for a specific edge, interpreting the array syntax.
 		/// Follows MAUI Thickness conventions:
 		/// - 1 value: applies to all edges
-		/// - 2 values: first value for left/right, second value for top/bottom  
+		/// - 2 values: first value for left/right (horizontal), second value for top/bottom (vertical)
 		/// - 4 values: left, top, right, bottom
 		/// </summary>
 		/// <param name="bindable">The bindable object to get the safe area behavior from.</param>
@@ -75,9 +75,9 @@ namespace Microsoft.Maui.Controls
 			{
 				// 1 value: applies to all edges
 				_ when values.Length == 1 => values[0],
-				// 2 values: first applies to Left & Right, second to Top & Bottom
-				0 or 2 when values.Length == 2 => values[0], // Left, Right
-				1 or 3 when values.Length == 2 => values[1], // Top, Bottom
+				// 2 values: first applies to Left & Right (horizontal), second to Top & Bottom (vertical)
+				0 or 2 when values.Length == 2 => values[0], // Left, Right (horizontal)
+				1 or 3 when values.Length == 2 => values[1], // Top, Bottom (vertical)
 				// 4 values: Left, Top, Right, Bottom
 				_ when values.Length == 4 && edge < 4 => values[edge],
 				// Default for unsupported configurations
