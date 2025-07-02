@@ -288,7 +288,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		private void UpdateFlowDirectionState()
+		void UpdateFlowDirectionState()
 		{
 			string flowDirectionState = FlowDirection == FlowDirection.RightToLeft
 				? TitleBarRTLState
