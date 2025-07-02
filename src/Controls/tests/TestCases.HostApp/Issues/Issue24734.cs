@@ -14,7 +14,7 @@ public class Issue24734 : ContentPage
 		Label label = new Label
 		{
 			Text = "Failure",
-			AutomationId = "TapLabel",
+			AutomationId = "LabelwithGesture",
 		};
 
 		TapGestureRecognizer tapGestureRecognizer = new TapGestureRecognizer

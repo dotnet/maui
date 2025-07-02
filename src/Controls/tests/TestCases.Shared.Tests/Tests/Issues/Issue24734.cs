@@ -16,8 +16,8 @@ public class Issue24734 : _IssuesUITest
     [Category(UITestCategories.Gestures)]
     public void ButtonMaskShouldNotReturnZero()
     {
-        App.WaitForElement("TapLabel");
-        App.Tap("TapLabel");
+        App.WaitForElement("LabelwithGesture");
+        App.Tap("LabelwithGesture");
         App.WaitForElement("Success");
     }
 }
