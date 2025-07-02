@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Children))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement
+	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement, ISafeAreaView2
 	{
 		protected ILayoutManager _layoutManager;
 
@@ -394,5 +394,18 @@ namespace Microsoft.Maui.Controls
 		{
 			return $"{base.GetDebuggerDisplay()}, ChildCount = {Count}";
 		}
+
+		#region ISafeAreaView2
+
+		/// <inheritdoc cref="ISafeAreaView2.SafeAreaInsets"/>
+		Thickness ISafeAreaView2.SafeAreaInsets { set { } } // Default no-op implementation for layouts
+
+		/// <inheritdoc cref="ISafeAreaView2.IgnoreSafeAreaForEdge"/>
+		bool ISafeAreaView2.IgnoreSafeAreaForEdge(int edge)
+		{
+			return SafeAreaGuides.ShouldIgnoreSafeAreaForEdge(this, edge);
+		}
+
+		#endregion
 	}
 }

@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Check for new per-edge safe area control first
-			if (View is ISafeAreaView sav2)
+			if (View is ISafeAreaView2 sav2)
 			{
 				return AdjustForSafeAreaPerEdge(bounds, sav2);
 			}
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Platform
 #pragma warning restore CA1416
 		}
 
-		private CGRect AdjustForSafeAreaPerEdge(CGRect bounds, ISafeAreaView safeAreaView)
+		private CGRect AdjustForSafeAreaPerEdge(CGRect bounds, ISafeAreaView2 safeAreaView)
 		{
 			if (!RespondsToSafeArea())
 			{
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.SafeAreaInsetsDidChange();
 
-			if (View is ISafeAreaView isav2)
+			if (View is ISafeAreaView2 isav2)
 				isav2.SafeAreaInsets = this.SafeAreaInsets.ToThickness();
 		}
 

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Xunit;
@@ -107,6 +108,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var layout = new Grid();
 			
 			Assert.IsAssignableFrom<ISafeAreaView>(layout);
+			Assert.IsAssignableFrom<ISafeAreaView2>(layout);
 		}
 
 		[Fact]
@@ -115,8 +117,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var layout = new Grid();
 			SafeAreaGuides.SetIgnoreSafeArea(layout, new[] { SafeAreaGroup.All, SafeAreaGroup.None, SafeAreaGroup.All, SafeAreaGroup.None });
 
-			// Test via ISafeAreaView interface
-			var safeAreaView2 = (ISafeAreaView)layout;
+			// Test via ISafeAreaView2 interface
+			var safeAreaView2 = (ISafeAreaView2)layout;
 			
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));  // Left = All
 			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top = None  
@@ -131,7 +133,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			layout.IgnoreSafeArea = true; // Legacy property
 
 			// Should fall back to legacy property when no attached property is set
-			var safeAreaView2 = (ISafeAreaView)layout;
+			var safeAreaView2 = (ISafeAreaView2)layout;
 			
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(1));
@@ -145,6 +147,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage();
 			
 			Assert.IsAssignableFrom<ISafeAreaView>(page);
+			Assert.IsAssignableFrom<ISafeAreaView2>(page);
 		}
 
 		[Fact]
@@ -152,7 +155,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var contentView = new ContentView();
 			
-			Assert.IsAssignableFrom<ISafeAreaView>(contentView);
+			Assert.IsAssignableFrom<ISafeAreaView2>(contentView);
 		}
 
 		[Fact]
@@ -161,8 +164,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage();
 			SafeAreaGuides.SetIgnoreSafeArea(page, new[] { SafeAreaGroup.All, SafeAreaGroup.None, SafeAreaGroup.All, SafeAreaGroup.None });
 
-			// Test via ISafeAreaView interface
-			var safeAreaView2 = (ISafeAreaView)page;
+			// Test via ISafeAreaView2 interface
+			var safeAreaView2 = (ISafeAreaView2)page;
 			
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));  // Left = All
 			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top = None  
@@ -173,10 +176,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ContentView_IgnoreSafeAreaForEdge_FallsBackToDefaultWhenNoLegacySupport()
 		{
-			var contentView = new ContentView(); // ContentView doesn't implement ISafeAreaView
+			var contentView = new ContentView(); // ContentView implements ISafeAreaView2
 
 			// Should default to false when no attached property is set and no legacy support (default is now SafeAreaGroup.None)
-			var safeAreaView2 = (ISafeAreaView)contentView;
+			var safeAreaView2 = (ISafeAreaView2)contentView;
 			
 			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0));
 			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1));
@@ -190,7 +193,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage(); // Page defaults to All when no property is explicitly set
 
 			// Should default to true for Page even though SafeAreaGuides default is None
-			var safeAreaView2 = (ISafeAreaView)page;
+			var safeAreaView2 = (ISafeAreaView2)page;
 			
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(1));
@@ -212,7 +215,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// New approach: use SafeAreaGuides attached property
 			SafeAreaGuides.SetIgnoreSafeArea(contentView, new[] { SafeAreaGroup.None }); // Respect all safe areas
 
-			var safeAreaView2 = (ISafeAreaView)contentView;
+			var safeAreaView2 = (ISafeAreaView2)contentView;
 			
 			// All edges should respect safe area (false)
 			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0));
@@ -230,7 +233,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Ignore safe area for top and bottom, respect for left and right
 			SafeAreaGuides.SetIgnoreSafeArea(stackLayout, new[] { SafeAreaGroup.None, SafeAreaGroup.All, SafeAreaGroup.None, SafeAreaGroup.All });
 
-			var safeAreaView2 = (ISafeAreaView)stackLayout;
+			var safeAreaView2 = (ISafeAreaView2)stackLayout;
 			
 			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0)); // Left = None (respect)
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(1));  // Top = All (ignore)
@@ -246,7 +249,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			
 			SafeAreaGuides.SetIgnoreSafeArea(grid, new[] { SafeAreaGroup.All, SafeAreaGroup.None });
 
-			var safeAreaView2 = (ISafeAreaView)grid;
+			var safeAreaView2 = (ISafeAreaView2)grid;
 			
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));  // Left = All  
 			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top = None

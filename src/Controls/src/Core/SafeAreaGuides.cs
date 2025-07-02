@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -10,14 +11,14 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Bindable property for attached property <c>IgnoreSafeArea</c>.
 		/// </summary>
+		[TypeConverter(typeof(SafeAreaGroupArrayTypeConverter))]
 		public static readonly BindableProperty IgnoreSafeAreaProperty =
 			BindableProperty.CreateAttached(
 				"IgnoreSafeArea",
 				typeof(SafeAreaGroup[]),
 				typeof(SafeAreaGuides),
 				new SafeAreaGroup[] { SafeAreaGroup.None },
-				propertyChanged: OnIgnoreSafeAreaChanged,
-				typeConverter: new SafeAreaGroupArrayTypeConverter()
+				propertyChanged: OnIgnoreSafeAreaChanged
 			);
 
 		static void OnIgnoreSafeAreaChanged(BindableObject bindable, object oldValue, object newValue)
