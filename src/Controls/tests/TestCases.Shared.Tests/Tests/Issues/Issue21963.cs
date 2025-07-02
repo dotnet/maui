@@ -1,0 +1,33 @@
+using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
+
+namespace Microsoft.Maui.TestCases.Tests.Issues;
+
+public class Issue21963 : _IssuesUITest
+{
+    public Issue21963(TestDevice testDevice) : base(testDevice)
+    {
+    }
+
+    public override string Issue => "Shell.MenuItemTemplate Sometime Does Not Work";
+
+    [Test]
+    [Category(UITestCategories.Shell)]
+    public void VerifyFlyoutAndTemplatesPresentInitially()
+    {
+#if __IOS__
+        App.WaitForElement(AppiumQuery.ByName("ShellContent 1"));
+        App.WaitForElement(AppiumQuery.ByName("ShellContent 2"));
+        App.WaitForElement(AppiumQuery.ByName("MenuItem 1"));
+        App.WaitForElement(AppiumQuery.ByName("MenuItem 2"));
+        App.WaitForElement(AppiumQuery.ByName("ShellContent 3"));
+#else
+        App.WaitForElement("ShellContent 1");
+        App.WaitForElement("ShellContent 2");
+        App.WaitForElement("MenuItem 1");
+        App.WaitForElement("MenuItem 2");
+        App.WaitForElement("ShellContent 3");
+#endif
+    }
+}
