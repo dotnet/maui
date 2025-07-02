@@ -69,12 +69,12 @@ namespace Microsoft.Maui.Media
 			var fileResult = new FileResult(result);
 
 			// Apply rotation if needed for photos
-			if (photo && ExifImageRotator.IsRotationNeeded(options) && result != null)
+			if (photo && ImageProcessor.IsRotationNeeded(options) && result != null)
 			{
 				try
 				{
 					using var originalStream = await result.OpenStreamForReadAsync();
-					using var rotatedStream = await ExifImageRotator.RotateImageAsync(originalStream, result.Name);
+					using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, result.Name);
 					
 					// Save rotated image to temporary file
 					var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}{Path.GetExtension(result.Name)}");
@@ -102,7 +102,8 @@ namespace Microsoft.Maui.Media
 					options?.MaximumWidth,
 					options?.MaximumHeight,
 					options?.CompressionQuality ?? 100,
-					result.Name);
+					result.Name,
+					options?.RotateImage ?? false);
 
 				if (processedStream != null)
 				{
@@ -154,7 +155,7 @@ namespace Microsoft.Maui.Media
 			var fileResults = result.Select(file => new FileResult(file)).ToList();
 
 			// Apply rotation if needed for photos
-			if (photo && ExifImageRotator.IsRotationNeeded(options))
+			if (photo && ImageProcessor.IsRotationNeeded(options))
 			{
 				var rotatedResults = new List<FileResult>();
 				for (int i = 0; i < result.Count; i++)
@@ -165,7 +166,7 @@ namespace Microsoft.Maui.Media
 					try
 					{
 						using var originalStream = await originalFile.OpenStreamForReadAsync();
-						using var rotatedStream = await ExifImageRotator.RotateImageAsync(originalStream, originalFile.Name);
+						using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, originalFile.Name);
 						
 						// Save rotated image to temporary file
 						var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}{Path.GetExtension(originalFile.Name)}");
@@ -202,7 +203,8 @@ namespace Microsoft.Maui.Media
 						options?.MaximumWidth,
 						options?.MaximumHeight,
 						options?.CompressionQuality ?? 100,
-						originalFile.Name);
+						originalFile.Name,
+						options?.RotateImage ?? false);
 
 					if (processedStream != null)
 					{
@@ -250,12 +252,12 @@ namespace Microsoft.Maui.Media
 				var fileResult = new FileResult(file);
 
 				// Apply rotation if needed for photos
-				if (photo && ExifImageRotator.IsRotationNeeded(options) && file != null)
+				if (photo && ImageProcessor.IsRotationNeeded(options) && file != null)
 				{
 					try
 					{
 						using var originalStream = await file.OpenStreamForReadAsync();
-						using var rotatedStream = await ExifImageRotator.RotateImageAsync(originalStream, file.Name);
+						using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, file.Name);
 						
 						// Save rotated image to temporary file
 						var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}");
@@ -283,7 +285,8 @@ namespace Microsoft.Maui.Media
 						options?.MaximumWidth,
 						options?.MaximumHeight,
 						options?.CompressionQuality ?? 100,
-						file.Name);
+						file.Name,
+						options?.RotateImage ?? false);
 
 					if (processedStream != null)
 					{
