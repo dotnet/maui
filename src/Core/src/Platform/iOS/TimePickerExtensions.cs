@@ -37,6 +37,7 @@ namespace Microsoft.Maui.Platform
 		{
 			picker?.UpdateTime(timePicker);
 
+			// CultureInfo to prevent AM/PM localization issues in 12-hour format
 			var cultureInfo = CultureInfo.CurrentCulture;
 
 			if (string.IsNullOrEmpty(timePicker.Format))
