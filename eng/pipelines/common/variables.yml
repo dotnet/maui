@@ -65,6 +65,7 @@ variables:
 # Variable group for maui release pipelines
 - ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
   - group: maui-nuget-release
+  - group: maui-provisionator
 
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
   - name: internalProvisioning
