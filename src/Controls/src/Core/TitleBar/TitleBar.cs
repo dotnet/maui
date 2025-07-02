@@ -261,7 +261,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnSizeChanged(object sender, EventArgs e)
+		void OnSizeChanged(object? sender, EventArgs e)
 		{
 #if MACCATALYST
                 if (Window?.Handler?.PlatformView is UIKit.UIWindow uiwindow)
