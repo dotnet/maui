@@ -1,1 +1,2 @@
 #nullable enable
+override Microsoft.Maui.Maps.Handlers.MapPinHandler.DisconnectHandler(Android.Gms.Maps.Model.MarkerOptions! platformView) -> void
