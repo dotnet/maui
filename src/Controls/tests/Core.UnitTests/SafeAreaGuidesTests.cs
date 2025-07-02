@@ -253,5 +253,71 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2));  // Right = All
 			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom = None
 		}
+
+		[Fact]
+		public void SafeAreaGroupArrayTypeConverter_CanConvertFromString()
+		{
+			var converter = new SafeAreaGroupArrayTypeConverter();
+			
+			Assert.True(converter.CanConvertFrom(null, typeof(string)));
+			Assert.False(converter.CanConvertFrom(null, typeof(int)));
+		}
+
+		[Fact]
+		public void SafeAreaGroupArrayTypeConverter_ConvertFromSingleValue()
+		{
+			var converter = new SafeAreaGroupArrayTypeConverter();
+			
+			var result = (SafeAreaGroup[])converter.ConvertFrom(null, null, "All");
+			
+			Assert.Single(result);
+			Assert.Equal(SafeAreaGroup.All, result[0]);
+		}
+
+		[Fact]
+		public void SafeAreaGroupArrayTypeConverter_ConvertFromTwoValues()
+		{
+			var converter = new SafeAreaGroupArrayTypeConverter();
+			
+			var result = (SafeAreaGroup[])converter.ConvertFrom(null, null, "All,None");
+			
+			Assert.Equal(2, result.Length);
+			Assert.Equal(SafeAreaGroup.All, result[0]);
+			Assert.Equal(SafeAreaGroup.None, result[1]);
+		}
+
+		[Fact]
+		public void SafeAreaGroupArrayTypeConverter_ConvertFromFourValues()
+		{
+			var converter = new SafeAreaGroupArrayTypeConverter();
+			
+			var result = (SafeAreaGroup[])converter.ConvertFrom(null, null, "None,All,None,All");
+			
+			Assert.Equal(4, result.Length);
+			Assert.Equal(SafeAreaGroup.None, result[0]);  // Left
+			Assert.Equal(SafeAreaGroup.All, result[1]);   // Top
+			Assert.Equal(SafeAreaGroup.None, result[2]);  // Right
+			Assert.Equal(SafeAreaGroup.All, result[3]);   // Bottom
+		}
+
+		[Fact]
+		public void SafeAreaGroupArrayTypeConverter_ConvertFromInvalidValue_ThrowsException()
+		{
+			var converter = new SafeAreaGroupArrayTypeConverter();
+			
+			Assert.Throws<InvalidOperationException>(() => 
+				converter.ConvertFrom(null, null, "InvalidValue"));
+		}
+
+		[Fact]
+		public void SafeAreaGroupArrayTypeConverter_ConvertToString()
+		{
+			var converter = new SafeAreaGroupArrayTypeConverter();
+			var values = new[] { SafeAreaGroup.All, SafeAreaGroup.None };
+			
+			var result = converter.ConvertTo(null, null, values, typeof(string));
+			
+			Assert.Equal("All, None", result);
+		}
 	}
 }
