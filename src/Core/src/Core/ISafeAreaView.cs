@@ -19,7 +19,7 @@
 		/// <summary>
 		/// Internal property for the Page's SafeAreaInsets Thickness that may be changed in the future.
 		/// </summary>
-		internal Thickness SafeAreaInsets { set => { } } // Default no-op implementation
+		internal Thickness SafeAreaInsets { set { } }
 
 		/// <summary>
 		/// Gets the safe area behavior for the specified edge (0=Left, 1=Top, 2=Right, 3=Bottom).
