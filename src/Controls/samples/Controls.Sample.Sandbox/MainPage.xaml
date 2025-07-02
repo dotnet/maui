@@ -1,36 +1,5 @@
-﻿<Window xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
-    <Window.TitleBar>
-        <TitleBar Title="Maui App" x:Name="titleBar"
-                  Subtitle="Hello, World!"
-                  ForegroundColor="Red"
-                  HeightRequest="48">
-
-            <TitleBar.LeadingContent>
-                <Image Source="dotnet_bot.png"
-                       HeightRequest="24"
-                       VerticalOptions="Center"/>
-            </TitleBar.LeadingContent>
-
-            <TitleBar.Content>
-                <SearchBar Placeholder="Search"
-                           PlaceholderColor="White"
-                           BackgroundColor="LightGray"
-                           MaximumWidthRequest="300"
-                           HorizontalOptions="Fill"
-                           VerticalOptions="Center" />
-            </TitleBar.Content>
-
-            <TitleBar.TrailingContent>
-                <ImageButton Source="dotnet_bot.png"
-                             BackgroundColor="Yellow"
-                             CornerRadius="50"
-                             HeightRequest="36"
-                             WidthRequest="36"/>
-            </TitleBar.TrailingContent>
-        </TitleBar>
-    </Window.TitleBar>
-
-</Window>
+</ContentPage>
