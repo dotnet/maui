@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST // https://github.com/dotnet/maui/issues/30322
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
