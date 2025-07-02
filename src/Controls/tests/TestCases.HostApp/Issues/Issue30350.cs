@@ -14,30 +14,27 @@ public class Issue30350 : ContentPage
 	{
 		InitAsync();
 
-		Grid grid = new Grid
+		VerticalStackLayout verticalStackLayout = new VerticalStackLayout
 		{
 			Padding = 20,
-			RowSpacing = 10,
-			RowDefinitions =
+			Spacing = 10,
+			Children =
 			{
-				new RowDefinition { Height = GridLength.Auto },
-				new RowDefinition { Height = GridLength.Star }
+				new Image
+				{
+					Source = downsizedSource,
+					Aspect = Aspect.AspectFit
+				},
+
+				new Label
+				{
+					AutomationId = "Issue30350_DownsizedImageLabel",
+					Text = $"Downsized image: {downsizedSizeLabel}"
+				},
 			}
 		};
 
-		grid.Add(new Label
-		{
-			AutomationId = "Issue30350_DownsizedImageLabel",
-			Text = $"Downsized image: {downsizedSizeLabel}",
-		}, column: 0, row: 0);
-
-		grid.Add(new Image
-		{
-			Source = downsizedSource,
-			Aspect = Aspect.AspectFit
-		}, column: 0, row: 1);
-
-		Content = grid;
+		Content = verticalStackLayout;
 	}
 
 	private async void InitAsync()
