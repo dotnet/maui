@@ -45,16 +45,13 @@ namespace Microsoft.Maui.Handlers
 					{
 						if (uiView is WebKit.WKWebView webView)
 						{
+							var existingMaskView = webView.ViewWithTag(InterceptRightClickWebViewMaskView.MaskViewTag);
+							existingMaskView?.RemoveFromSuperview();
+
 							// If the view is a WKWebView, we need to intercept right-clicks
 							// to show the context menu, so we add a mask view that intercepts
 							// right-clicks and passes them to the context menu interaction.
-							var maskView = new InterceptRightClickWebViewMaskView(uiView.Bounds)
-							{
-								BackgroundColor = UIColor.Clear,
-								AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight,
-								UserInteractionEnabled = true
-							};
-
+							var maskView = new InterceptRightClickWebViewMaskView(uiView.Bounds);
 							webView.AddSubview(maskView);
 							maskView.AddInteraction(new MauiUIContextMenuInteraction(handler));
 						}
@@ -62,19 +59,31 @@ namespace Microsoft.Maui.Handlers
 						{
 							uiView.AddInteraction(new MauiUIContextMenuInteraction(handler));
 						}
-
 					}
 				}
 				else if (currentInteraction != null)
 				{
 					uiView.RemoveInteraction(currentInteraction);
+
+					if (uiView is WebKit.WKWebView webView)
+					{
+						var existingMaskView = webView.ViewWithTag(InterceptRightClickWebViewMaskView.MaskViewTag);
+						existingMaskView?.RemoveFromSuperview();
+					}
 				}
 			}
 		}
 
 		class InterceptRightClickWebViewMaskView : PlatformView
 		{
-			public InterceptRightClickWebViewMaskView(CGRect frame) : base(frame) { }
+			public const int MaskViewTag = 9999;
+			public InterceptRightClickWebViewMaskView(CGRect frame) : base(frame)
+			{
+				Tag = MaskViewTag;
+				BackgroundColor = UIColor.Clear;
+				AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
+				UserInteractionEnabled = true;
+			}
 
 			public override PlatformView? HitTest(CGPoint point, UIEvent? uievent)
 			{
