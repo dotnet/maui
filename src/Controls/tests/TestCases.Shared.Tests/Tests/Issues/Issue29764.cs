@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS
+#if TEST_FAILS_ON_WINDOWS // On Windows, still shadows disappearing permanently after Label opacity is at any time set to 0, Issue Link: https://github.com/dotnet/maui/issues/30383 
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
