@@ -314,6 +314,7 @@ namespace Microsoft.Maui.Platform
 
 			if (platformView is WrapperView wrapperView && wrapperView.Shadow != null && wrapperView.IsLoaded())
 			{
+				// Post invalidation to ensure shadow redraws correctly after opacity changes.
 				wrapperView.Post(() =>
 				{
 					wrapperView.Invalidate();
