@@ -312,15 +312,12 @@ namespace Microsoft.Maui.Platform
 		{
 			platformView.Alpha = (float)opacity;
 
-			if (platformView is WrapperView wrapperView && wrapperView.Shadow != null)
+			if (platformView is WrapperView wrapperView && wrapperView.Shadow != null && wrapperView.IsLoaded())
 			{
-				if (wrapperView.IsLoaded())
+				wrapperView.Post(() =>
 				{
-					wrapperView.Post(() =>
-					{
-						wrapperView.Invalidate();
-					});
-				}
+					wrapperView.Invalidate();
+				});
 			}
 		}
 
