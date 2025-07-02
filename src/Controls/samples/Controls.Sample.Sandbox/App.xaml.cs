@@ -14,7 +14,7 @@ public partial class App : Application
 
 		if (!useShell)
 		{
-			return new MainPage();
+			return new Window(new NavigationPage(new MainPage()));
 		}
 		else
 		{
