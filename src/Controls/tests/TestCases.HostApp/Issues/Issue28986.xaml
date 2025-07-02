@@ -6,13 +6,8 @@
              Title="SafeAreaGuides Test">
     
     <Grid x:Name="MainGrid" BackgroundColor="Red" SafeAreaGuides.IgnoreSafeArea="All">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        
-        <!-- Content area with colored background to show safe area effects -->
-        <Grid Grid.Row="0" x:Name="ContentGrid">
+        <!-- Single content grid that spans the entire screen -->
+        <Grid x:Name="ContentGrid">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -28,29 +23,103 @@
                        TextColor="DarkOrange" />
             </Border>
             
-            <!-- Middle content area -->
-            <Border Grid.Row="1" BackgroundColor="LightBlue" Stroke="Blue" StrokeThickness="4" Margin="10">
-                <VerticalStackLayout Spacing="15" Padding="20" VerticalOptions="Center">
+            <!-- Middle content area with control panel -->
+            <ScrollView Grid.Row="1">
+                <StackLayout Spacing="15" Padding="20" VerticalOptions="Center">
                     <Label Text="SafeAreaGuides Test Page" 
                            FontSize="24" 
                            FontAttributes="Bold"
                            HorizontalOptions="Center"
-                           TextColor="DarkBlue" />
+                           TextColor="White" />
                     
                     <Label Text="The red background shows areas outside safe area. Watch the yellow areas at top/bottom move when you toggle safe area settings."
                            FontSize="14"
                            HorizontalOptions="Center"
-                           TextColor="DarkBlue" />
+                           TextColor="White" />
                     
                     <Label x:Name="CurrentSettingsLabel"
                            Text="Current: All edges respect safe area"
                            FontSize="16"
                            FontAttributes="Bold"
                            HorizontalOptions="Center"
-                           TextColor="DarkBlue"
+                           TextColor="White"
                            AutomationId="CurrentSettings" />
-                </VerticalStackLayout>
-            </Border>
+                    
+                    <!-- Control panel -->
+                    <Border BackgroundColor="White" Stroke="Gray" StrokeThickness="1" Padding="15" Margin="10">
+                        <VerticalStackLayout Spacing="15">
+                            <Label Text="Toggle Safe Area per Edge:" 
+                                   FontSize="18" 
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center" />
+                            
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Top -->
+                                <StackLayout Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
+                                    <Label Text="Top:" VerticalOptions="Center" />
+                                    <CheckBox x:Name="TopCheckBox" 
+                                              IsChecked="False" 
+                                              CheckedChanged="OnEdgeCheckBoxChanged"
+                                              AutomationId="TopCheckBox" />
+                                </StackLayout>
+                                
+                                <!-- Left and Right -->
+                                <StackLayout Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalOptions="Center">
+                                    <Label Text="Left:" VerticalOptions="Center" />
+                                    <CheckBox x:Name="LeftCheckBox" 
+                                              IsChecked="False" 
+                                              CheckedChanged="OnEdgeCheckBoxChanged"
+                                              AutomationId="LeftCheckBox" />
+                                </StackLayout>
+                                
+                                <StackLayout Grid.Row="1" Grid.Column="2" Orientation="Horizontal" HorizontalOptions="Center">
+                                    <Label Text="Right:" VerticalOptions="Center" />
+                                    <CheckBox x:Name="RightCheckBox" 
+                                              IsChecked="False" 
+                                              CheckedChanged="OnEdgeCheckBoxChanged"
+                                              AutomationId="RightCheckBox" />
+                                </StackLayout>
+                                
+                                <!-- Bottom -->
+                                <StackLayout Grid.Row="2" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
+                                    <Label Text="Bottom:" VerticalOptions="Center" />
+                                    <CheckBox x:Name="BottomCheckBox" 
+                                              IsChecked="False" 
+                                              CheckedChanged="OnEdgeCheckBoxChanged"
+                                              AutomationId="BottomCheckBox" />
+                                </StackLayout>
+                            </Grid>
+                            
+                            <Label Text="✓ Checked = Ignore Safe Area (content can extend to edge)" 
+                                   FontSize="12" 
+                                   TextColor="Green"
+                                   HorizontalOptions="Center" />
+                            <Label Text="✗ Unchecked = Respect Safe Area (content stays in safe area)" 
+                                   FontSize="12" 
+                                   TextColor="Red"
+                                   HorizontalOptions="Center" />
+                            
+                            <Button Text="Reset All to Ignore" 
+                                    Clicked="OnResetAllClicked"
+                                    AutomationId="ResetAllButton" />
+                            <Button Text="Reset All to Respect" 
+                                    Clicked="OnResetNoneClicked"
+                                    AutomationId="ResetNoneButton" />
+                        </VerticalStackLayout>
+                    </Border>
+                </StackLayout>
+            </ScrollView>
             
             <!-- Bottom test area - should move in/out of home indicator area -->
             <Border Grid.Row="2" BackgroundColor="Yellow" Stroke="Orange" StrokeThickness="3" Padding="10">
@@ -61,79 +130,5 @@
                        TextColor="DarkOrange" />
             </Border>
         </Grid>
-        
-        <!-- Control panel -->
-        <Border Grid.Row="1" BackgroundColor="White" Stroke="Gray" StrokeThickness="1" Padding="15" Margin="10">
-            <VerticalStackLayout Spacing="15">
-                <Label Text="Toggle Safe Area per Edge:" 
-                       FontSize="18" 
-                       FontAttributes="Bold"
-                       HorizontalOptions="Center" />
-                
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    
-                    <!-- Top -->
-                    <StackLayout Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
-                        <Label Text="Top:" VerticalOptions="Center" />
-                        <CheckBox x:Name="TopCheckBox" 
-                                  IsChecked="False" 
-                                  CheckedChanged="OnEdgeCheckBoxChanged"
-                                  AutomationId="TopCheckBox" />
-                    </StackLayout>
-                    
-                    <!-- Left and Right -->
-                    <StackLayout Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalOptions="Center">
-                        <Label Text="Left:" VerticalOptions="Center" />
-                        <CheckBox x:Name="LeftCheckBox" 
-                                  IsChecked="False" 
-                                  CheckedChanged="OnEdgeCheckBoxChanged"
-                                  AutomationId="LeftCheckBox" />
-                    </StackLayout>
-                    
-                    <StackLayout Grid.Row="1" Grid.Column="2" Orientation="Horizontal" HorizontalOptions="Center">
-                        <Label Text="Right:" VerticalOptions="Center" />
-                        <CheckBox x:Name="RightCheckBox" 
-                                  IsChecked="False" 
-                                  CheckedChanged="OnEdgeCheckBoxChanged"
-                                  AutomationId="RightCheckBox" />
-                    </StackLayout>
-                    
-                    <!-- Bottom -->
-                    <StackLayout Grid.Row="2" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
-                        <Label Text="Bottom:" VerticalOptions="Center" />
-                        <CheckBox x:Name="BottomCheckBox" 
-                                  IsChecked="False" 
-                                  CheckedChanged="OnEdgeCheckBoxChanged"
-                                  AutomationId="BottomCheckBox" />
-                    </StackLayout>
-                </Grid>
-                
-                <Label Text="✓ Checked = Ignore Safe Area (content can extend to edge)" 
-                       FontSize="12" 
-                       TextColor="Green"
-                       HorizontalOptions="Center" />
-                <Label Text="✗ Unchecked = Respect Safe Area (content stays in safe area)" 
-                       FontSize="12" 
-                       TextColor="Red"
-                       HorizontalOptions="Center" />
-                
-                <Button Text="Reset All to Ignore" 
-                        Clicked="OnResetAllClicked"
-                        AutomationId="ResetAllButton" />
-                <Button Text="Reset All to Respect" 
-                        Clicked="OnResetNoneClicked"
-                        AutomationId="ResetNoneButton" />
-            </VerticalStackLayout>
-        </Border>
     </Grid>
 </ContentPage>
