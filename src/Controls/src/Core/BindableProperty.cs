@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls
 			{ typeof(Easing), new Maui.Converters.EasingTypeConverter() },
 			{ typeof(Maui.Graphics.Color), new ColorTypeConverter() },
 			{ typeof(ImageSource), new ImageSourceConverter() },
-			{ typeof(SafeAreaGroup[]), new SafeAreaGroupArrayTypeConverter() }
+			{ typeof(SafeAreaEdges), new SafeAreaEdgesTypeConverter() }
 		};
 
 		internal static readonly Dictionary<Type, IValueConverter> KnownIValueConverters = new Dictionary<Type, IValueConverter>

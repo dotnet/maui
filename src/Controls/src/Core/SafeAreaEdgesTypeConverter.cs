@@ -5,10 +5,10 @@ using System.Globalization;
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
-	/// Type converter for SafeAreaGroup[] arrays, supporting XAML parsing of 
+	/// Type converter for SafeAreaEdges struct, supporting XAML parsing of 
 	/// SafeAreaGuides.IgnoreSafeArea attached property values.
 	/// </summary>
-	public class SafeAreaGroupArrayTypeConverter : TypeConverter
+	public class SafeAreaEdgesTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string);
@@ -18,7 +18,6 @@ namespace Microsoft.Maui.Controls
 
 		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
-			// IMPORTANT! Update SafeAreaGroupArrayTypeDesignConverter.IsValid if making changes here
 			var strValue = value?.ToString();
 
 			if (strValue != null)
@@ -27,46 +26,47 @@ namespace Microsoft.Maui.Controls
 				
 				// Split by comma - if no comma, we get array with single element
 				var parts = strValue.Split(',');
-				var result = new SafeAreaGroup[parts.Length];
+				var regions = new SafeAreaRegions[parts.Length];
 
 				for (int i = 0; i < parts.Length; i++)
 				{
 					var part = parts[i].Trim();
 					
 					// Performance optimization: use string comparison instead of Enum.TryParse
-					// since SafeAreaGroup only has two values currently
+					// since SafeAreaRegions only has two values currently
 					if (string.Equals(part, "All", StringComparison.OrdinalIgnoreCase))
 					{
-						result[i] = SafeAreaGroup.All;
+						regions[i] = SafeAreaRegions.All;
 					}
 					else if (string.Equals(part, "None", StringComparison.OrdinalIgnoreCase))
 					{
-						result[i] = SafeAreaGroup.None;
+						regions[i] = SafeAreaRegions.None;
 					}
 					else
 					{
-						throw new FormatException($"Cannot convert \"{part}\" into {typeof(SafeAreaGroup)}");
+						throw new FormatException($"Cannot convert \"{part}\" into {typeof(SafeAreaRegions)}");
 					}
 				}
 
-				return result;
+				// Convert array to SafeAreaEdges using the same logic as before
+				return regions.Length switch
+				{
+					1 => new SafeAreaEdges(regions[0]),
+					2 => new SafeAreaEdges(regions[0], regions[1]), // horizontal, vertical
+					4 => new SafeAreaEdges(regions[0], regions[1], regions[2], regions[3]), // left, top, right, bottom
+					_ => throw new FormatException($"SafeAreaEdges must have 1, 2, or 4 values, but got {regions.Length}")
+				};
 			}
 
-			throw new FormatException($"Cannot convert \"{strValue}\" into {typeof(SafeAreaGroup[])}");
+			throw new FormatException($"Cannot convert \"{strValue}\" into {typeof(SafeAreaEdges)}");
 		}
 
 		public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 		{
-			if (value is not SafeAreaGroup[] array)
+			if (value is not SafeAreaEdges edges)
 				throw new NotSupportedException();
 
-			if (array.Length == 0)
-				return string.Empty;
-
-			if (array.Length == 1)
-				return array[0].ToString();
-
-			return string.Join(", ", Array.ConvertAll(array, item => item.ToString()));
+			return edges.ToString();
 		}
 	}
 }

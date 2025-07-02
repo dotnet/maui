@@ -40,15 +40,13 @@ public partial class Issue28986 : ContentPage
 
 	private void UpdateSafeAreaSettings()
 	{
-		// Create the SafeAreaGroup array based on checkbox states
-		// Order: Left, Top, Right, Bottom
-		var safeAreaSettings = new SafeAreaGroup[]
-		{
-			LeftCheckBox.IsChecked ? SafeAreaGroup.All : SafeAreaGroup.None,   // Left
-			TopCheckBox.IsChecked ? SafeAreaGroup.All : SafeAreaGroup.None,    // Top  
-			RightCheckBox.IsChecked ? SafeAreaGroup.All : SafeAreaGroup.None,  // Right
-			BottomCheckBox.IsChecked ? SafeAreaGroup.All : SafeAreaGroup.None  // Bottom
-		};
+		// Create the SafeAreaEdges based on checkbox states
+		var safeAreaSettings = new SafeAreaEdges(
+			LeftCheckBox.IsChecked ? SafeAreaRegions.All : SafeAreaRegions.None,   // Left
+			TopCheckBox.IsChecked ? SafeAreaRegions.All : SafeAreaRegions.None,    // Top  
+			RightCheckBox.IsChecked ? SafeAreaRegions.All : SafeAreaRegions.None,  // Right
+			BottomCheckBox.IsChecked ? SafeAreaRegions.All : SafeAreaRegions.None  // Bottom
+		);
 
 		// Apply the SafeAreaGuides attached property to the main content grid
 		SafeAreaGuides.SetIgnoreSafeArea(ContentGrid, safeAreaSettings);
@@ -61,29 +59,29 @@ public partial class Issue28986 : ContentPage
 		
 		CurrentSettingsLabel.Text = $"Current: {settingsText}";
 
-		// Test different array syntaxes based on the current selection
+		// Test different syntax formats based on the current selection
 		ApplyOptimizedSyntax(safeAreaSettings);
 	}
 
-	private void ApplyOptimizedSyntax(SafeAreaGroup[] settings)
+	private void ApplyOptimizedSyntax(SafeAreaEdges settings)
 	{
-		// Optimize the array syntax when possible to test different input formats
-		var left = settings[0];
-		var top = settings[1]; 
-		var right = settings[2];
-		var bottom = settings[3];
+		// Optimize the syntax when possible to test different input formats
+		var left = settings.Left;
+		var top = settings.Top; 
+		var right = settings.Right;
+		var bottom = settings.Bottom;
 
-		SafeAreaGroup[] optimizedSettings;
+		SafeAreaEdges optimizedSettings;
 
 		// Test 1-value syntax (all edges same)
 		if (left == top && top == right && right == bottom)
 		{
-			optimizedSettings = new[] { left };
+			optimizedSettings = new SafeAreaEdges(left);
 		}
 		// Test 2-value syntax (left/right same, top/bottom same)  
 		else if (left == right && top == bottom)
 		{
-			optimizedSettings = new[] { left, top };
+			optimizedSettings = new SafeAreaEdges(left, top);
 		}
 		// Use 4-value syntax
 		else
@@ -91,17 +89,13 @@ public partial class Issue28986 : ContentPage
 			optimizedSettings = settings;
 		}
 
-		// Apply the optimized settings to test array interpretation
+		// Apply the optimized settings to test different syntax formats
 		SafeAreaGuides.SetIgnoreSafeArea(ContentGrid, optimizedSettings);
 
 		// Update the label to show which syntax is being used
-		var syntaxInfo = optimizedSettings.Length switch
-		{
-			1 => " (1-value syntax)",
-			2 => " (2-value syntax)", 
-			4 => " (4-value syntax)",
-			_ => " (custom syntax)"
-		};
+		var syntaxInfo = (left == top && top == right && right == bottom) ? " (1-value syntax)" :
+		                (left == right && top == bottom) ? " (2-value syntax)" : 
+		                " (4-value syntax)";
 
 		CurrentSettingsLabel.Text += syntaxInfo;
 	}

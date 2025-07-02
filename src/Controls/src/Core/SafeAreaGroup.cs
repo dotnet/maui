@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls
 	/// Specifies which platform safe area insets to ignore for a layout or visual element.
 	/// </summary>
 	[Flags]
-	public enum SafeAreaGroup
+	public enum SafeAreaRegions
 	{
 		/// <summary>
 		/// Apply platform inset - content will be positioned only in the safe area.
