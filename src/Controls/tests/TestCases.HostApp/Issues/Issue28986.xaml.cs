@@ -6,6 +6,12 @@ public partial class Issue28986 : ContentPage
 	public Issue28986()
 	{
 		InitializeComponent();
+		// Since SafeAreaGuides default is now None, start with all unchecked
+		// This demonstrates the new default behavior
+		LeftCheckBox.IsChecked = false;
+		TopCheckBox.IsChecked = false;
+		RightCheckBox.IsChecked = false;
+		BottomCheckBox.IsChecked = false;
 		UpdateSafeAreaSettings();
 	}
 

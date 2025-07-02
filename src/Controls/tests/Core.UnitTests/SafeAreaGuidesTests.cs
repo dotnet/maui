@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class SafeAreaGuidesTests : BaseTestFixture
 	{
 		[Fact]
-		public void GetIgnoreSafeArea_DefaultValue_ReturnsAllArray()
+		public void GetIgnoreSafeArea_DefaultValue_ReturnsNoneArray()
 		{
 			var layout = new Grid();
 			
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			
 			Assert.NotNull(result);
 			Assert.Single(result);
-			Assert.Equal(SafeAreaGroup.All, result[0]);
+			Assert.Equal(SafeAreaGroup.None, result[0]);
 		}
 
 		[Fact]
@@ -175,8 +175,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var contentView = new ContentView(); // ContentView doesn't implement ISafeAreaView
 
-			// Should default to true when no attached property is set and no legacy support (default is now SafeAreaGroup.All)
+			// Should default to false when no attached property is set and no legacy support (default is now SafeAreaGroup.None)
 			var safeAreaView2 = (ISafeAreaView2)contentView;
+			
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0));
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1));
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2));
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3));
+		}
+
+		[Fact]
+		public void Page_IgnoreSafeAreaForEdge_DefaultsToAllWhenNoPropertySet()
+		{
+			var page = new ContentPage(); // Page defaults to All when no property is explicitly set
+
+			// Should default to true for Page even though SafeAreaGuides default is None
+			var safeAreaView2 = (ISafeAreaView2)page;
 			
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(1));
