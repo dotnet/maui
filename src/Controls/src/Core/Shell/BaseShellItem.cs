@@ -254,7 +254,7 @@ namespace Microsoft.Maui.Controls
 			if (property == Shell.NavBarIsVisibleProperty)
 			{
 				var shell = me.FindParentOfType<Shell>();
-				if (shell != null && shell.IsSet(property))
+				if (shell is not null && shell.IsSet(property))
 				{
 					// Get the value from the Shell directly
 					me.SetValue(property, shell.GetValue(property));
