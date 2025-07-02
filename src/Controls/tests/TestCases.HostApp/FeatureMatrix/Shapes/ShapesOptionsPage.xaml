@@ -15,8 +15,8 @@
                             Spacing="5">
               <!-- Shape Type Selection -->
               <Border Padding="1"
-                       Stroke="Gray"
-                       StrokeThickness="1">
+                      Stroke="Gray"
+                      StrokeThickness="1">
                      <StackLayout Spacing="1">
 
                             <Label Text="Select Shape Type:"
@@ -96,49 +96,62 @@
                                                 CheckedChanged="OnStrokeColorChanged"
                                                 AutomationId="StrokeColorRedRadioButton"/>
                             </HorizontalStackLayout>
-                            
+
+                            <HorizontalStackLayout Spacing="10">
+                                   <CheckBox
+                                          IsChecked="{Binding HasShadow}"
+                                          AutomationId="ShadowCheckBox"/>
+                                   <Label Text="Has Shadow"
+                                          VerticalOptions="Center"
+                                          FontAttributes="Bold"/>
+                            </HorizontalStackLayout>
+
                             <!-- Stroke Properties Grid -->
-                            <Grid ColumnDefinitions="Auto,*" 
+                            <Grid ColumnDefinitions="Auto,*"
                                   RowDefinitions="Auto,Auto,Auto"
-                                  ColumnSpacing="1" 
+                                  ColumnSpacing="1"
                                   RowSpacing="1">
-                                   
+
                                    <!-- Stroke Thickness -->
-                                   <Label Grid.Row="0" Grid.Column="0"
+                                   <Label Grid.Row="0"
+                                                 Grid.Column="0"
                                           Text="Stroke Thickness:"
                                           VerticalOptions="Center"
                                           FontAttributes="Bold"/>
-                                   <Entry Grid.Row="0" Grid.Column="1"
+                                   <Entry Grid.Row="0"
+                                                 Grid.Column="1"
                                           Text="{Binding StrokeThickness, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="Enter thickness (1-10)"
                                           WidthRequest="200"
-                                          Keyboard="Numeric"
                                           AutomationId="StrokeThicknessEntry"/>
-                                   
+
                                    <!-- Stroke Dash Array -->
-                                   <Label Grid.Row="1" Grid.Column="0"
+                                   <Label Grid.Row="1"
+                                                 Grid.Column="0"
                                           Text="Stroke Dash Array:"
                                           VerticalOptions="Center"
                                           FontAttributes="Bold"/>
-                                   <Entry Grid.Row="1" Grid.Column="1"
+                                   <Entry Grid.Row="1"
+                                                 Grid.Column="1"
                                           Text="{Binding StrokeDashArray, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="e.g., 5,5 or 10,3,2,3"
                                           WidthRequest="200"
                                           AutomationId="StrokeDashArrayEntry"/>
-                                   
+
                                    <!-- Stroke Dash Offset -->
-                                   <Label Grid.Row="2" Grid.Column="0"
+                                   <Label Grid.Row="2"
+                                                 Grid.Column="0"
                                           Text="Stroke Dash Offset:"
                                           VerticalOptions="Center"
                                           FontAttributes="Bold"/>
-                                   <Entry Grid.Row="2" Grid.Column="1"
+                                   <Entry Grid.Row="2"
+                                                 Grid.Column="1"
                                           Text="{Binding StrokeDashOffset, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="Enter offset (0-50)"
                                           WidthRequest="200"
-                                          Keyboard="Numeric"
                                           AutomationId="StrokeDashOffsetEntry"/>
                             </Grid>
                      </StackLayout>
@@ -153,62 +166,66 @@
                             <Label Text="Rectangle Properties"
                                    FontAttributes="Bold"
                                    FontSize="16"/>
-                            
-                            <Grid ColumnDefinitions="Auto,*" 
+
+                            <Grid ColumnDefinitions="Auto,*"
                                   RowDefinitions="Auto,Auto,Auto,Auto"
-                                  ColumnSpacing="1" 
+                                  ColumnSpacing="1"
                                   RowSpacing="1">
-                                   
+
                                    <!-- RadiusX -->
-                                   <Label Grid.Row="0" Grid.Column="0"
+                                   <Label Grid.Row="0"
+                                                 Grid.Column="0"
                                           Text="RadiusX:"
                                           VerticalOptions="Center"
                                           FontAttributes="Bold"/>
-                                   <Entry Grid.Row="0" Grid.Column="1"
+                                   <Entry Grid.Row="0"
+                                                 Grid.Column="1"
                                           Text="{Binding RadiusX, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="Enter RadiusX (0-100)"
                                           WidthRequest="200"
-                                          Keyboard="Numeric"
                                           AutomationId="RadiusXEntry"/>
-                                   
+
                                    <!-- RadiusY -->
-                                   <Label Grid.Row="1" Grid.Column="0"
+                                   <Label Grid.Row="1"
+                                                 Grid.Column="0"
                                           Text="RadiusY:"
                                           VerticalOptions="Center"
                                           FontAttributes="Bold"/>
-                                   <Entry Grid.Row="1" Grid.Column="1"
+                                   <Entry Grid.Row="1"
+                                                 Grid.Column="1"
                                           Text="{Binding RadiusY, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="Enter RadiusY (0-100)"
                                           WidthRequest="200"
-                                          Keyboard="Numeric"
                                           AutomationId="RadiusYEntry"/>
-                                   
+
                                    <!-- Width -->
-                                   <Label Grid.Row="2" Grid.Column="0"
+                                   <Label Grid.Row="2"
+                                                 Grid.Column="0"
                                           Text="Width:"
                                           VerticalOptions="Center"
                                           FontAttributes="Bold"/>
-                                   <Entry Grid.Row="2" Grid.Column="1"
+                                   <Entry Grid.Row="2"
+                                                 Grid.Column="1"
                                           Text="{Binding Width, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="Enter width"
                                           WidthRequest="200"
-                                          Keyboard="Numeric"
                                           AutomationId="RectangleWidthEntry"/>
-                                   
+
                                    <!-- Height -->
-                                   <Label Grid.Row="3" Grid.Column="0"
+                                   <Label Grid.Row="3"
+                                                 Grid.Column="0"
                                           Text="Height:"
                                           VerticalOptions="Center"
                                           FontAttributes="Bold"/>
-                                   <Entry Grid.Row="3" Grid.Column="1"
+                                   <Entry Grid.Row="3"
+                                                 Grid.Column="1"
                                           Text="{Binding Height, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="Enter height"
                                           WidthRequest="200"
-                                          Keyboard="Numeric"                                        
                                           AutomationId="RectangleHeightEntry"/>
                             </Grid>
                      </StackLayout>
@@ -223,36 +240,38 @@
                             <Label Text="Ellipse Properties"
                                    FontAttributes="Bold"
                                    FontSize="16"/>
-                            
-                            <Grid ColumnDefinitions="Auto,*" 
+
+                            <Grid ColumnDefinitions="Auto,*"
                                   RowDefinitions="Auto,Auto"
-                                  ColumnSpacing="1" 
+                                  ColumnSpacing="1"
                                   RowSpacing="8">
-                                   
+
                                    <!-- Width -->
-                                   <Label Grid.Row="0" Grid.Column="0"
+                                   <Label Grid.Row="0"
+                                                 Grid.Column="0"
                                           Text="Width:"
                                           VerticalOptions="Center"
                                           FontAttributes="Bold"/>
-                                   <Entry Grid.Row="0" Grid.Column="1"
+                                   <Entry Grid.Row="0"
+                                                 Grid.Column="1"
                                           Text="{Binding Width, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="Enter width"
                                           WidthRequest="200"
-                                          Keyboard="Numeric"
                                           AutomationId="EllipseWidthEntry"/>
-                                   
+
                                    <!-- Height -->
-                                   <Label Grid.Row="1" Grid.Column="0"
+                                   <Label Grid.Row="1"
+                                                 Grid.Column="0"
                                           Text="Height:"
                                           VerticalOptions="Center"
                                           FontAttributes="Bold"/>
-                                   <Entry Grid.Row="1" Grid.Column="1"
+                                   <Entry Grid.Row="1"
+                                                 Grid.Column="1"
                                           Text="{Binding Height, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="Enter height"
                                           WidthRequest="200"
-                                          Keyboard="Numeric"
                                           AutomationId="EllipseHeightEntry"/>
                             </Grid>
                      </StackLayout>
@@ -267,62 +286,66 @@
                             <Label Text="Line Properties"
                                    FontAttributes="Bold"
                                    FontSize="16"/>
-                            
-                            <Grid ColumnDefinitions="Auto,*" 
+
+                            <Grid ColumnDefinitions="Auto,*"
                                   RowDefinitions="Auto,Auto,Auto,Auto"
-                                  ColumnSpacing="1" 
+                                  ColumnSpacing="1"
                                   RowSpacing="1">
-                                   
+
                                    <!-- X1 -->
-                                   <Label Grid.Row="0" Grid.Column="0"
+                                   <Label Grid.Row="0"
+                                                 Grid.Column="0"
                                           Text="X1:"
                                           FontAttributes="Bold"
                                           VerticalOptions="Center"/>
-                                   <Entry Grid.Row="0" Grid.Column="1"
+                                   <Entry Grid.Row="0"
+                                                 Grid.Column="1"
                                           Text="{Binding X1, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="Enter X1 coordinate"
                                           WidthRequest="200"
-                                          Keyboard="Numeric"
                                           AutomationId="X1Entry"/>
-                                   
+
                                    <!-- Y1 -->
-                                   <Label Grid.Row="1" Grid.Column="0"
+                                   <Label Grid.Row="1"
+                                                 Grid.Column="0"
                                           Text="Y1:"
                                           FontAttributes="Bold"
                                           VerticalOptions="Center"/>
-                                   <Entry Grid.Row="1" Grid.Column="1"
+                                   <Entry Grid.Row="1"
+                                                 Grid.Column="1"
                                           Text="{Binding Y1, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="Enter Y1 coordinate"
                                           WidthRequest="200"
-                                          Keyboard="Numeric"
                                           AutomationId="Y1Entry"/>
-                                   
+
                                    <!-- X2 -->
-                                   <Label Grid.Row="2" Grid.Column="0"
+                                   <Label Grid.Row="2"
+                                                 Grid.Column="0"
                                           Text="X2:"
                                           FontAttributes="Bold"
                                           VerticalOptions="Center"/>
-                                   <Entry Grid.Row="2" Grid.Column="1"
+                                   <Entry Grid.Row="2"
+                                                 Grid.Column="1"
                                           Text="{Binding X2, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="Enter X2 coordinate"
                                           WidthRequest="200"
-                                          Keyboard="Numeric"
                                           AutomationId="X2Entry"/>
-                                   
+
                                    <!-- Y2 -->
-                                   <Label Grid.Row="3" Grid.Column="0"
+                                   <Label Grid.Row="3"
+                                                 Grid.Column="0"
                                           Text="Y2:"
                                           FontAttributes="Bold"
                                           VerticalOptions="Center"/>
-                                   <Entry Grid.Row="3" Grid.Column="1"
+                                   <Entry Grid.Row="3"
+                                                 Grid.Column="1"
                                           Text="{Binding Y2, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="Enter Y2 coordinate"
                                           WidthRequest="200"
-                                          Keyboard="Numeric"
                                           AutomationId="Y2Entry"/>
                             </Grid>
                      </StackLayout>
@@ -337,18 +360,20 @@
                             <Label Text="Polygon Properties"
                                    FontAttributes="Bold"
                                    FontSize="16"/>
-                            
-                            <Grid ColumnDefinitions="Auto,*" 
+
+                            <Grid ColumnDefinitions="Auto,*"
                                   RowDefinitions="Auto"
-                                  ColumnSpacing="10" 
+                                  ColumnSpacing="10"
                                   RowSpacing="8">
-                                   
+
                                    <!-- Points -->
-                                   <Label Grid.Row="0" Grid.Column="0"
+                                   <Label Grid.Row="0"
+                                                 Grid.Column="0"
                                           Text="Points:"
                                           VerticalOptions="Center"
                                           FontAttributes="Bold"/>
-                                   <Entry Grid.Row="0" Grid.Column="1"
+                                   <Entry Grid.Row="0"
+                                                 Grid.Column="1"
                                           Text="{Binding Points, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="Enter points (e.g., 100,50 150,100 100,150 50,100)"
@@ -367,18 +392,20 @@
                             <Label Text="Polyline Properties"
                                    FontAttributes="Bold"
                                    FontSize="16"/>
-                            
-                            <Grid ColumnDefinitions="Auto,*" 
+
+                            <Grid ColumnDefinitions="Auto,*"
                                   RowDefinitions="Auto"
-                                  ColumnSpacing="10" 
+                                  ColumnSpacing="10"
                                   RowSpacing="8">
-                                   
+
                                    <!-- Points -->
-                                   <Label Grid.Row="0" Grid.Column="0"
+                                   <Label Grid.Row="0"
+                                                 Grid.Column="0"
                                           Text="Points:"
                                           VerticalOptions="Center"
                                           FontAttributes="Bold"/>
-                                   <Entry Grid.Row="0" Grid.Column="1"
+                                   <Entry Grid.Row="0"
+                                                 Grid.Column="1"
                                           Text="{Binding PolylinePoints, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="Enter points (e.g., 50,100 100,50 150,100 200,50 250,100)"
@@ -397,18 +424,20 @@
                             <Label Text="Path Properties"
                                    FontAttributes="Bold"
                                    FontSize="16"/>
-                            
-                            <Grid ColumnDefinitions="Auto,*" 
+
+                            <Grid ColumnDefinitions="Auto,*"
                                   RowDefinitions="Auto"
-                                  ColumnSpacing="10" 
+                                  ColumnSpacing="10"
                                   RowSpacing="1">
-                                   
+
                                    <!-- Path Data -->
-                                   <Label Grid.Row="0" Grid.Column="0"
+                                   <Label Grid.Row="0"
+                                                 Grid.Column="0"
                                           Text="Path Data:"
                                           VerticalOptions="Center"
                                           FontAttributes="Bold"/>
-                                   <Entry Grid.Row="0" Grid.Column="1"
+                                   <Entry Grid.Row="0"
+                                                 Grid.Column="1"
                                           Text="{Binding PathData, Mode=TwoWay}"
                                           VerticalOptions="Center"
                                           Placeholder="Enter path data (e.g., M 10,100 C 10,300 300,-160 300,100)"

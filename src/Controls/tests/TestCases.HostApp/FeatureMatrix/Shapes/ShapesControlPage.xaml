@@ -38,6 +38,7 @@
                      StrokeDashOffset="{Binding StrokeDashOffset}"
                      RadiusX="{Binding RadiusX}"
                      RadiusY="{Binding RadiusY}"
+                     Shadow="{Binding BoxShadow}"
                      IsVisible="{Binding SelectedShapeType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Rectangle}"
                      AutomationId="RectangleShape"/>
 
@@ -50,6 +51,7 @@
                    StrokeThickness="{Binding StrokeThickness}"
                    StrokeDashArray="{Binding StrokeDashCollection}"
                    StrokeDashOffset="{Binding StrokeDashOffset}"
+                   Shadow="{Binding BoxShadow}"
                    IsVisible="{Binding SelectedShapeType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Ellipse}"
                    AutomationId="EllipseShape"/>
 
@@ -65,6 +67,7 @@
                 StrokeThickness="{Binding StrokeThickness}"
                 StrokeDashArray="{Binding StrokeDashCollection}"
                 StrokeDashOffset="{Binding StrokeDashOffset}"
+                Shadow="{Binding BoxShadow}"
                 IsVisible="{Binding SelectedShapeType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Line}"
                 AutomationId="LineShape"/>
 
@@ -77,7 +80,8 @@
                    HorizontalOptions="Center"
                    StrokeThickness="{Binding StrokeThickness}"
                    StrokeDashArray="{Binding StrokeDashCollection}"
-                   StrokeDashOffset="{Binding StrokeDashOffset}"     
+                   StrokeDashOffset="{Binding StrokeDashOffset}"
+                   Shadow="{Binding BoxShadow}"
                    IsVisible="{Binding SelectedShapeType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Polygon}"
                    AutomationId="PolygonShape"/>
 
@@ -90,6 +94,7 @@
                     VerticalOptions="Center"
                     HorizontalOptions="Center"
                     StrokeDashOffset="{Binding StrokeDashOffset}"
+                    Shadow="{Binding BoxShadow}"
                     IsVisible="{Binding SelectedShapeType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Polyline}"
                     AutomationId="PolylineShape"/>
 
@@ -102,7 +107,8 @@
                 VerticalOptions="Center"
                 HorizontalOptions="Center"
                 StrokeDashArray="{Binding StrokeDashCollection}"
-                StrokeDashOffset="{Binding StrokeDashOffset}"    
+                StrokeDashOffset="{Binding StrokeDashOffset}"
+                Shadow="{Binding BoxShadow}"
                 IsVisible="{Binding SelectedShapeType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Path}"
                 AutomationId="PathShape"/>
 

@@ -27,8 +27,6 @@ public partial class ShapesOptionsPage : ContentPage
 			}
 		}
 	}
-
-
 	private void UpdatePropertySectionVisibility(ShapeType shapeType)
 	{
 		// Hide all property sections first
