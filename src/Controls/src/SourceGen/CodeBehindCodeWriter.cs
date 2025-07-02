@@ -320,10 +320,15 @@ static class CodeBehindCodeWriter
 			addXamlCompilationAttribute = true;
 			hideFromIntellisense = true;
 		}
-		else
+		else if (parseResult?.ProjectItem?.ManifestResourceName != null && parseResult.ProjectItem.TargetPath != null)
 		{ // rootClass == null && !hasXamlCompilationProcessingInstruction) {
 			xamlResourceIdOnly = true; //only generate the XamlResourceId assembly attribute
 			return true;
+		}
+		else
+		{
+			reportDiagnostic?.Invoke(Diagnostic.Create(Descriptors.XamlParserError, Location.None, $"Xaml file {parseResult?.ProjectItem?.RelativePath} does not have a Class attribute"));
+			return false;
 		}
 
 		namedFields = GetNamedFields(root, nsmgr, compilation, xmlnsCache, typeCache, cancellationToken, reportDiagnostic);
