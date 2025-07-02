@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Bindable property for attached property <c>IgnoreSafeArea</c>.
 		/// </summary>
+		[TypeConverter(typeof(SafeAreaGroupArrayTypeConverter))]
 		public static readonly BindableProperty IgnoreSafeAreaProperty =
 			BindableProperty.CreateAttached(
 				"IgnoreSafeArea",
