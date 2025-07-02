@@ -263,32 +263,34 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+#if MACCATALYST
 		void OnSizeChanged(object? sender, EventArgs e)
 		{
-#if MACCATALYST
-                if (Window?.Handler?.PlatformView is UIKit.UIWindow uiwindow)
-                {
-                    if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
-                    {
-                        var windowScene = uiwindow.WindowScene;
-                        if (windowScene != null)
-                        {
-                            var fullScreen = windowScene.FullScreen;
-                            if (_templateRoot is Grid contentGrid)
-                            {
-                                // If in fullscreen, remove left margin, otherwise set 80px margin
-                                contentGrid.Margin = fullScreen ? new Thickness(0) : new Thickness(80, 0, 0, 0);
-                            }
-                        }
-                    }
-                }
-#endif
+			if (Window?.Handler?.PlatformView is UIKit.UIWindow uiwindow)
+			{
+				if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
+				{
+					var windowScene = uiwindow.WindowScene;
+					if (windowScene != null)
+					{
+						var fullScreen = windowScene.FullScreen;
+						if (_templateRoot is Grid contentGrid)
+						{
+							// If in fullscreen, remove left margin, otherwise set 80px margin
+							contentGrid.Margin = fullScreen ? new Thickness(0) : new Thickness(80, 0, 0, 0);
+						}
+					}
+				}
+			}
 		}
+#endif
 
 		internal void Cleanup()
 		{
 			PropertyChanged -= TitleBar_PropertyChanged;
+#if MACCATALYST
 			SizeChanged -= OnSizeChanged;
+#endif
 			if (Window is not null)
 			{
 				Window.Activated -= Window_Activated;
