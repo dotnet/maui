@@ -255,13 +255,17 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateHeaderVisibility()
 		{
+			if (Toolbar is null || PaneDisplayMode != NavigationViewPaneDisplayMode.LeftMinimal)
+			{
+				return;
+			}
+			
 			if (IsHeaderContentEmpty())
 			{
 				CollapseEmptyHeader();
 			}
-			else if (Toolbar is not null && TopNavArea is not null &&
-			        PaneDisplayMode == NavigationViewPaneDisplayMode.LeftMinimal &&
-			        (PaneFooter == Toolbar || Header is null))
+			else if (TopNavArea is not null &&
+					(PaneFooter == Toolbar || Header is null))
 			{
 				Header = Toolbar;
 			}
@@ -269,10 +273,7 @@ namespace Microsoft.Maui.Platform
 		
 		bool IsHeaderContentEmpty()
 		{
-			return Toolbar is not null &&
-				   PaneDisplayMode == NavigationViewPaneDisplayMode.LeftMinimal &&
-				   string.IsNullOrEmpty(Toolbar.Title) &&
-				   Toolbar.TitleView is null;
+			return string.IsNullOrEmpty(Toolbar.Title) && Toolbar.TitleView is null;
 		}
 		
 		void CollapseEmptyHeader()
