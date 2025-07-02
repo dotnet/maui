@@ -20,9 +20,10 @@ public class ShapesFeatureTests : UITest
 		App.NavigateToGallery(ShapesFeatureMatrix);
 	}
 
+#if TEST_FAILS_ON_WINDOWS //For more information see: https://github.com/dotnet/maui/issues/29812
 	[Test]
 	[Category(UITestCategories.Shape)]
-	public void Shape_Rectangle_StrokeColorAndFill()
+	public void Rectangle_FillColorWithStrokeColor_Shadow()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -44,7 +45,7 @@ public class ShapesFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.Shape)]
-	public void Shape_Ellipse_StrokeColorAndFill()
+	public void Ellipse_FillColorWithStrokeColor_Shadow()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -69,7 +70,7 @@ public class ShapesFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.Shape)]
-	public void Shape_Line_Stroke()
+	public void Line_FillColorWithStrokeColor_Shadow()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -77,16 +78,11 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("LineRadioButton");
 		App.Tap("LineRadioButton");
 
-		App.WaitForElement("ShadowCheckBox");
-		App.Tap("ShadowCheckBox");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.Tap("StrokeThicknessEntry");
-		App.ClearText("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "4");
-
 		App.WaitForElement("StrokeColorRedRadioButton");
 		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
 
 		App.WaitForElement("X1Entry");
 		App.Tap("X1Entry");
@@ -116,54 +112,7 @@ public class ShapesFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.Shape)]
-	public void Shape_Line_DashArray()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.Tap("StrokeThicknessEntry");
-		App.ClearText("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "4");
-
-		App.WaitForElement("LineRadioButton");
-		App.Tap("LineRadioButton");
-
-		App.WaitForElement("StrokeDashArrayEntry");
-		App.Tap("StrokeDashArrayEntry");
-		App.ClearText("StrokeDashArrayEntry");
-		App.EnterText("StrokeDashArrayEntry", "5,2");
-
-		App.WaitForElement("X1Entry");
-		App.Tap("X1Entry");
-		App.ClearText("X1Entry");
-		App.EnterText("X1Entry", "50");
-
-		App.WaitForElement("Y1Entry");
-		App.Tap("Y1Entry");
-		App.ClearText("Y1Entry");
-		App.EnterText("Y1Entry", "50");
-
-		App.WaitForElement("X2Entry");
-		App.Tap("X2Entry");
-		App.ClearText("X2Entry");
-		App.EnterText("X2Entry", "200");
-
-		App.WaitForElement("Y2Entry");
-		App.Tap("Y2Entry");
-		App.ClearText("Y2Entry");
-		App.EnterText("Y2Entry", "150");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-
-		VerifyScreenshot();
-	}	
-	
-
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void Shape_Polygon_StrokeColorAndFill()
+	public void Polygon_FillColorWithStrokeColor_Shadow()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -171,15 +120,46 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("PolygonRadioButton");
 		App.Tap("PolygonRadioButton");
 
-		App.WaitForElement("StrokeThicknessEntry");
-		App.Tap("StrokeThicknessEntry");
-		App.ClearText("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "4");
+		App.WaitForElement("FillColorBlueRadioButton");
+		App.Tap("FillColorBlueRadioButton");
 
-		App.WaitForElement("StrokeDashArrayEntry");
-		App.Tap("StrokeDashArrayEntry");
-		App.ClearText("StrokeDashArrayEntry");
-		App.EnterText("StrokeDashArrayEntry", "5,2");
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void PolyLine_FillColorWithStrokeColor_Shadow()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void Path_FillColorWithStrokeColor_Shadow()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
 
 		App.WaitForElement("FillColorGreenRadioButton");
 		App.Tap("FillColorGreenRadioButton");
@@ -195,10 +175,70 @@ public class ShapesFeatureTests : UITest
 
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.Shape)]
-	public void Shape_PolyLine_StrokeColorAndFill()
+	public void Rectangle_DashArray_DashOffset_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.Tap("StrokeDashArrayEntry");
+		App.ClearText("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,2");
+
+		App.WaitForElement("StrokeDashOffsetEntry");
+		App.Tap("StrokeDashOffsetEntry");
+		App.ClearText("StrokeDashOffsetEntry");
+		App.EnterText("StrokeDashOffsetEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void Ellipse_DashArray_DashOffset_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("EllipseRadioButton");
+		App.Tap("EllipseRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.Tap("StrokeDashArrayEntry");
+		App.ClearText("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,2");
+
+		App.WaitForElement("StrokeDashOffsetEntry");
+		App.Tap("StrokeDashOffsetEntry");
+		App.ClearText("StrokeDashOffsetEntry");
+		App.EnterText("StrokeDashOffsetEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void PolyLine_DashArray_DashOffset_Thickness()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -206,14 +246,20 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("PolyLineRadioButton");
 		App.Tap("PolyLineRadioButton");
 
-		App.WaitForElement("FillColorBlueRadioButton");
-		App.Tap("FillColorBlueRadioButton");
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
 
-		App.WaitForElement("StrokeColorRedRadioButton");
-		App.Tap("StrokeColorRedRadioButton");
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.Tap("StrokeDashArrayEntry");
+		App.ClearText("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,2");
 
-		App.WaitForElement("ShadowCheckBox");
-		App.Tap("ShadowCheckBox");
+		App.WaitForElement("StrokeDashOffsetEntry");
+		App.Tap("StrokeDashOffsetEntry");
+		App.ClearText("StrokeDashOffsetEntry");
+		App.EnterText("StrokeDashOffsetEntry", "5");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -223,7 +269,38 @@ public class ShapesFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.Shape)]
-	public void Shape_Path_StrokeColorAndFill()
+	public void Polygon_DashArray_DashOffset_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PolygonRadioButton");
+		App.Tap("PolygonRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.Tap("StrokeDashArrayEntry");
+		App.ClearText("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,2");
+
+		App.WaitForElement("StrokeDashOffsetEntry");
+		App.Tap("StrokeDashOffsetEntry");
+		App.ClearText("StrokeDashOffsetEntry");
+		App.EnterText("StrokeDashOffsetEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void Path_DashArray_DashOffset_Thickness()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -231,14 +308,20 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("PathRadioButton");
 		App.Tap("PathRadioButton");
 
-		App.WaitForElement("FillColorBlueRadioButton");
-		App.Tap("FillColorBlueRadioButton");
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
 
-		App.WaitForElement("StrokeColorRedRadioButton");
-		App.Tap("StrokeColorRedRadioButton");
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.Tap("StrokeDashArrayEntry");
+		App.ClearText("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,2");
 
-		App.WaitForElement("ShadowCheckBox");
-		App.Tap("ShadowCheckBox");
+		App.WaitForElement("StrokeDashOffsetEntry");
+		App.Tap("StrokeDashOffsetEntry");
+		App.ClearText("StrokeDashOffsetEntry");
+		App.EnterText("StrokeDashOffsetEntry", "5");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -248,7 +331,58 @@ public class ShapesFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.Shape)]
-	public void Shape_Path_DashArray()
+	public void Line_DashArray_DashOffset_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("LineRadioButton");
+		App.Tap("LineRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.Tap("StrokeDashArrayEntry");
+		App.ClearText("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,2");
+
+		App.WaitForElement("StrokeDashOffsetEntry");
+		App.Tap("StrokeDashOffsetEntry");
+		App.ClearText("StrokeDashOffsetEntry");
+		App.EnterText("StrokeDashOffsetEntry", "5");
+
+		App.WaitForElement("X1Entry");
+		App.Tap("X1Entry");
+		App.ClearText("X1Entry");
+		App.EnterText("X1Entry", "50");
+
+		App.WaitForElement("Y1Entry");
+		App.Tap("Y1Entry");
+		App.ClearText("Y1Entry");
+		App.EnterText("Y1Entry", "50");
+
+		App.WaitForElement("X2Entry");
+		App.Tap("X2Entry");
+		App.ClearText("X2Entry");
+		App.EnterText("X2Entry", "200");
+
+		App.WaitForElement("Y2Entry");
+		App.Tap("Y2Entry");
+		App.ClearText("Y2Entry");
+		App.EnterText("Y2Entry", "150");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void Path_Points_Thickness()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -260,11 +394,6 @@ public class ShapesFeatureTests : UITest
 		App.Tap("StrokeThicknessEntry");
 		App.ClearText("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "4");
-
-		App.WaitForElement("StrokeDashArrayEntry");
-		App.Tap("StrokeDashArrayEntry");
-		App.ClearText("StrokeDashArrayEntry");
-		App.EnterText("StrokeDashArrayEntry", "5,2");
 
 		App.WaitForElement("PathDataEntry");
 		App.Tap("PathDataEntry");
@@ -276,9 +405,10 @@ public class ShapesFeatureTests : UITest
 
 		VerifyScreenshot();
 	}
+
 	[Test]
 	[Category(UITestCategories.Shape)]
-	public void Shape_PolyLine_DashArray()
+	public void PolyLine_Points_Thickness()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -290,11 +420,6 @@ public class ShapesFeatureTests : UITest
 		App.Tap("StrokeThicknessEntry");
 		App.ClearText("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "4");
-
-		App.WaitForElement("StrokeDashArrayEntry");
-		App.Tap("StrokeDashArrayEntry");
-		App.ClearText("StrokeDashArrayEntry");
-		App.EnterText("StrokeDashArrayEntry", "5,2");
 
 		App.WaitForElement("PolyLinePointsEntry");
 		App.Tap("PolyLinePointsEntry");
@@ -331,228 +456,6 @@ public class ShapesFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void Shape_Rectangle_StrokeDashArray()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.Tap("StrokeThicknessEntry");
-		App.ClearText("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "5");
-
-		App.WaitForElement("StrokeDashArrayEntry");
-		App.Tap("StrokeDashArrayEntry");
-		App.ClearText("StrokeDashArrayEntry");
-		App.EnterText("StrokeDashArrayEntry", "5,2");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-
-		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void Shape_Rectangle_DashOffset()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.Tap("StrokeThicknessEntry");
-		App.ClearText("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "5");
-
-		App.WaitForElement("StrokeDashArrayEntry");
-		App.Tap("StrokeDashArrayEntry");
-		App.ClearText("StrokeDashArrayEntry");
-		App.EnterText("StrokeDashArrayEntry", "5,2");
-
-		App.WaitForElement("StrokeDashOffsetEntry");
-		App.Tap("StrokeDashOffsetEntry");
-		App.ClearText("StrokeDashOffsetEntry");
-		App.EnterText("StrokeDashOffsetEntry", "5");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-
-		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void Shape_Ellipse_DashOffset()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-
-		App.WaitForElement("EllipseRadioButton");
-		App.Tap("EllipseRadioButton");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.Tap("StrokeThicknessEntry");
-		App.ClearText("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "5");
-
-		App.WaitForElement("StrokeDashArrayEntry");
-		App.Tap("StrokeDashArrayEntry");
-		App.ClearText("StrokeDashArrayEntry");
-		App.EnterText("StrokeDashArrayEntry", "5,2");
-
-		App.WaitForElement("StrokeDashOffsetEntry");
-		App.Tap("StrokeDashOffsetEntry");
-		App.ClearText("StrokeDashOffsetEntry");
-		App.EnterText("StrokeDashOffsetEntry", "5");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-
-		VerifyScreenshot();
-	}
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void Shape_Polygon_DashOffset()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		
-		App.WaitForElement("PolygonRadioButton");
-		App.Tap("PolygonRadioButton");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.Tap("StrokeThicknessEntry");
-		App.ClearText("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "5");
-
-		App.WaitForElement("StrokeDashArrayEntry");
-		App.Tap("StrokeDashArrayEntry");
-		App.ClearText("StrokeDashArrayEntry");
-		App.EnterText("StrokeDashArrayEntry", "5,2");
-
-		App.WaitForElement("StrokeDashOffsetEntry");
-		App.Tap("StrokeDashOffsetEntry");
-		App.ClearText("StrokeDashOffsetEntry");
-		App.EnterText("StrokeDashOffsetEntry", "5");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-
-		VerifyScreenshot();
-	}
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void Shape_Line_DashOffset()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-
-		App.WaitForElement("LineRadioButton");
-		App.Tap("LineRadioButton");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.Tap("StrokeThicknessEntry");
-		App.ClearText("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "5");
-
-		App.WaitForElement("StrokeDashArrayEntry");
-		App.Tap("StrokeDashArrayEntry");
-		App.ClearText("StrokeDashArrayEntry");
-		App.EnterText("StrokeDashArrayEntry", "5,2");
-
-		App.WaitForElement("StrokeDashOffsetEntry");
-		App.Tap("StrokeDashOffsetEntry");
-		App.ClearText("StrokeDashOffsetEntry");
-		App.EnterText("StrokeDashOffsetEntry", "5");
-
-		App.WaitForElement("X1Entry");
-		App.Tap("X1Entry");
-		App.ClearText("X1Entry");
-		App.EnterText("X1Entry", "50");
-
-		App.WaitForElement("Y1Entry");
-		App.Tap("Y1Entry");
-		App.ClearText("Y1Entry");
-		App.EnterText("Y1Entry", "50");
-
-		App.WaitForElement("X2Entry");
-		App.Tap("X2Entry");
-		App.ClearText("X2Entry");
-		App.EnterText("X2Entry", "200");
-
-		App.WaitForElement("Y2Entry");
-		App.Tap("Y2Entry");
-		App.ClearText("Y2Entry");
-		App.EnterText("Y2Entry", "150");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-
-		VerifyScreenshot();
-	}
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void Shape_Path_DashOffset()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-
-		App.WaitForElement("PathRadioButton");
-		App.Tap("PathRadioButton");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.Tap("StrokeThicknessEntry");
-		App.ClearText("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "5");
-
-		App.WaitForElement("StrokeDashArrayEntry");
-		App.Tap("StrokeDashArrayEntry");
-		App.ClearText("StrokeDashArrayEntry");
-		App.EnterText("StrokeDashArrayEntry", "5,2");
-
-		App.WaitForElement("StrokeDashOffsetEntry");
-		App.Tap("StrokeDashOffsetEntry");
-		App.ClearText("StrokeDashOffsetEntry");
-		App.EnterText("StrokeDashOffsetEntry", "5");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-
-		VerifyScreenshot();
-	}
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void Shape_PolyLine_DashOffset()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-
-		App.WaitForElement("PolyLineRadioButton");
-		App.Tap("PolyLineRadioButton");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.Tap("StrokeThicknessEntry");
-		App.ClearText("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "5");
-
-		App.WaitForElement("StrokeDashArrayEntry");
-		App.Tap("StrokeDashArrayEntry");
-		App.ClearText("StrokeDashArrayEntry");
-		App.EnterText("StrokeDashArrayEntry", "5,2");
-
-		App.WaitForElement("StrokeDashOffsetEntry");
-		App.Tap("StrokeDashOffsetEntry");
-		App.ClearText("StrokeDashOffsetEntry");
-		App.EnterText("StrokeDashOffsetEntry", "5");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-
-		VerifyScreenshot();
-	}
-	
 
 	[Test]
 	[Category(UITestCategories.Shape)]
@@ -604,4 +507,353 @@ public class ShapesFeatureTests : UITest
 
 		VerifyScreenshot();
 	}
+
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void Rectangle_StrokeColor_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void Ellipse_StrokeColor_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("EllipseRadioButton");
+		App.Tap("EllipseRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("FillColorBlueRadioButton");
+		App.Tap("FillColorBlueRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void Line_StrokeColor_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("LineRadioButton");
+		App.Tap("LineRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("X1Entry");
+		App.Tap("X1Entry");
+		App.ClearText("X1Entry");
+		App.EnterText("X1Entry", "50");
+
+		App.WaitForElement("Y1Entry");
+		App.Tap("Y1Entry");
+		App.ClearText("Y1Entry");
+		App.EnterText("Y1Entry", "50");
+
+		App.WaitForElement("X2Entry");
+		App.Tap("X2Entry");
+		App.ClearText("X2Entry");
+		App.EnterText("X2Entry", "200");
+
+		App.WaitForElement("Y2Entry");
+		App.Tap("Y2Entry");
+		App.ClearText("Y2Entry");
+		App.EnterText("Y2Entry", "150");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void Polygon_StrokeColor_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PolygonRadioButton");
+		App.Tap("PolygonRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("FillColorGreenRadioButton");
+		App.Tap("FillColorGreenRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void PolyLine_StrokeColor_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PolyLineRadioButton");
+		App.Tap("PolyLineRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void Path_StrokeColor_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PathRadioButton");
+		App.Tap("PathRadioButton");
+
+		App.WaitForElement("FillColorGreenRadioButton");
+		App.Tap("FillColorGreenRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void Rectangle_StrokeColor_DashArray_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.Tap("StrokeDashArrayEntry");
+		App.ClearText("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,2");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void Ellipse_StrokeColor_DashArray_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("EllipseRadioButton");
+		App.Tap("EllipseRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.Tap("StrokeDashArrayEntry");
+		App.ClearText("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,2");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void Line_StrokeColor_DashArray_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("LineRadioButton");
+		App.Tap("LineRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.Tap("StrokeDashArrayEntry");
+		App.ClearText("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,2");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("X1Entry");
+		App.Tap("X1Entry");
+		App.ClearText("X1Entry");
+		App.EnterText("X1Entry", "50");
+
+		App.WaitForElement("Y1Entry");
+		App.Tap("Y1Entry");
+		App.ClearText("Y1Entry");
+		App.EnterText("Y1Entry", "50");
+
+		App.WaitForElement("X2Entry");
+		App.Tap("X2Entry");
+		App.ClearText("X2Entry");
+		App.EnterText("X2Entry", "200");
+
+		App.WaitForElement("Y2Entry");
+		App.Tap("Y2Entry");
+		App.ClearText("Y2Entry");
+		App.EnterText("Y2Entry", "150");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void Polygon_StrokeColor_DashArray_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PolygonRadioButton");
+		App.Tap("PolygonRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.Tap("StrokeDashArrayEntry");
+		App.ClearText("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,2");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void PolyLine_StrokeColor_DashArray_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		
+		App.WaitForElement("PolyLineRadioButton");
+		App.Tap("PolyLineRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.Tap("StrokeDashArrayEntry");
+		App.ClearText("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,2");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+	[Test]
+	[Category(UITestCategories.Shape)]
+	public void Path_StrokeColor_DashArray_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PathRadioButton");
+		App.Tap("PathRadioButton");
+		
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.Tap("StrokeDashArrayEntry");
+		App.ClearText("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,2");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
 }
