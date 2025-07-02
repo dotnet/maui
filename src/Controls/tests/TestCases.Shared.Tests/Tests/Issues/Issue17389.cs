@@ -21,7 +21,6 @@ public class Issue17389 : _IssuesUITest
         string[] layouts = new[]
         {
              "RedGrid",
-             "GreenGrid",
              "BlueBorder",
              "PurpleContent"
         };
@@ -31,7 +30,7 @@ public class Issue17389 : _IssuesUITest
             App.Tap(layout);
         }
 
-        App.WaitForElement("Tap count: 4");
+        App.WaitForElement("Tap count: 3");
         App.Click("ToggleInputTransparentButton");
 
         foreach (var layout in layouts)

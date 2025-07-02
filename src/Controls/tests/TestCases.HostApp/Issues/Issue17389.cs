@@ -4,12 +4,10 @@ namespace Maui.Controls.Sample.Issues;
 public class Issue17389 : TestContentPage
 {
     Grid redGrid;
-    Grid greenGrid;
     Border blueBorder;
     ContentView purpleContent;
     Label tapCountLabel;
     Label redGridLabel;
-    Label greenGridLabel;
     Label blueBorderLabel;
     Label purpleContentLabel;
     int tapCount;
@@ -18,8 +16,7 @@ public class Issue17389 : TestContentPage
     {
         tapCountLabel = new Label { Text = "Tap count: 0", HorizontalOptions = LayoutOptions.Center };
 
-        redGrid = CreateBackgroundTestGrid(Colors.Red, false, "RedGrid", out redGridLabel);
-        greenGrid = CreateBackgroundTestGrid(Colors.Green, false, "GreenGrid", out greenGridLabel);
+        redGrid = CreateBackgroundTestGrid(Colors.Red, false, "RedGrid");
 
         blueBorderLabel = new Label { Text = "Blue Border (InputTransparent=False)", HorizontalOptions = LayoutOptions.Center, AutomationId = "BlueBorder" };
         blueBorder = new Border
@@ -76,7 +73,6 @@ public class Issue17389 : TestContentPage
                         AutomationId = "ToggleBackgroundColorsButton"
                     },
                     redGrid,
-                    greenGrid,
                     blueBorder,
                     purpleContent
                 }
@@ -84,15 +80,15 @@ public class Issue17389 : TestContentPage
         };
     }
 
-    Grid CreateBackgroundTestGrid(Color bgColor, bool inputTransparent, string labelText, out Label label)
+    Grid CreateBackgroundTestGrid(Color bgColor, bool inputTransparent, string labelText)
     {
-        label = new Label { Text = $"{labelText} (InputTransparent=False)", HorizontalOptions = LayoutOptions.Center, AutomationId = $"{labelText}" };
+		redGridLabel = new Label { Text = $"{labelText} (InputTransparent=False)", HorizontalOptions = LayoutOptions.Center, AutomationId = $"{labelText}" };
 
         Grid childGrid = new Grid
         {
             BackgroundColor = bgColor,
             InputTransparent = inputTransparent,
-            Children = { label }
+            Children = { redGridLabel }
         };
 
         AddTapGesture(childGrid);
@@ -126,12 +122,10 @@ public class Issue17389 : TestContentPage
     {
         tapCountLabel.Text = $"Tap count: {0}";
         redGrid.InputTransparent = !redGrid.InputTransparent;
-        greenGrid.InputTransparent = !greenGrid.InputTransparent;
         blueBorder.InputTransparent = !blueBorder.InputTransparent;
         purpleContent.InputTransparent = !purpleContent.InputTransparent;
 
         redGridLabel.Text = $"Red Grid (InputTransparent={redGrid.InputTransparent})";
-        greenGridLabel.Text = $"Green Grid (InputTransparent={greenGrid.InputTransparent})";
         blueBorderLabel.Text = $"Blue Border (InputTransparent={blueBorder.InputTransparent})";
         purpleContentLabel.Text = $"Purple Content (InputTransparent={purpleContent.InputTransparent})";
     }
@@ -139,7 +133,6 @@ public class Issue17389 : TestContentPage
     void ToggleBackgroundColors()
     {
         redGrid.BackgroundColor = Colors.Orange;
-        greenGrid.BackgroundColor = Colors.LightGreen;
         blueBorder.BackgroundColor = Colors.LightBlue;
         purpleContent.BackgroundColor = Colors.Pink;
     }
