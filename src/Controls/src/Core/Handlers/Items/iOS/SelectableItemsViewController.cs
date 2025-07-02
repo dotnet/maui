@@ -57,6 +57,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Ensure the selected index is updated after the collection view's items generation is completed
 				CollectionView.PerformBatchUpdates(null, _ =>
 				{
+					// Ensure ItemsSource hasn't been disposed
+					if (ItemsSource is EmptySource)
+					{
+						return;
+					}
+
 					// Exit if the ItemsSource reference no longer matches the one captured at invocation.
 					if (!ReferenceEquals(ItemsView.ItemsSource, originalSource))
 					{
