@@ -27,12 +27,25 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
 		{
-			using (var renderer = new UIGraphicsImageRenderer(size))
+			var format = new UIGraphicsImageRendererFormat
+			{
+				Opaque = false,
+				Scale = target.CurrentScale,
+			};
+
+			using (var renderer = new UIGraphicsImageRenderer(size, format))
 			{
 				var resultImage = renderer.CreateImage((UIGraphicsImageRendererContext imageContext) =>
 				{
 					var cgcontext = imageContext.CGContext;
+
+					// The image is drawn upside down because Core Graphics uses a bottom-left origin, 
+					// whereas UIKit uses a top-left origin. Adjust the coordinate system to align with UIKit's top-left origin.
+					cgcontext.TranslateCTM(0, (nfloat)size.Height);
+					cgcontext.ScaleCTM(1, -1);
 					cgcontext.DrawImage(new CGRect(CGPoint.Empty, size), target.CGImage);
+					cgcontext.ScaleCTM(1, -1);
+					cgcontext.TranslateCTM(0, -(nfloat)size.Height);
 
 					if (disposeOriginal)
 					{
