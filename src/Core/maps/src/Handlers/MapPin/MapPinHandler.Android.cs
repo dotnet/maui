@@ -19,6 +19,13 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		protected override MarkerOptions CreatePlatformElement() => new MarkerOptions();
 
+		protected override void DisconnectHandler(MarkerOptions platformView)
+		{
+			// Clean up the weak reference to avoid potential memory leaks
+			_markerWeakReference = null;
+			base.DisconnectHandler(platformView);
+		}
+
 		public static void MapLocation(IMapPinHandler handler, IMapPin mapPin)
 		{
 			if (mapPin.Location is null)
