@@ -1,4 +1,3 @@
-using Microsoft.Maui.Controls.Shapes;
 namespace Maui.Controls.Sample;
 
 public class ShapesControlPage : NavigationPage
@@ -18,10 +17,10 @@ public partial class ShapesControlMainPage : ContentPage
 	public ShapesControlMainPage(ShapesViewModel viewModel)
 	{
 		_viewModel = viewModel;
-		InitializeComponent(); 
+		InitializeComponent();
 		BindingContext = _viewModel;
 	}
-	
+
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
 		BindingContext = _viewModel = new ShapesViewModel();

@@ -1,7 +1,3 @@
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample;
 
 public partial class ShapesOptionsPage : ContentPage
@@ -12,7 +8,7 @@ public partial class ShapesOptionsPage : ContentPage
 		InitializeComponent();
 		_viewModel = viewModel;
 		BindingContext = _viewModel;
-		
+
 		// Set initial property section visibility
 		UpdatePropertySectionVisibility(_viewModel.SelectedShapeType);
 	}
@@ -60,7 +56,7 @@ public partial class ShapesOptionsPage : ContentPage
 				break;
 		}
 	}
-	
+
 	private void OnFillColorChanged(object sender, CheckedChangedEventArgs e)
 	{
 		if (e.Value && sender is RadioButton radioButton && radioButton.Content is string colorName)
@@ -87,7 +83,7 @@ public partial class ShapesOptionsPage : ContentPage
 			_viewModel.StrokeColor = color;
 		}
 	}
-	
+
 	private Microsoft.Maui.Graphics.Color GetColorByName(string colorName)
 	{
 		return colorName.ToLower(System.Globalization.CultureInfo.InvariantCulture) switch
