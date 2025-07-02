@@ -59,6 +59,8 @@ steps:
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+        AUTH_TOKEN_GITHUB_COM: $(provisionator--github--pat)
+
   - script: |
       echo Remove old Xamarin Settings
       rm -f ~/Library/Preferences/Xamarin/Settings.plist
@@ -96,6 +98,7 @@ steps:
       github_token: ${{ parameters.gitHubToken }}
     env:
       PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+      AUTH_TOKEN_GITHUB_COM: $(provisionator--github--pat)
       AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
 
 ##################################################
