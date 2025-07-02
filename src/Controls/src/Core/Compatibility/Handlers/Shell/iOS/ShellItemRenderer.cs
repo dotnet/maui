@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (r.ShellSection == _currentSection
 					&& viewController is ShellSectionRenderer sectionRenderer)
 				{
-					sectionRenderer.popRequested = true;
+					sectionRenderer.PopRequested = true;
 				}
 
 				return accept;
