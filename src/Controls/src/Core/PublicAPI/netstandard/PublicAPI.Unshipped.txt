@@ -1,7 +1,21 @@
 #nullable enable
+Microsoft.Maui.Controls.SafeAreaGroup
+Microsoft.Maui.Controls.SafeAreaGroup.All = 2147483647 -> Microsoft.Maui.Controls.SafeAreaGroup
+Microsoft.Maui.Controls.SafeAreaGroup.None = 0 -> Microsoft.Maui.Controls.SafeAreaGroup
+Microsoft.Maui.Controls.SafeAreaGroupArrayTypeConverter
+Microsoft.Maui.Controls.SafeAreaGroupArrayTypeConverter.SafeAreaGroupArrayTypeConverter() -> void
+Microsoft.Maui.Controls.SafeAreaGuides
+override Microsoft.Maui.Controls.SafeAreaGroupArrayTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.SafeAreaGroupArrayTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.SafeAreaGroupArrayTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.SafeAreaGroupArrayTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
 override Microsoft.Maui.Controls.ScrollView.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void
+static Microsoft.Maui.Controls.SafeAreaGuides.GetIgnoreSafeArea(Microsoft.Maui.Controls.BindableObject! bindable) -> Microsoft.Maui.Controls.SafeAreaGroup[]!
+static Microsoft.Maui.Controls.SafeAreaGuides.GetIgnoreSafeAreaForEdge(Microsoft.Maui.Controls.BindableObject! bindable, int edge) -> Microsoft.Maui.Controls.SafeAreaGroup
+static readonly Microsoft.Maui.Controls.SafeAreaGuides.IgnoreSafeAreaProperty -> Microsoft.Maui.Controls.BindableProperty!
+static Microsoft.Maui.Controls.SafeAreaGuides.SetIgnoreSafeArea(Microsoft.Maui.Controls.BindableObject! bindable, Microsoft.Maui.Controls.SafeAreaGroup[]! value) -> void
 virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDeclarer, TPropertyType>.Invoke(TDeclarer bindable) -> TPropertyType
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue) -> void
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate<TPropertyType>.Invoke(Microsoft.Maui.Controls.BindableObject bindable, TPropertyType oldValue, TPropertyType newValue) -> void
@@ -15,11 +29,3 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 ~virtual Microsoft.Maui.Controls.CollectionSynchronizationCallback.Invoke(System.Collections.IEnumerable collection, object context, System.Action accessMethod, bool writeAccess) -> void
 ~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
-Microsoft.Maui.Controls.SafeAreaGroup
-Microsoft.Maui.Controls.SafeAreaGroup.All = 1 -> Microsoft.Maui.Controls.SafeAreaGroup
-Microsoft.Maui.Controls.SafeAreaGroup.None = 0 -> Microsoft.Maui.Controls.SafeAreaGroup
-Microsoft.Maui.Controls.SafeAreaGuides
-~static Microsoft.Maui.Controls.SafeAreaGuides.GetIgnoreSafeArea(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.SafeAreaGroup[]
-~static Microsoft.Maui.Controls.SafeAreaGuides.GetIgnoreSafeAreaForEdge(Microsoft.Maui.Controls.BindableObject bindable, int edge) -> Microsoft.Maui.Controls.SafeAreaGroup
-~static readonly Microsoft.Maui.Controls.SafeAreaGuides.IgnoreSafeAreaProperty -> Microsoft.Maui.Controls.BindableProperty
-~static Microsoft.Maui.Controls.SafeAreaGuides.SetIgnoreSafeArea(Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Controls.SafeAreaGroup[] value) -> void
