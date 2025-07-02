@@ -6,6 +6,7 @@ using System.Threading;
 
 namespace Microsoft.Maui.Controls.Internals
 {
+	[Obsolete("IPerformanceProvider is obsolete as of .NET MAUI and will be removed in a future version.", error: true)]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IPerformanceProvider
 	{
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Controls.Internals
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Performance.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Performance']/Docs/*" />
+	[Obsolete("Performance is obsolete as of .NET MAUI and will be removed in a future version.", error: true)]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class Performance
 	{

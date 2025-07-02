@@ -11,6 +11,7 @@ using Object = Java.Lang.Object;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
+#pragma warning disable CS0619 // Type or member is obsolete
 	public class CellRenderer : ElementHandler<Cell, AView>, IRegisterable
 	{
 		static readonly PropertyChangedEventHandler PropertyChangedHandler = OnGlobalCellPropertyChanged;

@@ -1,4 +1,5 @@
 #nullable disable
+#pragma warning disable CS0619 // Type or member is obsolete
 using System;
 using System.Linq;
 using Android.Content;
