@@ -20,7 +20,7 @@ parameters:
   provisionatorXCodePath: $(provisionator.xcode)
   provisionatorChannel: 'latest'
   provisionatorExtraArguments: $(provisionator.extraArguments)
-  gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+  gitHubToken: $(provisionator--github--pat)
   certPass: $(pass--components-mac-ios-certificate-p12)
   # Enabling internal runtimes / feeds
   federatedServiceConnection: 'dotnetbuilds-internal-read'
