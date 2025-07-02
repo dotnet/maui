@@ -85,13 +85,12 @@ namespace Microsoft.Maui.Media
 				if (photo)
 				{
 					captureResult = await CapturePhotoAsync(captureIntent);
-					
-					// Apply rotation if needed for photos
-					if (captureResult is not null && ExifImageRotator.IsRotationNeeded(options))
-					{
-						using var inputStream = File.OpenRead(captureResult);
-						var fileName = System.IO.Path.GetFileName(captureResult);
-						using var rotatedStream = await ExifImageRotator.RotateImageAsync(inputStream, fileName);
+							// Apply rotation if needed for photos
+				if (captureResult is not null && ImageProcessor.IsRotationNeeded(options))
+				{
+					using var inputStream = File.OpenRead(captureResult);
+					var fileName = System.IO.Path.GetFileName(captureResult);
+					using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
 						
 						var rotatedPath = System.IO.Path.Combine(
 							System.IO.Path.GetDirectoryName(captureResult),
@@ -161,11 +160,11 @@ namespace Microsoft.Maui.Media
 					if (photo)
 					{
 						// Apply rotation if needed
-						if (ExifImageRotator.IsRotationNeeded(options))
+						if (ImageProcessor.IsRotationNeeded(options))
 						{
 							using var inputStream = File.OpenRead(path);
 							var fileName = System.IO.Path.GetFileName(path);
-							using var rotatedStream = await ExifImageRotator.RotateImageAsync(inputStream, fileName);
+							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
 							
 							var rotatedPath = System.IO.Path.Combine(
 								System.IO.Path.GetDirectoryName(path),
@@ -215,11 +214,11 @@ namespace Microsoft.Maui.Media
 			if (photo)
 			{
 				// Apply rotation if needed
-				if (ExifImageRotator.IsRotationNeeded(options))
+				if (ImageProcessor.IsRotationNeeded(options))
 				{
 					using var inputStream = File.OpenRead(path);
 					var fileName = System.IO.Path.GetFileName(path);
-					using var rotatedStream = await ExifImageRotator.RotateImageAsync(inputStream, fileName);
+					using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
 					
 					var rotatedPath = System.IO.Path.Combine(
 						System.IO.Path.GetDirectoryName(path),
@@ -285,11 +284,11 @@ namespace Microsoft.Maui.Media
 					if (photo)
 					{
 						// Apply rotation if needed
-						if (ExifImageRotator.IsRotationNeeded(options))
+						if (ImageProcessor.IsRotationNeeded(options))
 						{
 							using var inputStream = File.OpenRead(path);
 							var fileName = System.IO.Path.GetFileName(path);
-							using var rotatedStream = await ExifImageRotator.RotateImageAsync(inputStream, fileName);
+							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
 							
 							var rotatedPath = System.IO.Path.Combine(
 								System.IO.Path.GetDirectoryName(path),
@@ -362,7 +361,8 @@ namespace Microsoft.Maui.Media
 					options?.MaximumWidth,
 					options?.MaximumHeight,
 					options?.CompressionQuality ?? 100,
-					inputFileName);
+					inputFileName,
+					options?.RotateImage ?? false);
 
 				if (processedStream != null)
 				{
@@ -481,11 +481,11 @@ namespace Microsoft.Maui.Media
 						string processedPath = path;
 						
 						// Apply rotation if needed
-						if (ExifImageRotator.IsRotationNeeded(options))
+						if (ImageProcessor.IsRotationNeeded(options))
 						{
 							using var inputStream = File.OpenRead(processedPath);
 							var fileName = System.IO.Path.GetFileName(processedPath);
-							using var rotatedStream = await ExifImageRotator.RotateImageAsync(inputStream, fileName);
+							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
 							
 							var rotatedPath = System.IO.Path.Combine(
 								System.IO.Path.GetDirectoryName(processedPath),
