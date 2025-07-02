@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls
 			return new StackLayoutManager(this);
 		}
 
-		internal override void ComputeConstraintForView(View view)
+		protected override void ComputeConstraintForView(View view)
 		{
 			if (Orientation == StackOrientation.Horizontal)
 			{

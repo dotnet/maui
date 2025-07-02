@@ -357,7 +357,7 @@ namespace Microsoft.Maui.Controls
 			UpdateRowColumnBindingContexts();
 		}
 
-		internal override void ComputeConstraintForView(View view)
+		protected override void ComputeConstraintForView(View view)
 		{
 			var result = LayoutConstraint.None;
 

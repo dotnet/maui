@@ -4,7 +4,7 @@
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <AssemblyName>Microsoft.Maui.Controls.Core.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
-    <NoWarn>0114;0672;0108;0067;0168;0169;0219;0612;0618;1998</NoWarn>
+    <NoWarn>0114;0672;0108;0067;0168;0169;0219;0612;0618;1998;RS0050;RS0026;RS0036;RS0024;RS0034</NoWarn>
     <RootNamespace>Microsoft.Maui.Controls.Core.UnitTests</RootNamespace>
   </PropertyGroup>
 
