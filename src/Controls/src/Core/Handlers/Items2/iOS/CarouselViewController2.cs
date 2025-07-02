@@ -294,8 +294,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		int GetPositionWhenAddingItems(int carouselPosition, int currentItemPosition)
 		{
 			// Early return for invalid positions - maintain current carousel position
-			if (currentItemPosition == -1)
+			if (currentItemPosition < 0)
+			{
 				return carouselPosition;
+			}
 
 			// Updates position to match current item when inserting items, correctly tracking previous position values.
 			var shouldUpdatePosition = currentItemPosition != carouselPosition && ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView;
