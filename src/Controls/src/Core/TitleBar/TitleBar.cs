@@ -253,7 +253,9 @@ namespace Microsoft.Maui.Controls
 		{
 			PassthroughElements = new List<IView>();
 			PropertyChanged += TitleBar_PropertyChanged;
+#if MACCATALYST
 			SizeChanged += OnSizeChanged;
+#endif
 
 			if (ControlTemplate is null)
 			{
