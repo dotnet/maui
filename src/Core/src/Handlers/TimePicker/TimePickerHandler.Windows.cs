@@ -1,5 +1,4 @@
 #nullable enable
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
@@ -11,13 +10,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(TimePicker platformView)
 		{
-			platformView.Loaded += OnControlLoaded;
 			platformView.TimeChanged += OnControlTimeChanged;
 		}
 
 		protected override void DisconnectHandler(TimePicker platformView)
 		{
-			platformView.Loaded -= OnControlLoaded;
 			platformView.TimeChanged -= OnControlTimeChanged;
 		}
 
@@ -43,7 +40,8 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdateFont(timePicker, fontManager);
 		}
 
-		public static void MapFlowDirection(ITimePickerHandler handler, ITimePicker timePicker)
+		// Make it public in .NET 10.
+		internal static void MapFlowDirection(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			if (handler.PlatformView is not null)
 			{
@@ -61,11 +59,6 @@ namespace Microsoft.Maui.Handlers
 		internal static void MapBackground(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateBackground(timePicker);
-		}
-
-		void OnControlLoaded(object sender, RoutedEventArgs e)
-		{
-			PlatformView.UpdateTextAlignment(VirtualView);
 		}
 
 		void OnControlTimeChanged(object? sender, TimePickerValueChangedEventArgs e)

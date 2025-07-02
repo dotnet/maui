@@ -51,11 +51,22 @@ namespace Microsoft.Maui.Platform
 		// Make it public in .NET 10.
 		internal static void UpdateTextAlignment(this TimePicker platformTimePicker, ITimePicker timePicker)
 		{
+			if (platformTimePicker.IsLoaded)
+			{
+				ApplyTextAlignment(platformTimePicker, timePicker);
+			}
+			else
+			{
+				platformTimePicker.OnLoaded(() => ApplyTextAlignment(platformTimePicker, timePicker));
+			}
+		}
+
+		static void ApplyTextAlignment(TimePicker platformTimePicker, ITimePicker timePicker)
+		{
 			var flowDirection = timePicker.FlowDirection;
 			var textAlignment = flowDirection == FlowDirection.RightToLeft
 				? UI.Xaml.TextAlignment.Right
 				: UI.Xaml.TextAlignment.Left;
-
 
 			SetTextAlignment(platformTimePicker, "HourTextBlock", textAlignment);
 			SetTextAlignment(platformTimePicker, "MinuteTextBlock", textAlignment);
