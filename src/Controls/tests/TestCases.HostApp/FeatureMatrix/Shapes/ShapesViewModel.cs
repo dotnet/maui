@@ -24,6 +24,56 @@ namespace Maui.Controls.Sample
         private double _strokeThickness = 1.0;
         private double _width = 300;
         private double _height = 150;
+        private FlowDirection _flowDirection = FlowDirection.LeftToRight;
+        private bool _hasShadow = false;
+    private Shadow _boxShadow = null;
+
+    public bool HasShadow
+    {
+        get => _hasShadow;
+        set
+        {
+            if (_hasShadow != value)
+            {
+                _hasShadow = value;
+                BoxShadow = value
+                    ? new Shadow
+                    {
+                        Radius = 10,
+                        Opacity = 1.0f,
+                        Brush = Colors.Black.AsPaint(),
+                        Offset = new Point(5, 5)
+                    }
+                    : null;
+                OnPropertyChanged(nameof(HasShadow));
+            }
+        }
+    }
+
+    public Shadow BoxShadow
+    {
+        get => _boxShadow;
+        private set
+        {
+            if (_boxShadow != value)
+            {
+                _boxShadow = value;
+                OnPropertyChanged(nameof(BoxShadow));
+            }
+        }
+    }
+     public FlowDirection FlowDirection
+    {
+        get => _flowDirection;
+        set
+        {
+            if (_flowDirection != value)
+            {
+                _flowDirection = value;
+                OnPropertyChanged();
+            }
+        }
+    }
 
         public ShapeType SelectedShapeType
         {
