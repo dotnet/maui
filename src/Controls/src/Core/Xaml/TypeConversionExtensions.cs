@@ -100,28 +100,6 @@ namespace Microsoft.Maui.Controls.Xaml
 			return converter is not null;
 		}
 
-		internal static bool TryGetTypeConverter(this Type type, [NotNullWhen(true)] out TypeConverter converter)
-		{
-			if (!s_converterCache.TryGetValue(type, out converter))
-			{
-				// Check if there's a TypeConverterAttribute on the type
-				if (type.GetCustomAttribute<TypeConverterAttribute>()?.GetConverterType() is Type converterType)
-				{
-					converter = (TypeConverter)Activator.CreateInstance(converterType);
-				}
-				// Check if the type is in BindableProperty.KnownTypeConverters
-				else if (BindableProperty.KnownTypeConverters.TryGetValue(type, out var knownConverter))
-				{
-					converter = knownConverter;
-				}
-
-				// cache the result, even if it is null
-				s_converterCache[type] = converter;
-			}
-
-			return converter is not null;
-		}
-
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		static Type GetConverterType(this TypeConverterAttribute attribute)
 			=> Type.GetType(attribute.ConverterTypeName);
