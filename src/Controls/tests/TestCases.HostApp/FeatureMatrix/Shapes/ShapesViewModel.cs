@@ -1,31 +1,29 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Controls;
 
-namespace Maui.Controls.Sample
+namespace Maui.Controls.Sample;
+
+public enum ShapeType
 {
-    public enum ShapeType
-    {
-        Line,
-        Rectangle,
-        Polygon,
-        Polyline,
-        Ellipse,
-        Path
-    }
-    public class ShapesViewModel : INotifyPropertyChanged
-    {
-        private ShapeType _selectedShapeType = ShapeType.Rectangle;
-        private Color _fillColor = null;
-        private bool _hasFillColor = false;
-        private Color _strokeColor = Colors.Black;
-        private double _strokeThickness = 1.0;
-        private double _width = 300;
-        private double _height = 150;
-        private FlowDirection _flowDirection = FlowDirection.LeftToRight;
-        private bool _hasShadow = false;
+    Line,
+    Rectangle,
+    Polygon,
+    Polyline,
+    Ellipse,
+    Path
+}
+public class ShapesViewModel : INotifyPropertyChanged
+{
+    private ShapeType _selectedShapeType = ShapeType.Rectangle;
+    private Color _fillColor = null;
+    private bool _hasFillColor = false;
+    private Color _strokeColor = Colors.Black;
+    private double _strokeThickness = 1.0;
+    private double _width = 300;
+    private double _height = 150;
+    private FlowDirection _flowDirection = FlowDirection.LeftToRight;
+    private bool _hasShadow = false;
     private Shadow _boxShadow = null;
 
     public bool HasShadow
@@ -62,7 +60,7 @@ namespace Maui.Controls.Sample
             }
         }
     }
-     public FlowDirection FlowDirection
+    public FlowDirection FlowDirection
     {
         get => _flowDirection;
         set
@@ -75,260 +73,259 @@ namespace Maui.Controls.Sample
         }
     }
 
-        public ShapeType SelectedShapeType
-        {
-            get => _selectedShapeType;
-            set => SetProperty(ref _selectedShapeType, value);
-        }
+    public ShapeType SelectedShapeType
+    {
+        get => _selectedShapeType;
+        set => SetProperty(ref _selectedShapeType, value);
+    }
 
-        public Color FillColor
-        {
-            get => _fillColor;
-            set => SetProperty(ref _fillColor, value);
-        }
+    public Color FillColor
+    {
+        get => _fillColor;
+        set => SetProperty(ref _fillColor, value);
+    }
 
-        public bool HasFillColor
+    public bool HasFillColor
+    {
+        get => _hasFillColor;
+        set
         {
-            get => _hasFillColor;
-            set
+            if (SetProperty(ref _hasFillColor, value))
             {
-                if (SetProperty(ref _hasFillColor, value))
+                if (!value)
                 {
-                    if (!value)
+                    _fillColor = null;
+                    OnPropertyChanged(nameof(FillColor));
+                }
+            }
+        }
+    }
+
+    public Color StrokeColor
+    {
+        get => _strokeColor;
+        set => SetProperty(ref _strokeColor, value);
+    }
+
+    public double StrokeThickness
+    {
+        get => _strokeThickness;
+        set => SetProperty(ref _strokeThickness, value);
+    }
+
+    public double Width
+    {
+        get => _width;
+        set => SetProperty(ref _width, value);
+    }
+
+    public double Height
+    {
+        get => _height;
+        set => SetProperty(ref _height, value);
+    }
+
+    private string _strokeDashArray = "0,0";
+    public string StrokeDashArray
+    {
+        get => _strokeDashArray;
+        set
+        {
+            if (SetProperty(ref _strokeDashArray, value))
+            {
+                OnPropertyChanged(nameof(StrokeDashCollection));
+            }
+        }
+    }
+
+    private double _strokeDashOffset = 0;
+    public double StrokeDashOffset
+    {
+        get => _strokeDashOffset;
+        set => SetProperty(ref _strokeDashOffset, value);
+    }
+
+    private double _radiusX = 0;
+    public double RadiusX
+    {
+        get => _radiusX;
+        set => SetProperty(ref _radiusX, value);
+    }
+
+    private double _radiusY = 0;
+    public double RadiusY
+    {
+        get => _radiusY;
+        set => SetProperty(ref _radiusY, value);
+    }
+
+    private double _x1 = 0;
+    public double X1
+    {
+        get => _x1;
+        set => SetProperty(ref _x1, value);
+    }
+
+    private double _y1 = 0;
+    public double Y1
+    {
+        get => _y1;
+        set => SetProperty(ref _y1, value);
+    }
+
+    private double _x2 = 0;
+    public double X2
+    {
+        get => _x2;
+        set => SetProperty(ref _x2, value);
+    }
+
+    private double _y2 = 0;
+    public double Y2
+    {
+        get => _y2;
+        set => SetProperty(ref _y2, value);
+    }
+
+    // Polygon/Polyline Points
+    private string _points = "100,50 150,100 100,150 50,100";
+    public string Points
+    {
+        get => _points;
+        set
+        {
+            if (SetProperty(ref _points, value))
+            {
+                OnPropertyChanged(nameof(PolygonPointCollection));
+            }
+        }
+    }
+
+    // Separate points for Polyline (zigzag pattern)
+    private string _polylinePoints = "50,100 100,50 150,100 200,50 250,100";
+    public string PolylinePoints
+    {
+        get => _polylinePoints;
+        set
+        {
+            if (SetProperty(ref _polylinePoints, value))
+            {
+                OnPropertyChanged(nameof(PolylinePointCollection));
+            }
+        }
+    }
+
+    // Path Data
+    private string _pathData = "M 10,100 L 100,100 100,50Z";
+    public string PathData
+    {
+        get => _pathData;
+        set
+        {
+            if (SetProperty(ref _pathData, value))
+            {
+                OnPropertyChanged(nameof(PathGeometry));
+            }
+        }
+    }
+
+    // Computed properties for proper data types
+    public PointCollection PolygonPointCollection
+    {
+        get
+        {
+            var points = new PointCollection();
+            if (!string.IsNullOrWhiteSpace(_points))
+            {
+                var pointPairs = _points.Split(' ');
+                foreach (var pointPair in pointPairs)
+                {
+                    var coords = pointPair.Split(',');
+                    if (coords.Length == 2 &&
+                        double.TryParse(coords[0], out double x) &&
+                        double.TryParse(coords[1], out double y))
                     {
-                        _fillColor = null;
-                        OnPropertyChanged(nameof(FillColor));
+                        points.Add(new Point(x, y));
                     }
                 }
             }
+            return points;
         }
+    }
 
-        public Color StrokeColor
+    public PointCollection PolylinePointCollection
+    {
+        get
         {
-            get => _strokeColor;
-            set => SetProperty(ref _strokeColor, value);
-        }
-
-        public double StrokeThickness
-        {
-            get => _strokeThickness;
-            set => SetProperty(ref _strokeThickness, value);
-        }
-
-        public double Width
-        {
-            get => _width;
-            set => SetProperty(ref _width, value);
-        }
-
-        public double Height
-        {
-            get => _height;
-            set => SetProperty(ref _height, value);
-        }
-
-        private string _strokeDashArray = "0,0";
-        public string StrokeDashArray
-        {
-            get => _strokeDashArray;
-            set
+            var points = new PointCollection();
+            if (!string.IsNullOrWhiteSpace(_polylinePoints))
             {
-                if (SetProperty(ref _strokeDashArray, value))
+                var pointPairs = _polylinePoints.Split(' ');
+                foreach (var pointPair in pointPairs)
                 {
-                    OnPropertyChanged(nameof(StrokeDashCollection));
-                }
-            }
-        }
-
-        private double _strokeDashOffset = 0;
-        public double StrokeDashOffset
-        {
-            get => _strokeDashOffset;
-            set => SetProperty(ref _strokeDashOffset, value);
-        }
-
-        private double _radiusX = 0;
-        public double RadiusX
-        {
-            get => _radiusX;
-            set => SetProperty(ref _radiusX, value);
-        }
-
-        private double _radiusY = 0;
-        public double RadiusY
-        {
-            get => _radiusY;
-            set => SetProperty(ref _radiusY, value);
-        }
-
-        private double _x1 = 0;
-        public double X1
-        {
-            get => _x1;
-            set => SetProperty(ref _x1, value);
-        }
-
-        private double _y1 = 0;
-        public double Y1
-        {
-            get => _y1;
-            set => SetProperty(ref _y1, value);
-        }
-
-        private double _x2 = 0;
-        public double X2
-        {
-            get => _x2;
-            set => SetProperty(ref _x2, value);
-        }
-
-        private double _y2 = 0;
-        public double Y2
-        {
-            get => _y2;
-            set => SetProperty(ref _y2, value);
-        }
-
-        // Polygon/Polyline Points
-        private string _points = "100,50 150,100 100,150 50,100";
-        public string Points
-        {
-            get => _points;
-            set
-            {
-                if (SetProperty(ref _points, value))
-                {
-                    OnPropertyChanged(nameof(PolygonPointCollection));
-                }
-            }
-        }
-
-        // Separate points for Polyline (zigzag pattern)
-        private string _polylinePoints = "50,100 100,50 150,100 200,50 250,100";
-        public string PolylinePoints
-        {
-            get => _polylinePoints;
-            set
-            {
-                if (SetProperty(ref _polylinePoints, value))
-                {
-                    OnPropertyChanged(nameof(PolylinePointCollection));
-                }
-            }
-        }
-
-        // Path Data
-        private string _pathData = "M 10,100 L 100,100 100,50Z";
-        public string PathData
-        {
-            get => _pathData;
-            set
-            {
-                if (SetProperty(ref _pathData, value))
-                {
-                    OnPropertyChanged(nameof(PathGeometry));
-                }
-            }
-        }
-
-        // Computed properties for proper data types
-        public PointCollection PolygonPointCollection
-        {
-            get
-            {
-                var points = new PointCollection();
-                if (!string.IsNullOrWhiteSpace(_points))
-                {
-                    var pointPairs = _points.Split(' ');
-                    foreach (var pointPair in pointPairs)
+                    var coords = pointPair.Split(',');
+                    if (coords.Length == 2 &&
+                        double.TryParse(coords[0], out double x) &&
+                        double.TryParse(coords[1], out double y))
                     {
-                        var coords = pointPair.Split(',');
-                        if (coords.Length == 2 &&
-                            double.TryParse(coords[0], out double x) &&
-                            double.TryParse(coords[1], out double y))
-                        {
-                            points.Add(new Point(x, y));
-                        }
+                        points.Add(new Point(x, y));
                     }
                 }
-                return points;
             }
+            return points;
         }
+    }
 
-        public PointCollection PolylinePointCollection
+    public DoubleCollection StrokeDashCollection
+    {
+        get
         {
-            get
+            var collection = new DoubleCollection();
+            if (!string.IsNullOrWhiteSpace(_strokeDashArray))
             {
-                var points = new PointCollection();
-                if (!string.IsNullOrWhiteSpace(_polylinePoints))
+                var values = _strokeDashArray.Split(',');
+                foreach (var val in values)
                 {
-                    var pointPairs = _polylinePoints.Split(' ');
-                    foreach (var pointPair in pointPairs)
+                    if (double.TryParse(val.Trim(), out double dashValue))
                     {
-                        var coords = pointPair.Split(',');
-                        if (coords.Length == 2 &&
-                            double.TryParse(coords[0], out double x) &&
-                            double.TryParse(coords[1], out double y))
-                        {
-                            points.Add(new Point(x, y));
-                        }
+                        collection.Add(dashValue);
                     }
                 }
-                return points;
             }
+            return collection;
         }
+    }
 
-        public DoubleCollection StrokeDashCollection
+    public Geometry PathGeometry
+    {
+        get
         {
-            get
+            try
             {
-                var collection = new DoubleCollection();
-                if (!string.IsNullOrWhiteSpace(_strokeDashArray))
+                if (!string.IsNullOrWhiteSpace(_pathData))
                 {
-                    var values = _strokeDashArray.Split(',');
-                    foreach (var val in values)
-                    {
-                        if (double.TryParse(val.Trim(), out double dashValue))
-                        {
-                            collection.Add(dashValue);
-                        }
-                    }
+                    return (Geometry)new PathGeometryConverter().ConvertFromInvariantString(_pathData);
                 }
-                return collection;
             }
-        }
-
-        public Geometry PathGeometry
-        {
-            get
+            catch
             {
-                try
-                {
-                    if (!string.IsNullOrWhiteSpace(_pathData))
-                    {
-                        return (Geometry)new PathGeometryConverter().ConvertFromInvariantString(_pathData);
-                    }
-                }
-                catch
-                {
-                    // Return a simple default path if parsing fails
-                }
-                return (Geometry)new PathGeometryConverter().ConvertFromInvariantString("M 10,100 L 100,100");
+                // Return a simple default path if parsing fails
             }
+            return (Geometry)new PathGeometryConverter().ConvertFromInvariantString("M 10,100 L 100,100");
         }
+    }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+    public event PropertyChangedEventHandler PropertyChanged;
 
-        protected void OnPropertyChanged([CallerMemberName] string name = null) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    protected void OnPropertyChanged([CallerMemberName] string name = null) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-        protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string name = null)
-        {
-            if (Equals(field, value))
-                return false;
-            field = value;
-            OnPropertyChanged(name);
-            return true;
-        }
+    protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string name = null)
+    {
+        if (Equals(field, value))
+            return false;
+        field = value;
+        OnPropertyChanged(name);
+        return true;
     }
 }
