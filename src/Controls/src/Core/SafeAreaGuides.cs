@@ -1,6 +1,4 @@
-#nullable disable
 using System;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -12,14 +10,14 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Bindable property for attached property <c>IgnoreSafeArea</c>.
 		/// </summary>
-		[TypeConverter(typeof(SafeAreaGroupArrayTypeConverter))]
 		public static readonly BindableProperty IgnoreSafeAreaProperty =
 			BindableProperty.CreateAttached(
 				"IgnoreSafeArea",
 				typeof(SafeAreaGroup[]),
 				typeof(SafeAreaGuides),
 				new SafeAreaGroup[] { SafeAreaGroup.None },
-				propertyChanged: OnIgnoreSafeAreaChanged
+				propertyChanged: OnIgnoreSafeAreaChanged,
+				typeConverter: new SafeAreaGroupArrayTypeConverter()
 			);
 
 		static void OnIgnoreSafeAreaChanged(BindableObject bindable, object oldValue, object newValue)
@@ -59,6 +57,10 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets the effective safe area behavior for a specific edge, interpreting the array syntax.
+		/// Follows MAUI Thickness conventions:
+		/// - 1 value: applies to all edges
+		/// - 2 values: first value for left/right, second value for top/bottom  
+		/// - 4 values: left, top, right, bottom
 		/// </summary>
 		/// <param name="bindable">The bindable object to get the safe area behavior from.</param>
 		/// <param name="edge">The edge to get the behavior for (0=Left, 1=Top, 2=Right, 3=Bottom).</param>

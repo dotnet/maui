@@ -2,8 +2,6 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 
-#nullable disable
-
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
@@ -26,35 +24,31 @@ namespace Microsoft.Maui.Controls
 			{
 				strValue = strValue.Trim();
 
-				// Handle comma-separated values
-				if (strValue.Contains(',', StringComparison.Ordinal))
-				{
-					var parts = strValue.Split(',');
-					var result = new SafeAreaGroup[parts.Length];
+				// Split by comma - if no comma, we get array with single element
+				var parts = strValue.Split(',');
+				var result = new SafeAreaGroup[parts.Length];
 
-					for (int i = 0; i < parts.Length; i++)
+				for (int i = 0; i < parts.Length; i++)
+				{
+					var part = parts[i].Trim();
+					
+					// Performance optimization: use string comparison instead of Enum.TryParse
+					// since SafeAreaGroup only has two values currently
+					if (string.Equals(part, "All", StringComparison.OrdinalIgnoreCase))
 					{
-						var part = parts[i].Trim();
-						if (Enum.TryParse<SafeAreaGroup>(part, true, out var enumValue))
-						{
-							result[i] = enumValue;
-						}
-						else
-						{
-							throw new FormatException($"Cannot convert \"{part}\" to SafeAreaGroup");
-						}
+						result[i] = SafeAreaGroup.All;
 					}
-
-					return result;
-				}
-				else
-				{
-					// Single value
-					if (Enum.TryParse<SafeAreaGroup>(strValue, true, out var enumValue))
+					else if (string.Equals(part, "None", StringComparison.OrdinalIgnoreCase))
 					{
-						return new[] { enumValue };
+						result[i] = SafeAreaGroup.None;
+					}
+					else
+					{
+						throw new FormatException($"Cannot convert \"{part}\" to SafeAreaGroup");
 					}
 				}
+
+				return result;
 			}
 
 			throw new FormatException($"Cannot convert \"{strValue}\" into {typeof(SafeAreaGroup[])}");
