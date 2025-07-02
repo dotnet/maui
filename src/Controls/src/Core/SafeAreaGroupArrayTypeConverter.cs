@@ -18,12 +18,13 @@ namespace Microsoft.Maui.Controls
 
 		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
+			// IMPORTANT! Update SafeAreaGroupArrayTypeDesignConverter.IsValid if making changes here
 			var strValue = value?.ToString();
 
 			if (strValue != null)
 			{
 				strValue = strValue.Trim();
-
+				
 				// Split by comma - if no comma, we get array with single element
 				var parts = strValue.Split(',');
 				var result = new SafeAreaGroup[parts.Length];
@@ -44,7 +45,7 @@ namespace Microsoft.Maui.Controls
 					}
 					else
 					{
-						throw new FormatException($"Cannot convert \"{part}\" to SafeAreaGroup");
+						throw new FormatException($"Cannot convert \"{part}\" into {typeof(SafeAreaGroup)}");
 					}
 				}
 
