@@ -104,8 +104,8 @@ namespace Microsoft.Maui.Controls
 
 		void Apply(BindableObject bindable)
 		{
-			//NOTE specificity could be more fine grained (using distance)
-			ImplicitStyle?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+			// Apply all implicit styles from the hierarchy (application to page level)
+			ApplyImplicitStyles(bindable);
 			if (ClassStyles != null)
 				foreach (var classStyle in ClassStyles)
 					//NOTE specificity could be more fine grained (using distance)
@@ -122,7 +122,8 @@ namespace Microsoft.Maui.Controls
 			if (ClassStyles != null)
 				foreach (var classStyle in ClassStyles)
 					((IStyle)classStyle)?.UnApply(bindable);
-			ImplicitStyle?.UnApply(bindable);
+			// UnApply all implicit styles from the hierarchy
+			UnApplyImplicitStyles(bindable);
 		}
 
 		void OnClassStyleChanged()
@@ -196,7 +197,7 @@ namespace Microsoft.Maui.Controls
 				foreach (var classStyle in ClassStyles)
 					((IStyle)classStyle)?.UnApply(Target);
 			if (shouldReApplyImplicitStyle)
-				ImplicitStyle?.UnApply(Target);
+				UnApplyImplicitStyles(Target);
 
 			_implicitStyle = implicitStyle;
 			_classStyles = classStyles;
@@ -204,7 +205,7 @@ namespace Microsoft.Maui.Controls
 
 			//FIXME compute specificity
 			if (shouldReApplyImplicitStyle)
-				ImplicitStyle?.Apply(Target, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+				ApplyImplicitStyles(Target);
 
 			if (shouldReApplyClassStyle && ClassStyles != null)
 				foreach (var classStyle in ClassStyles)
@@ -213,6 +214,34 @@ namespace Microsoft.Maui.Controls
 			if (shouldReApplyStyle)
 				//FIXME compute specificity
 				Style?.Apply(Target, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 0, 0));
+		}
+
+		void ApplyImplicitStyles(BindableObject bindable)
+		{
+			// Apply all implicit styles from furthest (application) to closest (page)
+			// This ensures application-level styles provide fallback values
+			// while page-level styles override properties they set
+			for (int i = _implicitStyles.Count - 1; i >= 0; i--)
+			{
+				var implicitStyle = (Style)Target.GetValue(_implicitStyles[i]);
+				if (implicitStyle != null)
+				{
+					((IStyle)implicitStyle).Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+				}
+			}
+		}
+
+		void UnApplyImplicitStyles(BindableObject bindable)
+		{
+			// UnApply all implicit styles in the hierarchy
+			foreach (BindableProperty implicitStyleProperty in _implicitStyles)
+			{
+				var implicitStyle = (Style)Target.GetValue(implicitStyleProperty);
+				if (implicitStyle != null)
+				{
+					((IStyle)implicitStyle).UnApply(bindable);
+				}
+			}
 		}
 	}
 }
