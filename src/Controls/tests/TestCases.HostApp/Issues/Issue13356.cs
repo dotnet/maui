@@ -12,14 +12,6 @@ public class Issue13356 : TestContentPage
 {
 	protected override void Init()
 	{
-		var button = new Button
-		{
-			Text = "Show me",
-			AutomationId = "showButton",
-			HorizontalOptions = LayoutOptions.Center
-		};
-		button.Clicked += Button_Clicked;
-
 		var stack = new VerticalStackLayout
 		{
 			Spacing = 25,
@@ -27,42 +19,67 @@ public class Issue13356 : TestContentPage
 			VerticalOptions = LayoutOptions.Center,
 			Children =
 			{
-				button
+				CreateButton("Show Button Dialog", "showButtonDialogButton", Button_Dialog_clicked),
+				CreateButton("Show CheckBox Dialog", "showCheckBoxDialogButton", CheckBox_Dialog_clicked),
 			}
 		};
 
-		Content = new ScrollView
-		{
-			Content = stack
-		};
+		Content = new ScrollView { Content = stack };
 	}
 
-	void Button_Clicked(object sender, EventArgs e)
+	Button CreateButton(string text, string automationId, EventHandler eventHandler) =>
+		new()
+		{
+			Text = text,
+			AutomationId = automationId,
+			HorizontalOptions = LayoutOptions.Center,
+			Command = new Command(() => eventHandler?.Invoke(this, EventArgs.Empty))
+		};
+
+	void Button_Dialog_clicked(object sender, EventArgs e)
 	{
 #if ANDROID
 		var droidContext = Handler.MauiContext.Context;
-		var myDialog = new Issue13356Dialog(droidContext);
-		var dialogContent = new Button { Text = "Dialog Button", Padding = new Thickness(30) };
-		myDialog.Content = dialogContent.ToPlatform(Application.Current.Handler.MauiContext);
+		using var myDialog = new Issue13356Dialog(droidContext)
+		{
+			Content = new Button { Text = "Dialog Button", Padding = new Thickness(30) }
+				.ToPlatform(Application.Current.Handler.MauiContext)
+		};
+		myDialog.ShowDialog();
+#endif
+	}
+
+	void CheckBox_Dialog_clicked(object sender, EventArgs e)
+	{
+#if ANDROID
+		var droidContext = Handler.MauiContext.Context;
+		using var myDialog = new Issue13356Dialog(droidContext)
+		{
+			Content = new CheckBox(){AutomationId = "DialogCheckBox" }
+				.ToPlatform(Application.Current.Handler.MauiContext)
+		};
 		myDialog.ShowDialog();
 #endif
 	}
 
 #if ANDROID
-public class Issue13356Dialog : BottomSheetDialog {
-    public View Content { get; set; }
+	public class Issue13356Dialog : BottomSheetDialog
+	{
+		public View Content { get; set; }
 
-    public Issue13356Dialog(Context context) : base(context) {}
+		public Issue13356Dialog(Context context) : base(context) { }
 
-    protected override void OnCreate(Bundle savedInstanceState) {
-        base.OnCreate(savedInstanceState);
-        SetContentView(Content);
-    }
+		protected override void OnCreate(Bundle savedInstanceState)
+		{
+			base.OnCreate(savedInstanceState);
+			SetContentView(Content);
+		}
 
-    public void ShowDialog() {
-        if (!IsShowing)
-            Show();
-    }
-}
+		public void ShowDialog()
+		{
+			if (!IsShowing)
+				Show();
+		}
+	}
 #endif
 }
