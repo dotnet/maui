@@ -221,9 +221,9 @@ namespace Microsoft.Maui.Controls
 			// Apply all implicit styles from furthest (application) to closest (page)
 			// This ensures application-level styles provide fallback values
 			// while page-level styles override properties they set
-			for (int i = _implicitStyles.Count - 1; i >= 0; i--)
+			foreach (BindableProperty implicitStyleProperty in _implicitStyles)
 			{
-				var implicitStyle = (Style)Target.GetValue(_implicitStyles[i]);
+				var implicitStyle = (Style)Target.GetValue(implicitStyleProperty);
 				if (implicitStyle != null)
 				{
 					((IStyle)implicitStyle).Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
