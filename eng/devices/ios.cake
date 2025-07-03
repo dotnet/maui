@@ -147,6 +147,7 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 		{
 			args
 				.Append("/p:BuildIpa=true")
+				.Append("/p:CodesignRequireProvisioningProfile=false")
 				.Append($"/p:RuntimeIdentifier={rid}")
 				.Append("/bl:" + binlog)
 				.Append("/tl");
