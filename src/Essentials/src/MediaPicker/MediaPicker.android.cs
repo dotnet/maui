@@ -362,7 +362,8 @@ namespace Microsoft.Maui.Media
 					options?.MaximumHeight,
 					options?.CompressionQuality ?? 100,
 					inputFileName,
-					options?.RotateImage ?? false);
+					options?.RotateImage ?? false,
+					options?.PreserveMetaData ?? true);
 
 				if (processedStream != null)
 				{

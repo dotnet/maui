@@ -307,7 +307,7 @@ namespace Microsoft.Maui.Media
 				var compressedResults = new List<FileResult>();
 				foreach (var result in fileResults)
 				{
-					var compressedResult = await CompressedUIImageFileResult.CreateCompressedFromFileResult(result, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100, options?.RotateImage ?? false);
+					var compressedResult = await CompressedUIImageFileResult.CreateCompressedFromFileResult(result, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100, options?.RotateImage ?? false, options?.PreserveMetaData ?? true);
 					compressedResults.Add(compressedResult);
 				}
 				return compressedResults;
@@ -557,7 +557,7 @@ namespace Microsoft.Maui.Media
 		NSData data;
 
 		// Static factory method to create compressed result from existing FileResult
-		internal static async Task<FileResult> CreateCompressedFromFileResult(FileResult originalResult, int? maximumWidth, int? maximumHeight, int compressionQuality = 100, bool rotateImage = false)
+		internal static async Task<FileResult> CreateCompressedFromFileResult(FileResult originalResult, int? maximumWidth, int? maximumHeight, int compressionQuality = 100, bool rotateImage = false, bool preserveMetaData = true)
 		{
 			if (originalResult is null || !ImageProcessor.IsProcessingNeeded(maximumWidth, maximumHeight, compressionQuality))
 				return originalResult;
@@ -566,7 +566,7 @@ namespace Microsoft.Maui.Media
 			{
 				using var originalStream = await originalResult.OpenReadAsync();
 				using var processedStream = await ImageProcessor.ProcessImageAsync(
-					originalStream, maximumWidth, maximumHeight, compressionQuality, originalResult.FileName, rotateImage);
+					originalStream, maximumWidth, maximumHeight, compressionQuality, originalResult.FileName, rotateImage, preserveMetaData);
 
 				// If ImageProcessor returns null (e.g., on .NET Standard), return original file
 				if (processedStream is null)

@@ -29,6 +29,7 @@ namespace Samples.ViewModel
 		int pickerMaximumWidth = 0;
 		int pickerMaximumHeight = 0;
 		bool pickerRotateImage = false;
+		bool pickerPreserveMetaData = true;
 		long imageByteLength = 0;
 		string imageDimensions = "";
 		private ObservableCollection<PhotoInfo> photoList = [];
@@ -81,6 +82,12 @@ namespace Samples.ViewModel
 			set => SetProperty(ref pickerRotateImage, value);
 		}
 
+		public bool PickerPreserveMetaData
+		{
+			get => pickerPreserveMetaData;
+			set => SetProperty(ref pickerPreserveMetaData, value);
+		}
+
 		public long ImageByteLength
 		{
 			get => imageByteLength;
@@ -128,7 +135,8 @@ namespace Samples.ViewModel
 					CompressionQuality = PickerCompressionQuality,
 					MaximumWidth = PickerMaximumWidth > 0 ? PickerMaximumWidth : null,
 					MaximumHeight = PickerMaximumHeight > 0 ? PickerMaximumHeight : null,
-					RotateImage = PickerRotateImage
+					RotateImage = PickerRotateImage,
+					PreserveMetaData = PickerPreserveMetaData
 				});
 
 				await LoadPhotoAsync(photo);
@@ -151,7 +159,8 @@ namespace Samples.ViewModel
 					CompressionQuality = PickerCompressionQuality,
 					MaximumWidth = PickerMaximumWidth > 0 ? PickerMaximumWidth : null,
 					MaximumHeight = PickerMaximumHeight > 0 ? PickerMaximumHeight : null,
-					RotateImage = PickerRotateImage
+					RotateImage = PickerRotateImage,
+					PreserveMetaData = PickerPreserveMetaData
 				});
 
 				await LoadPhotoAsync(photo);
@@ -172,7 +181,8 @@ namespace Samples.ViewModel
 				{
 					Title = "Pick a video",
 					SelectionLimit = PickerSelectionLimit,
-					RotateImage = PickerRotateImage
+					RotateImage = PickerRotateImage,
+					PreserveMetaData = PickerPreserveMetaData
 				});
 
 				ShowPhoto = false;

@@ -214,5 +214,20 @@ namespace Microsoft.Maui.Media
 		/// <para>Please note that performance might be affected by the rotation operation, especially on lower-end devices.</para>
 		/// </remarks>
 		public bool RotateImage { get; set; } = false;
+
+		/// <summary>
+		/// Gets or sets whether to preserve metadata (including EXIF data) when processing images.
+		/// When true, metadata from the original image will be preserved in the processed image.
+		/// Default value is true.
+		/// </summary>
+		/// <remarks>
+		/// <para>This property only applies to images. It has no effect on video files.</para>
+		/// <para>When enabled, metadata such as EXIF data, GPS information, camera settings, and timestamps
+		/// will be copied from the original image to the processed image during operations like resizing,
+		/// compression, or rotation.</para>
+		/// <para>Setting this to false may result in smaller file sizes but will lose the image's metadata.</para>
+		/// <para>Currently not supported on Windows.</para>
+		/// </remarks>
+		public bool PreserveMetaData { get; set; } = true;
 	}
 }

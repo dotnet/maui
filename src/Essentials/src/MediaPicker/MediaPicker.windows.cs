@@ -102,7 +102,8 @@ namespace Microsoft.Maui.Media
 					options?.MaximumHeight,
 					options?.CompressionQuality ?? 100,
 					result!.Name,
-					options?.RotateImage ?? false);
+					options?.RotateImage ?? false,
+					options?.PreserveMetaData ?? true);
 
 				if (processedStream != null)
 				{
@@ -203,7 +204,8 @@ namespace Microsoft.Maui.Media
 						options?.MaximumHeight,
 						options?.CompressionQuality ?? 100,
 						originalFile.Name,
-						options?.RotateImage ?? false);
+						options?.RotateImage ?? false,
+						options?.PreserveMetaData ?? true);
 
 					if (processedStream != null)
 					{
@@ -285,7 +287,8 @@ namespace Microsoft.Maui.Media
 						options?.MaximumHeight,
 						options?.CompressionQuality ?? 100,
 						file!.Name,
-						options?.RotateImage ?? false);
+						options?.RotateImage ?? false,
+						options?.PreserveMetaData ?? true);
 
 					if (processedStream is not null)
 					{

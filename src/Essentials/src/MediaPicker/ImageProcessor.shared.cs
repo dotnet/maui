@@ -31,6 +31,16 @@ internal static partial class ImageProcessor
     public static partial Task<Stream> RotateImageAsync(Stream inputStream, string? originalFileName);
 
     /// <summary>
+    /// Platform-specific metadata extraction implementation.
+    /// </summary>
+    public static partial Task<byte[]?> ExtractMetadataAsync(Stream inputStream, string? originalFileName);
+
+    /// <summary>
+    /// Platform-specific metadata application implementation.
+    /// </summary>
+    public static partial Task<Stream> ApplyMetadataAsync(Stream processedStream, byte[] metadata, string? originalFileName);
+
+    /// <summary>
     /// Processes an image by applying EXIF rotation, resizing and compression using MAUI Graphics.
     /// </summary>
     /// <param name="inputStream">The input image stream.</param>
@@ -39,9 +49,10 @@ internal static partial class ImageProcessor
     /// <param name="qualityPercent">Compression quality percentage (0-100).</param>
     /// <param name="originalFileName">Original filename to determine format preservation logic.</param>
     /// <param name="rotateImage">Whether to apply EXIF rotation correction.</param>
+    /// <param name="preserveMetaData">Whether to preserve metadata (including EXIF data) in the processed image.</param>
     /// <returns>A new stream containing the processed image.</returns>
     public static async Task<Stream?> ProcessImageAsync(Stream inputStream,
-        int? maxWidth, int? maxHeight, int qualityPercent, string? originalFileName = null, bool rotateImage = false)
+        int? maxWidth, int? maxHeight, int qualityPercent, string? originalFileName = null, bool rotateImage = false, bool preserveMetaData = true)
     {
 #if !(IOS || ANDROID || WINDOWS)
         await Task.CompletedTask; // Avoid async warning
@@ -67,6 +78,18 @@ internal static partial class ImageProcessor
             if (processedStream.CanSeek)
             {
                 processedStream.Position = 0;
+            }
+        }
+
+        // Extract metadata from original stream if needed
+        byte[]? originalMetadata = null;
+        if (preserveMetaData)
+        {
+            originalMetadata = await ExtractMetadataAsync(inputStream, originalFileName);
+            // Reset position after metadata extraction
+            if (inputStream.CanSeek)
+            {
+                inputStream.Position = 0;
             }
         }
 
@@ -97,6 +120,14 @@ internal static partial class ImageProcessor
             var outputStream = new MemoryStream();
             await image.SaveAsync(outputStream, format, quality);
             outputStream.Position = 0;
+
+            // Apply preserved metadata to the output stream if requested
+            if (preserveMetaData && originalMetadata != null)
+            {
+                var finalStream = await ApplyMetadataAsync(outputStream, originalMetadata, originalFileName);
+                outputStream.Dispose();
+                return finalStream;
+            }
 
             return outputStream;
         }
