@@ -46,6 +46,12 @@ namespace Microsoft.Maui.Controls
 		internal const string TitleBarLTRState = "TitleBarLeftToRight";
 		internal const string TitleBarRTLState = "TitleBarRightToLeft";
 
+		// Margin space (80px) required for Mac Catalyst window traffic light controls when not in fullscreen
+		const int MacCatalystMargin = 80;
+
+		// Margin space (150px) required for Windows title bar system buttons
+		const int WindowsMargin = 150;
+
 		/// <summary>Bindable property for <see cref="Icon"/>.</summary>
 		public static readonly BindableProperty IconProperty = BindableProperty.Create(nameof(Icon), typeof(ImageSource),
 			typeof(TitleBar), null, propertyChanged: OnIconChanged);
@@ -567,9 +573,9 @@ namespace Microsoft.Maui.Controls
 				Property = MarginProperty,
 				TargetName = TemplateRootName,
 #if MACCATALYST
-				Value = new Thickness(80, 0, 0, 0)  // System buttons on left in macOS
+				Value = new Thickness(MacCatalystMargin, 0, 0, 0)  // System buttons on left in macOS
 #else
-				Value = new Thickness(0, 0, 150, 0)  // System buttons on right in Windows
+				Value = new Thickness(0, 0, WindowsMargin, 0)  // System buttons on right in Windows
 #endif
 			});
 			flowDirectionGroup.States.Add(ltrState);
@@ -581,9 +587,9 @@ namespace Microsoft.Maui.Controls
 				Property = MarginProperty,
 				TargetName = TemplateRootName,
 #if MACCATALYST
-				Value = new Thickness(0, 0, 80, 0)  // System buttons on right in macOS RTL
+				Value = new Thickness(0, 0, MacCatalystMargin, 0)  // System buttons on right in macOS RTL
 #else
-				Value = new Thickness(150, 0, 0, 0)  // System buttons on left in Windows RTL
+				Value = new Thickness(WindowsMargin, 0, 0, 0)  // System buttons on left in Windows RTL
 #endif
 			});
 			flowDirectionGroup.States.Add(rtlState);
