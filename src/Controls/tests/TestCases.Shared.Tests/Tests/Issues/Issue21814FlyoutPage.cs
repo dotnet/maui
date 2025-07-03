@@ -70,7 +70,7 @@ public class Issue21814FlyoutPage : _IssuesUITest
 	[Category(UITestCategories.Navigation)]
 	public void NavigationFromItem2ToItem3ShowsCorrectParameters()
 	{
-#if ANDROID
+#if ANDROID || WINDOWS
 		App.TapBackArrow();
 #elif IOS || MACCATALYST
 		App.TapBackArrow("Item 1");
