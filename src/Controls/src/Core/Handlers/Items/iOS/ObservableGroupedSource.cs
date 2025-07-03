@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Foundation;
 using UIKit;
@@ -408,12 +409,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		int GroupsCount()
 		{
-			if (_groupSource is IList list)
-				return list.Count;
-
 			int count = 0;
-			foreach (var item in _groupSource)
-				count++;
+			if (_groupSource is IList list)
+			{
+				foreach (var group in list)
+				{
+					if (group is IEnumerable enumerable)
+					{
+						count++;
+					}
+				}
+
+				return count;
+			}
+
 			return count;
 		}
 	}
