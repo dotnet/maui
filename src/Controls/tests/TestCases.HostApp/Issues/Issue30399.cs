@@ -1,12 +1,12 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 39999, "RTL FlowDirection causes overlap with window control buttons", PlatformAffected.UWP)]
-public class Issue39999 : ContentPage
+[Issue(IssueTracker.Github, 30399, "RTL FlowDirection causes overlap with window control buttons", PlatformAffected.UWP)]
+public class Issue30399 : ContentPage
 {
 	TitleBar titleBar;
 	Button toggleButton;
 	
-	public Issue39999()
+	public Issue30399()
 	{
 		// Create TitleBar similar to MainPage.xaml
 		titleBar = new TitleBar

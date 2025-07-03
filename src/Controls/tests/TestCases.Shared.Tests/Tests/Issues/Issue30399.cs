@@ -1,13 +1,13 @@
-# if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS
+# if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS  // Titlebar applicable only on Windows and MacCatalyst
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue39999 : _IssuesUITest
+public class Issue30399 : _IssuesUITest
 {
-	public Issue39999(TestDevice device) : base(device)
+	public Issue30399(TestDevice device) : base(device)
 	{
 	}
 
