@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			var data = NSData.FromStream(stream);
 			var image = UIImage.LoadFromData(data);
-			return new PlatformImage(image);
+			return new PlatformImage(image.NormalizeOrientation());
 		}
 	}
 }
