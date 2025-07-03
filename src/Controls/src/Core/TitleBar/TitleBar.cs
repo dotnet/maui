@@ -44,6 +44,9 @@ namespace Microsoft.Maui.Controls
 		public const string TitleBarActiveState = "TitleBarTitleActive";
 		public const string TitleBarInactiveState = "TitleBarTitleInactive";
 
+		// Margin space (80px) required for Mac Catalyst window traffic light controls when not in fullscreen
+		const int MacCatalystMargin = 80; 
+
 		/// <summary>Bindable property for <see cref="Icon"/>.</summary>
 		public static readonly BindableProperty IconProperty = BindableProperty.Create(nameof(Icon), typeof(ImageSource),
 			typeof(TitleBar), null, propertyChanged: OnIconChanged);
@@ -277,7 +280,7 @@ namespace Microsoft.Maui.Controls
 						if (_templateRoot is Grid contentGrid)
 						{
 							// If in fullscreen, remove left margin, otherwise set 80px margin
-							contentGrid.Margin = fullScreen ? new Thickness(0) : new Thickness(80, 0, 0, 0);
+							contentGrid.Margin = fullScreen ? new Thickness(0) : new Thickness(MacCatalystMargin, 0, 0, 0);
 						}
 					}
 				}
@@ -377,7 +380,7 @@ namespace Microsoft.Maui.Controls
 			var contentGrid = new Grid()
 			{
 #if MACCATALYST
-				Margin = new Thickness(80, 0, 0, 0),
+				Margin = new Thickness(MacCatalystMargin, 0, 0, 0),
 #endif
 				HorizontalOptions = LayoutOptions.Fill,
 				ColumnDefinitions =
