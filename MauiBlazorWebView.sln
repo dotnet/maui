@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorWebView", "BlazorWebView", "{A703DA7E-5A1F-AF9B-CE7F-00B135C1C4F7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{2DA3F4D8-35E4-39B8-EB7E-CFF59A88A25F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MauiBlazorWebView.UnitTests", "src\BlazorWebView\tests\MauiBlazorWebView.UnitTests\MauiBlazorWebView.UnitTests.csproj", "{00E708AA-402D-4BB5-AD88-348274F8E1DF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{00E708AA-402D-4BB5-AD88-348274F8E1DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00E708AA-402D-4BB5-AD88-348274F8E1DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00E708AA-402D-4BB5-AD88-348274F8E1DF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{00E708AA-402D-4BB5-AD88-348274F8E1DF}.Debug|x64.Build.0 = Debug|Any CPU
+		{00E708AA-402D-4BB5-AD88-348274F8E1DF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{00E708AA-402D-4BB5-AD88-348274F8E1DF}.Debug|x86.Build.0 = Debug|Any CPU
+		{00E708AA-402D-4BB5-AD88-348274F8E1DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00E708AA-402D-4BB5-AD88-348274F8E1DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00E708AA-402D-4BB5-AD88-348274F8E1DF}.Release|x64.ActiveCfg = Release|Any CPU
+		{00E708AA-402D-4BB5-AD88-348274F8E1DF}.Release|x64.Build.0 = Release|Any CPU
+		{00E708AA-402D-4BB5-AD88-348274F8E1DF}.Release|x86.ActiveCfg = Release|Any CPU
+		{00E708AA-402D-4BB5-AD88-348274F8E1DF}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A703DA7E-5A1F-AF9B-CE7F-00B135C1C4F7} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{2DA3F4D8-35E4-39B8-EB7E-CFF59A88A25F} = {A703DA7E-5A1F-AF9B-CE7F-00B135C1C4F7}
+		{00E708AA-402D-4BB5-AD88-348274F8E1DF} = {2DA3F4D8-35E4-39B8-EB7E-CFF59A88A25F}
+	EndGlobalSection
+EndGlobal
