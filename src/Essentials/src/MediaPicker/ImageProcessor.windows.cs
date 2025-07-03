@@ -133,18 +133,18 @@ internal static partial class ImageProcessor
 	public static partial async Task<Stream> ApplyMetadataAsync(Stream processedStream, byte[] metadata, string? originalFileName)
 	{
 		if (processedStream == null || metadata == null || metadata.Length == 0)
-			return processedStream ?? new MemoryStream();
+			return await Task.FromResult(processedStream) ?? new MemoryStream();
 
 		try
 		{
 			// For now, Windows doesn't have a simple way to reapply metadata to processed images
 			// The Windows Imaging Component (WIC) makes this complex, so we'll return the processed stream as-is
 			// In the future, this could be enhanced with more sophisticated metadata handling
-			return processedStream;
+			return await Task.FromResult(processedStream);
 		}
 		catch
 		{
-			return processedStream;
+			return await Task.FromResult(processedStream);
 		}
 	}
 }
