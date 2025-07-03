@@ -213,8 +213,8 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
-		App.WaitForElement("ClickedEventLabel");
-		App.Tap("ClickedEventLabel");
+		App.WaitForElement("SelectedValueLabelOne");
+		App.Tap("SelectedValueLabelOne");
 		VerifyScreenshot();
 	}
 
