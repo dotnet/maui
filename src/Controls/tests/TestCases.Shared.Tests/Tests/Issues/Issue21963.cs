@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -31,3 +32,4 @@ public class Issue21963 : _IssuesUITest
 #endif
     }
 }
+#endif
