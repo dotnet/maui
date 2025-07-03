@@ -188,5 +188,269 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 				// If it's repeating, ticks will be greater than 1
 				Assert.True(ticks > 1);
 			});
+
+		[Fact]
+		public Task DispatchIfRequired_ShouldCallDispatch_WhenDispatchIsRequired() =>
+			DispatcherTest.Run(() =>
+			{
+				// Arrange
+				var dispatcher = new TestDispatcher();
+				dispatcher.SetIsDispatchRequired(true);
+
+				int executionCount = 0;
+				Action testAction = () => executionCount++;
+
+				// Act
+				dispatcher.DispatchIfRequired(testAction);
+
+				// Assert
+				Assert.Equal(1, executionCount);
+				Assert.True(dispatcher.WasDispatchCalled);
+			});
+
+		[Fact]
+		public Task DispatchIfRequired_ShouldExecuteAction_WhenDispatchIsNotRequired() =>
+			DispatcherTest.Run(() =>
+			{
+				// Arrange
+				var dispatcher = new TestDispatcher();
+				dispatcher.SetIsDispatchRequired(false);
+
+				int executionCount = 0;
+				Action testAction = () => executionCount++;
+
+				// Act
+				dispatcher.DispatchIfRequired(testAction);
+
+				// Assert
+				Assert.Equal(1, executionCount);
+				Assert.False(dispatcher.WasDispatchCalled);
+			});
+
+		[Fact]
+		public Task DispatchIfRequiredAsync_ShouldCallDispatchAsync_WhenDispatchIsRequired() =>
+			DispatcherTest.Run(async () =>
+			{
+				// Arrange
+				var dispatcher = new TestDispatcher();
+				dispatcher.SetIsDispatchRequired(true);
+
+				int executionCount = 0;
+				Action testAction = () => executionCount++;
+
+				// Act
+				await dispatcher.DispatchIfRequiredAsync(testAction);
+
+				// Assert
+				Assert.Equal(1, executionCount);
+				Assert.True(dispatcher.WasDispatchCalled);
+			});
+
+		[Fact]
+		public Task DispatchIfRequiredAsync_ShouldExecuteAction_WhenDispatchIsNotRequired() =>
+			DispatcherTest.Run(async () =>
+			{
+				// Arrange
+				var dispatcher = new TestDispatcher();
+				dispatcher.SetIsDispatchRequired(false);
+
+				int executionCount = 0;
+				Action testAction = () => executionCount++;
+
+				// Act
+				await dispatcher.DispatchIfRequiredAsync(testAction);
+
+				// Assert
+				Assert.Equal(1, executionCount);
+				Assert.False(dispatcher.WasDispatchCalled);
+			});
+
+		[Fact]
+		public Task DispatchIfRequiredAsync_WithFuncTask_ShouldCallDispatchAsync_WhenDispatchIsRequired() =>
+			DispatcherTest.Run(async () =>
+			{
+				// Arrange
+				var dispatcher = new TestDispatcher();
+				dispatcher.SetIsDispatchRequired(true);
+
+				int executionCount = 0;
+				Func<Task> testFunc = async () => 
+				{
+					await Task.Delay(1);
+					executionCount++;
+				};
+
+				// Act
+				await dispatcher.DispatchIfRequiredAsync(testFunc);
+
+				// Assert
+				Assert.Equal(1, executionCount);
+				Assert.True(dispatcher.WasDispatchCalled);
+			});
+
+		[Fact]
+		public Task DispatchIfRequiredAsync_WithFuncTask_ShouldExecuteFunc_WhenDispatchIsNotRequired() =>
+			DispatcherTest.Run(async () =>
+			{
+				// Arrange
+				var dispatcher = new TestDispatcher();
+				dispatcher.SetIsDispatchRequired(false);
+
+				int executionCount = 0;
+				Func<Task> testFunc = async () => 
+				{
+					await Task.Delay(1);
+					executionCount++;
+				};
+
+				// Act
+				await dispatcher.DispatchIfRequiredAsync(testFunc);
+
+				// Assert
+				Assert.Equal(1, executionCount);
+				Assert.False(dispatcher.WasDispatchCalled);
+			});
+
+		[Fact]
+		public Task DispatchIfRequiredAsync_WithFuncT_ShouldCallDispatchAsync_WhenDispatchIsRequired() =>
+			DispatcherTest.Run(async () =>
+			{
+				// Arrange
+				var dispatcher = new TestDispatcher();
+				dispatcher.SetIsDispatchRequired(true);
+
+				Func<int> testFunc = () => 42;
+
+				// Act
+				var result = await dispatcher.DispatchIfRequiredAsync(testFunc);
+
+				// Assert
+				Assert.Equal(42, result);
+				Assert.True(dispatcher.WasDispatchCalled);
+			});
+
+		[Fact]
+		public Task DispatchIfRequiredAsync_WithFuncT_ShouldExecuteFunc_WhenDispatchIsNotRequired() =>
+			DispatcherTest.Run(async () =>
+			{
+				// Arrange
+				var dispatcher = new TestDispatcher();
+				dispatcher.SetIsDispatchRequired(false);
+
+				Func<int> testFunc = () => 42;
+
+				// Act
+				var result = await dispatcher.DispatchIfRequiredAsync(testFunc);
+
+				// Assert
+				Assert.Equal(42, result);
+				Assert.False(dispatcher.WasDispatchCalled);
+			});
+
+		[Fact]
+		public Task DispatchIfRequiredAsync_WithFuncTaskT_ShouldCallDispatchAsync_WhenDispatchIsRequired() =>
+			DispatcherTest.Run(async () =>
+			{
+				// Arrange
+				var dispatcher = new TestDispatcher();
+				dispatcher.SetIsDispatchRequired(true);
+
+				Func<Task<int>> testFunc = async () => 
+				{
+					await Task.Delay(1);
+					return 42;
+				};
+
+				// Act
+				var result = await dispatcher.DispatchIfRequiredAsync(testFunc);
+
+				// Assert
+				Assert.Equal(42, result);
+				Assert.True(dispatcher.WasDispatchCalled);
+			});
+
+		[Fact]
+		public Task DispatchIfRequiredAsync_WithFuncTaskT_ShouldExecuteFunc_WhenDispatchIsNotRequired() =>
+			DispatcherTest.Run(async () =>
+			{
+				// Arrange
+				var dispatcher = new TestDispatcher();
+				dispatcher.SetIsDispatchRequired(false);
+
+				Func<Task<int>> testFunc = async () => 
+				{
+					await Task.Delay(1);
+					return 42;
+				};
+
+				// Act
+				var result = await dispatcher.DispatchIfRequiredAsync(testFunc);
+
+				// Assert
+				Assert.Equal(42, result);
+				Assert.False(dispatcher.WasDispatchCalled);
+			});
+	}
+
+	// Helper class for testing
+	public class TestDispatcher : IDispatcher
+	{
+		private bool _isDispatchRequired = false;
+		public bool WasDispatchCalled { get; private set; }
+
+		public bool IsDispatchRequired => _isDispatchRequired;
+
+		public void SetIsDispatchRequired(bool value)
+		{
+			_isDispatchRequired = value;
+		}
+
+		public bool Dispatch(Action action)
+		{
+			WasDispatchCalled = true;
+			action();
+			return true;
+		}
+
+		public bool DispatchDelayed(TimeSpan delay, Action action)
+		{
+			WasDispatchCalled = true;
+			Task.Delay(delay).ContinueWith(_ => action());
+			return true;
+		}
+
+		public IDispatcherTimer CreateTimer()
+		{
+			return new TestDispatcherTimer();
+		}
+	}
+
+	// Helper class for testing
+	public class TestDispatcherTimer : IDispatcherTimer
+	{
+		public TimeSpan Interval { get; set; }
+		public bool IsRepeating { get; set; }
+		public bool IsRunning { get; private set; }
+
+		public event EventHandler? Tick;
+
+		public void Start()
+		{
+			IsRunning = true;
+			// Simplified implementation for testing
+			Task.Delay(Interval).ContinueWith(_ => 
+			{
+				Tick?.Invoke(this, EventArgs.Empty);
+				if (!IsRepeating)
+				{
+					IsRunning = false;
+				}
+			});
+		}
+
+		public void Stop()
+		{
+			IsRunning = false;
+		}
 	}
 }

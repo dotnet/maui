@@ -45,9 +45,98 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(dispatched);
 		}
 
+		[Fact]
+		public async Task FindDispatcher_WithBindableObject_ReturnsValidDispatcher()
+		{
+			var button = await InvokeOnMainThreadAsync(() => new Button { Text = "Test" });
+			var handler = new ButtonHandlerStub();
+			handler.SetMauiContext(MauiContext);
+			button.Handler = handler;
+
+			var dispatcher = button.FindDispatcher();
+
+			Assert.NotNull(dispatcher);
+		}
+
+		[Fact]
+		public async Task DispatchIfRequired_OnMainThread_ExecutesSynchronously()
+		{
+			bool executed = false;
+			var button = await InvokeOnMainThreadAsync(() => new Button { Text = "Test" });
+			var handler = new ButtonHandlerStub();
+			handler.SetMauiContext(MauiContext);
+			button.Handler = handler;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var dispatcher = button.FindDispatcher();
+				dispatcher.DispatchIfRequired(() =>
+				{
+					executed = true;
+				});
+			});
+
+			Assert.True(executed);
+		}
+
+		[Fact]
+		public async Task DispatchIfRequiredAsync_OnMainThread_ExecutesSynchronously()
+		{
+			bool executed = false;
+			var button = await InvokeOnMainThreadAsync(() => new Button { Text = "Test" });
+			var handler = new ButtonHandlerStub();
+			handler.SetMauiContext(MauiContext);
+			button.Handler = handler;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var dispatcher = button.FindDispatcher();
+				await dispatcher.DispatchIfRequiredAsync(() =>
+				{
+					executed = true;
+				});
+			});
+
+			Assert.True(executed);
+		}
+
+		[Fact]
+		public async Task DispatchIfRequired_FromBackgroundThread_DispatchesToMainThread()
+		{
+			bool executed = false;
+			var button = await InvokeOnMainThreadAsync(() => new Button { Text = "Test" });
+			var handler = new ButtonHandlerStub();
+			handler.SetMauiContext(MauiContext);
+			button.Handler = handler;
+
+			await Task.Run(async () =>
+			{
+				var dispatcher = button.FindDispatcher();
+				dispatcher.DispatchIfRequired(() =>
+				{
+					executed = true;
+				});
+
+				// Wait a bit for the dispatch to complete
+				await Task.Delay(500);
+			});
+
+			Assert.True(executed);
+		}
+
 		public class ApplicationHandlerStub : ElementHandler<Application, object>
 		{
 			public ApplicationHandlerStub() : base(ElementHandler.ElementMapper)
+			{
+
+			}
+
+			protected override object CreatePlatformElement() => new Object();
+		}
+
+		public class ButtonHandlerStub : ElementHandler<Button, object>
+		{
+			public ButtonHandlerStub() : base(ElementHandler.ElementMapper)
 			{
 
 			}
