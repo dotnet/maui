@@ -42,7 +42,7 @@ pr:
     - THIRD-PARTY-NOTICES.TXT
 
 variables:
-  - template: /eng/pipelines/common/variables.yml
+  - template: /eng/pipelines/common/variables.yml@self
   - name: AgentPoolAccessToken
     value: $(botdeploy--azdo--token--register--xamarin-public--untrusted)
 
