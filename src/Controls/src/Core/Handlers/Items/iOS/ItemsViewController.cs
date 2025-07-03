@@ -822,7 +822,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var frame = DetermineEmptyViewFrame();
 
-			_emptyUIView.Frame = frame;
+			_emptyViewFormsElement.Measure(frame.Width, frame.Height);
 			_emptyViewFormsElement?.Arrange(frame.ToRectangle());
 		}
 
