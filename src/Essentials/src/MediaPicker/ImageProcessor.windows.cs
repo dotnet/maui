@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
@@ -90,5 +91,60 @@ internal static partial class ImageProcessor
 		}
 
 		return BitmapRotation.None;
+	}
+
+	public static partial async Task<byte[]?> ExtractMetadataAsync(Stream inputStream, string? originalFileName)
+	{
+		if (inputStream == null)
+			return null;
+
+		try
+		{
+			// Convert Stream to IRandomAccessStream
+			var randomAccessStream = new InMemoryRandomAccessStream();
+			await inputStream.CopyToAsync(randomAccessStream.AsStreamForWrite());
+			randomAccessStream.Seek(0);
+
+			// Create a decoder from the input stream
+			var decoder = await BitmapDecoder.CreateAsync(randomAccessStream);
+
+			// Get all properties
+			var properties = await decoder.BitmapProperties.GetPropertiesAsync(Array.Empty<string>());
+			
+			// Serialize properties to a simple format
+			var metadataList = new List<string>();
+			foreach (var prop in properties)
+			{
+				if (prop.Value != null && prop.Value.Value != null)
+				{
+					metadataList.Add($"{prop.Key}={prop.Value.Value}");
+				}
+			}
+
+			var metadataString = string.Join("\n", metadataList);
+			return System.Text.Encoding.UTF8.GetBytes(metadataString);
+		}
+		catch
+		{
+			return null;
+		}
+	}
+
+	public static partial async Task<Stream> ApplyMetadataAsync(Stream processedStream, byte[] metadata, string? originalFileName)
+	{
+		if (processedStream == null || metadata == null || metadata.Length == 0)
+			return processedStream ?? new MemoryStream();
+
+		try
+		{
+			// For now, Windows doesn't have a simple way to reapply metadata to processed images
+			// The Windows Imaging Component (WIC) makes this complex, so we'll return the processed stream as-is
+			// In the future, this could be enhanced with more sophisticated metadata handling
+			return processedStream;
+		}
+		catch
+		{
+			return processedStream;
+		}
 	}
 }

@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Android.Graphics;
@@ -148,6 +149,171 @@ internal static partial class ImageProcessor
 		{
 			System.Console.WriteLine($"Error applying EXIF orientation: {ex}");
 			return bitmap;
+		}
+	}
+
+	public static partial async Task<byte[]?> ExtractMetadataAsync(Stream inputStream, string? originalFileName)
+	{
+		if (inputStream == null)
+			return null;
+
+		try
+		{
+			// Reset stream position
+			if (inputStream.CanSeek)
+				inputStream.Position = 0;
+
+			// Read stream into byte array
+			byte[] bytes;
+			using (var memoryStream = new MemoryStream())
+			{
+				await inputStream.CopyToAsync(memoryStream);
+				bytes = memoryStream.ToArray();
+			}
+
+			// Create temporary file to extract EXIF data
+			var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.jpg");
+			using (var fileStream = File.Create(tempFileName))
+			{
+				fileStream.Write(bytes, 0, bytes.Length);
+			}
+
+			// Extract all EXIF attributes
+			var exif = new ExifInterface(tempFileName);
+			var metadataList = new List<string>();
+
+			// Extract common EXIF tags
+			var tags = new string[]
+			{
+				ExifInterface.TagArtist,
+				ExifInterface.TagCopyright,
+				ExifInterface.TagDatetime,
+				ExifInterface.TagImageDescription,
+				ExifInterface.TagMake,
+				ExifInterface.TagModel,
+				ExifInterface.TagOrientation,
+				ExifInterface.TagSoftware,
+				ExifInterface.TagGpsLatitude,
+				ExifInterface.TagGpsLongitude,
+				ExifInterface.TagGpsAltitude,
+				ExifInterface.TagExposureTime,
+				ExifInterface.TagFNumber,
+				ExifInterface.TagIso,
+				ExifInterface.TagWhiteBalance,
+				ExifInterface.TagFlash,
+				ExifInterface.TagFocalLength
+			};
+
+			foreach (var tag in tags)
+			{
+				var value = exif.GetAttribute(tag);
+				if (!string.IsNullOrEmpty(value))
+				{
+					metadataList.Add($"{tag}={value}");
+				}
+			}
+
+			// Serialize metadata to simple string format
+			var metadataString = string.Join("\n", metadataList);
+			var metadataBytes = System.Text.Encoding.UTF8.GetBytes(metadataString);
+
+			// Clean up temp file
+			try
+			{
+				File.Delete(tempFileName);
+			}
+			catch
+			{
+				// Ignore cleanup failures
+			}
+
+			return metadataBytes;
+		}
+		catch
+		{
+			return null;
+		}
+	}
+
+	public static partial async Task<Stream> ApplyMetadataAsync(Stream processedStream, byte[] metadata, string? originalFileName)
+	{
+		if (processedStream == null || metadata == null || metadata.Length == 0)
+			return processedStream ?? new MemoryStream();
+
+		try
+		{
+			// Reset stream position
+			if (processedStream.CanSeek)
+				processedStream.Position = 0;
+
+			// Read processed stream into byte array
+			byte[] bytes;
+			using (var memoryStream = new MemoryStream())
+			{
+				await processedStream.CopyToAsync(memoryStream);
+				bytes = memoryStream.ToArray();
+			}
+
+			// Deserialize metadata
+			var metadataString = System.Text.Encoding.UTF8.GetString(metadata);
+			var metadataLines = metadataString.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+			
+			var metadataDict = new Dictionary<string, string>();
+			foreach (var line in metadataLines)
+			{
+				var parts = line.Split('=', 2);
+				if (parts.Length == 2)
+				{
+					metadataDict[parts[0]] = parts[1];
+				}
+			}
+
+			if (metadataDict.Count == 0)
+				return new MemoryStream(bytes);
+
+			// Create temporary file to apply EXIF data
+			var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.jpg");
+			using (var fileStream = File.Create(tempFileName))
+			{
+				fileStream.Write(bytes, 0, bytes.Length);
+			}
+
+			// Apply EXIF data
+			var exif = new ExifInterface(tempFileName);
+			foreach (var kvp in metadataDict)
+			{
+				try
+				{
+					exif.SetAttribute(kvp.Key, kvp.Value);
+				}
+				catch
+				{
+					// Skip attributes that can't be set
+				}
+			}
+			exif.SaveAttributes();
+
+			// Read back the file with applied metadata
+			var resultBytes = File.ReadAllBytes(tempFileName);
+
+			// Clean up temp file
+			try
+			{
+				File.Delete(tempFileName);
+			}
+			catch
+			{
+				// Ignore cleanup failures
+			}
+
+			return new MemoryStream(resultBytes);
+		}
+		catch
+		{
+			// If metadata application fails, return original processed stream
+			if (processedStream.CanSeek)
+				processedStream.Position = 0;
+			return processedStream;
 		}
 	}
 }
