@@ -26,7 +26,7 @@ public class SearchBarFeatureTests : UITest
         VerifyScreenshot();
     }
 
-#if TEST_FAILS_ON_ANDROID
+#if TEST_FAILS_ON_ANDROID // Issue Link - https://github.com/dotnet/maui/issues/14061
         [Test, Order(2)]
         [Category(UITestCategories.SearchBar)]
         public void SearchBar_SearchButtonClicked_VerifyEventTriggered()
