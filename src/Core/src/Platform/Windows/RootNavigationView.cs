@@ -273,7 +273,7 @@ namespace Microsoft.Maui.Platform
 		
 		bool IsHeaderContentEmpty()
 		{
-			return string.IsNullOrEmpty(Toolbar.Title) && Toolbar.TitleView is null;
+			return string.IsNullOrEmpty(Toolbar?.Title) && Toolbar?.TitleView is null;
 		}
 		
 		void CollapseEmptyHeader()
