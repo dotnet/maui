@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool _undoNextScrollAdjustment;
 		bool _maintainingScrollOffsets;
-
+		bool isFirstItemReached = true;
 		int _lastScrollX;
 		int _lastScrollY;
 		int _lastDeltaX;
@@ -26,13 +26,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// Used by the renderer to maintain scroll offset when using ItemsUpdatingScrollMode KeepScrollOffset
 		public void UndoNextScrollAdjustment()
 		{
-			// Don't start tracking the scroll offsets until we really need to
-			if (!_maintainingScrollOffsets)
-			{
-				_maintainingScrollOffsets = true;
-				_recyclerView.AddOnScrollListener(this);
-			}
-
 			_undoNextScrollAdjustment = true;
 
 			_lastScrollX = _recyclerView.ComputeHorizontalScrollOffset();
@@ -212,11 +205,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// offset to shift; since the ItemsUpdatingScrollMode is set to KeepScrollOffset; we need to undo 
 				// that shift and stay where we were before the item was added
 
-				_undoNextScrollAdjustment = false;
-				_recyclerView.ScrollBy(-_lastDeltaX, -_lastDeltaY);
+				if (isFirstItemReached)
+				{
+					_recyclerView.ScrollBy(-_lastDeltaX, -_lastDeltaY);
+				}
 
+				_undoNextScrollAdjustment = false;
 				_lastDeltaX = 0;
 				_lastDeltaY = 0;
+			}
+			else
+			{
+				isFirstItemReached = newXOffset == 0
+				&& newYOffset == 0;
 			}
 		}
 
@@ -224,6 +225,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnScrolled(recyclerView, dx, dy);
 			TrackOffsets();
+		}
+
+		internal void AddScrollListener()
+		{
+			// Set up scroll listener to track the scroll offsets when we're using KeepScrollOffset.
+			if (!_maintainingScrollOffsets)
+			{
+				_maintainingScrollOffsets = true;
+				_recyclerView.AddOnScrollListener(this);
+			}
+		}
+
+		internal void RemoveScrollListener()
+		{
+			// Remove the scroll listener when we're done and no longer need to track the offsets.
+			if (_maintainingScrollOffsets)
+			{
+				_maintainingScrollOffsets = false;
+				_recyclerView.RemoveOnScrollListener(this);
+			}
 		}
 	}
 }
