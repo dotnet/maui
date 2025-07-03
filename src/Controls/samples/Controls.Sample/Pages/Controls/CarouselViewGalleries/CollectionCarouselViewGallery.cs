@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui;
@@ -14,7 +13,6 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 	[Preserve(AllMembers = true)]
 	public class CollectionCarouselViewGallery : ContentPage
 	{
-		[RequiresUnreferencedCode()]
 		public CollectionCarouselViewGallery()
 		{
 			Title = "Working with ObservableCollections and CarouselView";

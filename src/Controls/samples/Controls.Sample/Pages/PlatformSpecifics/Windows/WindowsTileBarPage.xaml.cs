@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using Maui.Controls.Sample.ViewModels;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
@@ -12,7 +11,6 @@ namespace Maui.Controls.Sample.Pages
 		TitleBarSampleViewModel _viewModel;
 		TitleBar _customTitleBar;
 
-		[RequiresUnreferencedCode()]
 		public WindowsTitleBarPage()
 		{
 			InitializeComponent();

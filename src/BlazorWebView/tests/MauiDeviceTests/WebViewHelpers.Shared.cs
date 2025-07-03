@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading.Tasks;
 #if ANDROID
@@ -85,7 +84,6 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 
 			throw new Exception($"Failed to deserialize result from controlDiv: {result}");
 
-			[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
 			static bool TryDeserialize<TInner>(string? result, out TInner? value)
 			{
 				if (result is null or "null" or "undefined")

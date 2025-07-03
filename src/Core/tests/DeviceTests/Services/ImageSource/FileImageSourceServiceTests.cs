@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -15,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(typeof(FontImageSourceStub))]
 		[InlineData(typeof(StreamImageSourceStub))]
 		[InlineData(typeof(UriImageSourceStub))]
-		public async Task ThrowsForIncorrectTypes([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+		public async Task ThrowsForIncorrectTypes(Type type)
 		{
 			var service = new FileImageSourceService();
 

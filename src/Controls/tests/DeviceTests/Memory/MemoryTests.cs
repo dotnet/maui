@@ -17,7 +17,6 @@ using Microsoft.Maui.Controls.Handlers.Items2;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.DeviceTests.Memory;
 
@@ -104,7 +103,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	//https://github.com/dotnet/maui/issues/27411
 #endif
 	[InlineData(typeof(TabbedPage))]
-	public async Task PagesDoNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+	public async Task PagesDoNotLeak(Type type)
 	{
 		SetupBuilder();
 
@@ -201,7 +200,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	//[InlineData(typeof(CollectionView2))] - Fails, Check https://github.com/dotnet/maui/issues/29619
 	[InlineData(typeof(CarouselView2))]
 #endif
-	public async Task HandlerDoesNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+	public async Task HandlerDoesNotLeak(Type type)
 	{
 		SetupBuilder();
 

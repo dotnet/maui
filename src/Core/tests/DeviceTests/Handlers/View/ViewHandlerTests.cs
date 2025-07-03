@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -85,7 +84,7 @@ namespace Microsoft.Maui.DeviceTests
 		public Task ToolTipTextAppliedToCheckbox(string text)
 			=> AssertTooltipTextApplied<CheckBoxStub>(text);
 
-		async Task AssertTooltipTextApplied<[DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TElement>(string expected)
+		async Task AssertTooltipTextApplied<TElement>(string expected)
 			where TElement : StubBase
 		{
 #if ANDROID
