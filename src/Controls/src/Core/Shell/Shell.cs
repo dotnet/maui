@@ -1590,7 +1590,7 @@ namespace Microsoft.Maui.Controls
 			if (_previousPage != null)
 				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
 
-			NavigationType navigationType = NavigationType.PageSwap;
+			NavigationType navigationType = NavigationType.Replace;
 
 			switch (args.Source)
 			{
@@ -1598,13 +1598,13 @@ namespace Microsoft.Maui.Controls
 					navigationType = NavigationType.Pop;
 					break;
 				case ShellNavigationSource.ShellItemChanged:
-					navigationType = NavigationType.PageSwap;
+					navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.ShellSectionChanged:
-					navigationType = NavigationType.PageSwap;
+					navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.ShellContentChanged:
-					navigationType = NavigationType.PageSwap;
+					navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.Push:
 					navigationType = NavigationType.Push;
@@ -1618,7 +1618,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
-			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, navigationType));
 			_previousPage = null;
 
 			if (CurrentPage != null)
@@ -1644,8 +1644,35 @@ namespace Microsoft.Maui.Controls
 
 			if (!args.Cancelled)
 			{
+				NavigationType navigationType = NavigationType.Replace;
+
+				switch (args.Source)
+				{
+					case ShellNavigationSource.Pop:
+						navigationType = NavigationType.Pop;
+						break;
+					case ShellNavigationSource.ShellItemChanged:
+						navigationType = NavigationType.Replace;
+						break;
+					case ShellNavigationSource.ShellSectionChanged:
+						navigationType = NavigationType.Replace;
+						break;
+					case ShellNavigationSource.ShellContentChanged:
+						navigationType = NavigationType.Replace;
+						break;
+					case ShellNavigationSource.Push:
+						navigationType = NavigationType.Push;
+						break;
+					case ShellNavigationSource.PopToRoot:
+						navigationType = NavigationType.PopToRoot;
+						break;
+					case ShellNavigationSource.Insert:
+						navigationType = NavigationType.Insert;
+						break;
+				}
+
 				_previousPage = CurrentPage;
-				CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs());
+				CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
 			}
 		}
 
