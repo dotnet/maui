@@ -5,7 +5,10 @@ using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls
 {
-	internal static class DispatcherExtensions
+	/// <summary>
+	/// Extension methods for finding and working with dispatchers in the Controls namespace.
+	/// </summary>
+	public static class DispatcherExtensions
 	{
 		public static IDispatcher FindDispatcher(this BindableObject? bindableObject)
 		{

@@ -258,3 +258,5 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 ~virtual Microsoft.Maui.Controls.CollectionSynchronizationCallback.Invoke(System.Collections.IEnumerable collection, object context, System.Action accessMethod, bool writeAccess) -> void
 ~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
+Microsoft.Maui.Controls.DispatcherExtensions
+static Microsoft.Maui.Controls.DispatcherExtensions.FindDispatcher(this Microsoft.Maui.Controls.BindableObject? bindableObject) -> Microsoft.Maui.Dispatching.IDispatcher!
