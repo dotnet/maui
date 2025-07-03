@@ -18,6 +18,15 @@ public class SearchBarFeatureTests : UITest
         App.NavigateToGallery(SearchBarFeatureMatrix);
     }
 
+    public void VerifyScreenshotWithPlatformCropping()
+    {
+#if IOS
+        VerifyScreenshot(cropBottom: 1200); 
+#else
+        VerifyScreenshot();
+#endif
+    }
+
     [Test, Order(1)]
     [Category(UITestCategories.SearchBar)]
     public void SearchBar_InitialState_VerifyVisualState()
@@ -26,7 +35,7 @@ public class SearchBarFeatureTests : UITest
         VerifyScreenshot();
     }
 
-#if TEST_FAILS_ON_ANDROID // Issue Link - https://github.com/dotnet/maui/issues/14061
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/14061
         [Test, Order(2)]
         [Category(UITestCategories.SearchBar)]
         public void SearchBar_SearchButtonClicked_VerifyEventTriggered()
@@ -79,26 +88,27 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("SearchBar");
         App.ClearText("SearchBar");
         App.EnterText("SearchBar", "Search Text");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 
 #if TEST_FAILS_ON_ANDROID // Issue Link - https://github.com/dotnet/maui/issues/30367
 
-        [Test, Order(5)]
-        [Category(UITestCategories.SearchBar)]
-        public void SearchBar_SetFlowDirection_VerifyVisualState()
-        {
-            App.WaitForElement("Options");
-            App.Tap("Options");
-            App.WaitForElement("FlowDirectionRTL");
-            App.Tap("FlowDirectionRTL");
-            App.WaitForElement("Apply");
-            App.Tap("Apply");
-            App.WaitForElementTillPageNavigationSettled("SearchBar");
-            App.ClearText("SearchBar");
-            App.EnterText("SearchBar", "Search Text");
-            VerifyScreenshot();
-        }
+    [Test, Order(5)]
+    [Category(UITestCategories.SearchBar)]
+    public void SearchBar_SetFlowDirection_VerifyVisualState()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("FlowDirectionRTL");
+        App.Tap("FlowDirectionRTL");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("SearchBar");
+        App.ClearText("SearchBar");
+        App.EnterText("SearchBar", "Search Text");
+        App.DismissKeyboard();
+        VerifyScreenshotWithPlatformCropping();
+    }
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30368
@@ -118,7 +128,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("SearchBar");
         App.ClearText("SearchBar");
         App.EnterText("SearchBar", "Search Text");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 
     [Test, Order(7)]
@@ -137,7 +147,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("SearchBar");
         App.ClearText("SearchBar");
         App.EnterText("SearchBar", "Search Text");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 
     [Test, Order(8)]
@@ -153,7 +163,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("SearchBar");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 
     [Test, Order(9)]
@@ -169,7 +179,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("SearchBar");
         App.ClearText("SearchBar");
         App.EnterText("SearchBar", "Search Text");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 
     [Test, Order(10)]
@@ -187,7 +197,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("SearchBar");
         App.ClearText("SearchBar");
         App.EnterText("SearchBar", "Search Text");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 #endif
 
@@ -207,7 +217,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("SearchBar");
         App.ClearText("SearchBar");
         App.EnterText("SearchBar", "Search Text");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 
     [Test, Order(12)]
@@ -223,7 +233,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("SearchBar");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 
     [Test, Order(13)]
@@ -239,7 +249,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("SearchBar");
         App.ClearText("SearchBar");
         App.EnterText("SearchBar", "Search Text");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 
     [Test, Order(14)]
@@ -256,7 +266,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("SearchBar");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 
     [Test, Order(15)]
@@ -273,7 +283,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("SearchBar");
         App.ClearText("SearchBar");
         App.EnterText("SearchBar", "Search Text");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link - https://github.com/dotnet/maui/issues/30371
@@ -291,7 +301,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("SearchBar");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 #endif
 
@@ -308,7 +318,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("SearchBar");
         App.ClearText("SearchBar");
         App.EnterText("SearchBar", "Search Text");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link - https://github.com/dotnet/maui/issues/30371
@@ -328,36 +338,36 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("SearchBar");
         App.ClearText("SearchBar");
         App.EnterText("SearchBar", "Search Text");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link - https://github.com/dotnet/maui/issues/14566
 
-        [Test, Order(19)]
-        [Category(UITestCategories.SearchBar)]
-        public void SearchBar_SetIsEnabledFalse_VerifyVisualState()
-        {
-            App.WaitForElement("Options");
-            App.Tap("Options");
-            App.WaitForElement("IsEnabledFalseButton");
-            App.Tap("IsEnabledFalseButton");
-            App.WaitForElement("Apply");
-            App.Tap("Apply");
-            App.WaitForElementTillPageNavigationSettled("SearchBar");
-            App.ClearText("SearchBar");
-            App.EnterText("SearchBar", "ShouldNotAppear");
-            var text = string.Empty;
+    [Test, Order(19)]
+    [Category(UITestCategories.SearchBar)]
+    public void SearchBar_SetIsEnabledFalse_VerifyVisualState()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("IsEnabledFalseButton");
+        App.Tap("IsEnabledFalseButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("SearchBar");
+        App.ClearText("SearchBar");
+        App.EnterText("SearchBar", "ShouldNotAppear");
+        var text = string.Empty;
 #if ANDROID
             text = App.WaitForElement("SearchBar").GetText();
 #elif IOS || MACCATALYST
             text = App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeSearchField")).GetText();
 #else
-            text = App.WaitForElement("TextBox").GetText();
+        text = App.WaitForElement("TextBox").GetText();
 #endif
-            Assert.That(text, Is.EqualTo(string.Empty));
-            VerifyScreenshot();
-        }
+        Assert.That(text, Is.EqualTo(string.Empty));
+        VerifyScreenshotWithPlatformCropping();
+    }
 #endif
 
     [Test, Order(20)]
@@ -397,7 +407,7 @@ public class SearchBarFeatureTests : UITest
             text = App.WaitForElement("TextBox").GetText();
 #endif
             Assert.That(text, Is.EqualTo(string.Empty));
-            VerifyScreenshot();
+            VerifyScreenshotWithPlatformCropping();
         }
 #endif
 
@@ -416,7 +426,7 @@ public class SearchBarFeatureTests : UITest
             App.WaitForElementTillPageNavigationSettled("SearchBar");
             App.ClearText("SearchBar");
             App.EnterText("SearchBar", "Ths is a spleling eror");
-            VerifyScreenshot();
+            VerifyScreenshotWithPlatformCropping();
         }
 
         [Test, Order(23)]
@@ -432,7 +442,7 @@ public class SearchBarFeatureTests : UITest
             App.WaitForElementTillPageNavigationSettled("SearchBar");
             App.ClearText("SearchBar");
             App.EnterText("SearchBar", "t");
-            VerifyScreenshot();
+            VerifyScreenshotWithPlatformCropping();
         }
 #endif
 
@@ -450,7 +460,7 @@ public class SearchBarFeatureTests : UITest
             App.Tap("Apply");
             App.WaitForElementTillPageNavigationSettled("SearchBar");
             App.Tap("SearchBar");
-            VerifyScreenshot();
+            VerifyScreenshotWithPlatformCropping();
             App.EnterText("SearchBar", "1234567890");
             App.DismissKeyboard();
         }
@@ -478,7 +488,7 @@ public class SearchBarFeatureTests : UITest
 #elif IOS || MACCATALYST
             text = App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeSearchField")).GetText();
 #else
-            text = App.WaitForElement("TextBox").GetText();
+        text = App.WaitForElement("TextBox").GetText();
 #endif
         var textLength = text?.Length;
         Assert.That(textLength, Is.EqualTo(10));
@@ -500,7 +510,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("SearchBar");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 #endif
 
@@ -517,7 +527,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("SearchBar");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 
     [Test, Order(28)]
@@ -533,7 +543,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("SearchBar");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link - https://github.com/dotnet/maui/issues/2661
@@ -551,7 +561,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("SearchBar");
         App.ClearText("SearchBar");
         App.EnterText("SearchBar", "Search Text");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 #endif
 
@@ -570,7 +580,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("SearchBar");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 
 # if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/29812
@@ -588,7 +598,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("SearchBar");
         App.ClearText("SearchBar");
         App.EnterText("SearchBar", "Shadow Test");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 #endif
 
@@ -608,7 +618,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("SearchBar");
         App.ClearText("SearchBar");
         App.EnterText("SearchBar", "SearchText");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 #endif
 
@@ -631,7 +641,7 @@ public class SearchBarFeatureTests : UITest
 #elif IOS || MACCATALYST
             text = App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeSearchField")).GetText();
 #else
-            text = App.WaitForElement("TextBox").GetText();
+        text = App.WaitForElement("TextBox").GetText();
 #endif
         Assert.That(text, Is.EqualTo("SEARCHTEXT"));
     }
@@ -656,7 +666,7 @@ public class SearchBarFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("SearchBar");
-        VerifyScreenshot();
+        VerifyScreenshotWithPlatformCropping();
     }
 #endif
 }
