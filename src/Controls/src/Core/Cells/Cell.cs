@@ -161,9 +161,11 @@ namespace Microsoft.Maui.Controls
 		public void ForceUpdateSize()
 		{
 			if (_nextCallToForceUpdateSizeQueued)
+			{
 				return;
+			}
 
-			if ((Parent as ListView)?.HasUnevenRows == true || (Parent as TableView)?.HasUnevenRows == true)
+			if ((Parent is ListView) || (Parent as TableView)?.HasUnevenRows == true)
 			{
 				_nextCallToForceUpdateSizeQueued = true;
 				OnForceUpdateSizeRequested();
