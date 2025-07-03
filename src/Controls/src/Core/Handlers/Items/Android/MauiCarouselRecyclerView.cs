@@ -303,6 +303,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 							UpdatePosition(carouselPosition);
 						}
 
+						UpdateAdapter();
+						ScrollToPosition(carouselPosition);
+
 						//If we are adding or removing the last item we need to update
 						//the inset that we give to items so they are centered
 						if (e.NewStartingIndex == count - 1 || removingLastElement)
