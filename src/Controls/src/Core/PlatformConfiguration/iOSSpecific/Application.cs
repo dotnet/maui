@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using FormsElement = Maui.Controls.Application;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Application']/Docs/*" />
+	/// <summary>Provides control over simultaneous recognition for pan gesture recognizers.</summary>
 	public static class Application
 	{
 		#region PanGestureRecognizerShouldRecognizeSimultaneously

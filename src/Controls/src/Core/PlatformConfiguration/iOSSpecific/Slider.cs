@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using FormsElement = Maui.Controls.Slider;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Slider.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Slider']/Docs/*" />
+	/// <summary>Platform-specific functionality for sliders the iOS platform.</summary>
 	public static class Slider
 	{
 		/// <summary>Bindable property for attached property <c>UpdateOnTap</c>.</summary>

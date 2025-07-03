@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 	using Microsoft.Maui.Graphics;
 	using FormsElement = Maui.Controls.Image;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Image']/Docs/*" />
+	/// <summary>Provides access to the blend color for images on the Tizen platform.</summary>
 	public static class Image
 	{
 		/// <summary>Bindable property for attached property <c>BlendColor</c>.</summary>

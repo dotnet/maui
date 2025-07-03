@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(DropCommandParameterProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='SendDragOver']/Docs/*" />
+		/// <param name="args">The event arguments.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendDragOver(DragEventArgs args)
 		{
