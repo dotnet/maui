@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (datePickerDialog != null)
 			{
-				datePickerDialog.DatePicker.MinDate = (long)datePicker.MinimumDate.ToUniversalTime().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
+				datePickerDialog.DatePicker.MinDate = (long)datePicker.MinimumDate.ToUniversalTimeNative().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
 			}
 		}
 
@@ -49,8 +49,22 @@ namespace Microsoft.Maui.Platform
 		{
 			if (datePickerDialog != null)
 			{
-				datePickerDialog.DatePicker.MaxDate = (long)datePicker.MaximumDate.ToUniversalTime().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
+				datePickerDialog.DatePicker.MaxDate = (long)datePicker.MaximumDate.ToUniversalTimeNative().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
 			}
+		}
+
+		internal static DateTime ToUniversalTimeNative(this DateTime date)
+		{
+			if (date.Kind == DateTimeKind.Utc)
+			{
+				return date;
+			}
+			var timeZone = Java.Util.TimeZone.Default;
+			if (timeZone != null && date != DateTime.MaxValue && date != DateTime.MinValue)
+			{
+				return date.AddHours(-1 * (double)timeZone.RawOffset / 1000 / 60 / 60);
+			}
+			return date.ToUniversalTime();
 		}
 
 		internal static void SetText(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
