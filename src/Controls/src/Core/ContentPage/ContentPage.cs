@@ -94,14 +94,19 @@ namespace Microsoft.Maui.Controls
 
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureEnd);
 			_ = this.MeasureContent(widthConstraint, heightConstraint);
-			return new Size(widthConstraint, heightConstraint);
+			var size = new Size(widthConstraint, heightConstraint);
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureEnd);
+			return size;
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
 		{
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformArrangeStart);
 			Frame = bounds;
 			this.ArrangeContent(bounds);
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformArrangeEnd);
 			return bounds.Size;
 		}
 

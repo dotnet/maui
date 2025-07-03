@@ -137,7 +137,10 @@ namespace Microsoft.Maui.Controls
 
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			return this.MeasureContent(widthConstraint, heightConstraint);
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureStart);
+			var size = this.MeasureContent(widthConstraint, heightConstraint);
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureEnd);
+			return size;
 		}
 
 		// Don't delete this override. At some point in the future we'd like to delete Compatibility.Layout
@@ -161,7 +164,9 @@ namespace Microsoft.Maui.Controls
 
 		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
 		{
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformArrangeStart);
 			this.ArrangeContent(bounds);
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformArrangeEnd);
 			return bounds.Size;
 		}
 

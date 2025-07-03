@@ -682,16 +682,20 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <inheritdoc cref="ICrossPlatformLayout.CrossPlatformMeasure(double, double)" />
 		public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureStart);
 #pragma warning disable CS0618 // Type or member is obsolete
-			return OnMeasure(widthConstraint, heightConstraint).Request;
+			Size crossPlatformMeasure = OnMeasure(widthConstraint, heightConstraint).Request;
 #pragma warning restore CS0618 // Type or member is obsolete
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureEnd);
+			return crossPlatformMeasure;
 		}
 
 		/// <inheritdoc cref="ICrossPlatformLayout.CrossPlatformArrange(Rect)" />
 		public Size CrossPlatformArrange(Rect bounds)
 		{
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformArrangeStart);
 			UpdateChildrenLayout();
-
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformArrangeEnd);
 			return Frame.Size;
 		}
 
