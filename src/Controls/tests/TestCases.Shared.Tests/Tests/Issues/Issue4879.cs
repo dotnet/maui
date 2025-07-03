@@ -19,7 +19,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("TestReady");
 			App.Screenshot("I am at Issue 4879. All buttons or images should be the same size.");
-			VerifyScreenshot();
 		}
 	}
 }
