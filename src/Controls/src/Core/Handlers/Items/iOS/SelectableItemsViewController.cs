@@ -55,10 +55,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (index.Section > -1 && index.Item > -1)
 			{
 				// Ensure the selected index is updated after the collection view's items generation is completed
-				CollectionView.PerformBatchUpdates(null, _ =>
+				if (!CollectionView.IsLoaded())
+				{
+					CollectionView.PerformBatchUpdates(null, _ =>
+					{
+						CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
+					});
+				}
+				else
 				{
 					CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
-				});
+				}
 			}
 		}
 
