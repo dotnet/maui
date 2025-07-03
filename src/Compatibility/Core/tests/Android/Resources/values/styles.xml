@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<resources>
-  <style name="TextAllCapsStyleTrue" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-    <item name="android:textAllCaps">true</item>
-  </style>
-  <style name="TextAllCapsStyleFalse" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-    <item name="android:textAllCaps">false</item>
-  </style>
-</resources>

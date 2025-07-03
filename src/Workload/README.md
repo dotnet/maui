@@ -19,7 +19,6 @@ The idea, is a project to be able to set `$(UseMaui)`:
 * `Microsoft.NET.Sdk.Maui` - workload manifest
 * `Microsoft.Maui.Sdk` - workload SDK
 * `Microsoft.Maui.Controls` - nuget
-* `Microsoft.Maui.Controls.Compatibility` - nuget
 * `Microsoft.Maui.Templates` - nuget
 
 `BlazorWebView` is an addition to MAUI, project can currently opt into
