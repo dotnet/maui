@@ -228,6 +228,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return;
 			}
 
+			if (child is IView fe && fe.Handler is not null)
+			{
+				// The new arrange methods will take care of all the alignment and margins and such
+				fe.Arrange(region);
+				return;
+			}
+
 			bool isRightToLeft = false;
 			if (child.Parent is IFlowDirectionController parent &&
 				(isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer &&
@@ -235,13 +242,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				(parent.Width - region.Right) != region.X)
 			{
 				region = new Rect(parent.Width - region.Right, region.Y, region.Width, region.Height);
-			}
-
-			if (child is IView fe && fe.Handler != null)
-			{
-				// The new arrange methods will take care of all the alignment and margins and such
-				fe.Arrange(region);
-				return;
 			}
 
 			if (!(child is View view))
