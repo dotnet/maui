@@ -270,5 +270,3 @@ override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, dou
 override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void
 Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider
 Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider.BindingDataType.get -> string!
-~Microsoft.Maui.Controls.Binding.DataType.get -> System.Type
-~Microsoft.Maui.Controls.Binding.DataType.set -> void
