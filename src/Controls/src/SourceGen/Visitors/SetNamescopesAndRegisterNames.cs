@@ -27,10 +27,10 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		if (!IsXNameProperty(node, parentNode))
 			return;
         var name = (string)node.Value;
-        if (namescope.namesInScope.Contains(name))
+        if (namescope.namesInScope.ContainsKey(name))
             //TODO send diagnostic instead
             throw new Exception("dup x:Name");
-		namescope.namesInScope.Add(name);
+		namescope.namesInScope.Add(name,Context.Variables[(IElementNode)parentNode]);
         Writer.WriteLine($"{namescope.namescope.Name}.RegisterName(\"{name}\", {Context.Variables[(IElementNode)parentNode].Name});");
 		
 		SetStyleId((string)node.Value, Context.Variables[(IElementNode)parentNode]);
@@ -42,13 +42,13 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 	public void Visit(ElementNode node, INode parentNode)
 	{
 		LocalVariable namescope;
-		IList<string> namesInNamescope;
+		IDictionary<string,LocalVariable> namesInNamescope;
 		var setNameScope = false;
 
 		if (parentNode == null || IsDataTemplate(node, parentNode) || IsStyle(node, parentNode) || IsVisualStateGroupList(node))
 		{
 			namescope = CreateNamescope();
-			namesInNamescope = [];
+			namesInNamescope = new Dictionary<string, LocalVariable>();
 			setNameScope = true;
 		}
 		else
@@ -71,7 +71,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		if (Context.RootType.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!, Context))
 			Writer.WriteLine($"global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope({Context.Variables[node].Name}, {namescope.Name});");
 		
-		Context.Scopes[node] = new (namescope, []);
+		Context.Scopes[node] = new (namescope, new Dictionary<string, LocalVariable>());
 	}
 
 	public void Visit(ListNode node, INode parentNode)

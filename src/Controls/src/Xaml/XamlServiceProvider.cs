@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		[Obsolete("Use the other ctor")]
 		//used by XamlC
 		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, INameScope scope)
-			: this(objectAndParents, targetProperty, new INameScope[] { scope }, false)
+			: this(objectAndParents, targetProperty, [scope], false)
 		{
 		}
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 
@@ -427,5 +428,36 @@ internal class KnownMarkups
 				&& propertyName.NamespaceURI == ""
 				&& propertyName.LocalName == "BindingContext";
 		}
+	}
+
+	internal static string ProvideValueForReferenceExtension(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType)
+	{
+		// should be possible to return the right value, as soon as we no longer use the namescope
+		returnType = context.Compilation.ObjectType;
+		if (!markupNode.Properties.TryGetValue(new XmlName("", "Name"), out INode refNameNode)
+			&& !markupNode.Properties.TryGetValue(new XmlName(null, "Name"), out refNameNode))
+			refNameNode = markupNode.CollectionItems[0];
+		var name = ((ValueNode)refNameNode).Value as string;
+
+		var node = markupNode;
+		var currentcontext = context;
+		while (currentcontext is not null && node is not null)
+		{
+			while (currentcontext is not null && !currentcontext.Scopes.ContainsKey(node))			
+				currentcontext = context.ParentContext;
+			if (currentcontext is null)
+				break;
+			var namescope= currentcontext.Scopes[node];
+			if (namescope.namesInScope != null && namescope.namesInScope.ContainsKey(name!))
+			{
+				returnType = namescope.namesInScope[name!].Type;
+				return $"{namescope.namesInScope[name!].Name}"; 
+			}
+			node = node.Parent as IElementNode;	
+		}
+
+		//TODO report diagnostic
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"ReferenceExtension: Name '{name}' not found in any NameScope"));
+		return "null"; // or throw an exception?
 	}
 }

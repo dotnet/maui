@@ -22,7 +22,7 @@ class SourceGenContext (IndentedTextWriter writer, Compilation compilation, Sour
     public void ReportDiagnostic(Diagnostic diagnostic) => sourceProductionContext.ReportDiagnostic(diagnostic);
     public string? FilePath {get; set;}
 	public IDictionary<INode, LocalVariable> ServiceProviders { get; } = new Dictionary<INode, LocalVariable>();
-	public IDictionary<INode, (LocalVariable namescope, IList<string> namesInScope)> Scopes = new Dictionary<INode, (LocalVariable, IList<string>)>(); 
+	public IDictionary<INode, (LocalVariable namescope, IDictionary<string, LocalVariable> namesInScope)> Scopes = new Dictionary<INode, (LocalVariable, IDictionary<string,LocalVariable>)>(); 
     public SourceGenContext? ParentContext {get;set;}
 	public ITypeSymbol? BaseType { get; } = baseType;
 	public IDictionary<INode, ITypeSymbol> Types { get; } = new Dictionary<INode, ITypeSymbol>();
