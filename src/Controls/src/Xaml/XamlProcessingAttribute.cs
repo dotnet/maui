@@ -3,6 +3,10 @@ using System;
 namespace Microsoft.Maui.Controls.Xaml;
 
 [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Module | AttributeTargets.Class, Inherited = false)]
+//when we remove this attribute, we'll have to obsolete XamlCompilationAttribute
+#if !NETSTANDARD
+[RequiresPreviewFeatures]
+#endif
 public sealed class XamlProcessingAttribute : Attribute
 {
 	public XamlProcessingAttribute(XamlInflator inflator) 
