@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IPicker.Items)] = MapItems,
+			[nameof(IPicker.IsOpen)] = MapIsOpen,
 		};
 
 		public static CommandMapper<IPicker, IPickerHandler> CommandMapper = new(ViewCommandMapper)
