@@ -1,5 +1,4 @@
 #nullable disable
-
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Compatibility;
@@ -8,6 +7,8 @@ using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
+
+#pragma warning disable CS0618 // Performance is obsolete
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
-			
+			Performance.Start(out string reference);
 
 			var viewCell = (ViewCell)item;
 
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			SetAccessibility(cell, item);
 
-			
+			Performance.Stop(reference);
 			return cell;
 		}
 
@@ -88,7 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public override void LayoutSubviews()
 			{
-				
+				Performance.Start(out string reference);
 
 				//This sets the content views frame.
 				base.LayoutSubviews();
@@ -109,12 +110,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					handler.LayoutVirtualView(new RectangleF(0, 0, contentFrame.Width, contentFrame.Height));
 				}
 
-				
+				Performance.Stop(reference);
 			}
 
 			public override SizeF SizeThatFits(SizeF size)
 			{
-				
+				Performance.Start(out string reference);
 
 				if (!_rendererRef.TryGetTarget(out IPlatformViewHandler handler))
 					return base.SizeThatFits(size);
@@ -131,7 +132,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// make sure to add in the separator if needed
 				var finalheight = (float)result.Value.Height + (SupressSeparator ? 0f : 1f) / UIScreen.MainScreen.Scale;
 
-				
+				Performance.Stop(reference);
 
 				return new SizeF(size.Width, finalheight);
 			}
@@ -178,7 +179,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			void UpdateCell(ViewCell cell)
 			{
-				
+				Performance.Start(out string reference);
 
 				if (ViewCell is ViewCell oldCell)
 				{
@@ -222,7 +223,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				UpdateIsEnabled(cell.IsEnabled);
 				cell.View.MeasureInvalidated += OnMeasureInvalidated;
-				
+				Performance.Stop(reference);
 			}
 
 			void OnMeasureInvalidated(object sender, EventArgs e)

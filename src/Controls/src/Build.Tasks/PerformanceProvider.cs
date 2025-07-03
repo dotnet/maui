@@ -8,7 +8,9 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls.Build.Tasks
 {
 	[Preserve(AllMembers = true)]
+#pragma warning disable CS0618 // IPerformanceProvider is obsolete
 	internal class PerformanceProvider : IPerformanceProvider
+#pragma warning restore CS0618
 	{
 		internal class Statistic
 		{

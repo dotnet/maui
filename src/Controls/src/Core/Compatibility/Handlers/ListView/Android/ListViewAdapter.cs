@@ -1,5 +1,4 @@
 #nullable disable
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,6 +13,8 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
+
+#pragma warning disable CS0618 // Performance is obsolete
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -220,7 +221,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			Cell cell = null;
 
-			
+			Performance.Start(out string reference);
 
 			ListViewCachingStrategy cachingStrategy = Controller.CachingStrategy;
 			var nextCellIsHeader = false;
@@ -242,7 +243,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (cell == null)
 					{
-						
+						Performance.Stop(reference);
 
 						return new AView(_context);
 					}
@@ -326,13 +327,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else
 					UnsetSelectedBackground(layout);
 
-				
+				Performance.Stop(reference);
 				return layout;
 			}
 
 			AView view = CellFactory.GetCell(cell, convertView, parent, _context, _listView);
 
-			
+			Performance.Start(reference, "AddView");
 
 			if (cellIsBeingReused)
 			{
@@ -350,7 +351,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			
+			Performance.Stop(reference, "AddView");
 
 			bool isHeader = cell.GetIsGroupHeader<ItemsView<Cell>, Cell>();
 
@@ -376,7 +377,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			layout.ApplyTouchListenersToSpecialCells(cell);
 
-			
+			Performance.Stop(reference);
 
 			return layout;
 		}

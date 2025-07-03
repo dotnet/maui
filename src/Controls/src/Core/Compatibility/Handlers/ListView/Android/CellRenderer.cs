@@ -9,9 +9,10 @@ using Microsoft.Maui.Controls.Internals;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
 
+#pragma warning disable CS0618 // Performance is obsolete
+
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-
 	public class CellRenderer : ElementHandler<Cell, AView>, IRegisterable
 	{
 		static readonly PropertyChangedEventHandler PropertyChangedHandler = OnGlobalCellPropertyChanged;
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (parent == null && ParentView?.Handler?.PlatformView is ViewGroup platformParent)
 				parent = platformParent;
 
-			
+			Performance.Start(out string reference);
 
 			if (Cell is ICellController cellController)
 				cellController.ForceUpdateSizeRequested -= OnForceUpdateSizeRequested;
@@ -84,14 +85,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Cell.PropertyChanged += PropertyChangedHandler;
 			((ICellController)Cell).SendAppearing();
 
-			
+			Performance.Stop(reference);
 
 			return view;
 		}
 
 		protected virtual AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
-			
+			Performance.Start(out string reference, "GetCellCore");
 
 			LayoutInflater inflater = LayoutInflater.FromContext(context);
 			const int type = global::Android.Resource.Layout.SimpleListItem1;
@@ -102,7 +103,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			textView.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
 			view.SetBackgroundColor(global::Android.Graphics.Color.Black);
 
-			
+			Performance.Stop(reference, "GetCellCore");
 
 			return view;
 		}
