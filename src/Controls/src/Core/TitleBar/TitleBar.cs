@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Controls
 
 		// Margin space (150px) required for Windows title bar system buttons
 		const int WindowsMargin = 150;
+		// Margin space (80px) required for Mac Catalyst window traffic light controls when not in fullscreen
 
 		/// <summary>Bindable property for <see cref="Icon"/>.</summary>
 		public static readonly BindableProperty IconProperty = BindableProperty.Create(nameof(Icon), typeof(ImageSource),
@@ -342,7 +343,7 @@ namespace Microsoft.Maui.Controls
 						if (_templateRoot is Grid contentGrid)
 						{
 							// If in fullscreen, remove left margin, otherwise set 80px margin
-							contentGrid.Margin = fullScreen ? new Thickness(0) : new Thickness(80, 0, 0, 0);
+							contentGrid.Margin = fullScreen ? new Thickness(0) : new Thickness(MacCatalystMargin, 0, 0, 0);
 						}
 					}
 				}
