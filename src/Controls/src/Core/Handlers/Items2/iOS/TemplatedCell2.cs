@@ -93,9 +93,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (_measureInvalidated || _cachedConstraints != constraints)
 				{
-					var measure = virtualView.Measure(constraints.Width, constraints.Height);
+					if (PlatformHandler?.VirtualView is View view && view.Parent is CollectionView itemsView && itemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+					{
+						_measuredSize = view.Measure(preferredAttributes.Size.Width, preferredAttributes.Size.Height);
+					}
+					else
+					{
+						_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
+
+					}
 					_cachedConstraints = constraints;
-					_measuredSize = measure;
 					_needsArrange = true;
 				}
 
