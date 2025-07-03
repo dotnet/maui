@@ -574,10 +574,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var frame = DetermineEmptyViewFrame();
 
-			_emptyUIView.Frame = frame;
-
 			if (_emptyViewFormsElement != null && ((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) != -1)
 			{
+				_emptyViewFormsElement.Measure(frame.Width, frame.Height);
 				_emptyViewFormsElement.Arrange(frame.ToRectangle());
 			}
 
