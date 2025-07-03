@@ -168,7 +168,6 @@ public class SearchBarViewModel : INotifyPropertyChanged
         set { _isVisible = value; OnPropertyChanged(); }
     }
 
-
     public event PropertyChangedEventHandler PropertyChanged;
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {

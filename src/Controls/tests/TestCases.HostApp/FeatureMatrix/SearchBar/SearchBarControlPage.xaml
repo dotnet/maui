@@ -12,15 +12,13 @@
        </ContentPage.ToolbarItems>
 
        <Grid x:Name="MainGrid"
-             RowDefinitions="Auto,Auto, Auto, Auto, Auto"
+             RowDefinitions="*,Auto, Auto, Auto, Auto"
              ColumnDefinitions="0.5*, 0.5*">
               <Grid x:Name="PickerGrid"
                     Grid.Row="0"
                     Grid.ColumnSpan="2"
                     VerticalOptions="Center">
-                     <SearchBar Grid.Row="0"
-                                Grid.ColumnSpan="2"
-                                x:Name="searchBar"
+                     <SearchBar x:Name="searchBar"
                                 AutomationId="SearchBar"
                                 CancelButtonColor="{Binding CancelButtonColor}"
                                 CharacterSpacing="{Binding CharacterSpacing}"
@@ -52,38 +50,37 @@
                                 VerticalTextAlignment="{Binding VerticalTextAlignment}"/>
               </Grid>
 
-              <Label Grid.Row="2"
+              <Label Grid.Row="1"
                      Grid.Column="0"
-                     Margin="0,100,0,0"
                      HorizontalOptions="Center"
                      Text="Search Button Pressed: "/>
-              <Label Grid.Row="2"
+              <Label Grid.Row="1"
                      Grid.Column="1"
-                     Margin="0,100,0,0"
                      x:Name="SearchButtonPressedLabel"
                      AutomationId="SearchButtonPressedLabel"
                      HorizontalOptions="Center"
                      Text="No"/>
 
-              <Label Grid.Row="3"
+              <Label Grid.Row="2"
                      Grid.Column="0"
                      HorizontalOptions="Center"
                      Text="New Text: "/>
-              <Label Grid.Row="3"
+              <Label Grid.Row="2"
                      Grid.Column="1"
                      x:Name="NewTextChangedLabel"
                      HorizontalOptions="Center"
                      AutomationId="NewTextChangedLabel"/>
 
-              <Label Grid.Row="4"
+              <Label Grid.Row="3"
                      Grid.Column="0"
                      HorizontalOptions="Center"
+                     Margin="0,0,0,100"
                      Text="Old Text: "/>
-              <Label Grid.Row="4"
+              <Label Grid.Row="3"
                      Grid.Column="1"
                      x:Name="OldTextChangedLabel"
-                     Margin="0,0,0,10"
                      HorizontalOptions="Center"
+                     Margin="0,0,0,100"
                      AutomationId="OldTextChangedLabel"/>
        </Grid>
 </ContentPage>

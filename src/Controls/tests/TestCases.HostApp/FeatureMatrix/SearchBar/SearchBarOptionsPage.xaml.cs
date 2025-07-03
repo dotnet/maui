@@ -131,14 +131,8 @@ public partial class SearchBarOptionsPage : ContentPage
 				case "Chat":
 					_viewModel.Keyboard = Keyboard.Chat;
 					break;
-				case "Email":
-					_viewModel.Keyboard = Keyboard.Email;
-					break;
 				case "Numeric":
 					_viewModel.Keyboard = Keyboard.Numeric;
-					break;
-				case "Telephone":
-					_viewModel.Keyboard = Keyboard.Telephone;
 					break;
 				case "Text":
 					_viewModel.Keyboard = Keyboard.Text;
@@ -187,9 +181,18 @@ public partial class SearchBarOptionsPage : ContentPage
 		var radioButton = sender as RadioButton;
 		if (radioButton.IsChecked)
 		{
-			_viewModel.VerticalTextAlignment = radioButton.Content.ToString() == "Center"
-				? TextAlignment.Center
-				: TextAlignment.End;
+			switch (radioButton.Content.ToString())
+			{
+				case "Start":
+					_viewModel.VerticalTextAlignment = TextAlignment.Start;
+					break;
+				case "End":
+					_viewModel.VerticalTextAlignment = TextAlignment.End;
+					break;
+				default:
+					_viewModel.VerticalTextAlignment = TextAlignment.Center;
+					break;
+			}
 		}
 	}
 
