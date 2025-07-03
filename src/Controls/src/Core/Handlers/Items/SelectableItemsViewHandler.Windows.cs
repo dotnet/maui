@@ -181,7 +181,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView != null)
 			{
 				_ignoreVirtualSelectionChange = true;
-				ItemsView.SelectedItem = selectedItem;
+				ItemsView.SetValueFromRenderer(SelectableItemsView.SelectedItemProperty, selectedItem);
+
 
 				_ignoreVirtualSelectionChange = false;
 			}
