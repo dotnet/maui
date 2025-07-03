@@ -399,7 +399,6 @@ Microsoft.Maui.Controls.ITextElement.TextTransform.set -> void
 *REMOVED*~static Microsoft.Maui.Controls.Editor.ControlsEditorMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IEditor, Microsoft.Maui.Handlers.EditorHandler>
 *REMOVED*~static Microsoft.Maui.Controls.Element.ControlsElementMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement, Microsoft.Maui.IElementHandler>
 *REMOVED*~static Microsoft.Maui.Controls.Entry.ControlsEntryMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IEntry, Microsoft.Maui.Handlers.EntryHandler>
-*REMOVED*~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions.ToUIBarButtonItem(this Microsoft.Maui.Controls.ToolbarItem item, bool forceName) -> UIKit.UIBarButtonItem
 ~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapCurrentItem(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 ~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapIsBounceEnabled(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 ~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapIsSwipeEnabled(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
@@ -617,6 +616,7 @@ virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>
 virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.UpdateVisibility() -> void
 virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.GetVisibleItemsIndex() -> (bool VisibleItems, int First, int Center, int Last)
 virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.UpdateLayout() -> void
+~virtual Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.GetSecondaryToolbarMenuButtonImage() -> UIKit.UIImage
 override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWindow() -> void
 ~static readonly Microsoft.Maui.Controls.Switch.OffColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~Microsoft.Maui.Controls.Switch.OffColor.get -> Microsoft.Maui.Graphics.Color

@@ -376,6 +376,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateBackgroundColor();
 		}
 
+		/// <summary>
+		/// Override this method to provide a custom image for the secondary toolbar menu button.
+		/// The default implementation uses the "ellipsis.circle" system image.
+		/// This image is used for the menu button that appears when there are secondary toolbar items
+		/// </summary>
+		/// <returns>The image to use for the secondary toolbar menu button.</returns>
+		protected virtual UIImage GetSecondaryToolbarMenuButtonImage()
+		{
+			// Use the ellipsis.circle system image for the menu button by default
+			// as per the iOS design guidelines: https://developer.apple.com/design/human-interface-guidelines/pull-down-buttons
+			return UIImage.GetSystemImage("ellipsis.circle");
+		}
 
 		ParentingViewController CreateViewControllerForPage(Page page)
 		{
@@ -1346,11 +1358,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			internal void Disconnect(bool dispose)
 			{
 				// Unsubscribe from toolbar item property changes
-				foreach (var item in _trackedToolbarItems)
-				{
-					item.PropertyChanged -= OnToolbarItemPropertyChanged;
-				}
-				_trackedToolbarItems.Clear();
+				CleanToolbarItems();
 
 				if (Child is Page child)
 				{
@@ -1418,13 +1426,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (disposing)
 				{
-					// Unsubscribe from toolbar item property changes
-					foreach (var item in _trackedToolbarItems)
-					{
-						item.PropertyChanged -= OnToolbarItemPropertyChanged;
-					}
-					_trackedToolbarItems.Clear();
-					
 					Disconnect(true);
 				}
 
@@ -1671,7 +1672,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						{
 							_toolbarUpdatePending = false;
 							if (!_disposed)
+							{
 								UpdateToolbarItems();
+							}
 						});
 					}
 				}
@@ -1713,14 +1716,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			void UpdateToolbarItems()
+			void CleanToolbarItems()
 			{
-				// Unsubscribe from previous toolbar item property changes
 				foreach (var item in _trackedToolbarItems)
 				{
 					item.PropertyChanged -= OnToolbarItemPropertyChanged;
 				}
 				_trackedToolbarItems.Clear();
+			}
+
+			void UpdateToolbarItems()
+			{
+				// Unsubscribe from previous toolbar item property changes
+				CleanToolbarItems();
 
 				if (NavigationItem.RightBarButtonItems is not null)
 				{
@@ -1750,7 +1758,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (item.Order == ToolbarItemOrder.Secondary)
 					{
-						(secondaries ??= []).Add(item.ToSecondaryToolbarItem().PlatformAction);
+						(secondaries ??= []).Add(item.ToSecondarySubToolbarItem().PlatformAction);
 					}
 					else
 					{
@@ -1765,10 +1773,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (secondaries is not null && secondaries.Count > 0)
 				{
+					UIImage secondaryIcon = null;
+					if (_navigation.TryGetTarget(out NavigationRenderer navRenderer))
+					{
+						secondaryIcon = navRenderer.GetSecondaryToolbarMenuButtonImage();
+					}
+					else
+					{
+						// Shouldn't happen, but just in case let's add a fallback to the default icon
+						secondaryIcon = UIImage.GetSystemImage("ellipsis.circle");
+					}
+
 					var menu = UIMenu.Create(string.Empty, null, UIMenuIdentifier.Edit, UIMenuOptions.DisplayInline, secondaries.ToArray());
-					// Using the ellipsis.circle system image for the menu button, as per the iOS design guidelines: https://developer.apple.com/design/human-interface-guidelines/pull-down-buttons
-					var menuButton = new UIBarButtonItem(UIImage.GetSystemImage("ellipsis.circle"), menu);
-					menuButton.AccessibilityIdentifier = "SecondaryToolbarMenuButton";
+					var menuButton = new UIBarButtonItem(secondaryIcon, menu)
+					{
+						AccessibilityIdentifier = "SecondaryToolbarMenuButton"
+					};
 
 					// Since we are adding secondary items under a primary button,
 					// make sure that primaries is initialized
