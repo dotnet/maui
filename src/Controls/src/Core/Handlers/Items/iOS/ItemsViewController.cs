@@ -822,8 +822,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var frame = DetermineEmptyViewFrame();
 
-			_emptyViewFormsElement.Measure(frame.Width, frame.Height);
+			_emptyViewFormsElement?.Measure(frame.Width, frame.Height);
 			_emptyViewFormsElement?.Arrange(frame.ToRectangle());
+			_emptyUIView.Frame = frame;
 		}
 
 		TemplatedCell CreateAppropriateCellForLayout()
