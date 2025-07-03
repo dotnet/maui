@@ -2,30 +2,4 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
-        <ScrollView>
-                <VerticalStackLayout
-                        Spacing="25"
-                        Padding="30,0"
-                        VerticalOptions="Center">
-
-                        <Image
-                                Source="dotnet_bot.png"
-                                SemanticProperties.Description="Cute dot net bot waving hi to you!"
-                                HeightRequest="200"
-                                HorizontalOptions="Center"/>
-
-                        <Label
-                                Text="Hello, World!"
-                                SemanticProperties.HeadingLevel="Level1"
-                                FontSize="32"
-                                HorizontalOptions="Center"/>
-
-                        <Button
-                                x:Name="CounterBtn"
-                                Text="Show me"
-                                Clicked="Button_Clicked"
-                                HorizontalOptions="Center"/>
-
-                </VerticalStackLayout>
-        </ScrollView>
 </ContentPage>
