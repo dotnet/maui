@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Maui.Controls.Sample.Pages.CollectionViewGalleries.SpacingGalleries;
+﻿using Maui.Controls.Sample.Pages.CollectionViewGalleries.SpacingGalleries;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
@@ -149,7 +148,6 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			_scrollInfoLabel.Text += $", Delta: {delta}, Offset: {offset}";
 		}
 
-		[RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.BindableObjectExtensions.SetBinding(BindableProperty, String, BindingMode, IValueConverter, String)")]
 		static StackLayout GetReadOnlyInfo(CarouselView carouselView)
 		{
 			var StackLayoutInfo = new StackLayout

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -23,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		[Theory]
 		[ClassData(typeof(TestCases.ControlsViewTypesTestCases))]
-		public async Task ViewWithMarginSetsFrameAndDesiredSizeCorrectly([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type controlType)
+		public async Task ViewWithMarginSetsFrameAndDesiredSizeCorrectly(Type controlType)
 		{
 			EnsureHandlerCreated(TestCases.ControlsViewTypesTestCases.Setup);
 

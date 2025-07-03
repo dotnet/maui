@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -189,7 +188,7 @@ namespace Microsoft.Maui.DeviceTests
 				await initialBitmap.AssertEqualAsync(updatingBitmap);
 			});
 
-			static void CreateLayout([DynamicallyAccessedMembersAttribute(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type layoutType, out Layout layout, out Label label)
+			static void CreateLayout(Type layoutType, out Layout layout, out Label label)
 			{
 				layout = Activator.CreateInstance(layoutType) as Layout;
 				layout.WidthRequest = 200;
@@ -451,7 +450,6 @@ namespace Microsoft.Maui.DeviceTests
 		}*/
 
 		[Fact]
-		[RequiresUnreferencedCode()]
 		public async Task DependentLayoutBindingsResolve()
 		{
 			EnsureHandlerCreated((builder) =>

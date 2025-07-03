@@ -1,7 +1,6 @@
 #if IOS || MACCATALYST
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using CoreAnimation;
 using Microsoft.Maui.Platform;
@@ -19,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests.Memory
 		[InlineData(typeof(StaticCALayer))]
 		[InlineData(typeof(StaticCAGradientLayer))]
 		[InlineData(typeof(StaticCAShapeLayer))]
-		public async Task CALayerAutosizeObserver_DoesNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type sublayerType)
+		public async Task CALayerAutosizeObserver_DoesNotLeak(Type sublayerType)
 		{
 			WeakReference viewReference = null;
 			WeakReference layerReference = null;
