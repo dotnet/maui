@@ -197,11 +197,6 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Flyout == null || Detail == null)
 				throw new InvalidOperationException("Flyout and Detail must be set before using a FlyoutPage");
-
-#if !ANDROID
-			_flyout.Layout(_flyoutBounds);
-			_detail.Layout(_detailBounds);
-#endif
 		}
 
 		protected override void OnAppearing()

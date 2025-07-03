@@ -134,7 +134,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[Obsolete]
 		public virtual void SetElementSize(Size size)
 		{
-			Element.Layout(new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public override void ViewDidLayoutSubviews()
