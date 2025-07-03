@@ -110,6 +110,50 @@ dotnet cake --target=dotnet-pack
   - `src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj`
   - `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
 
+#### UI Testing Guidelines
+
+When adding UI tests to validate visual behavior and user interactions, follow this two-part pattern:
+
+**CRITICAL: UITests require code in TWO separate projects that must BOTH be implemented:**
+
+1. **HostApp UI Test Page** (`src/Controls/tests/TestCases.HostApp/Issues/`)
+   - Create the actual UI page that demonstrates the feature or reproduces the issue
+   - Use XAML with proper `AutomationId` attributes on interactive controls for test automation
+   - Follow naming convention: `IssueXXXXX.xaml` and `IssueXXXXX.xaml.cs`
+   - Ensure the UI provides clear visual feedback for the behavior being tested
+
+2. **NUnit Test Implementation** (`src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/`)
+   - Create corresponding Appium-based NUnit tests that inherit from `_IssuesUITest`
+   - Use the `AutomationId` values to locate and interact with UI elements
+   - Follow naming convention: `IssueXXXXX.cs` (matches the HostApp file)
+   - Include appropriate `[Category(UITestCategories.XYZ)]` attributes
+   - Test should validate expected behavior through UI interactions and assertions
+
+**UI Test Pattern Example:**
+```csharp
+// In TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs
+public class IssueXXXXX : _IssuesUITest
+{
+    public override string Issue => "Description of the issue being tested";
+    
+    public IssueXXXXX(TestDevice device) : base(device) { }
+    
+    [Test]
+    [Category(UITestCategories.Layout)] // or appropriate category
+    public void TestMethodName()
+    {
+        App.WaitForElement("AutomationId");
+        App.Tap("AutomationId");
+        // Add assertions to verify expected behavior
+    }
+}
+```
+
+**Before committing UI tests:**
+- Compile both the HostApp project and TestCases.Shared.Tests project to ensure no build errors
+- Verify AutomationId references match between XAML and test code
+- Ensure tests follow the established naming and inheritance patterns
+
 ### Code Formatting
 
 Before committing any changes, format the codebase using the following command to ensure consistent code style:
@@ -183,6 +227,17 @@ Since coding agents function as both CI and pair programmers, they need to handl
 
 - **Always reset changes to `cgmanifest.json` files** - These are generated during CI builds and should not be committed by coding agents
 - **Always reset changes to `templatestrings.json` files** - These localization files are auto-generated and should not be committed by coding agents
+
+### PublicAPI.Unshipped.txt File Management
+When working with public API changes, proper handling of PublicAPI.Unshipped.txt files is critical:
+
+- **Never turn off analyzers or set no warn** to fix PublicAPI.Unshipped.txt file issues
+- **Always work to fix the PublicAPI.Unshipped.txt files properly** by adding the correct API entries
+- **Use `dotnet format analyzers`** if having trouble fixing PublicAPI.Unshipped.txt file issues
+- **Revert and re-add approach when files are incorrect:**
+  1. First, revert all changes to PublicAPI.Unshipped.txt files to their original state
+  2. Then, make only the necessary additions required for your new public APIs
+  3. This ensures clean, minimal changes that accurately reflect the new APIs being introduced
 
 ### Branching
 - `main` - For bug fixes without API changes
