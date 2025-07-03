@@ -1917,7 +1917,10 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("Use ArrangeOverride instead. This method will be removed in a future version.")]
 		public void Layout(Rect bounds)
 		{
-			Bounds = bounds;
+			// This forces any call to Layout to use the newer Measure and Arrange passes
+			// This should make it so legacy code that calls Layout will still work, but will use the new Measure and Arrange passes.
+			Measure(bounds.Width, bounds.Height);
+			Arrange(bounds);
 		}
 
 		/// <inheritdoc/>
