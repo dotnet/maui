@@ -272,7 +272,6 @@ internal static class LayoutFactory2
 		NSCollectionLayoutDimension itemHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
 		NSCollectionLayoutDimension groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
 		NSCollectionLayoutDimension groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
-		nfloat itemSpacing = 0;
 		NSCollectionLayoutGroup group = null;
 
 		var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
@@ -325,7 +324,10 @@ internal static class LayoutFactory2
 			}
 
 			var section = NSCollectionLayoutSection.Create(group: group);
-			section.InterGroupSpacing = itemSpacing;
+			if (itemsView.ItemsLayout is LinearItemsLayout linearItemsLayout)
+			{
+				section.InterGroupSpacing = (nfloat)linearItemsLayout.ItemSpacing;
+			}
 			section.OrthogonalScrollingBehavior = isHorizontal
 				? UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered
 				: UICollectionLayoutSectionOrthogonalScrollingBehavior.None;
