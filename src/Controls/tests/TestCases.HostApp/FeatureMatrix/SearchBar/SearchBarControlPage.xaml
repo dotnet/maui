@@ -14,7 +14,7 @@
        <Grid x:Name="MainGrid"
              RowDefinitions="*,Auto, Auto, Auto, Auto"
              ColumnDefinitions="0.5*, 0.5*">
-              <Grid x:Name="PickerGrid"
+              <Grid x:Name="SearchBarGrid"
                     Grid.Row="0"
                     Grid.ColumnSpan="2"
                     VerticalOptions="Center">

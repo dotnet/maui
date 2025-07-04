@@ -23,13 +23,13 @@ public partial class SearchBarControlMainPage : ContentPage
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
 		BindingContext = _viewModel = new SearchBarViewModel();
-		ReInitializePicker();
+		ReInitializeSearchBar();
 		await Navigation.PushAsync(new SearchBarOptionsPage(_viewModel));
 	}
 
-	private void ReInitializePicker()
+	private void ReInitializeSearchBar()
 	{
-		PickerGrid.Children.Clear();
+		SearchBarGrid.Children.Clear();
 
 		var searchBar = new SearchBar
 		{
@@ -69,7 +69,7 @@ public partial class SearchBarControlMainPage : ContentPage
 		OldTextChangedLabel.Text = string.Empty;
 		SearchButtonPressedLabel.Text = "No";
 
-		PickerGrid.Children.Add(searchBar);
+		SearchBarGrid.Children.Add(searchBar);
 	}
 
 	private void OnSearchButtonPressed(object sender, EventArgs e)
