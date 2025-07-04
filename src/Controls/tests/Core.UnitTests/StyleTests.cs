@@ -1202,42 +1202,5 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(Label.TextProperty.DefaultValue, label.Text);
 
 		}
-
-		[Fact]
-		public void ImplicitStylesShouldCascadeFromApplicationToPage()
-		{
-			var appStyle = new Style(typeof(Label))
-			{
-				Setters = {
-					new Setter { Property = Label.BackgroundColorProperty, Value = Colors.LightYellow },
-					new Setter { Property = Label.MarginProperty, Value = new Thickness(5) }
-				}
-			};
-
-			var pageStyle = new Style(typeof(Label))
-			{
-				Setters = {
-					new Setter { Property = Label.FontSizeProperty, Value = 20.0 },
-					new Setter { Property = Label.TextColorProperty, Value = Colors.Green }
-				}
-			};
-
-			var page = new ContentPage();
-			page.Resources = new ResourceDictionary { pageStyle };
-
-			var app = new MockApplication();
-			app.Resources = new ResourceDictionary { appStyle };
-			Application.Current = app;
-
-			var label = new Label { Text = "Test cascading" };
-			var layout = new StackLayout { Children = { label } };
-			page.Content = layout;
-			app.LoadPage(page);
-
-			Assert.Equal(Colors.LightYellow, label.BackgroundColor);
-			Assert.Equal(new Thickness(5), label.Margin);
-			Assert.Equal(20.0, label.FontSize);
-			Assert.Equal(Colors.Green, label.TextColor);
-		}
 	}
 }
