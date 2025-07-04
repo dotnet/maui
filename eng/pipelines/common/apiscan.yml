@@ -22,3 +22,4 @@ stages:
       apiScanSoftwareName: ${{ parameters.softwareName }}
       apiScanSoftwareVersionNum: ${{ parameters.softwareVersion }}
       apiScanAuthConnectionString: 'runAs=App;AppId=$(ApiScanClientId)'
+
