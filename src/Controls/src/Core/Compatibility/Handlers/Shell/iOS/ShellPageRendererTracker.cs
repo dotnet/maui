@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.Versioning;
+using Microsoft.Maui.Graphics.Platform;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
