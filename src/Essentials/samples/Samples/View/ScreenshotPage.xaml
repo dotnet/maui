@@ -15,6 +15,28 @@
         <ScrollView Grid.Row="1">
             <StackLayout Padding="12,0,12,12" Spacing="6">
 
+              <StackLayout Padding="12" Spacing="6">
+                <Label Text="Some Controls" />
+                <Switch OnColor="Orange"
+                        ThumbColor="Green" />
+                <WebView>
+                  <WebView.Source>
+                    <HtmlWebViewSource>
+                      <HtmlWebViewSource.Html>
+                        <![CDATA[
+                        <HTML>
+                        <BODY>
+                        <H1>.NET MAUI</H1>
+                        <P>Welcome to WebView 👍.</P>
+                        </BODY>
+                        </HTML>
+                        ]]>
+                      </HtmlWebViewSource.Html>
+                    </HtmlWebViewSource>
+                  </WebView.Source>
+                </WebView>
+              </StackLayout>
+              
                 <Button Text="Take Screenshot" Command="{Binding ScreenshotCommand}" />
 
                 <Button Text="Email Screenshot" Command="{Binding EmailCommand}" />
