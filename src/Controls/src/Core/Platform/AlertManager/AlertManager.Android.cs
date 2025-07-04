@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal void Subscribe(Window window)
 		{
 			IMauiContext mauiContext = window?.Handler?.MauiContext;
-			if (mauiContext == null)
+			if (mauiContext is null)
 			{
 				return;
 			}
