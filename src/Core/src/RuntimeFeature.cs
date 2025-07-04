@@ -87,10 +87,10 @@ namespace Microsoft.Maui
 				: IsHybridWebViewSupportedByDefault;
 
 #if NET9_0_OR_GREATER
-		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.PropagateKeyEventsToMainActivity")]
+		[FeatureSwitchDefinition("PropagateKeyEventsToMainActivityByDefault")]
 #endif
 		internal static bool PropagateKeyEventsToMainActivity =>
-			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.PropagateKeyEventsToMainActivity", out bool isEnabled)
+			AppContext.TryGetSwitch("PropagateKeyEventsToMainActivityByDefault", out bool isEnabled)
 				? isEnabled
 				: PropagateKeyEventsToMainActivityByDefault;
 #pragma warning restore IL4000
