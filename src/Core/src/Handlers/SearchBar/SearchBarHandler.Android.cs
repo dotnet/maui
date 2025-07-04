@@ -68,6 +68,12 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdatePlaceholderColor(searchBar, DefaultPlaceholderTextColors, handler.QueryEditor);
 		}
 
+		internal static void MapFlowDirection(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateFlowDirection(searchBar);
+			handler.QueryEditor?.UpdateFlowDirection(searchBar);
+		}
+
 		public static void MapFont(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();

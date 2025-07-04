@@ -34,6 +34,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISearchBar.Text)] = MapText,
 			[nameof(ISearchBar.TextColor)] = MapTextColor,
 			[nameof(ISearchBar.CancelButtonColor)] = MapCancelButtonColor,
+#if ANDROID
+			[nameof(ISearchBar.FlowDirection)] = MapFlowDirection,
+#endif
 			[nameof(ISearchBar.Keyboard)] = MapKeyboard
 		};
 
