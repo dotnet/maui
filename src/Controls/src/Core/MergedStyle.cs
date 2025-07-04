@@ -195,8 +195,6 @@ namespace Microsoft.Maui.Controls
 			if (shouldReApplyClassStyle && ClassStyles != null)
 				foreach (var classStyle in ClassStyles)
 					((IStyle)classStyle)?.UnApply(Target);
-			if (shouldReApplyImplicitStyle)
-				ImplicitStyle?.UnApply(Target);
 
 			_implicitStyle = implicitStyle;
 			_classStyles = classStyles;
