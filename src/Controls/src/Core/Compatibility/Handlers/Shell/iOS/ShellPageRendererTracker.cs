@@ -415,23 +415,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UIImage? icon = null;
 
-				if (image != null)
+				if (image is not null)
 				{
+					icon = result?.Value;
 					var originalImageSize = result?.Value?.Size ?? CGSize.Empty;
 					// Referred from the default hamburger size 
 					var defaultIconHeight = 23f;
 					var defaultIconWidth = 23f;
 					var buffer = 0.1;
 					// if the image is bigger than the default available size, resize it
-					if (originalImageSize.Height - defaultIconHeight > buffer || originalImageSize.Width - defaultIconWidth > buffer)
-					{
-						icon = result?.Value?.ResizeImageSource(defaultIconWidth, defaultIconHeight, originalImageSize);
-					}
-					else
-					{
-						icon = result?.Value;
-					}
+					// Don't resize if the feature is disabled via AppContext or if icon is null
+					bool enableResizing = !AppContext.TryGetSwitch("iOSDisableFlyoutIconAutoResizing", out bool disableResizing) || !disableResizing;
 
+					if (enableResizing && icon is not null &&
+						(originalImageSize.Height - defaultIconHeight > buffer || originalImageSize.Width - defaultIconWidth > buffer))
+					{
+						icon = icon.ResizeImageSource(defaultIconWidth, defaultIconHeight, originalImageSize);
+					}
 				}
 				else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
 				{
