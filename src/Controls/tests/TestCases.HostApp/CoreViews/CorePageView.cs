@@ -87,6 +87,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new LabelControlPage(), "Label Feature Matrix"),
 			new GalleryPageFactory(() => new CarouselViewFeaturePage(), "CarouselView Feature Matrix"),
 			new GalleryPageFactory(() => new BoxViewControlPage(), "BoxView Feature Matrix"),
+			new GalleryPageFactory(() => new ShapesControlPage(), "Shapes Feature Matrix"),
 		};
 
 		public CorePageView(Page rootPage)
