@@ -45,10 +45,10 @@ namespace Microsoft.Maui.Platform
 
 		static void ApplyCharacterSpacing(AutoSuggestBox platformControl, int characterSpacing)
 		{
-			var placeHolderTextBlock = platformControl.GetFirstDescendant<TextBlock>();
-			if (placeHolderTextBlock is not null)
+			var placeholderContentControl = platformControl.GetDescendantByName<ContentControl>("PlaceholderTextContentPresenter");
+			if (placeholderContentControl?.ContentTemplateRoot is TextBlock textBlock)
 			{
-				placeHolderTextBlock.CharacterSpacing = characterSpacing;
+				textBlock.CharacterSpacing = characterSpacing;
 			}
 		}
 
