@@ -46,7 +46,7 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			get
 			{
-				var result = TestContext.CurrentContext.Test.Name;
+				var result = "IntegrationTest"; // In xUnit, we can't easily get the test name like in NUnit
 				foreach (var c in invalidChars.Concat(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars())))
 				{
 					result = result.Replace(c, '_');
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.IntegrationTests
 		/// TODO: Should these be moved to a library-packs workload folder for testing?
 		/// </summary>
 		/// <exception cref="DirectoryNotFoundException"></exception>
-		[OneTimeSetUp]
+		
 		public void BuildTestFxtSetUp()
 		{
 			string[] NuGetOnlyPackages = new string[] {
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.IntegrationTests
 			FileUtilities.ReplaceInFile(TestNuGetConfig, "NUGET_ONLY_PLACEHOLDER", extraPacksDir);
 		}
 
-		[SetUp]
+		
 		public void BuildTestSetUp()
 		{
 			if (Directory.Exists(TestDirectory))
@@ -133,16 +133,16 @@ namespace Microsoft.Maui.IntegrationTests
 			Directory.CreateDirectory(TestDirectory);
 		}
 
-		[OneTimeTearDown]
+		
 		public void BuildTestFxtTearDown() { }
 
-		[TearDown]
+		
 		public void BuildTestTearDown()
 		{
 			// Attach test content and logs as artifacts
 			foreach (var log in Directory.GetFiles(Path.Combine(TestDirectory), "*log", SearchOption.AllDirectories))
 			{
-				TestContext.AddTestAttachment(log, Path.GetFileName(TestDirectory));
+				// TestContext.AddTestAttachment(log, Path.GetFileName(TestDirectory)); // Not available in xUnit
 			}
 		}
 
