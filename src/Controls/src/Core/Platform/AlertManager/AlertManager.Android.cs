@@ -26,6 +26,11 @@ namespace Microsoft.Maui.Controls.Platform
 		internal void Subscribe(Window window)
 		{
 			IMauiContext mauiContext = window?.Handler?.MauiContext;
+			if (mauiContext == null)
+			{
+				return;
+			}
+
 			Context context = mauiContext?.Context;
 			Activity activity = context.GetActivity();
 
