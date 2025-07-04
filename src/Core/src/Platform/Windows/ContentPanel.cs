@@ -183,7 +183,8 @@ namespace Microsoft.Maui.Platform
 
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
 
-			// If content already has a clip (e.g., from WrapperView), ignore applying Border's content clip same here, WrapperView can handle it.
+			// Prevent clip collision: When ContentView is inside Border, let WrapperView handle 
+			// clipping to avoid Border overwriting ContentView's clip geometry during SizeChanged.
 			if (visual.Clip != null && Content.Parent is WrapperView)
 			{
 				return;
