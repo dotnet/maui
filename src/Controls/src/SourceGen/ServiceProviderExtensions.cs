@@ -9,8 +9,6 @@ using Microsoft.CodeAnalysis;
 
 using System.CodeDom.Compiler;
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.IO;
 
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -63,7 +61,10 @@ static class ServiceProviderExtensions
                 List<string> scopes = [scope.namescope.Name];
                 var values = context.ParentContext?.Scopes.Select(s=> s.Value.namescope.Name).Distinct();
                 scopes.AddRange(values ?? Enumerable.Empty<string>());
-                writer.WriteLine($"new [] {{ {string.Join(", ", scopes)} }},");
+				using (PrePost.NewConditional(writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE", orElse: () => writer.WriteLine($"null,")))
+				{
+					writer.WriteLine($"new [] {{ {string.Join(", ", scopes)} }},");
+				}
             }
             else
                 writer.WriteLine($"null,");

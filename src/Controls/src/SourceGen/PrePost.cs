@@ -18,10 +18,20 @@ class PrePost : IDisposable
     public static PrePost NewLineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, string? fileName)
         => new(() => LineInfo(codeWriter, iXmlLineInfo, fileName), () => LineDefault(codeWriter, iXmlLineInfo));
 
-    public static PrePost NewConditional(IndentedTextWriter codeWriter, string condition)
-        => new(() => codeWriter.WriteLineNoTabs($"#if {condition}"), () => codeWriter.WriteLineNoTabs("#endif"));
+	public static PrePost NewConditional(IndentedTextWriter codeWriter, string condition, Action? orElse = null)
+	{
+		return new(() => codeWriter.WriteLineNoTabs($"#if {condition}"), () =>
+		{
+			if (orElse != null)
+			{
+				codeWriter.WriteLineNoTabs("#else");
+				orElse();
+			}
+			codeWriter.WriteLineNoTabs("#endif");
+		});
+	}
 
-    public static PrePost NewDisableWarning(IndentedTextWriter codeWriter, string warning)
+	public static PrePost NewDisableWarning(IndentedTextWriter codeWriter, string warning)
         => new(() => codeWriter.WriteLineNoTabs($"#pragma warning disable {warning}"), () => codeWriter.WriteLineNoTabs($"#pragma warning restore {warning}"));
     readonly Action post;
     PrePost(Action pre, Action post)
