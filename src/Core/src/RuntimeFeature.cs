@@ -14,7 +14,7 @@ namespace Microsoft.Maui
 	/// </remarks>
 	static class RuntimeFeature
 	{
-		const string FeatureSwitchPrefix = "Microsoft.Maui.RuntimeFeature.";
+		const string FeatureSwitchPrefix = "Microsoft.Maui.RuntimeFeature";
 
 		const bool IsIVisualAssemblyScanningEnabledByDefault = false;
 		const bool IsShellSearchResultsRendererDisplayMemberNameSupportedByDefault = true;
