@@ -63,10 +63,11 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new KeyboardScrollingGridGallery(), "Keyboard Scrolling Gallery - Grid with Star Row"),
 			new GalleryPageFactory(() => new KeyboardScrollingNonScrollingPageLargeTitlesGallery(), "Keyboard Scrolling Gallery - NonScrolling Page / Large Titles"),
 			new GalleryPageFactory(() => new KeyboardScrollingNonScrollingPageSmallTitlesGallery(), "Keyboard Scrolling Gallery - NonScrolling Page / Small Titles"),
-		  new GalleryPageFactory(() => new KeyboardScrollingScrollingPageLargeTitlesGallery(), "Keyboard Scrolling Gallery - Scrolling Page / Large Titles"),
+		  	new GalleryPageFactory(() => new KeyboardScrollingScrollingPageLargeTitlesGallery(), "Keyboard Scrolling Gallery - Scrolling Page / Large Titles"),
 			new GalleryPageFactory(() => new KeyboardScrollingScrollingPageSmallTitlesGallery(), "Keyboard Scrolling Gallery - Scrolling Page / Small Titles"),
 			new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
 			new GalleryPageFactory(() => new ListViewCoreGalleryPage(), "ListView Gallery"),
+			new GalleryPageFactory(() => new PickerControlPage(), "Picker Feature Matrix"),
 			new GalleryPageFactory(() => new PickerCoreGalleryPage(), "Picker Gallery"),
 			new GalleryPageFactory(() => new ProgressBarControlPage(), "ProgressBar Feature Matrix"),
 			new GalleryPageFactory(() => new ProgressBarCoreGalleryPage(), "Progress Bar Gallery"),
@@ -140,7 +141,7 @@ namespace Maui.Controls.Sample
 				{
 					var realize = page.Realize();
 
-				    Dispatcher.Dispatch(() => Application.Current.MainPage = realize);
+					Dispatcher.Dispatch(() => Application.Current.MainPage = realize);
 				}
 
 				SelectedItem = null;
