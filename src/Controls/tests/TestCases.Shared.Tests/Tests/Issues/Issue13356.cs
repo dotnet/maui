@@ -1,4 +1,4 @@
-﻿// This Issue is only reprodcued in Android platform
+﻿#if ANDROID // This Issue is only reprodcued in Android platform
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -32,3 +32,4 @@ public class Issue13356 : _IssuesUITest
 		App.WaitForElement("DialogCheckBox");
 	}
 }
+#endif
