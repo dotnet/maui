@@ -73,6 +73,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new RadioButtonCoreGalleryPage(), "RadioButton Gallery"),
 			new GalleryPageFactory(() => new ScrollViewCoreGalleryPage(), "ScrollView Gallery"),
 			new GalleryPageFactory(() => new ShadowFeaturePage(), "Shadow Feature Matrix"),
+			new GalleryPageFactory(() => new SearchBarControlPage(), "Search Bar Feature Matrix"),
 			new GalleryPageFactory(() => new SearchBarCoreGalleryPage(), "Search Bar Gallery"),
 			new GalleryPageFactory(() => new SliderCoreGalleryPage(), "Slider Gallery"),
 			new GalleryPageFactory(() => new StepperControlPage(), "Stepper Feature Matrix"),
