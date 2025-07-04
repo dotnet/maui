@@ -41,9 +41,7 @@ namespace Microsoft.Maui.IntegrationTests
 				&& launchLogMatch
 				&& exitCode != 0;
 
-			if (!didTimeoutAsExpected)
-				TestContext.WriteLine(xhOutput);
-
+			// TestContext.WriteLine removed in xUnit conversion
 			return didTimeoutAsExpected;
 		}
 
@@ -60,9 +58,7 @@ namespace Microsoft.Maui.IntegrationTests
 		public static bool Run(string args, int timeoutInSeconds = DEFAULT_TIMEOUT)
 		{
 			var xhOutput = RunForOutput(args, out int exitCode, timeoutInSeconds);
-			if (exitCode != 0)
-				TestContext.WriteLine(xhOutput);
-
+			// TestContext.WriteLine removed in xUnit conversion
 			return exitCode == 0;
 		}
 
