@@ -1,4 +1,6 @@
 #nullable enable
+Microsoft.Maui.Controls.SearchHandler.HideKeyboard() -> void
+Microsoft.Maui.Controls.SearchHandler.ShowKeyboard() -> void
 ~static Microsoft.Maui.Controls.Shell.GetNavBarVisibilityAnimationEnabled(Microsoft.Maui.Controls.BindableObject obj) -> bool
 ~static Microsoft.Maui.Controls.Shell.SetNavBarVisibilityAnimationEnabled(Microsoft.Maui.Controls.BindableObject obj, bool value) -> void
 ~static readonly Microsoft.Maui.Controls.Shell.NavBarVisibilityAnimationEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
