@@ -1,4 +1,4 @@
-﻿#if ANDROID // This Issue is only reprodcued in Android platform
+﻿#if ANDROID // This Issue is only reproduced in Android platform
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
