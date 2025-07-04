@@ -210,7 +210,9 @@ namespace Microsoft.Maui.Controls
 		public ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
 		/// <inheritdoc/>
+#pragma warning disable CS0618 // Type or member is obsolete
 		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		bool IConstrainedView.HasFixedConstraints => true;
 
@@ -259,6 +261,12 @@ namespace Microsoft.Maui.Controls
 			{
 				On<PlatformConfiguration.iOS>().SetSafeAreaInsets(value);
 			}
+		}
+
+		/// <inheritdoc cref="ISafeAreaView2.IgnoreSafeAreaForEdge"/>
+		bool ISafeAreaView2.IgnoreSafeAreaForEdge(int edge)
+		{
+			return SafeArea.ShouldIgnoreSafeAreaForEdge(this, edge);
 		}
 
 		/// <summary>
