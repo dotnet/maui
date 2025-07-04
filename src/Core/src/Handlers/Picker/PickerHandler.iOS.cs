@@ -210,9 +210,11 @@ namespace Microsoft.Maui.Handlers
 			if (_tapGestureRecognizer is not null && PlatformView?.Window is null)
 				return;
 
+			var weakPlatformView = new WeakReference<MauiPicker>(PlatformView);
 			_tapGestureRecognizer = new UITapGestureRecognizer(() =>
 			{
-				PlatformView.EndEditing(true);
+				if (!weakPlatformView.TryGetTarget(out var platformView))
+					platformView.EndEditing(true);
 			});
 			_tapGestureRecognizer.CancelsTouchesInView = false;
 			PlatformView.Window.AddGestureRecognizer(_tapGestureRecognizer);
