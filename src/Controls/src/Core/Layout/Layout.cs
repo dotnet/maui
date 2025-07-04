@@ -124,9 +124,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc cref="ISafeAreaView.IgnoreSafeArea"/>
 		/// <remarks>
-		/// This property is deprecated. Use SafeAreaGuides.IgnoreSafeArea attached property instead for per-edge safe area control.
+		/// This property is deprecated. Use SafeArea.IgnoreSafeArea attached property instead for per-edge safe area control.
 		/// </remarks>
-		[System.Obsolete("Use SafeAreaGuides.IgnoreSafeArea attached property instead for per-edge safe area control.")]
+		[System.Obsolete("Use SafeArea.IgnoreSafeArea attached property instead for per-edge safe area control.")]
 		public bool IgnoreSafeArea { get; set; }
 
 		/// <summary>
@@ -403,7 +403,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="ISafeAreaView2.IgnoreSafeAreaForEdge"/>
 		bool ISafeAreaView2.IgnoreSafeAreaForEdge(int edge)
 		{
-			return SafeAreaGuides.ShouldIgnoreSafeAreaForEdge(this, edge);
+			return SafeArea.ShouldIgnoreSafeAreaForEdge(this, edge);
 		}
 
 		#endregion

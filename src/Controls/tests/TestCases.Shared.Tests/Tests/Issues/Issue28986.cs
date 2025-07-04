@@ -6,7 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue28986 : _IssuesUITest
 	{
-		public override string Issue => "Test SafeAreaGuides attached property for per-edge safe area control";
+		public override string Issue => "Test SafeArea attached property for per-edge safe area control";
 
 		public Issue28986(TestDevice device) : base(device)
 		{
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		public void SafeAreaGuidesInitialStateIsCorrect()
+		public void SafeAreaInitialStateIsCorrect()
 		{
 			// Verify initial state - all checkboxes should be unchecked
 			App.WaitForElement("TopCheckBox");
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		public void SafeAreaGuidesIndividualCheckboxFunctionality()
+		public void SafeAreaIndividualCheckboxFunctionality()
 		{
 			App.WaitForElement("TopCheckBox");
 			App.WaitForElement("CurrentSettings");
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		public void SafeAreaGuidesResetAllButtonFunctionality()
+		public void SafeAreaResetAllButtonFunctionality()
 		{
 			App.WaitForElement("ResetAllButton");
 			App.WaitForElement("CurrentSettings");
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		public void SafeAreaGuidesResetNoneButtonFunctionality()
+		public void SafeAreaResetNoneButtonFunctionality()
 		{
 			App.WaitForElement("ResetNoneButton");
 			App.WaitForElement("CurrentSettings");
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		public void SafeAreaGuidesSyntaxOptimizationTest()
+		public void SafeAreaSyntaxOptimizationTest()
 		{
 			App.WaitForElement("CurrentSettings");
 

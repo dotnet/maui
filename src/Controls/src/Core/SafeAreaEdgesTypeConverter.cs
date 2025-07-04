@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <summary>
 	/// Type converter for SafeAreaEdges struct, supporting XAML parsing of 
-	/// SafeAreaGuides.IgnoreSafeArea attached property values.
+	/// SafeArea.IgnoreSafeArea attached property values.
 	/// </summary>
 	public class SafeAreaEdgesTypeConverter : TypeConverter
 	{

@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 28986, "Test SafeAreaGuides attached property for per-edge safe area control", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 28986, "Test SafeArea attached property for per-edge safe area control", PlatformAffected.All)]
 public partial class Issue28986 : ContentPage
 {
 	public Issue28986()
@@ -87,11 +87,11 @@ public partial class Issue28986 : ContentPage
 			GridBottomCheckBox.IsChecked ? SafeAreaRegions.All : SafeAreaRegions.None  // Bottom
 		);
 
-		// Apply SafeAreaGuides attached property to the ContentPage
-		SafeAreaGuides.SetIgnoreSafeArea(this, pageSafeAreaSettings);
+		// Apply SafeArea attached property to the ContentPage
+		SafeArea.SetIgnoreSafeArea(this, pageSafeAreaSettings);
 
-		// Apply SafeAreaGuides attached property to the main content grid
-		SafeAreaGuides.SetIgnoreSafeArea(ContentGrid, gridSafeAreaSettings);
+		// Apply SafeArea attached property to the main content grid
+		SafeArea.SetIgnoreSafeArea(ContentGrid, gridSafeAreaSettings);
 
 		// Update the display label
 		var pageSettingsText = $"Page - Left: {(PageLeftCheckBox.IsChecked ? "Ignore" : "Respect")}, " +
@@ -161,8 +161,8 @@ public partial class Issue28986 : ContentPage
 		}
 
 		// Apply the optimized settings to test different syntax formats
-		SafeAreaGuides.SetIgnoreSafeArea(this, optimizedPageSettings);
-		SafeAreaGuides.SetIgnoreSafeArea(ContentGrid, optimizedGridSettings);
+		SafeArea.SetIgnoreSafeArea(this, optimizedPageSettings);
+		SafeArea.SetIgnoreSafeArea(ContentGrid, optimizedGridSettings);
 
 		// Update the label to show which syntax is being used
 		var pageSyntaxInfo = (pageLeft == pageTop && pageTop == pageRight && pageRight == pageBottom) ? " (1-value)" :

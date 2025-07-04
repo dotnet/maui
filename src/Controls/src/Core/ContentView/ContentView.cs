@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="ISafeAreaView2.IgnoreSafeAreaForEdge"/>
 		bool ISafeAreaView2.IgnoreSafeAreaForEdge(int edge)
 		{
-			return SafeAreaGuides.ShouldIgnoreSafeAreaForEdge(this, edge);
+			return SafeArea.ShouldIgnoreSafeAreaForEdge(this, edge);
 		}
 
 		#endregion

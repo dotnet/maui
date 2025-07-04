@@ -5,14 +5,14 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	public class SafeAreaGuidesTests : BaseTestFixture
+	public class SafeAreaTests : BaseTestFixture
 	{
 		[Fact]
 		public void GetIgnoreSafeArea_DefaultValue_ReturnsNone()
 		{
 			var layout = new Grid();
 			
-			var result = SafeAreaGuides.GetIgnoreSafeArea(layout);
+			var result = SafeArea.GetIgnoreSafeArea(layout);
 			
 			Assert.Equal(SafeAreaEdges.None, result);
 		}
@@ -23,8 +23,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var layout = new Grid();
 			var value = SafeAreaEdges.All;
 			
-			SafeAreaGuides.SetIgnoreSafeArea(layout, value);
-			var result = SafeAreaGuides.GetIgnoreSafeArea(layout);
+			SafeArea.SetIgnoreSafeArea(layout, value);
+			var result = SafeArea.GetIgnoreSafeArea(layout);
 			
 			Assert.Equal(value, result);
 		}
@@ -33,51 +33,51 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void GetIgnoreSafeAreaForEdge_UniformValue_AppliesAllEdges()
 		{
 			var layout = new Grid();
-			SafeAreaGuides.SetIgnoreSafeArea(layout, SafeAreaEdges.All);
+			SafeArea.SetIgnoreSafeArea(layout, SafeAreaEdges.All);
 			
-			Assert.Equal(SafeAreaRegions.All, SafeAreaGuides.GetIgnoreSafeAreaForEdge(layout, 0)); // Left
-			Assert.Equal(SafeAreaRegions.All, SafeAreaGuides.GetIgnoreSafeAreaForEdge(layout, 1)); // Top
-			Assert.Equal(SafeAreaRegions.All, SafeAreaGuides.GetIgnoreSafeAreaForEdge(layout, 2)); // Right
-			Assert.Equal(SafeAreaRegions.All, SafeAreaGuides.GetIgnoreSafeAreaForEdge(layout, 3)); // Bottom
+			Assert.Equal(SafeAreaRegions.All, SafeArea.GetIgnoreSafeAreaForEdge(layout, 0)); // Left
+			Assert.Equal(SafeAreaRegions.All, SafeArea.GetIgnoreSafeAreaForEdge(layout, 1)); // Top
+			Assert.Equal(SafeAreaRegions.All, SafeArea.GetIgnoreSafeAreaForEdge(layout, 2)); // Right
+			Assert.Equal(SafeAreaRegions.All, SafeArea.GetIgnoreSafeAreaForEdge(layout, 3)); // Bottom
 		}
 
 		[Fact]
 		public void GetIgnoreSafeAreaForEdge_TwoValues_AppliesCorrectly()
 		{
 			var layout = new Grid();
-			SafeAreaGuides.SetIgnoreSafeArea(layout, new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None));
+			SafeArea.SetIgnoreSafeArea(layout, new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None));
 			
-			Assert.Equal(SafeAreaRegions.All, SafeAreaGuides.GetIgnoreSafeAreaForEdge(layout, 0)); // Left
-			Assert.Equal(SafeAreaRegions.None, SafeAreaGuides.GetIgnoreSafeAreaForEdge(layout, 1)); // Top
-			Assert.Equal(SafeAreaRegions.All, SafeAreaGuides.GetIgnoreSafeAreaForEdge(layout, 2)); // Right
-			Assert.Equal(SafeAreaRegions.None, SafeAreaGuides.GetIgnoreSafeAreaForEdge(layout, 3)); // Bottom
+			Assert.Equal(SafeAreaRegions.All, SafeArea.GetIgnoreSafeAreaForEdge(layout, 0)); // Left
+			Assert.Equal(SafeAreaRegions.None, SafeArea.GetIgnoreSafeAreaForEdge(layout, 1)); // Top
+			Assert.Equal(SafeAreaRegions.All, SafeArea.GetIgnoreSafeAreaForEdge(layout, 2)); // Right
+			Assert.Equal(SafeAreaRegions.None, SafeArea.GetIgnoreSafeAreaForEdge(layout, 3)); // Bottom
 		}
 
 		[Fact]
 		public void GetIgnoreSafeAreaForEdge_FourValues_AppliesCorrectly()
 		{
 			var layout = new Grid();
-			SafeAreaGuides.SetIgnoreSafeArea(layout, new SafeAreaEdges(
+			SafeArea.SetIgnoreSafeArea(layout, new SafeAreaEdges(
 				SafeAreaRegions.All,   // Left
 				SafeAreaRegions.None,  // Top
 				SafeAreaRegions.All,   // Right
 				SafeAreaRegions.None   // Bottom
 			));
 			
-			Assert.Equal(SafeAreaRegions.All, SafeAreaGuides.GetIgnoreSafeAreaForEdge(layout, 0)); // Left
-			Assert.Equal(SafeAreaRegions.None, SafeAreaGuides.GetIgnoreSafeAreaForEdge(layout, 1)); // Top
-			Assert.Equal(SafeAreaRegions.All, SafeAreaGuides.GetIgnoreSafeAreaForEdge(layout, 2)); // Right
-			Assert.Equal(SafeAreaRegions.None, SafeAreaGuides.GetIgnoreSafeAreaForEdge(layout, 3)); // Bottom
+			Assert.Equal(SafeAreaRegions.All, SafeArea.GetIgnoreSafeAreaForEdge(layout, 0)); // Left
+			Assert.Equal(SafeAreaRegions.None, SafeArea.GetIgnoreSafeAreaForEdge(layout, 1)); // Top
+			Assert.Equal(SafeAreaRegions.All, SafeArea.GetIgnoreSafeAreaForEdge(layout, 2)); // Right
+			Assert.Equal(SafeAreaRegions.None, SafeArea.GetIgnoreSafeAreaForEdge(layout, 3)); // Bottom
 		}
 
 		[Fact]
 		public void GetIgnoreSafeAreaForEdge_InvalidEdgeIndex_ReturnsNone()
 		{
 			var layout = new Grid();
-			SafeAreaGuides.SetIgnoreSafeArea(layout, SafeAreaEdges.All);
+			SafeArea.SetIgnoreSafeArea(layout, SafeAreaEdges.All);
 			
-			Assert.Equal(SafeAreaRegions.None, SafeAreaGuides.GetIgnoreSafeAreaForEdge(layout, -1));
-			Assert.Equal(SafeAreaRegions.None, SafeAreaGuides.GetIgnoreSafeAreaForEdge(layout, 4));
+			Assert.Equal(SafeAreaRegions.None, SafeArea.GetIgnoreSafeAreaForEdge(layout, -1));
+			Assert.Equal(SafeAreaRegions.None, SafeArea.GetIgnoreSafeAreaForEdge(layout, 4));
 		}
 
 		[Fact]
@@ -190,10 +190,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var uniform = new SafeAreaEdges(SafeAreaRegions.All);
 			var twoValue = new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None);
 			var fourValue = new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None);
+			var asymmetric = new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.None, SafeAreaRegions.All);
 			
 			Assert.Equal("All", uniform.ToString());
 			Assert.Equal("All, None", twoValue.ToString());
-			Assert.Equal("All, None, All, None", fourValue.ToString());
+			Assert.Equal("All, None", fourValue.ToString()); // Optimized: Left==Right, Top==Bottom
+			Assert.Equal("All, None, None, All", asymmetric.ToString()); // No optimization possible
 		}
 
 		[Fact]
@@ -209,7 +211,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void Layout_IgnoreSafeAreaForEdge_UsesAttachedProperty()
 		{
 			var layout = new Grid();
-			SafeAreaGuides.SetIgnoreSafeArea(layout, new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None));
+			SafeArea.SetIgnoreSafeArea(layout, new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None));
 
 			// Test via ISafeAreaView2 interface
 			var safeAreaView2 = (ISafeAreaView2)layout;
@@ -256,7 +258,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void Page_IgnoreSafeAreaForEdge_UsesAttachedProperty()
 		{
 			var page = new ContentPage();
-			SafeAreaGuides.SetIgnoreSafeArea(page, new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None));
+			SafeArea.SetIgnoreSafeArea(page, new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None));
 
 			// Test via ISafeAreaView2 interface
 			var safeAreaView2 = (ISafeAreaView2)page;
@@ -286,7 +288,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var page = new ContentPage(); // Page defaults to All when no property is explicitly set
 
-			// Should default to true for Page even though SafeAreaGuides default is None
+			// Should default to true for Page even though SafeArea default is None
 			var safeAreaView2 = (ISafeAreaView2)page;
 			
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));
@@ -297,7 +299,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		// Tests based on existing iOS safe area usage patterns
 		[Fact]
-		public void SafeAreaGuides_CanReplaceUseSafeAreaScenario()
+		public void SafeArea_CanReplaceUseSafeAreaScenario()
 		{
 			// This test mimics the usage pattern from Issue3809 and ShellTests.iOS
 			var contentView = new ContentView() 
@@ -306,8 +308,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			// Legacy approach: contentPage.On<iOS>().SetUseSafeArea(true);
-			// New approach: use SafeAreaGuides attached property
-			SafeAreaGuides.SetIgnoreSafeArea(contentView, SafeAreaEdges.None); // Respect all safe areas
+			// New approach: use SafeArea attached property
+			SafeArea.SetIgnoreSafeArea(contentView, SafeAreaEdges.None); // Respect all safe areas
 
 			var safeAreaView2 = (ISafeAreaView2)contentView;
 			
@@ -319,13 +321,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void SafeAreaGuides_SupportsPerEdgeControl_IgnoreTopAndBottom()
+		public void SafeArea_SupportsPerEdgeControl_IgnoreTopAndBottom()
 		{
 			// Common use case: ignore safe area for top and bottom edges only (e.g., for full-width background)
 			var stackLayout = new VerticalStackLayout();
 			
 			// Ignore safe area for top and bottom, respect for left and right
-			SafeAreaGuides.SetIgnoreSafeArea(stackLayout, new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All));
+			SafeArea.SetIgnoreSafeArea(stackLayout, new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All));
 
 			var safeAreaView2 = (ISafeAreaView2)stackLayout;
 			
@@ -336,12 +338,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void SafeAreaGuides_TwoValueShorthand_LeftRightTopBottom()
+		public void SafeArea_TwoValueShorthand_LeftRightTopBottom()
 		{
 			// Test two-value shorthand: first value for left/right, second for top/bottom
 			var grid = new Grid();
 			
-			SafeAreaGuides.SetIgnoreSafeArea(grid, new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None));
+			SafeArea.SetIgnoreSafeArea(grid, new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None));
 
 			var safeAreaView2 = (ISafeAreaView2)grid;
 			

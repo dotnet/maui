@@ -6,16 +6,16 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// Provides attached properties for controlling safe area behavior of layouts and visual elements.
 	/// </summary>
-	public static class SafeAreaGuides
+	public static class SafeArea
 	{
 		/// <summary>
 		/// Bindable property for attached property <c>IgnoreSafeArea</c>.
 		/// </summary>
-		public static readonly BindableProperty IgnoreSafeAreaProperty =
+		public static readonly BindableProperty IgnoreProperty =
 			BindableProperty.CreateAttached(
 				"IgnoreSafeArea",
 				typeof(SafeAreaEdges),
-				typeof(SafeAreaGuides),
+				typeof(SafeArea),
 				SafeAreaEdges.None,
 				propertyChanged: OnIgnoreSafeAreaChanged
 			);
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 		/// <returns>A <see cref="SafeAreaEdges"/> struct specifying which insets to ignore per edge.</returns>
 		public static SafeAreaEdges GetIgnoreSafeArea(BindableObject bindable)
 		{
-			return (SafeAreaEdges)bindable.GetValue(IgnoreSafeAreaProperty);
+			return (SafeAreaEdges)bindable.GetValue(IgnoreProperty);
 		}
 
 		/// <summary>
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls
 		/// </remarks>
 		public static void SetIgnoreSafeArea(BindableObject bindable, SafeAreaEdges value)
 		{
-			bindable.SetValue(IgnoreSafeAreaProperty, value);
+			bindable.SetValue(IgnoreProperty, value);
 		}
 
 		/// <summary>
@@ -76,9 +76,9 @@ namespace Microsoft.Maui.Controls
 		/// <returns>True if safe area should be ignored for this edge, false otherwise.</returns>
 		internal static bool ShouldIgnoreSafeAreaForEdge(BindableObject bindable, int edge)
 		{
-			// Check if SafeAreaGuides attached property has been explicitly set
+			// Check if SafeArea attached property has been explicitly set
 			var safeAreaEdges = GetIgnoreSafeArea(bindable);
-			var defaultValue = (SafeAreaEdges)IgnoreSafeAreaProperty.DefaultValue;
+			var defaultValue = (SafeAreaEdges)IgnoreProperty.DefaultValue;
 			
 			// Only use attached property if it's different from default (meaning it was explicitly set)
 			if (!safeAreaEdges.Equals(defaultValue))

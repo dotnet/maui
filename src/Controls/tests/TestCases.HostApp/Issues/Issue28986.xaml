@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue28986"
              x:Name="TestPage"
-             Title="SafeAreaGuides Test">
+             Title="SafeArea Test">
     
     <Grid x:Name="MainGrid" BackgroundColor="Red">
         <!-- Single content grid that spans the entire screen -->
@@ -26,7 +26,7 @@
             <!-- Middle content area with control panel -->
             <ScrollView Grid.Row="1">
                 <StackLayout Spacing="15" Padding="20" VerticalOptions="Center">
-                    <Label Text="SafeAreaGuides Test Page" 
+                    <Label Text="SafeArea Test Page" 
                            FontSize="24" 
                            FontAttributes="Bold"
                            HorizontalOptions="Center"
@@ -54,7 +54,7 @@
                                    HorizontalOptions="Center"
                                    TextColor="DarkBlue" />
                             
-                            <Label Text="Controls SafeAreaGuides on the ContentPage itself"
+                            <Label Text="Controls SafeArea on the ContentPage itself"
                                    FontSize="12"
                                    HorizontalOptions="Center"
                                    TextColor="DarkBlue" />
@@ -124,7 +124,7 @@
                                    FontAttributes="Bold"
                                    HorizontalOptions="Center" />
                             
-                            <Label Text="Controls SafeAreaGuides on the ContentGrid layout"
+                            <Label Text="Controls SafeArea on the ContentGrid layout"
                                    FontSize="12"
                                    HorizontalOptions="Center"
                                    TextColor="Gray" />
