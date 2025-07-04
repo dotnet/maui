@@ -3,14 +3,16 @@ using System;
 using Android.Content;
 using Android.Graphics;
 using Android.Views;
+using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using APath = Android.Graphics.Path;
 using AView = Android.Views.View;
+using Rectangle = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : PlatformWrapperView
+	public partial class WrapperView : PlatformWrapperView, IVisualTreeElementProvidable
 	{
 		APath _currentPath;
 		SizeF _lastPathSize;
@@ -34,12 +36,10 @@ namespace Microsoft.Maui.Platform
 			if (ChildCount == 0 || GetChildAt(0) is not AView child)
 				return;
 
-			var widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(right - left);
-			var heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(bottom - top);
-
-			child.Measure(widthMeasureSpec, heightMeasureSpec);
-			child.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
-			_borderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
+			// Standard layout for all children - no safe area adjustments in WrapperView
+			// Safe area handling is done by the LayoutViewGroup itself
+			child.Layout(0, 0, right - left, bottom - top);
+			_borderView?.Layout(0, 0, right - left, bottom - top);
 		}
 
 		public override bool DispatchTouchEvent(MotionEvent e)
@@ -145,6 +145,8 @@ namespace Microsoft.Maui.Platform
 			return _currentPath;
 		}
 
+
+
 		public override ViewStates Visibility
 		{
 			get => base.Visibility;
@@ -213,6 +215,17 @@ namespace Microsoft.Maui.Platform
 
 				clearWrapperView.Invoke();
 			}
+		}
+
+		IVisualTreeElement IVisualTreeElementProvidable.GetElement()
+		{
+			// Return the element from the wrapped layout if it exists
+			if (ChildCount > 0 && GetChildAt(0) is IVisualTreeElementProvidable provider)
+			{
+				return provider.GetElement();
+			}
+
+			return null;
 		}
 	}
 }
