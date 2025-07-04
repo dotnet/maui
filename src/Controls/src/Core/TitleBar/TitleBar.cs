@@ -269,9 +269,9 @@ namespace Microsoft.Maui.Controls
 #if MACCATALYST
 		void OnSizeChanged(object? sender, EventArgs e)
 		{
-			if (Window?.Handler?.PlatformView is UIKit.UIWindow uiwindow)
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
 			{
-				if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
+				if (Window?.Handler?.PlatformView is UIKit.UIWindow uiwindow)
 				{
 					var windowScene = uiwindow.WindowScene;
 					if (windowScene != null)
