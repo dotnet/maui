@@ -5,6 +5,7 @@ using System.Text;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -151,20 +152,8 @@ namespace Microsoft.Maui.Platform
 				newSize.Width = isRegularTabBar ? regularSquareSize : compactSquareSize;
 				newSize.Height = newSize.Width;
 			}
-
-			UIImage? resizedImage = null;
-			try
-			{
-				UIGraphics.BeginImageContextWithOptions(newSize, false, 0);
-				image.Draw(new CGRect(0, 0, newSize.Width, newSize.Height));
-				resizedImage = UIGraphics.GetImageFromCurrentImageContext();
-			}
-			finally
-			{
-				UIGraphics.EndImageContext();
-			}
-
-			return resizedImage;
+			
+			return image.ResizeImageSource(newSize.Width, newSize.Height, new CGSize(image.Size.Width, image.Size.Height));
 		}
 	}
 }
