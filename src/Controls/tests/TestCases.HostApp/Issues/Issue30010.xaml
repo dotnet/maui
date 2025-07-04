@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<controls:TestContentPage xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+                          xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                          x:Class="Maui.Controls.Sample.Issues.Issue30010">
+  <Grid RowDefinitions="Auto,*">
+    <Label Text="Issue 30010" FontAttributes="Bold" Margin="12" />
+
+    <ScrollView Grid.Row="1">
+      <StackLayout Padding="12,0,12,12" Spacing="6">
+        
+        <WebView>
+          <WebView.Source>
+            <HtmlWebViewSource>
+              <HtmlWebViewSource.Html>
+                <![CDATA[
+                      <HTML>
+                      <BODY>
+                      <H1>.NET MAUI</H1>
+                      <P>Welcome to WebView 👍.</P>
+                      </BODY>
+                      </HTML>
+                      ]]>
+              </HtmlWebViewSource.Html>
+            </HtmlWebViewSource>
+          </WebView.Source>
+        </WebView>
+              
+        <Button AutomationId="TakeScreenshotButton" Text="Take Screenshot" Command="{Binding ScreenshotCommand}" />
+        
+        <Image AutomationId="ResultImage" Source="{Binding Image}" />
+
+      </StackLayout>
+    </ScrollView>
+  </Grid>
+</controls:TestContentPage>
