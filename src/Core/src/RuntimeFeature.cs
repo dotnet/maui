@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 	/// Mapping of MSBuild properties to feature switches and the default values of feature switches
 	/// is defined in Microsoft.Maui.Sdk.Before.targets.
 	/// </remarks>
-	internal static class RuntimeFeature
+	static class RuntimeFeature
 	{
 		const bool IsIVisualAssemblyScanningEnabledByDefault = false;
 		const bool IsShellSearchResultsRendererDisplayMemberNameSupportedByDefault = true;
