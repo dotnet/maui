@@ -14,7 +14,7 @@ public partial class xKeyLiteral : ContentPage
 	[TestFixture]
 	class Tests
 	{
-		//this requirement might change, see https://github.com/xamarin/Microsoft.Maui.Controls/issues/12425
+		//this requirement might change, see https://github.com/xamarin/Xamarin.Forms/issues/12425
 		[Test]
 		public void xKeyRequireStringLiteral([Values] XamlInflator inflator)
 		{
@@ -23,12 +23,9 @@ public partial class xKeyLiteral : ContentPage
 			else if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new xKeyLiteral(inflator));
 			else if (inflator == XamlInflator.SourceGen)
-			{
-				var result = MockSourceGenerator.CreateMauiCompilation().RunMauiSourceGenerator(typeof(xKeyLiteral));
-				Assert.That(result.Diagnostics.Any());
-			}
+				Assert.That(MockSourceGenerator.CreateMauiCompilation().RunMauiSourceGenerator(typeof(xKeyLiteral)).Diagnostics.Any());
 			else
-				Assert.Ignore("Unknown inflator");
+				Assert.Ignore("Untested inflator");
 		}
 	}
 }

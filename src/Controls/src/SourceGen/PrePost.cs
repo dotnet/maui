@@ -72,5 +72,4 @@ class PrePost : IDisposable
     [Conditional("_SOURCEGEN_LINEINFO_ENABLE")]
     static void LineDefault(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo)
         => codeWriter.WriteLineNoTabs("#line default");
-
 }

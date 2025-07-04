@@ -554,10 +554,12 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
         if (node.Properties.TryGetValue(XmlName.xKey, out var keyNode))
         {
-            if (keyNode is not ValueNode vKeyNode || vKeyNode.Value is not string key)
-                //report diagnostic: x:Key must be a string literal
-                return false;
-
+			if (keyNode is not ValueNode vKeyNode || vKeyNode.Value is not string key)
+			{
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.FilePath!, (IXmlLineInfo)keyNode, ""), "x:Key must be a string literal"));
+				//report diagnostic: x:Key must be a string literal
+				return false;
+			}
 			if (!context.KeysInRD.TryGetValue(parentVar, out var keysInUse))
 			{
                 return true;
