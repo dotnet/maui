@@ -142,6 +142,9 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Options");
 		App.Tap("Options");
 
+		App.WaitForElement("PolyLineRadioButton");
+		App.Tap("PolyLineRadioButton");
+
 		App.WaitForElement("StrokeColorRedRadioButton");
 		App.Tap("StrokeColorRedRadioButton");
 
@@ -161,8 +164,8 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Options");
 		App.Tap("Options");
 
-		App.WaitForElement("FillColorGreenRadioButton");
-		App.Tap("FillColorGreenRadioButton");
+		App.WaitForElement("PathRadioButton");
+		App.Tap("PathRadioButton");
 
 		App.WaitForElement("StrokeColorRedRadioButton");
 		App.Tap("StrokeColorRedRadioButton");
