@@ -1,31 +1,33 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
+using System.Linq;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class StaticExtensionException : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class StaticExtensionException : ContentPage
+	public StaticExtensionException()
 	{
-		public StaticExtensionException()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public StaticExtensionException(bool useCompiledXaml)
+	[TestFixture]
+	public class Issue2115
+	{
+		[Test]
+		public void xStaticThrowsMeaningfullException([Values] XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Issue2115
-		{
-			[TestCase(false)]
-			public void xStaticThrowsMeaningfullException(bool useCompiledXaml)
-			{
-				Assert.Throws(new XamlParseExceptionConstraint(6, 34), () => new StaticExtensionException(useCompiledXaml));
+			if (inflator == XamlInflator.Runtime)
+				Assert.Throws(new XamlParseExceptionConstraint(6, 34), () => new StaticExtensionException(inflator));
+			else if (inflator == XamlInflator.XamlC)
+				Assert.Throws(new BuildExceptionConstraint(6, 34), () => MockCompiler.Compile(typeof(StaticExtensionException)));
+			else if (inflator == XamlInflator.SourceGen)
+			{ 
+				var result = MockSourceGenerator.CreateMauiCompilation().RunMauiSourceGenerator(typeof(StaticExtensionException));
+				Assert.That(result.Diagnostics.Any());
 			}
+			else
+				Assert.Ignore("Unknown inflator");
 		}
 	}
 }

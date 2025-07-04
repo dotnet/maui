@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
@@ -27,17 +28,10 @@ namespace CompanyTwo.Controls
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
+	[XamlProcessing(XamlInflator.Runtime, true)]
 	public partial class XmlnsCollision : ContentPage
 	{
-		public XmlnsCollision()
-		{
-			InitializeComponent();
-		}
-		public XmlnsCollision(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+		public XmlnsCollision() => InitializeComponent();
 
 		[TestFixture]
 		class Test
@@ -46,20 +40,28 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 			[Test]
-			public void ConflictInXmlns([Values] bool useCompiledXaml)
+			public void ConflictInXmlns([Values] XamlInflator inflator)
 			{
-				if (useCompiledXaml)
+				switch (inflator)
+				{
+					case XamlInflator.XamlC:
 					Assert.Throws<BuildException>(() =>
 					{
 						MockCompiler.Compile(typeof(XmlnsCollision), out var hasLoggedErrors);
 						Assert.IsTrue(hasLoggedErrors);
 					});
-
-				else
-					Assert.Throws<XamlParseException>(() =>
-					{
-						var layout = new XmlnsCollision(useCompiledXaml);
-					});
+						break;
+					case XamlInflator.SourceGen:
+						var result = MockSourceGenerator.CreateMauiCompilation().RunMauiSourceGenerator(typeof(XmlnsCollision));
+						Assert.That(result.Diagnostics.Any());
+						return;
+					case XamlInflator.Runtime:
+						Assert.Throws<XamlParseException>(() =>
+						{
+							var layout = new XmlnsCollision(inflator);
+						});
+						break;
+				}
 			}
 		}
 	}

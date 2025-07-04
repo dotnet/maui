@@ -10,6 +10,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class CompiledTypeConverter : ContentPage
 	{
 		public static readonly BindableProperty RectangleBPProperty =
@@ -68,19 +69,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		public CompiledTypeConverter() => InitializeComponent();
 
-		public CompiledTypeConverter(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void CompiledTypeConverterAreInvoked(bool useCompiledXaml)
+			[Test]
+			public void CompiledTypeConverterAreInvoked([Values]XamlInflator xamlInflator)
 			{
-				var p = new CompiledTypeConverter(useCompiledXaml);
+				var p = new CompiledTypeConverter(xamlInflator);
 				Assert.AreEqual(new Rect(0, 1, 2, 4), p.RectangleP);
 				Assert.AreEqual(new Rect(4, 8, 16, 32), p.RectangleBP);
 				Assert.AreEqual(new Point(1, 2), p.PointP);
@@ -111,17 +106,29 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreEqual("Bar", p.List[1]);
 			}
 
-			[Test]
-			[TestCase(typeof(Microsoft.Maui.Controls.BrushTypeConverter))]
-			[TestCase(typeof(Microsoft.Maui.Controls.ImageSourceConverter))]
-			[TestCase(typeof(Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter))]
-			[TestCase(typeof(Microsoft.Maui.Graphics.Converters.PointTypeConverter))]
-			[TestCase(typeof(Microsoft.Maui.Graphics.Converters.RectTypeConverter))]
-			public void ConvertersAreReplaced(Type converterType)
+			[Test] public void ConvertersAreReplaced(
+					[Values]XamlInflator inflator,
+					[Values (typeof(BrushTypeConverter), typeof(ImageSourceConverter), typeof(StrokeShapeTypeConverter), typeof(Graphics.Converters.PointTypeConverter), typeof(Graphics.Converters.RectTypeConverter))]Type converterType)
 			{
-				MockCompiler.Compile(typeof(CompiledTypeConverter), out var methodDef, out var hasLoggedErrors);
-				Assert.That(!hasLoggedErrors);
-				Assert.That(!methodDef.Body.Instructions.Any(instr => HasConstructorForType(methodDef, instr, converterType)), $"This Xaml still generates a new {converterType}()");
+				if (inflator == XamlInflator.XamlC)
+				{
+					MockCompiler.Compile(typeof(CompiledTypeConverter), out var methodDef, out bool hasLoggedErrors);
+					Assert.That(!hasLoggedErrors);
+					Assert.That(!methodDef.Body.Instructions.Any(instr => HasConstructorForType(methodDef, instr, converterType)), $"This Xaml still generates a new {converterType}()");
+				}
+
+				if (inflator == XamlInflator.SourceGen)
+				{
+					var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(CompiledTypeConverter));
+					Assert.IsFalse(result.Diagnostics.Any());
+					var boilerplate = result.GeneratedCodeBehind();
+					var initComp = result.GeneratedInitializeComponent();
+					if (converterType == typeof(Graphics.Converters.RectTypeConverter))
+						Assert.True(result.GeneratedInitializeComponent().Contains("new global::Microsoft.Maui.Graphics.Rect(0, 1, 2, 4)", StringComparison.InvariantCulture));
+						
+						// TODO check all other converters here
+						// TODO check that there are no ConvertFrom calls
+				}
 			}
 
 			bool HasConstructorForType(MethodDefinition methodDef, Instruction instruction, Type converterType)
