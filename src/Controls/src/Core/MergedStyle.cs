@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls
 			if (ClassStyles != null)
 				foreach (var classStyle in ClassStyles)
 					((IStyle)classStyle)?.UnApply(bindable);
-			ImplicitStyle?.UnApply(Target);
+			ImplicitStyle?.UnApply(bindable);
 		}
 
 		void OnClassStyleChanged()
