@@ -1,7 +1,7 @@
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -23,23 +23,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]]
+			[InlineData(true)]]
 			public void SupportsXArray(bool useCompiledXaml)
 			{
 				var layout = new XArray(useCompiledXaml);
 				var array = layout.Content;
 				Assert.NotNull(array);
 				Assert.That(array, Is.TypeOf<string[]>());
-				Assert.AreEqual(2, ((string[])layout.Content).Length);
-				Assert.AreEqual("Hello", ((string[])layout.Content)[0]);
-				Assert.AreEqual("World", ((string[])layout.Content)[1]);
+				Assert.Equal(2, ((string[])layout.Content).Length);
+				Assert.Equal("Hello", ((string[])layout.Content)[0]);
+				Assert.Equal("World", ((string[])layout.Content)[1]);
 			}
 
-			[Test]
+			[Fact]
 			public void ArrayExtensionNotPresentInGeneratedCode([Values(false)] bool useCompiledXaml)
 			{
 				MockCompiler.Compile(typeof(XArray), out var methodDef, out var hasLoggedErrors);

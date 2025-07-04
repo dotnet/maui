@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -35,13 +35,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 
-		[TestFixture]
+		// [TestFixture] - removed for xUnit
 		class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[TestCase(false), TestCase(true)]
+			[InlineData(false)], TestCase(true)]
 			public void BindingDoesNotThrowOnRedefinedProperty(bool useCompiledXaml)
 			{
 				var layout = new Gh2632(useCompiledXaml);

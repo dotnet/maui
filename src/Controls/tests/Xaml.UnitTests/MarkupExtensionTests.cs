@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Xml;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -85,12 +85,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
-	[TestFixture]
+	// [TestFixture] - removed for xUnit
 	public class MarkupExtensionTests : BaseTestFixture
 	{
 		IXamlTypeResolver typeResolver;
 
-		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
@@ -101,7 +100,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			typeResolver = new Internals.XamlTypeResolver(nsManager, XamlParser.GetElementType, Assembly.GetCallingAssembly());
 		}
 
-		[Test]
+		[Fact]
 		public void TestSimpleExtension()
 		{
 			var markupString = "{local:FooMarkupExtension}";
@@ -112,10 +111,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var result = (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider);
 
 			Assert.That(result, Is.InstanceOf<string>());
-			Assert.AreEqual("Foo", result);
+			Assert.Equal("Foo", result);
 		}
 
-		[Test]
+		[Fact]
 		public void TestExtensionWithParameters()
 		{
 			var markupString = "{local:AppendMarkupExtension Value0=Foo, Value1=Bar}";
@@ -126,10 +125,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var result = (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider);
 
 			Assert.That(result, Is.InstanceOf<string>());
-			Assert.AreEqual("FooBar", result);
+			Assert.Equal("FooBar", result);
 		}
 
-		[Test]
+		[Fact]
 		public void TestServiceProvider()
 		{
 			var markupString = "{local:AccessServiceProviderExtension}";
@@ -143,10 +142,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var result = (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider);
 
 			Assert.That(result, Is.InstanceOf<string>());
-			Assert.AreEqual("TrueTrueTrue", result);
+			Assert.Equal("TrueTrueTrue", result);
 		}
 
-		[Test]
+		[Fact]
 		public void TestInXaml()
 		{
 			var xaml = @"
@@ -159,10 +158,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var label = new Label();
 			label.LoadFromXaml(xaml);
-			Assert.AreEqual("FooBar", label.Text.ToString());
+			Assert.Equal("FooBar", label.Text.ToString());
 		}
 
-		[Test]
+		[Fact]
 		public void TestMarkupExtensionInDefaultNamespace()
 		{
 			var xaml = @"
@@ -175,10 +174,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var label = new Label();
 			label.LoadFromXaml(xaml);
-			Assert.AreEqual("FooBar", label.Text.ToString());
+			Assert.Equal("FooBar", label.Text.ToString());
 		}
 
-		[Test]
+		[Fact]
 		public void TestDocumentationCode()
 		{
 			var xaml = @"
@@ -189,10 +188,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				TextColor=""{local:ColorMarkup R=100, G=80, B=60}""/>";
 
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Color.FromRgb(100, 80, 60), label.TextColor);
+			Assert.Equal(Color.FromRgb(100, 80, 60), label.TextColor);
 		}
 
-		[Test]
+		[Fact]
 		public void TestLookupWithSuffix()
 		{
 			var markupString = "{local:Baa}";
@@ -203,10 +202,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var result = (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider);
 
 			Assert.That(result, Is.InstanceOf<string>());
-			Assert.AreEqual("BaaExtension", result);
+			Assert.Equal("BaaExtension", result);
 		}
 
-		[Test]
+		[Fact]
 		public void TestLookupOrder()
 		{
 			//The order of lookup is to look for the Extension-suffixed class name first and then look for the class name without the Extension suffix.
@@ -218,10 +217,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var result = (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider);
 
 			Assert.That(result, Is.InstanceOf<string>());
-			Assert.AreEqual("FuuExtension", result);
+			Assert.Equal("FuuExtension", result);
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowOnMarkupExtensionNotFound()
 		{
 			var markupString = "{local:Missing}";
