@@ -59,6 +59,8 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(SelectedTabColorProperty, value);
 		}
 
+		public event EventHandler TabActiveTapped;
+
 		protected override Page CreateDefault(object item)
 		{
 			var page = new Page();
@@ -85,6 +87,11 @@ namespace Microsoft.Maui.Controls
 		{
 			// We don't want forcelayout to call the legacy
 			// Page.LayoutChildren code
+		}
+
+		internal void SendTabActiveTapped()
+		{
+			TabActiveTapped?.Invoke(this, EventArgs.Empty);
 		}
 
 		partial void OnHandlerChangingPartial(HandlerChangingEventArgs args);
