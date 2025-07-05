@@ -965,6 +965,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			TabLayoutMediator.ITabConfigurationStrategy
 		{
 			readonly TabbedPageManager _tabbedPageManager;
+			bool _initialBottomNavigation;
 
 			public Listeners(TabbedPageManager tabbedPageManager)
 			{
@@ -1024,6 +1025,10 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					if (_tabbedPageManager._bottomNavigationView.SelectedItemId != item.ItemId && _tabbedPageManager.Element.Children.Count > item.ItemId)
 						_tabbedPageManager.Element.CurrentPage = _tabbedPageManager.Element.Children[item.ItemId];
+					else if (_tabbedPageManager._bottomNavigationView.SelectedItemId == item.ItemId && _initialBottomNavigation)
+						_tabbedPageManager.Element?.OnTabReselected();
+
+					_initialBottomNavigation = true;
 				}
 
 				return true;
@@ -1032,6 +1037,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			void TabLayout.IOnTabSelectedListener.OnTabReselected(TabLayout.Tab tab)
 			{
+				_tabbedPageManager?.Element?.SendTabReselected();
 			}
 
 			void TabLayout.IOnTabSelectedListener.OnTabSelected(TabLayout.Tab tab)
