@@ -187,7 +187,9 @@ namespace Microsoft.Maui.Controls
 					return;
 				_containerAreaSet = true;
 				_containerArea = value;
+#pragma warning disable CS0618 // Type or member is obsolete
 				ForceLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 
@@ -609,7 +611,9 @@ namespace Microsoft.Maui.Controls
 				{
 					if (startingLayout.Count <= i || c.Bounds != startingLayout[i])
 					{
+#pragma warning disable CS0618 // Type or member is obsolete
 						LayoutChanged?.Invoke(this, EventArgs.Empty);
+#pragma warning restore CS0618 // Type or member is obsolete
 						return;
 					}
 				}

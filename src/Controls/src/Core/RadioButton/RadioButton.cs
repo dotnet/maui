@@ -289,7 +289,7 @@ namespace Microsoft.Maui.Controls
 			base.ChangeVisualState();
 		}
 
-		[Obsolete("Use MeasureOverride instead")]
+		[Obsolete("Use MeasureOverride instead", true)]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (ControlTemplate == null)
@@ -297,7 +297,9 @@ namespace Microsoft.Maui.Controls
 				return Handler?.GetDesiredSize(widthConstraint, heightConstraint) ?? new();
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			return base.OnMeasure(widthConstraint, heightConstraint);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		protected override void OnApplyTemplate()

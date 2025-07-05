@@ -10,7 +10,7 @@ using Flex = Microsoft.Maui.Layouts.Flex;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
-	[Obsolete("Use Microsoft.Maui.Controls.FlexLayout instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts")]
+	[Obsolete("Use Microsoft.Maui.Controls.FlexLayout instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts", true)]
 	public class FlexLayout : Layout<View>
 	{
 		/// <summary>Bindable property for <see cref="Direction"/>.</summary>
@@ -193,7 +193,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (flexLayout._root == null)
 				return;
 			flexLayout._root.Direction = (Flex.Direction)(FlexDirection)newValue;
+#pragma warning disable CS0618 // Type or member is obsolete
 			flexLayout.InvalidateLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		static void OnJustifyContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -202,7 +204,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (flexLayout._root == null)
 				return;
 			flexLayout._root.JustifyContent = (Flex.Justify)(FlexJustify)newValue;
+#pragma warning disable CS0618 // Type or member is obsolete
 			flexLayout.InvalidateLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		static void OnAlignContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -211,7 +215,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (flexLayout._root == null)
 				return;
 			flexLayout._root.AlignContent = (Flex.AlignContent)(FlexAlignContent)newValue;
+#pragma warning disable CS0618 // Type or member is obsolete
 			flexLayout.InvalidateLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		static void OnAlignItemsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -220,7 +226,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (flexLayout._root == null)
 				return;
 			flexLayout._root.AlignItems = (Flex.AlignItems)(FlexAlignItems)newValue;
+#pragma warning disable CS0618 // Type or member is obsolete
 			flexLayout.InvalidateLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		static void OnPositionPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -229,7 +237,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (flexLayout._root == null)
 				return;
 			flexLayout._root.Position = (Flex.Position)(FlexPosition)newValue;
+#pragma warning disable CS0618 // Type or member is obsolete
 			flexLayout.InvalidateLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		static void OnWrapPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -238,7 +248,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (flexLayout._root == null)
 				return;
 			flexLayout._root.Wrap = (Flex.Wrap)(FlexWrap)newValue;
+#pragma warning disable CS0618 // Type or member is obsolete
 			flexLayout.InvalidateLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		Flex.Item _root;
@@ -432,6 +444,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		bool _measuring;
+		[Obsolete("Use MeasureOverride instead", true)]
 #pragma warning disable CS0672 // Member overrides obsolete member
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{

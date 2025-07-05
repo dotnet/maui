@@ -7,16 +7,20 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
-	[Obsolete("Use Microsoft.Maui.Controls.StackLayout instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts")]
+	[Obsolete("Use Microsoft.Maui.Controls.StackLayout instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts", true)]
 	public class StackLayout : Layout<View>, IElementConfiguration<StackLayout>, IView
 	{
 		/// <summary>Bindable property for <see cref="Orientation"/>.</summary>
 		public static readonly BindableProperty OrientationProperty = BindableProperty.Create(nameof(Orientation), typeof(StackOrientation), typeof(StackLayout), StackOrientation.Vertical,
+#pragma warning disable CS0618 // Type or member is obsolete
 			propertyChanged: (bindable, oldvalue, newvalue) => ((StackLayout)bindable).InvalidateLayout());
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		/// <summary>Bindable property for <see cref="Spacing"/>.</summary>
 		public static readonly BindableProperty SpacingProperty = BindableProperty.Create(nameof(Spacing), typeof(double), typeof(StackLayout), 6d,
+#pragma warning disable CS0618 // Type or member is obsolete
 			propertyChanged: (bindable, oldvalue, newvalue) => ((StackLayout)bindable).InvalidateLayout());
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		LayoutInformation _layoutInformation = new LayoutInformation();
 		readonly Lazy<PlatformConfigurationRegistry<StackLayout>> _platformConfigurationRegistry;
@@ -71,11 +75,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				var child = (View)LogicalChildrenInternal[i];
 				if (child.IsVisible && layoutInformationCopy.Plots != null)
+#pragma warning disable CS0618 // Type or member is obsolete
 					LayoutChildIntoBoundingRegion(child, layoutInformationCopy.Plots[i], layoutInformationCopy.Requests[i]);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 #pragma warning restore CS0672 // Member overrides obsolete member
 
+		[Obsolete("Use MeasureOverride instead", true)]
 #pragma warning disable CS0672 // Member overrides obsolete member
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 #pragma warning restore CS0672 // Member overrides obsolete member
@@ -95,7 +102,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		internal override void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
 		{
 			_layoutInformation = new LayoutInformation();
+#pragma warning disable CS0618 // Type or member is obsolete
 			base.OnChildMeasureInvalidated(child, trigger);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		protected override void ComputeConstraintForView(View view)
