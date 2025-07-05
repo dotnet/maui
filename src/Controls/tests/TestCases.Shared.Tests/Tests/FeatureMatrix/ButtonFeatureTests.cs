@@ -75,6 +75,8 @@ public class ButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		App.WaitForElement("ClickedEventLabel");
+		App.Tap("ClickedEventLabel");
 		VerifyScreenshot();
 	}
 #endif
@@ -115,6 +117,8 @@ public class ButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		App.WaitForElement("ClickedEventLabel");
+		App.Tap("ClickedEventLabel");
 		VerifyScreenshot();
 	}
 
@@ -249,6 +253,8 @@ public class ButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		App.WaitForElement("ClickedEventLabel");
+		App.Tap("ClickedEventLabel");
 		VerifyScreenshot();
 	}
 
