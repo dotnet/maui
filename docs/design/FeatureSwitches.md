@@ -13,6 +13,8 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | _MauiBindingInterceptorsSupport | Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported | When disabled, MAUI won't intercept any calls to `SetBinding` methods and try to compile them. Enabled by default. |
 | MauiEnableXamlCBindingWithSourceCompilation | Microsoft.Maui.RuntimeFeature.XamlCBindingWithSourceCompilationEnabled | When enabled, MAUI will compile all bindings, including those where the `Source` property is used. |
 | MauiHybridWebViewSupported | Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported | Enables HybridWebView, which makes use of dynamic System.Text.Json serialization features |
+| EnableDiagnostics | Microsoft.Maui.RuntimeFeature.EnableDiagnostics | Enables diagnostic for the running app |
+| EnableMauiDiagnostics | Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics | Enables MAUI specific diagnostics, like VisualDiagnostics and BindingDiagnostics. Defaults to EnableDiagnostics |
 
 ## MauiEnableIVisualAssemblyScanning
 
@@ -76,3 +78,15 @@ XamlC skipped compilation of bindings with the `Source` property set to any valu
 ```
 
 This feature is disabled by default, unless `TrimMode=true` or `PublishAot=true`. For fully trimmed and NativeAOT apps, the feature is enabled.
+
+## EnableDiagnostics
+
+Turn on various diagnostics at runtime and Maui level.
+
+Defaults to `false`
+
+## EnableMauiDiagnostics
+
+Enable VisualDiagnostics and BindingDiagnostics
+
+Defaults to `EnableDiagnostics`
