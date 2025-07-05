@@ -62,6 +62,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IMenuItem _updateMenuItemTitle;
 		IMenuItem _updateMenuItemIcon;
 		ShellSection _updateMenuItemSource;
+		bool _initialTabNavigation;
 
 		public ShellItemRenderer(IShellContext shellContext) : base(shellContext)
 		{
@@ -420,6 +421,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void OnTabReselected(ShellSection shellSection)
 		{
+			if (_initialTabNavigation)
+				shellSection?.SendTabReselected();
+
+			_initialTabNavigation = true;
 		}
 
 		protected virtual void ResetAppearance() => _appearanceTracker.ResetAppearance(_bottomView);

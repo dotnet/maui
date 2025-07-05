@@ -1311,7 +1311,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<ShellNavigatedEventArgs> Navigated;
 		public event EventHandler<ShellNavigatingEventArgs> Navigating;
-
+		public event EventHandler TabReselected;
 
 		/// <summary>
 		/// Gets or sets the icon that, when pressed, opens the flyout.
@@ -1534,6 +1534,11 @@ namespace Microsoft.Maui.Controls
 		{
 			UpdateChecked(this);
 			_structureChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		internal void SendTabReselected()
+		{
+			TabReselected?.Invoke(this, EventArgs.Empty);
 		}
 
 		protected override bool OnBackButtonPressed()

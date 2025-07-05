@@ -681,6 +681,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		internal void SendTabReselected()
+		{
+			if (Parent?.Parent is Shell shell)
+			{
+				shell.SendTabReselected();
+			}
+		}
+
 		protected virtual IReadOnlyList<Page> GetNavigationStack() => _navStack;
 
 		internal void UpdateDisplayedPage()
