@@ -5,7 +5,13 @@
 *REMOVED*override Microsoft.Maui.Platform.MauiPicker.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 Microsoft.Maui.Handlers.NavigationViewHandler.StackNavigationManager.get -> Microsoft.Maui.Platform.StackNavigationManager!
 Microsoft.Maui.Handlers.NavigationViewHandler.StackNavigationManager.set -> void
+Microsoft.Maui.Platform.StackNavigationManager.FragmentNavigator.get -> AndroidX.Navigation.Fragment.FragmentNavigator!
+Microsoft.Maui.Platform.StackNavigationManager.HasNavHost.get -> bool
+Microsoft.Maui.Platform.StackNavigationManager.NavController.get -> AndroidX.Navigation.NavController!
+Microsoft.Maui.Platform.StackNavigationManager.NavGraph.get -> AndroidX.Navigation.NavGraph!
+Microsoft.Maui.Platform.StackNavigationManager.NavHost.get -> AndroidX.Navigation.Fragment.NavHostFragment!
 Microsoft.Maui.Platform.StackNavigationManager.SetNavigationViewFragmentType(System.Type! type) -> void
+Microsoft.Maui.Platform.StackNavigationManager.ToolbarElement.get -> Microsoft.Maui.IToolbarElement?
 override Microsoft.Maui.Platform.MauiDatePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
 override Microsoft.Maui.Platform.MauiPickerBase.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
 override Microsoft.Maui.Platform.MauiTimePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?

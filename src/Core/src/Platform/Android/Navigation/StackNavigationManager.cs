@@ -33,26 +33,26 @@ namespace Microsoft.Maui.Platform
 		internal NavigationRequest? OnResumeRequestedArgs { get; private set; }
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = [];
 
-		internal NavHostFragment NavHost =>
+		protected NavHostFragment NavHost =>
 			_navHost ?? throw new InvalidOperationException($"NavHost cannot be null");
 
-		internal NavController NavController =>
+		protected NavController NavController =>
 			NavHost.NavController ?? throw new InvalidOperationException($"NavHost cannot be null");
 
-		internal FragmentNavigator FragmentNavigator =>
+		protected FragmentNavigator FragmentNavigator =>
 			_fragmentNavigator ?? throw new InvalidOperationException($"FragmentNavigator cannot be null");
 
-		internal NavGraph NavGraph => _navGraph ??
+		protected NavGraph NavGraph => _navGraph ??
 			throw new InvalidOperationException($"NavGraph cannot be null");
 
-		internal bool HasNavHost => _navHost is not null;
+		protected bool HasNavHost => _navHost is not null;
 
 		public IView CurrentPage
 			=> _currentPage ?? throw new InvalidOperationException("CurrentPage cannot be null");
 
 		public IMauiContext MauiContext { get; }
 
-		internal IToolbarElement? ToolbarElement =>
+		protected IToolbarElement? ToolbarElement =>
 			MauiContext.GetNavigationRootManager().ToolbarElement;
 
 		public StackNavigationManager(IMauiContext mauiContext)
