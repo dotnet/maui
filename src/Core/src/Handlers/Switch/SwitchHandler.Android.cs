@@ -80,6 +80,12 @@ namespace Microsoft.Maui.Handlers
 			void CompoundButton.IOnCheckedChangeListener.OnCheckedChanged(CompoundButton? buttonView, bool isToggled)
 			{
 				Handler?.OnCheckedChanged(isToggled);
+
+				// Schedule shadow update after a short delay to allow toggle animation to finish
+				if (Handler?.VirtualView?.Shadow is not null)
+				{
+					Handler.PlatformView?.PostDelayed(() => MapShadow(Handler, Handler.VirtualView), 150);
+				}
 			}
 		}
 	}
