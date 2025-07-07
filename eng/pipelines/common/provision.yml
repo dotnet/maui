@@ -21,7 +21,7 @@ parameters:
   provisionatorChannel: 'latest'
   provisionatorExtraArguments: $(provisionator.extraArguments)
   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
-  certPass: $(maui-cert-password)
+  certPass: $(maui-cert-password) # This lives on MAUI variable group
   certName: 'MauiCert.p12'
   provisioningProfileName: 'MauiProvisioningProfile.mobileprovision'
   # Enabling internal runtimes / feeds
