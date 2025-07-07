@@ -56,7 +56,6 @@ steps:
 
 - template: provision.yml
   parameters:
-    skipProvisioning: true
     skipJdk: ${{ ne(parameters.platform, 'android') }}
     skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
     skipAndroidPlatformApis: true
@@ -72,7 +71,7 @@ steps:
       skipProvisionator: false
       gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
     ${{ if eq(parameters.platform, 'catalyst') }}:
-      opensslPkcsArgs: '' # Do not use legacy openssl for Catalyst builds
+      openSslArgs: '' # Do not use legacy openssl for Catalyst builds
 
 - task: PowerShell@2
   condition: and(ne('${{ parameters.platform }}', 'windows'), ne('${{ parameters.platform }}', 'android'))
