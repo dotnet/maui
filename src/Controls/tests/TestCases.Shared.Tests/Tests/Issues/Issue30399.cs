@@ -1,4 +1,4 @@
-#if MACCATALYST && WINDOWS  // Titlebar applicable only on Windows and MacCatalyst
+#if MACCATALYST || WINDOWS  // Titlebar applicable only on Windows and MacCatalyst
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
