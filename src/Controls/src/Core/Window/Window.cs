@@ -611,6 +611,7 @@ namespace Microsoft.Maui.Controls
 			if (oldValue is Page oldPage)
 			{
 				oldPage.SendDisappearing();
+				oldPage.ConfigureAsOutgoingPage(newValue as Page, NavigationType.PageSwap);
 			}
 		}
 
@@ -658,7 +659,7 @@ namespace Microsoft.Maui.Controls
 
 			Handler?.UpdateValue(nameof(IWindow.FlowDirection));
 
-			newPage?.WireUpAsIncomingPage(oldPage);
+			newPage?.ConfigureAsIncomingPage(oldPage);
 		}
 
 		void OnPageHandlerChanged(object? sender, EventArgs e)
