@@ -11,4 +11,5 @@ static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.AuthenticateAsyn
 static Microsoft.Maui.Devices.Sensors.Geolocation.IsEnabled.get -> bool
 *REMOVED*static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>!>!
 static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
+static Microsoft.Maui.Devices.HapticFeedback.IsSupported.get -> bool
 static Microsoft.Maui.Devices.Vibration.IsSupported.get -> bool
