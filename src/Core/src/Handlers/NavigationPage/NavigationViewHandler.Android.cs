@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, View>
 	{
 		StackNavigationManager? _stackNavigationManager;
-		protected StackNavigationManager StackNavigationManager
+		public StackNavigationManager StackNavigationManager
 		{
 			get => _stackNavigationManager ??= CreateNavigationManager();
 			set
