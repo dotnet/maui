@@ -50,15 +50,11 @@ variables:
 - name: _InternalBuildArgs
   value: ''
 
-# Variable groups required for all builds
-- ${{ if and(ne(variables['Build.DefinitionName'], 'maui-pr'), ne(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
-  - group: maui-provisionator # This is just needed for the provisionator
-  - group: MAUI # This is the main MAUI variable group that contains secret for the apple certificate
-
 # Variable groups required for private builds but not prs
 # Variable group for maui release pipelines
-- ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+- ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['UseProvisionator'], 'true')) }}:
   - group: maui-provisionator
+  - group: MAUI # This is the main MAUI variable group that contains secret for the apple certificate
 
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
   - name: internalProvisioning
