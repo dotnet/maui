@@ -136,8 +136,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			if (handler is DatePickerHandler platformHandler &&
-			    handler.PlatformView.IsLoaded())
+			if (handler.IsConnected() && handler is DatePickerHandler platformHandler)
 			{
 				if (datePicker.IsOpen)
 					platformHandler.ShowPickerDialog(datePicker.Date);

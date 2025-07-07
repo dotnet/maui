@@ -310,7 +310,7 @@ namespace Microsoft.Maui.Controls
 
 		void HandleIsOpenChanged()
 		{
-			if (Handler.VirtualView is not Picker picker)
+			if (Handler?.VirtualView is not Picker picker)
 				return;
 
 			if (picker.IsOpen)

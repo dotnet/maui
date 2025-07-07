@@ -86,8 +86,7 @@ namespace Microsoft.Maui.Handlers
 		
 		public static void MapIsOpen(IPickerHandler handler, IPicker picker)
 		{
-			if (handler is PickerHandler pickerHandler &&
-			    pickerHandler.PlatformView.IsLoaded())
+			if (handler.IsConnected() && handler is PickerHandler pickerHandler)
 			{
 				if (picker.IsOpen)
 					pickerHandler.ShowDialog();

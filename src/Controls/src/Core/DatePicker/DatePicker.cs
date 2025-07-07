@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Controls
 
 		void HandleIsOpenChanged()
 		{
-			if (Handler.VirtualView is not DatePicker datePicker)
+			if (Handler?.VirtualView is not DatePicker datePicker)
 				return;
 
 			if (datePicker.IsOpen)

@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Controls
 
 		void HandleIsOpenChanged()
 		{
-			if (Handler.VirtualView is not TimePicker timePicker)
+			if (Handler?.VirtualView is not TimePicker timePicker)
 				return;
 
 			if (timePicker.IsOpen)
