@@ -90,9 +90,8 @@ steps:
   # Prepare macOS
   - task: InstallAppleCertificate@2
     inputs:
-      certSecureFile: { ? { parameters.certName } }
+      certSecureFile: '{{ parameters.certName }}'
       certPwd: '{{ parameters.certPass }}'
-      # Advanced
       keychain: 'temp'
 
   - task: InstallAppleProvisioningProfile@1
