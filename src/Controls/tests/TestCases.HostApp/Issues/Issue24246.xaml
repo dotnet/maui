@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue24246">
+    <VerticalStackLayout x:Name="layout" 
+                         BackgroundColor="Purple" 
+                         IgnoreSafeArea="False" 
+                         VerticalOptions="Start" 
+                         IsClippedToBounds="True"
+                         AutomationId="TestLayout">
+        <Entry x:Name="entry" 
+               BackgroundColor="Green" 
+               Text="Hello there"
+               AutomationId="TestEntry" />
+    </VerticalStackLayout>
+</ContentPage>

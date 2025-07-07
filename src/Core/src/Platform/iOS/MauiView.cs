@@ -108,9 +108,38 @@ namespace Microsoft.Maui.Platform
 			var widthConstraint = size.Width;
 			var heightConstraint = size.Height;
 
+			// If SafeArea applies, we need to adjust the constraints to account for SafeArea insets
+			// during measurement, and then add back the SafeArea insets to the final size
+			var shouldAdjustForSafeArea = View is ISafeAreaView sav && !sav.IgnoreSafeArea && RespondsToSafeArea();
+			
+			if (shouldAdjustForSafeArea)
+			{
+				// Reduce the available measurement space by SafeArea insets
+#pragma warning disable CA1416 // TODO 'UIView.SafeAreaInsets' is only supported on: 'ios' 11.0 and later, 'maccatalyst' 11.0 and later, 'tvos' 11.0 and later.
+				var safeAreaInsets = SafeAreaInsets;
+#pragma warning restore CA1416
+				
+				// Adjust the measurement constraints to account for SafeArea
+				widthConstraint = Math.Max(0, widthConstraint - safeAreaInsets.Left - safeAreaInsets.Right);
+				heightConstraint = Math.Max(0, heightConstraint - safeAreaInsets.Top - safeAreaInsets.Bottom);
+			}
+
 			var crossPlatformSize = CrossPlatformMeasure(widthConstraint, heightConstraint);
 
-			CacheMeasureConstraints(widthConstraint, heightConstraint);
+			CacheMeasureConstraints(size.Width, size.Height);
+
+			// If SafeArea applies, add back the SafeArea insets to the measured size
+			if (shouldAdjustForSafeArea)
+			{
+#pragma warning disable CA1416 // TODO 'UIView.SafeAreaInsets' is only supported on: 'ios' 11.0 and later, 'maccatalyst' 11.0 and later, 'tvos' 11.0 and later.
+				var safeAreaInsets = SafeAreaInsets;
+#pragma warning restore CA1416
+				
+				return new CGSize(
+					crossPlatformSize.Width + safeAreaInsets.Left + safeAreaInsets.Right,
+					crossPlatformSize.Height + safeAreaInsets.Top + safeAreaInsets.Bottom
+				);
+			}
 
 			return crossPlatformSize.ToCGSize();
 		}
