@@ -75,7 +75,6 @@ steps:
       echo
       echo selecting latest xcode...
       sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
-      xcode-select -p
       xcrun xcode-select --print-path
       xcodebuild -version
       sudo xcodebuild -license accept
@@ -95,7 +94,7 @@ steps:
       certSecureFile: '${{ parameters.certName }}'
       certPwd: ${{ parameters.certPass }}
       keychain: 'temp'
-      opensslPkcsArgs: '-legacy'
+  #    opensslPkcsArgs: '-legacy'
 
   - task: InstallAppleProvisioningProfile@1
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
