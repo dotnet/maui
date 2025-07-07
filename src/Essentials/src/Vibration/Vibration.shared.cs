@@ -66,6 +66,12 @@ namespace Microsoft.Maui.Devices
 		public static void Cancel() =>
 			Current.Cancel();
 
+		/// <summary>
+		/// Gets a value indicating whether vibration is supported on this device.
+		/// </summary>
+		public static bool IsSupported
+			=> Current.IsSupported;
+
 		static IVibration Current => Devices.Vibration.Default;
 
 		static IVibration? defaultImplementation;
