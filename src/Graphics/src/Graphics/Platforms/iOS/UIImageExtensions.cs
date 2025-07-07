@@ -27,12 +27,22 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
 		{
-			using (var renderer = new UIGraphicsImageRenderer(size))
+			if (target.Size == size)
+			{
+				return target;
+			}
+
+			var format = new UIGraphicsImageRendererFormat
+			{
+				Opaque = false,
+				Scale = target.CurrentScale,
+			};
+
+			using (var renderer = new UIGraphicsImageRenderer(size, format))
 			{
 				var resultImage = renderer.CreateImage((UIGraphicsImageRendererContext imageContext) =>
 				{
-					var cgcontext = imageContext.CGContext;
-					cgcontext.DrawImage(new CGRect(CGPoint.Empty, size), target.CGImage);
+					target.Draw(new CGRect(CGPoint.Empty, size));
 
 					if (disposeOriginal)
 					{
