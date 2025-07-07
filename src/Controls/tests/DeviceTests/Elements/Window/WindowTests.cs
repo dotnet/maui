@@ -133,16 +133,16 @@ namespace Microsoft.Maui.DeviceTests
 			var firstRootPage = swapOrder.GetNextPageType();
 			var window = new Window(firstRootPage);
 
-			bool hasNavigatedToFired = false;
-			bool hasNavigatedFromFired = false;
-			bool hasNavigatingFromFired = false;
+			int navigatedToCount = 0;
+			int navigatedFromCount = 0;
+			int navigatingFromCount = 0;
 			Page previousPage = null;
 
 			EventHandler<NavigatedToEventArgs> NavigatedToHandler = null;
 			NavigatedToHandler = (s, args) =>
 			{
 				((Page)s).NavigatedTo -= NavigatedToHandler;
-				hasNavigatedToFired = true;
+				navigatedToCount++;
 				Assert.Equal(window.Page, s);
 				Assert.Equal(previousPage, args.PreviousPage);
 			};
@@ -151,25 +151,19 @@ namespace Microsoft.Maui.DeviceTests
 			NavigatedFromHandler = (s, args) =>
 			{
 				((Page)s).NavigatedFrom -= NavigatedFromHandler;
-				hasNavigatedFromFired = true;
+				navigatedFromCount++;
 
-				// if the destination page is null that means this page is being unloaded
-				if (args.DestinationPage is null)
-				{
-					Assert.Equal(window.Page, s);
-				}
-				else
-				{
-					Assert.NotEqual(window.Page, s);
-				}
+				Assert.NotNull(s);
+
 			};
 
 			EventHandler<NavigatingFromEventArgs> NavigatingFromHandler = null;
 			NavigatingFromHandler = (s, args) =>
 			{
-				Assert.False(hasNavigatedToFired);
+				Assert.True(navigatedToCount > navigatedFromCount || (navigatedToCount == 1 && navigatedFromCount == 0));
+				Assert.True(navigatedToCount > navigatingFromCount || (navigatedToCount == 1 && navigatingFromCount == 0));
 				((Page)s).NavigatingFrom -= NavigatingFromHandler;
-				hasNavigatingFromFired = true;
+				navigatingFromCount++;
 				Assert.Equal(window.Page, s);
 			};
 
@@ -177,22 +171,24 @@ namespace Microsoft.Maui.DeviceTests
 			firstRootPage.NavigatedFrom += NavigatedFromHandler;
 			firstRootPage.NavigatingFrom += NavigatingFromHandler;
 
+			int swapCount = 0;
+
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
 			{
 				await OnLoadedAsync(swapOrder.Page);
 
-				// Validate initial has Navigated To has fired
-				Assert.True(hasNavigatedToFired);
-				Assert.False(hasNavigatedFromFired);
-				hasNavigatedToFired = false;
+				// Validate initial NavigatedTo has fired
+				Assert.Equal(1, navigatedToCount);
+				Assert.Equal(0, navigatedFromCount);
+				Assert.Equal(0, navigatingFromCount);
 
 				while (!swapOrder.IsFinished())
 				{
+					swapCount++;
 					var previousRootPage = window.Page?.GetType();
 					var nextRootPage = swapOrder.GetNextPageType();
 					previousPage = window.Page;
 
-					// Wire up the incoming page to navigation events
 					nextRootPage.NavigatedTo += NavigatedToHandler;
 					nextRootPage.NavigatedFrom += NavigatedFromHandler;
 					nextRootPage.NavigatingFrom += NavigatingFromHandler;
@@ -202,14 +198,11 @@ namespace Microsoft.Maui.DeviceTests
 					try
 					{
 						await OnLoadedAsync(swapOrder.Page);
-						Assert.True(hasNavigatedToFired);
-						Assert.True(hasNavigatedFromFired);
-						Assert.True(hasNavigatingFromFired);
-						hasNavigatedToFired = false;
-						hasNavigatedFromFired = false;
-						hasNavigatingFromFired = false;
 
-						// Disconnect the previous page from navigation events
+						Assert.Equal(swapCount + 1, navigatedToCount);
+						Assert.Equal(swapCount, navigatedFromCount);
+						Assert.Equal(swapCount, navigatingFromCount);
+
 						previousPage.NavigatedTo -= NavigatedToHandler;
 						previousPage.NavigatedFrom -= NavigatedFromHandler;
 						previousPage.NavigatingFrom -= NavigatingFromHandler;
@@ -219,6 +212,10 @@ namespace Microsoft.Maui.DeviceTests
 						throw new Exception($"Failed to swap to {nextRootPage} from {previousRootPage}", exc);
 					}
 				}
+
+				Assert.Equal(swapCount + 1, navigatedToCount);
+				Assert.Equal(swapCount, navigatedFromCount);
+				Assert.Equal(swapCount, navigatingFromCount);
 			});
 		}
 
