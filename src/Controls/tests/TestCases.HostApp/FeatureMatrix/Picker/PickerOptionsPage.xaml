@@ -183,24 +183,6 @@
                                          CheckedChanged="OnVerticalTextAlignmentChanged"/>
                      </StackLayout>
 
-                     <!-- Text Transform -->
-                     <Label Text="Text Transform:"
-                            FontSize="15"/>
-                     <StackLayout Orientation="Horizontal">
-                            <RadioButton x:Name="TextTransformUppercase"
-                                         AutomationId="TextTransformUppercase"
-                                         GroupName="TextTransform"
-                                         Content="Uppercase"
-                                         FontSize="14"
-                                         CheckedChanged="OnTextTransformChanged"/>
-                            <RadioButton x:Name="TextTransformLowercase"
-                                         AutomationId="TextTransformLowercase"
-                                         GroupName="TextTransform"
-                                         Content="Lowercase"
-                                         FontSize="14"
-                                         CheckedChanged="OnTextTransformChanged"/>
-                     </StackLayout>
-
                      <!-- Shadow -->
                      <StackLayout Orientation="Horizontal"
                                   Spacing="5">

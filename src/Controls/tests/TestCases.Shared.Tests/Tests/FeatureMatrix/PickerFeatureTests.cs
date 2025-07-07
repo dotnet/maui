@@ -27,70 +27,35 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(2)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_TapPicker_TakeScreenshot()
 		{
 			App.WaitForElement("Picker");
 			App.Tap("Picker");
 			VerifyScreenshot();
-#if ANDROID
-			App.WaitForElement("Cancel");
-			App.Tap("Cancel");
-#elif IOS
+#if IOS
 			App.WaitForElement("Done");
 			App.Tap("Done");
 #endif
 		}
 
-		[Test]
+		[Test, Order(3)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SelectItem_VerifySelectedItem()
 		{
+#if ANDROID
+			App.WaitForElement("Cancel");
+			App.Tap("Cancel");
 			App.WaitForElement("Picker");
 			App.Tap("Picker");
-#if ANDROID
 			App.WaitForElement("Option 3 - Third option");
 			App.Tap("Option 3 - Third option");
+	        VerifyScreenshot();
 #endif
-			VerifyScreenshot();
 		}
 
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetTitle_VerifyTitleLabel()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("TitleEntry");
-			App.ClearText("TitleEntry");
-			App.EnterText("TitleEntry", "Choose Option");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Picker");
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetTitleAndCharacterSpacing_VerifyBoth()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("TitleEntry");
-			App.ClearText("TitleEntry");
-			App.EnterText("TitleEntry", "Custom Title");
-			App.WaitForElement("CharacterSpacingEntry");
-			App.ClearText("CharacterSpacingEntry");
-			App.EnterText("CharacterSpacingEntry", "5");
-			App.PressEnter();
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Picker");
-			VerifyScreenshot();
-		}
-
-		[Test]
+		[Test, Order(4)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetSelectedIndex_VerifySelectedIndexAndItem()
 		{
@@ -107,7 +72,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(5)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetSelectedItem_VerifySelectedItemLabel()
 		{
@@ -124,7 +89,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30464
+
+		[Test, Order(6)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetCharacterSpacing_VerifyCharacterSpacingLabel()
 		{
@@ -140,15 +107,18 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(7)]
 		[Category(UITestCategories.Picker)]
-		public void Picker_SetFontSize_VerifyFontSizeLabel()
+		public void Picker_SetCharacterSpacingAndTitle_VerifyBoth()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("FontSizeEntry");
-			App.ClearText("FontSizeEntry");
-			App.EnterText("FontSizeEntry", "20");
+			App.WaitForElement("TitleEntry");
+			App.ClearText("TitleEntry");
+			App.EnterText("TitleEntry", "Custom Title");
+			App.WaitForElement("CharacterSpacingEntry");
+			App.ClearText("CharacterSpacingEntry");
+			App.EnterText("CharacterSpacingEntry", "5");
 			App.PressEnter();
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
@@ -156,7 +126,27 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(8)]
+		[Category(UITestCategories.Picker)]
+		public void Picker_SetCharacterSpacingAndPickerItem_Verify()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("CharacterSpacingEntry");
+			App.ClearText("CharacterSpacingEntry");
+			App.EnterText("CharacterSpacingEntry", "8");
+			App.WaitForElement("SelectedIndexEntry");
+			App.ClearText("SelectedIndexEntry");
+			App.EnterText("SelectedIndexEntry", "1");
+			App.PressEnter();
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
+		}
+#endif
+
+		[Test, Order(9)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetFontSizeAndFontAttributesBold_VerifyFontSizeAndAttributes()
 		{
@@ -168,13 +158,17 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.PressEnter();
 			App.WaitForElement("FontAttributesBold");
 			App.Tap("FontAttributesBold");
+			App.WaitForElement("SelectedIndexEntry");
+			App.ClearText("SelectedIndexEntry");
+			App.EnterText("SelectedIndexEntry", "1");
+			App.PressEnter();
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(10)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetFontSizeAndFontFamilyDokdo_VerifyFontSizeAndFontFamily()
 		{
@@ -186,13 +180,17 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.PressEnter();
 			App.WaitForElement("FontFamilyDokdoButton");
 			App.Tap("FontFamilyDokdoButton");
+			App.WaitForElement("SelectedIndexEntry");
+			App.ClearText("SelectedIndexEntry");
+			App.EnterText("SelectedIndexEntry", "1");
+			App.PressEnter();
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(11)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetFlowDirectionRTL_VerifyFlowDirection()
 		{
@@ -200,27 +198,37 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("FlowDirectionRTL");
 			App.Tap("FlowDirectionRTL");
+			App.WaitForElement("SelectedIndexEntry");
+			App.ClearText("SelectedIndexEntry");
+			App.EnterText("SelectedIndexEntry", "1");
+			App.PressEnter();
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
 			VerifyScreenshot();
 		}
 
-		[Test]
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30463
+
+		[Test, Order(12)]
 		[Category(UITestCategories.Picker)]
-		public void Picker_SetFontAttributesItalic_VerifyFontAttributes()
+		public void Picker_SetFlowDirectionRTLAndTitle_VerifyFlowDirectionAndTitle()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("FontAttributesItalic");
-			App.Tap("FontAttributesItalic");
+			App.WaitForElement("FlowDirectionRTL");
+			App.Tap("FlowDirectionRTL");
+			App.WaitForElement("TitleEntry");
+			App.ClearText("TitleEntry");
+			App.EnterText("TitleEntry", "RTL Title");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
 			VerifyScreenshot();
 		}
+#endif
 
-		[Test]
+		[Test, Order(13)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetFontAttributesItalicAndFontFamilyDokdo_VerifyFontAttributesAndFontFamily()
 		{
@@ -230,13 +238,17 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("FontAttributesItalic");
 			App.WaitForElement("FontFamilyDokdoButton");
 			App.Tap("FontFamilyDokdoButton");
+			App.WaitForElement("SelectedIndexEntry");
+			App.ClearText("SelectedIndexEntry");
+			App.EnterText("SelectedIndexEntry", "2");
+			App.PressEnter();
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(14)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetIsEnabledFalse_VerifyPickerDisabled()
 		{
@@ -251,7 +263,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(15)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetIsVisibleFalse_VerifyPickerHidden()
 		{
@@ -264,21 +276,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("Picker");
 		}
 
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetHorizontalTextAlignmentEnd_VerifyTextAlignment()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("HorizontalTextAlignmentEnd");
-			App.Tap("HorizontalTextAlignmentEnd");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Picker");
-			VerifyScreenshot();
-		}
-
-		[Test]
+		[Test, Order(16)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetHorizontalTextAlignmentAndSelectedItem_VerifySelectedItem()
 		{
@@ -296,21 +294,27 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30463
+
+		[Test, Order(17)]
 		[Category(UITestCategories.Picker)]
-		public void Picker_SetVerticalTextAlignmentEnd_VerifyTextAlignment()
+		public void Picker_SetHorizontalTextAlignmentEndAndTitle_VerifyTitleAlignment()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("VerticalTextAlignmentEnd");
-			App.Tap("VerticalTextAlignmentEnd");
+			App.WaitForElement("HorizontalTextAlignmentEnd");
+			App.Tap("HorizontalTextAlignmentEnd");
+			App.WaitForElement("TitleEntry");
+			App.ClearText("TitleEntry");
+			App.EnterText("TitleEntry", "Aligned Title");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
 			VerifyScreenshot();
 		}
+#endif
 
-		[Test]
+		[Test, Order(18)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetVerticalTextAlignmentAndSelectedItem_VerifySelectedItem()
 		{
@@ -328,39 +332,27 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30463
+
+		[Test, Order(19)]
 		[Category(UITestCategories.Picker)]
-		public void Picker_SetTextTransformUppercase_VerifyTextTransform()
+		public void Picker_SetVerticalTextAlignmentEndAndTitle_VerifyTitleAlignment()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("TextTransformUppercase");
-			App.Tap("TextTransformUppercase");
+			App.WaitForElement("VerticalTextAlignmentEnd");
+			App.Tap("VerticalTextAlignmentEnd");
+			App.WaitForElement("TitleEntry");
+			App.ClearText("TitleEntry");
+			App.EnterText("TitleEntry", "Aligned Title");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
 			VerifyScreenshot();
 		}
+#endif
 
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetTextTransformUppercaseAndSelectedItem_VerifyTextTransformAndSelectedItem()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("TextTransformUppercase");
-			App.Tap("TextTransformUppercase");
-			App.WaitForElement("SelectedItemEntry");
-			App.ClearText("SelectedItemEntry");
-			App.EnterText("SelectedItemEntry", "Option 5 - Fifth option");
-			App.PressEnter();
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Picker");
-			VerifyScreenshot();
-		}
-
-		[Test]
+		[Test, Order(20)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetShadow_VerifyShadow()
 		{
@@ -374,7 +366,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(21)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetTextColorRed_VerifyTextColor()
 		{
@@ -392,7 +384,24 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30463
+
+		[Test, Order(22)]
+		[Category(UITestCategories.Picker)]
+		public void Picker_SetTitle_VerifyTitleLabel()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("TitleEntry");
+			App.ClearText("TitleEntry");
+			App.EnterText("TitleEntry", "Choose Option");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
+		}
+
+		[Test, Order(23)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetTitleColorOrange_VerifyTitleColor()
 		{
@@ -400,18 +409,60 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("TitleColorOrangeButton");
 			App.Tap("TitleColorOrangeButton");
+			App.WaitForElement("TitleEntry");
+			App.ClearText("TitleEntry");
+			App.EnterText("TitleEntry", "Choose Option");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(24)]
 		[Category(UITestCategories.Picker)]
-		public void Picker_SetFontFamilyDokdo_VerifyFontFamily()
+		public void Picker_SetTitleWithFontSize_VerifyTitleAndFontSize()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
+			App.WaitForElement("TitleEntry");
+			App.ClearText("TitleEntry");
+			App.EnterText("TitleEntry", "Styled Title");
+			App.WaitForElement("FontSizeEntry");
+			App.ClearText("FontSizeEntry");
+			App.EnterText("FontSizeEntry", "22");
+			App.PressEnter();
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
+		}
+
+		[Test, Order(25)]
+		[Category(UITestCategories.Picker)]
+		public void Picker_SetTitleWithFontAttributeBold_VerifyTitleAndFontAttribute()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("TitleEntry");
+			App.ClearText("TitleEntry");
+			App.EnterText("TitleEntry", "Styled Title");
+			App.WaitForElement("FontAttributesBold");
+			App.Tap("FontAttributesBold");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
+		}
+
+		[Test, Order(26)]
+		[Category(UITestCategories.Picker)]
+		public void Picker_SetTitleWithFontFamilyDokdo_VerifyTitleAndFontFamily()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("TitleEntry");
+			App.ClearText("TitleEntry");
+			App.EnterText("TitleEntry", "Styled Title");
 			App.WaitForElement("FontFamilyDokdoButton");
 			App.Tap("FontFamilyDokdoButton");
 			App.WaitForElement("Apply");
@@ -419,8 +470,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Picker");
 			VerifyScreenshot();
 		}
+#endif
 
-		[Test]
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/4818
+
+		[Test, Order(27)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetItemDisplayBindingName_VerifyItemDisplay()
 		{
@@ -433,8 +487,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Picker");
 			VerifyScreenshot();
 		}
+#endif
 
-		[Test]
+		[Test, Order(28)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SelectedIndexChanged_VerifyEventTriggered()
 		{

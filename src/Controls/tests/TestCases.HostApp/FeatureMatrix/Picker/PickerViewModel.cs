@@ -21,7 +21,7 @@ public class PickerViewModel : INotifyPropertyChanged
 	private Shadow _shadow = null;
 	private Color _textColor = Colors.Black;
 	private TextTransform _textTransform = TextTransform.None;
-	private string _title = "Select an item";
+	private string _title = string.Empty;
 	private Color _titleColor = Colors.Black;
 	private TextAlignment _verticalTextAlignment = TextAlignment.Center;
 
@@ -292,7 +292,6 @@ public class PickerViewModel : INotifyPropertyChanged
 		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 
-	// Resets all properties to their default values
 	public void ResetToDefaults()
 	{
 		_characterSpacing = 0;
@@ -310,7 +309,7 @@ public class PickerViewModel : INotifyPropertyChanged
 		_shadow = null;
 		_textColor = Colors.Black;
 		_textTransform = TextTransform.None;
-		_title = "Select an item";
+		_title = string.Empty;
 		_titleColor = Colors.Black;
 		_verticalTextAlignment = TextAlignment.Center;
 

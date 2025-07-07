@@ -143,19 +143,6 @@ public partial class PickerOptionsPage : ContentPage
         }
     }
 
-    private void OnTextTransformChanged(object sender, CheckedChangedEventArgs e)
-    {
-        if (sender is RadioButton radioButton && e.Value)
-        {
-            _viewModel.TextTransform = radioButton.Content.ToString() switch
-            {
-                "Uppercase" => TextTransform.Uppercase,
-                "Lowercase" => TextTransform.Lowercase,
-                _ => TextTransform.None
-            };
-        }
-    }
-
     private void OnShadowRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
     {
         var radioButton = sender as RadioButton;
