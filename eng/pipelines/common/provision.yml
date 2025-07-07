@@ -89,12 +89,17 @@ steps:
 - ${{ if ne(parameters.skipProvisionator, true) }}:
   # Prepare macOS
   - task: InstallAppleCertificate@2
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+    displayName: 'Install Apple Certificate ${{ parameters.certName }}'
     inputs:
       certSecureFile: '${{ parameters.certName }}'
-      certPwd: '${{ parameters.certPass }}'
+      certPwd: ${{ parameters.certPass }}
       keychain: 'temp'
+      opensslPkcsArgs: -legacy
 
   - task: InstallAppleProvisioningProfile@1
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+    displayName: 'Install Apple Provisioning Profile ${{ parameters.provisioningProfileName }}'
     inputs:
       provisioningProfileLocation: 'secureFiles'
       provProfileSecureFile: '${{ parameters.provisioningProfileName }}'
