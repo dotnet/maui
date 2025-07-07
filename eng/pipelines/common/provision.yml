@@ -23,6 +23,7 @@ parameters:
   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
   certPass: $(maui-cert-password) # This lives on MAUI variable group
   certName: 'MauiCert.p12'
+  openSslArgs: '-legacy'
   provisioningProfileName: 'MauiProvisioningProfile.mobileprovision'
   # Enabling internal runtimes / feeds
   federatedServiceConnection: 'dotnetbuilds-internal-read'
@@ -94,7 +95,7 @@ steps:
       certSecureFile: '${{ parameters.certName }}'
       certPwd: ${{ parameters.certPass }}
       keychain: 'temp'
-  #    opensslPkcsArgs: '-legacy'
+      opensslPkcsArgs: '${{ parameters.openSslArgs }}'
 
   - task: InstallAppleProvisioningProfile@1
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
