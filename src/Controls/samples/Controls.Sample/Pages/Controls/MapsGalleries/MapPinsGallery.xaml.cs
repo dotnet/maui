@@ -9,6 +9,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MapPinsGallery
 	{
+		const double DefaultMapRadiusKm = 5.0;
 		readonly Random _locationRandomSeed = new();
 		int _locationIncrement = 0;
 
@@ -132,7 +133,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			_randomLocations[_locationRandomSeed.Next(_randomLocations.Length)];
 
 		void MoveMapTo(Position location) =>
-			pinsMap.MoveToRegion(MapSpan.FromCenterAndRadius(location, Distance.FromKilometers(5)));
+			pinsMap.MoveToRegion(MapSpan.FromCenterAndRadius(location, Distance.FromKilometers(DefaultMapRadiusKm)));
 
 		void OnMapClicked(object sender, MapClickedEventArgs e)
 		{
