@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS
+#if TEST_FAILS_ON_WINDOWS// This test fails on Windows: Shell.MenuItemTemplate behaves correctly,AutomationId does not work as expected on the Windows platform.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -17,7 +17,6 @@ public class Issue21963 : _IssuesUITest
     [Category(UITestCategories.Shell)]
     public void VerifyFlyoutAndTemplatesPresentInitially()
     {
-
         App.WaitForElement("ShellContent 1");
         App.WaitForElement("ShellContent 2");
         App.WaitForElement("MenuItem 1");
