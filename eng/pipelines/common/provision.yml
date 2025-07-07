@@ -95,7 +95,7 @@ steps:
       certSecureFile: '${{ parameters.certName }}'
       certPwd: maui
       keychain: 'temp'
-      # opensslPkcsArgs: -legacy
+      opensslPkcsArgs: '-legacy'
 
   - task: InstallAppleProvisioningProfile@1
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
