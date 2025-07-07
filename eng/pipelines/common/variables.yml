@@ -58,7 +58,7 @@ variables:
   value: ''
 
 # Variable groups required for all builds
-- ${{ if and(ne(variables['Build.DefinitionName'], 'maui-pr'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
+- ${{ if and(ne(variables['Build.DefinitionName'], 'maui-pr'), ne(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
   - group: xamops-azdev-secrets
 
 # Variable groups required for private builds but not prs
