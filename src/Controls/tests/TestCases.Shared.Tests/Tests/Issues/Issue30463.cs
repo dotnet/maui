@@ -14,13 +14,13 @@ public class Issue30463 : _IssuesUITest
 	[Category(UITestCategories.Picker)]
 	public void PickerShouldRegainTitle()
 	{
-		App.WaitForElement("ChangeSelectedIndexToMinusOne");
-		App.Tap("ChangeSelectedIndexToMinusOne");
-		var picker = App.WaitForElement("RegainingPickerTitle").GetText();
-#if WINDOWS || IOS
-			Assert.That(picker, Is.Empty);
+		App.WaitForElement("ToggleSelectedIndexBtn");
+		App.Tap("ToggleSelectedIndexBtn");
+		var pickerText = App.WaitForElement("RegainingPickerTitle").GetText();
+#if ANDROID || MACCATALYST
+			Assert.That(pickerText, Is.EqualTo("Select an item"));
 #else
-		Assert.That(picker, Is.EqualTo("Select an item"));
+		Assert.That(pickerText, Is.Empty);
 #endif
 	}
 }

@@ -21,7 +21,7 @@ public class Issue30463 : ContentPage
 
 		Button button = new Button
 		{
-			AutomationId = "ChangeSelectedIndexToMinusOne",
+			AutomationId = "ToggleSelectedIndexBtn",
 			Text = "Click to change selected index to -1"
 		};
 		button.Clicked += (sender, e) =>
