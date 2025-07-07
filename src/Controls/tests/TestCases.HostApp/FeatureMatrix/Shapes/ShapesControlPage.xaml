@@ -24,15 +24,20 @@
     </Grid.RowDefinitions>
     <!-- Shape Display Area -->
     <ScrollView Grid.Row="1">
-      <Border BackgroundColor="White">
-
-        <Grid>
+      <ContentView Padding="20"
+                   BackgroundColor="White">
+        <Grid WidthRequest="400"
+              HeightRequest="400"
+              HorizontalOptions="Center"
+              VerticalOptions="Center">
           <!-- Rectangle Shape -->
           <Rectangle x:Name="RectangleShape"
                      WidthRequest="{Binding Width}"
                      HeightRequest="{Binding Height}"
                      Fill="{Binding FillColor}"
                      Stroke="{Binding StrokeColor}"
+                     HorizontalOptions="Center"
+                     VerticalOptions="Center"
                      StrokeThickness="{Binding StrokeThickness}"
                      StrokeDashArray="{Binding StrokeDashCollection}"
                      StrokeDashOffset="{Binding StrokeDashOffset}"
@@ -47,6 +52,8 @@
                    WidthRequest="{Binding Width}"
                    HeightRequest="{Binding Height}"
                    Fill="{Binding FillColor}"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
                    Stroke="{Binding StrokeColor}"
                    StrokeThickness="{Binding StrokeThickness}"
                    StrokeDashArray="{Binding StrokeDashCollection}"
@@ -82,6 +89,8 @@
                    StrokeDashArray="{Binding StrokeDashCollection}"
                    StrokeDashOffset="{Binding StrokeDashOffset}"
                    Shadow="{Binding BoxShadow}"
+                   WidthRequest="{Binding Width}"
+                   HeightRequest="{Binding Height}"
                    IsVisible="{Binding SelectedShapeType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Polygon}"
                    AutomationId="PolygonShape"/>
 
@@ -109,11 +118,12 @@
                 StrokeDashArray="{Binding StrokeDashCollection}"
                 StrokeDashOffset="{Binding StrokeDashOffset}"
                 Shadow="{Binding BoxShadow}"
+                WidthRequest="{Binding Width}"
+                HeightRequest="{Binding Height}"
                 IsVisible="{Binding SelectedShapeType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Path}"
                 AutomationId="PathShape"/>
-
         </Grid>
-      </Border>
+      </ContentView>
     </ScrollView>
   </Grid>
 </ContentPage>
