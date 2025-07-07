@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30465 
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -20,3 +21,4 @@ public class Issue30350 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif

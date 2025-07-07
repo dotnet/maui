@@ -8,11 +8,21 @@ namespace Controls.TestCases.HostApp.Issues;
 public class Issue30350 : ContentPage
 {
 	string downsizedSizeLabel;
-	ImageSource downsizedSource;
+	Image downsizedImage;
+	Label sizeLabel;
 
 	public Issue30350()
 	{
-		InitAsync();
+		downsizedImage = new Image
+		{
+			Aspect = Aspect.AspectFit
+		};
+
+		sizeLabel = new Label
+		{
+			AutomationId = "Issue30350_DownsizedImageLabel",
+			Text = $"Downsized image: {downsizedSizeLabel}"
+		};
 
 		VerticalStackLayout verticalStackLayout = new VerticalStackLayout
 		{
@@ -20,24 +30,17 @@ public class Issue30350 : ContentPage
 			Spacing = 10,
 			Children =
 			{
-				new Image
-				{
-					Source = downsizedSource,
-					Aspect = Aspect.AspectFit
-				},
-
-				new Label
-				{
-					AutomationId = "Issue30350_DownsizedImageLabel",
-					Text = $"Downsized image: {downsizedSizeLabel}"
-				},
+				downsizedImage,
+				sizeLabel
 			}
 		};
 
 		Content = verticalStackLayout;
+
+		_ = InitAsync();
 	}
 
-	private async void InitAsync()
+	private async Task InitAsync()
 	{
 		var origImage = await LoadImageAsync();
 
@@ -49,7 +52,13 @@ public class Issue30350 : ContentPage
 
 		string filePath = Path.Combine(FileSystem.CacheDirectory, "downsized.png");
 		File.WriteAllBytes(filePath, memStream.ToArray());
-		downsizedSource = ImageSource.FromFile(filePath);
+
+
+		MainThread.BeginInvokeOnMainThread(() =>
+		{
+			downsizedImage.Source = ImageSource.FromFile(filePath);
+			sizeLabel.Text = $"Downsized image: {downsizedSizeLabel}";
+		});
 	}
 
 	private Task<IImage> LoadImageAsync()
