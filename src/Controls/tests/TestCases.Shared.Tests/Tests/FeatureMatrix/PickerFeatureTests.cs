@@ -37,8 +37,12 @@ namespace Microsoft.Maui.TestCases.Tests
 #if IOS
 			App.WaitForElement("Done");
 			App.Tap("Done");
+#elif WINDOWS
+			App.Tap("Option 2 - Second option");
 #endif
 		}
+
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 
 		[Test, Order(3)]
 		[Category(UITestCategories.Picker)]
@@ -47,13 +51,14 @@ namespace Microsoft.Maui.TestCases.Tests
 #if ANDROID
 			App.WaitForElement("Cancel");
 			App.Tap("Cancel");
+#endif
 			App.WaitForElement("Picker");
 			App.Tap("Picker");
 			App.WaitForElement("Option 3 - Third option");
 			App.Tap("Option 3 - Third option");
-	        VerifyScreenshot();
-#endif
+			VerifyScreenshot();
 		}
+#endif
 
 		[Test, Order(4)]
 		[Category(UITestCategories.Picker)]
