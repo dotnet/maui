@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -155,9 +156,32 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
-		void OnIsOpenPropertyChanged(bool oldValue, bool newValue) =>
-			HandleIsOpenChanged();
-
+		readonly Queue<Action> _pendingIsOpenActions = new Queue<Action>();
+		
+		void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
+		{
+			if (Handler?.VirtualView is Picker picker)
+			{
+				HandleIsOpenChanged();
+			}
+			else
+			{
+				_pendingIsOpenActions.Enqueue(HandleIsOpenChanged);
+			}
+		}
+		
+		protected override void OnHandlerChanged()
+		{
+			base.OnHandlerChanged();
+            
+			// Process any pending actions when handler becomes available
+			while (_pendingIsOpenActions.Count > 0 && Handler != null)
+			{
+				var action = _pendingIsOpenActions.Dequeue();
+				action.Invoke();
+			}
+		}
+		
 		void HandleIsOpenChanged()
 		{
 			if (Handler?.VirtualView is not TimePicker timePicker)

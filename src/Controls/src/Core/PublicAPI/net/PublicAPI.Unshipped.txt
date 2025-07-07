@@ -1,4 +1,7 @@
 #nullable enable
+override Microsoft.Maui.Controls.Picker.OnHandlerChanged() -> void
+override Microsoft.Maui.Controls.DatePicker.OnHandlerChanged() -> void
+override Microsoft.Maui.Controls.TimePicker.OnHandlerChanged() -> void
 ~static Microsoft.Maui.Controls.Shell.GetNavBarVisibilityAnimationEnabled(Microsoft.Maui.Controls.BindableObject obj) -> bool
 ~static Microsoft.Maui.Controls.Shell.SetNavBarVisibilityAnimationEnabled(Microsoft.Maui.Controls.BindableObject obj, bool value) -> void
 ~static readonly Microsoft.Maui.Controls.Shell.NavBarVisibilityAnimationEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
