@@ -644,11 +644,11 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal void SendTabReselected()
+		internal void SendTabActiveTapped()
 		{
 			if (Parent?.Parent is Shell shell)
 			{
-				shell.SendTabReselected();
+				shell.SendTabActiveTapped();
 			}
 		}
 

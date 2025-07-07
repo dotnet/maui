@@ -422,7 +422,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnTabReselected(ShellSection shellSection)
 		{
 			if (_initialTabNavigation)
-				shellSection?.SendTabReselected();
+				shellSection?.SendTabActiveTapped();
 
 			_initialTabNavigation = true;
 		}
