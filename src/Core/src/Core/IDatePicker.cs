@@ -17,7 +17,11 @@ public interface IDatePicker : IView, ITextStyle
 	/// Setting this property programmatically will open or close the dropdown.
 	/// Controls may also update this property when the dropdown is opened or closed through user interaction.
 	/// </remarks>
+#if NETSTANDARD2_0
 	bool IsOpen { get; set; }
+#else
+	bool IsOpen { get => false; set {} }
+#endif
 	
 	/// <summary>
 	/// Gets the format of the date to display to the user. 
