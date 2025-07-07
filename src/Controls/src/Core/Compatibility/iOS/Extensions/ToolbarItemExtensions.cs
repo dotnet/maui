@@ -2,7 +2,9 @@
 using System;
 using System.ComponentModel;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
@@ -13,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	public static class ToolbarItemExtensions
 	{
-		public static UIKit.UIBarButtonItem ToUIBarButtonItem(this Microsoft.Maui.Controls.ToolbarItem item, bool forceName)
+		public static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName)
 		{
 			return ToUIBarButtonItem(item, false, false);
 		}
@@ -23,6 +25,31 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (item.Order == ToolbarItemOrder.Secondary && !forcePrimary)
 				return new SecondaryToolbarItem(item);
 			return new PrimaryToolbarItem(item, forceName);
+		}
+
+		internal static SecondarySubToolbarItem ToSecondarySubToolbarItem(this ToolbarItem item)
+		{
+			var action = UIAction.Create(item.Text, null, null, _ =>
+			{
+				if (item is IMenuItemController menuItemController)
+				{
+					menuItemController.Activate();
+				}
+				else
+				{
+					item.Command?.Execute(item.CommandParameter);
+				}
+			});
+
+			if (item.IconImageSource != null && !item.IconImageSource.IsEmpty)
+			{
+				item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
+				{
+					action.Image = result?.Value;
+				});
+			}
+
+			return new SecondarySubToolbarItem(item, action);
 		}
 
 		sealed class PrimaryToolbarItem : UIBarButtonItem
@@ -137,6 +164,83 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		internal sealed class SecondarySubToolbarItem
+		{
+			readonly WeakReference<ToolbarItem> _item;
+			readonly WeakReference<UIAction> _nativeItem;
+
+			public UIAction PlatformAction
+			{
+				get
+				{
+					if (_nativeItem.TryGetTarget(out var nativeItem))
+					{
+						return nativeItem;
+					}
+
+					return null;
+				}
+			}
+
+			public SecondarySubToolbarItem(ToolbarItem item, UIAction nativeItem)
+			{
+				_item = new(item);
+				_nativeItem = new(nativeItem);
+
+				UpdateText(item);
+				UpdateIcon(item);
+				UpdateIsEnabled(item);
+
+				item.PropertyChanged += OnPropertyChanged;
+
+				if (item is not null && !string.IsNullOrEmpty(item.AutomationId)
+					&& _nativeItem.TryGetTarget(out var nativeAction))
+				{
+					nativeAction.AccessibilityIdentifier = item.AutomationId;
+				}
+
+				//this.SetAccessibilityHint(item);
+				//this.SetAccessibilityLabel(item);
+			}
+
+			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				if (!_item.TryGetTarget(out var item))
+					return;
+
+				if (e.PropertyName == MenuItem.TextProperty.PropertyName)
+					UpdateText(item);
+				else if (e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName)
+					UpdateIcon(item);
+				else if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)
+					UpdateIsEnabled(item);
+			}
+
+			void UpdateIcon(ToolbarItem item)
+			{
+				if (_nativeItem.TryGetTarget(out var nativeItem))
+				{
+					nativeItem.Image = item.IconImageSource?.GetPlatformMenuImage(item.FindMauiContext());
+				}
+			}
+
+			void UpdateIsEnabled(ToolbarItem item)
+			{
+				if (_nativeItem.TryGetTarget(out var nativeItem))
+				{
+					nativeItem.UpdateIsEnabled(item.IsEnabled);
+				}
+			}
+
+			void UpdateText(ToolbarItem item)
+			{
+				if (_nativeItem.TryGetTarget(out var nativeItem))
+				{
+					nativeItem.Title = item.Text;
+				}
+			}
+		}
+		
 		sealed class SecondaryToolbarItem : UIBarButtonItem
 		{
 			readonly WeakReference<ToolbarItem> _item;
@@ -153,7 +257,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
 					AccessibilityIdentifier = item.AutomationId;
-
 #pragma warning disable CS0618 // Type or member is obsolete
 				this.SetAccessibilityHint(item);
 				this.SetAccessibilityLabel(item);
