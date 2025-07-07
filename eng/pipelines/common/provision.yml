@@ -93,9 +93,9 @@ steps:
     displayName: 'Install Apple Certificate ${{ parameters.certName }}'
     inputs:
       certSecureFile: '${{ parameters.certName }}'
-      certPwd: ${{ parameters.certPass }}
+      certPwd: $(maui-cert-password)
       keychain: 'temp'
-      opensslPkcsArgs: -legacy
+      # opensslPkcsArgs: -legacy
 
   - task: InstallAppleProvisioningProfile@1
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
