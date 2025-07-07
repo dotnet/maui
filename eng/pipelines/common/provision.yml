@@ -93,7 +93,7 @@ steps:
     displayName: 'Install Apple Certificate ${{ parameters.certName }}'
     inputs:
       certSecureFile: '${{ parameters.certName }}'
-      certPwd: $(maui-cert-password)
+      certPwd: maui
       keychain: 'temp'
       # opensslPkcsArgs: -legacy
 
