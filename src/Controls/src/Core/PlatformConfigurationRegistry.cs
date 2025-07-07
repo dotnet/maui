@@ -19,9 +19,9 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, TElement> On<T>() where T : IConfigPlatform
 		{
-			if (_platformSpecifics.ContainsKey(typeof(T)))
+			if (_platformSpecifics.TryGetValue(typeof(T), out var specific))
 			{
-				return (IPlatformElementConfiguration<T, TElement>)_platformSpecifics[typeof(T)];
+				return (IPlatformElementConfiguration<T, TElement>)specific;
 			}
 
 			var emptyConfig = Configuration<T, TElement>.Create(_element);

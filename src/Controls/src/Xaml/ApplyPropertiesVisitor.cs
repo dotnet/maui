@@ -197,9 +197,9 @@ namespace Microsoft.Maui.Controls.Xaml
 					return;
 				Exception xpe = null;
 				string xKey = null;
-				if (xpe == null && node.Properties.ContainsKey(XmlName.xKey))
+				if (xpe == null && node.Properties.TryGetValue(XmlName.xKey, out INode property))
 				{
-					if ((node.Properties[XmlName.xKey] is ValueNode valueNode))
+					if (property is ValueNode valueNode)
 						xKey = valueNode.Value as string;
 					if (xKey == null)
 						xpe = new XamlParseException("x:Key expects a string literal.", node as IXmlLineInfo);
@@ -346,7 +346,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		public static void SetPropertyValue(object xamlelement, XmlName propertyName, object value, object rootElement, INode node, HydrationContext context, IXmlLineInfo lineInfo)
 		{
 			var serviceProvider = new XamlServiceProvider(node, context);
-			var xKey = node is IElementNode eNode && eNode.Properties.ContainsKey(XmlName.xKey) ? ((ValueNode)eNode.Properties[XmlName.xKey]).Value as string : null;
+			var xKey = node is IElementNode eNode && eNode.Properties.TryGetValue(XmlName.xKey, out INode property) ? ((ValueNode)property).Value as string : null;
 
 			// Special handling for ResourceDictionary.Source
 			if (xamlelement is ResourceDictionary rd && propertyName.LocalName == "Source" && propertyName.NamespaceURI == "")
