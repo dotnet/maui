@@ -56,9 +56,9 @@ variables:
 - ${{ if and(ne(variables['Build.DefinitionName'], 'maui-pr'), ne(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
   - group: xamops-azdev-secrets
   - group: maui-provisionator
-  - group: MAUI
+  #- group: MAUI
 
-# Variable groups required for private builds but not prs
+  # Variable groups required for private builds but not prs
 - ${{ if ne(variables['Build.DefinitionName'], 'maui-pr') }}:
   - group: Xamarin-Secrets
 
