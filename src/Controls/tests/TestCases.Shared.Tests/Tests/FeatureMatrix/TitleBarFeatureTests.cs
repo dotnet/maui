@@ -1,3 +1,4 @@
+#if ANDROID || WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -358,5 +359,5 @@ public class TitleBarFeatureTests : UITest
 
 		VerifyScreenshot();
 	}
-
 }
+#endif
