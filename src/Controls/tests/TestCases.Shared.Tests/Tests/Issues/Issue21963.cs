@@ -17,19 +17,12 @@ public class Issue21963 : _IssuesUITest
     [Category(UITestCategories.Shell)]
     public void VerifyFlyoutAndTemplatesPresentInitially()
     {
-#if __IOS__
-        App.WaitForElement(AppiumQuery.ByName("ShellContent 1"));
-        App.WaitForElement(AppiumQuery.ByName("ShellContent 2"));
-        App.WaitForElement(AppiumQuery.ByName("MenuItem 1"));
-        App.WaitForElement(AppiumQuery.ByName("MenuItem 2"));
-        App.WaitForElement(AppiumQuery.ByName("ShellContent 3"));
-#else
+
         App.WaitForElement("ShellContent 1");
         App.WaitForElement("ShellContent 2");
         App.WaitForElement("MenuItem 1");
         App.WaitForElement("MenuItem 2");
         App.WaitForElement("ShellContent 3");
-#endif
     }
 }
 #endif
