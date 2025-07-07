@@ -31,8 +31,6 @@ variables:
   value: $(Build.ArtifactStagingDirectory)/test-results
 - name: provisionator.xcode
   value: 'eng/provisioning/xcode.csx'
-- name: provisionator.path
-  value: 'eng/provisioning/provisioning.csx'
 - name: internalProvisioning
   value: false
 - name: provisionator.extraArguments
