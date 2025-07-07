@@ -19,12 +19,7 @@ variables:
 - name: isLocHandoffBranch
   value: $[in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main')]
 - name: signingCondition
-  value: $[or(
-            eq(variables['Sign'], 'true'),
-            in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main', 'refs/heads/inflight/current' ),
-            startsWith(variables['Build.SourceBranch'], 'refs/tags/'),
-            startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')
-          )]
+  value: $[or( eq(variables['Sign'], 'true'), in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main', 'refs/heads/inflight/current' ), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') )]
 # Common Agent Pools in use
 - name: HostedMacImage
   value: macOS-15
@@ -60,6 +55,7 @@ variables:
 # Variable groups required for all builds
 - ${{ if and(ne(variables['Build.DefinitionName'], 'maui-pr'), ne(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
   - group: xamops-azdev-secrets
+  - group: maui-provisionator
 
 # Variable groups required for private builds but not prs
 - ${{ if ne(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -83,10 +79,7 @@ variables:
     - group: DotNetBuilds storage account read tokens
     - group: AzureDevOps-Artifact-Feeds-Pats
     - name: _InternalBuildArgs
-      value: /p:DotNetSignType=$(_SignType)
-        /p:TeamName=$(_TeamName)
-        /p:DotNetPublishUsingPipelines=true
-        /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+      value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) /p:DotNetPublishUsingPipelines=true /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
 
 - ${{ if eq(variables['Build.DefinitionName'], 'dotnet-maui') }}:
   - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:

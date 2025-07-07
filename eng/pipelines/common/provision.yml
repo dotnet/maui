@@ -21,7 +21,9 @@ parameters:
   provisionatorChannel: 'latest'
   provisionatorExtraArguments: $(provisionator.extraArguments)
   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
-  certPass: $(pass--components-mac-ios-certificate-p12)
+  certPass: $(maui-cert-password)
+  certName: 'MauiCert.p12'
+  provisioningProfileName: 'MauiProvisioningProfile.mobileprovision'
   # Enabling internal runtimes / feeds
   federatedServiceConnection: 'dotnetbuilds-internal-read'
   outputVariableName: 'dotnetbuilds-internal-container-read-token'
@@ -73,6 +75,7 @@ steps:
       echo
       echo selecting latest xcode...
       sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
+      xcode-select -p
       xcrun xcode-select --print-path
       xcodebuild -version
       sudo xcodebuild -license accept
@@ -85,23 +88,36 @@ steps:
 # Provision Additional Software
 - ${{ if ne(parameters.skipProvisionator, true) }}:
   # Prepare macOS
-  - task: xamops.azdevex.provisionator-task.provisionator@3
-    displayName: 'Provision Additional Software'
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-    continueOnError: true
+  - task: InstallAppleCertificate@2
     inputs:
-      provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
-      provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
-      github_token: ${{ parameters.gitHubToken }}
-    env:
-      PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-      AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+      certSecureFile: { ? { parameters.certName } }
+      certPwd: '{{ parameters.certPass }}'
+      # Advanced
+      keychain: 'temp'
 
-##################################################
-#              Provisioning Windows              #
-##################################################
+  - task: InstallAppleProvisioningProfile@1
+    inputs:
+      provisioningProfileLocation: 'secureFiles'
+      provProfileSecureFile: '{{ parameters.provisioningProfileName }}'
+  # - task: xamops.azdevex.provisionator-task.provisionator@3
+  #   displayName: 'Provision Additional Software'
+  #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+  #   continueOnError: true
+  #   inputs:
+  #     provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
+  #     provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+  #     github_token: ${{ parameters.gitHubToken }}
+  #   env:
+  #     PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+  #     AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
 
-# Provisioning Windows - Set dump file location
+
+
+  ##################################################
+  #              Provisioning Windows              #
+  ##################################################
+
+  # Provisioning Windows - Set dump file location
 - pwsh: |
     $errorPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
     New-ItemProperty -Path $errorPath -Name DumpFolder -PropertyType String -Value "$(Build.ArtifactStagingDirectory)/crash-dumps" -Force
