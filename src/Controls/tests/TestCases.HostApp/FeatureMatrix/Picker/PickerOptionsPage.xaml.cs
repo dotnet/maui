@@ -32,6 +32,25 @@ public partial class PickerOptionsPage : ContentPage
         }
     }
 
+    private void OnSelectedItemChanged(object sender, TextChangedEventArgs e)
+    {
+        if (!string.IsNullOrEmpty(e.NewTextValue))
+        {
+            // Find the item in ItemsSource that matches the entered text exactly (case-insensitive)
+            var matchingItem = _viewModel.ItemsSource.FirstOrDefault(item =>
+                item.ToString().Equals(e.NewTextValue, StringComparison.OrdinalIgnoreCase));
+
+            if (matchingItem != null)
+            {
+                _viewModel.SelectedItem = matchingItem;
+            }
+            else
+            {
+                _viewModel.SelectedItem = null;
+            }
+        }
+    }
+
     private void OnCharacterSpacingChanged(object sender, TextChangedEventArgs e)
     {
         if (double.TryParse(e.NewTextValue, out double characterSpacing))

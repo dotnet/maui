@@ -19,10 +19,10 @@ public class PickerViewModel : INotifyPropertyChanged
 	private int _selectedIndex = -1;
 	private object _selectedItem = null;
 	private Shadow _shadow = null;
-	private Color _textColor = null;
+	private Color _textColor = Colors.Black;
 	private TextTransform _textTransform = TextTransform.None;
 	private string _title = "Select an item";
-	private Color _titleColor = null;
+	private Color _titleColor = Colors.Black;
 	private TextAlignment _verticalTextAlignment = TextAlignment.Center;
 
 	public event PropertyChangedEventHandler PropertyChanged;
@@ -192,18 +192,6 @@ public class PickerViewModel : INotifyPropertyChanged
 			{
 				_selectedIndex = value;
 				OnPropertyChanged();
-
-				// Update SelectedItem when SelectedIndex changes
-				if (_selectedIndex >= 0 && _selectedIndex < ItemsSource.Count)
-				{
-					_selectedItem = ItemsSource[_selectedIndex];
-					OnPropertyChanged(nameof(SelectedItem));
-				}
-				else
-				{
-					_selectedItem = null;
-					OnPropertyChanged(nameof(SelectedItem));
-				}
 			}
 		}
 	}
@@ -217,18 +205,6 @@ public class PickerViewModel : INotifyPropertyChanged
 			{
 				_selectedItem = value;
 				OnPropertyChanged();
-
-				// Update SelectedIndex when SelectedItem changes
-				if (_selectedItem != null && ItemsSource.Contains(_selectedItem))
-				{
-					_selectedIndex = ItemsSource.IndexOf(_selectedItem);
-					OnPropertyChanged(nameof(SelectedIndex));
-				}
-				else
-				{
-					_selectedIndex = -1;
-					OnPropertyChanged(nameof(SelectedIndex));
-				}
 			}
 		}
 	}
@@ -314,5 +290,47 @@ public class PickerViewModel : INotifyPropertyChanged
 	protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 	{
 		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+	}
+
+	// Resets all properties to their default values
+	public void ResetToDefaults()
+	{
+		_characterSpacing = 0;
+		_flowDirection = FlowDirection.LeftToRight;
+		_fontAttributes = FontAttributes.None;
+		_fontAutoScalingEnabled = true;
+		_fontFamily = null;
+		_fontSize = -1;
+		_horizontalTextAlignment = TextAlignment.Start;
+		_isEnabled = true;
+		// _itemDisplayBinding = null;
+		_isVisible = true;
+		_selectedIndex = -1;
+		_selectedItem = null;
+		_shadow = null;
+		_textColor = Colors.Black;
+		_textTransform = TextTransform.None;
+		_title = "Select an item";
+		_titleColor = Colors.Black;
+		_verticalTextAlignment = TextAlignment.Center;
+
+		OnPropertyChanged(nameof(CharacterSpacing));
+		OnPropertyChanged(nameof(FlowDirection));
+		OnPropertyChanged(nameof(FontAttributes));
+		OnPropertyChanged(nameof(FontAutoScalingEnabled));
+		OnPropertyChanged(nameof(FontFamily));
+		OnPropertyChanged(nameof(FontSize));
+		OnPropertyChanged(nameof(HorizontalTextAlignment));
+		OnPropertyChanged(nameof(IsEnabled));
+		// OnPropertyChanged(nameof(ItemDisplayBinding));
+		OnPropertyChanged(nameof(IsVisible));
+		OnPropertyChanged(nameof(SelectedIndex));
+		OnPropertyChanged(nameof(SelectedItem));
+		OnPropertyChanged(nameof(Shadow));
+		OnPropertyChanged(nameof(TextColor));
+		OnPropertyChanged(nameof(TextTransform));
+		OnPropertyChanged(nameof(Title));
+		OnPropertyChanged(nameof(TitleColor));
+		OnPropertyChanged(nameof(VerticalTextAlignment));
 	}
 }

@@ -12,16 +12,16 @@
        </ContentPage.ToolbarItems>
 
        <Grid Padding="20"
-             RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+             RowDefinitions="*, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
              ColumnDefinitions="0.5*, 0.5*"
-             RowSpacing="10">
+             RowSpacing="20">
               <!-- Picker Control -->
               <Grid x:Name="PickerGrid"
                     Grid.Row="0"
                     Grid.Column="0"
-                    Grid.ColumnSpan="2">
+                    Grid.ColumnSpan="2"
+                    Margin="0,200,0,50">
                      <Picker ItemsSource="{Binding ItemsSource}"
-                             ItemDisplayBinding="{Binding ItemDisplayBinding}"
                              SelectedIndex="{Binding SelectedIndex}"
                              SelectedItem="{Binding SelectedItem}"
                              CharacterSpacing="{Binding CharacterSpacing}"
@@ -39,8 +39,7 @@
                              TitleColor="{Binding TitleColor}"
                              VerticalTextAlignment="{Binding VerticalTextAlignment}"
                              SelectedIndexChanged="Picker_SelectedIndexChanged"
-                             Margin="0,50,0,50"
-                             AutomationId="PickerControl"/>
+                             AutomationId="Picker"/>
               </Grid>
 
               <!-- Selected Index -->
@@ -48,15 +47,13 @@
                      Grid.Column="0"
                      Text="Selected Index:"
                      FontSize="16"
-                     VerticalTextAlignment="Start"
-                     HorizontalTextAlignment="Start"
-                     Margin="80,0,10,10"/>
+                     HorizontalTextAlignment="Center"
+                     Margin="0,0,0,0"/>
               <Label Grid.Row="1"
                      Grid.Column="1"
                      Text="{Binding SelectedIndex}"
                      FontSize="16"
-                     VerticalTextAlignment="Start"
-                     HorizontalTextAlignment="Start"
+                     HorizontalTextAlignment="Center"
                      AutomationId="SelectedIndexLabel"/>
 
               <!-- Selected Item -->
@@ -64,15 +61,12 @@
                      Grid.Column="0"
                      Text="Selected Item:"
                      FontSize="16"
-                     VerticalTextAlignment="Start"
-                     HorizontalTextAlignment="Start"
-                     Margin="80,0,10,10"/>
+                     HorizontalTextAlignment="Center"/>
               <Label Grid.Row="2"
                      Grid.Column="1"
                      Text="{Binding SelectedItem}"
                      FontSize="16"
-                     VerticalTextAlignment="Start"
-                     HorizontalTextAlignment="Start"
+                     HorizontalTextAlignment="Center"
                      AutomationId="SelectedItemLabel"/>
 
               <!-- Event Status -->
@@ -80,17 +74,12 @@
                      Grid.Column="0"
                      FontSize="16"
                      Text="SelectedIndexChanged Event:"
-                     VerticalTextAlignment="Start"
-                     HorizontalTextAlignment="Start"
-                     Margin="80,0,10,10"/>
+                     HorizontalTextAlignment="Center"/>
               <Label Grid.Row="3"
                      Grid.Column="1"
                      x:Name="SelectedIndexChangedStatusLabel"
                      FontSize="16"
-                     VerticalTextAlignment="Start"
-                     HorizontalTextAlignment="Start"
-                     AutomationId="SelectedIndexChangedStatusLabel"
-                     Margin="0,0,10,10"/>
-
+                     HorizontalTextAlignment="Center"
+                     AutomationId="SelectedIndexChangedStatusLabel"/>
        </Grid>
 </ContentPage>

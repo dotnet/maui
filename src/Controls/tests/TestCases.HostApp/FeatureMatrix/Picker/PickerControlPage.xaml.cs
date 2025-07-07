@@ -27,8 +27,9 @@ public partial class PickerControlMainPage : ContentPage
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		BindingContext = _viewModel = new PickerViewModel();
+		_viewModel.ResetToDefaults();
 		await Navigation.PushAsync(new PickerOptionsPage(_viewModel));
+		SelectedIndexChangedStatusLabel.Text = string.Empty;
 	}
 
 	private void Picker_SelectedIndexChanged(object sender, EventArgs e)

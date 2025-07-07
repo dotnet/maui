@@ -21,14 +21,39 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test, Order(1)]
 		[Category(UITestCategories.Picker)]
-		public void Picker_ValidateDefaultValues_VerifyLabels()
+		public void Picker_Validate_VerifyLabels()
 		{
-			App.WaitForElement("Options");
-			Assert.That(App.FindElement("SelectedIndexLabel").GetText(), Is.EqualTo("-1"));
-			Assert.That(App.FindElement("SelectedItemLabel").GetText(), Is.EqualTo(""));
-			Assert.That(App.FindElement("TitleLabel").GetText(), Is.EqualTo("Select an item"));
-			Assert.That(App.FindElement("CharacterSpacingLabel").GetText(), Is.EqualTo("0.0"));
-			Assert.That(App.FindElement("FontSizeLabel").GetText(), Is.EqualTo("-1.0"));
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Picker)]
+		public void Picker_TapPicker_TakeScreenshot()
+		{
+			App.WaitForElement("Picker");
+			App.Tap("Picker");
+			VerifyScreenshot();
+#if ANDROID
+			App.WaitForElement("Cancel");
+			App.Tap("Cancel");
+#elif IOS
+			App.WaitForElement("Done");
+			App.Tap("Done");
+#endif
+		}
+
+		[Test]
+		[Category(UITestCategories.Picker)]
+		public void Picker_SelectItem_VerifySelectedItem()
+		{
+			App.WaitForElement("Picker");
+			App.Tap("Picker");
+#if ANDROID
+			App.WaitForElement("Option 3 - Third option");
+			App.Tap("Option 3 - Third option");
+#endif
+			VerifyScreenshot();
 		}
 
 		[Test]
@@ -42,8 +67,27 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("TitleEntry", "Choose Option");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			Assert.That(App.FindElement("TitleLabel").GetText(), Is.EqualTo("Choose Option"));
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Picker)]
+		public void Picker_SetTitleAndCharacterSpacing_VerifyBoth()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("TitleEntry");
+			App.ClearText("TitleEntry");
+			App.EnterText("TitleEntry", "Custom Title");
+			App.WaitForElement("CharacterSpacingEntry");
+			App.ClearText("CharacterSpacingEntry");
+			App.EnterText("CharacterSpacingEntry", "5");
+			App.PressEnter();
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
@@ -58,9 +102,26 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.PressEnter();
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
+			App.WaitForElement("Picker");
 			Assert.That(App.FindElement("SelectedIndexLabel").GetText(), Is.EqualTo("1"));
-			Assert.That(App.FindElement("SelectedItemLabel").GetText(), Is.EqualTo("Option 2"));
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Picker)]
+		public void Picker_SetSelectedItem_VerifySelectedItemLabel()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("SelectedItemEntry");
+			App.ClearText("SelectedItemEntry");
+			App.EnterText("SelectedItemEntry", "Option 4 - Fourth option");
+			App.PressEnter();
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Picker");
+			Assert.That(App.FindElement("SelectedItemLabel").GetText(), Is.EqualTo("Option 4 - Fourth option"));
+			VerifyScreenshot();
 		}
 
 		[Test]
@@ -71,12 +132,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("CharacterSpacingEntry");
 			App.ClearText("CharacterSpacingEntry");
-			App.EnterText("CharacterSpacingEntry", "2.5");
+			App.EnterText("CharacterSpacingEntry", "5");
 			App.PressEnter();
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			Assert.That(App.FindElement("CharacterSpacingLabel").GetText(), Is.EqualTo("2.5"));
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
@@ -87,12 +148,48 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("FontSizeEntry");
 			App.ClearText("FontSizeEntry");
-			App.EnterText("FontSizeEntry", "18");
+			App.EnterText("FontSizeEntry", "20");
 			App.PressEnter();
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			Assert.That(App.FindElement("FontSizeLabel").GetText(), Is.EqualTo("18.0"));
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Picker)]
+		public void Picker_SetFontSizeAndFontAttributesBold_VerifyFontSizeAndAttributes()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("FontSizeEntry");
+			App.ClearText("FontSizeEntry");
+			App.EnterText("FontSizeEntry", "24");
+			App.PressEnter();
+			App.WaitForElement("FontAttributesBold");
+			App.Tap("FontAttributesBold");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Picker)]
+		public void Picker_SetFontSizeAndFontFamilyDokdo_VerifyFontSizeAndFontFamily()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("FontSizeEntry");
+			App.ClearText("FontSizeEntry");
+			App.EnterText("FontSizeEntry", "18");
+			App.PressEnter();
+			App.WaitForElement("FontFamilyDokdoButton");
+			App.Tap("FontFamilyDokdoButton");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
@@ -105,26 +202,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("FlowDirectionRTL");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present and responsive
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
-		}
-
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetFontAttributesBold_VerifyFontAttributes()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("FontAttributesBold");
-			App.Tap("FontAttributesBold");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
@@ -137,26 +216,24 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("FontAttributesItalic");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
 		[Category(UITestCategories.Picker)]
-		public void Picker_DisableFontAutoScaling_VerifyFontAutoScaling()
+		public void Picker_SetFontAttributesItalicAndFontFamilyDokdo_VerifyFontAttributesAndFontFamily()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("FontAutoScalingFalse");
-			App.Tap("FontAutoScalingFalse");
+			App.WaitForElement("FontAttributesItalic");
+			App.Tap("FontAttributesItalic");
+			App.WaitForElement("FontFamilyDokdoButton");
+			App.Tap("FontFamilyDokdoButton");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
@@ -169,12 +246,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("IsEnabledFalseRadio");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present but should be disabled
-			var pickerElement = App.FindElement("PickerControl");
-			Assert.That(pickerElement, Is.Not.Null);
-			// Assert.That(pickerElement.GetAttribute("enabled"), Is.EqualTo("false").Or.EqualTo("False"));
+			App.WaitForElement("Picker");
+			App.Tap("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
@@ -187,26 +261,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("IsVisibleFalseRadio");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			// App.WaitForElementTillPageNavigationSettled("PickerControl", WaitTimeout.Short);
-			
-			// The picker should not be visible
-			Assert.Throws<InvalidOperationException>(() => App.FindElement("PickerControl"));
-		}
-
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetHorizontalTextAlignmentCenter_VerifyTextAlignment()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("HorizontalTextAlignmentCenter");
-			App.Tap("HorizontalTextAlignmentCenter");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
+			App.WaitForNoElement("Picker");
 		}
 
 		[Test]
@@ -219,26 +274,26 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HorizontalTextAlignmentEnd");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
 		[Category(UITestCategories.Picker)]
-		public void Picker_SetVerticalTextAlignmentStart_VerifyTextAlignment()
+		public void Picker_SetHorizontalTextAlignmentAndSelectedItem_VerifySelectedItem()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("VerticalTextAlignmentStart");
-			App.Tap("VerticalTextAlignmentStart");
+			App.WaitForElement("HorizontalTextAlignmentEnd");
+			App.Tap("HorizontalTextAlignmentEnd");
+			App.WaitForElement("SelectedItemEntry");
+			App.ClearText("SelectedItemEntry");
+			App.EnterText("SelectedItemEntry", "Option 2 - Second option");
+			App.PressEnter();
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
@@ -251,10 +306,26 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("VerticalTextAlignmentEnd");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Picker)]
+		public void Picker_SetVerticalTextAlignmentAndSelectedItem_VerifySelectedItem()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("VerticalTextAlignmentEnd");
+			App.Tap("VerticalTextAlignmentEnd");
+			App.WaitForElement("SelectedItemEntry");
+			App.ClearText("SelectedItemEntry");
+			App.EnterText("SelectedItemEntry", "Option 3 - Third option");
+			App.PressEnter();
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
@@ -267,90 +338,40 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("TextTransformUppercase");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
 		[Category(UITestCategories.Picker)]
-		public void Picker_SetTextTransformLowercase_VerifyTextTransform()
+		public void Picker_SetTextTransformUppercaseAndSelectedItem_VerifyTextTransformAndSelectedItem()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("TextTransformLowercase");
-			App.Tap("TextTransformLowercase");
+			App.WaitForElement("TextTransformUppercase");
+			App.Tap("TextTransformUppercase");
+			App.WaitForElement("SelectedItemEntry");
+			App.ClearText("SelectedItemEntry");
+			App.EnterText("SelectedItemEntry", "Option 5 - Fifth option");
+			App.PressEnter();
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
 		[Category(UITestCategories.Picker)]
-		public void Picker_SetShadowRed_VerifyShadow()
+		public void Picker_SetShadow_VerifyShadow()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ShadowRedButton");
-			App.Tap("ShadowRedButton");
+			App.WaitForElement("ShadowTrueButton");
+			App.Tap("ShadowTrueButton");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
-		}
-
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetShadowBlue_VerifyShadow()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ShadowBlueButton");
-			App.Tap("ShadowBlueButton");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
-		}
-
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetShadowGreen_VerifyShadow()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ShadowGreenButton");
-			App.Tap("ShadowGreenButton");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
-		}
-
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_ClearShadow_VerifyNoShadow()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ShadowNoneButton");
-			App.Tap("ShadowNoneButton");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
@@ -361,60 +382,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("TextColorRedButton");
 			App.Tap("TextColorRedButton");
+			App.WaitForElement("SelectedIndexEntry");
+			App.ClearText("SelectedIndexEntry");
+			App.EnterText("SelectedIndexEntry", "2");
+			App.PressEnter();
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
-		}
-
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetTextColorBlue_VerifyTextColor()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("TextColorBlueButton");
-			App.Tap("TextColorBlueButton");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
-		}
-
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetTextColorGreen_VerifyTextColor()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("TextColorGreenButton");
-			App.Tap("TextColorGreenButton");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
-		}
-
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetTitleColorPurple_VerifyTitleColor()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("TitleColorPurpleButton");
-			App.Tap("TitleColorPurpleButton");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
@@ -427,58 +402,22 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("TitleColorOrangeButton");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
 		[Category(UITestCategories.Picker)]
-		public void Picker_SetTitleColorBrown_VerifyTitleColor()
+		public void Picker_SetFontFamilyDokdo_VerifyFontFamily()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("TitleColorBrownButton");
-			App.Tap("TitleColorBrownButton");
+			App.WaitForElement("FontFamilyDokdoButton");
+			App.Tap("FontFamilyDokdoButton");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
-		}
-
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetFontFamilySerif_VerifyFontFamily()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("FontFamilySerifButton");
-			App.Tap("FontFamilySerifButton");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
-		}
-
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetFontFamilyMonospace_VerifyFontFamily()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("FontFamilyMonospaceButton");
-			App.Tap("FontFamilyMonospaceButton");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
@@ -491,42 +430,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("ItemDisplayNameButton");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
-		}
-
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetItemDisplayBindingDescription_VerifyItemDisplay()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemDisplayDescriptionButton");
-			App.Tap("ItemDisplayDescriptionButton");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
-		}
-
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetItemDisplayBindingDefault_VerifyItemDisplay()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemDisplayDefaultButton");
-			App.Tap("ItemDisplayDefaultButton");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker is present
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
+			App.WaitForElement("Picker");
+			VerifyScreenshot();
 		}
 
 		[Test]
@@ -541,58 +446,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.PressEnter();
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the event status label shows the event was triggered
-			var eventStatusLabel = App.FindElement("SelectedIndexChangedStatusLabel");
-			Assert.That(eventStatusLabel.GetText(), Does.Contain("SelectedIndexChanged fired"));
-		}
-
-		[Test]
-		[Category(UITestCategories.Picker)]
-		public void Picker_ResetToDefaults_VerifyDefaultValues()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			
-			// Reset to defaults
-			App.WaitForElement("TextColorDefaultButton");
-			App.Tap("TextColorDefaultButton");
-			App.WaitForElement("TitleColorDefaultButton");
-			App.Tap("TitleColorDefaultButton");
-			App.WaitForElement("FontFamilyDefaultButton");
-			App.Tap("FontFamilyDefaultButton");
-			App.WaitForElement("FontAttributesNone");
-			App.Tap("FontAttributesNone");
-			App.WaitForElement("FlowDirectionLTR");
-			App.Tap("FlowDirectionLTR");
-			
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("PickerControl");
-			
-			// Verify the picker returns to default state
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
-		}
-
-		[Test]
-		[Category(UITestCategories.Picker)]
-		[Category(UITestCategories.ManualReview)]
-		public void Picker_InteractiveSelection_VerifyUserCanSelectItems()
-		{
-			App.WaitForElement("PickerControl");
-			
-			// Try to tap the picker to open it (this may vary by platform)
-			App.Tap("PickerControl");
-			
-			// Wait a moment for potential picker dialog/dropdown
-			App.WaitForNoElement("NonExistentElement", timeout: TimeSpan.FromSeconds(1));
-			
-			// Verify picker is still present after interaction
-			Assert.That(App.FindElement("PickerControl"), Is.Not.Null);
-			
-			// This test requires manual verification that the picker opens
-			// and allows item selection on each platform
+			App.WaitForElement("Picker");
+			Assert.That(App.FindElement("SelectedIndexChangedStatusLabel").GetText(), Is.EqualTo("Triggered"));
 		}
 	}
 }
