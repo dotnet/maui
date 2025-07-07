@@ -1,13 +1,16 @@
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls;
+
+/// <summary>
+/// Enumeration specifying whether the ToolbarItem appears on the primary toolbar surface or secondary toolbar surface.
+/// </summary>
+public enum ToolbarItemOrder
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ToolbarItemOrder.xml" path="Type[@FullName='Microsoft.Maui.Controls.ToolbarItemOrder']/Docs/*" />
-	public enum ToolbarItemOrder
-	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ToolbarItemOrder.xml" path="//Member[@MemberName='Default']/Docs/*" />
-		Default,
-		/// <include file="../../docs/Microsoft.Maui.Controls/ToolbarItemOrder.xml" path="//Member[@MemberName='Primary']/Docs/*" />
-		Primary,
-		/// <include file="../../docs/Microsoft.Maui.Controls/ToolbarItemOrder.xml" path="//Member[@MemberName='Secondary']/Docs/*" />
-		Secondary
-	}
+	/// <summary>Use the default choice for the toolbar item.</summary>
+	Default,
+
+	/// <summary>Place the toolbar item on the primary toolbar surface.</summary>
+	Primary,
+
+	/// <summary>Place the toolbar item on the secondary toolbar surface.</summary>
+	Secondary
 }
