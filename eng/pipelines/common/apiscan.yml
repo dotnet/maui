@@ -8,6 +8,7 @@ parameters:
   scanArtifacts: []
   stageName: 'api_scan'
   displayName: 'ApiScan'
+  tsaUploadEnabled: false
 
 stages:
   - template: security/apiscan/v0.yml@yaml-templates
@@ -22,4 +23,5 @@ stages:
       apiScanSoftwareName: ${{ parameters.softwareName }}
       apiScanSoftwareVersionNum: ${{ parameters.softwareVersion }}
       apiScanAuthConnectionString: 'runAs=App;AppId=$(ApiScanClientId)'
+      tsaUploadEnabled: ${{ parameters.tsaUploadEnabled }}
 
