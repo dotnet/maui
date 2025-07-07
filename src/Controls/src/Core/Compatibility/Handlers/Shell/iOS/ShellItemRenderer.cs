@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (viewController == tabController.SelectedViewController)
 				{
-					r?.ShellSection?.SendTabReselected();
+					r?.ShellSection?.SendTabActiveTapped();
 				}
 
 				return accept;
