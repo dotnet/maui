@@ -8,14 +8,14 @@ public partial class Issue21963 : TestShell
 	{
 		this.FlyoutIsPresented = true;
 		this.ItemTemplate = new DataTemplate(() =>
-	{
-		var content = new ContentView();
-		var label = new Label();
-		label.SetBinding(Label.TextProperty, "Title");
-		content.Content = label;
+		{
+			var content = new ContentView();
+			var label = new Label();
+			label.SetBinding(Label.TextProperty, "Title");
+			content.Content = label;
 
-		return content;
-	});
+			return content;
+		});
 
 		// MenuItemTemplate
 		this.MenuItemTemplate = new DataTemplate(() =>
@@ -85,7 +85,7 @@ public class Issue21963InnerPage : ContentPage
 			{
 				new Button
 				{
-					Text = "Click Me"
+				Text = "Click Me"
 				}
 			}
 		};
@@ -102,7 +102,7 @@ public class Issue21963MenuPage : ContentPage
 			{
 				new Button
 				{
-					Text = "Click Me"
+				Text = "Click Me"
 				}
 			}
 		};
@@ -118,7 +118,7 @@ public class Issue21963FlyoutPage : ContentPage
 			{
 				new Button
 				{
-					Text = "Click Me"
+				Text = "Click Me"
 				}
 			}
 		};
