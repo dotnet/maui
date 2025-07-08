@@ -31,18 +31,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					//single resource in <Resources>
 					if (resourcesNode is IElementNode irn
 						&& irn.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode)
-						&& context.Variables.TryGetValue(irn, out VariableDefinition variableDefinition1)
+						&& context.Variables.TryGetValue(irn, out VariableDefinition variable1)
 						&& xKeyNode is ValueNode xKeyValueNode
 						&& xKeyValueNode.Value as string == keyValueNode.Value as string)
 					{
-						if (variableDefinition1.VariableType.FullName == "System.String")
+						if (variable1.VariableType.FullName == "System.String")
 						{
 							foreach (var instruction in TryConvert(irn.CollectionItems[0] as ValueNode, eNode, vardefref, module, context))
 								yield return instruction;
 							yield break;
 						}
 
-						vardefref.VariableDefinition = variableDefinition1;
+						vardefref.VariableDefinition = variable1;
 						yield break;
 					}
 					//multiple resources in <Resources>
@@ -52,18 +52,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						{
 							if (rn is IElementNode irn2
 								&& irn2.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode2)
-								&& context.Variables.TryGetValue(irn2, out VariableDefinition variableDefinition2)
+								&& context.Variables.TryGetValue(irn2, out VariableDefinition variable2)
 								&& xKeyNode2 is ValueNode xKeyValueNode2
 								&& xKeyValueNode2.Value as string == keyValueNode.Value as string)
 							{
-								if (variableDefinition2.VariableType.FullName == "System.String")
+								if (variable2.VariableType.FullName == "System.String")
 								{
 									foreach (var instruction in TryConvert(irn2.CollectionItems[0] as ValueNode, eNode, vardefref, module, context))
 										yield return instruction;
 									yield break;
 								}
 
-								vardefref.VariableDefinition = variableDefinition2;
+								vardefref.VariableDefinition = variable2;
 								yield break;
 							}
 						}
@@ -77,18 +77,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 							if (rn is IElementNode irn3
 								&& irn3.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode3)
 								&& irn3.XmlType.Name != "OnPlatform"
-								&& context.Variables.TryGetValue(irn3, out VariableDefinition variableDefinition3)
+								&& context.Variables.TryGetValue(irn3, out VariableDefinition variable3)
 								&& xKeyNode3 is ValueNode xKeyValueNode3
 								&& xKeyValueNode3.Value as string == keyValueNode.Value as string)
 							{
-								if (variableDefinition3.VariableType.FullName == "System.String")
+								if (variable3.VariableType.FullName == "System.String")
 								{
 									foreach (var instruction in TryConvert(irn3.CollectionItems[0] as ValueNode, eNode, vardefref, module, context))
 										yield return instruction;
 									yield break;
 								}
 
-								vardefref.VariableDefinition = variableDefinition3;
+								vardefref.VariableDefinition = variable3;
 								yield break;
 							}
 						}
