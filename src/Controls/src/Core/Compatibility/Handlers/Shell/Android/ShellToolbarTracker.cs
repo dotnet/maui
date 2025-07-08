@@ -661,11 +661,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Collapsible)
 				{
-					var existingItem = menu.FindItem(_placeholderMenuItemId);
-					if (existingItem != null)
-					{
-						menu.RemoveItem(_placeholderMenuItemId);
-					}
+					menu.RemoveItem(_placeholderMenuItemId);
 
 					var placeholder = new Java.Lang.String(SearchHandler.Placeholder);
 					var item = menu.Add(0, _placeholderMenuItemId, 0, placeholder);
