@@ -89,7 +89,7 @@
 
         <!-- Add the discovered items to the appropriate Helix test collection -->
         <ItemGroup Condition="'$(TargetOS)' == 'ios'">
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Debug/net9.0-ios/', '*.app', System.IO.SearchOption.AllDirectories))" >
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/net9.0-ios/', '*.app', System.IO.SearchOption.AllDirectories))" >
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
@@ -98,7 +98,7 @@
         </ItemGroup>
 
         <ItemGroup Condition="'$(TargetOS)' == 'android'">
-            <_apks Include="%(_MAUIScenarioSearch.PayloadDirectory)/Debug/net9.0-android/**/*Signed.apk" />
+            <_apks Include="%(_MAUIScenarioSearch.PayloadDirectory)/Release/net9.0-android/**/*Signed.apk" />
             <XHarnessApkToTest Include="@(_apks)">
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
