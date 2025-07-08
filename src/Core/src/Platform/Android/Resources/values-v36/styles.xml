@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <style name="Maui.MainTheme" parent="Maui.MainTheme.Base">
+    <!-- Android 16 (API 36) enforces edge-to-edge display, cannot opt out -->
+    <!-- Status bar appearance must be set via WindowInsetsControllerCompat -->
+    <item name="android:windowTranslucentStatus">false</item>
+    <item name="android:windowTranslucentNavigation">false</item>
+    <item name="android:statusBarColor">@android:color/transparent</item>
+    <item name="android:navigationBarColor">@android:color/transparent</item>
+  </style>
+</resources>

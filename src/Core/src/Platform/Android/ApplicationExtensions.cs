@@ -57,6 +57,9 @@ namespace Microsoft.Maui.Platform
 			}
 
 			activity.SetWindowHandler(window, mauiContext);
+			
+			// Set status bar appearance for Android API 36+ edge-to-edge enforcement
+			activity.SetStatusBarAppearanceForCurrentTheme();
 		}
 
 		public static Bundle ToBundle(this IPersistedState? state)
