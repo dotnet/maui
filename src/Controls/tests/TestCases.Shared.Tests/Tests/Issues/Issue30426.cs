@@ -1,8 +1,6 @@
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
-using System;
-using System.Globalization;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
@@ -22,11 +20,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
             App.WaitForElement("LoadImageButton");
             App.Tap("LoadImageButton");
             App.WaitForElement("StatusLabel");
-            Assert.That(App.WaitForElement("StatusLabel").GetText(), Is.EqualTo("Image loaded successfully"));
+            Assert.That(App.WaitForElement("StatusLabel").GetText(), Is.EqualTo("Status: Image loaded successfully"));
             App.WaitForElement("ProcessImageButton");
             App.Tap("ProcessImageButton");
             App.WaitForElement("StatusLabel");
-            Assert.That(App.WaitForElement("StatusLabel").GetText(), Is.EqualTo("Image processed successfully"));
+            Assert.That(App.WaitForElement("StatusLabel").GetText(), Is.EqualTo("Status: Image processed successfully"));
         }
     }
 }
