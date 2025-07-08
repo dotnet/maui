@@ -13,7 +13,7 @@ public class Issue30066 : _IssuesUITest
 
 	public override string Issue => "DatePicker CharacterSpacing Property Not Working on Windows";
 
-	[Test]
+	[Test, Order(1)]
 	[Category(UITestCategories.DatePicker)]
 	public void DatePickerCharacterSpacingShouldApply()
 	{
@@ -24,7 +24,7 @@ public class Issue30066 : _IssuesUITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Test, Order(2)]
 	[Category(UITestCategories.DatePicker)]
 	public void DatePickerCharacterSpacingCanChange()
 	{
