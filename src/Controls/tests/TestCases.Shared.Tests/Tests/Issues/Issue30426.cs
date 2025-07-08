@@ -25,6 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
             Assert.That(App.WaitForElement("StatusLabel").GetText(), Is.EqualTo("Image loaded successfully"));
             App.WaitForElement("ProcessImageButton");
             App.Tap("ProcessImageButton");
+            App.WaitForElement("StatusLabel");
             Assert.That(App.WaitForElement("StatusLabel").GetText(), Is.EqualTo("Image processed successfully"));
         }
     }
