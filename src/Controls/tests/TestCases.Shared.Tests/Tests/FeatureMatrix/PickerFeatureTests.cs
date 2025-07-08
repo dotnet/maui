@@ -341,6 +341,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/29812
+
 		[Test, Order(19)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetShadow_VerifyShadow()
@@ -354,6 +356,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Picker");
 			VerifyScreenshot();
 		}
+#endif
 
 		[Test, Order(20)]
 		[Category(UITestCategories.Picker)]
