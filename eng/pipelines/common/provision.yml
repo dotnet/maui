@@ -19,7 +19,8 @@ parameters:
   provisionatorXCodePath: $(provisionator.xcode)
   provisionatorChannel: 'latest'
   provisionatorExtraArguments: $(provisionator.extraArguments)
-  gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+  provisionatorUri: $(provisionator-uri)
+  gitHubToken: $(provisionator--github--pat)
   certPass: $(maui-cert-password) # This lives on MAUI variable group
   certName: 'MauiCert.p12'
   openSslArgs: '-legacy'
@@ -54,12 +55,13 @@ steps:
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
         displayName: 'Provision Xcode'
         inputs:
+          provisionator_uri: ${{ parameters.provisionatorUri }}
           provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
           provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
           github_token: ${{ parameters.gitHubToken }}
         env:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-          AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+
     - script: |
         echo Remove old Xamarin Settings
         rm -f ~/Library/Preferences/Xamarin/Settings.plist
@@ -81,7 +83,6 @@ steps:
         sudo xcodebuild -runFirstLaunch
       displayName: Select Xcode Version
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      timeoutInMinutes: 30
 
   # Provision Additional Software
   - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), ne(parameters.skipProvisionator, true)) }}:
@@ -103,7 +104,7 @@ steps:
       inputs:
         provisioningProfileLocation: 'secureFiles'
         provProfileSecureFile: '${{ parameters.provisioningProfileName }}'
-        
+
   ##################################################
   #              Provisioning Windows              #
   ##################################################
