@@ -117,13 +117,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (r is not null)
 					accept = ((IShellItemController)ShellItem).ProposeSection(r.ShellSection, false);
 
-				// Detect back navigation when the user taps on the current section
-				if (r is not null && r.ShellSection == _currentSection
-					&& viewController is ShellSectionRenderer sectionRenderer)
-				{
-					sectionRenderer.PopRequested = true;
-				}
-
 				return accept;
 			};
 		}
