@@ -228,9 +228,9 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(message));
 			var key = new Sender(message, senderType, argType);
 			var value = new Subscription(subscriber, target, methodInfo, filter);
-			if (_subscriptions.TryGetValue(key, out List<Subscription> subscription))
+			if (_subscriptions.TryGetValue(key, out List<Subscription> subscriptions))
 			{
-				subscription.Add(value);
+				subscriptions.Add(value);
 			}
 			else
 			{
@@ -247,10 +247,10 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(message));
 
 			var key = new Sender(message, senderType, argType);
-			if (!_subscriptions.TryGetValue(key, out List<Subscription> subscription))
+			if (!_subscriptions.TryGetValue(key, out List<Subscription> subscriptions))
 				return;
-			subscription.RemoveAll(sub => sub.CanBeRemoved() || sub.Subscriber.Target == subscriber);
-			if (!subscription.Any())
+			subscriptions.RemoveAll(sub => sub.CanBeRemoved() || sub.Subscriber.Target == subscriber);
+			if (!subscriptions.Any())
 				_subscriptions.Remove(key);
 		}
 
