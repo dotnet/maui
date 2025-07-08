@@ -143,7 +143,10 @@ Task("dotnet-build")
         }
         else
         {
-            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
+            // On macOS, for this type of build we don't need to ensure that the provisioning profile is required
+            var properties = new Dictionary<string, string>();
+            properties["CodesignRequireProvisioningProfile"] = "false";
+            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf", properties);
         }
     });
 
