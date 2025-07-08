@@ -541,12 +541,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_trackers.Remove(page);
 			}
 
-
-			var renderer = page.Handler;
-			if (renderer != null)
-			{
-				renderer.DisconnectHandler();
-			}
+			page?.DisconnectHandlers();
 		}
 
 		Element ElementForViewController(UIViewController viewController)
