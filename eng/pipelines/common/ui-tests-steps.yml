@@ -177,9 +177,3 @@ steps:
     displayName: 'Enable Notification Center'
     continueOnError: true
     timeoutInMinutes: 60
-
-- ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines'), eq(variables['System.TeamProject'], 'devdiv') ) }}:
-  # This must always be placed as the last step in the job
-  - template: agent-rebooter/mac.v1.yml@yaml-templates
-    parameters:
-      AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
