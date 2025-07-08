@@ -21,7 +21,7 @@
                 HorizontalOptions="Center">
                 <Image x:Name="DisplayImage" 
                        AutomationId="DisplayImage"
-                       Aspect="AspectFit"/>
+                       Aspect="AspectFit" Source="royals.png"/>
             </Border>
             
             <!-- File info display -->
@@ -35,16 +35,12 @@
                    Text="Dimensions: Not loaded"
                    FontSize="14"/>
             
-            <!-- Controls -->
+            <!-- Load Image Button -->
             <Button 
-                AutomationId="SelectImageButton"
-                Text="Select Image" 
+                x:Name="LoadImageButton"
+                AutomationId="LoadImageButton"
+                Text="Load Embedded Image (royals.png)" 
                 Clicked="OnSelectImageClicked"/>
-            
-            <Label Text="Force Main Thread (Workaround):" FontSize="16"/>
-            <Switch x:Name="ForceMainThreadSwitch" 
-                    AutomationId="ForceMainThreadSwitch"
-                    IsToggled="False"/>
             
             <Label Text="Resize Percentage:" FontSize="16"/>
             <Label x:Name="ResizeLabel" Text="50%"/>
@@ -59,8 +55,7 @@
                 x:Name="ProcessImageButton"
                 AutomationId="ProcessImageButton"
                 Text="Process Image (IImage.Downsize())" 
-                Clicked="OnProcessImageClicked"
-                IsEnabled="False"/>
+                Clicked="OnProcessImageClicked" />
             
             <!-- Status and results -->
             <Label x:Name="StatusLabel" 
@@ -79,3 +74,4 @@
         </VerticalStackLayout>
     </ScrollView>
 </controls:TestContentPage>
+ 
