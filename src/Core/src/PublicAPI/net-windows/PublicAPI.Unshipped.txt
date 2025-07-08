@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.Maui.Platform.CharacterSpacingExtensions.FromEm(this int emValue) -> double
