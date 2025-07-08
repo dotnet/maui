@@ -202,9 +202,9 @@ namespace Microsoft.Maui.Controls
 			if (message == null)
 				throw new ArgumentNullException(nameof(message));
 			var key = new Sender(message, senderType, argType);
-			if (!_subscriptions.TryGetValue(key, out List<Subscription> value))
+			if (!_subscriptions.TryGetValue(key, out List<Subscription> subscriptions))
 				return;
-			if (value == null || !value.Any())
+			if (subscriptions == null || !subscriptions.Any())
 				return; // should not be reachable
 
 			// ok so this code looks a bit funky but here is the gist of the problem. It is possible that in the course
@@ -212,10 +212,10 @@ namespace Microsoft.Maui.Controls
 			// the callback. This would invalidate the enumerator. To work around this we make a copy. However if you unsubscribe 
 			// from a message you can fairly reasonably expect that you will therefor not receive a call. To fix this we then
 			// check that the item we are about to send the message to actually exists in the live list.
-			List<Subscription> subscriptionsCopy = value.ToList();
+			List<Subscription> subscriptionsCopy = subscriptions.ToList();
 			foreach (Subscription subscription in subscriptionsCopy)
 			{
-				if (subscription.Subscriber.Target != null && value.Contains(subscription))
+				if (subscription.Subscriber.Target != null && subscriptions.Contains(subscription))
 				{
 					subscription.InvokeCallback(sender, args);
 				}
