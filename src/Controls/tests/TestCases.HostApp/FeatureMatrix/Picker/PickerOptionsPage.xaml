@@ -12,7 +12,7 @@
 
        <Grid Padding="10"
              ColumnDefinitions="0.5*, 0.5*"
-             RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
+             RowDefinitions="Auto">
               <!-- Left Column -->
               <StackLayout Grid.Column="0"
                            Padding="10"

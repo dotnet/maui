@@ -21,7 +21,7 @@ public class PickerViewModel : INotifyPropertyChanged
 	private Shadow _shadow = null;
 	private Color _textColor = Colors.Black;
 	private TextTransform _textTransform = TextTransform.None;
-	private string _title = string.Empty;
+	private string _title = "Picker Title";
 	private Color _titleColor = Colors.Black;
 	private TextAlignment _verticalTextAlignment = TextAlignment.Center;
 
@@ -309,7 +309,7 @@ public class PickerViewModel : INotifyPropertyChanged
 		_shadow = null;
 		_textColor = Colors.Black;
 		_textTransform = TextTransform.None;
-		_title = string.Empty;
+		_title = "Picker Title";
 		_titleColor = Colors.Black;
 		_verticalTextAlignment = TextAlignment.Center;
 

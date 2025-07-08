@@ -39,6 +39,7 @@
                              TitleColor="{Binding TitleColor}"
                              VerticalTextAlignment="{Binding VerticalTextAlignment}"
                              SelectedIndexChanged="Picker_SelectedIndexChanged"
+                             HeightRequest="100"
                              AutomationId="Picker"/>
               </Grid>
 

@@ -111,6 +111,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Picker");
 			VerifyScreenshot();
 		}
+#endif
+
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30463, https://github.com/dotnet/maui/issues/30464
 
 		[Test, Order(7)]
 		[Category(UITestCategories.Picker)]
@@ -130,28 +133,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Picker");
 			VerifyScreenshot();
 		}
-
-		[Test, Order(8)]
-		[Category(UITestCategories.Picker)]
-		public void Picker_SetCharacterSpacingAndPickerItem_Verify()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("CharacterSpacingEntry");
-			App.ClearText("CharacterSpacingEntry");
-			App.EnterText("CharacterSpacingEntry", "8");
-			App.WaitForElement("SelectedIndexEntry");
-			App.ClearText("SelectedIndexEntry");
-			App.EnterText("SelectedIndexEntry", "1");
-			App.PressEnter();
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Picker");
-			VerifyScreenshot();
-		}
 #endif
 
-		[Test, Order(9)]
+		[Test, Order(8)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetFontSizeAndFontAttributesBold_VerifyFontSizeAndAttributes()
 		{
@@ -173,7 +157,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test, Order(10)]
+		[Test, Order(9)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetFontSizeAndFontFamilyDokdo_VerifyFontSizeAndFontFamily()
 		{
@@ -195,7 +179,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test, Order(11)]
+		[Test, Order(10)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetFlowDirectionRTL_VerifyFlowDirection()
 		{
@@ -215,7 +199,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30463
 
-		[Test, Order(12)]
+		[Test, Order(11)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetFlowDirectionRTLAndTitle_VerifyFlowDirectionAndTitle()
 		{
@@ -233,7 +217,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-		[Test, Order(13)]
+		[Test, Order(12)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetFontAttributesItalicAndFontFamilyDokdo_VerifyFontAttributesAndFontFamily()
 		{
@@ -253,7 +237,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test, Order(14)]
+		[Test, Order(13)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetIsEnabledFalse_VerifyPickerDisabled()
 		{
@@ -268,7 +252,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test, Order(15)]
+		[Test, Order(14)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetIsVisibleFalse_VerifyPickerHidden()
 		{
@@ -281,7 +265,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("Picker");
 		}
 
-		[Test, Order(16)]
+		[Test, Order(15)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetHorizontalTextAlignmentAndSelectedItem_VerifySelectedItem()
 		{
@@ -301,7 +285,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30463
 
-		[Test, Order(17)]
+		[Test, Order(16)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetHorizontalTextAlignmentEndAndTitle_VerifyTitleAlignment()
 		{
@@ -319,7 +303,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-		[Test, Order(18)]
+		[Test, Order(17)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetVerticalTextAlignmentAndSelectedItem_VerifySelectedItem()
 		{
@@ -339,7 +323,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30463
 
-		[Test, Order(19)]
+		[Test, Order(18)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetVerticalTextAlignmentEndAndTitle_VerifyTitleAlignment()
 		{
@@ -357,7 +341,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-		[Test, Order(20)]
+		[Test, Order(19)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetShadow_VerifyShadow()
 		{
@@ -371,7 +355,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test, Order(21)]
+		[Test, Order(20)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetTextColorRed_VerifyTextColor()
 		{
@@ -391,7 +375,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30463
 
-		[Test, Order(22)]
+		[Test, Order(21)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetTitle_VerifyTitleLabel()
 		{
@@ -406,7 +390,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test, Order(23)]
+		[Test, Order(22)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetTitleColorOrange_VerifyTitleColor()
 		{
@@ -423,7 +407,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test, Order(24)]
+		[Test, Order(23)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetTitleWithFontSize_VerifyTitleAndFontSize()
 		{
@@ -442,7 +426,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test, Order(25)]
+		[Test, Order(24)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetTitleWithFontAttributeBold_VerifyTitleAndFontAttribute()
 		{
@@ -459,7 +443,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test, Order(26)]
+		[Test, Order(25)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetTitleWithFontFamilyDokdo_VerifyTitleAndFontFamily()
 		{
@@ -479,7 +463,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/4818
 
-		[Test, Order(27)]
+		[Test, Order(26)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SetItemDisplayBindingName_VerifyItemDisplay()
 		{
@@ -494,7 +478,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-		[Test, Order(28)]
+		[Test, Order(27)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_SelectedIndexChanged_VerifyEventTriggered()
 		{

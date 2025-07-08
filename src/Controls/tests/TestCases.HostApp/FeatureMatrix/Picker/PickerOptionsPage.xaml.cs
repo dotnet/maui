@@ -36,7 +36,6 @@ public partial class PickerOptionsPage : ContentPage
     {
         if (!string.IsNullOrEmpty(e.NewTextValue))
         {
-            // Find the item in ItemsSource that matches the entered text exactly (case-insensitive)
             var matchingItem = _viewModel.ItemsSource.FirstOrDefault(item =>
                 item.ToString().Equals(e.NewTextValue, StringComparison.OrdinalIgnoreCase));
 
