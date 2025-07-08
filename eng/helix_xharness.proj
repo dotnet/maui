@@ -108,7 +108,7 @@
             <!-- Update the package name to remove -Signed suffix -->
             <XHarnessApkToTest Update="@(XHarnessApkToTest)">
                 <AndroidPackageName>$([System.String]::Copy('%(AndroidPackageName)').Replace('-Signed',''))</AndroidPackageName>
-                <AndroidInstrumentationName>$(AndroidPackageName).TestInstrumentation</AndroidInstrumentationName>
+                <!-- <AndroidInstrumentationName>$(AndroidPackageName).TestInstrumentation</AndroidInstrumentationName> -->
             </XHarnessApkToTest>
         </ItemGroup>
     </Target>
