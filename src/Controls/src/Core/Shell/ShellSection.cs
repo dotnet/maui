@@ -114,7 +114,9 @@ namespace Microsoft.Maui.Controls
 		internal void SyncStackDownTo(Page page)
 		{
 			if (_navStack.Count <= 1)
+			{
 				throw new Exception("Nav Stack consistency error");
+			}
 
 			var oldStack = _navStack;
 
