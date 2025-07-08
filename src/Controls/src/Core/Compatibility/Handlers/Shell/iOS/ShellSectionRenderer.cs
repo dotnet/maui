@@ -19,8 +19,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public bool IsInMoreTab { get; set; }
 
-		internal bool PopRequested { get; set; }
-
 		public ShellSection ShellSection
 		{
 			get { return _shellSection; }
