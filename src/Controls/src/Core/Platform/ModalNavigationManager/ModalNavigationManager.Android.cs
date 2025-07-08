@@ -260,13 +260,7 @@ namespace Microsoft.Maui.Controls.Platform
 					// Set status bar appearance for API 36+ using WindowInsetsController
 					if (Build.VERSION.SdkInt >= (BuildVersionCodes)36 && mainActivity is not null)
 					{
-						var windowInsetsController =
-							new WindowInsetsControllerCompat(dialog.Window, dialog.Window.DecorView);
-						
-						// Determine if we should use light status bar based on current theme
-						var uiModeFlags = mainActivity.Resources?.Configuration?.UiMode & UiMode.NightMask;
-						bool isLightTheme = uiModeFlags != UiMode.NightYes;
-						windowInsetsController.AppearanceLightStatusBars = isLightTheme;
+						mainActivity.SetStatusBarColor(new AColor(statusBarColor));
 					}
 				}
 
