@@ -137,6 +137,34 @@ namespace Microsoft.Maui.Dispatching
 		}
 
 		/// <summary>
+		/// Checks if a dispatch is required. If a dispatch is required, the provided function will be executed on the UI thread.
+		/// </summary>
+		/// <typeparam name="T">The type returned from the function.</typeparam>
+		/// <param name="dispatcher">The <see cref="IDispatcher"/> instance this method is called on.</param>
+		/// <param name="func">The function to be executed by the dispatcher.</param>
+		/// <returns>A <see cref="Task{TResult}"/> object containing the result of the function.</returns>
+		public static Task<T> DispatchIfRequiredAsync<T>(this IDispatcher dispatcher, Func<T> func)
+		{
+			return dispatcher.IsDispatchRequired
+				? dispatcher.DispatchAsync(func)
+				: Task.FromResult(func());
+		}
+
+		/// <summary>
+		/// Checks if a dispatch is required. If a dispatch is required, the provided function will be executed on the UI thread.
+		/// </summary>
+		/// <typeparam name="T">The type returned from the function.</typeparam>
+		/// <param name="dispatcher">The <see cref="IDispatcher"/> instance this method is called on.</param>
+		/// <param name="funcTask">The function to be executed by the dispatcher.</param>
+		/// <returns>A <see cref="Task{TResult}"/> object containing the result of the function.</returns>
+		public static Task<T> DispatchIfRequiredAsync<T>(this IDispatcher dispatcher, Func<Task<T>> funcTask)
+		{
+			return dispatcher.IsDispatchRequired
+				? dispatcher.DispatchAsync(funcTask)
+				: funcTask();
+		}
+
+		/// <summary>
 		/// Gets the synchronization context for the current thread.
 		/// </summary>
 		/// <param name="dispatcher">The <see cref="IDispatcher"/> instance this method is called on.</param>
