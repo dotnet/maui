@@ -111,6 +111,32 @@ namespace Microsoft.Maui.Controls
 			_lastTabThickness = tabThickness;
 		}
 
+		internal void SyncStackDownTo(Page page)
+		{
+			if (_navStack.Count <= 1)
+				throw new Exception("Nav Stack consistency error");
+
+			var oldStack = _navStack;
+
+			int index = oldStack.IndexOf(page);
+			_navStack = new List<Page> { null };
+
+			for (int i = 1; i <= index; i++)
+			{
+				_navStack.Add(oldStack[i]);
+			}
+
+			for (int i = index + 1; i < oldStack.Count; i++)
+				oldStack[i].SendDisappearing();
+
+			UpdateDisplayedPage();
+
+			for (int i = index + 1; i < oldStack.Count; i++)
+				RemovePage(oldStack[i]);
+
+			(Parent?.Parent as IShellController)?.UpdateCurrentState(ShellNavigationSource.Pop);
+		}
+
 		async void IShellSectionController.SendPopping(Task poppingCompleted)
 		{
 			if (_navStack.Count <= 1)

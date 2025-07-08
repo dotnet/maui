@@ -109,7 +109,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		[Export("navigationBar:didPopItem:")]
 		[Internals.Preserve(Conditional = true)]
 		bool DidPopItem(UINavigationBar _, UINavigationItem __)
-			=> PopRequested || SendPop();
+		{
+			if (_shellSection.Stack.Count == NavigationBar.Items.Length)
+				return true;
+
+			var pages = _shellSection.Stack.ToList();
+
+			_shellSection.SyncStackDownTo(pages[NavigationBar.Items.Length - 1]);
+
+			for (int i = pages.Count - 1; i >= NavigationBar.Items.Length; i--)
+			{
+				var page = pages[i];
+				DisposePage(page);
+			}
+
+			return true;
+		}
 
 		internal bool SendPop()
 		{
@@ -394,7 +409,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual async void OnPopRequested(NavigationRequestedEventArgs e)
 		{
-			PopRequested = true;
 			var page = e.Page;
 			var animated = e.Animated;
 
@@ -435,7 +449,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual async void OnPopToRootRequested(NavigationRequestedEventArgs e)
 		{
-			PopRequested = true;
 			var animated = e.Animated;
 			var task = new TaskCompletionSource<bool>();
 			var pages = _shellSection.Stack.ToList();
@@ -597,7 +610,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void PushViewController(UIViewController viewController, bool animated)
 		{
 			_pendingViewControllers = null;
-			PopRequested = false;
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
 				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
@@ -610,7 +622,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override UIViewController PopViewController(bool animated)
 		{
-			PopRequested = true;
 			_pendingViewControllers = null;
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
