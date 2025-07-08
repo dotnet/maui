@@ -33,19 +33,19 @@ namespace Microsoft.Maui.Platform
 		internal NavigationRequest? OnResumeRequestedArgs { get; private set; }
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = [];
 
-		protected NavHostFragment NavHost =>
+		public NavHostFragment NavHost =>
 			_navHost ?? throw new InvalidOperationException($"NavHost cannot be null");
 
-		protected NavController NavController =>
+		public NavController NavController =>
 			NavHost.NavController ?? throw new InvalidOperationException($"NavHost cannot be null");
 
-		protected FragmentNavigator FragmentNavigator =>
+		public FragmentNavigator FragmentNavigator =>
 			_fragmentNavigator ?? throw new InvalidOperationException($"FragmentNavigator cannot be null");
 
-		protected NavGraph NavGraph => _navGraph ??
+		public NavGraph NavGraph => _navGraph ??
 			throw new InvalidOperationException($"NavGraph cannot be null");
 
-		protected bool HasNavHost => _navHost is not null;
+		public bool HasNavHost => _navHost is not null;
 
 		public IView CurrentPage
 			=> _currentPage ?? throw new InvalidOperationException("CurrentPage cannot be null");
