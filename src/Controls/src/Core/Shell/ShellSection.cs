@@ -121,20 +121,29 @@ namespace Microsoft.Maui.Controls
 			var oldStack = _navStack;
 
 			int index = oldStack.IndexOf(page);
-			_navStack = new List<Page> { null };
+			_navStack = new List<Page>();
 
-			for (int i = 1; i <= index; i++)
+			// Rebuild the stack up to the page that was passed in
+			// Since this now represents the current accurate stack
+			for (int i = 0; i <= index; i++)
 			{
 				_navStack.Add(oldStack[i]);
 			}
 
-			for (int i = index + 1; i < oldStack.Count; i++)
+			// Send Disappearing for all pages that are no longer in the stack
+			// This will really only SendDisappearing on the top page
+			// but we just call it on all of them to be sure
+			for (int i = oldStack.Count - 1; i > index; i--)
+			{
 				oldStack[i].SendDisappearing();
+			}
 
 			UpdateDisplayedPage();
 
 			for (int i = index + 1; i < oldStack.Count; i++)
+			{
 				RemovePage(oldStack[i]);
+			}
 
 			(Parent?.Parent as IShellController)?.UpdateCurrentState(ShellNavigationSource.Pop);
 		}
