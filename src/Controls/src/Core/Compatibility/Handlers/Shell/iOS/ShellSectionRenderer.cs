@@ -108,17 +108,32 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		[Internals.Preserve(Conditional = true)]
 		bool DidPopItem(UINavigationBar _, UINavigationItem __)
 		{
+			// Check for null references
+			if (_shellSection?.Stack == null || NavigationBar?.Items == null)
+				return true;
+
+			// Check if stacks are in sync
 			if (_shellSection.Stack.Count == NavigationBar.Items.Length)
 				return true;
 
 			var pages = _shellSection.Stack.ToList();
 
-			_shellSection.SyncStackDownTo(pages[NavigationBar.Items.Length - 1]);
+			// Ensure we have enough pages and navigation items
+			if (pages.Count == 0 || NavigationBar.Items.Length == 0)
+				return true;
+
+			// Bounds check: ensure we have a valid index for pages array
+			int targetIndex = NavigationBar.Items.Length - 1;
+			if (targetIndex < 0 || targetIndex >= pages.Count)
+				return true;
+
+			_shellSection.SyncStackDownTo(pages[targetIndex]);
 
 			for (int i = pages.Count - 1; i >= NavigationBar.Items.Length; i--)
 			{
 				var page = pages[i];
-				DisposePage(page);
+				if (page != null)
+					DisposePage(page);
 			}
 
 			return true;
