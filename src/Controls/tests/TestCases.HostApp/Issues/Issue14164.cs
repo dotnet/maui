@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 14164, "[iOS ,MAC]Border overlapped with content view label when setting clip", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 14164, "[iOS, MAC] Border overlapped with content view label when setting clip", PlatformAffected.iOS)]
 public class Issue14164 : ContentPage
 {
     ContentView _contentView;
