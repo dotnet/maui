@@ -20,7 +20,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.DatePicker)]
 		public void OpenCloseDatePicker()
 		{ 
-			App.WaitForElement("WaitForStubControl");
 			App.WaitForElement("OpenDatePickerButton");
 			App.Tap("OpenDatePickerButton");
 #if ANDROID
@@ -37,7 +36,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.TimePicker)]
 		public void OpenCloseTimePicker()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.WaitForElement("OpenTimePickerButton");
 			App.Tap("OpenTimePickerButton");
 #if ANDROID
@@ -54,7 +52,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Picker)]
 		public void OpenClosePicker()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.WaitForElement("OpenPickerButton");
 			App.Tap("OpenPickerButton");
 #if ANDROID

@@ -6,7 +6,7 @@
              x:Class="Maui.Controls.Sample.Issues.Issue8945">
   <ContentPage.Content>
     <VerticalStackLayout
-        Padding="12">
+        Padding="12, 24">
         <Label      
             AutomationId="WaitForStubControl"
             Text="IsOpen" />

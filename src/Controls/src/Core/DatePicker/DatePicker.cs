@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Controls
 		
 		void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
 		{
-			if (Handler?.VirtualView is Picker picker)
+			if (Handler?.VirtualView is DatePicker)
 			{
 				HandleIsOpenChanged();
 			}

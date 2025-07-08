@@ -5,8 +5,8 @@
                           x:Class="Maui.Controls.Sample.Issues.Issue8945Picker">
   <ContentPage.Content>
     <VerticalStackLayout
-      Padding="12">
-      <Label      
+      Padding="12, 24">
+      <Label
         AutomationId="WaitForStubControl"
         Text="IsOpen (True)" />
       <Picker
