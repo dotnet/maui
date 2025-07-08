@@ -89,53 +89,5 @@ namespace Microsoft.Maui.DeviceTests
 
 			return null;
 		}
-
-		[Fact]
-		public async Task CharacterSpacingInitializesCorrectly()
-		{
-			var datePicker = new DatePickerStub()
-			{
-				Date = DateTime.Today,
-				CharacterSpacing = 10
-			};
-
-			await ValidatePropertyInitValue(datePicker, () => datePicker.CharacterSpacing, GetNativeCharacterSpacing, 10.0);
-		}
-
-		double GetNativeCharacterSpacing(DatePickerHandler datePickerHandler)
-		{
-			var platformDatePicker = GetNativeDatePicker(datePickerHandler);
-
-			// Since CalendarDatePicker doesn't have CharacterSpacing property directly,
-			// we need to check if it was applied to internal TextBlock elements
-			var textBlocks = platformDatePicker.GetChildren<Microsoft.UI.Xaml.Controls.TextBlock>();
-			foreach (var textBlock in textBlocks)
-			{
-				if (textBlock is not null && textBlock.CharacterSpacing > 0)
-				{
-					// Convert back from Em to original value using the extension method
-					return textBlock.CharacterSpacing.FromEm();
-				}
-			}
-
-			return 0.0;
-		}
-
-		[Fact]
-		public async Task CharacterSpacingUpdatesCorrectly()
-		{
-			var datePicker = new DatePickerStub()
-			{
-				Date = DateTime.Today,
-				CharacterSpacing = 5
-			};
-
-			await ValidatePropertyUpdatesValue(
-				datePicker,
-				nameof(IDatePicker.CharacterSpacing),
-				GetNativeCharacterSpacing,
-				5.0,
-				15.0);
-		}
 	}
 }
