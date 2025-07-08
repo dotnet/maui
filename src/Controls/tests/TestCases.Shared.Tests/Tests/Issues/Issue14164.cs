@@ -8,7 +8,7 @@ public class Issue14164 : _IssuesUITest
 {
 	public Issue14164(TestDevice device) : base(device) { }
 
-	public override string Issue => "[iOS ,MAC]Border overlapped with content view label when setting clip";
+	public override string Issue => "[iOS, MAC] Border overlapped with content view label when setting clip";
 
 	[Test, Order(1)]
 	[Category(UITestCategories.Border)]
