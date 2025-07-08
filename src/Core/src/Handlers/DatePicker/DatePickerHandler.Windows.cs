@@ -1,5 +1,4 @@
 ﻿#nullable enable
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
@@ -12,13 +11,11 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(CalendarDatePicker platformView)
 		{
 			platformView.DateChanged += DateChanged;
-			platformView.Loaded += OnLoaded;
 		}
 
 		protected override void DisconnectHandler(CalendarDatePicker platformView)
 		{
 			platformView.DateChanged -= DateChanged;
-			platformView.Loaded -= OnLoaded;
 		}
 
 		public static partial void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
@@ -82,14 +79,6 @@ namespace Microsoft.Maui.Handlers
 			//}
 
 			VirtualView.Date = args.NewDate.Value.Date;
-		}
-
-		void OnLoaded(object sender, RoutedEventArgs e)
-		{
-			if (VirtualView is not null)
-			{
-				PlatformView?.UpdateCharacterSpacing(VirtualView);
-			}
 		}
 
 		public static partial void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
