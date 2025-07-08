@@ -49,7 +49,7 @@ parameters:
   default: ''
 - name: BuildConfiguration
   type: string
-  default: 'Debug'
+  default: 'Release'
 - name: TargetFrameworkVersion
   type: string
   default: 'net9.0'
