@@ -129,7 +129,7 @@ stages:
           - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' $(_OfficialBuildIdArgs)
             displayName: Build BuildTasks
 
-          - script: $(_buildScriptMacOS) -restore -build -a x64 -configuration $(_BuildConfig) /p:BuildDeviceTests=true $(_OfficialBuildIdArgs)
+          - script: $(_buildScriptMacOS) -restore -build -a x64 -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:TargetFrameworks=net9.0-android /p:RuntimeIdentifiers=android-x64 $(_OfficialBuildIdArgs)
             displayName: Build DeviceTests
 
           - template: /eng/common/templates-official/steps/send-to-helix.yml
