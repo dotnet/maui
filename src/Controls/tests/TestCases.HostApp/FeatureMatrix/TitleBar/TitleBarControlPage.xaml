@@ -10,6 +10,15 @@
                                      Padding="10"
                                      Spacing="15">
                         <!-- Left Column Content -->
+                        <Label Text="TitleBar Visibility"
+                               FontSize="Medium"
+                               FontAttributes="Bold"/>
+                        <HorizontalStackLayout Spacing="10">
+                                <CheckBox AutomationId="ShowTitleBarCheckBox"
+                                          IsChecked="{Binding IsVisible}"/>
+                                <Label Text="Show TitleBar"
+                                       VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
                         <Label Text="TitleBar Content Visibility"
                                FontSize="Medium"
                                FontAttributes="Bold"/>
@@ -48,12 +57,24 @@
                                         WidthRequest="200"
                                         IsEnabled="{Binding ShowSubtitle}"/>
                         </HorizontalStackLayout>
+                        <Label Text="Icon"
+                               FontSize="Medium"
+                               FontAttributes="Bold"/>
+                        <HorizontalStackLayout Spacing="10">
+                                <CheckBox AutomationId="ShowIconCheckBox"
+                                          IsChecked="{Binding ShowIcon}"/>
+                                <Label Text="Show Icon"
+                                       VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                        <Label Text="Flow Direction"
+                               FontSize="Medium"
+                               FontAttributes="Bold"/>
                         <HorizontalStackLayout Spacing="5">
                                 <CheckBox x:Name="FlowDirectionRTLCheckBox"
                                           AutomationId="FlowDirectionRTLCheckBox"
                                           IsChecked="{Binding FlowDirectionRTL}"
                                           CheckedChanged="OnFlowDirectionCheckBoxChanged"/>
-                                <Label Text="RTL Flow Direction"
+                                <Label Text="Right to Left"
                                        VerticalOptions="Center"/>
                         </HorizontalStackLayout>
                         <Button AutomationId="ResetButton"
@@ -85,6 +106,21 @@
                                              Content="Red"
                                              GroupName="BackgroundColorGroup"
                                              IsChecked="{Binding IsRedChecked}"/>
+                        </HorizontalStackLayout>
+                        <Label Text="Foreground Color"
+                               FontSize="Medium"
+                               FontAttributes="Bold"/>
+                        <HorizontalStackLayout Spacing="10">
+                                <CheckBox AutomationId="ShowForegroundColorCheckBox"
+                                          IsChecked="{Binding ShowForegroundColor}"/>
+                                <Label Text="Enable Foreground Color"
+                                       VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout>
+                                <RadioButton AutomationId="WhiteForegroundRadioButton"
+                                             Content="White"
+                                             GroupName="ForegroundColorGroup"
+                                             IsChecked="{Binding IsWhiteForegroundChecked}"/>
                         </HorizontalStackLayout>
                         <Label Text="Select TitleBar Content"
                                FontSize="Medium"

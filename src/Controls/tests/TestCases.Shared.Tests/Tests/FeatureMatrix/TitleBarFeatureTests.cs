@@ -39,11 +39,19 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ShowSubtitleCheckBox");
 		App.Tap("ShowSubtitleCheckBox");
 
+		App.WaitForElement("ShowIconCheckBox");
+		App.Tap("ShowIconCheckBox");
+
 		App.WaitForElement("ShowBackgroundColorCheckBox");
 		App.Tap("ShowBackgroundColorCheckBox");
 
 		App.WaitForElement("OrangeRadioButton");
 		App.Tap("OrangeRadioButton");
+
+		App.WaitForElement("ShowForegroundColorCheckBox");
+		App.Tap("ShowForegroundColorCheckBox");
+		App.WaitForElement("WhiteForegroundRadioButton");
+		App.Tap("WhiteForegroundRadioButton");
 
 		App.WaitForElement("IsTitleBarContentVisibleCheckBox");
 		App.Tap("IsTitleBarContentVisibleCheckBox");
@@ -52,7 +60,133 @@ public class TitleBarFeatureTests : UITest
 		App.Tap("ProgressBarRadioButton");
 
 		VerifyScreenshot();
+	}
 
+	[Test]
+	[Category(UITestCategories.TitleView)]
+	public void TitleBar_Icon_WithTrailingContentAndLeadingContent()
+	{
+		App.WaitForElement("ResetButton");
+		App.Tap("ResetButton");
+
+		App.WaitForElement("ShowIconCheckBox");
+		App.Tap("ShowIconCheckBox");
+
+		App.WaitForElement("ShowLeadingContentCheckBox");
+		App.Tap("ShowLeadingContentCheckBox");
+		App.WaitForElement("ShowTrailingContentCheckBox");
+		App.Tap("ShowTrailingContentCheckBox");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.TitleView)]
+	public void TitleBar_Icon_WithBackgroundColor()
+	{
+		App.WaitForElement("ResetButton");
+		App.Tap("ResetButton");
+
+		App.WaitForElement("ShowIconCheckBox");
+		App.Tap("ShowIconCheckBox");
+
+		App.WaitForElement("ShowBackgroundColorCheckBox");
+		App.Tap("ShowBackgroundColorCheckBox");
+		App.WaitForElement("RedRadioButton");
+		App.Tap("RedRadioButton");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.TitleView)]
+	public void TitleBar_Icon_WithSearchBar()
+	{
+		App.WaitForElement("ResetButton");
+		App.Tap("ResetButton");
+
+		App.WaitForElement("ShowIconCheckBox");
+		App.Tap("ShowIconCheckBox");
+
+		App.WaitForElement("IsTitleBarContentVisibleCheckBox");
+		App.Tap("IsTitleBarContentVisibleCheckBox");
+		App.WaitForElement("SearchBarRadioButton");
+		App.Tap("SearchBarRadioButton");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.TitleView)]
+	public void TitleBar_Icon_WithForegroundColor()
+	{
+		App.WaitForElement("ResetButton");
+		App.Tap("ResetButton");
+
+		App.WaitForElement("ShowIconCheckBox");
+		App.Tap("ShowIconCheckBox");
+
+		App.WaitForElement("ShowTitleCheckBox");
+		App.Tap("ShowTitleCheckBox");
+		App.WaitForElement("ShowSubtitleCheckBox");
+		App.Tap("ShowSubtitleCheckBox");
+
+		App.WaitForElement("ShowForegroundColorCheckBox");
+		App.Tap("ShowForegroundColorCheckBox");
+		App.WaitForElement("WhiteForegroundRadioButton");
+		App.Tap("WhiteForegroundRadioButton");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.TitleView)]
+	public void TitleBar_ForegroundColor_WithBackgroundColor()
+	{
+		App.WaitForElement("ResetButton");
+		App.Tap("ResetButton");
+
+		App.WaitForElement("ShowTitleCheckBox");
+		App.Tap("ShowTitleCheckBox");
+		App.WaitForElement("ShowSubtitleCheckBox");
+		App.Tap("ShowSubtitleCheckBox");
+
+		App.WaitForElement("ShowForegroundColorCheckBox");
+		App.Tap("ShowForegroundColorCheckBox");
+		App.WaitForElement("WhiteForegroundRadioButton");
+		App.Tap("WhiteForegroundRadioButton");
+
+		App.WaitForElement("ShowBackgroundColorCheckBox");
+		App.Tap("ShowBackgroundColorCheckBox");
+		App.WaitForElement("RedRadioButton");
+		App.Tap("RedRadioButton");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.TitleView)]
+	public void TitleBar_ForegroundColor_WithGrid()
+	{
+		App.WaitForElement("ResetButton");
+		App.Tap("ResetButton");
+
+		App.WaitForElement("ShowTitleCheckBox");
+		App.Tap("ShowTitleCheckBox");
+		App.WaitForElement("ShowSubtitleCheckBox");
+		App.Tap("ShowSubtitleCheckBox");
+
+		App.WaitForElement("ShowForegroundColorCheckBox");
+		App.Tap("ShowForegroundColorCheckBox");
+		App.WaitForElement("WhiteForegroundRadioButton");
+		App.Tap("WhiteForegroundRadioButton");
+
+		App.WaitForElement("IsTitleBarContentVisibleCheckBox");
+		App.Tap("IsTitleBarContentVisibleCheckBox");
+		App.WaitForElement("ProgressBarRadioButton");
+		App.Tap("ProgressBarRadioButton");
+
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -250,6 +384,20 @@ public class TitleBarFeatureTests : UITest
 
 		VerifyScreenshot();
 	}
+
+	[Test]
+	[Category(UITestCategories.TitleView)]
+	public void TitleBar_IsVisible()
+	{
+		App.WaitForElement("ResetButton");
+		App.Tap("ResetButton");
+
+		App.WaitForElement("ShowTitleBarCheckBox");
+		App.Tap("ShowTitleBarCheckBox");
+
+		VerifyScreenshot();
+	}
+
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_MACCATALYST //For more information see:
 	[Test]
 	[Category(UITestCategories.TitleView)]

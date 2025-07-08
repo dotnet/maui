@@ -8,6 +8,8 @@ public class TitleBarViewModel : INotifyPropertyChanged
 	private string _title;
 	private string _subtitle;
 	private IView _trailingContent;
+	private Color _foregroundColor = Colors.Black;
+	private ImageSource _icon;
 
 	public IView TitleBarContent
 	{
@@ -165,6 +167,32 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public Color ForegroundColor
+	{
+		get => _foregroundColor;
+		set
+		{
+			if (_foregroundColor != value)
+			{
+				_foregroundColor = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public ImageSource Icon
+	{
+		get => _icon;
+		set
+		{
+			if (_icon != value)
+			{
+				_icon = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
 	private Color _color = Color.FromArgb("#6600ff");
 	public Color Color
 	{
@@ -203,6 +231,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 			}
 		}
 	}
+
 
 	private bool _isVisible = true;
 	public bool IsVisible
@@ -328,6 +357,53 @@ public class TitleBarViewModel : INotifyPropertyChanged
 				_showSubtitle = value;
 				OnPropertyChanged();
 				Subtitle = _showSubtitle ? "Demo TitleBar Integration" : string.Empty;
+			}
+		}
+	}
+
+	private bool _showForegroundColor = false;
+	public bool ShowForegroundColor
+	{
+		get => _showForegroundColor;
+		set
+		{
+			if (_showForegroundColor != value)
+			{
+				_showForegroundColor = value;
+				OnPropertyChanged();
+				ForegroundColor = _showForegroundColor ? Colors.Black : Colors.Black;
+				IsWhiteForegroundChecked = false;
+			}
+		}
+	}
+
+	private bool _isWhiteForegroundChecked = false;
+	public bool IsWhiteForegroundChecked
+	{
+		get => _isWhiteForegroundChecked;
+		set
+		{
+			if (_isWhiteForegroundChecked != value)
+			{
+				_isWhiteForegroundChecked = value;
+				if (value && ShowForegroundColor)
+					ForegroundColor = Colors.White;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	private bool _showIcon = false;
+	public bool ShowIcon
+	{
+		get => _showIcon;
+		set
+		{
+			if (_showIcon != value)
+			{
+				_showIcon = value;
+				OnPropertyChanged();
+				Icon = _showIcon ? "coffee.png" : null;
 			}
 		}
 	}
