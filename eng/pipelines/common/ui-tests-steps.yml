@@ -69,7 +69,6 @@ steps:
       skipProvisionator: true
     ${{ else }}:
       skipProvisionator: false
-      gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
     ${{ if eq(parameters.platform, 'catalyst') }}:
       openSslArgs: '' # Do not use legacy openssl for Catalyst builds
 
