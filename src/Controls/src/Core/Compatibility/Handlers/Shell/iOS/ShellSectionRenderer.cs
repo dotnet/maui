@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool DidPopItem(UINavigationBar _, UINavigationItem __)
 		{
 			// Check for null references
-			if (_shellSection?.Stack == null || NavigationBar?.Items == null)
+			if (_shellSection?.Stack is null || NavigationBar?.Items is null)
 				return true;
 
 			// Check if stacks are in sync
