@@ -42,7 +42,7 @@ pr:
     - THIRD-PARTY-NOTICES.TXT
 
 variables:
-  - template: /eng/pipelines/common/variables.yml
+  - template: /eng/pipelines/common/variables.yml@self
   - name: AgentPoolAccessToken
     value: $(botdeploy--azdo--token--register--xamarin-public--untrusted)
 
@@ -160,7 +160,6 @@ stages:
         runCompatibilityTests: true
       ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
         skipProvisioning: false
-        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
       ${{ else }}:  
         skipProvisioning: true
       projects:
