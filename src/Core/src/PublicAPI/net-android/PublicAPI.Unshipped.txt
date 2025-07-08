@@ -179,6 +179,11 @@ static Microsoft.Maui.Platform.ButtonExtensions.UpdateRippleColor(this Google.An
 static Microsoft.Maui.Platform.EditTextExtensions.GetCursorPosition(this Android.Widget.EditText! editText, int cursorOffset = 0) -> int
 static Microsoft.Maui.Platform.EditTextExtensions.GetSelectedTextLength(this Android.Widget.EditText! editText) -> int
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequired(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Action! action) -> void
+static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Action! action) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<System.Threading.Tasks.Task!>! action) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync<T>(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<T>! func) -> System.Threading.Tasks.Task<T>!
+static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync<T>(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<System.Threading.Tasks.Task<T>!>! funcTask) -> System.Threading.Tasks.Task<T>!
 *REMOVED*static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry, Android.Graphics.Drawables.Drawable? clearButtonDrawable) -> void
 *REMOVED*static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry, System.Func<Android.Graphics.Drawables.Drawable?>? getClearButtonDrawable) -> void
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformButton, Microsoft.Maui.IImageButton! imageButton) -> void
