@@ -17,6 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			_ = App.WaitForElement("button");
 			App.Click("button");
+			App.WaitForElement("Popped");
 			// The test passes if the 'Home Page' title is visible
 			VerifyScreenshot();
 		}
