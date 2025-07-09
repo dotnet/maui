@@ -83,7 +83,7 @@ stages:
         clean: all
       jobs:
       - job: builddevice_tests
-        displayName: DeviceTests iOS
+        displayName: Build Device Tests
         timeoutInMinutes: 240
         variables:
         - name: _BuildConfig
@@ -135,7 +135,7 @@ stages:
       - job: device_tests_ios
         dependsOn:
         - builddevice_tests
-        displayName: DeviceTests iOS
+        displayName: Run DeviceTests iOS
         timeoutInMinutes: 240
         variables:
         - name: _BuildConfig
@@ -144,11 +144,6 @@ stages:
         - checkout: self
           fetchDepth: 1
           clean: true
-
-        steps:
-        - ${{ each step in parameters.prepareSteps }}:
-          - ${{ each pair in step }}:
-              ${{ pair.key }}: ${{ pair.value }}
 
         - template: /eng/common/templates-official/steps/send-to-helix.yml
           parameters:
@@ -161,7 +156,7 @@ stages:
       - job: device_tests_android
         dependsOn:
         - builddevice_tests
-        displayName: DeviceTests Android
+        displayName: Run DeviceTests Android
         timeoutInMinutes: 240
         variables:
         - name: _BuildConfig
@@ -170,11 +165,6 @@ stages:
         - checkout: self
           fetchDepth: 1
           clean: true
-
-        steps:
-        - ${{ each step in parameters.prepareSteps }}:
-          - ${{ each pair in step }}:
-              ${{ pair.key }}: ${{ pair.value }}
 
         - task: DownloadPipelineArtifact@2
           displayName: 'Download Build'
