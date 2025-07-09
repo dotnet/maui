@@ -53,6 +53,12 @@ parameters:
 - name: TargetFrameworkVersion
   type: string
   default: 'net9.0'
+- name: appArtifactName
+  type: string
+  default: 'device_tests_app'
+- name: checkoutDirectory
+  type: string
+  default: $(System.DefaultWorkingDirectory)
 
 stages:
 - stage: deviceTests_ios_android
@@ -76,7 +82,7 @@ stages:
       workspace:
         clean: all
       jobs:
-      - job: device_tests_ios
+      - job: builddevice_tests
         displayName: DeviceTests iOS
         timeoutInMinutes: 240
         variables:
@@ -93,22 +99,68 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
-        - ${{ if parameters.runAsPublic }}:
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
-            displayName: Build BuildTasks
+        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
+          displayName: Build BuildTasks
 
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog
-            displayName: Build DeviceTests
+        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog
+          displayName: Build DeviceTests
 
-          - template: /eng/common/templates-official/steps/send-to-helix.yml
-            parameters:
-              HelixProjectPath: ${{ parameters.helixProject }}
-              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix="_$(_BuildConfig)" /p:TestRunNamePrefix="DeviceTestsIOS_"
-              HelixConfiguration: $(_BuildConfig)
-              IncludeDotNetCli: true
-              DisplayNamePrefix: DeviceTestsIOS
+        - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+          displayName: Publish Succeeded Artifacts Directory
+          condition: succeeded()
+          artifact: ${{ parameters.appArtifactName }}
+
+        - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+          displayName: Publish Failed Artifacts Directory
+          condition: not(succeeded())
+          artifact: ${{ parameters.appArtifactName }}_failed_$(System.JobAttempt)
+
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.iosPool }}
+      enableMicrobuild: true
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: true
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: true
+      workspace:
+        clean: all
+      jobs:
+      - job: device_tests_ios
+        dependsOn:
+        - builddevice_tests
+        displayName: DeviceTests iOS
+        timeoutInMinutes: 240
+        variables:
+        - name: _BuildConfig
+          value: ${{ parameters.BuildConfiguration }}
+        preSteps:
+        - checkout: self
+          fetchDepth: 1
+          clean: true
+
+        steps:
+        - ${{ each step in parameters.prepareSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
+
+        - template: /eng/common/templates-official/steps/send-to-helix.yml
+          parameters:
+            HelixProjectPath: ${{ parameters.helixProject }}
+            HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix="_$(_BuildConfig)" /p:TestRunNamePrefix="DeviceTestsIOS_"
+            HelixConfiguration: $(_BuildConfig)
+            IncludeDotNetCli: true
+            DisplayNamePrefix: DeviceTestsIOS
 
       - job: device_tests_android
+        dependsOn:
+        - builddevice_tests
         displayName: DeviceTests Android
         timeoutInMinutes: 240
         variables:
@@ -124,21 +176,17 @@ stages:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
 
-        # Run on public pipeline
-        - ${{ if parameters.runAsPublic }}:
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' $(_OfficialBuildIdArgs)
-            displayName: Build BuildTasks
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download Build'
+          condition: succeeded()
+          inputs:
+            artifactName: ${{ parameters.appArtifactName }}
+            targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
 
-          # - script: $(Build.SourcesDirectory)/.dotnet/dotnet build '$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj' -f net9.0-android -c $(_BuildConfig)
-          #   displayName: Build DeviceTests
-
-          - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog
-            displayName: Build DeviceTests
-
-          - template: /eng/common/templates-official/steps/send-to-helix.yml
-            parameters:
-              HelixProjectPath: ${{ parameters.helixProject }}
-              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix="_$(_BuildConfig)" /p:TestRunNamePrefix="DeviceTestsAndroid_"
-              HelixConfiguration: $(_BuildConfig)
-              IncludeDotNetCli: true
-              DisplayNamePrefix: DeviceTestsAndroid
+        - template: /eng/common/templates-official/steps/send-to-helix.yml
+          parameters:
+            HelixProjectPath: ${{ parameters.helixProject }}
+            HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix="_$(_BuildConfig)" /p:TestRunNamePrefix="DeviceTestsAndroid_"
+            HelixConfiguration: $(_BuildConfig)
+            IncludeDotNetCli: true
+            DisplayNamePrefix: DeviceTestsAndroid
