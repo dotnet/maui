@@ -12,8 +12,8 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 30147, "MauiScrollView resets ContentOffset on first layout pass", PlatformAffected.UWP)]
 public class Issue30147 : ContentPage
 {
-    private CustomScrollView myScroll;
-    private Label offsetLabel;
+    CustomScrollView myScroll;
+    Label offsetLabel;
 
     public Issue30147()
     {
