@@ -129,12 +129,14 @@ namespace Microsoft.Maui.Handlers
 
 		static void UpdateContentView(IScrollView scrollView, IScrollViewHandler handler)
 		{
+			bool changed = false;
 			var platformView = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			var mauiContext = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			if (GetContentView(platformView) is { } currentContentPlatformView)
 			{
 				currentContentPlatformView.RemoveFromSuperview();
+				changed = true;
 			}
 
 			if (scrollView.PresentedContent is { } content)
@@ -142,6 +144,12 @@ namespace Microsoft.Maui.Handlers
 				var platformContent = content.ToPlatform(mauiContext);
 				platformContent.Tag = ContentTag;
 				platformView.AddSubview(platformContent);
+				changed = true;
+			}
+
+			if (changed)
+			{
+				platformView.InvalidateMeasure();
 			}
 		}
 
