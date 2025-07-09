@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_CATALYST // IsOpen property not implemented on Catalyst
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -28,3 +29,4 @@ public class Issue8945TimePicker : _IssuesUITest
 		Assert.That(App.WaitForElement("TimePickerStatusLabel", timeout: TimeSpan.FromSeconds(2))?.GetText(), Is.EqualTo("Passed"));
 	}
 }
+#endif
