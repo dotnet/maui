@@ -69,13 +69,39 @@ public static class TimePickerExtensions
 
 		if (brush is null)
 		{
-			platformTimePicker.Resources.RemoveKeys(BackgroundColorResourceKeys);
-			platformTimePicker.ClearValue(TimePicker.BackgroundProperty);
+			platformTimePicker.CharacterSpacing = timePicker.CharacterSpacing.ToEm();
+
+			if (platformTimePicker.IsLoaded)
+			{
+				UpdateCharacterSpacingInTimePicker(platformTimePicker);
+			}
+			else
+			{
+				platformTimePicker.OnLoaded(() =>
+				{
+					UpdateCharacterSpacingInTimePicker(platformTimePicker);
+				});
+			}
 		}
-		else
+
+		static void UpdateCharacterSpacingInTimePicker(this TimePicker platformTimePicker)
 		{
-			platformTimePicker.Resources.SetValueForAllKey(BackgroundColorResourceKeys, brush);
-			platformTimePicker.Background = brush;
+			var hourTextBlock = platformTimePicker.GetDescendantByName<TextBlock>("HourTextBlock");
+			var minuteTextBlock = platformTimePicker.GetDescendantByName<TextBlock>("MinuteTextBlock");
+			var periodTextBlock = platformTimePicker.GetDescendantByName<TextBlock>("PeriodTextBlock");
+
+			if (hourTextBlock is not null)
+			{
+				hourTextBlock.CharacterSpacing = platformTimePicker.CharacterSpacing;
+			}
+			if (minuteTextBlock is not null)
+			{
+				minuteTextBlock.CharacterSpacing = platformTimePicker.CharacterSpacing;
+			}
+			if (periodTextBlock is not null)
+			{
+				periodTextBlock.CharacterSpacing = platformTimePicker.CharacterSpacing;
+			}
 		}
 
 		platformTimePicker.RefreshThemeResources();
