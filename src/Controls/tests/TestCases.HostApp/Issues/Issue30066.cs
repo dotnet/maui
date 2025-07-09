@@ -23,8 +23,9 @@ public class Issue30066 : TestShell
 		{
 			var datePicker = new DatePicker
 			{
-				Date = DateTime.Today,
+				Date = new DateTime(2025, 7, 9),
 				CharacterSpacing = 10,
+				Format = "M/d/yyyy",
 				AutomationId = "TestDatePicker",
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
