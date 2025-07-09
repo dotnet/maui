@@ -58,10 +58,6 @@ public class Issue30147 : ContentPage
         // Create the content for the scroll view
         var scrollContent = new StackLayout();
         scrollContent.Add(new BoxView { Color = Colors.Red, HeightRequest = 300, WidthRequest = 2000 });
-        scrollContent.Add(new BoxView { Color = Colors.Blue, HeightRequest = 300, WidthRequest = 2000 });
-        scrollContent.Add(new BoxView { Color = Colors.Green, HeightRequest = 300, WidthRequest = 2000 });
-        scrollContent.Add(new BoxView { Color = Colors.Orange, HeightRequest = 300, WidthRequest = 2000 });
-        scrollContent.Add(new BoxView { Color = Colors.Purple, HeightRequest = 300, WidthRequest = 2000 });
         
         myScroll.Content = scrollContent;
         
