@@ -145,6 +145,13 @@ stages:
           fetchDepth: 1
           clean: true
 
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download Build'
+          condition: succeeded()
+          inputs:
+            artifactName: ${{ parameters.appArtifactName }}
+            targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
+
         - template: /eng/common/templates-official/steps/send-to-helix.yml
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
