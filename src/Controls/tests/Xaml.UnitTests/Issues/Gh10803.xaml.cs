@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			bool debuggerinitialstate;
+			bool enableDiagnosticsInitialState;
 			int failures = 0;
 
 			[SetUp]
@@ -28,14 +28,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 				VisualDiagnostics.VisualTreeChanged += VTChanged;
-				debuggerinitialstate = DebuggerHelper._mockDebuggerIsAttached;
-				DebuggerHelper._mockDebuggerIsAttached = true;
+				enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
+				RuntimeFeature.EnableMauiDiagnostics = true;
 			}
 
 			[TearDown]
 			public void TearDown()
 			{
-				DebuggerHelper._mockDebuggerIsAttached = debuggerinitialstate;
+				RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 				DispatcherProvider.SetCurrent(null);
 				VisualDiagnostics.VisualTreeChanged -= VTChanged;
 				failures = 0;
