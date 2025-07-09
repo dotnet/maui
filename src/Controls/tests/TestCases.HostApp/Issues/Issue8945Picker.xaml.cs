@@ -8,6 +8,8 @@
 		public Issue8945Picker()
 		{
 			InitializeComponent();
+
+			IsOpenPicker.Opened += IsOpenPickerOpened;
 		}
 
 		protected override void Init()
@@ -15,13 +17,6 @@
 
 		}
 		
-		protected override void OnAppearing()
-		{
-			base.OnAppearing();
-			
-			IsOpenPicker.Opened += IsOpenPickerOpened;
-		}
-
 		protected override void OnDisappearing()
 		{
 			base.OnDisappearing();

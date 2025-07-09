@@ -8,6 +8,8 @@
 		public Issue8945TimePicker()
 		{
 			InitializeComponent();
+
+			IsOpenTimePicker.Opened += IsOpenPickerOpened;
 		}
 
 		protected override void Init()
@@ -15,13 +17,6 @@
 
 		}
 		
-		protected override void OnAppearing()
-		{
-			base.OnAppearing();
-			
-			IsOpenTimePicker.Opened += IsOpenPickerOpened;
-		}
-
 		protected override void OnDisappearing()
 		{
 			base.OnDisappearing();

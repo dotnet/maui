@@ -92,7 +92,19 @@ public static class TimePickerExtensions
 
 	public static void UpdateIsOpen(this TimePicker platformTimePicker, ITimePicker timePicker)
 	{
-		if(timePicker.IsOpen)
+		if (!platformTimePicker.IsLoaded)
+		{
+			RoutedEventHandler? onLoaded = null;
+			onLoaded = (s, e) =>
+			{
+				platformTimePicker.Loaded -= onLoaded;
+				UpdateIsOpen(platformTimePicker, timePicker);
+			};
+			platformTimePicker.Loaded += onLoaded;
+			return;
+		}
+
+		if (timePicker.IsOpen)
 		{
 			platformTimePicker.Focus(FocusState.Programmatic);
 
