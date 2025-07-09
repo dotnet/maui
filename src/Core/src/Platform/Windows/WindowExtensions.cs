@@ -218,7 +218,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateIsMinimizable(this UI.Xaml.Window platformWindow, IWindow window)
+		internal static void UpdateIsMinimizable(this UI.Xaml.Window platformWindow, IWindow window)
 		{
 			platformWindow.UpdateWindowOverlappedPresenter(presenter =>
 			{
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Platform
 			});
 		}
 
-		public static void UpdateIsMaximizable(this UI.Xaml.Window platformWindow, IWindow window)
+		internal static void UpdateIsMaximizable(this UI.Xaml.Window platformWindow, IWindow window)
 		{
 			platformWindow.UpdateWindowOverlappedPresenter(presenter =>
 			{
