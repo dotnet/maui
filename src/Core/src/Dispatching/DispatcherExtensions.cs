@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Dispatching
 		/// <param name="action">The <see cref="Action"/> to be scheduled for processing on the UI thread.</param>
 		public static void DispatchIfRequired(this IDispatcher dispatcher, Action action)
 		{
-			if (dispatcher.IsDispatchRequired)
+			if (dispatcher?.IsDispatchRequired == true)
 			{
 				dispatcher.Dispatch(action);
 			}
