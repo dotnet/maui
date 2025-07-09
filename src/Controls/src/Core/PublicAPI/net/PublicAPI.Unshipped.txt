@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.Maui.Controls.SafeArea
 Microsoft.Maui.Controls.SafeAreaEdges
 Microsoft.Maui.Controls.SafeAreaEdges.Bottom.get -> Microsoft.Maui.Controls.SafeAreaRegions
 Microsoft.Maui.Controls.SafeAreaEdges.Bottom.set -> void
@@ -17,10 +18,23 @@ Microsoft.Maui.Controls.SafeAreaEdges.Top.get -> Microsoft.Maui.Controls.SafeAre
 Microsoft.Maui.Controls.SafeAreaEdges.Top.set -> void
 Microsoft.Maui.Controls.SafeAreaEdgesTypeConverter
 Microsoft.Maui.Controls.SafeAreaEdgesTypeConverter.SafeAreaEdgesTypeConverter() -> void
-Microsoft.Maui.Controls.SafeArea
 Microsoft.Maui.Controls.SafeAreaRegions
 Microsoft.Maui.Controls.SafeAreaRegions.All = 2147483647 -> Microsoft.Maui.Controls.SafeAreaRegions
 Microsoft.Maui.Controls.SafeAreaRegions.None = 0 -> Microsoft.Maui.Controls.SafeAreaRegions
+override Microsoft.Maui.Controls.SafeAreaEdges.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.SafeAreaEdges.GetHashCode() -> int
+override Microsoft.Maui.Controls.SafeAreaEdges.ToString() -> string!
+override Microsoft.Maui.Controls.SafeAreaEdgesTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.SafeAreaEdgesTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.SafeAreaEdgesTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.SafeAreaEdgesTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+static Microsoft.Maui.Controls.SafeArea.GetIgnore(Microsoft.Maui.Controls.BindableObject! bindable) -> Microsoft.Maui.Controls.SafeAreaEdges
+static Microsoft.Maui.Controls.SafeArea.SetIgnore(Microsoft.Maui.Controls.BindableObject! bindable, Microsoft.Maui.Controls.SafeAreaEdges value) -> void
+static Microsoft.Maui.Controls.SafeAreaEdges.All.get -> Microsoft.Maui.Controls.SafeAreaEdges
+static Microsoft.Maui.Controls.SafeAreaEdges.None.get -> Microsoft.Maui.Controls.SafeAreaEdges
+static Microsoft.Maui.Controls.SafeAreaEdges.operator !=(Microsoft.Maui.Controls.SafeAreaEdges left, Microsoft.Maui.Controls.SafeAreaEdges right) -> bool
+static Microsoft.Maui.Controls.SafeAreaEdges.operator ==(Microsoft.Maui.Controls.SafeAreaEdges left, Microsoft.Maui.Controls.SafeAreaEdges right) -> bool
+static readonly Microsoft.Maui.Controls.SafeArea.IgnoreProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~static Microsoft.Maui.Controls.Shell.GetNavBarVisibilityAnimationEnabled(Microsoft.Maui.Controls.BindableObject obj) -> bool
 ~static Microsoft.Maui.Controls.Shell.SetNavBarVisibilityAnimationEnabled(Microsoft.Maui.Controls.BindableObject obj, bool value) -> void
 ~static readonly Microsoft.Maui.Controls.Shell.NavBarVisibilityAnimationEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -265,22 +279,8 @@ static Microsoft.Maui.Controls.ViewExtensions.ScaleXToAsync(this Microsoft.Maui.
 static Microsoft.Maui.Controls.ViewExtensions.ScaleYToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double x, double y, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void
-override Microsoft.Maui.Controls.SafeAreaEdges.Equals(object? obj) -> bool
-override Microsoft.Maui.Controls.SafeAreaEdges.GetHashCode() -> int
-override Microsoft.Maui.Controls.SafeAreaEdges.ToString() -> string!
-override Microsoft.Maui.Controls.SafeAreaEdgesTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
-override Microsoft.Maui.Controls.SafeAreaEdgesTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
-override Microsoft.Maui.Controls.SafeAreaEdgesTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
-override Microsoft.Maui.Controls.SafeAreaEdgesTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
 override Microsoft.Maui.Controls.ScrollView.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, double height) -> void
-static Microsoft.Maui.Controls.SafeAreaEdges.All.get -> Microsoft.Maui.Controls.SafeAreaEdges
-static Microsoft.Maui.Controls.SafeAreaEdges.None.get -> Microsoft.Maui.Controls.SafeAreaEdges
-static Microsoft.Maui.Controls.SafeAreaEdges.operator !=(Microsoft.Maui.Controls.SafeAreaEdges left, Microsoft.Maui.Controls.SafeAreaEdges right) -> bool
-static Microsoft.Maui.Controls.SafeAreaEdges.operator ==(Microsoft.Maui.Controls.SafeAreaEdges left, Microsoft.Maui.Controls.SafeAreaEdges right) -> bool
-static Microsoft.Maui.Controls.SafeArea.GetIgnore(Microsoft.Maui.Controls.BindableObject! bindable) -> Microsoft.Maui.Controls.SafeAreaEdges
-static Microsoft.Maui.Controls.SafeArea.SetIgnore(Microsoft.Maui.Controls.BindableObject! bindable, Microsoft.Maui.Controls.SafeAreaEdges value) -> void
-static readonly Microsoft.Maui.Controls.SafeArea.IgnoreProperty -> Microsoft.Maui.Controls.BindableProperty!
 virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDeclarer, TPropertyType>.Invoke(TDeclarer bindable) -> TPropertyType
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue) -> void
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate<TPropertyType>.Invoke(Microsoft.Maui.Controls.BindableObject bindable, TPropertyType oldValue, TPropertyType newValue) -> void
