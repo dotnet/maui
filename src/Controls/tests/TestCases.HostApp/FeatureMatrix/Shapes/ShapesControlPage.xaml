@@ -90,7 +90,6 @@
                    StrokeDashOffset="{Binding StrokeDashOffset}"
                    Shadow="{Binding BoxShadow}"
                    WidthRequest="{Binding Width}"
-                   HeightRequest="{Binding Height}"
                    IsVisible="{Binding SelectedShapeType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Polygon}"
                    AutomationId="PolygonShape"/>
 
