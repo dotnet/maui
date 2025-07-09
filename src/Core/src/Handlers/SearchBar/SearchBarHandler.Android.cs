@@ -5,6 +5,7 @@ using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using static AndroidX.AppCompat.Widget.SearchView;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -70,8 +71,21 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapFlowDirection(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateFlowDirection(searchBar);
-			handler.QueryEditor?.UpdateFlowDirection(searchBar);
+			if (searchBar.FlowDirection == FlowDirection.MatchParent && searchBar.Parent != null && searchBar.Parent is IView parentView)
+			{
+				// When FlowDirection is MatchParent, respect the parent's FlowDirection
+				if (handler.PlatformView is AView platformView)
+					Microsoft.Maui.Platform.ViewExtensions.UpdateFlowDirection(platformView, parentView);
+
+				if (handler.QueryEditor is TextView textView)
+					Microsoft.Maui.Platform.TextViewExtensions.UpdateFlowDirection(textView, parentView);
+			}
+			else
+			{
+				// Otherwise, use the SearchBar's own FlowDirection
+				handler.PlatformView?.UpdateFlowDirection(searchBar);
+				handler.QueryEditor?.UpdateFlowDirection(searchBar);
+			}
 		}
 
 		public static void MapFont(ISearchBarHandler handler, ISearchBar searchBar)
