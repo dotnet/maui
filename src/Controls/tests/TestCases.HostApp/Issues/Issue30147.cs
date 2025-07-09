@@ -9,7 +9,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 30147, "MauiScrollView resets ContentOffset on first layout pass", PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 30147, "MauiScrollView resets ContentOffset on first layout pass", PlatformAffected.iOS)]
 public class Issue30147 : ContentPage
 {
     CustomScrollView myScroll;
