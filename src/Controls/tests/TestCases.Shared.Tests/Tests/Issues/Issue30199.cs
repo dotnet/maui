@@ -15,7 +15,7 @@ public class Issue30199 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.TimePicker)]
-	public void Issue30199PlaceholderCharacterSpacingShouldApply()
+	public void Issue30199TimePickerCharacterSpacingShouldApply()
 	{
 		App.WaitForElement("timePicker");
 		VerifyScreenshot();
