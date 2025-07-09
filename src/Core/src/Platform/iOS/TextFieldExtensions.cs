@@ -32,8 +32,14 @@ namespace Microsoft.Maui.Platform
 				textField.BecomeFirstResponder();
 				if (!string.IsNullOrEmpty(currentText))
 				{
-					textField.Text = string.Empty;
-					textField.InsertText(currentText);
+					//Suppress TextChanged events during password toggle
+					if (textField is MauiTextField mauiTextField)
+					{
+						mauiTextField.SuppressTextPropertySet(true);
+						textField.Text = string.Empty;
+						textField.InsertText(currentText);
+						mauiTextField.SuppressTextPropertySet(false);
+					}
 				}
 			}
 			else
