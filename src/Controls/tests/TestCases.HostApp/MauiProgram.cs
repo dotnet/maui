@@ -52,7 +52,7 @@ namespace Maui.Controls.Sample
 				handlers.AddHandler(typeof(UITestSearchBar), typeof(UITestSearchBarHandler));
 #endif
 #if IOS
-				handlers.AddHandler(typeof(Issue30147.CustomScrollView), typeof(CustomScrollViewHandler));
+				handlers.AddHandler(typeof(Issue30147CustomScrollView), typeof(Issue30147CustomScrollViewHandler));
 #endif
 			});
 

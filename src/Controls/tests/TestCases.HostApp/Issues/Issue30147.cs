@@ -1,7 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-
-#if IOS
+﻿#if IOS
 using UIKit;
 using CoreGraphics;
 using Microsoft.Maui.Handlers;
@@ -9,10 +6,11 @@ using Microsoft.Maui.Handlers;
 
 namespace Maui.Controls.Sample.Issues;
 
+
 [Issue(IssueTracker.Github, 30147, "MauiScrollView resets ContentOffset on first layout pass", PlatformAffected.iOS)]
 public class Issue30147 : ContentPage
 {
-    CustomScrollView myScroll;
+    Issue30147CustomScrollView myScroll;
     Label offsetLabel;
 
     public Issue30147()
@@ -44,7 +42,7 @@ public class Issue30147 : ContentPage
         };
         
         // Create the CustomScrollView
-        myScroll = new CustomScrollView
+        myScroll = new Issue30147CustomScrollView
         {
             Orientation = ScrollOrientation.Horizontal
         };
@@ -77,39 +75,39 @@ public class Issue30147 : ContentPage
         // Set the page content
         Content = grid;
     }
-    
-    // The custom ScrollView class for tracking offset changes
-    public class CustomScrollView : ScrollView
+}
+
+public class Issue30147ScrollOffsetChangedEventArgs : EventArgs
+{
+	public double X { get; }
+	public double Y { get; }
+
+	public Issue30147ScrollOffsetChangedEventArgs(double x, double y)
+	{
+		X = x;
+		Y = y;
+	}
+}
+
+// Custom ScrollView class for tracking offset changes
+public class Issue30147CustomScrollView : ScrollView
+{
+    public event EventHandler<Issue30147ScrollOffsetChangedEventArgs> OffsetChanged;
+
+    // Raise the event from platform-specific code
+    internal void RaiseOffsetChanged(double x, double y)
     {
-        public event EventHandler<ScrollOffsetChangedEventArgs> OffsetChanged;
-
-        // Raise the event from platform-specific code
-        internal void RaiseOffsetChanged(double x, double y)
-        {
-            OffsetChanged?.Invoke(this, new ScrollOffsetChangedEventArgs(x, y));
-        }
-    }
-
-    public class ScrollOffsetChangedEventArgs : EventArgs
-    {
-        public double X { get; }
-        public double Y { get; }
-
-        public ScrollOffsetChangedEventArgs(double x, double y)
-        {
-            X = x;
-            Y = y;
-        }
+        OffsetChanged?.Invoke(this, new Issue30147ScrollOffsetChangedEventArgs(x, y));
     }
 }
 
 #if IOS
-public class CustomMauiScrollView : Microsoft.Maui.Platform.MauiScrollView
+public class Issue30147CustomMauiScrollView : Microsoft.Maui.Platform.MauiScrollView
 {
     CGPoint _previousOffset = new(-1, -1);
-    Issue30147.CustomScrollView _virtualView;
+    Issue30147CustomScrollView _virtualView;
 
-    public CustomMauiScrollView(Issue30147.CustomScrollView virtualView)
+    public Issue30147CustomMauiScrollView(Issue30147CustomScrollView virtualView)
     {
         _virtualView = virtualView;
     }
@@ -140,15 +138,15 @@ public class CustomMauiScrollView : Microsoft.Maui.Platform.MauiScrollView
     }
 }
 
-public class CustomScrollViewHandler : ScrollViewHandler
+public class Issue30147CustomScrollViewHandler : ScrollViewHandler
 {
     bool _initialOffsetApplied = false;
     
     protected override UIScrollView CreatePlatformView()
     {
-        if (VirtualView is Issue30147.CustomScrollView customScrollView)
+        if (VirtualView is Issue30147CustomScrollView customScrollView)
         {
-            return new CustomMauiScrollView(customScrollView);
+            return new Issue30147CustomMauiScrollView(customScrollView);
         }
 
         return base.CreatePlatformView();
