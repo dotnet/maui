@@ -181,6 +181,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				_visualElement.BindingContext = dataContext;
+				itemsView?.AddLogicalChild(_visualElement);
 				_handler = _visualElement.ToHandler(mauiContext);
 
 				// We need to set IsPlatformStateConsistent explicitly; otherwise, it won't be set until the renderer's Loaded 
@@ -199,8 +200,6 @@ namespace Microsoft.Maui.Controls.Platform
 				// We are reusing this ItemContentControl and we can reuse the Element
 				_visualElement.BindingContext = dataContext;
 			}
-
-			itemsView?.AddLogicalChild(_visualElement);
 
 			if (_handler.VirtualView is ICrossPlatformLayout)
 			{
