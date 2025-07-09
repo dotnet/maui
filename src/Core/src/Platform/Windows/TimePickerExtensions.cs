@@ -23,6 +23,38 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateCharacterSpacing(this TimePicker platformTimePicker, ITimePicker timePicker)
 		{
 			platformTimePicker.CharacterSpacing = timePicker.CharacterSpacing.ToEm();
+
+			if (platformTimePicker.IsLoaded)
+			{
+				UpdateCharacterSpacingInTimePicker(platformTimePicker);
+			}
+			else
+			{
+				platformTimePicker.OnLoaded(() =>
+				{
+					UpdateCharacterSpacingInTimePicker(platformTimePicker);
+				});
+			}
+		}
+
+		static void UpdateCharacterSpacingInTimePicker(this TimePicker platformTimePicker)
+		{
+			var hourTextBlock = platformTimePicker.GetDescendantByName<TextBlock>("HourTextBlock");
+			var minuteTextBlock = platformTimePicker.GetDescendantByName<TextBlock>("MinuteTextBlock");
+			var periodTextBlock = platformTimePicker.GetDescendantByName<TextBlock>("PeriodTextBlock");
+
+			if (hourTextBlock is not null)
+			{
+				hourTextBlock.CharacterSpacing = platformTimePicker.CharacterSpacing;
+			}
+			if (minuteTextBlock is not null)
+			{
+				minuteTextBlock.CharacterSpacing = platformTimePicker.CharacterSpacing;
+			}
+			if (periodTextBlock is not null)
+			{
+				periodTextBlock.CharacterSpacing = platformTimePicker.CharacterSpacing;
+			}
 		}
 
 		public static void UpdateFont(this TimePicker platformTimePicker, ITimePicker timePicker, IFontManager fontManager) =>
