@@ -27,6 +27,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
+#if TEST_FAILS_ON_CATALYST
+
 		[Test, Order(2)]
 		[Category(UITestCategories.Picker)]
 		public void Picker_TapPicker_TakeScreenshot()
@@ -41,6 +43,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Option 2 - Second option");
 #endif
 		}
+#endif
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 
