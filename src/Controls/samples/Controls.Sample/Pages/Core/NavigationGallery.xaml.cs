@@ -95,7 +95,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 			else
 			{
-				(Parent as IStackNavigationView)!.RequestNavigation(
+				((IStackNavigationView)Parent).RequestNavigation(
 				   new NavigationRequest(_currentNavStack, true));
 
 				_currentNavStack = null;
