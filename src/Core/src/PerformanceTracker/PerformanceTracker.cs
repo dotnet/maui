@@ -81,7 +81,7 @@ internal class PerformanceTracker
 	static IPerformanceProfiler? GetProfiler(IMauiContext? context)
 	{		
 		// Check if the performance profiling feature is enabled.
-		if (!PerformanceFeature.Guard())
+		if (!PerformanceFeature.IsMetricsSupported)
 		{
 			return null;
 		}

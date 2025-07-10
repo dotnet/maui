@@ -16,18 +16,8 @@ internal class PerformanceFeature
 #if NET9_0_OR_GREATER
 	[FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
 #endif
-	internal static bool IsSupported { get; }
+	internal static bool IsMetricsSupported { get; }
 		= InitializeIsMeterSupported();
-	
-	/// <summary>
-	/// Guards execution of performance monitoring code.
-	/// When IsEnabled is false, the linker will remove the guarded code entirely.
-	/// </summary>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal static bool Guard()
-	{
-		return IsSupported;
-	}
 	
 	static bool InitializeIsMeterSupported() =>
 		!AppContext.TryGetSwitch(
