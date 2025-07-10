@@ -95,7 +95,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					if (PlatformHandler?.VirtualView is View view && view.Parent is CollectionView itemsView && itemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
 					{
-						_measuredSize = view.Measure(preferredAttributes.Size.Width, preferredAttributes.Size.Height);
+						// Always get the cached first item size from the CollectionView
+						var cached = CollectionViewMeasurementCache.GetFirstItemMeasuredSize(itemsView);
+						if (!cached.IsZero)
+						{
+							_measuredSize = cached;
+						}
+						else
+						{
+							_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
+						}
 					}
 					else
 					{

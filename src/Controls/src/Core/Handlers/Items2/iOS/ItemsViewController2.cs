@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using PassKit;
@@ -120,6 +121,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				TemplatedCell2.ScrollDirection = ScrollDirection;
 
 				TemplatedCell2.Bind(ItemsView.ItemTemplate, ItemsSource[indexpathAdjusted], ItemsView);
+
+				var cv = ItemsView as CollectionView;
+				if (cv?.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+				{
+					// Only measure and cache the first item size once per CollectionView
+					if (CollectionViewMeasurementCache.GetFirstItemMeasuredSize(cv).IsZero && indexPath.Item == 0)
+					{
+						var measuredSize = DetermineCellSize(TemplatedCell2, indexPath);
+						if (measuredSize != CGSize.Empty)
+						{
+							CollectionViewMeasurementCache.SetFirstItemMeasuredSize(cv, measuredSize.ToSize());
+						}
+					}
+				}
 			}
 			else if (cell is DefaultCell2 DefaultCell2)
 			{
@@ -128,6 +143,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			return cell;
 		}
+
+		// Cache for the first item's measured size
+		CGSize _firstItemMeasuredSize = CGSize.Empty;
+
+		// Measures and caches the size of the first item using the provided TemplatedCell2.
+		private CGSize DetermineCellSize(TemplatedCell2 templatedCell2, NSIndexPath indexPath)
+		{
+			var collectionView = ItemsView as CollectionView;
+			if (collectionView?.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem && ItemsSource?.ItemCount > 0)
+			{
+				if (templatedCell2.PlatformHandler?.VirtualView is View view)
+				{
+					// Use the same constraints as PreferredLayoutAttributesFittingAttributes
+					var constraints = templatedCell2.ScrollDirection == UICollectionViewScrollDirection.Vertical
+						? new Size(templatedCell2.Bounds.Width, double.PositiveInfinity)
+						: new Size(double.PositiveInfinity, templatedCell2.Bounds.Height);
+					var measured = view.Measure(constraints.Width, constraints.Height);
+					_firstItemMeasuredSize = measured.ToCGSize();
+				}
+				return _firstItemMeasuredSize;
+			}
+			return _firstItemMeasuredSize;
+		}
+
 
 		public override nint GetItemsCount(UICollectionView collectionView, nint section)
 		{
@@ -667,4 +706,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 	}
+}
+
+internal static class CollectionViewMeasurementCache
+{
+	internal static readonly BindableProperty FirstItemMeasuredSizeProperty =
+		BindableProperty.CreateAttached(
+			"FirstItemMeasuredSize",
+			typeof(Size),
+			typeof(CollectionViewMeasurementCache),
+			Size.Zero);
+
+	internal static void SetFirstItemMeasuredSize(BindableObject element, Size value)
+		=> element.SetValue(FirstItemMeasuredSizeProperty, value);
+
+	internal static Size GetFirstItemMeasuredSize(BindableObject element)
+		=> (Size)element.GetValue(FirstItemMeasuredSizeProperty);
 }

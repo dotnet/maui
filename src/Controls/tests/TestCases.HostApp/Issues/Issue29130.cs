@@ -2,13 +2,14 @@ using System.Collections.ObjectModel;
 using Maui.Controls.Sample;
 
 namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 29130, "CollectionView2 ItemSizingStrategy should work for MeasureFirstItem", PlatformAffected.iOS)]
 public class Issue29130 : ContentPage
 {
 	CollectionView2 collectionView;
 	public Issue29130()
 	{
-		var viewModel = new CollectionViewViewModel();
+		var viewModel = new Issue29130ViewModel();
 		this.BindingContext = viewModel;
 
 		var measureFirstItemButton = new Button
@@ -85,7 +86,7 @@ public class Issue29130 : ContentPage
 		}
 	}
 }
-public class CollectionViewViewModel
+public class Issue29130ViewModel
 
 {
 	public ObservableCollection<ItemModel> Items { get; } = new()
