@@ -43,17 +43,17 @@ internal static class PerformanceProfiler
 	}
 
 	/// <summary>
-	/// Starts performance tracking for a given category and optional identifier.
+	/// Starts performance tracking for a given category and optional element.
 	/// </summary>
 	/// <param name="category">The category of operation being tracked (e.g. <see cref="PerformanceCategory.LayoutMeasure"/>).</param>
-	/// <param name="id">An optional identifier for the specific element being tracked (e.g. element name).</param>
+	/// <param name="element">An optional identifier for the specific element being tracked (e.g. element name).</param>
 	/// <returns>A <see cref="PerformanceTracker"/> struct that must be explicitly stopped via <see cref="PerformanceTracker.Stop"/>.</returns>
-	public static PerformanceTracker Start(PerformanceCategory category, string id = null)
+	public static PerformanceTracker Start(PerformanceCategory category, string element = null)
 	{
 		if (Layout is null)
 			return default;
 
-		return new PerformanceTracker(category, id);
+		return new PerformanceTracker(category, element);
 	}
 
 	/// <summary>
