@@ -624,10 +624,15 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
 void SetDotNetEnvironmentVariables(string dotnetDir = null)
 {
     var dotnet = dotnetDir ?? MakeAbsolute(Directory("./.dotnet/")).ToString();
-    
+    var dotnetHostPath = IsRunningOnWindows() ? $"{dotnet}/dotnet.exe" : $"{dotnet}/dotnet";
     SetEnvironmentVariable("VSDebugger_ValidateDotnetDebugLibSignatures", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
+    if (IsRunningOnWindows())
+    { 
+        //workaround for dev18 
+        SetEnvironmentVariable("DOTNET_HOST_PATH", dotnetHostPath);
+    }
     SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
     SetEnvironmentVariable("DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT", "true");
