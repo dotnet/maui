@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				// do not canonicalize "-0"; user will likely enter a period after "-0"
-				if (stringValue == "-0" && DecimalTypes.Contains(convertTo))
+				if ((stringValue.StartsWith("0") || stringValue.StartsWith("-0")) && DecimalTypes.Contains(convertTo))
 				{
 					value = original;
 					return false;
