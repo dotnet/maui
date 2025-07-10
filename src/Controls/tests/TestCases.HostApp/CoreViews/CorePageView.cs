@@ -88,6 +88,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new CollectionViewFeaturePage(), "CollectionView Feature Matrix"),
 			new GalleryPageFactory(() => new LabelControlPage(), "Label Feature Matrix"),
 			new GalleryPageFactory(() => new CarouselViewFeaturePage(), "CarouselView Feature Matrix"),
+			new GalleryPageFactory(() => new EntryControlPage(), "Entry Feature Matrix"),
 			new GalleryPageFactory(() => new ImageControlPage(), "Image Feature Matrix"),
 			new GalleryPageFactory(() => new ImageButtonControlPage(), "ImageButton Feature Matrix"),
 			new GalleryPageFactory(() => new BoxViewControlPage(), "BoxView Feature Matrix"),
@@ -95,6 +96,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new TitleBarControlPage(), "TitleBar Feature Matrix"),
 		};
 		
+
 		public CorePageView(Page rootPage)
 		{
 			_titleToPage = _pages.ToDictionary(o => o.Title.ToLowerInvariant());
