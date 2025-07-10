@@ -57,7 +57,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			button.Clicked += GenerateItems;
 			WeakReferenceMessenger.Default.Register<ExampleTemplateCarousel, string>(this, "remove", (_, obj) =>
 			{
-				(cv.ItemsSource as ObservableCollection<CollectionViewGalleryTestItem>)!.Remove((obj.BindingContext as CollectionViewGalleryTestItem)!);
+				((ObservableCollection<CollectionViewGalleryTestItem>)cv.ItemsSource).Remove((obj.BindingContext as CollectionViewGalleryTestItem)!);
 			});
 
 			Content = layout;
