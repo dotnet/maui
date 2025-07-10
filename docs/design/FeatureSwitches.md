@@ -13,6 +13,7 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | _MauiBindingInterceptorsSupport | Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported | When disabled, MAUI won't intercept any calls to `SetBinding` methods and try to compile them. Enabled by default. |
 | MauiEnableXamlCBindingWithSourceCompilation | Microsoft.Maui.RuntimeFeature.XamlCBindingWithSourceCompilationEnabled | When enabled, MAUI will compile all bindings, including those where the `Source` property is used. |
 | MauiHybridWebViewSupported | Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported | Enables HybridWebView, which makes use of dynamic System.Text.Json serialization features |
+| MauiEnableMetrics | System.Diagnostics.Metrics.Meter.IsSupported | Enables MAUI’s metrics instrumentation via `Meter`. Metrics are on by default; set to `false` to disable.   |
 
 ## MauiEnableIVisualAssemblyScanning
 
@@ -76,3 +77,7 @@ XamlC skipped compilation of bindings with the `Source` property set to any valu
 ```
 
 This feature is disabled by default, unless `TrimMode=true` or `PublishAot=true`. For fully trimmed and NativeAOT apps, the feature is enabled.
+
+## MauiEnableMetrics
+
+When **MauiEnableMetrics** is not explicitly disabled, MAUI will register a `System.Diagnostics.Metrics.Meter` named `"Microsoft.Maui"` and emit performance related metrics (e.g. measure/arrange durations) to any configured listeners.
