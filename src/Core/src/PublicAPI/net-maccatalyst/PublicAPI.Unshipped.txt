@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.Maui.Platform.MauiView.AdjustForSafeAreaPerEdge(CoreGraphics.CGRect bounds) -> CoreGraphics.CGRect
 override Microsoft.Maui.Platform.MauiScrollView.AdjustedContentInsetDidChange() -> void
 override Microsoft.Maui.Platform.MauiScrollView.SafeAreaInsetsDidChange() -> void
 Microsoft.Maui.Handlers.DataFlowDirection
