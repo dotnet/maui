@@ -99,25 +99,25 @@ namespace Microsoft.Maui.IntegrationTests
 			args += $" {additionalDotNetNewParams}";
 
 			var output = RunForOutput("new", args, out int exitCode, timeoutInSeconds: 300);
-// 			TestContext.WriteLine(output);
+			TestContext.WriteLine(output);
 			return exitCode == 0;
 		}
 
 		public static bool Run(string command, string args, int timeoutinSeconds = DEFAULT_TIMEOUT)
 		{
 			var runOutput = RunForOutput(command, args, out int exitCode, timeoutinSeconds);
-// 			TestContext.WriteLine($"Process exit code: {exitCode}");
-// 			TestContext.WriteLine($"-------- Process output start --------");
-// 			TestContext.WriteLine(runOutput);
-// 			TestContext.WriteLine($"-------- Process output end --------");
+			TestContext.WriteLine($"Process exit code: {exitCode}");
+			TestContext.WriteLine($"-------- Process output start --------");
+			TestContext.WriteLine(runOutput);
+			TestContext.WriteLine($"-------- Process output end --------");
 
 			return exitCode == 0;
 		}
 
 		public static string RunForOutput(string command, string args, out int exitCode, int timeoutInSeconds = DEFAULT_TIMEOUT)
 		{
-// 			TestContext.WriteLine($"Running: '{DotnetTool}' with '{command}'");
-// 			TestContext.WriteLine($"Args list: {args}");
+			TestContext.WriteLine($"Running: '{DotnetTool}' with '{command}'");
+			TestContext.WriteLine($"Args list: {args}");
 			var pinfo = new ProcessStartInfo(DotnetTool, $"{command} {args}");
 			pinfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "0";
 			pinfo.EnvironmentVariables["DOTNET_ROOT"] = DotnetRoot;

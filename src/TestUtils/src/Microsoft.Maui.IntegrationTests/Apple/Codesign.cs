@@ -16,8 +16,8 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 				Arguments = $"-d --entitlements {entitlementsPath} --xml {appLocation}"
 			}, out int errorCode);
 
-			Assert.Equal(0, errorCode);
-			Assert.True(File.Exists(entitlementsPath));
+			Assert.AreEqual(errorCode, 0, procOutput);
+			Assert.IsTrue(File.Exists(entitlementsPath));
 
 			string fileContent = File.ReadAllText(entitlementsPath);
 			foreach (string entitlement in expectedEntitlements)

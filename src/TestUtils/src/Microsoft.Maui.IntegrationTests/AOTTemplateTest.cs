@@ -1,51 +1,51 @@
 ﻿namespace Microsoft.Maui.IntegrationTests;
 
-[Trait("Category", "AOT")]
+[Category(Categories.AOT)]
 public class AOTTemplateTest : BaseTemplateTests
 {
-	[Theory]
-	[InlineData("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
-	[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
-	[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
-	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
-	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
+	[Test]
+	[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
+	[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
+	[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
+	[TestCase("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
+	[TestCase("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
 	public void PublishNativeAOT(string id, string framework, string runtimeIdentifier)
 	{
 		if (!TestEnvironment.IsMacOS)
-			Assert.Fail("Publishing a MAUI iOS app with NativeAOT is only supported on a host MacOS system.");
+			Assert.Ignore("Publishing a MAUI iOS app with NativeAOT is only supported on a host MacOS system.");
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		var extendedBuildProps = PrepareNativeAotBuildProps();
 
 		string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-		Assert.True(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
 		actualWarnings.AssertNoWarnings();
 	}
 
-	[Theory]
-	[InlineData("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
-	[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
-	[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
-	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
-	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
+	[Test]
+	[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
+	[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
+	[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
+	[TestCase("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
+	[TestCase("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
 	public void PublishNativeAOTRootAllMauiAssemblies(string id, string framework, string runtimeIdentifier)
 	{
 		// This test follows the following guide: https://devblogs.microsoft.com/dotnet/creating-aot-compatible-libraries/#publishing-a-test-application-for-aot
 		if (!TestEnvironment.IsMacOS)
-			Assert.Fail("Publishing a MAUI iOS app with NativeAOT is only supported on a host MacOS system.");
+			Assert.Ignore("Publishing a MAUI iOS app with NativeAOT is only supported on a host MacOS system.");
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		var extendedBuildProps = PrepareNativeAotBuildProps();
@@ -72,7 +72,7 @@ public class AOTTemplateTest : BaseTemplateTests
 			""");
 
 		string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-		Assert.True(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);

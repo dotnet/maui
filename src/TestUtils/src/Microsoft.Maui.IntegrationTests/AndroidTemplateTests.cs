@@ -4,31 +4,31 @@ using Microsoft.Maui.IntegrationTests.Android;
 
 namespace Microsoft.Maui.IntegrationTests
 {
-	[Trait("Category", "RunOnAndroid")]
+	[Category(Categories.RunOnAndroid)]
 	public class AndroidTemplateTests : BaseBuildTest
 	{
 		Emulator TestAvd = new Emulator();
 		string testPackage = "";
 
-		
-		private void AndroidTemplateFxtSetUp()
+		[OneTimeSetUp]
+		public void AndroidTemplateFxtSetUp()
 		{
 			if (TestEnvironment.IsMacOS && RuntimeInformation.OSArchitecture == Architecture.Arm64)
 				TestAvd.Abi = "arm64-v8a";
 
-			Assert.True(TestAvd.AcceptLicenses(out var licenseOutput), $"Failed to accept SDK licenses.\n{licenseOutput}");
-			Assert.True(TestAvd.InstallAvd(out var installOutput), $"Failed to install Test AVD.\n{installOutput}");
+			Assert.IsTrue(TestAvd.AcceptLicenses(out var licenseOutput), $"Failed to accept SDK licenses.\n{licenseOutput}");
+			Assert.IsTrue(TestAvd.InstallAvd(out var installOutput), $"Failed to install Test AVD.\n{installOutput}");
 		}
 
-		
-		private void AndroidTemplateSetUp()
+		[SetUp]
+		public void AndroidTemplateSetUp()
 		{
 			var emulatorLog = Path.Combine(TestDirectory, $"emulator-launch-{DateTime.UtcNow.ToFileTimeUtc()}.log");
-			Assert.True(TestAvd.LaunchAndWaitForAvd(600, emulatorLog), "Failed to launch Test AVD.");
+			Assert.IsTrue(TestAvd.LaunchAndWaitForAvd(600, emulatorLog), "Failed to launch Test AVD.");
 		}
 
-		
-		private void AndroidTemplateFxtTearDown()
+		[OneTimeTearDown]
+		public void AndroidTemplateFxtTearDown()
 		{
 			Adb.KillEmulator(TestAvd.Id);
 
@@ -41,30 +41,30 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 		}
 
-		
-		private void AndroidTemplateTearDown()
+		[TearDown]
+		public void AndroidTemplateTearDown()
 		{
 			Adb.UninstallPackage(testPackage);
 		}
 
 
-		[Theory]
-		[InlineData("maui", DotNetPrevious, "Debug", null)]
-		[InlineData("maui", DotNetPrevious, "Release", null)]
-		[InlineData("maui", DotNetCurrent, "Debug", null)]
-		[InlineData("maui", DotNetCurrent, "Release", null)]
-		[InlineData("maui", DotNetCurrent, "Release", "full")]
-		[InlineData("maui-blazor", DotNetPrevious, "Debug", null)]
-		[InlineData("maui-blazor", DotNetPrevious, "Release", null)]
-		[InlineData("maui-blazor", DotNetCurrent, "Debug", null)]
-		[InlineData("maui-blazor", DotNetCurrent, "Release", null)]
-		[InlineData("maui-blazor", DotNetCurrent, "Release", "full")]
-		public void RunOnAndroid(string id, string framework, string config, string? trimMode)
+		[Test]
+		[TestCase("maui", DotNetPrevious, "Debug", null)]
+		[TestCase("maui", DotNetPrevious, "Release", null)]
+		[TestCase("maui", DotNetCurrent, "Debug", null)]
+		[TestCase("maui", DotNetCurrent, "Release", null)]
+		[TestCase("maui", DotNetCurrent, "Release", "full")]
+		[TestCase("maui-blazor", DotNetPrevious, "Debug", null)]
+		[TestCase("maui-blazor", DotNetPrevious, "Release", null)]
+		[TestCase("maui-blazor", DotNetCurrent, "Debug", null)]
+		[TestCase("maui-blazor", DotNetCurrent, "Release", null)]
+		[TestCase("maui-blazor", DotNetCurrent, "Release", "full")]
+		public void RunOnAndroid(string id, string framework, string config, string trimMode)
 		{
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-			Assert.True(DotnetInternal.New(id, projectDir, framework),
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			var buildProps = BuildProps;
@@ -76,11 +76,11 @@ namespace Microsoft.Maui.IntegrationTests
 
 			AddInstrumentation(projectDir);
 
-			Assert.True(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: BuildProps),
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: BuildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to install. Check test output/attachments for errors.");
 
 			testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLowerInvariant()}";
-			Assert.True(XHarness.RunAndroid(testPackage, Path.Combine(projectDir, "xh-results"), -1),
+			Assert.IsTrue(XHarness.RunAndroid(testPackage, Path.Combine(projectDir, "xh-results"), -1),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 

@@ -28,14 +28,18 @@ namespace Microsoft.Maui.IntegrationTests.Android
 				}
 			});
 
-			// TestContext.WriteLine removed in xUnit conversion
+			if (exitCode != 0)
+				TestContext.WriteLine(acceptLicenseOutput);
+
 			return exitCode == 0;
 		}
 
 		public bool InstallAvd(out string installOutput)
 		{
 			installOutput = ToolRunner.Run(SdkManagerTool, $"\"{SystemImageId}\"", out int exitCode, timeoutInSeconds: 180);
-			// TestContext.WriteLine removed in xUnit conversion
+			if (exitCode != 0)
+				TestContext.WriteLine(installOutput);
+
 			return exitCode == 0;
 		}
 
@@ -52,7 +56,9 @@ namespace Microsoft.Maui.IntegrationTests.Android
 				createArgs += " -f";
 
 			var createOutput = ToolRunner.Run(AvdManagerTool, createArgs, out int exitCode, timeoutInSeconds: 15);
-			// TestContext.WriteLine removed in xUnit conversion
+			if (exitCode != 0)
+				TestContext.WriteLine(createOutput);
+
 			return exitCode == 0;
 		}
 
@@ -71,7 +77,7 @@ namespace Microsoft.Maui.IntegrationTests.Android
 			launchArgs += TestEnvironment.IsRunningOnCI ? " -no-window -no-boot-anim -no-audio -no-snapshot -cache-size 512" : string.Empty;
 
 			// Emulator process does not stop once the emulator is running, end it after 15 seconds and then begin polling for boot success
-// 			TestContext.WriteLine($"Launching AVD: {Name}...");
+			TestContext.WriteLine($"Launching AVD: {Name}...");
 			var emulatorOutput = ToolRunner.Run(EmulatorTool, launchArgs, out _, timeoutInSeconds: 15);
 			File.WriteAllText(logFile, emulatorOutput);
 			return Adb.WaitForEmulator(timeToWaitInSeconds, Id);
