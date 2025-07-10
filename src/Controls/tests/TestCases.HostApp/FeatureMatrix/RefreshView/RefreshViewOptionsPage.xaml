@@ -40,7 +40,6 @@
                              Text="Green"/>
               </HorizontalStackLayout>
 
-
               <!-- IsEnabled -->
               <Label Grid.Row="1"
                      Grid.Column="0"
@@ -145,6 +144,5 @@
                            Content="True"
                            CheckedChanged="OnShadowRadioButtonCheckedChanged"
                            FontSize="15"/>
-
        </Grid>
 </ContentPage>

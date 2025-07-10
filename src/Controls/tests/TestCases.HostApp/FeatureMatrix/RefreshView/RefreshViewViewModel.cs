@@ -18,7 +18,6 @@ public class RefreshViewViewModel : INotifyPropertyChanged
 	private Shadow _shadow = null;
 	private string _refreshStatusText = "None";
 
-
 	public event PropertyChangedEventHandler PropertyChanged;
 
 	public RefreshViewViewModel()
@@ -34,8 +33,8 @@ public class RefreshViewViewModel : INotifyPropertyChanged
 			{
 				await Task.Delay(2000);
 				IsRefreshing = false;
+				RefreshStatusText = $"Refresh completed";
 			}
-			RefreshStatusText = $"Refresh completed";
 		});
 	}
 

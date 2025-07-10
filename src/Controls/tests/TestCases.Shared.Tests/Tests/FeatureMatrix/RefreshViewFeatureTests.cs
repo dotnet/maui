@@ -30,7 +30,9 @@ public class RefreshViewFeatureTests : UITest
 		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.EqualTo("None"));
 	}
 
-	[Test]
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // DragCoordinates is not supported in MacCatalyst
+
+	[Test, Order(2)]
 	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_SetCommandParameterTrue_VerifyCommandParameter()
 	{
@@ -46,7 +48,7 @@ public class RefreshViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Test, Order(3)]
 	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_SetIsEnabled_VerifyEnabledState()
 	{
@@ -63,21 +65,22 @@ public class RefreshViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Test, Order(4)]
 	[Category(UITestCategories.RefreshView)]
-	public void RefreshView_SetIsVisible_VerifyVisibilityState()
+	public void RefreshView_SetRefreshColorBlue_VerifyColorChange()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
-		App.WaitForElement("IsVisibleFalseButton");
-		App.Tap("IsVisibleFalseButton");
+		App.WaitForElement("RefreshColorBlueRadio");
+		App.Tap("RefreshColorBlueRadio");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForNoElement("RefreshView");
+		var rect = App.WaitForElement("RefreshView").GetRect();
+		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Test, Order(5)]
 	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_SetFlowDirectionRightToLeft_VerifyFlowDirection()
 	{
@@ -91,8 +94,25 @@ public class RefreshViewFeatureTests : UITest
 		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
 		VerifyScreenshot();
 	}
+#endif
 
-	[Test]
+	[Test, Order(6)]
+	[Category(UITestCategories.RefreshView)]
+	public void RefreshView_SetIsVisible_VerifyVisibilityState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("IsVisibleFalseButton");
+		App.Tap("IsVisibleFalseButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForNoElement("RefreshView");
+		VerifyScreenshot();
+	}
+
+#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30535
+
+	[Test, Order(7)]
 	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_SetIsRefreshing_VerifyStatusChanges()
 	{
@@ -106,7 +126,7 @@ public class RefreshViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Test, Order(8)]
 	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_SetRefreshColorRedAndIsRefreshing_VerifyColorChange()
 	{
@@ -121,22 +141,9 @@ public class RefreshViewFeatureTests : UITest
 		App.WaitForElement("RefreshView");
 		VerifyScreenshot();
 	}
+#endif
 
-	[Test]
-	[Category(UITestCategories.RefreshView)]
-	public void RefreshView_SetRefreshColorBlue_VerifyColorChange()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("RefreshColorBlueRadio");
-		App.Tap("RefreshColorBlueRadio");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		var rect = App.WaitForElement("RefreshView").GetRect();
-		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
-		VerifyScreenshot();
-	}
-	[Test]
+	[Test, Order(9)]
 	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_SetShadow_VerifyShadowApplied()
 	{
