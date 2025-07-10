@@ -1910,10 +1910,13 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Arrange(Rect bounds)
 		{
-			using (PerformanceProfiler.TrackArrange(GetType().Name))
-			{
-				return ArrangeOverride(bounds);
-			}
+			var performance = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, this.GetType().Name);
+
+			var result = ArrangeOverride(bounds);
+
+			performance.Stop();
+
+			return result;
 		}
 
 		/// <summary>
@@ -1958,11 +1961,13 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Measure(double widthConstraint, double heightConstraint)
 		{
-			using (PerformanceProfiler.TrackArrange(GetType().Name))
-			{
-				DesiredSize = MeasureOverride(widthConstraint, heightConstraint);
-				return DesiredSize;
-			}
+			var performance = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, this.GetType().Name);
+
+			DesiredSize = MeasureOverride(widthConstraint, heightConstraint);
+
+			performance.Stop();
+
+			return DesiredSize;
 		}
 
 		/// <summary>
