@@ -54,6 +54,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new CarouselViewCoreGalleryPage(), "CarouselView Gallery"),
 			new GalleryPageFactory(() => new CheckBoxCoreGalleryPage(), "CheckBox Gallery"),
 			new GalleryPageFactory(() => new CollectionViewCoreGalleryPage(), "CollectionView Gallery"),
+			new GalleryPageFactory(() => new DatePickerControlPage(), "Date Picker Feature Matrix"),
 			new GalleryPageFactory(() => new DatePickerCoreGalleryPage(), "Date Picker Gallery"),
 			new GalleryPageFactory(() => new EditorCoreGalleryPage(), "Editor Gallery"),
 			new GalleryPageFactory(() => new EntryCoreGalleryPage(), "Entry Gallery"),
