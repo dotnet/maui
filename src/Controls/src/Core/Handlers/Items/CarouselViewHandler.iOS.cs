@@ -47,7 +47,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapPeekAreaInsets(CarouselViewHandler handler, CarouselView carouselView)
 		{
-			(handler.Controller.Layout as CarouselViewLayout)?.UpdateConstraints(handler.PlatformView.Frame.Size);
 			handler.Controller.Layout.InvalidateLayout();
 		}
 
@@ -71,7 +70,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.Controller as CarouselViewController)?.UpdateLoop();
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
-			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			// I'm not sure if this solution is fully correct or if it properly accounts
+			// for all the constraints checks that  GetDesiredSizeFromHandler takes into account 
+			if (Primitives.Dimension.IsExplicitSet(widthConstraint) && Primitives.Dimension.IsExplicitSet(heightConstraint))
+			{
+				// If both width and height are explicitly set, we can use the base implementation
+				return base.GetDesiredSize(widthConstraint, heightConstraint);
+			}
+
+			var result = this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
+
+			if (Primitives.Dimension.IsExplicitSet(widthConstraint))
+			{
+				// If width is explicitly set, we can use the width from the result
+				result = new Size(widthConstraint, result.Height);
+			}
+			else if (Primitives.Dimension.IsExplicitSet(heightConstraint))
+			{
+				// If height is explicitly set, we can use the height from the result
+				result = new Size(result.Width, heightConstraint);
+			}
+
+			return result;
+		}
+
+		public override void PlatformArrange(Rect rect)
+		{
+			(Controller.Layout as CarouselViewLayout)?.UpdateConstraints(rect.Size);
+			base.PlatformArrange(rect);
+		}
 	}
 }
