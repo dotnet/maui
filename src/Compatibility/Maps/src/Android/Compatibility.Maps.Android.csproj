@@ -11,8 +11,13 @@
 
   <ItemGroup>
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Process" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
-    <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="$(XamarinGooglePlayServicesMaps)" />
+    <PackageReference Include="Xamarin.GooglePlayServices.Maps" />
   </ItemGroup>
 
   <ItemGroup>
