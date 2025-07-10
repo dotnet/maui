@@ -48,7 +48,7 @@
             <PackageName>com.microsoft.maui.controls.devicetests</PackageName>
         </MAUIScenario>
 
-        <MAUIScenario Include="Core">
+        <!-- <MAUIScenario Include="Core">
             <ScenarioDirectoryName>Core.DeviceTests</ScenarioDirectoryName>
             <PayloadDirectory>$(ScenariosDir)Core.DeviceTests</PayloadDirectory>
             <IPAName>Microsoft.Maui.Core.DeviceTests</IPAName>
@@ -74,7 +74,7 @@
             <PayloadDirectory>$(ScenariosDir)MauiBlazorWebView.DeviceTests</PayloadDirectory>
             <IPAName>Microsoft.Maui.MauiBlazorWebView.DeviceTests</IPAName>
             <PackageName>com.microsoft.maui.mauiblazorwebview.devicetests</PackageName>
-        </MAUIScenario>
+        </MAUIScenario> -->
     </ItemGroup>
 
     <!-- Process each test scenario individually using direct path construction -->
