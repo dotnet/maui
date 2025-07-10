@@ -37,10 +37,14 @@
     <AdditionalFiles Include="@(PublicAPIFiles)" />
   </ItemGroup>
 
-  <Target Name="_GeneratePublicApiFiles" AfterTargets="Build" Condition="'$(TargetFramework)' != '' and '$(PublicApiType)' == 'Generate'">
+  <Target Name="_GeneratePublicApiFiles" 
+          AfterTargets="Build"
+          Condition="'$(TargetFramework)' != '' and '$(PublicApiType)' == 'Generate'"
+          Inputs="$(TargetDir)$(AssemblyName).dll"
+          Outputs="@(PublicAPIFiles)">
     <GeneratePublicApiFiles
       Assembly="$(TargetDir)$(AssemblyName).dll"
-      Files="@(AdditionalFiles)"
+      Files="@(PublicAPIFiles)"
       ReferenceSearchPaths="@(ReferencePath)" />
   </Target>
 
