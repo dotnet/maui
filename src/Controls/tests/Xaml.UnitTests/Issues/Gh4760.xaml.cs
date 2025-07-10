@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -29,16 +29,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[Fact]
+			[Test]
 			public void GenericBaseClassForMarkups([Values(false, true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					() => MockCompiler.Compile(typeof(Gh4760))
+					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh4760)));
 				var layout = new Gh4760(useCompiledXaml);
-				Assert.Equal(6, layout.label.Scale);
+				Assert.That(layout.label.Scale, Is.EqualTo(6));
 			}
 		}
 	}

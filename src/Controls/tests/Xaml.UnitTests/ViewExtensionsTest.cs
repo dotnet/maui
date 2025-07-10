@@ -1,13 +1,13 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class ViewExtensionsTest : BaseTestFixture
 	{
-		[Fact]
+		[Test]
 		public void TestGetResource()
 		{
 			var resource = new object();
@@ -18,10 +18,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				},
 			};
 			var found = view.Resources["foo"];
-			Assert.Same(resource, found);
+			Assert.AreSame(resource, found);
 		}
 
-		[Fact]
+		[Test]
 		public void TestResourceNotFound()
 		{
 			var view = new View();
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.Null(resource);
 		}
 
-		[Fact]
+		[Test]
 		public void TestGetResourceInParents()
 		{
 			var resource = new object();
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			};
 
 			var found = stack.Resources["foo"];
-			Assert.Same(resource, found);
+			Assert.AreSame(resource, found);
 		}
 	}
 }

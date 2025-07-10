@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -31,15 +31,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
 
-			[InlineData(true)], TestCase(false)]
+			[TestCase(true), TestCase(false)]
 			public void UintProperties(bool useCompiledXaml)
 			{
 				var layout = new Gh2508(useCompiledXaml);
-				Assert.Equal(2000, ((layout.entry.Triggers[0] as Trigger).EnterActions[0] as Gh2508FlashingTriggerAction).Duration);
+				Assert.That(((layout.entry.Triggers[0] as Trigger).EnterActions[0] as Gh2508FlashingTriggerAction).Duration, Is.EqualTo(2000));
 			}
 		}
 	}

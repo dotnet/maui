@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,11 +15,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void DoesNotThrow(bool useCompiledXaml)
 			{
 				var layout = new McIgnorable(useCompiledXaml);

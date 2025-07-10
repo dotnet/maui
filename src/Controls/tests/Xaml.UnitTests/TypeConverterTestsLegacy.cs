@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Xml;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -122,17 +122,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class TypeConverterTestsLegacy : BaseTestFixture
 	{
-		[Fact]
+		[Test]
 		public void TestSetPropertyWithoutConverter()
 		{
 			var baz = new Baz();
 			var node = new ValueNode(baz, new MockNameSpaceResolver());
 			var bindable = new Bindable();
 
-			Assert.Null(bindable.Baz);
+			Assert.IsNull(bindable.Baz);
 			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", "Bindable", null), bindable, null)
 			{
 				Properties = {
@@ -142,17 +142,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var context = new HydrationContext { RootElement = new Label() };
 			rootNode.Accept(new CreateValuesVisitor(context), null);
 			node.Accept(new ApplyPropertiesVisitor(context), rootNode);
-			Assert.Equal(baz, bindable.Baz);
+			Assert.AreEqual(baz, bindable.Baz);
 
 		}
 
-		[Fact]
+		[Test]
 		public void TestFailOnMissingOrWrongConverter()
 		{
 			var node = new ValueNode("baz", new MockNameSpaceResolver());
 			var bindable = new Bindable();
 
-			Assert.Null(bindable.Baz);
+			Assert.IsNull(bindable.Baz);
 			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", "Bindable", null), bindable, null)
 			{
 				Properties = {
@@ -164,13 +164,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.Throws<XamlParseException>(() => node.Accept(new ApplyPropertiesVisitor(context), rootNode));
 		}
 
-		[Fact]
+		[Test]
 		public void TestConvertNonBindableProperty()
 		{
 			var node = new ValueNode("foo", new MockNameSpaceResolver());
 			var bindable = new Bindable();
 
-			Assert.Null(bindable.Foo);
+			Assert.IsNull(bindable.Foo);
 			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", "Bindable", null), bindable, null)
 			{
 				Properties = {
@@ -181,18 +181,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var context = new HydrationContext { RootElement = new Label() };
 			rootNode.Accept(new CreateValuesVisitor(context), null);
 			node.Accept(new ApplyPropertiesVisitor(context), rootNode);
-			Assert.NotNull(bindable.Foo);
+			Assert.IsNotNull(bindable.Foo);
 			Assert.That(bindable.Foo, Is.TypeOf<Foo>());
-			Assert.Equal("foo", bindable.Foo.Value);
+			Assert.AreEqual("foo", bindable.Foo.Value);
 		}
 
-		[Fact]
+		[Test]
 		public void TestConvertBindableProperty()
 		{
 			var node = new ValueNode("bar", new MockNameSpaceResolver());
 			var bindable = new Bindable();
 
-			Assert.Null(bindable.Bar);
+			Assert.IsNull(bindable.Bar);
 			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", "Bindable", null), bindable, null)
 			{
 				Properties = {
@@ -202,18 +202,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var context = new HydrationContext { RootElement = new Label() };
 			rootNode.Accept(new CreateValuesVisitor(context), null);
 			node.Accept(new ApplyPropertiesVisitor(context), rootNode);
-			Assert.NotNull(bindable.Bar);
+			Assert.IsNotNull(bindable.Bar);
 			Assert.That(bindable.Bar, Is.TypeOf<Bar>());
-			Assert.Equal("bar", bindable.Bar.Value);
+			Assert.AreEqual("bar", bindable.Bar.Value);
 		}
 
-		[Fact]
+		[Test]
 		public void TestConvertAttachedBindableProperty()
 		{
 			var node = new ValueNode("qux", new MockNameSpaceResolver());
 			var bindable = new Bindable();
 
-			Assert.Null(Bindable.GetQux(bindable));
+			Assert.IsNull(Bindable.GetQux(bindable));
 			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", "Bindable", null), bindable, null)
 			{
 				Properties = {
@@ -223,18 +223,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var context = new HydrationContext { RootElement = new Label() };
 			rootNode.Accept(new CreateValuesVisitor(context), null);
 			node.Accept(new ApplyPropertiesVisitor(context), rootNode);
-			Assert.NotNull(Bindable.GetQux(bindable));
+			Assert.IsNotNull(Bindable.GetQux(bindable));
 			Assert.That(Bindable.GetQux(bindable), Is.TypeOf<Qux>());
-			Assert.Equal("qux", Bindable.GetQux(bindable).Value);
+			Assert.AreEqual("qux", Bindable.GetQux(bindable).Value);
 		}
 
-		[Fact]
+		[Test]
 		public void TestConvertWithAttributeOnType()
 		{
 			var node = new ValueNode("foobar", new MockNameSpaceResolver());
 			var bindable = new Bindable();
 
-			Assert.Null(bindable.FooBar);
+			Assert.IsNull(bindable.FooBar);
 			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", "Bindable", null), bindable, null)
 			{
 				Properties = {
@@ -245,21 +245,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			rootNode.Accept(new CreateValuesVisitor(context), null);
 			node.Accept(new ApplyPropertiesVisitor(context), rootNode);
 
-			Assert.NotNull(bindable.FooBar);
+			Assert.IsNotNull(bindable.FooBar);
 			Assert.That(bindable.FooBar, Is.TypeOf<FooBar>());
-			Assert.Equal("foobar", bindable.FooBar.Value);
+			Assert.AreEqual("foobar", bindable.FooBar.Value);
 		}
 
 
 #if !WINDOWS_PHONE
-		[InlineData("en-GB")], TestCase("fr-FR")]
+		[TestCase("en-GB"), TestCase("fr-FR")]
 		public void TestCultureOnThickness(string culture)
 		{
 			System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
 
 			var xaml = @"<Page Padding=""1.1, 2""/>";
 			var page = new Page().LoadFromXaml(xaml);
-			Assert.Equal(new Thickness(1.1, 2), page.Padding);
+			Assert.AreEqual(new Thickness(1.1, 2), page.Padding);
 		}
 #endif
 	}

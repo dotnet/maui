@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -38,22 +38,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
+			[SetUp]
 			public void SetUp()
 			{
 				Bz27299ViewModelLocator.Count = 0;
 			}
 
-			[InlineData(true)]
-			[InlineData(false)]
+			[TestCase(true)]
+			[TestCase(false)]
 			public void ViewModelLocatorOnlyCalledOnce(bool useCompiledXaml)
 			{
-				Assert.Equal(0, Bz27299ViewModelLocator.Count);
+				Assert.AreEqual(0, Bz27299ViewModelLocator.Count);
 				var layout = new Bz27299(useCompiledXaml);
-				Assert.Equal(1, Bz27299ViewModelLocator.Count);
-				Assert.Equal("Foo", layout.label.Text);
+				Assert.AreEqual(1, Bz27299ViewModelLocator.Count);
+				Assert.AreEqual("Foo", layout.label.Text);
 			}
 		}
 	}

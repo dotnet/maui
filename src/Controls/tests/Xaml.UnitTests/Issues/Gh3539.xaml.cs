@@ -6,7 +6,7 @@ using System.Text;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -217,10 +217,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[InlineData(true)]
+			[TestCase(true)]
 			public void CompiledBindingCodeIsValid(bool useCompiledXaml)
 			{
 				var layout = new Gh3539(useCompiledXaml);

@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,15 +17,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void ImplicitRDonContentViews(bool useCompiledXaml)
 			{
 				var layout = new ImplicitResourceDictionaries(useCompiledXaml);
-				Assert.Equal(Colors.Purple, layout.label.TextColor);
+				Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Purple));
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -13,17 +13,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
 			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Fact]
+			[Test]
 			public void ControlTemplateFromStyle([Values(false, true)] bool useCompiledXaml)
 			{
 				Maui3793 page;
-				() => page = new Maui3793(useCompiledXaml)
+				Assert.DoesNotThrow(() => page = new Maui3793(useCompiledXaml));
 			}
 		}
 	}

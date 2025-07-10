@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -19,18 +19,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void XNameForwardDeclaration(bool useCompiledXaml)
 			{
 				var page = new Issue1438(useCompiledXaml);
 
 				var slider = page.FindByName<Slider>("slider");
 				var label = page.FindByName<Label>("label");
-				Assert.Same(slider, label.BindingContext);
+				Assert.AreSame(slider, label.BindingContext);
 				Assert.That(slider.Parent, Is.TypeOf<StackLayout>());
 			}
 		}

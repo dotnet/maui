@@ -1,11 +1,11 @@
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class XmlTypeTests : BaseTestFixture
 	{
-		[Fact]
+		[Test]
 		public void TestXmlTypeEquality()
 		{
 			// Arrange
@@ -16,10 +16,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var result = type1.Equals(type2);
 
 			// Assert
-			Assert.True(result);
+			Assert.IsTrue(result);
 		}
 
-		[Fact]
+		[Test]
 		public void TestXmlTypeInequality()
 		{
 			// Arrange
@@ -30,10 +30,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var result = type1.Equals(type2);
 
 			// Assert
-			Assert.False(result);
+			Assert.IsFalse(result);
 		}
 
-		[Fact]
+		[Test]
 		public void TestXmlTypeEqualityWithTypeArgs()
 		{
 			// Arrange
@@ -45,10 +45,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var result = type1.Equals(type2);
 
 			// Assert
-			Assert.True(result);
+			Assert.IsTrue(result);
 		}
 
-		[Fact]
+		[Test]
 		public void TestXmlTypeInequalityWithSameTypeArgs()
 		{
 			// Arrange
@@ -60,11 +60,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var result = type1.Equals(type2);
 
 			// Assert
-			Assert.False(result);
+			Assert.IsFalse(result);
 		}
 
 
-		[Fact]
+		[Test]
 		public void TestXmlTypeInequalityWithDifferentTypeArgs()
 		{
 			// Arrange
@@ -77,10 +77,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var result = type1.Equals(type2);
 
 			// Assert
-			Assert.False(result);
+			Assert.IsFalse(result);
 		}
 
-		[Fact]
+		[Test]
 		public void TestXmlTypeInequalityWithAndWithoutTypeArgs()
 		{
 			// Arrange
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var result = type1.Equals(type2);
 
 			// Assert
-			Assert.False(result);
+			Assert.IsFalse(result);
 		}
 	}
 }

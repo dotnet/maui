@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -19,9 +19,10 @@ public partial class Maui22536
 		//this stub will be replaced at compile time
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	class Test
 	{
+		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -30,11 +31,11 @@ public partial class Maui22536
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
+		[Test]
 		public void TestNonCompiledResourceDictionary([Values(false, true)] bool useCompiledXaml)
 		{
 			var page = new Maui22536(useCompiledXaml);
-			Assert.Equal(page.Button.BackgroundColor, Color.FromArgb("#010203"));
+			Assert.AreEqual(page.Button.BackgroundColor, Color.FromArgb("#010203"));
 		}
 	}
 }

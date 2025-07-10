@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,15 +17,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[InlineData(true)]
-			[InlineData(false)]
+			[TestCase(true)]
+			[TestCase(false)]
 			public void MultiTriggerConditionNotApplied(bool useCompiledXaml)
 			{
 				var layout = new Bz37524(useCompiledXaml);
-				Assert.Equal(false, layout.TheButton.IsEnabled);
+				Assert.AreEqual(false, layout.TheButton.IsEnabled);
 			}
 		}
 	}

@@ -6,7 +6,7 @@ using System.Runtime.ConstrainedExecution;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,17 +15,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class TestCases
 	{
 		CultureInfo _defaultCulture;
 
+		[SetUp]
 		public virtual void Setup()
 		{
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
+		[TearDown]
 		public virtual void TearDown()
 		{
 			DispatcherProvider.SetCurrent(null);
@@ -44,7 +46,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			bindable.SetValue(InnerViewProperty, value);
 		}
 
-		[Fact]
+		[Test]
 		public void TestCase001()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
@@ -73,15 +75,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var label1 = contentPage.FindByName<Label>("label1");
 
 			Assert.NotNull(GetInnerView(contentPage));
-			//			Assert.Equal ("innerView", GetInnerView (contentPage).Name);
-			Assert.Equal(GetInnerView(contentPage), ((Microsoft.Maui.Controls.Internals.INameScope)contentPage).FindByName("innerView"));
+			//			Assert.AreEqual ("innerView", GetInnerView (contentPage).Name);
+			Assert.AreEqual(GetInnerView(contentPage), ((Microsoft.Maui.Controls.Internals.INameScope)contentPage).FindByName("innerView"));
 			Assert.NotNull(label0);
 			Assert.NotNull(label1);
-			Assert.Equal(4, contentPage.Content.Descendants().Count());
+			Assert.AreEqual(4, contentPage.Content.Descendants().Count());
 		}
 
 
-		[Fact]
+		[Test]
 		public void TestCase002()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
@@ -98,7 +100,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.That(contentPage.Content, Is.InstanceOf<Label>());
 		}
 
-		[Fact]
+		[Test]
 		public void TestCase003()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
@@ -147,13 +149,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var listview = page.FindByName<ListView>("listview");
 			Cell cell = null;
-			() => { cell = listview.TemplatedItems[0]; }
+			Assert.DoesNotThrow(() => { cell = listview.TemplatedItems[0]; });
 			Assert.NotNull(cell);
 			Assert.That(cell, Is.TypeOf<ViewCell>());
-			Assert.Same(model[0], cell.BindingContext);
+			Assert.AreSame(model[0], cell.BindingContext);
 		}
 
-		[Fact]
+		[Test]
 		public void TestCase004()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
@@ -180,10 +182,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</ContentPage>";
 
 			var page = new ContentPage();
-			() => page.LoadFromXaml(xaml)
+			Assert.DoesNotThrow(() => page.LoadFromXaml(xaml));
 		}
 
-		[Fact]
+		[Test]
 		public void Issue1415()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
@@ -198,10 +200,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var label = page.FindByName<Label>("label");
 			Assert.NotNull(label);
 			label.BindingContext = "foo";
-			Assert.Equal("oof", label.Text);
+			Assert.AreEqual("oof", label.Text);
 		}
 
-		[InlineData("en-US")], TestCase("tr-TR"), TestCase("fr-FR")]
+		[TestCase("en-US"), TestCase("tr-TR"), TestCase("fr-FR")]
 		//only happens in european cultures
 		public void Issue1493(string culture)
 		{
@@ -216,7 +218,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 							cmp:RelativeLayout.WidthConstraint=""{cmp:ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.6}""/>";
 			View view = new View();
 			view.LoadFromXaml(xaml);
-			() => view.LoadFromXaml(xaml)
+			Assert.DoesNotThrow(() => view.LoadFromXaml(xaml));
 		}
 	}
 }

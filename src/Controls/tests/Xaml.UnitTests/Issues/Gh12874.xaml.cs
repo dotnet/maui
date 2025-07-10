@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -14,19 +14,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[Fact]
+			[Test]
 			public void RevertToStyleValue([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh12874(useCompiledXaml);
-				Assert.Equal(LayoutOptions.Start, layout.label0.HorizontalOptions);
-				Assert.Equal(LayoutOptions.Start, layout.label1.HorizontalOptions);
+				Assert.That(layout.label0.HorizontalOptions, Is.EqualTo(LayoutOptions.Start));
+				Assert.That(layout.label1.HorizontalOptions, Is.EqualTo(LayoutOptions.Start));
 				layout.label0.ClearValue(Label.HorizontalOptionsProperty);
 				layout.label1.ClearValue(Label.HorizontalOptionsProperty);
-				Assert.Equal(LayoutOptions.Center, layout.label0.HorizontalOptions);
-				Assert.Equal(LayoutOptions.Center, layout.label1.HorizontalOptions);
+				Assert.That(layout.label0.HorizontalOptions, Is.EqualTo(LayoutOptions.Center));
+				Assert.That(layout.label1.HorizontalOptions, Is.EqualTo(LayoutOptions.Center));
 			}
 		}
 	}

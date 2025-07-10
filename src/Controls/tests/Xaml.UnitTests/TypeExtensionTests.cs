@@ -2,17 +2,18 @@ using System;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class TypeExtensionTests : BaseTestFixture
 	{
 		IXamlTypeResolver typeResolver;
 		Internals.XamlServiceProvider serviceProvider;
 
+		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
@@ -30,25 +31,25 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			};
 		}
 
-		[Fact]
+		[Test]
 		public void TestxType()
 		{
 			var markupString = @"{x:Type sys:String}";
-			Assert.Equal(typeof(string), (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider));
+			Assert.AreEqual(typeof(string), (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider));
 		}
 
-		[Fact]
+		[Test]
 		public void TestWithoutPrefix()
 		{
 			var markupString = @"{x:Type Grid}";
-			Assert.Equal(typeof(Grid), (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider));
+			Assert.AreEqual(typeof(Grid), (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider));
 		}
 
-		[Fact]
+		[Test]
 		public void TestWithExplicitTypeName()
 		{
 			var markupString = @"{x:Type TypeName=sys:String}";
-			Assert.Equal(typeof(string), (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider));
+			Assert.AreEqual(typeof(string), (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider));
 		}
 	}
 }

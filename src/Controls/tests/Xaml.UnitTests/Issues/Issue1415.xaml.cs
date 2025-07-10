@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,18 +17,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void NestedMarkupExtension(bool useCompiledXaml)
 			{
 				var page = new Issue1415(useCompiledXaml);
 				var label = page.FindByName<Label>("label");
 				Assert.NotNull(label);
 				label.BindingContext = "foo";
-				Assert.Equal("oof", label.Text);
+				Assert.AreEqual("oof", label.Text);
 			}
 		}
 	}

@@ -4,7 +4,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -20,9 +20,10 @@ public partial class Maui20508
 		//this stub will be replaced at compile time
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	class Test
 	{
+		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -31,11 +32,11 @@ public partial class Maui20508
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
+		[Test]
 		public void ToolBarItemBinding([Values(false, true)] bool useCompiledXaml)
 		{
 			var page = new Maui20508(useCompiledXaml) { BindingContext = new { Icon = "boundIcon.png" } };
-			Assert.Equal("boundIcon.png", ((FileImageSource)page.ToolbarItems[0].IconImageSource).File);
+			Assert.That(((FileImageSource)page.ToolbarItems[0].IconImageSource).File, Is.EqualTo("boundIcon.png"));
 		}
 	}
 }

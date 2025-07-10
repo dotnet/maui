@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
-using Xunit;
+using NUnit.Framework;
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -20,16 +20,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[InlineData(true)]
-			[InlineData(false)]
+			[TestCase(true)]
+			[TestCase(false)]
 			public void PlatformSpecificPropertyIsSet(bool useCompiledXaml)
 			{
 				var layout = new PlatformSpecific(useCompiledXaml);
-				Assert.Equal(layout.On<WindowsOS>().GetCollapseStyle(), CollapseStyle.Partial);
-				Assert.Equal(layout.On<WindowsOS>().CollapsedPaneWidth(), 96d);
+				Assert.AreEqual(layout.On<WindowsOS>().GetCollapseStyle(), CollapseStyle.Partial);
+				Assert.AreEqual(layout.On<WindowsOS>().CollapsedPaneWidth(), 96d);
 			}
 		}
 	}

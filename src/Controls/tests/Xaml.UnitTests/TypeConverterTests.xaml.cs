@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,16 +17,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void UriAreConverted(bool useCompiledXaml)
 			{
 				var layout = new TypeConverterTests(useCompiledXaml);
 				Assert.That(layout.imageSource.Uri, Is.TypeOf<Uri>());
-				Assert.Equal("https://xamarin.com/content/images/pages/branding/assets/xamagon.png", layout.imageSource.Uri.ToString());
+				Assert.AreEqual("https://xamarin.com/content/images/pages/branding/assets/xamagon.png", layout.imageSource.Uri.ToString());
 			}
 		}
 	}

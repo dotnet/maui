@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -27,10 +27,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[InlineData(false)], TestCase(true)]
+			[TestCase(false), TestCase(true)]
 			public void ThrowsOnWrongEventHandlerSignature(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

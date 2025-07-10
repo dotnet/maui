@@ -3,7 +3,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -18,13 +18,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
 			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Fact]
+			[Test]
 			public void SolidColorBrushAsCompiledResources([Values(false, true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				//shouldn't throw
 				var page = new Maui11857(useCompiledXaml);
-				Assert.Equal(Colors.HotPink, ((SolidColorBrush)page.label.Background).Color);
+				Assert.AreEqual(Colors.HotPink, ((SolidColorBrush)page.label.Background).Color);
 			}
 		}
 	}

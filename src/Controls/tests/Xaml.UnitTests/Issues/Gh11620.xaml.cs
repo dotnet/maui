@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -14,17 +14,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[Fact]
+			[Test]
 			public void BoxOnAdd([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh11620(useCompiledXaml);
 				var arr = layout.Resources["myArray"];
 				Assert.That(arr, Is.TypeOf<object[]>());
-				Assert.Equal(3, ((object[])arr).Length);
-				Assert.Equal(32, ((object[])arr)[2]);
+				Assert.That(((object[])arr).Length, Is.EqualTo(3));
+				Assert.That(((object[])arr)[2], Is.EqualTo(32));
 			}
 		}
 	}

@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -27,11 +27,12 @@ public partial class Maui22877 : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
+		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -40,22 +41,23 @@ public partial class Maui22877 : ContentPage
 		}
 
 
+		[TearDown]
 		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Fact]
+		[Test]
 		public void OnBindingRelease([Values(false, true)] bool useCompiledXaml)
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Phone;
 			var page = new Maui22877(useCompiledXaml) { BindingContext = new { BoundString = "BoundString" } };
-			Assert.Equal("Grade", page.label0.Text);
+			Assert.That(page.label0.Text, Is.EqualTo("Grade"));
 
 			mockDeviceInfo.Idiom = DeviceIdiom.Desktop;
 			page = new Maui22877(useCompiledXaml) { BindingContext = new { BoundString = "BoundString" } };
-			Assert.Equal("BoundString", page.label0.Text);
+			Assert.That(page.label0.Text, Is.EqualTo("BoundString"));
 
 
 		}

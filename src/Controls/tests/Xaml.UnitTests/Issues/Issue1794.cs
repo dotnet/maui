@@ -1,17 +1,17 @@
 using System;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class Issue1794
 	{
 		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		[Fact]
+		[Test]
 		public void FindNameInDT()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>

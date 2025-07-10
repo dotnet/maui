@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -34,21 +34,22 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
+			[TearDown]
 			public void TearDown()
 			{
 				Application.Current = null;
 			}
 
-			[InlineData(true)]
-			[InlineData(false)]
+			[TestCase(true)]
+			[TestCase(false)]
 			public void PropertiesWithGenericType(bool useCompiledXaml)
 			{
 				var layout = new Bz53350(useCompiledXaml);
-				Assert.Equal("Foo", layout.content.SomeBP);
-				Assert.Equal("Bar", layout.content.SomeProperty);
+				Assert.That(layout.content.SomeBP, Is.EqualTo("Foo"));
+				Assert.That(layout.content.SomeProperty, Is.EqualTo("Bar"));
 			}
 		}
 	}

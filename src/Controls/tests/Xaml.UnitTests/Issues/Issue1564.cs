@@ -1,12 +1,12 @@
 using System;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class Issue1564
 	{
-		[Fact]
+		[Test]
 		public void ViewCellAsXamlRoot()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</ViewCell>";
 			var cell = new ViewCell().LoadFromXaml(xaml);
 			Assert.NotNull(cell);
-			Assert.Equal("This is my label", ((cell.View as StackLayout).Children[0] as Label).Text);
+			Assert.AreEqual("This is my label", ((cell.View as StackLayout).Children[0] as Label).Text);
 		}
 	}
 }

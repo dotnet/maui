@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -18,18 +18,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[InlineData(false)], TestCase(true)]
+			[TestCase(false), TestCase(true)]
 			public void RelativeSourceSelfBinding(bool useCompiledXaml)
 			{
 				var view = new Gh3847(useCompiledXaml);
 				var label = view.FindByName<Label>("SelfBindingLabel");
-				Assert.Equal(label.Text, label.StyleId);
+				Assert.AreEqual(label.Text, label.StyleId);
 			}
 
-			[InlineData(false)], TestCase(true)]
+			[TestCase(false), TestCase(true)]
 			public void RelativeSourceAncestorLevelBinding(bool useCompiledXaml)
 			{
 				var view = new Gh3847(useCompiledXaml);
@@ -40,19 +40,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var level3Label = view.FindByName<Label>("AncestorLevel3Label");
 				var ancestorBindingContextLabel = view.FindByName<Label>("AncestorBindingContextLabel");
 
-				Assert.Equal(level1Label.Text, stack1.StyleId);
-				Assert.Equal(level2Label.Text, stack0.StyleId);
-				Assert.Equal(ancestorBindingContextLabel.Text, "Foo");
-				Assert.Null(level3Label.Text);
+				Assert.AreEqual(level1Label.Text, stack1.StyleId);
+				Assert.AreEqual(level2Label.Text, stack0.StyleId);
+				Assert.AreEqual(ancestorBindingContextLabel.Text, "Foo");
+				Assert.IsNull(level3Label.Text);
 			}
 
-			[InlineData(false)], TestCase(true)]
+			[TestCase(false), TestCase(true)]
 			public void RelativeSourceTemplatedParentBinding(bool useCompiledXaml)
 			{
 				var view = new Gh3847(useCompiledXaml);
 				var cv = view.FindByName<ContentView>("contentView");
 				var label = cv.Children[0] as Label;
-				Assert.Equal(label.Text, cv.StyleId);
+				Assert.AreEqual(label.Text, cv.StyleId);
 			}
 		}
 	}

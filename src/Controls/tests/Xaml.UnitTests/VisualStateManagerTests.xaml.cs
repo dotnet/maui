@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,21 +17,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
+			[SetUp]
 			public void SetUp()
 			{
 				Application.Current = new MockApplication();
 			}
 
+			[TearDown]
 			public void TearDown()
 			{
 				Application.Current = null;
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void VisualStatesFromStyleXaml(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);
@@ -40,61 +42,61 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				// Verify that Entry0 has no VisualStateGroups
 				Assert.False(entry0.HasVisualStateGroups());
-				Assert.Equal(entry0.TextColor, null);
-				Assert.Equal(entry0.PlaceholderColor, null);
+				Assert.That(null, Is.EqualTo(entry0.TextColor));
+				Assert.That(null, Is.EqualTo(entry0.PlaceholderColor));
 
 				var entry1 = layout.Entry1;
 
 				// Verify that the correct groups are set up for Entry1
 				var groups = VisualStateManager.GetVisualStateGroups(entry1);
-				Assert.Equal(3, groups.Count);
-				Assert.Equal("CommonStates", groups[0].Name);
+				Assert.AreEqual(3, groups.Count);
+				Assert.That(groups[0].Name, Is.EqualTo("CommonStates"));
 				Assert.Contains("Normal", groups[0].States.Select(state => state.Name).ToList());
 				Assert.Contains("Disabled", groups[0].States.Select(state => state.Name).ToList());
 
-				Assert.Equal(null, entry1.TextColor);
-				Assert.Equal(null, entry1.PlaceholderColor);
+				Assert.AreEqual(null, entry1.TextColor);
+				Assert.AreEqual(null, entry1.PlaceholderColor);
 
 				// Change the state of Entry1
 				Assert.True(VisualStateManager.GoToState(entry1, "Disabled"));
 
 				// And verify that the changes took
-				Assert.Equal(Colors.Gray, entry1.TextColor);
-				Assert.Equal(Colors.LightGray, entry1.PlaceholderColor);
+				Assert.AreEqual(Colors.Gray, entry1.TextColor);
+				Assert.AreEqual(Colors.LightGray, entry1.PlaceholderColor);
 
 				// Verify that Entry0 was unaffected
-				Assert.Equal(null, entry0.TextColor);
-				Assert.Equal(null, entry0.PlaceholderColor);
+				Assert.AreEqual(null, entry0.TextColor);
+				Assert.AreEqual(null, entry0.PlaceholderColor);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void UnapplyVisualState(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);
 				var entry1 = layout.Entry1;
 
-				Assert.Equal(null, entry1.TextColor);
-				Assert.Equal(null, entry1.PlaceholderColor);
+				Assert.AreEqual(null, entry1.TextColor);
+				Assert.AreEqual(null, entry1.PlaceholderColor);
 
 				// Change the state of Entry1
 				var groups = VisualStateManager.GetVisualStateGroups(entry1);
 				Assert.True(VisualStateManager.GoToState(entry1, "Disabled"));
 
 				// And verify that the changes took
-				Assert.Equal(Colors.Gray, entry1.TextColor);
-				Assert.Equal(Colors.LightGray, entry1.PlaceholderColor);
+				Assert.AreEqual(Colors.Gray, entry1.TextColor);
+				Assert.AreEqual(Colors.LightGray, entry1.PlaceholderColor);
 
 				// Now change it to Normal
 				Assert.True(VisualStateManager.GoToState(entry1, "Normal"));
 
 				// And verify that the changes reverted
-				Assert.Equal(null, entry1.TextColor);
-				Assert.Equal(null, entry1.PlaceholderColor);
+				Assert.AreEqual(null, entry1.TextColor);
+				Assert.AreEqual(null, entry1.PlaceholderColor);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void VisualStateGroupsDirectlyOnElement(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);
@@ -104,11 +106,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var groups = VisualStateManager.GetVisualStateGroups(entry);
 
 				Assert.NotNull(groups);
-				Assert.Equal(2, groups.Count);
+				Assert.That(groups.Count, Is.EqualTo(2));
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void EmptyGroupDirectlyOnElement(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);
@@ -121,8 +123,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.True(groups.Count == 1);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void VisualStateGroupsFromStylesAreDistinct(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);
@@ -133,22 +135,22 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var groups1 = VisualStateManager.GetVisualStateGroups(label1);
 				var groups2 = VisualStateManager.GetVisualStateGroups(label2);
 
-				Assert.NotSame(groups1, groups2);
+				Assert.AreNotSame(groups1, groups2);
 
 				var currentState1 = groups1[0].CurrentState;
 				var currentState2 = groups2[0].CurrentState;
 
-				Assert.Equal("Normal", currentState1.Name);
-				Assert.Equal("Normal", currentState2.Name);
+				Assert.That(currentState1.Name, Is.EqualTo("Normal"));
+				Assert.That(currentState2.Name, Is.EqualTo("Normal"));
 
 				VisualStateManager.GoToState(label1, "Invalid");
 
-				Assert.Equal("Invalid", groups1[0].CurrentState.Name);
-				Assert.Equal("Normal", groups2[0].CurrentState.Name);
+				Assert.That(groups1[0].CurrentState.Name, Is.EqualTo("Invalid"));
+				Assert.That(groups2[0].CurrentState.Name, Is.EqualTo("Normal"));
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SettersAreAddedToCorrectState(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);
@@ -157,30 +159,30 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				var groups = VisualStateManager.GetVisualStateGroups(entry);
 
-				Assert.Equal(1, groups.Count);
+				Assert.That(groups.Count, Is.EqualTo(1));
 
 				var common = groups[0];
 
 				var normal = common.States.Single(state => state.Name == "Normal");
 				var disabled = common.States.Single(state => state.Name == "Disabled");
 
-				Assert.Equal(0, normal.Setters.Count);
-				Assert.Equal(2, disabled.Setters.Count);
+				Assert.That(normal.Setters.Count, Is.EqualTo(0));
+				Assert.That(disabled.Setters.Count, Is.EqualTo(2));
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void VisualElementGoesToCorrectStateWhenAvailable(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);
 
 				var button = layout.Button1;
 
-				Assert.Equal(Colors.Lime, button.BackgroundColor);
+				Assert.That(button.BackgroundColor, Is.EqualTo(Colors.Lime));
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void TargetedVisualElementGoesToCorrectState(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);
@@ -189,11 +191,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				VisualStateManager.GoToState(layout, "Red");
 
-				Assert.Equal("Red", label1.Text);
+				Assert.That(label1.Text, Is.EqualTo("Red"));
 
 				VisualStateManager.GoToState(layout, "Blue");
 
-				Assert.Equal("Blue", label1.Text);
+				Assert.That(label1.Text, Is.EqualTo("Blue"));
 
 			}
 		}

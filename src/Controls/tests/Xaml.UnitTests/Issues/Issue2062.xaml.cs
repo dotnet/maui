@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,16 +15,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void LabelWithoutExplicitPropertyElement(bool useCompiledXaml)
 			{
 				var layout = new Issue2062(useCompiledXaml);
-				Assert.Equal("text explicitly set to Label.Text", layout.label1.Text);
-				Assert.Equal("text implicitly set to Text property of Label", layout.label2.Text);
+				Assert.AreEqual("text explicitly set to Label.Text", layout.label1.Text);
+				Assert.AreEqual("text implicitly set to Text property of Label", layout.label2.Text);
 			}
 		}
 	}

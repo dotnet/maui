@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 public partial class Maui25309 : ContentPage
@@ -21,30 +21,32 @@ public partial class Maui25309 : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	class Test
 	{
+		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
+		[TearDown]
 		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 		}
 
-		[Fact]
+		[Test]
 		public void GenericConvertersDoesNotThrowNRE([Values(true, false)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
-				() => MockCompiler.Compile(typeof(Maui25309))
+				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui25309)));
 
 			var page = new Maui25309(useCompiledXaml) { BindingContext = new { IsValid = true } };
 			var converter = page.Resources["IsValidConverter"] as Maui25309BoolToObjectConverter;
-			Assert.NotNull(converter);
-			Assert.Equal(Color.Parse("#140F4B", page.label.BackgroundColor));
+			Assert.IsNotNull(converter);
+			Assert.That(page.label.BackgroundColor, Is.EqualTo(Color.Parse("#140F4B")));
 		}
 	}
 }

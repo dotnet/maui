@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -13,13 +13,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[Fact]
+			[Test]
 			public void EmptyResourcesElement([Values(false, true)] bool useCompiledXaml)
 			{
-				() => new DO817710(useCompiledXaml: useCompiledXaml)
+				Assert.DoesNotThrow(() => new DO817710(useCompiledXaml: useCompiledXaml));
 			}
 		}
 	}

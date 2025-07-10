@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -16,59 +16,57 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
-		public class Tests : IDisposable
+		[TestFixture]
+		public class Tests
 		{
-			public Tests()
+			[SetUp]
+			public void Setup()
 			{
 				Application.Current = new MockApplication();
 			}
 
-			public void Dispose()
+			[TearDown]
+			public void TearDown()
 			{
 				Application.Current = null;
 			}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void AutomationPropertiesName(bool useCompiledXaml)
 			{
 				var layout = new AutomationProperties(useCompiledXaml);
 
-				Assert.Equal("Name", (string)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.NameProperty));
+				Assert.AreEqual("Name", (string)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.NameProperty));
 			}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void AutomationPropertiesHelpText(bool useCompiledXaml)
 			{
 				var layout = new AutomationProperties(useCompiledXaml);
 
-				Assert.Equal("Sets your name", (string)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.HelpTextProperty));
+				Assert.AreEqual("Sets your name", (string)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.HelpTextProperty));
 			}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void AutomationPropertiesIsInAccessibleTree(bool useCompiledXaml)
 			{
 				var layout = new AutomationProperties(useCompiledXaml);
 				Application.Current.LoadPage(layout);
 
-				Assert.Equal(true, (bool)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.IsInAccessibleTreeProperty));
+				Assert.AreEqual(true, (bool)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.IsInAccessibleTreeProperty));
 			}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void AutomationPropertiesLabeledBy(bool useCompiledXaml)
 			{
 				var layout = new AutomationProperties(useCompiledXaml);
 				Application.Current.LoadPage(layout);
 
-				Assert.Equal(layout.label, (Element)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.LabeledByProperty));
+				Assert.AreEqual(layout.label, (Element)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.LabeledByProperty));
 			}
 		}
 	}

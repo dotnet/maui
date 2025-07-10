@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -21,9 +21,10 @@ public partial class Maui23989
 		//this stub will be replaced at compile time
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class Test
 	{
+		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -32,7 +33,7 @@ public partial class Maui23989
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
+		[Test]
 		public void ItemDisplayBindingWithoutDataTypeFails([Values(false, true)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
@@ -55,8 +56,8 @@ public partial class Maui23989
 				}.ToArray()
 			};
 
-			Assert.Equal("item1", layout.picker0.Items[0]);
-			Assert.Equal("item1", layout.picker1.Items[0]);
+			Assert.That(layout.picker0.Items[0], Is.EqualTo("item1"));
+			Assert.That(layout.picker1.Items[0], Is.EqualTo("item1"));
 
 		}
 	}

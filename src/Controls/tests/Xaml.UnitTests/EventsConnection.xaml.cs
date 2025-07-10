@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -86,71 +86,71 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			staticClicked++;
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void TestClicked(bool useCompiledXaml)
 			{
 				var layout = new EventsConnection(useCompiledXaml);
-				Assert.Equal(0, layout.clicked);
+				Assert.AreEqual(0, layout.clicked);
 				layout.elementWithEvent.SendClicked();
-				Assert.Equal(1, layout.clicked);
+				Assert.AreEqual(1, layout.clicked);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void TestGenericClicked(bool useCompiledXaml)
 			{
 				var layout = new EventsConnection(useCompiledXaml);
-				Assert.Equal(0, layout.genericClicked);
+				Assert.AreEqual(0, layout.genericClicked);
 				layout.elementWithGenericEvent.SendClicked();
-				Assert.Equal(1, layout.genericClicked);
+				Assert.AreEqual(1, layout.genericClicked);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void TestHandlerOnBase(bool useCompiledXaml)
 			{
 				var layout = new EventsConnection(useCompiledXaml);
-				Assert.Equal(0, layout.baseClicked);
+				Assert.AreEqual(0, layout.baseClicked);
 				layout.eventHandlerOnBase.SendClicked();
-				Assert.Equal(1, layout.baseClicked);
+				Assert.AreEqual(1, layout.baseClicked);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void TestAsyncPrivateHandler(bool useCompiledXaml)
 			{
 				var layout = new EventsConnection(useCompiledXaml);
-				Assert.Equal(0, layout.asyncPrivateClicked);
+				Assert.AreEqual(0, layout.asyncPrivateClicked);
 				layout.elementwithAsyncprivateHandler.SendClicked();
-				Assert.Equal(1, layout.asyncPrivateClicked);
+				Assert.AreEqual(1, layout.asyncPrivateClicked);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void TestVirtualHandler(bool useCompiledXaml)
 			{
 				var layout = new SubForEvents(useCompiledXaml);
-				Assert.Equal(0, layout.baseForVirtualClicked);
-				Assert.Equal(0, layout.overrideClicked);
+				Assert.AreEqual(0, layout.baseForVirtualClicked);
+				Assert.AreEqual(0, layout.overrideClicked);
 				layout.elementWithVirtualHandler.SendClicked();
-				Assert.Equal(0, layout.baseForVirtualClicked);
-				Assert.Equal(1, layout.overrideClicked);
+				Assert.AreEqual(0, layout.baseForVirtualClicked);
+				Assert.AreEqual(1, layout.overrideClicked);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void TestStaticHandler(bool useCompiledXaml)
 			{
 				try
 				{
 					var layout = new SubForEvents(useCompiledXaml);
-					Assert.Equal(0, staticClicked);
+					Assert.AreEqual(0, staticClicked);
 					layout.elementWithStaticHandler.SendClicked();
-					Assert.Equal(1, staticClicked);
+					Assert.AreEqual(1, staticClicked);
 				}
 				finally
 				{

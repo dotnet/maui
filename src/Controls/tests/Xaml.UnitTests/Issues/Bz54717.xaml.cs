@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,16 +17,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
+			[TearDown]
 			public void TearDown()
 			{
 				Application.Current = null;
 			}
 
-			[InlineData(true)]
-			[InlineData(false)]
+			[TestCase(true)]
+			[TestCase(false)]
 			public void FooBz54717(bool useCompiledXaml)
 			{
 				Application.Current = new MockApplication
@@ -37,10 +38,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					}
 				};
 				var layout = new Bz54717(useCompiledXaml);
-				Assert.Equal(1, layout.Resources.Count);
+				Assert.That(layout.Resources.Count, Is.EqualTo(1));
 				var array = layout.Resources["SomeColors"] as Color[];
-				Assert.Equal(Colors.Red, array[0]);
-				Assert.Equal(Colors.Blue, array[1]);
+				Assert.That(array[0], Is.EqualTo(Colors.Red));
+				Assert.That(array[1], Is.EqualTo(Colors.Blue));
 			}
 		}
 	}

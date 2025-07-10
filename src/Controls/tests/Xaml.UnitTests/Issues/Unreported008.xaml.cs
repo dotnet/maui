@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -27,19 +27,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[InlineData(true)], TestCase(false)]
+			[TestCase(true), TestCase(false)]
 			public void PickerDateTimesAndXamlC(bool useCompiledXaml)
 			{
 				var page = new Unreported008(useCompiledXaml);
 				var picker = page.picker0;
-				Assert.Equal(DateTime.Today, picker.Date.Date);
-				Assert.Equal(new DateTime(2000, 1, 1), picker.MinimumDate);
-				Assert.Equal(new DateTime(2050, 12, 31), picker.MaximumDate);
+				Assert.AreEqual(DateTime.Today, picker.Date.Date);
+				Assert.AreEqual(new DateTime(2000, 1, 1), picker.MinimumDate);
+				Assert.AreEqual(new DateTime(2050, 12, 31), picker.MaximumDate);
 
-				Assert.Equal(DateTime.Today, page.view0.Date.Value.Date);
+				Assert.AreEqual(DateTime.Today, page.view0.Date.Value.Date);
 			}
 		}
 	}

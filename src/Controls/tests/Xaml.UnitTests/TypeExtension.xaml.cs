@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -47,14 +47,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void NestedMarkupExtensionInsideDataTemplate(bool useCompiledXaml)
 			{
 				var page = new TypeExtension(useCompiledXaml);
@@ -63,21 +63,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				var cell = (ViewCell)listView.TemplatedItems[0];
 				var button = (Button)cell.View;
-				Assert.NotNull(button.Command);
+				Assert.IsNotNull(button.Command);
 
 				cell = (ViewCell)listView.TemplatedItems[1];
 				button = (Button)cell.View;
-				Assert.NotNull(button.Command);
+				Assert.IsNotNull(button.Command);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			//https://bugzilla.xamarin.com/show_bug.cgi?id=55027
 			public void TypeExtensionSupportsNamespace(bool useCompiledXaml)
 			{
 				var page = new TypeExtension(useCompiledXaml);
 				var button = page.button0;
-				Assert.Equal(typeof(TypeExtension, button.CommandParameter));
+				Assert.That(button.CommandParameter, Is.EqualTo(typeof(TypeExtension)));
 			}
 		}
 	}

@@ -1,13 +1,13 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class DesignPropertiesTests
 	{
-		[Fact]
+		[Test]
 		public void DesignProperties()
 		{
 			var xaml = @"
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var label = ((Maui.Controls.Internals.INameScope)view).FindByName("label") as Label;
 
-			Assert.Equal("Bar", label.Text);
+			Assert.That(label.Text, Is.EqualTo("Bar"));
 		}
 	}
 }

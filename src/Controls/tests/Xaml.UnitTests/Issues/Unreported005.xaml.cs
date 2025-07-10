@@ -1,5 +1,5 @@
 using System;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -68,10 +68,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[InlineData(true)], TestCase(false)]
+			[TestCase(true), TestCase(false)]
 			public void CustomMarkupExtensionWorks(bool useCompiledXaml)
 			{
 				var page = new Unreported005(useCompiledXaml);

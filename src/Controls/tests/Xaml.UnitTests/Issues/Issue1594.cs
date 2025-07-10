@@ -1,26 +1,28 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class Issue1594
 	{
 		MockDeviceInfo mockDeviceInfo;
 
+		[SetUp]
 		public void Setup()
 		{
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
+		[TearDown]
 		public void TearDown()
 		{
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Fact]
+		[Test]
 		public void OnPlatformForButtonHeight()
 		{
 			var xaml = @"
@@ -40,15 +42,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var button = new Button().LoadFromXaml(xaml);
-			Assert.Equal(33, button.HeightRequest);
+			Assert.AreEqual(33, button.HeightRequest);
 
 			mockDeviceInfo.Platform = DevicePlatform.Android;
 			button = new Button().LoadFromXaml(xaml);
-			Assert.Equal(44, button.HeightRequest);
+			Assert.AreEqual(44, button.HeightRequest);
 
 			mockDeviceInfo.Platform = DevicePlatform.UWP;
 			button = new Button().LoadFromXaml(xaml);
-			Assert.Equal(44, button.HeightRequest);
+			Assert.AreEqual(44, button.HeightRequest);
 		}
 	}
 }

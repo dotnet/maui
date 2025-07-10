@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -39,23 +39,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[InlineData(true)]
+			[TestCase(true)]
 			public void MarkupOnAttachedBPDoesNotThrowAtCompileTime(bool useCompiledXaml)
 			{
 				MockCompiler.Compile(typeof(Bz53203));
 			}
 
-			[InlineData(true)]
-			[InlineData(false)]
+			[TestCase(true)]
+			[TestCase(false)]
 			public void MarkupOnAttachedBP(bool useCompiledXaml)
 			{
 				var page = new Bz53203(useCompiledXaml);
 				var label = page.label0;
-				Assert.Equal(42, Grid.GetRow(label));
-				Assert.Equal(Bz53203Values.Better, GetParameter(label));
+				Assert.That(Grid.GetRow(label), Is.EqualTo(42));
+				Assert.That(GetParameter(label), Is.EqualTo(Bz53203Values.Better));
 			}
 
 		}

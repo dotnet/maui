@@ -5,7 +5,7 @@ using System.Globalization;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -159,15 +159,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[InlineData(true)]
-			[InlineData(false)]
+			[TestCase(true)]
+			[TestCase(false)]
 			public void XamlCCustomTypeConverter(bool useCompiledXaml)
 			{
 				var p = new Bz45299(useCompiledXaml);
-				Assert.Equal(0d, p.ctrl.PortraitLayout.Spacing.Value);
+				Assert.AreEqual(0d, p.ctrl.PortraitLayout.Spacing.Value);
 			}
 		}
 	}

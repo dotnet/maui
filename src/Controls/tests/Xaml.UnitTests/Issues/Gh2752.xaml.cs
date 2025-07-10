@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -29,14 +29,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[InlineData(true)], TestCase(false)]
+			[TestCase(true), TestCase(false)]
 			public void FallbcakToDefaultValueCreator(bool useCompiledXaml)
 			{
 				var layout = new Gh2752(useCompiledXaml) { BindingContext = null };
-				Assert.Equal("default created value", layout.My);
+				Assert.That(layout.My, Is.EqualTo("default created value"));
 			}
 		}
 	}

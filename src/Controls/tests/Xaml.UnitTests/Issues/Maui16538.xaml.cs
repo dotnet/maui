@@ -5,7 +5,7 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -19,9 +19,10 @@ public partial class Maui16538
 		//this stub will be replaced at compile time
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	class Test
 	{
+		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -31,7 +32,7 @@ public partial class Maui16538
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
+		[Test]
 		public void VSMandAppTheme([Values(false, true)] bool useCompiledXaml)
 		{
 
@@ -39,11 +40,11 @@ public partial class Maui16538
 			var page = new Maui16538(useCompiledXaml);
 			Application.Current.MainPage = page;
 			Button button = page.button0;
-			Assert.Equal(Color.FromHex("404040", button.BackgroundColor));
+			Assert.That(button.BackgroundColor, Is.EqualTo(Color.FromHex("404040")));
 			button.IsEnabled = true;
-			Assert.Equal(Colors.White, button.BackgroundColor);
+			Assert.That(button.BackgroundColor, Is.EqualTo(Colors.White));
 			Application.Current.UserAppTheme = AppTheme.Light;
-			Assert.Equal(Color.FromHex("512BD4", button.BackgroundColor));
+			Assert.That(button.BackgroundColor, Is.EqualTo(Color.FromHex("512BD4")));
 		}
 	}
 }

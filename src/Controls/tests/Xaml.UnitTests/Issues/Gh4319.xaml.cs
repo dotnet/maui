@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,31 +15,33 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
+			[SetUp]
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			}
 
+			[TearDown]
 			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[InlineData(true)], TestCase(false)]
+			[TestCase(true), TestCase(false)]
 			public void OnPlatformMarkupAndNamedSizes(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;
 				var layout = new Gh4319(useCompiledXaml);
-				Assert.Equal(4d, layout.label.FontSize);
+				Assert.That(layout.label.FontSize, Is.EqualTo(4d));
 
 				mockDeviceInfo.Platform = DevicePlatform.Android;
 				layout = new Gh4319(useCompiledXaml);
-				Assert.Equal(8d, layout.label.FontSize);
+				Assert.That(layout.label.FontSize, Is.EqualTo(8d));
 			}
 		}
 	}

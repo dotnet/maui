@@ -12,7 +12,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -28,11 +28,12 @@ public partial class Maui22001
 		//this stub will be replaced at compile time
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	class Test
 	{
 		MockDeviceDisplay mockDeviceDisplay;
 		MockDeviceInfo mockDeviceInfo;
+		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -42,6 +43,7 @@ public partial class Maui22001
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
+		[TearDown]
 		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
@@ -49,7 +51,7 @@ public partial class Maui22001
 			mockDeviceInfo = null;
 		}
 
-		[Fact]
+		[Test]
 		public void StateTriggerTargetName([Values(false, true)] bool useCompiledXaml)
 		{
 			var page = new Maui22001(useCompiledXaml);
@@ -58,12 +60,12 @@ public partial class Maui22001
 			{
 				Page = page
 			};
-			Assert.True(page._firstGrid.IsVisible);
-			Assert.False(page._secondGrid.IsVisible);
+			Assert.That(page._firstGrid.IsVisible, Is.True);
+			Assert.That(page._secondGrid.IsVisible, Is.False);
 
 			mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Landscape);
-			Assert.False(page._firstGrid.IsVisible);
-			Assert.True(page._secondGrid.IsVisible);
+			Assert.That(page._firstGrid.IsVisible, Is.False);
+			Assert.That(page._secondGrid.IsVisible, Is.True);
 		}
 	}
 }

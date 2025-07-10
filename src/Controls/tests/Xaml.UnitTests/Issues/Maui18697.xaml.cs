@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -27,11 +27,12 @@ public partial class Maui18697 : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
+		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -40,18 +41,19 @@ public partial class Maui18697 : ContentPage
 		}
 
 
+		[TearDown]
 		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Fact]
+		[Test]
 		public void OnBindingRelease([Values(false, true)] bool useCompiledXaml)
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Desktop;
 			var page = new Maui18697(useCompiledXaml);
-			Assert.Equal("_ProfileToolBarText", page.ToolbarItems[0].Text);
+			Assert.That(page.ToolbarItems[0].Text, Is.EqualTo("_ProfileToolBarText"));
 
 
 		}

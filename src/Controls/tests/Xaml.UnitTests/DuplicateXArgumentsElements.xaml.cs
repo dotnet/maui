@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -10,10 +10,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public static class Tests
 		{
-			[Fact]
+			[Test]
 			public static void ThrowXamlParseException([Values] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -20,33 +20,35 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
+			[SetUp]
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			}
 
+			[TearDown]
 			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[InlineData(false)], TestCase(true)]
+			[TestCase(false), TestCase(true)]
 			public void OnPlatformMarkupInStyle(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;
 				var layout = new Gh3862(useCompiledXaml);
-				Assert.Equal(Colors.Pink, layout.label.TextColor);
-				Assert.False(layout.label.IsVisible);
+				Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Pink));
+				Assert.That(layout.label.IsVisible, Is.False);
 
 				mockDeviceInfo.Platform = DevicePlatform.Android;
 
 				layout = new Gh3862(useCompiledXaml);
-				Assert.True(layout.label.IsVisible);
+				Assert.That(layout.label.IsVisible, Is.True);
 
 			}
 		}

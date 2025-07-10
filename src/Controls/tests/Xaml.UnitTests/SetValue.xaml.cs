@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -147,44 +147,44 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			fired = true;
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetValueToBP(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal("Foo", page.label0.Text);
+				Assert.AreEqual("Foo", page.label0.Text);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetBindingToBP(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal(Label.TextProperty.DefaultValue, page.label1.Text);
+				Assert.AreEqual(Label.TextProperty.DefaultValue, page.label1.Text);
 
 				page.label1.BindingContext = new { labeltext = "Foo" };
-				Assert.Equal("Foo", page.label1.Text);
+				Assert.AreEqual("Foo", page.label1.Text);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetBindingWithImplicitPath(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal(Label.TextProperty.DefaultValue, page.label11.Text);
+				Assert.AreEqual(Label.TextProperty.DefaultValue, page.label11.Text);
 
 				page.label11.BindingContext = new { labeltext = "Foo" };
-				Assert.Equal("Foo", page.label11.Text);
+				Assert.AreEqual("Foo", page.label11.Text);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetEvent(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
@@ -193,8 +193,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.True(page.fired);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetBoolValue(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
@@ -203,33 +203,33 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			//TODO test all value conversions
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetAttachedBP(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal(1, Grid.GetColumn(page.label2));
-				Assert.Equal(2, Grid.GetRow(page.label2));
+				Assert.AreEqual(1, Grid.GetColumn(page.label2));
+				Assert.AreEqual(2, Grid.GetRow(page.label2));
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetContent(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Same(page.label3, page.contentview0.Content);
+				Assert.AreSame(page.label3, page.contentview0.Content);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetImplicitContent(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Same(page.label4, page.contentview1.Content);
+				Assert.AreSame(page.label4, page.contentview1.Content);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetCollectionContent(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
@@ -237,8 +237,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.True(page.stack0.Children.Contains(page.label6));
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetImplicitCollectionContent(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
@@ -246,145 +246,145 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.True(page.stack1.Children.Contains(page.label8));
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetSingleCollectionContent(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.True(page.stack2.Children.Contains(page.label9));
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetImplicitSingleCollectionContent(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.True(page.stack3.Children.Contains(page.label10));
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetPropertyDefinedOnGenericType(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal(2, page.listView.ItemsSource.Cast<object>().Count());
+				Assert.AreEqual(2, page.listView.ItemsSource.Cast<object>().Count());
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetConvertibleProperties(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal(Colors.Red, page.label12.TextColor);
+				Assert.AreEqual(Colors.Red, page.label12.TextColor);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetValueTypeProperties(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal(Colors.Pink, page.label13.TextColor);
+				Assert.AreEqual(Colors.Pink, page.label13.TextColor);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void CreateValueTypes(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal(Colors.Purple, page.Resources["purple"]);
+				Assert.AreEqual(Colors.Purple, page.Resources["purple"]);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void DefCollections(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal(2, page.grid0.RowDefinitions.Count);
-				Assert.Equal(1, page.grid0.ColumnDefinitions.Count);
+				Assert.AreEqual(2, page.grid0.RowDefinitions.Count);
+				Assert.AreEqual(1, page.grid0.ColumnDefinitions.Count);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void FlagsAreApplied(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal(AbsoluteLayoutFlags.PositionProportional | AbsoluteLayoutFlags.WidthProportional, AbsoluteLayout.GetLayoutFlags(page.label14));
+				Assert.AreEqual(AbsoluteLayoutFlags.PositionProportional | AbsoluteLayoutFlags.WidthProportional, AbsoluteLayout.GetLayoutFlags(page.label14));
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void ConversionsAreAppliedOnSet(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.That(page.content0.Content, Is.TypeOf<Button>());
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void ConversionsAreAppliedOnAdd(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.That(page.stack4.Children[0], Is.TypeOf<Button>());
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void ListsAreSimplified(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.That(page.contentview2.Content, Is.TypeOf<Label>());
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void MorePrimitiveTypes(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal('!', page.mockView0.AChar);
-				Assert.Equal((byte)2, page.mockView0.AByte);
-				Assert.Equal((sbyte)-12, page.mockView0.ASByte);
-				Assert.Equal((short)-22, page.mockView0.AShort);
-				Assert.Equal((ushort)32, page.mockView0.UShort);
-				Assert.Equal((decimal)42, page.mockView0.ADecimal);
+				Assert.AreEqual('!', page.mockView0.AChar);
+				Assert.AreEqual((byte)2, page.mockView0.AByte);
+				Assert.AreEqual((sbyte)-12, page.mockView0.ASByte);
+				Assert.AreEqual((short)-22, page.mockView0.AShort);
+				Assert.AreEqual((ushort)32, page.mockView0.UShort);
+				Assert.AreEqual((decimal)42, page.mockView0.ADecimal);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void NonIntEnums(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal(IntEnum.Foo, page.enums.IntEnum);
-				Assert.Equal(ByteEnum.Bar, page.enums.ByteEnum);
+				Assert.AreEqual(IntEnum.Foo, page.enums.IntEnum);
+				Assert.AreEqual(ByteEnum.Bar, page.enums.ByteEnum);
 			}
 
 			public void SetValueWithImplicitOperatorOnSource(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal("Bar", page.implicit0.GetValue(MockViewWithValues.BPBarProperty));
+				Assert.AreEqual("Bar", page.implicit0.GetValue(MockViewWithValues.BPBarProperty));
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetValueWithImplicitOperatorOnTarget(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal("Foo", ((SV_Foo)page.implicit1.GetValue(MockViewWithValues.BPFooProperty)).Value);
+				Assert.AreEqual("Foo", ((SV_Foo)page.implicit1.GetValue(MockViewWithValues.BPFooProperty)).Value);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetWithImplicitOperatorOnSource(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal("Bar", page.implicit2.Bar);
+				Assert.AreEqual("Bar", page.implicit2.Bar);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SetWithImplicitOperatorOnTarget(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
-				Assert.Equal("Foo", page.implicit3.Foo.Value);
+				Assert.AreEqual("Foo", page.implicit3.Foo.Value);
 			}
 		}
 	}

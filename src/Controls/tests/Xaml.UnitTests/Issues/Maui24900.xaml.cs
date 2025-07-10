@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -32,11 +32,12 @@ public partial class Maui24900 : ContentPage
 
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
+		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -45,17 +46,18 @@ public partial class Maui24900 : ContentPage
 		}
 
 
+		[TearDown]
 		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Fact]
+		[Test]
 		public void OnPlatformDownNotThrow([Values(false, true)] bool useCompiledXaml)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.WinUI;
-			() => new Maui24900(useCompiledXaml)
+			Assert.DoesNotThrow(() => new Maui24900(useCompiledXaml));
 
 
 

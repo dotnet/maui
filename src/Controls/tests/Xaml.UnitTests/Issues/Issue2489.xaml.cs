@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -19,11 +19,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void DataTriggerTargetType(bool useCompiledXaml)
 			{
 				var layout = new Issue2489(useCompiledXaml);
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.True(layout.wimage.Triggers.Any());
 				Assert.That(layout.wimage.Triggers[0], Is.TypeOf<DataTrigger>());
 				var trigger = (DataTrigger)layout.wimage.Triggers[0];
-				Assert.Equal(typeof(WImage), trigger.TargetType);
+				Assert.AreEqual(typeof(WImage), trigger.TargetType);
 			}
 		}
 	}

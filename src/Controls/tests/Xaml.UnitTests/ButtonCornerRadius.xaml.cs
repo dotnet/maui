@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,15 +15,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void EscapedStringsAreTreatedAsLiterals(bool useCompiledXaml)
 			{
 				var layout = new ButtonCornerRadius(useCompiledXaml);
-				Assert.Equal(0, layout.Button0.CornerRadius);
+				Assert.AreEqual(0, layout.Button0.CornerRadius);
 			}
 		}
 	}

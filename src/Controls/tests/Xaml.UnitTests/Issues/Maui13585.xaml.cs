@@ -3,7 +3,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -20,30 +20,30 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
 			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Fact]
+			[Test]
 			public void TriggerWithDynamicResource([Values(false, true)] bool useCompiledXaml)
 			{
 				var page = new Maui13585(useCompiledXaml);
-				Assert.Equal(Colors.Green, page.styleTriggerWithStaticResources.BackgroundColor);
-				Assert.Equal(Colors.Green, page.styleTriggerWithDynamicResources.BackgroundColor);
+				Assert.That(page.styleTriggerWithStaticResources.BackgroundColor, Is.EqualTo(Colors.Green));
+				Assert.That(page.styleTriggerWithDynamicResources.BackgroundColor, Is.EqualTo(Colors.Green));
 
 				page.styleTriggerWithStaticResources.IsEnabled = false;
 				page.styleTriggerWithDynamicResources.IsEnabled = false;
 
-				Assert.Equal(Colors.Purple, page.styleTriggerWithStaticResources.BackgroundColor);
-				Assert.Equal(Colors.Purple, page.styleTriggerWithDynamicResources.BackgroundColor);
+				Assert.That(page.styleTriggerWithStaticResources.BackgroundColor, Is.EqualTo(Colors.Purple));
+				Assert.That(page.styleTriggerWithDynamicResources.BackgroundColor, Is.EqualTo(Colors.Purple));
 
 				page.styleTriggerWithStaticResources.IsEnabled = true;
 				page.styleTriggerWithDynamicResources.IsEnabled = true;
 
-				Assert.Equal(Colors.Green, page.styleTriggerWithStaticResources.BackgroundColor);
-				Assert.Equal(Colors.Green, page.styleTriggerWithDynamicResources.BackgroundColor);
+				Assert.That(page.styleTriggerWithStaticResources.BackgroundColor, Is.EqualTo(Colors.Green));
+				Assert.That(page.styleTriggerWithDynamicResources.BackgroundColor, Is.EqualTo(Colors.Green));
 
 			}
 		}

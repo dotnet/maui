@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,18 +17,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
 
-			[InlineData(true)], TestCase(false)]
+			[TestCase(true), TestCase(false)]
 			public void CanCompileMultiTriggersWithDifferentConditions(bool useCompiledXaml)
 			{
 				var layout = new Bz60203(useCompiledXaml);
-				Assert.Equal(BackgroundColorProperty.DefaultValue, layout.label.BackgroundColor);
+				Assert.That(layout.label.BackgroundColor, Is.EqualTo(BackgroundColorProperty.DefaultValue));
 				layout.BindingContext = new { Text = "Foo" };
 				layout.label.TextColor = Colors.Blue;
-				Assert.Equal(Colors.Pink, layout.label.BackgroundColor);
+				Assert.That(layout.label.BackgroundColor, Is.EqualTo(Colors.Pink));
 			}
 
 		}

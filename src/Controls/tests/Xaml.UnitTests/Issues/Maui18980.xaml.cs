@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -26,9 +26,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Test
 		{
+			[SetUp]
 			public void Setup()
 			{
 				Application.SetCurrentApplication(new MockApplication());
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Fact]
+			[Test]
 			public void CSSnotOverridenbyImplicitStyle([Values(false, true)] bool useCompiledXaml)
 			{
 				// var app = new MockApplication();
@@ -46,7 +47,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				// Application.SetCurrentApplication(app);
 
 				var page = new Maui18980(useCompiledXaml);
-				Assert.Equal(Colors.Red, page.button.BackgroundColor);
+				Assert.That(page.button.BackgroundColor, Is.EqualTo(Colors.Red));
 			}
 		}
 	}

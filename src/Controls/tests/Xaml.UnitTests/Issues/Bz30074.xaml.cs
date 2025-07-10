@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,18 +17,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[InlineData(true)]
-			[InlineData(false)]
+			[TestCase(true)]
+			[TestCase(false)]
 			public void DataTriggerInTemplates(bool useCompiledXaml)
 			{
 				var layout = new Bz30074(useCompiledXaml);
 				Assert.Null(layout.image.Source);
 
 				layout.BindingContext = new { IsSelected = true };
-				Assert.Equal("Add.png", ((FileImageSource)layout.image.Source).File);
+				Assert.AreEqual("Add.png", ((FileImageSource)layout.image.Source).File);
 
 				layout.BindingContext = new { IsSelected = false };
 				Assert.Null(layout.image.Source);

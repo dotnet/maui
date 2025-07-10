@@ -1,4 +1,4 @@
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -13,11 +13,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			// This stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void NavBarIsVisiblePropertyPropagates(bool useCompiledXaml)
 			{
 				var shell = new Issue18948(useCompiledXaml);

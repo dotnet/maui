@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,19 +17,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void SupportsXReference(bool useCompiledXaml)
 			{
 				var layout = new XReference(useCompiledXaml);
-				Assert.Same(layout.image, layout.imageView.Content);
+				Assert.AreSame(layout.image, layout.imageView.Content);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void XReferenceAsCommandParameterToSelf(bool useCompiledXaml)
 			{
 				var layout = new XReference(useCompiledXaml);
@@ -47,24 +47,24 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Fail();
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void XReferenceAsBindingSource(bool useCompiledXaml)
 			{
 				var layout = new XReference(useCompiledXaml);
 
-				Assert.Equal("foo", layout.entry.Text);
-				Assert.Equal("bar", layout.entry.Placeholder);
+				Assert.AreEqual("foo", layout.entry.Text);
+				Assert.AreEqual("bar", layout.entry.Placeholder);
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void CrossXReference(bool useCompiledXaml)
 			{
 				var layout = new XReference(useCompiledXaml);
 
-				Assert.Same(layout.label0, layout.label1.BindingContext);
-				Assert.Same(layout.label1, layout.label0.BindingContext);
+				Assert.AreSame(layout.label0, layout.label1.BindingContext);
+				Assert.AreSame(layout.label1, layout.label0.BindingContext);
 			}
 		}
 	}

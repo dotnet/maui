@@ -1,11 +1,11 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-// [TestFixture] - removed for xUnit
+[TestFixture]
 public class BindingExtensionTests
 {
-	[Fact]
+	[Test]
 	public void ProvideValue_Null()
 	{
 		IMarkupExtension<BindingBase> binding = new BindingExtension { Path = "Foo" };

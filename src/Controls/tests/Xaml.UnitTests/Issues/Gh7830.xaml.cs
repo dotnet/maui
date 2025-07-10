@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -19,18 +19,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[Fact]
+			[Test]
 			public void CanResolvexStaticWithShortName([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh7830(useCompiledXaml);
 				var cell = layout.listView.ItemTemplate.CreateContent() as ViewCell;
-				Assert.Equal(StaticText, (cell.View as Label).Text);
+				Assert.That((cell.View as Label).Text, Is.EqualTo(StaticText));
 			}
 		}
 	}

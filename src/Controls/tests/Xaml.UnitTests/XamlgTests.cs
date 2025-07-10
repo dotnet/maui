@@ -4,15 +4,15 @@
 //using Microsoft.Build.Framework;
 //using Microsoft.Maui.Controls.Build.Tasks;
 //using Microsoft.Maui.Controls.Core.UnitTests;
-//using Xunit;
+//using NUnit.Framework;
 //using IOPath = System.IO.Path;
 //
 //namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 //{
-//	// [TestFixture] - removed for xUnit
+//	[TestFixture]
 //	public class XamlgTests : BaseTestFixture
 //	{
-//		[Fact]
+//		[Test]
 //		public void LoadXaml2006()
 //		{
 //			var xaml = @"<View
@@ -40,15 +40,15 @@
 //			Assert.NotNull(generator.BaseType);
 //			Assert.NotNull(generator.NamedFields);
 //
-//			Assert.Equal("CustomView", generator.RootType);
-//			Assert.Equal("Microsoft.Maui.Controls.Xaml.UnitTests", generator.RootClrNamespace);
-//			Assert.Equal("Microsoft.Maui.Controls.View", generator.BaseType.BaseType);
-//			Assert.Equal(1, generator.NamedFields.Count());
-//			Assert.Equal("label0", generator.NamedFields.First().Name);
-//			Assert.Equal("Microsoft.Maui.Controls.Label", generator.NamedFields.First().Type.BaseType);
+//			Assert.AreEqual("CustomView", generator.RootType);
+//			Assert.AreEqual("Microsoft.Maui.Controls.Xaml.UnitTests", generator.RootClrNamespace);
+//			Assert.AreEqual("Microsoft.Maui.Controls.View", generator.BaseType.BaseType);
+//			Assert.AreEqual(1, generator.NamedFields.Count());
+//			Assert.AreEqual("label0", generator.NamedFields.First().Name);
+//			Assert.AreEqual("Microsoft.Maui.Controls.Label", generator.NamedFields.First().Type.BaseType);
 //		}
 //
-//		[Fact]
+//		[Test]
 //		public void LoadXaml2009()
 //		{
 //			var xaml = @"<View
@@ -76,15 +76,15 @@
 //			Assert.NotNull(generator.BaseType);
 //			Assert.NotNull(generator.NamedFields);
 //
-//			Assert.Equal("CustomView", generator.RootType);
-//			Assert.Equal("Microsoft.Maui.Controls.Xaml.UnitTests", generator.RootClrNamespace);
-//			Assert.Equal("Microsoft.Maui.Controls.View", generator.BaseType.BaseType);
-//			Assert.Equal(1, generator.NamedFields.Count());
-//			Assert.Equal("label0", generator.NamedFields.First().Name);
-//			Assert.Equal("Microsoft.Maui.Controls.Label", generator.NamedFields.First().Type.BaseType);
+//			Assert.AreEqual("CustomView", generator.RootType);
+//			Assert.AreEqual("Microsoft.Maui.Controls.Xaml.UnitTests", generator.RootClrNamespace);
+//			Assert.AreEqual("Microsoft.Maui.Controls.View", generator.BaseType.BaseType);
+//			Assert.AreEqual(1, generator.NamedFields.Count());
+//			Assert.AreEqual("label0", generator.NamedFields.First().Name);
+//			Assert.AreEqual("Microsoft.Maui.Controls.Label", generator.NamedFields.First().Type.BaseType);
 //		}
 //
-//		[Fact]
+//		[Test]
 //		//https://github.com/xamarin/Duplo/issues/1207#issuecomment-47159917
 //		public void xNameInCustomTypes()
 //		{
@@ -118,14 +118,14 @@
 //			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 //			generator.ParseXaml(reader);
 //
-//			Assert.Equal(2, generator.NamedFields.Count());
-//			Assert.Equal("listView", generator.NamedFields.ToArray()[0].Name);
-//			Assert.Equal("CustomListViewSample.CustomListView", generator.NamedFields.ToArray()[0].Type.BaseType);
-//			Assert.Equal("listViewusing", generator.NamedFields.ToArray()[1].Name);
-//			Assert.Equal("CustomListViewSample.CustomListView", generator.NamedFields.ToArray()[1].Type.BaseType);
+//			Assert.AreEqual(2, generator.NamedFields.Count());
+//			Assert.AreEqual("listView", generator.NamedFields.ToArray()[0].Name);
+//			Assert.AreEqual("CustomListViewSample.CustomListView", generator.NamedFields.ToArray()[0].Type.BaseType);
+//			Assert.AreEqual("listViewusing", generator.NamedFields.ToArray()[1].Name);
+//			Assert.AreEqual("CustomListViewSample.CustomListView", generator.NamedFields.ToArray()[1].Type.BaseType);
 //		}
 //
-//		[Fact]
+//		[Test]
 //		public void xNameInDataTemplates()
 //		{
 //			var xaml = @"<StackLayout 
@@ -159,10 +159,10 @@
 //
 //			Assert.Contains("included", generator.NamedFields.Select(cmf => cmf.Name).ToList());
 //			Assert.False(generator.NamedFields.Select(cmf => cmf.Name).Contains("notincluded"));
-//			Assert.Equal(1, generator.NamedFields.Count());
+//			Assert.AreEqual(1, generator.NamedFields.Count());
 //		}
 //
-//		[Fact]
+//		[Test]
 //		public void xNameInStyles()
 //		{
 //			var xaml = @"<StackLayout 
@@ -196,10 +196,10 @@
 //			generator.ParseXaml(reader);
 //
 //			Assert.False(generator.NamedFields.Select(cmf => cmf.Name).Contains("notincluded"));
-//			Assert.Equal(0, generator.NamedFields.Count());
+//			Assert.AreEqual(0, generator.NamedFields.Count());
 //		}
 //
-//		[Fact]
+//		[Test]
 //		public void xTypeArgumentsOnRootElement()
 //		{
 //			var xaml = @"<Layout 
@@ -222,13 +222,13 @@
 //			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 //			generator.ParseXaml(reader);
 //
-//			Assert.Equal("FooBar", generator.RootType);
-//			Assert.Equal("Microsoft.Maui.Controls.Layout`1", generator.BaseType.BaseType);
-//			Assert.Equal(1, generator.BaseType.TypeArguments.Count);
-//			Assert.Equal("System.String", generator.BaseType.TypeArguments[0].BaseType);
+//			Assert.AreEqual("FooBar", generator.RootType);
+//			Assert.AreEqual("Microsoft.Maui.Controls.Layout`1", generator.BaseType.BaseType);
+//			Assert.AreEqual(1, generator.BaseType.TypeArguments.Count);
+//			Assert.AreEqual("System.String", generator.BaseType.TypeArguments[0].BaseType);
 //		}
 //
-//		[Fact]
+//		[Test]
 //		public void MulipleXTypeArgumentsOnRootElement()
 //		{
 //			var xaml = @"<ObservableWrapper 
@@ -251,14 +251,14 @@
 //			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 //			generator.ParseXaml(reader);
 //
-//			Assert.Equal("FooBar", generator.RootType);
-//			Assert.Equal("Microsoft.Maui.Controls.ObservableWrapper`2", generator.BaseType.BaseType);
-//			Assert.Equal(2, generator.BaseType.TypeArguments.Count);
-//			Assert.Equal("System.String", generator.BaseType.TypeArguments[0].BaseType);
-//			Assert.Equal("System.Int32", generator.BaseType.TypeArguments[1].BaseType);
+//			Assert.AreEqual("FooBar", generator.RootType);
+//			Assert.AreEqual("Microsoft.Maui.Controls.ObservableWrapper`2", generator.BaseType.BaseType);
+//			Assert.AreEqual(2, generator.BaseType.TypeArguments.Count);
+//			Assert.AreEqual("System.String", generator.BaseType.TypeArguments[0].BaseType);
+//			Assert.AreEqual("System.Int32", generator.BaseType.TypeArguments[1].BaseType);
 //		}
 //
-//		[Fact]
+//		[Test]
 //		public void MulipleXTypeArgumentsOnRootElementWithWhitespace()
 //		{
 //			var xaml = @"<ObservableWrapper 
@@ -281,14 +281,14 @@
 //			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 //			generator.ParseXaml(reader);
 //
-//			Assert.Equal("FooBar", generator.RootType);
-//			Assert.Equal("Microsoft.Maui.Controls.ObservableWrapper`2", generator.BaseType.BaseType);
-//			Assert.Equal(2, generator.BaseType.TypeArguments.Count);
-//			Assert.Equal("System.String", generator.BaseType.TypeArguments[0].BaseType);
-//			Assert.Equal("System.Int32", generator.BaseType.TypeArguments[1].BaseType);
+//			Assert.AreEqual("FooBar", generator.RootType);
+//			Assert.AreEqual("Microsoft.Maui.Controls.ObservableWrapper`2", generator.BaseType.BaseType);
+//			Assert.AreEqual(2, generator.BaseType.TypeArguments.Count);
+//			Assert.AreEqual("System.String", generator.BaseType.TypeArguments[0].BaseType);
+//			Assert.AreEqual("System.Int32", generator.BaseType.TypeArguments[1].BaseType);
 //		}
 //
-//		[Fact]
+//		[Test]
 //		public void MulipleXTypeArgumentsMulitpleNamespacesOnRootElement()
 //		{
 //			var xaml = @"<ObservableWrapper 
@@ -314,14 +314,14 @@
 //			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 //			generator.ParseXaml(reader);
 //
-//			Assert.Equal("FooBar", generator.RootType);
-//			Assert.Equal("Microsoft.Maui.Controls.ObservableWrapper`2", generator.BaseType.BaseType);
-//			Assert.Equal(2, generator.BaseType.TypeArguments.Count);
-//			Assert.Equal("Microsoft.Maui.Controls.Xaml.UnitTests.Bugzilla24258.Interfaces.IDummyInterface", generator.BaseType.TypeArguments[0].BaseType);
-//			Assert.Equal("Microsoft.Maui.Controls.Xaml.UnitTests.Bugzilla24258.InterfacesTwo.IDummyInterfaceTwo", generator.BaseType.TypeArguments[1].BaseType);
+//			Assert.AreEqual("FooBar", generator.RootType);
+//			Assert.AreEqual("Microsoft.Maui.Controls.ObservableWrapper`2", generator.BaseType.BaseType);
+//			Assert.AreEqual(2, generator.BaseType.TypeArguments.Count);
+//			Assert.AreEqual("Microsoft.Maui.Controls.Xaml.UnitTests.Bugzilla24258.Interfaces.IDummyInterface", generator.BaseType.TypeArguments[0].BaseType);
+//			Assert.AreEqual("Microsoft.Maui.Controls.Xaml.UnitTests.Bugzilla24258.InterfacesTwo.IDummyInterfaceTwo", generator.BaseType.TypeArguments[1].BaseType);
 //		}
 //
-//		[Fact]
+//		[Test]
 //		public void MulipleXTypeArgumentsMulitpleNamespacesOnRootElementWithWhitespace()
 //		{
 //			var xaml = @"<ObservableWrapper 
@@ -347,14 +347,14 @@
 //			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 //			generator.ParseXaml(reader);
 //
-//			Assert.Equal("FooBar", generator.RootType);
-//			Assert.Equal("Microsoft.Maui.Controls.ObservableWrapper`2", generator.BaseType.BaseType);
-//			Assert.Equal(2, generator.BaseType.TypeArguments.Count);
-//			Assert.Equal("Microsoft.Maui.Controls.Xaml.UnitTests.Bugzilla24258.Interfaces.IDummyInterface", generator.BaseType.TypeArguments[0].BaseType);
-//			Assert.Equal("Microsoft.Maui.Controls.Xaml.UnitTests.Bugzilla24258.InterfacesTwo.IDummyInterfaceTwo", generator.BaseType.TypeArguments[1].BaseType);
+//			Assert.AreEqual("FooBar", generator.RootType);
+//			Assert.AreEqual("Microsoft.Maui.Controls.ObservableWrapper`2", generator.BaseType.BaseType);
+//			Assert.AreEqual(2, generator.BaseType.TypeArguments.Count);
+//			Assert.AreEqual("Microsoft.Maui.Controls.Xaml.UnitTests.Bugzilla24258.Interfaces.IDummyInterface", generator.BaseType.TypeArguments[0].BaseType);
+//			Assert.AreEqual("Microsoft.Maui.Controls.Xaml.UnitTests.Bugzilla24258.InterfacesTwo.IDummyInterfaceTwo", generator.BaseType.TypeArguments[1].BaseType);
 //		}
 //
-//		[Fact]
+//		[Test]
 //		//https://bugzilla.xamarin.com/show_bug.cgi?id=33256
 //		public void AlwaysUseGlobalReference()
 //		{
@@ -379,12 +379,12 @@
 //				var generator = new XamlGenerator(null, null, null, null, null, null, references);
 //				generator.ParseXaml(reader);
 //
-//				Assert.True(generator.BaseType.Options.HasFlag(CodeTypeReferenceOptions.GlobalReference));
-//				Assert.True(generator.NamedFields.Select(cmf => cmf.Type).First().Options.HasFlag(CodeTypeReferenceOptions.GlobalReference));
+//				Assert.IsTrue(generator.BaseType.Options.HasFlag(CodeTypeReferenceOptions.GlobalReference));
+//				Assert.IsTrue(generator.NamedFields.Select(cmf => cmf.Type).First().Options.HasFlag(CodeTypeReferenceOptions.GlobalReference));
 //			}
 //		}
 //
-//		[Fact]
+//		[Test]
 //		public void FieldModifier()
 //		{
 //			var xaml = @"
@@ -413,13 +413,13 @@
 //				var generator = new XamlGenerator(null, null, null, null, null, null, references);
 //				generator.ParseXaml(reader);
 //
-//				Assert.Equal(MemberAttributes.Private, generator.NamedFields.First(cmf => cmf.Name == "privateLabel").Attributes);
-//				Assert.Equal(MemberAttributes.Assembly, generator.NamedFields.First(cmf => cmf.Name == "internalLabel").Attributes);
-//				Assert.Equal(MemberAttributes.Public, generator.NamedFields.First(cmf => cmf.Name == "publicLabel").Attributes);
+//				Assert.That(generator.NamedFields.First(cmf => cmf.Name == "privateLabel").Attributes, Is.EqualTo(MemberAttributes.Private));
+//				Assert.That(generator.NamedFields.First(cmf => cmf.Name == "internalLabel").Attributes, Is.EqualTo(MemberAttributes.Assembly));
+//				Assert.That(generator.NamedFields.First(cmf => cmf.Name == "publicLabel").Attributes, Is.EqualTo(MemberAttributes.Public));
 //			}
 //		}
 //
-//		[Fact]
+//		[Test]
 //		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/2574
 //		public void xNameOnRoot()
 //		{
@@ -442,12 +442,12 @@
 //			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 //			generator.ParseXaml(new StringReader(xaml));
 //
-//			Assert.Equal(1, generator.NamedFields.Count());
-//			Assert.Equal("bar", generator.NamedFields.First().Name);
-//			Assert.Equal("Microsoft.Maui.Controls.ContentPage", generator.NamedFields.First().Type.BaseType);
+//			Assert.AreEqual(1, generator.NamedFields.Count());
+//			Assert.AreEqual("bar", generator.NamedFields.First().Name);
+//			Assert.AreEqual("Microsoft.Maui.Controls.ContentPage", generator.NamedFields.First().Type.BaseType);
 //		}
 //
-//		[Fact]
+//		[Test]
 //		public void XamlGDifferentInputOutputLengths()
 //		{
 //			var engine = new MSBuild.UnitTests.DummyBuildEngine();
@@ -460,10 +460,10 @@
 //				OutputFiles = new ITaskItem[2],
 //			};
 //
-//			Assert.False(generator.Execute(), "XamlGTask.Execute() should fail.");
-//			Assert.Equal(1, engine.Errors.Count, "XamlGTask should have 1 error.");
+//			Assert.IsFalse(generator.Execute(), "XamlGTask.Execute() should fail.");
+//			Assert.AreEqual(1, engine.Errors.Count, "XamlGTask should have 1 error.");
 //			var error = engine.Errors.First();
-//			Assert.Equal("\"XamlFiles\" refers to 1 item(s), and \"OutputFiles\" refers to 2 item(s). They must have the same number of items.", error.Message);
+//			Assert.AreEqual("\"XamlFiles\" refers to 1 item(s), and \"OutputFiles\" refers to 2 item(s). They must have the same number of items.", error.Message);
 //		}
 //	}
 //}

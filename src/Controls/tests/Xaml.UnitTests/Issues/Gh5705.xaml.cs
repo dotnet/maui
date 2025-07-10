@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -14,16 +14,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
 
-			[Fact]
+			[Test]
 			public void SearchHandlerIneritBC([Values(false, true)] bool useCompiledXaml)
 			{
 				var vm = new object();
 				var shell = new Gh5705(useCompiledXaml) { BindingContext = vm };
-				Assert.Equal(vm, shell.searchHandler.BindingContext);
+				Assert.That(shell.searchHandler.BindingContext, Is.EqualTo(vm));
 			}
 		}
 	}

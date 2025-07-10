@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -35,16 +35,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[InlineData(true)], TestCase(false)]
+			[TestCase(true), TestCase(false)]
 			public void GenericBaseInterfaceResolution(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					() => MockCompiler.Compile(typeof(Gh5651))
+					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh5651)));
 				var layout = new Gh5651(useCompiledXaml) { BindingContext = new Gh5651VM() };
-				Assert.Equal("test", layout.label.Text);
+				Assert.That(layout.label.Text, Is.EqualTo("test"));
 			}
 		}
 	}

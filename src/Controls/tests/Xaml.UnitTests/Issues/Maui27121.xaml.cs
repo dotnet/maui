@@ -9,7 +9,7 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -22,9 +22,10 @@ public partial class Maui27121
 		//this stub will be replaced at compile time
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	class Test
 	{
+		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -33,11 +34,11 @@ public partial class Maui27121
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
+		[Test]
 		public void XNameAreTrimmed([Values] bool useCompiledXaml)
 		{
 			var page = new Maui27121(useCompiledXaml);
-			Assert.NotNull(page.label0);
+			Assert.That(page.label0, Is.Not.Null);
 		}
 	}
 }

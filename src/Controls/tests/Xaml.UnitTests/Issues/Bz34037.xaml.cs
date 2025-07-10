@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -68,32 +68,34 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
+			[SetUp]
 			public void Setup()
 			{
 				Bz34037Converter0.Invoked = 0;
 				Bz34037Converter1.Invoked = 0;
 			}
 
+			[TearDown]
 			public void TearDown()
 			{
 				Application.Current = null;
 			}
 
 
-			[InlineData(true)]
-			[InlineData(false)]
+			[TestCase(true)]
+			[TestCase(false)]
 			public void ConverterParameterOrderDoesNotMatters(bool useCompiledXaml)
 			{
 				var layout = new Bz34037(useCompiledXaml);
-				Assert.Equal(1, Bz34037Converter0.Invoked);
-				Assert.Equal(1, Bz34037Converter1.Invoked);
-				Assert.Equal(typeof(string), Bz34037Converter0.Parameter);
-				Assert.Equal(typeof(string), Bz34037Converter1.Parameter);
-				Assert.True(layout.s0.IsToggled);
-				Assert.True(layout.s1.IsToggled);
+				Assert.AreEqual(1, Bz34037Converter0.Invoked);
+				Assert.AreEqual(1, Bz34037Converter1.Invoked);
+				Assert.AreEqual(typeof(string), Bz34037Converter0.Parameter);
+				Assert.AreEqual(typeof(string), Bz34037Converter1.Parameter);
+				Assert.That(layout.s0.IsToggled, Is.True);
+				Assert.That(layout.s1.IsToggled, Is.True);
 			}
 		}
 	}

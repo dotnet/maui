@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,21 +15,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
 			[TearDown] public void TearDown() => ResourceDictionary.ClearCache();
 
-			[InlineData(true)], TestCase(false)]
+			[TestCase(true), TestCase(false)]
 			public void RdWithSource(bool useCompiledXaml)
 			{
 				var layout = new Gh13209(useCompiledXaml);
-				Assert.Equal(Colors.Chartreuse, layout.MyRect.BackgroundColor);
-				Assert.Equal(1, layout.Root.Resources.Count);
-				Assert.Equal(0, layout.Root.Resources.MergedDictionaries.Count);
+				Assert.That(layout.MyRect.BackgroundColor, Is.EqualTo(Colors.Chartreuse));
+				Assert.That(layout.Root.Resources.Count, Is.EqualTo(1));
+				Assert.That(layout.Root.Resources.MergedDictionaries.Count, Is.EqualTo(0));
 
-				Assert.NotNull(layout.Root.Resources["Color1"]);
-				Assert.True(layout.Root.Resources.Remove("Color1"));
+				Assert.That(layout.Root.Resources["Color1"], Is.Not.Null);
+				Assert.That(layout.Root.Resources.Remove("Color1"), Is.True);
 				Assert.Throws<KeyNotFoundException>(() =>
 				{
 					var _ = layout.Root.Resources["Color1"];

@@ -1,21 +1,22 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class OnPlatformTests : BaseTestFixture
 	{
 		MockDeviceInfo mockDeviceInfo;
 
+		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
-		[Fact]
+		[Test]
 		public void ApplyToProperty()
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.NotNull(layout.Content);
 		}
 
-		[Fact]
+		[Test]
 		public void UseTypeConverters()
 		{
 			var xaml = @"
@@ -60,18 +61,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			layout = new ContentPage().LoadFromXaml(xaml);
-			Assert.Equal(new Thickness(0, 20, 0, 0), layout.Padding);
+			Assert.AreEqual(new Thickness(0, 20, 0, 0), layout.Padding);
 
 			mockDeviceInfo.Platform = DevicePlatform.Android;
 			layout = new ContentPage().LoadFromXaml(xaml);
-			Assert.Equal(new Thickness(0, 0, 10, 0), layout.Padding);
+			Assert.AreEqual(new Thickness(0, 0, 10, 0), layout.Padding);
 
 			mockDeviceInfo.Platform = DevicePlatform.UWP;
 			layout = new ContentPage().LoadFromXaml(xaml);
-			Assert.Equal(new Thickness(0, 20, 0, 20), layout.Padding);
+			Assert.AreEqual(new Thickness(0, 20, 0, 20), layout.Padding);
 		}
 
-		[Fact]
+		[Test]
 		//Issue 1480
 		public void TypeConverterAndDerivedTypes()
 		{
@@ -91,10 +92,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			image = new Image().LoadFromXaml(xaml);
-			Assert.Equal("icon_twitter.png", (image.Source as FileImageSource).File);
+			Assert.AreEqual("icon_twitter.png", (image.Source as FileImageSource).File);
 		}
 
-		[Fact]
+		[Test]
 		public void UWPisWinUI()
 		{
 			var xaml = @"
@@ -113,10 +114,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			mockDeviceInfo.Platform = DevicePlatform.WinUI;
 			image = new Image().LoadFromXaml(xaml);
-			Assert.Equal("Images/icon_twitter.png", (image.Source as FileImageSource).File);
+			Assert.AreEqual("Images/icon_twitter.png", (image.Source as FileImageSource).File);
 		}
 
-		[Fact]
+		[Test]
 		public void ChecksPreferWinUI()
 		{
 			var xaml = @"
@@ -136,22 +137,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			mockDeviceInfo.Platform = DevicePlatform.WinUI;
 			image = new Image().LoadFromXaml(xaml);
-			Assert.Equal("Images/icon_twitter_preferred.png", (image.Source as FileImageSource).File);
+			Assert.AreEqual("Images/icon_twitter_preferred.png", (image.Source as FileImageSource).File);
 		}
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class OnIdiomTests : BaseTestFixture
 	{
 		MockDeviceInfo mockDeviceInfo;
 
+		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
-		[Fact]
+		[Test]
 		public void StackLayoutOrientation()
 		{
 			var xaml = @"
@@ -170,11 +172,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			mockDeviceInfo.Idiom = DeviceIdiom.Phone;
 			var layout = new StackLayout().LoadFromXaml(xaml);
-			Assert.Equal(StackOrientation.Vertical, layout.Orientation);
+			Assert.AreEqual(StackOrientation.Vertical, layout.Orientation);
 
 			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
 			layout = new StackLayout().LoadFromXaml(xaml);
-			Assert.Equal(StackOrientation.Horizontal, layout.Orientation);
+			Assert.AreEqual(StackOrientation.Horizontal, layout.Orientation);
 		}
 	}
 }

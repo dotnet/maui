@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -13,16 +13,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[Fact]
+			[Test]
 			public void XamlOnlyResourceResolvesLocalAssembly([Values(false, true)] bool useCompiledXaml)
 			{
 				Gh7531 layout = null;
-				() => layout = new Gh7531(useCompiledXaml)
+				Assert.DoesNotThrow(() => layout = new Gh7531(useCompiledXaml));
 				var style = ((ResourceDictionary)layout.Resources["Colors"])["style"] as Style;
-				Assert.Equal(typeof(Gh7531, style.TargetType));
+				Assert.That(style.TargetType, Is.EqualTo(typeof(Gh7531)));
 			}
 		}
 	}

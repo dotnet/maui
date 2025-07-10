@@ -1,6 +1,6 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,10 +17,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public static Color Color => Colors.Black;
 		public static double Size = 50d;
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[InlineData(true)], TestCase(false)]
+			[TestCase(true), TestCase(false)]
 			public void FontImageExtension_Positive(bool useCompiledXaml)
 			{
 				var layout = new FontImageExtension(useCompiledXaml);
@@ -36,20 +36,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					Assert.That(myTab.Icon, Is.TypeOf<FontImageSource>());
 
 					var fontImage = (FontImageSource)myTab.Icon;
-					Assert.Equal(FontFamily, fontImage.FontFamily);
-					Assert.Equal(Glyph, fontImage.Glyph);
+					Assert.AreEqual(FontFamily, fontImage.FontFamily);
+					Assert.AreEqual(Glyph, fontImage.Glyph);
 
 					if (i == 3)
-						Assert.Equal(30d, fontImage.Size);
+						Assert.AreEqual(30d, fontImage.Size);
 					else
-						Assert.Equal(Size, fontImage.Size);
+						Assert.AreEqual(Size, fontImage.Size);
 
-					Assert.Equal(Color, fontImage.Color);
+					Assert.AreEqual(Color, fontImage.Color);
 					i++;
 				}
 			}
 
-			[InlineData(true)], TestCase(false)]
+			[TestCase(true), TestCase(false)]
 			public void FontImageExtension_Negative(bool useCompiledXaml)
 			{
 				var layout = new FontImageExtension(useCompiledXaml);

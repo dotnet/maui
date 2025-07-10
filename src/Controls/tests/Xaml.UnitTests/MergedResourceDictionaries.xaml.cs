@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,18 +17,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void MergedResourcesAreFound(bool useCompiledXaml)
 			{
 				MockCompiler.Compile(typeof(MergedResourceDictionaries));
 				var layout = new MergedResourceDictionaries(useCompiledXaml);
-				Assert.Equal("Foo", layout.label0.Text);
-				Assert.Equal(Colors.Pink, layout.label0.TextColor);
-				Assert.Equal(Color.FromArgb("#111", layout.label0.BackgroundColor));
+				Assert.That(layout.label0.Text, Is.EqualTo("Foo"));
+				Assert.That(layout.label0.TextColor, Is.EqualTo(Colors.Pink));
+				Assert.That(layout.label0.BackgroundColor, Is.EqualTo(Color.FromArgb("#111")));
 			}
 		}
 	}

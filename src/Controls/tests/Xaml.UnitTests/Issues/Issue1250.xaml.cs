@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -28,17 +28,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void AddCustomElementInCollection(bool useCompiledXaml)
 			{
 				var page = new Issue1250(useCompiledXaml);
 				var stack = page.stack;
 
-				Assert.Equal(3, stack.Children.Count);
+				Assert.AreEqual(3, stack.Children.Count);
 				Assert.That(stack.Children[0], Is.TypeOf<Label>());
 				Assert.That(stack.Children[1], Is.TypeOf<Issue1250AspectRatioContainer>());
 				Assert.That(stack.Children[2], Is.TypeOf<Label>());

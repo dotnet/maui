@@ -1,6 +1,6 @@
 using System.IO;
 using Mono.Cecil;
-using Xunit;
+using NUnit.Framework;
 using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests

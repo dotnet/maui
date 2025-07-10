@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Xaml.Internals;
-using Xunit;
+using NUnit.Framework;
 using NUnit.Framework.Internal;
 using static System.String;
 
@@ -283,9 +283,10 @@ public partial class NativeViewsAndBindings : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	class Test
 	{
+		[SetUp]
 		public void Setup()
 		{
 			AppInfo.SetCurrent(new Core.UnitTests.MockAppInfo());
@@ -295,7 +296,7 @@ public partial class NativeViewsAndBindings : ContentPage
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
+		[Test]
 		public void NativeInContentView([Values(false)] bool useCompiledXaml)
 		{
 			var layout = new NativeViewsAndBindings(useCompiledXaml);
@@ -308,11 +309,11 @@ public partial class NativeViewsAndBindings : ContentPage
 
 			var wrapper = layout.stack.Children.First();
 			Assert.That(wrapper, Is.TypeOf<MockNativeViewWrapper>());
-			Assert.Equal(nativeView, ((MockNativeViewWrapper)wrapper).NativeView);
+			Assert.That(((MockNativeViewWrapper)wrapper).NativeView, Is.EqualTo(nativeView));
 
-			Assert.Equal("foo", nativeView.Foo);
-			Assert.Equal(42, nativeView.Bar);
-			Assert.Equal("Bound Value", nativeView.Baz);
+			Assert.AreEqual("foo", nativeView.Foo);
+			Assert.AreEqual(42, nativeView.Bar);
+			Assert.AreEqual("Bound Value", nativeView.Baz);
 		}
 	}
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -19,22 +19,22 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void ConstantConstraint(bool useCompiledXaml)
 			{
 				var layout = new ConstraintExpression(useCompiledXaml);
 				var label = layout.constantConstraint;
 				var constraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(label);
 				Assert.NotNull(constraint);
-				Assert.Equal(42, constraint.Compute(null));
+				Assert.AreEqual(42, constraint.Compute(null));
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void ConstraintRelativeToParent(bool useCompiledXaml)
 			{
 				var layout = new ConstraintExpression(useCompiledXaml);
@@ -42,11 +42,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var label = layout.constraintRelativeToParent;
 				var constraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(label);
 				Assert.NotNull(constraint);
-				Assert.Equal(102, constraint.Compute(layout.relativeLayout));
+				Assert.AreEqual(102, constraint.Compute(layout.relativeLayout));
 			}
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void ContraintRelativeToView(bool useCompiledXaml)
 			{
 				var layout = new ConstraintExpression(useCompiledXaml)
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var label = layout.constraintRelativeToView;
 				var constraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(label);
 				Assert.NotNull(constraint);
-				Assert.Equal(97, constraint.Compute(layout.relativeLayout));
+				Assert.AreEqual(97, constraint.Compute(layout.relativeLayout));
 			}
 		}
 	}

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,19 +17,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[Fact]
+			[Test]
 			public void FontImageSourceColorWithDynamicResource([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh6996(useCompiledXaml);
 				Image image = layout.image;
 				var fis = image.Source as FontImageSource;
-				Assert.Equal(Colors.Orange, fis.Color);
+				Assert.That(fis.Color, Is.EqualTo(Colors.Orange));
 
 				layout.Resources["imcolor"] = layout.Resources["notBlue"];
-				Assert.Equal(Colors.Lime, fis.Color);
+				Assert.That(fis.Color, Is.EqualTo(Colors.Lime));
 			}
 		}
 	}

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -27,17 +27,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			stack.Children.Insert(index + 1, newLabel);
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
 			bool _debuggerinitialstate;
 
+			[SetUp]
 			public void Setup()
 			{
 				_debuggerinitialstate = DebuggerHelper._mockDebuggerIsAttached;
 				DebuggerHelper._mockDebuggerIsAttached = true;
 			}
 
+			[TearDown]
 			public void TearDown()
 			{
 				DebuggerHelper._mockDebuggerIsAttached = _debuggerinitialstate;
@@ -46,12 +48,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			void OnVTChanged(object sender, VisualTreeChangeEventArgs e)
 			{
-				Assert.Equal(VisualTreeChangeType.Remove, e.ChangeType);
-				Assert.Equal(0, e.ChildIndex);
+				Assert.That(e.ChangeType, Is.EqualTo(VisualTreeChangeType.Remove));
+				Assert.That(e.ChildIndex, Is.EqualTo(0));
 				Assert.Pass();
 			}
 
-			[Fact]
+			[Test]
 			public void ChildIndexOnRemove([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh11334(useCompiledXaml);

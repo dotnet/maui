@@ -2,7 +2,7 @@ using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using Xunit;
+using NUnit.Framework;
 
 #pragma warning disable CS0067 // The event 'event' is never used
 
@@ -25,13 +25,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
 			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Fact]
+			[Test]
 			public void AccessInternalEvent([Values(false, true)] bool useCompiledXaml)
 			{
 				//shouldn't throw

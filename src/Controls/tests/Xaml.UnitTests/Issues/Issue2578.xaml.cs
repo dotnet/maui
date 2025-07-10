@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -19,21 +19,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
 			[Ignore("[Bug] NamedSizes don't work in triggers: https://github.com/xamarin/Microsoft.Maui.Controls/issues/13831")]
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void MultipleTriggers(bool useCompiledXaml)
 			{
 				Issue2578 layout = new Issue2578(useCompiledXaml);
 
-				Assert.Equal(null, layout.label.Text);
-				Assert.Equal(null, layout.label.BackgroundColor);
-				Assert.Equal(Colors.Olive, layout.label.TextColor);
+				Assert.AreEqual(null, layout.label.Text);
+				Assert.AreEqual(null, layout.label.BackgroundColor);
+				Assert.AreEqual(Colors.Olive, layout.label.TextColor);
 				layout.label.Text = "Foo";
-				Assert.Equal(Colors.Red, layout.label.BackgroundColor);
+				Assert.AreEqual(Colors.Red, layout.label.BackgroundColor);
 			}
 		}
 	}

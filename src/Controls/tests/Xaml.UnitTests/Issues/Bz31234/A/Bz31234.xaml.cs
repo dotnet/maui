@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests.A
 {
@@ -17,10 +17,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests.A
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
-			[InlineData(true)], TestCase(false)]
+			[TestCase(true), TestCase(false)]
 			public void ShouldPass(bool useCompiledXaml)
 			{
 				new Bz31234(useCompiledXaml);

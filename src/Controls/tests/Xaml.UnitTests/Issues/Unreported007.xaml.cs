@@ -1,6 +1,6 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -18,25 +18,27 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
+			[SetUp]
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
 			}
 
+			[TearDown]
 			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[InlineData(true)], TestCase(false)]
+			[TestCase(true), TestCase(false)]
 			public void ConstraintsAreEvaluatedWithOnPlatform(bool useCompiledXaml)
 			{
 				var page = new Unreported007(useCompiledXaml);
 				Assert.That(RelativeLayout.GetXConstraint(page.label), Is.TypeOf<Constraint>());
-				Assert.Equal(3, RelativeLayout.GetXConstraint(page.label).Compute(null));
+				Assert.AreEqual(3, RelativeLayout.GetXConstraint(page.label).Compute(null));
 			}
 		}
 	}

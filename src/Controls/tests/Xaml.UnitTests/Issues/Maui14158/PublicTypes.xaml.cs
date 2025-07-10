@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Xaml.UnitTests.Issues.Maui14158;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests.Maui14158;
 
@@ -15,15 +15,15 @@ public partial class PublicTypes : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	class Tests
 	{
-		[InlineData(true)]
-		[InlineData(false)]
+		[TestCase(true)]
+		[TestCase(false)]
 		public void VerifyCorrectTypesUsed(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
-				() => MockCompiler.Compile(typeof(PublicTypes))
+				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(PublicTypes)));
 
 			var page = new PublicTypes(useCompiledXaml);
 

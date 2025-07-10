@@ -1,10 +1,10 @@
 using System.Collections;
 using Microsoft.Maui.Controls.Xaml;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public static class ApplyPropertiesVisitorTests
 	{
 		public class MarkupExtension : IMarkupExtension
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public ArrayList ArrayList { get; } = new ArrayList();
 		}
 
-		[Fact]
+		[Test]
 		public static void ProvideValueForCollectionItem()
 		{
 			const string NAMESPACE = "clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests";
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			rootNode.Accept(new CreateValuesVisitor(context), null);
 			rootNode.Accept(new ApplyPropertiesVisitor(context), null);
 
-			CollectionAssert.Equal(new[] { "provided value", "provided value" }, rootElement.ArrayList);
+			CollectionAssert.AreEqual(new[] { "provided value", "provided value" }, rootElement.ArrayList);
 		}
 	}
 }

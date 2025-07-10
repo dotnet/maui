@@ -11,7 +11,7 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -28,9 +28,10 @@ public partial class Maui20616
 		//this stub will be replaced at compile time
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	class Test
 	{
+		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -39,13 +40,13 @@ public partial class Maui20616
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
+		[Test]
 		public void XDataTypeCanBeGeneric([Values(false, true)] bool useCompiledXaml)
 		{
 			var page = new Maui20616(useCompiledXaml);
 
 			page.LabelA.BindingContext = new ViewModel20616<string> { Value = "ABC" };
-			Assert.Equal("ABC", page.LabelA.Text);
+			Assert.AreEqual("ABC", page.LabelA.Text);
 
 			if (useCompiledXaml)
 			{
@@ -54,7 +55,7 @@ public partial class Maui20616
 			}
 
 			page.LabelB.BindingContext = new ViewModel20616<ViewModel20616<bool>> { Value = new ViewModel20616<bool> { Value = true } };
-			Assert.Equal("True", page.LabelB.Text);
+			Assert.AreEqual("True", page.LabelB.Text);
 
 			if (useCompiledXaml)
 			{
@@ -62,8 +63,8 @@ public partial class Maui20616
 				Assert.That(binding, Is.TypeOf<TypedBinding<ViewModel20616<ViewModel20616<bool>>, bool>>());
 			}
 
-			Assert.Equal(typeof(ViewModel20616<bool>), page.Resources["ViewModelBool"]);
-			Assert.Equal(typeof(ViewModel20616<ViewModel20616<string>>), page.Resources["NestedViewModel"]);
+			Assert.AreEqual(typeof(ViewModel20616<bool>), page.Resources["ViewModelBool"]);
+			Assert.AreEqual(typeof(ViewModel20616<ViewModel20616<string>>), page.Resources["NestedViewModel"]);
 		}
 	}
 }

@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -18,20 +18,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[Fact]
+			[Test]
 			public void TemplateBindingInSpans([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh7494(useCompiledXaml);
 				var view = layout.Content as Gh7494Content;
 				var templatedLabel = ((StackLayout)view.Children[0]).Children[0] as Label;
 
-				Assert.Equal(view.Title, templatedLabel.FormattedText.Spans[0].Text);
+				Assert.That(templatedLabel.FormattedText.Spans[0].Text, Is.EqualTo(view.Title));
 			}
 		}
 	}

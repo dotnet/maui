@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -27,11 +27,12 @@ public partial class Maui24849 : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
+		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -40,13 +41,14 @@ public partial class Maui24849 : ContentPage
 		}
 
 
+		[TearDown]
 		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Fact]
+		[Test]
 		public void VSGReturnsToNormal([Values(false, true)] bool useCompiledXaml)
 		{
 			var app = new MockApplication();
@@ -55,16 +57,16 @@ public partial class Maui24849 : ContentPage
 
 			app.MainPage = page;
 
-			Assert.False(page.button.IsEnabled);
-			Assert.Equal(Color.FromHex("#3c3c3b", page.button.TextColor));
+			Assert.That(page.button.IsEnabled, Is.False);
+			Assert.That(page.button.TextColor, Is.EqualTo(Color.FromHex("#3c3c3b")));
 
 			page.button.IsEnabled = true;
-			Assert.True(page.button.IsEnabled);
-			Assert.Equal(Colors.White, page.button.TextColor);
+			Assert.That(page.button.IsEnabled, Is.True);
+			Assert.That(page.button.TextColor, Is.EqualTo(Colors.White));
 
 			page.button.IsEnabled = false;
-			Assert.False(page.button.IsEnabled);
-			Assert.Equal(Color.FromHex("#3c3c3b", page.button.TextColor));
+			Assert.That(page.button.IsEnabled, Is.False);
+			Assert.That(page.button.TextColor, Is.EqualTo(Color.FromHex("#3c3c3b")));
 		}
 	}
 }

@@ -1,14 +1,14 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class FontConverterTests : BaseTestFixture
 	{
-		[InlineData("Bold", Controls.FontAttributes.Bold)]
-		[InlineData("Italic", Controls.FontAttributes.Italic)]
-		[InlineData("Bold, Italic", Controls.FontAttributes.Bold | Controls.FontAttributes.Italic)]
+		[TestCase("Bold", Controls.FontAttributes.Bold)]
+		[TestCase("Italic", Controls.FontAttributes.Italic)]
+		[TestCase("Bold, Italic", Controls.FontAttributes.Bold | Controls.FontAttributes.Italic)]
 		public void FontAttributes(string attributeString, FontAttributes result)
 		{
 			var xaml = @"
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var label = new Label().LoadFromXaml(xaml);
 
-			Assert.Equal(result, label.FontAttributes);
+			Assert.AreEqual(result, label.FontAttributes);
 		}
 	}
 }

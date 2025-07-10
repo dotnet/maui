@@ -5,7 +5,7 @@ using System.Runtime.ConstrainedExecution;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Mono.Cecil;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -88,10 +88,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	}
 
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class LoaderTests : BaseTestFixture
 	{
-		[Fact]
+		[Test]
 		public void TestRootName()
 		{
 			var xaml = @"
@@ -105,10 +105,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var view = new CustomView();
 			view.LoadFromXaml(xaml);
 
-			Assert.Same(view, ((Maui.Controls.Internals.INameScope)view).FindByName("customView"));
+			Assert.AreSame(view, ((Maui.Controls.Internals.INameScope)view).FindByName("customView"));
 		}
 
-		[Fact]
+		[Test]
 		public void TestFindByXName()
 		{
 			var xaml = @"
@@ -125,10 +125,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var label = stacklayout.FindByName<Label>("label0");
 			Assert.NotNull(label);
-			Assert.Equal("Foo", label.Text);
+			Assert.AreEqual("Foo", label.Text);
 		}
 
-		[Fact]
+		[Test]
 		public void TestUnknownPropertyShouldThrow()
 		{
 			var xaml = @"
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.Throws(new XamlParseExceptionConstraint(5, 5), () => label.LoadFromXaml(xaml));
 		}
 
-		[Fact]
+		[Test]
 		public void TestSetValueToBindableProperty()
 		{
 			var xaml = @"
@@ -154,11 +154,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var label = new Label();
 
 			label.LoadFromXaml(xaml);
-			Assert.Equal("Foo", label.Text);
+			Assert.AreEqual("Foo", label.Text);
 
 		}
 
-		[Fact]
+		[Test]
 		public void TestSetBindingToBindableProperty()
 		{
 			var xaml = @"
@@ -170,13 +170,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var label = new Label();
 			label.LoadFromXaml(xaml);
 
-			Assert.Equal(Label.TextProperty.DefaultValue, label.Text);
+			Assert.AreEqual(Label.TextProperty.DefaultValue, label.Text);
 
 			label.BindingContext = new { labeltext = "Foo" };
-			Assert.Equal("Foo", label.Text);
+			Assert.AreEqual("Foo", label.Text);
 		}
 
-		[Fact]
+		[Test]
 		public void TestSetBindingToNonBindablePropertyShouldThrow()
 		{
 			var xaml = @"
@@ -192,7 +192,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.Throws(new XamlParseExceptionConstraint(6, 5), () => view.LoadFromXaml(xaml));
 		}
 
-		[Fact]
+		[Test]
 		public void TestBindingPath()
 		{
 			var xaml = @"
@@ -212,12 +212,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var label0 = stacklayout.FindByName<Label>("label0");
 			var label1 = stacklayout.FindByName<Label>("label1");
 
-			Assert.Equal(Label.TextProperty.DefaultValue, label0.Text);
-			Assert.Equal(Label.TextProperty.DefaultValue, label1.Text);
+			Assert.AreEqual(Label.TextProperty.DefaultValue, label0.Text);
+			Assert.AreEqual(Label.TextProperty.DefaultValue, label1.Text);
 
 			stacklayout.BindingContext = new { text = "Foo" };
-			Assert.Equal("Foo", label0.Text);
-			Assert.Equal("Foo", label1.Text);
+			Assert.AreEqual("Foo", label0.Text);
+			Assert.AreEqual("Foo", label1.Text);
 		}
 
 
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public string Text { get; set; }
 		}
 
-		[Fact]
+		[Test]
 		public void TestBindingModeAndConverter()
 		{
 			var xaml = @"
@@ -255,13 +255,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			contentPage.BindingContext = new ViewModel { Text = "foobar" };
 			var label0 = contentPage.FindByName<Label>("label0");
 			var label1 = contentPage.FindByName<Label>("label1");
-			Assert.Equal("raboof", label0.Text);
+			Assert.AreEqual("raboof", label0.Text);
 
 			label1.Text = "baz";
-			Assert.Equal("baz", ((ViewModel)(contentPage.BindingContext)).Text);
+			Assert.AreEqual("baz", ((ViewModel)(contentPage.BindingContext)).Text);
 		}
 
-		[Fact]
+		[Test]
 		public void TestNonEmptyCollectionMembers()
 		{
 			var xaml = @"
@@ -284,7 +284,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.NotNull(grid1);
 		}
 
-		[Fact]
+		[Test]
 		public void TestUnknownType()
 		{
 			var xaml = @"
@@ -300,7 +300,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.Throws(new XamlParseExceptionConstraint(6, 8), () => stacklayout.LoadFromXaml(xaml));
 		}
 
-		[Fact]
+		[Test]
 		public void TestResources()
 		{
 			var xaml = @"
@@ -321,7 +321,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.True(label.Resources["reverseConverter"] is ReverseConverter);
 		}
 
-		[Fact]
+		[Test]
 		public void TestResourceDoesRequireKey()
 		{
 			var xaml = @"
@@ -339,7 +339,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.Throws(new XamlParseExceptionConstraint(8, 9), () => label.LoadFromXaml(xaml));
 		}
 
-		[Fact]
+		[Test]
 		public void UseResourcesOutsideOfBinding()
 		{
 			var xaml = @"
@@ -357,10 +357,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
                 </ContentView>";
 
 			var contentView = new ContentView().LoadFromXaml(xaml);
-			Assert.Equal("Foo", (((ContentView)(contentView.Content)).Content as Label).Text);
+			Assert.AreEqual("Foo", (((ContentView)(contentView.Content)).Content as Label).Text);
 		}
 
-		[Fact]
+		[Test]
 		public void MissingStaticResourceShouldThrow()
 		{
 			var xaml = @"<Label xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" Text=""{StaticResource foo}""/>";
@@ -392,7 +392,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 		}
 
-		[Fact]
+		[Test]
 		public void StaticResourceLookForApplicationResources()
 		{
 			Application.Current = null;
@@ -416,13 +416,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var label1 = layout.FindByName<Label>("label1");
 
 			//resource from App.Resources
-			Assert.Equal("FOO", label0.Text);
+			Assert.AreEqual("FOO", label0.Text);
 
 			//local resources have precedence
-			Assert.Equal("BAZ", label1.Text);
+			Assert.AreEqual("BAZ", label1.Text);
 		}
 
-		[Fact]
+		[Test]
 		public void TestEvent()
 		{
 			var xaml = @"
@@ -438,7 +438,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.True(view.fired);
 		}
 
-		[Fact]
+		[Test]
 		public void TestFailingEvent()
 		{
 			var xaml = @"
@@ -451,7 +451,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.Throws(new XamlParseExceptionConstraint(5, 63), () => view.LoadFromXaml(xaml));
 		}
 
-		[Fact]
+		[Test]
 		public void TestConnectingEventOnMethodWithWrongSignature()
 		{
 			var xaml = @"
@@ -476,7 +476,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		}
 
-		[Fact]
+		[Test]
 		public void TestEventWithCustomEventArgs()
 		{
 			var xaml = @"
@@ -488,7 +488,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			new CustEntry().LoadFromXaml(xaml);
 		}
 
-		[Fact]
+		[Test]
 		public void TestEmptyTemplate()
 		{
 			var xaml = @"
@@ -508,7 +508,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.NotNull(template.CreateContent());
 		}
 
-		[Fact]
+		[Test]
 		public void TestBoolValue()
 		{
 			var xaml = @"
@@ -518,12 +518,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				IsOpaque=""true""/>";
 
 			var image = new Image();
-			Assert.Equal(Image.IsOpaqueProperty.DefaultValue, image.IsOpaque);
+			Assert.AreEqual(Image.IsOpaqueProperty.DefaultValue, image.IsOpaque);
 			image.LoadFromXaml(xaml);
-			Assert.Equal(true, image.IsOpaque);
+			Assert.AreEqual(true, image.IsOpaque);
 		}
 
-		[Fact]
+		[Test]
 		public void TestAttachedBP()
 		{
 			var xaml = @"
@@ -534,11 +534,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					<Grid.Row>2</Grid.Row>
 				</View>";
 			var view = new View().LoadFromXaml(xaml);
-			Assert.Equal(1, Grid.GetColumn(view));
-			Assert.Equal(2, Grid.GetRow(view));
+			Assert.AreEqual(1, Grid.GetColumn(view));
+			Assert.AreEqual(2, Grid.GetRow(view));
 		}
 
-		[Fact]
+		[Test]
 		public void TestAttachedBPWithDifferentNS()
 		{
 			//If this looks very similar to Vernacular, well... it's on purpose :)
@@ -549,10 +549,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" 
 				local:Catalog.Message=""foobar""/>";
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.Equal("raboof", label.Text);
+			Assert.AreEqual("raboof", label.Text);
 		}
 
-		[Fact]
+		[Test]
 		public void TestBindOnAttachedBP()
 		{
 			var xaml = @"
@@ -563,10 +563,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				local:Catalog.Message=""{Binding .}""/>";
 			var label = new Label().LoadFromXaml(xaml);
 			label.BindingContext = "foobar";
-			Assert.Equal("raboof", label.Text);
+			Assert.AreEqual("raboof", label.Text);
 		}
 
-		[Fact]
+		[Test]
 		public void TestContentProperties()
 		{
 			var xaml = @"
@@ -577,12 +577,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					<Label x:Name=""contentview""/>
 				</local:CustomView>";
 			CustomView customView = null;
-			() => customView = new CustomView().LoadFromXaml(xaml)
+			Assert.DoesNotThrow(() => customView = new CustomView().LoadFromXaml(xaml));
 			Assert.NotNull(customView.Content);
-			Assert.Same(customView.Content, ((Maui.Controls.Internals.INameScope)customView).FindByName("contentview"));
+			Assert.AreSame(customView.Content, ((Maui.Controls.Internals.INameScope)customView).FindByName("contentview"));
 		}
 
-		[Fact]
+		[Test]
 		public void TestCollectionContentProperties()
 		{
 			var xaml = @"
@@ -591,12 +591,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					<Label Text=""Bar""/>
 				</StackLayout>";
 			var layout = new StackLayout().LoadFromXaml(xaml);
-			Assert.Equal(2, layout.Children.Count);
-			Assert.Equal("Foo", ((Label)(layout.Children[0])).Text);
-			Assert.Equal("Bar", ((Label)(layout.Children[1])).Text);
+			Assert.AreEqual(2, layout.Children.Count);
+			Assert.AreEqual("Foo", ((Label)(layout.Children[0])).Text);
+			Assert.AreEqual("Bar", ((Label)(layout.Children[1])).Text);
 		}
 
-		[Fact]
+		[Test]
 		public void TestCollectionContentPropertiesWithSingleElement()
 		{
 			var xaml = @"
@@ -604,11 +604,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					<Label Text=""Foo""/>
 				</StackLayout>";
 			var layout = new StackLayout().LoadFromXaml(xaml);
-			Assert.Equal(1, layout.Children.Count);
-			Assert.Equal("Foo", ((Label)(layout.Children[0])).Text);
+			Assert.AreEqual(1, layout.Children.Count);
+			Assert.AreEqual("Foo", ((Label)(layout.Children[0])).Text);
 		}
 
-		[Fact]
+		[Test]
 		public void TestPropertiesWithContentProperties()
 		{
 			var xaml = @"
@@ -619,28 +619,28 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				<Label Text=""foo""></Label>
 				</ContentPage>";
 			var contentPage = new ContentPage().LoadFromXaml(xaml);
-			Assert.Equal(1, Grid.GetRow(contentPage));
+			Assert.AreEqual(1, Grid.GetRow(contentPage));
 			Assert.NotNull(contentPage.Content);
 		}
 
-		[Fact]
+		[Test]
 		public void LoadFromXamlResource()
 		{
 			ContentView view = null;
-			() => view = new CustomXamlView()
+			Assert.DoesNotThrow(() => view = new CustomXamlView());
 			Assert.NotNull(view);
 			Assert.That(view.Content, Is.TypeOf<Label>());
-			Assert.Equal("foobar", ((Label)view.Content).Text);
+			Assert.AreEqual("foobar", ((Label)view.Content).Text);
 		}
 
-		[Fact]
+		[Test]
 		public void ThrowOnMissingXamlResource()
 		{
 			var view = new CustomView();
 			Assert.Throws(new XamlParseExceptionConstraint(), () => view.LoadFromXaml(typeof(CustomView)));
 		}
 
-		[Fact]
+		[Test]
 		public void CreateNewChildrenCollection()
 		{
 			var xaml = @"
@@ -656,14 +656,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					</local:ViewWithChildrenContent.Children>
 				</local:ViewWithChildrenContent>";
 			ViewWithChildrenContent layout = null;
-			() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml)
-			Assert.NotNull(layout);
-			Assert.NotSame(layout.DefaultChildren, layout.Children);
+			Assert.DoesNotThrow(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml));
+			Assert.IsNotNull(layout);
+			Assert.AreNotSame(layout.DefaultChildren, layout.Children);
 			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child0"), layout.Children);
 			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child1"), layout.Children);
 		}
 
-		[Fact]
+		[Test]
 		public void AddChildrenToCollectionContentProperty()
 		{
 			var xaml = @"
@@ -675,14 +675,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					<Label x:Name=""child1""/>
 				</local:ViewWithChildrenContent>";
 			ViewWithChildrenContent layout = null;
-			() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml)
-			Assert.NotNull(layout);
-			Assert.Same(layout.DefaultChildren, layout.Children);
+			Assert.DoesNotThrow(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml));
+			Assert.IsNotNull(layout);
+			Assert.AreSame(layout.DefaultChildren, layout.Children);
 			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child0"), layout.Children);
 			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child1"), layout.Children);
 		}
 
-		[Fact]
+		[Test]
 		public void AddChildrenToExistingCollection()
 		{
 			var xaml = @"
@@ -696,15 +696,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					</local:ViewWithChildrenContent.Children>
 				</local:ViewWithChildrenContent>";
 			ViewWithChildrenContent layout = null;
-			() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml)
-			Assert.NotNull(layout);
-			Assert.Same(layout.DefaultChildren, layout.Children);
+			Assert.DoesNotThrow(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml));
+			Assert.IsNotNull(layout);
+			Assert.AreSame(layout.DefaultChildren, layout.Children);
 			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child0"), layout.Children);
 			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child1"), layout.Children);
 
 		}
 
-		[Fact]
+		[Test]
 		public void AddSingleChildToCollectionContentProperty()
 		{
 			var xaml = @"
@@ -715,13 +715,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					<Label x:Name=""child0""/>
 				</local:ViewWithChildrenContent>";
 			ViewWithChildrenContent layout = null;
-			() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml)
-			Assert.NotNull(layout);
-			Assert.Same(layout.DefaultChildren, layout.Children);
+			Assert.DoesNotThrow(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml));
+			Assert.IsNotNull(layout);
+			Assert.AreSame(layout.DefaultChildren, layout.Children);
 			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child0"), layout.Children);
 		}
 
-		[Fact]
+		[Test]
 		public void FindResourceByName()
 		{
 			var xaml = @"
@@ -744,7 +744,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.That(resource, Is.TypeOf<Button>());
 		}
 
-		[Fact]
+		[Test]
 		public void ParseEnum()
 		{
 			var xaml = @"
@@ -755,11 +755,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				MockFlags=""Bar""
 				/>";
 			var view = new CustomView().LoadFromXaml(xaml);
-			Assert.Equal(MockFlags.Bar, view.MockFlags);
+			Assert.AreEqual(MockFlags.Bar, view.MockFlags);
 
 		}
 
-		[Fact]
+		[Test]
 		public void ParseFlags()
 		{
 			var xaml = @"
@@ -770,10 +770,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				MockFlags=""Baz,Bar""
 				/>";
 			var view = new CustomView().LoadFromXaml(xaml);
-			Assert.Equal(MockFlags.Bar | MockFlags.Baz, view.MockFlags);
+			Assert.AreEqual(MockFlags.Bar | MockFlags.Baz, view.MockFlags);
 		}
 
-		[Fact]
+		[Test]
 		public void StyleWithoutTargetTypeThrows()
 		{
 			var xaml = @"
@@ -788,20 +788,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.Throws(new XamlParseExceptionConstraint(4, 8), () => label.LoadFromXaml(xaml));
 		}
 
-		[Fact]
+		[Test]
 		public void BindingIsResolvedAsBindingExtension()
 		// https://github.com/xamarin/Microsoft.Maui.Controls/issues/3606#issuecomment-422377338
 		{
 			var bindingType = XamlParser.GetElementType(new XmlType("http://schemas.microsoft.com/dotnet/2021/maui", "Binding", null), null, null, true, out var ex);
-			Assert.Null(ex);
-			Assert.Equal(typeof(BindingExtension, bindingType));
+			Assert.That(ex, Is.Null);
+			Assert.That(bindingType, Is.EqualTo(typeof(BindingExtension)));
 			var module = ModuleDefinition.CreateModule("foo", new ModuleParameters()
 			{
 				AssemblyResolver = new MockAssemblyResolver(),
 				Kind = ModuleKind.Dll,
 			});
 			var bindingTypeRef = new XmlType("http://schemas.microsoft.com/dotnet/2021/maui", "Binding", null).GetTypeReference(new XamlCache(), module, null);
-			Assert.Equal("Microsoft.Maui.Controls.Xaml.BindingExtension", bindingType.FullName);
+			Assert.That(bindingType.FullName, Is.EqualTo("Microsoft.Maui.Controls.Xaml.BindingExtension"));
 		}
 	}
 }

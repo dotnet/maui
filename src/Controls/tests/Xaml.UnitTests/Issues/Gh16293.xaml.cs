@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,29 +15,29 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Tests
 		{
-			[InlineData(true)], TestCase(false)]
+			[TestCase(true), TestCase(false)]
 			public void ShouldResolveNested(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					() => MockCompiler.Compile(typeof(Gh16293))
+					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh16293)));
 
 				var layout = new Gh16293(useCompiledXaml);
-				Assert.Equal("LibraryConstant", layout.Label1.Text);
-				Assert.Equal("NestedLibraryConstant", layout.Label2.Text);
+				Assert.That(layout.Label1.Text, Is.EqualTo("LibraryConstant"));
+				Assert.That(layout.Label2.Text, Is.EqualTo("NestedLibraryConstant"));
 			}
 
-			[InlineData(true)], TestCase(false)]
+			[TestCase(true), TestCase(false)]
 			public void ShouldResolveInternalNested(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					() => MockCompiler.Compile(typeof(Gh16293))
+					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh16293)));
 
 				var layout = new Gh16293(useCompiledXaml);
-				Assert.Equal("InternalLibraryConstant", layout.Label3.Text);
-				Assert.Equal("InternalNestedLibraryConstant", layout.Label4.Text);
+				Assert.That(layout.Label3.Text, Is.EqualTo("InternalLibraryConstant"));
+				Assert.That(layout.Label4.Text, Is.EqualTo("InternalNestedLibraryConstant"));
 			}
 		}
 	}

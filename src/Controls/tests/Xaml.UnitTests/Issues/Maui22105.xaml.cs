@@ -4,7 +4,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -20,9 +20,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		class Test
 		{
+			[SetUp]
 			public void Setup()
 			{
 				Application.SetCurrentApplication(new MockApplication());
@@ -31,11 +32,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Fact]
+			[Test]
 			public void DefaultValueShouldBeApplied([Values(false, true)] bool useCompiledXaml)
 			{
 				var page = new Maui22105(useCompiledXaml);
-				Assert.Equal(100, page.label.FontSize);
+				Assert.That(page.label.FontSize, Is.EqualTo(100));
 			}
 		}
 	}

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -19,14 +19,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		// [TestFixture] - removed for xUnit
+		[TestFixture]
 		public class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[InlineData(false)]
-			[InlineData(true)]
+			[TestCase(false)]
+			[TestCase(true)]
 			public void AssignBindingMarkupToBindingBase(bool useCompiledXaml)
 			{
 				var listView = new Issue1306(useCompiledXaml);
@@ -35,8 +35,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.NotNull(listView.GroupShortNameBinding);
 				Assert.That(listView.GroupDisplayBinding, Is.TypeOf<Binding>());
 				Assert.That(listView.GroupShortNameBinding, Is.TypeOf<Binding>());
-				Assert.Equal("Key", (listView.GroupDisplayBinding as Binding).Path);
-				Assert.Equal("Key", (listView.GroupShortNameBinding as Binding).Path);
+				Assert.AreEqual("Key", (listView.GroupDisplayBinding as Binding).Path);
+				Assert.AreEqual("Key", (listView.GroupShortNameBinding as Binding).Path);
 			}
 		}
 	}

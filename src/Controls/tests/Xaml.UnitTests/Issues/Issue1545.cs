@@ -3,30 +3,32 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using Xunit;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
-	// [TestFixture] - removed for xUnit
+	[TestFixture]
 	public class Issue1545
 	{
 		MockDeviceInfo mockDeviceInfo;
 
+		[SetUp]
 		public void Setup()
 		{
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo(platform: DevicePlatform.iOS));
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
+		[TearDown]
 		public void TearDown()
 		{
 			DeviceInfo.SetCurrent(null);
 			DispatcherProvider.SetCurrent(null);
 		}
 
-		[Fact]
+		[Test]
 		public void BindingCanNotBeReused()
 		{
 			string xaml = @"<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
@@ -49,13 +51,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			ListView lv = page.FindByName<ListView>("List");
 
 			TextCell cell = (TextCell)lv.TemplatedItems.GetOrCreateContent(0, items[0]);
-			Assert.Equal("Fu", cell.Text);
+			Assert.That(cell.Text, Is.EqualTo("Fu"));
 
 			cell = (TextCell)lv.TemplatedItems.GetOrCreateContent(1, items[1]);
-			Assert.Equal("Bar", cell.Text);
+			Assert.That(cell.Text, Is.EqualTo("Bar"));
 		}
 
-		[Fact]
+		[Test]
 		public void ElementsCanNotBeReused()
 		{
 			string xaml = @"<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
@@ -92,18 +94,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			ViewCell cell0 = (ViewCell)lv.TemplatedItems.GetOrCreateContent(0, items[0]);
 
 
-			Assert.Equal("Fu", ((Label)((StackLayout)cell0.View).Children[0]).Text);
+			Assert.That(((Label)((StackLayout)cell0.View).Children[0]).Text, Is.EqualTo("Fu"));
 
 			ViewCell cell1 = (ViewCell)lv.TemplatedItems.GetOrCreateContent(1, items[1]);
-			Assert.Equal("Bar", ((Label)((StackLayout)cell1.View).Children[0]).Text);
+			Assert.That(((Label)((StackLayout)cell1.View).Children[0]).Text, Is.EqualTo("Bar"));
 
-			Assert.NotSame(cell0, cell1);
-			Assert.NotSame(cell0.View, cell1.View);
-			Assert.NotSame(((StackLayout)cell0.View).Children[0], ((StackLayout)cell1.View).Children[0]);
-			Assert.Equal(Color.FromArgb("ff00aa"), ((StackLayout)cell1.View).Children[0].BackgroundColor);
+			Assert.AreNotSame(cell0, cell1);
+			Assert.AreNotSame(cell0.View, cell1.View);
+			Assert.AreNotSame(((StackLayout)cell0.View).Children[0], ((StackLayout)cell1.View).Children[0]);
+			Assert.AreEqual(Color.FromArgb("ff00aa"), ((StackLayout)cell1.View).Children[0].BackgroundColor);
 		}
 
-		[Fact]
+		[Test]
 		public void ElementsFromCollectionsAreNotReused()
 		{
 			var xaml = @"<ListView 
@@ -132,13 +134,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var cell0 = (ViewCellWithCollection)listview.TemplatedItems.GetOrCreateContent(0, items[0]);
 			var cell1 = (ViewCellWithCollection)listview.TemplatedItems.GetOrCreateContent(1, items[1]);
 
-			Assert.NotSame(cell0, cell1);
-			Assert.NotSame(cell0.Children, cell1.Children);
-			Assert.NotSame(cell0.Children[0], cell1.Children[0]);
+			Assert.AreNotSame(cell0, cell1);
+			Assert.AreNotSame(cell0.Children, cell1.Children);
+			Assert.AreNotSame(cell0.Children[0], cell1.Children[0]);
 
 		}
 
-		[Fact]
+		[Test]
 		public void ResourcesDeclaredInDataTemplatesAreNotShared()
 		{
 			var xaml = @"<ListView 
@@ -168,17 +170,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			listview.LoadFromXaml(xaml);
 			var cell0 = (ViewCell)listview.TemplatedItems.GetOrCreateContent(0, items[0]);
 			var cell1 = (ViewCell)listview.TemplatedItems.GetOrCreateContent(1, items[1]);
-			Assert.NotSame(cell0, cell1);
+			Assert.AreNotSame(cell0, cell1);
 
 			var label0 = (Label)cell0.View;
 			var label1 = (Label)cell1.View;
-			Assert.NotSame(label0, label1);
-			Assert.Equal("Foo", label0.Text);
-			Assert.Equal("Bar", label1.Text);
+			Assert.AreNotSame(label0, label1);
+			Assert.AreEqual("Foo", label0.Text);
+			Assert.AreEqual("Bar", label1.Text);
 
 			var res0 = label0.Resources;
 			var res1 = label1.Resources;
-			Assert.NotSame(res0, res1);
+			Assert.AreNotSame(res0, res1);
 
 			var obj0 = res0["object"];
 			var obj1 = res1["object"];
@@ -186,7 +188,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.NotNull(obj0);
 			Assert.NotNull(obj1);
 
-			Assert.NotSame(obj0, obj1);
+			Assert.AreNotSame(obj0, obj1);
 		}
 	}
 
