@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 	/// <remarks><see cref = "Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="Page"/> class are most prominently used as the top level UI element in .NET MAUI applications. In addition to their role as the main pages of applications, <see cref="Page"/> objects and their descendants can be used with navigation classes, such as <see cref="NavigationPage"/> or <see cref="FlyoutPage"/>, among others, to provide rich user experiences that conform to the expected behaviors on each platform.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement, IConstrainedView
+	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaPage, IView, ITitledElement, IToolbarElement, ISafeAreaView, IConstrainedView
 #if IOS
 	,IiOSPageSpecifics
 #endif
@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls
 #endif
 
 		/// <inheritdoc/>
-		Thickness ISafeAreaView2.SafeAreaInsets
+		Thickness ISafeAreaPage.SafeAreaInsets
 		{
 			set
 			{
@@ -263,8 +263,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <inheritdoc cref="ISafeAreaView2.IgnoreSafeAreaForEdge"/>
-		bool ISafeAreaView2.IgnoreSafeAreaForEdge(int edge)
+		/// <inheritdoc cref="ISafeAreaPage.IgnoreSafeAreaForEdge"/>
+		bool ISafeAreaPage.IgnoreSafeAreaForEdge(int edge)
 		{
 			return SafeArea.ShouldIgnoreSafeAreaForEdge(this, edge);
 		}

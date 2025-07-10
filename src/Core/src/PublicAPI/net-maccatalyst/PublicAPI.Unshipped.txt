@@ -1,4 +1,6 @@
 #nullable enable
+override Microsoft.Maui.Platform.MauiScrollView.AdjustedContentInsetDidChange() -> void
+override Microsoft.Maui.Platform.MauiScrollView.SafeAreaInsetsDidChange() -> void
 Microsoft.Maui.Handlers.DataFlowDirection
 Microsoft.Maui.Handlers.DataFlowDirection.FromPlatform = 1 -> Microsoft.Maui.Handlers.DataFlowDirection
 Microsoft.Maui.Handlers.DataFlowDirection.ToPlatform = 0 -> Microsoft.Maui.Handlers.DataFlowDirection

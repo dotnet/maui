@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
@@ -9,11 +9,17 @@ namespace Microsoft.Maui.Platform
 {
 	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 	{
-		bool _invalidateParentWhenMovedToWindow;
 		static bool? _respondsToSafeArea;
+
+		bool _invalidateParentWhenMovedToWindow;
 
 		double _lastMeasureHeight = double.NaN;
 		double _lastMeasureWidth = double.NaN;
+
+		SafeAreaPadding _safeArea = SafeAreaPadding.Empty;
+		bool _safeAreaInvalidated = true;
+		bool _appliesSafeAreaAdjustments;
+		
 
 		WeakReference<IView>? _reference;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
@@ -28,9 +34,17 @@ namespace Microsoft.Maui.Platform
 
 		bool RespondsToSafeArea()
 		{
+			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea)
+			{
+				return false;
+			}
+
 			if (_respondsToSafeArea.HasValue)
+			{
 				return _respondsToSafeArea.Value;
-			return (bool)(_respondsToSafeArea = RespondsToSelector(new Selector("safeAreaInsets")));
+			}
+
+			return (_respondsToSafeArea = RespondsToSelector(new Selector("safeAreaInsets"))).Value;
 		}
 
 		protected CGRect AdjustForSafeArea(CGRect bounds)
@@ -40,62 +54,14 @@ namespace Microsoft.Maui.Platform
 				KeyboardAutoManagerScroll.ShouldScrollAgain = true;
 			}
 
-			// Check for new per-edge safe area control first
-			if (View is ISafeAreaView2 sav2)
-			{
-				return AdjustForSafeAreaPerEdge(bounds, sav2);
-			}
-
-			// Fall back to legacy ISafeAreaView behavior
-			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea || !RespondsToSafeArea())
-			{
-				return bounds;
-			}
-
-#pragma warning disable CA1416 // TODO 'UIView.SafeAreaInsets' is only supported on: 'ios' 11.0 and later, 'maccatalyst' 11.0 and later, 'tvos' 11.0 and later.
-			return SafeAreaInsets.InsetRect(bounds);
-#pragma warning restore CA1416
-		}
-
-		private CGRect AdjustForSafeAreaPerEdge(CGRect bounds, ISafeAreaView2 safeAreaView)
-		{
-			if (!RespondsToSafeArea())
-			{
-				return bounds;
-			}
-
-#pragma warning disable CA1416 // TODO 'UIView.SafeAreaInsets' is only supported on: 'ios' 11.0 and later, 'maccatalyst' 11.0 and later, 'tvos' 11.0 and later.
-			var insets = SafeAreaInsets;
-
-			// Selectively apply insets based on per-edge settings
-			// If IgnoreSafeAreaForEdge returns true, we set that inset to 0
-			var adjustedInsets = new UIKit.UIEdgeInsets(
-				top: safeAreaView.IgnoreSafeAreaForEdge(1) ? 0 : insets.Top,       // Top = 1
-				left: safeAreaView.IgnoreSafeAreaForEdge(0) ? 0 : insets.Left,     // Left = 0  
-				bottom: safeAreaView.IgnoreSafeAreaForEdge(3) ? 0 : insets.Bottom, // Bottom = 3
-				right: safeAreaView.IgnoreSafeAreaForEdge(2) ? 0 : insets.Right    // Right = 2
-			);
-
-			return adjustedInsets.InsetRect(bounds);
-#pragma warning restore CA1416
+			return _safeArea.InsetRect(bounds);
 		}
 
 		protected bool IsMeasureValid(double widthConstraint, double heightConstraint)
 		{
-			// Check the last constraints this View was measured with; if they're the same,
-			// then the current measure info is already correct and we don't need to repeat it
-			return heightConstraint == _lastMeasureHeight && widthConstraint == _lastMeasureWidth;
-		}
-
-		bool HasBeenMeasured()
-		{
-			return !double.IsNaN(_lastMeasureWidth) && !double.IsNaN(_lastMeasureHeight);
-		}
-
-		protected void InvalidateConstraintsCache()
-		{
-			_lastMeasureWidth = double.NaN;
-			_lastMeasureHeight = double.NaN;
+			return !HasFixedConstraints
+				&& widthConstraint == _lastMeasureWidth
+				&& heightConstraint == _lastMeasureHeight;
 		}
 
 		protected void CacheMeasureConstraints(double widthConstraint, double heightConstraint)
@@ -104,12 +70,19 @@ namespace Microsoft.Maui.Platform
 			_lastMeasureHeight = heightConstraint;
 		}
 
+		protected void InvalidateConstraintsCache()
+		{
+			_lastMeasureWidth = double.NaN;
+			_lastMeasureHeight = double.NaN;
+		}
+
 		public override void SafeAreaInsetsDidChange()
 		{
 			base.SafeAreaInsetsDidChange();
 
-			if (View is ISafeAreaView2 isav2)
-				isav2.SafeAreaInsets = this.SafeAreaInsets.ToThickness();
+			// We can't do anything more than this here because `SafeAreaInsetsDidChange()` is triggered twice with
+			// different values when setting the frame via `Center` and `Bounds` in `PlatformArrangeHandler`.
+			_safeAreaInvalidated = true;
 		}
 
 		public ICrossPlatformLayout? CrossPlatformLayout
@@ -120,12 +93,32 @@ namespace Microsoft.Maui.Platform
 
 		Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			return CrossPlatformLayout?.CrossPlatformMeasure(widthConstraint, heightConstraint) ?? Size.Zero;
+			if (_appliesSafeAreaAdjustments)
+			{
+				// When responding to safe area, we need to adjust the constraints to account for the safe area.
+				widthConstraint -= _safeArea.HorizontalThickness;
+				heightConstraint -= _safeArea.VerticalThickness;
+			}
+
+			var crossPlatformSize = CrossPlatformLayout?.CrossPlatformMeasure(widthConstraint, heightConstraint) ?? Size.Zero;
+
+			if (_appliesSafeAreaAdjustments)
+			{
+				// If we're responding to the safe area, we need to add the safe area back to the size so the container can allocate the correct space
+				crossPlatformSize = new Size(crossPlatformSize.Width + _safeArea.HorizontalThickness, crossPlatformSize.Height + _safeArea.VerticalThickness);
+			}
+
+			return crossPlatformSize;
 		}
 
-		Size CrossPlatformArrange(Rect bounds)
+		void CrossPlatformArrange(CGRect bounds)
 		{
-			return CrossPlatformLayout?.CrossPlatformArrange(bounds) ?? Size.Zero;
+			if (_appliesSafeAreaAdjustments)
+			{
+				bounds = AdjustForSafeArea(bounds);
+			}
+
+			CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle());
 		}
 
 		public override CGSize SizeThatFits(CGSize size)
@@ -135,8 +128,8 @@ namespace Microsoft.Maui.Platform
 				return base.SizeThatFits(size);
 			}
 
-			var widthConstraint = size.Width;
-			var heightConstraint = size.Height;
+			var widthConstraint = (double)size.Width;
+			var heightConstraint = (double)size.Height;
 
 			var crossPlatformSize = CrossPlatformMeasure(widthConstraint, heightConstraint);
 
@@ -157,25 +150,64 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
+			if (!ValidateSafeArea())
+			{
+				InvalidateConstraintsCache();
+
+				// The safe area is now interacting differently with our view, so we have to enqueue a second layout pass
+				// to let ancestors adjust to the measured size.
+				if (this.IsFinalMeasureHandledBySuperView())
+				{
+					SetNeedsLayout();
+					this.InvalidateAncestorsMeasures();
+					return;
+				}
+			}
+
+			var bounds = Bounds.ToRectangle();
 
 			var widthConstraint = bounds.Width;
 			var heightConstraint = bounds.Height;
 
-			// If the SuperView is a cross-platform layout backed view (i.e. MauiView, MauiScrollView, LayoutView, ..),
-			// then measurement has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews.
-			// This is especially important to avoid overriding potentially infinite measurement constraints
-			// imposed by the parent (i.e. scroll view) with the current bounds, except when our bounds are fixed by constraints.
-			// But we _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
-			// the window); there's no guarantee that SizeThatFits has been called in that case.
-			if (!IsMeasureValid(widthConstraint, heightConstraint) && !this.IsFinalMeasureHandledBySuperView() ||
-				!HasBeenMeasured() && HasFixedConstraints)
+			// TODO: This is expensive and should not be happening during arrange
+			// This happens on the first layout pass when the default size of the page is set
+			// If we're here and the fixed constraints have changed, it's likely that the content was invalidated 
+			// and we need to remeasure
+			if (!IsMeasureValid(widthConstraint, heightConstraint))
 			{
-				CrossPlatformMeasure(widthConstraint, heightConstraint);
+				var crossPlatformSize = CrossPlatformMeasure(widthConstraint, heightConstraint);
 				CacheMeasureConstraints(widthConstraint, heightConstraint);
 			}
 
 			CrossPlatformArrange(bounds);
+		}
+
+		bool ValidateSafeArea()
+		{
+			// If nothing changed, we don't need to do anything
+			if (!_safeAreaInvalidated)
+			{
+				return true;
+			}
+
+			// Mark the safe area as validated given that we're about to check it
+			_safeAreaInvalidated = false;
+
+			// Store the information about the safe area for developers to use
+			if (View is ISafeAreaPage safeAreaPage)
+			{
+				safeAreaPage.SafeAreaInsets = SafeAreaInsets.ToThickness();
+			}
+
+			var oldSafeArea = _safeArea;
+			_safeArea = SafeAreaInsets.ToSafeAreaInsets();
+
+			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
+			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
+
+			// Return whether the way safe area interacts with our view has changed
+			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
+			       (oldSafeArea == _safeArea || !_appliesSafeAreaAdjustments);
 		}
 
 		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
@@ -235,7 +267,10 @@ namespace Microsoft.Maui.Platform
 		public override void MovedToWindow()
 		{
 			base.MovedToWindow();
+
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
+			_safeAreaInvalidated = true;
+
 			if (_invalidateParentWhenMovedToWindow)
 			{
 				_invalidateParentWhenMovedToWindow = false;
