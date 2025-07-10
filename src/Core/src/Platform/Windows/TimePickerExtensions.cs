@@ -86,21 +86,16 @@ public static class TimePickerExtensions
 
 		static void UpdateCharacterSpacingInTimePicker(this TimePicker platformTimePicker)
 		{
-			var hourTextBlock = platformTimePicker.GetDescendantByName<TextBlock>("HourTextBlock");
-			var minuteTextBlock = platformTimePicker.GetDescendantByName<TextBlock>("MinuteTextBlock");
-			var periodTextBlock = platformTimePicker.GetDescendantByName<TextBlock>("PeriodTextBlock");
-
-			if (hourTextBlock is not null)
+			SetCharacterSpacingToBlocks(platformTimePicker, "HourTextBlock");
+			SetCharacterSpacingToBlocks(platformTimePicker, "MinuteTextBlock");
+			SetCharacterSpacingToBlocks(platformTimePicker, "PeriodTextBlock");
+		}
+		static void SetCharacterSpacingToBlocks(TimePicker platformTimePicker, string partName)
+		{
+			var textBlock = platformTimePicker.GetDescendantByName<TextBlock>(partName);
+			if (textBlock is not null)
 			{
-				hourTextBlock.CharacterSpacing = platformTimePicker.CharacterSpacing;
-			}
-			if (minuteTextBlock is not null)
-			{
-				minuteTextBlock.CharacterSpacing = platformTimePicker.CharacterSpacing;
-			}
-			if (periodTextBlock is not null)
-			{
-				periodTextBlock.CharacterSpacing = platformTimePicker.CharacterSpacing;
+				textBlock.CharacterSpacing = platformTimePicker.CharacterSpacing;
 			}
 		}
 
