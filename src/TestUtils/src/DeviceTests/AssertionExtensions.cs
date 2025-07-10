@@ -53,7 +53,8 @@ namespace Microsoft.Maui.DeviceTests
 			foreach (var reference in references)
 			{
 				Assert.NotNull(reference);
-				if (!await reference.WaitForCollect())
+				var isAlive = await reference.WaitForCollect();
+				if (isAlive)
 				{
 					return false; // If any reference is still alive, return false
 				}
