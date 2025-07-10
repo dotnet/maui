@@ -13,7 +13,6 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Storage;
 using Windows.Foundation.Collections;
-using Windows.Graphics.Imaging;
 using Windows.Media.Capture;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -68,6 +67,31 @@ namespace Microsoft.Maui.Media
 
 			var fileResult = new FileResult(result);
 
+			// Apply rotation if needed for photos
+			if (photo && ImageProcessor.IsRotationNeeded(options) && result != null)
+			{
+				try
+				{
+					using var originalStream = await result.OpenStreamForReadAsync();
+					using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, result.Name);
+					
+					// Save rotated image to temporary file
+					var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}{Path.GetExtension(result.Name)}");
+					using (var fileStream = File.Create(tempFileName))
+					{
+						rotatedStream.Position = 0;
+						await rotatedStream.CopyToAsync(fileStream);
+					}
+					
+					fileResult = new FileResult(tempFileName);
+				}
+				catch (Exception ex)
+				{
+					System.Diagnostics.Debug.WriteLine($"Failed to rotate image: {ex.Message}");
+					// If rotation fails, continue with the original file
+				}
+			}
+
 			// Apply compression/resizing if specified for photos
 			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 			{
@@ -77,7 +101,9 @@ namespace Microsoft.Maui.Media
 					options?.MaximumWidth,
 					options?.MaximumHeight,
 					options?.CompressionQuality ?? 100,
-					result.Name);
+					result!.Name,
+					options?.RotateImage ?? false,
+					options?.PreserveMetaData ?? true);
 
 				if (processedStream != null)
 				{
@@ -128,6 +154,40 @@ namespace Microsoft.Maui.Media
 
 			var fileResults = result.Select(file => new FileResult(file)).ToList();
 
+			// Apply rotation if needed for photos
+			if (photo && ImageProcessor.IsRotationNeeded(options))
+			{
+				var rotatedResults = new List<FileResult>();
+				for (int i = 0; i < result.Count; i++)
+				{
+					var originalFile = result[i];
+					var fileResult = fileResults[i];
+					
+					try
+					{
+						using var originalStream = await originalFile.OpenStreamForReadAsync();
+						using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, originalFile.Name);
+						
+						// Save rotated image to temporary file
+						var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}{Path.GetExtension(originalFile.Name)}");
+						using (var fileStream = File.Create(tempFileName))
+						{
+							rotatedStream.Position = 0;
+							await rotatedStream.CopyToAsync(fileStream);
+						}
+						
+						rotatedResults.Add(new FileResult(tempFileName));
+					}
+					catch (Exception ex)
+					{
+						System.Diagnostics.Debug.WriteLine($"Failed to rotate image: {ex.Message}");
+						// If rotation fails, use original file
+						rotatedResults.Add(fileResult);
+					}
+				}
+				fileResults = rotatedResults;
+			}
+
 			// Apply compression/resizing if specified for photos
 			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 			{
@@ -143,7 +203,9 @@ namespace Microsoft.Maui.Media
 						options?.MaximumWidth,
 						options?.MaximumHeight,
 						options?.CompressionQuality ?? 100,
-						originalFile.Name);
+						originalFile.Name,
+						options?.RotateImage ?? false,
+						options?.PreserveMetaData ?? true);
 
 					if (processedStream != null)
 					{
@@ -190,6 +252,31 @@ namespace Microsoft.Maui.Media
 			{
 				var fileResult = new FileResult(file);
 
+				// Apply rotation if needed for photos
+				if (photo && ImageProcessor.IsRotationNeeded(options) && file is not null)
+				{
+					try
+					{
+						using var originalStream = await file.OpenStreamForReadAsync();
+						using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, file.Name);
+						
+						// Save rotated image to temporary file
+						var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}");
+						using (var fileStream = File.Create(tempFileName))
+						{
+							rotatedStream.Position = 0;
+							await rotatedStream.CopyToAsync(fileStream);
+						}
+						
+						fileResult = new FileResult(tempFileName);
+					}
+					catch (Exception ex)
+					{
+						// If rotation fails, continue with the original file
+						System.Diagnostics.Debug.WriteLine($"Failed to rotate image: {ex.Message}");
+					}
+				}
+
 				// Apply compression/resizing if specified for photos
 				if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 				{
@@ -199,9 +286,11 @@ namespace Microsoft.Maui.Media
 						options?.MaximumWidth,
 						options?.MaximumHeight,
 						options?.CompressionQuality ?? 100,
-						file.Name);
+						file!.Name,
+						options?.RotateImage ?? false,
+						options?.PreserveMetaData ?? true);
 
-					if (processedStream != null)
+					if (processedStream is not null)
 					{
 						// Convert to MemoryStream for ProcessedImageFileResult
 						var memoryStream = new MemoryStream();
