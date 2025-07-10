@@ -4362,6 +4362,7 @@ Microsoft.Maui.Controls.DatePicker.CharacterSpacing.set -> void
 Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime
 Microsoft.Maui.Controls.DatePicker.Date.set -> void
 Microsoft.Maui.Controls.DatePicker.DatePicker() -> void
+Microsoft.Maui.Controls.DatePicker.DateChanged -> System.EventHandler<Microsoft.Maui.Controls.DateChangedEventArgs>
 Microsoft.Maui.Controls.DatePicker.DateSelected -> System.EventHandler<Microsoft.Maui.Controls.DateChangedEventArgs>
 Microsoft.Maui.Controls.DatePicker.FontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
 Microsoft.Maui.Controls.DatePicker.FontAttributes.set -> void

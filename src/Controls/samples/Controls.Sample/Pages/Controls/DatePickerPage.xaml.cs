@@ -60,5 +60,24 @@ namespace Maui.Controls.Sample.Pages
 		{
 			NullDatePicker.Date = DateTime.Now;
 		}
+		
+		void OnDateSelected(object sender, Microsoft.Maui.Controls.DateChangedEventArgs e)
+		{
+			Debug.WriteLine("Date Selected");
+			DateSelectedText.Text = string.Format("Selected: {0}", e.NewDate?.ToShortDateString() ?? "null");
+		}
+
+		void OnDateChanged(object sender, Microsoft.Maui.Controls.DateChangedEventArgs e)
+		{
+			Debug.WriteLine("Date Changed");
+			DateChangedText.Text = string.Format("Changed: {0}", e.NewDate?.ToShortDateString() ?? "null");
+		}
+
+		void OnClearPickerEventText(object sender, EventArgs e)
+		{
+			Debug.WriteLine("Resetting Date Selected/Changed Label Text");
+			DateSelectedText.Text = "Selected: ";
+			DateChangedText.Text = "Changed: ";
+		}
 	}
 }
