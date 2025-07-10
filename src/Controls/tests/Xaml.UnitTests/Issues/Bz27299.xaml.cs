@@ -46,8 +46,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Bz27299ViewModelLocator.Count = 0;
 			}
 
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void ViewModelLocatorOnlyCalledOnce(bool useCompiledXaml)
 			{
 				Assert.Equal(0, Bz27299ViewModelLocator.Count);

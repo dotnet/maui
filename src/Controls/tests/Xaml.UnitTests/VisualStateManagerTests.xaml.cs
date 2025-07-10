@@ -30,8 +30,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Application.Current = null;
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void VisualStatesFromStyleXaml(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);
@@ -67,8 +67,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(null, entry0.PlaceholderColor);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void UnapplyVisualState(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);
@@ -93,8 +93,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(null, entry1.PlaceholderColor);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void VisualStateGroupsDirectlyOnElement(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);
@@ -107,8 +107,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(2, groups.Count);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void EmptyGroupDirectlyOnElement(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);
@@ -121,8 +121,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.True(groups.Count == 1);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void VisualStateGroupsFromStylesAreDistinct(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);
@@ -147,8 +147,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("Normal", groups2[0].CurrentState.Name);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SettersAreAddedToCorrectState(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);
@@ -168,8 +168,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(2, disabled.Setters.Count);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void VisualElementGoesToCorrectStateWhenAvailable(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);
@@ -179,8 +179,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(Colors.Lime, button.BackgroundColor);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TargetedVisualElementGoesToCorrectState(bool useCompiledXaml)
 			{
 				var layout = new VisualStateManagerTests(useCompiledXaml);

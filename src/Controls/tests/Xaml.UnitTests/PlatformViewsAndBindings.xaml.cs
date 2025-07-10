@@ -271,10 +271,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				return p;
 			}
 
-			[InlineData(false, "iOS")]]
-			[InlineData(false, "Android")]]
+			[InlineData(false, "iOS")]
+			[InlineData(false, "Android")]
 			[Ignore("fails for now")]
-			//[InlineData(true)]]
+			//[InlineData(true)]
 			public void PlatformInContentView(bool useCompiledXaml, string platform)
 			{
 				var realPlatform = SetUpPlatform(platform);

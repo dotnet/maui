@@ -20,8 +20,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void NestedMarkupExtension(bool useCompiledXaml)
 			{
 				var page = new Issue1415(useCompiledXaml);

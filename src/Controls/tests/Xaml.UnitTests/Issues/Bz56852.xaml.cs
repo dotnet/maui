@@ -24,8 +24,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Application.Current = null;
 			}
 
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void DynamicResourceApplyingOrder(bool useCompiledXaml)
 			{
 				var layout = new Bz56852(useCompiledXaml);

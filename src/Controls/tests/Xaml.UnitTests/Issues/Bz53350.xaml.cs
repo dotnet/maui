@@ -42,8 +42,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Application.Current = null;
 			}
 
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void PropertiesWithGenericType(bool useCompiledXaml)
 			{
 				var layout = new Bz53350(useCompiledXaml);

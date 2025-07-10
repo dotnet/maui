@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[InlineData(true)]]
+			[InlineData(true)]
 			[Ignore("Ignore for now, Compiled Converters are disabled")]
 			public void BetterExceptionReport(bool useCompiledXaml)
 			{

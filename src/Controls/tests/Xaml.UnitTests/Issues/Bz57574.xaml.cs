@@ -47,8 +47,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Application.Current = null;
 			}
 
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void EventWithGenericEventHandlers(bool useCompiledXaml)
 			{
 				var layout = new Bz57574(useCompiledXaml);

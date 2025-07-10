@@ -35,8 +35,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void BoolToVisibility(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;
@@ -48,8 +48,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(false, layout.label0.IsVisible);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void DoubleToWidth(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;
@@ -65,8 +65,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(0.0, layout.label0.WidthRequest);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void StringToText(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;
@@ -82,8 +82,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(null, layout.label0.Text);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void OnPlatformAsResource(bool useCompiledXaml)
 			{
 				var layout = new OnPlatform(useCompiledXaml);
@@ -97,8 +97,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(FontAttributes.None, (FontAttributes)onplat);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void OnPlatformAsResourceAreApplied(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;
@@ -114,8 +114,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(FontAttributes.Italic, layout.label0.FontAttributes);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void OnPlatform2Syntax(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.Android;
@@ -135,8 +135,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(42, layout.label0.HeightRequest);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void OnPlatformDefault(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.Create("\ud83d\ude80");
@@ -144,8 +144,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(63, layout.label0.HeightRequest);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void OnPlatformInStyle0(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;
@@ -157,8 +157,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(0.0, layout.button0.FontSize);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void OnPlatformInStyle1(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;
@@ -170,8 +170,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(0.0, layout.button1.FontSize);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void OnPlatformInline(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;

@@ -40,8 +40,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void GridItemsLayoutWithConverter(bool useCompiledXaml)
 			{
 				var layout = new Bz18828(useCompiledXaml);

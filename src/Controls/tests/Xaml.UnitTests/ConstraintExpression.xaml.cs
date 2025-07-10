@@ -22,8 +22,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ConstantConstraint(bool useCompiledXaml)
 			{
 				var layout = new ConstraintExpression(useCompiledXaml);
@@ -33,8 +33,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(42, constraint.Compute(null));
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ConstraintRelativeToParent(bool useCompiledXaml)
 			{
 				var layout = new ConstraintExpression(useCompiledXaml);
@@ -45,8 +45,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(102, constraint.Compute(layout.relativeLayout));
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ContraintRelativeToView(bool useCompiledXaml)
 			{
 				var layout = new ConstraintExpression(useCompiledXaml)

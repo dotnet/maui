@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[InlineData(false)]]
+			[InlineData(false)]
 			public void ThrowMeaningfulExceptionOnDuplicateXName(bool useCompiledXaml)
 			{
 				var layout = new Issue2450(useCompiledXaml);

@@ -51,8 +51,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void BindProperties(bool useCompiledXaml)
 			{
 				var page = new BindablePropertiesAccessModifiers(useCompiledXaml);

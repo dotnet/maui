@@ -39,8 +39,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Throws(new XamlParseExceptionConstraint(8, 9), () => new ContentPage().LoadFromXaml(xaml));
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void GenericSupportOnXaml2009(bool useCompiledXaml)
 			{
 				var layout = new GenericsTests(useCompiledXaml);
@@ -50,8 +50,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(2, ((List<Button>)list).Count);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void FindGenericByName(bool useCompiledXaml)
 			{
 				var layout = new GenericsTests(useCompiledXaml);
@@ -66,8 +66,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(1, nestedGenericList.Count);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestGenericParsing(bool useCompiledXaml)
 			{
 				var layout = new GenericsTests(useCompiledXaml);
@@ -87,8 +87,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.That(queue, Is.TypeOf<List<KeyValuePair<string, string>>>());
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestXamlPrimitives(bool useCompiledXaml)
 			{
 				var layout = new GenericsTests(useCompiledXaml);

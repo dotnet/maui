@@ -56,40 +56,40 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			// - An enumeration value
 			// All other cases should throw
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void StaticProperty(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
 				Assert.Equal("Property", layout.staticproperty.Text);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void MemberOptional(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
 				Assert.Equal("Property", layout.memberisoptional.Text);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void FieldColor(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
 				Assert.Equal(Colors.Fuchsia, layout.color.TextColor);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Constant(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
 				Assert.Equal("Constant", layout.constant.Text);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			//https://bugzilla.xamarin.com/show_bug.cgi?id=49228
 			public void ConstantInARemoteAssembly(bool useCompiledXaml)
 			{
@@ -97,32 +97,32 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("CompatibilityGalleryControls", layout.remoteConstant.Text);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Field(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
 				Assert.Equal("Field", layout.field.Text);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Enum(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
 				Assert.Equal(ScrollOrientation.Both, layout.enuM.Orientation);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void FieldRef(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
 				Assert.Equal("ic_close.png", layout.field2.Text);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			// https://bugzilla.xamarin.com/show_bug.cgi?id=48242
 			public void xStaticAndImplicitOperators(bool useCompiledXaml)
 			{
@@ -130,8 +130,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("ic_close.png", (layout.ToolbarItems[0].IconImageSource as FileImageSource).File);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			// https://bugzilla.xamarin.com/show_bug.cgi?id=55096
 			public void xStaticAndNestedClasses(bool useCompiledXaml)
 			{

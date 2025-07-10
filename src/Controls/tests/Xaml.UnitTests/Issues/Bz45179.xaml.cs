@@ -30,8 +30,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void DTDoNotInstantiateTheirContent(bool useCompiledXaml)
 			{
 				Bz45179_0.creator_count = 0;

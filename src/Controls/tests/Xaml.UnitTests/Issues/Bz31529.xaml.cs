@@ -19,8 +19,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void AllowWhiteSpacesInMarkups(bool useCompiledXaml)
 			{
 				var layout = new Bz31529(useCompiledXaml);

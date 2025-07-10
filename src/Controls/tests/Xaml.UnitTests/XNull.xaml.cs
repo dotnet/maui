@@ -18,8 +18,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SupportsXNull(bool useCompiledXaml)
 			{
 				var layout = new XNull(useCompiledXaml);

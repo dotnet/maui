@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		class Tests
 		{
 
-			[InlineData(true)]]
+			[InlineData(true)]
 			public void ErrorOnUnknownXmlnsForDataType(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

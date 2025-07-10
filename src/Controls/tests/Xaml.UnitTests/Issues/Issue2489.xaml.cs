@@ -22,8 +22,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void DataTriggerTargetType(bool useCompiledXaml)
 			{
 				var layout = new Issue2489(useCompiledXaml);

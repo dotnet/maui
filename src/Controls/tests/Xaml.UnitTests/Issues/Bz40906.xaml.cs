@@ -21,8 +21,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void ParsingCDATA(bool useCompiledXaml)
 			{
 				var page = new Bz40906(useCompiledXaml);

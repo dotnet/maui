@@ -18,8 +18,8 @@ namespace Foo.Microsoft.Maui.Controls.Bar
 		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			//No need for any actual [Fact]. If this compiles, the bug is fixed.
 			public void DoesCompile(bool useCompiledXaml)
 			{

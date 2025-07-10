@@ -20,8 +20,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void InitializeStrokeShape(bool useCompiledXaml)
 			{
 				var layout = new Border(useCompiledXaml);
@@ -30,8 +30,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.NotNull(layout.Border2.StrokeShape);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void BindingToStrokeShapeWorks(bool useCompiledXaml)
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());

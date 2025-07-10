@@ -18,8 +18,8 @@ public partial class WithSuffix : ContentPage
 	// [TestFixture] - removed for xUnit
 	class Tests
 	{
-		[InlineData(true)]]
-		[InlineData(false)]]
+		[InlineData(true)]
+		[InlineData(false)]
 		public void VerifyCorrectTypesUsed(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)

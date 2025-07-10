@@ -23,8 +23,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void PlatformSpecificPropertyIsSet(bool useCompiledXaml)
 			{
 				var layout = new PlatformSpecific(useCompiledXaml);

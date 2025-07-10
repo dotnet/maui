@@ -7,9 +7,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	// [TestFixture] - removed for xUnit
 	public class TextTransformTests : BaseTestFixture
 	{
-		[InlineData(TextTransform.None)]]
-		[InlineData(TextTransform.Lowercase)]]
-		[InlineData(TextTransform.Uppercase)]]
+		[InlineData(TextTransform.None)]
+		[InlineData(TextTransform.Lowercase)]
+		[InlineData(TextTransform.Uppercase)]
 		public void LabelTextTransform(TextTransform result)
 		{
 			var xaml = @"

@@ -31,8 +31,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void OnIdiomXDouble(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Idiom = DeviceIdiom.Phone;

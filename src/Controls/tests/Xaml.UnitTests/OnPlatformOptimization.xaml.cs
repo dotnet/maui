@@ -36,8 +36,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.That(methodDef.Body.Instructions.Any(instr => instr.Operand as string == expected), $"Did not find instruction containing '{expected}'");
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ValuesAreSet(bool useCompiledXaml)
 			{
 				var p = new OnPlatformOptimization(useCompiledXaml);

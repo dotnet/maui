@@ -20,8 +20,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void DoesNotAllowGridRowDefinition(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

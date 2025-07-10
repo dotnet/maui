@@ -42,8 +42,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void LookForInheritanceOnOpImplicit(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;

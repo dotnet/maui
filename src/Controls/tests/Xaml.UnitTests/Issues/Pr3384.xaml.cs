@@ -36,8 +36,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void RecyclingStrategyIsHandled(bool useCompiledXaml)
 			{
 				var p = new Pr3384(useCompiledXaml);

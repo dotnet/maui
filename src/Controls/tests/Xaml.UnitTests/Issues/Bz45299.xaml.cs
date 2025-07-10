@@ -162,8 +162,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void XamlCCustomTypeConverter(bool useCompiledXaml)
 			{
 				var p = new Bz45299(useCompiledXaml);

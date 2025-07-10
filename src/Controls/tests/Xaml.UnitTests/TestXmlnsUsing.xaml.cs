@@ -26,8 +26,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Application.Current = null;
 			}
 
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void SupportUsingXmlns(bool useCompiledXaml)
 			{
 				var page = new TestXmlnsUsing(useCompiledXaml);

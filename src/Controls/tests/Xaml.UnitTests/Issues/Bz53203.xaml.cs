@@ -42,14 +42,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[InlineData(true)]]
+			[InlineData(true)]
 			public void MarkupOnAttachedBPDoesNotThrowAtCompileTime(bool useCompiledXaml)
 			{
 				MockCompiler.Compile(typeof(Bz53203));
 			}
 
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void MarkupOnAttachedBP(bool useCompiledXaml)
 			{
 				var page = new Bz53203(useCompiledXaml);

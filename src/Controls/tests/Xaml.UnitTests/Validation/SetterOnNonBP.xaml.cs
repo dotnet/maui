@@ -23,8 +23,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class SetterOnNonBPTests
 		{
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ShouldThrow(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

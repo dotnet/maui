@@ -26,8 +26,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Application.Current = null;
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void StaticResourceOnApplication(bool useCompiledXaml)
 			{
 				Issue2114 app;

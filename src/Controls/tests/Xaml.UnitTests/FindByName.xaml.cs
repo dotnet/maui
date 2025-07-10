@@ -18,8 +18,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class FindByNameTests
 		{
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestRootName(bool useCompiledXaml)
 			{
 				var page = new FindByName(useCompiledXaml);
@@ -27,8 +27,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Same(page, page.FindByName<FindByName>("root"));
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestName(bool useCompiledXaml)
 			{
 				var page = new FindByName(useCompiledXaml);

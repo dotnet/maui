@@ -59,8 +59,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void XStaticWithXamlC(bool useCompiledXaml)
 			{
 				Bz48554 page = null;

@@ -27,8 +27,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Application.Current = new MockApplication();
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestStyle(bool useCompiledXaml)
 			{
 				var layout = new StyleTests(useCompiledXaml);
@@ -37,8 +37,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("FooBar", layout.label0.Text);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestConversionOnSetters(bool useCompiledXaml)
 			{
 				var layout = new StyleTests(useCompiledXaml);
@@ -61,16 +61,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("foo.png", ((FileImageSource)setter.Value).File);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ImplicitStyleAreApplied(bool useCompiledXaml)
 			{
 				var layout = new StyleTests(useCompiledXaml);
 				Assert.Equal(Colors.Red, layout.label1.TextColor);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void PropertyDoesNotNeedTypes(bool useCompiledXaml)
 			{
 				var layout = new StyleTests(useCompiledXaml);
@@ -82,8 +82,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(Colors.Red, s1.Value);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			//issue #2406
 			public void StylesDerivedFromDynamicStylesThroughStaticResource(bool useCompiledXaml)
 			{
@@ -96,8 +96,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(Colors.Red, label.TextColor);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			//issue #2406
 			public void StylesDerivedFromDynamicStylesThroughDynamicResource(bool useCompiledXaml)
 			{

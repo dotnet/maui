@@ -83,8 +83,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void ConverterParameterOrderDoesNotMatters(bool useCompiledXaml)
 			{
 				var layout = new Bz34037(useCompiledXaml);

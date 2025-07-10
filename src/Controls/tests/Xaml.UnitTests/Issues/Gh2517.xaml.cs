@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[InlineData(true)]]
+			[InlineData(true)]
 			public void BindingWithInvalidPathIsNotCompiled(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

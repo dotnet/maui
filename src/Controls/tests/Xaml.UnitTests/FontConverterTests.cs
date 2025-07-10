@@ -6,9 +6,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	// [TestFixture] - removed for xUnit
 	public class FontConverterTests : BaseTestFixture
 	{
-		[InlineData("Bold", Controls.FontAttributes.Bold)]]
-		[InlineData("Italic", Controls.FontAttributes.Italic)]]
-		[InlineData("Bold, Italic", Controls.FontAttributes.Bold | Controls.FontAttributes.Italic)]]
+		[InlineData("Bold", Controls.FontAttributes.Bold)]
+		[InlineData("Italic", Controls.FontAttributes.Italic)]
+		[InlineData("Bold, Italic", Controls.FontAttributes.Bold | Controls.FontAttributes.Italic)]
 		public void FontAttributes(string attributeString, FontAttributes result)
 		{
 			var xaml = @"

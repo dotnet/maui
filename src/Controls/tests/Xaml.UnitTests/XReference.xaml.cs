@@ -20,16 +20,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SupportsXReference(bool useCompiledXaml)
 			{
 				var layout = new XReference(useCompiledXaml);
 				Assert.Same(layout.image, layout.imageView.Content);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void XReferenceAsCommandParameterToSelf(bool useCompiledXaml)
 			{
 				var layout = new XReference(useCompiledXaml);
@@ -47,8 +47,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Fail();
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void XReferenceAsBindingSource(bool useCompiledXaml)
 			{
 				var layout = new XReference(useCompiledXaml);
@@ -57,8 +57,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("bar", layout.entry.Placeholder);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void CrossXReference(bool useCompiledXaml)
 			{
 				var layout = new XReference(useCompiledXaml);

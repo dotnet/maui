@@ -53,8 +53,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void NestedMarkupExtensionInsideDataTemplate(bool useCompiledXaml)
 			{
 				var page = new TypeExtension(useCompiledXaml);
@@ -70,8 +70,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.NotNull(button.Command);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			//https://bugzilla.xamarin.com/show_bug.cgi?id=55027
 			public void TypeExtensionSupportsNamespace(bool useCompiledXaml)
 			{

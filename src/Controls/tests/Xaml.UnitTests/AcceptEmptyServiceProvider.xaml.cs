@@ -37,8 +37,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void ServiceProviderIsNullOnAttributedExtensions(bool useCompiledXaml)
 			{
 				var p = new AcceptEmptyServiceProvider(useCompiledXaml);

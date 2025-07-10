@@ -50,8 +50,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void IValueConverterOnBindings(bool useCompiledXaml)
 			{
 				var page = new Bz47703(useCompiledXaml);

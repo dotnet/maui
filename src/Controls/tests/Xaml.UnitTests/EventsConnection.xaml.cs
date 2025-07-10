@@ -89,8 +89,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestClicked(bool useCompiledXaml)
 			{
 				var layout = new EventsConnection(useCompiledXaml);
@@ -99,8 +99,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(1, layout.clicked);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestGenericClicked(bool useCompiledXaml)
 			{
 				var layout = new EventsConnection(useCompiledXaml);
@@ -109,8 +109,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(1, layout.genericClicked);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestHandlerOnBase(bool useCompiledXaml)
 			{
 				var layout = new EventsConnection(useCompiledXaml);
@@ -119,8 +119,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(1, layout.baseClicked);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestAsyncPrivateHandler(bool useCompiledXaml)
 			{
 				var layout = new EventsConnection(useCompiledXaml);
@@ -129,8 +129,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(1, layout.asyncPrivateClicked);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestVirtualHandler(bool useCompiledXaml)
 			{
 				var layout = new SubForEvents(useCompiledXaml);
@@ -141,8 +141,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(1, layout.overrideClicked);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestStaticHandler(bool useCompiledXaml)
 			{
 				try

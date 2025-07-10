@@ -20,8 +20,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		class Tests
 		{
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void DataTriggerInTemplates(bool useCompiledXaml)
 			{
 				var layout = new Bz30074(useCompiledXaml);

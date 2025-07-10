@@ -29,8 +29,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			// - An enumeration value
 			// All other cases should throw
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ThrowOnInstanceProperty(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

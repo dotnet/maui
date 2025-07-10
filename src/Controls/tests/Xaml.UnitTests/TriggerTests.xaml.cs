@@ -21,8 +21,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ValueIsConverted(bool useCompiledXaml)
 			{
 				var layout = new TriggerTests(useCompiledXaml);
@@ -36,8 +36,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(true, pwTrigger.Value);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ValueIsConvertedWithPropertyCondition(bool useCompiledXaml)
 			{
 				var layout = new TriggerTests(useCompiledXaml);

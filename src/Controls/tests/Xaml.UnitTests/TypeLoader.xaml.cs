@@ -26,8 +26,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Application.Current = new MockApplication();
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void LoadTypeFromXmlns(bool useCompiledXaml)
 			{
 				TypeLoader layout = null;
@@ -36,8 +36,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.That(layout.customview0, Is.TypeOf<CustomView>());
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void LoadTypeFromXmlnsWithoutAssembly(bool useCompiledXaml)
 			{
 				TypeLoader layout = null;

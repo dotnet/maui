@@ -27,8 +27,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Application.Current = null;
 			}
 
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void StyleDoesNotOverrideValues(bool useCompiledXaml)
 			{
 				var layout = new Bz41048(useCompiledXaml);

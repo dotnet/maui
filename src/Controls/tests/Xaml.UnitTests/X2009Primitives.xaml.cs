@@ -21,8 +21,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SupportsXString(bool useCompiledXaml)
 			{
 				var layout = new X2009Primitives(useCompiledXaml);
@@ -34,8 +34,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SupportsXObject(bool useCompiledXaml)
 			{
 				var layout = new X2009Primitives(useCompiledXaml);
@@ -45,8 +45,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.That(value, Is.TypeOf<object>());
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SupportsXBoolean(bool useCompiledXaml)
 			{
 				var layout = new X2009Primitives(useCompiledXaml);
@@ -70,8 +70,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(default(bool), (bool)defaultbool);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SupportsXChar(bool useCompiledXaml)
 			{
 				var layout = new X2009Primitives(useCompiledXaml);
@@ -95,8 +95,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(default(char), (char)defaultChar);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SupportsXNumbers(bool useCompiledXaml)
 			{
 				var layout = new X2009Primitives(useCompiledXaml);
@@ -216,8 +216,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(default(long), (long)defaultInt64);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SupportsXTimeSpan(bool useCompiledXaml)
 			{
 				var layout = new X2009Primitives(useCompiledXaml);
@@ -235,8 +235,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(default(TimeSpan), (TimeSpan)defaultTimeSpan);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SupportsXUri(bool useCompiledXaml)
 			{
 				var layout = new X2009Primitives(useCompiledXaml);

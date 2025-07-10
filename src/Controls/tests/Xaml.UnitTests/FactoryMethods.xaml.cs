@@ -77,72 +77,72 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestDefaultCtor(bool useCompiledXaml)
 			{
 				var layout = new FactoryMethods(useCompiledXaml);
 				Assert.Equal("default ctor", layout.v0.Content.Content);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestStringCtor(bool useCompiledXaml)
 			{
 				var layout = new FactoryMethods(useCompiledXaml);
 				Assert.Equal("alternate ctor foobar", layout.v1.Content.Content);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestIntCtor(bool useCompiledXaml)
 			{
 				var layout = new FactoryMethods(useCompiledXaml);
 				Assert.Equal("int ctor 42", layout.v2.Content.Content);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestArgumentlessFactoryMethod(bool useCompiledXaml)
 			{
 				var layout = new FactoryMethods(useCompiledXaml);
 				Assert.Equal("parameterless factory", layout.v3.Content.Content);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestFactoryMethod(bool useCompiledXaml)
 			{
 				var layout = new FactoryMethods(useCompiledXaml);
 				Assert.Equal("factory foo42", layout.v4.Content.Content);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestFactoryMethodParametersOrder(bool useCompiledXaml)
 			{
 				var layout = new FactoryMethods(useCompiledXaml);
 				Assert.Equal("factory 42foo", layout.v5.Content.Content);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestCtorWithxStatic(bool useCompiledXaml)
 			{
 				var layout = new FactoryMethods(useCompiledXaml);
 				Assert.Equal("alternate ctor Property", layout.v6.Content.Content);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestCtorWithxStaticAttribute(bool useCompiledXaml)
 			{
 				var layout = new FactoryMethods(useCompiledXaml);
 				Assert.Equal("alternate ctor Property", layout.v7.Content.Content);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestCtorWithArrayParameter(bool useCompiledXaml)
 			{
 				var layout = new FactoryMethods(useCompiledXaml);

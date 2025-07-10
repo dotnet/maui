@@ -19,8 +19,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Datetime(bool useCompiledXaml)
 			{
 				var layout = new BuiltInConversions(useCompiledXaml);
@@ -29,8 +29,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(new DateTime(2015, 01, 16), layout.datetime1.Date);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void String(bool useCompiledXaml)
 			{
 				var layout = new BuiltInConversions(useCompiledXaml);

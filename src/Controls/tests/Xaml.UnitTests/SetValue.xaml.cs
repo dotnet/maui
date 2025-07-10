@@ -153,16 +153,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetValueToBP(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.Equal("Foo", page.label0.Text);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetBindingToBP(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
@@ -172,8 +172,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("Foo", page.label1.Text);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetBindingWithImplicitPath(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
@@ -183,8 +183,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("Foo", page.label11.Text);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetEvent(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
@@ -193,8 +193,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.True(page.fired);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetBoolValue(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
@@ -203,8 +203,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			//TODO test all value conversions
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetAttachedBP(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
@@ -212,24 +212,24 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(2, Grid.GetRow(page.label2));
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetContent(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.Same(page.label3, page.contentview0.Content);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetImplicitContent(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.Same(page.label4, page.contentview1.Content);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetCollectionContent(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
@@ -237,8 +237,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.True(page.stack0.Children.Contains(page.label6));
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetImplicitCollectionContent(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
@@ -246,56 +246,56 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.True(page.stack1.Children.Contains(page.label8));
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetSingleCollectionContent(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.True(page.stack2.Children.Contains(page.label9));
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetImplicitSingleCollectionContent(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.True(page.stack3.Children.Contains(page.label10));
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetPropertyDefinedOnGenericType(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.Equal(2, page.listView.ItemsSource.Cast<object>().Count());
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetConvertibleProperties(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.Equal(Colors.Red, page.label12.TextColor);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetValueTypeProperties(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.Equal(Colors.Pink, page.label13.TextColor);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void CreateValueTypes(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.Equal(Colors.Purple, page.Resources["purple"]);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void DefCollections(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
@@ -303,40 +303,40 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(1, page.grid0.ColumnDefinitions.Count);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void FlagsAreApplied(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.Equal(AbsoluteLayoutFlags.PositionProportional | AbsoluteLayoutFlags.WidthProportional, AbsoluteLayout.GetLayoutFlags(page.label14));
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ConversionsAreAppliedOnSet(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.That(page.content0.Content, Is.TypeOf<Button>());
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ConversionsAreAppliedOnAdd(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.That(page.stack4.Children[0], Is.TypeOf<Button>());
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ListsAreSimplified(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.That(page.contentview2.Content, Is.TypeOf<Label>());
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void MorePrimitiveTypes(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
@@ -348,8 +348,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal((decimal)42, page.mockView0.ADecimal);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void NonIntEnums(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
@@ -363,24 +363,24 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("Bar", page.implicit0.GetValue(MockViewWithValues.BPBarProperty));
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetValueWithImplicitOperatorOnTarget(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.Equal("Foo", ((SV_Foo)page.implicit1.GetValue(MockViewWithValues.BPFooProperty)).Value);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetWithImplicitOperatorOnSource(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.Equal("Bar", page.implicit2.Bar);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SetWithImplicitOperatorOnTarget(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);

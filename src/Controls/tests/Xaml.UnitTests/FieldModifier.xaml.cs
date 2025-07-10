@@ -19,8 +19,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class FindByNameTests
 		{
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestFieldModifier(bool useCompiledXaml)
 			{
 				var layout = new FieldModifier();

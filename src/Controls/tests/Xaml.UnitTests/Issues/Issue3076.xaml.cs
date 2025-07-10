@@ -30,8 +30,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TestFixture] - removed for xUnit
 		public class Tests
 		{
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void CanUseBindableObjectDefinedInThisAssembly(bool useCompiledXaml)
 			{
 				var layout = new Issue3076(useCompiledXaml);
@@ -40,8 +40,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(TextAlignment.Start, layout.local.VerticalContentAlignment);
 			}
 
-			[InlineData(false)]]
-			[InlineData(true)]]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void CanUseBindableObjectDefinedInOtherAssembly(bool useCompiledXaml)
 			{
 				var layout = new Issue3076(useCompiledXaml);

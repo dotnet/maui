@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				DispatcherProvider.SetCurrent(null);
 			}
 
-			[InlineData(true)]]
-			[InlineData(false)]]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void ControlTemplateAsImplicitAppLevelStyles(bool useCompiledXaml)
 			{
 				Application.Current = new Bz53381App();
