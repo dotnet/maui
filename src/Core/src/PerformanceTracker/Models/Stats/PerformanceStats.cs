@@ -20,4 +20,13 @@ internal class PerformanceStats
 	/// and helps correlate image loading events.
 	/// </remarks>
 	public DateTime TimestampUtc { get; set; }
+
+	/// <summary>
+	/// Returns a default, empty instance of <see cref="PerformanceStats"/> with no layout data.
+	/// </summary>
+	public static PerformanceStats Empty { get; } = new PerformanceStats
+	{
+		Layout = null,
+		TimestampUtc = DateTime.UtcNow
+	};
 }

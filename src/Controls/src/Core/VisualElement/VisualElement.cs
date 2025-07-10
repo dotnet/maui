@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls.Shapes;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Performance;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
 using Rect = Microsoft.Maui.Graphics.Rect;
 
@@ -1909,10 +1910,10 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Arrange(Rect bounds)
 		{
-			return Performance.PerformanceTracker.TrackArrange(
-				this.FindMauiContext(),
-				() => ArrangeOverride(bounds),
-				GetType().Name);
+			using (PerformanceProfiler.TrackArrange(GetType().Name))
+			{
+				return ArrangeOverride(bounds);
+			}
 		}
 
 		/// <summary>
@@ -1957,12 +1958,11 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Measure(double widthConstraint, double heightConstraint)
 		{
-			DesiredSize = Performance.PerformanceTracker.TrackMeasure(
-				this.FindMauiContext(),
-				() => MeasureOverride(widthConstraint, heightConstraint),
-				GetType().Name
-			);
-			return DesiredSize;
+			using (PerformanceProfiler.TrackArrange(GetType().Name))
+			{
+				DesiredSize = MeasureOverride(widthConstraint, heightConstraint);
+				return DesiredSize;
+			}
 		}
 
 		/// <summary>

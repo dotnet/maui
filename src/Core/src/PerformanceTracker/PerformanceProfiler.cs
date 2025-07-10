@@ -1,19 +1,16 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.Maui.Performance;
 
 /// <summary>
-/// Implementation of <see cref="IPerformanceProfiler"/> that provides access to performance tracking.
+/// Provides access to performance tracking.
 /// </summary>
-internal class PerformanceProfiler : IPerformanceProfiler
+internal static class PerformanceProfiler
 {
-	public PerformanceProfiler(
-		ILayoutPerformanceTracker layoutTracker)
-	{
-		Layout = layoutTracker;
-	}
-	
+	static readonly IDisposable Untracked = new ActionDisposable(() => { /* nothing */ });
+
 	/// <summary>
 	/// Gets the layout performance tracker responsible for monitoring
 	/// layout-related operations such as measure and arrange passes.
@@ -22,7 +19,16 @@ internal class PerformanceProfiler : IPerformanceProfiler
 	/// This tracker provides insights into UI rendering performance, helping detect 
 	/// inefficiencies in layout calculations and arrangement processes.
 	/// </remarks>
-	public ILayoutPerformanceTracker Layout { get; }
+	public static ILayoutPerformanceTracker Layout { get; private set; }
+
+	/// <summary>
+	/// Initializes the performance profiler with the given tracker implementations.
+	/// </summary>
+	/// <param name="layout">An instance of <see cref="ILayoutPerformanceTracker"/> to be used for tracking performance.</param>
+	public static void Initialize(ILayoutPerformanceTracker layout)
+	{
+		Layout = layout ?? throw new ArgumentNullException(nameof(layout));
+	}
 
 	/// <summary>
 	/// Collects and returns performance statistics related to layout operations.
@@ -37,40 +43,61 @@ internal class PerformanceProfiler : IPerformanceProfiler
 	/// rendering performance over time. The <see cref="PerformanceStats"/> returned includes
 	/// details such as measure/arrange counts or durations, and when the snapshot was taken.
 	/// </remarks>
-	public PerformanceStats GetStats()
+	public static PerformanceStats GetStats()
 	{
+		if (Layout is null)
+			return PerformanceStats.Empty;
+		
 		return new PerformanceStats
 		{
 			Layout = Layout.GetStats(),
 			TimestampUtc = DateTime.UtcNow
 		};
 	}
-	
+
 	/// <summary>
-	/// Records a layout measure pass with the specified duration and optional element name.
+	/// Starts timing a layout-measure pass. Dispose the returned scope to stop and record.
 	/// </summary>
-	/// <param name="duration">The duration of the measure pass in milliseconds.</param>
-	/// <param name="element">Optional element name or type for per-element tracking.</param>
-	/// <remarks>
-	/// This method tracks layout measurements to identify performance bottlenecks 
-	/// and improve UI responsiveness.
-	/// </remarks>
-	public void RecordMeasurePass(long duration, string element = null)
+	/// <param name="element">
+	/// Optional element name or type for per-element tracking.
+	/// </param>
+	/// <returns>
+	/// An <see cref="IDisposable"/> which, when disposed, stops timing
+	/// and records the duration with the layout tracker.
+	/// </returns>
+	public static IDisposable TrackMeasure(string element = null)
 	{
-		Layout.RecordMeasurePass(duration, element);
+		if (Layout is null)
+			return Untracked;
+
+		var sw = Stopwatch.StartNew();
+		return new ActionDisposable(() =>
+		{
+			sw.Stop();
+			Layout.RecordMeasurePass(sw.Elapsed.TotalMilliseconds, element);
+		});
 	}
-	
+
 	/// <summary>
-	/// Records a layout arrange pass with the specified duration and optional element name.
+	/// Starts timing a layout-arrange pass. Dispose the returned scope to stop and record.
 	/// </summary>
-	/// <param name="duration">The duration of the arrange pass in milliseconds.</param>
-	/// <param name="element">Optional element name or type for per-element tracking.</param>
-	/// <remarks>
-	/// This method tracks layout measurements to identify performance bottlenecks 
-	/// and improve UI responsiveness.
-	/// </remarks>
-	public void RecordArrangePass(long duration, string element = null)
+	/// <param name="element">
+	/// Optional element name or type for per-element tracking.
+	/// </param>
+	/// <returns>
+	/// An <see cref="IDisposable"/> which, when disposed, stops timing
+	/// and records the duration with the layout tracker.
+	/// </returns>
+	public static IDisposable TrackArrange(string element = null)
 	{
-		Layout.RecordArrangePass(duration, element);
+		if (Layout is null)
+			return Untracked;
+
+		var sw = Stopwatch.StartNew();
+		return new ActionDisposable(() =>
+		{
+			sw.Stop();
+			Layout.RecordArrangePass(sw.Elapsed.TotalMilliseconds, element);
+		});
 	}
 }

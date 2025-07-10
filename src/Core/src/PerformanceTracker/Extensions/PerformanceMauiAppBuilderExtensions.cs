@@ -15,19 +15,25 @@ namespace Microsoft.Maui.Performance
         /// <param name="builder">The <see cref="MauiAppBuilder"/> to which performance monitoring is being added.</param>
         /// <returns>The same <see cref="MauiAppBuilder"/> instance.</returns>
         public static MauiAppBuilder ConfigurePerformance(
-            this MauiAppBuilder builder)
-		{
-			// Check if the performance profiling feature is enabled.
-			if (PerformanceFeature.IsMetricsSupported)
-			{
-				// Register the Meter
-				var meter = new Meter("Microsoft.Maui");
-				builder.Services.AddSingleton(meter);
+			this MauiAppBuilder builder)
+        {
+            // Check if the performance profiling feature is enabled.
+            if (PerformanceFeature.IsMetricsSupported)
+            {
+                // Register the Meter
+                var meter = new Meter("Microsoft.Maui");
+                builder.Services.AddSingleton(meter);
 
-				// Register core services
-				builder.Services.AddSingleton<IPerformanceProfiler, PerformanceProfiler>();
-				builder.Services.AddSingleton<ILayoutPerformanceTracker, LayoutPerformanceTracker>();
-			}
+                // Register core services
+                builder.Services.AddSingleton<ILayoutPerformanceTracker, LayoutPerformanceTracker>();
+
+				// Initialize the PerformanceProfiler
+				using (var serviceProvider = builder.Services.BuildServiceProvider())
+                {
+                    var layout = serviceProvider.GetRequiredService<ILayoutPerformanceTracker>();
+                    PerformanceProfiler.Initialize(layout);
+                }
+            }
 
             return builder;
         }
