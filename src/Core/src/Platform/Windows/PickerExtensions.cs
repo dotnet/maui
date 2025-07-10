@@ -74,7 +74,33 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCharacterSpacing(this ComboBox nativeComboBox, IPicker picker)
 		{
-			nativeComboBox.CharacterSpacing = picker.CharacterSpacing.ToEm();
+			var characterSpacing = picker.CharacterSpacing.ToEm();
+			nativeComboBox.CharacterSpacing = characterSpacing;
+
+			if (nativeComboBox.IsLoaded)
+			{
+				ApplyCharacterSpacingToSelectedItem(nativeComboBox, characterSpacing);
+			}
+			else
+			{
+				nativeComboBox.OnLoaded(() =>
+				{
+					ApplyCharacterSpacingToSelectedItem(nativeComboBox, characterSpacing);
+				});
+			}
+		}
+
+		static void ApplyCharacterSpacingToSelectedItem(ComboBox nativeComboBox, int characterSpacing)
+		{
+			var contentPresenter = nativeComboBox.GetDescendantByName<ContentPresenter>("ContentPresenter");
+			if (contentPresenter != null)
+			{
+				var textBlock = contentPresenter.GetFirstDescendant<TextBlock>();
+				if (textBlock != null)
+				{
+					textBlock.CharacterSpacing = characterSpacing;
+				}
+			}
 		}
 
 		public static void UpdateFont(this ComboBox nativeComboBox, IPicker picker, IFontManager fontManager) =>
