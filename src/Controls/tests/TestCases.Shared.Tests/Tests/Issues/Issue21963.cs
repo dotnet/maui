@@ -17,11 +17,11 @@ public class Issue21963 : _IssuesUITest
     [Category(UITestCategories.Shell)]
     public void VerifyFlyoutAndTemplatesPresentInitially()
     {
-        App.WaitForElement("ShellContent 1");
-        App.WaitForElement("ShellContent 2");
-        App.WaitForElement("MenuItem 1");
-        App.WaitForElement("MenuItem 2");
-        App.WaitForElement("ShellContent 3");
+        App.WaitForElement("Issue21963ShellContent1");
+        App.WaitForElement("Issue21963ShellContent2");
+        App.WaitForElement("Issue21963MenuItem1");
+        App.WaitForElement("Issue21963MenuItem2");
+        App.WaitForElement("Issue21963ShellContent3");
     }
 }
 #endif
