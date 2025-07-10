@@ -115,13 +115,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (FlyoutView.FlyoutBehavior == FlyoutBehavior.Locked)
 				OnFlyoutViewLayoutChanging();
 
-			// If the flyout is initially presented, we need to ensure the content is loaded immediately
-			// Otherwise OnCreateViewHolder won't be called and templates won't be applied
-			if (_shellContext.Shell.FlyoutIsPresented)
-			{
-				UpdateFlyoutContent();
-			}
-
 			if (View is ShellFlyoutLayout sfl)
 			{
 				// The purpose of this code is to load the flyout content after
@@ -451,7 +444,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// The second time this fires the non flyout part of the view
 			// is visible to the user. I haven't found a better
 			// mechanism to wire into in order to detect this
-			if ((_initialLayoutChangeFired || FlyoutView.FlyoutBehavior == FlyoutBehavior.Locked) &&
+			if ((_initialLayoutChangeFired || FlyoutView.FlyoutBehavior == FlyoutBehavior.Locked || _shellContext.Shell.FlyoutIsPresented) &&
 				_flyoutContentView == null)
 			{
 				UpdateFlyoutContent();
