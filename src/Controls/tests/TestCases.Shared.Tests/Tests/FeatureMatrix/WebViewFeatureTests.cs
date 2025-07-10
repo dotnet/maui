@@ -60,8 +60,8 @@ public class WebViewFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("MicrosoftUrlButton");
-		App.Tap("MicrosoftUrlButton");
+		App.WaitForElement("HtmlSourceButton");
+		App.Tap("HtmlSourceButton");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(CanGoBackLabel, timeout: TimeSpan.FromSeconds(3));
