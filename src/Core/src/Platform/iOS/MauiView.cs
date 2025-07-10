@@ -34,6 +34,27 @@ namespace Microsoft.Maui.Platform
 
 		bool RespondsToSafeArea()
 		{
+			// Check if we should respond to safe area on any edge
+			if (View is ISafeAreaPage safeAreaPage)
+			{
+				// If any edge should respect safe area, then we respond to safe area
+				for (int edge = 0; edge < 4; edge++)
+				{
+					if (!safeAreaPage.IgnoreSafeAreaForEdge(edge))
+					{
+						// At least one edge should respect safe area
+						if (_respondsToSafeArea.HasValue)
+						{
+							return _respondsToSafeArea.Value;
+						}
+						return (_respondsToSafeArea = RespondsToSelector(new Selector("safeAreaInsets"))).Value;
+					}
+				}
+				// All edges ignore safe area
+				return false;
+			}
+
+			// Fallback to legacy ISafeAreaView behavior
 			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea)
 			{
 				return false;
@@ -55,6 +76,40 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return _safeArea.InsetRect(bounds);
+		}
+
+		protected CGRect AdjustForSafeAreaPerEdge(CGRect bounds)
+		{
+			if (KeyboardAutoManagerScroll.ShouldIgnoreSafeAreaAdjustment)
+			{
+				KeyboardAutoManagerScroll.ShouldScrollAgain = true;
+			}
+
+			// Create a selective safe area based on per-edge settings
+			var selectiveSafeArea = GetSelectiveSafeArea();
+			return selectiveSafeArea.InsetRect(bounds);
+		}
+
+		SafeAreaPadding GetSelectiveSafeArea()
+		{
+			if (View is ISafeAreaPage safeAreaPage)
+			{
+				// Apply safe area selectively per edge
+				var left = safeAreaPage.IgnoreSafeAreaForEdge(0) ? 0 : _safeArea.Left;
+				var top = safeAreaPage.IgnoreSafeAreaForEdge(1) ? 0 : _safeArea.Top;
+				var right = safeAreaPage.IgnoreSafeAreaForEdge(2) ? 0 : _safeArea.Right;
+				var bottom = safeAreaPage.IgnoreSafeAreaForEdge(3) ? 0 : _safeArea.Bottom;
+
+				return new SafeAreaPadding(left, right, top, bottom);
+			}
+
+			// Fallback to legacy behavior
+			if (View is ISafeAreaView sav && sav.IgnoreSafeArea)
+			{
+				return SafeAreaPadding.Empty;
+			}
+
+			return _safeArea;
 		}
 
 		protected bool IsMeasureValid(double widthConstraint, double heightConstraint)
@@ -95,9 +150,10 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_appliesSafeAreaAdjustments)
 			{
-				// When responding to safe area, we need to adjust the constraints to account for the safe area.
-				widthConstraint -= _safeArea.HorizontalThickness;
-				heightConstraint -= _safeArea.VerticalThickness;
+				// When responding to safe area, we need to adjust the constraints to account for the selective safe area.
+				var selectiveSafeArea = GetSelectiveSafeArea();
+				widthConstraint -= selectiveSafeArea.HorizontalThickness;
+				heightConstraint -= selectiveSafeArea.VerticalThickness;
 			}
 
 			var crossPlatformSize = CrossPlatformLayout?.CrossPlatformMeasure(widthConstraint, heightConstraint) ?? Size.Zero;
@@ -105,7 +161,8 @@ namespace Microsoft.Maui.Platform
 			if (_appliesSafeAreaAdjustments)
 			{
 				// If we're responding to the safe area, we need to add the safe area back to the size so the container can allocate the correct space
-				crossPlatformSize = new Size(crossPlatformSize.Width + _safeArea.HorizontalThickness, crossPlatformSize.Height + _safeArea.VerticalThickness);
+				var selectiveSafeArea = GetSelectiveSafeArea();
+				crossPlatformSize = new Size(crossPlatformSize.Width + selectiveSafeArea.HorizontalThickness, crossPlatformSize.Height + selectiveSafeArea.VerticalThickness);
 			}
 
 			return crossPlatformSize;
@@ -115,7 +172,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_appliesSafeAreaAdjustments)
 			{
-				bounds = AdjustForSafeArea(bounds);
+				bounds = AdjustForSafeAreaPerEdge(bounds);
 			}
 
 			CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle());
