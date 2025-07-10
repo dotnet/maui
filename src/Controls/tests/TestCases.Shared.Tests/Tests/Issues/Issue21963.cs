@@ -11,17 +11,18 @@ public class Issue21963 : _IssuesUITest
     {
     }
 
-    public override string Issue => "Shell.MenuItemTemplate Sometime Does Not Work";
+    public override string Issue => "ShellMenuItemTemplate Sometime Does Not Work";
 
     [Test]
     [Category(UITestCategories.Shell)]
     public void VerifyFlyoutAndTemplatesPresentInitially()
     {
-        App.WaitForElement("Issue21963ShellContent1");
-        App.WaitForElement("Issue21963ShellContent2");
-        App.WaitForElement("Issue21963MenuItem1");
-        App.WaitForElement("Issue21963MenuItem2");
-        App.WaitForElement("Issue21963ShellContent3");
+        App.WaitForElement("ShellContent 1");
+        App.WaitForElement("ShellContent 2");
+        App.WaitForElement("MenuItem 1");
+        App.WaitForElement("MenuItem 2");
+        App.WaitForElement("ShellContent 3");
+
     }
 }
 #endif
