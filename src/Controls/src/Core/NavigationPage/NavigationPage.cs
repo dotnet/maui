@@ -54,6 +54,7 @@ namespace Microsoft.Maui.Controls
 
 		INavigationPageController NavigationPageController => this;
 
+	
 		partial void Init();
 
 #if WINDOWS || ANDROID || TIZEN
@@ -63,6 +64,7 @@ namespace Microsoft.Maui.Controls
 #endif
 
 		bool _setForMaui;
+			
 		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public NavigationPage() : this(UseMauiHandler)
 		{
@@ -111,6 +113,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal Task CurrentNavigationTask { get; set; }
+
+		internal NavigationType NavigationType { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='Peek']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -377,12 +381,12 @@ namespace Microsoft.Maui.Controls
 		void SendNavigated(Page previousPage, NavigationType navigationType)
 		{
 			previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
-			CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
+			CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage, navigationType));
 		}
 
-		void SendNavigating(Page navigatingFrom = null)
+		void SendNavigating(NavigationType navigationType, Page navigatingFrom = null)
 		{
-			(navigatingFrom ?? CurrentPage)?.SendNavigatingFrom(new NavigatingFromEventArgs());
+			(navigatingFrom ?? CurrentPage)?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
 		}
 
 
@@ -691,7 +695,9 @@ namespace Microsoft.Maui.Controls
 				var visiblePage = Navigation.NavigationStack[NavigationStack.Count - 1];
 				RootPage = navStack[0];
 				CurrentPage = visiblePage;
-
+				
+				var navigationType = DetermineNavigationType();
+				
 				SendHandlerUpdateAsync(false, null,
 				() =>
 				{
@@ -699,8 +705,7 @@ namespace Microsoft.Maui.Controls
 				},
 				() =>
 				{
-					// TODO this is the wrong navigation type
-					SendNavigated(null, NavigationType.Initialize);
+					SendNavigated(null, navigationType);
 				})
 				.FireAndForget(Handler);
 			}
@@ -712,7 +717,21 @@ namespace Microsoft.Maui.Controls
 				((IStackNavigation)this).NavigationFinished(this.NavigationStack);
 			}
 		}
+		
+		NavigationType DetermineNavigationType()
+		{
+			var parentPages = this.GetParentPages();
 
+			bool hasTabOrFlyout = parentPages.Any(page => page is FlyoutPage or TabbedPage);
+    
+			if (hasTabOrFlyout)
+			{
+				return NavigationType.Replace;
+			}
+
+			return NavigationType.Push;
+		}
+		
 		// Once we get all platforms over to the new APIs
 		// we can just delete all the code inside NavigationPage.cs that fires "requested" events
 		class MauiNavigationImpl : NavigationProxy
@@ -750,6 +769,7 @@ namespace Microsoft.Maui.Controls
 				Owner.SendHandlerUpdateAsync(false,
 					() =>
 					{
+						Owner.NavigationType = NavigationType.Insert;
 						int index = Owner.InternalChildren.IndexOf(before);
 						Owner.InternalChildren.Insert(index, page);
 
@@ -783,6 +803,7 @@ namespace Microsoft.Maui.Controls
 				await Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						Owner.NavigationType = NavigationType.Pop;
 						Owner.CurrentPage = newCurrentPage;
 						Owner.RemoveFromInnerChildren(currentPage);
 						if (currentPage.TitleView != null)
@@ -792,7 +813,7 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
-						Owner.SendNavigating(currentPage);
+						Owner.SendNavigating(NavigationType.Pop, currentPage);
 						Owner.FireDisappearing(currentPage);
 						Owner.FireAppearing(newCurrentPage);
 					},
@@ -817,6 +838,7 @@ namespace Microsoft.Maui.Controls
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						Owner.NavigationType = NavigationType.PopToRoot;
 						var lastIndex = NavigationStack.Count - 1;
 						while (lastIndex > 0)
 						{
@@ -829,7 +851,7 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
-						Owner.SendNavigating(previousPage);
+						Owner.SendNavigating(NavigationType.PopToRoot, previousPage);
 						Owner.FireDisappearing(previousPage);
 						Owner.FireAppearing(newPage);
 					},
@@ -845,22 +867,24 @@ namespace Microsoft.Maui.Controls
 				if (Owner.InternalChildren.Contains(root))
 					return Task.CompletedTask;
 
+				var navigationType = Owner.DetermineNavigationType();
 				var previousPage = Owner.CurrentPage;
 
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						Owner.NavigationType = navigationType;
 						Owner.PushPage(root);
 					},
 					() =>
 					{
-						Owner.SendNavigating(previousPage);
+						Owner.SendNavigating(navigationType, previousPage);
 						Owner.FireDisappearing(previousPage);
 						Owner.FireAppearing(root);
 					},
 					() =>
 					{
-						Owner.SendNavigated(previousPage, NavigationType.Push);
+						Owner.SendNavigated(previousPage, navigationType);
 						Owner?.Pushed?.Invoke(Owner, new NavigationEventArgs(root));
 					});
 			}
@@ -886,6 +910,7 @@ namespace Microsoft.Maui.Controls
 				Owner.SendHandlerUpdateAsync(false,
 					() =>
 					{
+						Owner.NavigationType = NavigationType.Remove;
 						Owner.RemoveFromInnerChildren(page);
 
 						if (Owner.RootPage == page)
