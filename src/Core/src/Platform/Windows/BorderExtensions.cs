@@ -76,6 +76,10 @@ namespace Microsoft.Maui.Platform
 					borderPath.StrokeDashArray.Add(value);
 				}
 			}
+			else if (borderDashArray is null || borderDashArray.Length == 0)
+			{
+				borderPath.StrokeDashArray = null;
+			}
 		}
 
 		public static void UpdateBorderDashOffset(this Path borderPath, double borderDashOffset)
