@@ -3,22 +3,21 @@ using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Graphics;
 
-#nullable disable
-
 namespace Microsoft.Maui.Converters
 {
+
 	/// <inheritdoc/>
 	public class ThicknessTypeConverter : TypeConverter
 	{
-		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string)
 				|| sourceType == typeof(Size)
 				|| PrimitiveTypeConversions.IsImplicitlyConvertibleToDouble(sourceType);
 
-		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 			=> destinationType == typeof(string);
 
-		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
 			if (PrimitiveTypeConversions.TryGetDouble(value, out double d))
 			{
@@ -90,7 +89,7 @@ namespace Microsoft.Maui.Converters
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Thickness)}");
 		}
 
-		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 		{
 			if (value is not Thickness t)
 				throw new NotSupportedException();
