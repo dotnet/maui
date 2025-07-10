@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Controls.TestCases.HostApp.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 30181, "Entry bound to a double casts values too early, preventing small negative decimal entries", PlatformAffected.All)]
 public class Issue30181 : ContentPage
