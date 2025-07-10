@@ -45,11 +45,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// Called by Forms to mark an item selected 
 		internal void SelectItem(object selectedItem)
 		{
-			if(ItemsView?.ItemsSource is not object originalSource)
+			if (ItemsView?.ItemsSource is not object originalSource)
 			{
 				return;
 			}
-			
+
 			var index = GetIndexForItem(selectedItem);
 
 			if (index.Section > -1 && index.Item > -1)

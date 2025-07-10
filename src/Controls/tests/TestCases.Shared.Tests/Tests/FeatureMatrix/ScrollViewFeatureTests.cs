@@ -409,7 +409,7 @@ public class ScrollViewFeatureTests : UITest
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/30070
 
-    [Test, Order(5)]
+	[Test, Order(5)]
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewWithScrollToPositionEndAndOrientationHorizontal()
 	{
@@ -653,7 +653,7 @@ public class ScrollViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test , Order(43)]
+	[Test, Order(43)]
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewWithScrollToPositionCenterAndAbsoluteLayoutContentWhenOrientationHorizontal()
 	{
@@ -671,7 +671,7 @@ public class ScrollViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test , Order(44)]
+	[Test, Order(44)]
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewWithScrollToPositionMakeVisibleAndAbsoluteContentWhenOrientationHorizontal()
 	{
@@ -921,7 +921,7 @@ public class ScrollViewFeatureTests : UITest
 		Assert.That(scrollY, Is.GreaterThan("0"), "ScrollY should not be zero after scrolling down with Orientation Both");
 	}
 
-	 
+
 	[Test]
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewWithOrientationNeither()
@@ -934,17 +934,17 @@ public class ScrollViewFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("ScrollViewControl");
 		App.ScrollDown("ScrollViewControl", ScrollStrategy.Gesture, 0.99, 500);
-        App.ScrollRight("ScrollViewControl", ScrollStrategy.Gesture, 0.99, 500);
+		App.ScrollRight("ScrollViewControl", ScrollStrategy.Gesture, 0.99, 500);
 		var scrollY = App.WaitForElement("ScrollYLabel").GetText();
 		var scrollX = App.WaitForElement("ScrollXLabel").GetText();
 		Assert.That(scrollX, Is.EqualTo("0"), "Scrolling Does not work when Orientation is Neither");
 		Assert.That(scrollY, Is.EqualTo("0"), "Scrolling Does not work when Orientation is Neither");
 	}
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS  
-// Issue Link for Windows: https://github.com/dotnet/maui/issues/7766
-// Issue Link for iOS: https://github.com/dotnet/maui/issues/30158
-// Issue Link for Mac Catalyst: https://github.com/dotnet/maui/issues/7767
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
+	// Issue Link for Windows: https://github.com/dotnet/maui/issues/7766
+	// Issue Link for iOS: https://github.com/dotnet/maui/issues/30158
+	// Issue Link for Mac Catalyst: https://github.com/dotnet/maui/issues/7767
 	[Test]
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewWithVerticalScrollBarVisibilityAlways()
@@ -980,7 +980,7 @@ public class ScrollViewFeatureTests : UITest
 	}
 #endif
 
-    [Test]
+	[Test]
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewWithVerticalScrollBarVisibilityNever()
 	{
