@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	public abstract class ItemsViewLayout : UICollectionViewFlowLayout
 	{
 
-		readonly WeakReference<ItemsLayout> _itemsLayout = new WeakReference<ItemsLayout>(null);
+		readonly WeakReference<ItemsLayout> _itemsLayout;
 
 		ItemsLayout ItemsLayout
 		{
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			ItemSizingStrategy = itemSizingStrategy;
 
-			ItemsLayout = itemsLayout;
+			_itemsLayout = new(itemsLayout);
 
 			var scrollDirection = itemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
 				? UICollectionViewScrollDirection.Horizontal
