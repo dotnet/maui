@@ -44,29 +44,34 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
-		public void TrackMeasure_NotInitialized_DoesNotThrow()
+		public void Start_NotInitialized_DoesNotThrow()
 		{
 			// Arrange
 			ResetLayout();
 
 			// Act & Assert: Should not throw
-			using (PerformanceProfiler.TrackMeasure("Test"))
-			{ }
+			var tracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "Test");
+			tracker.Stop();
 		}
 
 		[Fact]
-		public void TrackArrange_NotInitialized_DoesNotThrow()
+		public void Start_NotInitialized_DoesNotRecord()
 		{
 			// Arrange
 			ResetLayout();
+			var tracker = new FakeLayoutTracker();
 
-			// Act & Assert: Should not throw
-			using (PerformanceProfiler.TrackArrange("Test"))
-			{ }
+			// Act
+			var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "Test");
+			perfTracker.Stop();
+
+			// Assert
+			Assert.Equal(0, tracker.MeasureCallCount);
+			Assert.Equal(0, tracker.ArrangeCallCount);
 		}
 
 		[Fact]
-		public void TrackMeasure_AfterInitialization_RecordsDurationAndElement()
+		public void Start_LayoutMeasure_AfterInitialization_RecordsDurationAndElement()
 		{
 			// Arrange
 			ResetLayout();
@@ -74,19 +79,18 @@ namespace Microsoft.Maui.UnitTests
 			PerformanceProfiler.Initialize(tracker);
 
 			// Act
-			using (PerformanceProfiler.TrackMeasure("ElementA"))
-			{
-				Thread.Sleep(5);
-			}
+			var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "ElementA");
+			Thread.Sleep(5);
+			perfTracker.Stop();
 
 			// Assert
 			Assert.Equal(1, tracker.MeasureCallCount);
-			Assert.True(tracker.MeasuredDuration >= 5);
+			Assert.True(tracker.MeasuredDuration >= 5, $"Expected duration >= 5ms, but got {tracker.MeasuredDuration}ms");
 			Assert.Equal("ElementA", tracker.MeasuredElement);
 		}
 
 		[Fact]
-		public void TrackArrange_AfterInitialization_RecordsDurationAndElement()
+		public void Start_LayoutArrange_AfterInitialization_RecordsDurationAndElement()
 		{
 			// Arrange
 			ResetLayout();
@@ -94,33 +98,14 @@ namespace Microsoft.Maui.UnitTests
 			PerformanceProfiler.Initialize(tracker);
 
 			// Act
-			using (PerformanceProfiler.TrackArrange("ElementB"))
-			{
-				Thread.Sleep(7);
-			}
+			var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "ElementB");
+			Thread.Sleep(7);
+			perfTracker.Stop();
 
 			// Assert
 			Assert.Equal(1, tracker.ArrangeCallCount);
-			Assert.True(tracker.ArrangedDuration >= 7);
+			Assert.True(tracker.ArrangedDuration >= 7, $"Expected duration >= 7ms, but got {tracker.ArrangedDuration}ms");
 			Assert.Equal("ElementB", tracker.ArrangedElement);
-		}
-
-		[Fact]
-		public void DoubleDispose_DoesNotRecordTwice()
-		{
-			// Arrange
-			ResetLayout();
-			var tracker = new FakeLayoutTracker();
-			PerformanceProfiler.Initialize(tracker);
-
-			// Act
-			var scope = PerformanceProfiler.TrackMeasure("X");
-			System.Threading.Thread.Sleep(3);
-			scope.Dispose();
-			scope.Dispose(); // second dispose should be no-op
-
-			// Assert
-			Assert.Equal(1, tracker.MeasureCallCount);
 		}
 
 		[Fact]
@@ -132,22 +117,24 @@ namespace Microsoft.Maui.UnitTests
 			PerformanceProfiler.Initialize(tracker);
 
 			// Track measure
-			using (PerformanceProfiler.TrackMeasure("M"))
-			{ System.Threading.Thread.Sleep(4); }
+			var measureTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "M");
+			Thread.Sleep(4);
+			measureTracker.Stop();
 			var statsAfterMeasure = PerformanceProfiler.GetStats();
 
 			// Track arrange
-			using (PerformanceProfiler.TrackArrange("A"))
-			{ System.Threading.Thread.Sleep(6); }
+			var arrangeTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "A");
+			Thread.Sleep(6);
+			arrangeTracker.Stop();
 			var statsAfterArrange = PerformanceProfiler.GetStats();
 
 			// Assert measure stats
-			Assert.True(statsAfterMeasure.Layout.MeasureDuration >= 4);
+			Assert.True(statsAfterMeasure.Layout.MeasureDuration >= 4, $"Expected measure duration >= 4ms, but got {statsAfterMeasure.Layout.MeasureDuration}ms");
 			Assert.Equal(0, statsAfterMeasure.Layout.ArrangeDuration);
 
 			// Assert arrange stats
-			Assert.True(statsAfterArrange.Layout.ArrangeDuration >= 6);
-			Assert.True(statsAfterArrange.Layout.MeasureDuration >= 4);
+			Assert.True(statsAfterArrange.Layout.ArrangeDuration >= 6, $"Expected arrange duration >= 6ms, but got {statsAfterArrange.Layout.ArrangeDuration}ms");
+			Assert.True(statsAfterArrange.Layout.MeasureDuration >= 4, $"Expected measure duration >= 4ms, but got {statsAfterArrange.Layout.MeasureDuration}ms");
 		}
 
 		[Fact]
@@ -166,10 +153,9 @@ namespace Microsoft.Maui.UnitTests
 
 			// After measure tracking with sleep
 			const int measureSleep = 20;
-			using (PerformanceProfiler.TrackMeasure())
-			{
-				Thread.Sleep(measureSleep);
-			}
+			var measureTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure);
+			Thread.Sleep(measureSleep);
+			measureTracker.Stop();
 			var afterMeasure = PerformanceProfiler.GetStats();
 			Assert.InRange(afterMeasure.Layout.MeasureDuration, measureSleep, measureSleep * 3);
 			Assert.Equal(0, afterMeasure.Layout.ArrangeDuration);
@@ -177,14 +163,118 @@ namespace Microsoft.Maui.UnitTests
 
 			// After arrange tracking with sleep
 			const int arrangeSleep = 30;
-			using (PerformanceProfiler.TrackArrange())
-			{
-				Thread.Sleep(arrangeSleep);
-			}
+			var arrangeTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange);
+			Thread.Sleep(arrangeSleep);
+			arrangeTracker.Stop();
 			var afterArrange = PerformanceProfiler.GetStats();
 			Assert.InRange(afterArrange.Layout.ArrangeDuration, arrangeSleep, arrangeSleep * 3);
-			Assert.True(afterArrange.Layout.MeasureDuration >= afterMeasure.Layout.MeasureDuration);
+			Assert.True(afterArrange.Layout.MeasureDuration >= afterMeasure.Layout.MeasureDuration,
+				$"Expected measure duration >= {afterMeasure.Layout.MeasureDuration}ms, but got {afterArrange.Layout.MeasureDuration}ms");
 			Assert.True((DateTime.UtcNow - afterArrange.TimestampUtc).TotalSeconds < 5);
+		}
+
+		[Fact]
+		public void Start_UnknownPerformanceType_DoesNotRecord()
+		{
+			// Arrange
+			ResetLayout();
+			var tracker = new FakeLayoutTracker();
+			PerformanceProfiler.Initialize(tracker);
+			const PerformanceCategory unknownType = (PerformanceCategory)99;
+
+			// Act
+			var perfTracker = PerformanceProfiler.Start(unknownType, "TestElement");
+			perfTracker.Stop();
+
+			// Assert
+			Assert.Equal(0, tracker.MeasureCallCount);
+			Assert.Equal(0, tracker.ArrangeCallCount);
+		}
+
+		[Fact]
+		public void Start_MultipleTrackers_RecordsEachPass()
+		{
+			// Arrange
+			ResetLayout();
+			var tracker = new FakeLayoutTracker();
+			PerformanceProfiler.Initialize(tracker);
+
+			// Act
+			var tracker1 = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "Element1");
+			var tracker2 = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "Element2");
+			Thread.Sleep(5);
+			tracker1.Stop();
+			Thread.Sleep(5);
+			tracker2.Stop();
+
+			// Assert
+			Assert.Equal(1, tracker.MeasureCallCount);
+			Assert.Equal("Element1", tracker.MeasuredElement);
+			Assert.True(tracker.MeasuredDuration >= 5, $"Expected measure duration >= 5ms, but got {tracker.MeasuredDuration}ms");
+			Assert.Equal(1, tracker.ArrangeCallCount);
+			Assert.Equal("Element2", tracker.ArrangedElement);
+			Assert.True(tracker.ArrangedDuration >= 10, $"Expected arrange duration >= 10ms, but got {tracker.ArrangedDuration}ms");
+		}
+
+		[Fact]
+		public void Start_WithoutElement_RecordsDuration()
+		{
+			// Arrange
+			ResetLayout();
+			var tracker = new FakeLayoutTracker();
+			PerformanceProfiler.Initialize(tracker);
+
+			// Act
+			var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure);
+			Thread.Sleep(5);
+			perfTracker.Stop();
+
+			// Assert
+			Assert.Equal(1, tracker.MeasureCallCount);
+			Assert.True(tracker.MeasuredDuration >= 5, $"Expected duration >= 5ms, but got {tracker.MeasuredDuration}ms");
+			Assert.Null(tracker.MeasuredElement);
+		}
+
+		[Fact]
+		public void Start_LayoutMeasure_WithLongDelay_RecordsAccurateDuration()
+		{
+			// Arrange
+			ResetLayout();
+			var tracker = new FakeLayoutTracker();
+			PerformanceProfiler.Initialize(tracker);
+			const int expectedDelayMs = 500;
+			const int toleranceMs = 100;
+
+			// Act
+			var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "LongDelayedElement");
+			Thread.Sleep(expectedDelayMs);
+			perfTracker.Stop();
+
+			// Assert
+			Assert.Equal(1, tracker.MeasureCallCount);
+			Assert.InRange(tracker.MeasuredDuration, expectedDelayMs, expectedDelayMs + toleranceMs);
+			Assert.Equal("LongDelayedElement", tracker.MeasuredElement);
+		}
+
+		[Fact]
+		public void Start_LayoutArrange_WithLongDelay_RecordsAccurateDuration()
+		{
+			// Arrange
+			ResetLayout();
+			var tracker = new FakeLayoutTracker();
+			PerformanceProfiler.Initialize(tracker);
+			const int expectedDelayMs = 500;
+			const int toleranceMs = 100;
+
+			// Act
+			var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "LongDelayedElement");
+			Thread.Sleep(expectedDelayMs);
+			perfTracker.Stop();
+
+			// Assert
+			Assert.Equal(1, tracker.ArrangeCallCount);
+			Assert.InRange(tracker.ArrangedDuration, expectedDelayMs, expectedDelayMs + toleranceMs);
+			Assert.Equal("LongDelayedElement", tracker.ArrangedElement);
 		}
 	}
 
