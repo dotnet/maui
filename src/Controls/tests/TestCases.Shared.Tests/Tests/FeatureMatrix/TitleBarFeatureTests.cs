@@ -59,7 +59,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ProgressBarRadioButton");
 		App.Tap("ProgressBarRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -77,7 +77,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ShowTrailingContentCheckBox");
 		App.Tap("ShowTrailingContentCheckBox");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -95,7 +95,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("RedRadioButton");
 		App.Tap("RedRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -113,7 +113,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("SearchBarRadioButton");
 		App.Tap("SearchBarRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -136,7 +136,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("WhiteForegroundRadioButton");
 		App.Tap("WhiteForegroundRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -161,7 +161,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("RedRadioButton");
 		App.Tap("RedRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -186,7 +186,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ProgressBarRadioButton");
 		App.Tap("ProgressBarRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -206,7 +206,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("HorizontalStackLayoutRadioButton");
 		App.Tap("HorizontalStackLayoutRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -226,7 +226,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ProgressBarRadioButton");
 		App.Tap("ProgressBarRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -246,7 +246,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ShowSubtitleCheckBox");
 		App.Tap("ShowSubtitleCheckBox");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -266,7 +266,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("OrangeRadioButton");
 		App.Tap("OrangeRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -286,7 +286,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("SearchBarRadioButton");
 		App.Tap("SearchBarRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -306,7 +306,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("OrangeRadioButton");
 		App.Tap("OrangeRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -325,7 +325,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("HorizontalStackLayoutRadioButton");
 		App.Tap("HorizontalStackLayoutRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -344,7 +344,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ProgressBarRadioButton");
 		App.Tap("ProgressBarRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -363,7 +363,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("SearchBarRadioButton");
 		App.Tap("SearchBarRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -382,7 +382,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ProgressBarRadioButton");
 		App.Tap("ProgressBarRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 	[Test]
@@ -395,7 +395,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ShowTitleBarCheckBox");
 		App.Tap("ShowTitleBarCheckBox");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_MACCATALYST //For more information see:
@@ -413,7 +413,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("FlowDirectionRTLCheckBox");
 		App.Tap("FlowDirectionRTLCheckBox");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar:true);
 	}
 
 	[Test]
@@ -430,7 +430,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ShowSubtitleCheckBox");
 		App.Tap("ShowSubtitleCheckBox");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar:true);
 	}
 
 	[Test]
@@ -447,7 +447,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("SearchBarRadioButton");
 		App.Tap("SearchBarRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar:true);
 	}
 
 	[Test]
@@ -464,7 +464,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("HorizontalStackLayoutRadioButton");
 		App.Tap("HorizontalStackLayoutRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar:true);
 	}
 
 	[Test]
@@ -481,7 +481,7 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ProgressBarRadioButton");
 		App.Tap("ProgressBarRadioButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar:true);
 	}
 #endif
 	[Test]
@@ -505,7 +505,7 @@ public class TitleBarFeatureTests : UITest
 		App.ClearText("SubtitleEntry");
 		App.EnterText("SubtitleEntry", "Custom Subtitle");
 
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 }
 #endif

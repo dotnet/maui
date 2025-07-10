@@ -54,7 +54,7 @@ public partial class TitleBarControlPage : ContentPage
                 ForegroundColor = _viewModel.ForegroundColor,
                 Icon = _viewModel.Icon,
                 IsVisible = _viewModel.IsVisible,
-                HeightRequest = 48
+                HeightRequest = 60
             };
 
             // Set content properties conditionally to avoid null reference issues

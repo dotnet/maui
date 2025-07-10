@@ -130,6 +130,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 					{
 						new ProgressBar
 						{
+							Margin=10,
 							Progress = 0.5,
 							BackgroundColor = Colors.LightGray,
 							ProgressColor = Colors.White,
@@ -247,7 +248,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		}
 	}
 
-	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
+	public FlowDirection _flowDirection = FlowDirection.LeftToRight;
 	public FlowDirection FlowDirection
 	{
 		get => _flowDirection;
@@ -275,7 +276,8 @@ public class TitleBarViewModel : INotifyPropertyChanged
 				LeadingContent = _showLeadingContent ? new Image
 				{
 					Source = "dotnet_bot.png",
-					HeightRequest = 24,
+					HeightRequest = 60,
+					Margin = 10,
 					VerticalOptions = LayoutOptions.Center
 				} : null;
 			}
@@ -321,11 +323,10 @@ public class TitleBarViewModel : INotifyPropertyChanged
 
 				TrailingContent = _showTrailingContent ? new ImageButton
 				{
-					Source = "dotnet_bot.png",
-					BackgroundColor = Colors.Yellow,
-					CornerRadius = 50,
-					HeightRequest = 36,
-					WidthRequest = 36
+					Source = "avatar.png",
+					CornerRadius = 5,
+					Margin = 10,
+					HeightRequest = 60,
 				} : null;
 			}
 		}
@@ -403,10 +404,11 @@ public class TitleBarViewModel : INotifyPropertyChanged
 			{
 				_showIcon = value;
 				OnPropertyChanged();
-				Icon = _showIcon ? "coffee.png" : null;
+				Icon = _showIcon ? ImageSource.FromFile("green.png") : null;
 			}
 		}
 	}
+
 
 	private bool _showBackgroundColor = false;
 	public bool ShowBackgroundColor
