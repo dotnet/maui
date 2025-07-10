@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				bool accept = true;
 				var r = RendererForViewController(viewController);
-				if (r != null)
+				if (r is not null)
 					accept = ((IShellItemController)ShellItem).ProposeSection(r.ShellSection, false);
 
 				return accept;

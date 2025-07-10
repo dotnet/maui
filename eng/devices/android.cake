@@ -556,7 +556,7 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 		SetEnvironmentVariable("DEVICE_UDID", DEVICE_UDID);
 		//this needs to be translated to android 10/11 for appium
 		var realApi = "";
-		if (DEVICE_VERSION == "34ß")
+		if (DEVICE_VERSION == "34")
 		{
 			realApi = "14";
 		}
