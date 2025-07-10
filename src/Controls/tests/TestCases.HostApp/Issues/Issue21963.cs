@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 21963, "Shell.MenuItemTemplate Sometime Does Not Work", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 21963, "ShellMenuItemTemplate Sometime Does Not Work", PlatformAffected.Android)]
 public partial class Issue21963 : TestShell
 {
 
