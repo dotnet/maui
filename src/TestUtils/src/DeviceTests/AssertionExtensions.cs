@@ -15,11 +15,44 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
+
+		public static async Task Collect()
+		{
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect(2, GCCollectionMode.Forced, true);
+			GC.WaitForPendingFinalizers();
+			GC.Collect(2, GCCollectionMode.Forced, true);
+			await Task.Yield();
+		}
+
+
+		public static async Task<bool> WaitForCollect(this WeakReference reference)
+		{
+			for (int i = 0; i < 40 && reference.IsAlive; i++)
+			{
+				await Collect();
+			}
+
+			return reference.IsAlive;
+		}
+
+		public static async Task<bool> WaitForCollect(this WeakReference<object> reference)
+		{
+			for (int i = 0; i < 40 && reference.TryGetTarget(out _); i++)
+			{
+				await Collect();
+			}
+
+			return reference.TryGetTarget(out _);
+		}
+
 		public static async Task WaitForGC(params WeakReference[] references)
 		{
 			Assert.NotEmpty(references);
 
-			bool referencesCollected()
+			Task<bool> referencesCollected()
 			{
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
@@ -27,18 +60,15 @@ namespace Microsoft.Maui.DeviceTests
 				foreach (var reference in references)
 				{
 					Assert.NotNull(reference);
-					if (reference.IsAlive)
-					{
-						return false;
-					}
+					return reference.WaitForCollect();
 				}
 
-				return true;
+				return Task.FromResult(true);
 			}
 
 			try
 			{
-				await AssertEventually(referencesCollected, timeout: 10000);
+				await AssertEventuallyAsync(referencesCollected(), timeout: 10000);
 			}
 			catch (XunitException ex)
 			{
@@ -263,6 +293,27 @@ namespace Microsoft.Maui.DeviceTests
 			while (timeout >= 0);
 
 			if (!assertion())
+			{
+				throw new XunitException(message);
+			}
+		}
+
+		public static async Task AssertEventuallyAsync(this Task<bool> assertion, int timeout = 1000, int interval = 100, string message = "Assertion timed out")
+		{
+			do
+			{
+				if (await assertion)
+				{
+					return;
+				}
+
+				await Task.Delay(interval);
+				timeout -= interval;
+
+			}
+			while (timeout >= 0);
+
+			if (!await assertion)
 			{
 				throw new XunitException(message);
 			}
