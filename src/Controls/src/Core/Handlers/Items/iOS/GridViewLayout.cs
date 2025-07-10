@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class GridViewLayout : ItemsViewLayout
 	{
-		readonly  WeakReference<GridItemsLayout> _itemsLayout  = new WeakReference<GridItemsLayout>(null);
+		readonly WeakReference<GridItemsLayout> _itemsLayout;
 
 		GridItemsLayout ItemsLayout
 		{
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public GridViewLayout(GridItemsLayout itemsLayout, ItemSizingStrategy itemSizingStrategy) : base(itemsLayout, itemSizingStrategy)
 		{
-			ItemsLayout = itemsLayout;
+			_itemsLayout = new(itemsLayout);
 		}
 
 		protected override void HandlePropertyChanged(PropertyChangedEventArgs propertyChanged)
