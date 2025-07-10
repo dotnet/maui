@@ -48,32 +48,26 @@ namespace Microsoft.Maui.DeviceTests
 			return reference.TryGetTarget(out _);
 		}
 
+		public static async Task<bool> WaitForCollect(params WeakReference[] references)
+		{
+			foreach (var reference in references)
+			{
+				Assert.NotNull(reference);
+				if (!await reference.WaitForCollect())
+				{
+					return false; // If any reference is still alive, return false
+				}
+			}
+			return true; // All references are collected
+		}
+
 		public static async Task WaitForGC(params WeakReference[] references)
 		{
 			Assert.NotEmpty(references);
 
-			Task<bool> referencesCollected()
-			{
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
+			var collectResult = await WaitForCollect(references);
 
-				foreach (var reference in references)
-				{
-					Assert.NotNull(reference);
-					return reference.WaitForCollect();
-				}
-
-				return Task.FromResult(true);
-			}
-
-			try
-			{
-				await AssertEventuallyAsync(referencesCollected(), timeout: 10000);
-			}
-			catch (XunitException ex)
-			{
-				throw new XunitException(ListLivingReferences(references), ex);
-			}
+			Assert.True(collectResult, $"Expected all references to be collected, but some are still alive. {ListLivingReferences(references)}");
 		}
 
 		static string ListLivingReferences(WeakReference[] references)
