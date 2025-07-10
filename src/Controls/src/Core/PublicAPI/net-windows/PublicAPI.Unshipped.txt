@@ -1,4 +1,7 @@
 #nullable enable
+~static Microsoft.Maui.Controls.Shell.GetNavBarVisibilityAnimationEnabled(Microsoft.Maui.Controls.BindableObject obj) -> bool
+~static Microsoft.Maui.Controls.Shell.SetNavBarVisibilityAnimationEnabled(Microsoft.Maui.Controls.BindableObject obj, bool value) -> void
+~static readonly Microsoft.Maui.Controls.Shell.NavBarVisibilityAnimationEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Send<TSender>(TSender sender, string message) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Subscribe<TSender, TArgs>(object subscriber, string message, System.Action<TSender, TArgs> callback, TSender source = null) -> void
@@ -151,6 +154,25 @@ Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.WebViewWebResourceR
 Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute
 Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.Allow.get -> bool
 Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.AllowImplicitXmlnsDeclarationAttribute(bool allow = true) -> void
+*REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.get -> System.Collections.Generic.IEnumerable<string>
+*REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.set -> void
+*REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.get -> System.Collections.Generic.IEnumerable<string>
+*REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
+*REMOVED*~override Microsoft.Maui.Controls.Accelerator.Equals(object obj) -> bool
+*REMOVED*~override Microsoft.Maui.Controls.Accelerator.ToString() -> string
+*REMOVED*~override Microsoft.Maui.Controls.AcceleratorTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Type sourceType) -> bool
+*REMOVED*~override Microsoft.Maui.Controls.AcceleratorTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Type destinationType) -> bool
+*REMOVED*~override Microsoft.Maui.Controls.AcceleratorTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) -> object
+*REMOVED*~override Microsoft.Maui.Controls.AcceleratorTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) -> object
+*REMOVED*~static Microsoft.Maui.Controls.Accelerator.FromString(string text) -> Microsoft.Maui.Controls.Accelerator
+*REMOVED*~static Microsoft.Maui.Controls.Accelerator.implicit operator Microsoft.Maui.Controls.Accelerator(string accelerator) -> Microsoft.Maui.Controls.Accelerator
+*REMOVED*~static Microsoft.Maui.Controls.MenuItem.GetAccelerator(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.Accelerator
+*REMOVED*~static Microsoft.Maui.Controls.MenuItem.SetAccelerator(Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Controls.Accelerator value) -> void
+*REMOVED*~static readonly Microsoft.Maui.Controls.MenuItem.AcceleratorProperty -> Microsoft.Maui.Controls.BindableProperty
+*REMOVED*Microsoft.Maui.Controls.Accelerator
+*REMOVED*Microsoft.Maui.Controls.AcceleratorTypeConverter
+*REMOVED*Microsoft.Maui.Controls.AcceleratorTypeConverter.AcceleratorTypeConverter() -> void
+*REMOVED*override Microsoft.Maui.Controls.Accelerator.GetHashCode() -> int
 override Microsoft.Maui.Controls.BrushTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Controls.BrushTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.BrushTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
@@ -242,22 +264,19 @@ static Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync(this Microsoft.Maui.C
 static Microsoft.Maui.Controls.ViewExtensions.ScaleXToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.ScaleYToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double x, double y, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
-*REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.get -> System.Collections.Generic.IEnumerable<string>
-*REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.set -> void
-*REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.get -> System.Collections.Generic.IEnumerable<string>
-*REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
-*REMOVED*~override Microsoft.Maui.Controls.Accelerator.Equals(object obj) -> bool
-*REMOVED*~override Microsoft.Maui.Controls.Accelerator.ToString() -> string
-*REMOVED*~override Microsoft.Maui.Controls.AcceleratorTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Type sourceType) -> bool
-*REMOVED*~override Microsoft.Maui.Controls.AcceleratorTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Type destinationType) -> bool
-*REMOVED*~override Microsoft.Maui.Controls.AcceleratorTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) -> object
-*REMOVED*~override Microsoft.Maui.Controls.AcceleratorTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) -> object
-*REMOVED*~static Microsoft.Maui.Controls.Accelerator.FromString(string text) -> Microsoft.Maui.Controls.Accelerator
-*REMOVED*~static Microsoft.Maui.Controls.Accelerator.implicit operator Microsoft.Maui.Controls.Accelerator(string accelerator) -> Microsoft.Maui.Controls.Accelerator
-*REMOVED*~static Microsoft.Maui.Controls.MenuItem.GetAccelerator(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.Accelerator
-*REMOVED*~static Microsoft.Maui.Controls.MenuItem.SetAccelerator(Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Controls.Accelerator value) -> void
-*REMOVED*~static readonly Microsoft.Maui.Controls.MenuItem.AcceleratorProperty -> Microsoft.Maui.Controls.BindableProperty
-*REMOVED*Microsoft.Maui.Controls.Accelerator
-*REMOVED*Microsoft.Maui.Controls.AcceleratorTypeConverter
-*REMOVED*Microsoft.Maui.Controls.AcceleratorTypeConverter.AcceleratorTypeConverter() -> void
-*REMOVED*override Microsoft.Maui.Controls.Accelerator.GetHashCode() -> int
+override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void
+override Microsoft.Maui.Controls.ScrollView.OnSizeAllocated(double width, double height) -> void
+override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, double height) -> void
+virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDeclarer, TPropertyType>.Invoke(TDeclarer bindable) -> TPropertyType
+~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue) -> void
+~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate<TPropertyType>.Invoke(Microsoft.Maui.Controls.BindableObject bindable, TPropertyType oldValue, TPropertyType newValue) -> void
+~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangingDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue) -> void
+~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangingDelegate<TPropertyType>.Invoke(Microsoft.Maui.Controls.BindableObject bindable, TPropertyType oldValue, TPropertyType newValue) -> void
+~virtual Microsoft.Maui.Controls.BindableProperty.CoerceValueDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object value) -> object
+~virtual Microsoft.Maui.Controls.BindableProperty.CoerceValueDelegate<TPropertyType>.Invoke(Microsoft.Maui.Controls.BindableObject bindable, TPropertyType value) -> TPropertyType
+~virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable) -> object
+~virtual Microsoft.Maui.Controls.BindableProperty.ValidateValueDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object value) -> bool
+~virtual Microsoft.Maui.Controls.BindableProperty.ValidateValueDelegate<TPropertyType>.Invoke(Microsoft.Maui.Controls.BindableObject bindable, TPropertyType value) -> bool
+~virtual Microsoft.Maui.Controls.CollectionSynchronizationCallback.Invoke(System.Collections.IEnumerable collection, object context, System.Action accessMethod, bool writeAccess) -> void
+~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
+~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
