@@ -53,7 +53,8 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
-			swipeView?.UpdateIsVisibleSwipeItem(view);
+			if (swipeView != null)
+				swipeView.UpdateIsVisibleSwipeItem(view);
 		}
 
 		partial class SwipeItemMenuItemImageSourcePartSetter

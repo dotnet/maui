@@ -124,7 +124,8 @@ namespace Microsoft.Maui.Handlers
 			if (_flyoutView == newFlyoutView)
 				return;
 
-			_flyoutView?.RemoveFromParent();
+			if (_flyoutView != null)
+				_flyoutView.RemoveFromParent();
 
 			_flyoutView = newFlyoutView;
 			if (_flyoutView == null)

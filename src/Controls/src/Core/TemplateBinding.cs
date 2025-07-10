@@ -127,7 +127,8 @@ namespace Microsoft.Maui.Controls
 		{
 			base.Unapply(fromBindingContextChanged: fromBindingContextChanged);
 
-			_expression?.Unapply();
+			if (_expression != null)
+				_expression.Unapply();
 		}
 
 		void ApplyInner(Element templatedParent, BindableObject bindableObject, BindableProperty targetProperty)

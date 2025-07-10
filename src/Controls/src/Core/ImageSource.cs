@@ -38,7 +38,8 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_cancellationTokenSource == value)
 					return;
-				_cancellationTokenSource?.Cancel();
+				if (_cancellationTokenSource != null)
+					_cancellationTokenSource.Cancel();
 				_cancellationTokenSource = value;
 			}
 		}
@@ -126,7 +127,8 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			TaskCompletionSource<bool> tcs = Interlocked.Exchange(ref _completionSource, null);
-			tcs?.SetResult(cancelled);
+			if (tcs != null)
+				tcs.SetResult(cancelled);
 
 			await _cancellationTokenSourceLock.WaitAsync();
 			try

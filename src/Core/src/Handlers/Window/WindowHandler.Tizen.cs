@@ -15,7 +15,8 @@ namespace Microsoft.Maui.Handlers
 
 			handler.MauiContext.GetPlatformWindow().SetContent(platformContent);
 
-			window.VisualDiagnosticsOverlay?.Initialize();
+			if (window.VisualDiagnosticsOverlay != null)
+				window.VisualDiagnosticsOverlay.Initialize();
 		}
 
 		public static void MapX(IWindowHandler handler, IWindow view) =>

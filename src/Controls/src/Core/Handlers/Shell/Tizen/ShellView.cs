@@ -145,7 +145,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public void UpdateCurrentItem(ShellItem newItem)
 		{
-			_currentItemHandler?.Dispose();
+			if (_currentItemHandler != null)
+				_currentItemHandler.Dispose();
 
 			if (newItem != null)
 			{

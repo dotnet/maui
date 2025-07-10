@@ -422,8 +422,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 #else
-			if (handler.IsConnectingHandler() && view.Opacity == 1)
-				return;
+			if (handler.IsConnectingHandler() && view.Opacity == 1) return;
 #endif
 
 			if (handler.HasContainer)
@@ -443,8 +442,7 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapAutomationId(IViewHandler handler, IView view)
 		{
-			if (handler.IsConnectingHandler() && view.AutomationId is null)
-				return;
+			if (handler.IsConnectingHandler() && view.AutomationId is null) return;
 
 			((PlatformView?)handler.PlatformView)?.UpdateAutomationId(view);
 		}
@@ -456,8 +454,7 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapClip(IViewHandler handler, IView view)
 		{
-			if (handler.IsConnectingHandler() && view.Clip is null)
-				return;
+			if (handler.IsConnectingHandler() && view.Clip is null) return;
 
 			if (!handler.IsMappingProperties())
 			{
@@ -475,8 +472,7 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapShadow(IViewHandler handler, IView view)
 		{
-			if (handler.IsConnectingHandler() && view.Shadow is null)
-				return;
+			if (handler.IsConnectingHandler() && view.Shadow is null) return;
 
 			if (!handler.IsMappingProperties())
 			{

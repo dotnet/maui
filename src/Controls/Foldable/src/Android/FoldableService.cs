@@ -401,7 +401,8 @@ namespace Microsoft.Maui.Foldable
 				_gettingHingeAngle = null;
 			}
 
-			toSet?.SetResult(hingeAngle);
+			if (toSet != null)
+				toSet.SetResult(hingeAngle);
 		}
 	}
 

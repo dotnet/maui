@@ -147,13 +147,16 @@ namespace Microsoft.Maui.Controls
 			if (_enumerator != null)
 			{
 				var dispose = _enumerator as IDisposable;
-				dispose?.Dispose();
+				if (dispose != null)
+					dispose.Dispose();
 
 				_enumerator = null;
 			}
 
-			_items?.Clear();
-			_indexesCounted?.Clear();
+			if (_items != null)
+				_items.Clear();
+			if (_indexesCounted != null)
+				_indexesCounted.Clear();
 
 			OnCountChanged();
 			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
@@ -300,7 +303,8 @@ namespace Microsoft.Maui.Controls
 				_windowIndex = 0;
 
 				var dispose = _enumerator as IDisposable;
-				dispose?.Dispose();
+				if (dispose != null)
+					dispose.Dispose();
 
 				_enumerator = null;
 				_enumeratorIndex = 0;
@@ -331,7 +335,8 @@ namespace Microsoft.Maui.Controls
 					if (!moved)
 					{
 						var dispose = _enumerator as IDisposable;
-						dispose?.Dispose();
+						if (dispose != null)
+							dispose.Dispose();
 
 						_enumerator = null;
 						_enumeratorIndex = 0;

@@ -116,11 +116,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 		internal static void SendViewInitialized(this VisualElement self, NView nativeView)
 		{
 			EventHandler<ViewInitializedEventArgs> viewInitialized = Forms.ViewInitialized;
-			viewInitialized?.Invoke(self, new ViewInitializedEventArgs
+			if (viewInitialized != null)
+			{
+				viewInitialized.Invoke(self, new ViewInitializedEventArgs
 				{
 					View = self,
 					NativeView = nativeView
 				});
+			}
 		}
 
 		public static bool IsInitializedRenderers { get; private set; }

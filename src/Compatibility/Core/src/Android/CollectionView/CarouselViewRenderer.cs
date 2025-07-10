@@ -190,7 +190,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			var adapter = GetAdapter();
 
-			adapter?.NotifyItemChanged(_oldPosition);
+			if (adapter != null)
+			{
+				adapter.NotifyItemChanged(_oldPosition);
+			}
 
 			base.UpdateItemSpacing();
 		}

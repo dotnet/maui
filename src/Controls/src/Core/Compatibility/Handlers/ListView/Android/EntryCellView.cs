@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			Action<string> changed = TextChanged;
 			if (changed != null)
-				changed(s?.ToString());
+				changed(s != null ? s.ToString() : null);
 		}
 
 		public void SetLabelTextColor(Color color, int defaultColorResourceId)

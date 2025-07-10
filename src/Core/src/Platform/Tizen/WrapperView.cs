@@ -106,7 +106,10 @@ namespace Microsoft.Maui.Platform
 
 		void OnLayout(object? sender, LayoutEventArgs e)
 		{
-			Content?.UpdateBounds(new TRect(0, 0, Size.Width, Size.Height));
+			if (Content != null)
+			{
+				Content.UpdateBounds(new TRect(0, 0, Size.Width, Size.Height));
+			}
 
 			if (_clipperView.IsValueCreated)
 			{

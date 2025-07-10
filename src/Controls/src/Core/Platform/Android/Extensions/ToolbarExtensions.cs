@@ -261,7 +261,10 @@ namespace Microsoft.Maui.Controls.Platform
 			int toolBarItemCount = i;
 			while (toolBarItemCount < previousMenuItems.Count)
 			{
-				menu?.RemoveItem(previousMenuItems[toolBarItemCount].ItemId);
+				if (menu != null)
+				{
+					menu.RemoveItem(previousMenuItems[toolBarItemCount].ItemId);
+				}
 				previousMenuItems[toolBarItemCount].Dispose();
 				previousMenuItems.RemoveAt(toolBarItemCount);
 			}

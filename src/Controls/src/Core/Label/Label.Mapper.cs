@@ -56,16 +56,14 @@ namespace Microsoft.Maui.Controls
 			MapTextOrFormattedText(handler, label);
 		static void MapFormattedText(ILabelHandler handler, Label label)
 		{
-			if (label.IsConnectingHandler())
-				return;
+			if (label.IsConnectingHandler()) return;
 
 			MapText(handler, label);
 		}
 
 		static void MapTextOrFormattedText(ILabelHandler handler, Label label)
 		{
-			if (label.IsConnectingHandler())
-				return;
+			if (label.IsConnectingHandler()) return;
 
 			if (label.HasFormattedTextSpans)
 				handler.UpdateValue(nameof(FormattedText));

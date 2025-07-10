@@ -33,7 +33,8 @@ namespace Microsoft.Maui.Platform
 			{
 				var image = FindViewById<ImageView>(searchCloseButtonIdentifier);
 
-				image?.SetMinimumWidth((int?)Context?.ToPixels(44) ?? 0);
+				if (image != null)
+					image.SetMinimumWidth((int?)Context?.ToPixels(44) ?? 0);
 			}
 		}
 	}

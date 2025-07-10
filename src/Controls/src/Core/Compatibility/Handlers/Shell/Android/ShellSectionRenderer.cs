@@ -166,7 +166,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (index >= 0)
 			{
 				var tab = _tablayout.GetTabAt(index);
-				tab?.SetText(new string(shellContent.Title));
+				if (tab != null)
+				{
+					tab.SetText(new string(shellContent.Title));
+				}
 			}
 		}
 

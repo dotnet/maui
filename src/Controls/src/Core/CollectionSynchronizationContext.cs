@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 
 		internal object Context
 		{
-			get { return ContextReference?.Target; }
+			get { return ContextReference != null ? ContextReference.Target : null; }
 		}
 
 		internal WeakReference ContextReference { get; }

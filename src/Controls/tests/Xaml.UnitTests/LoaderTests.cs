@@ -63,7 +63,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				propertyChanged: (bindable, oldvalue, newvalue) =>
 				{
 					var label = bindable as Label;
-					label?.SetValue(Label.TextProperty, new string(((string)newvalue).Reverse().ToArray()));
+					if (label != null)
+						label.SetValue(Label.TextProperty, new string(((string)newvalue).Reverse().ToArray()));
 				});
 
 		public static string GetMessage(BindableObject bindable)

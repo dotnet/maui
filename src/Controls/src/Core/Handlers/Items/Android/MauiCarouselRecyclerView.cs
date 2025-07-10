@@ -169,7 +169,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var adapter = GetAdapter();
 
-			adapter?.NotifyItemChanged(_oldPosition);
+			if (adapter != null)
+			{
+				adapter.NotifyItemChanged(_oldPosition);
+			}
 
 			base.UpdateItemSpacing();
 		}
