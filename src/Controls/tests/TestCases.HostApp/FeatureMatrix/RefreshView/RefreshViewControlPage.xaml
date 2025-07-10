@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.RefreshViewControlMainPage"
+             x:DataType="local:RefreshViewViewModel"
+             Title="RefreshViewFeature">
+
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Options"
+                           Clicked="NavigateToOptionsPage_Clicked"
+                           AutomationId="Options"/>
+       </ContentPage.ToolbarItems>
+
+       <Grid Padding="20"
+             RowDefinitions="*, Auto, Auto, Auto, Auto"
+             ColumnDefinitions="0.5*, 0.5*"
+             RowSpacing="5"
+             ColumnSpacing="20">
+
+              <!-- RefreshView -->
+              <RefreshView x:Name="RefreshView"
+                           Grid.Row="0"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="2"
+                           Command="{Binding Command}"
+                           CommandParameter="{Binding CommandParameter}"
+                           FlowDirection="{Binding FlowDirection}"
+                           IsEnabled="{Binding IsEnabled}"
+                           IsVisible="{Binding IsVisible}"
+                           IsRefreshing="{Binding IsRefreshing}"
+                           RefreshColor="{Binding RefreshColor}"
+                           Shadow="{Binding Shadow}"
+                           AutomationId="RefreshView">
+
+                     <ScrollView>
+                            <StackLayout Spacing="200">
+                                   <Label Text="Pull down to refresh this content"
+                                          FontSize="18"
+                                          HorizontalOptions="Center"/>
+                                   <BoxView Color="{Binding BoxViewColor}"
+                                            HeightRequest="100"
+                                            WidthRequest="200"
+                                            HorizontalOptions="Center"
+                                            AutomationId="BoxContent"/>
+                            </StackLayout>
+                     </ScrollView>
+              </RefreshView>
+
+              <!-- Status Information -->
+              <Label Grid.Row="1"
+                     Grid.Column="0"
+                     HorizontalOptions="Center"
+                     Text="IsRefreshing:"
+                     FontSize="16"/>
+              <Label Grid.Row="1"
+                     Grid.Column="1"
+                     HorizontalOptions="Center"
+                     Text="{Binding IsRefreshing}"
+                     FontSize="16"
+                     AutomationId="IsRefreshingValueLabel"/>
+
+              <Label Grid.Row="2"
+                     Grid.Column="0"
+                     HorizontalOptions="Center"
+                     Text="IsEnabled:"
+                     FontSize="16"/>
+              <Label Grid.Row="2"
+                     Grid.Column="1"
+                     HorizontalOptions="Center"
+                     Text="{Binding IsEnabled}"
+                     FontSize="16"
+                     AutomationId="IsEnabledValueLabel"/>
+
+              <Label Grid.Row="3"
+                     Grid.Column="0"
+                     HorizontalOptions="Center"
+                     Text="IsVisible:"
+                     FontSize="16"/>
+              <Label Grid.Row="3"
+                     Grid.Column="1"
+                     HorizontalOptions="Center"
+                     Text="{Binding IsVisible}"
+                     FontSize="16"
+                     AutomationId="IsVisibleValueLabel"/>
+
+              <Label Grid.Row="4"
+                     Grid.Column="0"
+                     HorizontalOptions="Center"
+                     FontSize="16"
+                     Text="Status Messages:"/>
+              <Label Grid.Row="4"
+                     Grid.Column="1"
+                     HorizontalOptions="Center"
+                     Margin="0,0,0,10"
+                     Text="{Binding RefreshStatusText}"
+                     FontSize="16"
+                     AutomationId="RefreshStatusLabel"/>
+       </Grid>
+</ContentPage>
