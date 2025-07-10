@@ -16,11 +16,6 @@ public class Issue30463 : _IssuesUITest
 	{
 		App.WaitForElement("ToggleSelectedIndexBtn");
 		App.Tap("ToggleSelectedIndexBtn");
-		var pickerText = App.WaitForElement("RegainingPickerTitle").GetText();
-#if ANDROID || MACCATALYST
-			Assert.That(pickerText, Is.EqualTo("Select an item"));
-#else
-		Assert.That(pickerText, Is.Empty);
-#endif
+		VerifyScreenshot();
 	}
 }
