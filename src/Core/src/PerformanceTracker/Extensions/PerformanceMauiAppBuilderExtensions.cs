@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Performance
 			this MauiAppBuilder builder)
         {
             // Check if the performance profiling feature is enabled.
-            if (PerformanceFeature.IsMetricsSupported)
+            if (RuntimeFeature.IsMetricsSupported)
             {
                 // Register the Meter
                 var meter = new Meter("Microsoft.Maui");
