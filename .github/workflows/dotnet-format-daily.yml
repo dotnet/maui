@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   dotnet-format:
-    runs-on: windows-latest
+    runs-on: macos-15
     strategy:
       matrix:
         branch: [ main, net10.0, inflight/current ]
