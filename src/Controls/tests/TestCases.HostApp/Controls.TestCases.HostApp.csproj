@@ -29,6 +29,10 @@
     <NoWarn>$(NoWarn);CS0618;CS0672;XC0618;IL2026;IL2091;IL2067;IL2072;IL2087;IL3050</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
+    <NoWarn>$(NoWarn);IL2067;IL2026</NoWarn>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(_UseNativeAot)' == 'true' ">
     <PublishAot>true</PublishAot>
     <_IsPublishing>true</_IsPublishing>
