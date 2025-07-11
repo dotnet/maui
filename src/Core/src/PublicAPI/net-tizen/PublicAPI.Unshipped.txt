@@ -34,6 +34,8 @@ override Microsoft.Maui.SafeAreaEdges.GetHashCode() -> int
 override Microsoft.Maui.SafeAreaEdges.ToString() -> string!
 static Microsoft.Maui.SafeAreaEdges.operator ==(Microsoft.Maui.SafeAreaEdges left, Microsoft.Maui.SafeAreaEdges right) -> bool
 static Microsoft.Maui.SafeAreaEdges.operator !=(Microsoft.Maui.SafeAreaEdges left, Microsoft.Maui.SafeAreaEdges right) -> bool
+Microsoft.Maui.FontManager.GetFontFamily(string? fontFamily) -> string!
+*REMOVED*Microsoft.Maui.FontManager.GetFontFamily(string? fontFamliy) -> string!
 Microsoft.Maui.Handlers.DataFlowDirection
 Microsoft.Maui.Handlers.DataFlowDirection.FromPlatform = 1 -> Microsoft.Maui.Handlers.DataFlowDirection
 Microsoft.Maui.Handlers.DataFlowDirection.ToPlatform = 0 -> Microsoft.Maui.Handlers.DataFlowDirection
@@ -59,11 +61,8 @@ Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
 Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
 *REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
 Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
-Microsoft.Maui.IWebRequestInterceptingWebView
-Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
-Microsoft.Maui.WebResourceRequestedEventArgs
 *REMOVED*readonly Microsoft.Maui.PropertyMapper._mapper -> System.Collections.Generic.Dictionary<string!, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>!>!
-static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureEnvironmentVariables(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 *REMOVED*virtual Microsoft.Maui.PropertyMapper.ClearKeyCache() -> void
 *REMOVED*virtual Microsoft.Maui.PropertyMapper.UpdateKeys.get -> System.Collections.Generic.IReadOnlyCollection<string!>!
@@ -176,6 +175,17 @@ virtual Microsoft.Maui.Handlers.OpenWindowRequest.<Clone>$() -> Microsoft.Maui.H
 virtual Microsoft.Maui.Handlers.OpenWindowRequest.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.Handlers.OpenWindowRequest.Equals(Microsoft.Maui.Handlers.OpenWindowRequest? other) -> bool
 virtual Microsoft.Maui.Handlers.OpenWindowRequest.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Microsoft.Maui.LifecycleEvents.TizenLifecycle.OnAppControlReceived.Invoke(Tizen.Applications.CoreApplication! application, Tizen.Applications.AppControlReceivedEventArgs! e) -> void
+virtual Microsoft.Maui.LifecycleEvents.TizenLifecycle.OnCreate.Invoke(Tizen.Applications.CoreApplication! application) -> void
+virtual Microsoft.Maui.LifecycleEvents.TizenLifecycle.OnDeviceOrientationChanged.Invoke(Tizen.Applications.CoreApplication! application, Tizen.Applications.DeviceOrientationEventArgs! e) -> void
+virtual Microsoft.Maui.LifecycleEvents.TizenLifecycle.OnLocaleChanged.Invoke(Tizen.Applications.CoreApplication! application, Tizen.Applications.LocaleChangedEventArgs! e) -> void
+virtual Microsoft.Maui.LifecycleEvents.TizenLifecycle.OnLowBattery.Invoke(Tizen.Applications.CoreApplication! application, Tizen.Applications.LowBatteryEventArgs! e) -> void
+virtual Microsoft.Maui.LifecycleEvents.TizenLifecycle.OnLowMemory.Invoke(Tizen.Applications.CoreApplication! application, Tizen.Applications.LowMemoryEventArgs! e) -> void
+virtual Microsoft.Maui.LifecycleEvents.TizenLifecycle.OnPause.Invoke(Tizen.Applications.CoreApplication! application) -> void
+virtual Microsoft.Maui.LifecycleEvents.TizenLifecycle.OnPreCreate.Invoke(Tizen.Applications.CoreApplication! application) -> void
+virtual Microsoft.Maui.LifecycleEvents.TizenLifecycle.OnRegionFormatChanged.Invoke(Tizen.Applications.CoreApplication! application, Tizen.Applications.RegionFormatChangedEventArgs! e) -> void
+virtual Microsoft.Maui.LifecycleEvents.TizenLifecycle.OnResume.Invoke(Tizen.Applications.CoreApplication! application) -> void
+virtual Microsoft.Maui.LifecycleEvents.TizenLifecycle.OnTerminate.Invoke(Tizen.Applications.CoreApplication! application) -> void
 virtual Microsoft.Maui.ScrollToRequest.<Clone>$() -> Microsoft.Maui.ScrollToRequest!
 virtual Microsoft.Maui.ScrollToRequest.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.ScrollToRequest.Equals(Microsoft.Maui.ScrollToRequest? other) -> bool
