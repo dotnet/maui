@@ -1,7 +1,6 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI App",
-  "_name.comment": "{Locked='.NET MAUI'}",
   "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Tizen",
   "postActions/openInEditor/description": "Opens MainPage.xaml in the editor.",
   "postActions/restore/description": "Restore NuGet packages required by this project.",
