@@ -30,16 +30,12 @@ namespace Microsoft.Maui.Platform
 				textField.SecureTextEntry = true;
 				textField.Enabled = entry.IsEnabled;
 				textField.BecomeFirstResponder();
-				if (!string.IsNullOrEmpty(currentText))
+				if (!string.IsNullOrEmpty(currentText) && textField is MauiTextField mauiTextField)
 				{
-					//Suppress TextChanged events during password toggle
-					if (textField is MauiTextField mauiTextField)
-					{
-						mauiTextField.SuppressTextPropertySet(true);
-						textField.Text = string.Empty;
-						textField.InsertText(currentText);
-						mauiTextField.SuppressTextPropertySet(false);
-					}
+					mauiTextField.SuppressTextPropertySet(true);
+					textField.Text = string.Empty;
+					textField.InsertText(currentText);
+					mauiTextField.SuppressTextPropertySet(false);
 				}
 			}
 			else
