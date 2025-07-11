@@ -11,6 +11,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
@@ -972,12 +973,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 			}
 
-
 			FlyoutPage.Flyout.IconImageSource.LoadImage(FlyoutPage.FindMauiContext(), result =>
 			{
 				var icon = result?.Value;
-				if (icon != null)
+				var originalImageSize = result?.Value?.Size ?? CGSize.Empty;
+				// Referred from the default hamburger size 
+				var defaultIconHeight = 23f;
+				var defaultIconWidth = 23f;
+				var buffer = 0.1;
+				// if the image is bigger than the default available size, resize it
+				if (icon is not null)
 				{
+					bool enableResizing = !AppContext.TryGetSwitch("iOSDisableFlyoutIconAutoResizing", out bool disableResizing) || !disableResizing;
+
+					if (enableResizing &&
+						(originalImageSize.Height - defaultIconHeight > buffer || originalImageSize.Width - defaultIconWidth > buffer))
+					{
+						icon = icon.ResizeImageSource(defaultIconWidth, defaultIconHeight, originalImageSize);
+					}
 					try
 					{
 						containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, OnItemTapped);
