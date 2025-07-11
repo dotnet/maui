@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
