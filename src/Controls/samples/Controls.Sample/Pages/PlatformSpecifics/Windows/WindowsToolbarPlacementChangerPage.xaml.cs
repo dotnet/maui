@@ -40,8 +40,8 @@ namespace Maui.Controls.Sample.Pages
 			if (newValue != null)
 			{
 				var enumType = typeof(ToolbarPlacement);
-				var instance = element as WindowsToolbarPlacementChangerPage;
-				instance!.picker.SelectedIndex = Array.IndexOf(Enum.GetNames(enumType), Enum.GetName(enumType, instance.ParentPage.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().GetToolbarPlacement()));
+				var instance = (WindowsToolbarPlacementChangerPage)element;
+				instance.picker.SelectedIndex = Array.IndexOf(Enum.GetNames(enumType), Enum.GetName(enumType, instance.ParentPage.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().GetToolbarPlacement()));
 			}
 		}
 	}

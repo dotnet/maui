@@ -4,9 +4,9 @@ using MauiApp._1.Models;
 namespace MauiApp._1.Utilities;
 
 /// <summary>
-/// Project Model Extentions
+/// Project Model Extensions
 /// </summary>
-public static class ProjectExtentions
+public static class ProjectExtensions
 {
 	/// <summary>
 	/// Check if the project is null or new.
