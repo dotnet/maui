@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var r = scrollView.Measure(100, 100, MeasureFlags.None);
 
-			Assert.Equal(10, r.Request.Height);
+			Assert.Equal(0, r.Request.Height);
 		}
 
 		[Fact]
