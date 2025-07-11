@@ -33,7 +33,7 @@ namespace Microsoft.Maui.ApplicationModel
 			var requestedPermissions = packageInfo?.RequestedPermissions;
 			var requestedPermissionsFlags = packageInfo?.RequestedPermissionsFlags;
 
-			for (int i=0; i<requestedPermissions.Count; i++)
+			for (int i = 0; i < requestedPermissions.Count; i++)
 			{
 				if (requestedPermissions[i].Equals(permission, StringComparison.OrdinalIgnoreCase))
 					return (requestedPermissionsFlags[i] & (int)flag) != 0;
