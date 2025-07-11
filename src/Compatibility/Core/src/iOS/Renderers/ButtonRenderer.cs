@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Control == null)
 				return;
 
-			UIColor backgroundColor = Element.BackgroundColor == null ? null : Element.BackgroundColor.ToPlatform();
+			UIColor backgroundColor = Element.BackgroundColor?.ToPlatform();
 
 			if (!Brush.IsNullOrEmpty(brush))
 			{

@@ -112,7 +112,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (view is IContextFlyoutElement contextFlyoutContainer)
 			{
-				if (handler.IsConnectingHandler() && contextFlyoutContainer.ContextFlyout is null) return;
+				if (handler.IsConnectingHandler() && contextFlyoutContainer.ContextFlyout is null)
+					return;
 
 				MapContextFlyout(handler, contextFlyoutContainer);
 			}

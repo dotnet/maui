@@ -178,8 +178,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Brush.IsNullOrEmpty(background))
 				return;
 
-			if (Control != null)
-				Control.UpdateBackground(background);
+			Control?.UpdateBackground(background);
 		}
 
 		public override void TouchesEnded(NSSet touches, UIEvent evt)

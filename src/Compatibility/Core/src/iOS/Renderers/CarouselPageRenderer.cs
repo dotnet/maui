@@ -68,8 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
-			if (element != null)
-				element.SendViewInitialized(NativeView);
+			element?.SendViewInitialized(NativeView);
 
 			_previousPage = Carousel?.CurrentPage;
 		}
