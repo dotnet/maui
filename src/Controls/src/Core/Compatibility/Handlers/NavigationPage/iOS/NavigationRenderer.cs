@@ -1692,8 +1692,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem());
 				}
 
-				if (primaries != null)
-					primaries.Reverse();
+				primaries?.Reverse();
 				NavigationItem.SetRightBarButtonItems(primaries == null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
 				ToolbarItems = secondaries == null ? Array.Empty<UIBarButtonItem>() : secondaries.ToArray();
 
@@ -2010,8 +2009,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				set
 				{
-					if (_icon != null)
-						_icon.RemoveFromSuperview();
+					_icon?.RemoveFromSuperview();
 
 					_icon = value;
 
