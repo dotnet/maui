@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Specifies which platform safe area insets to ignore for a layout or visual element.

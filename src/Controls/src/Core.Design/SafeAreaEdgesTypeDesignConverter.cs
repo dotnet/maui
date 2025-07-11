@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Controls.Core.Design;
+using Microsoft.Maui;
 
 namespace Microsoft.Maui.Controls.Design
 {

@@ -1,12 +1,12 @@
 using System;
 using System.ComponentModel;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents safe area settings for each edge of a layout or visual element.
 	/// </summary>
-	[TypeConverter(typeof(SafeAreaEdgesTypeConverter))]
+	[TypeConverter(typeof(Converters.SafeAreaEdgesTypeConverter))]
 	public struct SafeAreaEdges : IEquatable<SafeAreaEdges>
 	{
 		/// <summary>
