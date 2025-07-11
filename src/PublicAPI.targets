@@ -1,8 +1,20 @@
 <Project>
 
+  <PropertyGroup>
+    <!-- The Copilot SWE always generates instead of trying to fix -->
+    <PublicApiType Condition="'$(PublicApiType)' == '' and '$(GITHUB_WORKFLOW)' == 'Copilot'">Generate</PublicApiType>
+    <!-- The normal CI workflows or Release with NEVER generate, only validate -->
+    <PublicApiType Condition="'$(PublicApiType)' == '' and ('$(Configuration)' != 'Debug' or '$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">Validate</PublicApiType>
+    <!-- WHEN WE ARE READY: Local Debug workflows will generate -->
+    <!-- <PublicApiType Condition="'$(PublicApiType)' == '' and '$(Configuration)' == 'Debug'">Generate</PublicApiType> -->
+    <!-- Fall back to validate -->
+    <PublicApiType Condition="'$(PublicApiType)' == ''">Validate</PublicApiType>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Remove="Microsoft.CodeAnalysis.PublicApiAnalyzers" />
-    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="All" Condition="'$(PublicApiType)' != 'Generate'" />
+    <PackageReference Include="Mono.ApiTools.MSBuildTasks" PrivateAssets="all" Condition="'$(PublicApiType)' == 'Generate'" />
   </ItemGroup>
 
   <!-- for explicit TFMs -->
@@ -24,5 +36,16 @@
   <ItemGroup Condition="'$(TargetFramework)' != ''">
     <AdditionalFiles Include="@(PublicAPIFiles)" />
   </ItemGroup>
+
+  <Target Name="_GeneratePublicApiFiles" 
+          AfterTargets="Build"
+          Condition="'$(TargetFramework)' != '' and '$(PublicApiType)' == 'Generate'"
+          Inputs="$(TargetDir)$(AssemblyName).dll"
+          Outputs="@(PublicAPIFiles)">
+    <GeneratePublicApiFiles
+      Assembly="$(TargetDir)$(AssemblyName).dll"
+      Files="@(PublicAPIFiles)"
+      ReferenceSearchPaths="@(ReferencePath)" />
+  </Target>
 
 </Project>
