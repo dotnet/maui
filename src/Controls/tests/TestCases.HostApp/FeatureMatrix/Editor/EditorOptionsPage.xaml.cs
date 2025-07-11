@@ -246,15 +246,17 @@ public partial class EditorOptionsPage : ContentPage
             _viewModel.FontAttributes = FontAttributes.Italic;
         }
     }
-    
+
     private void AutoSize_CheckedChanged(object sender, CheckedChangedEventArgs e)
     {
-        if(AutoSizeTextChanges.IsChecked)
+        if (AutoSizeTextChanges.IsChecked)
         {
+            _viewModel.HeightRequest = -1;
             _viewModel.AutoSizeOption = EditorAutoSizeOption.TextChanges;
         }
-        else if(AutoSizeDisabled.IsChecked)
+        else if (AutoSizeDisabled.IsChecked)
         {
+            _viewModel.HeightRequest = -1;
             _viewModel.AutoSizeOption = EditorAutoSizeOption.Disabled;
         }
     }
