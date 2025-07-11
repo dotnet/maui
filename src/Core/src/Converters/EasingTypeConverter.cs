@@ -17,12 +17,16 @@ namespace Microsoft.Maui.Converters
 		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
 			if (value is null)
+			{
 				return null;
+			}
 
 			var strValue = value as string ?? value.ToString();
 
 			if (string.IsNullOrWhiteSpace(strValue))
+			{
 				return null;
+			}
 
 			var parts = strValue.Split('.');
 			if (parts.Length == 2 && Compare(parts[0], nameof(Easing)))
@@ -51,7 +55,9 @@ namespace Microsoft.Maui.Converters
 		public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 		{
 			if (value is not Easing easing)
+			{
 				throw new NotSupportedException();
+			}
 
 			return easing switch
 			{
