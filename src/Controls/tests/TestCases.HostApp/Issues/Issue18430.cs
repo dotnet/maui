@@ -10,7 +10,7 @@ public class Issue18430 : ContentPage
 	public Issue18430()
 	{
 		var label = new Label
-		{ 
+		{
 			Text = "Test should pass only if no exception is thrown and the image should clipped",
 			AutomationId = "Issue18430DescriptionLabel",
 
@@ -59,7 +59,7 @@ public class Issue18430ClippingDrawable : IDrawable
 			PathF path = new PathF();
 			path.AppendCircle(circleCenterX, circleCenterY, radius);
 
-			canvas.ClipPath(path); 
+			canvas.ClipPath(path);
 			canvas.DrawImage(image, imageX, imageY, image.Width, image.Height);
 		}
 	}
