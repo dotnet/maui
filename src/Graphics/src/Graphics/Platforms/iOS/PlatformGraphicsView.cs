@@ -91,6 +91,12 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			var coreGraphics = UIGraphics.GetCurrentContext();
 
+			// Ensure we have a valid context
+			if (coreGraphics is null)
+			{
+				return;
+			}
+
 			if (_colorSpace == null)
 			{
 				_colorSpace = CGColorSpace.CreateDeviceRGB();

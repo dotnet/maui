@@ -2,13 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.ApplicationModel;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Media
@@ -58,8 +55,13 @@ namespace Microsoft.Maui.Media
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
+			var size = view.Bounds.Size;
+
+			if (size.Width <= 0 || size.Height <= 0)
+				return Task.FromResult<IScreenshotResult?>(null);
+
 			// NOTE: We rely on the view frame having been set to the correct size when this method is invoked.
-			var renderer = new UIGraphicsImageRenderer(view.Bounds.Size, new UIGraphicsImageRendererFormat()
+			var renderer = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat()
 			{
 				Opaque = false,
 				Scale = view.Window?.Screen?.Scale ?? 1.0f,
@@ -100,12 +102,7 @@ namespace Microsoft.Maui.Media
 
 			var image = renderer?.CreateImage((context) =>
 			{
-				if (!TryRender(layer, context.CGContext, skipChildren, out _))
-				{
-					// TODO: test/handle this case
-				}
-
-				layer.RenderInContext(context.CGContext);
+				TryRender(layer, context.CGContext, skipChildren, out _);
 			});
 
 			var result = image is null ? null : new ScreenshotResult(image);
@@ -225,29 +222,6 @@ namespace Microsoft.Maui.Media
 			result.CopyTo(destination);
 
 			return Task.CompletedTask;
-		}
-
-		Task<byte[]> PlatformToPixelBufferAsync()
-		{
-			var cgimage = bmp.CGImage!;
-			var width = cgimage.Width;
-			var height = cgimage.Height;
-
-			var pixelData = new byte[height * width * 4];
-			var gchandle = GCHandle.Alloc(pixelData, GCHandleType.Pinned);
-			var data = gchandle.AddrOfPinnedObject();
-			try
-			{
-				var colorSpace = CGColorSpace.CreateDeviceRGB();
-				var context = new CGBitmapContext(data, width, height, 8, 4 * width, colorSpace, CGImageAlphaInfo.PremultipliedLast);
-				context.DrawImage(new CGRect(0, 0, width, height), cgimage);
-			}
-			finally
-			{
-				gchandle.Free();
-			}
-
-			return Task.FromResult(pixelData);
 		}
 	}
 }
