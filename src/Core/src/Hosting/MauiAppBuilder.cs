@@ -219,11 +219,11 @@ namespace Microsoft.Maui.Hosting
 
 		private sealed class NullLoggerFactory : ILoggerFactory
 		{
-			public static void AddProvider(ILoggerProvider provider) { }
+			public void AddProvider(ILoggerProvider provider) { }
 
 			public ILogger CreateLogger(string categoryName) => NullLogger.Instance;
 
-			public static void Dispose() { }
+			public void Dispose() { }
 		}
 
 		private sealed class NullLogger<T> : ILogger<T>, IDisposable
@@ -232,9 +232,9 @@ namespace Microsoft.Maui.Hosting
 
 			public void Dispose() { }
 
-			public static bool IsEnabled(LogLevel logLevel) => false;
+			public bool IsEnabled(LogLevel logLevel) => false;
 
-			public static void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+			public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
 			{
 			}
 		}
