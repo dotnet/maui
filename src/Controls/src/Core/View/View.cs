@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	/// This is the base class for <see cref="Layout"/> and most of the controls.
 	/// Because <see cref="View" /> ultimately inherits from <see cref="BindableObject" />, application developers can use the Model-View-ViewModel architecture, as well as XAML, to develop portable user interfaces.
 	/// </remarks>
-	public partial class View : VisualElement, IViewController, IGestureController, IGestureRecognizers, IView, IPropertyMapperView, IHotReloadableView, IControlsView
+	public partial class View : VisualElement, IViewController, IGestureController, IGestureRecognizers, IView, IPropertyMapperView, IHotReloadableView, IControlsView, IViewWithWindow
 	{
 		protected internal IGestureController GestureController => this;
 
@@ -313,6 +313,8 @@ namespace Microsoft.Maui.Controls
 			MauiHotReloadHelper.GetReplacedView(this) ?? this;
 
 		IReloadHandler IHotReloadableView.ReloadHandler { get; set; }
+
+		IWindow? IViewWithWindow.Window => Window;
 
 		void IHotReloadableView.TransferState(IView newView)
 		{
