@@ -1,18 +1,14 @@
 #nullable enable
 using System;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	/// <summary>
 	/// The PhoneDialer API enables an application to open a phone number in the dialer.
 	/// </summary>
-	public interface IPhoneDialer
+	public interface IPhoneDialer : IDeviceCapabilities
 	{
-		/// <summary>
-		/// Gets a value indicating whether using the phone dialer is supported on this device.
-		/// </summary>
-		bool IsSupported { get; }
-
 		/// <summary>
 		/// Open the phone dialer to a specific phone number.
 		/// </summary>

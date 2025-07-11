@@ -7,33 +7,12 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// <summary>
 	/// Monitor changes to the atmospheric pressure.
 	/// </summary>
-	public interface IBarometer
+	public interface IBarometer : ISensor
 	{
-		/// <summary>
-		/// Gets a value indicating whether reading the barometer is supported on this device.
-		/// </summary>
-		bool IsSupported { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether the barometer is actively being monitored.
-		/// </summary>
-		bool IsMonitoring { get; }
-
-		/// <summary>
-		/// Start monitoring for changes to the barometer.
-		/// </summary>
-		/// <param name="sensorSpeed">The speed to listen for changes.</param>
-		void Start(SensorSpeed sensorSpeed);
-
 		/// <summary>
 		/// Occurs when the barometer reading changes.
 		/// </summary>
 		event EventHandler<BarometerChangedEventArgs>? ReadingChanged;
-
-		/// <summary>
-		/// Stop monitoring for changes to the barometer.
-		/// </summary>
-		void Stop();
 	}
 
 	/// <summary>
