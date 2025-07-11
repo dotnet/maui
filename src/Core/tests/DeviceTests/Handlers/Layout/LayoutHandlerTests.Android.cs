@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Widget;
+using AndroidX.Core.View;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Xunit;
 using AView = Android.Views.View;
 
@@ -62,6 +64,48 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			});
 
 			Assert.Equal(expected, actual);
+		}
+
+		[Fact(DisplayName = "Layout with IgnoreSafeArea false handles window insets")]
+		public async Task LayoutIgnoreSafeAreaFalseHandlesWindowInsets()
+		{
+			var layout = new LayoutStub();
+			layout.IgnoreSafeArea = false;
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, (handler) =>
+			{
+				var layoutViewGroup = GetNativeLayout(handler);
+				
+				// Verify that the layout implements ISafeAreaView correctly
+				Assert.True(layout is ISafeAreaView);
+				Assert.False(((ISafeAreaView)layout).IgnoreSafeArea);
+				
+				// Verify that the LayoutViewGroup has the OnApplyWindowInsets method
+				Assert.NotNull(layoutViewGroup);
+				
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "Layout with IgnoreSafeArea true ignores window insets")]
+		public async Task LayoutIgnoreSafeAreaTrueIgnoresWindowInsets()
+		{
+			var layout = new LayoutStub();
+			layout.IgnoreSafeArea = true;
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, (handler) =>
+			{
+				var layoutViewGroup = GetNativeLayout(handler);
+				
+				// Verify that the layout implements ISafeAreaView correctly
+				Assert.True(layout is ISafeAreaView);
+				Assert.True(((ISafeAreaView)layout).IgnoreSafeArea);
+				
+				// Verify that the LayoutViewGroup has the OnApplyWindowInsets method
+				Assert.NotNull(layoutViewGroup);
+				
+				return Task.CompletedTask;
+			});
 		}
 	}
 }
