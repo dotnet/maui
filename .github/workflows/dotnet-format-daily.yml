@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   dotnet-format:
-    runs-on: ubuntu-latest
+    runs-on: macos-15
     strategy:
       matrix:
         branch: [ main, net10.0, inflight/current ]
@@ -53,9 +53,7 @@ jobs:
           git reset --hard HEAD
 
       - name: Run dotnet format
-        run: |
-          dotnet restore Microsoft.Maui.sln 
-          dotnet format Microsoft.Maui.sln --exclude Templates/src --exclude-diagnostics CA1822
+        run: dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
     
       - name: Create Pull Request
         uses: dotnet/actions-create-pull-request@v4
