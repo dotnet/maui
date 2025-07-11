@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Linq;
 
 namespace Maui.Controls.Sample
 {
@@ -106,6 +107,7 @@ namespace Maui.Controls.Sample
 				public string Description { get; set; }
 				public bool IsInternetRequired { get; set; }
 				public Action Action { get; set; }
+				public Func<Page> PageFactory { get; set; }
 
 				public bool Matches(string filter)
 				{
@@ -175,7 +177,8 @@ namespace Maui.Controls.Sample
 						 Name = attribute.DisplayName,
 						 Description = attribute.Description,
 						 IsInternetRequired = attribute.IsInternetRequired,
-						 Action = ActivatePageAndNavigate(attribute, type)
+						 Action = ActivatePageAndNavigate(attribute, type),
+						 PageFactory = () => ActivatePage(type)
 					 }).ToList();
 #endif
 
@@ -218,6 +221,15 @@ namespace Maui.Controls.Sample
 				return true;
 			}
 
+			public Page TryToGetTestPage(string name)
+			{
+				var issue = _issues.SingleOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
+				if (issue == null)
+					issue = _issues.SingleOrDefault(x => string.Equals(x.Description, name, StringComparison.OrdinalIgnoreCase));
+
+				return issue?.PageFactory?.Invoke();
+			}
+			
 			public void FilterIssues(string filter = null)
 			{
 				filter = filter?.Trim();

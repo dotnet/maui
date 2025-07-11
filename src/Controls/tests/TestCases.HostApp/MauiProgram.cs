@@ -74,13 +74,13 @@ namespace Maui.Controls.Sample
 			{
 				App.StartupTestName = testName;
 
-				// Try to navigate directly to the test
+				// Try to get the test page directly
 				var testCaseScreen = new TestCases.TestCaseScreen();
-				if (testCaseScreen.TryToNavigateTo(testName))
+				var testPage = testCaseScreen.TryToGetTestPage(testName);
+				if (testPage != null)
 				{
-					// If navigation succeeded, the page was already set by the action
-					// Return a dummy page that will be replaced
-					return new ContentPage { Title = "Loading Test..." };
+					// Return the actual test page
+					return testPage;
 				}
 			}
 
