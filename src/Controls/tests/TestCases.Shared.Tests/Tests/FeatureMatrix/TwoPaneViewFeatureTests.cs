@@ -19,10 +19,26 @@ namespace Microsoft.Maui.TestCases.Tests
             base.FixtureSetup();
             App.NavigateToGallery(TwoPaneViewFeatureMatrix);
         }
+        // Used 
+#if MACCATALYST || WINDOWS
 
-        [Test, Order(1)]
+        [Test]
         [Category(UITestCategories.Layout)]
-        public void TwoPaneView()
+        public void TwoPaneView_RTLFlowDirection()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("FlowDirectionRTLCheckBox");
+            App.Tap("FlowDirectionRTLCheckBox");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+        }
+
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_WideMode()
         {
             App.WaitForElement("Options");
             App.Tap("Options");
@@ -35,65 +51,96 @@ namespace Microsoft.Maui.TestCases.Tests
 
         [Test]
         [Category(UITestCategories.Layout)]
-        public void TwoPaneView_Pane1Size()
+        public void TwoPaneView_Wide_UsingRect()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            var pane1Y = App.WaitForElement("Pane1Label").GetRect().Y;
+            var pane2Y = App.WaitForElement("Pane2Label").GetRect().Y;
+
+            Assert.That(pane1Y, Is.GreaterThan(pane2Y), "Pane2 should be below Pane1 in Wide mode");
+
+        }
+
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_TallMode()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("WideModeStepper");
+            App.IncreaseStepper("WideModeStepper");
+            App.WaitForElement("WideModeStepper");
+            App.IncreaseStepper("WideModeStepper");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            VerifyScreenshot();
+        }
+
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_Pane1Priority()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("TallModeSinglePaneRadio");
+            App.Tap("TallModeSinglePaneRadio");
+
+            App.WaitForElement("WideModeSinglePaneRadio");
+            App.Tap("WideModeSinglePaneRadio");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            VerifyScreenshot();
+        }
+
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_Pane2Priority()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("TallModeSinglePaneRadio");
+            App.Tap("TallModeSinglePaneRadio");
+
+            App.WaitForElement("WideModeSinglePaneRadio");
+            App.Tap("WideModeSinglePaneRadio");
+
+            App.WaitForElement("PanePriorityPane2Radio");
+            App.Tap("PanePriorityPane2Radio");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            VerifyScreenshot();
+        }
+
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_Pane1SizeIncrease_WithTallMode()
         {
             App.WaitForElement("Options");
             App.Tap("Options");
 
             App.WaitForElement("Pane1LengthStepper");
             App.IncreaseStepper("Pane1LengthStepper");
-
-            App.WaitForElement("Apply");
-            App.Tap("Apply");
-
-            VerifyScreenshot();
-        }
-
-        [Test]
-        [Category(UITestCategories.Layout)]
-        public void TwoPaneView_Pane2Size()
-        {
-            App.WaitForElement("Options");
-            App.Tap("Options");
-
-            App.WaitForElement("Pane2LengthStepper");
-            App.IncreaseStepper("Pane2LengthStepper");
-
-            App.WaitForElement("Apply");
-            App.Tap("Apply");
-
-            VerifyScreenshot();
-        }
-
-        [Test]
-        [Category(UITestCategories.Layout)]
-        public void TwoPaneView_Pane1SmallerThanPane2()
-        {
-            App.WaitForElement("Options");
-            App.Tap("Options");
-
-            App.WaitForElement("Pane2LengthStepper");
-            App.IncreaseStepper("Pane2LengthStepper");
-            App.WaitForElement("Pane1LengthStepper");
-            App.DecreaseStepper("Pane1LengthStepper");
-
-            App.WaitForElement("Apply");
-            App.Tap("Apply");
-
-            VerifyScreenshot();
-        }
-
-        [Test]
-        [Category(UITestCategories.Layout)]
-        public void TwoPaneView_Pane2SmallerThanPane1()
-        {
-            App.WaitForElement("Options");
-            App.Tap("Options");
-
             App.WaitForElement("Pane1LengthStepper");
             App.IncreaseStepper("Pane1LengthStepper");
-            App.WaitForElement("Pane2LengthStepper");
-            App.DecreaseStepper("Pane2LengthStepper");
+
+            App.WaitForElement("WideModeStepper");
+            App.IncreaseStepper("WideModeStepper");
+            App.WaitForElement("WideModeStepper");
+            App.IncreaseStepper("WideModeStepper");
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
@@ -101,6 +148,30 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_Pane2SizeIncrease_WithTallMode()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("Pane2LengthStepper");
+            App.IncreaseStepper("Pane2LengthStepper");
+            App.WaitForElement("Pane2LengthStepper");
+            App.IncreaseStepper("Pane2LengthStepper");
+
+            App.WaitForElement("WideModeStepper");
+            App.IncreaseStepper("WideModeStepper");
+            App.WaitForElement("WideModeStepper");
+            App.IncreaseStepper("WideModeStepper");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            VerifyScreenshot();
+        }
+        
+#endif
         [Test]
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_IsVisible()
@@ -113,13 +184,12 @@ namespace Microsoft.Maui.TestCases.Tests
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
-
-            VerifyScreenshot();
         }
+
 
         [Test]
         [Category(UITestCategories.Layout)]
-        public void TwoPaneView_Shadow()
+        public void TwoPaneView_IsShadowEnabled()
         {
             App.WaitForElement("Options");
             App.Tap("Options");
@@ -129,43 +199,202 @@ namespace Microsoft.Maui.TestCases.Tests
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
-
-            VerifyScreenshot();
         }
 
-#if ANDROID || IOS
         [Test]
         [Category(UITestCategories.Layout)]
-        public void TwoPaneView_Height()
+        public void TwoPaneView_Pane1SizeIncrease()
         {
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            App.WaitForElement("TallModeStepper");
-            App.IncreaseStepper("TallModeStepper");
+            App.WaitForElement("Pane1LengthStepper");
+            App.IncreaseStepper("Pane1LengthStepper");
+            App.WaitForElement("Pane1LengthStepper");
+            App.IncreaseStepper("Pane1LengthStepper");
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
 
             VerifyScreenshot();
         }
-#endif
-
-#if MACCATALYST || WINDOWS
 
         [Test]
         [Category(UITestCategories.Layout)]
-        public void TwoPaneView_HeightAndWidth()
+        public void TwoPaneView_Pane2SizeIncrease()
         {
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            App.WaitForElement("TallModeStepper");
-            App.IncreaseStepper("TallModeStepper");
+            App.WaitForElement("Pane2LengthStepper");
+            App.IncreaseStepper("Pane2LengthStepper");
+            App.WaitForElement("Pane2LengthStepper");
+            App.IncreaseStepper("Pane2LengthStepper");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            VerifyScreenshot();
+        }
+
+#if ANDROID || IOS
+
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_IsTall_UsingRect()
+        {
+            
+            var pane1Y = App.WaitForElement("Pane1Label").GetRect().Y;
+            var pane2Y = App.WaitForElement("Pane2Label").GetRect().Y;
+
+            Assert.That(pane2Y, Is.GreaterThan(pane1Y), "Pane2 should be below Pane1 in Wide mode");
+
+            App.WaitForElement("CurrentModeLabel").Equals("Tall Mode");
+
+        }
+
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_IsWide_UsingRect()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
 
             App.WaitForElement("WideModeStepper");
-            App.IncreaseStepper("WideModeStepper");
-            App.IncreaseStepper("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper");
+            App.WaitForElement("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper");
+            
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            var pane1X = App.WaitForElement("Pane1Label").GetRect().X;
+            var pane2X = App.WaitForElement("Pane2Label").GetRect().X;
+
+            Assert.That(pane2X, Is.GreaterThan(pane1X), "Pane2 should be below Pane1 in Wide mode");
+
+            App.WaitForElement("CurrentModeLabel").Equals("Wide Mode");
+
+        }
+
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_IsWideWithRTL_UsingRect()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper");
+            App.WaitForElement("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper");
+
+            App.WaitForElement("FlowDirectionRTLCheckBox");
+            App.Tap("FlowDirectionRTLCheckBox");
+            
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            var pane1X = App.WaitForElement("Pane1Label").GetRect().X;
+            var pane2X = App.WaitForElement("Pane2Label").GetRect().X;
+
+            Assert.That(pane1X, Is.GreaterThan(pane2X), "Pane2 should be below Pane1 in Wide mode");
+
+            App.WaitForElement("CurrentModeLabel").Equals("Wide Mode");
+
+        }
+
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_TallMode()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            VerifyScreenshot();
+        }
+
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_WideMode()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper");
+            App.WaitForElement("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            VerifyScreenshot();
+        }
+
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_Pane1SizeIncrease_WithWideMode()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("Pane1LengthStepper");
+            App.IncreaseStepper("Pane1LengthStepper");
+            App.WaitForElement("Pane1LengthStepper");
+            App.IncreaseStepper("Pane1LengthStepper");
+
+            App.WaitForElement("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper");
+            App.WaitForElement("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            VerifyScreenshot();
+        }
+
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_Pane2SizeIncrease_WithWideMode()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("Pane2LengthStepper");
+            App.IncreaseStepper("Pane2LengthStepper");
+            App.WaitForElement("Pane2LengthStepper");
+            App.IncreaseStepper("Pane2LengthStepper");
+
+            App.WaitForElement("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper");
+            App.WaitForElement("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            VerifyScreenshot();
+        }
+
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_ShadowWithWideMode()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("ShadowCheckBox");
+            App.Tap("ShadowCheckBox");
+
+            App.WaitForElement("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper");
+            App.WaitForElement("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper");
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
@@ -180,6 +409,11 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
+            App.WaitForElement("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper");
+            App.WaitForElement("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper");
+
             App.WaitForElement("FlowDirectionRTLCheckBox");
             App.Tap("FlowDirectionRTLCheckBox");
 
@@ -189,22 +423,42 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
+
         [Test]
         [Category(UITestCategories.Layout)]
-        public void TwoPaneView_Width()
+        public void TwoPaneView_Pane1Priority()
         {
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            App.WaitForElement("WideModeStepper");
-            App.IncreaseStepper("WideModeStepper");
-            App.IncreaseStepper("WideModeStepper");
+            App.WaitForElement("TallModeSinglePaneRadio");
+            App.Tap("TallModeSinglePaneRadio");
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
 
             VerifyScreenshot();
         }
+
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_Pane2Priority()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("TallModeSinglePaneRadio");
+            App.Tap("TallModeSinglePaneRadio");
+
+            App.WaitForElement("PanePriorityPane2Radio");
+            App.Tap("PanePriorityPane2Radio");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            VerifyScreenshot();
+        }
+
 #endif
     }
 }
