@@ -86,9 +86,11 @@ public static class TimePickerExtensions
 
 		static void UpdateCharacterSpacingInTimePicker(this TimePicker platformTimePicker)
 		{
-			SetCharacterSpacingToBlocks(platformTimePicker, "HourTextBlock");
-			SetCharacterSpacingToBlocks(platformTimePicker, "MinuteTextBlock");
-			SetCharacterSpacingToBlocks(platformTimePicker, "PeriodTextBlock");
+			string[] partNames = { "HourTextBlock", "MinuteTextBlock", "PeriodTextBlock" };
+			foreach (var partName in partNames)
+			{
+				SetCharacterSpacingToBlocks(platformTimePicker, partName);
+			}
 		}
 		static void SetCharacterSpacingToBlocks(TimePicker platformTimePicker, string partName)
 		{
