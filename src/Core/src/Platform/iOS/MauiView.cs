@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -32,6 +33,60 @@ namespace Microsoft.Maui.Platform
 
 		bool HasFixedConstraints => CrossPlatformLayout is IConstrainedView { HasFixedConstraints: true };
 
+		SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
+		{
+			if (View is BindableObject bindable)
+			{
+				return SafeArea.GetIgnoreForEdge(bindable, edge);
+			}
+			return SafeAreaRegions.Default;
+		}
+
+		bool ShouldRespectSafeAreaForRegion(SafeAreaRegions region)
+		{
+			// All means ignore all insets
+			if (region.HasFlag(SafeAreaRegions.All))
+			{
+				return false;
+			}
+
+			// None, Keyboard, and Default all respect safe area in some form
+			// None: Never display behind anything that could block it
+			// Keyboard: Layout behind keyboard to where keyboard starts
+			// Default: Apply platform inset
+			return region == SafeAreaRegions.None || region == SafeAreaRegions.Keyboard || region == SafeAreaRegions.Default;
+		}
+
+		double GetSafeAreaForEdge(int edge, double originalSafeArea)
+		{
+			var regionForEdge = GetSafeAreaRegionForEdge(edge);
+			
+			// Handle different SafeAreaRegions behaviors
+			if (regionForEdge.HasFlag(SafeAreaRegions.All))
+			{
+				// Ignore all insets - content may be positioned anywhere
+				return 0;
+			}
+
+			if (regionForEdge == SafeAreaRegions.None)
+			{
+				// Content will never display behind anything that could block it
+				// This is the most conservative approach - always apply full safe area
+				return originalSafeArea;
+			}
+
+			if (regionForEdge == SafeAreaRegions.Keyboard)
+			{
+				// Layout behind the keyboard down to where the keyboard starts
+				// For now, treat this as respecting safe area (can be enhanced later for keyboard-specific behavior)
+				// TODO: In the future, this could be enhanced to only apply safe area when keyboard is visible
+				return originalSafeArea;
+			}
+
+			// SafeAreaRegions.Default: Apply platform inset
+			return originalSafeArea;
+		}
+
 		bool RespondsToSafeArea()
 		{
 			// Check if we should respond to safe area on any edge
@@ -40,7 +95,8 @@ namespace Microsoft.Maui.Platform
 				// If any edge should respect safe area, then we respond to safe area
 				for (int edge = 0; edge < 4; edge++)
 				{
-					if (!safeAreaPage.IgnoreSafeAreaForEdge(edge))
+					var regionForEdge = GetSafeAreaRegionForEdge(edge);
+					if (ShouldRespectSafeAreaForRegion(regionForEdge))
 					{
 						// At least one edge should respect safe area
 						if (_respondsToSafeArea.HasValue)
@@ -94,11 +150,11 @@ namespace Microsoft.Maui.Platform
 		{
 			if (View is ISafeAreaPage safeAreaPage)
 			{
-				// Apply safe area selectively per edge
-				var left = safeAreaPage.IgnoreSafeAreaForEdge(0) ? 0 : _safeArea.Left;
-				var top = safeAreaPage.IgnoreSafeAreaForEdge(1) ? 0 : _safeArea.Top;
-				var right = safeAreaPage.IgnoreSafeAreaForEdge(2) ? 0 : _safeArea.Right;
-				var bottom = safeAreaPage.IgnoreSafeAreaForEdge(3) ? 0 : _safeArea.Bottom;
+				// Apply safe area selectively per edge based on SafeAreaRegions
+				var left = GetSafeAreaForEdge(0, _safeArea.Left);
+				var top = GetSafeAreaForEdge(1, _safeArea.Top);
+				var right = GetSafeAreaForEdge(2, _safeArea.Right);
+				var bottom = GetSafeAreaForEdge(3, _safeArea.Bottom);
 
 				return new SafeAreaPadding(left, right, top, bottom);
 			}
