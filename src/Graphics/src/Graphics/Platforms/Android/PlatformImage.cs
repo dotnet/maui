@@ -158,13 +158,23 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
-			// Use original stream if it's seekable, else copy to memory stream
-			var seekableStream = stream.CanSeek ? stream : new MemoryStream();
-			if (!stream.CanSeek)
+			// Use original stream if seekable, otherwise copy to memory stream
+			if (stream.CanSeek)
 			{
-				stream.CopyTo(seekableStream);
-				seekableStream.Position = 0;
+				return CreateImageFromSeekableStream(stream);
 			}
+			else
+			{
+				// Copy to memory stream and dispose it properly
+				using var memoryStream = new MemoryStream();
+				stream.CopyTo(memoryStream);
+				memoryStream.Position = 0;
+				return CreateImageFromSeekableStream(memoryStream);
+			}
+		}
+
+		private static IImage CreateImageFromSeekableStream(Stream seekableStream)
+		{
 			Bitmap bitmap;
 			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 			{
