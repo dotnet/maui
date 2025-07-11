@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			if (CrossPlatformMeasure == null)
+			if (CrossPlatformLayout is null)
 			{
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 				return;
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
-			if (CrossPlatformArrange == null)
+			if (CrossPlatformLayout is null)
 			{
 				return;
 			}
