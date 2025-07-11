@@ -80,7 +80,9 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			SizeRequest desiredSize = base.OnMeasure(double.PositiveInfinity, double.PositiveInfinity);
+#pragma warning restore CS0618 // Type or member is obsolete
 			return ImageElement.Measure(this, desiredSize, widthConstraint, heightConstraint);
 		}
 

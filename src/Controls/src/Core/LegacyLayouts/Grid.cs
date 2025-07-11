@@ -10,7 +10,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
-	[Obsolete("Use Microsoft.Maui.Controls.Grid instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts")]
+	[Obsolete("Use Microsoft.Maui.Controls.Grid instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts", true)]
 	public partial class Grid : Layout<View>, IGridController, IElementConfiguration<Grid>, IGridLayout
 	{
 		/// <summary>Bindable property for attached property <c>Row</c>.</summary>
@@ -248,7 +248,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			ComputeConstrainsForChildren();
 			UpdateInheritedBindingContexts();
+#pragma warning disable CS0618 // Type or member is obsolete
 			InvalidateLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -262,7 +264,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 					ComputeConstraintForView(child);
 				}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				InvalidateLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 

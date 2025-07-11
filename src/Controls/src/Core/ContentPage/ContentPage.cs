@@ -82,7 +82,9 @@ namespace Microsoft.Maui.Controls
 			// This call is redundant when a handler is attached because the handler just calls
 			// CrossPlatformArrange
 			if (Handler is null)
+#pragma warning disable CS0618 // Type or member is obsolete
 				base.LayoutChildren(x, y, width, height);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		protected override Size ArrangeOverride(Rect bounds)

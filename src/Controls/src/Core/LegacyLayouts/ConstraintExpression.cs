@@ -62,8 +62,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 							return null;
 						view = ((INameScope)valueProvider.TargetObject).FindByName<View>(ElementName);
 					}
+#pragma warning disable CS0618 // Type or member is obsolete
 					return Constraint.RelativeToView(view, delegate (RelativeLayout p, View v)
 					{ return (double)minfo.Invoke(v, Array.Empty<object>()) * Factor + Constant; });
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 	}
