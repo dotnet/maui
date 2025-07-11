@@ -757,7 +757,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var color = Element.RefreshControlColor;
 
 			if (_tableViewController != null)
-				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToPlatform());
+				_tableViewController.UpdateRefreshControlColor(color?.ToPlatform());
 		}
 
 		void UpdateVerticalScrollBarVisibility()
