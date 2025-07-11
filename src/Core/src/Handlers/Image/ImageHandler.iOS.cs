@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Handlers
 
 				Handler?.UpdateValue(nameof(IImage.IsAnimationPlaying));
 
-				if (Handler?.VirtualView is IImage image && image.Source is IStreamImageSource)
+				if (Handler?.VirtualView is IImage image && (image.Source is IStreamImageSource || image.Source is IFileImageSource))
 					imageView.InvalidateMeasure(image);
 			}
 		}
