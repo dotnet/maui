@@ -23,9 +23,6 @@ Microsoft.Maui.SafeAreaRegions.None = 2 -> Microsoft.Maui.SafeAreaRegions
 static Microsoft.Maui.SafeAreaEdges.All.get -> Microsoft.Maui.SafeAreaEdges
 static Microsoft.Maui.SafeAreaEdges.Default.get -> Microsoft.Maui.SafeAreaEdges
 static Microsoft.Maui.SafeAreaEdges.None.get -> Microsoft.Maui.SafeAreaEdges
-Microsoft.Maui.Platform.MauiView.AdjustForSafeAreaPerEdge(CoreGraphics.CGRect bounds) -> CoreGraphics.CGRect
-override Microsoft.Maui.Platform.MauiScrollView.AdjustedContentInsetDidChange() -> void
-override Microsoft.Maui.Platform.MauiScrollView.SafeAreaInsetsDidChange() -> void
 Microsoft.Maui.Handlers.DataFlowDirection
 Microsoft.Maui.Handlers.DataFlowDirection.FromPlatform = 1 -> Microsoft.Maui.Handlers.DataFlowDirection
 Microsoft.Maui.Handlers.DataFlowDirection.ToPlatform = 0 -> Microsoft.Maui.Handlers.DataFlowDirection

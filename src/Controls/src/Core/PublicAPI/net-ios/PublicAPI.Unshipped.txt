@@ -1,8 +1,8 @@
 #nullable enable
-override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
-static Microsoft.Maui.Controls.SafeArea.GetIgnore(Microsoft.Maui.Controls.BindableObject! bindable) -> Microsoft.Maui.SafeAreaEdges
-static Microsoft.Maui.Controls.SafeArea.SetIgnore(Microsoft.Maui.Controls.BindableObject! bindable, Microsoft.Maui.SafeAreaEdges value) -> void
-static readonly Microsoft.Maui.Controls.SafeArea.IgnoreProperty -> Microsoft.Maui.Controls.BindableProperty!
+static Microsoft.Maui.Controls.SafeArea.GetIgnore(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.SafeAreaEdges
+static Microsoft.Maui.Controls.SafeArea.IgnoreProperty -> Microsoft.Maui.Controls.BindableProperty
+static Microsoft.Maui.Controls.SafeArea.SetIgnore(Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.SafeAreaEdges value) -> void
+Microsoft.Maui.Controls.SafeArea
 ~static Microsoft.Maui.Controls.Shell.GetNavBarVisibilityAnimationEnabled(Microsoft.Maui.Controls.BindableObject obj) -> bool
 ~static Microsoft.Maui.Controls.Shell.SetNavBarVisibilityAnimationEnabled(Microsoft.Maui.Controls.BindableObject obj, bool value) -> void
 ~static readonly Microsoft.Maui.Controls.Shell.NavBarVisibilityAnimationEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
