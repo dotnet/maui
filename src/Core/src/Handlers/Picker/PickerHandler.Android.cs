@@ -7,6 +7,7 @@ using Android.Text;
 using Android.Text.Style;
 using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
 using AResource = Android.Resource;
+using Google.Android.Material.Dialog;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -111,7 +112,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog == null && VirtualView != null)
 			{
-				using (var builder = new AppCompatAlertDialog.Builder(Context))
+				using (var builder = new MaterialAlertDialogBuilder(Context))
 				{
 					if (VirtualView.TitleColor == null)
 					{
@@ -135,7 +136,7 @@ namespace Microsoft.Maui.Handlers
 							items[i] = String.Empty;
 					}
 
-					builder.SetItems(items, (s, e) =>
+					builder.SetSingleChoiceItems(items, VirtualView.SelectedIndex, (s, e) =>
 					{
 						var selectedIndex = e.Which;
 						VirtualView.SelectedIndex = selectedIndex;
