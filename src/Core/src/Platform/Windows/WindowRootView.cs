@@ -59,8 +59,7 @@ namespace Microsoft.Maui.Platform
 			get => _toolbar;
 			set
 			{
-				if (_toolbar != null)
-					_toolbar.SetMenuBar(null);
+				_toolbar?.SetMenuBar(null);
 
 				_toolbar = value;
 				if (NavigationViewControl != null)
