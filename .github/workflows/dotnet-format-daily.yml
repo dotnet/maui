@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   dotnet-format:
-    runs-on: macos-15
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -47,11 +47,6 @@ jobs:
           dotnet --version
           dotnet --info
           dotnet workload --info
-
-      - name: Reset tracked files to clean workspace
-        shell: bash
-        run: |
-          git reset --hard HEAD
 
       # - name: Restore solution
       #   run: dotnet restore Microsoft.Maui.sln
