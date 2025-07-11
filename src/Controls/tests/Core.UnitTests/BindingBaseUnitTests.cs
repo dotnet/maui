@@ -145,10 +145,62 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var bo = new MockBindable { BindingContext = vm };
 			bo.SetBinding(property, binding);
 
-			bo.SetValue(property, "Baz", SetterSpecificity.FromHandler);
+			bo.SetValue(property, "Baz", SetterSpecificity.FromUnknown);
 
 			Assert.Equal("Baz", vm.Text);
 			Assert.Equal("Foo Baz", bo.GetValue(property));
+		}
+
+		[Fact("TwoWay bindings should apply with FromUnknown specificity")]
+		public void TwoWayBindingSpecificity()
+		{
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable));
+			var binding = new Binding("Text", BindingMode.TwoWay);
+
+			var vm = new MockViewModel { Text = "initial" };
+			var bo = new MockBindable { BindingContext = vm };
+			bo.SetBinding(property, binding);
+
+			var context = bo.GetContext(property);
+			Assert.Equal(SetterSpecificity.FromUnknown, context.Values.GetSpecificity());
+		}
+
+		[Fact("FromUnknown should override FromHandler")]
+		public void FromUnknownOverridesFromHandler()
+		{
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable));
+
+			var bo = new MockBindable();
+			bo.SetValue(property, "HandlerValue", SetterSpecificity.FromHandler);
+			bo.SetValue(property, "UnknownValue", SetterSpecificity.FromUnknown);
+
+			// Assert value
+			Assert.Equal("UnknownValue", bo.GetValue(property));
+
+			// Assert specificity
+			var context = bo.GetContext(property);
+			Assert.Equal(SetterSpecificity.FromUnknown, context.Values.GetSpecificity());
+			var fromHandlerValue = context.Values[SetterSpecificity.FromHandler];
+			Assert.Null(fromHandlerValue);
+		}
+
+		[Fact("FromHandler should override FromUnknown")]
+		public void FromHandlerOverridesFromUnknown()
+		{
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable));
+
+			var bo = new MockBindable();
+			bo.SetValue(property, "UnknownValue", SetterSpecificity.FromUnknown);
+			bo.SetValue(property, "HandlerValue", SetterSpecificity.FromHandler);
+
+			// Assert value
+			Assert.Equal("HandlerValue", bo.GetValue(property));
+
+			// Assert specificity
+			var context = bo.GetContext(property);
+			Assert.Equal(SetterSpecificity.FromHandler, context.Values.GetSpecificity());
+			var fromUnknownValue = context.Values[SetterSpecificity.FromUnknown];
+			Assert.Null(fromUnknownValue);
 		}
 
 		[Fact("You should get an exception when trying to change a binding after it's been applied")]
