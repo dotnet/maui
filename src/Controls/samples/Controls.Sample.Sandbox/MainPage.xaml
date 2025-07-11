@@ -1,5 +1,18 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
-             xmlns:local="clr-namespace:Maui.Controls.Sample">
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             Title="ToolbarItem IsVisible Test">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem x:Name="AlwaysVisibleItem" Text="Always Visible" />
+        <ToolbarItem x:Name="ToggleableItem" Text="Toggle Me" />
+        <ToolbarItem x:Name="AnotherItem" Text="Another Item" />
+    </ContentPage.ToolbarItems>
+    <StackLayout Padding="20">
+        <Label Text="ToolbarItem IsVisible Test" FontSize="18" FontAttributes="Bold" />
+        <Label Text="This page demonstrates the new IsVisible property on ToolbarItem. Use the buttons below to toggle the visibility of toolbar items." />
+        <Button x:Name="ToggleButton" Text="Toggle 'Toggle Me' Item" Clicked="OnToggleClicked" />
+        <Button x:Name="HideAllButton" Text="Hide All Items" Clicked="OnHideAllClicked" />
+        <Button x:Name="ShowAllButton" Text="Show All Items" Clicked="OnShowAllClicked" />
+    </StackLayout>
 </ContentPage>
