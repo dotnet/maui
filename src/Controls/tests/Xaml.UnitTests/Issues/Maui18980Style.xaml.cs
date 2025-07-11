@@ -1,30 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
-using Microsoft.Maui.Dispatching;
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
-
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+[XamlProcessing(XamlInflator.Default, true)]
+public partial class Maui18980Style : ResourceDictionary
 {
-	public partial class Maui18980Style : ResourceDictionary
-	{
-		public Maui18980Style()
-		{
-			InitializeComponent();
-		}
-
-		public Maui18980Style(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-	}
+	public Maui18980Style() => InitializeComponent();
 }

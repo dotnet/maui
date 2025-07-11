@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			string asmName = null;
 			if (value.Contains(";assembly="))
 			{
-				var parts = value.Split(new[] { ";assembly=" }, StringSplitOptions.RemoveEmptyEntries);
+				var parts = value.Split([";assembly="], StringSplitOptions.RemoveEmptyEntries);
 				value = parts[0];
 				asmName = parts[1];
 				if (currentModule.Assembly.Name.Name != asmName)

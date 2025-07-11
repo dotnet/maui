@@ -1,31 +1,43 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
+using System.Linq;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
+
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class StaticExtensionException : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class StaticExtensionException : ContentPage
+	public StaticExtensionException() => InitializeComponent();
+
+	[TestFixture]
+	public class Issue2115
 	{
-		public StaticExtensionException()
+		[Test]
+		public void xStaticThrowsMeaningfullException([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public StaticExtensionException(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Issue2115
-		{
-			[TestCase(false)]
-			public void xStaticThrowsMeaningfullException(bool useCompiledXaml)
+			if (inflator == XamlInflator.Runtime)
+				Assert.Throws(new XamlParseExceptionConstraint(6, 34), () => new StaticExtensionException(inflator));
+			else if (inflator == XamlInflator.XamlC)
+				Assert.Throws(new BuildExceptionConstraint(6, 34), () => MockCompiler.Compile(typeof(StaticExtensionException)));
+			else if (inflator == XamlInflator.SourceGen)
 			{
-				Assert.Throws(new XamlParseExceptionConstraint(6, 34), () => new StaticExtensionException(useCompiledXaml));
+				var result = CreateMauiCompilation()
+					.WithAdditionalSource(
+"""
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class StaticExtensionException : ContentPage
+{
+	public StaticExtensionException() => InitializeComponent();
+}
+""")
+					.RunMauiSourceGenerator(typeof(StaticExtensionException));
+				Assert.That(result.Diagnostics.Any());
 			}
+			else
+				Assert.Ignore("Unknown inflator");
 		}
 	}
 }
