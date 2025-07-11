@@ -607,6 +607,7 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
     envVariables.Add("DOTNET_ROOT", dotnet);
     envVariables.Add("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
     envVariables.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
+    envVariables.Add("DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT", "true");
     envVariables.Add("MSBuildEnableWorkloadResolver", "true");
 
     var existingPath = EnvironmentVariable("PATH");
@@ -629,6 +630,7 @@ void SetDotNetEnvironmentVariables(string dotnetDir = null)
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
     SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
+    SetEnvironmentVariable("DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT", "true");
     SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
 
