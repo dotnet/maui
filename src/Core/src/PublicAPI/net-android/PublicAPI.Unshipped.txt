@@ -1,4 +1,9 @@
 #nullable enable
+Microsoft.Maui.Platform.MauiSwipeRefreshLayout.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
+Microsoft.Maui.Platform.MauiSwipeRefreshLayout.CrossPlatformLayout.set -> void
+override Microsoft.Maui.Handlers.RefreshViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
+override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 ~override Microsoft.Maui.Platform.MauiWebChromeClient.OnShowCustomView(Android.Views.View view, Android.Webkit.WebChromeClient.ICustomViewCallback callback) -> void
 Microsoft.Maui.Graphics.MauiDrawable.SetEmptyBorderBrush() -> void
 Microsoft.Maui.Handlers.DataFlowDirection
