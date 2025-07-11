@@ -34,6 +34,7 @@ public partial class EditorControlMainPage : ContentPage
         _viewModel.VerticalTextAlignment = TextAlignment.End;
         _viewModel.CursorPosition = 0;
         _viewModel.SelectionLength = 0;
+        _viewModel.HeightRequest = -1;
         await Navigation.PushAsync(new EditorOptionsPage(_viewModel));
     }
 

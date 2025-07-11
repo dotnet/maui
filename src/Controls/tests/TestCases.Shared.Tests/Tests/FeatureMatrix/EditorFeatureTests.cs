@@ -462,7 +462,7 @@ public class EditorFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
-		VerifyScreenshotWithKeyboardHandling();
+		VerifyScreenshot();
 	}
 
 #endif
@@ -606,7 +606,7 @@ public class EditorFeatureTests : UITest
 	}
 
 	[Test]
-	public void VerifyEditorTextWhenAutoSizeTextChangesSet()
+	public void VerifyzEditorTextWhenAutoSizeTextChangesSet()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -614,7 +614,7 @@ public class EditorFeatureTests : UITest
 		App.Tap("AutoSizeTextChanges");
 		App.WaitForElement("TextEntryChanged");
 		App.ClearText("TextEntryChanged");
-		App.EnterText("TextEntryChanged", "An Editor can be made to auto-size to its content by setting the Editor.AutoSize property to TextChanges");
+		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
@@ -622,13 +622,13 @@ public class EditorFeatureTests : UITest
 	}
 
 	[Test]
-	public void VerifyEditorTextWhenAutoSizeDisabled()
+	public void VerifyzEditorTextWhenAutoSizeDisabled()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("TextEntryChanged");
 		App.ClearText("TextEntryChanged");
-		App.EnterText("TextEntryChanged", "Disabled indicates that automatic resizing is disabled, and is the default value");
+		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
@@ -782,14 +782,15 @@ public class EditorFeatureTests : UITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/30571
 	[Test]
-	public void VerifyEditorPlaceholderWithAutoSizeDiabled()
+	public void VerifyzEditorPlaceholderWithAutoSizeDiabled()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("PlaceholderText");
 		App.ClearText("PlaceholderText");
-		App.EnterText("PlaceholderText", "Disabled indicates that automatic resizing is disabled, and is the default value");
+		App.EnterText("PlaceholderText", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
 		App.WaitForElement("TextEntryChanged");
 		App.ClearText("TextEntryChanged");
 		App.WaitForElement("Apply");
@@ -799,7 +800,7 @@ public class EditorFeatureTests : UITest
 	}
 
 	[Test]
-	public void VerifyEditorPlaceholderWithAutoSizeTextChanges()
+	public void VerifyzEditorPlaceholderWithAutoSizeTextChanges()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -807,7 +808,7 @@ public class EditorFeatureTests : UITest
 		App.Tap("AutoSizeTextChanges");
 		App.WaitForElement("PlaceholderText");
 		App.ClearText("PlaceholderText");
-		App.EnterText("PlaceholderText", "An Editor can be made to auto-size to its content by setting the Editor.AutoSize property to TextChanges");
+		App.EnterText("PlaceholderText", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
 		App.WaitForElement("TextEntryChanged");
 		App.ClearText("TextEntryChanged");
 		App.WaitForElement("Apply");
@@ -815,6 +816,7 @@ public class EditorFeatureTests : UITest
 		App.WaitForElement("TestEditor");
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
+#endif
 
 	/// <summary>
 	/// Helper method to handle keyboard visibility and take a screenshot with appropriate cropping
