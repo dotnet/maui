@@ -883,11 +883,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void DettachSearchController()
 		{
-			if (_searchHandlerAppearanceTracker is not null)
-			{
-				_searchHandlerAppearanceTracker.Dispose();
-				_searchHandlerAppearanceTracker = null;
-			}
+			_searchHandlerAppearanceTracker?.Dispose();
+			_searchHandlerAppearanceTracker = null;
 
 			if (NavigationItem is not null)
 			{
@@ -901,11 +898,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
-			if (_searchController is not null)
-			{
-				_searchController.SetSearchResultsUpdater(_ => { });
-				_searchController = null;
-			}
+			_searchController?.SetSearchResultsUpdater(_ => { });
+			_searchController = null;
 		}
 
 		void OnSearchItemSelected(object? sender, object e)

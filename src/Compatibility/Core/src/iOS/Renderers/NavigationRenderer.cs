@@ -78,8 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Element = element;
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
-			if (element != null)
-				element.SendViewInitialized(NativeView);
+			element?.SendViewInitialized(NativeView);
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
@@ -271,8 +270,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				foreach (var childViewController in ViewControllers)
 					childViewController.Dispose();
 
-				if (_tracker != null)
-					_tracker.Dispose();
+				_tracker?.Dispose();
 
 				_secondaryToolbar.RemoveFromSuperview();
 				_secondaryToolbar.Dispose();
@@ -1133,11 +1131,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_tracker.CollectionChanged -= TrackerOnCollectionChanged;
 					_tracker = null;
 
-					if (NavigationItem.TitleView != null)
-					{
-						NavigationItem.TitleView.Dispose();
-						NavigationItem.TitleView = null;
-					}
+					NavigationItem.TitleView?.Dispose();
+					NavigationItem.TitleView = null;
 
 					if (NavigationItem.RightBarButtonItems != null)
 					{
@@ -1420,8 +1415,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem());
 				}
 
-				if (primaries != null)
-					primaries.Reverse();
+				primaries?.Reverse();
 				NavigationItem.SetRightBarButtonItems(primaries == null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
 				ToolbarItems = secondaries == null ? Array.Empty<UIBarButtonItem>() : secondaries.ToArray();
 
@@ -1656,8 +1650,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				set
 				{
-					if (_icon != null)
-						_icon.RemoveFromSuperview();
+					_icon?.RemoveFromSuperview();
 
 					_icon = value;
 
