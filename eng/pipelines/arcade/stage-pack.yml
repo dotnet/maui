@@ -39,7 +39,7 @@ stages:
       sourceIndexParams: ${{ parameters.sourceIndexParams }}
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
-      enablePublishTestResults: true
+      enablePublishTestResults: false
       workspace:
         clean: all
       jobs:
