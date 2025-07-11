@@ -15,7 +15,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
-
 		public static async Task Collect()
 		{
 			await Task.Yield();
@@ -53,10 +52,15 @@ namespace Microsoft.Maui.DeviceTests
 			foreach (var reference in references)
 			{
 				Assert.NotNull(reference);
-				var isAlive = await reference.WaitForCollect();
-				if (isAlive)
+				var taskCollect = reference.WaitForCollect();
+				try
 				{
-					return false; // If any reference is still alive, return false
+					await AssertEventuallyAsync(taskCollect);
+				}
+				catch (XunitException)
+				{
+					var isAlive = await taskCollect;
+					return !isAlive; // If any reference is still alive, return false
 				}
 			}
 			return true; // All references are collected
