@@ -74,14 +74,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public object Resolve(Type type, params object[] args)
 			{
-				if (_services.ContainsKey(type))
+				if (_services.TryGetValue(type, out var resolve))
 				{
-					return _services[type];
+					return resolve;
 				}
 
-				if (_factories.ContainsKey(type))
+				if (_factories.TryGetValue(type, out var factory))
 				{
-					return _factories[type].Invoke(args[0]);
+					return factory.Invoke(args[0]);
 				}
 
 				return null;
