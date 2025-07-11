@@ -71,7 +71,35 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.Controller as CarouselViewController)?.UpdateLoop();
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
-			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			// If both width and height are explicitly set, we can use the base implementation
+			if (Primitives.Dimension.IsExplicitSet(widthConstraint) && Primitives.Dimension.IsExplicitSet(heightConstraint))
+			{
+				return base.GetDesiredSize(widthConstraint, heightConstraint);
+			}
+
+			var result = this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
+
+			if (Primitives.Dimension.IsExplicitSet(widthConstraint))
+			{
+				// If width is explicitly set, use the provided width constraint
+				result = new Size(widthConstraint, result.Height);
+			}
+			else if (Primitives.Dimension.IsExplicitSet(heightConstraint))
+			{
+				// If height is explicitly set, use the provided height constraint
+				result = new Size(result.Width, heightConstraint);
+			}
+
+			return result;
+		}
+
+		public override void PlatformArrange(Rect rect)
+		{
+			// Update the layout constraints with the actual arranged size
+			_layout?.UpdateConstraints(rect.Size);
+			base.PlatformArrange(rect);
+		}
 	}
 }
