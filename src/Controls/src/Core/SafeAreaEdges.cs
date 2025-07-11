@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls
 				1 => Top,
 				2 => Right,
 				3 => Bottom,
-				_ => SafeAreaRegions.None
+				_ => SafeAreaRegions.Default
 			};
 		}
 
@@ -109,6 +109,11 @@ namespace Microsoft.Maui.Controls
 					break;
 			}
 		}
+
+		/// <summary>
+		/// A <see cref="SafeAreaEdges"/> with all edges set to <see cref="SafeAreaRegions.Default"/>.
+		/// </summary>
+		public static SafeAreaEdges Default => new(SafeAreaRegions.Default);
 
 		/// <summary>
 		/// A <see cref="SafeAreaEdges"/> with all edges set to <see cref="SafeAreaRegions.None"/>.

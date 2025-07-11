@@ -11,7 +11,18 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Apply platform inset - content will be positioned only in the safe area.
 		/// </summary>
-		None = 0,
+		Default = 0,
+
+		/// <summary>
+		/// Layout behind the keyboard down to where the keyboard starts.
+		/// </summary>
+		Keyboard = 1,
+
+		/// <summary>
+		/// Content will never display behind anything that could block it.
+		/// If keyboard is visible, content will resize to the visible view.
+		/// </summary>
+		None = 2,
 
 		/// <summary>
 		/// Ignore all insets for this edge - content may be positioned anywhere on the screen, 

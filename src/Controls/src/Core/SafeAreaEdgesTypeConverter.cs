@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 					var part = parts[i].Trim();
 					
 					// Performance optimization: use string comparison instead of Enum.TryParse
-					// since SafeAreaRegions only has two values currently
+					// since SafeAreaRegions has specific values
 					if (string.Equals(part, "All", StringComparison.OrdinalIgnoreCase))
 					{
 						regions[i] = SafeAreaRegions.All;
@@ -44,6 +44,14 @@ namespace Microsoft.Maui.Controls
 					else if (string.Equals(part, "None", StringComparison.OrdinalIgnoreCase))
 					{
 						regions[i] = SafeAreaRegions.None;
+					}
+					else if (string.Equals(part, "Default", StringComparison.OrdinalIgnoreCase))
+					{
+						regions[i] = SafeAreaRegions.Default;
+					}
+					else if (string.Equals(part, "Keyboard", StringComparison.OrdinalIgnoreCase))
+					{
+						regions[i] = SafeAreaRegions.Keyboard;
 					}
 					else
 					{

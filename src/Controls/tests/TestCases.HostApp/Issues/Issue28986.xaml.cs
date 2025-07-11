@@ -6,85 +6,115 @@ public partial class Issue28986 : ContentPage
 	public Issue28986()
 	{
 		InitializeComponent();
-		// Initialize page-level controls (start with all ignore - True)
-		PageLeftCheckBox.IsChecked = true;
-		PageTopCheckBox.IsChecked = true;
-		PageRightCheckBox.IsChecked = true;
-		PageBottomCheckBox.IsChecked = true;
+		// Initialize page-level controls (start with all Default)
+		PageLeftPicker.SelectedIndex = 0;   // Default
+		PageTopPicker.SelectedIndex = 0;    // Default
+		PageRightPicker.SelectedIndex = 0;  // Default
+		PageBottomPicker.SelectedIndex = 0; // Default
 		
-		// Initialize grid-level controls (start with all respect - False)
-		GridLeftCheckBox.IsChecked = false;
-		GridTopCheckBox.IsChecked = false;
-		GridRightCheckBox.IsChecked = false;
-		GridBottomCheckBox.IsChecked = false;
+		// Initialize grid-level controls (start with all Default)
+		GridLeftPicker.SelectedIndex = 0;   // Default
+		GridTopPicker.SelectedIndex = 0;    // Default
+		GridRightPicker.SelectedIndex = 0;  // Default
+		GridBottomPicker.SelectedIndex = 0; // Default
 		
 		UpdateSafeAreaSettings();
 	}
 
 	// Page-level event handlers
-	private void OnPageEdgeCheckBoxChanged(object sender, CheckedChangedEventArgs e)
+	private void OnPageEdgePickerChanged(object sender, EventArgs e)
 	{
 		UpdateSafeAreaSettings();
 	}
 
-	private void OnPageResetAllClicked(object sender, EventArgs e)
+	private void OnPageResetDefaultClicked(object sender, EventArgs e)
 	{
-		PageLeftCheckBox.IsChecked = true;
-		PageTopCheckBox.IsChecked = true;
-		PageRightCheckBox.IsChecked = true;
-		PageBottomCheckBox.IsChecked = true;
+		PageLeftPicker.SelectedIndex = 0;   // Default
+		PageTopPicker.SelectedIndex = 0;    // Default
+		PageRightPicker.SelectedIndex = 0;  // Default
+		PageBottomPicker.SelectedIndex = 0; // Default
 		UpdateSafeAreaSettings();
 	}
 
 	private void OnPageResetNoneClicked(object sender, EventArgs e)
 	{
-		PageLeftCheckBox.IsChecked = false;
-		PageTopCheckBox.IsChecked = false;
-		PageRightCheckBox.IsChecked = false;
-		PageBottomCheckBox.IsChecked = false;
+		PageLeftPicker.SelectedIndex = 2;   // None
+		PageTopPicker.SelectedIndex = 2;    // None
+		PageRightPicker.SelectedIndex = 2;  // None
+		PageBottomPicker.SelectedIndex = 2; // None
+		UpdateSafeAreaSettings();
+	}
+
+	private void OnPageResetAllClicked(object sender, EventArgs e)
+	{
+		PageLeftPicker.SelectedIndex = 3;   // All
+		PageTopPicker.SelectedIndex = 3;    // All
+		PageRightPicker.SelectedIndex = 3;  // All
+		PageBottomPicker.SelectedIndex = 3; // All
 		UpdateSafeAreaSettings();
 	}
 
 	// Grid-level event handlers
-	private void OnGridEdgeCheckBoxChanged(object sender, CheckedChangedEventArgs e)
+	private void OnGridEdgePickerChanged(object sender, EventArgs e)
 	{
 		UpdateSafeAreaSettings();
 	}
 
-	private void OnGridResetAllClicked(object sender, EventArgs e)
+	private void OnGridResetDefaultClicked(object sender, EventArgs e)
 	{
-		GridLeftCheckBox.IsChecked = true;
-		GridTopCheckBox.IsChecked = true;
-		GridRightCheckBox.IsChecked = true;
-		GridBottomCheckBox.IsChecked = true;
+		GridLeftPicker.SelectedIndex = 0;   // Default
+		GridTopPicker.SelectedIndex = 0;    // Default
+		GridRightPicker.SelectedIndex = 0;  // Default
+		GridBottomPicker.SelectedIndex = 0; // Default
 		UpdateSafeAreaSettings();
 	}
 
 	private void OnGridResetNoneClicked(object sender, EventArgs e)
 	{
-		GridLeftCheckBox.IsChecked = false;
-		GridTopCheckBox.IsChecked = false;
-		GridRightCheckBox.IsChecked = false;
-		GridBottomCheckBox.IsChecked = false;
+		GridLeftPicker.SelectedIndex = 2;   // None
+		GridTopPicker.SelectedIndex = 2;    // None
+		GridRightPicker.SelectedIndex = 2;  // None
+		GridBottomPicker.SelectedIndex = 2; // None
 		UpdateSafeAreaSettings();
+	}
+
+	private void OnGridResetAllClicked(object sender, EventArgs e)
+	{
+		GridLeftPicker.SelectedIndex = 3;   // All
+		GridTopPicker.SelectedIndex = 3;    // All
+		GridRightPicker.SelectedIndex = 3;  // All
+		GridBottomPicker.SelectedIndex = 3; // All
+		UpdateSafeAreaSettings();
+	}
+
+	private SafeAreaRegions GetSafeAreaRegionsFromPickerIndex(int index)
+	{
+		return index switch
+		{
+			0 => SafeAreaRegions.Default,
+			1 => SafeAreaRegions.Keyboard,
+			2 => SafeAreaRegions.None,
+			3 => SafeAreaRegions.All,
+			_ => SafeAreaRegions.Default
+		};
 	}
 
 	private void UpdateSafeAreaSettings()
 	{
 		// Create SafeAreaEdges for page-level settings
 		var pageSafeAreaSettings = new SafeAreaEdges(
-			PageLeftCheckBox.IsChecked ? SafeAreaRegions.All : SafeAreaRegions.None,   // Left
-			PageTopCheckBox.IsChecked ? SafeAreaRegions.All : SafeAreaRegions.None,    // Top  
-			PageRightCheckBox.IsChecked ? SafeAreaRegions.All : SafeAreaRegions.None,  // Right
-			PageBottomCheckBox.IsChecked ? SafeAreaRegions.All : SafeAreaRegions.None  // Bottom
+			GetSafeAreaRegionsFromPickerIndex(PageLeftPicker.SelectedIndex),   // Left
+			GetSafeAreaRegionsFromPickerIndex(PageTopPicker.SelectedIndex),    // Top  
+			GetSafeAreaRegionsFromPickerIndex(PageRightPicker.SelectedIndex),  // Right
+			GetSafeAreaRegionsFromPickerIndex(PageBottomPicker.SelectedIndex)  // Bottom
 		);
 
 		// Create SafeAreaEdges for grid-level settings
 		var gridSafeAreaSettings = new SafeAreaEdges(
-			GridLeftCheckBox.IsChecked ? SafeAreaRegions.All : SafeAreaRegions.None,   // Left
-			GridTopCheckBox.IsChecked ? SafeAreaRegions.All : SafeAreaRegions.None,    // Top  
-			GridRightCheckBox.IsChecked ? SafeAreaRegions.All : SafeAreaRegions.None,  // Right
-			GridBottomCheckBox.IsChecked ? SafeAreaRegions.All : SafeAreaRegions.None  // Bottom
+			GetSafeAreaRegionsFromPickerIndex(GridLeftPicker.SelectedIndex),   // Left
+			GetSafeAreaRegionsFromPickerIndex(GridTopPicker.SelectedIndex),    // Top  
+			GetSafeAreaRegionsFromPickerIndex(GridRightPicker.SelectedIndex),  // Right
+			GetSafeAreaRegionsFromPickerIndex(GridBottomPicker.SelectedIndex)  // Bottom
 		);
 
 		// Apply SafeArea attached property to the ContentPage
@@ -94,15 +124,15 @@ public partial class Issue28986 : ContentPage
 		SafeArea.SetIgnore(ContentGrid, gridSafeAreaSettings);
 
 		// Update the display label
-		var pageSettingsText = $"Page - Left: {(PageLeftCheckBox.IsChecked ? "Ignore" : "Respect")}, " +
-		                      $"Top: {(PageTopCheckBox.IsChecked ? "Ignore" : "Respect")}, " +
-		                      $"Right: {(PageRightCheckBox.IsChecked ? "Ignore" : "Respect")}, " +
-		                      $"Bottom: {(PageBottomCheckBox.IsChecked ? "Ignore" : "Respect")}";
+		var pageSettingsText = $"Page - Left: {GetSafeAreaRegionsFromPickerIndex(PageLeftPicker.SelectedIndex)}, " +
+		                      $"Top: {GetSafeAreaRegionsFromPickerIndex(PageTopPicker.SelectedIndex)}, " +
+		                      $"Right: {GetSafeAreaRegionsFromPickerIndex(PageRightPicker.SelectedIndex)}, " +
+		                      $"Bottom: {GetSafeAreaRegionsFromPickerIndex(PageBottomPicker.SelectedIndex)}";
 
-		var gridSettingsText = $"Grid - Left: {(GridLeftCheckBox.IsChecked ? "Ignore" : "Respect")}, " +
-		                      $"Top: {(GridTopCheckBox.IsChecked ? "Ignore" : "Respect")}, " +
-		                      $"Right: {(GridRightCheckBox.IsChecked ? "Ignore" : "Respect")}, " +
-		                      $"Bottom: {(GridBottomCheckBox.IsChecked ? "Ignore" : "Respect")}";
+		var gridSettingsText = $"Grid - Left: {GetSafeAreaRegionsFromPickerIndex(GridLeftPicker.SelectedIndex)}, " +
+		                      $"Top: {GetSafeAreaRegionsFromPickerIndex(GridTopPicker.SelectedIndex)}, " +
+		                      $"Right: {GetSafeAreaRegionsFromPickerIndex(GridRightPicker.SelectedIndex)}, " +
+		                      $"Bottom: {GetSafeAreaRegionsFromPickerIndex(GridBottomPicker.SelectedIndex)}";
 		
 		CurrentSettingsLabel.Text = $"Current:\n{pageSettingsText}\n{gridSettingsText}";
 

@@ -33,6 +33,14 @@ namespace Microsoft.Maui.Controls.XamlC
 					{
 						regions.Add(Microsoft.Maui.Controls.SafeAreaRegions.None);
 					}
+					else if (string.Equals(part, "Default", System.StringComparison.OrdinalIgnoreCase))
+					{
+						regions.Add(Microsoft.Maui.Controls.SafeAreaRegions.Default);
+					}
+					else if (string.Equals(part, "Keyboard", System.StringComparison.OrdinalIgnoreCase))
+					{
+						regions.Add(Microsoft.Maui.Controls.SafeAreaRegions.Keyboard);
+					}
 					else
 					{
 						throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Microsoft.Maui.Controls.SafeAreaEdges));

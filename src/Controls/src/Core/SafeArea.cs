@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 				"Ignore",
 				typeof(SafeAreaEdges),
 				typeof(SafeArea),
-				SafeAreaEdges.None,
+				SafeAreaEdges.Default,
 				propertyChanged: OnIgnoreSafeAreaChanged
 			);
 
@@ -46,9 +46,9 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">A <see cref="SafeAreaEdges"/> struct specifying safe area behavior per edge.</param>
 		/// <remarks>
 		/// <para>Supports 1, 2, or 4 values in XAML:</para>
-		/// <para>• 1 value: "All" or "None" - applies to all four edges</para>
+		/// <para>• 1 value: "All", "None", "Default", or "Keyboard" - applies to all four edges</para>
 		/// <para>• 2 values: "All,None" - first applies to Left &amp; Right (horizontal), second to Top &amp; Bottom (vertical)</para>
-		/// <para>• 4 values: "All,None,All,None" - applies in order: Left, Top, Right, Bottom</para>
+		/// <para>• 4 values: "All,None,Default,Keyboard" - applies in order: Left, Top, Right, Bottom</para>
 		/// </remarks>
 		public static void SetIgnore(BindableObject bindable, SafeAreaEdges value)
 		{
@@ -78,17 +78,33 @@ namespace Microsoft.Maui.Controls
 		{
 			// Check the SafeArea.Ignore attached property
 			var regionForEdge = GetIgnoreForEdge(bindable, edge);
+			
+			// Handle the new SafeAreaRegions behavior
 			if (regionForEdge.HasFlag(SafeAreaRegions.All))
 			{
-				return true;
+				return true; // Ignore all insets - content may be positioned anywhere
 			}
 
-			// For SafeAreaRegions.None, we need to determine if it should override legacy behavior
-			// If this is a Page or Layout that typically has legacy behavior, and the attached property
-			// is set to None, we should respect that and not fall back to legacy behavior
-			if (regionForEdge == SafeAreaRegions.None && bindable is ISafeAreaView)
+			if (regionForEdge == SafeAreaRegions.None)
 			{
-				// If SafeAreaRegions.None is explicitly set, respect it (don't ignore safe area)
+				// NEW: Content will never display behind anything that could block it
+				// This is the most conservative approach - always respect safe area
+				return false;
+			}
+
+			if (regionForEdge == SafeAreaRegions.Keyboard)
+			{
+				// NEW: Layout behind the keyboard down to where the keyboard starts
+				// For now, treat this as respecting safe area (can be enhanced later for keyboard-specific behavior)
+				return false;
+			}
+
+			// For SafeAreaRegions.Default, we need to determine if it should override legacy behavior
+			// If this is a Page or Layout that typically has legacy behavior, and the attached property
+			// is set to Default, we should respect that and not fall back to legacy behavior
+			if (regionForEdge == SafeAreaRegions.Default && bindable is ISafeAreaView)
+			{
+				// If SafeAreaRegions.Default is explicitly set, respect it (don't ignore safe area)
 				// But we need to check if the attached property was set to a non-default value
 				// Since we can't track explicit setting, we'll use a heuristic:
 				// If any edge of the SafeAreaEdges is set to All, then we assume the property was set
@@ -96,7 +112,7 @@ namespace Microsoft.Maui.Controls
 				if (edges.Left == SafeAreaRegions.All || edges.Top == SafeAreaRegions.All ||
 					edges.Right == SafeAreaRegions.All || edges.Bottom == SafeAreaRegions.All)
 				{
-					// The attached property was set (at least one edge is All), so respect the None value
+					// The attached property was set (at least one edge is All), so respect the Default value
 					return false;
 				}
 			}
@@ -107,7 +123,7 @@ namespace Microsoft.Maui.Controls
 				return legacySafeAreaView.IgnoreSafeArea;
 			}
 
-			// Default to false (respect safe area) since the default is now SafeAreaRegions.None
+			// Default to false (respect safe area) since the default is now SafeAreaRegions.Default
 			return false;
 		}
 	}

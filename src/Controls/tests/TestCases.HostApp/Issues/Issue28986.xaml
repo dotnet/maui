@@ -64,6 +64,7 @@
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -74,45 +75,85 @@
                                 <!-- Top -->
                                 <StackLayout Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
                                     <Label Text="Top:" VerticalOptions="Center" />
-                                    <CheckBox x:Name="PageTopCheckBox" 
-                                              IsChecked="True" 
-                                              CheckedChanged="OnPageEdgeCheckBoxChanged"
-                                              AutomationId="PageTopCheckBox" />
+                                    <Picker x:Name="PageTopPicker" 
+                                            SelectedIndex="0" 
+                                            SelectedIndexChanged="OnPageEdgePickerChanged"
+                                            AutomationId="PageTopPicker">
+                                        <Picker.Items>
+                                            <x:String>Default</x:String>
+                                            <x:String>Keyboard</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>All</x:String>
+                                        </Picker.Items>
+                                    </Picker>
                                 </StackLayout>
                                 
                                 <!-- Left and Right -->
                                 <StackLayout Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalOptions="Center">
                                     <Label Text="Left:" VerticalOptions="Center" />
-                                    <CheckBox x:Name="PageLeftCheckBox" 
-                                              IsChecked="True" 
-                                              CheckedChanged="OnPageEdgeCheckBoxChanged"
-                                              AutomationId="PageLeftCheckBox" />
+                                    <Picker x:Name="PageLeftPicker" 
+                                            SelectedIndex="0" 
+                                            SelectedIndexChanged="OnPageEdgePickerChanged"
+                                            AutomationId="PageLeftPicker">
+                                        <Picker.Items>
+                                            <x:String>Default</x:String>
+                                            <x:String>Keyboard</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>All</x:String>
+                                        </Picker.Items>
+                                    </Picker>
                                 </StackLayout>
                                 
                                 <StackLayout Grid.Row="1" Grid.Column="2" Orientation="Horizontal" HorizontalOptions="Center">
                                     <Label Text="Right:" VerticalOptions="Center" />
-                                    <CheckBox x:Name="PageRightCheckBox" 
-                                              IsChecked="True" 
-                                              CheckedChanged="OnPageEdgeCheckBoxChanged"
-                                              AutomationId="PageRightCheckBox" />
+                                    <Picker x:Name="PageRightPicker" 
+                                            SelectedIndex="0" 
+                                            SelectedIndexChanged="OnPageEdgePickerChanged"
+                                            AutomationId="PageRightPicker">
+                                        <Picker.Items>
+                                            <x:String>Default</x:String>
+                                            <x:String>Keyboard</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>All</x:String>
+                                        </Picker.Items>
+                                    </Picker>
                                 </StackLayout>
                                 
                                 <!-- Bottom -->
                                 <StackLayout Grid.Row="2" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
                                     <Label Text="Bottom:" VerticalOptions="Center" />
-                                    <CheckBox x:Name="PageBottomCheckBox" 
-                                              IsChecked="True" 
-                                              CheckedChanged="OnPageEdgeCheckBoxChanged"
-                                              AutomationId="PageBottomCheckBox" />
+                                    <Picker x:Name="PageBottomPicker" 
+                                            SelectedIndex="0" 
+                                            SelectedIndexChanged="OnPageEdgePickerChanged"
+                                            AutomationId="PageBottomPicker">
+                                        <Picker.Items>
+                                            <x:String>Default</x:String>
+                                            <x:String>Keyboard</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>All</x:String>
+                                        </Picker.Items>
+                                    </Picker>
+                                </StackLayout>
+                                
+                                <!-- Keyboard test area -->
+                                <StackLayout Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalOptions="Center">
+                                    <Label Text="Keyboard Test:" VerticalOptions="Center" />
+                                    <Entry x:Name="KeyboardTestEntry" 
+                                           Placeholder="Tap to show keyboard" 
+                                           WidthRequest="200"
+                                           AutomationId="KeyboardTestEntry" />
                                 </StackLayout>
                             </Grid>
                             
-                            <Button Text="Page: Reset All to Ignore" 
-                                    Clicked="OnPageResetAllClicked"
-                                    AutomationId="PageResetAllButton" />
-                            <Button Text="Page: Reset All to Respect" 
+                            <Button Text="Page: Reset All to Default" 
+                                    Clicked="OnPageResetDefaultClicked"
+                                    AutomationId="PageResetDefaultButton" />
+                            <Button Text="Page: Reset All to None" 
                                     Clicked="OnPageResetNoneClicked"
                                     AutomationId="PageResetNoneButton" />
+                            <Button Text="Page: Reset All to All" 
+                                    Clicked="OnPageResetAllClicked"
+                                    AutomationId="PageResetAllButton" />
                         </VerticalStackLayout>
                     </Border>
 
@@ -134,6 +175,7 @@
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -144,54 +186,96 @@
                                 <!-- Top -->
                                 <StackLayout Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
                                     <Label Text="Top:" VerticalOptions="Center" />
-                                    <CheckBox x:Name="GridTopCheckBox" 
-                                              IsChecked="False" 
-                                              CheckedChanged="OnGridEdgeCheckBoxChanged"
-                                              AutomationId="GridTopCheckBox" />
+                                    <Picker x:Name="GridTopPicker" 
+                                            SelectedIndex="0" 
+                                            SelectedIndexChanged="OnGridEdgePickerChanged"
+                                            AutomationId="GridTopPicker">
+                                        <Picker.Items>
+                                            <x:String>Default</x:String>
+                                            <x:String>Keyboard</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>All</x:String>
+                                        </Picker.Items>
+                                    </Picker>
                                 </StackLayout>
                                 
                                 <!-- Left and Right -->
                                 <StackLayout Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalOptions="Center">
                                     <Label Text="Left:" VerticalOptions="Center" />
-                                    <CheckBox x:Name="GridLeftCheckBox" 
-                                              IsChecked="False" 
-                                              CheckedChanged="OnGridEdgeCheckBoxChanged"
-                                              AutomationId="GridLeftCheckBox" />
+                                    <Picker x:Name="GridLeftPicker" 
+                                            SelectedIndex="0" 
+                                            SelectedIndexChanged="OnGridEdgePickerChanged"
+                                            AutomationId="GridLeftPicker">
+                                        <Picker.Items>
+                                            <x:String>Default</x:String>
+                                            <x:String>Keyboard</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>All</x:String>
+                                        </Picker.Items>
+                                    </Picker>
                                 </StackLayout>
                                 
                                 <StackLayout Grid.Row="1" Grid.Column="2" Orientation="Horizontal" HorizontalOptions="Center">
                                     <Label Text="Right:" VerticalOptions="Center" />
-                                    <CheckBox x:Name="GridRightCheckBox" 
-                                              IsChecked="False" 
-                                              CheckedChanged="OnGridEdgeCheckBoxChanged"
-                                              AutomationId="GridRightCheckBox" />
+                                    <Picker x:Name="GridRightPicker" 
+                                            SelectedIndex="0" 
+                                            SelectedIndexChanged="OnGridEdgePickerChanged"
+                                            AutomationId="GridRightPicker">
+                                        <Picker.Items>
+                                            <x:String>Default</x:String>
+                                            <x:String>Keyboard</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>All</x:String>
+                                        </Picker.Items>
+                                    </Picker>
                                 </StackLayout>
                                 
                                 <!-- Bottom -->
                                 <StackLayout Grid.Row="2" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
                                     <Label Text="Bottom:" VerticalOptions="Center" />
-                                    <CheckBox x:Name="GridBottomCheckBox" 
-                                              IsChecked="False" 
-                                              CheckedChanged="OnGridEdgeCheckBoxChanged"
-                                              AutomationId="GridBottomCheckBox" />
+                                    <Picker x:Name="GridBottomPicker" 
+                                            SelectedIndex="0" 
+                                            SelectedIndexChanged="OnGridEdgePickerChanged"
+                                            AutomationId="GridBottomPicker">
+                                        <Picker.Items>
+                                            <x:String>Default</x:String>
+                                            <x:String>Keyboard</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>All</x:String>
+                                        </Picker.Items>
+                                    </Picker>
+                                </StackLayout>
+                                
+                                <!-- Legend -->
+                                <StackLayout Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Spacing="5">
+                                    <Label Text="Default = Apply platform inset (safe area)" 
+                                           FontSize="10" 
+                                           TextColor="Blue"
+                                           HorizontalOptions="Center" />
+                                    <Label Text="Keyboard = Layout behind keyboard" 
+                                           FontSize="10" 
+                                           TextColor="Orange"
+                                           HorizontalOptions="Center" />
+                                    <Label Text="None = Never behind blocking UI" 
+                                           FontSize="10" 
+                                           TextColor="Red"
+                                           HorizontalOptions="Center" />
+                                    <Label Text="All = Ignore all insets" 
+                                           FontSize="10" 
+                                           TextColor="Green"
+                                           HorizontalOptions="Center" />
                                 </StackLayout>
                             </Grid>
                             
-                            <Label Text="✓ Checked = Ignore Safe Area (content can extend to edge)" 
-                                   FontSize="12" 
-                                   TextColor="Green"
-                                   HorizontalOptions="Center" />
-                            <Label Text="✗ Unchecked = Respect Safe Area (content stays in safe area)" 
-                                   FontSize="12" 
-                                   TextColor="Red"
-                                   HorizontalOptions="Center" />
-                            
-                            <Button Text="Grid: Reset All to Ignore" 
-                                    Clicked="OnGridResetAllClicked"
-                                    AutomationId="GridResetAllButton" />
-                            <Button Text="Grid: Reset All to Respect" 
+                            <Button Text="Grid: Reset All to Default" 
+                                    Clicked="OnGridResetDefaultClicked"
+                                    AutomationId="GridResetDefaultButton" />
+                            <Button Text="Grid: Reset All to None" 
                                     Clicked="OnGridResetNoneClicked"
                                     AutomationId="GridResetNoneButton" />
+                            <Button Text="Grid: Reset All to All" 
+                                    Clicked="OnGridResetAllClicked"
+                                    AutomationId="GridResetAllButton" />
                         </VerticalStackLayout>
                     </Border>
                 </StackLayout>

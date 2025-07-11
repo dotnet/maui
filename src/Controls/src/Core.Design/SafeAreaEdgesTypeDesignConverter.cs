@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Controls.Design
 			{
 				string trimmedPart = part.Trim();
 				if (!string.Equals(trimmedPart, "All", StringComparison.OrdinalIgnoreCase) &&
-					!string.Equals(trimmedPart, "None", StringComparison.OrdinalIgnoreCase))
+					!string.Equals(trimmedPart, "None", StringComparison.OrdinalIgnoreCase) &&
+					!string.Equals(trimmedPart, "Default", StringComparison.OrdinalIgnoreCase) &&
+					!string.Equals(trimmedPart, "Keyboard", StringComparison.OrdinalIgnoreCase))
 				{
 					return false;
 				}
