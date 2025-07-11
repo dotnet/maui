@@ -49,10 +49,6 @@ namespace Microsoft.Maui.TestCases.Tests
 #if !MACCATALYST
 					// For non-Catalyst platforms, navigate via UI
 					NavigateToIssue(Issue);
-#else
-					// For Catalyst, navigation is handled via startup arguments
-					// Just wait for the test to load
-					App.WaitForElement("*", timeout: TimeSpan.FromSeconds(10));
 #endif
 					break;
 				}

@@ -66,10 +66,10 @@ namespace UITest.Appium
 			}
 
 			var args = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
-			options.AddAdditionalAppiumOption(IOSMobileCapabilityType.ProcessArguments, new Dictionary<string, object>
+			if(args != null && args.Count > 0)
 			{
-				{ "env", args! }
-			});
+				options.AddAdditionalAppiumOption("environment", args);
+			}
 
 			options.AddAdditionalAppiumOption("showServerLogs", true);
 			return options;
