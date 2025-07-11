@@ -65,6 +65,8 @@ When a new release branch is created, this command should look something like th
 darc add-default-channel --channel ".NET 9.0.1xx SDK Preview 1" --branch "release/9.0.1xx-preview1" --repo https://github.com/dotnet/maui
 ```
 
+> **Note**: For comprehensive information about the complete .NET MAUI release process, including release pipelines, workload set integration, and Visual Studio insertions, see the [Release Process documentation](../docs/ReleaseProcess.md).
+
 Other products/tools can consume our package version info in the following way:
 ```
 darc add-dependency -n Microsoft.Maui.Sdk -t product -r https://github.com/dotnet/maui -v 1.2.3
