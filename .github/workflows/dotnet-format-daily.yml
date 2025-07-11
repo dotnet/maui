@@ -53,8 +53,8 @@ jobs:
         run: |
           git reset --hard HEAD
 
-      - name: Restore solution
-        run: dotnet restore Microsoft.Maui.sln
+      # - name: Restore solution
+      #   run: dotnet restore Microsoft.Maui.sln
 
       - name: Run dotnet format
         run: dotnet format Microsoft.Maui.sln --exclude Templates/src --exclude-diagnostics CA1822
