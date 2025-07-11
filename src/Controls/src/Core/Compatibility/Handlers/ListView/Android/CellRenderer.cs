@@ -9,6 +9,8 @@ using Microsoft.Maui.Controls.Internals;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
 
+#pragma warning disable CS0618 // Performance is obsolete
+
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class CellRenderer : ElementHandler<Cell, AView>, IRegisterable
