@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Children))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement
+	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement, ISafeAreaPage
 	{
 		protected ILayoutManager _layoutManager;
 
@@ -123,6 +124,10 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <inheritdoc cref="ISafeAreaView.IgnoreSafeArea"/>
+		/// <remarks>
+		/// This property is deprecated. Use SafeArea.IgnoreSafeArea attached property instead for per-edge safe area control.
+		/// </remarks>
+		[System.Obsolete("Use SafeArea.IgnoreSafeArea attached property instead for per-edge safe area control.")]
 		public bool IgnoreSafeArea { get; set; }
 
 		/// <summary>
@@ -390,5 +395,24 @@ namespace Microsoft.Maui.Controls
 		{
 			return $"{base.GetDebuggerDisplay()}, ChildCount = {Count}";
 		}
+
+		#region ISafeAreaPage
+
+		/// <inheritdoc cref="ISafeAreaPage.SafeAreaInsets"/>
+		Thickness ISafeAreaPage.SafeAreaInsets { set { } } // Default no-op implementation for layouts
+
+		/// <inheritdoc cref="ISafeAreaPage.IgnoreSafeAreaForEdge"/>
+		bool ISafeAreaPage.IgnoreSafeAreaForEdge(int edge)
+		{
+			return SafeArea.ShouldIgnoreSafeAreaForEdge(this, edge);
+		}
+
+		/// <inheritdoc cref="ISafeAreaPage.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaPage.GetSafeAreaRegionsForEdge(int edge)
+		{
+			return SafeArea.GetIgnoreForEdge(this, edge);
+		}
+
+		#endregion
 	}
 }
