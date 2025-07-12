@@ -88,7 +88,8 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static bool ShouldSkipStrokeMappings(IBorderHandler handler) {
+		private static bool ShouldSkipStrokeMappings(IBorderHandler handler)
+		{
 #if __IOS__ || MACCATALYST || ANDROID
 			// During the initial connection, the `MapBackground` takes care of updating the stroke properties
 			// so we can skip the stroke mappings to avoid repetitive and useless updates.

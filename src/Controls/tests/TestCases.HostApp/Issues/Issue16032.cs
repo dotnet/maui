@@ -4,14 +4,14 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using AWebView = Android.Webkit.WebView;
 using IWebResourceRequest = Android.Webkit.IWebResourceRequest;
-using Microsoft.Maui.Platform;
 using WebResourceResponse = Android.Webkit.WebResourceResponse;
 
 namespace Maui.Controls.Sample.Issues
 {
-	
+
 	[Issue(IssueTracker.Github, 16032, "Improve the customization of WebView on Android", PlatformAffected.Android, isInternetRequired: true)]
 	public class Issue16032 : ContentPage
 	{
@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample.Issues
 				{
 					Background = new SolidPaint(Colors.Red),
 					WidthRequest = 300,
-					HeightRequest = 300		
+					HeightRequest = 300
 				}
 			};
 		}
@@ -34,7 +34,7 @@ namespace Maui.Controls.Sample.Issues
 				new PropertyMapper<Issue16032WebView, WebViewHandler>(WebViewHandler.Mapper);
 
 			public Issue16032WebView()
-			{				
+			{
 				TestMapper.ModifyMapping(
 					"WebViewClient",
 					(handler, view, setter) =>
@@ -42,7 +42,7 @@ namespace Maui.Controls.Sample.Issues
 						WebClient ??= new CustomWebClient((WebViewHandler)handler);
 						handler.PlatformView.SetWebViewClient(WebClient);
 					});
-				
+
 			}
 
 			protected async override void OnHandlerChanged()
@@ -54,8 +54,8 @@ namespace Maui.Controls.Sample.Issues
 
 				var platformWebView = webViewHandler.PlatformView;
 				platformWebView.Settings.AllowFileAccess = true;
-				
-				Source = new UrlWebViewSource { Url = "extracontent.html" };				
+
+				Source = new UrlWebViewSource { Url = "extracontent.html" };
 
 				var tcsLoaded = new TaskCompletionSource<bool>();
 				var tcsNavigating = new TaskCompletionSource();
@@ -109,7 +109,7 @@ namespace Maui.Controls.Sample.Issues
 
 					// wait for the navigation to complete
 					await tcsNavigating.Task;
-					if	(navigatingCount < 1)
+					if (navigatingCount < 1)
 					{
 						throw new Exception("Navigating event did not fire");
 					}
@@ -122,12 +122,12 @@ namespace Maui.Controls.Sample.Issues
 					// wait for the image to be requested
 					await tcsRequested.Task;
 
-					if	(shouldRequestCount != 1)
+					if (shouldRequestCount != 1)
 					{
 						throw new Exception("only 1 request for the image to load");
 					}
 				}
-				catch(Exception ex)
+				catch (Exception ex)
 				{
 					failureMessage = ex.Message;
 				}
@@ -143,7 +143,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 
 			PropertyMapper IPropertyMapperView.GetPropertyMapperOverrides() => TestMapper;
-			
+
 			CustomWebClient WebClient { get; set; }
 
 			public Action<AWebView, IWebResourceRequest> ShouldInterceptRequestDelegate { get; set; }
@@ -161,7 +161,7 @@ namespace Maui.Controls.Sample.Issues
 				public override WebResourceResponse ShouldInterceptRequest(AWebView view, IWebResourceRequest request)
 				{
 					if (_handler.VirtualView is Issue16032WebView customWebView)
-					customWebView.ShouldInterceptRequestDelegate(view, request);
+						customWebView.ShouldInterceptRequestDelegate(view, request);
 
 					return base.ShouldInterceptRequest(view, request);
 				}
