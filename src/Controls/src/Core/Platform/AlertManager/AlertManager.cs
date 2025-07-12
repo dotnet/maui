@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
@@ -58,6 +59,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public void RequestPrompt(Page page, PromptArguments arguments) =>
 			_subscription?.OnPromptRequested(page, arguments);
 
+		[Obsolete("This method is obsolete in .NET 10 and will be removed in .NET11.")]
 		public void RequestPageBusy(Page page, bool isBusy) =>
 			_subscription?.OnPageBusy(page, isBusy);
 
