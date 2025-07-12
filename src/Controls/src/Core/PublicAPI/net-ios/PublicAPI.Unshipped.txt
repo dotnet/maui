@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.Maui.Controls.SafeArea
 override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 static Microsoft.Maui.Controls.SafeArea.GetIgnore(Microsoft.Maui.Controls.BindableObject! bindable) -> Microsoft.Maui.SafeAreaEdges
 static Microsoft.Maui.Controls.SafeArea.SetIgnore(Microsoft.Maui.Controls.BindableObject! bindable, Microsoft.Maui.SafeAreaEdges value) -> void

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			{
 				var parts = value.Split(',');
 				var result = new List<Instruction>();
-				var regions = new List<Microsoft.Maui.Controls.SafeAreaRegions>();
+				var regions = new List<Microsoft.Maui.SafeAreaRegions>();
 				
 				// Parse all parts
 				for (int i = 0; i < parts.Length; i++)
@@ -27,23 +27,23 @@ namespace Microsoft.Maui.Controls.XamlC
 					
 					if (string.Equals(part, "All", System.StringComparison.OrdinalIgnoreCase))
 					{
-						regions.Add(Microsoft.Maui.Controls.SafeAreaRegions.All);
+						regions.Add(Microsoft.Maui.SafeAreaRegions.All);
 					}
 					else if (string.Equals(part, "None", System.StringComparison.OrdinalIgnoreCase))
 					{
-						regions.Add(Microsoft.Maui.Controls.SafeAreaRegions.None);
+						regions.Add(Microsoft.Maui.SafeAreaRegions.None);
 					}
 					else if (string.Equals(part, "Default", System.StringComparison.OrdinalIgnoreCase))
 					{
-						regions.Add(Microsoft.Maui.Controls.SafeAreaRegions.Default);
+						regions.Add(Microsoft.Maui.SafeAreaRegions.Default);
 					}
 					else if (string.Equals(part, "Keyboard", System.StringComparison.OrdinalIgnoreCase))
 					{
-						regions.Add(Microsoft.Maui.Controls.SafeAreaRegions.Keyboard);
+						regions.Add(Microsoft.Maui.SafeAreaRegions.Keyboard);
 					}
 					else
 					{
-						throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Microsoft.Maui.Controls.SafeAreaEdges));
+						throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Microsoft.Maui.SafeAreaEdges));
 					}
 				}
 				
@@ -82,12 +82,12 @@ namespace Microsoft.Maui.Controls.XamlC
 				}
 				else
 				{
-					throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Microsoft.Maui.Controls.SafeAreaEdges));
+					throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Microsoft.Maui.SafeAreaEdges));
 				}
 				
 				return result;
 			}
-			throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Microsoft.Maui.Controls.SafeAreaEdges));
+			throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Microsoft.Maui.SafeAreaEdges));
 		}
 	}
 }
