@@ -138,6 +138,62 @@ namespace Microsoft.Maui.Platform
 			return selectiveSafeArea.InsetRect(bounds);
 		}
 
+		SafeAreaPadding GetAdjustedSafeAreaInsets()
+		{
+			var baseSafeArea = SafeAreaInsets.ToSafeAreaInsets();
+
+			// Check if keyboard-aware safe area adjustments are needed
+			if (View is ISafeAreaPage safeAreaPage && KeyboardAutoManagerScroll.IsKeyboardShowing)
+			{
+				// Check if any edge has SafeAreaRegions.Keyboard or SafeAreaRegions.None set
+				var needsKeyboardAdjustment = false;
+				for (int edge = 0; edge < 4; edge++)
+				{
+					var safeAreaRegion = safeAreaPage.GetSafeAreaRegionsForEdge(edge);
+					if (safeAreaRegion == SafeAreaRegions.Keyboard || safeAreaRegion == SafeAreaRegions.None)
+					{
+						needsKeyboardAdjustment = true;
+						break;
+					}
+				}
+
+				if (needsKeyboardAdjustment)
+				{
+					// Get the keyboard frame and calculate its intersection with the current window
+					var keyboardFrame = KeyboardAutoManagerScroll.KeyboardFrame;
+					var window = this.Window;
+					
+					if (window != null && !keyboardFrame.IsEmpty)
+					{
+						var windowFrame = window.Frame;
+						var keyboardIntersection = CGRect.Intersect(keyboardFrame, windowFrame);
+						
+						// If keyboard is visible and intersects with window
+						if (!keyboardIntersection.IsEmpty)
+						{
+							// Calculate keyboard height in the window's coordinate system
+							var keyboardHeight = keyboardIntersection.Height;
+							
+							// For SafeAreaRegions.Keyboard: Layout behind keyboard down to where keyboard starts
+							// For SafeAreaRegions.None: Never display behind blocking UI (most conservative)
+							// Both cases need to ensure content doesn't go behind the keyboard
+							
+							// Bottom edge is most commonly affected by keyboard
+							var bottomEdgeRegion = safeAreaPage.GetSafeAreaRegionsForEdge(3); // 3 = bottom edge
+							if (bottomEdgeRegion == SafeAreaRegions.Keyboard || bottomEdgeRegion == SafeAreaRegions.None)
+							{
+								// Use the larger of the current bottom safe area or the keyboard height
+								var adjustedBottom = Math.Max(baseSafeArea.Bottom, keyboardHeight);
+								baseSafeArea = new SafeAreaPadding(baseSafeArea.Left, baseSafeArea.Right, baseSafeArea.Top, adjustedBottom);
+							}
+						}
+					}
+				}
+			}
+
+			return baseSafeArea;
+		}
+
 		SafeAreaPadding GetSelectiveSafeArea()
 		{
 			if (View is ISafeAreaPage safeAreaPage)
@@ -305,7 +361,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var oldSafeArea = _safeArea;
-			_safeArea = SafeAreaInsets.ToSafeAreaInsets();
+			_safeArea = GetAdjustedSafeAreaInsets();
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
