@@ -25,7 +25,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class NavigationRenderer : UINavigationController, INavigationViewHandler, IPlatformViewHandler
+	public class NavigationRenderer : UINavigationController, INavigationViewHandler, IPlatformViewHandler, IUIViewLifeCycleEvents
 	{
 		internal const string UpdateToolbarButtons = "Xamarin.UpdateToolbarButtons";
 		bool _appeared;
@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _disposed;
 		IMauiContext _mauiContext;
 		IMauiContext MauiContext => _mauiContext;
+		EventHandler _movedToWindow;
 		public static IPropertyMapper<NavigationPage, NavigationRenderer> Mapper = new PropertyMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewMapper)
 		{
 			[PlatformConfiguration.iOSSpecific.NavigationPage.PrefersLargeTitlesProperty.PropertyName] = NavigationPage.MapPrefersLargeTitles,
@@ -155,6 +156,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.ViewDidAppear(animated);
 
 			View.SetNeedsLayout();
+
+			if (View.Window is not null)
+			{
+				_movedToWindow?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		public override void ViewWillAppear(bool animated)
@@ -175,6 +181,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_appeared = false;
 			PageController.SendDisappearing();
+
+			if (View.Window is null)
+			{
+				_movedToWindow?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		public override void ViewWillLayoutSubviews()
@@ -1775,6 +1786,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return (Current.Handler as IPlatformViewHandler)?.ViewController;
 		}
 
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
 		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>
 			ChildViewControllerForStatusBarHidden();
 
@@ -1996,8 +2013,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 								value.Width = (value.X - xSpace) + value.Width;
 								value.X = xSpace;
 							}
-						}
-						;
+						};
 
 						value.Height = ToolbarHeight;
 					}
