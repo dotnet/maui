@@ -444,6 +444,8 @@ namespace Microsoft.Maui.Controls
 				return ContentSize;
 			}
 
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureStart);
+
 			switch (Orientation)
 			{
 				case ScrollOrientation.Horizontal:
@@ -461,6 +463,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			content.Measure(widthConstraint, heightConstraint);
+
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureEnd);
+
 			return content.DesiredSize;
 		}
 
@@ -488,7 +493,10 @@ namespace Microsoft.Maui.Controls
 		{
 			if (this is IScrollView scrollView)
 			{
-				return scrollView.ArrangeContentUnbounded(bounds);
+				TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformArrangeStart);
+				var size = scrollView.ArrangeContentUnbounded(bounds);
+				TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformArrangeEnd);
+				return size;
 			}
 
 			return bounds.Size;

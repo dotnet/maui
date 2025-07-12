@@ -230,6 +230,7 @@
   <Target Name="_MauiPrepareForILLink" BeforeTargets="PrepareForILLink;_GenerateRuntimeConfigurationFilesInputCache;XamlC">
     <PropertyGroup>
       <MauiEnableIVisualAssemblyScanning Condition="'$(MauiEnableIVisualAssemblyScanning)' == ''">false</MauiEnableIVisualAssemblyScanning>
+      <MauiEnableVisualElementProfiler Condition="'$(MauiEnableVisualElementProfiler)' == ''">false</MauiEnableVisualElementProfiler>
     </PropertyGroup>
     <PropertyGroup Condition="'$(PublishAot)' == 'true' or '$(TrimMode)' == 'full'">
       <MauiShellSearchResultsRendererDisplayMemberNameSupported Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' == ''">false</MauiShellSearchResultsRendererDisplayMemberNameSupported>
@@ -242,6 +243,10 @@
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled"
                                       Condition="'$(MauiEnableIVisualAssemblyScanning)' != ''"
                                       Value="$(MauiEnableIVisualAssemblyScanning)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsVisualElementProfilerEnabled"
+                                      Condition="'$(MauiEnableVisualElementProfiler)' != ''"
+                                      Value="$(MauiEnableVisualElementProfiler)"
                                       Trim="true" />
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported"
                                       Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' != ''"
