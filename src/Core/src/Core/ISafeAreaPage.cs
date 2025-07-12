@@ -19,5 +19,12 @@
 		/// <param name="edge">The edge to get the behavior for (0=Left, 1=Top, 2=Right, 3=Bottom).</param>
 		/// <returns>True if safe area should be ignored for this edge, false otherwise.</returns>
 		bool IgnoreSafeAreaForEdge(int edge);
+
+		/// <summary>
+		/// Gets the safe area regions for the specified edge (0=Left, 1=Top, 2=Right, 3=Bottom).
+		/// </summary>
+		/// <param name="edge">The edge to get the behavior for (0=Left, 1=Top, 2=Right, 3=Bottom).</param>
+		/// <returns>The SafeAreaRegions behavior for this edge.</returns>
+		SafeAreaRegions GetSafeAreaRegionsForEdge(int edge);
 	}
 }

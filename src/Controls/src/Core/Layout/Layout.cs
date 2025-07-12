@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -404,6 +405,12 @@ namespace Microsoft.Maui.Controls
 		bool ISafeAreaPage.IgnoreSafeAreaForEdge(int edge)
 		{
 			return SafeArea.ShouldIgnoreSafeAreaForEdge(this, edge);
+		}
+
+		/// <inheritdoc cref="ISafeAreaPage.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaPage.GetSafeAreaRegionsForEdge(int edge)
+		{
+			return SafeArea.GetIgnoreForEdge(this, edge);
 		}
 
 		#endregion

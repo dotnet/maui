@@ -1,6 +1,6 @@
 #nullable disable
 using System.Diagnostics;
-
+using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -65,6 +65,12 @@ namespace Microsoft.Maui.Controls
 		bool ISafeAreaPage.IgnoreSafeAreaForEdge(int edge)
 		{
 			return SafeArea.ShouldIgnoreSafeAreaForEdge(this, edge);
+		}
+
+		/// <inheritdoc cref="ISafeAreaPage.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaPage.GetSafeAreaRegionsForEdge(int edge)
+		{
+			return SafeArea.GetIgnoreForEdge(this, edge);
 		}
 
 		#endregion

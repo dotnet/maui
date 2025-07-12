@@ -8,9 +8,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -267,6 +267,12 @@ namespace Microsoft.Maui.Controls
 		bool ISafeAreaPage.IgnoreSafeAreaForEdge(int edge)
 		{
 			return SafeArea.ShouldIgnoreSafeAreaForEdge(this, edge);
+		}
+
+		/// <inheritdoc cref="ISafeAreaPage.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaPage.GetSafeAreaRegionsForEdge(int edge)
+		{
+			return SafeArea.GetIgnoreForEdge(this, edge);
 		}
 
 		/// <summary>

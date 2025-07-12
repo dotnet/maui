@@ -32,6 +32,22 @@ namespace Microsoft.Maui.Platform
 
 		bool HasFixedConstraints => CrossPlatformLayout is IConstrainedView { HasFixedConstraints: true };
 
+		SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
+		{
+			if (View is ISafeAreaPage safeAreaPage)
+			{
+				return safeAreaPage.GetSafeAreaRegionsForEdge(edge);
+			}
+			
+			// Fallback to legacy ISafeAreaView behavior
+			if (View is ISafeAreaView sav)
+			{
+				return sav.IgnoreSafeArea ? SafeAreaRegions.All : SafeAreaRegions.Default;
+			}
+			
+			return SafeAreaRegions.Default; // Default: respect safe area
+		}
+
 		bool ShouldIgnoreSafeAreaForEdge(int edge)
 		{
 			if (View is ISafeAreaPage safeAreaPage)
@@ -50,14 +66,16 @@ namespace Microsoft.Maui.Platform
 
 		double GetSafeAreaForEdge(int edge, double originalSafeArea)
 		{
-			// If safe area should be ignored for this edge, return 0
-			if (ShouldIgnoreSafeAreaForEdge(edge))
-			{
-				return 0;
-			}
+			var safeAreaRegion = GetSafeAreaRegionForEdge(edge);
 			
-			// Otherwise, apply the original safe area
-			return originalSafeArea;
+			return safeAreaRegion switch
+			{
+				SafeAreaRegions.All => 0, // Ignore all insets - content may be positioned anywhere
+				SafeAreaRegions.None => originalSafeArea, // Never display behind blocking UI - always respect safe area
+				SafeAreaRegions.Keyboard => originalSafeArea, // Layout behind keyboard - for now, respect safe area (can be enhanced later)
+				SafeAreaRegions.Default => originalSafeArea, // Apply platform insets - respect safe area
+				_ => originalSafeArea // Default case - respect safe area
+			};
 		}
 
 		bool RespondsToSafeArea()
@@ -68,7 +86,9 @@ namespace Microsoft.Maui.Platform
 				// If any edge should respect safe area, then we respond to safe area
 				for (int edge = 0; edge < 4; edge++)
 				{
-					if (!safeAreaPage.IgnoreSafeAreaForEdge(edge))
+					var safeAreaRegion = safeAreaPage.GetSafeAreaRegionsForEdge(edge);
+					// If this edge doesn't ignore all insets, we need to respond to safe area
+					if (safeAreaRegion != SafeAreaRegions.All)
 					{
 						// At least one edge should respect safe area
 						if (_respondsToSafeArea.HasValue)
@@ -78,7 +98,7 @@ namespace Microsoft.Maui.Platform
 						return (_respondsToSafeArea = RespondsToSelector(new Selector("safeAreaInsets"))).Value;
 					}
 				}
-				// All edges ignore safe area
+				// All edges ignore safe area (All = ignore all insets)
 				return false;
 			}
 
