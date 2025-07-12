@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 
 #if ANDROID
 		[Fact("Checks that the default background is transparent")]
-		public async Task DefaultBackgroundIsTransparent ()
+		public async Task DefaultBackgroundIsTransparent()
 		{
 			// We use a Grid container to set a background color and then make sure that the Border background
 			// is transparent by making sure that the parent Grid's Blue background shows through.
@@ -49,7 +49,8 @@ namespace Microsoft.Maui.DeviceTests
 				HeightRequest = 200
 			};
 
-			var border = new Border {
+			var border = new Border
+			{
 				WidthRequest = 200,
 				HeightRequest = 200,
 				Stroke = Colors.Red,
