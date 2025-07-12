@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public AView GetCell(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			Cell = item;
 			Cell.PropertyChanged -= PropertyChangedHandler;
@@ -62,14 +62,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Cell.PropertyChanged += PropertyChangedHandler;
 			((ICellController)Cell).SendAppearing();
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 
 			return view;
 		}
 
 		protected virtual AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
-			Performance.Start(out string reference, "GetCellCore");
+			Internals.Performance.Start(out string reference, "GetCellCore");
 
 			LayoutInflater inflater = LayoutInflater.FromContext(context);
 			const int type = global::Android.Resource.Layout.SimpleListItem1;
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			textView.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
 			view.SetBackgroundColor(global::Android.Graphics.Color.Black);
 
-			Performance.Stop(reference, "GetCellCore");
+			Internals.Performance.Stop(reference, "GetCellCore");
 
 			return view;
 		}

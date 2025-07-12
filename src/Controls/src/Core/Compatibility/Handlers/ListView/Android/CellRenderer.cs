@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (parent == null && ParentView?.Handler?.PlatformView is ViewGroup platformParent)
 				parent = platformParent;
 
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			if (Cell is ICellController cellController)
 				cellController.ForceUpdateSizeRequested -= OnForceUpdateSizeRequested;
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Cell.PropertyChanged += PropertyChangedHandler;
 			((ICellController)Cell).SendAppearing();
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 
 			return view;
 		}
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected virtual AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 #pragma warning restore CS0618 // Type or member is obsolete
 		{
-			Performance.Start(out string reference, "GetCellCore");
+			Internals.Performance.Start(out string reference, "GetCellCore");
 
 			LayoutInflater inflater = LayoutInflater.FromContext(context);
 			const int type = global::Android.Resource.Layout.SimpleListItem1;
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			textView.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
 			view.SetBackgroundColor(global::Android.Graphics.Color.Black);
 
-			Performance.Stop(reference, "GetCellCore");
+			Internals.Performance.Stop(reference, "GetCellCore");
 
 			return view;
 		}

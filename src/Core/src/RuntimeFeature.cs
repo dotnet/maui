@@ -84,6 +84,16 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported", out bool isSupported)
 				? isSupported
 				: IsHybridWebViewSupportedByDefault;
+
+
+#if NET9_0_OR_GREATER
+		[FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
+#endif
+		internal static bool IsMetricsSupported { get; } = 
+			!AppContext.TryGetSwitch(
+				"System.Diagnostics.Metrics.Meter.IsSupported",
+				out bool isSupported)
+			|| isSupported;
 #pragma warning restore IL4000
 	}
 }

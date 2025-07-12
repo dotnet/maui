@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public virtual UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			var tvc = reusableCell as CellTableViewCell ?? new CellTableViewCell(UITableViewCellStyle.Default, item.GetType().FullName);
 
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			SetAccessibility(tvc, item);
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 			return tvc;
 		}
 

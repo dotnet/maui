@@ -1088,7 +1088,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Cell cell;
 				UITableViewCell nativeCell;
 
-				Performance.Start(out string reference);
+				Internals.Performance.Start(out string reference);
 
 				var cachingStrategy = List.CachingStrategy;
 				if (cachingStrategy == ListViewCachingStrategy.RetainElement)
@@ -1134,7 +1134,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var bgColor = tableView.IndexPathForSelectedRow != null && tableView.IndexPathForSelectedRow.Equals(indexPath) ? UIColor.Clear : DefaultBackgroundColor;
 				SetCellBackgroundColor(nativeCell, bgColor);
 				PreserveActivityIndicatorState(cell);
-				Performance.Stop(reference);
+				Internals.Performance.Stop(reference);
 				return nativeCell;
 			}
 
