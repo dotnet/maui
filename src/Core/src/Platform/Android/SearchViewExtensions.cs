@@ -1,6 +1,11 @@
-﻿using Android.Content.Res;
+﻿using System;
+using Android.Content.Res;
+using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Text;
+using Android.Util;
 using Android.Widget;
+using static Android.Content.Res.Resources;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.Platform
@@ -21,21 +26,43 @@ namespace Microsoft.Maui.Platform
 		{
 			editText ??= searchView.GetFirstChildOfType<EditText>();
 
-			if (editText == null)
+			if (editText is null)
 				return;
 
-			var placeholderTextColor = searchBar.PlaceholderColor;
-
-			if (placeholderTextColor == null)
-			{
-				editText.SetHintTextColor(defaultPlaceholderColor);
-			}
-			else
+			if (searchBar?.PlaceholderColor is Graphics.Color placeholderTextColor)
 			{
 				if (PlatformInterop.CreateEditTextColorStateList(editText.HintTextColors, placeholderTextColor.ToPlatform()) is ColorStateList c)
 				{
 					editText.SetHintTextColor(c);
 				}
+			}
+			else
+			{
+				var typedValue = new TypedValue();
+				if (OperatingSystem.IsAndroidVersionAtLeast(23) &&
+					searchView.Context?.Theme is Theme theme &&
+					theme.ResolveAttribute(Android.Resource.Attribute.TextColorHint, typedValue, true) &&
+					editText.Resources?.GetColor(typedValue.ResourceId, theme) is Color textColorHint)
+				{
+					editText.SetHintTextColor(textColorHint);
+				}
+			}
+		}
+
+		internal static void UpdateTextColor(this SearchView searchView, ITextStyle entry)
+		{
+			var typedValue = new TypedValue();
+			if (OperatingSystem.IsAndroidVersionAtLeast(23) &&
+				searchView.GetFirstChildOfType<EditText>() is EditText editText &&
+				editText.Context?.Theme is Theme theme &&
+				theme.ResolveAttribute(Android.Resource.Attribute.TextColorPrimary, typedValue, true) &&
+				editText.Resources?.GetColor(typedValue.ResourceId, theme) is Color color)
+			{
+				if (entry.TextColor is null)
+					editText.SetTextColor(color);
+
+				var searchMagIconImage = searchView.FindViewById<ImageView>(Resource.Id.search_mag_icon);
+				searchMagIconImage?.Drawable?.SetTint(color);
 			}
 		}
 
@@ -108,12 +135,21 @@ namespace Microsoft.Maui.Platform
 			{
 				var image = searchView.FindViewById<ImageView>(searchCloseButtonIdentifier);
 
-				if (image != null && image.Drawable != null)
+				if (image is not null && image.Drawable is Drawable drawable)
 				{
-					if (searchBar.CancelButtonColor != null)
-						image.Drawable.SetColorFilter(searchBar.CancelButtonColor, FilterMode.SrcIn);
+					if (searchBar.CancelButtonColor is not null)
+						drawable.SetColorFilter(searchBar.CancelButtonColor, FilterMode.SrcIn);
 					else
-						image.Drawable.ClearColorFilter();
+					{
+						var typedValue = new TypedValue();
+						if (OperatingSystem.IsAndroidVersionAtLeast(23) &&
+							image.Context?.Theme is Theme theme &&
+							theme.ResolveAttribute(Android.Resource.Attribute.TextColorPrimary, typedValue, true) &&
+							image.Resources?.GetColor(typedValue.ResourceId, theme) is Color imageColor)
+						{
+							drawable.SetColorFilter(imageColor, FilterMode.SrcIn);
+						}
+					}
 				}
 			}
 		}

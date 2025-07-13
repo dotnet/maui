@@ -112,6 +112,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.QueryEditor?.UpdateTextColor(searchBar);
+			handler.PlatformView?.UpdateTextColor(searchBar);
 		}
 
 		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar)
