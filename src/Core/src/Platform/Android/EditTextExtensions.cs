@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
+using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
@@ -41,10 +42,18 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this EditText editText, Graphics.Color textColor)
 		{
-			if (textColor != null)
+			if (textColor is not null && PlatformInterop.CreateEditTextColorStateList(editText.TextColors, textColor.ToPlatform()) is ColorStateList c)
+				editText.SetTextColor(c);
+			else
 			{
-				if (PlatformInterop.CreateEditTextColorStateList(editText.TextColors, textColor.ToPlatform()) is ColorStateList c)
-					editText.SetTextColor(c);
+				var typedValue = new TypedValue();
+				if (OperatingSystem.IsAndroidVersionAtLeast(23) &&
+					editText.Context?.Theme is Resources.Theme theme &&
+					theme.ResolveAttribute(Android.Resource.Attribute.TextColorPrimary, typedValue, true) &&
+					editText.Resources?.GetColor(typedValue.ResourceId, theme) is Android.Graphics.Color color)
+				{
+					editText.SetTextColor(color);
+				}
 			}
 		}
 
@@ -132,10 +141,18 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePlaceholderColor(this EditText editText, Graphics.Color placeholderTextColor)
 		{
-			if (placeholderTextColor != null)
+			if (placeholderTextColor is not null && PlatformInterop.CreateEditTextColorStateList(editText.HintTextColors, placeholderTextColor.ToPlatform()) is ColorStateList c)
+				editText.SetHintTextColor(c);
+			else
 			{
-				if (PlatformInterop.CreateEditTextColorStateList(editText.HintTextColors, placeholderTextColor.ToPlatform()) is ColorStateList c)
-					editText.SetHintTextColor(c);
+				var typedValue = new TypedValue();
+				if (OperatingSystem.IsAndroidVersionAtLeast(23) &&
+					editText.Context?.Theme is Resources.Theme theme &&
+					theme.ResolveAttribute(Android.Resource.Attribute.TextColorHint, typedValue, true) &&
+					editText.Resources?.GetColor(typedValue.ResourceId, theme) is Android.Graphics.Color color)
+				{
+					editText.SetHintTextColor(color);
+				}
 			}
 		}
 
@@ -416,7 +433,7 @@ namespace Microsoft.Maui.Platform
 			// The horizontal location of the button depends on the layout direction
 			var flowDirection = platformView.LayoutDirection;
 
-			if (flowDirection == LayoutDirection.Ltr)
+			if (flowDirection == Android.Views.LayoutDirection.Ltr)
 			{
 				var rightEdge = platformView.Width - platformView.PaddingRight;
 				var leftEdge = rightEdge - buttonRect.Width();
