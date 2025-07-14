@@ -304,7 +304,7 @@ namespace Microsoft.Maui.Platform
 						ShowsVerticalScrollIndicator = showsVertical;
 						ShowsHorizontalScrollIndicator = showsHorizontal;
 					}
-                    
+
 					if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 					{
 						var horizontalOffset = contentSize.Width - crossPlatformBounds.Width;
