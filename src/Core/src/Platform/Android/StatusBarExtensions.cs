@@ -1,8 +1,6 @@
-using System.Collections.Generic;
 using Android.Content.Res;
 using Android.OS;
 using Android.Views;
-using Android.Widget;
 using AndroidX.Core.View;
 using AColor = Android.Graphics.Color;
 using Activity = Android.App.Activity;
@@ -11,226 +9,183 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class StatusBarExtensions
 	{
-		static readonly Dictionary<Activity, View> StatusBarOverlays = new();
-
-		class WindowInsetsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
+		const int StatusBarOverlayId = 0x7F000001;
+		
+		/// <summary>
+		/// Sets up edge-to-edge handling for Android API 36+ where edge-to-edge is enforced.
+		/// </summary>
+		public static void SetEdgeToEdge(this Activity activity)
 		{
-			private readonly View? _overlay;
+			if (activity?.Window is null)
+				return;
 
-			public WindowInsetsListener(View? overlay = null)
+			if (Build.VERSION.SdkInt >= (BuildVersionCodes)36)
 			{
-				_overlay = overlay;
-			}
-
-			public WindowInsetsCompat? OnApplyWindowInsets(View? view, WindowInsetsCompat? insets)
-			{
-				if (insets == null || view == null)
-				{
-					return insets;
-				}
-
-				// Get the system bars insets (status bar and navigation bar)
-				var systemBarsInsets = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
-
-				if (_overlay != null)
-				{
-					// Position the overlay at the top of the screen covering the status bar area
-					var statusBarInsets = insets.GetInsets(WindowInsetsCompat.Type.StatusBars());
-					
-					var layoutParams = new FrameLayout.LayoutParams(
-						ViewGroup.LayoutParams.MatchParent,
-						statusBarInsets?.Top ?? 0)
-					{
-						Gravity = GravityFlags.Top
-					};
-					_overlay.LayoutParameters = layoutParams;
-				}
-				
-				// Apply padding to the root view to prevent content overlap with system bars
-				view.SetPadding(
-					systemBarsInsets?.Left ?? 0,
-					systemBarsInsets?.Top ?? 0,
-					systemBarsInsets?.Right ?? 0,
-					systemBarsInsets?.Bottom ?? 0
-				);
-			
-				return insets;
+				SetEdgeToEdge(activity.Window);
 			}
 		}
 
 		/// <summary>
-		/// Sets the status bar appearance for Android API 36+ where edge-to-edge is enforced.
-		/// On Android 16 (API 36), you can no longer change the status bar color directly,
-		/// and must use WindowInsetsControllerCompat to set the appearance.
-		/// Also handles proper window insets to prevent content overlap with system bars.
+		/// Configures window for edge-to-edge display on Android API 36+.
+		/// Sets transparent status bar, disables system window fitting, and applies proper window insets.
 		/// </summary>
-		/// <param name="activity">The activity to set the status bar appearance for</param>
-		/// <param name="isLightStatusBar">Whether to use light status bar (dark icons) or dark status bar (light icons)</param>
-		public static void SetStatusBarAppearance(this Activity activity, bool isLightStatusBar)
+		public static void SetEdgeToEdge(this Window window)
 		{
-			if (activity?.Window == null)
-			{
+			if (window is null)
 				return;
-			}
 
-			// For Android API 36+, use WindowInsetsControllerCompat and handle edge-to-edge properly
-			if (Build.VERSION.SdkInt >= (BuildVersionCodes)36) // Android 16 API 36+
+			if (Build.VERSION.SdkInt >= (BuildVersionCodes)36)
 			{
-				// Enable edge-to-edge display
-				WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
-
-				var windowInsetsController =
-					WindowCompat.GetInsetsController(activity.Window, activity.Window.DecorView);
-
-				if (windowInsetsController is not null)
-				{
-					windowInsetsController.AppearanceLightStatusBars = isLightStatusBar;
-				}
-
-				// Set up window insets handling to prevent content overlap
-				SetupWindowInsets(activity);
+				window.SetStatusBarColor(AColor.Transparent);
+				WindowCompat.SetDecorFitsSystemWindows(window, false);
+				SetWindowInsets(window);
 			}
-
-			// For older versions, the existing status bar color setting approach continues to work
-			// This is handled by other parts of the framework that call SetStatusBarColor directly
 		}
-
+		
 		/// <summary>
-		/// Sets the status bar background color for Android API 36+ by creating a colored overlay.
-		/// On Android 16 (API 36), the status bar must be transparent due to edge-to-edge enforcement,
-		/// so we create a colored overlay view behind it to achieve the desired visual appearance.
+		/// Sets the status bar color for the activity's window.
 		/// </summary>
-		/// <param name="activity">The activity to set the status bar color for</param>
-		/// <param name="color">The color to use for the status bar background</param>
-		/// <param name="isLightStatusBar">Whether to use light status bar (dark icons) or dark status bar (light icons)</param>
-		public static void SetStatusBarColor(this Activity activity, AColor color, bool isLightStatusBar)
+		public static void SetStatusBarColorWithEdgeToEdge(this Activity activity, AColor color)
 		{
-			if (activity?.Window == null)
-			{
+			activity?.Window?.SetStatusBarColorWithEdgeToEdge(color);
+		}
+		
+		/// <summary>
+		/// Sets the status bar color with proper handling for different Android API levels.
+		/// On API 36+, uses edge-to-edge with colored overlay. On older versions, sets color directly.
+		/// </summary>
+		public static void SetStatusBarColorWithEdgeToEdge(this Window window, AColor color)
+		{
+			if (window is null)
 				return;
-			}
 
-			// For Android API 36+, create a colored overlay behind the transparent status bar
-			if (Build.VERSION.SdkInt >= (BuildVersionCodes)36) // Android 16 API 36+
+			var context = window.Context;
+			var uiModeFlags = context?.Resources?.Configuration?.UiMode & UiMode.NightMask;
+			bool isLightTheme = uiModeFlags != UiMode.NightYes;
+
+			if (Build.VERSION.SdkInt >= (BuildVersionCodes)36)
 			{
-				// Set the appearance first
-				activity.SetStatusBarAppearance(isLightStatusBar);
-				
-				// Create or update the status bar overlay
-				CreateStatusBarOverlay(activity, color);
+				window.SetEdgeToEdge();
+				window.SetStatusBarColorForEdgeToEdge(color);
+				SetStatusBarAppearance(window, isLightTheme);
 			}
 			else
 			{
-				// For older versions, use the standard approach
-				activity.Window.SetStatusBarColor(color);
-				activity.SetStatusBarAppearance(isLightStatusBar);
-			}
-		}
-
-		/// <summary>
-		/// Sets the status bar color based on the current theme colors.
-		/// Uses the app's primary color for the status bar background.
-		/// </summary>
-		/// <param name="activity">The activity to set the status bar color for</param>
-		/// <param name="color">The color to use for the status bar background</param>
-		public static void SetStatusBarColor(this Activity activity, AColor color)
-		{
-			if (activity?.Window == null)
-			{
-				return;
-			}
-
-			// Determine if we should use light status bar based on current theme
-			bool isLightTheme = IsLightTheme(activity);
-			
-			// Set the status bar color with appropriate appearance
-			activity.SetStatusBarColor(color, isLightTheme);
-		}
-
-		/// <summary>
-		/// Sets the status bar appearance based on the current theme.
-		/// </summary>
-		/// <param name="activity">The activity to set the status bar appearance for</param>
-		public static void SetStatusBarAppearance(this Activity activity)
-		{
-			if (activity?.Window == null)
-			{
-				return;
-			}
-
-			// Determine if we should use light status bar based on current theme
-			bool isLightTheme = IsLightTheme(activity);
-			
-			// Set the status bar appearance
-			activity.SetStatusBarAppearance(isLightTheme);
-		}
-
-		static void CreateStatusBarOverlay(Activity activity, AColor color)
-		{
-			if (activity?.Window?.DecorView is not ViewGroup decorView)
-			{
-				return;
-			}
-
-			// Remove existing overlay if it exists
-			if (StatusBarOverlays.TryGetValue(activity, out var existingOverlay))
-			{
-				if (existingOverlay.Parent is ViewGroup parent)
+				// Pre-API 36: Direct color setting
+				window.SetStatusBarColor(color);
+				
+				if (Build.VERSION.SdkInt >= BuildVersionCodes.M)
 				{
-					parent.RemoveView(existingOverlay);
+					SetStatusBarAppearance(window, isLightTheme);
 				}
+			}
+		}
+		
+		/// <summary>
+		/// Sets status bar icon appearance (light/dark) based on theme.
+		/// </summary>
+		static void SetStatusBarAppearance(Window window, bool isLightTheme)
+		{
+			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
+			if (windowInsetsController is not null)
+			{
+				windowInsetsController.AppearanceLightStatusBars = isLightTheme;
+			}
+		}
+		
+		/// <summary>
+		/// Configures window insets handling to prevent content overlap with system bars.
+		/// Applied to the content root view with margin-based positioning.
+		/// </summary>
+		static void SetWindowInsets(Window window)
+		{
+			if (window is null)
+				return;
 
-				StatusBarOverlays.Remove(activity);
+			var rootView = window.DecorView?.FindViewById(global::Android.Resource.Id.Content);
+			
+			if (rootView != null)
+			{
+				ViewCompat.SetOnApplyWindowInsetsListener(rootView, new WindowInsetsListener());
+			}
+		}
+		
+		/// <summary>
+		/// Creates a colored overlay view positioned in the status bar area for edge-to-edge scenarios.
+		/// Replaces any existing overlay to prevent stacking.
+		/// </summary>
+		static void SetStatusBarColorForEdgeToEdge(this Window window, AColor color)
+		{
+			if (window?.DecorView is not ViewGroup decorView)
+				return;
+			
+			// Remove existing overlay if present
+			var existingOverlay = decorView.FindViewById(StatusBarOverlayId);
+			if (existingOverlay != null)
+			{
+				decorView.RemoveView(existingOverlay);
 			}
 
-			// Create a new colored overlay view
-			var overlay = new View(activity)
+			// Create new colored overlay
+			var statusBarOverlay = new View(window.Context)
 			{
-				Id = View.GenerateViewId()
+				Id = StatusBarOverlayId,
+				LayoutParameters = new ViewGroup.LayoutParams(
+					ViewGroup.LayoutParams.MatchParent,
+					ViewGroup.LayoutParams.WrapContent)
 			};
-			overlay.SetBackgroundColor(color);
+			statusBarOverlay.SetBackgroundColor(color);
 
-			// Add the overlay to the decor view
-			decorView.AddView(overlay);
-			StatusBarOverlays[activity] = overlay;
-
-			// Position the overlay over the status bar area
-			PositionStatusBarOverlay(activity, overlay);
+			decorView.AddView(statusBarOverlay, 0); // Add behind content
+			ViewCompat.SetOnApplyWindowInsetsListener(statusBarOverlay, new StatusBarOverlayInsetsListener());
 		}
+	}
 
-		static void PositionStatusBarOverlay(Activity activity, View overlay)
+	/// <summary>
+	/// Applies system bar insets as margins to prevent content overlap in edge-to-edge scenarios.
+	/// </summary>
+	internal class WindowInsetsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
+	{
+		public WindowInsetsCompat? OnApplyWindowInsets(View? view, WindowInsetsCompat? insets)
 		{
-			if (activity?.Window?.DecorView == null)
+			if (view is null || insets is null)
+				return insets;
+
+			var systemBarInsets = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+			
+			if (view.LayoutParameters is ViewGroup.MarginLayoutParams marginParams && systemBarInsets != null)
 			{
-				return;
+				marginParams.LeftMargin = systemBarInsets.Left;
+				marginParams.BottomMargin = systemBarInsets.Bottom;
+				marginParams.RightMargin = systemBarInsets.Right;
+				marginParams.TopMargin = systemBarInsets.Top;
+				
+				view.LayoutParameters = marginParams;
 			}
 
-			// Set up a layout listener to position the overlay correctly once we have window insets
-			var listener = new WindowInsetsListener(overlay);
-			ViewCompat.SetOnApplyWindowInsetsListener(activity.Window.DecorView, listener);
+			return WindowInsetsCompat.Consumed;
 		}
-
-		static bool IsLightTheme(Activity activity)
+	}
+	
+	/// <summary>
+	/// Positions the status bar overlay to match the system status bar height.
+	/// </summary>
+	internal class StatusBarOverlayInsetsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
+	{
+		public WindowInsetsCompat? OnApplyWindowInsets(View? view, WindowInsetsCompat? insets)
 		{
-			// Check if the current theme is light or dark
-			var uiModeFlags = activity.Resources?.Configuration?.UiMode & UiMode.NightMask;
-			return uiModeFlags != UiMode.NightYes;
-		}
+			if (view is null || insets is null)
+				return insets;
 
-		static void SetupWindowInsets(Activity activity)
-		{
-			if (activity?.Window?.DecorView == null)
+			var statusBarInsets = insets.GetInsets(WindowInsetsCompat.Type.StatusBars());
+			
+			if (view.LayoutParameters is ViewGroup.LayoutParams layoutParams && statusBarInsets != null)
 			{
-				return;
+				layoutParams.Height = statusBarInsets.Top;
+				view.LayoutParameters = layoutParams;
 			}
 
-			// Only set up basic window insets if no overlay is being used
-			// If an overlay is being used, PositionStatusBarOverlay handles the insets
-			if (!StatusBarOverlays.ContainsKey(activity))
-			{
-				var listener = new WindowInsetsListener();
-				ViewCompat.SetOnApplyWindowInsetsListener(activity.Window.DecorView, listener);
-			}
+			return insets;
 		}
 	}
 }

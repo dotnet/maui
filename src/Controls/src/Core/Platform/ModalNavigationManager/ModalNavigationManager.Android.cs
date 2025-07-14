@@ -249,18 +249,15 @@ namespace Microsoft.Maui.Controls.Platform
 					dialog.Window.SetNavigationBarColor(new AColor(navigationBarColor));
 #pragma warning restore CA1422
 					// For Android API 36+, cannot set status bar color directly due to edge-to-edge enforcement
-
 					if (Build.VERSION.SdkInt < (BuildVersionCodes)36)
 					{
 #pragma warning disable CA1422
 						dialog.Window.SetStatusBarColor(new AColor(statusBarColor));
 #pragma warning restore CA1422
 					}
-
-					// Set status bar appearance for API 36+ using WindowInsetsController
-					if (Build.VERSION.SdkInt >= (BuildVersionCodes)36 && mainActivity is not null)
+					else
 					{
-						mainActivity.SetStatusBarColor(new AColor(statusBarColor));
+						dialog.Window.SetStatusBarColorWithEdgeToEdge(new AColor(statusBarColor));
 					}
 				}
 

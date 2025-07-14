@@ -58,8 +58,8 @@ namespace Microsoft.Maui.Platform
 
 			activity.SetWindowHandler(window, mauiContext);
 			
-			// Set status bar appearance for Android API 36+ edge-to-edge enforcement
-			activity.SetStatusBarAppearance();
+			// Set up edge-to-edge handling for Android API 36+ where edge-to-edge is enforced
+			activity.SetEdgeToEdge();
 		}
 
 		public static Bundle ToBundle(this IPersistedState? state)
