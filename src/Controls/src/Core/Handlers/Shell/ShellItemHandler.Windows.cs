@@ -121,11 +121,13 @@ namespace Microsoft.Maui.Controls.Handlers
 				if (VirtualView.Parent is Shell shell)
 				{
 					shell.Navigated -= OnShellNavigated;
-					foreach (var item in shellItemController.GetItems())
-					{
-						item.PropertyChanged -= OnShellItemPropertyChanged;
-					}
 				}
+
+				foreach (var item in shellItemController.GetItems())
+				{
+					item.PropertyChanged -= OnShellItemPropertyChanged;
+				}
+
 			}
 		}
 
