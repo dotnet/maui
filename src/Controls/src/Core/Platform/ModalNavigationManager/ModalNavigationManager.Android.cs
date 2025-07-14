@@ -232,8 +232,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				dialog.Window.SetBackgroundDrawable(TransparentColorDrawable);
 
-				var mainActivity = Context?.GetActivity();
-				var mainActivityWindow = mainActivity?.Window;
+				var mainActivityWindow = Context?.GetActivity()?.Window;
 				var attributes = mainActivityWindow?.Attributes;
 
 				if (attributes is not null)
