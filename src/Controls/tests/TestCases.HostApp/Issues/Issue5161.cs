@@ -108,10 +108,8 @@ public class Issue5161 : Shell
                 HorizontalOptions = LayoutOptions.Center,
                 Children =
             {
-                new Label
-                {
-                    Text = "This is Third Page",
-                }
+                label,
+                button
             }
             };
         }
