@@ -6,18 +6,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue24734 : _IssuesUITest
 {
-    public Issue24734(TestDevice device) : base(device)
-    {
-    }
+	public Issue24734(TestDevice device) : base(device)
+	{
+	}
 
-    public override string Issue => "TapGestureRecognizer ButtonMask always return 0";
+	public override string Issue => "TapGestureRecognizer ButtonMask always return 0";
 
-    [Test]
-    [Category(UITestCategories.Gestures)]
-    public void ButtonMaskShouldNotReturnZero()
-    {
-        App.WaitForElement("LabelwithGesture");
-        App.Tap("LabelwithGesture");
-        App.WaitForElement("Success");
-    }
+	[Test]
+	[Category(UITestCategories.Gestures)]
+	public void ButtonMaskShouldNotReturnZero()
+	{
+		App.WaitForElement("LabelwithGesture");
+		App.Tap("LabelwithGesture");
+		App.WaitForElement("Success");
+	}
 }

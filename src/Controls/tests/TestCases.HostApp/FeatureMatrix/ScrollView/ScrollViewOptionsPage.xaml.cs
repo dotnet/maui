@@ -55,28 +55,28 @@ public partial class ScrollViewOptionsPage : ContentPage
 				{
 					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 15).Select(i => $"Editor 1: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
 					HeightRequest = 250,
-					AutomationId="Editor1"
+					AutomationId = "Editor1"
 				});
 
 				editorLayout.Children.Add(new Editor
 				{
 					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 15).Select(i => $"Editor 2: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
 					HeightRequest = 250,
-					AutomationId="Editor2"
+					AutomationId = "Editor2"
 				});
 
 				editorLayout.Children.Add(new Editor
 				{
 					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 15).Select(i => $"Editor 3: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
 					HeightRequest = 250,
-					AutomationId="Editor3"
+					AutomationId = "Editor3"
 				});
 
 				editorLayout.Children.Add(new Editor
 				{
 					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 15).Select(i => $"Editor 4: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
 					HeightRequest = 250,
-					AutomationId="Editor4"
+					AutomationId = "Editor4"
 				});
 
 				vm.Content = editorLayout;

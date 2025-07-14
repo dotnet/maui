@@ -28,7 +28,7 @@ public class Issue22045 : Shell
 		{
 			widthLabel = new Label
 			{
-				AutomationId= "WidthLabel",
+				AutomationId = "WidthLabel",
 				VerticalOptions = LayoutOptions.Center,
 				HorizontalOptions = LayoutOptions.Center
 			};
