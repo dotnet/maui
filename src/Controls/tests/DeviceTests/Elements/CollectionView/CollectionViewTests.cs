@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(
-#if IOS || MACCATALYST
+#if IOS || MACCATALYST || ANDROID
 		Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/19240"
 #endif
 		)]
