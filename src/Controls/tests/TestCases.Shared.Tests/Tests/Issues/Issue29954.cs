@@ -7,7 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue29954: _IssuesUITest
 {
-	public Issue29882(TestDevice device) : base(device)
+	public Issue29954(TestDevice device) : base(device)
 	{
 	}
 
