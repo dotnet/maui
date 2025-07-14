@@ -5,6 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.UnitTests
 {
+	[Collection("PerformanceProfilerTests")]
 	[Category(TestCategory.Core)]
 	public class PerformanceProfilerTests
 	{
@@ -15,8 +16,11 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var prop = typeof(PerformanceProfiler).GetProperty(
 				"Layout",
-				System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-			prop.SetValue(null, null);
+				System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+			lock (typeof(PerformanceProfiler).GetField("_lock", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static).GetValue(null))
+			{
+				prop.SetValue(null, null);
+			}
 		}
 
 		[Fact]
