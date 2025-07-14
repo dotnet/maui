@@ -21,7 +21,7 @@ namespace Microsoft.Maui
 		private const bool AreBindingInterceptorsSupportedByDefault = true;
 		private const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
 		private const bool IsHybridWebViewSupportedByDefault = true;
-		private const bool IsMetricsSupportedByDefault = false;
+		private const bool IsMetricsSupportedByDefault = true;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER
