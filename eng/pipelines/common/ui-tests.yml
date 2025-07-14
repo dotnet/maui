@@ -157,7 +157,7 @@ stages:
                     parameters:
                       platform: ios
                       ${{ if eq(version, 'latest') }}:
-                        version: 16.4
+                        version: 18.4
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.ios }}
@@ -194,7 +194,7 @@ stages:
                     parameters:
                       platform: ios
                       ${{ if eq(version, 'latest') }}:
-                        version: 16.4
+                        version: 18.4
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.ios }}
@@ -232,7 +232,7 @@ stages:
                     parameters:
                       platform: ios
                       ${{ if eq(version, 'latest') }}:
-                        version: 16.4
+                        version: 18.4
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.ios }}
@@ -276,7 +276,7 @@ stages:
                       parameters:
                         platform: ios
                         ${{ if eq(version, 'latest') }}:
-                          version: 17.2
+                          version: 18.4
                         ${{ if ne(version, 'latest') }}:
                           version: ${{ version }}
                         path: ${{ project.ios }}
@@ -347,7 +347,7 @@ stages:
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: catalyst
-                      version: "13.1"
+                      version: "15.3"
                       device: mac
                       path: ${{ project.mac }}
                       app: ${{ project.app }}
