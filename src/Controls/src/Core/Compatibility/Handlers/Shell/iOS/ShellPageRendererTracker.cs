@@ -796,10 +796,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateFlowDirection()
 		{
-			_searchHandlerAppearanceTracker?.UpdateFlowDirection(_context.Shell);
+			var shell = _context?.Shell;
+			if (shell is null || _searchController is null)
+			{
+				return;
+			}
+			_searchHandlerAppearanceTracker?.UpdateFlowDirection(shell);
 			if (_searchController != null)
 			{
-				_searchController.View.UpdateFlowDirection(shell);
+				_searchController.View?.UpdateFlowDirection(shell);
 				_searchController.SearchBar.UpdateFlowDirection(shell);
 			}
 		}

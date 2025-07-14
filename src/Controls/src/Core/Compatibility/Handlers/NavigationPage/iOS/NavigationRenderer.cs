@@ -1766,9 +1766,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 				}
 
-				primaries?.Reverse();
-				NavigationItem.SetRightBarButtonItems(primaries == null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
-				ToolbarItems = secondaries == null ? Array.Empty<UIBarButtonItem>() : secondaries.ToArray();
+				if (primaries is not null && primaries.Count > 0)
+				{
+					primaries.Reverse();
+				}
 
 				if (secondaries is not null && secondaries.Count > 0)
 				{

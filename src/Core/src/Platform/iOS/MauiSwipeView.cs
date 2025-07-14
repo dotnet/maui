@@ -607,7 +607,7 @@ namespace Microsoft.Maui.Platform
 
 				if (animated)
 				{
-					Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, SetFrame, null);
+					Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, SetFrame, () => { });
 				}
 				else
 				{
