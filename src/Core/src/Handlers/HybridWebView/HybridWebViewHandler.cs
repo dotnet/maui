@@ -69,6 +69,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static IPropertyMapper<IHybridWebView, IHybridWebViewHandler> Mapper = new PropertyMapper<IHybridWebView, IHybridWebViewHandler>(ViewHandler.ViewMapper)
 		{
+#if WINDOWS
+			[nameof(IView.FlowDirection)] = MapFlowDirection,
+#endif
 		};
 
 		public static CommandMapper<IHybridWebView, IHybridWebViewHandler> CommandMapper = new(ViewCommandMapper)
