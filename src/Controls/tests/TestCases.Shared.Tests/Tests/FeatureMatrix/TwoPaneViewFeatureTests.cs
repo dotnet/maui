@@ -19,7 +19,22 @@ namespace Microsoft.Maui.TestCases.Tests
             base.FixtureSetup();
             App.NavigateToGallery(TwoPaneViewFeatureMatrix);
         }
-        // Used 
+
+        // The test cases below are divided based on platform-specific UI behaviors and layout logic.
+        //
+        // For MACCATALYST and WINDOWS:
+        // - Increase WideModeStepper to switch to Tall Mode (Pane1 above Pane2)
+        // - Use Y position to validate layout changes
+        //
+        // For ANDROID and IOS:
+        // - Decrease WideModeStepper to switch to Wide Mode (Pane1 beside Pane2)
+        // - Use X position to validate layout changes
+        // - Extra checks for RTL and shadow are included
+        //
+        // Common tests:
+        // - FlowDirection, visibility, shadow, and pane size changes are tested on all platforms
+        //   with minor differences in interactions.
+
 #if MACCATALYST || WINDOWS
 
         [Test]
@@ -34,6 +49,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
+            
+            VerifyScreenshot();
         }
 
         [Test]
@@ -51,19 +68,60 @@ namespace Microsoft.Maui.TestCases.Tests
 
         [Test]
         [Category(UITestCategories.Layout)]
-        public void TwoPaneView_Wide_UsingRect()
+        public void TwoPaneView_IsTall_UsingRect()
         {
             App.WaitForElement("Options");
             App.Tap("Options");
 
+            App.IncreaseStepper("WideModeStepper");
+            App.IncreaseStepper("WideModeStepper");
+
             App.WaitForElement("Apply");
             App.Tap("Apply");
-
+            
             var pane1Y = App.WaitForElement("Pane1Label").GetRect().Y;
             var pane2Y = App.WaitForElement("Pane2Label").GetRect().Y;
 
-            Assert.That(pane1Y, Is.GreaterThan(pane2Y), "Pane2 should be below Pane1 in Wide mode");
+            Assert.That(pane2Y, Is.GreaterThan(pane1Y), "Pane2 should be below Pane1 in Wide mode");
 
+            App.WaitForElement("CurrentModeLabel").Equals("Tall Mode");
+        }
+
+        [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_Wide_UsingRect()
+        {
+
+            var pane1Y = App.WaitForElement("Pane1Label").GetRect().X;
+            var pane2Y = App.WaitForElement("Pane2Label").GetRect().X;
+
+            Assert.That(pane2Y, Is.GreaterThan(pane1Y), "Pane2 should be below Pane1 in Wide mode");
+
+            App.WaitForElement("CurrentModeLabel").Equals("Wide Mode");
+        }
+
+         [Test]
+        [Category(UITestCategories.Layout)]
+        public void TwoPaneView_IsWideWithRTL_UsingRect()
+        {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.DecreaseStepper("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper");
+
+            App.WaitForElement("FlowDirectionRTLCheckBox");
+            App.Tap("FlowDirectionRTLCheckBox");
+            
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
+
+            var pane1X = App.WaitForElement("Pane1Label").GetRect().X;
+            var pane2X = App.WaitForElement("Pane2Label").GetRect().X;
+
+            Assert.That(pane1X, Is.GreaterThan(pane2X), "Pane2 should be below Pane1 in Wide mode");
+
+            App.WaitForElement("CurrentModeLabel").Equals("Wide Mode");
         }
 
         [Test]
@@ -73,9 +131,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            App.WaitForElement("WideModeStepper");
             App.IncreaseStepper("WideModeStepper");
-            App.WaitForElement("WideModeStepper");
             App.IncreaseStepper("WideModeStepper");
 
             App.WaitForElement("Apply");
@@ -132,14 +188,10 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            App.WaitForElement("Pane1LengthStepper");
             App.IncreaseStepper("Pane1LengthStepper");
-            App.WaitForElement("Pane1LengthStepper");
             App.IncreaseStepper("Pane1LengthStepper");
 
-            App.WaitForElement("WideModeStepper");
             App.IncreaseStepper("WideModeStepper");
-            App.WaitForElement("WideModeStepper");
             App.IncreaseStepper("WideModeStepper");
 
             App.WaitForElement("Apply");
@@ -155,14 +207,10 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            App.WaitForElement("Pane2LengthStepper");
             App.IncreaseStepper("Pane2LengthStepper");
-            App.WaitForElement("Pane2LengthStepper");
             App.IncreaseStepper("Pane2LengthStepper");
 
-            App.WaitForElement("WideModeStepper");
             App.IncreaseStepper("WideModeStepper");
-            App.WaitForElement("WideModeStepper");
             App.IncreaseStepper("WideModeStepper");
 
             App.WaitForElement("Apply");
@@ -170,7 +218,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
             VerifyScreenshot();
         }
-        
+
 #endif
         [Test]
         [Category(UITestCategories.Layout)]
@@ -184,8 +232,9 @@ namespace Microsoft.Maui.TestCases.Tests
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
-        }
 
+            VerifyScreenshot();
+        }
 
         [Test]
         [Category(UITestCategories.Layout)]
@@ -199,6 +248,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
+
+            VerifyScreenshot();
         }
 
         [Test]
@@ -208,9 +259,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            App.WaitForElement("Pane1LengthStepper");
             App.IncreaseStepper("Pane1LengthStepper");
-            App.WaitForElement("Pane1LengthStepper");
             App.IncreaseStepper("Pane1LengthStepper");
 
             App.WaitForElement("Apply");
@@ -226,9 +275,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            App.WaitForElement("Pane2LengthStepper");
             App.IncreaseStepper("Pane2LengthStepper");
-            App.WaitForElement("Pane2LengthStepper");
             App.IncreaseStepper("Pane2LengthStepper");
 
             App.WaitForElement("Apply");
@@ -243,14 +290,12 @@ namespace Microsoft.Maui.TestCases.Tests
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_IsTall_UsingRect()
         {
-            
             var pane1Y = App.WaitForElement("Pane1Label").GetRect().Y;
             var pane2Y = App.WaitForElement("Pane2Label").GetRect().Y;
 
             Assert.That(pane2Y, Is.GreaterThan(pane1Y), "Pane2 should be below Pane1 in Wide mode");
 
             App.WaitForElement("CurrentModeLabel").Equals("Tall Mode");
-
         }
 
         [Test]
@@ -301,7 +346,6 @@ namespace Microsoft.Maui.TestCases.Tests
             Assert.That(pane1X, Is.GreaterThan(pane2X), "Pane2 should be below Pane1 in Wide mode");
 
             App.WaitForElement("CurrentModeLabel").Equals("Wide Mode");
-
         }
 
         [Test]
@@ -458,7 +502,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
             VerifyScreenshot();
         }
-
 #endif
     }
 }
