@@ -11,6 +11,7 @@ public class Issue21814TabbedPage : _IssuesUITest
 	const string Tab3Content = "Tab3Content";
 
 	const string Tab1OnNavigatedToLabel = "Tab1OnNavigatedToLabel";
+	const string Tab1OnNavigatingFromLabel = "Tab1OnNavigatingFromLabel";
 	const string Tab1OnNavigatedFromLabel = "Tab1OnNavigatedFromLabel";
 
 	const string Tab2OnNavigatedToLabel = "Tab2OnNavigatedToLabel";
@@ -33,6 +34,10 @@ public class Issue21814TabbedPage : _IssuesUITest
 		// Verify Tab 1 is initially loaded and shows correct navigation info
 		App.WaitForElement(Tab1Content);
 
+		var onNavigatingFromText = App.FindElement(Tab1OnNavigatingFromLabel).GetText();
+		Assert.That(onNavigatingFromText, Does.Contain("DestinationPage: Issue21814TabItem1"));
+		Assert.That(onNavigatingFromText, Does.Contain("NavigationType: Replace"));
+		
 		var onNavigatedToText = App.FindElement(Tab1OnNavigatedToLabel).GetText();
 		Assert.That(onNavigatedToText, Does.Contain("PreviousPage: Null"));
 		Assert.That(onNavigatedToText, Does.Contain("NavigationType: Replace"));
