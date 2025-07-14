@@ -28,11 +28,11 @@ public class HybridWebViewFeatureTests : UITest
 		App.WaitForElement("HybridRootLabel");
 		var hybridRootLabel = App.FindElement("HybridRootLabel").GetText();
 		Assert.That(hybridRootLabel, Is.EqualTo("HybridWebView1"), "Hybrid Root label should be displayed correctly.");
-		var hybridDefaulltFile = App.FindElement("DefaultFileLabel").GetText();
-		Assert.That(hybridDefaulltFile, Is.EqualTo("index.html"), "Default file should be index.Html.");
+		var hybridDefaultFile = App.FindElement("DefaultFileLabel").GetText();
+		Assert.That(hybridDefaultFile, Is.EqualTo("index.html"), "Default file should be index.Html.");
 	}
 
-	[Test]
+	[Test, Order(2)]
 	[Category(UITestCategories.WebView)]
 	public void VerifyHybridWebView_SameHybridRootWithDifferentDefaultFile()
 	{
@@ -45,11 +45,11 @@ public class HybridWebViewFeatureTests : UITest
 		App.WaitForElement("HybridRootLabel");
 		var hybridRootLabel = App.FindElement("HybridRootLabel").GetText();
 		Assert.That(hybridRootLabel, Is.EqualTo("HybridWebView1"), "Hybrid Root label should be displayed correctly.");
-		var hybridDefaulltFile = App.FindElement("DefaultFileLabel").GetText();
-		Assert.That(hybridDefaulltFile, Is.EqualTo("image.html"), "Default file should be index.Html.");
+		var hybridDefaultFile = App.FindElement("DefaultFileLabel").GetText();
+		Assert.That(hybridDefaultFile, Is.EqualTo("image.html"), "Default file should be index.Html.");
 	}
 
-	[Test]
+	[Test, Order(3)]
 	[Category(UITestCategories.WebView)]
 	public void VerifyHybridWebView_SameDefaultFileWithDifferentHybridRoot()
 	{
@@ -60,11 +60,11 @@ public class HybridWebViewFeatureTests : UITest
 		App.WaitForElement("HybridRootLabel");
 		var hybridRootLabel = App.FindElement("HybridRootLabel").GetText();
 		Assert.That(hybridRootLabel, Is.EqualTo("HybridWebView2"), "Hybrid Root label should be displayed correctly.");
-		var hybridDefaulltFile = App.FindElement("DefaultFileLabel").GetText();
-		Assert.That(hybridDefaulltFile, Is.EqualTo("index.html"), "Default file should be index.Html.");
+		var hybridDefaultFile = App.FindElement("DefaultFileLabel").GetText();
+		Assert.That(hybridDefaultFile, Is.EqualTo("index.html"), "Default file should be index.Html.");
 	}
 
-	[Test]
+	[Test, Order(4)]
 	[Category(UITestCategories.WebView)]
 	public void VerifyHybridWebView_EvaluateJavaScriptWithDifferentHybridRoot()
 	{
@@ -72,6 +72,7 @@ public class HybridWebViewFeatureTests : UITest
 		App.Tap("ResetButton");
 		App.WaitForElement("HybridWebView1Button");
 		App.Tap("HybridWebView1Button");
+		Thread.Sleep(2000); // Allow time for the UI to update
 		App.WaitForElement("EvaluateJavaScriptButton");
 		App.Tap("EvaluateJavaScriptButton");
 		App.WaitForElement("StatusLabel");
@@ -80,6 +81,7 @@ public class HybridWebViewFeatureTests : UITest
 
 		App.WaitForElement("HybridWebView2Button");
 		App.Tap("HybridWebView2Button");
+		Thread.Sleep(2000); // Allow time for the UI to update
 		App.WaitForElement("EvaluateJavaScriptButton");
 		App.Tap("EvaluateJavaScriptButton");
 		App.WaitForElement("StatusLabel");
@@ -87,7 +89,7 @@ public class HybridWebViewFeatureTests : UITest
 		Assert.That(result2, Is.EqualTo("EvaluateJavaScriptAsync Result: HybridWebView2"), "JavaScript evaluation should return the correct title for HybridWebview2.");
 	}
 
-	[Test]
+	[Test, Order(5)]
 	[Category(UITestCategories.WebView)]
 	public void VerifyHybridWebView_EvaluateJavaScriptWithDifferentDefaultFile()
 	{
@@ -97,6 +99,7 @@ public class HybridWebViewFeatureTests : UITest
 		App.Tap("HybridWebView1Button");
 		App.WaitForElement("ImageHtmlButton");
 		App.Tap("ImageHtmlButton");
+		Thread.Sleep(2000); // Allow time for the UI to update
 		App.WaitForElement("EvaluateJavaScriptButton");
 		App.Tap("EvaluateJavaScriptButton");
 		App.WaitForElement("StatusLabel");
@@ -105,6 +108,7 @@ public class HybridWebViewFeatureTests : UITest
 
 		App.WaitForElement("NavigationHtmlButton");
 		App.Tap("NavigationHtmlButton");
+		Thread.Sleep(2000); // Allow time for the UI to update
 		App.WaitForElement("EvaluateJavaScriptButton");
 		App.Tap("EvaluateJavaScriptButton");
 		App.WaitForElement("StatusLabel");
@@ -112,7 +116,7 @@ public class HybridWebViewFeatureTests : UITest
 		Assert.That(result2, Is.EqualTo("EvaluateJavaScriptAsync Result: HybridWebView Navigation Page"));
 	}
 
-	[Test]
+	[Test, Order(9)]
 	[Category(UITestCategories.WebView)]
 	public void VerifyHybridWebViewWithShadow()
 	{
@@ -120,11 +124,11 @@ public class HybridWebViewFeatureTests : UITest
 		App.Tap("ResetButton");
 		App.WaitForElement("ShadowCheckBox");
 		App.Tap("ShadowCheckBox");
-		App.WaitForElement("StatusLabel", timeout: TimeSpan.FromSeconds(5));
+		Thread.Sleep(2000); // Allow time for the UI to update
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Test, Order(8)]
 	[Category(UITestCategories.WebView)]
 	public void VerifyHybridWebViewWithIsVisibleFalse()
 	{
@@ -135,7 +139,7 @@ public class HybridWebViewFeatureTests : UITest
 		App.WaitForNoElement("HybridWebViewControl");
 	}
 
-	[Test]
+	[Test, Order(7)]
 	[Category(UITestCategories.WebView)]
 	public void VerifyHybridWebView_SendMessageToJavaScript()
 	{
@@ -152,8 +156,8 @@ public class HybridWebViewFeatureTests : UITest
 		Assert.That(message, Is.EqualTo("Message sent successfully. Result: Message received"), "JavaScript should receive the message sent from C#.");
 	}
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/30575
-	[Test]
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/30575, https://github.com/dotnet/maui/issues/30605
+	[Test, Order(10)]
 	[Category(UITestCategories.WebView)]
 	public void VerifyHybridWebViewWithFlowDirection()
 	{
@@ -161,7 +165,7 @@ public class HybridWebViewFeatureTests : UITest
 		App.Tap("ResetButton");
 		App.WaitForElement("FlowDirectionCheckBox");
 		App.Tap("FlowDirectionCheckBox");
-		App.WaitForElement("StatusLabel", timeout: TimeSpan.FromSeconds(5));
+	    Thread.Sleep(2000); // Allow time for the UI to update
 		VerifyScreenshot();
 	}
 #endif
