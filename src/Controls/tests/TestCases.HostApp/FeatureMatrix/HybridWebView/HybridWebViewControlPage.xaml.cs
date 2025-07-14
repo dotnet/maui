@@ -74,7 +74,7 @@ public partial class HybridWebViewControlPage : ContentPage
         try
         {
             _viewModel.Status = "Sending message to index.html...";
-            await Task.Delay(500);  
+            await Task.Delay(500);
             var message = $"Hello from C#";
             var jsCode = $@"window.receiveMessageFromCSharp('{message}')";
             var result = await MyHybridWebView.EvaluateJavaScriptAsync(jsCode);
@@ -87,6 +87,12 @@ public partial class HybridWebViewControlPage : ContentPage
         }
     }
 
+    private void OnFlowDirectionCheckBoxChanged(object sender, CheckedChangedEventArgs e)
+    {
+        _viewModel.FlowDirection = e.Value
+            ? FlowDirection.LeftToRight
+            : FlowDirection.RightToLeft;
+    }
 
     private async void OnResetButtonClicked(object sender, EventArgs e)
     {

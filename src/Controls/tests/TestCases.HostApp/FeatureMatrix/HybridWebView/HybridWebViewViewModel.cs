@@ -11,8 +11,11 @@ public class HybridWebViewViewModel : INotifyPropertyChanged
     private string _hybridRoot = "HybridWebView1";
     private string _status = "Ready";
     private bool _isVisible = true;
+    private FlowDirection _flowDirection = FlowDirection.LeftToRight;
     private Shadow _shadow = null;
     private bool _hasShadow = false;
+    private bool _isLeftToRight = true;
+
 
     public HybridWebViewViewModel()
     {
@@ -21,6 +24,7 @@ public class HybridWebViewViewModel : INotifyPropertyChanged
         Status = "Ready";
         IsVisible = true;
         HasShadow = false;
+        IsLeftToRight = true;
     }
     public string DefaultFile
     {
@@ -48,6 +52,32 @@ public class HybridWebViewViewModel : INotifyPropertyChanged
         }
     }
 
+    public FlowDirection FlowDirection
+    {
+        get => _flowDirection;
+        set
+        {
+            if (_flowDirection != value)
+            {
+                _flowDirection = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+
+    public bool IsLeftToRight
+    {
+        get => _isLeftToRight;
+        set
+        {
+            if (_isLeftToRight != value)
+            {
+                _isLeftToRight = value;
+                OnPropertyChanged(nameof(IsLeftToRight));
+            }
+        }
+    }
     public string Status
     {
         get => _status;

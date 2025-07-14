@@ -151,4 +151,18 @@ public class HybridWebViewFeatureTests : UITest
 		var message = App.FindElement("StatusLabel").GetText();
 		Assert.That(message, Is.EqualTo("Message sent successfully. Result: Message received"), "JavaScript should receive the message sent from C#.");
 	}
+
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/30575
+	[Test]
+	[Category(UITestCategories.WebView)]
+	public void VerifyHybridWebViewWithFlowDirection()
+	{
+		App.WaitForElement("ResetButton");
+		App.Tap("ResetButton");
+		App.WaitForElement("FlowDirectionCheckBox");
+		App.Tap("FlowDirectionCheckBox");
+		App.WaitForElement("StatusLabel", timeout: TimeSpan.FromSeconds(5));
+		VerifyScreenshot();
+	}
+#endif
 }
