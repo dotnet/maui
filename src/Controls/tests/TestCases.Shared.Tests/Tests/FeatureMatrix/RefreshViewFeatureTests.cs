@@ -34,6 +34,34 @@ public class RefreshViewFeatureTests : UITest
 
 	[Test, Order(2)]
 	[Category(UITestCategories.RefreshView)]
+	public void RefreshView_InsideScrollView_VerifyScrollAndRefresh()
+	{
+		App.WaitForElement("RefreshView");
+		App.WaitForElement("ScrollViewContentButton");
+		App.Tap("ScrollViewContentButton");
+		App.WaitForElement("RefreshView");
+		var rect = App.WaitForElement("RefreshView").GetRect();
+		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
+		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.Not.EqualTo("None"));
+		VerifyScreenshot();
+	}
+
+	[Test, Order(3)]
+	[Category(UITestCategories.RefreshView)]
+	public void RefreshView_InsideCollectionView_VerifyRefresh()
+	{
+		App.WaitForElement("RefreshView");
+		App.WaitForElement("CollectionViewContentButton");
+		App.Tap("CollectionViewContentButton");
+		App.WaitForElement("RefreshView");
+		var rect = App.WaitForElement("RefreshView").GetRect();
+		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
+		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.Not.EqualTo("None"));
+		VerifyScreenshot();
+	}
+
+	[Test, Order(2)]
+	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_SetCommandParameterTrue_VerifyCommandParameter()
 	{
 		App.WaitForElement("Options");

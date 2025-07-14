@@ -13,88 +13,111 @@
        </ContentPage.ToolbarItems>
 
        <Grid Padding="20"
-             RowDefinitions="*, Auto, Auto, Auto, Auto"
+             RowDefinitions="Auto, *, Auto, Auto, Auto, Auto, Auto"
              ColumnDefinitions="0.5*, 0.5*"
              RowSpacing="5"
-             ColumnSpacing="20">
+             ColumnSpacing="0">
+
+              <Label Grid.Row="0"
+                     Grid.Column="0"
+                     Grid.ColumnSpan="2"
+                     Text="Pull down to refresh this content"
+                     FontSize="18"
+                     Margin="0,0,0,50"
+                     HorizontalOptions="Center"/>
 
               <!-- RefreshView -->
-              <RefreshView x:Name="RefreshView"
-                           Grid.Row="0"
-                           Grid.Column="0"
-                           Grid.ColumnSpan="2"
-                           Command="{Binding Command}"
-                           CommandParameter="{Binding CommandParameter}"
-                           FlowDirection="{Binding FlowDirection}"
-                           IsEnabled="{Binding IsEnabled}"
-                           IsVisible="{Binding IsVisible}"
-                           IsRefreshing="{Binding IsRefreshing}"
-                           RefreshColor="{Binding RefreshColor}"
-                           Shadow="{Binding Shadow}"
-                           AutomationId="RefreshView">
+              <Grid x:Name="RefreshViewContainer"
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    VerticalOptions="Center">
+                     <RefreshView x:Name="RefreshView"
+                                  Command="{Binding Command}"
+                                  CommandParameter="{Binding CommandParameter}"
+                                  FlowDirection="{Binding FlowDirection}"
+                                  IsEnabled="{Binding IsEnabled}"
+                                  IsVisible="{Binding IsVisible}"
+                                  IsRefreshing="{Binding IsRefreshing}"
+                                  RefreshColor="{Binding RefreshColor}"
+                                  Shadow="{Binding Shadow}"
+                                  AutomationId="RefreshView"
+                                  Margin="0,20,0,0">
 
-                     <ScrollView>
-                            <StackLayout Spacing="200">
-                                   <Label Text="Pull down to refresh this content"
-                                          FontSize="18"
-                                          HorizontalOptions="Center"/>
-                                   <BoxView Color="{Binding BoxViewColor}"
-                                            HeightRequest="100"
-                                            WidthRequest="200"
-                                            HorizontalOptions="Center"
-                                            AutomationId="BoxContent"/>
-                            </StackLayout>
-                     </ScrollView>
-              </RefreshView>
+                            <ScrollView Margin="0,20,0,0">
+                                   <StackLayout>
+                                          <BoxView Color="{Binding BoxViewColor}"
+                                                   HeightRequest="100"
+                                                   WidthRequest="200"
+                                                   AutomationId="BoxContent"/>
+                                   </StackLayout>
+                            </ScrollView>
+                     </RefreshView>
+              </Grid>
 
               <!-- Status Information -->
-              <Label Grid.Row="1"
+              <Label Grid.Row="2"
                      Grid.Column="0"
                      HorizontalOptions="Center"
                      Text="IsRefreshing:"
                      FontSize="16"/>
-              <Label Grid.Row="1"
+              <Label Grid.Row="2"
                      Grid.Column="1"
                      HorizontalOptions="Center"
                      Text="{Binding IsRefreshing}"
                      FontSize="16"
                      AutomationId="IsRefreshingValueLabel"/>
 
-              <Label Grid.Row="2"
+              <Label Grid.Row="3"
                      Grid.Column="0"
                      HorizontalOptions="Center"
                      Text="IsEnabled:"
                      FontSize="16"/>
-              <Label Grid.Row="2"
+              <Label Grid.Row="3"
                      Grid.Column="1"
                      HorizontalOptions="Center"
                      Text="{Binding IsEnabled}"
                      FontSize="16"
                      AutomationId="IsEnabledValueLabel"/>
 
-              <Label Grid.Row="3"
+              <Label Grid.Row="4"
                      Grid.Column="0"
                      HorizontalOptions="Center"
                      Text="IsVisible:"
                      FontSize="16"/>
-              <Label Grid.Row="3"
+              <Label Grid.Row="4"
                      Grid.Column="1"
                      HorizontalOptions="Center"
                      Text="{Binding IsVisible}"
                      FontSize="16"
                      AutomationId="IsVisibleValueLabel"/>
 
-              <Label Grid.Row="4"
+              <Label Grid.Row="5"
                      Grid.Column="0"
                      HorizontalOptions="Center"
                      FontSize="16"
                      Text="Status Messages:"/>
-              <Label Grid.Row="4"
+              <Label Grid.Row="5"
                      Grid.Column="1"
                      HorizontalOptions="Center"
-                     Margin="0,0,0,10"
                      Text="{Binding RefreshStatusText}"
                      FontSize="16"
                      AutomationId="RefreshStatusLabel"/>
+
+              <Label Grid.Row="6"
+                     Grid.Column="0"
+                     HorizontalOptions="Center"
+                     FontSize="16"
+                     Margin="0,0,0,10"
+                     Text="RefreshView Content:"/>
+              <HorizontalStackLayout Grid.Row="6"
+                                     Grid.Column="1">
+                     <Button Text="ScrollView"
+                             Clicked="OnScrollViewContentClicked"
+                             AutomationId="ScrollViewContentButton"/>
+                     <Button Text="CollectionView"
+                             Clicked="OnCollectionViewContentClicked"
+                             AutomationId="CollectionViewContentButton"/>
+              </HorizontalStackLayout>
        </Grid>
 </ContentPage>
