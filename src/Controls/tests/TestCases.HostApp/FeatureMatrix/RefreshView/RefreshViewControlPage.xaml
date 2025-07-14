@@ -23,7 +23,6 @@
                      Grid.ColumnSpan="2"
                      Text="Pull down to refresh this content"
                      FontSize="18"
-                     Margin="0,0,0,50"
                      HorizontalOptions="Center"/>
 
               <!-- RefreshView -->
@@ -41,16 +40,13 @@
                                   IsRefreshing="{Binding IsRefreshing}"
                                   RefreshColor="{Binding RefreshColor}"
                                   Shadow="{Binding Shadow}"
-                                  AutomationId="RefreshView"
-                                  Margin="0,20,0,0">
+                                  AutomationId="RefreshView">
 
-                            <ScrollView Margin="0,20,0,0">
-                                   <StackLayout>
-                                          <BoxView Color="{Binding BoxViewColor}"
-                                                   HeightRequest="100"
-                                                   WidthRequest="200"
-                                                   AutomationId="BoxContent"/>
-                                   </StackLayout>
+                            <ScrollView>
+                                   <BoxView Color="{Binding BoxViewColor}"
+                                            HeightRequest="100"
+                                            WidthRequest="200"
+                                            AutomationId="BoxContent"/>
                             </ScrollView>
                      </RefreshView>
               </Grid>

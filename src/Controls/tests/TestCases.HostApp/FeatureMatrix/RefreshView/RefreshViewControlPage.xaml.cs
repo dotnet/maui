@@ -29,6 +29,7 @@ public partial class RefreshViewControlMainPage : ContentPage
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
+		SetScrollViewContent();
 		BindingContext = _viewModel = new RefreshViewViewModel();
 		await Navigation.PushAsync(new RefreshViewOptionsPage(_viewModel));
 	}
@@ -54,10 +55,7 @@ public partial class RefreshViewControlMainPage : ContentPage
 			AutomationId = "RefreshView",
 			Content = new ScrollView
 			{
-				Content = new StackLayout
-				{
-					Children = { boxView }
-				}
+				Content = boxView
 			}
 		};
 

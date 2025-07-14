@@ -30,7 +30,7 @@ public class RefreshViewFeatureTests : UITest
 		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.EqualTo("None"));
 	}
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // DragCoordinates is not supported in MacCatalyst
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // In Appium PullToRefresh is not supported on Catalyst and Windows
 
 	[Test, Order(2)]
 	[Category(UITestCategories.RefreshView)]
@@ -60,7 +60,7 @@ public class RefreshViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(2)]
+	[Test, Order(4)]
 	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_SetCommandParameterTrue_VerifyCommandParameter()
 	{
@@ -76,7 +76,7 @@ public class RefreshViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(3)]
+	[Test, Order(5)]
 	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_SetIsEnabled_VerifyEnabledState()
 	{
@@ -93,7 +93,7 @@ public class RefreshViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(4)]
+	[Test, Order(6)]
 	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_SetRefreshColorBlue_VerifyColorChange()
 	{
@@ -108,7 +108,7 @@ public class RefreshViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(5)]
+	[Test, Order(7)]
 	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_SetFlowDirectionRightToLeft_VerifyFlowDirection()
 	{
@@ -124,7 +124,7 @@ public class RefreshViewFeatureTests : UITest
 	}
 #endif
 
-	[Test, Order(6)]
+	[Test, Order(8)]
 	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_SetIsVisible_VerifyVisibilityState()
 	{
@@ -140,9 +140,9 @@ public class RefreshViewFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30535
 
-	[Test, Order(7)]
+	[Test, Order(9)]
 	[Category(UITestCategories.RefreshView)]
-	public void RefreshView_SetIsRefreshing_VerifyStatusChanges()
+	public void RefreshView_SetIsRefreshingAndScrollView_VerifyStatusChanges()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -151,10 +151,28 @@ public class RefreshViewFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("RefreshView");
+		App.WaitForElement("ScrollViewContentButton");
+		App.Tap("ScrollViewContentButton");
 		VerifyScreenshot();
 	}
 
-	[Test, Order(8)]
+	[Test, Order(10)]
+	[Category(UITestCategories.RefreshView)]
+	public void RefreshView_SetIsRefreshingAndCollectionView_VerifyStatusChanges()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("IsRefreshingTrueRadioButton");
+		App.Tap("IsRefreshingTrueRadioButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("RefreshView");
+		App.WaitForElement("CollectionViewContentButton");
+		App.Tap("CollectionViewContentButton");
+		VerifyScreenshot();
+	}
+
+	[Test, Order(11)]
 	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_SetRefreshColorRedAndIsRefreshing_VerifyColorChange()
 	{
@@ -171,7 +189,7 @@ public class RefreshViewFeatureTests : UITest
 	}
 #endif
 
-	[Test, Order(9)]
+	[Test, Order(12)]
 	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_SetShadow_VerifyShadowApplied()
 	{
