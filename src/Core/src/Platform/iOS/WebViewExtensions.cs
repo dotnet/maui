@@ -55,7 +55,27 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateReload(this WKWebView platformWebView, IWebView webView)
 		{
-			platformWebView?.Reload();
+			//platformWebView?.Reload();
+			if (platformWebView == null)
+				return;
+
+			// Check if we have a source and platformWebView implements IWebViewDelegate
+			if (webView.Source != null && platformWebView is IWebViewDelegate webViewDelegate)
+			{
+				// If the source is an HTML source, we need to reload from the source
+				// since WKWebView.Reload() doesn't work properly with LoadHtmlString
+				var sourceType = webView.Source.GetType().Name;
+				if (sourceType == "HtmlWebViewSource")
+				{
+					// For HTML sources, always reload from the source
+					webView.Source.Load(webViewDelegate);
+				}
+				else
+				{
+					// For URL sources, use the standard reload
+					platformWebView.Reload();
+				}
+			}
 		}
 
 		internal static void UpdateCanGoBackForward(this WKWebView platformWebView, IWebView webView)
