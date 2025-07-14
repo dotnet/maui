@@ -93,10 +93,11 @@ namespace Microsoft.Maui.Platform
 		static void ApplyCharacterSpacingToSelectedItem(ComboBox nativeComboBox, int characterSpacing)
 		{
 			var contentPresenter = nativeComboBox.GetDescendantByName<ContentPresenter>("ContentPresenter");
-			if (contentPresenter != null)
+
+			if (contentPresenter is not null)
 			{
 				var textBlock = contentPresenter.GetFirstDescendant<TextBlock>();
-				if (textBlock != null)
+				if (textBlock is not null)
 				{
 					textBlock.CharacterSpacing = characterSpacing;
 				}
