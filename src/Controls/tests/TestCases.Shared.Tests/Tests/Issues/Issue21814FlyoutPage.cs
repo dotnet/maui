@@ -11,6 +11,7 @@ public class Issue21814FlyoutPage : _IssuesUITest
 	const string FlyoutContent3 = "FlyoutContent3";
 
 	const string FlyoutItem1OnNavigatedToLabel = "FlyoutItem1OnNavigatedToLabel";
+	const string FlyoutItem1OnNavigatingFromLabel = "FlyoutItem1OnNavigatingFromLabel";
 	const string FlyoutItem1OnNavigatedFromLabel = "FlyoutItem1OnNavigatedFromLabel";
 
 	const string FlyoutItem2OnNavigatedToLabel = "FlyoutItem2OnNavigatedToLabel";
@@ -36,6 +37,10 @@ public class Issue21814FlyoutPage : _IssuesUITest
 	{
 		// Verify Item 1 is initially loaded and shows correct navigation info
 		App.WaitForElement("FlyoutContent1");
+
+		var onNavigatingFromText = App.FindElement(FlyoutItem1OnNavigatingFromLabel).GetText();
+		Assert.That(onNavigatingFromText, Does.Contain("DestinationPage: Issue21814FlyoutItem1"));
+		Assert.That(onNavigatingFromText, Does.Contain("NavigationType: Replace"));
 
 		var onNavigatedToText = App.FindElement(FlyoutItem1OnNavigatedToLabel).GetText();
 		Assert.That(onNavigatedToText, Does.Contain("PreviousPage: Null"));
@@ -75,18 +80,18 @@ public class Issue21814FlyoutPage : _IssuesUITest
 #elif IOS || MACCATALYST
 		App.TapBackArrow("Item 1");
 #endif
-		
+
 		// Navigate to Item 3
 		OpenFlyoutMenu();
 		App.Tap(Item3MenuItem);
 		App.WaitForElement(FlyoutContent3);
-            
+
 		// Verify Item 3 navigation parameters
 		var item3OnNavigatedToText = App.FindElement(FlyoutItem3OnNavigatedToLabel).GetText();
 		Assert.That(item3OnNavigatedToText, Does.Contain("PreviousPage: Issue21814FlyoutItem1"));
 		Assert.That(item3OnNavigatedToText, Does.Contain("NavigationType: Replace"));
 	}
-	
+
 	void OpenFlyoutMenu()
 	{
 		App.TapFlyoutPageIcon("Flyout Menu");
