@@ -123,6 +123,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFlowDirection(this FrameworkElement platformView, IView view)
 		{
+			if(platformView is WebView2)
+			{
+				return;
+			}
 			var flowDirection = view.FlowDirection;
 			switch (flowDirection)
 			{
