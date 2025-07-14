@@ -21,6 +21,7 @@ namespace Microsoft.Maui
 		private const bool AreBindingInterceptorsSupportedByDefault = true;
 		private const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
 		private const bool IsHybridWebViewSupportedByDefault = true;
+		private const bool IsMetricsSupportedByDefault = false;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER
@@ -89,11 +90,10 @@ namespace Microsoft.Maui
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
 #endif
-		internal static bool IsMetricsSupported { get; } = 
-			!AppContext.TryGetSwitch(
-				"System.Diagnostics.Metrics.Meter.IsSupported",
-				out bool isSupported)
-			|| isSupported;
+		internal static bool IsMetricsSupported =>
+			AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out bool isSupported)
+				? isSupported
+				: IsMetricsSupportedByDefault;
 #pragma warning restore IL4000
 	}
 }
