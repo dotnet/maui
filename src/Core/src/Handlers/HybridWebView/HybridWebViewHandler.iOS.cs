@@ -77,6 +77,28 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.EvaluateJavaScript(request);
 		}
 
+		internal static void MapFlowDirection(IHybridWebViewHandler handler, IHybridWebView hybridWebView)
+		{
+			var scrollView = handler.PlatformView?.ScrollView;
+			if (scrollView == null)
+				return;
+				
+			scrollView.UpdateFlowDirection(hybridWebView);
+			
+			// On macOS, we need to refresh the scroll indicators when flow direction changes
+			if (OperatingSystem.IsMacCatalyst())
+			{
+				bool showsVertical = scrollView.ShowsVerticalScrollIndicator;
+				bool showsHorizontal = scrollView.ShowsHorizontalScrollIndicator;
+
+				scrollView.ShowsVerticalScrollIndicator = false;
+				scrollView.ShowsHorizontalScrollIndicator = false;
+
+				scrollView.ShowsVerticalScrollIndicator = showsVertical;
+				scrollView.ShowsHorizontalScrollIndicator = showsHorizontal;
+			}
+		}
+
 		public static void MapSendRawMessage(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
 		{
 			if (arg is not HybridWebViewRawMessage hybridWebViewRawMessage || handler.PlatformView is not IHybridPlatformWebView hybridPlatformWebView)

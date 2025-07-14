@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Handlers
 #elif __IOS__
 			[nameof(WKUIDelegate)] = MapWKUIDelegate,
 			[nameof(IWebView.Background)] = MapBackground,
+			[nameof(IWebView.FlowDirection)] = MapFlowDirection,
 #endif
 		};
 
