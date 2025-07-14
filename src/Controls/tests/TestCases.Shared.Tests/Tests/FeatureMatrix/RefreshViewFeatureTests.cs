@@ -189,6 +189,8 @@ public class RefreshViewFeatureTests : UITest
 	}
 #endif
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/29812
+
 	[Test, Order(12)]
 	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_SetShadow_VerifyShadowApplied()
@@ -202,4 +204,5 @@ public class RefreshViewFeatureTests : UITest
 		App.WaitForElement("RefreshView");
 		VerifyScreenshot();
 	}
+#endif
 }
