@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// Called by Forms to mark an item selected 
 		internal void SelectItem(object selectedItem)
 		{
-			if(ItemsView?.ItemsSource is not object originalSource)
+			if (ItemsView?.ItemsSource is not object originalSource)
 			{
 				return;
 			}
