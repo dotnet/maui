@@ -15,7 +15,7 @@ public class Issue30575 : _IssuesUITest
 	public void WebViewShouldNotMirrored()
 	{
 		App.WaitForElement("WebViewLabel");
-		Task.Delay(3000).Wait();
+		Thread.Sleep(3000);
 		VerifyScreenshot();
 	}
 }
