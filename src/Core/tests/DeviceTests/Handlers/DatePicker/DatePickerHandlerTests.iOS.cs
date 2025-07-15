@@ -85,6 +85,55 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
 		}
 
+		[Fact(DisplayName = "Null Date Uses Today's Date in Picker")]
+		public async Task NullDateUsesTodaysDateInPicker()
+		{
+			var datePicker = new DatePickerStub()
+			{
+				Date = null
+			};
+
+			var values = await GetValueAsync(datePicker, (handler) =>
+			{
+				return new
+				{
+					ViewValue = datePicker.Date,
+					PlatformViewValue = GetNativePickerDate(handler)
+				};
+			});
+
+			Assert.Null(values.ViewValue);
+			Assert.Equal(DateTime.Today.Date, values.PlatformViewValue.Date);
+		}
+
+		[Fact(DisplayName = "Null Date Updates To Today's Date When Picker Updates")]
+		public async Task NullDateUpdatesToTodaysDateWhenPickerUpdates()
+		{
+			var datePicker = new DatePickerStub()
+			{
+				Date = null
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(datePicker);
+				var platformView = handler.PlatformView;
+				
+				// Initially null date should show today's date in picker
+				var picker = handler.DatePickerDialog;
+				Assert.NotNull(picker);
+				Assert.Equal(DateTime.Today.Date, picker.Date.ToDateTime().Date);
+				
+				// Update to a specific date
+				var testDate = new DateTime(2023, 5, 15);
+				datePicker.Date = testDate;
+				
+				// Verify the picker updates to the specific date
+				await Task.Delay(100); // Allow update to process
+				Assert.Equal(testDate.Date, picker.Date.ToDateTime().Date);
+			});
+		}
+
 		MauiDatePicker GetNativeDatePicker(DatePickerHandler datePickerHandler) =>
 			datePickerHandler.PlatformView;
 
@@ -115,6 +164,12 @@ namespace Microsoft.Maui.DeviceTests
 			return maxDate.ToDateTime();
 		}
 
+		DateTime GetNativePickerDate(DatePickerHandler datePickerHandler)
+		{
+			var dialog = datePickerHandler.DatePickerDialog;
+			return dialog.Date.ToDateTime();
+		}
+
 		double GetNativeCharacterSpacing(DatePickerHandler datePickerHandler)
 		{
 			var mauiDatePicker = GetNativeDatePicker(datePickerHandler);
@@ -123,57 +178,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetNativeUnscaledFontSize(DatePickerHandler datePickerHandler) =>
 			GetNativeDatePicker(datePickerHandler).Font.PointSize;
-
-		[Fact(DisplayName = "Date Picker Dialog Defaults to Today When Date is MinimumDate")]
-		public async Task DatePickerDialogDefaultsToTodayWhenDateIsMinimumDate()
-		{
-			var datePicker = new DatePickerStub()
-			{
-				Date = new DateTime(1900, 1, 1) // Set to MinimumDate value
-			};
-
-			var values = await GetValueAsync(datePicker, (handler) =>
-			{
-				var dialog = handler.DatePickerDialog;
-				return new
-				{
-					VirtualViewDate = datePicker.Date,
-					DialogDate = dialog?.Date.ToDateTime()
-				};
-			});
-
-			// VirtualView should have MinimumDate as set
-			Assert.Equal(new DateTime(1900, 1, 1), values.VirtualViewDate);
-			
-			// Dialog should default to Today's date when Date is MinimumDate
-			Assert.Equal(DateTime.Today, values.DialogDate?.Date);
-		}
-
-		[Fact(DisplayName = "Date Picker Dialog Uses Specified Date When Not MinimumDate")]
-		public async Task DatePickerDialogUsesSpecifiedDateWhenNotMinimumDate()
-		{
-			var specificDate = new DateTime(2023, 6, 15);
-			var datePicker = new DatePickerStub()
-			{
-				Date = specificDate
-			};
-
-			var values = await GetValueAsync(datePicker, (handler) =>
-			{
-				var dialog = handler.DatePickerDialog;
-				return new
-				{
-					VirtualViewDate = datePicker.Date,
-					DialogDate = dialog?.Date.ToDateTime()
-				};
-			});
-
-			// VirtualView should have the specified date
-			Assert.Equal(specificDate, values.VirtualViewDate);
-			
-			// Dialog should also have the specified date
-			Assert.Equal(specificDate, values.DialogDate?.Date);
-		}
 	}
 }
 #endif

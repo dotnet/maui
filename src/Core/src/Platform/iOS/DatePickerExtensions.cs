@@ -38,89 +38,7 @@ public static class DatePickerExtensions
 		{
 			if (defaultTextColor is not null)
 			{
-				if (defaultTextColor != null)
-				{
-					platformDatePicker.TextColor = defaultTextColor;
-				}
-			}
-			else
-			{
-				platformDatePicker.TextColor = textColor.ToPlatform();
-			}
-
-		}
-
-		public static void UpdateDate(this UIDatePicker picker, IDatePicker datePicker)
-		{
-			if (picker != null)
-			{
-				// If date is equal to MinimumDate (could be default/null value), use Today's date for the picker
-				var date = datePicker.Date == datePicker.MinimumDate ? DateTime.Today : datePicker.Date;
-				if (picker.Date.ToDateTime().Date != date.Date)
-					picker.SetDate(date.ToNSDate(), false);
-			}
-		}
-
-		public static void UpdateDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, UIDatePicker? picker)
-		{
-			if (picker != null)
-			{
-				// If date is equal to MinimumDate (could be default/null value), use Today's date for the picker
-				var date = datePicker.Date == datePicker.MinimumDate ? DateTime.Today : datePicker.Date;
-				if (picker.Date.ToDateTime().Date != date.Date)
-					picker.SetDate(date.ToNSDate(), false);
-			}
-
-			string format = datePicker.Format ?? string.Empty;
-
-			// Can't use VirtualView.Format because it won't display the correct format if the region and language are set differently
-			if (picker != null && (string.IsNullOrWhiteSpace(format) || format.Equals("d", StringComparison.OrdinalIgnoreCase)))
-			{
-				NSDateFormatter dateFormatter = new NSDateFormatter
-				{
-					TimeZone = NSTimeZone.FromGMT(0)
-				};
-
-				if (format.Equals("D", StringComparison.Ordinal) == true)
-				{
-					dateFormatter.DateStyle = NSDateFormatterStyle.Long;
-					var strDate = dateFormatter.StringFor(picker.Date);
-					platformDatePicker.Text = strDate;
-				}
-				else
-				{
-					dateFormatter.DateStyle = NSDateFormatterStyle.Short;
-					var strDate = dateFormatter.StringFor(picker.Date);
-					platformDatePicker.Text = strDate;
-				}
-			}
-			else if (format.Contains('/', StringComparison.Ordinal))
-			{
-				platformDatePicker.Text = datePicker.Date.ToString(format, CultureInfo.InvariantCulture);
-			}
-			else
-			{
-				platformDatePicker.Text = datePicker.Date.ToString(format);
-			}
-
-			platformDatePicker.UpdateCharacterSpacing(datePicker);
-		}
-
-		public static void UpdateMinimumDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
-		{
-			platformDatePicker.UpdateMinimumDate(datePicker, null);
-		}
-
-		public static void UpdateMinimumDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, UIDatePicker? picker)
-		{
-			picker?.UpdateMinimumDate(datePicker);
-		}
-
-		public static void UpdateMinimumDate(this UIDatePicker platformDatePicker, IDatePicker datePicker)
-		{
-			if (platformDatePicker != null)
-			{
-				platformDatePicker.MinimumDate = datePicker.MinimumDate.ToNSDate();
+				platformDatePicker.TextColor = defaultTextColor;
 			}
 		}
 		else
@@ -134,17 +52,25 @@ public static class DatePickerExtensions
 
 	public static void UpdateDate(this UIDatePicker picker, IDatePicker datePicker)
 	{
-		if (picker is not null && picker.Date.ToDateTime() != datePicker.Date)
+		if (picker is not null)
 		{
-			picker.SetDate(datePicker.Date?.ToNSDate() ?? NSDate.DistantPast, false);
+			var targetDate = datePicker.Date ?? DateTime.Today;
+			if (picker.Date.ToDateTime() != targetDate)
+			{
+				picker.SetDate(targetDate.ToNSDate(), false);
+			}
 		}
 	}
 
 	public static void UpdateDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, UIDatePicker? picker)
 	{
-		if (picker is not null && picker.Date != NSDate.DistantPast && picker.Date.ToDateTime() != datePicker.Date)
+		if (picker is not null)
 		{
-			picker.SetDate(datePicker.Date?.ToNSDate() ?? NSDate.DistantPast, false);
+			var targetDate = datePicker.Date ?? DateTime.Today;
+			if (picker.Date != NSDate.DistantPast && picker.Date.ToDateTime() != targetDate)
+			{
+				picker.SetDate(targetDate.ToNSDate(), false);
+			}
 		}
 
 		string format = datePicker.Format ?? string.Empty;
