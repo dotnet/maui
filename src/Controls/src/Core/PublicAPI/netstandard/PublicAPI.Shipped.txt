@@ -222,6 +222,13 @@
 ~Microsoft.Maui.Controls.ChildGestureRecognizer.GestureRecognizer.get -> Microsoft.Maui.Controls.IGestureRecognizer
 ~Microsoft.Maui.Controls.ChildGestureRecognizer.GestureRecognizer.set -> void
 ~Microsoft.Maui.Controls.ChildGestureRecognizer.OnPropertyChanged(string propertyName = "") -> void
+~Microsoft.Maui.Controls.ClickedEventArgs.ClickedEventArgs(Microsoft.Maui.Controls.ButtonsMask buttons, object commandParameter) -> void
+~Microsoft.Maui.Controls.ClickedEventArgs.Parameter.get -> object
+~Microsoft.Maui.Controls.ClickGestureRecognizer.Command.get -> System.Windows.Input.ICommand
+~Microsoft.Maui.Controls.ClickGestureRecognizer.Command.set -> void
+~Microsoft.Maui.Controls.ClickGestureRecognizer.CommandParameter.get -> object
+~Microsoft.Maui.Controls.ClickGestureRecognizer.CommandParameter.set -> void
+~Microsoft.Maui.Controls.ClickGestureRecognizer.SendClicked(Microsoft.Maui.Controls.View sender, Microsoft.Maui.Controls.ButtonsMask buttons) -> void
 ~Microsoft.Maui.Controls.ColumnDefinitionCollection.ColumnDefinitionCollection(params Microsoft.Maui.Controls.ColumnDefinition[] definitions) -> void
 ~Microsoft.Maui.Controls.Command.CanExecute(object parameter) -> bool
 ~Microsoft.Maui.Controls.Command.Command(System.Action execute, System.Func<bool> canExecute) -> void
@@ -3042,6 +3049,10 @@
 ~static readonly Microsoft.Maui.Controls.Cell.IsEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.CheckBox.ColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.CheckBox.IsCheckedProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.CommandProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequiredProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ColumnDefinition.WidthProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.CompareStateTrigger.PropertyProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.CompareStateTrigger.ValueProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -4185,6 +4196,15 @@ Microsoft.Maui.Controls.CheckedChangedEventArgs.Value.get -> bool
 Microsoft.Maui.Controls.ChildGestureRecognizer
 Microsoft.Maui.Controls.ChildGestureRecognizer.ChildGestureRecognizer() -> void
 Microsoft.Maui.Controls.ChildGestureRecognizer.PropertyChanged -> System.ComponentModel.PropertyChangedEventHandler
+Microsoft.Maui.Controls.ClickedEventArgs
+Microsoft.Maui.Controls.ClickedEventArgs.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
+Microsoft.Maui.Controls.ClickGestureRecognizer
+Microsoft.Maui.Controls.ClickGestureRecognizer.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
+Microsoft.Maui.Controls.ClickGestureRecognizer.Buttons.set -> void
+Microsoft.Maui.Controls.ClickGestureRecognizer.Clicked -> System.EventHandler
+Microsoft.Maui.Controls.ClickGestureRecognizer.ClickGestureRecognizer() -> void
+Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequired.get -> int
+Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequired.set -> void
 Microsoft.Maui.Controls.CloseRequestedEventArgs
 Microsoft.Maui.Controls.CloseRequestedEventArgs.Animated.get -> bool
 Microsoft.Maui.Controls.CloseRequestedEventArgs.Animated.set -> void
