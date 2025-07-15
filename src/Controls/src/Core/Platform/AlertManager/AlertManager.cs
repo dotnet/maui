@@ -73,6 +73,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void OnPromptRequested(Page sender, PromptArguments arguments);
 
+			[Obsolete("This method is obsolete in .NET 10 and will be removed in .NET11.")]
 			void OnPageBusy(Page sender, bool enabled);
 		}
 
@@ -84,6 +85,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public partial void OnPromptRequested(Page sender, PromptArguments arguments);
 
+			[Obsolete("This method is obsolete in .NET 10 and will be removed in .NET11.")]
 			public partial void OnPageBusy(Page sender, bool enabled);
 		}
 	}
