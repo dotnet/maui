@@ -117,10 +117,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			EventHandler<ViewInitializedEventArgs> viewInitialized = Forms.ViewInitialized;
 			viewInitialized?.Invoke(self, new ViewInitializedEventArgs
-				{
-					View = self,
-					NativeView = nativeView
-				});
+			{
+				View = self,
+				NativeView = nativeView
+			});
 		}
 
 		public static bool IsInitializedRenderers { get; private set; }
