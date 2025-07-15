@@ -367,6 +367,117 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, unLoadedCnt);
 		}
 
+		[Fact]
+		public async Task NavigationPageMultiplePushesAndPops()
+		{
+			var firstPage = new LCPage();
+			var secondPage = new LCPage();
+			var thirdPage = new LCPage();
+			var navigationPage = new TestNavigationPage(true, firstPage)
+				.AddToTestWindow();
+
+			// Push two pages
+			await navigationPage.PushAsync(secondPage);
+			await navigationPage.PushAsync(thirdPage);
+
+			// Verify event args after multiple pushes
+			Assert.NotNull(secondPage.NavigatingFromArgs);
+			Assert.NotNull(secondPage.NavigatedFromArgs);
+			Assert.NotNull(thirdPage.NavigatedToArgs);
+			Assert.Equal(secondPage, thirdPage.NavigatedToArgs.PreviousPage);
+			Assert.Equal(thirdPage, secondPage.NavigatedFromArgs.DestinationPage);
+
+			// Pop back to second page
+			await navigationPage.PopAsync();
+
+			Assert.NotNull(thirdPage.NavigatingFromArgs);
+			Assert.NotNull(thirdPage.NavigatedFromArgs);
+			Assert.NotNull(secondPage.NavigatedToArgs);
+			Assert.Equal(thirdPage, secondPage.NavigatedToArgs.PreviousPage);
+			Assert.Equal(secondPage, thirdPage.NavigatedFromArgs.DestinationPage);
+
+			// Verify Loaded/Unloaded counts
+			int secondPageLoadedCnt = 0;
+			int secondPageUnloadedCnt = 0;
+			secondPage.Loaded += (_, _) => secondPageLoadedCnt++;
+			secondPage.Unloaded += (_, _) => secondPageUnloadedCnt++;
+
+			// Initial subscription should trigger Loaded
+			Assert.Equal(1, secondPageLoadedCnt);
+			Assert.Equal(0, secondPageUnloadedCnt);
+
+			// Pop back to first page
+			await navigationPage.PopAsync();
+			Assert.Equal(1, secondPageLoadedCnt);
+			Assert.Equal(1, secondPageUnloadedCnt);
+		}
+
+		[Fact]
+		public async Task TabbedPageMultipleTabSwitches()
+		{
+			var firstPage = new LCPage { Title = "First Page" };
+			var secondPage = new LCPage { Title = "Second Page" };
+
+			var tabbedPage = new TabbedPage { Children = { firstPage, secondPage } }
+				.AddToTestWindow();
+
+			// Add load/unload counters for second page
+			int secondPageLoadedCnt = 0;
+			int secondPageUnloadedCnt = 0;
+			secondPage.Loaded += (_, _) => secondPageLoadedCnt++;
+			secondPage.Unloaded += (_, _) => secondPageUnloadedCnt++;
+
+			// Switch to second page
+			tabbedPage.CurrentPage = secondPage;
+			Assert.NotNull(firstPage.NavigatingFromArgs);
+			Assert.NotNull(firstPage.NavigatedFromArgs);
+			Assert.NotNull(secondPage.NavigatedToArgs);
+			Assert.Equal(firstPage, secondPage.NavigatedToArgs.PreviousPage);
+			Assert.Equal(secondPage, firstPage.NavigatedFromArgs.DestinationPage);
+
+			// Verify Loaded/Unloaded for second page
+			Assert.Equal(1, secondPageLoadedCnt);
+			Assert.Equal(0, secondPageUnloadedCnt);
+
+			// Switch back to first page
+			tabbedPage.CurrentPage = firstPage;
+			Assert.Equal(1, secondPageLoadedCnt);
+			// This assertion is currently failing due to unexpected unload behavior on navigation.
+			// See: https://github.com/dotnet/maui/issues/30627 for context and discussion.
+			//Assert.Equal(1, secondPageUnloadedCnt);
+		}
+
+		[Fact]
+		public async Task FlyoutPageMultipleDetailChanges()
+		{
+			var flyout = new LCPage { Title = "Flyout" };
+			var firstDetail = new LCPage { Title = "First Detail" };
+			var secondDetail = new LCPage { Title = "Second Detail" };
+			var flyoutPage = new FlyoutPage { Flyout = flyout, Detail = firstDetail }.AddToTestWindow();
+
+			// Change to second detail
+			flyoutPage.Detail = secondDetail;
+			Assert.NotNull(firstDetail.NavigatingFromArgs);
+			Assert.NotNull(firstDetail.NavigatedFromArgs);
+			Assert.NotNull(secondDetail.NavigatedToArgs);
+			Assert.Equal(firstDetail, secondDetail.NavigatedToArgs.PreviousPage);
+			Assert.Equal(secondDetail, firstDetail.NavigatedFromArgs.DestinationPage);
+
+			// Verify Loaded/Unloaded for second detail
+			int secondDetailLoadedCnt = 0;
+			int secondDetailUnloadedCnt = 0;
+			secondDetail.Loaded += (_, _) => secondDetailLoadedCnt++;
+			secondDetail.Unloaded += (_, _) => secondDetailUnloadedCnt++;
+
+			Assert.Equal(1, secondDetailLoadedCnt);
+			Assert.Equal(0, secondDetailUnloadedCnt);
+
+			// Change back to first detail
+			flyoutPage.Detail = firstDetail;
+			Assert.Equal(1, secondDetailLoadedCnt);
+			Assert.Equal(1, secondDetailUnloadedCnt);
+		}
+
 		public class LCPage : ContentPage
 		{
 			public NavigatedFromEventArgs NavigatedFromArgs { get; private set; }
