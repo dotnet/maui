@@ -315,5 +315,128 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(2, deactivated);
 			}
 		}
+
+		[Fact(DisplayName = "Window respects IsMinimizable property")]
+		public async Task WindowRespectsIsMinimizableProperty()
+		{
+			SetupBuilder();
+
+			var mainPage = new ContentPage();
+			var window = new Window(mainPage)
+			{
+				IsMinimizable = false
+			};
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
+			{
+				var platformWindow = handler.PlatformView as UI.Xaml.Window;
+				var appWindow = platformWindow?.GetAppWindow();
+				var presenter = appWindow?.Presenter as OverlappedPresenter;
+
+				Assert.NotNull(presenter);
+
+				await Task.Yield();
+
+				// Check that minimize button is disabled when IsMinimizable is false
+				Assert.False(presenter.IsMinimizable);
+
+				// Test changing the property at runtime
+				window.IsMinimizable = true;
+				await Task.Yield();
+
+				Assert.True(presenter.IsMinimizable);
+
+				// Test setting it back to false
+				window.IsMinimizable = false;
+				await Task.Yield();
+
+				Assert.False(presenter.IsMinimizable);
+			});
+		}
+
+		[Fact(DisplayName = "Window respects IsMaximizable property")]
+		public async Task WindowRespectsIsMaximizableProperty()
+		{
+			SetupBuilder();
+
+			var mainPage = new ContentPage();
+			var window = new Window(mainPage)
+			{
+				IsMaximizable = false
+			};
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
+			{
+				var platformWindow = handler.PlatformView as UI.Xaml.Window;
+				var appWindow = platformWindow?.GetAppWindow();
+				var presenter = appWindow?.Presenter as OverlappedPresenter;
+
+				Assert.NotNull(presenter);
+
+				await Task.Yield();
+
+				// Check that maximize button is disabled when IsMaximizable is false
+				Assert.False(presenter.IsMaximizable);
+
+				// Test changing the property at runtime
+				window.IsMaximizable = true;
+				await Task.Yield();
+
+				Assert.True(presenter.IsMaximizable);
+
+				// Test setting it back to false
+				window.IsMaximizable = false;
+				await Task.Yield();
+
+				Assert.False(presenter.IsMaximizable);
+			});
+		}
+
+		[Fact(DisplayName = "Window respects both IsMinimizable and IsMaximizable properties together")]
+		public async Task WindowRespectsBothMinimizableAndMaximizableProperties()
+		{
+			SetupBuilder();
+
+			var mainPage = new ContentPage();
+			var window = new Window(mainPage)
+			{
+				IsMinimizable = false,
+				IsMaximizable = false
+			};
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
+			{
+				var platformWindow = handler.PlatformView as UI.Xaml.Window;
+				var appWindow = platformWindow?.GetAppWindow();
+				var presenter = appWindow?.Presenter as OverlappedPresenter;
+
+				Assert.NotNull(presenter);
+
+				await Task.Yield();
+
+				Assert.False(presenter.IsMinimizable);
+				Assert.False(presenter.IsMaximizable);
+
+				window.IsMinimizable = true;
+				await Task.Yield();
+
+				Assert.True(presenter.IsMinimizable);
+				Assert.False(presenter.IsMaximizable);
+
+				window.IsMinimizable = false;
+				window.IsMaximizable = true;
+				await Task.Yield();
+
+				Assert.False(presenter.IsMinimizable);
+				Assert.True(presenter.IsMaximizable);
+
+				window.IsMinimizable = true;
+				window.IsMaximizable = true;
+				await Task.Yield();
+
+				Assert.True(presenter.IsMinimizable);
+				Assert.True(presenter.IsMaximizable);
+			});
+		}
 	}
 }
