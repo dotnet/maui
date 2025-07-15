@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		private const string ScriptMessageHandlerName = "webwindowinterop";
 
+		bool isInitialLoading = true;
+
 		protected override WKWebView CreatePlatformView()
 		{
 			var config = new WKWebViewConfiguration();
@@ -84,10 +86,17 @@ namespace Microsoft.Maui.Handlers
 				return;
 				
 			scrollView.UpdateFlowDirection(hybridWebView);
-			
+
 			// On macOS, we need to refresh the scroll indicators when flow direction changes
-			if (OperatingSystem.IsMacCatalyst())
+			// But only for runtime changes, not during initial load
+			if (OperatingSystem.IsMacCatalyst() && handler is HybridWebViewHandler hybridWebViewHandler)
 			{
+				if (hybridWebViewHandler.isInitialLoading)
+				{
+					hybridWebViewHandler.isInitialLoading = false;
+					return;
+				}
+
 				bool showsVertical = scrollView.ShowsVerticalScrollIndicator;
 				bool showsHorizontal = scrollView.ShowsHorizontalScrollIndicator;
 

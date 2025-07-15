@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual float MinimumSize => 44f;
 
+		bool isInitialLoading = true;
+
 		WKUIDelegate? _delegate;
 
 		protected override WKWebView CreatePlatformView() =>
@@ -72,10 +74,17 @@ namespace Microsoft.Maui.Handlers
 			scrollView.UpdateFlowDirection(webView);
 
 			// On macOS, we need to refresh the scroll indicators when flow direction changes
-			if (OperatingSystem.IsMacCatalyst())
+			// But only for runtime changes, not during initial load
+			if (OperatingSystem.IsMacCatalyst() && handler is WebViewHandler platformHandler)
 			{
-				bool showsVertical = scrollView.ShowsVerticalScrollIndicator;
-				bool showsHorizontal = scrollView.ShowsHorizontalScrollIndicator;
+				if (platformHandler.isInitialLoading)
+				{
+					platformHandler.isInitialLoading = false;
+					return;
+				}
+				
+				var showsVertical = scrollView.ShowsVerticalScrollIndicator;
+				var showsHorizontal = scrollView.ShowsHorizontalScrollIndicator;
 
 				scrollView.ShowsVerticalScrollIndicator = false;
 				scrollView.ShowsHorizontalScrollIndicator = false;
