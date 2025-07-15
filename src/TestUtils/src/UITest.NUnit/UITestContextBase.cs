@@ -42,7 +42,14 @@ namespace UITest.Appium.NUnit
 		public void InitialSetup(IServerContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
+
+#if MACCATALYST //In Mac Catalyst, we want to reset the context after each test
+			// This is to ensure that the app is restarted with current test configuration.
+			InitialSetup(context, true);
+#else
 			InitialSetup(context, false);
+#endif
+
 		}
 
 		public virtual void Reset()
