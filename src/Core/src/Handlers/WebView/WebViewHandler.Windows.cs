@@ -322,11 +322,6 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapFlowDirection(IWebViewHandler handler, IWebView webView)
 		{
-			// On Windows, we don't want to apply FlowDirection to WebView2 as it causes content mirroring.
-			// WebView2 content should maintain its original appearance regardless of the container's FlowDirection.
-			// The FlowDirection should only affect the positioning of the WebView within its parent container,
-			// which is handled by the parent layout, not the WebView2 control itself.
-
 			// Explicitly do nothing here to override the base ViewHandler.MapFlowDirection behavior
 			// This prevents the WebView2.FlowDirection from being set, avoiding content mirroring
 		}
