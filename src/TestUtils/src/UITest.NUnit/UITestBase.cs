@@ -59,7 +59,7 @@ namespace UITest.Appium.NUnit
 			try
 			{
 				if (!ResetAfterEachTest)
-					Reset();
+					Close();
 			}
 			catch (Exception e)
 			{
