@@ -17,10 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		protected const string BackButtonAutomationId = "Navigate up";
 #endif
 
-#if MACCATALYST
-		protected override bool ResetAfterEachTest => true;
-#endif
-
 		public _IssuesUITest(TestDevice device) : base(device) { }
 
 		public override IConfig GetTestConfig()
@@ -28,11 +24,24 @@ namespace Microsoft.Maui.TestCases.Tests
 			var config = base.GetTestConfig();
 
 #if MACCATALYST
-			// For Catalyst, pass the test name as a startup argument
+		// For Catalyst, pass the test name as a startup argument
+		if(UITestContext is null)
+		{
 			config.SetTestConfigurationArg("test", Issue);
+		}
 #endif
 
 			return config;
+		}
+
+		public override void LaunchAppWithTest()
+		{
+			App.LaunchApp(Issue, ResetAfterEachTest);
+		}
+
+		public override void Close()
+		{
+			App.CloseApp();
 		}
 
 		protected override void FixtureSetup()
