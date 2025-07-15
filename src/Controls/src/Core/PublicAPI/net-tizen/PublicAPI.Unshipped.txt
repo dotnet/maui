@@ -213,6 +213,15 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 ~virtual Microsoft.Maui.Controls.CollectionSynchronizationCallback.Invoke(System.Collections.IEnumerable collection, object context, System.Action accessMethod, bool writeAccess) -> void
 ~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
+*REMOVED*Microsoft.Maui.Controls.ClickedEventArgs
+*REMOVED*Microsoft.Maui.Controls.ClickedEventArgs.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
+*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer
+*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
+*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.Buttons.set -> void
+*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.Clicked -> System.EventHandler
+*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.ClickGestureRecognizer() -> void
+*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequired.get -> int
+*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequired.set -> void
 *REMOVED*~Microsoft.Maui.Controls.ClickedEventArgs.ClickedEventArgs(Microsoft.Maui.Controls.ButtonsMask buttons, object commandParameter) -> void
 *REMOVED*~Microsoft.Maui.Controls.ClickedEventArgs.Parameter.get -> object
 *REMOVED*~Microsoft.Maui.Controls.ClickGestureRecognizer.Command.get -> System.Windows.Input.ICommand
@@ -224,12 +233,3 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.CommandProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequiredProperty -> Microsoft.Maui.Controls.BindableProperty
-*REMOVED*Microsoft.Maui.Controls.ClickedEventArgs
-*REMOVED*Microsoft.Maui.Controls.ClickedEventArgs.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
-*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer
-*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
-*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.Buttons.set -> void
-*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.Clicked -> System.EventHandler
-*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.ClickGestureRecognizer() -> void
-*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequired.get -> int
-*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequired.set -> void
