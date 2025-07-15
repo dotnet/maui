@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Platform
 		SafeAreaPadding _safeArea = SafeAreaPadding.Empty;
 		bool _safeAreaInvalidated = true;
 		bool _appliesSafeAreaAdjustments;
-		
+
 
 		WeakReference<IView>? _reference;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
@@ -163,6 +163,9 @@ namespace Microsoft.Maui.Platform
 				// to let ancestors adjust to the measured size.
 				if (this.IsFinalMeasureHandledBySuperView())
 				{
+					//This arrangement step is essential for communicating the correct coordinate space to native iOS views before scheduling the second layout pass.
+					//This ensures the native view is aware of the correct bounds and can adjust its layout accordingly.
+					CrossPlatformArrange(Bounds.ToRectangle());
 					SetNeedsLayout();
 					this.InvalidateAncestorsMeasures();
 					return;
@@ -215,7 +218,7 @@ namespace Microsoft.Maui.Platform
 
 			// Return whether the way safe area interacts with our view has changed
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
-			       (oldSafeArea == _safeArea || !_appliesSafeAreaAdjustments);
+				   (oldSafeArea == _safeArea || !_appliesSafeAreaAdjustments);
 		}
 
 		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
