@@ -55,9 +55,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateReload(this WKWebView platformWebView, IWebView webView)
 		{
-			//platformWebView?.Reload();
 			if (platformWebView == null)
+			{
 				return;
+			}
 
 			// Check if we have a source and platformWebView implements IWebViewDelegate
 			if (webView.Source != null && platformWebView is IWebViewDelegate webViewDelegate)
