@@ -678,16 +678,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool IsPointerEventRelevantToCurrentElement(PointerRoutedEventArgs e)
 		{
-			if (_container is null)
-			{
-				return false;
-			}
 			// For multi-window scenarios, we need to validate that the pointer event
 			// is actually relevant to the current element's window
 			try
 			{
 				// Check if the container has a valid XamlRoot (indicates it's in a live window)
-				if (_container.XamlRoot is null)
+				if (_container?.XamlRoot is null || e?.OriginalSource is null)
 				{
 					return false;
 				}
