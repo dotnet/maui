@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Handlers
 				var date = VirtualView?.Date;
 				if (date is not null && date is DateTime dt)
 				{
-					picker.Date = dt.ToNSDate();
+					// If date is equal to MinimumDate (could be default/null value), use Today's date for the picker
+					var pickerDate = dt == VirtualView.MinimumDate ? DateTime.Today : dt;
+					picker.Date = pickerDate.ToNSDate();
 				}
 			}
 

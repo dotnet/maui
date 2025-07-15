@@ -23,5 +23,26 @@ namespace Microsoft.Maui.UnitTests.Views
 			Assert.NotNull(datePicker);
 			Assert.Equal(datePicker.Format, dateFormat);
 		}
+
+		[Fact]
+		public void TestDatePickerDefaultValue()
+		{
+			DatePicker datePicker = new DatePicker();
+			
+			// The default value should be Today's date due to the defaultValueCreator
+			Assert.Equal(DateTime.Today, datePicker.Date);
+		}
+
+		[Fact]
+		public void TestDatePickerMinValueHandling()
+		{
+			DatePicker datePicker = new DatePicker();
+			
+			// Set date to MinValue explicitly - this should get coerced to MinimumDate
+			datePicker.Date = DateTime.MinValue;
+			
+			// The DatePicker should have MinimumDate as its value due to coercion
+			Assert.Equal(new DateTime(1900, 1, 1), datePicker.Date);
+		}
 	}
 }
