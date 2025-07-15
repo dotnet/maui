@@ -14,12 +14,23 @@ namespace Microsoft.Maui.UnitTests
 		/// </summary>
 		void ResetLayout()
 		{
-			var prop = typeof(PerformanceProfiler).GetProperty(
+			var layoutProperty = typeof(PerformanceProfiler).GetProperty(
 				"Layout",
-				System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-			lock (typeof(PerformanceProfiler).GetField("_lock", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static).GetValue(null))
+				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+			
+			var lockField = typeof(PerformanceProfiler).GetField("_lock", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+			var lockObj = lockField?.GetValue(null);
+
+			if (lockObj != null)
 			{
-				prop.SetValue(null, null);
+				lock (lockObj)
+				{
+					layoutProperty?.SetValue(null, null);
+				}
+			}
+			else
+			{
+				layoutProperty?.SetValue(null, null);
 			}
 		}
 
@@ -144,33 +155,39 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void GetStats_BeforeAndAfterTracking_VerifyTimestampAndDurations()
 		{
-			// Arrange
 			ResetLayout();
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
 
-			// Before any tracking
 			var beforeStats = PerformanceProfiler.GetStats();
 			Assert.Equal(0, beforeStats.Layout.MeasureDuration);
 			Assert.Equal(0, beforeStats.Layout.ArrangeDuration);
 			Assert.True((DateTime.UtcNow - beforeStats.TimestampUtc).TotalSeconds < 5);
 
-			// After measure tracking with sleep
+			// Track measure
 			const int measureSleep = 20;
 			var measureTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure);
 			Thread.Sleep(measureSleep);
 			measureTracker.Stop();
+
+			SpinWait.SpinUntil(() => tracker.MeasureCallCount == 1, TimeSpan.FromMilliseconds(200));
 			var afterMeasure = PerformanceProfiler.GetStats();
+
+			// Assert measure stats
 			Assert.InRange(afterMeasure.Layout.MeasureDuration, measureSleep, measureSleep * 3);
 			Assert.Equal(0, afterMeasure.Layout.ArrangeDuration);
 			Assert.True((DateTime.UtcNow - afterMeasure.TimestampUtc).TotalSeconds < 5);
 
-			// After arrange tracking with sleep
+			// Track arrange
 			const int arrangeSleep = 30;
 			var arrangeTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange);
 			Thread.Sleep(arrangeSleep);
 			arrangeTracker.Stop();
+
+			SpinWait.SpinUntil(() => tracker.ArrangeCallCount == 1, TimeSpan.FromMilliseconds(200));
 			var afterArrange = PerformanceProfiler.GetStats();
+
+			// Assert arrange stats
 			Assert.InRange(afterArrange.Layout.ArrangeDuration, arrangeSleep, arrangeSleep * 3);
 			Assert.True(afterArrange.Layout.MeasureDuration >= afterMeasure.Layout.MeasureDuration,
 				$"Expected measure duration >= {afterMeasure.Layout.MeasureDuration}ms, but got {afterArrange.Layout.MeasureDuration}ms");
@@ -275,8 +292,11 @@ namespace Microsoft.Maui.UnitTests
 			Thread.Sleep(expectedDelayMs);
 			perfTracker.Stop();
 
+			// Wait for tracking to register
+			bool success = SpinWait.SpinUntil(() => tracker.ArrangeCallCount == 1, TimeSpan.FromMilliseconds(200));
+			Assert.True(success, "ArrangeCallCount did not reach 1 in expected time.");
+
 			// Assert
-			Assert.Equal(1, tracker.ArrangeCallCount);
 			Assert.InRange(tracker.ArrangedDuration, expectedDelayMs, expectedDelayMs + toleranceMs);
 			Assert.Equal("LongDelayedElement", tracker.ArrangedElement);
 		}
