@@ -59,11 +59,12 @@ namespace UITest.Appium
 
 			if (_app.GetTestDevice() == TestDevice.Mac)
 			{
-				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
-				_app.Driver.ExecuteScript("macos: activateApp", new Dictionary<string, object>
+			
+				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+				_app.Driver.ExecuteScript("macos: launchApp", new Dictionary<string, object>
 				{
 					{ "bundleId", _app.GetAppId() },
-					{ "environment", args ?? new Dictionary<string, string>() },
+					{ "environment", args},
 				});
 			}
 			else if (_app.Driver is WindowsDriver windowsDriver)
