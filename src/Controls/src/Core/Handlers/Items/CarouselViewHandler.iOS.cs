@@ -85,12 +85,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				if (!double.IsInfinity(widthConstraint) && size.Width > widthConstraint)
 				{
-					size.Width = (float)widthConstraint;
+					size.Width = widthConstraint;
 				}
 
 				if (!double.IsInfinity(heightConstraint) && size.Height > heightConstraint)
 				{
-					size.Height = (float)heightConstraint;
+					size.Height = heightConstraint;
 				}
 
 			}
