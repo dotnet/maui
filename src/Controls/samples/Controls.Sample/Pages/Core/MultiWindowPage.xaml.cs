@@ -83,5 +83,21 @@ namespace Maui.Controls.Sample.Pages
 			Window.X = (disp.Width / disp.Density - Window.Width) / 2;
 			Window.Y = (disp.Height / disp.Density - Window.Height) / 2;
 		}
-	}
+
+		void OnIsMinimizableCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
+		{
+			UpdateWindowButtons();
+		}
+
+		void OnIsMaximizableCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
+		{
+			UpdateWindowButtons();
+		}
+
+		void UpdateWindowButtons()
+		{
+			Window.IsMinimizable = IsMinimizableCheckBox.IsChecked;
+			Window.IsMaximizable = IsMaximizableCheckBox.IsChecked;
+		}
+    }
 }

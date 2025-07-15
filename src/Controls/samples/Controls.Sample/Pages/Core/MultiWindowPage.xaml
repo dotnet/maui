@@ -21,6 +21,11 @@
             <Label Text="{Binding Window.Width, StringFormat='W = {0:0.00}'}" />
             <Label Text="{Binding Window.Height, StringFormat='H = {0:0.00}'}" />
 
+            <Label Text="IsMinimizable:" />
+            <CheckBox x:Name="IsMinimizableCheckBox" IsChecked="True" CheckedChanged="OnIsMinimizableCheckBoxCheckedChanged" />
+            <Label Text="IsMaximizable:" />
+            <CheckBox x:Name="IsMaximizableCheckBox" IsChecked="True" CheckedChanged="OnIsMaximizableCheckBoxCheckedChanged" />
+          
             <Label Text="Open/Close Windows:" />
             <Button
                 Clicked="OnNewWindowClicked"
