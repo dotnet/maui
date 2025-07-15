@@ -42,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 #if IOS || MACCATALYST
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
 #else
-                    handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 #endif
 
 					SetupShellHandlers(handlers);
