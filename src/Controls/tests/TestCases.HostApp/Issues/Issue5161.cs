@@ -77,6 +77,7 @@ public class Issue5161 : Shell
                 new Label
                 {
                     Text = "This is Second Page",
+                    AutomationId = "SecondPageLabel"
                 }
             }
             };
