@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var toggleSwitch = (ToggleSwitch)sender;
 
-			if( toggleSwitch is null)
+			if (toggleSwitch is null)
 			{
 				return;
 			}
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Handlers
 			// This ensures the control does not reserve unnecessary space for labels.
 			if (view is ISwitch switchView && handler is SwitchHandler switchHandler)
 			{
-				switchHandler.PlatformView.UpdateMinWidth(switchView);
+				switchHandler.PlatformView?.UpdateMinWidth(switchView);
 			}
 		}
 
