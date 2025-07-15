@@ -251,7 +251,6 @@ virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.
 virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateSearchIsEnabled(UIKit.UISearchController! searchController) -> void
 virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateSearchVisibility(UIKit.UISearchController! searchController) -> void
 override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void
-override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Controls.ScrollView.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, double height) -> void
 virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDeclarer, TPropertyType>.Invoke(TDeclarer bindable) -> TPropertyType
