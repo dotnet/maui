@@ -18,7 +18,8 @@ public class Issue23377 : TestContentPage
 		};
 		BindingContext = this;
 
-		var VerticalStackLayout = new VerticalStackLayout();
+		var StackLayout = new StackLayout();
+		StackLayout.VerticalOptions = LayoutOptions.Center;
 
 		button = new Button
 		{
@@ -31,9 +32,11 @@ public class Issue23377 : TestContentPage
 		collectionView = new CollectionView
 		{
 			ItemsSource = Items,
-			Margin = new Thickness(100),
+			Margin = new Thickness(5),
 			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
 			HeightRequest = 200,
+			WidthRequest = 300,
+			VerticalOptions = LayoutOptions.Center,
 			HorizontalScrollBarVisibility = ScrollBarVisibility.Never
 		};
 
@@ -44,17 +47,17 @@ public class Issue23377 : TestContentPage
 			return label;
 		});
 
-		VerticalStackLayout.Children.Add(collectionView);
-		VerticalStackLayout.Children.Add(button);
+		StackLayout.Children.Add(collectionView);
+		StackLayout.Children.Add(button);
 
-		Content = VerticalStackLayout;
+		Content = StackLayout;
 	}
 
 	void Button_Clicked(object sender, EventArgs e)
 	{
 		if (collectionView.ItemsLayout is LinearItemsLayout linearItemsLayout)
 		{
-			linearItemsLayout.ItemSpacing = 80;
+			linearItemsLayout.ItemSpacing = 5;
 		}
 	}
 }
