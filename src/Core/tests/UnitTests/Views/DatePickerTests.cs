@@ -28,7 +28,7 @@ namespace Microsoft.Maui.UnitTests.Views
 		public void TestDatePickerDefaultValue()
 		{
 			DatePicker datePicker = new DatePicker();
-			
+
 			// The default value should be Today's date due to the defaultValueCreator
 			Assert.Equal(DateTime.Today, datePicker.Date);
 		}
@@ -37,10 +37,10 @@ namespace Microsoft.Maui.UnitTests.Views
 		public void TestDatePickerMinValueHandling()
 		{
 			DatePicker datePicker = new DatePicker();
-			
+
 			// Set date to MinValue explicitly - this should get coerced to MinimumDate
 			datePicker.Date = DateTime.MinValue;
-			
+
 			// The DatePicker should have MinimumDate as its value due to coercion
 			Assert.Equal(new DateTime(1900, 1, 1), datePicker.Date);
 		}
@@ -49,13 +49,13 @@ namespace Microsoft.Maui.UnitTests.Views
 		public void TestDatePickerWithCustomMinimumDate()
 		{
 			DatePicker datePicker = new DatePicker();
-			
+
 			// Set a custom minimum date
 			datePicker.MinimumDate = new DateTime(2020, 1, 1);
-			
+
 			// Set date to MinValue - this should get coerced to the new MinimumDate
 			datePicker.Date = DateTime.MinValue;
-			
+
 			// The DatePicker should have the custom MinimumDate as its value
 			Assert.Equal(new DateTime(2020, 1, 1), datePicker.Date);
 		}
