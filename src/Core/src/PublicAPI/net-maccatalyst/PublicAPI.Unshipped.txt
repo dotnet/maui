@@ -43,6 +43,8 @@ Microsoft.Maui.WebResourceRequestedEventArgs.UrlSchemeTask.get -> WebKit.IWKUrlS
 static Microsoft.Maui.Handlers.ButtonHandler.MapBackground(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IButton! button) -> void
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapBackground(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapIsMaximizable(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapIsMinimizable(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! window) -> void
 static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureEnvironmentVariables(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 *REMOVED*static Microsoft.Maui.Platform.ApplicationExtensions.CreatePlatformWindow(this UIKit.IUIApplicationDelegate! platformApplication, Microsoft.Maui.IApplication! application, UIKit.UIApplication! uiApplication, Foundation.NSDictionary! launchOptions) -> void
 static Microsoft.Maui.Platform.ApplicationExtensions.CreatePlatformWindow(this UIKit.IUIApplicationDelegate! platformApplication, Microsoft.Maui.IApplication! application, UIKit.UIApplication! uiApplication, Foundation.NSDictionary? launchOptions) -> void
@@ -53,6 +55,8 @@ static Microsoft.Maui.Platform.TextInputExtensions.SetTextRange(this UIKit.IUITe
 static Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(this UIKit.UIApplication! application) -> UIKit.UIWindow?
 static Microsoft.Maui.Platform.UIApplicationExtensions.GetWindow(this UIKit.UIApplication! application) -> Microsoft.Maui.IWindow?
 *REMOVED*virtual Microsoft.Maui.MauiUIApplicationDelegate.FinishedLaunching(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
+static Microsoft.Maui.Platform.WindowExtensions.UpdateIsMaximizableAsync(this UIKit.UIWindow! platformWindow, Microsoft.Maui.IWindow! window) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Platform.WindowExtensions.UpdateIsMinimizableAsync(this UIKit.UIWindow! platformWindow, Microsoft.Maui.IWindow! window) -> System.Threading.Tasks.Task!
 virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillEnterForeground.Invoke(UIKit.UIApplication! application) -> void
 virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillFinishLaunching.Invoke(UIKit.UIApplication! application, Foundation.NSDictionary? launchOptions) -> bool
 virtual Microsoft.Maui.MauiUIApplicationDelegate.FinishedLaunching(UIKit.UIApplication! application, Foundation.NSDictionary? launchOptions) -> bool

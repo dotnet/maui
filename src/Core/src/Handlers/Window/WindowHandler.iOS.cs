@@ -127,7 +127,13 @@ namespace Microsoft.Maui.Handlers
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
 			}
 		}
+#if MACCATALYST
+		public static void MapIsMinimizable(IWindowHandler handler, IWindow window) =>
+			handler.PlatformView?.UpdateIsMinimizableAsync(window).FireAndForget();
 
+		public static void MapIsMaximizable(IWindowHandler handler, IWindow window) =>
+			handler.PlatformView?.UpdateIsMaximizableAsync(window).FireAndForget();
+#endif
 		void UpdateVirtualViewFrame(UIWindow window)
 		{
 			VirtualView.FrameChanged(window.Bounds.ToRectangle());
