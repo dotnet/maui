@@ -95,8 +95,9 @@ namespace Microsoft.Maui.Platform
 					CacheMeasureConstraints(widthConstraint, heightConstraint);
 				}
 
+				Size crossPlatformBounds;
 				// Account for safe area adjustments automatically added by iOS
-				var contentSize = CrossPlatformArrange(Bounds).ToCGSize();
+				var contentSize = CrossPlatformArrange(Bounds, out crossPlatformBounds).ToCGSize();
 
 				// For Right-To-Left (RTL) layouts, we need to adjust the content arrangement and offset
 				// to ensure the content is correctly aligned and scrolled. This involves a second layout
@@ -105,8 +106,8 @@ namespace Microsoft.Maui.Platform
 				{
 					if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 					{
-						var horizontalOffset = contentSize.Width - contentSize.Width;
-						CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), contentSize.ToSize()));
+						var horizontalOffset = contentSize.Width - crossPlatformBounds.Width;
+						CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), crossPlatformBounds), out _);
 						ContentOffset = new CGPoint(horizontalOffset, 0);
 					}
 					else
@@ -156,12 +157,15 @@ namespace Microsoft.Maui.Platform
 			       (oldSafeArea == _safeArea || !_appliesSafeAreaAdjustments);
 		}
 
-		Size CrossPlatformArrange(CGRect bounds)
+		Size CrossPlatformArrange(CGRect bounds, out Size adjustedBounds)
 		{
 			if (_appliesSafeAreaAdjustments)
 			{
 				bounds = _safeArea.InsetRect(bounds);
 			}
+
+			adjustedBounds = bounds.Size.ToSize();
+			
 
 			var size = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
 			return size;
