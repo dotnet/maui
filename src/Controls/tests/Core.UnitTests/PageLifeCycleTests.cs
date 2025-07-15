@@ -102,16 +102,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TabbedPageInitialPage()
 		{
-			var firstPage = new LCPage() { Title = "First Page" };
-			var secondPage = new LCPage() { Title = "Second Page" };
+			var firstPage = new LCPage { Title = "First Page" };
+			var secondPage = new LCPage { Title = "Second Page" };
 			var tabbedPage = new TabbedPage().AddToTestWindow();
 
 			tabbedPage.Children.Add(firstPage);
 			tabbedPage.Children.Add(secondPage);
-			Assert.Null(firstPage.NavigatingFromArgs);
-			Assert.Null(firstPage.NavigatedFromArgs);
+			
 			Assert.NotNull(firstPage.NavigatedToArgs);
 			Assert.Null(firstPage.NavigatedToArgs.PreviousPage);
+
+			if (firstPage.NavigatingFromArgs is not null)
+			{
+				Assert.Same(firstPage, firstPage.NavigatingFromArgs.DestinationPage);
+				Assert.Equal(NavigationType.Replace, firstPage.NavigatingFromArgs.NavigationType);
+			}
+
+			if (firstPage.NavigatedFromArgs is not null)
+			{
+				Assert.Same(secondPage, firstPage.NavigatedFromArgs.DestinationPage);
+			}
 		}
 
 		[Fact]
