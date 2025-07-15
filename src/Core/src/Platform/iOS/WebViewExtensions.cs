@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Platform
 				// If the source is an HTML source, we need to reload from the source
 				// since WKWebView.Reload() doesn't work properly with LoadHtmlString
 				var sourceType = webView.Source.GetType().Name;
-				if (sourceType == "HtmlWebViewSource")
+				if (string.Equals(sourceType, "HtmlWebViewSource", StringComparison.Ordinal))
 				{
 					// For HTML sources, always reload from the source
 					webView.Source.Load(webViewDelegate);
@@ -75,6 +75,10 @@ namespace Microsoft.Maui.Platform
 					// For URL sources, use the standard reload
 					platformWebView.Reload();
 				}
+			}
+			else
+			{
+				platformWebView.Reload();
 			}
 		}
 
