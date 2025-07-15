@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Handlers
 
 			// On macOS, we need to refresh the scroll indicators when flow direction changes
 			// But only for runtime changes, not during initial load
-			if (OperatingSystem.IsMacCatalyst() && handler.PlatformView != null && handler.PlatformView.IsLoaded())
+			if (OperatingSystem.IsMacCatalyst() && hybridWebView.IsLoadedOnPlatform())
 			{
 				bool showsVertical = scrollView.ShowsVerticalScrollIndicator;
 				bool showsHorizontal = scrollView.ShowsHorizontalScrollIndicator;
