@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS // Graphics view is not accessible on Windows , https://github.com/dotnet/maui/issues/27195#issuecomment-2599151930
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -7,9 +6,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue20834 : _IssuesUITest
 {
-	const string DragTarget = "graphicsView";
-	const string DropTarget1 = "DropTarget";
-	const string DropTarget2 = "DropTarget_2";
+	const string DragTarget = "DragTarget";
+	const string DropTarget1 = "DropTarget1";
+	const string DropTarget2 = "DropTarget2";
 
 	public Issue20834(TestDevice testDevice) : base(testDevice)
 	{
@@ -36,7 +35,7 @@ public class Issue20834 : _IssuesUITest
 		VerifyScreenshot();
 	}
 
-#if ANDROID //setting the toY value more than 100 in iOS opens the notification center
+#if !IOS //setting the toY value more than 100 in iOS opens the notification center
 	[Test]
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsViewShouldDrawWithInCanvasBounds()
@@ -48,4 +47,3 @@ public class Issue20834 : _IssuesUITest
 	}
 #endif
 }
-#endif
