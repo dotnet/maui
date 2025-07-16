@@ -52,17 +52,25 @@ public static class DatePickerExtensions
 
 	public static void UpdateDate(this UIDatePicker picker, IDatePicker datePicker)
 	{
-		if (picker is not null && picker.Date.ToDateTime() != datePicker.Date)
+		if (picker is not null)
 		{
-			picker.SetDate(datePicker.Date?.ToNSDate() ?? NSDate.DistantPast, false);
+			var targetDate = datePicker.Date ?? DateTime.Today;
+			if (picker.Date.ToDateTime() != targetDate)
+			{
+				picker.SetDate(targetDate.ToNSDate(), false);
+			}
 		}
 	}
 
 	public static void UpdateDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, UIDatePicker? picker)
 	{
-		if (picker is not null && picker.Date != NSDate.DistantPast && picker.Date.ToDateTime() != datePicker.Date)
+		if (picker is not null)
 		{
-			picker.SetDate(datePicker.Date?.ToNSDate() ?? NSDate.DistantPast, false);
+			var targetDate = datePicker.Date ?? DateTime.Today;
+			if (picker.Date.ToDateTime() != targetDate)
+			{
+				picker.SetDate(targetDate.ToNSDate(), false);
+			}
 		}
 
 		string format = datePicker.Format ?? string.Empty;
@@ -90,11 +98,15 @@ public static class DatePickerExtensions
 		}
 		else if (format.Contains('/', StringComparison.Ordinal))
 		{
-			platformDatePicker.Text = datePicker.Date?.ToString(format, CultureInfo.InvariantCulture) ?? string.Empty;
+			// When Date is null, use today's date for display
+			var displayDate = datePicker.Date ?? DateTime.Today;
+			platformDatePicker.Text = displayDate.ToString(format, CultureInfo.InvariantCulture);
 		}
 		else
 		{
-			platformDatePicker.Text = datePicker.Date?.ToString(format) ?? string.Empty;
+			// When Date is null, use today's date for display
+			var displayDate = datePicker.Date ?? DateTime.Today;
+			platformDatePicker.Text = displayDate.ToString(format);
 		}
 
 		platformDatePicker.UpdateCharacterSpacing(datePicker);

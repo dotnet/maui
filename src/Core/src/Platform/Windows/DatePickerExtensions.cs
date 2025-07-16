@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			var date = datePicker.Date ?? DateTime.MinValue;
+			var date = datePicker.Date ?? DateTime.Today;
 			platformDatePicker.UpdateDate(date);
 
 			var format = datePicker.Format;
