@@ -92,6 +92,7 @@ namespace UITest.Appium
 			if (!string.IsNullOrWhiteSpace(appId))
 			{
 				options.AddAdditionalAppiumOption(MobileCapabilityType.NoReset, "true");
+				options.AddAdditionalAppiumOption(MobileCapabilityType.FullReset, "false");
 				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, appId);
 				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, $"{appId}.MainActivity");
 			}
@@ -105,7 +106,11 @@ namespace UITest.Appium
 			// Once the idle state is detected or the timeout elapses (whichever occurs first), the object will start to wait for the selector to find a match. 
 			// 10000 ms by default.
 			options.AddAdditionalAppiumOption("appium:waitForIdleTimeout", 5000);
-
+			
+			// Set the timeout for ADB (Android Debug Bridge) shell commands execution.
+			// 20000 ms by default.
+			options.AddAdditionalAppiumOption("appium:adbExecTimeout", 15000);
+			
 			// Whether to disable window animations when starting the instrumentation process.
 			// The animation scale will be restored automatically after the instrumentation process ends.
 			options.AddAdditionalAppiumOption("appium:disableWindowAnimation", true);
