@@ -1,4 +1,4 @@
-namespace Controls.TestCases.HostApp.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 29277, "Shell SearchHandler.Unfocus() has no effect on iOS & Android", PlatformAffected.iOS | PlatformAffected.Android)]
 public partial class Issue29277 : Shell
