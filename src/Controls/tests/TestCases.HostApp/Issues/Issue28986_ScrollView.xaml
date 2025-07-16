@@ -2,9 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue28986_ScrollView"
-             Title="SafeArea ScrollView Test">
+             Title="SafeArea ScrollView Test" SafeAreaIgnore="All"
+             Background="Red">
     
-    <Grid BackgroundColor="Red">
+    <Grid BackgroundColor="Red" SafeAreaIgnore="All">
         <!-- ScrollView with SafeAreaIgnore property -->
         <ScrollView x:Name="TestScrollView" SafeAreaIgnore="All" BackgroundColor="LightBlue">
             <StackLayout Spacing="20" Padding="20">
