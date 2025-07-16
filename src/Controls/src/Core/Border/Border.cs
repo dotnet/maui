@@ -374,6 +374,43 @@ namespace Microsoft.Maui.Controls
 			return fallbackRegion;
 		}
 
+		/// <inheritdoc cref="ISafeAreaPage.SafeAreaInsets"/>
+		Thickness ISafeAreaPage.SafeAreaInsets { set { } } // Default no-op implementation for borders
+
+		/// <inheritdoc cref="ISafeAreaPage.IgnoreSafeAreaForEdge"/>
+		bool ISafeAreaPage.IgnoreSafeAreaForEdge(int edge)
+		{
+			// Use direct property first, then fall back to attached property
+			var regionForEdge = SafeAreaIgnore.GetEdge(edge);
+			
+			// Handle the SafeAreaRegions behavior
+			if (regionForEdge.HasFlag(SafeAreaRegions.All))
+			{
+				return true; // Ignore all insets - content may be positioned anywhere
+			}
+
+			if (regionForEdge == SafeAreaRegions.None || regionForEdge == SafeAreaRegions.SoftInput)
+			{
+				// Content will never display behind anything that could block it
+				// Or treat SoftInput as respecting safe area for now
+				return false;
+			}
+
+			if (regionForEdge == SafeAreaRegions.Default)
+			{
+				// Check if attached property is set, if not fall back to default behavior
+				if (SafeAreaElement.GetIgnore(this) != SafeAreaEdges.Default)
+				{
+					return SafeAreaElement.ShouldIgnoreSafeAreaForEdge(this, edge);
+				}
+				
+				// Default behavior for Border is to respect safe area
+				return false;
+			}
+
+			return false;
+		}
+
 		SafeAreaEdges ISafeAreaElement.SafeAreaIgnoreDefaultValueCreator()
 		{
 			return SafeAreaEdges.Default;
