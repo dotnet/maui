@@ -262,7 +262,13 @@ namespace Microsoft.Maui.Platform
 
 			adjustedBounds = bounds.Size.ToSize();
 
-			var size = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
+			Size size;
+			
+			if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+				size = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
+			else
+				size = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
+
 			return size;
 		}
 
