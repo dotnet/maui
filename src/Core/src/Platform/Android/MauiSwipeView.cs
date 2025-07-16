@@ -210,7 +210,10 @@ namespace Microsoft.Maui.Platform
 				else
 				{
 					ResetSwipe(e);
-					PropagateParentTouch();
+					if (!_isSwiping)
+					{
+						PropagateParentTouch();
+					}
 				}
 			}
 
