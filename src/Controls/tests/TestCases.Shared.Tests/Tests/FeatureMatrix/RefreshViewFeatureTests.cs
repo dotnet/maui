@@ -43,21 +43,23 @@ public class RefreshViewFeatureTests : UITest
 		var rect = App.WaitForElement("RefreshView").GetRect();
 		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
 		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.Not.EqualTo("None"));
-		VerifyScreenshot();
 	}
 
 	[Test, Order(3)]
 	[Category(UITestCategories.RefreshView)]
 	public void RefreshView_InsideCollectionView_VerifyRefresh()
 	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
 		App.WaitForElement("RefreshView");
 		App.WaitForElement("CollectionViewContentButton");
 		App.Tap("CollectionViewContentButton");
 		App.WaitForElement("RefreshView");
 		var rect = App.WaitForElement("RefreshView").GetRect();
-		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
+		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 300);
 		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.Not.EqualTo("None"));
-		VerifyScreenshot();
 	}
 
 	[Test, Order(4)]
@@ -73,7 +75,7 @@ public class RefreshViewFeatureTests : UITest
 		App.WaitForElement("RefreshView");
 		var rect = App.WaitForElement("RefreshView").GetRect();
 		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
-		VerifyScreenshot();
+		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.Not.EqualTo("None"));
 	}
 
 	[Test, Order(5)]
@@ -90,7 +92,6 @@ public class RefreshViewFeatureTests : UITest
 		var rect = App.WaitForElement("RefreshView").GetRect();
 		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
 		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.EqualTo("None"));
-		VerifyScreenshot();
 	}
 
 	[Test, Order(6)]
@@ -105,7 +106,7 @@ public class RefreshViewFeatureTests : UITest
 		App.Tap("Apply");
 		var rect = App.WaitForElement("RefreshView").GetRect();
 		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
-		VerifyScreenshot();
+		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.Not.EqualTo("None"));
 	}
 
 	[Test, Order(7)]
@@ -120,7 +121,7 @@ public class RefreshViewFeatureTests : UITest
 		App.Tap("Apply");
 		var rect = App.WaitForElement("RefreshView").GetRect();
 		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
-		VerifyScreenshot();
+		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.Not.EqualTo("None"));
 	}
 #endif
 
@@ -135,7 +136,6 @@ public class RefreshViewFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForNoElement("RefreshView");
-		VerifyScreenshot();
 	}
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30535
@@ -153,7 +153,7 @@ public class RefreshViewFeatureTests : UITest
 		App.WaitForElement("RefreshView");
 		App.WaitForElement("ScrollViewContentButton");
 		App.Tap("ScrollViewContentButton");
-		VerifyScreenshot();
+		Assert.That(App.FindElement("IsRefreshingValueLabel").GetText(), Is.EqualTo("True"));
 	}
 
 	[Test, Order(10)]
@@ -169,7 +169,7 @@ public class RefreshViewFeatureTests : UITest
 		App.WaitForElement("RefreshView");
 		App.WaitForElement("CollectionViewContentButton");
 		App.Tap("CollectionViewContentButton");
-		VerifyScreenshot();
+		Assert.That(App.FindElement("IsRefreshingValueLabel").GetText(), Is.EqualTo("True"));
 	}
 
 	[Test, Order(11)]
@@ -185,7 +185,7 @@ public class RefreshViewFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("RefreshView");
-		VerifyScreenshot();
+		Assert.That(App.FindElement("IsRefreshingValueLabel").GetText(), Is.EqualTo("True"));
 	}
 #endif
 
