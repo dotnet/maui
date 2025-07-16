@@ -458,7 +458,15 @@ namespace Microsoft.Maui.Controls
 			}
 			
 			// Fall back to attached property if direct property is Default
-			return SafeAreaElement.GetIgnoreForEdge(this, edge);
+			var fallbackRegion = SafeAreaElement.GetIgnoreForEdge(this, edge);
+			
+			// For Layout views, never return Default - return None instead
+			if (fallbackRegion == SafeAreaRegions.Default)
+			{
+				return SafeAreaRegions.None;
+			}
+			
+			return fallbackRegion;
 		}
 
 		#endregion

@@ -273,7 +273,15 @@ namespace Microsoft.Maui.Controls
 		SafeAreaRegions ISafeAreaPage.GetSafeAreaRegionsForEdge(int edge)
 		{
 			// Use attached property
-			return SafeAreaElement.GetIgnoreForEdge(this, edge);
+			var regionForEdge = SafeAreaElement.GetIgnoreForEdge(this, edge);
+			
+			// For Page (but not ContentPage), never return Default - return None instead
+			if (regionForEdge == SafeAreaRegions.Default)
+			{
+				return SafeAreaRegions.None;
+			}
+			
+			return regionForEdge;
 		}
 
 		/// <summary>
