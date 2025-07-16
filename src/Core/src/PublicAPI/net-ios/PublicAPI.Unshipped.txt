@@ -148,6 +148,7 @@ override Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.ToString() -> st
 override Microsoft.Maui.Handlers.OpenWindowRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.Handlers.OpenWindowRequest.GetHashCode() -> int
 override Microsoft.Maui.Handlers.OpenWindowRequest.ToString() -> string!
+override Microsoft.Maui.Handlers.ScrollViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Platform.MauiScrollView.AdjustedContentInsetDidChange() -> void
 override Microsoft.Maui.Platform.MauiScrollView.SafeAreaInsetsDidChange() -> void
 override Microsoft.Maui.SafeAreaEdges.Equals(object? obj) -> bool

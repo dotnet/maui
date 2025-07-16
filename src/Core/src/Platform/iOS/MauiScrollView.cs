@@ -23,11 +23,18 @@ namespace Microsoft.Maui.Platform
 		UIUserInterfaceLayoutDirection? _previousEffectiveUserInterfaceLayoutDirection;
 
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
+		WeakReference<IView>? _reference;
 
 		ICrossPlatformLayout? ICrossPlatformLayoutBacking.CrossPlatformLayout
 		{
 			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
 			set => _crossPlatformLayoutReference = value == null ? null : new WeakReference<ICrossPlatformLayout>(value);
+		}
+
+		internal IView? View
+		{
+			get => _reference != null && _reference.TryGetTarget(out var v) ? v : null;
+			set => _reference = value == null ? null : new(value);
 		}
 
 		internal ICrossPlatformLayout? CrossPlatformLayout => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout;
@@ -38,27 +45,49 @@ namespace Microsoft.Maui.Platform
 
 		SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
 		{
-			if (CrossPlatformLayout is ISafeAreaPage safeAreaPage)
+			if (View is ISafeAreaPage safeAreaPage)
 			{
 				return safeAreaPage.GetSafeAreaRegionsForEdge(edge);
-			}
-			
-			// Fallback to legacy ISafeAreaView behavior
-			if (CrossPlatformLayout is ISafeAreaView sav)
-			{
-				return sav.IgnoreSafeArea ? SafeAreaRegions.All : SafeAreaRegions.Default;
 			}
 			
 			return SafeAreaRegions.Default; // Default: respect safe area
 		}
 
-		void UpdateContentInsetAdjustmentBehavior()
+		SafeAreaEdges? _previousEdges;
+
+		UIEdgeInsets GetInset()
 		{
+			var leftRegion = GetSafeAreaRegionForEdge(0);
+			var topRegion = GetSafeAreaRegionForEdge(1);
+			var rightRegion = GetSafeAreaRegionForEdge(2);
+			var bottomRegion = GetSafeAreaRegionForEdge(3);
+
+			var safeAreaInsets = SafeAreaInsets;
+			var manualInset = new UIEdgeInsets(
+					top: GetManualInsetForEdge(topRegion, safeAreaInsets.Top),
+					left: GetManualInsetForEdge(leftRegion, safeAreaInsets.Left),
+					bottom: GetManualInsetForEdge(bottomRegion, safeAreaInsets.Bottom),
+					right: GetManualInsetForEdge(rightRegion, safeAreaInsets.Right)
+				);
+
+			return manualInset;
+		}
+
+		bool UpdateContentInsetAdjustmentBehavior()
+		{
+
 			// Get SafeAreaRegions for all edges
 			var leftRegion = GetSafeAreaRegionForEdge(0);
 			var topRegion = GetSafeAreaRegionForEdge(1);
 			var rightRegion = GetSafeAreaRegionForEdge(2);
 			var bottomRegion = GetSafeAreaRegionForEdge(3);
+
+			SafeAreaEdges safeAreaEdges = new SafeAreaEdges(leftRegion, topRegion, rightRegion, bottomRegion);
+
+			if (_previousEdges is not null && _previousEdges.Equals(safeAreaEdges))
+				return false;
+
+			_previousEdges = safeAreaEdges;
 
 			// Check if all edges have the same SafeAreaRegions value
 			if (leftRegion == topRegion && topRegion == rightRegion && rightRegion == bottomRegion)
@@ -72,26 +101,14 @@ namespace Microsoft.Maui.Platform
 					SafeAreaRegions.SoftInput => UIScrollViewContentInsetAdjustmentBehavior.Automatic, // For now, treat as Default
 					_ => UIScrollViewContentInsetAdjustmentBehavior.Automatic
 				};
-				
-				// Clear any manual content inset
-				ContentInset = UIEdgeInsets.Zero;
 			}
 			else
 			{
 				// Mixed edges - use manual calculation
 				ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
-				
-				// Calculate manual content inset based on SafeAreaRegions and current safe area
-				var safeAreaInsets = SafeAreaInsets;
-				var manualInset = new UIEdgeInsets(
-					top: GetManualInsetForEdge(topRegion, safeAreaInsets.Top),
-					left: GetManualInsetForEdge(leftRegion, safeAreaInsets.Left),
-					bottom: GetManualInsetForEdge(bottomRegion, safeAreaInsets.Bottom),
-					right: GetManualInsetForEdge(rightRegion, safeAreaInsets.Right)
-				);
-				
-				ContentInset = manualInset;
 			}
+
+			return true;
 		}
 
 		static nfloat GetManualInsetForEdge(SafeAreaRegions safeAreaRegion, nfloat safeAreaInset)
@@ -211,7 +228,7 @@ namespace Microsoft.Maui.Platform
 		bool ValidateSafeArea()
 		{
 			// If nothing changed, we don't need to do anything
-			if (!_safeAreaInvalidated)
+			if (!_safeAreaInvalidated && !UpdateContentInsetAdjustmentBehavior())
 			{
 				return true;
 			}
@@ -219,11 +236,12 @@ namespace Microsoft.Maui.Platform
 			// Mark the safe area as validated given that we're about to check it
 			_safeAreaInvalidated = false;
 
-			// Update ContentInsetAdjustmentBehavior based on SafeAreaRegions
-			UpdateContentInsetAdjustmentBehavior();
-
 			var oldSafeArea = _safeArea;
-			_safeArea = AdjustedContentInset.ToSafeAreaInsets();
+
+			if (ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Never)
+				_safeArea = AdjustedContentInset.ToSafeAreaInsets();
+			else
+				_safeArea = GetInset().ToSafeAreaInsets();
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
