@@ -510,6 +510,8 @@ public class ImageButtonFeatureTests : UITest
 		App.WaitForElement(CornerRadiusEntry);
 		App.ClearText(CornerRadiusEntry);
 		App.EnterText(CornerRadiusEntry, "30,30,30,30");
+		App.WaitForElement(SourceTypeFile);
+		App.Tap(SourceTypeFile);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageButtonControl");
