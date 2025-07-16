@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// <summary>
 	/// Accelerometer data of the acceleration of the device in three-dimensional space.
 	/// </summary>
-	public interface IAccelerometer
+	public interface IAccelerometer : ISensor
 	{
 		/// <summary>
 		/// Occurs when the sensor reading changes.
@@ -19,30 +19,6 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Occurs when the accelerometer detects that the device has been shaken.
 		/// </summary>
 		event EventHandler? ShakeDetected;
-
-		/// <summary>
-		/// Gets a value indicating whether reading the accelerometer is supported on this device.
-		/// </summary>
-		bool IsSupported { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether the accelerometer is being monitored.
-		/// </summary>
-		bool IsMonitoring { get; }
-
-		/// <summary>
-		/// Start monitoring for changes to accelerometer.
-		/// </summary>
-		/// <remarks>
-		/// Will throw <see cref="FeatureNotSupportedException"/> if <see cref="IsSupported"/> is <see langword="false"/>.
-		/// Will throw <see cref="InvalidOperationException"/> if <see cref="IsMonitoring"/> is <see langword="true"/>.</remarks>
-		/// <param name="sensorSpeed">Speed to monitor the sensor.</param>
-		void Start(SensorSpeed sensorSpeed);
-
-		/// <summary>
-		/// Stop monitoring for changes to accelerometer.
-		/// </summary>
-		void Stop();
 	}
 
 	/// <summary>
