@@ -59,6 +59,13 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateHorizontalTextAlignment(this TextView textView, ITextAlignment text)
 		{
 			textView.UpdateHorizontalAlignment(text.HorizontalTextAlignment);
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				textView.JustificationMode = text.HorizontalTextAlignment == TextAlignment.Justify
+					? Android.Text.JustificationMode.InterWord
+					: Android.Text.JustificationMode.None;
+			}
 		}
 
 		public static void UpdateVerticalTextAlignment(this TextView textView, ITextAlignment textAlignment)
