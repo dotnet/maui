@@ -1,10 +1,4 @@
-#nullable enable
-const Microsoft.Maui.Controls.BrushTypeConverter.Hsl = "hsl" -> string!
-const Microsoft.Maui.Controls.BrushTypeConverter.Hsla = "hsla" -> string!
-const Microsoft.Maui.Controls.BrushTypeConverter.LinearGradient = "linear-gradient" -> string!
-const Microsoft.Maui.Controls.BrushTypeConverter.RadialGradient = "radial-gradient" -> string!
-const Microsoft.Maui.Controls.BrushTypeConverter.Rgb = "rgb" -> string!
-const Microsoft.Maui.Controls.BrushTypeConverter.Rgba = "rgba" -> string!
+﻿#nullable enable
 Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.GradientBrushParser(Microsoft.Maui.Graphics.Converters.ColorTypeConverter? colorConverter = null) -> void
 Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.Parse(string? css) -> Microsoft.Maui.Controls.GradientBrush?
 *REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime oldDate, System.DateTime newDate) -> void
@@ -19,6 +13,8 @@ Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime?
 Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime?
+~Microsoft.Maui.Controls.Element.transientNamescope -> Microsoft.Maui.Controls.Internals.INameScope
+Microsoft.Maui.Controls.FlexLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView
 Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.MauiCollectionView(CoreGraphics.CGRect frame, UIKit.UICollectionViewLayout! layout) -> void
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
@@ -36,7 +32,6 @@ Microsoft.Maui.Controls.ILineHeightElement.OnLineHeightChanged(double oldValue, 
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Subscribe<TSender>(object subscriber, string message, System.Action<TSender> callback, TSender source = null) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void
-Microsoft.Maui.Controls.Internals.TextTransformUtilities
 Microsoft.Maui.Controls.ITextAlignmentElement
 Microsoft.Maui.Controls.ITextAlignmentElement.HorizontalTextAlignment.get -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.Controls.ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(Microsoft.Maui.TextAlignment oldValue, Microsoft.Maui.TextAlignment newValue) -> void
@@ -50,6 +45,7 @@ Microsoft.Maui.Controls.ITextElement.OnTextTransformChanged(Microsoft.Maui.TextT
 Microsoft.Maui.Controls.ITextElement.TextTransform.get -> Microsoft.Maui.TextTransform
 Microsoft.Maui.Controls.ITextElement.TextTransform.set -> void
 ~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string
+Microsoft.Maui.Controls.Internals.TextTransformUtilities
 Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.Fixed = Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed | Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Controls.LayoutConstraint
@@ -59,10 +55,10 @@ Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed = 2 -> Microsoft.Maui.C
 *REMOVED*Microsoft.Maui.Controls.MessagingCenter.MessagingCenter() -> void
 ~Microsoft.Maui.Controls.Page.DisplayActionSheetAsync(string title, string cancel, string destruction, Microsoft.Maui.FlowDirection flowDirection, params string[] buttons) -> System.Threading.Tasks.Task<string>
 ~Microsoft.Maui.Controls.Page.DisplayActionSheetAsync(string title, string cancel, string destruction, params string[] buttons) -> System.Threading.Tasks.Task<string>
-~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string accept, string cancel, Microsoft.Maui.FlowDirection flowDirection) -> System.Threading.Tasks.Task<bool>
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string accept, string cancel) -> System.Threading.Tasks.Task<bool>
-~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string cancel, Microsoft.Maui.FlowDirection flowDirection) -> System.Threading.Tasks.Task
+~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string accept, string cancel, Microsoft.Maui.FlowDirection flowDirection) -> System.Threading.Tasks.Task<bool>
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string cancel) -> System.Threading.Tasks.Task
+~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string cancel, Microsoft.Maui.FlowDirection flowDirection) -> System.Threading.Tasks.Task
 Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.Popover = 5 -> Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Request.get -> Foundation.NSUrlRequest!
@@ -91,11 +87,11 @@ Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Headers.get -> Syst
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Method.get -> string!
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs?
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.QueryParameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, string! contentType, System.IO.Stream? content) -> void
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, string! contentType, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason) -> void
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.IO.Stream? content) -> void
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
-Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, string! contentType, System.IO.Stream? content) -> void
+Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, string! contentType, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Uri.get -> System.Uri!
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.WebViewWebResourceRequestedEventArgs(Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs! platformArgs) -> void
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.WebViewWebResourceRequestedEventArgs(System.Uri! uri, string! method) -> void
@@ -105,6 +101,12 @@ Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.Al
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.Target.get -> string
 *REMOVED*~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.XmlnsDefinitionAttribute(string xmlNamespace, string clrNamespace) -> void
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.XmlnsDefinitionAttribute(string xmlNamespace, string target) -> void
+const Microsoft.Maui.Controls.BrushTypeConverter.Hsl = "hsl" -> string!
+const Microsoft.Maui.Controls.BrushTypeConverter.Hsla = "hsla" -> string!
+const Microsoft.Maui.Controls.BrushTypeConverter.LinearGradient = "linear-gradient" -> string!
+const Microsoft.Maui.Controls.BrushTypeConverter.RadialGradient = "radial-gradient" -> string!
+const Microsoft.Maui.Controls.BrushTypeConverter.Rgb = "rgb" -> string!
+const Microsoft.Maui.Controls.BrushTypeConverter.Rgba = "rgba" -> string!
 override Microsoft.Maui.Controls.AcceleratorTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Controls.AcceleratorTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.AcceleratorTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
@@ -247,13 +249,6 @@ static Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync(this Microsoft.Maui.C
 static Microsoft.Maui.Controls.ViewExtensions.ScaleXToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.ScaleYToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double x, double y, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.RemoveSearchController(UIKit.UINavigationItem! navigationItem) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateSearchIsEnabled(UIKit.UISearchController! searchController) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateSearchVisibility(UIKit.UISearchController! searchController) -> void
-override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void
-override Microsoft.Maui.Controls.ScrollView.OnSizeAllocated(double width, double height) -> void
-override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, double height) -> void
-virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDeclarer, TPropertyType>.Invoke(TDeclarer bindable) -> TPropertyType
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.RippleColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.RippleColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WebView.JavaScriptEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
