@@ -24,7 +24,11 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void Picker_Validate_VerifyLabels()
 		{
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 #if TEST_FAILS_ON_CATALYST
@@ -35,7 +39,12 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("Picker");
 			App.Tap("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
+
 #if IOS
 			App.WaitForElement("Done");
 			App.Tap("Done");
@@ -59,7 +68,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Picker");
 			App.WaitForElement("Option 3 - Third option");
 			App.Tap("Option 3 - Third option");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 #endif
 
@@ -77,7 +90,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
 			Assert.That(App.FindElement("SelectedIndexLabel").GetText(), Is.EqualTo("1"));
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 		[Test, Order(5)]
@@ -94,7 +111,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
 			Assert.That(App.FindElement("SelectedItemLabel").GetText(), Is.EqualTo("Option 4 - Fourth option"));
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30464
@@ -112,7 +133,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 #endif
 
@@ -134,7 +159,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 #endif
 
@@ -157,7 +186,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 		[Test, Order(9)]
@@ -179,7 +212,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 		[Test, Order(10)]
@@ -197,7 +234,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30463
@@ -216,7 +257,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 #endif
 
@@ -237,7 +282,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 		[Test, Order(13)]
@@ -252,7 +301,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
 			App.Tap("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 		[Test, Order(14)]
@@ -283,7 +336,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30463
@@ -302,7 +359,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 #endif
 
@@ -321,7 +382,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30463
@@ -340,7 +405,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 #endif
 
@@ -357,7 +426,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 #endif
 
@@ -376,7 +449,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30463
@@ -393,7 +470,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 		[Test, Order(22)]
@@ -410,7 +491,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 		[Test, Order(23)]
@@ -429,7 +514,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 		[Test, Order(24)]
@@ -446,7 +535,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 		[Test, Order(25)]
@@ -463,7 +556,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 #endif
 
@@ -480,7 +577,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Picker");
+#if WINDOWS
+			VerifyScreenshot(cropTop:50);
+#else
 			VerifyScreenshot();
+#endif
 		}
 #endif
 
