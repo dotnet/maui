@@ -62,7 +62,7 @@ namespace UITest.Appium.NUnit
 				{
 					if (Device == TestDevice.Mac)
 					{
-						// For Mac, we need to close the app, open it again on InitialSetup
+						// For Mac, here needed to close the app itself, re-open happens on InitialSetup
 						Close();
 					}
 					else
