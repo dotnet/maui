@@ -7,31 +7,93 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
+	/// <summary>
+	/// Base class for MAUI views on iOS that provides cross-platform layout capabilities
+	/// and safe area handling. This view bridges the gap between iOS native UIView
+	/// and MAUI's cross-platform layout system.
+	/// </summary>
 	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 	{
+		/// <summary>
+		/// Cached result of whether the current iOS version supports safe area insets.
+		/// This is determined once and reused across all MauiView instances for performance.
+		/// </summary>
 		static bool? _respondsToSafeArea;
 
+		/// <summary>
+		/// Flag indicating that parent views should be invalidated when this view is moved to a window.
+		/// This is used to trigger layout updates when the view hierarchy changes.
+		/// </summary>
 		bool _invalidateParentWhenMovedToWindow;
 
+		/// <summary>
+		/// Cached height constraint from the last measure operation.
+		/// Used to avoid redundant measure calls when constraints haven't changed.
+		/// NaN indicates no previous measure has been performed.
+		/// </summary>
 		double _lastMeasureHeight = double.NaN;
+
+		/// <summary>
+		/// Cached width constraint from the last measure operation.
+		/// Used to avoid redundant measure calls when constraints haven't changed.
+		/// NaN indicates no previous measure has been performed.
+		/// </summary>
 		double _lastMeasureWidth = double.NaN;
 
+		/// <summary>
+		/// Current safe area padding values (top, left, bottom, right) in device-independent units.
+		/// These values represent the insets needed to avoid system UI elements like status bars,
+		/// navigation bars, and home indicators.
+		/// </summary>
 		SafeAreaPadding _safeArea = SafeAreaPadding.Empty;
+
+		/// <summary>
+		/// Flag indicating that the safe area has changed and needs to be revalidated.
+		/// Set to true when SafeAreaInsetsDidChange() is called by the system.
+		/// </summary>
 		bool _safeAreaInvalidated = true;
+
+		/// <summary>
+		/// Flag indicating whether this view should apply safe area adjustments to its layout.
+		/// This is true when the view implements ISafeAreaView, doesn't ignore safe area,
+		/// and the safe area is not empty.
+		/// </summary>
 		bool _appliesSafeAreaAdjustments;
 
 
+		/// <summary>
+		/// Weak reference to the cross-platform IView that this native view represents.
+		/// Uses WeakReference to avoid circular references between platform and cross-platform layers.
+		/// </summary>
 		WeakReference<IView>? _reference;
+
+		/// <summary>
+		/// Weak reference to the cross-platform layout manager for this view.
+		/// Used to delegate measure and arrange operations to the cross-platform layout system.
+		/// </summary>
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
+		/// <summary>
+		/// Gets or sets the cross-platform IView that this native view represents.
+		/// This provides access to the MAUI view properties and behavior from the platform layer.
+		/// </summary>
 		public IView? View
 		{
 			get => _reference != null && _reference.TryGetTarget(out var v) ? v : null;
 			set => _reference = value == null ? null : new(value);
 		}
 
+		/// <summary>
+		/// Determines if this view has fixed constraints that prevent it from changing size.
+		/// Views with fixed constraints don't need to propagate measure invalidations to ancestors.
+		/// </summary>
 		bool HasFixedConstraints => CrossPlatformLayout is IConstrainedView { HasFixedConstraints: true };
 
+		/// <summary>
+		/// Determines if this view should respond to safe area changes.
+		/// Returns true if the view implements ISafeAreaView, doesn't ignore safe area,
+		/// and the current iOS version supports safe area insets.
+		/// </summary>
 		bool RespondsToSafeArea()
 		{
 			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea)
@@ -47,8 +109,16 @@ namespace Microsoft.Maui.Platform
 			return (_respondsToSafeArea = RespondsToSelector(new Selector("safeAreaInsets"))).Value;
 		}
 
+		/// <summary>
+		/// Adjusts the given bounds rectangle to account for safe area insets.
+		/// This method subtracts the safe area padding from the bounds to ensure
+		/// content doesn't overlap with system UI elements.
+		/// </summary>
+		/// <param name="bounds">The original bounds rectangle</param>
+		/// <returns>The bounds rectangle adjusted for safe area insets</returns>
 		protected CGRect AdjustForSafeArea(CGRect bounds)
 		{
+			// Special handling for keyboard auto-scroll scenarios
 			if (KeyboardAutoManagerScroll.ShouldIgnoreSafeAreaAdjustment)
 			{
 				KeyboardAutoManagerScroll.ShouldScrollAgain = true;
@@ -57,6 +127,13 @@ namespace Microsoft.Maui.Platform
 			return _safeArea.InsetRect(bounds);
 		}
 
+		/// <summary>
+		/// Checks if the current measure information is still valid for the given constraints.
+		/// This optimization avoids redundant measure operations when constraints haven't changed.
+		/// </summary>
+		/// <param name="widthConstraint">The width constraint to check</param>
+		/// <param name="heightConstraint">The height constraint to check</param>
+		/// <returns>True if the cached measure is still valid, false otherwise</returns>
 		protected bool IsMeasureValid(double widthConstraint, double heightConstraint)
 		{
 			// Check the last constraints this View was measured with; if they're the same,
@@ -64,23 +141,45 @@ namespace Microsoft.Maui.Platform
 			return heightConstraint == _lastMeasureHeight && widthConstraint == _lastMeasureWidth;
 		}
 
+		/// <summary>
+		/// Determines if this view has been measured at least once.
+		/// Used to decide whether a layout pass needs to perform measurement.
+		/// </summary>
+		/// <returns>True if the view has been measured, false otherwise</returns>
 		bool HasBeenMeasured()
 		{
 			return !double.IsNaN(_lastMeasureWidth) && !double.IsNaN(_lastMeasureHeight);
 		}
 
+		/// <summary>
+		/// Invalidates the cached measure constraints, forcing a new measure operation
+		/// on the next layout pass. This is called when the view's content or
+		/// properties change in a way that affects its size.
+		/// </summary>
 		protected void InvalidateConstraintsCache()
 		{
 			_lastMeasureWidth = double.NaN;
 			_lastMeasureHeight = double.NaN;
 		}
 
+		/// <summary>
+		/// Caches the measure constraints for future comparison.
+		/// This optimization prevents redundant measure operations when
+		/// the same constraints are applied repeatedly.
+		/// </summary>
+		/// <param name="widthConstraint">The width constraint to cache</param>
+		/// <param name="heightConstraint">The height constraint to cache</param>
 		protected void CacheMeasureConstraints(double widthConstraint, double heightConstraint)
 		{
 			_lastMeasureWidth = widthConstraint;
 			_lastMeasureHeight = heightConstraint;
 		}
 
+		/// <summary>
+		/// Called by iOS when the safe area insets change (e.g., device rotation, status bar changes).
+		/// We can't perform full safe area processing here because this method is called multiple times
+		/// during the layout process with different values, so we just mark the safe area as invalidated.
+		/// </summary>
 		public override void SafeAreaInsetsDidChange()
 		{
 			base.SafeAreaInsetsDidChange();
@@ -90,12 +189,25 @@ namespace Microsoft.Maui.Platform
 			_safeAreaInvalidated = true;
 		}
 
+		/// <summary>
+		/// Gets or sets the cross-platform layout manager for this view.
+		/// This delegates measure and arrange operations to the MAUI layout system
+		/// rather than handling them natively.
+		/// </summary>
 		public ICrossPlatformLayout? CrossPlatformLayout
 		{
 			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
 			set => _crossPlatformLayoutReference = value == null ? null : new WeakReference<ICrossPlatformLayout>(value);
 		}
 
+		/// <summary>
+		/// Performs cross-platform measure operation, optionally adjusting for safe area.
+		/// This method coordinates between the native iOS layout system and MAUI's
+		/// cross-platform layout system.
+		/// </summary>
+		/// <param name="widthConstraint">The maximum width available</param>
+		/// <param name="heightConstraint">The maximum height available</param>
+		/// <returns>The desired size of the view</returns>
 		Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (_appliesSafeAreaAdjustments)
@@ -116,6 +228,11 @@ namespace Microsoft.Maui.Platform
 			return crossPlatformSize;
 		}
 
+		/// <summary>
+		/// Performs cross-platform arrange operation, optionally adjusting for safe area.
+		/// This method positions and sizes child elements within the available bounds.
+		/// </summary>
+		/// <param name="bounds">The bounds rectangle to arrange within</param>
 		void CrossPlatformArrange(CGRect bounds)
 		{
 			if (_appliesSafeAreaAdjustments)
@@ -126,6 +243,13 @@ namespace Microsoft.Maui.Platform
 			CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle());
 		}
 
+		/// <summary>
+		/// iOS method called to determine the size that fits within the given constraints.
+		/// This integrates with the cross-platform layout system to provide consistent
+		/// sizing behavior across platforms.
+		/// </summary>
+		/// <param name="size">The size constraints</param>
+		/// <returns>The size that fits within the constraints</returns>
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			if (_crossPlatformLayoutReference == null)
@@ -143,6 +267,11 @@ namespace Microsoft.Maui.Platform
 			return crossPlatformSize.ToCGSize();
 		}
 
+		/// <summary>
+		/// iOS method called to layout subviews within this view's bounds.
+		/// This method coordinates the cross-platform layout system with iOS layout,
+		/// handling safe area adjustments and ensuring proper measure/arrange cycles.
+		/// </summary>
 		// TODO: Possibly reconcile this code with ViewHandlerExtensions.LayoutVirtualView
 		// If you make changes here please review if those changes should also
 		// apply to ViewHandlerExtensions.LayoutVirtualView
@@ -155,6 +284,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			// Validate safe area and check if it has changed in a way that affects layout
 			if (!ValidateSafeArea())
 			{
 				InvalidateConstraintsCache();
@@ -193,6 +323,11 @@ namespace Microsoft.Maui.Platform
 			CrossPlatformArrange(bounds);
 		}
 
+		/// <summary>
+		/// Validates and updates the safe area state for this view.
+		/// This method checks if the safe area has changed and updates the internal state accordingly.
+		/// </summary>
+		/// <returns>True if the safe area interaction hasn't changed, false if it has changed and requires layout updates</returns>
 		bool ValidateSafeArea()
 		{
 			// If nothing changed, we don't need to do anything
@@ -221,6 +356,11 @@ namespace Microsoft.Maui.Platform
 				   (oldSafeArea == _safeArea || !_appliesSafeAreaAdjustments);
 		}
 
+		/// <summary>
+		/// Provides the visual tree element that this platform view represents.
+		/// This is used by the visual tree system to navigate between platform and cross-platform views.
+		/// </summary>
+		/// <returns>The IVisualTreeElement this view represents, or null if none</returns>
 		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
 		{
 
@@ -239,11 +379,22 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		/// <summary>
+		/// Marks this view to invalidate ancestor measures when moved to a window.
+		/// This is used when the view's constraints or size requirements change in a way
+		/// that affects the entire view hierarchy.
+		/// </summary>
 		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
 		{
 			_invalidateParentWhenMovedToWindow = true;
 		}
 
+		/// <summary>
+		/// Invalidates the measure for this view and determines if the invalidation should propagate to ancestors.
+		/// This is part of the measure invalidation system that ensures layout updates when view properties change.
+		/// </summary>
+		/// <param name="isPropagating">True if this invalidation is propagating from a descendant view</param>
+		/// <returns>True if the invalidation should continue propagating to ancestors, false to stop propagation</returns>
 		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
 			InvalidateConstraintsCache();
@@ -267,21 +418,39 @@ namespace Microsoft.Maui.Platform
 			return true;
 		}
 
+		/// <summary>
+		/// Event handler for the MovedToWindow event. This field is used to store
+		/// subscriptions to the IUIViewLifeCycleEvents.MovedToWindow event.
+		/// </summary>
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
+
+		/// <summary>
+		/// Event fired when this view is moved to a window (added to or removed from the view hierarchy).
+		/// This is part of the IUIViewLifeCycleEvents interface and allows subscribers to react to
+		/// view lifecycle changes.
+		/// </summary>
 		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
 		{
 			add => _movedToWindow += value;
 			remove => _movedToWindow -= value;
 		}
 
+		/// <summary>
+		/// Called when this view is moved to a window (added to or removed from the view hierarchy).
+		/// This triggers safe area invalidation and any pending ancestor measure invalidations.
+		/// </summary>
 		public override void MovedToWindow()
 		{
 			base.MovedToWindow();
 
+			// Notify any subscribers that this view has been moved to a window
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
+
+			// Safe area may have changed when moving to a different window
 			_safeAreaInvalidated = true;
 
+			// If we were marked to invalidate ancestors when moved to window, do so now
 			if (_invalidateParentWhenMovedToWindow)
 			{
 				_invalidateParentWhenMovedToWindow = false;
