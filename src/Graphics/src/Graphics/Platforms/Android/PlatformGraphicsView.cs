@@ -58,9 +58,9 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			var dirtyRect = new RectF(0, 0, _width, _height);
 
-			// To draw within the canvas bounds
+			// Save the canvas state and clip to view bounds to prevent drawing outside
 			androidCanvas.Save();
-			androidCanvas.ClipRect(androidCanvas.ClipBounds);
+			androidCanvas.ClipRect(0, 0, _width, _height);
 
 			_canvas.Canvas = androidCanvas;
 			if (_backgroundColor != null)
