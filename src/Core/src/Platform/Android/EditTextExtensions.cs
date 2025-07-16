@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Platform
 				editText.SetTextColor(c);
 			else
 			{
+				// Fallback to system default color
 				var typedValue = new TypedValue();
 				if (OperatingSystem.IsAndroidVersionAtLeast(23) &&
 					editText.Context?.Theme is Resources.Theme theme &&
@@ -145,6 +146,7 @@ namespace Microsoft.Maui.Platform
 				editText.SetHintTextColor(c);
 			else
 			{
+				// Fallback to system default color
 				var typedValue = new TypedValue();
 				if (OperatingSystem.IsAndroidVersionAtLeast(23) &&
 					editText.Context?.Theme is Resources.Theme theme &&
