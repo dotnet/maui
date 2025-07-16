@@ -68,8 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
-			if (element != null)
-				element.SendViewInitialized(NativeView);
+			element?.SendViewInitialized(NativeView);
 
 			_previousPage = Carousel?.CurrentPage;
 		}
@@ -204,11 +203,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					PageController?.SendDisappearing();
 				}
 
-				if (_tracker != null)
-				{
-					_tracker.Dispose();
-					_tracker = null;
-				}
+				_tracker?.Dispose();
+				_tracker = null;
 
 				Element = null;
 				_disposed = true;

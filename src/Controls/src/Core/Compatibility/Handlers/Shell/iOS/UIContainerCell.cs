@@ -50,8 +50,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (BindingContext is BaseShellItem bsi)
 				bsi.AddLogicalChild(View);
-			else if (shell != null)
-				shell.AddLogicalChild(View);
+			else
+				shell?.AddLogicalChild(View);
 		}
 
 		public UIContainerCell(string cellId, View view) : this(cellId, view, null, null)
@@ -80,8 +80,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (View.Parent is BaseShellItem bsi)
 				bsi.RemoveLogicalChild(View);
-			else if (shell != null)
-				shell.RemoveLogicalChild(View);
+			else
+				shell?.RemoveLogicalChild(View);
 
 			_bindingContext = null;
 

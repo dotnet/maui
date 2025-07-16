@@ -694,15 +694,9 @@ namespace Microsoft.Maui.Platform
 			_swipeOffset = 0;
 			_originalBounds = CGRect.Empty;
 
-			if (_actionView != null)
-			{
-				_actionView.RemoveFromSuperview();
-			}
+			_actionView?.RemoveFromSuperview();
 
-			if (_swipeItemsRect != null)
-			{
-				_swipeItemsRect.Clear();
-			}
+			_swipeItemsRect?.Clear();
 
 			UpdateIsOpen(false);
 		}
