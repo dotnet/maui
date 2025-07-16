@@ -91,6 +91,11 @@ namespace Microsoft.Maui.TestCases.Tests
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_Wide_UsingRect()
         {
+            App.WaitForElement("Options");
+            App.Tap("Options");
+
+            App.WaitForElement("Apply");
+            App.Tap("Apply");
 
             var pane1Y = App.WaitForElement("Pane1Label").GetRect().X;
             var pane2Y = App.WaitForElement("Pane2Label").GetRect().X;
@@ -238,7 +243,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
         [Test]
         [Category(UITestCategories.Layout)]
-        public void TwoPaneView_IsShadowEnabled()
+        public void TwoPaneView_ZIsShadowEnabled()
         {
             App.WaitForElement("Options");
             App.Tap("Options");
