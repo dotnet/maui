@@ -4,6 +4,7 @@ plugins {
 
 android {
     compileSdk 35
+    namespace "microsoft.maui"
 
     defaultConfig {
         minSdk 21
