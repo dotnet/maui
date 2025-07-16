@@ -348,7 +348,7 @@ AndroidEmulatorToolSettings AdjustEmulatorSettingsForCI(AndroidEmulatorToolSetti
 {
 	if (IsCIBuild())
 	{
-		var gpu = IsRunningOnLinux() ? "-gpu swiftshader_indirect" : "";
+		var gpu = IsRunningOnLinux() ? "-gpu swiftshader_indirect" : "-gpu auto";
 		settings.ArgumentCustomization = args => args
 			.Append(gpu)
 			.Append("-no-window")
@@ -634,7 +634,7 @@ void PrepareDevice(bool waitForBoot)
         var total = EmulatorBootTimeoutSeconds;
         while (AdbShell("getprop sys.boot_completed", settings).FirstOrDefault() != "1")
 		{
-		    System.Threading.Thread.Sleep(1000);
+		    System.Threading.Thread.Sleep(500);
 
             Information("Waiting {0}/{1} seconds for the emulator to boot up.", waited, total);
             if (waited++ > total)
@@ -784,7 +784,7 @@ void EnsureAdbKeys(AdbToolSettings settings)
         int retries = 0;
         bool pushSuccess = false;
         
-        while (retries < 3 && !pushSuccess)
+        while (retries < 2 && !pushSuccess)
         {
             var processSettings = new ProcessSettings {
                 Arguments = new ProcessArgumentBuilder()
