@@ -8,7 +8,7 @@
     <!-- The Release builds will NEVER generate, only validate -->
     <PublicApiType Condition="'$(PublicApiType)' == '' and '$(Configuration)' != 'Debug'">Validate</PublicApiType>
     <!-- Local Debug workflows will generate -->
-    <PublicApiType Condition="'$(PublicApiType)' == '' and '$(Configuration)' == 'Debug'">Generate</PublicApiType>
+    <!--<PublicApiType Condition="'$(PublicApiType)' == '' and '$(Configuration)' == 'Debug'">Generate</PublicApiType>-->
     <!-- Fall back to validate -->
     <PublicApiType Condition="'$(PublicApiType)' == ''">Validate</PublicApiType>
   </PropertyGroup>
