@@ -1,95 +1,115 @@
 using System;
-using System.Windows.Input;
+using System.ComponentModel;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
+using System.Diagnostics;
 
-namespace Maui.Controls.Sample;
-
-public partial class GraphicsViewControlPage : NavigationPage
+namespace Maui.Controls.Sample
 {
-    private GraphicsViewViewModel _viewModel;
+	public class GraphicsViewControlPage : NavigationPage
+	{
+		private GraphicsViewViewModel _viewModel;
 
-    public GraphicsViewControlPage()
+		public GraphicsViewControlPage()
+		{
+			_viewModel = new GraphicsViewViewModel();
+			PushAsync(new GraphicsViewControlMainPage(_viewModel));
+		}
+	}
+
+    public partial class GraphicsViewControlMainPage : ContentPage
     {
-        _viewModel = new GraphicsViewViewModel();
-        PushAsync(new GraphicsViewControlMainPage(_viewModel));
-    }
-}
+        private GraphicsViewViewModel _viewModel;
 
-public partial class GraphicsViewControlMainPage : ContentPage
-{
-    private GraphicsViewViewModel _viewModel;
-    private GraphicsView graphicsView;
-
-    public GraphicsViewControlMainPage(GraphicsViewViewModel viewModel)
-    {
-        InitializeComponent();
-        _viewModel = viewModel;
-        BindingContext = _viewModel;
-
-        graphicsView = new GraphicsView
+        public GraphicsViewControlMainPage(GraphicsViewViewModel viewModel)
         {
-            BackgroundColor = _viewModel.BackgroundColor,
-            IsVisible = _viewModel.IsVisible,
-            IsEnabled = _viewModel.IsEnabled,
-            FlowDirection = _viewModel.FlowDirection
-        };
+            InitializeComponent();
+            _viewModel = viewModel;
+            BindingContext = _viewModel;
 
-        Content = new StackLayout
-        {
-            Children =
-            {
-                graphicsView,
-                new Button
-                {
-                    Text = "Options",
-                    Command = new Command(NavigateToOptionsPage_Clicked)
-                },
-                new Button
-                {
-                    Text = "Reset",
-                    Command = new Command(OnResetClicked)
-                }
-            }
-        };
-    }
+            // Ensure GraphicsView invalidates when drawable changes
+            _viewModel.RequestInvalidate = () => graphicsView.Invalidate();
 
-    private void OnSetBackgroundColor(string colorName)
-    {
-        switch (colorName)
-        {
-            case "Blue":
-                _viewModel.BackgroundColor = Colors.Blue;
-                break;
-            case "Green":
-                _viewModel.BackgroundColor = Colors.Green;
-                break;
-            case "Default":
-            default:
-                _viewModel.BackgroundColor = null;
-                break;
+            // Set default drawable
+            _viewModel.SelectedDrawable = DrawableType.Square;
         }
-        graphicsView.Invalidate();
-    }
 
-    private void OnSetDrawableType(string drawableType)
-    {
-        _viewModel.DrawableType = drawableType;
-        graphicsView.Invalidate();
-    }
+        private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
+        {
+            BindingContext = _viewModel = new GraphicsViewViewModel(); // Ensure the ViewModel is set for the options page
+            await Navigation.PushAsync(new GraphicsViewOptionsPage(_viewModel));
+        }
 
-    private void OnResetClicked()
-    {
-        _viewModel = new GraphicsViewViewModel();
-        BindingContext = _viewModel;
-        graphicsView.BackgroundColor = _viewModel.BackgroundColor;
-        graphicsView.IsVisible = _viewModel.IsVisible;
-        graphicsView.IsEnabled = _viewModel.IsEnabled;
-        graphicsView.FlowDirection = _viewModel.FlowDirection;
-        graphicsView.Invalidate();
-    }
+        private void OnStartHoverInteraction(object sender, TouchEventArgs e)
+        {
+            _viewModel.AddInteractionEvent("StartHoverInteraction");
+        }
 
-    private async void NavigateToOptionsPage_Clicked()
-    {
-        await Navigation.PushAsync(new GraphicsViewOptionsPage(_viewModel));
-    }
+        private void OnMoveHoverInteraction(object sender, TouchEventArgs e)
+        {
+            _viewModel.AddInteractionEvent("MoveHoverInteraction");
+        }
+
+        private void OnEndHoverInteraction(object sender, EventArgs e)
+        {
+            _viewModel.AddInteractionEvent("EndHoverInteraction");
+        }
+
+        private void OnStartInteraction(object sender, TouchEventArgs e)
+        {
+            _viewModel.AddInteractionEvent("StartInteraction");
+        }
+
+        private void OnDragInteraction(object sender, TouchEventArgs e)
+        {
+            _viewModel.AddInteractionEvent("DragInteraction");
+        }
+
+        private void OnEndInteraction(object sender, EventArgs e)
+        {
+            _viewModel.AddInteractionEvent("EndInteraction");
+        }
+
+        private void OnCancelInteraction(object sender, EventArgs e)
+        {
+            _viewModel.AddInteractionEvent("CancelInteraction");
+        }
+
+        private void OnInvalidateClicked(object sender, EventArgs e)
+        {
+            // Change to a random color to visually show the redraw
+            _viewModel.ChangeToRandomColor();
+            
+            // Call Invalidate on the GraphicsView to force a redraw
+            graphicsView.Invalidate();
+            
+            // Add the invalidate event to the history with color information
+            _viewModel.AddInteractionEvent($"Invalidate() called - Color changed to {_viewModel.CurrentDrawColor}");
+        }
+
+        private void OnClearEventsClicked(object sender, EventArgs e)
+        {
+            // Clear the interaction event history
+            _viewModel.ClearInteractionHistory();
+        }
+
+        private void DisplayStoredDimensions()
+        {
+            var dimensions = _viewModel.GetDrawableDimensions(_viewModel.SelectedDrawable);
+            if (dimensions.HasValue)
+            {
+                Debug.WriteLine($"Stored Dimensions for {_viewModel.SelectedDrawable}: Width = {dimensions.Value.Width}, Height = {dimensions.Value.Height}");
+            }
+            else
+            {
+                Debug.WriteLine($"No stored dimensions found for {_viewModel.SelectedDrawable}.");
+            }
+        }
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            DisplayStoredDimensions();
+        }
+	}
 }

@@ -13,16 +13,14 @@
     <StackLayout Grid.Column="0" Padding="10" Spacing="8">
 
       <Label Text="Drawable Type:" FontSize="15" />
-      <Picker x:Name="DrawablePicker" AutomationId="DrawablePicker" SelectedIndexChanged="OnDrawableChanged" HorizontalOptions="Start" WidthRequest="100">
-        <Picker.Items>
-          <x:String>Square</x:String>
-          <x:String>Rectangle</x:String>
-          <x:String>Triangle</x:String>
-          <x:String>Ellipse</x:String>
-          <x:String>Line</x:String>
-          <x:String>Polygon</x:String>
-        </Picker.Items>
-      </Picker>
+      <StackLayout Orientation="Vertical">
+        <RadioButton x:Name="DrawableSquare" AutomationId="Square" GroupName="DrawableType" Content="Square" IsChecked="True" CheckedChanged="OnDrawableChanged" />
+        <RadioButton x:Name="DrawableTriangle" AutomationId="Triangle" GroupName="DrawableType" Content="Triangle" CheckedChanged="OnDrawableChanged" />
+        <RadioButton x:Name="DrawableEllipse" AutomationId="Ellipse" GroupName="DrawableType" Content="Ellipse" CheckedChanged="OnDrawableChanged" />
+        <RadioButton x:Name="DrawableLine" AutomationId="Line" GroupName="DrawableType" Content="Line" CheckedChanged="OnDrawableChanged" />
+        <RadioButton x:Name="DrawableString" AutomationId="String" GroupName="DrawableType" Content="String" CheckedChanged="OnDrawableChanged" />
+        <RadioButton x:Name="DrawableImage" AutomationId="Image" GroupName="DrawableType" Content="Image" CheckedChanged="OnDrawableChanged" />
+      </StackLayout>
 
       <!-- Flow Direction -->
       <Label Text="Flow Direction:" FontSize="15" />
@@ -44,15 +42,25 @@
         <RadioButton x:Name="IsVisibleTrueRadio" AutomationId="IsVisibleTrueRadio" GroupName="IsVisible" Content="True" IsChecked="True" FontSize="14" CheckedChanged="OnIsVisibleCheckedChanged" />
         <RadioButton x:Name="IsVisibleFalseRadio" AutomationId="IsVisibleFalseRadio" GroupName="IsVisible" Content="False" FontSize="14" CheckedChanged="OnIsVisibleCheckedChanged" />
       </StackLayout>
+      
+      <!-- Shadow Properties -->
+      <Label Text="Shadow (OffsetX,OffsetY,Radius,Opacity):" FontSize="15" />
+      <Entry x:Name="ShadowInputEntry" Text="" Keyboard="Text" AutomationId="ShadowInputEntry" TextChanged="OnShadowInputChanged" />
     </StackLayout>
 
     <StackLayout Grid.Column="1" Padding="10" Spacing="12">
-      <!-- Background Color -->
-      <Label Text="Background Color:" />
+      <!-- Height Request -->
+      <Label Text="Height Request:" FontSize="15" />
       <StackLayout Orientation="Horizontal" Spacing="5">
-        <Button Text="Gray" Clicked="BackgroundColorButton_Clicked" WidthRequest="100" HorizontalOptions="Start" AutomationId="BackgroundColorGrayButton"/>
-        <Button Text="Light Blue" Clicked="BackgroundColorButton_Clicked" WidthRequest="100" HorizontalOptions="Start" AutomationId="BackgroundColorLightBlueButton"/>
+        <Entry x:Name="HeightRequestEntry" Text="{Binding HeightRequest}" Keyboard="Numeric" AutomationId="HeightRequestEntry" />
       </StackLayout>
+
+      <!-- Width Request -->
+      <Label Text="Width Request:" FontSize="15" />
+      <StackLayout Orientation="Horizontal" Spacing="5">
+        <Entry x:Name="WidthRequestEntry" Text="{Binding WidthRequest}" Keyboard="Numeric" AutomationId="WidthRequestEntry" />
+      </StackLayout>
+
     </StackLayout>
   </Grid>
 </ContentPage>
