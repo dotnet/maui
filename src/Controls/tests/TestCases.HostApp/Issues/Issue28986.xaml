@@ -5,7 +5,7 @@
              x:Name="TestPage"
              Title="SafeArea Test">
     
-    <Grid x:Name="MainGrid" BackgroundColor="Red" SafeArea.Ignore="All">
+    <Grid x:Name="MainGrid" BackgroundColor="Red" SafeAreaIgnore="All">
         <!-- Single content grid that spans the entire screen -->
         <Grid x:Name="ContentGrid">
             <Grid.RowDefinitions>
