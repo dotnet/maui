@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPage']/Docs/*" />
 	[ContentProperty("Content")]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class ContentPage : TemplatedPage, IContentView, HotReload.IHotReloadableView, ISafeAreaElement
+	public partial class ContentPage : TemplatedPage, IContentView, HotReload.IHotReloadableView, ISafeAreaElement, ISafeAreaPage
 	{
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentPage), null, propertyChanged: TemplateUtilities.OnContentChanged);
@@ -167,6 +167,29 @@ namespace Microsoft.Maui.Controls
 		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			return (this as ICrossPlatformLayout).CrossPlatformMeasure(widthConstraint, heightConstraint);
+		}
+
+		/// <inheritdoc cref="ISafeAreaPage.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaPage.GetSafeAreaRegionsForEdge(int edge)
+		{
+			// Use direct property first, then fall back to attached property
+			var regionForEdge = SafeAreaIgnore.GetEdge(edge);
+			
+			if (regionForEdge != SafeAreaRegions.Default)
+			{
+				return regionForEdge;
+			}
+			
+			// Fall back to attached property if direct property is Default
+			var fallbackRegion = SafeAreaElement.GetIgnoreForEdge(this, edge);
+			
+			// For ContentPage, never return Default - return All instead
+			if (fallbackRegion == SafeAreaRegions.Default)
+			{
+				return SafeAreaRegions.All;
+			}
+			
+			return fallbackRegion;
 		}
 
 		SafeAreaEdges ISafeAreaElement.SafeAreaIgnoreDefaultValueCreator()

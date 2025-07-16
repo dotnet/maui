@@ -10,7 +10,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement
+	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement, ISafeAreaPage
 	{
 		float[]? _strokeDashPattern;
 
@@ -349,6 +349,29 @@ namespace Microsoft.Maui.Controls
 			{
 				strokeShape.StrokeThickness = StrokeThickness;
 			}
+		}
+
+		/// <inheritdoc cref="ISafeAreaPage.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaPage.GetSafeAreaRegionsForEdge(int edge)
+		{
+			// Use direct property first, then fall back to attached property
+			var regionForEdge = SafeAreaIgnore.GetEdge(edge);
+			
+			if (regionForEdge != SafeAreaRegions.Default)
+			{
+				return regionForEdge;
+			}
+			
+			// Fall back to attached property if direct property is Default
+			var fallbackRegion = SafeAreaElement.GetIgnoreForEdge(this, edge);
+			
+			// For Border, never return Default - return None instead
+			if (fallbackRegion == SafeAreaRegions.Default)
+			{
+				return SafeAreaRegions.None;
+			}
+			
+			return fallbackRegion;
 		}
 
 		SafeAreaEdges ISafeAreaElement.SafeAreaIgnoreDefaultValueCreator()
