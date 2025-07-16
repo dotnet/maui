@@ -63,8 +63,8 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var placeholder = searchBar.Placeholder ?? string.Empty;
-			var color = searchBar.PlaceholderColor is Color placeholderColor ? placeholderColor.ToPlatform() : ColorExtensions.PlaceholderColor;
-			textField.AttributedPlaceholder = new NSAttributedString(str: placeholder, foregroundColor: color);
+			var placeholderColor = searchBar.PlaceholderColor is Color color ? color.ToPlatform() : ColorExtensions.PlaceholderColor;
+			textField.AttributedPlaceholder = new NSAttributedString(str: placeholder, foregroundColor: placeholderColor);
 			textField.AttributedPlaceholder.WithCharacterSpacing(searchBar.CharacterSpacing);
 		}
 
