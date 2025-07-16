@@ -112,6 +112,7 @@ public class BorderFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //For more information, see : https://github.com/dotnet/maui/issues/29661 , https://github.com/dotnet/maui/issues/29743
 
 	[Test]
@@ -143,14 +144,14 @@ public class BorderFeatureTests : UITest
 		App.WaitForElement("Options");
 		App.Tap("Options");
 
-		App.WaitForElement("PathShapeRadio");
-		App.Tap("PathShapeRadio");
-
 		App.WaitForElement("StrokeDashArrayEntry");
 		App.EnterText("StrokeDashArrayEntry", "5,3");
 
 		App.WaitForElement("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "10");
+
+		App.WaitForElement("PathShapeRadio");
+		App.Tap("PathShapeRadio");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -172,7 +173,12 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
+
+#if WINDOWS
+		VerifyScreenshot(cropTop: 50);
+#else
 		VerifyScreenshot();
+#endif
 	}
 
 	[Test]
@@ -193,7 +199,12 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
+
+#if WINDOWS
+		VerifyScreenshot(cropTop: 50);
+#else
 		VerifyScreenshot();
+#endif
 	}
 
 	[Test]
@@ -227,11 +238,11 @@ public class BorderFeatureTests : UITest
 		App.WaitForElement("StrokeDashArrayEntry");
 		App.EnterText("StrokeDashArrayEntry", "5,3");
 
-		App.WaitForElement("RoundLineCapRadio");
-		App.Tap("RoundLineCapRadio");
-
 		App.WaitForElement("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "10");
+
+		App.WaitForElement("RoundLineCapRadio");
+		App.Tap("RoundLineCapRadio");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -248,11 +259,11 @@ public class BorderFeatureTests : UITest
 		App.WaitForElement("StrokeDashArrayEntry");
 		App.EnterText("StrokeDashArrayEntry", "5,3");
 
-		App.WaitForElement("RoundLineCapRadio");
-		App.Tap("RoundLineCapRadio");
-
 		App.WaitForElement("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "10");
+
+		App.WaitForElement("RoundLineCapRadio");
+		App.Tap("RoundLineCapRadio");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -269,11 +280,11 @@ public class BorderFeatureTests : UITest
 		App.WaitForElement("StrokeDashArrayEntry");
 		App.EnterText("StrokeDashArrayEntry", "5,3");
 
-		App.WaitForElement("SquareLineCapRadio");
-		App.Tap("SquareLineCapRadio");
-
 		App.WaitForElement("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "10");
+
+		App.WaitForElement("SquareLineCapRadio");
+		App.Tap("SquareLineCapRadio");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -290,19 +301,20 @@ public class BorderFeatureTests : UITest
 		App.WaitForElement("StrokeDashArrayEntry");
 		App.EnterText("StrokeDashArrayEntry", "5,3");
 
+		App.WaitForElement("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "10");
+
 		App.WaitForElement("EllipseShapeRadio");
 		App.Tap("EllipseShapeRadio");
 
 		App.WaitForElement("SquareLineCapRadio");
 		App.Tap("SquareLineCapRadio");
 
-		App.WaitForElement("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "10");
-
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		VerifyScreenshot();
 	}
+
 	[Test]
 	[Category(UITestCategories.Border)]
 	public void Border_PolygonShapeWithStrokeLineCap_Round()
@@ -313,14 +325,14 @@ public class BorderFeatureTests : UITest
 		App.WaitForElement("StrokeDashArrayEntry");
 		App.EnterText("StrokeDashArrayEntry", "5,3");
 
+		App.WaitForElement("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "15");
+
 		App.WaitForElement("PolygonShapeRadio");
 		App.Tap("PolygonShapeRadio");
 
 		App.WaitForElement("RoundLineCapRadio");
 		App.Tap("RoundLineCapRadio");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "15");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -339,11 +351,11 @@ public class BorderFeatureTests : UITest
 		App.WaitForElement("StrokeDashArrayEntry");
 		App.EnterText("StrokeDashArrayEntry", "5,3");
 
-		App.WaitForElement("RedColorButton");
-		App.Tap("RedColorButton");
-
 		App.WaitForElement("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "10");
+
+		App.WaitForElement("RedColorButton");
+		App.Tap("RedColorButton");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -408,7 +420,12 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
+
+#if WINDOWS
+		VerifyScreenshot(cropTop: 50);
+#else
 		VerifyScreenshot();
+#endif
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // For more information, see : https://github.com/dotnet/maui/issues/29898
@@ -419,9 +436,6 @@ public class BorderFeatureTests : UITest
 		App.WaitForElement("Options");
 		App.Tap("Options");
 
-		App.WaitForElement("BlackColorButton");
-		App.Tap("BlackColorButton");
-
 		App.WaitForElement("StrokeDashArrayEntry");
 		App.EnterText("StrokeDashArrayEntry", "5,3");
 
@@ -430,6 +444,9 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "15");
+
+		App.WaitForElement("BlackColorButton");
+		App.Tap("BlackColorButton");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
