@@ -1,18 +1,11 @@
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 15778, "CollectionView SelectionChanged gets fired when performing swipe using swipe view", PlatformAffected.Android)]
-public class Issue15778 : NavigationPage
-{
-    public Issue15778() : base(new Issue15778Page1())
-    {
-    }
-}
-
-public class Issue15778Page1 : ContentPage
+public class Issue15778 : ContentPage
 {
     private Label statusLabel;
 
-    public Issue15778Page1()
+    public Issue15778()
     {
         Title = "SwipeView in CollectionView";
 
