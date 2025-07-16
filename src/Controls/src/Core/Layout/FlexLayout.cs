@@ -464,9 +464,7 @@ namespace Microsoft.Maui.Controls
 		// Until we can rewrite the FlexLayout engine to handle measurement properly (without the "in measure mode" hacks)
 		// we need to replace the default implementation of CrossPlatformMeasure.
 		// And we need to disable the public API analyzer briefly, because it doesn't understand hiding.
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		new public Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			var layoutManager = _layoutManager ??= CreateLayoutManager();
 
