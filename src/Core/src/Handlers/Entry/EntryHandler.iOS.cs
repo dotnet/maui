@@ -28,6 +28,9 @@ namespace Microsoft.Maui.Handlers
 			base.SetVirtualView(view);
 
 			_proxy.SetVirtualView(PlatformView);
+
+			// Store the virtual view reference in MauiTextField for theme change handling
+			PlatformView?.SetVirtualView(VirtualView);
 		}
 
 		protected override void ConnectHandler(MauiTextField platformView)
@@ -38,6 +41,9 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiTextField platformView)
 		{
 			_proxy.Disconnect(platformView);
+
+			// Clear the virtual view reference when disconnecting
+			platformView?.SetVirtualView(null);
 		}
 
 		public static void MapText(IEntryHandler handler, IEntry entry)
