@@ -97,9 +97,8 @@ namespace Microsoft.Maui.Platform
 						// At least one edge should respect safe area
 						if (_respondsToSafeArea.HasValue)
 						{
-							return _respondsToSafeArea.Value;
+							return (_respondsToSafeArea = RespondsToSelector(new Selector("safeAreaInsets"))).Value;
 						}
-						return (_respondsToSafeArea = RespondsToSelector(new Selector("safeAreaInsets"))).Value;
 					}
 				}
 				// All edges ignore safe area (All = ignore all insets)
