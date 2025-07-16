@@ -9,6 +9,9 @@ namespace Microsoft.Maui.Controls
 	{
 		public static void MapAutomationPropertiesIsInAccessibleTree(IElementHandler handler, Element element)
 		{
+			if (handler.IsConnectingHandler() && element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) is null)
+				return;
+
 			Platform.AccessibilityExtensions.SetAutomationPropertiesAccessibilityView(
 				handler.PlatformView as Microsoft.UI.Xaml.FrameworkElement, element);
 		}
