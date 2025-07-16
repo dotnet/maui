@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPage']/Docs/*" />
 	[ContentProperty("Content")]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class ContentPage : TemplatedPage, IContentView, HotReload.IHotReloadableView
+	public partial class ContentPage : TemplatedPage, IContentView, HotReload.IHotReloadableView, ISafeAreaElement
 	{
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentPage), null, propertyChanged: TemplateUtilities.OnContentChanged);
@@ -28,6 +28,9 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty HideSoftInputOnTappedProperty
 			= BindableProperty.Create(nameof(HideSoftInputOnTapped), typeof(bool), typeof(ContentPage), false);
 
+		/// <summary>Bindable property for <see cref="SafeAreaIgnore"/>.</summary>
+		public static readonly BindableProperty SafeAreaIgnoreProperty = SafeAreaElement.SafeAreaIgnoreProperty;
+
 		/// <summary>
 		/// Gets or sets a value that indicates whether tapping anywhere on the page will cause the soft input to hide.
 		/// </summary>
@@ -35,6 +38,21 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (bool)GetValue(HideSoftInputOnTappedProperty); }
 			set { SetValue(HideSoftInputOnTappedProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets the safe area edges to ignore for this content page.
+		/// The default value is SafeAreaEdges.Default.
+		/// </summary>
+		/// <remarks>
+		/// This property controls which edges of the content page should ignore safe area insets.
+		/// Use SafeAreaRegions.Default to respect safe area, SafeAreaRegions.All to ignore all insets, 
+		/// SafeAreaRegions.None to ensure content never displays behind blocking UI, or SafeAreaRegions.SoftInput for soft input aware behavior.
+		/// </remarks>
+		public SafeAreaEdges SafeAreaIgnore
+		{
+			get => (SafeAreaEdges)GetValue(SafeAreaElement.SafeAreaIgnoreProperty);
+			set => SetValue(SafeAreaElement.SafeAreaIgnoreProperty, value);
 		}
 
 		public ContentPage()
@@ -149,6 +167,11 @@ namespace Microsoft.Maui.Controls
 		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			return (this as ICrossPlatformLayout).CrossPlatformMeasure(widthConstraint, heightConstraint);
+		}
+
+		SafeAreaEdges ISafeAreaElement.SafeAreaIgnoreDefaultValueCreator()
+		{
+			return SafeAreaEdges.Default;
 		}
 
 		private protected override string GetDebuggerDisplay()
