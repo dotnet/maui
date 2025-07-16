@@ -355,7 +355,9 @@ namespace Microsoft.Maui.Controls
 			{
 				var grid = new Grid()
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					IgnoreSafeArea = true
+#pragma warning restore CS0618 // Type or member is obsolete
 				};
 
 				if (OperatingSystem.IsWindows())

@@ -10,7 +10,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public class Border : View, IContentView, IBorderView, IPaddingElement
+	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement
 	{
 		float[]? _strokeDashPattern;
 
@@ -32,6 +32,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
+		/// <summary>Bindable property for <see cref="SafeAreaIgnore"/>.</summary>
+		public static readonly BindableProperty SafeAreaIgnoreProperty = SafeAreaElement.SafeAreaIgnoreProperty;
+
 		public View? Content
 		{
 			get { return (View?)GetValue(ContentProperty); }
@@ -42,6 +45,21 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (Thickness)GetValue(PaddingElement.PaddingProperty);
 			set => SetValue(PaddingElement.PaddingProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets the safe area edges to ignore for this border.
+		/// The default value is SafeAreaEdges.Default.
+		/// </summary>
+		/// <remarks>
+		/// This property controls which edges of the border should ignore safe area insets.
+		/// Use SafeAreaRegions.Default to respect safe area, SafeAreaRegions.All to ignore all insets, 
+		/// SafeAreaRegions.None to ensure content never displays behind blocking UI, or SafeAreaRegions.SoftInput for soft input aware behavior.
+		/// </remarks>
+		public SafeAreaEdges SafeAreaIgnore
+		{
+			get => (SafeAreaEdges)GetValue(SafeAreaElement.SafeAreaIgnoreProperty);
+			set => SetValue(SafeAreaElement.SafeAreaIgnoreProperty, value);
 		}
 
 		/// <summary>Bindable property for <see cref="StrokeShape"/>.</summary>
@@ -331,6 +349,11 @@ namespace Microsoft.Maui.Controls
 			{
 				strokeShape.StrokeThickness = StrokeThickness;
 			}
+		}
+
+		SafeAreaEdges ISafeAreaElement.SafeAreaIgnoreDefaultValueCreator()
+		{
+			return SafeAreaEdges.Default;
 		}
 	}
 }

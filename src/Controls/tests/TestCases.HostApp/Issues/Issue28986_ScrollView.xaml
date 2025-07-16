@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue28986_ScrollView"
+             Title="SafeArea ScrollView Test">
+    
+    <Grid BackgroundColor="Red">
+        <!-- ScrollView with SafeAreaIgnore property -->
+        <ScrollView x:Name="TestScrollView" SafeAreaIgnore="All" BackgroundColor="LightBlue">
+            <StackLayout Spacing="20" Padding="20">
+                <Label Text="SafeArea ScrollView Test" 
+                       FontSize="24" 
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center" />
+                
+                <Label Text="This ScrollView has SafeAreaIgnore='All' and should extend behind system UI areas. The red background shows areas outside safe area."
+                       FontSize="14"
+                       HorizontalOptions="Center" />
+                
+                <Label x:Name="CurrentSettingsLabel"
+                       Text="Current ScrollView SafeAreaIgnore: All"
+                       FontSize="16"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       AutomationId="CurrentSettings" />
+                
+                <!-- Control panel for ScrollView SafeAreaIgnore -->
+                <Border BackgroundColor="White" Stroke="Gray" StrokeThickness="2" Padding="15">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="ScrollView SafeAreaIgnore Control:" 
+                               FontSize="18" 
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center" />
+                        
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Top -->
+                            <StackLayout Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
+                                <Label Text="Top:" VerticalOptions="Center" />
+                                <Picker x:Name="TopPicker" 
+                                        SelectedIndex="3" 
+                                        SelectedIndexChanged="OnEdgePickerChanged"
+                                        AutomationId="TopPicker">
+                                    <Picker.Items>
+                                        <x:String>Default</x:String>
+                                        <x:String>SoftInput</x:String>
+                                        <x:String>None</x:String>
+                                        <x:String>All</x:String>
+                                    </Picker.Items>
+                                </Picker>
+                            </StackLayout>
+                            
+                            <!-- Left and Right -->
+                            <StackLayout Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalOptions="Center">
+                                <Label Text="Left:" VerticalOptions="Center" />
+                                <Picker x:Name="LeftPicker" 
+                                        SelectedIndex="3" 
+                                        SelectedIndexChanged="OnEdgePickerChanged"
+                                        AutomationId="LeftPicker">
+                                    <Picker.Items>
+                                        <x:String>Default</x:String>
+                                        <x:String>SoftInput</x:String>
+                                        <x:String>None</x:String>
+                                        <x:String>All</x:String>
+                                    </Picker.Items>
+                                </Picker>
+                            </StackLayout>
+                            
+                            <StackLayout Grid.Row="1" Grid.Column="2" Orientation="Horizontal" HorizontalOptions="Center">
+                                <Label Text="Right:" VerticalOptions="Center" />
+                                <Picker x:Name="RightPicker" 
+                                        SelectedIndex="3" 
+                                        SelectedIndexChanged="OnEdgePickerChanged"
+                                        AutomationId="RightPicker">
+                                    <Picker.Items>
+                                        <x:String>Default</x:String>
+                                        <x:String>SoftInput</x:String>
+                                        <x:String>None</x:String>
+                                        <x:String>All</x:String>
+                                    </Picker.Items>
+                                </Picker>
+                            </StackLayout>
+                            
+                            <!-- Bottom -->
+                            <StackLayout Grid.Row="2" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
+                                <Label Text="Bottom:" VerticalOptions="Center" />
+                                <Picker x:Name="BottomPicker" 
+                                        SelectedIndex="3" 
+                                        SelectedIndexChanged="OnEdgePickerChanged"
+                                        AutomationId="BottomPicker">
+                                    <Picker.Items>
+                                        <x:String>Default</x:String>
+                                        <x:String>SoftInput</x:String>
+                                        <x:String>None</x:String>
+                                        <x:String>All</x:String>
+                                    </Picker.Items>
+                                </Picker>
+                            </StackLayout>
+                            
+                            <!-- SoftInput test area -->
+                            <StackLayout Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalOptions="Center">
+                                <Label Text="SoftInput Test:" VerticalOptions="Center" />
+                                <Entry x:Name="SoftInputTestEntry" 
+                                       Placeholder="Tap to show keyboard" 
+                                       WidthRequest="200"
+                                       AutomationId="SoftInputTestEntry" />
+                            </StackLayout>
+                        </Grid>
+                        
+                        <Button Text="Reset All to Default" 
+                                Clicked="OnResetDefaultClicked"
+                                AutomationId="ResetDefaultButton" />
+                        <Button Text="Reset All to None" 
+                                Clicked="OnResetNoneClicked"
+                                AutomationId="ResetNoneButton" />
+                        <Button Text="Reset All to All" 
+                                Clicked="OnResetAllClicked"
+                                AutomationId="ResetAllButton" />
+                    </VerticalStackLayout>
+                </Border>
+                
+                <!-- Sample content to make scrolling meaningful -->
+                <Label Text="Sample Content" FontSize="18" FontAttributes="Bold" />
+                <Label Text="This is sample content to demonstrate ScrollView behavior with SafeAreaIgnore." />
+                <Label Text="Line 1" />
+                <Label Text="Line 2" />
+                <Label Text="Line 3" />
+                <Label Text="Line 4" />
+                <Label Text="Line 5" />
+                <Label Text="Line 6" />
+                <Label Text="Line 7" />
+                <Label Text="Line 8" />
+                <Label Text="Line 9" />
+                <Label Text="Line 10" />
+                <Label Text="Line 11" />
+                <Label Text="Line 12" />
+                <Label Text="Line 13" />
+                <Label Text="Line 14" />
+                <Label Text="Line 15" />
+                <Label Text="Line 16" />
+                <Label Text="Line 17" />
+                <Label Text="Line 18" />
+                <Label Text="Line 19" />
+                <Label Text="Line 20" />
+                <Label Text="End of Content" FontSize="18" FontAttributes="Bold" />
+            </StackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

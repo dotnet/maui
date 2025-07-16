@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Children))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement
+	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement, ISafeAreaPage, ISafeAreaElement
 	{
 		protected ILayoutManager _layoutManager;
 
@@ -122,7 +123,29 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(PaddingElement.PaddingProperty, value);
 		}
 
+		/// <summary>Bindable property for <see cref="SafeAreaIgnore"/>.</summary>
+		public static readonly BindableProperty SafeAreaIgnoreProperty = SafeAreaElement.SafeAreaIgnoreProperty;
+
+		/// <summary>
+		/// Gets or sets the safe area edges to ignore for this layout.
+		/// The default value is SafeAreaEdges.Default.
+		/// </summary>
+		/// <remarks>
+		/// This property controls which edges of the layout should ignore safe area insets.
+		/// Use SafeAreaRegions.Default to respect safe area, SafeAreaRegions.All to ignore all insets, 
+		/// SafeAreaRegions.None to ensure content never displays behind blocking UI, or SafeAreaRegions.SoftInput for soft input aware behavior.
+		/// </remarks>
+		public SafeAreaEdges SafeAreaIgnore
+		{
+			get => (SafeAreaEdges)GetValue(SafeAreaElement.SafeAreaIgnoreProperty);
+			set => SetValue(SafeAreaElement.SafeAreaIgnoreProperty, value);
+		}
+
 		/// <inheritdoc cref="ISafeAreaView.IgnoreSafeArea"/>
+		/// <remarks>
+		/// This property is deprecated. Use SafeAreaElement.IgnoreSafeArea attached property instead for per-edge safe area control.
+		/// </remarks>
+		[System.Obsolete("Use SafeAreaElement.IgnoreSafeArea attached property instead for per-edge safe area control.")]
 		public bool IgnoreSafeArea { get; set; }
 
 		/// <summary>
@@ -346,6 +369,11 @@ namespace Microsoft.Maui.Controls
 			return new Thickness(0);
 		}
 
+		SafeAreaEdges ISafeAreaElement.SafeAreaIgnoreDefaultValueCreator()
+		{
+			return SafeAreaEdges.Default;
+		}
+
 		public Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			return LayoutManager.Measure(widthConstraint, heightConstraint);
@@ -378,5 +406,61 @@ namespace Microsoft.Maui.Controls
 		{
 			return $"{base.GetDebuggerDisplay()}, ChildCount = {Count}";
 		}
+
+		#region ISafeAreaPage
+
+		/// <inheritdoc cref="ISafeAreaPage.SafeAreaInsets"/>
+		Thickness ISafeAreaPage.SafeAreaInsets { set { } } // Default no-op implementation for layouts
+
+		/// <inheritdoc cref="ISafeAreaPage.IgnoreSafeAreaForEdge"/>
+		bool ISafeAreaPage.IgnoreSafeAreaForEdge(int edge)
+		{
+			// Use direct property first, then fall back to attached property and legacy behavior
+			var regionForEdge = SafeAreaIgnore.GetEdge(edge);
+			
+			// Handle the SafeAreaRegions behavior
+			if (regionForEdge.HasFlag(SafeAreaRegions.All))
+			{
+				return true; // Ignore all insets - content may be positioned anywhere
+			}
+
+			if (regionForEdge == SafeAreaRegions.None || regionForEdge == SafeAreaRegions.SoftInput)
+			{
+				// Content will never display behind anything that could block it
+				// Or treat SoftInput as respecting safe area for now
+				return false;
+			}
+
+			if (regionForEdge == SafeAreaRegions.Default)
+			{
+				// Check if attached property is set, if not fall back to legacy behavior
+				if (SafeAreaElement.GetIgnore(this) != SafeAreaEdges.Default)
+				{
+					return SafeAreaElement.ShouldIgnoreSafeAreaForEdge(this, edge);
+				}
+				
+				// Fall back to legacy ISafeAreaView behavior
+				return ((ISafeAreaView)this).IgnoreSafeArea;
+			}
+
+			return false;
+		}
+
+		/// <inheritdoc cref="ISafeAreaPage.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaPage.GetSafeAreaRegionsForEdge(int edge)
+		{
+			// Use direct property first, then fall back to attached property
+			var regionForEdge = SafeAreaIgnore.GetEdge(edge);
+			
+			if (regionForEdge != SafeAreaRegions.Default)
+			{
+				return regionForEdge;
+			}
+			
+			// Fall back to attached property if direct property is Default
+			return SafeAreaElement.GetIgnoreForEdge(this, edge);
+		}
+
+		#endregion
 	}
 }

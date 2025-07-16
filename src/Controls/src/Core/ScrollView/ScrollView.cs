@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Content))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #pragma warning disable CS0618 // Type or member is obsolete
-	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView
+	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, ISafeAreaElement, ISafeAreaPage
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
 		#region IScrollViewController
@@ -137,6 +137,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="VerticalScrollBarVisibility"/>.</summary>
 		public static readonly BindableProperty VerticalScrollBarVisibilityProperty = BindableProperty.Create(nameof(VerticalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ScrollView), ScrollBarVisibility.Default);
 
+		/// <summary>Bindable property for <see cref="SafeAreaIgnore"/>.</summary>
+		public static readonly BindableProperty SafeAreaIgnoreProperty = SafeAreaElement.SafeAreaIgnoreProperty;
+
 		View _content;
 		TaskCompletionSource<bool> _scrollCompletionSource;
 		Rect _layoutAreaOverride;
@@ -250,6 +253,21 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (ScrollBarVisibility)GetValue(VerticalScrollBarVisibilityProperty); }
 			set { SetValue(VerticalScrollBarVisibilityProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets the safe area edges to ignore for this scroll view.
+		/// The default value is SafeAreaEdges.Default.
+		/// </summary>
+		/// <remarks>
+		/// This property controls which edges of the scroll view should ignore safe area insets.
+		/// Use SafeAreaRegions.Default to respect safe area, SafeAreaRegions.All to ignore all insets, 
+		/// SafeAreaRegions.None to ensure content never displays behind blocking UI, or SafeAreaRegions.SoftInput for soft input aware behavior.
+		/// </remarks>
+		public SafeAreaEdges SafeAreaIgnore
+		{
+			get => (SafeAreaEdges)GetValue(SafeAreaElement.SafeAreaIgnoreProperty);
+			set => SetValue(SafeAreaElement.SafeAreaIgnoreProperty, value);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
@@ -493,6 +511,43 @@ namespace Microsoft.Maui.Controls
 
 		Size IContentView.CrossPlatformArrange(Rect bounds) =>
 			((ICrossPlatformLayout)this).CrossPlatformArrange(bounds);
+			
+		SafeAreaEdges ISafeAreaElement.SafeAreaIgnoreDefaultValueCreator()
+		{
+			return SafeAreaEdges.Default;
+		}
+
+		/// <inheritdoc cref="ISafeAreaPage.SafeAreaInsets"/>
+		Thickness ISafeAreaPage.SafeAreaInsets
+		{
+			set
+			{
+				// For ScrollView, we don't need to store the SafeAreaInsets
+				// The platform-specific MauiScrollView handles this
+			}
+		}
+
+		/// <inheritdoc cref="ISafeAreaPage.IgnoreSafeAreaForEdge"/>
+		bool ISafeAreaPage.IgnoreSafeAreaForEdge(int edge)
+		{
+			// Use direct property first, then fall back to attached property and legacy behavior
+			return SafeAreaElement.ShouldIgnoreSafeAreaForEdge(this, edge);
+		}
+
+		/// <inheritdoc cref="ISafeAreaPage.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaPage.GetSafeAreaRegionsForEdge(int edge)
+		{
+			// Use direct property first, then fall back to attached property
+			var regionForEdge = SafeAreaIgnore.GetEdge(edge);
+			
+			if (regionForEdge != SafeAreaRegions.Default)
+			{
+				return regionForEdge;
+			}
+			
+			// Fall back to attached property if direct property is Default
+			return SafeAreaElement.GetIgnoreForEdge(this, edge);
+		}
 
 		private protected override string GetDebuggerDisplay()
 		{
