@@ -2,7 +2,6 @@
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -28,7 +27,7 @@ public partial class DatePickerTests : ControlsHandlerTestBase
 		SetupBuilder();
 
 		var testDate = new DateTime(2023, 5, 15);
-		var datePicker = new DatePicker();
+		var datePicker = new DatePicker() { Format = "dd/MM/yy" };
 
 		await CreateHandlerAndAddToWindow<DatePickerHandler>(datePicker, async handler =>
 		{
@@ -72,11 +71,27 @@ public partial class DatePickerTests : ControlsHandlerTestBase
 		var platformView = handler.PlatformView;
 		if (platformView is { } view)
 		{
+#if MACCATALYST
+				// On MacCatalyst, the platform view is UIDatePicker directly, which doesn't have a Text property
+				var nsDate = view.Date;
+				var dateTime = ((DateTime)nsDate);
+				return dateTime.ToString("dd/MM/yy");
+#elif WINDOWS
+	        // On Windows, the platform view is CalendarDatePicker with a Date property
+	        if (view is Microsoft.UI.Xaml.Controls.CalendarDatePicker calendarPicker && 
+	            calendarPicker.Date.HasValue)
+	        {
+	            return calendarPicker.Date.Value.DateTime.ToString("dd/MM/yy");
+	        }
+
+	        return string.Empty;
+#else
 			var textProperty = view.GetType().GetProperty("Text");
 			if (textProperty != null)
 			{
 				return textProperty.GetValue(view) as string ?? string.Empty;
 			}
+#endif
 		}
 
 		return string.Empty;
