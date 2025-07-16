@@ -208,8 +208,13 @@ namespace Microsoft.Maui.Platform
 
 				if (entry.TextColor is null)
 				{
-					clearButton.SetImage(defaultClearImage, UIControlState.Normal);
-					clearButton.SetImage(defaultClearImage, UIControlState.Highlighted);
+					// When TextColor is null, apply theme-appropriate tint color
+					UIColor themeBasedColor = GetThemeBasedClearButtonColor(textField);
+					clearButton.TintColor = themeBasedColor;
+
+					var tintedClearImage = GetClearButtonTintImage(defaultClearImage, themeBasedColor);
+					clearButton.SetImage(tintedClearImage, UIControlState.Normal);
+					clearButton.SetImage(tintedClearImage, UIControlState.Highlighted);
 				}
 				else
 				{
@@ -220,6 +225,17 @@ namespace Microsoft.Maui.Platform
 					clearButton.SetImage(tintedClearImage, UIControlState.Highlighted);
 				}
 			}
+		}
+
+		internal static UIColor GetThemeBasedClearButtonColor(UITextField textField)
+		{
+			var userInterfaceStyle = textField.TraitCollection.UserInterfaceStyle;
+			return userInterfaceStyle switch
+			{
+				UIUserInterfaceStyle.Dark => UIColor.White,
+				UIUserInterfaceStyle.Light => UIColor.Black,
+				_ => UIColor.Gray
+			};
 		}
 
 		internal static UIImage? GetClearButtonTintImage(UIImage image, UIColor color)
