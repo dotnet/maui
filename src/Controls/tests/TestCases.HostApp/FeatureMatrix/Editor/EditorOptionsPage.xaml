@@ -3,17 +3,21 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:DataType="local:EditorViewModel"
              x:Class="Maui.Controls.Sample.EditorOptionsPage">
-       <ContentPage.ToolbarItems>
-              <ToolbarItem Text="Apply"
-                           Clicked="ApplyButton_Clicked"
-                           AutomationId="Apply"/>
-       </ContentPage.ToolbarItems>
        <Grid Padding="2"
              ColumnDefinitions="*, *"
              RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
              ColumnSpacing="8">
+              <VerticalStackLayout Grid.ColumnSpan="2"
+                            Grid.Row="1">
+                     <!-- Add Apply buttons below the grid -->
+                     <Button Text="Apply"
+                             FontSize="14"
+                             Clicked="ApplyButton_Clicked"
+                             AutomationId="ApplyButton"/>
+              </VerticalStackLayout>
               <!-- Left Column: Editor property toggles and settings -->
-              <VerticalStackLayout Grid.Column="0">
+              <VerticalStackLayout Grid.Column="0"
+                            Grid.Row="2">
                      <!-- Text -->
                      <HorizontalStackLayout>
                             <Label Text="Text:"
@@ -226,7 +230,8 @@
                      </HorizontalStackLayout>
               </VerticalStackLayout>
               <!-- Right Column: Color, spacing, keyboard, and other settings -->
-              <VerticalStackLayout Grid.Column="1">
+              <VerticalStackLayout Grid.Column="1"
+                            Grid.Row="2">
                      <!-- Text Color -->
                      <Label Text="Text Color:"
                             FontSize="11"/>
