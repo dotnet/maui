@@ -75,8 +75,11 @@ public static class DatePickerExtensions
 
 		string format = datePicker.Format ?? string.Empty;
 
-		// Can't use VirtualView.Format because it won't display the correct format if the region and language are set differently
-		if (picker is not null && (string.IsNullOrWhiteSpace(format) || format.Equals("d", StringComparison.OrdinalIgnoreCase)))
+		if (datePicker.Date is null)
+		{
+			platformDatePicker.Text = string.Empty;
+		}
+		else if (picker is not null && (string.IsNullOrWhiteSpace(format) || format.Equals("d", StringComparison.OrdinalIgnoreCase)))
 		{
 			NSDateFormatter dateFormatter = new NSDateFormatter
 			{
@@ -98,15 +101,11 @@ public static class DatePickerExtensions
 		}
 		else if (format.Contains('/', StringComparison.Ordinal))
 		{
-			// When Date is null, use today's date for display
-			var displayDate = datePicker.Date ?? DateTime.Today;
-			platformDatePicker.Text = displayDate.ToString(format, CultureInfo.InvariantCulture);
+			platformDatePicker.Text = datePicker.Date?.ToString(format, CultureInfo.InvariantCulture) ?? string.Empty;
 		}
 		else
 		{
-			// When Date is null, use today's date for display
-			var displayDate = datePicker.Date ?? DateTime.Today;
-			platformDatePicker.Text = displayDate.ToString(format);
+			platformDatePicker.Text = datePicker.Date?.ToString(format) ?? string.Empty;
 		}
 
 		platformDatePicker.UpdateCharacterSpacing(datePicker);

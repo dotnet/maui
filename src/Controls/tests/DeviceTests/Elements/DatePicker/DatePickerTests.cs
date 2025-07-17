@@ -4,6 +4,7 @@ using Microsoft.Maui.Hosting;
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.DeviceTests;
 
@@ -72,10 +73,10 @@ public partial class DatePickerTests : ControlsHandlerTestBase
 		if (platformView is { } view)
 		{
 #if MACCATALYST
-				// On MacCatalyst, the platform view is UIDatePicker directly, which doesn't have a Text property
-				var nsDate = view.Date;
-				var dateTime = ((DateTime)nsDate);
-				return dateTime.ToString("dd/MM/yy");
+			// On MacCatalyst, the platform view is UIDatePicker directly, which doesn't have a Text property
+			var nsDate = view.Date;
+			var dateTime = nsDate.ToDateTime();
+			return dateTime.ToString("dd/MM/yy");
 #elif WINDOWS
 	        // On Windows, the platform view is CalendarDatePicker with a Date property
 	        if (view is Microsoft.UI.Xaml.Controls.CalendarDatePicker calendarPicker && 
