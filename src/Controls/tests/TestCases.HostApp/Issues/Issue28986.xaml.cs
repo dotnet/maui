@@ -118,10 +118,10 @@ public partial class Issue28986 : ContentPage
 		);
 
 		// Apply SafeArea attached property to the ContentPage
-		SafeAreaElement.SetIgnore(this, pageSafeAreaSettings);
+		this.SafeAreaIgnore = pageSafeAreaSettings;
 
 		// Apply SafeArea attached property to the main content grid
-		SafeAreaElement.SetIgnore(ContentGrid, gridSafeAreaSettings);
+		ContentGrid.SafeAreaIgnore = gridSafeAreaSettings;
 
 		// Update the display label
 		var pageSettingsText = $"Page - Left: {GetSafeAreaRegionsFromPickerIndex(PageLeftPicker.SelectedIndex)}, " +
@@ -191,8 +191,8 @@ public partial class Issue28986 : ContentPage
 		}
 
 		// Apply the optimized settings to test different syntax formats
-		SafeAreaElement.SetIgnore(this, optimizedPageSettings);
-		SafeAreaElement.SetIgnore(ContentGrid, optimizedGridSettings);
+		this.SafeAreaIgnore = optimizedPageSettings;
+		ContentGrid.SafeAreaIgnore = optimizedGridSettings;
 
 		// Update the label to show which syntax is being used
 		var pageSyntaxInfo = (pageLeft == pageTop && pageTop == pageRight && pageRight == pageBottom) ? " (1-value)" :
