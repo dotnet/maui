@@ -93,9 +93,11 @@ namespace Microsoft.Maui.Platform
 
 		public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
 		{
-#if !MACCATALYST || (MACCATALYST && !NET7_0_OR_GREATER)
+
+#pragma warning disable CA1422 // Validate platform compatibility
 			base.TraitCollectionDidChange(previousTraitCollection);
-#endif
+#pragma warning restore CA1422 // Validate platform compatibility
+
 			// Update clear button color when theme changes (UserInterfaceStyle change)
 			if (previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 			{
