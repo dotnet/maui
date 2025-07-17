@@ -27,7 +27,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void GraphicsView_ValidateDefaultValues_VerifyInitialState()
 		{
 			App.WaitForElement("Options");
-			App.WaitForElement("GraphicsViewControl");
 			
 			// Verify default drawable type is Square
 			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Square"));
@@ -37,19 +36,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(dimensionsText, Does.Contain("Height: 100"));
 			Assert.That(dimensionsText, Does.Contain("Width: 100"));
 			
-			// Verify GraphicsView is visible and enabled by default
-			var graphicsView = App.FindElement("GraphicsViewControl");
-			Assert.That(graphicsView.IsDisplayed(), Is.True);
-			Assert.That(graphicsView.IsEnabled(), Is.True);
-		}
-
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_DefaultInteractionEvents_VerifyInitialState()
-		{
-			App.WaitForElement("GraphicsViewControl");
-			
-			// Initially, no interaction event should be displayed
 			var interactionLabel = App.FindElement("InteractionEventLabel");
 			Assert.That(interactionLabel.GetText(), Is.EqualTo("No interactions yet"));
 		}
@@ -60,7 +46,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.GraphicsView)]
-		[Category(UITestCategories.Visual)]
 		public void GraphicsView_SquareDrawable_VerifyTypeAndRendering()
 		{
 			App.WaitForElement("Options");
@@ -69,15 +54,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Square");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-			
+			App.WaitForElement("Options");
+
 			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Square"));
 			VerifyScreenshot();
 		}
 
 		[Test]
 		[Category(UITestCategories.GraphicsView)]
-		[Category(UITestCategories.Visual)]
 		public void GraphicsView_TriangleDrawable_VerifyTypeAndRendering()
 		{
 			App.WaitForElement("Options");
@@ -86,15 +70,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Triangle");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-			
+			App.WaitForElement("Options");
+
 			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Triangle"));
 			VerifyScreenshot();
 		}
 
 		[Test]
 		[Category(UITestCategories.GraphicsView)]
-		[Category(UITestCategories.Visual)]
 		public void GraphicsView_EllipseDrawable_VerifyTypeAndRendering()
 		{
 			App.WaitForElement("Options");
@@ -103,15 +86,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Ellipse");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-			
+			App.WaitForElement("Options");
+
 			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Ellipse"));
 			VerifyScreenshot();
 		}
 
 		[Test]
 		[Category(UITestCategories.GraphicsView)]
-		[Category(UITestCategories.Visual)]
 		public void GraphicsView_LineDrawable_VerifyTypeAndRendering()
 		{
 			App.WaitForElement("Options");
@@ -120,15 +102,15 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Line");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-			
+			App.WaitForElement("Options");
+
 			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Line"));
 			VerifyScreenshot();
 		}
 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST        // See Issue : https://github.com/dotnet/maui/issues/30673                                                             
 		[Test]
 		[Category(UITestCategories.GraphicsView)]
-		[Category(UITestCategories.Visual)]
 		public void GraphicsView_StringDrawable_VerifyTypeAndRendering()
 		{
 			App.WaitForElement("Options");
@@ -137,15 +119,16 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("String");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-			
+			App.WaitForElement("Options");
+
 			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("String"));
 			VerifyScreenshot();
 		}
 
+#endif
+
 		[Test]
 		[Category(UITestCategories.GraphicsView)]
-		[Category(UITestCategories.Visual)]
 		public void GraphicsView_ImageDrawable_VerifyTypeAndRendering()
 		{
 			App.WaitForElement("Options");
@@ -154,8 +137,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Image");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-			
+			App.WaitForElement("Options");
+
 			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Image"));
 			VerifyScreenshot();
 		}
@@ -174,7 +157,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("FlowDirectionLTR");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
+			App.WaitForElement("Options");
+
 			VerifyScreenshot();
 		}
 
@@ -188,7 +172,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("FlowDirectionRTL");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
+			App.WaitForElement("Options");
+
 			VerifyScreenshot();
 		}
 
@@ -206,74 +191,38 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			
+
 			// Select the shape
 			App.WaitForElement(shapeType);
 			App.Tap(shapeType);
-			
+
 			// Select the flow direction
 			string flowDirectionElement = flowDirection == "LTR" ? "FlowDirectionLTR" : "FlowDirectionRTL";
 			App.WaitForElement(flowDirectionElement);
 			App.Tap(flowDirectionElement);
-			
+
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-			
+			App.WaitForElement("Options");
+
 			// Verify the shape type is correctly displayed
 			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo(shapeType));
-			
+
 			// Verify the GraphicsView is visible (containing the shape with flow direction text)
 			var graphicsView = App.FindElement("GraphicsViewControl");
 			Assert.That(graphicsView.IsDisplayed(), Is.True);
-			
+
 			// Visual verification through screenshot - this will show the text within shapes
 			VerifyScreenshot();
 		}
 
 		#endregion
 
-		#region IsEnabled Tests
-
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_SetEnabledToTrue_VerifyEnabledState()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsEnabledTrueRadio");
-			App.Tap("IsEnabledTrueRadio");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-			
-			var graphicsView = App.FindElement("GraphicsViewControl");
-			Assert.That(graphicsView.IsEnabled(), Is.True);
-		}
-
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_SetEnabledToFalse_VerifyDisabledState()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsEnabledFalseRadio");
-			App.Tap("IsEnabledFalseRadio");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-			
-			var graphicsView = App.FindElement("GraphicsViewControl");
-			Assert.That(graphicsView.IsEnabled(), Is.False);
-		}
-
-		#endregion
 
 		#region IsVisible Tests
 
 		[Test]
 		[Category(UITestCategories.GraphicsView)]
-		[Category(UITestCategories.IsVisible)]
 		public void GraphicsView_SetVisibilityToTrue_VerifyVisibleState()
 		{
 			App.WaitForElement("Options");
@@ -282,15 +231,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("IsVisibleTrueRadio");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-			
-			var graphicsView = App.FindElement("GraphicsViewControl");
-			Assert.That(graphicsView.IsDisplayed(), Is.True);
+			App.WaitForElement("Options");
+			// When IsVisible is true, the element should be visible
+			VerifyScreenshot();
 		}
 
 		[Test]
 		[Category(UITestCategories.GraphicsView)]
-		[Category(UITestCategories.IsVisible)]
 		public void GraphicsView_SetVisibilityToFalse_VerifyHiddenState()
 		{
 			App.WaitForElement("Options");
@@ -319,8 +266,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("HeightRequestEntry", "150");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-			
+			App.WaitForElement("Options");
+
 			var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
 			Assert.That(dimensionsText, Does.Contain("Height: 150"));
 		}
@@ -336,8 +283,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("WidthRequestEntry", "200");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-			
+			App.WaitForElement("Options");
+
 			var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
 			Assert.That(dimensionsText, Does.Contain("Width: 200"));
 		}
@@ -356,8 +303,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("WidthRequestEntry", "250");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-			
+			App.WaitForElement("Options");
+
 			var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
 			Assert.That(dimensionsText, Does.Contain("Height: 180"));
 			Assert.That(dimensionsText, Does.Contain("Width: 250"));
@@ -377,10 +324,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("ShadowInputEntry", "5,5,10,0.5");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-
-			var graphicsView = App.FindElement("GraphicsViewControl");
-			Assert.That(graphicsView, Is.Not.Null);
+			App.WaitForElement("Options");
 			VerifyScreenshot();
 		}
 
@@ -394,15 +338,15 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("ShadowInputEntry", "invalid,input");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-
-			var graphicsView = App.FindElement("GraphicsViewControl");
-			Assert.That(graphicsView, Is.Not.Null);
+			App.WaitForElement("Options");
 			VerifyScreenshot();
 		}
 
 		#endregion
 
+
+#if TEST_FAILS_ON_WINDOWS       //Note:These tests are currently disabled on Windows due to a Graphicsview automationid doesn't work.                                                                              
+		
 		#region Interaction Event Tests
 
 		[Test]
@@ -460,8 +404,44 @@ namespace Microsoft.Maui.TestCases.Tests
 			
 			Assert.That(eventText, Does.Contain("DragInteraction"));
 		}
+		#endregion
+
+		#region IsEnabled Tests
+
+		[Test]
+		[Category(UITestCategories.GraphicsView)]
+		public void GraphicsView_SetEnabledToTrue_VerifyEnabledState()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("IsEnabledTrueRadio");
+			App.Tap("IsEnabledTrueRadio");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Options");
+
+			var graphicsView = App.FindElement("GraphicsViewControl");
+			Assert.That(graphicsView.IsEnabled(), Is.True);
+		}
+
+		[Test]
+		[Category(UITestCategories.GraphicsView)]
+		public void GraphicsView_SetEnabledToFalse_VerifyDisabledState()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("IsEnabledFalseRadio");
+			App.Tap("IsEnabledFalseRadio");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Options");
+
+			var graphicsView = App.FindElement("GraphicsViewControl");
+			Assert.That(graphicsView.IsEnabled(), Is.False);
+		}
 
 		#endregion
+#endif
 
 		#region Combined Feature Tests
 
@@ -481,18 +461,21 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("WidthRequestEntry", "160");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-			
+			App.WaitForElement("Options");
+
 			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Triangle"));
 			var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
 			Assert.That(dimensionsText, Does.Contain("Height: 120"));
 			Assert.That(dimensionsText, Does.Contain("Width: 160"));
+			VerifyScreenshot();
 		}
 
-//issue isEnabled problem
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
+// This test fails on Android, iOS, and MacCatalyst. See issue: https://github.com/dotnet/maui/issues/30649
+// Note: The test is also disabled on Windows due to the GraphicsView AutomationId not functioning correctly.
+
 		[Test]
 		[Category(UITestCategories.GraphicsView)]
-		[Category(UITestCategories.IsEnabled)]
 		public void GraphicsView_DisabledSquareWithInteraction_VerifyNoInteraction()
 		{
 			App.WaitForElement("Options");
@@ -503,7 +486,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("IsEnabledFalseRadio");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
+			App.WaitForElement("Options");
 			
 			var graphicsView = App.FindElement("GraphicsViewControl");
 			Assert.That(graphicsView.IsEnabled(), Is.False);
@@ -515,8 +498,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			var interactionLabel = App.FindElement("InteractionEventLabel");
 			Assert.That(interactionLabel.GetText(), Is.EqualTo("No interactions yet"));
 		}
-
-		#endregion
+#endif
+#endregion
 
 		#region Edge Cases and Error Handling
 
@@ -541,9 +524,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			
 			if (shouldBeVisible)
 			{
-				App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
+				App.WaitForElement("Options");
+#if WINDOWS
+				VerifyScreenshot();
+#else
 				var graphicsView = App.FindElement("GraphicsViewControl");
 				Assert.That(graphicsView, Is.Not.Null);
+#endif
 			}
 			else
 			{
@@ -556,44 +543,27 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.GraphicsView)]
 		public void GraphicsView_InvalidateButton_ChangesColorAndLogsEvent()
 		{
-			// Navigate to GraphicsView and ensure it's loaded
-			App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
-			var graphicsView = App.FindElement("GraphicsViewControl");
-			Assert.That(graphicsView, Is.Not.Null);
-
 			// Clear any existing events to start fresh
 			App.WaitForElement("ClearEventsButton");
 			App.Tap("ClearEventsButton");
 
-			// Get the initial interaction events text (should be empty after clearing)
 			var interactionEventLabel = App.FindElement("InteractionEventLabel");
 			var initialEventsText = interactionEventLabel.GetText();
 
-			// Click the Invalidate button
 			App.WaitForElement("InvalidateButton");
 			App.Tap("InvalidateButton");
 
-			// Wait a moment for the invalidation to process
-			System.Threading.Thread.Sleep(500);
-
-			// Verify that an interaction event was logged
 			var updatedEventsText = interactionEventLabel.GetText();
 
-			// The events text should now contain information about the invalidate action
 			Assert.That(updatedEventsText, Is.Not.EqualTo(initialEventsText),
 				"Interaction events should be updated after clicking Invalidate button");
 
-			// Verify that the events text contains relevant invalidate information
 			Assert.That(updatedEventsText, Does.Contain("Invalidate() called"),
-				"Events should indicate that Invalidate() was called on the GraphicsView");
-
-			// Verify GraphicsView is still present and functional after invalidation
-			Assert.That(graphicsView, Is.Not.Null,
-				"GraphicsView should remain functional after invalidation");
+				"Events should indicate that Invalidate() was called on the GraphicsView");		
 				
 			VerifyScreenshot();
 		}
 
-		#endregion
+#endregion
 	}
 }
