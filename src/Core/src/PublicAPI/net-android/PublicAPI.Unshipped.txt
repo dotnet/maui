@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 Microsoft.Maui.Graphics.MauiDrawable.SetEmptyBorderBrush() -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
@@ -173,9 +173,9 @@ static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureEnvironmentVaria
 static Microsoft.Maui.Platform.ButtonExtensions.UpdateRippleColor(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.Graphics.Color? rippleColor) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.GetCursorPosition(this Android.Widget.EditText! editText, int cursorOffset = 0) -> int
 static Microsoft.Maui.Platform.EditTextExtensions.GetSelectedTextLength(this Android.Widget.EditText! editText) -> int
+static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
 *REMOVED*static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry, Android.Graphics.Drawables.Drawable? clearButtonDrawable) -> void
 *REMOVED*static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry, System.Func<Android.Graphics.Drawables.Drawable?>? getClearButtonDrawable) -> void
-static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformButton, Microsoft.Maui.IImageButton! imageButton) -> void
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateButtonBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformView, Microsoft.Maui.IImageButton! button) -> void
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateButtonStroke(this Google.Android.Material.ImageView.ShapeableImageView! platformView, Microsoft.Maui.IButtonStroke! button) -> void

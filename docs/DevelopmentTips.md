@@ -21,6 +21,16 @@ for IntelliSense and other tasks to initialize. If the project hasn't 'settled' 
 
 The below parameters can be used with the `dotnet cake` command in the root of your locally cloned .NET MAUI repository folder.
 
+#### PublicAPI Management
+`--target=publicapi`
+- Clears and regenerates PublicAPI.Unshipped.txt files across all MAUI projects (Core, Controls, Essentials, Graphics)
+- Use this when you've added new public APIs and are getting build errors about missing API declarations
+- Automatically skips Windows-specific files when not running on Windows, and always skips Tizen files
+
+```bash
+dotnet cake --target=publicapi
+```
+
 #### Clean
 `--clean`
 - Occasionally, when switching branches or syncing with the main branch, incremental builds may stop working. A common fix for this is to use git clean -xdf to delete all locally cached build information. However, the issue with git clean -xdf is that it will also wipe out any uncommitted changes. Using --clean to recursively delete the local obj/bin folders should hopefully resolve the issue while preserving your changes.
