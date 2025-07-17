@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public UI.Xaml.Window PlatformView { get; }
 
+			// TODO: This method is obsolete in .NET 10 and will be removed in .NET11.
 			public partial void OnPageBusy(Page sender, bool enabled)
 			{
 				// TODO: Wrap the pages in a Canvas, and dynamically add a ProgressBar
