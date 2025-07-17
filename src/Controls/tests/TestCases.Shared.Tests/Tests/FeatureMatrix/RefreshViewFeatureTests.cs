@@ -204,5 +204,21 @@ public class RefreshViewFeatureTests : UITest
 		App.WaitForElement("RefreshView");
 		VerifyScreenshot();
 	}
+
+	[Test, Order(13)]
+	[Category(UITestCategories.RefreshView)]
+	public void RefreshView_SetShadowWithCollectionView_VerifyShadowApplied()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ShadowTrueButton");
+		App.Tap("ShadowTrueButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("RefreshView");
+		App.WaitForElement("CollectionViewContentButton");
+		App.Tap("CollectionViewContentButton");
+		VerifyScreenshot();
+	}
 #endif
 }
