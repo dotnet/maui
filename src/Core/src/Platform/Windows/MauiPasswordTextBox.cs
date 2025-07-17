@@ -298,7 +298,15 @@ namespace Microsoft.Maui.Platform
 			var updatedPassword = DetermineTextFromPassword(Password, SelectionStart, Text);
 
 			if (Password != updatedPassword)
+			{
 				Password = updatedPassword;
+			}
+			else
+			{
+				// Ensure the UI properly refreshes when text is pasted with the same value
+				// Without this, pasting identical text via Ctrl+V doesn't trigger obfuscation
+				UpdateVisibleText();
+			}
 		}
 
 		static string Obfuscate(string text, bool leaveLastVisible = false)
