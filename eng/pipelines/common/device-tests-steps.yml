@@ -121,7 +121,7 @@ steps:
   displayName: 'Download Build'
   condition: and(succeeded(), eq('${{ parameters.buildType }}', 'testOnly'))
   inputs:
-    artifactName: ${{ parameters.appArtifactName }}
+    artifactName: ${{ parameters.appArtifactName }}_${{ iif(eq(parameters.useCoreClr, 'true'), 'coreclr', 'mono') }}
     targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
 
 ##################################################
@@ -159,11 +159,11 @@ steps:
   - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
     displayName: Publish Succeeded Artifacts Directory
     condition: succeeded()
-    artifact: ${{ parameters.appArtifactName }}
+    artifact: ${{ parameters.appArtifactName }}_${{ iif(eq(parameters.useCoreClr, 'true'), 'coreclr', 'mono') }}
   - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
     displayName: Publish Failed Artifacts Directory
     condition: not(succeeded())
-    artifact: ${{ parameters.appArtifactName }}_failed_$(System.JobAttempt)
+    artifact: ${{ parameters.appArtifactName }}_${{ iif(eq(parameters.useCoreClr, 'true'), 'coreclr', 'mono') }}_failed_$(System.JobAttempt)
 
 # Publish the test results
 - ${{ if ne(parameters.buildType, 'buildOnly') }}:
