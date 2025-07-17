@@ -69,10 +69,6 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
 
-		Rect _containerArea;
-
-		bool _containerAreaSet;
-
 		bool _hasAppeared;
 		private protected bool HasAppeared => _hasAppeared;
 
@@ -673,11 +669,6 @@ namespace Microsoft.Maui.Controls
 
 					InsertLogicalChild(insertIndex, item);
 
-					if (item is VisualElement)
-					{
-						InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-					}
-
 					if (index >= 0)
 					{
 						index++;
@@ -706,33 +697,6 @@ namespace Microsoft.Maui.Controls
 				foreach (IElementDefinition item in args.OldItems)
 					item.Parent = null;
 			}
-		}
-
-		bool ShouldLayoutChildren()
-		{
-			var logicalChildren = this.InternalChildren;
-			if (logicalChildren.Count == 0 || Width <= 0 || Height <= 0 || !IsPlatformStateConsistent)
-				return false;
-
-			var container = this as IPageContainer<Page>;
-			if (container?.CurrentPage != null)
-			{
-				if (InternalChildren.Contains(container.CurrentPage))
-					return container.CurrentPage.IsPlatformEnabled && container.CurrentPage.IsPlatformStateConsistent;
-				return true;
-			}
-
-			var any = false;
-			for (var i = 0; i < logicalChildren.Count; i++)
-			{
-				var v = logicalChildren[i] as VisualElement;
-				if (v != null && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
-				{
-					any = true;
-					break;
-				}
-			}
-			return !any;
 		}
 
 		/// <inheritdoc/>

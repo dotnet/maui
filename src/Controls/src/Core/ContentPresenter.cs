@@ -25,10 +25,10 @@ namespace Microsoft.Maui.Controls
 		{
 			this.SetBinding(
 				ContentProperty,
-				new Binding(
-					ContentView.ContentProperty.PropertyName,
-					source: RelativeBindingSource.TemplatedParent,
-					converterParameter: this));
+				static (IContentView view) => view.Content,
+				source: RelativeBindingSource.TemplatedParent,
+				converter: new ContentConverter(),
+				converterParameter: this);
 		}
 
 		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
@@ -77,8 +77,8 @@ namespace Microsoft.Maui.Controls
 
 		protected override void ComputeConstraintForView(View view)
 		{
-			var isFixedHorizontally = (HeightRequest != -1);
-			var isFixedVertically = (WidthRequest != -1);
+			bool isFixedHorizontally = (Constraint & LayoutConstraint.HorizontallyFixed) != 0;
+			bool isFixedVertically = (Constraint & LayoutConstraint.VerticallyFixed) != 0;
 
 			var result = LayoutConstraint.None;
 			if (isFixedVertically && view.VerticalOptions.Alignment == LayoutAlignment.Fill)
@@ -94,14 +94,14 @@ namespace Microsoft.Maui.Controls
 			view.ComputedConstraint = result;
 		}
 
+		internal override void SetChildInheritedBindingContext(Element child, object context)
+		{
+			// We never want to use the standard inheritance mechanism, we will get this set by our parent
+		}
+
 		static async void OnContentChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var self = (ContentPresenter)bindable;
-
-			if (self.Handler != null)
-			{
-				self.Handler.UpdateValue(nameof(IContentView.Content));
-			}
 
 			var oldView = (View)oldValue;
 			var newView = (View)newValue;
@@ -118,9 +118,36 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+
+		// Don't delete this override. At some point in the future we'd like to delete Compatibility.Layout
+		// and this is the only way to ensure binary compatibility with code that's already compiled against MAUI
+		// and is overriding MeasureOverride.
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		{
+			return this.ComputeDesiredSize(widthConstraint, heightConstraint);
+		}
+
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			return this.MeasureContent(Padding, widthConstraint, heightConstraint);
+			return this.MeasureContent(widthConstraint, heightConstraint);
+		}
+
+		// Don't delete this override. At some point in the future we'd like to delete Compatibility.Layout
+		// and this is the only way to ensure binary compatibility with code that's already compiled against MAUI
+		// and is overriding OnSizeAllocated.
+		protected override void OnSizeAllocated(double width, double height)
+		{
+			base.OnSizeAllocated(width, height);
+		}
+
+		// Don't delete this override. At some point in the future we'd like to delete Compatibility.Layout
+		// and this is the only way to ensure binary compatibility with code that's already compiled against MAUI
+		// and is overriding ArrangeOverride.
+		protected override Size ArrangeOverride(Rect bounds)
+		{
+			Frame = this.ComputeFrame(bounds);
+			Handler?.PlatformArrange(Frame);
+			return Frame.Size;
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
