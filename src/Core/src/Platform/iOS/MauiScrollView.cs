@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Platform
 
 		public MauiScrollView()
 		{
+			KeyboardAutoManagerScroll.Disconnect();
 		}
 
 		SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
@@ -75,7 +76,6 @@ namespace Microsoft.Maui.Platform
 
 		bool UpdateContentInsetAdjustmentBehavior()
 		{
-
 			// Get SafeAreaRegions for all edges
 			var leftRegion = GetSafeAreaRegionForEdge(0);
 			var topRegion = GetSafeAreaRegionForEdge(1);
@@ -107,6 +107,8 @@ namespace Microsoft.Maui.Platform
 				// Mixed edges - use manual calculation
 				ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 			}
+
+			_safeAreaInvalidated = true;
 
 			return true;
 		}
@@ -147,9 +149,6 @@ namespace Microsoft.Maui.Platform
 			base.SafeAreaInsetsDidChange();
 
 			_safeAreaInvalidated = true;
-			
-			// Update ContentInsetAdjustmentBehavior when safe area changes
-			UpdateContentInsetAdjustmentBehavior();
 		}
 
 		public override void LayoutSubviews()
@@ -263,11 +262,17 @@ namespace Microsoft.Maui.Platform
 			adjustedBounds = bounds.Size.ToSize();
 
 			Size size;
-			
+
 			if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+			{
 				size = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
+				//size = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
+				size = new Size(size.Width + _safeArea.HorizontalThickness, size.Height + _safeArea.VerticalThickness);
+			}
 			else
+			{
 				size = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
+			}
 
 			return size;
 		}
@@ -318,6 +323,10 @@ namespace Microsoft.Maui.Platform
 		{
 			SetNeedsLayout();
 			InvalidateConstraintsCache();
+
+			// todo not sure if this is right
+			if (UpdateContentInsetAdjustmentBehavior())
+				ValidateSafeArea();
 
 			return !isPropagating;
 		}

@@ -141,16 +141,19 @@ namespace Microsoft.Maui.Platform
 		void SubscribeToKeyboardNotifications()
 		{
 			UnsubscribeFromKeyboardNotifications();
-			
+
 			var showObserver = NSNotificationCenter.DefaultCenter.AddObserver(
 				UIKeyboard.WillShowNotification,
 				OnKeyboardWillShow);
 			_keyboardWillShowObserver = new WeakReference<NSObject>(showObserver);
-				
+
 			var hideObserver = NSNotificationCenter.DefaultCenter.AddObserver(
 				UIKeyboard.WillHideNotification,
 				OnKeyboardWillHide);
 			_keyboardWillHideObserver = new WeakReference<NSObject>(hideObserver);
+
+			// TODO Temporary
+			UnsubscribeFromKeyboardNotifications();
 		}
 
 		void UnsubscribeFromKeyboardNotifications()
@@ -199,6 +202,8 @@ namespace Microsoft.Maui.Platform
 
 		SafeAreaPadding GetAdjustedSafeAreaInsets()
 		{
+			// Todo disable keyboard for now
+			_isKeyboardShowing = false;
 			var baseSafeArea = SafeAreaInsets.ToSafeAreaInsets();
 
 			// Check if keyboard-aware safe area adjustments are needed
@@ -407,7 +412,7 @@ namespace Microsoft.Maui.Platform
 		bool ValidateSafeArea()
 		{
 			// If nothing changed, we don't need to do anything
-			if (!_safeAreaInvalidated)
+			if (!_safeAreaInvalidated && GetAdjustedSafeAreaInsets() != _safeArea)
 			{
 				return true;
 			}

@@ -14,19 +14,6 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create("SafeAreaIgnore", typeof(SafeAreaEdges), typeof(ISafeAreaElement), SafeAreaEdges.Default,
 									propertyChanged: OnSafeAreaIgnoreChanged,
 									defaultValueCreator: SafeAreaIgnoreDefaultValueCreator);
-
-		/// <summary>
-		/// Bindable property for attached property <c>IgnoreSafeArea</c>.
-		/// </summary>
-		public static readonly BindableProperty IgnoreProperty =
-			BindableProperty.CreateAttached(
-				"Ignore",
-				typeof(SafeAreaEdges),
-				typeof(SafeAreaElement),
-				SafeAreaEdges.Default,
-				propertyChanged: OnIgnoreSafeAreaChanged
-			);
-
 		static void OnSafeAreaIgnoreChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			// Centralized implementation - invalidate measure to trigger layout recalculation
@@ -49,32 +36,6 @@ namespace Microsoft.Maui.Controls
 			=> ((ISafeAreaElement)bindable).SafeAreaIgnoreDefaultValueCreator();
 
 		/// <summary>
-		/// Gets the safe area behavior for the specified bindable object.
-		/// </summary>
-		/// <param name="bindable">The bindable object to get the safe area behavior from.</param>
-		/// <returns>A <see cref="SafeAreaEdges"/> struct specifying which insets to ignore per edge.</returns>
-		public static SafeAreaEdges GetIgnore(BindableObject bindable)
-		{
-			return (SafeAreaEdges)bindable.GetValue(IgnoreProperty);
-		}
-
-		/// <summary>
-		/// Sets the safe area behavior for the specified bindable object.
-		/// </summary>
-		/// <param name="bindable">The bindable object to set the safe area behavior for.</param>
-		/// <param name="value">A <see cref="SafeAreaEdges"/> struct specifying safe area behavior per edge.</param>
-		/// <remarks>
-		/// <para>Supports 1, 2, or 4 values in XAML:</para>
-		/// <para>• 1 value: "All", "None", "Default", or "SoftInput" - applies to all four edges</para>
-		/// <para>• 2 values: "All,None" - first applies to Left &amp; Right (horizontal), second to Top &amp; Bottom (vertical)</para>
-		/// <para>• 4 values: "All,None,Default,SoftInput" - applies in order: Left, Top, Right, Bottom</para>
-		/// </remarks>
-		public static void SetIgnore(BindableObject bindable, SafeAreaEdges value)
-		{
-			bindable.SetValue(IgnoreProperty, value);
-		}
-
-		/// <summary>
 		/// Gets the effective safe area behavior for a specific edge.
 		/// </summary>
 		/// <param name="bindable">The bindable object to get the safe area behavior from.</param>
@@ -82,7 +43,7 @@ namespace Microsoft.Maui.Controls
 		/// <returns>The <see cref="SafeAreaRegions"/> for the specified edge.</returns>
 		internal static SafeAreaRegions GetIgnoreForEdge(BindableObject bindable, int edge)
 		{
-			var edges = GetIgnore(bindable);
+			var edges = (SafeAreaEdges)bindable.GetValue(SafeAreaIgnoreProperty);
 			return edges.GetEdge(edge);
 		}
 
@@ -127,7 +88,7 @@ namespace Microsoft.Maui.Controls
 				// But we need to check if the attached property was set to a non-default value
 				// Since we can't track explicit setting, we'll use a heuristic:
 				// If any edge of the SafeAreaEdges is set to All, then we assume the property was set
-				var edges = GetIgnore(bindable);
+				var edges = (SafeAreaEdges)bindable.GetValue(SafeAreaIgnoreProperty);
 				if (edges.Left == SafeAreaRegions.All || edges.Top == SafeAreaRegions.All ||
 					edges.Right == SafeAreaRegions.All || edges.Bottom == SafeAreaRegions.All)
 				{
