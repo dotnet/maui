@@ -120,6 +120,7 @@ namespace Microsoft.Maui.Platform
 			var pathGeometry = compositor.CreatePathGeometry(path);
 			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
 
+			geometricClip.Offset = new Vector2(-Child.ActualOffset.X, -Child.ActualOffset.Y);
 			visual.Clip = geometricClip;
 			//When the clip is updated, the shadow must be updated as well
 			UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
