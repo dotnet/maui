@@ -74,7 +74,6 @@ static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.operator !=(Micros
 static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.operator ==(Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate? left, Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate? right) -> bool
 static Microsoft.Maui.Handlers.OpenWindowRequest.operator !=(Microsoft.Maui.Handlers.OpenWindowRequest? left, Microsoft.Maui.Handlers.OpenWindowRequest? right) -> bool
 static Microsoft.Maui.Handlers.OpenWindowRequest.operator ==(Microsoft.Maui.Handlers.OpenWindowRequest? left, Microsoft.Maui.Handlers.OpenWindowRequest? right) -> bool
-static Microsoft.Maui.Handlers.RefreshViewHandler.MapIsEnabled(Microsoft.Maui.Handlers.IRefreshViewHandler! handler, Microsoft.Maui.IRefreshView! refreshView) -> void
 static Microsoft.Maui.Handlers.RefreshViewHandler.MapIsRefreshEnabled(Microsoft.Maui.Handlers.IRefreshViewHandler! handler, Microsoft.Maui.IRefreshView! refreshView) -> void
 static Microsoft.Maui.ScrollToRequest.operator !=(Microsoft.Maui.ScrollToRequest? left, Microsoft.Maui.ScrollToRequest? right) -> bool
 static Microsoft.Maui.ScrollToRequest.operator ==(Microsoft.Maui.ScrollToRequest? left, Microsoft.Maui.ScrollToRequest? right) -> bool

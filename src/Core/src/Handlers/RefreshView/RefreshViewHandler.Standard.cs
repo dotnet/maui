@@ -24,12 +24,6 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public static void MapIsRefreshEnabled(IRefreshViewHandler handler, IRefreshView refreshView)
-		{
-		}
-
-		public static void MapIsEnabled(IRefreshViewHandler handler, IRefreshView refreshView)
-		{
-		}
+		public static void MapIsRefreshEnabled(IRefreshViewHandler handler, IRefreshView refreshView) { }
 	}
 }

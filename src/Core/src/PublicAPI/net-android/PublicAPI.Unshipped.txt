@@ -14,6 +14,8 @@ Microsoft.Maui.Handlers.OpenWindowRequest.OpenWindowRequest(Microsoft.Maui.Handl
 Microsoft.Maui.IRefreshView.IsRefreshEnabled.get -> bool
 *REMOVED*Microsoft.Maui.Platform.MauiPicker.ShowPopupOnFocus.get -> bool
 *REMOVED*Microsoft.Maui.Platform.MauiPicker.ShowPopupOnFocus.set -> void
+Microsoft.Maui.Platform.MauiSwipeRefreshLayout.RefreshEnabled.get -> bool
+Microsoft.Maui.Platform.MauiSwipeRefreshLayout.RefreshEnabled.set -> void
 Microsoft.Maui.ScrollToRequest.Deconstruct(out double HorizontalOffset, out double VerticalOffset, out bool Instant) -> void
 Microsoft.Maui.ScrollToRequest.ScrollToRequest(Microsoft.Maui.ScrollToRequest! original) -> void
 Microsoft.Maui.SwipeViewCloseRequest.Deconstruct(out bool Animated) -> void

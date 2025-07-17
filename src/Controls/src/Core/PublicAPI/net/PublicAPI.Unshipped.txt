@@ -3,7 +3,9 @@
 Microsoft.Maui.Controls.FlexLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.RefreshView.IsRefreshEnabled.get -> bool
 Microsoft.Maui.Controls.RefreshView.IsRefreshEnabled.set -> void
+Microsoft.Maui.Controls.RefreshView.RefreshIsRefreshEnabledProperty() -> void
 override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void
+*REMOVED*override Microsoft.Maui.Controls.RefreshView.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.ScrollView.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, double height) -> void
 ~static readonly Microsoft.Maui.Controls.RefreshView.IsRefreshEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -20,3 +22,4 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 ~virtual Microsoft.Maui.Controls.CollectionSynchronizationCallback.Invoke(System.Collections.IEnumerable collection, object context, System.Action accessMethod, bool writeAccess) -> void
 ~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
+virtual Microsoft.Maui.Controls.RefreshView.IsRefreshEnabledCore.get -> bool
