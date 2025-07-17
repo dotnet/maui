@@ -369,6 +369,7 @@ namespace Microsoft.Maui.Controls
 						vm.SelectedForeground = view.SelectedTabColor?.AsPaint()?.ToPlatform();
 						vm.UnselectedForeground = view.UnselectedTabColor?.AsPaint()?.ToPlatform();
 						vm.IsSelected = page == view.CurrentPage;
+						vm.IsEnabled = page.IsEnabled;
 					});
 
 				handler.UpdateValue(nameof(TabbedPage.CurrentPage));
