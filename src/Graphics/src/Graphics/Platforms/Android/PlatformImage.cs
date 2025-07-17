@@ -156,7 +156,15 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
-			var bitmap = BitmapFactory.DecodeStream(stream);
+			// Copy stream data to a byte array to ensure marshaling stability
+			byte[] buffer;
+			using (var memoryStream = new MemoryStream())
+			{
+				stream.CopyTo(memoryStream);
+				buffer = memoryStream.ToArray();
+			}
+
+			var bitmap = BitmapFactory.DecodeByteArray(buffer, 0, buffer.Length);
 			return new PlatformImage(bitmap);
 		}
 	}
