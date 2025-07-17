@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
 Microsoft.Maui.Handlers.DataFlowDirection
@@ -32,6 +32,8 @@ Microsoft.Maui.IDatePicker.Date.get -> System.DateTime?
 Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
+Microsoft.Maui.IHybridWebView.InitializedWebView(object! webView) -> void
+Microsoft.Maui.IHybridWebView.InitializingWebView() -> object?
 Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
 Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
 *REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
@@ -63,6 +65,14 @@ Microsoft.Maui.SwipeViewSwipeStarted.SwipeViewSwipeStarted(Microsoft.Maui.SwipeV
 Microsoft.Maui.WebResourceRequestedEventArgs
 Microsoft.Maui.WebResourceRequestedEventArgs.Sender.get -> WebKit.WKWebView!
 Microsoft.Maui.WebResourceRequestedEventArgs.UrlSchemeTask.get -> WebKit.IWKUrlSchemeTask!
+Microsoft.Maui.WebViewInitializedEventArgs
+Microsoft.Maui.WebViewInitializedEventArgs.WebView.get -> WebKit.WKWebView!
+Microsoft.Maui.WebViewInitializedEventArgs.WebView.set -> void
+Microsoft.Maui.WebViewInitializedEventArgs.WebViewInitializedEventArgs(object! webView) -> void
+Microsoft.Maui.WebViewInitializingEventArgs
+Microsoft.Maui.WebViewInitializingEventArgs.AdditionalSettings.get -> System.Action<WebKit.WKWebViewConfiguration!>?
+Microsoft.Maui.WebViewInitializingEventArgs.AdditionalSettings.set -> void
+Microsoft.Maui.WebViewInitializingEventArgs.WebViewInitializingEventArgs() -> void
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
