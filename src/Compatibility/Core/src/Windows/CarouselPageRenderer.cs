@@ -121,11 +121,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (!disposing || _disposed)
 				return;
 
-			if (_tracker != null)
-			{
-				_tracker.Dispose();
-				_tracker = null;
-			}
+			_tracker?.Dispose();
+			_tracker = null;
 
 			_disposed = true;
 			Page?.SendDisappearing();
