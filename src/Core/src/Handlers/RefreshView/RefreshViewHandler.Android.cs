@@ -81,17 +81,13 @@ namespace Microsoft.Maui.Handlers
 
 		static void UpdateIsRefreshEnabled(IRefreshViewHandler handler)
 		{
-			handler.PlatformView.Enabled = handler.VirtualView.IsRefreshEnabled;
+			handler.PlatformView.RefreshEnabled = handler.VirtualView.IsRefreshEnabled;
 		}
 
 		static void UpdateIsEnabled(IRefreshViewHandler handler)
 		{
 			// On Android, IsEnabled should disable the entire view tree
 			handler.PlatformView.Enabled = handler.VirtualView.IsEnabled;
-			
-			// Also update the refresh enabled state
-			if (handler.VirtualView.IsEnabled)
-				UpdateIsRefreshEnabled(handler);
 		}
 	}
 }
