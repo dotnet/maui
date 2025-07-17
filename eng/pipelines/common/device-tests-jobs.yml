@@ -76,6 +76,9 @@ jobs:
             ${{ if contains(version, 'device') }}:
               device: ios-device
               apiVersion: ${{ replace(version, 'device-', '') }}
+            ${{ if contains(version, 'latest') }}:
+              device: ios-simulator-64
+              apiVersion: 18.4
             ${{ else }}:
               device: ios-simulator-64_${{ replace(version, 'simulator-', '') }}
               apiVersion: ${{ replace(version, 'simulator-', '') }}
