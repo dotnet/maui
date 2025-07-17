@@ -33,7 +33,7 @@
 
   <!-- A small task to make sure everything depends on the same version of SkiaSharp -->
   <ItemGroup>
-    <PackageReference Include="Mono.ApiTools.MSBuildTasks" Version="0.3.0" PrivateAssets="all" />
+    <PackageReference Include="Mono.ApiTools.MSBuildTasks" PrivateAssets="all" />
   </ItemGroup>
   <PropertyGroup>
     <_AdjustmentsAssembly>$(PkgSvg_Skia)\lib\netstandard2.0\Svg.Skia.dll</_AdjustmentsAssembly>
