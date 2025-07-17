@@ -311,3 +311,39 @@ virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.CommandProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequiredProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.DatePicker.Closed -> System.EventHandler<Microsoft.Maui.Controls.DatePickerClosedEventArgs>
+Microsoft.Maui.Controls.DatePicker.Opened -> System.EventHandler<Microsoft.Maui.Controls.DatePickerOpenedEventArgs>
+Microsoft.Maui.Controls.DatePickerClosedEventArgs
+Microsoft.Maui.Controls.DatePickerClosedEventArgs.DatePickerClosedEventArgs() -> void
+Microsoft.Maui.Controls.DatePickerOpenedEventArgs
+Microsoft.Maui.Controls.DatePickerOpenedEventArgs.DatePickerOpenedEventArgs() -> void
+Microsoft.Maui.Controls.TimePicker.Closed -> System.EventHandler<Microsoft.Maui.Controls.TimePickerClosedEventArgs>
+Microsoft.Maui.Controls.TimePicker.Opened -> System.EventHandler<Microsoft.Maui.Controls.TimePickerOpenedEventArgs>
+Microsoft.Maui.Controls.TimePickerClosedEventArgs
+Microsoft.Maui.Controls.TimePickerClosedEventArgs.TimePickerClosedEventArgs() -> void
+Microsoft.Maui.Controls.TimePickerOpenedEventArgs
+Microsoft.Maui.Controls.TimePickerOpenedEventArgs.TimePickerOpenedEventArgs() -> void
+override Microsoft.Maui.Controls.Picker.OnHandlerChanged() -> void
+override Microsoft.Maui.Controls.DatePicker.OnHandlerChanged() -> void
+override Microsoft.Maui.Controls.TimePicker.OnHandlerChanged() -> void
+static readonly Microsoft.Maui.Controls.DatePickerClosedEventArgs.Empty -> Microsoft.Maui.Controls.DatePickerClosedEventArgs!
+static readonly Microsoft.Maui.Controls.DatePickerOpenedEventArgs.Empty -> Microsoft.Maui.Controls.DatePickerOpenedEventArgs!
+static readonly Microsoft.Maui.Controls.PickerClosedEventArgs.Empty -> Microsoft.Maui.Controls.PickerClosedEventArgs!
+static readonly Microsoft.Maui.Controls.PickerOpenedEventArgs.Empty -> Microsoft.Maui.Controls.PickerOpenedEventArgs!
+static readonly Microsoft.Maui.Controls.TimePickerClosedEventArgs.Empty -> Microsoft.Maui.Controls.TimePickerClosedEventArgs!
+static readonly Microsoft.Maui.Controls.TimePickerOpenedEventArgs.Empty -> Microsoft.Maui.Controls.TimePickerOpenedEventArgs!
+Microsoft.Maui.Controls.DatePicker.IsOpen.get -> bool
+Microsoft.Maui.Controls.DatePicker.IsOpen.set -> void
+Microsoft.Maui.Controls.Picker.Closed -> System.EventHandler<Microsoft.Maui.Controls.PickerClosedEventArgs>
+Microsoft.Maui.Controls.Picker.IsOpen.get -> bool
+Microsoft.Maui.Controls.Picker.IsOpen.set -> void
+Microsoft.Maui.Controls.Picker.Opened -> System.EventHandler<Microsoft.Maui.Controls.PickerOpenedEventArgs>
+Microsoft.Maui.Controls.PickerClosedEventArgs
+Microsoft.Maui.Controls.PickerClosedEventArgs.PickerClosedEventArgs() -> void
+Microsoft.Maui.Controls.PickerOpenedEventArgs
+Microsoft.Maui.Controls.PickerOpenedEventArgs.PickerOpenedEventArgs() -> void
+Microsoft.Maui.Controls.TimePicker.IsOpen.get -> bool
+Microsoft.Maui.Controls.TimePicker.IsOpen.set -> void
+~static readonly Microsoft.Maui.Controls.DatePicker.IsOpenProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Picker.IsOpenProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.TimePicker.IsOpenProperty -> Microsoft.Maui.Controls.BindableProperty
