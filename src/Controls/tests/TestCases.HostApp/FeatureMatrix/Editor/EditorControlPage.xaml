@@ -4,46 +4,54 @@
              x:DataType="local:EditorViewModel"
              x:Class="Maui.Controls.Sample.EditorControlMainPage">
        <VerticalStackLayout Padding="20"
-                    Spacing="8">
+                            Spacing="8">
               <Label Text="Editor Control"
-                     FontSize="20" Margin="0,0,0,50"
+                     FontSize="20"
+                     Margin="0,0,0,50"
                      HorizontalOptions="Center"/>
 
-              <local:UITestEditor x:Name="EditorControl" 
-                                 IsCursorVisible="False"  
-                                 Text="{Binding Text}"
-                                 Placeholder="{Binding Placeholder}"
-                                 PlaceholderColor="{Binding PlaceholderColor}"
-                                 TextColor="{Binding TextColor}"
-                                 HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
-                                 VerticalTextAlignment="{Binding VerticalTextAlignment}"
-                                 FontSize="{Binding FontSize}"
-                                 CharacterSpacing="{Binding CharacterSpacing}"
-                                 IsReadOnly="{Binding IsReadOnly}"
-                                 IsTextPredictionEnabled="{Binding IsTextPredictionEnabled}"
-                                 IsSpellCheckEnabled="{Binding IsSpellCheckEnabled}"
-                                 Shadow="{Binding EditorShadow}"
-                                 MaxLength="{Binding MaxLength}"
-                                 SelectionLength="{Binding SelectionLength}"
-                                 CursorPosition="{Binding CursorPosition, Mode=TwoWay}"
-                                 Keyboard="{Binding Keyboard}"
-                                 FontFamily="{Binding FontFamily}"
-                                 IsVisible="{Binding IsVisible}"
-                                 IsEnabled="{Binding IsEnabled}"
-                                 FlowDirection="{Binding FlowDirection}"
-                                 HeightRequest="{Binding HeightRequest}"
-                                 FontAttributes="{Binding FontAttributes}"
-                                 TextTransform="{Binding TextTransform}"
-                                 AutoSize ="{Binding AutoSizeOption}"
-                                 TextChanged="EditorControl_TextChanged"
-                                 Completed="EditorControl_Completed"
-                                 Focused="EditorControl_Focused"
-                                 Unfocused="EditorControl_Unfocused"
-                                 AutomationId="TestEditor"/>
+              <local:UITestEditor x:Name="EditorControl"
+                                  IsCursorVisible="False"
+                                  Text="{Binding Text}"
+                                  Placeholder="{Binding Placeholder}"
+                                  PlaceholderColor="{Binding PlaceholderColor}"
+                                  TextColor="{Binding TextColor}"
+                                  HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
+                                  VerticalTextAlignment="{Binding VerticalTextAlignment}"
+                                  FontSize="{Binding FontSize}"
+                                  CharacterSpacing="{Binding CharacterSpacing}"
+                                  IsReadOnly="{Binding IsReadOnly}"
+                                  IsTextPredictionEnabled="{Binding IsTextPredictionEnabled}"
+                                  IsSpellCheckEnabled="{Binding IsSpellCheckEnabled}"
+                                  Shadow="{Binding EditorShadow}"
+                                  MaxLength="{Binding MaxLength}"
+                                  SelectionLength="{Binding SelectionLength}"
+                                  CursorPosition="{Binding CursorPosition, Mode=TwoWay}"
+                                  Keyboard="{Binding Keyboard}"
+                                  FontFamily="{Binding FontFamily}"
+                                  IsVisible="{Binding IsVisible}"
+                                  IsEnabled="{Binding IsEnabled}"
+                                  FlowDirection="{Binding FlowDirection}"
+                                  HeightRequest="{Binding HeightRequest}"
+                                  FontAttributes="{Binding FontAttributes}"
+                                  TextTransform="{Binding TextTransform}"
+                                  AutoSize="{Binding AutoSizeOption}"
+                                  TextChanged="EditorControl_TextChanged"
+                                  Completed="EditorControl_Completed"
+                                  Focused="EditorControl_Focused"
+                                  Unfocused="EditorControl_Unfocused"
+                                  AutomationId="TestEditor"/>
 
               <Grid HeightRequest="130"/>
 
-              <Grid ColumnSpacing="10" Margin="0,10,0,10">
+              <Button Text="Options"
+                      FontSize="11"
+                      Clicked="NavigateToOptionsPage_Clicked"
+                      AutomationId="OptionsButton"
+                      Margin="0,10,0,0"/>
+
+              <Grid ColumnSpacing="10"
+                    Margin="0,10,0,10">
                      <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -52,38 +60,36 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                      </Grid.ColumnDefinitions>
-                     
                      <!-- Row 1: Labels -->
-                     <Label Text="Selection Length:" 
-                               FontSize="11" 
-                               Grid.Row="0" 
-                               Grid.Column="0"/>
+                     <Label Text="Selection Length:"
+                            FontSize="11"
+                            Grid.Row="0"
+                            Grid.Column="0"/>
                      <Label Text="Cursor position:"
-                               FontSize="11" 
-                               Grid.Row="0" 
-                               Grid.Column="1"/>
-                     
+                            FontSize="11"
+                            Grid.Row="0"
+                            Grid.Column="1"/>
                      <!-- Row 2: Entries -->
                      <local:UITestEntry x:Name="SelectionLengthEntry"
-                                                    Text="{Binding SelectionLength}"
-                                                    AutomationId="SelectionLengthEntry"
-                                                    IsCursorVisible="False"
-                                                    TextChanged="SelectionLength_Clicked"
-                                                    Grid.Row="1"
-                                                    Grid.Column="0"/>
+                                        Text="{Binding SelectionLength}"
+                                        AutomationId="SelectionLengthEntry"
+                                        IsCursorVisible="False"
+                                        TextChanged="SelectionLength_Clicked"
+                                        Grid.Row="1"
+                                        Grid.Column="0"/>
                      <local:UITestEntry x:Name="CursorPositionEntry"
-                                                    Text="{Binding CursorPosition}"
-                                                    AutomationId="CursorPositionEntry"
-                                                    IsCursorVisible="False"
-                                                    Grid.Row="1"
-                                                    Grid.Column="1"/>
+                                        Text="{Binding CursorPosition}"
+                                        AutomationId="CursorPositionEntry"
+                                        IsCursorVisible="False"
+                                        Grid.Row="1"
+                                        Grid.Column="1"/>
               </Grid>
 
               <Button Text="Update Cursor Selection"
                       FontSize="11"
                       Clicked="OnUpdateCursorAndSelectionClicked"
                       AutomationId="UpdateCursorAndSelectionButton"/>
-              
+
               <Label Text="Events:"
                      FontSize="11"/>
               <Label x:Name="TextChangedLabel"
@@ -103,9 +109,4 @@
                      AutomationId="UnfocusedLabel"
                      FontSize="11"/>
        </VerticalStackLayout>
-
-       <ContentPage.ToolbarItems>
-              <ToolbarItem Text="Options"
-                           Clicked="NavigateToOptionsPage_Clicked"></ToolbarItem>
-       </ContentPage.ToolbarItems>
 </ContentPage>
