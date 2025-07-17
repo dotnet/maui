@@ -574,6 +574,74 @@ Task("GenerateCgManifest")
     });
 });
 
+Task("generate-publicapi")
+    .Description("Reset PublicAPI.Unshipped.txt files and regenerate")
+    .Does(() =>
+{
+    var corePublicApiDir = MakeAbsolute(Directory("./src/Core/src/PublicAPI"));
+    var controlsPublicApiDir = MakeAbsolute(Directory("./src/Controls/src/Core/PublicAPI"));
+    
+    Information("Resetting PublicAPI.Unshipped.txt files...");
+    
+    // Find and clear all PublicAPI.Unshipped.txt files in Core
+    var coreUnshippedFiles = GetFiles($"{corePublicApiDir}/**/PublicAPI.Unshipped.txt");
+    foreach(var file in coreUnshippedFiles)
+    {
+        // Skip Windows-specific files if not on Windows
+        if (!IsRunningOnWindows() && file.FullPath.Contains("windows"))
+        {
+            Information($"Skipping Windows file (not on Windows): {file}");
+            continue;
+        }
+        
+        // Skip Tizen-specific files
+        if (file.FullPath.Contains("tizen"))
+        {
+            Information($"Skipping Tizen file: {file}");
+            continue;
+        }
+        
+        Information($"Clearing: {file}");
+        System.IO.File.WriteAllText(file.FullPath, string.Empty);
+    }
+    
+    // Find and clear all PublicAPI.Unshipped.txt files in Controls
+    var controlsUnshippedFiles = GetFiles($"{controlsPublicApiDir}/**/PublicAPI.Unshipped.txt");
+    foreach(var file in controlsUnshippedFiles)
+    {
+        // Skip Windows-specific files if not on Windows
+        if (!IsRunningOnWindows() && file.FullPath.Contains("windows"))
+        {
+            Information($"Skipping Windows file (not on Windows): {file}");
+            continue;
+        }
+        
+        // Skip Tizen-specific files
+        if (file.FullPath.Contains("tizen"))
+        {
+            Information($"Skipping Tizen file: {file}");
+            continue;
+        }
+        
+        Information($"Clearing: {file}");
+        System.IO.File.WriteAllText(file.FullPath, string.Empty);
+    }
+    
+    Information("Regenerating PublicAPI...");
+    
+    // Build Controls.Core.csproj with PublicApiType=Generate
+    var settings = new DotNetBuildSettings
+    {
+        Configuration = "Debug",
+        MSBuildSettings = new DotNetMSBuildSettings()
+    };
+    settings.MSBuildSettings.Properties["PublicApiType"] = new List<string> { "Generate" };
+    
+    DotNetBuild("./src/Controls/src/Core/Controls.Core.csproj", settings);
+    
+    Information("PublicAPI reset and regeneration completed!");
+});
+
 bool RunPackTarget()
 {
     // Is the user running the pack target explicitly?
