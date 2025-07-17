@@ -20,6 +20,15 @@ public class ShapesFeatureTests : UITest
 		App.NavigateToGallery(ShapesFeatureMatrix);
 	}
 
+	public void VerifyShapeScreenshot()
+	{	
+#if WINDOWS
+		VerifyScreenshot(CropTop: 50);
+#else
+		VerifyScreenshot();
+#endif
+	}
+
 #if TEST_FAILS_ON_WINDOWS //For more information see: https://github.com/dotnet/maui/issues/29812
 	[Test]
 	[Category(UITestCategories.Shape)]
@@ -40,7 +49,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -107,7 +116,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -132,7 +141,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -154,7 +163,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -176,7 +185,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 #endif
 
@@ -205,7 +214,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -236,7 +245,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -267,7 +276,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -298,7 +307,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -329,7 +338,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -380,7 +389,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -406,7 +415,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -432,7 +441,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -456,7 +465,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 
@@ -485,7 +494,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -508,7 +517,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -529,7 +538,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -556,7 +565,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 	[Test]
 	[Category(UITestCategories.Shape)]
@@ -596,7 +605,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 	[Test]
 	[Category(UITestCategories.Shape)]
@@ -622,7 +631,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 	[Test]
 	[Category(UITestCategories.Shape)]
@@ -645,7 +654,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -669,7 +678,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -695,7 +704,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
@@ -724,7 +733,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 	[Test]
 	[Category(UITestCategories.Shape)]
@@ -772,7 +781,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 	[Test]
 	[Category(UITestCategories.Shape)]
@@ -800,7 +809,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 	[Test]
 	[Category(UITestCategories.Shape)]
@@ -828,7 +837,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 	[Test]
 	[Category(UITestCategories.Shape)]
@@ -856,7 +865,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 }
