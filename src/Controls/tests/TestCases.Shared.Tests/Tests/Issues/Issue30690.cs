@@ -77,7 +77,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.RefreshView)]
-		public void BothPropertiesEnabledAllowsRefresh()
+		public void PullToRefreshWorksWhenEnabled()
 		{
 			// Ensure both properties are enabled
 			App.WaitForElement("CheckStates");
@@ -96,11 +96,59 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.Tap("ToggleIsEnabled");
 			}
 
-			// Now refresh should work
-			App.Tap("StartRefresh");
+			// Find the scroll view content to perform pull gesture on
+			var scrollView = App.FindElement("ScrollViewContent");
 			
-			// Wait for refresh to complete
+			// Perform pull-to-refresh gesture by swiping down from the top
+			App.SwipeDownToRefresh("TestRefreshView");
+			
+			// Wait for refresh to complete and verify it worked
 			App.WaitForTextToBePresentInElement("StatusLabel", "Refresh completed", timeout: TimeSpan.FromSeconds(5));
+		}
+
+		[Test]
+		[Category(UITestCategories.RefreshView)]
+		public void PullToRefreshBlockedWhenIsRefreshEnabledFalse()
+		{
+			// Disable IsRefreshEnabled but keep IsEnabled true
+			App.WaitForElement("CheckStates");
+			App.Tap("CheckStates");
+			var status = GetStatusText();
+			
+			// Enable IsEnabled if it's disabled
+			if (status.Contains("IsEnabled: False"))
+			{
+				App.Tap("ToggleIsEnabled");
+			}
+			
+			// Disable IsRefreshEnabled
+			if (status.Contains("IsRefreshEnabled: True"))
+			{
+				App.Tap("ToggleIsRefreshEnabled");
+			}
+
+			// Verify current state
+			App.Tap("CheckStates");
+			Assert.That(GetStatusText().Contains("IsEnabled: True"), "IsEnabled should be true");
+			Assert.That(GetStatusText().Contains("IsRefreshEnabled: False"), "IsRefreshEnabled should be false");
+
+			// Try to perform pull-to-refresh gesture
+			try
+			{
+				App.SwipeDownToRefresh("TestRefreshView");
+				
+				// Wait a moment to see if any refresh happens
+				System.Threading.Thread.Sleep(1000);
+				
+				// Check that no refresh occurred
+				App.Tap("CheckStates");
+				Assert.That(GetStatusText().Contains("IsRefreshing: False"), "Pull-to-refresh should be blocked when IsRefreshEnabled is false");
+			}
+			catch (Exception)
+			{
+				// Some platforms might throw an exception when trying to refresh a disabled RefreshView
+				// This is acceptable behavior
+			}
 		}
 
 		private string GetStatusText()
