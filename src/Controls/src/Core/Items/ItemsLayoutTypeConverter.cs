@@ -24,9 +24,13 @@ namespace Microsoft.Maui.Controls
 			int identifierLength = 0;
 
 			if (strValue == "VerticalList")
-				return LinearItemsLayout.Vertical;
+			{
+				return new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
+			}
 			else if (strValue == "HorizontalList")
-				return LinearItemsLayout.Horizontal;
+			{
+				return new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
+			}
 			else if (strValue.StartsWith("VerticalGrid", StringComparison.Ordinal))
 			{
 				orientation = ItemsLayoutOrientation.Vertical;
@@ -55,10 +59,12 @@ namespace Microsoft.Maui.Controls
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (value is LinearItemsLayout && value == LinearItemsLayout.Vertical)
-				return "VerticalList";
-			if (value is LinearItemsLayout && value == LinearItemsLayout.Horizontal)
-				return "HorizontalList";
+			if (value is LinearItemsLayout linearItemsLayout)
+			{
+				return linearItemsLayout.Orientation == ItemsLayoutOrientation.Vertical
+					? "VerticalList"
+					: "HorizontalList";
+			}
 			if (value is GridItemsLayout gil)
 				return $"{gil.Orientation}Grid,{gil.Span}";
 			throw new NotSupportedException();
