@@ -25,6 +25,7 @@ namespace UITest.Appium.NUnit
 		public virtual void TestSetup()
 		{
 			RecordTestSetup();
+			
 			if (ResetAfterEachTest)
 			{
 				FixtureSetup();
@@ -35,10 +36,30 @@ namespace UITest.Appium.NUnit
 		public virtual void TestTearDown()
 		{
 			RecordTestTeardown();
+            
+			// Always check for diagnostics first, before any reset operations
 			UITestBaseTearDown();
+            
+			// Handle reset after each test efficiently
 			if (ResetAfterEachTest)
 			{
-				Reset();
+				try
+				{
+					// Only reset if app is still running - no point resetting a crashed app
+					if (App?.AppState == ApplicationState.Running)
+					{
+						Reset();
+					}
+					else
+					{
+						TestContext.Progress.WriteLine($">>>>> {DateTime.Now} App not running, skipping reset in teardown");
+					}
+				}
+				catch (Exception resetException)
+				{
+					TestContext.Error.WriteLine($">>>>> {DateTime.Now} Reset in teardown failed: {resetException.Message}");
+					// Don't rethrow - teardown should be resilient
+				}
 			}
 		}
 
@@ -72,33 +93,44 @@ namespace UITest.Appium.NUnit
 		{
 			try
 			{
-				if (App.AppState != ApplicationState.Running)
-				{
-					SaveDeviceDiagnosticInfo();
+				// Check app state with fallback
+				var appState = App?.AppState ?? ApplicationState.Unknown;
 
+				if (appState == ApplicationState.NotRunning)
+				{
+					// App has crashed, save diagnostics
+					SaveDeviceDiagnosticInfo();
+					Assert.Fail("The app is not running, investigate as possible crash");
+				}
+				else
+				{
+					// App is running - handle reset if needed
 					if (!ResetAfterEachTest)
 					{
-						Reset();
-						FixtureSetup();
+						try
+						{
+							Reset();
+							FixtureSetup();
+						}
+						catch (Exception resetException)
+						{
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Reset after test failed: {resetException.Message}");
+						}
 					}
-
-					// Assert.Fail will immediately exit the test which is desirable as the app is not
-					// running anymore so we can't capture any UI structures or any screenshots
-					Assert.Fail("The app was expected to be running still, investigate as possible crash");
+					// If ResetAfterEachTest is true, reset will happen in TestTearDown()
 				}
 			}
 			finally
 			{
 				var testOutcome = TestContext.CurrentContext.Result.Outcome;
-				if (testOutcome == ResultState.Error ||
-					testOutcome == ResultState.Failure)
+				if (testOutcome == ResultState.Error || testOutcome == ResultState.Failure)
 				{
 					SaveDeviceDiagnosticInfo();
 					SaveUIDiagnosticInfo();
 				}
 			}
 		}
-
+		
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
@@ -107,7 +139,6 @@ namespace UITest.Appium.NUnit
 			{
 				if (!ResetAfterEachTest)
 				{
-					//SaveDiagnosticLogs("BeforeFixtureSetup");
 					FixtureSetup();
 				}
 			}
