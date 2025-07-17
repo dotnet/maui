@@ -434,7 +434,7 @@ namespace Microsoft.Maui.Controls
 			if (regionForEdge == SafeAreaRegions.Default)
 			{
 				// Check if attached property is set, if not fall back to legacy behavior
-				if (SafeAreaElement.GetIgnore(this) != SafeAreaEdges.Default)
+				if (this.SafeAreaIgnore != SafeAreaEdges.Default)
 				{
 					return SafeAreaElement.ShouldIgnoreSafeAreaForEdge(this, edge);
 				}
