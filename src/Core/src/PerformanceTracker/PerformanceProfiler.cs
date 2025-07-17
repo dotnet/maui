@@ -46,9 +46,9 @@ internal static class PerformanceProfiler
 	/// Starts performance tracking for a given category and optional element.
 	/// </summary>
 	/// <param name="category">The category of operation being tracked (e.g. <see cref="PerformanceCategory.LayoutMeasure"/>).</param>
-	/// <param name="element">An optional identifier for the specific element being tracked (e.g. element name).</param>
+	/// <param name="element">An optional object identifying the specific element being tracked.</param>
 	/// <returns>A <see cref="PerformanceTracker"/> struct that must be explicitly stopped via <see cref="PerformanceTracker.Stop"/>.</returns>
-	public static PerformanceTracker Start(PerformanceCategory category, string element = null)
+	public static PerformanceTracker Start(PerformanceCategory category, object element = null)
 	{
 		if (Layout is null)
 			return default;
@@ -59,10 +59,10 @@ internal static class PerformanceProfiler
 	/// <summary>
 	/// Represents a running performance tracking operation. Must call <see cref="Stop"/> to record the timing.
 	/// </summary>
-	internal readonly struct PerformanceTracker
+	internal readonly struct PerformanceTracker : IDisposable
 	{
 		readonly PerformanceCategory _category;
-		readonly string _element;
+		readonly object _element;
 		readonly long _startTimestamp;
 		readonly bool _isActive;
 
@@ -70,8 +70,8 @@ internal static class PerformanceProfiler
 		/// Creates a new performance tracker for the given category and identifier.
 		/// </summary>
 		/// <param name="category">The category of the operation being tracked.</param>
-		/// <param name="element">The optional identifier (e.g. element name or operation label).</param>
-		public PerformanceTracker(PerformanceCategory category, string element)
+		/// <param name="element">An optional object identifying the specific element being tracked.</param>
+		public PerformanceTracker(PerformanceCategory category, object element)
 		{
 			_category = category;
 			_element = element;
@@ -103,6 +103,14 @@ internal static class PerformanceProfiler
 					Debug.WriteLine($"[Performance Profiler] {_category} took {elapsed:0.00} ms.");
 					break;
 			}
+		}
+		
+		/// <summary>
+		/// Disposes the performance tracker by stopping the tracking operation.
+		/// </summary>
+		public void Dispose()
+		{
+			Stop();
 		}
 	}
 }

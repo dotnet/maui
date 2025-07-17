@@ -40,16 +40,16 @@ namespace Microsoft.Maui.Performance
 		/// <summary>
 		/// Record a Measure pass of the layout engine.
 		/// </summary>
-		public void RecordMeasurePass(double duration, string? element = null)
+		public void RecordMeasurePass(double duration, object? element = null)
 		{
 			// Update fields
 			_measureDuration = duration;
 
 			// Record metrics
 			var tags = new TagList();
-			if (!string.IsNullOrEmpty(element))
+			if (element is not null)
 			{
-				tags.Add("element.type", element);
+				tags.Add("element.type", element.GetType().Name);
 			}
 
 			_measureDurationHistogram.Record(duration, tags);
@@ -58,16 +58,16 @@ namespace Microsoft.Maui.Performance
 		/// <summary>
 		/// Record an Arrange pass of the layout engine.
 		/// </summary>
-		public void RecordArrangePass(double duration, string? element = null)
+		public void RecordArrangePass(double duration, object? element = null)
 		{
 			// Update fields
 			_arrangeDuration = duration;
 
 			// Record metrics
 			var tags = new TagList();
-			if (!string.IsNullOrEmpty(element))
+			if (element is not null)
 			{
-				tags.Add("element.type", element);
+				tags.Add("element.type", element.GetType().Name);
 			}
 
 			_arrangeDurationHistogram.Record(duration, tags);

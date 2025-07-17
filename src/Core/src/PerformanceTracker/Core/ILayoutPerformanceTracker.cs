@@ -16,13 +16,13 @@ internal interface ILayoutPerformanceTracker
 	/// Records a measure pass with the specified duration and optional element type.
 	/// </summary>
 	/// <param name="duration">The duration of the measure pass in milliseconds.</param>
-	/// <param name="element">An optional string representing the type of element measured.</param>
-	void RecordMeasurePass(double duration, string? element = null);
+	/// <param name="element">An optional object representing the element measured.</param>
+	void RecordMeasurePass(double duration, object? element = null);
 
 	/// <summary>
 	/// Records an arrange pass with the specified duration and optional element type.
 	/// </summary>
 	/// <param name="duration">The duration of the arrange pass in milliseconds.</param>
-	/// <param name="element">An optional string representing the type of element arranged.</param>
-	void RecordArrangePass(double duration, string? element = null);
+	/// <param name="element">An optional object representing the element arranged.</param>
+	void RecordArrangePass(double duration, object? element = null);
 }
