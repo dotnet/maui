@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
 Microsoft.Maui.Handlers.DataFlowDirection

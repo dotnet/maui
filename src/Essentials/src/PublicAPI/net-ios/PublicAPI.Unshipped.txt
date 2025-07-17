@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 Microsoft.Maui.Authentication.IWebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 Microsoft.Maui.Devices.Sensors.IGeolocation.IsEnabled.get -> bool
 Microsoft.Maui.Media.IMediaPicker.PickPhotosAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.List<Microsoft.Maui.Storage.FileResult!>!>!
