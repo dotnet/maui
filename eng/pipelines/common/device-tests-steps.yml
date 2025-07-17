@@ -17,6 +17,7 @@ parameters:
   poolName: 'Azure Pipelines'
   skipDotNet: false
   buildType: 'buildAndTest' # [ buildAndTest, buildOnly, testOnly ]
+  useCoreClr: false # Use CoreCLR for Android builds
 
 steps:
 
@@ -128,7 +129,7 @@ steps:
 ##################################################
 
 # First run the build if this is a build-only or build-and-test job
-- script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target="buildOnly" --project="${{ parameters.path }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ iif(eq(parameters.device, ''), '', format('--device="{0}"', parameters.device)) }} ${{ iif(eq(parameters.apiversion, ''), '', format('--apiversion="{0}"', parameters.apiversion)) }} --create="${{ ne(parameters.buildType, 'buildOnly') }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" --verbosity=diagnostic ${{ parameters.cakeArgs }}
+- script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target="buildOnly" --project="${{ parameters.path }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ iif(eq(parameters.device, ''), '', format('--device="{0}"', parameters.device)) }} ${{ iif(eq(parameters.apiversion, ''), '', format('--apiversion="{0}"', parameters.apiversion)) }} --create="${{ ne(parameters.buildType, 'buildOnly') }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" --verbosity=diagnostic ${{ parameters.cakeArgs }} --useCoreClr=${{ parameters.useCoreClr }}
   displayName: Execute Build
   workingDirectory: ${{ parameters.checkoutDirectory }}
   condition: and(succeeded(), ne('${{ parameters.buildType }}', 'testOnly'))

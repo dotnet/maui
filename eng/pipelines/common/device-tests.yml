@@ -65,6 +65,32 @@ stages:
               artifactItemPattern: ${{ parameters.artifactItemPattern }}
               useArtifacts: ${{ parameters.useArtifacts }}
 
+    - ${{ if eq(platform, 'android') }}:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - template: device-tests-jobs.yml
+            parameters:
+              buildAndTest: false
+              platform: android
+              timeoutInMinutes: 60
+              pool: ${{ parameters.androidPool }}
+              versions: ${{ parameters.androidApiLevels }}
+              targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
+              checkoutDirectory: ${{ parameters.checkoutDirectory }}
+              project:
+                name: ${{ project.name }}
+                desc: ${{ project.desc }}
+                path: ${{ project.android }}
+                versionsExclude: ${{ project.androidApiLevelsExclude }}
+                configuration: ${{ project.androidConfiguration }}
+              provisionatorChannel: ${{ parameters.provisionatorChannel }}
+              skipProvisioning: ${{ parameters.skipProvisioning }}
+              agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+              artifactName: ${{ parameters.artifactName }}
+              artifactItemPattern: ${{ parameters.artifactItemPattern }}
+              useArtifacts: ${{ parameters.useArtifacts }}
+              useCoreClr: true
+
     - ${{ if eq(platform, 'ios') }}:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:

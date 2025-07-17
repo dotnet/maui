@@ -27,6 +27,7 @@ var testAppPackageName = Argument("package", EnvironmentVariable("ANDROID_TEST_A
 var testAppInstrumentation = Argument("instrumentation", EnvironmentVariable("ANDROID_TEST_APP_INSTRUMENTATION") ?? "");
 var testResultsPath = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? GetTestResultsDirectory()?.FullPath);
 var deviceCleanupEnabled = Argument("cleanup", true);
+var useCoreClr = Argument("coreclr", false);
 
 // Device details
 var deviceSkin = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
@@ -92,7 +93,7 @@ Task("buildOnly")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
-		ExecuteBuild(projectPath, testDevice, binlogDirectory, configuration, targetFramework, dotnetToolPath);
+		ExecuteBuild(projectPath, testDevice, binlogDirectory, configuration, targetFramework, dotnetToolPath, useCoreClr);
 	});
 
 Task("testOnly")
@@ -144,7 +145,7 @@ Task("logcat")
 
 RunTarget(TARGET);
 
-void ExecuteBuild(string project, string device, string binDir, string config, string tfm, string toolPath)
+void ExecuteBuild(string project, string device, string binDir, string config, string tfm, string toolPath, bool useCoreClr)
 {
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{projectName}-{config}-android.binlog";
@@ -158,9 +159,17 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 			MaxCpuCount = 0
 		},
 		ToolPath = toolPath,
-		ArgumentCustomization = args => args
-			.Append("/p:EmbedAssembliesIntoApk=true")
-			.Append("/bl:" + binlog)
+		ArgumentCustomization = args =>
+		{
+			args.Append("/p:EmbedAssembliesIntoApk=true")
+				.Append("/bl:" + binlog);
+
+			if (useCoreClr)
+			{
+				args.Append("/p:UseMonoRuntime=false");
+			}
+			return args;
+		}
 	});
 }
 
