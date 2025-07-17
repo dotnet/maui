@@ -175,19 +175,43 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateIsEnabled(bool isRefreshViewEnabled)
 		{
-			_refreshControl.Enabled = isRefreshViewEnabled;
+			// On iOS, IsEnabled should disable the entire view tree for consistency
+			UserInteractionEnabled = isRefreshViewEnabled;
 
-			UserInteractionEnabled = true;
-
-			if (IsRefreshing)
-				return;
-
+			// Also update refresh control state if enabled
 			if (isRefreshViewEnabled)
-				TryInsertRefresh(_refreshControlParent);
+			{
+				_refreshControl.Enabled = true;
+				if (!IsRefreshing)
+					TryInsertRefresh(_refreshControlParent);
+			}
 			else
+			{
+				_refreshControl.Enabled = false;
+				if (IsRefreshing)
+				{
+					IsRefreshing = false;
+				}
 				TryRemoveRefresh(_refreshControlParent);
+			}
+		}
 
-			UserInteractionEnabled = true;
+		public void UpdateIsRefreshEnabled(bool isRefreshEnabled)
+		{
+			_refreshControl.Enabled = isRefreshEnabled;
+
+			if (IsRefreshing && !isRefreshEnabled)
+			{
+				IsRefreshing = false;
+			}
+
+			if (UserInteractionEnabled) // Only modify refresh control if the view itself is enabled
+			{
+				if (isRefreshEnabled)
+					TryInsertRefresh(_refreshControlParent);
+				else
+					TryRemoveRefresh(_refreshControlParent);
+			}
 		}
 
 #pragma warning disable CA1416 // TODO: 'UINavigationBar.PrefersLargeTitles' is only supported on: 'ios' 11.0 and later
