@@ -5,20 +5,18 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class SliderFeatureTests : UITest
+	public class SliderFeatureTests : _GalleryUITest
 	{
 		public const string SliderFeatureMatrix = "Slider Feature Matrix";
+
+		public override string GalleryPageName => SliderFeatureMatrix;
 
 		public SliderFeatureTests(TestDevice device)
 			: base(device)
 		{
 		}
 
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery(SliderFeatureMatrix);
-		}
+		
 
 		[Test, Order(1)]
 		[Category(UITestCategories.Slider)]

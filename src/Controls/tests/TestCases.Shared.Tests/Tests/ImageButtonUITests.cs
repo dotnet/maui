@@ -9,6 +9,8 @@ internal class ImageButtonUITests : _ViewUITests
 {
 	const string ImageButtonGallery = "Image Button Gallery";
 
+	public override string GalleryPageName => ImageButtonGallery;
+
 	public ImageButtonUITests(TestDevice device)
 		: base(device)
 	{

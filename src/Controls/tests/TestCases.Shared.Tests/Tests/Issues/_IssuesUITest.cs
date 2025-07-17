@@ -24,11 +24,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			var config = base.GetTestConfig();
 
 #if MACCATALYST
-		// For Catalyst, pass the test name as a startup argument
-		if(UITestContext is null)
-		{
-			config.SetTestConfigurationArg("test", Issue);
-		}
+			// For Catalyst, pass the test name as a startup argument
+			// If the UITestContext is not null we can directly pass the Issue via LaunchAppWithTest
+			if (UITestContext is null)
+			{
+				config.SetTestConfigurationArg("test", Issue);
+			}
 #endif
 
 			return config;
@@ -37,11 +38,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		public override void LaunchAppWithTest()
 		{
 			App.LaunchApp(Issue, ResetAfterEachTest);
-		}
-
-		public override void Close()
-		{
-			App.CloseApp();
 		}
 
 		protected override void FixtureSetup()

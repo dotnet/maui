@@ -66,7 +66,7 @@ namespace UITest.Appium
 			}
 
 			var args = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
-			if(args != null && args.Count > 0)
+			if(args is not null && args.Count > 0)
 			{
 				options.AddAdditionalAppiumOption("environment", args);
 			}

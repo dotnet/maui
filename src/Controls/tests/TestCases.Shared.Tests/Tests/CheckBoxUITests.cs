@@ -7,6 +7,8 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		const string CheckBoxGallery = "CheckBox Gallery";
 
+		public override string GalleryPageName => CheckBoxGallery;
+
 		public CheckBoxUITests(TestDevice device)
 			: base(device)
 		{

@@ -31,8 +31,12 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public static void NavigateToGallery(this IApp app, string page)
 		{
-			app.WaitForElement(goToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
-			NavigateTo(app, page);
+			// For Catalyst app directly go the test page while opening.
+			if (app is not AppiumCatalystApp)
+			{
+				app.WaitForElement(goToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
+				NavigateTo(app, page);
+			}
 		}
 
 		public static void NavigateTo(this IApp app, string text)

@@ -10,6 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		public const string StepperGallery = "Stepper Gallery";
 
+		public override string GalleryPageName => StepperGallery;
+
 		public StepperUITests(TestDevice device)
 			: base(device)
 		{

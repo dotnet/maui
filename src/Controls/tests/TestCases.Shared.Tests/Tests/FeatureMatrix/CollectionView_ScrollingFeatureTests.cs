@@ -4,7 +4,7 @@ using UITest.Core;
 
 
 namespace Microsoft.Maui.TestCases.Tests;
-public class CollectionView_ScrollingFeatureTests : UITest
+public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 {
 	public const string ScrollingFeatureMatrix = "CollectionView Feature Matrix";
 	public const string Options = "Options";
@@ -25,16 +25,11 @@ public class CollectionView_ScrollingFeatureTests : UITest
 	public const string ItemsLayoutHorizontalList = "ItemsLayoutHorizontalList";
 	public const string AddButton = "AddButton";
 
+	public override string GalleryPageName => ScrollingFeatureMatrix;
 
 	public CollectionView_ScrollingFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ScrollingFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -376,7 +371,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS // //CollectionView ItemsLayout does not update Issue Link: https://github.com/dotnet/maui/issues/27946
-    [Test]
+	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithObservableListWhenVerticalGrid()
 	{

@@ -6,7 +6,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class LabelFeatureTests : UITest
+public class LabelFeatureTests : _GalleryUITest
 {
 	public const string LabelFeatureMatrix = "Label Feature Matrix";
 	public const string Options = "Options";
@@ -46,16 +46,11 @@ public class LabelFeatureTests : UITest
 	public const string LineBreakModeNoWrap = "LineBreakModeNoWrap";
 	public const string MainLabel = "MainLabel";
 
+	public override string GalleryPageName => LabelFeatureMatrix;
 
 	public LabelFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(LabelFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -362,7 +357,7 @@ public class LabelFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/22594, https://github.com/dotnet/maui/issues/21294
-    [Test, Order(19)]
+	[Test, Order(19)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextAndLineBreakModeCharacterWrap()
 	{
@@ -1153,7 +1148,7 @@ public class LabelFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/24298 , https://github.com/dotnet/maui/issues/29673, https://github.com/dotnet/maui/issues/29674
-    [Test, Order(61)]
+	[Test, Order(61)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndLineBreakModeTailTruncation()
 	{

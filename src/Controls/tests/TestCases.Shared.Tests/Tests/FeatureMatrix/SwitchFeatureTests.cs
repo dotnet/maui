@@ -5,19 +5,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class SwitchFeatureTests : UITest
+public class SwitchFeatureTests : _GalleryUITest
 {
 	public const string SwitchFeatureMatrix = "Switch Feature Matrix";
+
+	public override string GalleryPageName => SwitchFeatureMatrix;
 
 	public SwitchFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(SwitchFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -117,59 +113,59 @@ public class SwitchFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30046, https://github.com/dotnet/maui/issues/29812
-    [Test]
-    [Category(UITestCategories.Switch)]
-    public void Switch_SetShadowOpacityAndToggled_VerifyVisualState()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("ShadowTrueCheckBox");
-        App.Tap("ShadowTrueCheckBox");
-        App.WaitForElement("IsToggledTrueCheckBox");
-        App.Tap("IsToggledTrueCheckBox");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElementTillPageNavigationSettled("SwitchControl");
-        VerifyScreenshot();
-    }
+	[Test]
+	[Category(UITestCategories.Switch)]
+	public void Switch_SetShadowOpacityAndToggled_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ShadowTrueCheckBox");
+		App.Tap("ShadowTrueCheckBox");
+		App.WaitForElement("IsToggledTrueCheckBox");
+		App.Tap("IsToggledTrueCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("SwitchControl");
+		VerifyScreenshot();
+	}
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30046, https://github.com/dotnet/maui/issues/29812
-    [Test]
-    [Category(UITestCategories.Switch)]
-    public void Switch_SetShadowAndOnColor_VerifyVisualState()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("ShadowTrueCheckBox");
-        App.Tap("ShadowTrueCheckBox");
-        App.WaitForElement("OnColorRedCheckBox");
-        App.Tap("OnColorRedCheckBox");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElement("SwitchControl");
-        App.Tap("SwitchControl");
-        VerifyScreenshot();
-    }
+	[Test]
+	[Category(UITestCategories.Switch)]
+	public void Switch_SetShadowAndOnColor_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ShadowTrueCheckBox");
+		App.Tap("ShadowTrueCheckBox");
+		App.WaitForElement("OnColorRedCheckBox");
+		App.Tap("OnColorRedCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwitchControl");
+		App.Tap("SwitchControl");
+		VerifyScreenshot();
+	}
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30046, https://github.com/dotnet/maui/issues/29812
-    [Test]
-    [Category(UITestCategories.Switch)]
-    public void Switch_SetShadowAndThumbColor_VerifyVisualState()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("ShadowTrueCheckBox");
-        App.Tap("ShadowTrueCheckBox");
-        App.WaitForElement("ThumbColorGreenCheckBox");
-        App.Tap("ThumbColorGreenCheckBox");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElement("SwitchControl");
-        App.Tap("SwitchControl");
-        VerifyScreenshot();
-    }
+	[Test]
+	[Category(UITestCategories.Switch)]
+	public void Switch_SetShadowAndThumbColor_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ShadowTrueCheckBox");
+		App.Tap("ShadowTrueCheckBox");
+		App.WaitForElement("ThumbColorGreenCheckBox");
+		App.Tap("ThumbColorGreenCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwitchControl");
+		App.Tap("SwitchControl");
+		VerifyScreenshot();
+	}
 #endif
 
 	[Test]

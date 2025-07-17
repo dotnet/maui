@@ -9,6 +9,8 @@ internal class ImageUITests : _ViewUITests
 {
 	const string ImageGallery = "Image Gallery";
 
+	public override string GalleryPageName => ImageGallery;
+
 	public ImageUITests(TestDevice device)
 		: base(device)
 	{

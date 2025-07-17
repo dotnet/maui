@@ -6,7 +6,8 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class ImageButtonFeatureTests : UITest
+
+public class ImageButtonFeatureTests : _GalleryUITest
 {
 	public const string ImageButtonFeatureMatrix = "ImageButton Feature Matrix";
 	public const string Options = "Options";
@@ -28,16 +29,11 @@ public class ImageButtonFeatureTests : UITest
 	public const string IsEnabledFalse = "IsEnabledFalse";
 	public const string PaddingEntry = "PaddingEntry";
 
+	public override string GalleryPageName => ImageButtonFeatureMatrix;
 
 	public ImageButtonFeatureTests(TestDevice device)
-	: base(device)
+		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ImageButtonFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -270,7 +266,7 @@ public class ImageButtonFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/29956
-    [Test]
+	[Test]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_AspectFillWithImageSourceFromFile()
 	{

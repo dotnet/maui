@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		const string ResultToRightId = "ResultToRightId";
 		const string SwipeViewToLeftId = "SwipeViewToLeftId";
 		const string ResultToLeftId = "ResultToLeftId";
+		public override string GalleryPageName => ScrollViewGallery;
 
 		public SwipeViewUITests(TestDevice device)
 			: base(device)
