@@ -58,8 +58,21 @@ namespace Microsoft.Maui.Handlers
 		public static void MapRefreshColor(IRefreshViewHandler handler, IRefreshView refreshView)
 			=> UpdateRefreshColor(handler);
 
+		public static void MapIsRefreshEnabled(IRefreshViewHandler handler, IRefreshView refreshView)
+			=> UpdateIsRefreshEnabled(handler);
+
 		public static void MapIsEnabled(IRefreshViewHandler handler, IRefreshView refreshView)
-			=> handler.PlatformView?.UpdateIsEnabled(refreshView.IsEnabled);
+			=> UpdateIsEnabled(handler);
+
+		static void UpdateIsRefreshEnabled(IRefreshViewHandler handler)
+		{
+			handler.PlatformView?.UpdateIsRefreshEnabled(handler.VirtualView.IsRefreshEnabled);
+		}
+
+		static void UpdateIsEnabled(IRefreshViewHandler handler)
+		{
+			handler.PlatformView?.UpdateIsEnabled(handler.VirtualView.IsEnabled);
+		}
 
 		static void UpdateIsRefreshing(IRefreshViewHandler handler)
 		{

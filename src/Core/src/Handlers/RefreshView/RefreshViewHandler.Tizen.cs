@@ -36,5 +36,11 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(IRefreshViewHandler handler, IRefreshView view)
 			=> handler.PlatformView.UpdateBackground(view);
+
+		public static void MapIsRefreshEnabled(IRefreshViewHandler handler, IRefreshView refreshView) =>
+			handler.PlatformView.UpdateIsRefreshEnabled(refreshView);
+
+		public static void MapIsEnabled(IRefreshViewHandler handler, IRefreshView refreshView) =>
+			handler.PlatformView.UpdateIsEnabled(refreshView);
 	}
 }
