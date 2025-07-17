@@ -249,11 +249,6 @@ namespace Microsoft.Maui.Handlers
 
 		internal void ShowClearButton()
 		{
-			if (_clearButtonVisible)
-			{
-				return;
-			}
-
 			var drawable = GetClearButtonDrawable();
 
 			if (VirtualView?.TextColor is not null)
@@ -266,7 +261,10 @@ namespace Microsoft.Maui.Handlers
 			else
 				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
 
-			_clearButtonVisible = true;
+			if (!_clearButtonVisible)
+			{
+				_clearButtonVisible = true;
+			}
 		}
 
 		internal void HideClearButton()
