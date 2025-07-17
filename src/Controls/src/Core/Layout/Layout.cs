@@ -370,8 +370,8 @@ namespace Microsoft.Maui.Controls
 		/// </value>
 		public bool CascadeInputTransparent
 		{
-			get => (bool)GetValue(InputTransparentContainerElement.CascadeInputTransparentProperty);
-			set => SetValue(InputTransparentContainerElement.CascadeInputTransparentProperty, value);
+			get => (bool)GetValue(CascadeInputTransparentProperty);
+			set => SetValue(CascadeInputTransparentProperty, value);
 		}
 
 		private protected override string GetDebuggerDisplay()

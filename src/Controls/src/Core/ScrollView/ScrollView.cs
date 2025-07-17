@@ -175,8 +175,8 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="IInputTransparentContainerElement.CascadeInputTransparent"/>
 		public new bool CascadeInputTransparent
 		{
-			get => (bool)GetValue(InputTransparentContainerElement.CascadeInputTransparentProperty);
-			set => SetValue(InputTransparentContainerElement.CascadeInputTransparentProperty, value);
+			get => (bool)GetValue(CascadeInputTransparentProperty);
+			set => SetValue(CascadeInputTransparentProperty, value);
 		}
 
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>

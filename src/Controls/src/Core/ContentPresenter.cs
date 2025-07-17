@@ -249,7 +249,7 @@ namespace Microsoft.Maui.Controls
 		}
 		
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		[Obsolete("Use IVisualTreeElement.GetVisualChildren() instead.", true)]
+		[Obsolete("Use IVisualTreeElement.GetVisualChildren() instead.")]
 		public new IReadOnlyList<Element> Children => base.Children;
 	}
 }
