@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnToolbarItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			var toolbarItems = ToolbarItems;
+			var toolbarItems = ToolbarItems?.Where(item => item.IsVisible);
 			List<ToolbarItem> newToolBarItems = new List<ToolbarItem>();
 			if (toolbarItems != null)
 				newToolBarItems.AddRange(toolbarItems);
@@ -69,7 +70,7 @@ namespace Microsoft.Maui.Controls
 			if (_currentMenuItems == null)
 				return;
 
-			PlatformView.UpdateMenuItems(ToolbarItems, MauiContext, BarTextColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
+			PlatformView.UpdateMenuItems(ToolbarItems?.Where(item => item.IsVisible), MauiContext, BarTextColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
 
 		void UpdateTitleView()

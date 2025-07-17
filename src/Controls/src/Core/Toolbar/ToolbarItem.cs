@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
@@ -13,6 +14,9 @@ namespace Microsoft.Maui.Controls
 		});
 
 		static readonly BindableProperty PriorityProperty = BindableProperty.Create(nameof(Priority), typeof(int), typeof(ToolbarItem), 0);
+
+		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
+		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(ToolbarItem), true, propertyChanged: OnIsVisiblePropertyChanged);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ToolbarItem.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public ToolbarItem()
@@ -44,6 +48,27 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (int)GetValue(PriorityProperty); }
 			set { SetValue(PriorityProperty, value); }
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/ToolbarItem.xml" path="//Member[@MemberName='IsVisible']/Docs/*" />
+		public bool IsVisible
+		{
+			get { return (bool)GetValue(IsVisibleProperty); }
+			set { SetValue(IsVisibleProperty, value); }
+		}
+
+		static void OnIsVisiblePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is not ToolbarItem item)
+				return;
+
+			// Find the page that contains this toolbar item and trigger an update
+			if (item.Parent is Page page)
+			{
+				// Trigger a toolbar items refresh by notifying that the collection has "changed"
+				// This will cause the platform to rebuild the toolbar with current visible items
+				page.Handler?.UpdateValue(nameof(Toolbar.ToolbarItems));
+			}
 		}
 	}
 }
