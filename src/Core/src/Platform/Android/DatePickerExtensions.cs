@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void SetText(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.Text = datePicker.Date?.ToString(datePicker.Format) ?? DateTime.Today.ToString(datePicker.Format);
+			platformDatePicker.Text = datePicker.Date?.ToString(datePicker.Format) ?? string.Empty;
 		}
 	}
 }
