@@ -66,7 +66,8 @@ namespace Microsoft.Maui.Handlers
 					if (!double.IsInfinity(heightConstraint))
 						heightSpec = AdjustSpecForAlignment(heightSpec, virtualView.VerticalLayoutAlignment);
 
-					widthSpec = AdjustSpecForAlignment(widthSpec, virtualView.HorizontalLayoutAlignment);
+					if (!double.IsInfinity(widthConstraint))
+        				widthSpec = AdjustSpecForAlignment(widthSpec, virtualView.HorizontalLayoutAlignment);
 
 				}
 
@@ -75,7 +76,8 @@ namespace Microsoft.Maui.Handlers
 					if (!double.IsInfinity(widthConstraint))
 						widthSpec = AdjustSpecForAlignment(widthSpec, virtualView.HorizontalLayoutAlignment);
 
-					heightSpec = AdjustSpecForAlignment(heightSpec, virtualView.VerticalLayoutAlignment);
+					if (!double.IsInfinity(heightConstraint))
+        				heightSpec = AdjustSpecForAlignment(heightSpec, virtualView.VerticalLayoutAlignment);
 				}
 			}
 
