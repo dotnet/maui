@@ -14,6 +14,7 @@ namespace Microsoft.Maui.UnitTests
 			var layoutProperty = typeof(PerformanceProfiler).GetProperty(
 				"Layout",
 				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+
 			layoutProperty?.SetValue(null, null);
 		}
 
