@@ -8,11 +8,23 @@ namespace Microsoft.Maui.Handlers
 	public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, View>
 	{
 		StackNavigationManager? _stackNavigationManager;
-		internal StackNavigationManager? StackNavigationManager => _stackNavigationManager;
+		public StackNavigationManager StackNavigationManager
+		{
+			get => _stackNavigationManager ??= CreateNavigationManager();
+			set
+			{
+				if (_stackNavigationManager is not null && _stackNavigationManager != value)
+				{
+					throw new InvalidOperationException("StackNavigationManager cannot be assigned to new instance");
+				}
+
+				_stackNavigationManager = value ?? CreateNavigationManager();
+			}
+		}
 
 		protected override View CreatePlatformView()
 		{
-			LayoutInflater? li = CreateNavigationManager().MauiContext?.GetLayoutInflater();
+			LayoutInflater? li = StackNavigationManager.MauiContext?.GetLayoutInflater();
 			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
 
 			var view = li.Inflate(Resource.Layout.fragment_backstack, null).JavaCast<FragmentContainerView>();
