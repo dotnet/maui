@@ -255,6 +255,7 @@ namespace Microsoft.Maui.Handlers
 
 			private Window? Window => _window is not null && _window.TryGetTarget(out var w) ? w : null;
 			private HybridWebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
+			private IHybridWebView? VirtualView => Handler?.VirtualView;
 
 			public void Connect(HybridWebViewHandler handler, WebView2 platformView)
 			{
@@ -266,6 +267,9 @@ namespace Microsoft.Maui.Handlers
 			private async Task<bool> TryInitializeWebView2(WebView2 webView)
 			{
 				await webView.EnsureCoreWebView2Async();
+
+				if (VirtualView is null)
+					return false;
 
 				var customSettings = VirtualView.InitializingWebView() as WebViewInitializingEventArgs;
 
