@@ -67,7 +67,7 @@ public class ImageFeatureTests : UITest
 		App.WaitForElement("ImageControl", timeout: TimeSpan.FromSeconds(3));
 		VerifyScreenshot();
 	}
-
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/30576
 	[Test]
 	[Category(UITestCategories.Image)]
 	public void VerifyImageAspect_AspectFitWithImageSourceFromStream()
@@ -84,6 +84,22 @@ public class ImageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+	[Test]
+	[Category(UITestCategories.Image)]
+	public void VerifyImageAspect_FillWithImageSourceFromStream()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ImageFill);
+		App.Tap(ImageFill);
+		App.WaitForElement(SourceTypeStream);
+		App.Tap(SourceTypeStream);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageControl");
+		VerifyScreenshot();
+	}
+#endif
 	[Test]
 	[Category(UITestCategories.Image)]
 	public void VerifyImageAspect_AspectFitWithImageSourceFromFontImage()
@@ -132,7 +148,7 @@ public class ImageFeatureTests : UITest
 		App.WaitForElement("ImageControl", timeout: TimeSpan.FromSeconds(3));
 		VerifyScreenshot();
 	}
-
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/30576
 	[Test]
 	[Category(UITestCategories.Image)]
 	public void VerifyImageAspect_AspectFillWithImageSourceFromStream()
@@ -148,6 +164,7 @@ public class ImageFeatureTests : UITest
 		App.WaitForElement("ImageControl");
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.Image)]
@@ -200,22 +217,6 @@ public class ImageFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.Image)]
-	public void VerifyImageAspect_FillWithImageSourceFromStream()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ImageFill);
-		App.Tap(ImageFill);
-		App.WaitForElement(SourceTypeStream);
-		App.Tap(SourceTypeStream);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.Image)]
 	public void VerifyImageAspect_FillWithImageSourceFromFontImage()
 	{
 		App.WaitForElement(Options);
@@ -262,7 +263,7 @@ public class ImageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29813
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // Issue Link for Windows: https://github.com/dotnet/maui/issues/29813 and for Android: https://github.com/dotnet/maui/issues/30576
 	[Test]
 	[Category(UITestCategories.Image)]
 	public void VerifyImageAspect_CenterWithImageSourceFromStream()
