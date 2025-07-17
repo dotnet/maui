@@ -274,3 +274,23 @@ virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.
 virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateSearchVisibility(UIKit.UISearchController! searchController) -> void
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.VisualElement.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+*REMOVED*Microsoft.Maui.Controls.ClickedEventArgs
+*REMOVED*Microsoft.Maui.Controls.ClickedEventArgs.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
+*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer
+*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
+*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.Buttons.set -> void
+*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.Clicked -> System.EventHandler
+*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.ClickGestureRecognizer() -> void
+*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequired.get -> int
+*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequired.set -> void
+*REMOVED*~Microsoft.Maui.Controls.ClickedEventArgs.ClickedEventArgs(Microsoft.Maui.Controls.ButtonsMask buttons, object commandParameter) -> void
+*REMOVED*~Microsoft.Maui.Controls.ClickedEventArgs.Parameter.get -> object
+*REMOVED*~Microsoft.Maui.Controls.ClickGestureRecognizer.Command.get -> System.Windows.Input.ICommand
+*REMOVED*~Microsoft.Maui.Controls.ClickGestureRecognizer.Command.set -> void
+*REMOVED*~Microsoft.Maui.Controls.ClickGestureRecognizer.CommandParameter.get -> object
+*REMOVED*~Microsoft.Maui.Controls.ClickGestureRecognizer.CommandParameter.set -> void
+*REMOVED*~Microsoft.Maui.Controls.ClickGestureRecognizer.SendClicked(Microsoft.Maui.Controls.View sender, Microsoft.Maui.Controls.ButtonsMask buttons) -> void
+*REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty
+*REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
+*REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.CommandProperty -> Microsoft.Maui.Controls.BindableProperty
+*REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequiredProperty -> Microsoft.Maui.Controls.BindableProperty
