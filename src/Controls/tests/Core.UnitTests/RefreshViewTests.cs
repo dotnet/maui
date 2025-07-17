@@ -167,5 +167,98 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			refreshView.IsRefreshing = true;
 			Assert.True(eventFired);
 		}
+
+		[Fact]
+		public void IsRefreshEnabledDefaultsToTrue()
+		{
+			RefreshView refreshView = new RefreshView();
+			Assert.True(refreshView.IsRefreshEnabled);
+		}
+
+		[Fact]
+		public void IsRefreshEnabledCanBeSetToFalse()
+		{
+			RefreshView refreshView = new RefreshView();
+			refreshView.IsRefreshEnabled = false;
+			Assert.False(refreshView.IsRefreshEnabled);
+		}
+
+		[Fact]
+		public void IsRefreshEnabledPreventsIsRefreshingFromBeingSetToTrue()
+		{
+			RefreshView refreshView = new RefreshView();
+			refreshView.IsRefreshEnabled = false;
+			refreshView.IsRefreshing = true;
+			Assert.False(refreshView.IsRefreshing);
+		}
+
+		[Fact]
+		public void IsRefreshingCanBeSetToFalseWhenIsRefreshEnabledIsFalse()
+		{
+			RefreshView refreshView = new RefreshView();
+			refreshView.IsRefreshing = true;
+			Assert.True(refreshView.IsRefreshing);
+			
+			refreshView.IsRefreshEnabled = false;
+			Assert.False(refreshView.IsRefreshing); // Should be automatically cleared
+		}
+
+		[Fact]
+		public void SettingIsRefreshEnabledToFalseWhileRefreshingStopsRefresh()
+		{
+			RefreshView refreshView = new RefreshView();
+			refreshView.IsRefreshing = true;
+			Assert.True(refreshView.IsRefreshing);
+			
+			refreshView.IsRefreshEnabled = false;
+			Assert.False(refreshView.IsRefreshing);
+		}
+
+		[Fact]
+		public void BothIsEnabledAndIsRefreshEnabledMustBeTrueToAllowRefresh()
+		{
+			RefreshView refreshView = new RefreshView();
+			
+			// Both true - should allow refresh
+			refreshView.IsEnabled = true;
+			refreshView.IsRefreshEnabled = true;
+			refreshView.IsRefreshing = true;
+			Assert.True(refreshView.IsRefreshing);
+			
+			// IsEnabled false - should prevent refresh
+			refreshView.IsRefreshing = false;
+			refreshView.IsEnabled = false;
+			refreshView.IsRefreshing = true;
+			Assert.False(refreshView.IsRefreshing);
+			
+			// IsRefreshEnabled false - should prevent refresh
+			refreshView.IsEnabled = true;
+			refreshView.IsRefreshEnabled = false;
+			refreshView.IsRefreshing = true;
+			Assert.False(refreshView.IsRefreshing);
+		}
+
+		[Fact]
+		public void IsRefreshEnabledWorksWithCommand()
+		{
+			RefreshView refreshView = new RefreshView();
+			bool commandExecuted = false;
+			refreshView.Command = new Command(() => commandExecuted = true);
+			
+			// When IsRefreshEnabled is true, command should execute
+			refreshView.IsRefreshEnabled = true;
+			refreshView.IsRefreshing = true;
+			Assert.True(commandExecuted);
+			
+			// Reset
+			commandExecuted = false;
+			refreshView.IsRefreshing = false;
+			
+			// When IsRefreshEnabled is false, refresh should not happen
+			refreshView.IsRefreshEnabled = false;
+			refreshView.IsRefreshing = true;
+			Assert.False(refreshView.IsRefreshing);
+			Assert.False(commandExecuted);
+		}
 	}
 }
