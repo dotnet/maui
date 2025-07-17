@@ -540,24 +540,24 @@ namespace Maui.Controls.Sample
             canvas.DrawString(displayText, x, y, HorizontalAlignment.Left);
 
             // Add "HelloWorld" label with flow direction support
-            DrawFlowDirectionLabel(canvas, dirtyRect);
+            //DrawFlowDirectionLabel(canvas, dirtyRect);
         }
 
-        private void DrawFlowDirectionLabel(ICanvas canvas, RectF rect)
-        {
-            canvas.FontColor = Colors.Green;
-            var fontSize = Math.Min(rect.Width, rect.Height) * 0.12f;
-            canvas.FontSize = fontSize;
+        //private void DrawFlowDirectionLabel(ICanvas canvas, RectF rect)
+        //{
+        //    canvas.FontColor = Colors.Green;
+        //    var fontSize = Math.Min(rect.Width, rect.Height) * 0.12f;
+        //    canvas.FontSize = fontSize;
             
-            string text = "HelloWorld";
+        //    string text = "HelloWorld";
             
-            // Use the shape bounds and let FlowDirection handle RTL/LTR automatically
-            // HorizontalAlignment.Left respects FlowDirection (becomes right-aligned in RTL)
-            float x = rect.Left + 10; // Small padding from edge
-            float y = rect.Bottom - 15; // Position at bottom
+        //    // Use the shape bounds and let FlowDirection handle RTL/LTR automatically
+        //    // HorizontalAlignment.Left respects FlowDirection (becomes right-aligned in RTL)
+        //    float x = rect.Left + 10; // Small padding from edge
+        //    float y = rect.Bottom - 15; // Position at bottom
             
-            canvas.DrawString(text, x, y, HorizontalAlignment.Left);
-        }
+        //    canvas.DrawString(text, x, y, HorizontalAlignment.Left);
+        //}
     }
 
     public class ImageDrawable : IDrawable
