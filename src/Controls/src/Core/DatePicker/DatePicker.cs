@@ -207,9 +207,9 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			if (datePicker.IsOpen)
-				datePicker.Opened?.Invoke(datePicker, new PickerOpenedEventArgs());
+				datePicker.Opened?.Invoke(datePicker, DatePickerOpenedEventArgs.Empty);
 			else
-				datePicker.Closed?.Invoke(datePicker, new PickerClosedEventArgs());
+				datePicker.Closed?.Invoke(datePicker, DatePickerClosedEventArgs.Empty);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
@@ -217,8 +217,8 @@ namespace Microsoft.Maui.Controls
 			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
 		public event EventHandler<DateChangedEventArgs> DateSelected;
-		public event EventHandler<PickerOpenedEventArgs> Opened;
-		public event EventHandler<PickerClosedEventArgs> Closed;
+		public event EventHandler<DatePickerOpenedEventArgs> Opened;
+		public event EventHandler<DatePickerClosedEventArgs> Closed;
 
 		static object CoerceDate(BindableObject bindable, object value)
 		{

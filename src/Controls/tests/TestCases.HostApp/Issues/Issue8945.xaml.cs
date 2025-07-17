@@ -79,25 +79,25 @@
 			IsOpenPicker.IsOpen = false;
 		}
 
-		void IsOpenDatePickerOpened(object sender, PickerOpenedEventArgs e)
+		void IsOpenDatePickerOpened(object sender, DatePickerOpenedEventArgs e)
 		{
 			_datePickerOpened = true;
 			UpdateDatePickerStatus();
 		}
 
-		void IsOpenDatePickerClosed(object sender, PickerClosedEventArgs e)
+		void IsOpenDatePickerClosed(object sender, DatePickerClosedEventArgs e)
 		{
 			_datePickerClosed = true;
 			UpdateDatePickerStatus();
 		}
 
-		void IsOpenTimePickerOpened(object sender, PickerOpenedEventArgs e)
+		void IsOpenTimePickerOpened(object sender, TimePickerOpenedEventArgs e)
 		{
 			_timePickerOpened = true;
 			UpdateTimePickerStatus();
 		}
 
-		void IsOpenTimePickerClosed(object sender, PickerClosedEventArgs e)
+		void IsOpenTimePickerClosed(object sender, TimePickerClosedEventArgs e)
 		{
 			_timePickerClosed = true;
 			UpdateTimePickerStatus();

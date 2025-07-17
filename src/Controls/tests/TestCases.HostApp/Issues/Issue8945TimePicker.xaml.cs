@@ -24,7 +24,7 @@
 			IsOpenTimePicker.Opened -= IsOpenPickerOpened;
 		}	
 		
-		void IsOpenPickerOpened(object sender, PickerOpenedEventArgs e)
+		void IsOpenPickerOpened(object sender, TimePickerOpenedEventArgs e)
 		{
 			_timePickerOpened = true;
 			UpdateDatePickerStatus();

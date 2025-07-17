@@ -128,8 +128,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public event EventHandler<TimeChangedEventArgs> TimeSelected;
-		public event EventHandler<PickerOpenedEventArgs> Opened;
-		public event EventHandler<PickerClosedEventArgs> Closed;
+		public event EventHandler<TimePickerOpenedEventArgs> Opened;
+		public event EventHandler<TimePickerClosedEventArgs> Closed;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
@@ -188,9 +188,9 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			if (timePicker.IsOpen)
-				timePicker.Opened?.Invoke(timePicker, new PickerOpenedEventArgs());
+				timePicker.Opened?.Invoke(timePicker, TimePickerOpenedEventArgs.Empty);
 			else
-				timePicker.Closed?.Invoke(timePicker, new PickerClosedEventArgs());
+				timePicker.Closed?.Invoke(timePicker, TimePickerClosedEventArgs.Empty);
 		}
 
 		/// <inheritdoc/>

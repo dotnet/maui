@@ -87,12 +87,12 @@ namespace Maui.Controls.Sample.Pages
 			IsOpenDatePicker.IsOpen = false;
 		}
 
-		void IsOpenDatePickerOpened(object? sender, PickerOpenedEventArgs e)
+		void IsOpenDatePickerOpened(object? sender, DatePickerOpenedEventArgs e)
 		{
 			Console.WriteLine("IsOpenDatePicker Opened");
 		}
 
-		void IsOpenDatePickerClosed(object? sender, PickerClosedEventArgs e)
+		void IsOpenDatePickerClosed(object? sender, DatePickerClosedEventArgs e)
 		{
 			Console.WriteLine("IsOpenDatePicker Closed");
 		}

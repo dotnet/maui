@@ -337,9 +337,9 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			if (picker.IsOpen)
-				picker.Opened?.Invoke(picker, new PickerOpenedEventArgs());
+				picker.Opened?.Invoke(picker, PickerOpenedEventArgs.Empty);
 			else
-				picker.Closed?.Invoke(picker, new PickerClosedEventArgs());
+				picker.Closed?.Invoke(picker, PickerClosedEventArgs.Empty);
 		}
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

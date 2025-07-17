@@ -11,7 +11,6 @@ override Microsoft.Maui.Controls.TimePicker.OnHandlerChanged() -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Subscribe<TSender>(object subscriber, string message, System.Action<TSender> callback, TSender source = null) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void
-Microsoft.Maui.Controls.DatePicker.Closed -> System.EventHandler<Microsoft.Maui.Controls.PickerClosedEventArgs>
 Microsoft.Maui.Controls.DatePicker.IsOpen.get -> bool
 Microsoft.Maui.Controls.DatePicker.IsOpen.set -> void
 ~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
@@ -101,7 +100,6 @@ Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime?
 Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime?
-Microsoft.Maui.Controls.DatePicker.Opened -> System.EventHandler<Microsoft.Maui.Controls.PickerOpenedEventArgs>
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.HybridWebView.WebResourceRequested -> System.EventHandler<Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs!>?
 Microsoft.Maui.Controls.ICornerElement
@@ -130,10 +128,8 @@ Microsoft.Maui.Controls.PickerClosedEventArgs
 Microsoft.Maui.Controls.PickerClosedEventArgs.PickerClosedEventArgs() -> void
 Microsoft.Maui.Controls.PickerOpenedEventArgs
 Microsoft.Maui.Controls.PickerOpenedEventArgs.PickerOpenedEventArgs() -> void
-Microsoft.Maui.Controls.TimePicker.Closed -> System.EventHandler<Microsoft.Maui.Controls.PickerClosedEventArgs>
 Microsoft.Maui.Controls.TimePicker.IsOpen.get -> bool
 Microsoft.Maui.Controls.TimePicker.IsOpen.set -> void
-Microsoft.Maui.Controls.TimePicker.Opened -> System.EventHandler<Microsoft.Maui.Controls.PickerOpenedEventArgs>
 Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.Fixed = Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed | Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Controls.LayoutConstraint
@@ -287,3 +283,21 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 ~virtual Microsoft.Maui.Controls.CollectionSynchronizationCallback.Invoke(System.Collections.IEnumerable collection, object context, System.Action accessMethod, bool writeAccess) -> void
 ~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
+Microsoft.Maui.Controls.DatePicker.Closed -> System.EventHandler<Microsoft.Maui.Controls.DatePickerClosedEventArgs>
+Microsoft.Maui.Controls.DatePicker.Opened -> System.EventHandler<Microsoft.Maui.Controls.DatePickerOpenedEventArgs>
+Microsoft.Maui.Controls.DatePickerClosedEventArgs
+Microsoft.Maui.Controls.DatePickerClosedEventArgs.DatePickerClosedEventArgs() -> void
+Microsoft.Maui.Controls.DatePickerOpenedEventArgs
+Microsoft.Maui.Controls.DatePickerOpenedEventArgs.DatePickerOpenedEventArgs() -> void
+Microsoft.Maui.Controls.TimePicker.Closed -> System.EventHandler<Microsoft.Maui.Controls.TimePickerClosedEventArgs>
+Microsoft.Maui.Controls.TimePicker.Opened -> System.EventHandler<Microsoft.Maui.Controls.TimePickerOpenedEventArgs>
+Microsoft.Maui.Controls.TimePickerClosedEventArgs
+Microsoft.Maui.Controls.TimePickerClosedEventArgs.TimePickerClosedEventArgs() -> void
+Microsoft.Maui.Controls.TimePickerOpenedEventArgs
+Microsoft.Maui.Controls.TimePickerOpenedEventArgs.TimePickerOpenedEventArgs() -> void
+static readonly Microsoft.Maui.Controls.DatePickerClosedEventArgs.Empty -> Microsoft.Maui.Controls.DatePickerClosedEventArgs!
+static readonly Microsoft.Maui.Controls.DatePickerOpenedEventArgs.Empty -> Microsoft.Maui.Controls.DatePickerOpenedEventArgs!
+static readonly Microsoft.Maui.Controls.PickerClosedEventArgs.Empty -> Microsoft.Maui.Controls.PickerClosedEventArgs!
+static readonly Microsoft.Maui.Controls.PickerOpenedEventArgs.Empty -> Microsoft.Maui.Controls.PickerOpenedEventArgs!
+static readonly Microsoft.Maui.Controls.TimePickerClosedEventArgs.Empty -> Microsoft.Maui.Controls.TimePickerClosedEventArgs!
+static readonly Microsoft.Maui.Controls.TimePickerOpenedEventArgs.Empty -> Microsoft.Maui.Controls.TimePickerOpenedEventArgs!

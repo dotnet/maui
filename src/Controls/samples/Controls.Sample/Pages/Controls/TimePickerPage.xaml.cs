@@ -76,12 +76,12 @@ namespace Maui.Controls.Sample.Pages
 			IsOpenTimePicker.IsOpen = false;
 		}
 
-		void IsOpenTimePickerOpened(object? sender, PickerOpenedEventArgs e)
+		void IsOpenTimePickerOpened(object? sender, TimePickerOpenedEventArgs e)
 		{
 			Console.WriteLine("IsOpenTimePicker Opened");
 		}
 
-		void IsOpenTimePickerClosed(object? sender, PickerClosedEventArgs e)
+		void IsOpenTimePickerClosed(object? sender, TimePickerClosedEventArgs e)
 		{
 			Console.WriteLine("IsOpenTimePicker Closed");
 		}
