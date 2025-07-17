@@ -8,6 +8,10 @@ namespace UITest.Appium.NUnit
 {
 	public abstract class UITestBase : UITestContextBase
 	{
+		// Timeout configurations
+		protected virtual TimeSpan TeardownTimeout => TimeSpan.FromSeconds(30);
+		protected virtual TimeSpan ResetTimeout => TimeSpan.FromSeconds(15);
+		
 		protected virtual bool ResetAfterEachTest => false;
 
 		public UITestBase(TestDevice testDevice)
@@ -31,35 +35,70 @@ namespace UITest.Appium.NUnit
 				FixtureSetup();
 			}
 		}
-
+		
 		[TearDown]
 		public virtual void TestTearDown()
 		{
 			RecordTestTeardown();
-            
+
+			// Run teardown with overall timeout protection
+			var teardownTask = Task.Run(ExecuteTeardown);
+
+			if (!teardownTask.Wait(TeardownTimeout))
+			{
+				TestContext.Error.WriteLine(
+					$">>>>> {DateTime.Now} TearDown timed out after {TeardownTimeout.TotalSeconds} seconds");
+				SaveDeviceDiagnosticInfo();
+				return;
+			}
+
+			// Check for any exceptions from teardown
+			if (teardownTask.Exception is not null)
+			{
+				TestContext.Error.WriteLine(
+					$">>>>> {DateTime.Now} TearDown failed: {teardownTask.Exception.InnerException?.Message}");
+			}
+		}
+
+		void ExecuteTeardown()
+		{
 			// Always check for diagnostics first, before any reset operations
 			UITestBaseTearDown();
             
 			// Handle reset after each test efficiently
 			if (ResetAfterEachTest)
 			{
-				try
+				ExecuteReset();
+			}
+		}
+		
+		void ExecuteReset()
+		{
+			try
+			{
+				// Only reset if app is still running, no point resetting a crashed app
+				if (App?.AppState == ApplicationState.Running)
 				{
-					// Only reset if app is still running - no point resetting a crashed app
-					if (App?.AppState == ApplicationState.Running)
+					var resetTask = Task.Run(Reset);
+					
+					if (!resetTask.Wait(ResetTimeout))
 					{
-						Reset();
+						TestContext.Error.WriteLine($">>>>> {DateTime.Now} Reset timed out after {ResetTimeout.TotalSeconds} seconds");
 					}
-					else
+					else if (resetTask.Exception != null)
 					{
-						TestContext.Progress.WriteLine($">>>>> {DateTime.Now} App not running, skipping reset in teardown");
+						TestContext.Error.WriteLine($">>>>> {DateTime.Now} Reset failed: {resetTask.Exception.InnerException?.Message}");
 					}
 				}
-				catch (Exception resetException)
+				else
 				{
-					TestContext.Error.WriteLine($">>>>> {DateTime.Now} Reset in teardown failed: {resetException.Message}");
-					// Don't rethrow - teardown should be resilient
+					TestContext.Progress.WriteLine($">>>>> {DateTime.Now} App not running ({App?.AppState}), skipping reset in teardown");
 				}
+			}
+			catch (Exception resetException)
+			{
+				TestContext.Error.WriteLine($">>>>> {DateTime.Now} Reset in teardown failed: {resetException.Message}");
+				// Don't rethrow, teardown should be resilient
 			}
 		}
 
