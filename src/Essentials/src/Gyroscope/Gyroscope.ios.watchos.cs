@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			MotionManager.StartGyroUpdates(NSOperationQueue.CurrentQueue ?? new NSOperationQueue(), DataUpdated);
 		}
 
-		void DataUpdated(CMGyroData data, NSError error)
+		void DataUpdated(CMGyroData? data, NSError? error)
 		{
 			if (data == null)
 				return;
