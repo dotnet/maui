@@ -129,7 +129,9 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnChildAdded(child);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			ForceLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		protected virtual void OnCurrentPageChanged()
