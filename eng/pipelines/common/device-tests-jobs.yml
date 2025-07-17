@@ -1,7 +1,7 @@
 parameters:
   platform: ''
-  pool: { }
-  versions: [ ]
+  pool: {}
+  versions: []
   provisionatorChannel: 'latest'
   skipProvisioning: true
   agentPoolAccessToken: ''
@@ -18,7 +18,7 @@ parameters:
     name: name
     desc: Human Description
     path: /optional/path/to/project.csproj
-    versionsExclude: [ ]
+    versionsExclude: []
     packageid: ''
     configuration: ''
 
@@ -76,6 +76,9 @@ jobs:
             ${{ if contains(version, 'device') }}:
               device: ios-device
               apiVersion: ${{ replace(version, 'device-', '') }}
+            ${{ if contains(version, 'latest') }}:
+              device: ios-simulator-64
+              apiVersion: 18.5
             ${{ else }}:
               device: ios-simulator-64_${{ replace(version, 'simulator-', '') }}
               apiVersion: ${{ replace(version, 'simulator-', '') }}
