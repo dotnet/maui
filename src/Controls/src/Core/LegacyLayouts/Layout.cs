@@ -156,8 +156,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// </value>
 		public bool CascadeInputTransparent
 		{
-			get => (bool)GetValue(InputTransparentContainerElement.CascadeInputTransparentProperty);
-			set => SetValue(InputTransparentContainerElement.CascadeInputTransparentProperty, value);
+			get => (bool)GetValue(CascadeInputTransparentProperty);
+			set => SetValue(CascadeInputTransparentProperty, value);
 		}
 
 		Thickness IPaddingElement.PaddingDefaultValueCreator() => default(Thickness);
