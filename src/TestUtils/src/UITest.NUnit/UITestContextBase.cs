@@ -43,7 +43,7 @@ namespace UITest.Appium.NUnit
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
 
- 			if (UITestContext != null && Device == TestDevice.Mac)
+ 			if (UITestContext != null && Device is TestDevice.Mac)
 			{
 				LaunchAppWithTest();
 			}

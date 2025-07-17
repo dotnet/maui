@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class CarouselViewFeatureTests : UITest
+public class CarouselViewFeatureTests : _GalleryUITest
 {
 	public const string CarouselViewFeatureMatrix = "CarouselView Feature Matrix";
 	private const string CarouselViewControl = "CarouselViewControl";
@@ -31,14 +31,10 @@ public class CarouselViewFeatureTests : UITest
 	private const string ScrollToIndexEntry = "ScrollToIndexEntry";
 	private const string ScrollToButton = "ScrollToButton";
 
+	public override string GalleryPageName => CarouselViewFeatureMatrix;
+
 	public CarouselViewFeatureTests(TestDevice device) : base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(CarouselViewFeatureMatrix);
 	}
 
 	[Test, Order(1)]

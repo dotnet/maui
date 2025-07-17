@@ -8,6 +8,9 @@ namespace Microsoft.Maui.TestCases.Tests
 	public class GestureRecognizerUITests : CoreGalleryBasePageTest
 	{
 		const string GestureRecognizerGallery = "Gesture Recognizer Gallery";
+
+		public override string GalleryPageName => GestureRecognizerGallery;
+
 		public GestureRecognizerUITests(TestDevice device)
 			: base(device)
 		{
