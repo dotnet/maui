@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+		void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
 		{
 			OnPropertyChanged(nameof(ClearButtonVisibility));
 		}
