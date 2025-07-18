@@ -992,7 +992,6 @@ namespace Microsoft.Maui.Layouts
 			/// Gets the display density for density-aware calculations.
 			/// </summary>
 			/// <returns>The display density, or 1.0 if not available.</returns>
-			[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Accesses instance member _grid")]
 			double GetDensity()
 			{
 				// Try to get density from the grid view if it implements IViewWithWindow
