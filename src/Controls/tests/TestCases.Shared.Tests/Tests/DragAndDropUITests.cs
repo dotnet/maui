@@ -9,6 +9,7 @@ namespace Microsoft.Maui.TestCases.Tests
 	public class DragAndDropUITests : CoreGalleryBasePageTest
 	{
 		const string DragAndDropGallery = "Drag and Drop Gallery";
+		public override string GalleryPageName => DragAndDropGallery;
 		public DragAndDropUITests(TestDevice device)
 			: base(device)
 		{

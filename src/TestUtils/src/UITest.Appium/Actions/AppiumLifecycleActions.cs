@@ -58,10 +58,18 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 
 			if (_app.GetTestDevice() == TestDevice.Mac)
-			{
-				_app.Driver.ExecuteScript("macos: activateApp", new Dictionary<string, object>
+			{		
+				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+				
+				if (args.ContainsKey("test")&& parameters.ContainsKey("issue") && parameters["issue"] is string issue && !string.IsNullOrEmpty(issue))
+				{
+					args["test"] = issue;
+				}
+
+				_app.Driver.ExecuteScript("macos: launchApp", new Dictionary<string, object>
 				{
 					{ "bundleId", _app.GetAppId() },
+					{ "environment", args},
 				});
 			}
 			else if (_app.Driver is WindowsDriver windowsDriver)
