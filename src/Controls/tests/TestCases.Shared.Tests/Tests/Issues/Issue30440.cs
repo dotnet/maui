@@ -16,7 +16,7 @@ public class Issue30440 : _IssuesUITest
 	[Category(UITestCategories.Image)]
 	public void Issue30440ImageShouldClipCorrectly()
 	{
-		App.WaitForElement("image");
+		App.WaitForElement("circleLabel");
 		VerifyScreenshot();
 	}
 }
