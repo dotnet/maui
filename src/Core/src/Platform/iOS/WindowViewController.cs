@@ -70,6 +70,19 @@ internal class WindowViewController : UIViewController
 		contentViewController.DidMoveToParentViewController(this);
 	}
 
+
+	public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
+	{
+#pragma warning disable CA1422 // Validate platform compatibility
+		base.TraitCollectionDidChange(previousTraitCollection);
+#pragma warning restore CA1422 // Validate platform compatibility
+
+		if (_titleBar is not null && _iTitleBarRef.TryGetTarget(out IView? iTitleBar) && iTitleBar?.Background is null)
+		{
+			_titleBar.BackgroundColor = UIColor.SecondarySystemBackground;
+		}
+	}
+
 	public override void ViewWillLayoutSubviews()
 	{
 		LayoutTitleBar();
