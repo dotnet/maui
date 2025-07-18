@@ -266,6 +266,9 @@ public class SearchBarFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("SearchBar");
+#if WINDOWS // For maintaining consistency between .NET 9.0 and .NET 10.0
+		App.Tap("SearchBar");
+#endif
 		VerifyScreenshotWithPlatformCropping();
 	}
 
