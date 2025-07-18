@@ -14,12 +14,16 @@ internal static partial class ImageProcessor
 {
 	public static partial async Task<Stream> RotateImageAsync(Stream inputStream, string? originalFileName)
 	{
-		if (inputStream == null)
+		if (inputStream is null)
+		{
 			return new MemoryStream();
+		}
 
 		// Reset stream position
 		if (inputStream.CanSeek)
+		{
 			inputStream.Position = 0;
+		}
 
 		// Read the input stream into a byte array
 		byte[] bytes;
@@ -32,9 +36,11 @@ internal static partial class ImageProcessor
 		try
 		{
 			// Load the bitmap from bytes
-			var originalBitmap = await Task.Run(() => BitmapFactory.DecodeByteArray(bytes, 0, bytes.Length));
-			if (originalBitmap == null)
+			using var originalBitmap = await Task.Run(() => BitmapFactory.DecodeByteArray(bytes, 0, bytes.Length));
+			if (originalBitmap is null)
+			{
 				return new MemoryStream(bytes);
+			}
 
 			// Get EXIF orientation
 			int orientation = GetExifOrientation(bytes);
@@ -47,19 +53,21 @@ internal static partial class ImageProcessor
 
 			// Apply EXIF orientation correction using SetRotate(0) to preserve original EXIF behavior
 			Bitmap? rotatedBitmap = ApplyExifOrientation(originalBitmap);
-			if (rotatedBitmap == null)
+			if (rotatedBitmap is null)
 			{
 				return new MemoryStream(bytes);
 			}
 
 			// Clean up the original bitmap if we created a new one
 			if (rotatedBitmap != originalBitmap)
+			{
 				originalBitmap.Recycle();
+			}
 
 			// Convert the rotated bitmap back to a stream
 			var resultStream = new MemoryStream();
 			bool usePng = !string.IsNullOrEmpty(originalFileName) && 
-						  Path.GetExtension(originalFileName).ToLowerInvariant() == ".png";
+						  Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase);
 
 			var compressResult = await Task.Run(() =>
 			{
@@ -86,7 +94,9 @@ internal static partial class ImageProcessor
 			});
 
 			if (!compressResult)
+			{
 				return new MemoryStream(bytes);
+			}
 
 			resultStream.Position = 0;
 			return resultStream;
