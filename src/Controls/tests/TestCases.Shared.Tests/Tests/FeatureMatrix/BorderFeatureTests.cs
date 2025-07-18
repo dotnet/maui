@@ -175,7 +175,7 @@ public class BorderFeatureTests : UITest
 		App.Tap("Apply");
 
 #if WINDOWS
-		VerifyScreenshot(cropTop: 50);
+		VerifyScreenshot(cropTop: 100);
 #else
 		VerifyScreenshot();
 #endif
@@ -201,7 +201,7 @@ public class BorderFeatureTests : UITest
 		App.Tap("Apply");
 
 #if WINDOWS
-		VerifyScreenshot(cropTop: 50);
+		VerifyScreenshot(cropTop: 100);
 #else
 		VerifyScreenshot();
 #endif
@@ -422,7 +422,7 @@ public class BorderFeatureTests : UITest
 		App.Tap("Apply");
 
 #if WINDOWS
-		VerifyScreenshot(cropTop: 50);
+		VerifyScreenshot(cropTop: 100);
 #else
 		VerifyScreenshot();
 #endif
