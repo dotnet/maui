@@ -101,12 +101,7 @@ namespace Microsoft.Maui.Platform
 				return false;
 			}
 
-			if (_respondsToSafeArea.HasValue)
-			{
-				return _respondsToSafeArea.Value;
-			}
-
-			return (_respondsToSafeArea = RespondsToSelector(new Selector("safeAreaInsets"))).Value;
+			return true;
 		}
 
 		/// <summary>
