@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -75,6 +76,7 @@ public partial class BlazorWebViewTests
 			Assert.NotNull(responseObject);
 			Assert.Equal("Hello real endpoint (param1=value1, param2=value2)", responseObject.message);
 
+			[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.SerializeAsync<TValue>(Stream, TValue, JsonSerializerOptions, CancellationToken)")]
 			static async Task<Stream> GetDataAsync(IReadOnlyDictionary<string, string> queryParams)
 			{
 				var response = new EchoResponseObject { message = $"Hello real endpoint (param1={queryParams["param1"]}, param2={queryParams["param2"]})" };
