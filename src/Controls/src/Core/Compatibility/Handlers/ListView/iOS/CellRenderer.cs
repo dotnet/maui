@@ -5,6 +5,8 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using ObjCRuntime;
 using UIKit;
 
+#pragma warning disable CS0618 // Performance is obsolete
+
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class CellRenderer : ElementHandler<Cell, UITableViewCell>, IRegisterable
