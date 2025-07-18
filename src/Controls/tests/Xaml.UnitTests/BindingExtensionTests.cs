@@ -8,7 +8,7 @@ public class BindingExtensionTests
 	[Test]
 	public void ProvideValue_Null()
 	{
-		IMarkupExtension<BindingBase> binding = new BindingExtension { Path = "Foo" };
-		binding.ProvideValue(null); // This should not throw
+		BindingExtension binding = new BindingExtension { Path = "Foo" };
+		((IMarkupExtension<BindingBase>)binding).ProvideValue(null); // This should not throw
 	}
 }

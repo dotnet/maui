@@ -6,6 +6,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class StringLiterals : ContentPage
 	{
 		public StringLiterals()
@@ -13,19 +14,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public StringLiterals(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void EscapedStringsAreTreatedAsLiterals(bool useCompiledXaml)
+			[Test]
+			public void EscapedStringsAreTreatedAsLiterals([Values]XamlInflator inflator)
 			{
-				var layout = new StringLiterals(useCompiledXaml);
+				var layout = new StringLiterals(inflator);
 				Assert.AreEqual("Foo", layout.label0.Text);
 				Assert.AreEqual("{Foo}", layout.label1.Text);
 				Assert.AreEqual("Foo", layout.label2.Text);
