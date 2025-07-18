@@ -21,21 +21,15 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
 		public async Task Redirect(string urlBase, string callbackScheme, string accessToken, string refreshToken, int expires)
 		{
-#pragma warning disable CA1416 // Validate platform compatibility: Not supported on Windows
 			var authenticationTask = WebAuthenticator.AuthenticateAsync(
 				new Uri($"{urlBase}?access_token={accessToken}&refresh_token={refreshToken}&expires={expires}"),
 				new Uri($"{callbackScheme}://"));
-#pragma warning restore CA1416 // Validate platform compatibility
 
-#if WINDOWS
-			var exception = await Assert.ThrowsAsync<PlatformNotSupportedException>(async () => await authenticationTask);
-#else
 			var r = await authenticationTask.ConfigureAwait(false);
 			Assert.Equal(accessToken, r?.AccessToken);
 			Assert.Equal(refreshToken, r?.RefreshToken);
 			Assert.NotNull(r?.ExpiresIn);
 			Assert.True(r?.ExpiresIn > DateTime.UtcNow);
-#endif
 		}
 
 		[Theory]
@@ -49,24 +43,18 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public async Task RedirectWithResponseDecoder(string urlBase, string callbackScheme, string accessToken, string refreshToken, int expires)
 		{
 			var responseDecoder = new TestResponseDecoder();
-#pragma warning disable CA1416 // Validate platform compatibility: Not supported on Windows
 			var authenticationTask = WebAuthenticator.AuthenticateAsync(new WebAuthenticatorOptions
 			{
 				Url = new Uri($"{urlBase}?access_token={accessToken}&refresh_token={refreshToken}&expires={expires}"),
 				CallbackUrl = new Uri($"{callbackScheme}://"),
 				ResponseDecoder = responseDecoder
 			});
-#pragma warning restore CA1416 // Validate platform compatibility
-#if WINDOWS
-			var exception = await Assert.ThrowsAsync<PlatformNotSupportedException>(async () => await authenticationTask);
-#else
 			var r = await authenticationTask.ConfigureAwait(false);
 			Assert.Equal(accessToken, r?.AccessToken);
 			Assert.Equal(refreshToken, r?.RefreshToken);
 			Assert.NotNull(r?.ExpiresIn);
 			Assert.True(r?.ExpiresIn > DateTime.UtcNow);
 			Assert.Equal(1, responseDecoder.CallCount);
-#endif
 		}
 
 		[Theory]
