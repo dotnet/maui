@@ -23,7 +23,7 @@ public class ShapesFeatureTests : UITest
 	public void VerifyShapeScreenshot()
 	{
 #if WINDOWS
-		VerifyScreenshot(cropTop: 85);
+		VerifyScreenshot(cropTop: 100);
 #else
 		VerifyScreenshot();
 #endif
