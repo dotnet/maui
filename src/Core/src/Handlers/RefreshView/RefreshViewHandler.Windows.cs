@@ -60,6 +60,18 @@ namespace Microsoft.Maui.Handlers
 		public static void MapRefreshViewBackground(IRefreshViewHandler handler, IView view)
 			=> UpdateBackground(handler);
 
+		public static void MapIsRefreshEnabled(IRefreshViewHandler handler, IRefreshView refreshView)
+			=> (handler as RefreshViewHandler)?.UpdateIsRefreshEnabled();
+
+		void UpdateIsRefreshEnabled()
+		{
+			if (PlatformView?.Visualizer == null)
+				return;
+
+			// On Windows, disable the refresh visualizer when refresh is disabled
+			PlatformView.Visualizer.IsEnabled = VirtualView?.IsRefreshEnabled ?? true;
+		}
+
 		void UpdateIsRefreshing()
 		{
 			if (!_isLoaded)

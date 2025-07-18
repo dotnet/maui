@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls
 			if (!newValue)
 				return value;
 
-			if (!view.IsEnabled)
+			if (!view.IsEnabled || !view.IsRefreshEnabled)
 				return false;
 
 			if (view.Command == null)
@@ -109,6 +109,71 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(RefreshColorProperty, value); }
 		}
 
+		/// <summary>Bindable property for <see cref="IsRefreshEnabled"/>.</summary>
+		public static readonly BindableProperty IsRefreshEnabledProperty =
+			BindableProperty.Create(nameof(IsRefreshEnabled), typeof(bool), typeof(RefreshView), true, 
+				propertyChanged: OnIsRefreshEnabledPropertyChanged, coerceValue: CoerceIsRefreshEnabledProperty);
+
+		bool _isRefreshEnabledExplicit = (bool)IsRefreshEnabledProperty.DefaultValue;
+
+		static object CoerceIsRefreshEnabledProperty(BindableObject bindable, object value)
+		{
+			if (bindable is RefreshView refreshView)
+			{
+				refreshView._isRefreshEnabledExplicit = (bool)value;
+				return refreshView.IsRefreshEnabledCore;
+			}
+
+			return false;
+		}
+
+		static void OnIsRefreshEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var refreshView = (RefreshView)bindable;
+			if (refreshView == null)
+				return;
+
+			// If IsRefreshEnabled becomes false and we're refreshing, stop the refresh
+			if (!(bool)newValue && refreshView.IsRefreshing)
+				refreshView.IsRefreshing = false;
+		}
+
+		/// <summary>
+		/// This value represents the cumulative IsRefreshEnabled value.
+		/// It considers both the explicitly set value and the command's CanExecute state.
+		/// </summary>
+		protected virtual bool IsRefreshEnabledCore
+		{
+			get
+			{
+				if (_isRefreshEnabledExplicit == false)
+				{
+					// If the explicitly set value is false, then nothing else matters
+					return false;
+				}
+
+				// Also check if the command can execute
+				return CommandElement.GetCanExecute(this);
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets a value indicating whether the pull-to-refresh gesture is enabled.
+		/// When false, the refresh gesture is disabled but child controls remain interactive.
+		/// </summary>
+		public bool IsRefreshEnabled
+		{
+			get { return (bool)GetValue(IsRefreshEnabledProperty); }
+			set { SetValue(IsRefreshEnabledProperty, value); }
+		}
+
+		/// <summary>
+		/// This method must always be called if some event occurs and the value of
+		/// the <see cref="IsRefreshEnabledCore"/> property will change.
+		/// </summary>
+		protected void RefreshIsRefreshEnabledProperty() =>
+			this.RefreshPropertyValue(IsRefreshEnabledProperty, _isRefreshEnabledExplicit);
+
 		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, RefreshView> On<T>() where T : IConfigPlatform
 		{
@@ -119,25 +184,25 @@ namespace Microsoft.Maui.Controls
 
 		object ICommandElement.CommandParameter => CommandParameter;
 
-		protected override bool IsEnabledCore => base.IsEnabledCore && CommandElement.GetCanExecute(this);
+		bool IRefreshView.IsRefreshEnabled => IsRefreshEnabled;
 
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e)
 		{
 			if (IsRefreshing)
 				return;
 
-			RefreshIsEnabledProperty();
+			RefreshIsRefreshEnabledProperty();
 		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);
 
-			if (IsEnabledProperty.PropertyName == propertyName &&
-				!IsEnabled &&
-				IsRefreshing)
+			// When IsEnabled becomes false, stop any active refresh
+			if (IsEnabledProperty.PropertyName == propertyName && !IsEnabled)
 			{
-				IsRefreshing = false;
+				if (IsRefreshing)
+					IsRefreshing = false;
 			}
 		}
 
