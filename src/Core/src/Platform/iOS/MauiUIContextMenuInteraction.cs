@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Platform
 			if (contextFlyout == null || mauiContext == null)
 				return null;
 
+			contextFlyout.Handler?.DisconnectHandler();
 			var contextFlyoutHandler = contextFlyout.ToHandler(mauiContext);
 			var contextFlyoutPlatformView = contextFlyoutHandler.PlatformView;
 
