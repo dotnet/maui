@@ -1,8 +1,8 @@
 #addin nuget:?package=Cake.AppleSimulator&version=0.2.0
 #load "./uitests-shared.cake"
 
-const string DefaultVersion = "18.0";
-const string DefaultTestDevice = $"ios-simulator-64_{DefaultVersion}";
+const string DefaultVersion = "18.4";
+const string DefaultTestDevice = $"ios-simulator-64";
 
 // Required arguments
 string DEFAULT_IOS_PROJECT = "../../src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj";
@@ -146,7 +146,7 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 		ArgumentCustomization = args =>
 		{
 			args
-				.Append("/p:BuildIpa=true")
+				.Append("/p:CodesignRequireProvisioningProfile=false")
 				.Append($"/p:RuntimeIdentifier={rid}")
 				.Append("/bl:" + binlog)
 				.Append("/tl");

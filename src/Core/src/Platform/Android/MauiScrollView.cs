@@ -127,8 +127,7 @@ namespace Microsoft.Maui.Platform
 				if (_content != null && _content.Parent != this)
 				{
 					_content.RemoveFromParent();
-					if (_hScrollView != null)
-						_hScrollView.RemoveFromParent();
+					_hScrollView?.RemoveFromParent();
 					AddView(_content);
 				}
 			}

@@ -3,8 +3,13 @@
 	<PropertyGroup>
 		<_IsHotRestartDefined>$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants.Trim())', '(^|;)HOTRESTART($|;)'))</_IsHotRestartDefined>
 		<DefineConstants Condition="!$(_IsHotRestartDefined) And '$(IsHotRestartBuild)' == 'true'">HOTRESTART;$(DefineConstants)</DefineConstants>
-		<UseInterpreter Condition="'$(UseInterpreter)' == '' and '$(Configuration)' == 'Debug'">True</UseInterpreter>
-	</PropertyGroup>
+    <UseInterpreter Condition="'$(UseInterpreter)' == '' and '$(Configuration)' == 'Debug' and 
+    ('$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' or 
+    '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'ios' or 
+    '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'maccatalyst' or 
+    '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' or 
+    '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'tizen')">True</UseInterpreter>
+  </PropertyGroup>
 
 	<!-- FIXME: https://github.com/xamarin/xamarin-macios/pull/21351 -->
 	<PropertyGroup Condition=" '$(_MauiDoNotConfigureTrimAnalyzer)' != 'true' and '$(PublishAot)' != 'true' and '$(TrimMode)' != 'full' ">

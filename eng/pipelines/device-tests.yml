@@ -44,9 +44,7 @@ pr:
     - THIRD-PARTY-NOTICES.TXT
 
 variables:
-  - template: /eng/pipelines/common/variables.yml
-  - name: AgentPoolAccessToken
-    value: $(botdeploy--azdo--token)
+- template: /eng/pipelines/common/variables.yml@self
 
 parameters:
 
@@ -114,18 +112,18 @@ stages:
       iosPool: ${{ parameters.iosPool }}
       catalystPool: ${{ parameters.catalystPool }}
       windowsPool: ${{ parameters.windowsPool }}
-      agentPoolAccessToken: $(AgentPoolAccessToken)
+      # agentPoolAccessToken: $(AgentPoolAccessToken)
       targetFrameworkVersion: ${{ targetFrameworkVersion }}
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 33, 30, 29, 28, 27, 26, 25, 24, 23 ]
-        iosVersions: [ 'simulator-18.0']
+        iosVersions: [ 'latest']
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
         skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
       ${{ else }}:
         androidApiLevels: [ 33, 23 ]
-        iosVersions: [ 'simulator-18.0' ]
+        iosVersions: [ 'latest' ]
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
