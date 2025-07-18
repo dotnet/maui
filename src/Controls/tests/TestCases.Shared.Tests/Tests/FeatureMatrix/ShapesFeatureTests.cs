@@ -21,9 +21,9 @@ public class ShapesFeatureTests : UITest
 	}
 
 	public void VerifyShapeScreenshot()
-	{	
+	{
 #if WINDOWS
-		VerifyScreenshot(CropTop: 50);
+		VerifyScreenshot(cropTop: 85);
 #else
 		VerifyScreenshot();
 #endif
@@ -817,7 +817,7 @@ public class ShapesFeatureTests : UITest
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
-		
+
 		App.WaitForElement("PolyLineRadioButton");
 		App.Tap("PolyLineRadioButton");
 
@@ -848,7 +848,7 @@ public class ShapesFeatureTests : UITest
 
 		App.WaitForElement("PathRadioButton");
 		App.Tap("PathRadioButton");
-		
+
 		App.WaitForElement("StrokeColorRedRadioButton");
 		App.Tap("StrokeColorRedRadioButton");
 
