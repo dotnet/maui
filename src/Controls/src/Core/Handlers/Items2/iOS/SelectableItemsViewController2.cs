@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
@@ -57,6 +58,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// Ensure the selected index is updated after the collection view's items generation is completed
 				CollectionView.PerformBatchUpdates(null, _ =>
 				{
+					if (ItemsSource is EmptySource)
+					{
+						return;
+					}
+					
 					CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
 				});
 			}

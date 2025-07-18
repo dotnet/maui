@@ -12,16 +12,22 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 		{
 			CoreWebView2 coreWebView2 = null;
 
-			await Retry(
-				() =>
+			// Ensure that the WebView2 runtime is installed and initialized and has a CoreWebView2 instance.
+			if (wv2?.CoreWebView2 == null)
+			{
+				string version = CoreWebView2Environment.GetAvailableBrowserVersionString(null);
+				if (string.IsNullOrEmpty(version))
 				{
-					coreWebView2 = wv2.CoreWebView2;
-					return Task.FromResult(coreWebView2 != null);
-				},
-				timeoutInMS =>
-				{
-					return Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get CoreWebView2 to be available."));
-				});
+					throw new InvalidOperationException("WebView2 runtime is not installed.");
+				}
+				await wv2.EnsureCoreWebView2Async();
+			}
+
+			await Retry(() =>
+			{
+				coreWebView2 = wv2.CoreWebView2;
+				return Task.FromResult(coreWebView2 != null);
+			}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get CoreWebView2 to be available.")));
 
 			var domLoaded = false;
 			var sem = new SemaphoreSlim(1);

@@ -81,8 +81,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (Control == null || Control.Style != style)
 				{
-					if (Control != null)
-						Control.Dispose();
+					Control?.Dispose();
 
 					var tv = CreateNativeControl();
 					_originalBackgroundView = tv.BackgroundView;

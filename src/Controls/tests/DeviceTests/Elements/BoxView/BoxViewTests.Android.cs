@@ -126,5 +126,26 @@ namespace Microsoft.Maui.DeviceTests
 				return nativeView.Visibility == global::Android.Views.ViewStates.Visible;
 			});
 		}
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a BoxView should match with native Translation")]
+		public async Task BoxViewTranslationConsistent()
+		{
+			var boxView = new BoxView()
+			{
+				HeightRequest = 100,
+				WidthRequest = 200,
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<ShapeViewHandler>(boxView);
+			var nativeView = GetNativeBoxView(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				AssertTranslationMatches(nativeView, boxView.TranslationX, boxView.TranslationY);
+			});
+		}
 	}
 }
