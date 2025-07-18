@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
 	using FormsElement = Maui.Controls.ProgressBar;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ProgressBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ProgressBar']/Docs/*" />
+	/// <summary>Provides access to the pulsing status for progress bars.</summary>
 	public static class ProgressBar
 	{
 		/// <summary>Bindable property for attached property <c>ProgressBarPulsingStatus</c>.</summary>

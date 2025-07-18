@@ -1,19 +1,19 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/GestureState.xml" path="Type[@FullName='Microsoft.Maui.Controls.GestureState']/Docs/*" />
+	/// <summary>Enumeration specifying the various states of a gesture.</summary>
 	public enum GestureState
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/GestureState.xml" path="//Member[@MemberName='Began']/Docs/*" />
+		/// <summary>The gesture has begun and has not ended, failed, or been cancelled.</summary>
 		Began,
-		/// <include file="../../docs/Microsoft.Maui.Controls/GestureState.xml" path="//Member[@MemberName='Update']/Docs/*" />
+		/// <summary>The gesture state is being updated.</summary>
 		Update,
-		/// <include file="../../docs/Microsoft.Maui.Controls/GestureState.xml" path="//Member[@MemberName='Ended']/Docs/*" />
+		/// <summary>The gesture has ended.</summary>
 		Ended,
-		/// <include file="../../docs/Microsoft.Maui.Controls/GestureState.xml" path="//Member[@MemberName='Failed']/Docs/*" />
+		/// <summary>The gesture was not recognized.</summary>
 		Failed,
-		/// <include file="../../docs/Microsoft.Maui.Controls/GestureState.xml" path="//Member[@MemberName='Cancelled']/Docs/*" />
+		/// <summary>The gesture was cancelled.</summary>
 		Cancelled,
-		/// <include file="../../docs/Microsoft.Maui.Controls/GestureState.xml" path="//Member[@MemberName='Possible']/Docs/*" />
+		/// <summary>The gesture is in progress and may still become recognizable.</summary>
 		Possible
 	}
 }

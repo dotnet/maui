@@ -3,13 +3,15 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using FormsElement = Maui.Controls.Picker;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Picker.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Picker']/Docs/*" />
+	/// <summary>The picker instance that Microsoft.Maui.Controls created on the iOS platform.</summary>
 	public static class Picker
 	{
 		/// <summary>Bindable property for <see cref="UpdateMode"/>.</summary>
 		public static readonly BindableProperty UpdateModeProperty = BindableProperty.Create(nameof(UpdateMode), typeof(UpdateMode), typeof(Picker), default(UpdateMode));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Picker.xml" path="//Member[@MemberName='GetUpdateMode']/Docs/*" />
+		/// <summary>Returns a value that tells whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <returns>A value that tells whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</returns>
 		public static UpdateMode GetUpdateMode(BindableObject element)
 		{
 			return (UpdateMode)element.GetValue(UpdateModeProperty);
@@ -21,7 +23,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(UpdateModeProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Picker.xml" path="//Member[@MemberName='UpdateMode']/Docs/*" />
+		/// <summary>Returns a value that tells whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>A value that tells whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</returns>
 		public static UpdateMode UpdateMode(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetUpdateMode(config.Element);

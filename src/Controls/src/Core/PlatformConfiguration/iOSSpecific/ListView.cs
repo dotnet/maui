@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using FormsElement = Maui.Controls.ListView;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.ListView']/Docs/*" />
+	/// <summary>Provides access to the separator style for list views on the iOS platform.</summary>
 	public static class ListView
 	{
 		/// <summary>Bindable property for <see cref="SeparatorStyle"/>.</summary>
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>Bindable property for <see cref="RowAnimationsEnabled"/>.</summary>
 		public static readonly BindableProperty RowAnimationsEnabledProperty = BindableProperty.Create(nameof(RowAnimationsEnabled), typeof(bool), typeof(ListView), true);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='GetRowAnimationsEnabled']/Docs/*" />
+		/// <param name="element">The element parameter.</param>
 		public static bool GetRowAnimationsEnabled(BindableObject element)
 		{
 			return (bool)element.GetValue(RowAnimationsEnabledProperty);
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='RowAnimationsEnabled']/Docs/*" />
+		/// <param name="config">The config parameter.</param>
 		public static bool RowAnimationsEnabled(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetRowAnimationsEnabled(config.Element);

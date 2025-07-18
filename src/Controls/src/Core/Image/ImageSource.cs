@@ -1,22 +1,22 @@
 #nullable disable
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.ImageSource']/Docs/*" />
+	/// <summary>Abstract class whose implementors load images from files or the Web.</summary>
 	public partial class ImageSource : IImageSource
 	{
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls/FileImageSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.FileImageSource']/Docs/*" />
+	/// <summary>An <see cref="Microsoft.Maui.Controls.ImageSource"/> that reads an image from a file.</summary>
 	public partial class FileImageSource : IFileImageSource
 	{
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls/StreamImageSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.StreamImageSource']/Docs/*" />
+	/// <summary><see cref="Microsoft.Maui.Controls.ImageSource"/> that loads an image from a <see cref="System.IO.Stream"/>.</summary>
 	public partial class StreamImageSource : IStreamImageSource
 	{
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.UriImageSource']/Docs/*" />
+	/// <summary>An ImageSource that loads an image from a URI, caching the result.</summary>
 	public partial class UriImageSource : IUriImageSource, IStreamImageSource
 	{
 	}

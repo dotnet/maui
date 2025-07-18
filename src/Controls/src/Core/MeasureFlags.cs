@@ -2,13 +2,13 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/MeasureFlags.xml" path="Type[@FullName='Microsoft.Maui.Controls.MeasureFlags']/Docs/*" />
+	/// <summary>Enumerates values that tell whether margins are included when laying out windows.</summary>
 	[Flags]
 	public enum MeasureFlags
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/MeasureFlags.xml" path="//Member[@MemberName='None']/Docs/*" />
+		/// <summary>Do not include margins in a layout measurement.</summary>
 		None = 0,
-		/// <include file="../../docs/Microsoft.Maui.Controls/MeasureFlags.xml" path="//Member[@MemberName='IncludeMargins']/Docs/*" />
+		/// <summary>Include margins in a layout measurement.</summary>
 		IncludeMargins = 1 << 0
 	}
 }

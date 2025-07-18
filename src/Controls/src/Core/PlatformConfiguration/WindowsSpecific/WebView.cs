@@ -4,13 +4,15 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
 	using FormsElement = Maui.Controls.WebView;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/WebView.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.WebView']/Docs/*" />
+	/// <summary>Controls whether JavaScript alerts are enabled for a web view.</summary>
 	public static class WebView
 	{
 		/// <summary>Bindable property for <see cref="IsJavaScriptAlertEnabled"/>.</summary>
 		public static readonly BindableProperty IsJavaScriptAlertEnabledProperty = BindableProperty.Create("IsJavaScriptAlertEnabled", typeof(bool), typeof(WebView), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/WebView.xml" path="//Member[@MemberName='GetIsJavaScriptAlertEnabled']/Docs/*" />
+		/// <summary>Returns a Boolean value that tells whether the web view allows JavaScript alerts.</summary>
+		/// <param name="element">The web view element whose JavaScript alert permissions to return.</param>
+		/// <returns>A Boolean value that tells whether the web view allows JavaScript alerts.</returns>
 		public static bool GetIsJavaScriptAlertEnabled(BindableObject element)
 		{
 			return (bool)element.GetValue(IsJavaScriptAlertEnabledProperty);
@@ -22,7 +24,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			element.SetValue(IsJavaScriptAlertEnabledProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/WebView.xml" path="//Member[@MemberName='IsJavaScriptAlertEnabled']/Docs/*" />
+		/// <summary>Returns a Boolean value that tells whether the web view allows JavaScript alerts.</summary>
+		/// <param name="config">The platform configuration for the web view element whose JavaScript alert permissions to return.</param>
+		/// <returns>A Boolean value that tells whether the web view allows JavaScript alerts.</returns>
 		public static bool IsJavaScriptAlertEnabled(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return GetIsJavaScriptAlertEnabled(config.Element);

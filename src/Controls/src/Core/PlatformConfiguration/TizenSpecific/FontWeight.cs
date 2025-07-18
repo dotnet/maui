@@ -1,32 +1,32 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FontWeight.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.FontWeight']/Docs/*" />
+	/// <summary>Contains constants for font weights.</summary>
 	public static class FontWeight
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FontWeight.xml" path="//Member[@MemberName='None']/Docs/*" />
+		/// <summary>The constant for specifying no font weight.</summary>
 		public const string None = "None";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FontWeight.xml" path="//Member[@MemberName='Normal']/Docs/*" />
+		/// <summary>The constant for specifying the normal, or default, font weight.</summary>
 		public const string Normal = "Normal";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FontWeight.xml" path="//Member[@MemberName='Thin']/Docs/*" />
+		/// <summary>The constant for specifying the thin font weight.</summary>
 		public const string Thin = "Thin";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FontWeight.xml" path="//Member[@MemberName='UltraLight']/Docs/*" />
+		/// <summary>The constant for specifying the ultralight font weight.</summary>
 		public const string UltraLight = "UltraLight";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FontWeight.xml" path="//Member[@MemberName='Light']/Docs/*" />
+		/// <summary>The constant for specifying the light font weight.</summary>
 		public const string Light = "Light";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FontWeight.xml" path="//Member[@MemberName='Book']/Docs/*" />
+		/// <summary>The constant for specifying the book font weight.</summary>
 		public const string Book = "Book";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FontWeight.xml" path="//Member[@MemberName='Medium']/Docs/*" />
+		/// <summary>The constant for specifying the medium font weight.</summary>
 		public const string Medium = "Medium";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FontWeight.xml" path="//Member[@MemberName='SemiBold']/Docs/*" />
+		/// <summary>The constant for specifying the semibold font weight.</summary>
 		public const string SemiBold = "SemiBold";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FontWeight.xml" path="//Member[@MemberName='Bold']/Docs/*" />
+		/// <summary>The constant for specifying the bold font weight.</summary>
 		public const string Bold = "Bold";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FontWeight.xml" path="//Member[@MemberName='UltraBold']/Docs/*" />
+		/// <summary>The constant for specifying the ultrabold font weight.</summary>
 		public const string UltraBold = "UltraBold";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FontWeight.xml" path="//Member[@MemberName='Black']/Docs/*" />
+		/// <summary>The constant for specifying the black font weight.</summary>
 		public const string Black = "Black";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FontWeight.xml" path="//Member[@MemberName='ExtraBlack']/Docs/*" />
+		/// <summary>The constant for specifying the extra black font weight.</summary>
 		public const string ExtraBlack = "ExtraBlack";
 	}
 }
