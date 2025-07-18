@@ -7,7 +7,7 @@
                             Spacing="8">
               <Label Text="Entry Control"
                      FontSize="20"
-                            Margin="0,0,0,50"
+                     Margin="0,0,0,50"
                      HorizontalOptions="Center"/>
 
               <local:UITestEntry x:Name="EntryControl"
@@ -54,7 +54,7 @@
                       AutomationId="OptionsButton"/>
 
               <Grid ColumnSpacing="10"
-                            Margin="0,10,0,10">
+                    Margin="0,10,0,10">
                      <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
