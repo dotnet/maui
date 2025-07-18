@@ -1,4 +1,4 @@
-#nullable disable
+#nullable enable
 using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
@@ -11,9 +11,9 @@ namespace Microsoft.Maui.Controls
 			propertyChanged: (bindable, oldvalue, newvalue) => ((UrlWebViewSource)bindable).OnSourceChanged());
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/UrlWebViewSource.xml" path="//Member[@MemberName='Url']/Docs/*" />
-		public string Url
+		public string? Url
 		{
-			get { return (string)GetValue(UrlProperty); }
+			get { return (string?)GetValue(UrlProperty); }
 			set { SetValue(UrlProperty, value); }
 		}
 
@@ -21,6 +21,9 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public override void Load(IWebViewDelegate renderer)
 		{
+			if (renderer is null)
+				throw new System.ArgumentNullException(nameof(renderer));
+				
 			renderer.LoadUrl(Url);
 		}
 	}

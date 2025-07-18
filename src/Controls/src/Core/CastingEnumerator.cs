@@ -1,4 +1,4 @@
-#nullable disable
+#nullable enable
 using System.Collections;
 using System.Collections.Generic;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 
 		public CastingEnumerator(IEnumerator<TFrom> enumerator)
 		{
-			_enumerator = enumerator;
+			_enumerator = enumerator ?? throw new System.ArgumentNullException(nameof(enumerator));
 		}
 
 		public void Dispose()
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 			_enumerator.Dispose();
 		}
 
-		object IEnumerator.Current
+		object? IEnumerator.Current
 		{
 			get { return Current; }
 		}
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls
 
 		public T Current
 		{
-			get { return _enumerator.Current as T; }
+			get { return (_enumerator.Current as T)!; }
 		}
 	}
 }

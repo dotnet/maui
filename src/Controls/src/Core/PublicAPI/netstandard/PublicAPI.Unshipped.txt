@@ -6,6 +6,7 @@ Microsoft.Maui.Controls.AppLinkEntry.Thumbnail.get -> Microsoft.Maui.Controls.Im
 Microsoft.Maui.Controls.AppLinkEntry.Title.get -> string?
 ~Microsoft.Maui.Controls.Element.transientNamescope -> Microsoft.Maui.Controls.Internals.INameScope
 Microsoft.Maui.Controls.FlexLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.Controls.UrlWebViewSource.Url.get -> string?
 override Microsoft.Maui.Controls.AppLinkEntry.ToString() -> string!
 override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.FontSizeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
@@ -14,12 +15,14 @@ override Microsoft.Maui.Controls.FontSizeConverter.ConvertFrom(System.ComponentM
 override Microsoft.Maui.Controls.FontSizeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object?
 override Microsoft.Maui.Controls.ScrollView.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, double height) -> void
+override Microsoft.Maui.Controls.UrlWebViewSource.Load(Microsoft.Maui.IWebViewDelegate! renderer) -> void
 static Microsoft.Maui.Controls.AppLinkEntry.FromUri(System.Uri! uri) -> Microsoft.Maui.Controls.AppLinkEntry!
 static readonly Microsoft.Maui.Controls.AppLinkEntry.AppLinkUriProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.AppLinkEntry.DescriptionProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.AppLinkEntry.IsLinkActiveProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.AppLinkEntry.ThumbnailProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.AppLinkEntry.TitleProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.UrlWebViewSource.UrlProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue) -> void
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate<TPropertyType>.Invoke(Microsoft.Maui.Controls.BindableObject bindable, TPropertyType oldValue, TPropertyType newValue) -> void
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangingDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue) -> void
