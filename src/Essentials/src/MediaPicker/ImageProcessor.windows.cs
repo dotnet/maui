@@ -23,7 +23,7 @@ internal static partial class ImageProcessor
 			var decoder = await BitmapDecoder.CreateAsync(randomAccessStream);
 			
 			// Check if rotation is needed
-			var orientation = GetImageOrientation(decoder);
+			var orientation = await GetImageOrientation(decoder);
 			if (orientation == BitmapRotation.None)
 			{
 				inputStream.Position = 0;
@@ -34,7 +34,14 @@ internal static partial class ImageProcessor
 			var outputStream = new InMemoryRandomAccessStream();
 
 			// Create encoder
-			var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, outputStream);
+			Guid encoderId = BitmapEncoder.JpegEncoderId;
+
+			if (Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase))
+			{
+				encoderId = BitmapEncoder.PngEncoderId;
+			}
+
+			var encoder = await BitmapEncoder.CreateAsync(encoderId, outputStream);
 
 			// Set the transform with rotation
 			encoder.BitmapTransform.Rotation = orientation;
@@ -65,13 +72,13 @@ internal static partial class ImageProcessor
 		}
 	}
 
-	static BitmapRotation GetImageOrientation(BitmapDecoder decoder)
+	static async Task<BitmapRotation> GetImageOrientation(BitmapDecoder decoder)
 	{
 		try
 		{
 			// Try to get the EXIF orientation
 			var properties = decoder.BitmapProperties;
-			var orientationProperty = properties.GetPropertiesAsync(new[] { "System.Photo.Orientation" }).GetAwaiter().GetResult();
+			var orientationProperty = await properties.GetPropertiesAsync(new[] { "System.Photo.Orientation" });
 			
 			if (orientationProperty.TryGetValue("System.Photo.Orientation", out var orientationValue) && 
 				orientationValue.Value is ushort orientation)
