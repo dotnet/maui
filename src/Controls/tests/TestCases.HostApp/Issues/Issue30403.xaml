@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue30403"
+             Title="Issue30403">
+    <Grid RowDefinitions="*,*,*" ColumnDefinitions="*,*" Padding="20" BackgroundColor="LightGray">
+        
+        <!-- Test Image with AspectFit and Center alignment -->
+        <Border Grid.Row="0" Grid.Column="0" 
+                Stroke="Red" StrokeThickness="2" 
+                HeightRequest="200" WidthRequest="200"
+                HorizontalOptions="Center" VerticalOptions="Center">
+            <Image Source="dotnet_bot.png" 
+                   Aspect="AspectFit"
+                   VerticalOptions="Center" 
+                   HorizontalOptions="Center"
+                   AutomationId="CenteredImage" />
+        </Border>
+
+        <!-- Test Image with AspectFit and Start alignment -->
+        <Border Grid.Row="0" Grid.Column="1" 
+                Stroke="Blue" StrokeThickness="2" 
+                HeightRequest="200" WidthRequest="200"
+                HorizontalOptions="Center" VerticalOptions="Center">
+            <Image Source="dotnet_bot.png" 
+                   Aspect="AspectFit"
+                   VerticalOptions="Start" 
+                   HorizontalOptions="Start"
+                   AutomationId="StartImage" />
+        </Border>
+
+        <!-- Test Image with AspectFit and End alignment -->
+        <Border Grid.Row="1" Grid.Column="0" 
+                Stroke="Green" StrokeThickness="2" 
+                HeightRequest="200" WidthRequest="200"
+                HorizontalOptions="Center" VerticalOptions="Center">
+            <Image Source="dotnet_bot.png" 
+                   Aspect="AspectFit"
+                   VerticalOptions="End" 
+                   HorizontalOptions="End"
+                   AutomationId="EndImage" />
+        </Border>
+
+        <!-- Test Image with AspectFit and Fill alignment (should stretch) -->
+        <Border Grid.Row="1" Grid.Column="1" 
+                Stroke="Orange" StrokeThickness="2" 
+                HeightRequest="200" WidthRequest="200"
+                HorizontalOptions="Center" VerticalOptions="Center">
+            <Image Source="dotnet_bot.png" 
+                   Aspect="AspectFit"
+                   VerticalOptions="Fill" 
+                   HorizontalOptions="Fill"
+                   AutomationId="FillImage" />
+        </Border>
+
+        <!-- Test with different aspect ratios -->
+        <Border Grid.Row="2" Grid.ColumnSpan="2" 
+                Stroke="Purple" StrokeThickness="2" 
+                HeightRequest="150" WidthRequest="400"
+                HorizontalOptions="Center" VerticalOptions="Center">
+            <Image Source="dotnet_bot.png" 
+                   Aspect="AspectFit"
+                   VerticalOptions="Center" 
+                   HorizontalOptions="Center"
+                   AutomationId="WideImage" />
+        </Border>
+        
+    </Grid>
+</ContentPage>
