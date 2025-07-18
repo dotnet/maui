@@ -36,7 +36,8 @@ internal static partial class ImageProcessor
 			// Create encoder
 			Guid encoderId = BitmapEncoder.JpegEncoderId;
 
-			if (Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase))
+			// If we don't have the filename, assume Jpeg
+			if (Path.GetExtension(originalFileName ?? string.Empty).Equals(".png", StringComparison.OrdinalIgnoreCase))
 			{
 				encoderId = BitmapEncoder.PngEncoderId;
 			}
