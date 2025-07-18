@@ -68,7 +68,7 @@ namespace Microsoft.Maui
 			}
 
 			// CachedMappers initially contains only the UpdateProperties keys which may not contain the key we are looking for.
-			// See AndroidBatchPropertyMapper for an example.
+			// This should never happen, but there's a chance someone may have customized `GetKeys` to return a subset of the actual registered mapper keys.
 			var mapper = GetProperty(key);
 			cachedMappers[key] = mapper;
 
@@ -173,12 +173,7 @@ namespace Microsoft.Maui
 		{
 			var updatePropertiesKeys = GetKeys().Distinct().ToList();
 			var updatePropertiesMappers = new List<Action<IElementHandler, IElement>>(updatePropertiesKeys.Count);
-#if ANDROID
-			var cacheSize = updatePropertiesKeys.Count + AndroidBatchPropertyMapper.SkipList.Count;
-#else
-			var cacheSize = updatePropertiesKeys.Count;
-#endif
-			var cachedMappers = new Dictionary<string, Action<IElementHandler, IElement>?>(cacheSize);
+			var cachedMappers = new Dictionary<string, Action<IElementHandler, IElement>?>(updatePropertiesKeys.Count);
 
 			foreach (var key in updatePropertiesKeys)
 			{

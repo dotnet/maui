@@ -59,51 +59,91 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTranslationX(IViewHandler handler, IView view)
 		{
+			// During the initial setup, MappingFrame will take care of everything
+			if (handler.IsConnectingHandler())
+				return;
+
 			UpdateTransformation(handler, view);
 		}
 
 		public static void MapTranslationY(IViewHandler handler, IView view)
 		{
+			// During the initial setup, MappingFrame will take care of everything
+			if (handler.IsConnectingHandler())
+				return;
+
 			UpdateTransformation(handler, view);
 		}
 
 		public static void MapScale(IViewHandler handler, IView view)
 		{
+			// During the initial setup, MappingFrame will take care of everything
+			if (handler.IsConnectingHandler())
+				return;
+
 			UpdateTransformation(handler, view);
 		}
 
 		public static void MapScaleX(IViewHandler handler, IView view)
 		{
+			// During the initial setup, MappingFrame will take care of everything
+			if (handler.IsConnectingHandler())
+				return;
+
 			UpdateTransformation(handler, view);
 		}
 
 		public static void MapScaleY(IViewHandler handler, IView view)
 		{
+			// During the initial setup, MappingFrame will take care of everything
+			if (handler.IsConnectingHandler())
+				return;
+
 			UpdateTransformation(handler, view);
 		}
 
 		public static void MapRotation(IViewHandler handler, IView view)
 		{
+			// During the initial setup, MappingFrame will take care of everything
+			if (handler.IsConnectingHandler())
+				return;
+
 			UpdateTransformation(handler, view);
 		}
 
 		public static void MapRotationX(IViewHandler handler, IView view)
 		{
+			// During the initial setup, MappingFrame will take care of everything
+			if (handler.IsConnectingHandler())
+				return;
+
 			UpdateTransformation(handler, view);
 		}
 
 		public static void MapRotationY(IViewHandler handler, IView view)
 		{
+			// During the initial setup, MappingFrame will take care of everything
+			if (handler.IsConnectingHandler())
+				return;
+
 			UpdateTransformation(handler, view);
 		}
 
 		public static void MapAnchorX(IViewHandler handler, IView view)
 		{
+			// During the initial setup, MappingFrame will take care of everything
+			if (handler.IsConnectingHandler())
+				return;
+
 			UpdateTransformation(handler, view);
 		}
 
 		public static void MapAnchorY(IViewHandler handler, IView view)
 		{
+			// During the initial setup, MappingFrame will take care of everything
+			if (handler.IsConnectingHandler())
+				return;
+
 			UpdateTransformation(handler, view);
 		}
 

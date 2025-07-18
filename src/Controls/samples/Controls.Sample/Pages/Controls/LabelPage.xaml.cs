@@ -17,7 +17,7 @@ namespace Maui.Controls.Sample.Pages
 			BindingContext = new LabelViewModel();
 		}
 
-		void ClickGestureRecognizer_Clicked(object sender, EventArgs e)
+		void TapGestureRecognizer_Tapped(object sender, EventArgs e)
 		{
 			SetRandomBackgroundColor(GestureSpan);
 		}

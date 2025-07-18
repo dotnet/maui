@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Application.Current = new Bz53381App();
 				var view = new Bz53381(useCompiledXaml);
 				Application.Current.LoadPage(new ContentPage { Content = view });
-				var presenter = ((StackLayout)view.InternalChildren[0]).Children[1] as ContentPresenter;
+				var presenter = ((StackLayout)((IVisualTreeElement)view).GetVisualChildren()[0]).Children[1] as ContentPresenter;
 				Assume.That(presenter, Is.Not.Null);
 				var grid = presenter.Content as Grid;
 				Assert.That(grid, Is.Not.Null);

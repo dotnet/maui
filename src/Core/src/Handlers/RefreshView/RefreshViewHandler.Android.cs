@@ -9,6 +9,12 @@ namespace Microsoft.Maui.Handlers
 			return new MauiSwipeRefreshLayout(Context);
 		}
 
+		public override void SetVirtualView(IView view)
+		{
+			base.SetVirtualView(view);
+			PlatformView.CrossPlatformLayout = VirtualView as ICrossPlatformLayout;
+		}
+
 		protected override void ConnectHandler(MauiSwipeRefreshLayout platformView)
 		{
 			base.ConnectHandler(platformView);
