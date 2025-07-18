@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls
 			if (cmd != null && cmd.CanExecute(CommandParameter))
 				cmd.Execute(CommandParameter);
 
-			Tapped?.Invoke(sender, new TappedEventArgs(CommandParameter, getPosition));
+			Tapped?.Invoke(sender, new TappedEventArgs(CommandParameter, getPosition, Buttons));
 		}
 
 	}
