@@ -269,7 +269,10 @@
                                       Condition="'$(MauiHybridWebViewSupported)' != ''"
                                       Value="$(MauiHybridWebViewSupported)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.AreNamescopesSupported"
+                                      Condition="'$(MauiNamescopesSupported)' != ''"
+                                      Value="$(MauiNamescopesSupported)"
+                                      Trim="true" />      
     </ItemGroup>
   </Target>
-
 </Project>

@@ -174,6 +174,9 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 		public object FindByName(string name)
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			object value;
 			if (scopes != null)
 				foreach (var scope in scopes)
@@ -278,6 +281,9 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 		public object FindByName(string name)
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			var n = _node;
 			while (n != null)
 			{
