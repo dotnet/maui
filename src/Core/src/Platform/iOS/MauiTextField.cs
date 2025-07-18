@@ -101,11 +101,11 @@ namespace Microsoft.Maui.Platform
 			// Update clear button color when theme changes (UserInterfaceStyle change)
 			if (previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 			{
-				UpdateClearButtonForThemeChange();
+				UpdateClearButtonIconColor();
 			}
 		}
 
-		void UpdateClearButtonForThemeChange()
+		void UpdateClearButtonIconColor()
 		{
 			if (ClearButtonMode != UITextFieldViewMode.Never && GetVirtualView() is IEntry entry)
 			{
