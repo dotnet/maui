@@ -76,14 +76,19 @@ namespace Microsoft.Maui.Controls
 			base.OnHandlerChangingCore(args);
 
 			if (Application.Current is null)
+			{
 				return;
+			}
 
 			if (args.NewHandler is null)
+			{
 				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
-
+			}
 
 			if (args.NewHandler is not null && args.OldHandler is null)
+			{
 				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+			}
 		}
 
 		private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
