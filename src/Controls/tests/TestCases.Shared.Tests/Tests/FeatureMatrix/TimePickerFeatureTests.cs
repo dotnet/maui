@@ -220,6 +220,8 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+		App.WaitForElement("CultureFormatLabel");
+		App.Tap("CultureFormatLabel");
 		VerifyScreenshot();
 	}
 #endif
@@ -267,6 +269,8 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+		App.WaitForElement("CultureFormatLabel");
+		App.Tap("CultureFormatLabel");
 		VerifyScreenshot();
 	}
 #endif
@@ -290,6 +294,8 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+		App.WaitForElement("CultureFormatLabel");
+		App.Tap("CultureFormatLabel");
 		VerifyScreenshot();
 	}
 #endif
@@ -442,6 +448,8 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+		App.WaitForElement("CultureFormatLabel");
+		App.Tap("CultureFormatLabel");
 		VerifyScreenshot();
 	}
 #endif
