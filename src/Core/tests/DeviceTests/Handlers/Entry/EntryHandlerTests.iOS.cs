@@ -863,5 +863,56 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+
+		[Fact(DisplayName = "Password Toggling Preserves Text When Focused")]
+		public async Task PasswordTogglingPreservesTextWhenFocused()
+		{
+			var initialText = "password123";
+			var additionalText = "456";
+			var expectedFinalText = initialText + additionalText;
+
+			var entry = new EntryStub()
+			{
+				Text = initialText,
+				IsPassword = true
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
+				var platformView = GetNativeEntry(handler);
+
+				// Simulate the field being focused (this is key to reproducing the issue)
+				platformView.BecomeFirstResponder();
+				
+				// Verify initial state - password mode with text
+				Assert.True(GetNativeIsPassword(handler));
+				Assert.Equal(initialText, GetNativeText(handler));
+
+				// Toggle password off (text becomes visible)
+				entry.IsPassword = false;
+				handler.UpdateValue(nameof(IEntry.IsPassword));
+				
+				// Verify password mode is off and text is preserved
+				Assert.False(GetNativeIsPassword(handler));
+				Assert.Equal(initialText, GetNativeText(handler));
+
+				// Toggle password back on (this is where the bug occurs)
+				entry.IsPassword = true;
+				handler.UpdateValue(nameof(IEntry.IsPassword));
+				
+				// Verify password mode is on and text is still preserved
+				Assert.True(GetNativeIsPassword(handler));
+				Assert.Equal(initialText, GetNativeText(handler));
+
+				// Simulate user typing additional text (this triggers the text loss bug)
+				SetNativeText(handler, expectedFinalText);
+				
+				// Verify the original text is still preserved
+				Assert.Equal(expectedFinalText, GetNativeText(handler));
+				
+				platformView.ResignFirstResponder();
+			});
+		}
 	}
 }
