@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (renderer is null)
 				throw new System.ArgumentNullException(nameof(renderer));
-				
+
 			renderer.LoadUrl(Url);
 		}
 	}

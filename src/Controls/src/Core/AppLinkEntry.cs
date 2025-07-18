@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (uri is null)
 				throw new ArgumentNullException(nameof(uri));
-			
+
 			var appEntry = new AppLinkEntry();
 			appEntry.AppLinkUri = uri;
 			return appEntry;
