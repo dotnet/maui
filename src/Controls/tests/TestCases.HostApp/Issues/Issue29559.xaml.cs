@@ -9,8 +9,8 @@ public partial class Issue29559 : Shell
 	}
 
 	private void ShowKeyboardClicked(object sender, EventArgs e)
-		=> searchHandler.ShowKeyboard();
+		=> searchHandler.ShowSoftInputAsync();
 
 	private void HideKeyboardClicked(object sender, EventArgs e)
-		=> searchHandler.HideKeyboard();
+		=> searchHandler.HideSoftInputAsync();
 }
