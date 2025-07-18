@@ -54,20 +54,21 @@ public class WebViewFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("GithubUrlButton");
-		App.Tap("GithubUrlButton");
+		App.WaitForElement("MicrosoftUrlButton");
+		App.Tap("MicrosoftUrlButton");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("HtmlSourceButton");
-		App.Tap("HtmlSourceButton");
+		App.WaitForElement("GithubUrlButton");
+		App.Tap("GithubUrlButton");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(CanGoBackLabel, timeout: TimeSpan.FromSeconds(3));
 		Assert.That(App.FindElement(CanGoBackLabel).GetText(), Is.EqualTo("True"));
 		App.WaitForElement(GoBackButton);
 		App.Tap(GoBackButton);
+		Thread.Sleep(2000); // Allow time to update the state
 		App.WaitForElement(CanGoForwardLabel, timeout: TimeSpan.FromSeconds(5));
 		Assert.That(App.FindElement(CanGoForwardLabel).GetText(), Is.EqualTo("True"));
 	}
