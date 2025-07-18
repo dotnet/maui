@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers
 			_proxy.SetVirtualView(PlatformView);
 
 			// Store the virtual view reference in MauiTextField for theme change handling
-			PlatformView?.SetVirtualView(VirtualView);
+			PlatformView?.SetEntryView(VirtualView);
 		}
 
 		protected override void ConnectHandler(MauiTextField platformView)
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Handlers
 			_proxy.Disconnect(platformView);
 
 			// Clear the virtual view reference when disconnecting
-			platformView?.SetVirtualView(null);
+			platformView?.SetEntryView(null);
 		}
 
 		public static void MapText(IEntryHandler handler, IEntry entry)

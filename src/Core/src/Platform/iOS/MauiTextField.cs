@@ -20,14 +20,9 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		internal void SetVirtualView(IEntry? entry)
+		internal void SetEntryView(IEntry? entry)
 		{
 			_virtualView = entry != null ? new WeakReference<IEntry>(entry) : null;
-		}
-
-		internal IEntry? GetVirtualView()
-		{
-			return _virtualView?.TryGetTarget(out var entry) == true ? entry : null;
 		}
 
 		public override void WillMoveToWindow(UIWindow? window)
@@ -107,7 +102,7 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateClearButtonIconColor()
 		{
-			if (ClearButtonMode != UITextFieldViewMode.Never && GetVirtualView() is IEntry entry)
+			if (ClearButtonMode != UITextFieldViewMode.Never && _virtualView?.TryGetTarget(out var entry) == true)
 			{
 				this.UpdateClearButtonVisibility(entry);
 			}
