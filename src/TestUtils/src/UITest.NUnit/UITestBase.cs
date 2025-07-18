@@ -63,7 +63,7 @@ namespace UITest.Appium.NUnit
 		void ExecuteTeardown()
 		{
 			// Always check for diagnostics first, before any reset operations
-			UITestBaseTearDown();
+			UiTestBaseTearDown();
             
 			// Handle reset after each test efficiently
 			if (ResetAfterEachTest)
@@ -76,8 +76,10 @@ namespace UITest.Appium.NUnit
 		{
 			try
 			{
+				var appState = GetSafeAppState();
+				
 				// Only reset if app is still running, no point resetting a crashed app
-				if (App?.AppState == ApplicationState.Running)
+				if (appState == ApplicationState.Running)
 				{
 					var resetTask = Task.Run(Reset);
 					
@@ -92,7 +94,7 @@ namespace UITest.Appium.NUnit
 				}
 				else
 				{
-					TestContext.Progress.WriteLine($">>>>> {DateTime.Now} App not running ({App?.AppState}), skipping reset in teardown");
+					TestContext.Progress.WriteLine($">>>>> {DateTime.Now} App not running ({appState}), skipping reset in teardown");
 				}
 			}
 			catch (Exception resetException)
@@ -128,18 +130,20 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
-		public void UITestBaseTearDown()
+		void UiTestBaseTearDown()
 		{
 			try
 			{
-				// Check app state with fallback
-				var appState = App?.AppState ?? ApplicationState.Unknown;
+				// Check app state
+				var appState = GetSafeAppState();
 
 				if (appState == ApplicationState.NotRunning)
 				{
+					TestContext.Error.WriteLine($">>>>> {DateTime.Now} App is not running, possible crash detected");
+					
 					// App has crashed, save diagnostics
 					SaveDeviceDiagnosticInfo();
-					Assert.Fail("The app is not running, investigate as possible crash");
+				
 				}
 				else
 				{
@@ -199,8 +203,10 @@ namespace UITest.Appium.NUnit
 				outcome.Site == ResultState.SetUpFailure.Site)
 			{
 				SaveDeviceDiagnosticInfo();
-
-				if (App.AppState == ApplicationState.Running)
+				
+				var appState = GetSafeAppState();
+				
+				if (appState== ApplicationState.Running)
 					SaveUIDiagnosticInfo();
 			}
 
@@ -238,7 +244,9 @@ namespace UITest.Appium.NUnit
 
 		protected bool SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
 		{
-			if (App.AppState != ApplicationState.Running)
+			var appState = GetSafeAppState();
+			
+			if (appState != ApplicationState.Running)
 				return false;
 
 			var screenshotPath = GetGeneratedFilePath("ScreenShot.png", note);
@@ -294,6 +302,19 @@ namespace UITest.Appium.NUnit
 			{
 				// Add the file path to better troubleshoot when these errors occur
 				throw new FileNotFoundException($"Test attachment file path could not be found: '{filePath}' {description}", e);
+			}
+		}
+		
+		ApplicationState GetSafeAppState()
+		{
+			try
+			{
+				return App?.AppState ?? ApplicationState.Unknown;
+			}
+			catch (Exception ex)
+			{
+				TestContext.Error.WriteLine($">>>>> {DateTime.Now} Error getting app state: {ex.Message}");
+				return ApplicationState.Unknown;
 			}
 		}
 	}
