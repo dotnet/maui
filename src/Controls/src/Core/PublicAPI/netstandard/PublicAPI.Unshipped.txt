@@ -40,6 +40,8 @@ Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime?
 Microsoft.Maui.Controls.FlexLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.HybridWebView.WebResourceRequested -> System.EventHandler<Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs!>?
+Microsoft.Maui.Controls.HybridWebView.WebViewInitialized -> System.EventHandler<Microsoft.Maui.WebViewInitializedEventArgs!>?
+Microsoft.Maui.Controls.HybridWebView.WebViewInitializing -> System.EventHandler<Microsoft.Maui.WebViewInitializingEventArgs!>?
 Microsoft.Maui.Controls.ICornerElement
 Microsoft.Maui.Controls.ICornerElement.CornerRadius.get -> Microsoft.Maui.CornerRadius
 Microsoft.Maui.Controls.IExtendedTypeConverter.ConvertFromInvariantString(string! value, System.IServiceProvider! serviceProvider) -> object?
@@ -292,6 +294,8 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 ~virtual Microsoft.Maui.Controls.BindableProperty.ValidateValueDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object value) -> bool
 ~virtual Microsoft.Maui.Controls.BindableProperty.ValidateValueDelegate<TPropertyType>.Invoke(Microsoft.Maui.Controls.BindableObject bindable, TPropertyType value) -> bool
 ~virtual Microsoft.Maui.Controls.CollectionSynchronizationCallback.Invoke(System.Collections.IEnumerable collection, object context, System.Action accessMethod, bool writeAccess) -> void
+virtual Microsoft.Maui.Controls.HybridWebView.OnWebViewInitialized(Microsoft.Maui.WebViewInitializedEventArgs! e) -> void
+virtual Microsoft.Maui.Controls.HybridWebView.OnWebViewInitializing(Microsoft.Maui.WebViewInitializingEventArgs! e) -> void
 ~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.VisualElement.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void

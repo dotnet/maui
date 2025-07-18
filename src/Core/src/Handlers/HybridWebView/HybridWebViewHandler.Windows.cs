@@ -255,6 +255,7 @@ namespace Microsoft.Maui.Handlers
 
 			private Window? Window => _window is not null && _window.TryGetTarget(out var w) ? w : null;
 			private HybridWebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
+			private IHybridWebView? VirtualView => Handler?.VirtualView;
 
 			public void Connect(HybridWebViewHandler handler, WebView2 platformView)
 			{
@@ -267,12 +268,23 @@ namespace Microsoft.Maui.Handlers
 			{
 				await webView.EnsureCoreWebView2Async();
 
+				if (VirtualView is null)
+					return false;
+
+				var customSettings = VirtualView.InitializingWebView() as WebViewInitializingEventArgs;
+
 				webView.CoreWebView2.Settings.AreDevToolsEnabled = Handler?.DeveloperTools.Enabled ?? false;
 				webView.CoreWebView2.Settings.IsWebMessageEnabled = true;
-				webView.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+
+				// Allow additional custom settings to be applied through the WebViewInitializingEventArgs Class
+				customSettings?.AdditionalSettings?.Invoke(webView.CoreWebView2.Settings);
+
+				webView.CoreWebView2.AddWebResourceRequestedFilter($"*", CoreWebView2WebResourceContext.All);
 
 				webView.WebMessageReceived += OnWebMessageReceived;
 				webView.CoreWebView2.WebResourceRequested += OnWebResourceRequested;
+
+				VirtualView.InitializedWebView(webView);
 
 				return true;
 			}
