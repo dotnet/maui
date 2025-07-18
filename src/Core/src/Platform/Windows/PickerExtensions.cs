@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
@@ -87,6 +88,23 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateVerticalTextAlignment(this ComboBox nativeComboBox, IPicker picker)
 		{
 			nativeComboBox.VerticalContentAlignment = picker.VerticalTextAlignment.ToPlatformVerticalAlignment();
+		}
+
+		public static void UpdateIsOpen(this ComboBox nativeComboBox, IPicker picker)
+		{
+			if (!nativeComboBox.IsLoaded)
+			{
+				RoutedEventHandler? onLoaded = null;
+				onLoaded = (s, e) =>
+				{
+					nativeComboBox.Loaded -= onLoaded;
+					UpdateIsOpen(nativeComboBox, picker);
+				};
+				nativeComboBox.Loaded += onLoaded;
+				return;
+			}
+
+			nativeComboBox.IsDropDownOpen = picker.IsOpen;
 		}
 	}
 }
