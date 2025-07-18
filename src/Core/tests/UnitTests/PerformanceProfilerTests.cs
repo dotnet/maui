@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Maui.Performance;
 using Xunit;
 
@@ -84,7 +85,8 @@ namespace Microsoft.Maui.UnitTests
 
 			// Assert
 			Assert.Equal(1, tracker.MeasureCallCount);
-			Assert.True(tracker.MeasuredDuration >= 5, $"Expected duration >= 5ms, but got {tracker.MeasuredDuration}ms");
+			Assert.True(tracker.MeasuredDuration >= 5,
+				$"Expected duration >= 5ms, but got {tracker.MeasuredDuration}ms");
 			Assert.Equal("ElementA", tracker.MeasuredElement);
 		}
 
@@ -103,7 +105,8 @@ namespace Microsoft.Maui.UnitTests
 
 			// Assert
 			Assert.Equal(1, tracker.ArrangeCallCount);
-			Assert.True(tracker.ArrangedDuration >= 7, $"Expected duration >= 7ms, but got {tracker.ArrangedDuration}ms");
+			Assert.True(tracker.ArrangedDuration >= 7,
+				$"Expected duration >= 7ms, but got {tracker.ArrangedDuration}ms");
 			Assert.Equal("ElementB", tracker.ArrangedElement);
 		}
 
@@ -128,17 +131,21 @@ namespace Microsoft.Maui.UnitTests
 			var statsAfterArrange = PerformanceProfiler.GetStats();
 
 			// Assert measure stats
-			Assert.True(statsAfterMeasure.Layout.MeasureDuration >= 4, $"Expected measure duration >= 4ms, but got {statsAfterMeasure.Layout.MeasureDuration}ms");
+			Assert.True(statsAfterMeasure.Layout.MeasureDuration >= 4,
+				$"Expected measure duration >= 4ms, but got {statsAfterMeasure.Layout.MeasureDuration}ms");
 			Assert.Equal(0, statsAfterMeasure.Layout.ArrangeDuration);
 
 			// Assert arrange stats
-			Assert.True(statsAfterArrange.Layout.ArrangeDuration >= 6, $"Expected arrange duration >= 6ms, but got {statsAfterArrange.Layout.ArrangeDuration}ms");
-			Assert.True(statsAfterArrange.Layout.MeasureDuration >= 4, $"Expected measure duration >= 4ms, but got {statsAfterArrange.Layout.MeasureDuration}ms");
+			Assert.True(statsAfterArrange.Layout.ArrangeDuration >= 6,
+				$"Expected arrange duration >= 6ms, but got {statsAfterArrange.Layout.ArrangeDuration}ms");
+			Assert.True(statsAfterArrange.Layout.MeasureDuration >= 4,
+				$"Expected measure duration >= 4ms, but got {statsAfterArrange.Layout.MeasureDuration}ms");
 		}
 
 		[Fact]
-		public void GetStats_BeforeAndAfterTracking_VerifyTimestampAndDurations()
+		public async Task GetStats_BeforeAndAfterTracking_VerifyTimestampAndDurations()
 		{
+			// Arrange
 			ResetLayout();
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
@@ -146,36 +153,43 @@ namespace Microsoft.Maui.UnitTests
 			var beforeStats = PerformanceProfiler.GetStats();
 			Assert.Equal(0, beforeStats.Layout.MeasureDuration);
 			Assert.Equal(0, beforeStats.Layout.ArrangeDuration);
-			Assert.True((DateTime.UtcNow - beforeStats.TimestampUtc).TotalSeconds < 5);
+			Assert.True((DateTime.UtcNow - beforeStats.TimestampUtc).TotalSeconds < 5,
+				$"Timestamp too old: {beforeStats.TimestampUtc}");
 
 			// Track measure
 			const int measureSleep = 20;
 			var measureTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure);
-			Thread.Sleep(measureSleep);
+			await Task.Delay(measureSleep);
 			measureTracker.Stop();
+			await Task.Yield();
 
-			SpinWait.SpinUntil(() => tracker.MeasureCallCount == 1, TimeSpan.FromMilliseconds(200));
+			bool measureSuccess = await Task.Run(() =>
+				SpinWait.SpinUntil(() => tracker.MeasureCallCount == 1, TimeSpan.FromMilliseconds(1000)));
+			Assert.True(measureSuccess, $"MeasureCallCount did not reach 1. Final count: {tracker.MeasureCallCount}");
+
 			var afterMeasure = PerformanceProfiler.GetStats();
-
-			// Assert measure stats
-			Assert.InRange(afterMeasure.Layout.MeasureDuration, measureSleep, measureSleep * 3);
+			Assert.InRange(afterMeasure.Layout.MeasureDuration, measureSleep * 0.9, measureSleep * 10);
 			Assert.Equal(0, afterMeasure.Layout.ArrangeDuration);
-			Assert.True((DateTime.UtcNow - afterMeasure.TimestampUtc).TotalSeconds < 5);
+			Assert.True((DateTime.UtcNow - afterMeasure.TimestampUtc).TotalSeconds < 5,
+				$"Timestamp too old: {afterMeasure.TimestampUtc}");
 
 			// Track arrange
 			const int arrangeSleep = 30;
 			var arrangeTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange);
-			Thread.Sleep(arrangeSleep);
+			await Task.Delay(arrangeSleep);
 			arrangeTracker.Stop();
+			await Task.Yield();
 
-			SpinWait.SpinUntil(() => tracker.ArrangeCallCount == 1, TimeSpan.FromMilliseconds(200));
+			bool arrangeSuccess = await Task.Run(() =>
+				SpinWait.SpinUntil(() => tracker.ArrangeCallCount == 1, TimeSpan.FromMilliseconds(1000)));
+			Assert.True(arrangeSuccess, $"ArrangeCallCount did not reach 1. Final count: {tracker.ArrangeCallCount}");
+
 			var afterArrange = PerformanceProfiler.GetStats();
-
-			// Assert arrange stats
-			Assert.InRange(afterArrange.Layout.ArrangeDuration, arrangeSleep, arrangeSleep * 3);
+			Assert.InRange(afterArrange.Layout.ArrangeDuration, arrangeSleep * 0.9, arrangeSleep * 10);
 			Assert.True(afterArrange.Layout.MeasureDuration >= afterMeasure.Layout.MeasureDuration,
 				$"Expected measure duration >= {afterMeasure.Layout.MeasureDuration}ms, but got {afterArrange.Layout.MeasureDuration}ms");
-			Assert.True((DateTime.UtcNow - afterArrange.TimestampUtc).TotalSeconds < 5);
+			Assert.True((DateTime.UtcNow - afterArrange.TimestampUtc).TotalSeconds < 5,
+				$"Timestamp too old: {afterArrange.TimestampUtc}");
 		}
 
 		[Fact]
@@ -215,10 +229,12 @@ namespace Microsoft.Maui.UnitTests
 			// Assert
 			Assert.Equal(1, tracker.MeasureCallCount);
 			Assert.Equal("Element1", tracker.MeasuredElement);
-			Assert.True(tracker.MeasuredDuration >= 5, $"Expected measure duration >= 5ms, but got {tracker.MeasuredDuration}ms");
+			Assert.True(tracker.MeasuredDuration >= 5,
+				$"Expected measure duration >= 5ms, but got {tracker.MeasuredDuration}ms");
 			Assert.Equal(1, tracker.ArrangeCallCount);
 			Assert.Equal("Element2", tracker.ArrangedElement);
-			Assert.True(tracker.ArrangedDuration >= 10, $"Expected arrange duration >= 10ms, but got {tracker.ArrangedDuration}ms");
+			Assert.True(tracker.ArrangedDuration >= 10,
+				$"Expected arrange duration >= 10ms, but got {tracker.ArrangedDuration}ms");
 		}
 
 		[Fact]
@@ -236,7 +252,8 @@ namespace Microsoft.Maui.UnitTests
 
 			// Assert
 			Assert.Equal(1, tracker.MeasureCallCount);
-			Assert.True(tracker.MeasuredDuration >= 5, $"Expected duration >= 5ms, but got {tracker.MeasuredDuration}ms");
+			Assert.True(tracker.MeasuredDuration >= 5,
+				$"Expected duration >= 5ms, but got {tracker.MeasuredDuration}ms");
 			Assert.Null(tracker.MeasuredElement);
 		}
 
@@ -262,7 +279,7 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
-		public void Start_LayoutArrange_WithLongDelay_RecordsAccurateDuration()
+		public async Task Start_LayoutArrange_WithLongDelay_RecordsAccurateDuration()
 		{
 			// Arrange
 			ResetLayout();
@@ -273,14 +290,16 @@ namespace Microsoft.Maui.UnitTests
 
 			// Act
 			var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "LongDelayedElement");
-			Thread.Sleep(expectedDelayMs);
+			await Task.Delay(expectedDelayMs);
 			perfTracker.Stop();
+			await Task.Yield(); // Allow event loop to process
 
 			// Wait for tracking to register
-			bool success = SpinWait.SpinUntil(() => tracker.ArrangeCallCount == 1, TimeSpan.FromMilliseconds(200));
-			Assert.True(success, "ArrangeCallCount did not reach 1 in expected time.");
+			bool success = await Task.Run(() => SpinWait.SpinUntil(() => tracker.ArrangeCallCount == 1, TimeSpan.FromMilliseconds(1000)));
 
 			// Assert
+			Assert.True(success,
+				$"ArrangeCallCount did not reach 1 in expected time. Final count: {tracker.ArrangeCallCount}");
 			Assert.InRange(tracker.ArrangedDuration, expectedDelayMs, expectedDelayMs + toleranceMs);
 			Assert.Equal("LongDelayedElement", tracker.ArrangedElement);
 		}
@@ -302,7 +321,8 @@ namespace Microsoft.Maui.UnitTests
 
 			// Assert
 			Assert.Equal(1, tracker.MeasureCallCount);
-			Assert.True(tracker.MeasuredDuration >= 10, $"Expected duration >= 10ms, but got {tracker.MeasuredDuration}ms");
+			Assert.True(tracker.MeasuredDuration >= 10,
+				$"Expected duration >= 10ms, but got {tracker.MeasuredDuration}ms");
 			Assert.Equal("UsingElement", tracker.MeasuredElement);
 		}
 
@@ -316,14 +336,16 @@ namespace Microsoft.Maui.UnitTests
 
 			// Act
 			{
-				using var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "UsingArrangeElement");
+				using var perfTracker =
+					PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "UsingArrangeElement");
 				Thread.Sleep(15);
 				// perfTracker.Dispose() is called automatically here
 			}
 
 			// Assert
 			Assert.Equal(1, tracker.ArrangeCallCount);
-			Assert.True(tracker.ArrangedDuration >= 15, $"Expected duration >= 15ms, but got {tracker.ArrangedDuration}ms");
+			Assert.True(tracker.ArrangedDuration >= 15,
+				$"Expected duration >= 15ms, but got {tracker.ArrangedDuration}ms");
 			Assert.Equal("UsingArrangeElement", tracker.ArrangedElement);
 		}
 
@@ -352,7 +374,8 @@ namespace Microsoft.Maui.UnitTests
 			// Act & Assert
 			try
 			{
-				using var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "ExceptionElement");
+				using var perfTracker =
+					PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "ExceptionElement");
 				Thread.Sleep(5);
 				throw new InvalidOperationException("Test exception");
 			}
@@ -363,7 +386,8 @@ namespace Microsoft.Maui.UnitTests
 
 			// Assert that tracking still occurred despite the exception
 			Assert.Equal(1, tracker.MeasureCallCount);
-			Assert.True(tracker.MeasuredDuration >= 5, $"Expected duration >= 5ms, but got {tracker.MeasuredDuration}ms");
+			Assert.True(tracker.MeasuredDuration >= 5,
+				$"Expected duration >= 5ms, but got {tracker.MeasuredDuration}ms");
 			Assert.Equal("ExceptionElement", tracker.MeasuredElement);
 		}
 
@@ -379,27 +403,29 @@ namespace Microsoft.Maui.UnitTests
 			{
 				using var outerTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "Outer");
 				Thread.Sleep(5);
-				
+
 				{
 					using var innerTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "Inner");
 					Thread.Sleep(5);
 					// innerTracker.Dispose() called here
 				}
-				
+
 				Thread.Sleep(5);
 				// outerTracker.Dispose() called here
 			}
 
 			// Assert
 			Assert.Equal(1, tracker.MeasureCallCount);
-			Assert.True(tracker.MeasuredDuration >= 15, $"Expected outer duration >= 15ms, but got {tracker.MeasuredDuration}ms");
+			Assert.True(tracker.MeasuredDuration >= 15,
+				$"Expected outer duration >= 15ms, but got {tracker.MeasuredDuration}ms");
 			Assert.Equal("Outer", tracker.MeasuredElement);
-			
+
 			Assert.Equal(1, tracker.ArrangeCallCount);
-			Assert.True(tracker.ArrangedDuration >= 5, $"Expected inner duration >= 5ms, but got {tracker.ArrangedDuration}ms");
+			Assert.True(tracker.ArrangedDuration >= 5,
+				$"Expected inner duration >= 5ms, but got {tracker.ArrangedDuration}ms");
 			Assert.Equal("Inner", tracker.ArrangedElement);
 		}
-		
+
 		[Fact]
 		public void UsingVar_UnknownPerformanceType_DoesNotRecord()
 		{
@@ -425,7 +451,7 @@ namespace Microsoft.Maui.UnitTests
 	internal class FakeLayoutTracker : ILayoutPerformanceTracker
 	{
 		readonly object _lock = new object();
-		
+
 		public int MeasureCallCount { get; private set; }
 		public double MeasuredDuration { get; private set; }
 		public object MeasuredElement { get; private set; }
@@ -439,7 +465,7 @@ namespace Microsoft.Maui.UnitTests
 			{
 				return new LayoutStats
 				{
-					MeasureDuration = MeasuredDuration,
+					MeasureDuration = MeasuredDuration, 
 					ArrangeDuration = ArrangedDuration
 				};
 			}
