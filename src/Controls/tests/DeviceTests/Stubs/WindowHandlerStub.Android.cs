@@ -17,6 +17,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			[nameof(IWindow.Content)] = MapContent
 		};
 
+		public static CommandMapper<IWindow, IWindowHandler> CommandMapper = new(ElementCommandMapper)
+		{
+			[nameof(IWindow.RequestDisplayDensity)] = WindowHandler.MapRequestDisplayDensity,
+		};
+
 		public AView PlatformViewUnderTest { get; private set; }
 
 		void UpdateContent()
@@ -50,7 +55,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 
 		public WindowHandlerStub()
-			: base(WindowMapper)
+			: base(WindowMapper, CommandMapper)
 		{
 		}
 
