@@ -25,19 +25,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			bool _debuggerinitialstate;
+			bool enableDiagnosticsInitialState;
 
 			[SetUp]
 			public void Setup()
 			{
-				_debuggerinitialstate = DebuggerHelper._mockDebuggerIsAttached;
-				DebuggerHelper._mockDebuggerIsAttached = true;
+				enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
+				RuntimeFeature.EnableMauiDiagnostics = true;
 			}
 
 			[TearDown]
 			public void TearDown()
 			{
-				DebuggerHelper._mockDebuggerIsAttached = _debuggerinitialstate;
+				RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 				VisualDiagnostics.VisualTreeChanged -= OnVTChanged;
 			}
 
