@@ -13,5 +13,5 @@ public class PickerClosedEventArgs : EventArgs
 	/// <value>
 	/// A static readonly instance of PickerClosedEventArgs that can be reused to avoid unnecessary object allocation.
 	/// </value>
-	public new static readonly PickerClosedEventArgs Empty = new();
+	internal new static readonly PickerClosedEventArgs Empty = new();
 }

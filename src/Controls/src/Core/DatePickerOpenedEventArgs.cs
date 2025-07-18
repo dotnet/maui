@@ -13,5 +13,5 @@ public class DatePickerOpenedEventArgs : EventArgs
 	/// <value>
 	/// A static readonly instance of DatePickerOpenedEventArgs that can be reused to avoid unnecessary object allocation.
 	/// </value>
-	public new static readonly DatePickerOpenedEventArgs Empty = new();
+	internal new static readonly DatePickerOpenedEventArgs Empty = new();
 }

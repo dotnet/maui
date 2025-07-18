@@ -13,5 +13,5 @@ public class TimePickerClosedEventArgs : EventArgs
 	/// <value>
 	/// A static readonly instance of TimePickerClosedEventArgs that can be reused to avoid unnecessary object allocation.
 	/// </value>
-	public new static readonly TimePickerClosedEventArgs Empty = new();
+	internal new static readonly TimePickerClosedEventArgs Empty = new();
 }
