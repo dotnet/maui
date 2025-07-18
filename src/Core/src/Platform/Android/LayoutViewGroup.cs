@@ -4,6 +4,7 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
 using Rectangle = Microsoft.Maui.Graphics.Rect;
@@ -96,6 +97,8 @@ namespace Microsoft.Maui.Platform
 			SetMeasuredDimension((int)platformWidth, (int)platformHeight);
 		}
 
+
+
 		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
 		// If you make changes here please review if those changes should also
 		// apply to ViewHandlerExtensions.MeasureVirtualView
@@ -120,6 +123,22 @@ namespace Microsoft.Maui.Platform
 			{
 				ClipBounds = null;
 			}
+		}
+
+		protected override void OnAttachedToWindow()
+		{
+			base.OnAttachedToWindow();
+			
+			// Set up modern window insets handling when attached to window
+			AndroidSafeAreaHelper.SetupWindowInsetsHandling(this, CrossPlatformLayout);
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			base.OnDetachedFromWindow();
+			
+			// Clean up insets listener when detached
+			ViewCompat.SetOnApplyWindowInsetsListener(this, null);
 		}
 
 		public override bool OnTouchEvent(MotionEvent? e)

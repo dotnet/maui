@@ -5,7 +5,7 @@
 	/// </summary>
 	/// <remarks>
 	/// This interface may be applied to any ILayout or IContentView.
-	/// This interface is only recognized on the iOS/Mac Catalyst platforms; other platforms will ignore it.
+	/// This interface is recognized on iOS/Mac Catalyst and Android platforms.
 	/// </remarks>
 	public interface ISafeAreaView
 	{
