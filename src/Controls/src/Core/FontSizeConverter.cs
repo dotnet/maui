@@ -1,4 +1,4 @@
-#nullable disable
+#nullable enable
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -10,15 +10,15 @@ namespace Microsoft.Maui.Controls
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.FontSizeTypeConverter")]
 	public class FontSizeConverter : TypeConverter, IExtendedTypeConverter
 	{
-		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string);
 
-		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 			=> destinationType == typeof(string);
 
-		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
+		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider? serviceProvider)
 		{
-			if (value != null)
+			if (!string.IsNullOrWhiteSpace(value))
 			{
 				value = value.Trim();
 				if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double size))
@@ -54,23 +54,23 @@ namespace Microsoft.Maui.Controls
 
 				if (namedSize.HasValue)
 				{
-					var type = serviceProvider.GetService(typeof(IProvideValueTarget)) is IProvideValueTarget valueTargetProvider ? valueTargetProvider.TargetObject.GetType() : typeof(Label);
-					return Device.GetNamedSize(namedSize.Value, type, false);
+					var type = serviceProvider?.GetService(typeof(IProvideValueTarget)) is IProvideValueTarget valueTargetProvider ? valueTargetProvider.TargetObject?.GetType() : typeof(Label);
+					return Device.GetNamedSize(namedSize.Value, type ?? typeof(Label), false);
 				}
 #pragma warning restore CS0612 // Type or member is obsolete
 			}
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(double)));
 		}
 
-		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
 		{
 			var strValue = value?.ToString();
 
-			if (strValue != null)
+			if (!string.IsNullOrWhiteSpace(strValue))
 			{
+				strValue = strValue.Trim();
 				if (double.TryParse(strValue, NumberStyles.Number, CultureInfo.InvariantCulture, out double size))
 					return size;
-				strValue = strValue.Trim();
 
 #pragma warning disable CS0612 // Type or member is obsolete
 				if (strValue.Equals(nameof(NamedSize.Default), StringComparison.Ordinal))
@@ -100,11 +100,11 @@ namespace Microsoft.Maui.Controls
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(double)));
 		}
 
-		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type? destinationType)
 		{
 			if (value is not double d)
 				throw new NotSupportedException();
-			return $"{d.ToString(CultureInfo.InvariantCulture)}";
+			return d.ToString(CultureInfo.InvariantCulture);
 		}
 	}
 }

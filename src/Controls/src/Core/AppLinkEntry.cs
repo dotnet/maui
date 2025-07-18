@@ -1,4 +1,4 @@
-#nullable disable
+#nullable enable
 using System;
 using System.Collections.Generic;
 
@@ -31,16 +31,16 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsLinkActiveProperty = BindableProperty.Create(nameof(IsLinkActive), typeof(bool), typeof(AppLinkEntry), false);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='AppLinkUri']/Docs/*" />
-		public Uri AppLinkUri
+		public Uri? AppLinkUri
 		{
-			get { return (Uri)GetValue(AppLinkUriProperty); }
+			get { return (Uri?)GetValue(AppLinkUriProperty); }
 			set { SetValue(AppLinkUriProperty, value); }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='Description']/Docs/*" />
-		public string Description
+		public string? Description
 		{
-			get { return (string)GetValue(DescriptionProperty); }
+			get { return (string?)GetValue(DescriptionProperty); }
 			set { SetValue(DescriptionProperty, value); }
 		}
 
@@ -58,22 +58,25 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='Thumbnail']/Docs/*" />
-		public ImageSource Thumbnail
+		public ImageSource? Thumbnail
 		{
-			get { return (ImageSource)GetValue(ThumbnailProperty); }
+			get { return (ImageSource?)GetValue(ThumbnailProperty); }
 			set { SetValue(ThumbnailProperty, value); }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='Title']/Docs/*" />
-		public string Title
+		public string? Title
 		{
-			get { return (string)GetValue(TitleProperty); }
+			get { return (string?)GetValue(TitleProperty); }
 			set { SetValue(TitleProperty, value); }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='FromUri']/Docs/*" />
 		public static AppLinkEntry FromUri(Uri uri)
 		{
+			if (uri is null)
+				throw new ArgumentNullException(nameof(uri));
+			
 			var appEntry = new AppLinkEntry();
 			appEntry.AppLinkUri = uri;
 			return appEntry;
@@ -82,7 +85,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='ToString']/Docs/*" />
 		public override string ToString()
 		{
-			return AppLinkUri.ToString();
+			return AppLinkUri?.ToString() ?? string.Empty;
 		}
 	}
 }

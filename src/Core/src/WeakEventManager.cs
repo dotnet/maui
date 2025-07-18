@@ -26,7 +26,7 @@ namespace Microsoft.Maui
 			where TEventArgs : EventArgs
 		{
 			if (IsNullOrEmpty(eventName))
-				throw new ArgumentNullException(nameof(eventName));
+				throw new ArgumentException("Event name cannot be null or empty.", nameof(eventName));
 
 			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
@@ -44,7 +44,7 @@ namespace Microsoft.Maui
 		public void AddEventHandler(Delegate? handler, [CallerMemberName] string eventName = "")
 		{
 			if (IsNullOrEmpty(eventName))
-				throw new ArgumentNullException(nameof(eventName));
+				throw new ArgumentException("Event name cannot be null or empty.", nameof(eventName));
 
 			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
@@ -111,7 +111,7 @@ namespace Microsoft.Maui
 			where TEventArgs : EventArgs
 		{
 			if (IsNullOrEmpty(eventName))
-				throw new ArgumentNullException(nameof(eventName));
+				throw new ArgumentException("Event name cannot be null or empty.", nameof(eventName));
 
 			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
@@ -129,7 +129,7 @@ namespace Microsoft.Maui
 		public void RemoveEventHandler(Delegate? handler, [CallerMemberName] string eventName = "")
 		{
 			if (IsNullOrEmpty(eventName))
-				throw new ArgumentNullException(nameof(eventName));
+				throw new ArgumentException("Event name cannot be null or empty.", nameof(eventName));
 
 			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
@@ -200,7 +200,7 @@ namespace Microsoft.Maui
 
 			public override bool Equals(object? obj) => obj is Subscription other && Equals(other);
 
-			public override int GetHashCode() => Subscriber?.GetHashCode() ?? 0 ^ Handler.GetHashCode();
+			public override int GetHashCode() => HashCode.Combine(Subscriber?.GetHashCode() ?? 0, Handler.GetHashCode());
 		}
 	}
 }
