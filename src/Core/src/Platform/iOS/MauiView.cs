@@ -15,12 +15,6 @@ namespace Microsoft.Maui.Platform
 	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 	{
 		/// <summary>
-		/// Cached result of whether the current iOS version supports safe area insets.
-		/// This is determined once and reused across all MauiView instances for performance.
-		/// </summary>
-		static bool? _respondsToSafeArea;
-
-		/// <summary>
 		/// Flag indicating that parent views should be invalidated when this view is moved to a window.
 		/// This is used to trigger layout updates when the view hierarchy changes.
 		/// </summary>
