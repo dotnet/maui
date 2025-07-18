@@ -11,7 +11,7 @@ namespace UITest.Appium
 {
 	public static class HelperExtensions
 	{
-		static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
+		static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
 
 		/// <summary>
 		/// For desktop, this will perform a mouse click on the target element.
