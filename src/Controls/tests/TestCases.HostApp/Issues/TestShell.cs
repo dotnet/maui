@@ -1,4 +1,6 @@
-﻿namespace Maui.Controls.Sample.Issues
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Maui.Controls.Sample.Issues
 {
 	public abstract class TestShell : Shell
 	{
@@ -158,7 +160,7 @@
 		public ContentPage CreateContentPage(string shellItemTitle = null)
 			=> CreateContentPage<ShellItem, ShellSection>(shellItemTitle);
 
-		public ContentPage CreateContentPage<TShellItem, TShellSection>(string shellItemTitle = null)
+		public ContentPage CreateContentPage<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TShellItem, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TShellSection>(string shellItemTitle = null)
 			where TShellItem : ShellItem
 			where TShellSection : ShellSection
 		{

@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		bool _hasDoneLayout;
 		Size _lastLayoutSize = new Size(-1, -1);
 
-		private protected bool UseCompatibilityMode {get; }
+		private protected bool UseCompatibilityMode { get; }
 
 		protected Layout()
 		{
@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		[Obsolete("Use the Arrange method on child instead.")]
 		public static void LayoutChildIntoBoundingRegion(VisualElement child, Rect region)
 		{
-			if(child?.Parent is Layout layout && !layout.UseCompatibilityMode)
+			if (child?.Parent is Layout layout && !layout.UseCompatibilityMode)
 			{
 				return;
 			}
@@ -298,7 +298,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			if (!UseCompatibilityMode)
 				return;
-				
+
 			if (!InternalChildren.Contains(view) || InternalChildren.First() == view)
 			{
 				return;
@@ -474,7 +474,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				return;
 			}
-			
+
 			_hasDoneLayout = true;
 
 			if (!ShouldLayoutChildren())
@@ -536,7 +536,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		internal static void LayoutChildIntoBoundingRegion(View child, Rect region, SizeRequest childSizeRequest)
 #pragma warning restore CS0618 // Type or member is obsolete
 		{
-			if(child?.Parent is Layout layout && !layout.UseCompatibilityMode)
+			if (child?.Parent is Layout layout && !layout.UseCompatibilityMode)
 			{
 				return;
 			}
@@ -600,7 +600,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			base.OnIsVisibleChanged(oldValue, newValue);
 
-			if(!UseCompatibilityMode)
+			if (!UseCompatibilityMode)
 			{
 				return;
 			}
@@ -616,7 +616,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		void InternalChildrenOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if(!UseCompatibilityMode)
+			if (!UseCompatibilityMode)
 			{
 				return;
 			}
@@ -672,14 +672,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			base.OnChildRemoved(child, oldLogicalIndex);
-			
+
 			if (!UseCompatibilityMode)
 				InternalChildren.Remove(child);
 		}
 
 		void OnInternalAdded(View view)
 		{
-			if(!UseCompatibilityMode)
+			if (!UseCompatibilityMode)
 			{
 				return;
 			}
@@ -696,7 +696,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		void OnInternalRemoved(View view, int oldIndex)
 		{
-			if(!UseCompatibilityMode)
+			if (!UseCompatibilityMode)
 			{
 				return;
 			}
@@ -710,7 +710,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		bool ShouldLayoutChildren()
 		{
-			if(!UseCompatibilityMode)
+			if (!UseCompatibilityMode)
 			{
 				return false;
 			}

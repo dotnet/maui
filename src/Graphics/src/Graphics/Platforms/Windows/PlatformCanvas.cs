@@ -776,17 +776,11 @@ namespace Microsoft.Maui.Graphics.Platform
 					_effectContext.Dispose();
 					_effectContext = null;
 
-					if (_shadowEffect != null)
-					{
-						_shadowEffect.Dispose();
-						_shadowEffect = null;
-					}
+					_shadowEffect?.Dispose();
+					_shadowEffect = null;
 
-					if (_blurEffect != null)
-					{
-						_blurEffect.Dispose();
-						_blurEffect = null;
-					}
+					_blurEffect?.Dispose();
+					_blurEffect = null;
 				}
 				else
 				{

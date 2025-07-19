@@ -218,7 +218,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 		}
-		
+
 		//src/Compatibility/Core/tests/Android/TranslationTests.cs
 		[Fact]
 		[Description("The Translation property of a Button should match with native Translation")]

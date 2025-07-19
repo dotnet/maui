@@ -13,6 +13,8 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using System.Diagnostics.CodeAnalysis;
+
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
@@ -306,7 +308,7 @@ namespace Microsoft.Maui.DeviceTests
 		/// This is more complicated as we have different logic depending on the view being focused or not.
 		/// When we attach to the UI, there is only a single control so sometimes it cannot unfocus.
 		/// </summary>
-		public async Task AttachAndRunFocusAffectedControl<TType, THandler>(TType control, Func<THandler, Task> action)
+		public async Task AttachAndRunFocusAffectedControl<TType, [DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(TType control, Func<THandler, Task> action)
 			where TType : IView, new()
 			where THandler : class, IPlatformViewHandler, IElementHandler, new()
 		{
