@@ -553,7 +553,7 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("Use ArrangeOverride instead")]
 		protected void UpdateChildrenLayout()
 		{
-			
+
 		}
 
 		internal void OnAppearing(Action action)
