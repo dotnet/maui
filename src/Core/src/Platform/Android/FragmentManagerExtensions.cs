@@ -118,7 +118,9 @@ namespace Microsoft.Maui.Platform
 			public override void OnFragmentDestroyed(FragmentManager fm, Fragment f)
 			{
 				base.OnFragmentDestroyed(fm, f);
+				var resume = _onResume;
 				Disconnect();
+				resume?.Invoke(fm);
 			}
 
 			public override void OnFragmentResumed(FragmentManager fm, Fragment f)
