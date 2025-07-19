@@ -353,22 +353,67 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var shellToolbarItems = _context?.Shell?.ToolbarItems;
 			List<UIBarButtonItem>? primaries = null;
+			List<UIMenuElement>? secondaries = null;
+
 			if (Page.ToolbarItems.Count > 0) // Display toolbar items defined on the current page
 			{
 				foreach (var item in System.Linq.Enumerable.OrderBy(Page.ToolbarItems, x => x.Priority))
 				{
-					(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(false, true));
+					if (item.Order == ToolbarItemOrder.Secondary)
+					{
+						(secondaries ??= []).Add(item.ToSecondarySubToolbarItem().PlatformAction);
+					}
+					else
+					{
+						(primaries ??= []).Add(item.ToUIBarButtonItem());
+					}
 				}
 			}
 			else if (shellToolbarItems != null && shellToolbarItems.Count > 0) // If the page has no toolbar items use the ones defined for the shell
 			{
 				foreach (var item in System.Linq.Enumerable.OrderBy(shellToolbarItems, x => x.Priority))
 				{
-					(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(false, true));
+					if (item.Order == ToolbarItemOrder.Secondary)
+					{
+						(secondaries ??= []).Add(item.ToSecondarySubToolbarItem().PlatformAction);
+					}
+					else
+					{
+						(primaries ??= []).Add(item.ToUIBarButtonItem());
+					}
 				}
 			}
 
-			primaries?.Reverse();
+			if (primaries is not null && primaries.Count > 0)
+			{
+				primaries.Reverse();
+			}
+
+			if (secondaries is not null && secondaries.Count > 0)
+			{
+				UIImage? secondaryIcon = null;
+				if (ViewController?.ParentViewController is ShellSectionRenderer ssr)
+				{
+					secondaryIcon = ssr.GetSecondaryToolbarMenuButtonImage();
+				}
+				else
+				{
+					// Shouldn't happen, but just in case let's add a fallback to the default icon
+					secondaryIcon = UIImage.GetSystemImage("ellipsis.circle");
+				}
+
+				var menu = UIMenu.Create(string.Empty, null, UIMenuIdentifier.Edit, UIMenuOptions.DisplayInline, secondaries.ToArray());
+				var menuButton = new UIBarButtonItem(secondaryIcon, menu)
+				{
+					AccessibilityIdentifier = "SecondaryToolbarMenuButton"
+				};
+
+				// Since we are adding secondary items under a primary button,
+				// make sure that primaries is initialized
+				primaries ??= [];
+
+				primaries.Insert(0, menuButton);
+			}
 
 			NavigationItem.SetRightBarButtonItems(primaries is null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
 
