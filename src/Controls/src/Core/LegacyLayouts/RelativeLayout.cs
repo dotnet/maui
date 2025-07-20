@@ -11,6 +11,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
+	[Obsolete("RelativeLayout is obsolete. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts", true)]
 #pragma warning disable CS0618 // Type or member is obsolete
 	public class RelativeLayout : Layout<View>, IElementConfiguration<RelativeLayout>
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -199,6 +200,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			base.OnRemoved(view);
 		}
 
+		[Obsolete("Use MeasureOverride instead", true)]
 #pragma warning disable CS0672 // Member overrides obsolete member
 #pragma warning disable CS0618 // Type or member is obsolete
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)

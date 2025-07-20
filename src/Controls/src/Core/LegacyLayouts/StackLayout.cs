@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
-	[Obsolete("Use Microsoft.Maui.Controls.StackLayout instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts")]
+	[Obsolete("Use Microsoft.Maui.Controls.StackLayout instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts", true)]
 	public class StackLayout : Layout<View>, IElementConfiguration<StackLayout>, IView
 	{
 		/// <summary>Bindable property for <see cref="Orientation"/>.</summary>
@@ -76,6 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 #pragma warning restore CS0672 // Member overrides obsolete member
 
+		[Obsolete("Use MeasureOverride instead", true)]
 #pragma warning disable CS0672 // Member overrides obsolete member
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 #pragma warning restore CS0672 // Member overrides obsolete member
