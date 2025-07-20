@@ -27,7 +27,23 @@ namespace Microsoft.Maui.Controls
 			{
 				if (view.IsLoaded())
 				{
+#if ANDROID
+					// On Android, during navigation, fragments can be reused which means
+					// the normal ViewAttachedToWindow events might not fire. This fixes
+					// issue #29414 where navigating back to a page doesn't trigger the Loaded event.
+					// If we have subscribers to the loaded event and the platform view is loaded,
+					// we should force the loaded event to fire.
+					if (_loaded is not null)
+					{
+						SendLoaded(false, true);
+					}
+					else
+					{
+						SendLoaded(false);
+					}
+#else
 					SendLoaded(false);
+#endif
 
 					// If SendLoaded caused the unloaded tokens to wire up
 					_loadedUnloadedToken?.Dispose();
