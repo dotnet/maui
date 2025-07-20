@@ -291,6 +291,8 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
+		App.WaitForElement("CultureFormatLabel");
+		App.Tap("CultureFormatLabel");
 		VerifyScreenshot();
 	}
 #endif
@@ -360,6 +362,8 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
+		App.WaitForElement("CultureFormatLabel");
+		App.Tap("CultureFormatLabel");
 		VerifyScreenshot();
 	}
 
@@ -382,6 +386,8 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
+		App.WaitForElement("CultureFormatLabel");
+		App.Tap("CultureFormatLabel");
 		VerifyScreenshot();
 	}
 
@@ -502,6 +508,8 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
+		App.WaitForElement("CultureFormatLabel");
+		App.Tap("CultureFormatLabel");
 		VerifyScreenshot();
 	}
 #endif
