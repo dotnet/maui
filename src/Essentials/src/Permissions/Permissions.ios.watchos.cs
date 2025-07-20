@@ -199,19 +199,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 				if (OperatingSystem.IsIOSVersionAtLeast(11, 0) || OperatingSystem.IsWatchOSVersionAtLeast(4, 0))
 				{
-#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
-					switch (CMMotionActivityManager.AuthorizationStatus)
-					{
-						case CMAuthorizationStatus.Authorized:
-							return PermissionStatus.Granted;
-						case CMAuthorizationStatus.Denied:
-							return PermissionStatus.Denied;
-						case CMAuthorizationStatus.NotDetermined:
-							return PermissionStatus.Unknown;
-						case CMAuthorizationStatus.Restricted:
-							return PermissionStatus.Restricted;
-					}
-#pragma warning restore CA1416
+					return ConvertAuthorizationStatus(CMMotionActivityManager.AuthorizationStatus);
 				}
 
 				return PermissionStatus.Unknown;
@@ -230,10 +218,23 @@ namespace Microsoft.Maui.ApplicationModel
 				catch (Exception ex)
 				{
 					Debug.WriteLine("Unable to query activity manager: " + ex.Message);
-					return PermissionStatus.Denied;
+					// Fall back to checking the authorization status directly
+					return ConvertAuthorizationStatus(CMMotionActivityManager.AuthorizationStatus);
 				}
 
 				return PermissionStatus.Unknown;
+			}
+
+			private static PermissionStatus ConvertAuthorizationStatus(CMAuthorizationStatus status)
+			{
+				return status switch
+				{
+					CMAuthorizationStatus.Authorized => PermissionStatus.Granted,
+					CMAuthorizationStatus.Denied => PermissionStatus.Denied,
+					CMAuthorizationStatus.NotDetermined => PermissionStatus.Unknown,
+					CMAuthorizationStatus.Restricted => PermissionStatus.Restricted,
+					_ => PermissionStatus.Unknown,
+				};
 			}
 		}
 
