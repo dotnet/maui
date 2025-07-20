@@ -1,1 +1,4 @@
 #nullable enable
+~override Microsoft.Maui.ApplicationModel.Permissions.Bluetooth.CheckStatusAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
+~override Microsoft.Maui.ApplicationModel.Permissions.Bluetooth.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
+~override Microsoft.Maui.ApplicationModel.Permissions.Bluetooth.RequiredInfoPlistKeys.get -> System.Func<System.Collections.Generic.IEnumerable<string>>
