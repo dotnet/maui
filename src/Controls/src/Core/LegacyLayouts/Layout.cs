@@ -526,7 +526,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				Rect newBound = ((VisualElement)LogicalChildrenInternal[i]).Bounds;
 				if (oldBound != newBound)
 				{
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 					LayoutChanged?.Invoke(this, EventArgs.Empty);
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete
 					return;
 				}
 			}
