@@ -10,7 +10,7 @@ using Flex = Microsoft.Maui.Layouts.Flex;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
-	[Obsolete("Use Microsoft.Maui.Controls.FlexLayout instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts")]
+	[Obsolete("Use Microsoft.Maui.Controls.FlexLayout instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts", true)]
 	public class FlexLayout : Layout<View>
 	{
 		/// <summary>Bindable property for <see cref="Direction"/>.</summary>
@@ -432,6 +432,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		bool _measuring;
+		[Obsolete("Use MeasureOverride instead", true)]
 #pragma warning disable CS0672 // Member overrides obsolete member
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
