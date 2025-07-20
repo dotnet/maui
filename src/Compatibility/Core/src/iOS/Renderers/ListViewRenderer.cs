@@ -180,11 +180,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (disposing)
 			{
-				if (_insetTracker != null)
-				{
-					_insetTracker.Dispose();
-					_insetTracker = null;
-				}
+				_insetTracker?.Dispose();
+				_insetTracker = null;
 
 				foreach (UIView subview in Subviews)
 					DisposeSubviews(subview);
@@ -196,34 +193,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
 				}
 
-				if (_dataSource != null)
-				{
-					_dataSource.Dispose();
-					_dataSource = null;
-				}
+				_dataSource?.Dispose();
+				_dataSource = null;
 
-				if (_tableViewController != null)
-				{
-					_tableViewController.Dispose();
-					_tableViewController = null;
-				}
+				_tableViewController?.Dispose();
+				_tableViewController = null;
 
-				if (_headerRenderer != null)
-				{
-					_headerRenderer.Element?.DisposeModalAndChildRenderers();
-					_headerRenderer = null;
-				}
-				if (_footerRenderer != null)
-				{
-					_footerRenderer.Element?.DisposeModalAndChildRenderers();
-					_footerRenderer = null;
-				}
+				_headerRenderer?.Element?.DisposeModalAndChildRenderers();
+				_headerRenderer = null;
+				_footerRenderer?.Element?.DisposeModalAndChildRenderers();
+				_footerRenderer = null;
 
-				if (_backgroundUIView != null)
-				{
-					_backgroundUIView.Dispose();
-					_backgroundUIView = null;
-				}
+				_backgroundUIView?.Dispose();
+				_backgroundUIView = null;
 
 				var headerView = ListView?.HeaderElement as VisualElement;
 				if (headerView != null)
