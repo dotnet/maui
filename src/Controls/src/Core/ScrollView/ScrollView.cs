@@ -12,9 +12,9 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete
 	{
 		#region IScrollViewController
 
