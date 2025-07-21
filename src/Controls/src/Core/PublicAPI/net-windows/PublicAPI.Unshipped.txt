@@ -83,3 +83,7 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~Microsoft.Maui.Controls.Toolbar.BackButtonAccessibilityLabel.set -> void
 static Microsoft.Maui.Controls.Toolbar.MapBackButtonAccessibilityLabel(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
 static Microsoft.Maui.Controls.Toolbar.MapBackButtonAccessibilityLabel(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+Microsoft.Maui.Controls.BoxView.~BoxView() -> void
+~Microsoft.Maui.Controls.BoxView.Fill.get -> Microsoft.Maui.Controls.Brush
+~Microsoft.Maui.Controls.BoxView.Fill.set -> void
+~static readonly Microsoft.Maui.Controls.BoxView.FillProperty -> Microsoft.Maui.Controls.BindableProperty
