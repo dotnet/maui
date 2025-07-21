@@ -102,7 +102,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
             Assert.That(pane2Y, Is.GreaterThan(pane1Y), "Pane2 should be below Pane1 in Wide mode");
 
-            App.WaitForElement("CurrentModeLabel").Equals("Wide Mode");
+            Assert.That(App.WaitForElement("CurrentModeLabel").GetText(), Is.EqualTo("Wide Mode"));
         }
 
          [Test]
