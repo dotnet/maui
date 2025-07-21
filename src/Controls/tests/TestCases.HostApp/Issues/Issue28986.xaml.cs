@@ -6,17 +6,17 @@ public partial class Issue28986 : ContentPage
 	public Issue28986()
 	{
 		InitializeComponent();
-		// Initialize page-level controls (start with all Default)
-		PageLeftPicker.SelectedIndex = 0;   // Default
-		PageTopPicker.SelectedIndex = 0;    // Default
-		PageRightPicker.SelectedIndex = 0;  // Default
-		PageBottomPicker.SelectedIndex = 0; // Default
+		// Initialize page-level controls (start with all None)
+		PageLeftPicker.SelectedIndex = 0;   // None
+		PageTopPicker.SelectedIndex = 0;    // None
+		PageRightPicker.SelectedIndex = 0;  // None
+		PageBottomPicker.SelectedIndex = 0; // None
 		
-		// Initialize grid-level controls (start with all Default)
-		GridLeftPicker.SelectedIndex = 0;   // Default
-		GridTopPicker.SelectedIndex = 0;    // Default
-		GridRightPicker.SelectedIndex = 0;  // Default
-		GridBottomPicker.SelectedIndex = 0; // Default
+		// Initialize grid-level controls (start with all None)
+		GridLeftPicker.SelectedIndex = 0;   // None
+		GridTopPicker.SelectedIndex = 0;    // None
+		GridRightPicker.SelectedIndex = 0;  // None
+		GridBottomPicker.SelectedIndex = 0; // None
 		
 		UpdateSafeAreaSettings();
 	}
@@ -29,19 +29,19 @@ public partial class Issue28986 : ContentPage
 
 	private void OnPageResetDefaultClicked(object sender, EventArgs e)
 	{
-		PageLeftPicker.SelectedIndex = 0;   // Default
-		PageTopPicker.SelectedIndex = 0;    // Default
-		PageRightPicker.SelectedIndex = 0;  // Default
-		PageBottomPicker.SelectedIndex = 0; // Default
+		PageLeftPicker.SelectedIndex = 0;   // None
+		PageTopPicker.SelectedIndex = 0;    // None
+		PageRightPicker.SelectedIndex = 0;  // None
+		PageBottomPicker.SelectedIndex = 0; // None
 		UpdateSafeAreaSettings();
 	}
 
 	private void OnPageResetNoneClicked(object sender, EventArgs e)
 	{
-		PageLeftPicker.SelectedIndex = 2;   // None
-		PageTopPicker.SelectedIndex = 2;    // None
-		PageRightPicker.SelectedIndex = 2;  // None
-		PageBottomPicker.SelectedIndex = 2; // None
+		PageLeftPicker.SelectedIndex = 0;   // None
+		PageTopPicker.SelectedIndex = 0;    // None
+		PageRightPicker.SelectedIndex = 0;  // None
+		PageBottomPicker.SelectedIndex = 0; // None
 		UpdateSafeAreaSettings();
 	}
 
@@ -62,19 +62,19 @@ public partial class Issue28986 : ContentPage
 
 	private void OnGridResetDefaultClicked(object sender, EventArgs e)
 	{
-		GridLeftPicker.SelectedIndex = 0;   // Default
-		GridTopPicker.SelectedIndex = 0;    // Default
-		GridRightPicker.SelectedIndex = 0;  // Default
-		GridBottomPicker.SelectedIndex = 0; // Default
+		GridLeftPicker.SelectedIndex = 0;   // None
+		GridTopPicker.SelectedIndex = 0;    // None
+		GridRightPicker.SelectedIndex = 0;  // None
+		GridBottomPicker.SelectedIndex = 0; // None
 		UpdateSafeAreaSettings();
 	}
 
 	private void OnGridResetNoneClicked(object sender, EventArgs e)
 	{
-		GridLeftPicker.SelectedIndex = 2;   // None
-		GridTopPicker.SelectedIndex = 2;    // None
-		GridRightPicker.SelectedIndex = 2;  // None
-		GridBottomPicker.SelectedIndex = 2; // None
+		GridLeftPicker.SelectedIndex = 0;   // None
+		GridTopPicker.SelectedIndex = 0;    // None
+		GridRightPicker.SelectedIndex = 0;  // None
+		GridBottomPicker.SelectedIndex = 0; // None
 		UpdateSafeAreaSettings();
 	}
 
@@ -91,11 +91,11 @@ public partial class Issue28986 : ContentPage
 	{
 		return index switch
 		{
-			0 => SafeAreaRegions.Default,
-			1 => SafeAreaRegions.SoftInput,
-			2 => SafeAreaRegions.None,
+			0 => SafeAreaRegions.None,
+			1 => SafeAreaRegions.Keyboard,
+			2 => SafeAreaRegions.Container,
 			3 => SafeAreaRegions.All,
-			_ => SafeAreaRegions.Default
+			_ => SafeAreaRegions.None
 		};
 	}
 
@@ -117,11 +117,11 @@ public partial class Issue28986 : ContentPage
 			GetSafeAreaRegionsFromPickerIndex(GridBottomPicker.SelectedIndex)  // Bottom
 		);
 
-		// Apply SafeArea attached property to the ContentPage
-		this.SafeAreaIgnore = pageSafeAreaSettings;
+		// Apply SafeAreaEdges property to the ContentPage
+		this.SafeAreaEdges = pageSafeAreaSettings;
 
-		// Apply SafeArea attached property to the main content grid
-		ContentGrid.SafeAreaIgnore = gridSafeAreaSettings;
+		// Apply SafeAreaEdges property to the main content grid
+		ContentGrid.SafeAreaEdges = gridSafeAreaSettings;
 
 		// Update the display label
 		var pageSettingsText = $"Page - Left: {GetSafeAreaRegionsFromPickerIndex(PageLeftPicker.SelectedIndex)}, " +
@@ -191,8 +191,8 @@ public partial class Issue28986 : ContentPage
 		}
 
 		// Apply the optimized settings to test different syntax formats
-		this.SafeAreaIgnore = optimizedPageSettings;
-		ContentGrid.SafeAreaIgnore = optimizedGridSettings;
+		this.SafeAreaEdges = optimizedPageSettings;
+		ContentGrid.SafeAreaEdges = optimizedGridSettings;
 
 		// Update the label to show which syntax is being used
 		var pageSyntaxInfo = (pageLeft == pageTop && pageTop == pageRight && pageRight == pageBottom) ? " (1-value)" :

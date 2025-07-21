@@ -9,76 +9,76 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class SafeAreaTests : BaseTestFixture
 	{
 		[Fact]
-		public void GetIgnore_DefaultValue_ReturnsDefault()
+		public void GetEdges_DefaultValue_ReturnsDefault()
 		{
 			var layout = new Grid();
 			
-			var result = SafeAreaElement.GetIgnore(layout);
+			var result = layout.SafeAreaEdges;
 			
 			Assert.Equal(SafeAreaEdges.Default, result);
 		}
 
 		[Fact]
-		public void SetIgnore_SingleValue_AppliedCorrectly()
+		public void SetEdges_SingleValue_AppliedCorrectly()
 		{
 			var layout = new Grid();
 			var value = SafeAreaEdges.All;
 			
-			SafeAreaElement.SetIgnore(layout, value);
-			var result = SafeAreaElement.GetIgnore(layout);
+			layout.SafeAreaEdges = value;
+			var result = layout.SafeAreaEdges;
 			
 			Assert.Equal(value, result);
 		}
 
 		[Fact]
-		public void GetIgnoreForEdge_UniformValue_AppliesAllEdges()
+		public void GetEdgeValue_UniformValue_AppliesAllEdges()
 		{
 			var layout = new Grid();
-			SafeAreaElement.SetIgnore(layout, SafeAreaEdges.All);
+			layout.SafeAreaEdges = SafeAreaEdges.All;
 			
-			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetIgnoreForEdge(layout, 0)); // Left
-			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetIgnoreForEdge(layout, 1)); // Top
-			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetIgnoreForEdge(layout, 2)); // Right
-			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetIgnoreForEdge(layout, 3)); // Bottom
+			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetEdgeValue(layout, 0)); // Left
+			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetEdgeValue(layout, 1)); // Top
+			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetEdgeValue(layout, 2)); // Right
+			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetEdgeValue(layout, 3)); // Bottom
 		}
 
 		[Fact]
-		public void GetIgnoreForEdge_TwoValues_AppliesCorrectly()
+		public void GetEdgeValue_TwoValues_AppliesCorrectly()
 		{
 			var layout = new Grid();
-			SafeAreaElement.SetIgnore(layout, new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None));
+			layout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None);
 			
-			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetIgnoreForEdge(layout, 0)); // Left
-			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetIgnoreForEdge(layout, 1)); // Top
-			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetIgnoreForEdge(layout, 2)); // Right
-			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetIgnoreForEdge(layout, 3)); // Bottom
+			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetEdgeValue(layout, 0)); // Left
+			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetEdgeValue(layout, 1)); // Top
+			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetEdgeValue(layout, 2)); // Right
+			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetEdgeValue(layout, 3)); // Bottom
 		}
 
 		[Fact]
-		public void GetIgnoreForEdge_FourValues_AppliesCorrectly()
+		public void GetEdgeValue_FourValues_AppliesCorrectly()
 		{
 			var layout = new Grid();
-			SafeAreaElement.SetIgnore(layout, new SafeAreaEdges(
+			layout.SafeAreaEdges = new SafeAreaEdges(
 				SafeAreaRegions.All,   // Left
 				SafeAreaRegions.None,  // Top
 				SafeAreaRegions.All,   // Right
 				SafeAreaRegions.None   // Bottom
-			));
+			);
 			
-			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetIgnoreForEdge(layout, 0)); // Left
-			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetIgnoreForEdge(layout, 1)); // Top
-			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetIgnoreForEdge(layout, 2)); // Right
-			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetIgnoreForEdge(layout, 3)); // Bottom
+			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetEdgeValue(layout, 0)); // Left
+			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetEdgeValue(layout, 1)); // Top
+			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetEdgeValue(layout, 2)); // Right
+			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetEdgeValue(layout, 3)); // Bottom
 		}
 
 		[Fact]
-		public void GetIgnoreForEdge_InvalidEdgeIndex_ReturnsNone()
+		public void GetEdgeValue_InvalidEdgeIndex_ReturnsNone()
 		{
 			var layout = new Grid();
-			SafeAreaElement.SetIgnore(layout, SafeAreaEdges.All);
+			layout.SafeAreaEdges = SafeAreaEdges.All;
 			
-			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetIgnoreForEdge(layout, -1));
-			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetIgnoreForEdge(layout, 4));
+			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetEdgeValue(layout, -1));
+			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetEdgeValue(layout, 4));
 		}
 
 		[Fact]
@@ -209,18 +209,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void Layout_IgnoreSafeAreaForEdge_UsesAttachedProperty()
+		public void Layout_IgnoreSafeAreaForEdge_UsesDirectProperty()
 		{
 			var layout = new Grid();
-			SafeAreaElement.SetIgnore(layout, new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None));
+			layout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All);
 
-			// Test via ISafeAreaPage interface
+			// Test via ISafeAreaPage interface - inverted logic: None means edge-to-edge (ignore), All means obey
 			var safeAreaView2 = (ISafeAreaPage)layout;
 			
-			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));  // Left = All
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top = None  
-			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2));  // Right = All
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom = None
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));  // Left = None (edge-to-edge, so ignore)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top = All (obey safe area, so don't ignore)  
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2));  // Right = None (edge-to-edge, so ignore)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom = All (obey safe area, so don't ignore)
 		}
 
 		[Fact]
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var layout = new Grid();
 			layout.IgnoreSafeArea = true; // Legacy property
 
-			// Should fall back to legacy property when no attached property is set
+			// Should fall back to legacy property when no direct property is set
 			var safeAreaView2 = (ISafeAreaPage)layout;
 			
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));
@@ -256,40 +256,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void Page_IgnoreSafeAreaForEdge_UsesAttachedProperty()
+		public void Page_IgnoreSafeAreaForEdge_UsesDirectProperty()
 		{
 			var page = new ContentPage();
-			SafeAreaElement.SetIgnore(page, new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None));
+			page.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All);
 
-			// Test via ISafeAreaPage interface
+			// Test via ISafeAreaPage interface - inverted logic: None means edge-to-edge (ignore), All means obey
 			var safeAreaView2 = (ISafeAreaPage)page;
 			
-			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));  // Left = All
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top = None  
-			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2));  // Right = All
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom = None
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));  // Left = None (edge-to-edge, so ignore)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top = All (obey safe area, so don't ignore)  
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2));  // Right = None (edge-to-edge, so ignore)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom = All (obey safe area, so don't ignore)
 		}
 
 		[Fact]
-		public void ContentView_IgnoreSafeAreaForEdge_FallsBackToDefaultWhenNoLegacySupport()
+		public void ContentView_IgnoreSafeAreaForEdge_DefaultsToNoneWhenNoPropertySet()
 		{
 			var contentView = new ContentView(); // ContentView implements ISafeAreaPage
 
-			// Should default to false when no attached property is set and no legacy support (default is now SafeAreaRegions.None)
+			// Should default to true (ignore) when no property is set since default is SafeAreaRegions.None (edge-to-edge)
 			var safeAreaView2 = (ISafeAreaPage)contentView;
 			
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0));
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1));
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2));
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3));
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(1));
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2));
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(3));
 		}
 
 		[Fact]
-		public void Page_IgnoreSafeAreaForEdge_DefaultsToAllWhenNoPropertySet()
+		public void Page_IgnoreSafeAreaForEdge_DefaultsToNoneForContentPage()
 		{
-			var page = new ContentPage(); // Page defaults to All when no property is explicitly set
+			var page = new ContentPage(); // ContentPage returns All when SafeAreaRegions.None is specified for better UX
 
-			// Should default to true for Page even though SafeArea default is None
+			// ContentPage has special logic - when SafeAreaRegions.None is specified, it returns All for better UX
 			var safeAreaView2 = (ISafeAreaPage)page;
 			
 			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));
@@ -309,12 +309,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			// Legacy approach: contentPage.On<iOS>().SetUseSafeArea(true);
-			// New approach: use SafeArea attached property
-			SafeAreaElement.SetIgnore(contentView, SafeAreaEdges.None); // Respect all safe areas
+			// New approach: use SafeAreaEdges property to obey all safe areas
+			contentView.SafeAreaEdges = SafeAreaEdges.All; // Obey all safe areas
 
 			var safeAreaView2 = (ISafeAreaPage)contentView;
 			
-			// All edges should respect safe area (false)
+			// All edges should obey safe area (false = don't ignore)
 			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0));
 			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1));
 			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2));
@@ -327,15 +327,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Common use case: ignore safe area for top and bottom edges only (e.g., for full-width background)
 			var stackLayout = new VerticalStackLayout();
 			
-			// Ignore safe area for top and bottom, respect for left and right
-			SafeAreaElement.SetIgnore(stackLayout, new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All));
+			// Edge-to-edge for top and bottom (None), obey for left and right (All)
+			stackLayout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None);
 
 			var safeAreaView2 = (ISafeAreaPage)stackLayout;
 			
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0)); // Left = None (respect)
-			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(1));  // Top = All (ignore)
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2)); // Right = None (respect)  
-			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(3));  // Bottom = All (ignore)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0)); // Left = All (obey safe area, so don't ignore)
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(1));  // Top = None (edge-to-edge, so ignore)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2)); // Right = All (obey safe area, so don't ignore)
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(3));  // Bottom = None (edge-to-edge, so ignore)
 		}
 
 		[Fact]
@@ -344,14 +344,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Test two-value shorthand: first value for left/right, second for top/bottom
 			var grid = new Grid();
 			
-			SafeAreaElement.SetIgnore(grid, new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None));
+			grid.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All);
 
 			var safeAreaView2 = (ISafeAreaPage)grid;
 			
-			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));  // Left = All  
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top = None
-			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2));  // Right = All
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom = None
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));  // Left = None (edge-to-edge, so ignore)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top = All (obey safe area, so don't ignore)
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2));  // Right = None (edge-to-edge, so ignore)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom = All (obey safe area, so don't ignore)
 		}
 
 		[Fact]
@@ -378,9 +378,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var converter = new SafeAreaEdgesTypeConverter();
 			
-			var result = (SafeAreaEdges)converter.ConvertFrom(null, null, "All,None");
+			var result = (SafeAreaEdges)converter.ConvertFrom(null, null, "None,Container");
 			
-			Assert.Equal(new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None), result);
+			Assert.Equal(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.Container), result);
 		}
 
 		[Fact]
@@ -388,9 +388,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var converter = new SafeAreaEdgesTypeConverter();
 			
-			var result = (SafeAreaEdges)converter.ConvertFrom(null, null, "None,All,None,All");
+			var result = (SafeAreaEdges)converter.ConvertFrom(null, null, "None,All,Container,Keyboard");
 			
-			Assert.Equal(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All), result);
+			Assert.Equal(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.Container, SafeAreaRegions.Keyboard), result);
 		}
 
 		[Fact]
@@ -408,18 +408,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var converter = new SafeAreaEdgesTypeConverter();
 			
 			Assert.Throws<FormatException>(() => 
-				converter.ConvertFrom(null, null, "All,None,All")); // 3 values not supported
+				converter.ConvertFrom(null, null, "None,Container,All")); // 3 values not supported
 		}
 
 		[Fact]
 		public void SafeAreaEdgesTypeConverter_ConvertToString()
 		{
 			var converter = new SafeAreaEdgesTypeConverter();
-			var edges = new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None);
+			var edges = new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.Container);
 			
 			var result = converter.ConvertTo(null, null, edges, typeof(string));
 			
-			Assert.Equal("All, None", result);
+			Assert.Equal("None, Container", result);
 		}
 
 		#region Stack Layout Automatic Safe Area Tests
@@ -429,29 +429,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var stackLayout = new HorizontalStackLayout();
 			
-			// Should behave like regular layout with default SafeAreaEdges.None (respect safe area)
+			// Should behave like regular layout with default SafeAreaEdges.None (edge-to-edge)
 			var safeAreaView2 = (ISafeAreaPage)stackLayout;
 			
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0)); // Left
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top  
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2)); // Right
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0)); // Left
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top  
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2)); // Right
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom
 		}
 
 		[Fact]
-		public void HorizontalStackLayout_RespectsAttachedProperty_RTL()
+		public void HorizontalStackLayout_RespectsDirectProperty_RTL()
 		{
 			var stackLayout = new HorizontalStackLayout();
 			stackLayout.FlowDirection = FlowDirection.RightToLeft;
-			SafeAreaElement.SetIgnore(stackLayout, new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.None, SafeAreaRegions.None));
+			stackLayout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.All, SafeAreaRegions.All);
 			
-			// Should respect SafeAreaElement.Ignore attached property
+			// Should respect SafeAreaEdges direct property
 			var safeAreaView2 = (ISafeAreaPage)stackLayout;
 			
-			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));   // Left (set to All)
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1));  // Top (set to None)
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2));  // Right (set to None)
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3));  // Bottom (set to None)
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));   // Left (set to None - edge-to-edge)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1));  // Top (set to All - obey)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2));  // Right (set to All - obey)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3));  // Bottom (set to All - obey)
 		}
 
 		[Fact]
@@ -459,13 +459,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var stackLayout = new VerticalStackLayout();
 			
-			// Should behave like regular layout with default SafeAreaEdges.None (respect safe area)
+			// Should behave like regular layout with default SafeAreaEdges.None (edge-to-edge)
 			var safeAreaView2 = (ISafeAreaPage)stackLayout;
 			
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0)); // Left
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top  
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2)); // Right
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0)); // Left
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top  
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2)); // Right
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom
 		}
 
 		[Fact]
@@ -473,29 +473,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var stackLayout = new StackLayout { Orientation = StackOrientation.Horizontal };
 			
-			// Should behave like regular layout with default SafeAreaEdges.None (respect safe area)
+			// Should behave like regular layout with default SafeAreaEdges.None (edge-to-edge)
 			var safeAreaView2 = (ISafeAreaPage)stackLayout;
 			
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0)); // Left
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top  
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2)); // Right
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0)); // Left
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top  
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2)); // Right
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom
 		}
 
 		[Fact]
-		public void StackLayout_HorizontalOrientation_RespectsAttachedProperty_RTL()
+		public void StackLayout_HorizontalOrientation_RespectsDirectProperty_RTL()
 		{
 			var stackLayout = new StackLayout { Orientation = StackOrientation.Horizontal };
 			stackLayout.FlowDirection = FlowDirection.RightToLeft;
-			SafeAreaElement.SetIgnore(stackLayout, new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.None, SafeAreaRegions.None));
+			stackLayout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.All, SafeAreaRegions.All);
 			
-			// Should respect SafeAreaElement.Ignore attached property
+			// Should respect SafeAreaEdges direct property
 			var safeAreaView2 = (ISafeAreaPage)stackLayout;
 			
-			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));   // Left (set to All)
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1));  // Top (set to None)
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2));  // Right (set to None)
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3));  // Bottom (set to None)
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0));   // Left (set to None - edge-to-edge)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1));  // Top (set to All - obey)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2));  // Right (set to All - obey)
+			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3));  // Bottom (set to All - obey)
 		}
 
 		[Fact]
@@ -503,13 +503,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var stackLayout = new StackLayout { Orientation = StackOrientation.Vertical };
 			
-			// Should behave like regular layout with default SafeAreaEdges.None (respect safe area)
+			// Should behave like regular layout with default SafeAreaEdges.None (edge-to-edge)
 			var safeAreaView2 = (ISafeAreaPage)stackLayout;
 			
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(0)); // Left
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top  
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(2)); // Right
-			Assert.False(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(0)); // Left
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(1)); // Top  
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(2)); // Right
+			Assert.True(safeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom
 		}
 
 		[Fact]
@@ -518,24 +518,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var verticalStackLayout = new VerticalStackLayout();
 			var horizontalStackLayout = new HorizontalStackLayout();
 			
-			// Set explicit SafeAreaElement.Ignore property - this should be respected
-			SafeAreaElement.SetIgnore(verticalStackLayout, SafeAreaEdges.None); // Respect all edges
-			SafeAreaElement.SetIgnore(horizontalStackLayout, SafeAreaEdges.All); // Ignore all edges
+			// Set explicit SafeAreaEdges property - this should be respected
+			verticalStackLayout.SafeAreaEdges = SafeAreaEdges.All; // Obey all edges
+			horizontalStackLayout.SafeAreaEdges = SafeAreaEdges.None; // Edge-to-edge all edges
 			
 			var verticalSafeAreaView2 = (ISafeAreaPage)verticalStackLayout;
 			var horizontalSafeAreaView2 = (ISafeAreaPage)horizontalStackLayout;
 			
-			// VerticalStackLayout should respect user setting (None = respect safe area)
-			Assert.False(verticalSafeAreaView2.IgnoreSafeAreaForEdge(0)); // Left (respects safe area)
-			Assert.False(verticalSafeAreaView2.IgnoreSafeAreaForEdge(1)); // Top (respects safe area)
-			Assert.False(verticalSafeAreaView2.IgnoreSafeAreaForEdge(2)); // Right (respects safe area)
-			Assert.False(verticalSafeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom (respects safe area)
+			// VerticalStackLayout should respect user setting (All = obey safe area)
+			Assert.False(verticalSafeAreaView2.IgnoreSafeAreaForEdge(0)); // Left (obeys safe area)
+			Assert.False(verticalSafeAreaView2.IgnoreSafeAreaForEdge(1)); // Top (obeys safe area)
+			Assert.False(verticalSafeAreaView2.IgnoreSafeAreaForEdge(2)); // Right (obeys safe area)
+			Assert.False(verticalSafeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom (obeys safe area)
 			
-			// HorizontalStackLayout should respect user setting (All = ignore safe area)
-			Assert.True(horizontalSafeAreaView2.IgnoreSafeAreaForEdge(0)); // Left (ignores safe area)
-			Assert.True(horizontalSafeAreaView2.IgnoreSafeAreaForEdge(1)); // Top (ignores safe area)
-			Assert.True(horizontalSafeAreaView2.IgnoreSafeAreaForEdge(2)); // Right (ignores safe area)
-			Assert.True(horizontalSafeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom (ignores safe area)
+			// HorizontalStackLayout should respect user setting (None = edge-to-edge)
+			Assert.True(horizontalSafeAreaView2.IgnoreSafeAreaForEdge(0)); // Left (edge-to-edge)
+			Assert.True(horizontalSafeAreaView2.IgnoreSafeAreaForEdge(1)); // Top (edge-to-edge)
+			Assert.True(horizontalSafeAreaView2.IgnoreSafeAreaForEdge(2)); // Right (edge-to-edge)
+			Assert.True(horizontalSafeAreaView2.IgnoreSafeAreaForEdge(3)); // Bottom (edge-to-edge)
 		}
 
 		#endregion

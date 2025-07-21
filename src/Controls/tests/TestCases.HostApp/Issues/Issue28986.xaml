@@ -5,7 +5,7 @@
              x:Name="TestPage"
              Title="SafeArea Test">
     
-    <Grid x:Name="MainGrid" BackgroundColor="Red" SafeAreaIgnore="All">
+    <Grid x:Name="MainGrid" BackgroundColor="Red" SafeAreaEdges="None">
         <!-- Single content grid that spans the entire screen -->
         <Grid x:Name="ContentGrid">
             <Grid.RowDefinitions>
@@ -80,8 +80,8 @@
                                             SelectedIndexChanged="OnPageEdgePickerChanged"
                                             AutomationId="PageTopPicker">
                                         <Picker.Items>
-                                            <x:String>Default</x:String>
-                                            <x:String>SoftInput</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>Keyboard</x:String>
                                             <x:String>None</x:String>
                                             <x:String>All</x:String>
                                         </Picker.Items>
@@ -96,8 +96,8 @@
                                             SelectedIndexChanged="OnPageEdgePickerChanged"
                                             AutomationId="PageLeftPicker">
                                         <Picker.Items>
-                                            <x:String>Default</x:String>
-                                            <x:String>SoftInput</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>Keyboard</x:String>
                                             <x:String>None</x:String>
                                             <x:String>All</x:String>
                                         </Picker.Items>
@@ -111,8 +111,8 @@
                                             SelectedIndexChanged="OnPageEdgePickerChanged"
                                             AutomationId="PageRightPicker">
                                         <Picker.Items>
-                                            <x:String>Default</x:String>
-                                            <x:String>SoftInput</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>Keyboard</x:String>
                                             <x:String>None</x:String>
                                             <x:String>All</x:String>
                                         </Picker.Items>
@@ -127,8 +127,8 @@
                                             SelectedIndexChanged="OnPageEdgePickerChanged"
                                             AutomationId="PageBottomPicker">
                                         <Picker.Items>
-                                            <x:String>Default</x:String>
-                                            <x:String>SoftInput</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>Keyboard</x:String>
                                             <x:String>None</x:String>
                                             <x:String>All</x:String>
                                         </Picker.Items>
@@ -137,15 +137,15 @@
                                 
                                 <!-- SoftInput test area -->
                                 <StackLayout Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalOptions="Center">
-                                    <Label Text="SoftInput Test:" VerticalOptions="Center" />
-                                    <Entry x:Name="SoftInputTestEntry" 
+                                    <Label Text="Keyboard Test:" VerticalOptions="Center" />
+                                    <Entry x:Name="KeyboardTestEntry" 
                                            Placeholder="Tap to show keyboard" 
                                            WidthRequest="200"
-                                           AutomationId="SoftInputTestEntry" />
+                                           AutomationId="KeyboardTestEntry" />
                                 </StackLayout>
                             </Grid>
                             
-                            <Button Text="Page: Reset All to Default" 
+                            <Button Text="Page: Reset All to None" 
                                     Clicked="OnPageResetDefaultClicked"
                                     AutomationId="PageResetDefaultButton" />
                             <Button Text="Page: Reset All to None" 
@@ -191,8 +191,8 @@
                                             SelectedIndexChanged="OnGridEdgePickerChanged"
                                             AutomationId="GridTopPicker">
                                         <Picker.Items>
-                                            <x:String>Default</x:String>
-                                            <x:String>SoftInput</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>Keyboard</x:String>
                                             <x:String>None</x:String>
                                             <x:String>All</x:String>
                                         </Picker.Items>
@@ -207,8 +207,8 @@
                                             SelectedIndexChanged="OnGridEdgePickerChanged"
                                             AutomationId="GridLeftPicker">
                                         <Picker.Items>
-                                            <x:String>Default</x:String>
-                                            <x:String>SoftInput</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>Keyboard</x:String>
                                             <x:String>None</x:String>
                                             <x:String>All</x:String>
                                         </Picker.Items>
@@ -222,8 +222,8 @@
                                             SelectedIndexChanged="OnGridEdgePickerChanged"
                                             AutomationId="GridRightPicker">
                                         <Picker.Items>
-                                            <x:String>Default</x:String>
-                                            <x:String>SoftInput</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>Keyboard</x:String>
                                             <x:String>None</x:String>
                                             <x:String>All</x:String>
                                         </Picker.Items>
@@ -238,8 +238,8 @@
                                             SelectedIndexChanged="OnGridEdgePickerChanged"
                                             AutomationId="GridBottomPicker">
                                         <Picker.Items>
-                                            <x:String>Default</x:String>
-                                            <x:String>SoftInput</x:String>
+                                            <x:String>None</x:String>
+                                            <x:String>Keyboard</x:String>
                                             <x:String>None</x:String>
                                             <x:String>All</x:String>
                                         </Picker.Items>
@@ -248,26 +248,26 @@
                                 
                                 <!-- Legend -->
                                 <StackLayout Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Spacing="5">
-                                    <Label Text="Default = Apply platform inset (safe area)" 
+                                    <Label Text="None = Edge-to-edge content (no safe area padding)" 
                                            FontSize="10" 
                                            TextColor="Blue"
                                            HorizontalOptions="Center" />
-                                    <Label Text="SoftInput = Layout behind keyboard" 
+                                    <Label Text="Keyboard = Always pad for keyboard" 
                                            FontSize="10" 
                                            TextColor="Orange"
                                            HorizontalOptions="Center" />
-                                    <Label Text="None = Never behind blocking UI" 
+                                    <Label Text="Container = Flow under keyboard, stay out of bars/notch" 
                                            FontSize="10" 
                                            TextColor="Red"
                                            HorizontalOptions="Center" />
-                                    <Label Text="All = Ignore all insets" 
+                                    <Label Text="All = Obey all safe area insets" 
                                            FontSize="10" 
                                            TextColor="Green"
                                            HorizontalOptions="Center" />
                                 </StackLayout>
                             </Grid>
                             
-                            <Button Text="Grid: Reset All to Default" 
+                            <Button Text="Grid: Reset All to None" 
                                     Clicked="OnGridResetDefaultClicked"
                                     AutomationId="GridResetDefaultButton" />
                             <Button Text="Grid: Reset All to None" 
