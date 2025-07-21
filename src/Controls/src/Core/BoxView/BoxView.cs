@@ -1,6 +1,5 @@
 #nullable disable
 using System;
-using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
@@ -11,11 +10,32 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public partial class BoxView : View, IColorElement, ICornerElement, IElementConfiguration<BoxView>, IShapeView, IShape
 	{
+		WeakBrushChangedProxy _fillProxy = null;
+		EventHandler _fillChanged;
+
 		/// <summary>Bindable property for <see cref="Color"/>.</summary>
 		public static readonly BindableProperty ColorProperty = ColorElement.ColorProperty;
 
 		/// <summary>Bindable property for <see cref="CornerRadius"/>.</summary>
 		public static readonly BindableProperty CornerRadiusProperty = CornerElement.CornerRadiusProperty;
+
+		/// <summary>Bindable property for <see cref="Color"/>.</summary>
+		public static readonly BindableProperty FillProperty =
+			BindableProperty.Create(nameof(Fill), typeof(Brush), typeof(BoxView), null,
+				propertyChanging: (bindable, oldvalue, newvalue) =>
+				{
+					if (oldvalue != null)
+					{
+						(bindable as BoxView)?.StopNotifyingFillChanges();
+					}
+				},
+				propertyChanged: (bindable, oldvalue, newvalue) =>
+				{
+					if (newvalue != null)
+					{
+						(bindable as BoxView)?.NotifyFillChanges();
+					}
+				});
 
 		readonly Lazy<PlatformConfigurationRegistry<BoxView>> _platformConfigurationRegistry;
 
@@ -60,6 +80,45 @@ namespace Microsoft.Maui.Controls
 			return new SizeRequest(new Size(40, 40));
 		}
 
+		void NotifyFillChanges()
+		{
+			var fill = Fill;
+
+			if (fill is ImmutableBrush)
+			{
+				return;
+			}
+
+			if (fill is not null)
+			{
+				SetInheritedBindingContext(fill, BindingContext);
+				_fillChanged ??= (sender, e) => OnPropertyChanged(nameof(Fill));
+				_fillProxy ??= new();
+				_fillProxy.Subscribe(fill, _fillChanged);
+
+				OnParentResourcesChanged(this.GetMergedResources());
+				((IElementDefinition)this).AddResourcesChangedListener(fill.OnParentResourcesChanged);
+			}
+		}
+
+		void StopNotifyingFillChanges()
+		{
+			var fill = Fill;
+
+			if (fill is ImmutableBrush)
+			{
+				return;
+			}
+
+			if (fill is not null)
+			{
+				((IElementDefinition)this).RemoveResourcesChangedListener(fill.OnParentResourcesChanged);
+
+				SetInheritedBindingContext(fill, null);
+				_fillProxy?.Unsubscribe();
+			}
+		}
+
 #nullable enable
 		// Todo these shuold be moved to a mapper
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
@@ -71,14 +130,16 @@ namespace Microsoft.Maui.Controls
 				propertyName == IsVisibleProperty.PropertyName ||
 				propertyName == BackgroundProperty.PropertyName ||
 				propertyName == CornerRadiusProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IShapeView.Shape));
+			}
 		}
 
 		IShape? IShapeView.Shape => this;
 
 		PathAspect IShapeView.Aspect => PathAspect.None;
 
-		Paint? IShapeView.Fill => Color?.AsPaint();
+		Paint? IShapeView.Fill => Fill ?? Color?.AsPaint();
 
 		Paint? IStroke.Stroke => null;
 
