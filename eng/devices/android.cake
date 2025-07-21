@@ -680,10 +680,10 @@ void EnsureAdbKeys(AdbToolSettings settings)
 
     try
     {
-        // Kill ADB server first before modifying keys
+        // Stop ADB server
         Information("Stopping ADB server...");
         AdbKillServer(settings);
-        System.Threading.Thread.Sleep(1000);
+        System.Threading.Thread.Sleep(2000); // Allow server to stop
 
         // Set up file paths
         var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -691,14 +691,15 @@ void EnsureAdbKeys(AdbToolSettings settings)
         var adbKeyFile = System.IO.Path.Combine(adbKeyPath, "adbkey");
         var adbKeyPubFile = System.IO.Path.Combine(adbKeyPath, "adbkey.pub");
 
-        // Ensure ADB directory exists with correct permissions
+        // Ensure ADB directory exists
         Information("Ensuring ADB key directory exists...");
         if (!System.IO.Directory.Exists(adbKeyPath))
         {
             System.IO.Directory.CreateDirectory(adbKeyPath);
-            Information($"Created ADB directory at {adbKeyPath}");
+            StartProcess("chmod", $"700 {adbKeyPath}");
         }
 
+<<<<<<< Updated upstream
         // Set proper directory permissions
         if (IsRunningOnLinux())
         {
@@ -706,15 +707,18 @@ void EnsureAdbKeys(AdbToolSettings settings)
 		}
 
         // Delete existing ADB keys to avoid stale data
+=======
+        // Clean up old keys
+>>>>>>> Stashed changes
         Information("Cleaning up old ADB keys...");
-        if (System.IO.File.Exists(adbKeyFile)) 
-        {
-            System.IO.File.Delete(adbKeyFile);
-            Information("Removed existing private key");
-        }
+        if (System.IO.File.Exists(adbKeyFile)) System.IO.File.Delete(adbKeyFile);
+        if (System.IO.File.Exists(adbKeyPubFile)) System.IO.File.Delete(adbKeyPubFile);
 
-        if (System.IO.File.Exists(adbKeyPubFile)) 
+        // Generate new ADB keys
+        Information("Generating new ADB keys...");
+        var keygenResult = StartProcess("adb", new ProcessSettings
         {
+<<<<<<< Updated upstream
             System.IO.File.Delete(adbKeyPubFile);
             Information("Removed existing public key");
         }
@@ -746,10 +750,18 @@ void EnsureAdbKeys(AdbToolSettings settings)
         
       	// Verify keys were created
         if (!System.IO.File.Exists(adbKeyFile) || !System.IO.File.Exists(adbKeyPubFile))
+=======
+            Arguments = $"keygen {adbKeyFile}",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        });
+        if (keygenResult != 0 || !System.IO.File.Exists(adbKeyFile) || !System.IO.File.Exists(adbKeyPubFile))
+>>>>>>> Stashed changes
         {
             throw new Exception("ADB keys were not created successfully.");
         }
 
+<<<<<<< Updated upstream
         Information("ADB keys generated successfully!");
 
         // Set correct file permissions for ADB keys (Unix systems only)
@@ -759,103 +771,116 @@ void EnsureAdbKeys(AdbToolSettings settings)
             StartProcess("chmod", $"600 {adbKeyFile}");
             StartProcess("chmod", $"600 {adbKeyPubFile}");
         }
-
-        // Set environment variable properly (platform specific)
-        Information("Setting ADB_VENDOR_KEYS environment variable...");
-
-        // This actually sets it for the current process
-        SetEnvironmentVariable("ADB_VENDOR_KEYS", adbKeyPubFile);
+=======
+        // Set permissions for keys
+        Information("Setting permissions for ADB keys...");
+        StartProcess("chmod", $"600 {adbKeyFile}");
+        StartProcess("chmod", $"600 {adbKeyPubFile}");
+>>>>>>> Stashed changes
 
         // Set ADB_VENDOR_KEYS environment variable
-        StartProcess("sh", new ProcessSettings {
-            Arguments = new ProcessArgumentBuilder()
-                .Append("-c")
-                .AppendQuoted($"export ADB_VENDOR_KEYS={adbKeyPubFile}"),
-            RedirectStandardOutput = true
-        });
+        Information("Setting ADB_VENDOR_KEYS environment variable...");
+        SetEnvironmentVariable("ADB_VENDOR_KEYS", adbKeyPubFile);
 
-        // Start ADB server with new keys
-        Information("Starting ADB server with new keys...");
+        // Start ADB server
+        Information("Starting ADB server...");
         AdbStartServer(settings);
-        System.Threading.Thread.Sleep(2000); // Give ADB time to fully start
+        System.Threading.Thread.Sleep(2000); // Allow server to start
 
+<<<<<<< Updated upstream
         // Push keys to the device with better error handling
         Information("Pushing ADB keys to the device...");
         int retries = 0;
         bool pushSuccess = false;
         
         while (retries < 2 && !pushSuccess)
+=======
+        // Wait for device to be ready
+        Information("Waiting for device to be ready...");
+        var waited = 0;
+        var total = EmulatorBootTimeoutSeconds;
+        while (AdbDevices(settings).Count == 0 || AdbShell("getprop sys.boot_completed", settings).FirstOrDefault() != "1")
+>>>>>>> Stashed changes
         {
-            var processSettings = new ProcessSettings {
+            Information("Waiting {0}/{1} seconds for device to be ready...", waited, total);
+            System.Threading.Thread.Sleep(1000);
+            if (waited++ > total)
+            {
+                throw new Exception("Device not ready in time.");
+            }
+        }
+
+        // Push keys to device
+        Information("Pushing ADB keys to device...");
+        int retries = 0;
+        while (retries < 3)
+        {
+            var pushResult = StartProcess("adb", new ProcessSettings
+            {
                 Arguments = new ProcessArgumentBuilder()
                     .Append("push")
                     .AppendQuoted(adbKeyPubFile)
                     .AppendQuoted("/data/misc/adb/adb_keys"),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
-            };
-            
-            var exitCode = StartProcess("adb", processSettings);
-            
-            // Check exit code for success indicators
-            if (exitCode == 0)
+            });
+
+            if (pushResult == 0)
             {
-                Information("ADB key successfully pushed.");
-                pushSuccess = true;
+                Information("ADB keys pushed successfully.");
                 break;
             }
 
             retries++;
-            Information($"Push attempt {retries} failed. Retrying in 1 second...");
-            System.Threading.Thread.Sleep(1000);
+            Information($"Push attempt {retries} failed. Retrying in 2 seconds...");
+            System.Threading.Thread.Sleep(2000);
+            if (retries == 3)
+            {
+                throw new Exception("Failed to push ADB keys after multiple attempts.");
+            }
         }
 
-        if (!pushSuccess)
-        {
-            throw new Exception("Failed to push ADB keys after multiple attempts.");
-        }
-
-        // Set proper permissions on the device key file
+        // Set permissions on device
+        Information("Setting permissions on device...");
         AdbShell("chmod 600 /data/misc/adb/adb_keys", settings);
 
-        // Restart ADB on device to apply changes
-        Information("Restarting ADB daemon on the device...");
+        // Restart ADB daemon on device
+        Information("Restarting ADB daemon on device...");
         AdbShell("stop adbd", settings);
         System.Threading.Thread.Sleep(2000);
         AdbShell("start adbd", settings);
         System.Threading.Thread.Sleep(2000);
 
-        // Verify connectivity after all changes
-        var deviceCheck = StartProcess("adb", new ProcessSettings {
-            Arguments = "devices",
-            RedirectStandardOutput = true
-        });
-        
-        if (deviceCheck == 0)
+        // Verify device connection
+        var devices = AdbDevices(settings);
+        if (devices.Any(d => d.State == "device"))
         {
-            Information("Device connection authorized successfully.");
+            Information("Device connection verified.");
         }
         else
         {
-            Warning("Device may not be properly authorized. Check 'adb devices' output.");
+            Warning("Device not properly connected. Check 'adb devices' output.");
         }
     }
     catch (Exception ex)
     {
-        Warning($"Error ensuring ADB keys: {ex.Message}");
-        Information("Trying to restart ADB just in case...");
-        
+        Error($"Failed to configure ADB keys: {ex.Message}");
+        // Attempt recovery
         try 
         {
+<<<<<<< Updated upstream
 		  	// Recovery attempt: Restart ADB and try automatic key generation
             RecoverAdbConnection(settings);
+=======
+            AdbKillServer(settings);
+            System.Threading.Thread.Sleep(2000);
+            AdbStartServer(settings);
+>>>>>>> Stashed changes
         }
         catch (Exception innerEx) 
         {
             Error($"Recovery attempt also failed: {innerEx.Message}");
         }
-        
-        throw; // Re-throw the original exception
     }
 }
 
