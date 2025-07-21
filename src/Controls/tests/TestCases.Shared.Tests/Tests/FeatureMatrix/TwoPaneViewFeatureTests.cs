@@ -348,7 +348,7 @@ namespace Microsoft.Maui.TestCases.Tests
             var pane1X = App.WaitForElement("Pane1Label").GetRect().X;
             var pane2X = App.WaitForElement("Pane2Label").GetRect().X;
 
-            Assert.That(pane1X, Is.GreaterThan(pane2X), "Pane2 should be below Pane1 in Wide mode");
+            Assert.That(pane1X, Is.GreaterThan(pane2X), "Pane1 should be to the right of Pane2 in RTL Wide mode");
 
             App.WaitForElement("CurrentModeLabel").Equals("Wide Mode");
         }
