@@ -20,6 +20,7 @@ public class Issue29542 : _IssuesUITest
 		App.SetOrientationLandscape();
 		App.WaitForElement("TestCollectionView");
 		App.Tap("ScrollToDownButton");
+		App.WaitForElement("TestCollectionView");
 		VerifyScreenshot();
 	}
 
