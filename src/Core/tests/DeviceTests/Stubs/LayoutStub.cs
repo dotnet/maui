@@ -6,7 +6,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class LayoutStub : StubBase, ILayout
+	public class LayoutStub : StubBase, ILayout, ISafeAreaPage
 	{
 		ILayoutManager _layoutManager;
 
@@ -83,6 +83,13 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public bool IgnoreSafeArea => false;
 
 		public bool ClipsToBounds { get; set; }
+
+		// ISafeAreaPage implementation
+		Thickness ISafeAreaPage.SafeAreaInsets { set { } }
+
+		public bool IgnoreSafeAreaForEdge(int edge) => false;
+
+		public SafeAreaRegions GetSafeAreaRegionsForEdge(int edge) => SafeAreaRegions.Default;
 
 		public IView this[int index] { get => Children[index]; set => Children[index] = value; }
 	}
