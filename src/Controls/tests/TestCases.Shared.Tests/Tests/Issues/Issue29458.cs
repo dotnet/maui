@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID || IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -26,3 +27,4 @@ public class Issue29458 : _IssuesUITest
 		Assert.That(App.FindElement("Tab5RTL").GetRect().X, Is.GreaterThan(-50f));
 	}
 }
+#endif
