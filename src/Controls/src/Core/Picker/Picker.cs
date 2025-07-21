@@ -372,7 +372,7 @@ namespace Microsoft.Maui.Controls
 			var oldIndex = SelectedIndex;
 			var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
 			//FIXME use the specificity of the caller
-			SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
+			SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromUnknown);
 			// If the index has not changed, still need to change the selected item
 			if (newIndex == oldIndex)
 				UpdateSelectedItem(newIndex);
@@ -384,10 +384,10 @@ namespace Microsoft.Maui.Controls
 
 			if (ItemsSource != null)
 			{
-				SetValue(SelectedIndexProperty, ItemsSource.IndexOf(selectedItem), SetterSpecificity.FromHandler);
+				SetValue(SelectedIndexProperty, ItemsSource.IndexOf(selectedItem), SetterSpecificity.FromUnknown);
 				return;
 			}
-			SetValue(SelectedIndexProperty, Items.IndexOf(selectedItem), SetterSpecificity.FromHandler);
+			SetValue(SelectedIndexProperty, Items.IndexOf(selectedItem), SetterSpecificity.FromUnknown);
 		}
 
 		void UpdateSelectedItem(int index)
@@ -396,18 +396,18 @@ namespace Microsoft.Maui.Controls
 
 			if (index == -1)
 			{
-				SetValue(SelectedItemProperty, null, SetterSpecificity.FromHandler);
+				SetValue(SelectedItemProperty, null, SetterSpecificity.FromUnknown);
 				return;
 			}
 
 			if (ItemsSource != null)
 			{
 				var item = index < ItemsSource.Count ? ItemsSource[index] : null;
-				SetValue(SelectedItemProperty, item, SetterSpecificity.FromHandler);
+				SetValue(SelectedItemProperty, item, SetterSpecificity.FromUnknown);
 				return;
 			}
 
-			SetValue(SelectedItemProperty, Items[index], SetterSpecificity.FromHandler);
+			SetValue(SelectedItemProperty, Items[index], SetterSpecificity.FromUnknown);
 		}
 
 		/// <inheritdoc/>
