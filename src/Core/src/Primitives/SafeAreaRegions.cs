@@ -3,31 +3,29 @@ using System;
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Specifies which platform safe area insets to ignore for a layout or visual element.
+	/// Specifies which platform safe area edges to obey for a layout or visual element.
 	/// </summary>
 	[Flags]
 	public enum SafeAreaRegions
 	{
 		/// <summary>
-		/// Apply platform inset - content will be positioned only in the safe area.
+		/// Content goes edge to edge with no safe area padding.
 		/// </summary>
-		Default = 0,
+		None = 0,
 
 		/// <summary>
-		/// Layout behind the soft input down to where the soft input starts.
+		/// Always pad so content doesn't go under the keyboard.
 		/// </summary>
-		SoftInput = 1,
+		Keyboard = 1,
 
 		/// <summary>
-		/// Content will never display behind anything that could block it.
-		/// If keyboard is visible, content will resize to the visible view.
+		/// Content flows under keyboard but stays out of top and bottom bars and notch.
 		/// </summary>
-		None = 2,
+		Container = 2,
 
 		/// <summary>
-		/// Ignore all insets for this edge - content may be positioned anywhere on the screen, 
-		/// including behind toolbars, screen cutouts, etc.
-		/// Currently equivalent to ignoring platform safe area insets.
+		/// Obey all safe area insets - content will be positioned only in the safe area.
+		/// This includes top and bottom bars, notch, and keyboard.
 		/// </summary>
 		All = int.MaxValue
 	}

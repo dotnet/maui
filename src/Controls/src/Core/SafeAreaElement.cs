@@ -8,13 +8,13 @@ namespace Microsoft.Maui.Controls
 	internal static class SafeAreaElement
 	{
 		/// <summary>
-		/// The backing store for the <see cref="ISafeAreaElement.SafeAreaIgnore" /> bindable property.
+		/// The backing store for the <see cref="ISafeAreaElement.SafeAreaEdges" /> bindable property.
 		/// </summary>
-		public static readonly BindableProperty SafeAreaIgnoreProperty =
-			BindableProperty.Create("SafeAreaIgnore", typeof(SafeAreaEdges), typeof(ISafeAreaElement), SafeAreaEdges.Default,
-									propertyChanged: OnSafeAreaIgnoreChanged,
-									defaultValueCreator: SafeAreaIgnoreDefaultValueCreator);
-		static void OnSafeAreaIgnoreChanged(BindableObject bindable, object oldValue, object newValue)
+		public static readonly BindableProperty SafeAreaEdgesProperty =
+			BindableProperty.Create("SafeAreaEdges", typeof(SafeAreaEdges), typeof(ISafeAreaElement), SafeAreaEdges.Default,
+									propertyChanged: OnSafeAreaEdgesChanged,
+									defaultValueCreator: SafeAreaEdgesDefaultValueCreator);
+		static void OnSafeAreaEdgesChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			// Centralized implementation - invalidate measure to trigger layout recalculation
 			if (bindable is IView view)
@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		static object SafeAreaIgnoreDefaultValueCreator(BindableObject bindable)
-			=> ((ISafeAreaElement)bindable).SafeAreaIgnoreDefaultValueCreator();
+		static object SafeAreaEdgesDefaultValueCreator(BindableObject bindable)
+			=> ((ISafeAreaElement)bindable).SafeAreaEdgesDefaultValueCreator();
 
 		/// <summary>
 		/// Gets the effective safe area behavior for a specific edge.
@@ -41,69 +41,57 @@ namespace Microsoft.Maui.Controls
 		/// <param name="bindable">The bindable object to get the safe area behavior from.</param>
 		/// <param name="edge">The edge to get the behavior for (0=Left, 1=Top, 2=Right, 3=Bottom).</param>
 		/// <returns>The <see cref="SafeAreaRegions"/> for the specified edge.</returns>
-		internal static SafeAreaRegions GetIgnoreForEdge(BindableObject bindable, int edge)
+		internal static SafeAreaRegions GetEdgeValue(BindableObject bindable, int edge)
 		{
-			var edges = (SafeAreaEdges)bindable.GetValue(SafeAreaIgnoreProperty);
+			var edges = (SafeAreaEdges)bindable.GetValue(SafeAreaEdgesProperty);
 			return edges.GetEdge(edge);
 		}
 
 		/// <summary>
 		/// Gets the effective safe area behavior for a specific edge for elements that implement ISafeAreaView.
-		/// This method handles the logic for checking attached properties and falling back to legacy behavior.
+		/// This method handles the logic for checking the new SafeAreaEdges property and falling back to legacy behavior.
 		/// </summary>
 		/// <param name="bindable">The bindable object that implements ISafeAreaView.</param>
 		/// <param name="edge">The edge to get the behavior for (0=Left, 1=Top, 2=Right, 3=Bottom).</param>
-		/// <returns>True if safe area should be ignored for this edge, false otherwise.</returns>
-		internal static bool ShouldIgnoreSafeAreaForEdge(BindableObject bindable, int edge)
+		/// <returns>True if safe area should be obeyed for this edge, false otherwise.</returns>
+		internal static bool ShouldObeySafeAreaForEdge(BindableObject bindable, int edge)
 		{
-			// Check the SafeArea.Ignore attached property
-			var regionForEdge = GetIgnoreForEdge(bindable, edge);
+			// Check the SafeAreaEdges property
+			var regionForEdge = GetEdgeValue(bindable, edge);
 			
-			// Handle the new SafeAreaRegions behavior
-			if (regionForEdge.HasFlag(SafeAreaRegions.All))
+			// Handle the new SafeAreaRegions behavior (now obey-based instead of ignore-based)
+			if (regionForEdge == SafeAreaRegions.All)
 			{
-				return true; // Ignore all insets - content may be positioned anywhere
+				return true; // Obey all safe area insets - content positioned only in safe area
+			}
+
+			if (regionForEdge == SafeAreaRegions.Container)
+			{
+				// Content flows under keyboard but stays out of top and bottom bars and notch
+				// For now, treat this as obeying safe area (can be enhanced later for keyboard-specific behavior)
+				return true;
+			}
+
+			if (regionForEdge == SafeAreaRegions.Keyboard)
+			{
+				// Always pad so content doesn't go under the keyboard
+				// For now, treat this as obeying safe area
+				return true;
 			}
 
 			if (regionForEdge == SafeAreaRegions.None)
 			{
-				// NEW: Content will never display behind anything that could block it
-				// This is the most conservative approach - always respect safe area
+				// Content goes edge to edge with no safe area padding
 				return false;
 			}
 
-			if (regionForEdge == SafeAreaRegions.SoftInput)
-			{
-				// NEW: Layout behind the soft input down to where the soft input starts
-				// For now, treat this as respecting safe area (can be enhanced later for soft input-specific behavior)
-				return false;
-			}
-
-			// For SafeAreaRegions.Default, we need to determine if it should override legacy behavior
-			// If this is a Page or Layout that typically has legacy behavior, and the attached property
-			// is set to Default, we should respect that and not fall back to legacy behavior
-			if (regionForEdge == SafeAreaRegions.Default && bindable is ISafeAreaView)
-			{
-				// If SafeAreaRegions.Default is explicitly set, respect it (don't ignore safe area)
-				// But we need to check if the attached property was set to a non-default value
-				// Since we can't track explicit setting, we'll use a heuristic:
-				// If any edge of the SafeAreaEdges is set to All, then we assume the property was set
-				var edges = (SafeAreaEdges)bindable.GetValue(SafeAreaIgnoreProperty);
-				if (edges.Left == SafeAreaRegions.All || edges.Top == SafeAreaRegions.All ||
-					edges.Right == SafeAreaRegions.All || edges.Bottom == SafeAreaRegions.All)
-				{
-					// The attached property was set (at least one edge is All), so respect the Default value
-					return false;
-				}
-			}
-
-			// Fall back to legacy behavior if available
+			// Fall back to legacy behavior if available (but invert the logic since we now return "should obey")
 			if (bindable is ISafeAreaView legacySafeAreaView)
 			{
-				return legacySafeAreaView.IgnoreSafeArea;
+				return !legacySafeAreaView.IgnoreSafeArea; // Invert: if legacy says "ignore", we say "don't obey"
 			}
 
-			// Default to false (respect safe area) since the default is now SafeAreaRegions.Default
+			// Default to false (don't obey safe area) since the new default is SafeAreaRegions.None (edge to edge)
 			return false;
 		}
 	}

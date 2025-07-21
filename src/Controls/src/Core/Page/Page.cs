@@ -265,22 +265,17 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="ISafeAreaPage.IgnoreSafeAreaForEdge"/>
 		bool ISafeAreaPage.IgnoreSafeAreaForEdge(int edge)
 		{
-			// Use attached property first, then fall back to legacy behavior
-			return SafeAreaElement.ShouldIgnoreSafeAreaForEdge(this, edge);
+			// Use new SafeAreaElement logic with inverted behavior
+			return !SafeAreaElement.ShouldObeySafeAreaForEdge(this, edge);
 		}
 
 		/// <inheritdoc cref="ISafeAreaPage.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaPage.GetSafeAreaRegionsForEdge(int edge)
 		{
-			// Use attached property
-			var regionForEdge = SafeAreaElement.GetIgnoreForEdge(this, edge);
+			// Use new SafeAreaElement method
+			var regionForEdge = SafeAreaElement.GetEdgeValue(this, edge);
 			
-			// For Page (but not ContentPage), never return Default - return None instead
-			if (regionForEdge == SafeAreaRegions.Default)
-			{
-				return SafeAreaRegions.None;
-			}
-			
+			// For Page (but not ContentPage), return as-is
 			return regionForEdge;
 		}
 

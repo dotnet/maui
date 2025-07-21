@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
-		/// <summary>Bindable property for <see cref="SafeAreaIgnore"/>.</summary>
-		public static readonly BindableProperty SafeAreaIgnoreProperty = SafeAreaElement.SafeAreaIgnoreProperty;
+		/// <summary>Bindable property for <see cref="SafeAreaEdges"/>.</summary>
+		public static readonly BindableProperty SafeAreaEdgesProperty = SafeAreaElement.SafeAreaEdgesProperty;
 
 		public View? Content
 		{
@@ -48,18 +48,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the safe area edges to ignore for this border.
-		/// The default value is SafeAreaEdges.Default.
+		/// Gets or sets the safe area edges to obey for this border.
+		/// The default value is SafeAreaEdges.Default (None - edge to edge).
 		/// </summary>
 		/// <remarks>
-		/// This property controls which edges of the border should ignore safe area insets.
-		/// Use SafeAreaRegions.Default to respect safe area, SafeAreaRegions.All to ignore all insets, 
-		/// SafeAreaRegions.None to ensure content never displays behind blocking UI, or SafeAreaRegions.SoftInput for soft input aware behavior.
+		/// This property controls which edges of the border should obey safe area insets.
+		/// Use SafeAreaRegions.None for edge-to-edge content, SafeAreaRegions.All to obey all safe area insets, 
+		/// SafeAreaRegions.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaRegions.Keyboard for keyboard-aware behavior.
 		/// </remarks>
-		public SafeAreaEdges SafeAreaIgnore
+		public SafeAreaEdges SafeAreaEdges
 		{
-			get => (SafeAreaEdges)GetValue(SafeAreaElement.SafeAreaIgnoreProperty);
-			set => SetValue(SafeAreaElement.SafeAreaIgnoreProperty, value);
+			get => (SafeAreaEdges)GetValue(SafeAreaElement.SafeAreaEdgesProperty);
+			set => SetValue(SafeAreaElement.SafeAreaEdgesProperty, value);
 		}
 
 		/// <summary>Bindable property for <see cref="StrokeShape"/>.</summary>
@@ -354,24 +354,11 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="ISafeAreaPage.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaPage.GetSafeAreaRegionsForEdge(int edge)
 		{
-			// Use direct property first, then fall back to attached property
-			var regionForEdge = SafeAreaIgnore.GetEdge(edge);
+			// Use direct property
+			var regionForEdge = SafeAreaEdges.GetEdge(edge);
 			
-			if (regionForEdge != SafeAreaRegions.Default)
-			{
-				return regionForEdge;
-			}
-			
-			// Fall back to attached property if direct property is Default
-			var fallbackRegion = SafeAreaElement.GetIgnoreForEdge(this, edge);
-			
-			// For Border, never return Default - return None instead
-			if (fallbackRegion == SafeAreaRegions.Default)
-			{
-				return SafeAreaRegions.None;
-			}
-			
-			return fallbackRegion;
+			// For Border, return as-is
+			return regionForEdge;
 		}
 
 		/// <inheritdoc cref="ISafeAreaPage.SafeAreaInsets"/>
@@ -380,38 +367,28 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="ISafeAreaPage.IgnoreSafeAreaForEdge"/>
 		bool ISafeAreaPage.IgnoreSafeAreaForEdge(int edge)
 		{
-			// Use direct property first, then fall back to attached property
-			var regionForEdge = SafeAreaIgnore.GetEdge(edge);
+			// Use new SafeAreaEdges property with inverted logic (obey -> ignore conversion)
+			var regionForEdge = SafeAreaEdges.GetEdge(edge);
 			
-			// Handle the SafeAreaRegions behavior
-			if (regionForEdge.HasFlag(SafeAreaRegions.All))
+			// Convert from "obey" logic to "ignore" logic for backwards compatibility
+			switch (regionForEdge)
 			{
-				return true; // Ignore all insets - content may be positioned anywhere
+				case SafeAreaRegions.None:
+					return true; // None means edge-to-edge, so ignore safe area
+				case SafeAreaRegions.All:
+				case SafeAreaRegions.Container:
+				case SafeAreaRegions.Keyboard:
+					return false; // These obey safe area, so don't ignore
+				default:
+					// For Border, default to None behavior (edge-to-edge)
+					return true;
 			}
-
-			if (regionForEdge == SafeAreaRegions.None || regionForEdge == SafeAreaRegions.SoftInput)
-			{
-				// Content will never display behind anything that could block it
-				// Or treat SoftInput as respecting safe area for now
-				return false;
-			}
-
-			if (regionForEdge == SafeAreaRegions.Default)
-			{
-				// Check if attached property is set, if not fall back to default behavior
-				if (this.SafeAreaIgnore != SafeAreaEdges.Default)
-				{
-					return SafeAreaElement.ShouldIgnoreSafeAreaForEdge(this, edge);
-				}
-				
-				// Default behavior for Border is to respect safe area
-				return false;
-			}
+		}
 
 			return false;
 		}
 
-		SafeAreaEdges ISafeAreaElement.SafeAreaIgnoreDefaultValueCreator()
+		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
 		{
 			return SafeAreaEdges.Default;
 		}

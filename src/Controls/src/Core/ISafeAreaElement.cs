@@ -8,8 +8,8 @@ namespace Microsoft.Maui.Controls
 	internal interface ISafeAreaElement
 	{
 		//note to implementor: implement this property publicly
-		SafeAreaEdges SafeAreaIgnore { get; }
+		SafeAreaEdges SafeAreaEdges { get; }
 
-		SafeAreaEdges SafeAreaIgnoreDefaultValueCreator();
+		SafeAreaEdges SafeAreaEdgesDefaultValueCreator();
 	}
 }

@@ -89,7 +89,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IgnoreSafeAreaForEdge(int edge) => false;
 
-		public SafeAreaRegions GetSafeAreaRegionsForEdge(int edge) => SafeAreaRegions.Default;
+		public SafeAreaRegions GetSafeAreaRegionsForEdge(int edge) => SafeAreaRegions.None;
 
 		public IView this[int index] { get => Children[index]; set => Children[index] = value; }
 	}

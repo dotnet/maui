@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Platform
 				return safeAreaPage.GetSafeAreaRegionsForEdge(edge);
 			}
 			
-			return SafeAreaRegions.Default; // Default: respect safe area
+			return SafeAreaRegions.None; // Default: edge-to-edge content
 		}
 
 		SafeAreaEdges? _previousEdges;
@@ -95,11 +95,11 @@ namespace Microsoft.Maui.Platform
 				// All edges have the same value, use built-in iOS behavior
 				ContentInsetAdjustmentBehavior = leftRegion switch
 				{
-					SafeAreaRegions.Default => UIScrollViewContentInsetAdjustmentBehavior.Automatic,
-					SafeAreaRegions.All => UIScrollViewContentInsetAdjustmentBehavior.Never,
-					SafeAreaRegions.None => UIScrollViewContentInsetAdjustmentBehavior.Always,
-					SafeAreaRegions.SoftInput => UIScrollViewContentInsetAdjustmentBehavior.Automatic, // For now, treat as Default
-					_ => UIScrollViewContentInsetAdjustmentBehavior.Automatic
+					SafeAreaRegions.None => UIScrollViewContentInsetAdjustmentBehavior.Never, // Edge-to-edge content
+					SafeAreaRegions.All => UIScrollViewContentInsetAdjustmentBehavior.Always, // Obey all safe area insets
+					SafeAreaRegions.Container => UIScrollViewContentInsetAdjustmentBehavior.Automatic, // Content flows under keyboard but stays out of bars/notch
+					SafeAreaRegions.Keyboard => UIScrollViewContentInsetAdjustmentBehavior.Always, // Always pad for keyboard
+					_ => UIScrollViewContentInsetAdjustmentBehavior.Never // Default: edge-to-edge
 				};
 			}
 			else
@@ -117,11 +117,11 @@ namespace Microsoft.Maui.Platform
 		{
 			return safeAreaRegion switch
 			{
-				SafeAreaRegions.Default => safeAreaInset, // Apply platform inset
-				SafeAreaRegions.All => 0, // Ignore all insets
-				SafeAreaRegions.None => safeAreaInset, // Never display behind blocking UI
-				SafeAreaRegions.SoftInput => safeAreaInset, // For now, treat as Default
-				_ => safeAreaInset
+				SafeAreaRegions.None => 0, // Edge-to-edge content - no inset
+				SafeAreaRegions.All => safeAreaInset, // Obey all safe area insets
+				SafeAreaRegions.Container => safeAreaInset, // Content flows under keyboard but stays out of bars/notch
+				SafeAreaRegions.Keyboard => safeAreaInset, // Always pad for keyboard
+				_ => 0 // Default: edge-to-edge
 			};
 		}
 
