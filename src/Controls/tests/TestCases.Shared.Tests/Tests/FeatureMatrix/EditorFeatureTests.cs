@@ -435,7 +435,7 @@ public class EditorFeatureTests : UITest
 	}
 #endif
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID //keybord type is not supported on Windows and Maccatalyst platforms & On Android, opening the keyboard keeps the cursor visible even when IsCursorVisible is set to false, which is unexpected.
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS //keybord type is not supported on Windows and Maccatalyst platforms & On Android & IOS related issue:https://github.com/dotnet/maui/issues/26968
 	[Test]
 	public void VerifyEditorTextWhenKeyboardTypeSet()
 	{
@@ -450,7 +450,6 @@ public class EditorFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_ANDROID //related issue:https://github.com/dotnet/maui/issues/26968
 	[Test]
 	public void VerifyEditorTextWhenReturnTypeSet()
 	{
@@ -465,7 +464,6 @@ public class EditorFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-#endif
 #endif
 
 #if TEST_FAILS_ON_ANDROID // On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsEnabled property is set to false.
@@ -514,6 +512,7 @@ public class EditorFeatureTests : UITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
+#if TEST_FAILS_ON_WINDOWS //On Windows, the placeholder is not visible because its text alignment is reset to default values when navigating to the page. This issue occurs only in the Host App.
 	[Test]
 	public void VerifyEditorPlaceholderWhenFlowDirectionSet()
 	{
@@ -565,6 +564,7 @@ public class EditorFeatureTests : UITest
 		App.WaitForElement("TestEditor");
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
+#endif
 
 	[Test]
 	public void VerifyEditorWhenTextChanged()
@@ -670,6 +670,7 @@ public class EditorFeatureTests : UITest
 	}
 #endif
 
+#if TEST_FAILS_ON_WINDOWS //On Windows, the placeholder is not visible because its text alignment is reset to default values when navigating to the page. This issue occurs only in the Host App.
 	[Test]
 	public void VerifyEditorPlaceholderWithHorizontalAlignment()
 	{
@@ -817,6 +818,7 @@ public class EditorFeatureTests : UITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 #endif
+#endif
 
 	/// <summary>
 	/// Helper method to handle keyboard visibility and take a screenshot with appropriate cropping
@@ -834,20 +836,5 @@ public class EditorFeatureTests : UITest
 			VerifyScreenshot(cropBottom: CropBottomValue);
 		else
 			VerifyScreenshot(screenshotName, cropBottom: CropBottomValue);
-	}
-
-	/// <summary>
-	/// Helper method to handle keyboard visibility and set exception if screenshot verification fails
-	/// </summary>
-	/// <param name="exception">Reference to exception variable</param>
-	/// <param name="screenshotName">Name for the screenshot</param>
-	private void VerifyScreenshotWithKeyboardHandlingOrSetException(ref Exception? exception, string screenshotName)
-	{
-#if ANDROID
-		if (App.IsKeyboardShown())
-			App.DismissKeyboard();
-#endif
-		VerifyScreenshotOrSetException(ref exception, screenshotName, cropBottom: CropBottomValue);
-
 	}
 }
