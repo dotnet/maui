@@ -84,7 +84,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
             Assert.That(pane2Y, Is.GreaterThan(pane1Y), "Pane2 should be below Pane1 in Tall mode");
 
-            App.WaitForElement("CurrentModeLabel").Equals("Tall Mode");
+            Assert.That(App.WaitForElement("CurrentModeLabel").GetText(), Is.EqualTo("Tall Mode"), "CurrentModeLabel should display 'Tall Mode'");
         }
 
         [Test]
