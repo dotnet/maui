@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.MapOptionsPage"
+             x:DataType="local:MapViewModel"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             Title="MapOptionsPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Apply"
+                     Clicked="ApplyButton_Clicked"
+                     AutomationId="Apply"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid Padding="15"
+            RowSpacing="10"
+            ColumnSpacing="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Boolean Properties Section - Left Column -->
+        <StackLayout Grid.Row="0"
+                Grid.Column="0"
+                Spacing="8">
+            <Label Text="Map Behavior Options"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+
+            <StackLayout Orientation="Horizontal"
+                    Spacing="10">
+                <Switch x:Name="IsShowingUserSwitch"
+                        IsToggled="{Binding IsShowingUser}"
+                        AutomationId="IsShowingUserSwitch"/>
+                <Label Text="Show User Location"
+                        VerticalOptions="Center"
+                        FontSize="12"/>
+            </StackLayout>
+
+            <StackLayout Orientation="Horizontal"
+                    Spacing="10">
+                <Switch x:Name="IsScrollEnabledSwitch"
+                        IsToggled="{Binding IsScrollEnabled}"
+                        AutomationId="IsScrollEnabledSwitch"/>
+                <Label Text="Enable Scroll"
+                        VerticalOptions="Center"
+                        FontSize="12"/>
+            </StackLayout>
+
+            <StackLayout Orientation="Horizontal"
+                    Spacing="10">
+                <Switch x:Name="IsTrafficEnabledSwitch"
+                        IsToggled="{Binding IsTrafficEnabled}"
+                        AutomationId="IsTrafficEnabledSwitch"/>
+                <Label Text="Show Traffic"
+                        VerticalOptions="Center"
+                        FontSize="12"/>
+            </StackLayout>
+
+            <StackLayout Orientation="Horizontal"
+                    Spacing="10">
+                <Switch x:Name="IsZoomEnabledSwitch"
+                        IsToggled="{Binding IsZoomEnabled}"
+                        AutomationId="IsZoomEnabledSwitch"/>
+                <Label Text="Enable Zoom"
+                        VerticalOptions="Center"
+                        FontSize="12"/>
+            </StackLayout>
+        </StackLayout>
+
+        <!-- MapType Section - Right Column -->
+        <StackLayout Grid.Row="0"
+                Grid.Column="1"
+                Spacing="8">
+            <Label Text="Map Type"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+
+            <RadioButton x:Name="StreetRadioButton"
+                         Content="Street"
+                         GroupName="MapType"
+                         IsChecked="True"
+                         CheckedChanged="MapTypeRadioButton_CheckedChanged"
+                         AutomationId="StreetRadioButton"
+                         FontSize="12"/>
+
+            <RadioButton x:Name="SatelliteRadioButton"
+                         Content="Satellite"
+                         GroupName="MapType"
+                         CheckedChanged="MapTypeRadioButton_CheckedChanged"
+                         AutomationId="SatelliteRadioButton"
+                         FontSize="12"/>
+
+            <RadioButton x:Name="HybridRadioButton"
+                         Content="Hybrid"
+                         GroupName="MapType"
+                         CheckedChanged="MapTypeRadioButton_CheckedChanged"
+                         AutomationId="HybridRadioButton"
+                         FontSize="12"/>
+        </StackLayout>
+
+        <!-- Collections Section - Left Column -->
+        <StackLayout Grid.Row="1"
+                Grid.Column="0"
+                Spacing="5">
+            <Label Text="Map Collections"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+
+            <Label Text="{Binding Pins.Count, StringFormat='Pins: {0}'}"
+                    FontSize="12"/>
+            <Button Text="Add Pin"
+                    x:Name="AddPinButton"
+                    Clicked="AddPinButton_Clicked"
+                    AutomationId="AddPinButton"
+                    FontSize="11"/>
+            <Button Text="Clear Pins"
+                    x:Name="ClearPinsButton"
+                    Clicked="ClearPinsButton_Clicked"
+                    AutomationId="ClearPinsButton"
+                    FontSize="11"/>
+        </StackLayout>
+
+        <!-- Map Elements Section - Right Column -->
+        <StackLayout Grid.Row="1"
+                Grid.Column="1"
+                Spacing="5">
+            <Label Text="Map Elements"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+
+            <Label Text="{Binding MapElements.Count, StringFormat='Elements: {0}'}"
+                    FontSize="12"/>
+            <Button Text="Add Element"
+                    x:Name="AddElementButton"
+                    Clicked="AddElementButton_Clicked"
+                    AutomationId="AddElementButton"
+                    FontSize="11"/>
+            <Button Text="Clear Elements"
+                    x:Name="ClearElementsButton"
+                    Clicked="ClearElementsButton_Clicked"
+                    AutomationId="ClearElementsButton"
+                    FontSize="11"/>
+        </StackLayout>
+
+        <!-- Template Properties Section - Spanning both columns -->
+        <StackLayout Grid.Row="2"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Spacing="5">
+            <Label Text="Template Properties"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+
+            <Grid ColumnDefinitions="*,*"
+                    ColumnSpacing="10">
+                <Button Grid.Column="0"
+                        Text="Set ItemsSource"
+                        x:Name="SetItemsSourceButton"
+                        Clicked="SetItemsSourceButton_Clicked"
+                        AutomationId="SetItemsSourceButton"
+                        FontSize="11"/>
+                <Button Grid.Column="1"
+                        Text="Clear ItemsSource"
+                        x:Name="ClearItemsSourceButton"
+                        Clicked="ClearItemsSourceButton_Clicked"
+                        AutomationId="ClearItemsSourceButton"
+                        FontSize="11"/>
+            </Grid>
+
+            <Label Text="{Binding ItemsSource, StringFormat='ItemsSource: {0}'}"
+                   FontSize="10"
+                   TextColor="Gray"/>
+            <Label Text="ItemTemplate &amp; Selector: Set programmatically"
+                   FontSize="10"
+                   TextColor="Gray"/>
+        </StackLayout>
+    </Grid>
+</ContentPage>

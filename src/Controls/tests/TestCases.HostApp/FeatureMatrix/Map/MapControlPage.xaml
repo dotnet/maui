@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
+             x:Class="Maui.Controls.Sample.MapControlMainPage"
+             Title="MapControlPage">
+  <ContentPage.ToolbarItems>
+    <ToolbarItem Text="Options"
+                 Clicked="NavigateToOptionsPage_Clicked"
+                 AutomationId="Options"/>
+  </ContentPage.ToolbarItems>
+
+  <StackLayout Padding="20"
+               Spacing="20">
+    <maps:Map x:Name="TestMap"
+              IsShowingUser="{Binding IsShowingUser}"
+              IsScrollEnabled="{Binding IsScrollEnabled}"
+              IsTrafficEnabled="{Binding IsTrafficEnabled}"
+              IsZoomEnabled="{Binding IsZoomEnabled}"
+              MapType="{Binding MapType}"
+              ItemsSource="{Binding ItemsSource}"
+              ItemTemplate="{Binding ItemTemplate}"
+              ItemTemplateSelector="{Binding ItemTemplateSelector}"
+              VerticalOptions="FillAndExpand"
+              HorizontalOptions="FillAndExpand"/>
+  </StackLayout>
+</ContentPage>
