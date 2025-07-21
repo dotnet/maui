@@ -205,6 +205,35 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("ShadowCheckBox");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
+		[Test]
+		[Category(UITestCategories.BoxView)]
+		public void BoxView_FillWithSolidColor()
+		{
+			App.WaitForElement("SolidRadioButton");
+			App.Tap("SolidRadioButton");
+
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.BoxView)]
+		public void BoxView_FillWithLinearGradient()
+		{
+			App.WaitForElement("LinearRadioButton");
+			App.Tap("LinearRadioButton");
+
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.BoxView)]
+		public void BoxView_FillWithRadialGradient()
+		{
+			App.WaitForElement("RadialRadioButton");
+			App.Tap("RadialRadioButton");
+
+			VerifyScreenshot();
+		}
 #endif
 	}
 }
