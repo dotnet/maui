@@ -69,6 +69,10 @@ public class Issue28091SubscribeToUpdates : _IssuesUITest
         App.Tap("IncreaseHeightButton");
 
         var updatedText = App.FindElement("HistoryLabel")?.GetText();
-        Assert.That(updatedText, Is.Not.Null.And.Contains("Rectangle").IgnoreCase);
+        Assert.That(updatedText, Is.Not.Null
+	        .And.Contains("Rectangle")
+	        .And.Contains("Duration")
+	        .IgnoreCase);
+        Assert.That(updatedText, Is.Not.EqualTo(initialText));
     }
 }
