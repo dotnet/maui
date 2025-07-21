@@ -323,7 +323,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
             Assert.That(pane2X, Is.GreaterThan(pane1X), "Pane2 should be to the right of Pane1 in Wide mode");
 
-            App.WaitForElement("CurrentModeLabel").Equals("Wide Mode");
+            Assert.That(App.WaitForElement("CurrentModeLabel").GetText(), Is.EqualTo("Wide Mode"), "CurrentModeLabel should display 'Wide Mode'");
 
         }
 
