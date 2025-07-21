@@ -43,7 +43,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("SelectScrollMode");
 			App.Click("SelectScrollMode");
 			App.Click("KeepScrollOffset");
-			App.Click("Cancel");
 			App.WaitForElement("ScrollToMiddle");
 			App.Click("ScrollToMiddle");
 			App.WaitForElement("Vegetables.jpg, 10");
@@ -59,7 +58,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("SelectScrollMode");
 			App.Click("SelectScrollMode");
 			App.Click("KeepLastItemInView");
-			App.Click("Cancel");
 			App.WaitForElement("ScrollToMiddle");
 			App.Click("ScrollToMiddle");
 			App.WaitForElement("Vegetables.jpg, 10");

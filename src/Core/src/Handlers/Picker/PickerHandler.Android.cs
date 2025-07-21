@@ -141,6 +141,8 @@ namespace Microsoft.Maui.Handlers
 						var selectedIndex = e.Which;
 						VirtualView.SelectedIndex = selectedIndex;
 						base.PlatformView?.UpdatePicker(VirtualView);
+
+						_dialog?.Dismiss();
 					});
 
 					builder.SetNegativeButton(AResource.String.Cancel, (o, args) => { });
