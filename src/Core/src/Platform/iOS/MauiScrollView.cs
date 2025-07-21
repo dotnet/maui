@@ -101,6 +101,16 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		public MauiScrollView()
 		{
+			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
+#if TVOS
+				|| OperatingSystem.IsTvOSVersionAtLeast(11)
+#endif
+				)
+			{
+				// Disable iOS automatic content inset adjustments to avoid conflicts with MAUI's safe area logic.
+				// Prevents layout instability and infinite loops caused by overlapping inset management.
+				ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
+			}
 		}
 
 		/// <summary>
