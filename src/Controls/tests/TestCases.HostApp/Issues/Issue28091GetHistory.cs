@@ -25,7 +25,7 @@ public class Issue28091GetHistory : ContentPage
         _historyLabel = new Label
         {
 	        AutomationId = "HistoryLabel",
-            Text = "Resize history will appear here",
+            Text = "Performance metrics will appear here",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Center,
         };
@@ -123,7 +123,7 @@ public class Issue28091GetHistory : ContentPage
     {
         var history = PerformanceProfiler.GetHistory("Rectangle");
         var layoutHistory = new List<LayoutUpdate>(history.Layout ?? Array.Empty<LayoutUpdate>());
-        var sb = new StringBuilder("Resize History:\n");
+        var sb = new StringBuilder();
        
         foreach (var update in layoutHistory)
         {

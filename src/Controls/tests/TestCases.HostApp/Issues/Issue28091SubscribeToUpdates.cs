@@ -17,7 +17,7 @@ public class Issue28091SubscribeToUpdates : ContentPage
     public Issue28091SubscribeToUpdates()
     {
         // Initialize StringBuilder for history
-        _historyBuilder = new StringBuilder("Resize History:\n");
+        _historyBuilder = new StringBuilder();
 
         // Rectangle inside a Border
         _rectangle = new Rectangle
@@ -32,7 +32,7 @@ public class Issue28091SubscribeToUpdates : ContentPage
         _historyLabel = new Label
         {
             AutomationId = "HistoryLabel",
-            Text = _historyBuilder.ToString(),
+            Text = "Performance metrics will appear here",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Center,
         };
