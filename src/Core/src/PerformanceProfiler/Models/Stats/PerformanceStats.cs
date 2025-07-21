@@ -13,16 +13,16 @@ internal class PerformanceStats
 	public LayoutStats? Layout { get; set; }
 	
 	/// <summary>
-	/// The timestamp (UTC) when the image update was recorded.
+	/// The timestamp (UTC) when the performance update was recorded.
 	/// </summary>
 	/// <remarks>
 	/// Capturing this timestamp allows performance monitoring over time 
-	/// and helps correlate image loading events.
+	/// and helps correlate performance events.
 	/// </remarks>
 	public DateTime TimestampUtc { get; set; }
 
 	/// <summary>
-	/// Returns a default, empty instance of <see cref="PerformanceStats"/> with no layout data.
+	/// Returns a default, empty instance of <see cref="PerformanceStats"/> with no data.
 	/// </summary>
 	public static PerformanceStats Empty { get; } = new PerformanceStats
 	{

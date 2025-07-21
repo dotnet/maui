@@ -41,6 +41,43 @@ internal static class PerformanceProfiler
 			TimestampUtc = DateTime.UtcNow
 		};
 	}
+	
+	/// <summary>
+	/// Retrieves the current performance update history for the layout tracker, optionally filtered by the specified element.
+	/// </summary>
+	/// <param name="element">An optional element to filter updates by instance. If null, all updates are returned.</param>
+	/// <returns>
+	/// A <see cref="PerformanceUpdate"/> instance containing performance-related history. 
+	/// Returns an empty update object if the trackers are not initialized.
+	/// </returns>
+	public static PerformanceUpdate GetHistory(object element = null)
+	{
+		if (Layout is null)
+			return PerformanceUpdate.Empty;
+		
+		var layout = Layout.GetHistory(element);
+
+		var performanceUpdate = new PerformanceUpdate
+		{
+			Layout = layout,
+			TimestampUtc = DateTime.UtcNow
+		};
+		
+		return performanceUpdate;
+	}
+	
+	/// <summary>
+	/// Subscribe to receive real-time LayoutUpdate events (Measure or Arrange).
+	/// </summary>
+	/// <param name="callback">The callback to invoke when a layout update occurs.</param>
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="callback"/> is null.</exception>
+	public static void SubscribeToUpdates(Action<LayoutUpdate> callback)
+	{
+		if (callback == null)
+			throw new ArgumentNullException(nameof(callback));
+
+		Layout?.SubscribeToLayoutUpdates(callback);
+	}
 
 	/// <summary>
 	/// Starts performance tracking for a given category and optional element.
