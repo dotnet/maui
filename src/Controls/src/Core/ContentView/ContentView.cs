@@ -97,16 +97,14 @@ namespace Microsoft.Maui.Controls
 					return true; // None means edge-to-edge, so ignore safe area
 				case SafeAreaRegions.All:
 				case SafeAreaRegions.Container:
-				case SafeAreaRegions.Keyboard:
+				case SafeAreaRegions.SoftInput:
+				case SafeAreaRegions.Default:
 					return false; // These obey safe area, so don't ignore
 				default:
 					// For ContentView, default to None behavior (edge-to-edge)
 					return true;
 			}
 		}
-			}
-
-			return false;
 
 		/// <inheritdoc cref="ISafeAreaPage.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaPage.GetSafeAreaRegionsForEdge(int edge)

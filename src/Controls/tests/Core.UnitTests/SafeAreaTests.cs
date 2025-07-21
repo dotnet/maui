@@ -388,9 +388,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var converter = new SafeAreaEdgesTypeConverter();
 			
-			var result = (SafeAreaEdges)converter.ConvertFrom(null, null, "None,All,Container,Keyboard");
+			var result = (SafeAreaEdges)converter.ConvertFrom(null, null, "None,All,Container,SoftInput");
 			
-			Assert.Equal(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.Container, SafeAreaRegions.Keyboard), result);
+			Assert.Equal(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.Container, SafeAreaRegions.SoftInput), result);
 		}
 
 		[Fact]

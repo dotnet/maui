@@ -377,15 +377,13 @@ namespace Microsoft.Maui.Controls
 					return true; // None means edge-to-edge, so ignore safe area
 				case SafeAreaRegions.All:
 				case SafeAreaRegions.Container:
-				case SafeAreaRegions.Keyboard:
+				case SafeAreaRegions.SoftInput:
+				case SafeAreaRegions.Default:
 					return false; // These obey safe area, so don't ignore
 				default:
 					// For Border, default to None behavior (edge-to-edge)
 					return true;
 			}
-		}
-
-			return false;
 		}
 
 		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()

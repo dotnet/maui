@@ -59,8 +59,9 @@ Microsoft.Maui.SafeAreaEdges.Top.set -> void
 Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.All = 2147483647 -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.Container = 2 -> Microsoft.Maui.SafeAreaRegions
-Microsoft.Maui.SafeAreaRegions.Keyboard = 1 -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaRegions.Default = 4 -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.None = 0 -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaRegions.SoftInput = 1 -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.ScrollToRequest.Deconstruct(out double HorizontalOffset, out double VerticalOffset, out bool Instant) -> void
 Microsoft.Maui.ScrollToRequest.ScrollToRequest(Microsoft.Maui.ScrollToRequest! original) -> void
 Microsoft.Maui.SwipeViewCloseRequest.Deconstruct(out bool Animated) -> void

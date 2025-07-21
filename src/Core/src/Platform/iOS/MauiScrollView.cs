@@ -98,7 +98,8 @@ namespace Microsoft.Maui.Platform
 					SafeAreaRegions.None => UIScrollViewContentInsetAdjustmentBehavior.Never, // Edge-to-edge content
 					SafeAreaRegions.All => UIScrollViewContentInsetAdjustmentBehavior.Always, // Obey all safe area insets
 					SafeAreaRegions.Container => UIScrollViewContentInsetAdjustmentBehavior.Automatic, // Content flows under keyboard but stays out of bars/notch
-					SafeAreaRegions.Keyboard => UIScrollViewContentInsetAdjustmentBehavior.Always, // Always pad for keyboard
+					SafeAreaRegions.SoftInput => UIScrollViewContentInsetAdjustmentBehavior.Always, // Always pad for keyboard
+					SafeAreaRegions.Default => UIScrollViewContentInsetAdjustmentBehavior.Automatic, // Default behavior
 					_ => UIScrollViewContentInsetAdjustmentBehavior.Never // Default: edge-to-edge
 				};
 			}
@@ -120,7 +121,8 @@ namespace Microsoft.Maui.Platform
 				SafeAreaRegions.None => 0, // Edge-to-edge content - no inset
 				SafeAreaRegions.All => safeAreaInset, // Obey all safe area insets
 				SafeAreaRegions.Container => safeAreaInset, // Content flows under keyboard but stays out of bars/notch
-				SafeAreaRegions.Keyboard => safeAreaInset, // Always pad for keyboard
+				SafeAreaRegions.SoftInput => safeAreaInset, // Always pad for keyboard
+				SafeAreaRegions.Default => safeAreaInset, // Default behavior - obey safe area
 				_ => 0 // Default: edge-to-edge
 			};
 		}

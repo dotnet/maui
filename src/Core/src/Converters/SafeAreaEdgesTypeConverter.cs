@@ -47,9 +47,13 @@ namespace Microsoft.Maui.Converters
 					{
 						regions[i] = SafeAreaRegions.Container;
 					}
-					else if (string.Equals(part, "Keyboard", StringComparison.OrdinalIgnoreCase))
+					else if (string.Equals(part, "SoftInput", StringComparison.OrdinalIgnoreCase))
 					{
-						regions[i] = SafeAreaRegions.Keyboard;
+						regions[i] = SafeAreaRegions.SoftInput;
+					}
+					else if (string.Equals(part, "Default", StringComparison.OrdinalIgnoreCase))
+					{
+						regions[i] = SafeAreaRegions.Default;
 					}
 					else
 					{

@@ -92,7 +92,7 @@ public partial class Issue28986 : ContentPage
 		return index switch
 		{
 			0 => SafeAreaRegions.None,
-			1 => SafeAreaRegions.Keyboard,
+			1 => SafeAreaRegions.SoftInput,
 			2 => SafeAreaRegions.Container,
 			3 => SafeAreaRegions.All,
 			_ => SafeAreaRegions.None

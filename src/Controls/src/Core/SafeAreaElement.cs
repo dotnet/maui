@@ -72,10 +72,16 @@ namespace Microsoft.Maui.Controls
 				return true;
 			}
 
-			if (regionForEdge == SafeAreaRegions.Keyboard)
+			if (regionForEdge == SafeAreaRegions.SoftInput)
 			{
 				// Always pad so content doesn't go under the keyboard
 				// For now, treat this as obeying safe area
+				return true;
+			}
+
+			if (regionForEdge == SafeAreaRegions.Default)
+			{
+				// Default behavior - apply platform safe area insets
 				return true;
 			}
 
@@ -93,6 +99,19 @@ namespace Microsoft.Maui.Controls
 
 			// Default to false (don't obey safe area) since the new default is SafeAreaRegions.None (edge to edge)
 			return false;
+		}
+
+		/// <summary>
+		/// Gets whether safe area should be ignored for a specific edge (opposite of ShouldObeySafeAreaForEdge).
+		/// This is used by ISafeAreaPage.IgnoreSafeAreaForEdge implementations.
+		/// </summary>
+		/// <param name="bindable">The bindable object that implements ISafeAreaView.</param>
+		/// <param name="edge">The edge to get the behavior for (0=Left, 1=Top, 2=Right, 3=Bottom).</param>
+		/// <returns>True if safe area should be ignored for this edge, false otherwise.</returns>
+		internal static bool ShouldIgnoreSafeAreaForEdge(BindableObject bindable, int edge)
+		{
+			// This is simply the inverse of ShouldObeySafeAreaForEdge
+			return !ShouldObeySafeAreaForEdge(bindable, edge);
 		}
 	}
 }
