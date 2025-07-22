@@ -30,7 +30,7 @@ parameters:
   outputVariableName: 'dotnetbuilds-internal-container-read-token'
   expiryInHours: 1
   base64Encode: false
-  skipInternalFeeds: false
+  skipInternalFeeds: true
 
 steps:
 

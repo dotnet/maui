@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public partial void OnPromptRequested(Page sender, PromptArguments arguments) { }
 
+			// TODO: This method is obsolete in .NET 10 and will be removed in .NET 11.
 			public partial void OnPageBusy(Page sender, bool enabled) { }
 		}
 	}

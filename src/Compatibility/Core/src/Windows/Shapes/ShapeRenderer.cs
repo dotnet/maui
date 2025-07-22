@@ -144,8 +144,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 
 		void UpdateStrokeDashArray()
 		{
-			if (Control.StrokeDashArray != null)
-				Control.StrokeDashArray.Clear();
+			Control.StrokeDashArray?.Clear();
 
 			if (Element.StrokeDashArray != null && Element.StrokeDashArray.Count > 0)
 			{

@@ -145,5 +145,25 @@ namespace Microsoft.Maui.DeviceTests
 				return nativeView.Visibility == global::Android.Views.ViewStates.Visible;
 			});
 		}
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a SearchBar should match with native Translation")]
+		public async Task SearchBarTranslationConsistent()
+		{
+			var searchBar = new SearchBar()
+			{
+				Text = "SearchBar Test",
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				AssertTranslationMatches(nativeView, searchBar.TranslationX, searchBar.TranslationY);
+			});
+		}
 	}
 }

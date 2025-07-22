@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //NullReferenceException throws on iOS and mac Issue link - https://github.com/dotnet/maui/issues/19642
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID //NullReferenceException throws on iOS and mac Issue link - https://github.com/dotnet/maui/issues/19642 and for Android: https://github.com/dotnet/maui/issues/30576
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

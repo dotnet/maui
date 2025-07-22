@@ -16,8 +16,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #endif
 		}
 
-// Temporarily disabling this test on Windows due to consistent CI failures.
-// See https://github.com/dotnet/maui/issues/30507 for tracking re-enablement.
+		// Temporarily disabling this test on Windows due to consistent CI failures.
+		// See https://github.com/dotnet/maui/issues/30507 for tracking re-enablement.
 #if !ANDROID && !WINDOWS
 		[Theory]
 		[InlineData(47.673988, -122.121513)]

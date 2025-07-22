@@ -1749,7 +1749,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				List<UIBarButtonItem> primaries = null;
 				List<UIMenuElement> secondaries = null;
 				var toolbarItems = _tracker.ToolbarItems;
-				
+
 				// Subscribe to property changes for all current toolbar items
 				foreach (var item in toolbarItems)
 				{
@@ -1796,7 +1796,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					primaries.Insert(0, menuButton);
 				}
-				
+
 				NavigationItem.SetRightBarButtonItems(primaries is null ? [] : primaries.ToArray(), false);
 
 				if (_navigation.TryGetTarget(out NavigationRenderer n))
@@ -2112,8 +2112,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				set
 				{
-					if (_icon != null)
-						_icon.RemoveFromSuperview();
+					_icon?.RemoveFromSuperview();
 
 					_icon = value;
 

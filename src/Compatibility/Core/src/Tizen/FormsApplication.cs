@@ -53,28 +53,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		protected override void OnTerminate()
 		{
 			base.OnTerminate();
-			if (_platform != null)
-			{
-				_platform.Dispose();
-			}
+			_platform?.Dispose();
 		}
 
 		protected override void OnPause()
 		{
 			base.OnPause();
-			if (_application != null)
-			{
-				_application.SendSleep();
-			}
+			_application?.SendSleep();
 		}
 
 		protected override void OnResume()
 		{
 			base.OnResume();
-			if (_application != null)
-			{
-				_application.SendResume();
-			}
+			_application?.SendResume();
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

@@ -71,7 +71,7 @@ public partial class ToolbarPage
 			ToolbarItems.Add(_cachedSecondary3);
 		}
 	}
-	
+
 	void Button_Clicked5(object sender, EventArgs e)
 	{
 		secondary3.Command = new Command(() =>

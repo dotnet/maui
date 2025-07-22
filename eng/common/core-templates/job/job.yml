@@ -1,5 +1,5 @@
 parameters:
-  # Job schema parameters - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
+# Job schema parameters - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
   cancelTimeoutInMinutes: ''
   condition: ''
   container: ''
@@ -14,7 +14,7 @@ parameters:
   workspace: ''
   templateContext: {}
 
-  # Job base template specific parameters
+# Job base template specific parameters
   # See schema documentation - https://github.com/dotnet/arcade/blob/master/Documentation/AzureDevOps/TemplateSchema.md
   # publishing defaults
   artifacts: ''
@@ -33,7 +33,7 @@ parameters:
   artifactPublishSteps: []
   runAsPublic: false
 
-  # 1es specific parameters
+# 1es specific parameters
   is1ESPipeline: ''
 
 jobs:
@@ -202,7 +202,7 @@ jobs:
           TargetFolder: '$(Build.ArtifactStagingDirectory)/artifacts/log'
         continueOnError: true
         condition: always()
-
+      
   - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
     - task: CopyFiles@2
       displayName: Gather logs for publish to artifacts

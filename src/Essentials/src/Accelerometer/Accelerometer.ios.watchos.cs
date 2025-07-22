@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			MotionManager.StartAccelerometerUpdates(NSOperationQueue.CurrentQueue ?? new NSOperationQueue(), DataUpdated);
 		}
 
-		void DataUpdated(CMAccelerometerData data, NSError error)
+		void DataUpdated(CMAccelerometerData? data, NSError? error)
 		{
 			if (data == null)
 				return;

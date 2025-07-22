@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 			}
 		}
-		
+
 		sealed class SecondaryToolbarItem : UIBarButtonItem
 		{
 			readonly WeakReference<ToolbarItem> _item;

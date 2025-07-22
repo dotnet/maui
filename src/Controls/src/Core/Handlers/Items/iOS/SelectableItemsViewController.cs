@@ -57,6 +57,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Ensure the selected index is updated after the collection view's items generation is completed
 				CollectionView.PerformBatchUpdates(null, _ =>
 				{
+					if (ItemsSource is EmptySource)
+					{
+						return;
+					}
+
 					CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
 				});
 			}

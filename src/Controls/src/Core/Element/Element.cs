@@ -504,9 +504,7 @@ namespace Microsoft.Maui.Controls
 
 		//this is only used by XAMLC, not added to public API
 		[EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		public INameScope transientNamescope;
-#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		/// <summary>Returns the element that has the specified name.</summary>
 		/// <param name="name">The name of the element to be found.</param>
@@ -514,6 +512,9 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="InvalidOperationException">Thrown if the element's namescope couldn't be found.</exception>
 		public object FindByName(string name)
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+			
 			var namescope = GetNameScope() ?? transientNamescope;
 			if (namescope == null)
 				throw new InvalidOperationException("this element is not in a namescope");
@@ -523,6 +524,9 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		void INameScope.RegisterName(string name, object scopedElement)
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			var namescope = GetNameScope() ?? throw new InvalidOperationException("this element is not in a namescope");
 			namescope.RegisterName(name, scopedElement);
 		}
@@ -530,6 +534,9 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		void INameScope.UnregisterName(string name)
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			var namescope = GetNameScope() ?? throw new InvalidOperationException("this element is not in a namescope");
 			namescope.UnregisterName(name);
 		}
@@ -895,6 +902,9 @@ namespace Microsoft.Maui.Controls
 
 		internal INameScope GetNameScope()
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			var element = this;
 			do
 			{
