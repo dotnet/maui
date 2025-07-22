@@ -154,7 +154,7 @@ namespace Maui.Controls.Sample
 				});
 			}
 
-			[RequiresUnreferencedCode()]
+			[RequiresUnreferencedCode("TestCaseScreen uses reflection for test case discovery")]
 			public TestCaseScreen()
 			{
 				AutomationId = "TestCasesIssueList";

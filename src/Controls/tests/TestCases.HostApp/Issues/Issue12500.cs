@@ -49,7 +49,7 @@ public class Issue12500 : Shell
 }
 public class Issue12500EventPage : ContentPage
 {
-	[RequiresUnreferencedCode()]
+	[RequiresUnreferencedCode("Issue12500EventPage may require unreferenced code for data binding")]
 	public Issue12500EventPage()
 	{
 		var label = new Label
@@ -70,7 +70,7 @@ public class Issue12500EventPage : ContentPage
 
 public class Issue12500Main : ContentPage
 {
-	[RequiresUnreferencedCode()]
+	[RequiresUnreferencedCode("Issue12500Main may require unreferenced code for data binding")]
 	public Issue12500Main()
 	{
 		var label = new Label
