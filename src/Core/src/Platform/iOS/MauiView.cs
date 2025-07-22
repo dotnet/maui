@@ -148,8 +148,6 @@ namespace Microsoft.Maui.Platform
 			CrossPlatformArrange(bounds);
 		}
 
-
-
 		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
 		{
 			_invalidateParentWhenMovedToWindow = true;
