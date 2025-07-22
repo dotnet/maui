@@ -18,7 +18,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public RefreshViewTests()
 		{
-
 			DeviceDisplay.SetCurrent(new MockDeviceDisplay());
 		}
 
@@ -30,7 +29,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void CanExecuteDisablesRefreshView()
+		public void CanExecuteDisablesRefreshing()
 		{
 			RefreshView refreshView = new RefreshView();
 			refreshView.Command = new Command(() => { }, () => false);
@@ -38,7 +37,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void CanExecuteEnablesRefreshView()
+		public void CanExecuteEnablesRefreshing()
 		{
 			RefreshView refreshView = new RefreshView();
 			refreshView.Command = new Command(() => { }, () => true);
@@ -57,18 +56,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void IsEnabledShouldCoerceCanExecute()
+		public void IsRefreshEnabledShouldCoerceCanExecute()
 		{
 			RefreshView refreshView = new RefreshView()
 			{
-				IsEnabled = false,
+				IsRefreshEnabled = false,
 				Command = new Command(() => { })
 			};
-			Assert.False(refreshView.IsEnabled);
+			Assert.False(refreshView.IsRefreshEnabled);
 		}
 
 		[Fact]
-		public void CanExecuteChangesEnabled()
+		public void CanExecuteChangesIsRefreshEnabled()
 		{
 			RefreshView refreshView = new RefreshView();
 
@@ -80,14 +79,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			command.ChangeCanExecute();
 			Assert.False(refreshView.IsRefreshEnabled);
 
-
 			canExecute = true;
 			command.ChangeCanExecute();
 			Assert.True(refreshView.IsRefreshEnabled);
 		}
 
 		[Fact]
-		public void CommandPropertyChangesEnabled()
+		public void CommandPropertyChangesIsRefreshEnabled()
 		{
 			RefreshView refreshView = new RefreshView();
 
@@ -196,26 +194,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SettingIsRefreshEnabledToFalseWhileRefreshingStopsRefresh()
 		{
 			RefreshView refreshView = new RefreshView();
+
 			refreshView.IsRefreshing = true;
 			Assert.True(refreshView.IsRefreshing);
-			
+
 			refreshView.IsRefreshEnabled = false;
 			Assert.False(refreshView.IsRefreshing);
 		}
 
 		[Theory]
-		[InlineData(true, true, true, true)]   // Both enabled - should allow refresh
-		[InlineData(false, true, true, false)] // IsEnabled false - should prevent refresh
-		[InlineData(true, false, true, false)] // IsRefreshEnabled false - should prevent refresh
-		[InlineData(false, false, true, false)] // Both false - should prevent refresh
-		public void RefreshBehaviorDependsOnIsEnabledAndIsRefreshEnabled(bool isEnabled, bool isRefreshEnabled, bool setRefreshing, bool expectedRefreshing)
+		[InlineData(true, true, true)]   // Both enabled - should allow refresh
+		[InlineData(false, true, false)] // IsEnabled false - should prevent refresh
+		[InlineData(true, false, false)] // IsRefreshEnabled false - should prevent refresh
+		[InlineData(false, false, false)] // Both false - should prevent refresh
+		public void RefreshBehaviorDependsOnIsEnabledAndIsRefreshEnabled(bool isEnabled, bool isRefreshEnabled, bool expectedRefreshing)
 		{
 			RefreshView refreshView = new RefreshView();
-			
+
 			refreshView.IsEnabled = isEnabled;
 			refreshView.IsRefreshEnabled = isRefreshEnabled;
-			refreshView.IsRefreshing = setRefreshing;
-			
+
+			refreshView.IsRefreshing = true;
+
 			Assert.Equal(expectedRefreshing, refreshView.IsRefreshing);
 		}
 
@@ -225,16 +225,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			RefreshView refreshView = new RefreshView();
 			bool commandExecuted = false;
 			refreshView.Command = new Command(() => commandExecuted = true);
-			
+
 			// When IsRefreshEnabled is true, command should execute
 			refreshView.IsRefreshEnabled = true;
 			refreshView.IsRefreshing = true;
 			Assert.True(commandExecuted);
-			
+
 			// Reset
 			commandExecuted = false;
 			refreshView.IsRefreshing = false;
-			
+
 			// When IsRefreshEnabled is false, refresh should not happen
 			refreshView.IsRefreshEnabled = false;
 			refreshView.IsRefreshing = true;
@@ -248,17 +248,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			RefreshView refreshView = new RefreshView();
 			bool canExecute = true;
 			bool commandExecuted = false;
-			
+
 			refreshView.Command = new Command(() => commandExecuted = true, () => canExecute);
-			
+
 			// Initially can execute and IsRefreshEnabled is true by default
 			Assert.True(refreshView.IsRefreshEnabled);
-			
+
 			// When command cannot execute, IsRefreshEnabled should be false
 			canExecute = false;
 			((Command)refreshView.Command).ChangeCanExecute();
 			Assert.False(refreshView.IsRefreshEnabled);
-			
+
 			// When command can execute again, IsRefreshEnabled should be true (if explicitly set)
 			canExecute = true;
 			((Command)refreshView.Command).ChangeCanExecute();
@@ -271,13 +271,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			RefreshView refreshView = new RefreshView();
 			bool canExecute = false;
 			bool commandExecuted = false;
-			
+
 			refreshView.Command = new Command(() => commandExecuted = true, () => canExecute);
-			
+
 			// Even though IsRefreshEnabled is explicitly true, command cannot execute
 			refreshView.IsRefreshEnabled = true;
 			Assert.False(refreshView.IsRefreshEnabled); // Should be coerced to false
-			
+
 			// Trying to refresh should fail
 			refreshView.IsRefreshing = true;
 			Assert.False(refreshView.IsRefreshing);
@@ -290,18 +290,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			RefreshView refreshView = new RefreshView();
 			bool canExecute = true;
 			bool commandExecuted = false;
-			
+
 			refreshView.Command = new Command(() => commandExecuted = true, () => canExecute);
-			
+
 			// Start refreshing
 			refreshView.IsRefreshing = true;
 			Assert.True(refreshView.IsRefreshing);
 			Assert.True(commandExecuted);
-			
+
 			// When command can no longer execute, refreshing should stop
 			canExecute = false;
 			((Command)refreshView.Command).ChangeCanExecute();
-			
+
 			// The refresh should not be stopped by CanExecuteChanged when already refreshing
 			// This matches the behavior in the CanExecuteChanged method
 			Assert.True(refreshView.IsRefreshing);
