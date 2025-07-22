@@ -56,6 +56,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
 		/// <summary>Bindable property for <see cref="IsBusy"/>.</summary>
+		[Obsolete("Page.IsBusy has been deprecated and will be removed in .NET 11")]
 		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create(nameof(IsBusy), typeof(bool), typeof(Page), false, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
 
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
@@ -68,10 +69,6 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(Page), default(ImageSource), propertyChanged: OnImageSourceChanged);
 
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
-
-		Rect _containerArea;
-
-		bool _containerAreaSet;
 
 		bool _hasAppeared;
 		private protected bool HasAppeared => _hasAppeared;
@@ -128,6 +125,7 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>
 		/// <para>Setting <see cref="IsBusy"/> to <see langword="true"/> on multiple pages at once will cause the global activity indicator to run until all are set back to <see langword="false"/>. It is the developer's responsibility to unset the <see cref="IsBusy"/> flag before cleaning up a page.</para>
 		/// </remarks>
+		[Obsolete("Page.IsBusy has been deprecated and will be removed in .NET 11")]
 		public bool IsBusy
 		{
 			get { return (bool)GetValue(IsBusyProperty); }
@@ -178,16 +176,13 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
+
+		[Obsolete("This property is obsolete and will be removed in a future version. Use Bounds instead.")]
 		public Rect ContainerArea
 		{
-			get { return _containerArea; }
+			get { return Bounds; }
 			set
 			{
-				if (_containerArea == value)
-					return;
-				_containerAreaSet = true;
-				_containerArea = value;
-				ForceLayout();
 			}
 		}
 
@@ -207,6 +202,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
+		// TODO: Mark this obsolete and fix everywhere that references this property to use the more correct add/remove logical children
 		public ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
 		/// <inheritdoc/>
@@ -264,7 +260,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Raised when the children of this page, and thus potentially the layout, have changed.
 		/// </summary>
+		[Obsolete("Use SizeChanged.")]
+#pragma warning disable CS0067 // Type or member is obsolete
 		public event EventHandler LayoutChanged;
+#pragma warning disable CS0067 // Type or member is obsolete
 
 		/// <summary>
 		/// Raised when this page is visually appearing on screen.
@@ -438,34 +437,6 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("Use ArrangeOverride instead")]
 		protected virtual void LayoutChildren(double x, double y, double width, double height)
 		{
-			var area = new Rect(x, y, width, height);
-			Rect originalArea = area;
-			if (_containerAreaSet)
-			{
-				area = ContainerArea;
-				area.X += Padding.Left;
-				area.Y += Padding.Right;
-				area.Width -= Padding.HorizontalThickness;
-				area.Height -= Padding.VerticalThickness;
-				area.Width = Math.Max(0, area.Width);
-				area.Height = Math.Max(0, area.Height);
-			}
-
-			IList<Element> elements = this.InternalChildren;
-			foreach (Element element in elements)
-			{
-				var child = element as VisualElement;
-				if (child == null)
-					continue;
-
-				var page = child as Page;
-#pragma warning disable CS0618 // Type or member is obsolete
-				if (page != null && page.IgnoresContainerArea)
-					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
-				else
-					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, area);
-#pragma warning restore CS0618 // Type or member is obsolete
-			}
 		}
 
 		/// <summary>
@@ -584,36 +555,7 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("Use ArrangeOverride instead")]
 		protected void UpdateChildrenLayout()
 		{
-			if (!ShouldLayoutChildren())
-				return;
-
-			var logicalChildren = this.InternalChildren;
-			var startingLayout = new List<Rect>(logicalChildren.Count);
-			foreach (Element el in logicalChildren)
-			{
-				if (el is VisualElement c)
-					startingLayout.Add(c.Bounds);
-			}
-
-			double x = Padding.Left;
-			double y = Padding.Top;
-			double w = Math.Max(0, Width - Padding.HorizontalThickness);
-			double h = Math.Max(0, Height - Padding.VerticalThickness);
-
-			LayoutChildren(x, y, w, h);
-
-			for (var i = 0; i < logicalChildren.Count; i++)
-			{
-				var element = logicalChildren[i];
-				if (element is VisualElement c)
-				{
-					if (startingLayout.Count <= i || c.Bounds != startingLayout[i])
-					{
-						LayoutChanged?.Invoke(this, EventArgs.Empty);
-						return;
-					}
-				}
-			}
+			
 		}
 
 		internal void OnAppearing(Action action)
@@ -655,6 +597,7 @@ namespace Microsoft.Maui.Controls
 
 			_hasAppeared = true;
 
+#pragma warning disable CS0618 // TODO: Remove this API in .NET 11. Issue Link: https://github.com/dotnet/maui/issues/30155
 			if (IsBusy)
 			{
 				if (IsPlatformEnabled)
@@ -662,6 +605,7 @@ namespace Microsoft.Maui.Controls
 				else
 					_pendingActions.Add(() => Window.AlertManager.RequestPageBusy(this, true));
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			OnAppearing();
 			Appearing?.Invoke(this, EventArgs.Empty);
@@ -684,8 +628,10 @@ namespace Microsoft.Maui.Controls
 
 			_hasAppeared = false;
 
+#pragma warning disable CS0618 // TODO: Remove this API in .NET 11. Issue Link: https://github.com/dotnet/maui/issues/30155
 			if (IsBusy)
 				Window.AlertManager.RequestPageBusy(this, false);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var pageContainer = this as IPageContainer<Page>;
 			pageContainer?.CurrentPage?.SendDisappearing();
@@ -729,11 +675,6 @@ namespace Microsoft.Maui.Controls
 
 					InsertLogicalChild(insertIndex, item);
 
-					if (item is VisualElement)
-					{
-						InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-					}
-
 					if (index >= 0)
 					{
 						index++;
@@ -746,7 +687,9 @@ namespace Microsoft.Maui.Controls
 		{
 			if (!_hasAppeared)
 				return;
+#pragma warning disable CS0618 // TODO: Remove this API in .NET 11. Issue Link: https://github.com/dotnet/maui/issues/30155
 			Window.AlertManager.RequestPageBusy(this, IsBusy);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void OnToolbarItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -762,33 +705,6 @@ namespace Microsoft.Maui.Controls
 				foreach (IElementDefinition item in args.OldItems)
 					item.Parent = null;
 			}
-		}
-
-		bool ShouldLayoutChildren()
-		{
-			var logicalChildren = this.InternalChildren;
-			if (logicalChildren.Count == 0 || Width <= 0 || Height <= 0 || !IsPlatformStateConsistent)
-				return false;
-
-			var container = this as IPageContainer<Page>;
-			if (container?.CurrentPage != null)
-			{
-				if (InternalChildren.Contains(container.CurrentPage))
-					return container.CurrentPage.IsPlatformEnabled && container.CurrentPage.IsPlatformStateConsistent;
-				return true;
-			}
-
-			var any = false;
-			for (var i = 0; i < logicalChildren.Count; i++)
-			{
-				var v = logicalChildren[i] as VisualElement;
-				if (v != null && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
-				{
-					any = true;
-					break;
-				}
-			}
-			return !any;
 		}
 
 		/// <inheritdoc/>

@@ -13,6 +13,7 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | _MauiBindingInterceptorsSupport | Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported | When disabled, MAUI won't intercept any calls to `SetBinding` methods and try to compile them. Enabled by default. |
 | MauiEnableXamlCBindingWithSourceCompilation | Microsoft.Maui.RuntimeFeature.XamlCBindingWithSourceCompilationEnabled | When enabled, MAUI will compile all bindings, including those where the `Source` property is used. |
 | MauiHybridWebViewSupported | Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported | Enables HybridWebView, which makes use of dynamic System.Text.Json serialization features |
+| MauiNamescopesSupported | Microsoft.Maui.RuntimeFeature.AreNamescopesSupported | Enable support for Namescopes, FindByName if the application uses it, or to keep supporting runtime and XamlC XAML inflators |
 | MetricsSupport | System.Diagnostics.Metrics.Meter.IsSupported | Enables .NET MAUI metrics instrumentation via `Meter`. Metrics are on by default; set to `false` to disable.   |
 
 ## MauiEnableIVisualAssemblyScanning
@@ -77,6 +78,14 @@ XamlC skipped compilation of bindings with the `Source` property set to any valu
 ```
 
 This feature is disabled by default, unless `TrimMode=true` or `PublishAot=true`. For fully trimmed and NativeAOT apps, the feature is enabled.
+
+## MauiNamescopesSupported
+
+With (upcoming) sourcegen XAML inflation, the xaml infrastructure no longer need Namescopes. Some apps that want to keep XamlC or Runtime inflation, use FindByName in code, or have MarkupExtensions depending on `IReferenceProvider` will want to turn this back on.
+
+Having this off reduce method body size, making them faster to JIT, and release the pressure on the GC as there are way less allocations.
+
+As of NET10.0, the default is `true` so full compatibility is maintained, but might be changed in the future.
 
 ## MauiEnableMetrics
 

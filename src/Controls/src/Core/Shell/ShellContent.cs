@@ -122,7 +122,14 @@ namespace Microsoft.Maui.Controls
 			((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;
 		}
 
-		internal bool IsVisibleContent => Parent is ShellSection shellSection && shellSection.IsVisibleSection && shellSection.CurrentItem == this;
+		internal bool IsVisibleContent =>
+			Parent is ShellSection shellSection &&
+			shellSection.IsVisibleSection &&
+			shellSection.CurrentItem == this &&
+			(
+				Navigation?.ModalStack is null ||
+				Navigation?.ModalStack?.Count == 0
+			);
 
 		internal override void SendDisappearing()
 		{
