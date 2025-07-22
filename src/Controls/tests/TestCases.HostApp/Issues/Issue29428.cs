@@ -22,7 +22,7 @@ public class Issue29428 : Shell
             }
         };
 
-        var secondPage = new EventOrderTestPage();
+        var secondPage = new EventOrderTestPage29428();
 
         Items.Add(new FlyoutItem
         {
@@ -50,11 +50,11 @@ public class Issue29428 : Shell
         });
     }
 
-    public class EventOrderTestPage : ContentPage
+    public class EventOrderTestPage29428 : ContentPage
     {
         private readonly Label _eventOrderLabel;
 
-        public EventOrderTestPage()
+        public EventOrderTestPage29428()
         {
             Title = "Page 2";
             AutomationId = "SecondPage";
@@ -107,4 +107,3 @@ public class Issue29428 : Shell
         }
     }
 }
-
