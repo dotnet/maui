@@ -45,10 +45,25 @@ namespace Microsoft.Maui.Platform
 			_graphicsView = null;
 		}
 
+		bool CanProcessTouch([MaybeNullWhen(false)][NotNullWhen(true)] out IGraphicsView target)
+		{
+			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView) || !graphicsView.IsEnabled)
+			{
+				target = null;
+				return false;
+			}
+
+			target = graphicsView;
+			return true;
+		}
+
 		public override void TouchesBegan(NSSet touches, UIEvent? evt)
 		{
-			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
+			if (!CanProcessTouch(out var graphicsView))
+			{
 				return;
+			}
+
 			if (!IsFirstResponder)
 				BecomeFirstResponder();
 			var viewPoints = this.GetPointsInView(evt);
@@ -58,8 +73,10 @@ namespace Microsoft.Maui.Platform
 
 		public override void TouchesMoved(NSSet touches, UIEvent? evt)
 		{
-			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
+			if (!CanProcessTouch(out var graphicsView))
+			{
 				return;
+			}
 			var viewPoints = this.GetPointsInView(evt);
 			_pressedContained = _rect.ContainsAny(viewPoints);
 			graphicsView.DragInteraction(viewPoints);
@@ -67,15 +84,19 @@ namespace Microsoft.Maui.Platform
 
 		public override void TouchesEnded(NSSet touches, UIEvent? evt)
 		{
-			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
+			if (!CanProcessTouch(out var graphicsView))
+			{
 				return;
+			}
 			graphicsView.EndInteraction(this.GetPointsInView(evt), _pressedContained);
 		}
 
 		public override void TouchesCancelled(NSSet touches, UIEvent? evt)
 		{
-			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
+			if (!CanProcessTouch(out var graphicsView))
+			{
 				return;
+			}
 			_pressedContained = false;
 			graphicsView.CancelInteraction();
 		}
@@ -89,10 +110,14 @@ namespace Microsoft.Maui.Platform
 			public void OnHover()
 			{
 				if (!_platformView.TryGetTarget(out var platformView))
+				{
 					return;
+				}
 
-				if (platformView._graphicsView is null || !platformView._graphicsView.TryGetTarget(out var graphicsView))
+				if (platformView._graphicsView is null || !platformView._graphicsView.TryGetTarget(out var graphicsView) || !graphicsView.IsEnabled)
+				{
 					return;
+				}
 
 				var hoverGesture = platformView._hoverGesture;
 				if (hoverGesture!.State == UIGestureRecognizerState.Began)
