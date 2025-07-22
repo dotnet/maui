@@ -5,8 +5,8 @@
              Title="SafeArea Border Test">
     
     <Grid BackgroundColor="Red">
-        <!-- Border with SafeAreaIgnore property -->
-        <Border x:Name="TestBorder" SafeAreaIgnore="All" BackgroundColor="LightPink" Stroke="Purple" StrokeThickness="5">
+        <!-- Border with SafeAreaEdges property -->
+        <Border x:Name="TestBorder" SafeAreaEdges="All" BackgroundColor="LightPink" Stroke="Purple" StrokeThickness="5">
             <ScrollView>
                 <StackLayout Spacing="20" Padding="20">
                     <Label Text="SafeArea Border Test" 
@@ -14,21 +14,21 @@
                            FontAttributes="Bold"
                            HorizontalOptions="Center" />
                     
-                    <Label Text="This Border has SafeAreaIgnore='All' and should extend behind system UI areas. The red background shows areas outside safe area."
+                    <Label Text="This Border has SafeAreaEdges='All' and should extend behind system UI areas. The red background shows areas outside safe area."
                            FontSize="14"
                            HorizontalOptions="Center" />
                     
                     <Label x:Name="CurrentSettingsLabel"
-                           Text="Current Border SafeAreaIgnore: All"
+                           Text="Current Border SafeAreaEdges: All"
                            FontSize="16"
                            FontAttributes="Bold"
                            HorizontalOptions="Center"
                            AutomationId="CurrentSettings" />
                     
-                    <!-- Control panel for Border SafeAreaIgnore -->
+                    <!-- Control panel for Border SafeAreaEdges -->
                     <Border BackgroundColor="White" Stroke="Gray" StrokeThickness="2" Padding="15">
                         <VerticalStackLayout Spacing="15">
-                            <Label Text="Border SafeAreaIgnore Control:" 
+                            <Label Text="Border SafeAreaEdges Control:" 
                                    FontSize="18" 
                                    FontAttributes="Bold"
                                    HorizontalOptions="Center" />
@@ -133,8 +133,8 @@
                     
                     <!-- Sample content -->
                     <Label Text="Border Sample Content" FontSize="18" FontAttributes="Bold" />
-                    <Label Text="This content is inside the Border that has SafeAreaIgnore settings." />
-                    <Label Text="The Border should respect the SafeAreaIgnore settings on each edge." />
+                    <Label Text="This content is inside the Border that has SafeAreaEdges settings." />
+                    <Label Text="The Border should respect the SafeAreaEdges settings on each edge." />
                     <Label Text="Notice the purple border around the entire content area." />
                     <Label Text="Line 1" />
                     <Label Text="Line 2" />

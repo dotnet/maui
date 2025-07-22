@@ -69,8 +69,8 @@ public partial class Issue28986_ContentView : ContentPage
 			GetSafeAreaRegionsFromPickerIndex(BottomPicker.SelectedIndex)  // Bottom
 		);
 
-		// Apply SafeAreaIgnore to the ContentView
-		TestContentView.SafeAreaIgnore = safeAreaSettings;
+		// Apply SafeAreaEdges to the ContentView
+		TestContentView.SafeAreaEdges = safeAreaSettings;
 
 		// Update the display label
 		var settingsText = $"Left: {GetSafeAreaRegionsFromPickerIndex(LeftPicker.SelectedIndex)}, " +
@@ -78,6 +78,6 @@ public partial class Issue28986_ContentView : ContentPage
 		                  $"Right: {GetSafeAreaRegionsFromPickerIndex(RightPicker.SelectedIndex)}, " +
 		                  $"Bottom: {GetSafeAreaRegionsFromPickerIndex(BottomPicker.SelectedIndex)}";
 		
-		CurrentSettingsLabel.Text = $"Current ContentView SafeAreaIgnore: {settingsText}";
+		CurrentSettingsLabel.Text = $"Current ContentView SafeAreaEdges: {settingsText}";
 	}
 }

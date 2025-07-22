@@ -69,8 +69,8 @@ public partial class Issue28986_ScrollView : ContentPage
 			GetSafeAreaRegionsFromPickerIndex(BottomPicker.SelectedIndex)  // Bottom
 		);
 
-		// Apply SafeAreaIgnore to the ScrollView
-		TestScrollView.SafeAreaIgnore = safeAreaSettings;
+		// Apply SafeAreaEdges to the ScrollView
+		TestScrollView.SafeAreaEdges = safeAreaSettings;
 
 		// Update the display label
 		var settingsText = $"Left: {GetSafeAreaRegionsFromPickerIndex(LeftPicker.SelectedIndex)}, " +
@@ -78,6 +78,6 @@ public partial class Issue28986_ScrollView : ContentPage
 		                  $"Right: {GetSafeAreaRegionsFromPickerIndex(RightPicker.SelectedIndex)}, " +
 		                  $"Bottom: {GetSafeAreaRegionsFromPickerIndex(BottomPicker.SelectedIndex)}";
 		
-		CurrentSettingsLabel.Text = $"Current ScrollView SafeAreaIgnore: {settingsText}";
+		CurrentSettingsLabel.Text = $"Current ScrollView SafeAreaEdges: {settingsText}";
 	}
 }

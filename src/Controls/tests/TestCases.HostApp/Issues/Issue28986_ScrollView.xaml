@@ -2,33 +2,33 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue28986_ScrollView"
-             Title="SafeArea ScrollView Test" SafeAreaIgnore="All"
+             Title="SafeArea ScrollView Test" SafeAreaEdges="All"
              Background="Red">
     
-    <Grid BackgroundColor="Red" SafeAreaIgnore="All">
-        <!-- ScrollView with SafeAreaIgnore property -->
-        <ScrollView x:Name="TestScrollView" SafeAreaIgnore="All" BackgroundColor="LightBlue">
+    <Grid BackgroundColor="Red" SafeAreaEdges="All">
+        <!-- ScrollView with SafeAreaEdges property -->
+        <ScrollView x:Name="TestScrollView" SafeAreaEdges="All" BackgroundColor="LightBlue">
             <StackLayout Spacing="20" Padding="20">
                 <Label Text="SafeArea ScrollView Test" 
                        FontSize="24" 
                        FontAttributes="Bold"
                        HorizontalOptions="Center" />
                 
-                <Label Text="This ScrollView has SafeAreaIgnore='All' and should extend behind system UI areas. The red background shows areas outside safe area."
+                <Label Text="This ScrollView has SafeAreaEdges='All' and should extend behind system UI areas. The red background shows areas outside safe area."
                        FontSize="14"
                        HorizontalOptions="Center" />
                 
                 <Label x:Name="CurrentSettingsLabel"
-                       Text="Current ScrollView SafeAreaIgnore: All"
+                       Text="Current ScrollView SafeAreaEdges: All"
                        FontSize="16"
                        FontAttributes="Bold"
                        HorizontalOptions="Center"
                        AutomationId="CurrentSettings" />
                 
-                <!-- Control panel for ScrollView SafeAreaIgnore -->
+                <!-- Control panel for ScrollView SafeAreaEdges -->
                 <Border BackgroundColor="White" Stroke="Gray" StrokeThickness="2" Padding="15">
                     <VerticalStackLayout Spacing="15">
-                        <Label Text="ScrollView SafeAreaIgnore Control:" 
+                        <Label Text="ScrollView SafeAreaEdges Control:" 
                                FontSize="18" 
                                FontAttributes="Bold"
                                HorizontalOptions="Center" />
@@ -133,7 +133,7 @@
                 
                 <!-- Sample content to make scrolling meaningful -->
                 <Label Text="Sample Content" FontSize="18" FontAttributes="Bold" />
-                <Label Text="This is sample content to demonstrate ScrollView behavior with SafeAreaIgnore." />
+                <Label Text="This is sample content to demonstrate ScrollView behavior with SafeAreaEdges." />
                 <Label Text="Line 1" />
                 <Label Text="Line 2" />
                 <Label Text="Line 3" />

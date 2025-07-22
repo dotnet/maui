@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.Issues.Issue28986_ContentPage"
              x:Name="TestContentPage"
              Title="SafeArea ContentPage Test"
-             SafeAreaIgnore="All">
+             SafeAreaEdges="All">
     
     <Grid BackgroundColor="Red">
         <!-- Content that fills the entire ContentPage -->
@@ -15,21 +15,21 @@
                        FontAttributes="Bold"
                        HorizontalOptions="Center" />
                 
-                <Label Text="This ContentPage itself has SafeAreaIgnore='All' and should extend behind system UI areas. The red background shows areas outside safe area."
+                <Label Text="This ContentPage itself has SafeAreaEdges='All' and should extend behind system UI areas. The red background shows areas outside safe area."
                        FontSize="14"
                        HorizontalOptions="Center" />
                 
                 <Label x:Name="CurrentSettingsLabel"
-                       Text="Current ContentPage SafeAreaIgnore: All"
+                       Text="Current ContentPage SafeAreaEdges: All"
                        FontSize="16"
                        FontAttributes="Bold"
                        HorizontalOptions="Center"
                        AutomationId="CurrentSettings" />
                 
-                <!-- Control panel for ContentPage SafeAreaIgnore -->
+                <!-- Control panel for ContentPage SafeAreaEdges -->
                 <Border BackgroundColor="White" Stroke="Gray" StrokeThickness="2" Padding="15">
                     <VerticalStackLayout Spacing="15">
-                        <Label Text="ContentPage SafeAreaIgnore Control:" 
+                        <Label Text="ContentPage SafeAreaEdges Control:" 
                                FontSize="18" 
                                FontAttributes="Bold"
                                HorizontalOptions="Center" />
@@ -134,9 +134,9 @@
                 
                 <!-- Sample content -->
                 <Label Text="ContentPage Sample Content" FontSize="18" FontAttributes="Bold" />
-                <Label Text="This content is directly in the ContentPage that has SafeAreaIgnore settings." />
-                <Label Text="The ContentPage itself should respect the SafeAreaIgnore settings on each edge." />
-                <Label Text="The entire page content should move based on the SafeAreaIgnore settings." />
+                <Label Text="This content is directly in the ContentPage that has SafeAreaEdges settings." />
+                <Label Text="The ContentPage itself should respect the SafeAreaEdges settings on each edge." />
+                <Label Text="The entire page content should move based on the SafeAreaEdges settings." />
                 <Label Text="Line 1" />
                 <Label Text="Line 2" />
                 <Label Text="Line 3" />

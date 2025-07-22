@@ -5,8 +5,8 @@
              Title="SafeArea ContentView Test">
     
     <Grid BackgroundColor="Red">
-        <!-- ContentView with SafeAreaIgnore property -->
-        <ContentView x:Name="TestContentView" SafeAreaIgnore="All" BackgroundColor="LightGreen">
+        <!-- ContentView with SafeAreaEdges property -->
+        <ContentView x:Name="TestContentView" SafeAreaEdges="All" BackgroundColor="LightGreen">
             <ScrollView>
                 <StackLayout Spacing="20" Padding="20">
                     <Label Text="SafeArea ContentView Test" 
@@ -14,21 +14,21 @@
                            FontAttributes="Bold"
                            HorizontalOptions="Center" />
                     
-                    <Label Text="This ContentView has SafeAreaIgnore='All' and should extend behind system UI areas. The red background shows areas outside safe area."
+                    <Label Text="This ContentView has SafeAreaEdges='All' and should extend behind system UI areas. The red background shows areas outside safe area."
                            FontSize="14"
                            HorizontalOptions="Center" />
                     
                     <Label x:Name="CurrentSettingsLabel"
-                           Text="Current ContentView SafeAreaIgnore: All"
+                           Text="Current ContentView SafeAreaEdges: All"
                            FontSize="16"
                            FontAttributes="Bold"
                            HorizontalOptions="Center"
                            AutomationId="CurrentSettings" />
                     
-                    <!-- Control panel for ContentView SafeAreaIgnore -->
+                    <!-- Control panel for ContentView SafeAreaEdges -->
                     <Border BackgroundColor="White" Stroke="Gray" StrokeThickness="2" Padding="15">
                         <VerticalStackLayout Spacing="15">
-                            <Label Text="ContentView SafeAreaIgnore Control:" 
+                            <Label Text="ContentView SafeAreaEdges Control:" 
                                    FontSize="18" 
                                    FontAttributes="Bold"
                                    HorizontalOptions="Center" />
@@ -133,8 +133,8 @@
                     
                     <!-- Sample content -->
                     <Label Text="ContentView Sample Content" FontSize="18" FontAttributes="Bold" />
-                    <Label Text="This content is inside the ContentView that has SafeAreaIgnore settings." />
-                    <Label Text="The ContentView should respect the SafeAreaIgnore settings on each edge." />
+                    <Label Text="This content is inside the ContentView that has SafeAreaEdges settings." />
+                    <Label Text="The ContentView should respect the SafeAreaEdges settings on each edge." />
                     <Label Text="Line 1" />
                     <Label Text="Line 2" />
                     <Label Text="Line 3" />
