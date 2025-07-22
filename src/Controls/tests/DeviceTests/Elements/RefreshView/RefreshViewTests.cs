@@ -28,6 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
+
 		[Fact(DisplayName = "Setting the content of RefreshView removes previous platform view from visual tree")]
 		public async Task ChangingRefreshViewContentRemovesPreviousContentsPlatformViewFromVisualTree()
 		{
