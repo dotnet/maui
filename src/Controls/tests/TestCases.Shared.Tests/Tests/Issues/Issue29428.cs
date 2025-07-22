@@ -18,8 +18,8 @@ public class Issue29428 : _IssuesUITest
         App.TapShellFlyoutIcon();
         App.Tap("Page2FlyoutItem");
         App.WaitForElement("SecondPage");
-        var eventOrderElement = App.WaitForElement("EventOrderLabel").GetText();
-        Assert.That(eventOrderElement, Is.EqualTo("Loaded called first then NavigatedTo called"));
+        var eventOrderText = App.WaitForElement("EventOrderLabel").GetText();
+        Assert.That(eventOrderText, Is.EqualTo("Loaded called first then NavigatedTo called"));
     }
 }
 
