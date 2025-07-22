@@ -77,7 +77,6 @@ namespace Microsoft.Maui.Platform
 					.ConfigureAwait(false);
 
 				SourceManager.CompleteLoad(result);
-
 #elif ANDROID || TIZEN
 				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, token)
 					.ConfigureAwait(false);
@@ -86,11 +85,6 @@ namespace Microsoft.Maui.Platform
 #else
 				await Task.CompletedTask;
 #endif
-
-				if (result is not null)
-				{
-					SourceManager.CompleteLoad(result);
-				}
 
 #if ANDROID
 				CheckForImageLoadedOnAttached = true;
