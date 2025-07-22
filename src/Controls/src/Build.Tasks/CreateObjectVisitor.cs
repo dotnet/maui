@@ -139,9 +139,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (!typedef.IsValueType) //for ctor'ing typedefs, we first have to ldloca before the params
 					Context.IL.Append(PushCtorXArguments(factoryCtorInfo.ResolveGenericParameters(typeref, Module), node));
 			}
-			else if (node.Properties.ContainsKey(XmlName.xFactoryMethod))
+			else if (node.Properties.TryGetValue(XmlName.xFactoryMethod, out INode property))
 			{
-				var factoryMethod = (string)(node.Properties[XmlName.xFactoryMethod] as ValueNode).Value;
+				var factoryMethod = (string)(property as ValueNode).Value;
 				factoryMethodInfo = typedef.AllMethods(Context.Cache).FirstOrDefault(md => !md.methodDef.IsConstructor &&
 																			  md.methodDef.Name == factoryMethod &&
 																			  md.methodDef.IsStatic &&
