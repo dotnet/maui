@@ -59,7 +59,42 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyInitValue(datePicker, () => datePicker.Format, GetNativeFormat, format, nativeFormat);
 		}
+		
+		[Fact(DisplayName = "DateSelected Event Fires When Date Changes")]
+		public async Task DateSelectedEventFiresWhenDateChanges()
+		{
+			bool eventFired = false;
+			DateTime? oldDate = null;
+			DateTime? newDate = null;
 
+			var datePicker = new Controls.DatePicker
+			{
+				Date = DateTime.Today
+			};
+
+			datePicker.DateSelected += (sender, e) =>
+			{
+				eventFired = true;
+				oldDate = e.OldDate;
+				newDate = e.NewDate;
+			};
+
+			var handler = await CreateHandlerAsync(datePicker);
+			var platformView = GetNativeDatePicker(handler);
+
+			// Simulate date change from the platform control
+			var testDate = DateTime.Today.AddDays(5);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				platformView.Date = testDate;
+			});
+
+			// Verify the event was fired with correct values
+			Assert.True(eventFired);
+			Assert.Equal(DateTime.Today, oldDate);
+			Assert.Equal(testDate, newDate);
+		}
+		
 		CalendarDatePicker GetNativeDatePicker(DatePickerHandler datePickerHandler) =>
 			datePickerHandler.PlatformView;
 
