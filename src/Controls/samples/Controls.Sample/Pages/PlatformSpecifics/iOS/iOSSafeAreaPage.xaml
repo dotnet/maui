@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.iOSSafeAreaPage"
     Title="Safe Area"
-    SafeAreaIgnore="None">
+    SafeAreaEdges="None">
     <StackLayout>
         <Label Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quis enim redargueret? At modo dixeras nihil in istis rebus esse, quod interesset. Et quidem, inquit, vehementer errat; Semper enim ex eo, quod maximas partes continet latissimeque funditur, tota res appellatur. Equidem, sed audistine modo de Carneade? Duo Reges: constructio interrete." />
         <Button Text="Disable Use Safe Area"
