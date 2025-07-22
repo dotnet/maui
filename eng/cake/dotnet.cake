@@ -143,7 +143,10 @@ Task("dotnet-build")
         }
         else
         {
-            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
+            // On macOS, for this type of build we don't need to ensure that the provisioning profile is required
+            var properties = new Dictionary<string, string>();
+            properties["CodesignRequireProvisioningProfile"] = "false";
+            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf", properties);
         }
     });
 
@@ -486,7 +489,26 @@ Task("VSCode")
 
         UseLocalNuGetCacheFolder();
 
-        StartVisualStudioCodeForDotNet();
+        StartVisualStudioCodeForDotNet(false);
+    });
+
+Task("Insiders")
+    .Description("Provisions .NET, and launches an instance of Visual Studio Code using it.")
+    .IsDependentOn("Clean")
+    .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
+    .IsDependentOn("dotnet-pack") // Run conditionally
+    .Does(() =>
+    {
+        if (pendingException != null)
+        {
+            Error($"{pendingException}");
+            Error("!!!!BUILD TASKS FAILED: !!!!!");
+        }
+
+        UseLocalNuGetCacheFolder();
+
+        StartVisualStudioCodeForDotNet(true);
     });
 
 // Tasks for Local Development
@@ -585,6 +607,7 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
     envVariables.Add("DOTNET_ROOT", dotnet);
     envVariables.Add("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
     envVariables.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
+    envVariables.Add("DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT", "true");
     envVariables.Add("MSBuildEnableWorkloadResolver", "true");
 
     var existingPath = EnvironmentVariable("PATH");
@@ -607,6 +630,7 @@ void SetDotNetEnvironmentVariables(string dotnetDir = null)
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
     SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
+    SetEnvironmentVariable("DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT", "true");
     SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
 
@@ -632,7 +656,7 @@ void UseLocalNuGetCacheFolder(bool reset = false)
     SetEnvironmentVariable("NUGET_PACKAGES", packages.FullPath);
 }
 
-void StartVisualStudioCodeForDotNet()
+void StartVisualStudioCodeForDotNet(bool useInsiders)
 {
     if (IsCIBuild())
     {
@@ -645,7 +669,9 @@ void StartVisualStudioCodeForDotNet()
         SetDotNetEnvironmentVariables();
     }
 
-    StartProcess("code", new ProcessSettings{ EnvironmentVariables = GetDotNetEnvironmentVariables() });
+    string codeProcessName = useInsiders ? "code-insiders" : "code";
+
+    StartProcess(codeProcessName, new ProcessSettings{ EnvironmentVariables = GetDotNetEnvironmentVariables() });
 }
 
 void StartVisualStudioForDotNet()

@@ -106,7 +106,7 @@
   <ItemGroup Condition="'$(IsPackable)' == 'true'">
     <None Include="$(LicenseFile)"
           PackagePath="$([System.IO.Path]::GetFileName('$(LicenseFile)'))"
-          Pack="true" />
+          Pack="true" Condition="'$(MSBuildProjectFile)' != 'msi.csproj'" />
     <None Include="$(PackageThirdPartyNoticesFile)"
           PackagePath="$([System.IO.Path]::GetFileName('$(PackageThirdPartyNoticesFile)'))"
           Pack="true" />
@@ -124,5 +124,8 @@
                      Pack="true" />
     </ItemGroup>
   </Target>
+
+  <!-- Tell typescript to stop deleting everything before building the next TFM -->
+  <Target Name="TypeScriptDeleteOutputFromOtherConfigs" />
 
 </Project>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using NSubstitute;
 using NSubstitute.Core;
@@ -134,6 +135,20 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			view.Measure(Arg.Any<double>(), Arg.Any<double>()).Returns(fakeMeasure);
 
 			return view;
+		}
+
+		public static View Add(this Grid grid, int row, int column, int rowSpan = 1, int columnSpan = 1)
+		{
+			var child = new ContentView();
+
+			Grid.SetRow(child, row);
+			Grid.SetColumn(child, column);
+			Grid.SetRowSpan(child, rowSpan);
+			Grid.SetColumnSpan(child, columnSpan);
+
+			grid.Add(child);
+
+			return child;
 		}
 	}
 }

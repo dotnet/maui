@@ -71,6 +71,24 @@
     <None Include="nuget\buildTransitive\net-windows\**" PackagePath="buildTransitive\net$(_MauiMinimumSupportedDotNetTfm)-windows$(MinimumWindowsTargetFrameworkVersion)" Pack="true" />
   </ItemGroup>
 
+  <!-- TypeScript compilation -->
+  <PropertyGroup>
+    <TypeScriptTarget>ES2020</TypeScriptTarget>
+    <TypeScriptSourceMap>false</TypeScriptSourceMap>
+    <TypeScriptNoImplicitAny>true</TypeScriptNoImplicitAny>
+    <TypeScriptCompileOnSaveEnabled>true</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptCompileBlocked Condition=" '$(CI)' != 'true' and '$(TF_BUILD)' != 'true' ">true</TypeScriptCompileBlocked>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.7.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Handlers\HybridWebView\HybridWebView.js" LogicalName="_framework/hybridwebview.js" />
+  </ItemGroup>
+
   <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
     <ItemGroup>
       <_CopyItems Include="nuget\buildTransitive\**" SubFolder="" Exclude="nuget\**\*.in.*;nuget\**\net-*\*" />

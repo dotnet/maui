@@ -28,9 +28,9 @@ parameters:
   default: true
 
 - name: pushPackages
-  displayName: "Controls the script, allows for dry run"
+  displayName: "If false does dry run"
   type: boolean
-  default: false
+  default: true
 
 - name: nugetIncludeFilters
   displayName: "[OPTIONAL] Semi-colon (';') separated list of nugets packages to include"
@@ -59,6 +59,7 @@ variables:
 - group: DotNetBuilds storage account read tokens
 - group: AzureDevOps-Artifact-Feeds-Pats
 - group: DotNet-Maui-Release
+#- group: .NET Core Nuget API Keys
 
 resources:
   repositories:

@@ -1,0 +1,90 @@
+name: "AI Triage"
+
+on:
+  # When someone opens a new issue
+  issues:
+    types: [opened]
+  # When someone adds the "/triage" comments
+  issue_comment:
+    types: [created, edited]
+  # When the workflow is run manually
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to triage'
+        required: true
+        type: number
+
+permissions:
+  contents: read
+  issues: write
+  models: read
+
+jobs:
+  triage-issue:
+    name: Apply Labels
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'issues' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/triage'))
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get Issue or PR Number
+        id: get-number
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            echo "number=${{ inputs.issue_number }}" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "number=${{ github.event.issue.number }}" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Determine PLATFORM label for the issue
+        id: triage-platform
+        uses: ./.github/actions/triage-labels
+        with:
+          issue: ${{ steps.get-number.outputs.number }}
+          label-prefix: 'platform/'
+          mode: 'multi-label'
+
+      - name: Determine AREA label for the issue
+        id: triage-area
+        uses: ./.github/actions/triage-labels
+        with:
+          issue: ${{ steps.get-number.outputs.number }}
+          label-prefix: 'area-'
+          mode: 'single-label'
+
+      - name: Determine REGRESSION label for the issue
+        id: triage-regression
+        uses: ./.github/actions/triage-labels
+        with:
+          issue: ${{ steps.get-number.outputs.number }}
+          label: 'potential-regression'
+          mode: 'regression'
+
+      # TODO: fix this prompt as it is not working correctly
+      # - name: Determine MISSING INFO labels for the issue
+      #   id: triage-missing-info
+      #   uses: ./.github/actions/triage-labels
+      #   with:
+      #     issue: ${{ steps.get-number.outputs.number }}
+      #     mode: 'missing-info'
+
+      - name: Log Labels
+        run: |
+          cat "${{ steps.triage-platform.outputs.response-file }}"
+          cat "${{ steps.triage-area.outputs.response-file }}"
+          cat "${{ steps.triage-regression.outputs.response-file }}"
+
+      - name: Apply Labels and Comment
+        # TODO: delete this condition when we are ready!
+        if: |
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/triage'))
+        uses: ./.github/actions/triage-apply
+        with:
+          issue: ${{ steps.get-number.outputs.number }}

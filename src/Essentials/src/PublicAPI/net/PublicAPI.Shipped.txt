@@ -1201,6 +1201,8 @@ static Microsoft.Maui.Storage.Preferences.Get(string! key, string? defaultValue,
 static Microsoft.Maui.Storage.Preferences.Get(string! key, string? defaultValue) -> string?
 static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTime defaultValue, string? sharedName) -> System.DateTime
 static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTime defaultValue) -> System.DateTime
+static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue, string? sharedName) -> System.DateTimeOffset
+static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue) -> System.DateTimeOffset
 static Microsoft.Maui.Storage.Preferences.Remove(string! key, string? sharedName) -> void
 static Microsoft.Maui.Storage.Preferences.Remove(string! key) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, bool value, string? sharedName) -> void
@@ -1217,6 +1219,8 @@ static Microsoft.Maui.Storage.Preferences.Set(string! key, string? value, string
 static Microsoft.Maui.Storage.Preferences.Set(string! key, string? value) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTime value, string? sharedName) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTime value) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value, string? sharedName) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value) -> void
 static Microsoft.Maui.Storage.SecureStorage.Default.get -> Microsoft.Maui.Storage.ISecureStorage!
 static Microsoft.Maui.Storage.SecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string?>!
 static Microsoft.Maui.Storage.SecureStorage.Remove(string! key) -> bool
