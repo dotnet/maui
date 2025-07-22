@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -66,6 +67,7 @@ namespace Microsoft.Maui.DeviceTests
 #if !IOS
 		[Theory]
 		[ClassData(typeof(ChangingToNewMauiContextDoesntCrashTestCases))]
+		[RequiresUnreferencedCode("Calls System.Activator.CreateInstance(Type)")]
 		public async Task ChangingToNewMauiContextDoesntCrash(bool useAppMainPage, Type rootPageType)
 		{
 			SetupBuilder();

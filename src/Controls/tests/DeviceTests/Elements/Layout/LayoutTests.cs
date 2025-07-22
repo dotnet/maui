@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -188,6 +189,7 @@ namespace Microsoft.Maui.DeviceTests
 				await initialBitmap.AssertEqualAsync(updatingBitmap);
 			});
 
+			[RequiresUnreferencedCode("Calls System.Activator.CreateInstance(Type)")]
 			static void CreateLayout(Type layoutType, out Layout layout, out Label label)
 			{
 				layout = Activator.CreateInstance(layoutType) as Layout;
