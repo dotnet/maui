@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.Maui.Controls.TabbedPage.TabActiveTapped -> System.EventHandler
 const Microsoft.Maui.Controls.BrushTypeConverter.Hsl = "hsl" -> string!
 const Microsoft.Maui.Controls.BrushTypeConverter.Hsla = "hsla" -> string!
 const Microsoft.Maui.Controls.BrushTypeConverter.LinearGradient = "linear-gradient" -> string!
