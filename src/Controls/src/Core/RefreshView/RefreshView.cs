@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls
 			if (bindable is RefreshView refreshView)
 			{
 				refreshView._isRefreshEnabledExplicit = (bool)value;
-				return refreshView.IsRefreshEnabledCore;
+				return refreshView._isRefreshEnabledExplicit && CommandElement.GetCanExecute(refreshView);
 			}
 
 			return false;
@@ -139,25 +139,6 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// This value represents the cumulative IsRefreshEnabled value.
-		/// It considers both the explicitly set value and the command's CanExecute state.
-		/// </summary>
-		protected virtual bool IsRefreshEnabledCore
-		{
-			get
-			{
-				if (_isRefreshEnabledExplicit == false)
-				{
-					// If the explicitly set value is false, then nothing else matters
-					return false;
-				}
-
-				// Also check if the command can execute
-				return CommandElement.GetCanExecute(this);
-			}
-		}
-
-		/// <summary>
 		/// Gets or sets a value indicating whether the pull-to-refresh gesture is enabled.
 		/// When false, the refresh gesture is disabled but child controls remain interactive.
 		/// </summary>
@@ -167,31 +148,26 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IsRefreshEnabledProperty, value); }
 		}
 
-		/// <summary>
-		/// This method must always be called if some event occurs and the value of
-		/// the <see cref="IsRefreshEnabledCore"/> property will change.
-		/// </summary>
-		protected void RefreshIsRefreshEnabledProperty() =>
-			this.RefreshPropertyValue(IsRefreshEnabledProperty, _isRefreshEnabledExplicit);
-
 		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, RefreshView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
+		bool IRefreshView.IsRefreshEnabled => IsRefreshEnabled;
+
 		ICommand ICommandElement.Command => Command;
 
 		object ICommandElement.CommandParameter => CommandParameter;
 
-		bool IRefreshView.IsRefreshEnabled => IsRefreshEnabled;
-
+		protected override bool IsEnabledCore => base.IsEnabledCore;
+		
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e)
 		{
 			if (IsRefreshing)
 				return;
 
-			RefreshIsRefreshEnabledProperty();
+			this.RefreshPropertyValue(IsRefreshEnabledProperty, _isRefreshEnabledExplicit);
 		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)

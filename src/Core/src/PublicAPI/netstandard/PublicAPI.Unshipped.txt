@@ -32,6 +32,7 @@ Microsoft.Maui.IDatePicker.Date.get -> System.DateTime?
 Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
+Microsoft.Maui.IRefreshView.IsRefreshEnabled.get -> bool
 Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
 Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
 *REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
