@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public IMauiContext MauiContext { get; }
 
+			// TODO: This method is obsolete in .NET 10 and will be removed in .NET11.
 			public partial void OnPageBusy(Page sender, bool enabled)
 			{
 				// Verify that the page making the request is part of this activity 
