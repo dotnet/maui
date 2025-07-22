@@ -60,14 +60,18 @@ public class Issue28091SubscribeToUpdates : _IssuesUITest
     /// </summary>
     [Test, Order(3)]
     [Category(UITestCategories.Performance)]
-    public void HistoryLabel_ShouldUpdate_AfterInteractions()
+    public async Task HistoryLabel_ShouldUpdate_AfterInteractions()
     {
         App.WaitForElement("ResizableRectangle");
         var initialText = App.FindElement("HistoryLabel")?.GetText();
 
+        // Simulate layout changes
         App.Tap("IncreaseWidthButton");
         App.Tap("IncreaseHeightButton");
-
+        
+        // Wait briefly to allow profiler tracking events
+        await Task.Delay(500);
+        
         var updatedText = App.FindElement("HistoryLabel")?.GetText();
         Assert.That(updatedText, Is.Not.Null
 	        .And.Contains("Rectangle")
