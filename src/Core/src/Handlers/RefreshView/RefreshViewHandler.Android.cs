@@ -48,9 +48,6 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView.SetColorSchemeColors(color.Value);
 		}
 
-		static void UpdateIsRefreshing(IRefreshViewHandler handler) =>
-			handler.PlatformView.Refreshing = handler.VirtualView.IsRefreshing;
-
 		static void UpdateBackground(IRefreshViewHandler handler)
 		{
 			if (handler.VirtualView.Background == null)
@@ -65,7 +62,7 @@ namespace Microsoft.Maui.Handlers
 			=> UpdateBackground(handler);
 
 		public static void MapIsRefreshing(IRefreshViewHandler handler, IRefreshView refreshView)
-			=> UpdateIsRefreshing(handler);
+			=> handler.PlatformView.Refreshing = handler.VirtualView.IsRefreshing;
 
 		public static void MapContent(IRefreshViewHandler handler, IRefreshView refreshView)
 			=> UpdateContent(handler);
@@ -74,20 +71,9 @@ namespace Microsoft.Maui.Handlers
 			=> UpdateRefreshColor(handler);
 
 		internal static void MapIsRefreshEnabled(IRefreshViewHandler handler, IRefreshView refreshView)
-			=> UpdateIsRefreshEnabled(handler);
+			=> handler.PlatformView.RefreshEnabled = handler.VirtualView.IsRefreshEnabled;
 
 		public static void MapIsEnabled(IRefreshViewHandler handler, IRefreshView refreshView)
-			=> UpdateIsEnabled(handler);
-
-		static void UpdateIsRefreshEnabled(IRefreshViewHandler handler)
-		{
-			handler.PlatformView.RefreshEnabled = handler.VirtualView.IsRefreshEnabled;
-		}
-
-		static void UpdateIsEnabled(IRefreshViewHandler handler)
-		{
-			// On Android, IsEnabled should disable the entire view tree
-			handler.PlatformView.Enabled = handler.VirtualView.IsEnabled;
-		}
+			=> handler.PlatformView.Enabled = handler.VirtualView.IsEnabled;
 	}
 }
