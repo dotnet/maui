@@ -574,6 +574,66 @@ Task("GenerateCgManifest")
     });
 });
 
+Task("publicapi")
+    .Description("Clears PublicAPI.Unshipped.txt files and regenerates them with current public APIs. Processes Core, Controls, Essentials, and Graphics projects. Skips Windows files on non-Windows platforms and always skips Tizen files. Use after adding new public APIs to resolve build errors.")
+    .Does(() =>
+{
+    var corePublicApiDir = MakeAbsolute(Directory("./src/Core/src/PublicAPI"));
+    var controlsPublicApiDir = MakeAbsolute(Directory("./src/Controls/src/Core/PublicAPI"));
+    var essentialsPublicApiDir = MakeAbsolute(Directory("./src/Essentials/src/PublicAPI"));
+    var graphicsPublicApiDir = MakeAbsolute(Directory("./src/Graphics/src/Graphics/PublicAPI"));
+    
+    Information("Resetting PublicAPI.Unshipped.txt files...");
+    
+    // Find and clear all PublicAPI.Unshipped.txt files in Core, Controls, Essentials, and Graphics
+    var coreUnshippedFiles = GetFiles($"{corePublicApiDir}/**/PublicAPI.Unshipped.txt");
+    var controlsUnshippedFiles = GetFiles($"{controlsPublicApiDir}/**/PublicAPI.Unshipped.txt");
+    var essentialsUnshippedFiles = GetFiles($"{essentialsPublicApiDir}/**/PublicAPI.Unshipped.txt");
+    var graphicsUnshippedFiles = GetFiles($"{graphicsPublicApiDir}/**/PublicAPI.Unshipped.txt");
+    var allUnshippedFiles = coreUnshippedFiles.Concat(controlsUnshippedFiles).Concat(essentialsUnshippedFiles).Concat(graphicsUnshippedFiles);
+    
+    foreach(var file in allUnshippedFiles)
+    {
+        // Skip Windows-specific files if not on Windows
+        if (!IsRunningOnWindows() && file.FullPath.Contains("windows"))
+        {
+            Information($"Skipping Windows file (not on Windows): {file}");
+            continue;
+        }
+        
+        // Skip Tizen-specific files
+        if (file.FullPath.Contains("tizen"))
+        {
+            Information($"Skipping Tizen file: {file}");
+            continue;
+        }
+        
+        // Skip macOS-specific files
+        if (file.FullPath.Contains("macos"))
+        {
+            Information($"Skipping macOS file: {file}");
+            continue;
+        }
+        
+        Information($"Clearing: {file}");
+        System.IO.File.WriteAllText(file.FullPath, string.Empty);
+    }
+    
+    Information("Regenerating PublicAPI...");
+    
+    // Build Controls.Core.csproj with PublicApiType=Generate
+    var settings = new DotNetBuildSettings
+    {
+        Configuration = "Debug",
+        MSBuildSettings = new DotNetMSBuildSettings()
+    };
+    settings.MSBuildSettings.Properties["PublicApiType"] = new List<string> { "Generate" };
+    
+    DotNetBuild("./src/Controls/src/Core/Controls.Core.csproj", settings);
+    
+    Information("PublicAPI reset and regeneration completed!");
+});
+
 bool RunPackTarget()
 {
     // Is the user running the pack target explicitly?

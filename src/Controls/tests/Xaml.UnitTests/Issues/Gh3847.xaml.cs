@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var view = new Gh3847(useCompiledXaml);
 				var cv = view.FindByName<ContentView>("contentView");
-				var label = cv.Children[0] as Label;
+				var label = (cv as IVisualTreeElement).GetVisualChildren()[0] as Label;
 				Assert.AreEqual(label.Text, cv.StyleId);
 			}
 		}
