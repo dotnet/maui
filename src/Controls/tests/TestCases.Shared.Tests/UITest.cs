@@ -111,6 +111,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.CloseApp();
 		}
 
+		public override void LaunchAppWithTest()
+		{
+			App.LaunchApp();
+		}
+
 		/// <summary>
 		/// Verifies the screenshots and returns an exception in case of failure.
 		/// </summary>

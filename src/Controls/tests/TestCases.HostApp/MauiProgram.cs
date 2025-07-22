@@ -64,14 +64,12 @@ namespace Maui.Controls.Sample
 		{
 			Page mainPage = null;
 			OverrideMainPage(ref mainPage);
-
+#if MACCATALYST
 			// Check for startup test argument from environment variables (passed by test runner)
 			var testName = System.Environment.GetEnvironmentVariable("test");
 			
 			if (!string.IsNullOrEmpty(testName))
 			{
-				App.StartupTestName = testName;
-
 				// Try to get the test page directly from issues/test cases
 				var testCaseScreen = new TestCases.TestCaseScreen();
 				var testPage = testCaseScreen.TryToGetTestPage(testName);
@@ -90,7 +88,7 @@ namespace Maui.Controls.Sample
 					return galleryPage;
 				}
 			}
-
+#endif
 			return mainPage ?? new CoreNavigationPage();
 		}
 	}
@@ -105,7 +103,6 @@ namespace Maui.Controls.Sample
 		}
 
 		public static bool PreloadTestCasesIssuesList { get; set; } = true;
-		public static string StartupTestName { get; set; }
 
 		protected override void OnAppLinkRequestReceived(Uri uri)
 		{

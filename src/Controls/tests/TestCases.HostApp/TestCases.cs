@@ -235,10 +235,7 @@ namespace Maui.Controls.Sample
 			/// </remarks>
 			public Page TryToGetTestPage(string name)
 			{
-				var issue = _issues.SingleOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
-				if (issue == null)
-					issue = _issues.SingleOrDefault(x => string.Equals(x.Description, name, StringComparison.OrdinalIgnoreCase));
-
+				var issue = _issues.SingleOrDefault(x => string.Equals(x.Description, name, StringComparison.OrdinalIgnoreCase));
 				return issue?.PageFactory?.Invoke();
 			}
 			

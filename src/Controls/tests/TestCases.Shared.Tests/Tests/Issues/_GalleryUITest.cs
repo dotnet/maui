@@ -29,11 +29,6 @@ namespace Microsoft.Maui.TestCases.Tests
             App.LaunchApp(GalleryPageName, ResetAfterEachTest);
         }
 
-        public override void Close()
-        {
-            App.CloseApp();
-        }
-
         protected override void FixtureSetup()
         {
             base.FixtureSetup();
