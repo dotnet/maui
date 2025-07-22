@@ -64,8 +64,6 @@ namespace Microsoft.Maui.Platform
 			CrossPlatformLayout?.CrossPlatformArrange(destination);
 		}
 
-
-
 		public bool RefreshEnabled
 		{
 			get => _refreshEnabled;

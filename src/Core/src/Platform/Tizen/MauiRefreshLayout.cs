@@ -39,20 +39,5 @@ namespace Microsoft.Maui.Platform
 		{
 			IconBackgroundColor = view.Background.ToColor()?.ToPlatform() ?? TColor.Default;
 		}
-
-		public void UpdateIsRefreshEnabled(IRefreshView view)
-		{
-			IsEnabled = view.IsRefreshEnabled;
-		}
-
-		public void UpdateIsEnabled(IRefreshView view)
-		{
-			// On Tizen, IsEnabled should disable the entire view tree for consistency
-			IsEnabled = view.IsEnabled;
-			
-			// Also update refresh enabled state if the view is enabled
-			if (view.IsEnabled)
-				UpdateIsRefreshEnabled(view);
-		}
 	}
 }
