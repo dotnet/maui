@@ -511,7 +511,7 @@ namespace Microsoft.Maui.Controls
 			return base.Measure(widthConstraint, heightConstraint);
 		}
 
-		
+
 		/// <summary>
 		/// Sends a child to the back of the visual stack.
 		/// </summary>
@@ -578,7 +578,7 @@ namespace Microsoft.Maui.Controls
 		protected new void UpdateChildrenLayout()
 		{
 		}
-		
+
 		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
