@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample
@@ -343,9 +344,23 @@ namespace Maui.Controls.Sample
             // Notify ViewModel about updated dimensions including X and Y
             _viewModel.UpdateDrawableDimensions(dirtyRect.X, dirtyRect.Y, RectFWidth, RectFHeight);
 
-            // Use the color from ViewModel to show when redraw happens
+            // SetShadow - used once across all drawables
+            canvas.SetShadow(new SizeF(3, 3), 5, Colors.Gray);
+
+            // FillRoundedRectangle - used once across all drawables
             canvas.FillColor = _viewModel.CurrentDrawColor;
-            canvas.FillRectangle(dirtyRect);
+            float cornerRadius = 15;
+            canvas.FillRoundedRectangle(dirtyRect.X + 10, dirtyRect.Y + 10, 
+                dirtyRect.Width - 20, dirtyRect.Height - 20, cornerRadius);
+
+            // DrawRoundedRectangle - outline the rounded rectangle
+            canvas.StrokeColor = Colors.Black;
+            canvas.StrokeSize = 2;
+            canvas.DrawRoundedRectangle(dirtyRect.X + 10, dirtyRect.Y + 10, 
+                dirtyRect.Width - 20, dirtyRect.Height - 20, cornerRadius);
+
+            // Reset shadow
+            canvas.SetShadow(SizeF.Zero, 0, Colors.Transparent);
 
             // Add "HelloWorld" label with flow direction support
             DrawFlowDirectionLabel(canvas, dirtyRect);
@@ -354,17 +369,18 @@ namespace Maui.Controls.Sample
         private void DrawFlowDirectionLabel(ICanvas canvas, RectF rect)
         {
             canvas.FontColor = Colors.White;
-            var fontSize = Math.Min(rect.Width, rect.Height) * 0.15f;
-            canvas.FontSize = fontSize;
+            canvas.FontSize = 14;
+            canvas.Font = Microsoft.Maui.Graphics.Font.Default;
             
             string text = "HelloWorld";
             
-            // Use the shape bounds and let FlowDirection handle RTL/LTR automatically
-            // HorizontalAlignment.Left respects FlowDirection (becomes right-aligned in RTL)
-            float x = rect.Left + 10; // Small padding from edge
-            float y = rect.Center.Y;
+            // Define a proper bounding box for the text following documentation pattern
+            float textX = rect.Left + 10;
+            float textY = rect.Center.Y - 15; // Adjust Y to center vertically
+            float textWidth = Math.Max(100, rect.Width - 20); // Ensure minimum width
+            float textHeight = 30;
             
-            canvas.DrawString(text, x, y, HorizontalAlignment.Left);
+            canvas.DrawString(text, textX, textY, textWidth, textHeight, HorizontalAlignment.Left, VerticalAlignment.Top);
         }
     }
 
@@ -388,14 +404,21 @@ namespace Maui.Controls.Sample
             // Notify ViewModel about updated dimensions including X and Y
             _viewModel.UpdateDrawableDimensions(dirtyRect.X, dirtyRect.Y, RectFWidth, RectFHeight);
 
-            // Use the color from ViewModel to show when redraw happens
-            canvas.FillColor = _viewModel.CurrentDrawColor;
+            // DrawPath/FillPath - used once across all drawables
             PathF path = new PathF();
             path.MoveTo(dirtyRect.Left, dirtyRect.Bottom);
             path.LineTo(dirtyRect.Right, dirtyRect.Bottom);
             path.LineTo(dirtyRect.Center.X, dirtyRect.Top);
             path.Close();
+            
+            canvas.FillColor = _viewModel.CurrentDrawColor;
             canvas.FillPath(path);
+
+            // StrokeLineJoin - used once across all drawables
+            canvas.StrokeColor = Colors.Black;
+            canvas.StrokeSize = 3;
+            canvas.StrokeLineJoin = LineJoin.Round;
+            canvas.DrawPath(path);
 
             // Add "HelloWorld" label with flow direction support
             DrawFlowDirectionLabel(canvas, dirtyRect);
@@ -404,17 +427,18 @@ namespace Maui.Controls.Sample
         private void DrawFlowDirectionLabel(ICanvas canvas, RectF rect)
         {
             canvas.FontColor = Colors.White;
-            var fontSize = Math.Min(rect.Width, rect.Height) * 0.12f;
-            canvas.FontSize = fontSize;
+            canvas.FontSize = 14;
+            canvas.Font = Microsoft.Maui.Graphics.Font.Default;
             
             string text = "HelloWorld";
             
-            // Use the shape bounds and let FlowDirection handle RTL/LTR automatically
-            // HorizontalAlignment.Left respects FlowDirection (becomes right-aligned in RTL)
-            float x = rect.Left + 10; // Small padding from edge
-            float y = rect.Center.Y;
+            // Define a proper bounding box for the text following documentation pattern
+            float textX = rect.Left + 10;
+            float textY = rect.Center.Y - 15; // Adjust Y to center vertically
+            float textWidth = Math.Max(100, rect.Width - 20); // Ensure minimum width
+            float textHeight = 30;
             
-            canvas.DrawString(text, x, y, HorizontalAlignment.Left);
+            canvas.DrawString(text, textX, textY, textWidth, textHeight, HorizontalAlignment.Left, VerticalAlignment.Top);
         }
     }
 
@@ -432,28 +456,26 @@ namespace Maui.Controls.Sample
             // Notify ViewModel about updated dimensions including X and Y
             _viewModel.UpdateDrawableDimensions(dirtyRect.X, dirtyRect.Y, dirtyRect.Width, dirtyRect.Height);
 
-            // Use the color from ViewModel to show when redraw happens
+            // Fill the ellipse with the selected color
             canvas.FillColor = _viewModel.CurrentDrawColor;
             canvas.FillEllipse(dirtyRect);
 
-            // Add "HelloWorld" label with flow direction support
-            DrawFlowDirectionLabel(canvas, dirtyRect);
-        }
+            // DrawEllipse - outline the ellipse
+            canvas.StrokeColor = Colors.Black;
+            canvas.StrokeSize = 2;
+            canvas.DrawEllipse(dirtyRect);
 
-        private void DrawFlowDirectionLabel(ICanvas canvas, RectF rect)
-        {
-            canvas.FontColor = Colors.White;
-            var fontSize = Math.Min(rect.Width, rect.Height) * 0.15f;
-            canvas.FontSize = fontSize;
+            // DrawArc and FillArc - used once across all drawables
+            float centerX = dirtyRect.Center.X;
+            float centerY = dirtyRect.Center.Y;
+            float arcRadius = Math.Min(dirtyRect.Width, dirtyRect.Height) / 4;
             
-            string text = "HelloWorld";
+            canvas.FillColor = Colors.Yellow;
+            canvas.FillArc(centerX - arcRadius, centerY - arcRadius, arcRadius * 2, arcRadius * 2, 0, 90, true);
             
-            // Use the shape bounds and let FlowDirection handle RTL/LTR automatically
-            // HorizontalAlignment.Left respects FlowDirection (becomes right-aligned in RTL)
-            float x = rect.Left + 10; // Small padding from edge
-            float y = rect.Center.Y;
-            
-            canvas.DrawString(text, x, y, HorizontalAlignment.Left);
+            canvas.StrokeColor = Colors.Orange;
+            canvas.StrokeSize = 3;
+            canvas.DrawArc(centerX - arcRadius, centerY - arcRadius, arcRadius * 2, arcRadius * 2, 180, 90, true, false);
         }
     }
 
@@ -471,30 +493,15 @@ namespace Maui.Controls.Sample
             // Notify ViewModel about updated dimensions including X and Y
             _viewModel.UpdateDrawableDimensions(dirtyRect.X, dirtyRect.Y, dirtyRect.Width, dirtyRect.Height);
 
-            // Use the color from ViewModel to show when redraw happens
+            // StrokeLineCap and StrokeDashPattern - used once across all drawables
             canvas.StrokeColor = _viewModel.CurrentDrawColor;
-            canvas.StrokeSize = 2;
+            canvas.StrokeSize = 4;
+            canvas.StrokeLineCap = LineCap.Round;
+            canvas.StrokeDashPattern = new float[] { 15, 5, 10, 5 };
             canvas.DrawLine(dirtyRect.Left, dirtyRect.Top, dirtyRect.Right, dirtyRect.Bottom);
-            Debug.WriteLine(dirtyRect);
 
-            // Add "HelloWorld" label with flow direction support
-            DrawFlowDirectionLabel(canvas, dirtyRect);
-        }
-
-        private void DrawFlowDirectionLabel(ICanvas canvas, RectF rect)
-        {
-            canvas.FontColor = Colors.Black;
-            var fontSize = Math.Min(rect.Width, rect.Height) * 0.15f;
-            canvas.FontSize = fontSize;
-            
-            string text = "HelloWorld";
-            
-            // Use the shape bounds and let FlowDirection handle RTL/LTR automatically
-            // HorizontalAlignment.Left respects FlowDirection (becomes right-aligned in RTL)
-            float x = rect.Left + 5; // Small padding from edge
-            float y = rect.Top + fontSize + 5; // Position above the line
-            
-            canvas.DrawString(text, x, y, HorizontalAlignment.Left);
+            // Reset dash pattern
+            canvas.StrokeDashPattern = null;
         }
     }
 
@@ -512,61 +519,104 @@ namespace Maui.Controls.Sample
             // Notify ViewModel about updated dimensions including X and Y
             _viewModel.UpdateDrawableDimensions(dirtyRect.X, dirtyRect.Y, dirtyRect.Width, dirtyRect.Height);
 
-            // Set font properties
-            canvas.FontColor = Colors.DarkBlue;
-            var fontSize = Math.Min(dirtyRect.Width, dirtyRect.Height) * 0.2f;
-            canvas.FontSize = fontSize;
-            Debug.WriteLine(dirtyRect);
-            // Simple text to display
-            string displayText = "Sample Text";
+            // ClipPath - used once across all drawables
+            canvas.SaveState();
+            PathF clipPath = new PathF();
+            clipPath.MoveTo(dirtyRect.X + 10, dirtyRect.Y);
+            clipPath.LineTo(dirtyRect.Right - 10, dirtyRect.Y);
+            clipPath.LineTo(dirtyRect.Right, dirtyRect.Y + 10);
+            clipPath.LineTo(dirtyRect.Right, dirtyRect.Bottom - 10);
+            clipPath.LineTo(dirtyRect.Right - 10, dirtyRect.Bottom);
+            clipPath.LineTo(dirtyRect.X + 10, dirtyRect.Bottom);
+            clipPath.LineTo(dirtyRect.X, dirtyRect.Bottom - 10);
+            clipPath.LineTo(dirtyRect.X, dirtyRect.Y + 10);
+            clipPath.Close();
+            canvas.ClipPath(clipPath);
 
-            // Calculate text positioning (center the text)
-            var textSize = canvas.GetStringSize(displayText, Microsoft.Maui.Graphics.Font.Default, fontSize);
-            float x = dirtyRect.Center.X - (textSize.Width / 2);
-            float y = dirtyRect.Center.Y + (textSize.Height / 4);
-
-            // Draw background rectangle for better visibility
-            var backgroundRect = new RectF(x - 5, y - textSize.Height + 5, textSize.Width + 10, textSize.Height + 5);
+            // DrawCircle - use circle background instead of rectangle
+            float centerX = dirtyRect.Center.X;
+            float centerY = dirtyRect.Center.Y;
+            float circleRadius = Math.Min(dirtyRect.Width, dirtyRect.Height) / 3;
+            
             canvas.FillColor = Colors.LightYellow;
-            canvas.FillRectangle(backgroundRect);
+            canvas.FillCircle(centerX, centerY, circleRadius);
+            
+            canvas.StrokeColor = Colors.Blue;
+            canvas.StrokeSize = 2;
+            canvas.DrawCircle(centerX, centerY, circleRadius);
 
-            // Draw border around text
-            canvas.StrokeColor = Colors.DarkBlue;
-            canvas.StrokeSize = 1;
-            canvas.DrawRectangle(backgroundRect);
+            // Set font properties following the documentation pattern
+            canvas.FontColor = Colors.Blue;
+            canvas.FontSize = 18;
+            canvas.Font = Microsoft.Maui.Graphics.Font.Default;
+            
+            // Define the text and bounding box
+            string displayText = "Hello";
+            
+            // Use a proper bounding box within the dirtyRect, leaving some padding
+            float padding = 20;
+            float textX = dirtyRect.X + padding;
+            float textY = dirtyRect.Y + padding;
+            float textWidth = dirtyRect.Width - (2 * padding);
+            float textHeight = dirtyRect.Height - (2 * padding);
 
-            // Draw the text
-            canvas.FontColor = Colors.DarkBlue;
-            canvas.DrawString(displayText, x, y, HorizontalAlignment.Left);
-
-            // Add "HelloWorld" label with flow direction support
-            //DrawFlowDirectionLabel(canvas, dirtyRect);
+            // Center aligned text
+            canvas.DrawString(displayText, textX, textY + 40, textWidth, 30, HorizontalAlignment.Center, VerticalAlignment.Top);
+            
+            canvas.RestoreState();
         }
-
-        //private void DrawFlowDirectionLabel(ICanvas canvas, RectF rect)
-        //{
-        //    canvas.FontColor = Colors.Green;
-        //    var fontSize = Math.Min(rect.Width, rect.Height) * 0.12f;
-        //    canvas.FontSize = fontSize;
-            
-        //    string text = "HelloWorld";
-            
-        //    // Use the shape bounds and let FlowDirection handle RTL/LTR automatically
-        //    // HorizontalAlignment.Left respects FlowDirection (becomes right-aligned in RTL)
-        //    float x = rect.Left + 10; // Small padding from edge
-        //    float y = rect.Bottom - 15; // Position at bottom
-            
-        //    canvas.DrawString(text, x, y, HorizontalAlignment.Left);
-        //}
     }
 
     public class ImageDrawable : IDrawable
     {
         private readonly GraphicsViewViewModel _viewModel;
+        private Microsoft.Maui.Graphics.IImage _image;
 
         public ImageDrawable(GraphicsViewViewModel viewModel)
         {
             _viewModel = viewModel;
+            LoadImage();
+        }
+
+        private void LoadImage()
+        {
+            try
+            {
+                var assembly = GetType().GetTypeInfo().Assembly;
+                
+                // Try different possible resource names
+                string[] possibleNames = {
+                    "Maui.Controls.Sample.Resources.Images.royals.png",
+                    "Controls.TestCases.HostApp.Resources.Images.royals.png",
+                    "royals.png",
+                    "Resources.Images.royals.png"
+                };
+
+                foreach (var resourceName in possibleNames)
+                {
+                    using (var stream = assembly.GetManifestResourceStream(resourceName))
+                    {
+                        if (stream != null)
+                        {
+                            _image = Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(stream);
+                            Debug.WriteLine($"Successfully loaded image with resource name: {resourceName}");
+                            return;
+                        }
+                    }
+                }
+
+                // If we get here, none of the resource names worked
+                Debug.WriteLine("Could not find embedded image resource. Available resources:");
+                foreach (var name in assembly.GetManifestResourceNames())
+                {
+                    Debug.WriteLine($" - {name}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading image: {ex.Message}");
+                _image = null;
+            }
         }
 
         public void Draw(ICanvas canvas, RectF dirtyRect)
@@ -574,84 +624,66 @@ namespace Maui.Controls.Sample
             // Notify ViewModel about updated dimensions including X and Y
             _viewModel.UpdateDrawableDimensions(dirtyRect.X, dirtyRect.Y, dirtyRect.Width, dirtyRect.Height);
 
-            // Draw a placeholder image using basic shapes
-            // Create a mock "image" using geometric patterns
-            DrawMockImage(canvas, dirtyRect);
-
-            // Add "HelloWorld" label with flow direction support
-            DrawFlowDirectionLabel(canvas, dirtyRect);
-        }
-
-        private void DrawMockImage(ICanvas canvas, RectF rect)
-        {
-            // Draw image background
-            canvas.FillColor = Colors.LightBlue;
-            var imageRect = new RectF(
-                rect.Left + 10,
-                rect.Top + 10,
-                rect.Width - 20,
-                rect.Height - 20
-            ); // Use full rectangle since no label needed
-            canvas.FillRectangle(imageRect);
-
-            // Draw image border
-            canvas.StrokeColor = Colors.Navy;
-            canvas.StrokeSize = 2;
-            canvas.DrawRectangle(imageRect);
-
-            // Draw a simple geometric pattern - star icon
-            var centerX = imageRect.Center.X;
-            var centerY = imageRect.Center.Y;
-            var starSize = Math.Min(imageRect.Width, imageRect.Height) * 0.3f;
-
-            // Draw a 5-pointed star
+            // SubtractFromClip - used once across all drawables to create frame effect
+            canvas.SaveState();
+            
+            // Draw outer rectangle
             canvas.FillColor = Colors.Gold;
-            PathF starPath = new PathF();
+            canvas.FillRectangle(dirtyRect);
+            
+            // Subtract inner rectangle to create frame
+            float frameWidth = 15;
+            canvas.SubtractFromClip(dirtyRect.X + frameWidth, dirtyRect.Y + frameWidth, 
+                dirtyRect.Width - (2 * frameWidth), dirtyRect.Height - (2 * frameWidth));
+            
+            canvas.RestoreState();
 
-            // Calculate star points
-            float outerRadius = starSize;
-            float innerRadius = starSize * 0.4f;
+            // Draw inner content area
+            canvas.FillColor = Colors.LightGray;
+            canvas.FillRectangle(dirtyRect.X + frameWidth, dirtyRect.Y + frameWidth, 
+                dirtyRect.Width - (2 * frameWidth), dirtyRect.Height - (2 * frameWidth));
 
-            for (int i = 0; i < 10; i++)
+            if (_image != null)
             {
-                float angle = (float)(i * Math.PI / 5);
-                float radius = (i % 2 == 0) ? outerRadius : innerRadius;
-                float x = centerX + (float)(Math.Cos(angle - Math.PI / 2) * radius);
-                float y = centerY + (float)(Math.Sin(angle - Math.PI / 2) * radius);
+                // Calculate image position and size to fit within the inner area
+                float padding = 20 + frameWidth;
+                float availableWidth = dirtyRect.Width - (2 * padding);
+                float availableHeight = dirtyRect.Height - (2 * padding);
 
-                if (i == 0)
-                    starPath.MoveTo(x, y);
-                else
-                    starPath.LineTo(x, y);
+                // Calculate scale to fit image while maintaining aspect ratio
+                float scaleX = availableWidth / _image.Width;
+                float scaleY = availableHeight / _image.Height;
+                float scale = Math.Min(scaleX, scaleY);
+
+                float imageWidth = _image.Width * scale;
+                float imageHeight = _image.Height * scale;
+
+                // Center the image
+                float imageX = dirtyRect.X + (dirtyRect.Width - imageWidth) / 2;
+                float imageY = dirtyRect.Y + (dirtyRect.Height - imageHeight) / 2;
+
+                // Draw the actual PNG image
+                canvas.DrawImage(_image, imageX, imageY, imageWidth, imageHeight);
+
+                Debug.WriteLine($"Drew image at ({imageX}, {imageY}) with size ({imageWidth}, {imageHeight})");
             }
-            starPath.Close();
-            canvas.FillPath(starPath);
-
-            // Add some decorative circles around the star
-            canvas.FillColor = Colors.White;
-            float circleRadius = starSize * 0.1f;
-            canvas.FillEllipse(centerX - starSize * 0.8f, centerY - circleRadius, circleRadius * 2, circleRadius * 2);
-            canvas.FillEllipse(centerX + starSize * 0.6f, centerY - circleRadius, circleRadius * 2, circleRadius * 2);
-            canvas.FillEllipse(centerX - circleRadius, centerY - starSize * 0.8f, circleRadius * 2, circleRadius * 2);
-            canvas.FillEllipse(centerX - circleRadius, centerY + starSize * 0.6f, circleRadius * 2, circleRadius * 2);
-            Debug.WriteLine(rect);
+            else
+            {
+                // Fallback: draw text if image couldn't be loaded
+                canvas.FontColor = Colors.Red;
+                canvas.FontSize = 14;
+                canvas.Font = Microsoft.Maui.Graphics.Font.Default;
+                
+                string errorText = "Image not found";
+                float textX = dirtyRect.X + 10 + frameWidth;
+                float textY = dirtyRect.Y + 30 + frameWidth;
+                float textWidth = dirtyRect.Width - 20 - (2 * frameWidth);
+                float textHeight = 30;
+                
+                canvas.DrawString(errorText, textX, textY, textWidth, textHeight, HorizontalAlignment.Center, VerticalAlignment.Top);
+                
+                Debug.WriteLine("Image could not be loaded, showing error message");
+            }
         }
-
-        private void DrawFlowDirectionLabel(ICanvas canvas, RectF rect)
-        {
-            canvas.FontColor = Colors.Navy;
-            var fontSize = Math.Min(rect.Width, rect.Height) * 0.12f;
-            canvas.FontSize = fontSize;
-            
-            string text = "HelloWorld";
-            
-            // Use the shape bounds and let FlowDirection handle RTL/LTR automatically
-            // HorizontalAlignment.Left respects FlowDirection (becomes right-aligned in RTL)
-            float x = rect.Left + 15; // Small padding from edge
-            float y = rect.Bottom - 10; // Position at bottom
-            
-            canvas.DrawString(text, x, y, HorizontalAlignment.Left);
-        }
-
     }
 }
