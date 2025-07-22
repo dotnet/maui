@@ -24,11 +24,31 @@ namespace Microsoft.Maui
 				{
 					stream = await streamImageSource.GetStreamAsync(cancellationToken);
 
-					var callback = new ImageLoaderCallback();
+					if (stream.CanSeek)
+					{
+						stream.Position = 0;
+					}
+					// Convert stream to byte array to avoid AndroidMarshalMethod InputStreamAdapter issues in release builds
+					byte[] buffer;
+					int length;
+					using (var memoryStream = new MemoryStream())
+					{
+						await stream.CopyToAsync(memoryStream, cancellationToken);
+						buffer = memoryStream.GetBuffer();
+						length = (int)memoryStream.Length;
+					}
 
-					PlatformInterop.LoadImageFromStream(imageView, stream, callback);
+					// Decode the byte array into a Bitmap
+					var bitmap = global::Android.Graphics.BitmapFactory.DecodeByteArray(buffer, 0, length);
 
-					var result = await callback.Result;
+					// Set the bitmap to the ImageView
+					imageView.SetImageBitmap(bitmap);
+
+					// Convert Bitmap to Drawable
+					var drawable = new BitmapDrawable(imageView.Resources, bitmap);
+
+					// Create a result object
+					var result = new ImageSourceServiceResult(drawable);
 
 					stream?.Dispose();
 
