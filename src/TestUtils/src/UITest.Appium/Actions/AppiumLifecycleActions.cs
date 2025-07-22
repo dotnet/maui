@@ -60,10 +60,10 @@ namespace UITest.Appium
 			if (_app.GetTestDevice() == TestDevice.Mac)
 			{		
 				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
-				
-				if (args.ContainsKey("test")&& parameters.ContainsKey("issue") && parameters["issue"] is string issue && !string.IsNullOrEmpty(issue))
+
+				if (args.ContainsKey("test")&& parameters.ContainsKey("testName") && parameters["testName"] is string testName && !string.IsNullOrEmpty(testName))
 				{
-					args["test"] = issue;
+					args["test"] = testName;
 				}
 
 				_app.Driver.ExecuteScript("macos: launchApp", new Dictionary<string, object>

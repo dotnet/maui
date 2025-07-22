@@ -1519,7 +1519,7 @@ namespace UITest.Appium
 		{
 			app.CommandExecutor.Execute("launchApp", new Dictionary<string, object>
 			{
-				{ "issue", parameters },
+				{ "testName", parameters },
 				{ "isResetAfterEachTest", isResetAfterEachTest }
 			});
 		}

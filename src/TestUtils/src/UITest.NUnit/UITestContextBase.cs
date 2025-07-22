@@ -38,27 +38,21 @@ namespace UITest.Appium.NUnit
 		public IApp RunningApp => App;
 
 		public abstract IConfig GetTestConfig();
+		
+		public abstract void Close();
+
+		public abstract void LaunchAppWithTest();
 
 		public void InitialSetup(IServerContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
 
- 			if (UITestContext != null && Device is TestDevice.Mac)
+			if (UITestContext != null && Device is TestDevice.Mac)
 			{
 				LaunchAppWithTest();
 			}
-			
+
 			InitialSetup(context, false);
-		}
-
-		public virtual void LaunchAppWithTest()
-		{
-			// Launch the app with the test configuration on child classes.
-		}
-
-		public virtual void Close()
-		{
-			// Close the app in child classes
 		}
 
 		public virtual void Reset()
