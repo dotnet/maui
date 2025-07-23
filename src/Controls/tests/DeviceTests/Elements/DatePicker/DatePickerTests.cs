@@ -46,27 +46,22 @@ public partial class DatePickerTests : ControlsHandlerTestBase
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
+				datePicker.Date = newDate;
+
 #if ANDROID
-				if (handler.DatePickerDialog != null)
-				{
-					var previousDate = handler.VirtualView.Date;
-					handler.VirtualView.Date = newDate;
-				}
+				handler.DatePickerDialog?.UpdateDate(newDate.Year, newDate.Month - 1, newDate.Day);
 #elif IOS
                 if (handler.DatePickerDialog != null)
                 {
                     handler.DatePickerDialog.SetDate(newDate.ToNSDate(), false);
-                    typeof(DatePickerHandler).GetMethod("SetVirtualViewDate",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
-                        .Invoke(handler, null);
                 }
 #elif WINDOWS
                 if (handler.PlatformView != null)
                 {
                     handler.PlatformView.Date = newDate;
                 }
-#else
-                handler.VirtualView.Date = newDate;
+#elif MACCATALYST
+	 handler.PlatformView.Date = newDate.ToNSDate();
 #endif
 			});
 
