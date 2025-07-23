@@ -116,21 +116,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else
 			{
-				TemplatedItemViewHolder viewHolder;
-				if (context == ItemsView.HeaderTemplate)
-				{
-					viewHolder = new TemplatedItemViewHolder(templatedItemViewHolder.ItemView as ItemContentView, ItemsView.HeaderTemplate, isSelectionEnabled: false);
-				}
-				else if (context == ItemsView.FooterTemplate)
-				{
-					viewHolder = new TemplatedItemViewHolder(templatedItemViewHolder.ItemView as ItemContentView, ItemsView.FooterTemplate, isSelectionEnabled: false);
-				}
-				else
-				{
-					viewHolder = templatedItemViewHolder;
-				}
-
-				base.BindTemplatedItemViewHolder(viewHolder, context);
+				base.BindTemplatedItemViewHolder(templatedItemViewHolder, context);
 			}
 		}
 
