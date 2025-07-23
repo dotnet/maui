@@ -14,7 +14,7 @@ public class Issue30649 : ContentPage
 
         graphicsView = new GraphicsView
         {
-            Drawable = new Issue30649_Drawble(),
+            Drawable = new Issue30649_Drawable(),
             AutomationId = "Issue30649_GraphicsView",
             HeightRequest = 300,
             WidthRequest = 300,
@@ -47,7 +47,7 @@ public class Issue30649 : ContentPage
     }
 }
 
-public class Issue30649_Drawble : IDrawable
+public class Issue30649_Drawable : IDrawable
 {
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
