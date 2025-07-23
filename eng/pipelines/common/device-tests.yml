@@ -81,7 +81,7 @@ stages:
                 name: ${{ project.name }}
                 desc: ${{ project.desc }}
                 path: ${{ project.android }}
-                versionsExclude: ${{ project.androidApiLevelsExclude }}
+                versionsExclude: [23] # Ignore 23 since CoreCLR is 24+
                 configuration: ${{ project.androidConfiguration }}
               provisionatorChannel: ${{ parameters.provisionatorChannel }}
               skipProvisioning: ${{ parameters.skipProvisioning }}
