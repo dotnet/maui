@@ -61,7 +61,7 @@ namespace UITest.Appium
 			{		
 				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
 
-				if (args.ContainsKey("test")&& parameters.ContainsKey("testName") && parameters["testName"] is string testName && !string.IsNullOrEmpty(testName))
+				if (args.ContainsKey("test") && parameters.ContainsKey("testName") && parameters["testName"] is string testName && !string.IsNullOrEmpty(testName))
 				{
 					args["test"] = testName;
 				}
