@@ -26,7 +26,12 @@ public partial class OnPlatform : ContentPage
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test] public void BoolToVisibility([Values] XamlInflator inflator)
+		[Test]
+#if FIXME_BEFORE_PUBLIC_RELEASE
+		public void BoolToVisibility([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
+#else
+		public void BoolToVisibility([Values] XamlInflator inflator)
+#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new OnPlatform(inflator);
@@ -37,7 +42,12 @@ public partial class OnPlatform : ContentPage
 			Assert.AreEqual(false, layout.label0.IsVisible);
 		}
 
-		[Test] public void DoubleToWidth([Values] XamlInflator inflator)
+		[Test]
+#if FIXME_BEFORE_PUBLIC_RELEASE
+		public void DoubleToWidth([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
+#else
+		public void DoubleToWidth([Values] XamlInflator inflator)
+#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new OnPlatform(inflator);
@@ -52,7 +62,12 @@ public partial class OnPlatform : ContentPage
 			Assert.AreEqual(0.0, layout.label0.WidthRequest);
 		}
 
-		[Test] public void StringToText([Values] XamlInflator inflator)
+		[Test]
+#if FIXME_BEFORE_PUBLIC_RELEASE
+		public void StringToText([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
+#else
+		public void StringToText([Values] XamlInflator inflator)
+#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new OnPlatform(inflator);
@@ -67,7 +82,12 @@ public partial class OnPlatform : ContentPage
 			Assert.AreEqual(null, layout.label0.Text);
 		}
 
-		[Test] public void OnPlatformAsResource([Values] XamlInflator inflator)
+		[Test]
+#if FIXME_BEFORE_PUBLIC_RELEASE
+		public void OnPlatformAsResource([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
+#else
+		public void OnPlatformAsResource([Values] XamlInflator inflator)
+#endif
 		{
 			var layout = new OnPlatform(inflator);
 			var onplat = layout.Resources["fontAttributes"] as OnPlatform<FontAttributes>;
@@ -80,7 +100,12 @@ public partial class OnPlatform : ContentPage
 			Assert.AreEqual(FontAttributes.None, (FontAttributes)onplat);
 		}
 
-		[Test] public void OnPlatformAsResourceAreApplied([Values] XamlInflator inflator)
+		[Test]
+#if FIXME_BEFORE_PUBLIC_RELEASE
+		public void OnPlatformAsResourceAreApplied([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
+#else
+		public void OnPlatformAsResourceAreApplied([Values] XamlInflator inflator)
+#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new OnPlatform(inflator);
@@ -95,7 +120,12 @@ public partial class OnPlatform : ContentPage
 			Assert.AreEqual(FontAttributes.Italic, layout.label0.FontAttributes);
 		}
 
-		[Test] public void OnPlatform2Syntax([Values] XamlInflator inflator)
+		[Test]
+#if FIXME_BEFORE_PUBLIC_RELEASE
+		public void OnPlatform2Syntax([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
+#else
+		public void OnPlatform2Syntax([Values] XamlInflator inflator)
+#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.Android;
 			var layout = new OnPlatform(inflator);
@@ -114,14 +144,24 @@ public partial class OnPlatform : ContentPage
 			Assert.AreEqual(42, layout.label0.HeightRequest);
 		}
 
-		[Test] public void OnPlatformDefault([Values] XamlInflator inflator)
+		[Test]
+#if FIXME_BEFORE_PUBLIC_RELEASE
+		public void OnPlatformDefault([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
+#else
+		public void OnPlatformDefault([Values] XamlInflator inflator)
+#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.Create("\ud83d\ude80");
 			var layout = new OnPlatform(inflator);
 			Assert.AreEqual(63, layout.label0.HeightRequest);
 		}
 
-		[Test] public void OnPlatformInStyle0([Values] XamlInflator inflator)
+		[Test]
+#if FIXME_BEFORE_PUBLIC_RELEASE
+		public void OnPlatformInStyle0([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
+#else
+		public void OnPlatformInStyle0([Values] XamlInflator inflator)
+#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new OnPlatform(inflator);
@@ -132,7 +172,12 @@ public partial class OnPlatform : ContentPage
 			Assert.AreEqual(0.0, layout.button0.FontSize);
 		}
 
-		[Test] public void OnPlatformInStyle1([Values] XamlInflator inflator)
+		[Test]
+#if FIXME_BEFORE_PUBLIC_RELEASE
+		public void OnPlatformInStyle1([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
+#else
+		public void OnPlatformInStyle1([Values] XamlInflator inflator)
+#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new OnPlatform(inflator);
@@ -143,7 +188,12 @@ public partial class OnPlatform : ContentPage
 			Assert.AreEqual(0.0, layout.button1.FontSize);
 		}
 
-		[Test] public void OnPlatformInline([Values] XamlInflator inflator)
+		[Test]
+#if FIXME_BEFORE_PUBLIC_RELEASE
+		public void OnPlatformInline([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
+#else
+		public void OnPlatformInline([Values] XamlInflator inflator)
+#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new OnPlatform(inflator);

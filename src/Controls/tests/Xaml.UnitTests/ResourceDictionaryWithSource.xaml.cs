@@ -40,6 +40,10 @@ public partial class ResourceDictionaryWithSource : ContentPage
 			Assert.That(resourceId, Is.Not.Null);
 			var type = XamlResourceIdAttribute.GetTypeForResourceId(asm, resourceId);
 			Assert.That(type?.Name, Does.StartWith("__Type"), "xaml-comp default to true, this should have a type associated with it");
+
+#if !FIXME_BEFORE_PUBLIC_RELEASE
+			Assert.Fail(); //make sure to have the same default for sourcegen 
+#endif
 		}
 
 		[Test]

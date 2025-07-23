@@ -14,7 +14,11 @@ public partial class Bz43694 : ContentPage
 	class Tests
 	{
 		[Test]
+#if FIXME_BEFORE_PUBLIC_RELEASE
+		public void xStaticWithOnPlatformChildInRD([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
+#else
 		public void xStaticWithOnPlatformChildInRD([Values] XamlInflator inflator)
+#endif
 		{
 			if (inflator == XamlInflator.XamlC)
 				Assert.Throws(new BuildExceptionConstraint(9, 6), () => MockCompiler.Compile(typeof(Bz43694)));

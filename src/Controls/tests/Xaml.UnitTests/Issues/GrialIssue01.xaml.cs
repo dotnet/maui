@@ -10,7 +10,8 @@ public partial class GrialIssue01 : ContentPage
 	[TestFixture]
 	class Tests
 	{
-		[Test] public void ImplicitCastIsUsedOnFileImageSource([Values] XamlInflator inflator)
+		[Test]
+		public void ImplicitCastIsUsedOnFileImageSource([Values] XamlInflator inflator)
 		{
 			var layout = new GrialIssue01(inflator);
 			var res = (FileImageSource)layout.Resources["image"];

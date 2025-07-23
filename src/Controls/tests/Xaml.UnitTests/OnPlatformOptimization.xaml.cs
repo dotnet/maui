@@ -24,7 +24,12 @@ public partial class OnPlatformOptimization : ContentPage
 			Assert.That(methodDef.Body.Instructions.Any(instr => instr.Operand as string == expected), $"Did not find instruction containing '{expected}'");
 		}
 
-		[Test] public void ValuesAreSet([Values] XamlInflator inflator)
+		[Test]
+#if FIXME_BEFORE_PUBLIC_RELEASE
+		public void ValuesAreSet([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
+#else
+		public void ValuesAreSet([Values] XamlInflator inflator)
+#endif
 		{
 			var p = new OnPlatformOptimization(inflator);
 			Assert.AreEqual("ringo", p.label0.Text);
