@@ -103,12 +103,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
 				return;
 
-			if (!AppContext.TryGetSwitch("iOSDisableTabIconAutoResizing", out bool disableResizing) || !disableResizing)
+			foreach (var item in TabBar.Items)
 			{
-				foreach (var item in TabBar.Items)
-				{
-					item.Image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, item.Image);
-				}
+				item.Image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, item.Image);
 			}
 		}
 

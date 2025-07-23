@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
 				return;
 
-			if (Element is not null && (!AppContext.TryGetSwitch("iOSDisableTabIconAutoResizing", out bool disableResizing) || !disableResizing))
+			if (Element is not null)
 			{
 				UpdateTabBarItems();
 			}
@@ -503,18 +503,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				throw new InvalidCastException($"{nameof(renderer)} must be a {nameof(Page)} renderer.");
 
 			var icons = await GetIcon(page);
-			if (!AppContext.TryGetSwitch("iOSDisableTabIconAutoResizing", out bool disableResizing) || !disableResizing)
-			{
-				var resizedImage = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icons?.Item1);
-				var resizedSelectedImage = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icons?.Item2);
-				SetTabBarItem(resizedImage, resizedSelectedImage);
-				resizedImage?.Dispose();
-				resizedSelectedImage?.Dispose();
-			}
-			else
-			{
-				SetTabBarItem(icons?.Item1, icons?.Item2);
-			}
+			var resizedImage = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icons?.Item1);
+			var resizedSelectedImage = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icons?.Item2);
+			SetTabBarItem(resizedImage, resizedSelectedImage);
+			resizedImage?.Dispose();
+			resizedSelectedImage?.Dispose();
 
 			void SetTabBarItem(UIImage image, UIImage selectedImage)
 			{
