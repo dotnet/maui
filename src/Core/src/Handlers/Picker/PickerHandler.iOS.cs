@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiPicker CreatePlatformView() =>
 			new MauiPicker(null) { BorderStyle = UITextBorderStyle.RoundedRect };
 
-		void DisplayAlert(MauiPicker uITextField)
+		void DisplayAlert(MauiPicker uITextField, int selectedIndex)
 		{
 			var paddingTitle = 0;
 			if (!string.IsNullOrEmpty(VirtualView.Title))
@@ -48,7 +48,10 @@ namespace Microsoft.Maui.Handlers
 			var frame = new RectangleF(0, paddingTitle, 269, pickerHeight);
 			var pickerView = new UIPickerView(frame);
 			pickerView.Model = new PickerSource(this);
-			pickerView?.ReloadAllComponents();
+			var source = (PickerSource)pickerView.Model;
+			source.SelectedIndex = selectedIndex;
+			pickerView.Select(Math.Max(selectedIndex, 0), 0, true);
+			pickerView.ReloadAllComponents();
 
 			var pickerController = UIAlertController.Create(VirtualView.Title, "", UIAlertControllerStyle.ActionSheet);
 
@@ -246,7 +249,8 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is not PickerHandler handler)
 					return;
 
-				handler.DisplayAlert(handler.PlatformView);
+				int selectedIndex = handler.VirtualView?.SelectedIndex ?? 0;
+				handler.DisplayAlert(handler.PlatformView, selectedIndex);
 #endif
 			}
 
