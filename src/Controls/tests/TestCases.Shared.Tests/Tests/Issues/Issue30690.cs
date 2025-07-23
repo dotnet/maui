@@ -14,7 +14,7 @@ public class Issue30690 : _IssuesUITest
 	private const string ToggleIsRefreshEnabledButton = "ToggleIsRefreshEnabled";
 	private const string Element = "StartRefresh";
 	private const string StatusLabel = "StatusLabel";
-	private const string TestRefreshView = "TestRefreshView";
+	private const string ScrollViewContent = "ScrollViewContent";
 
 	public Issue30690(TestDevice device) : base(device)
 	{
@@ -106,19 +106,23 @@ public class Issue30690 : _IssuesUITest
 		catch (InvalidElementStateException) // Expected as the entry should not be interactable
 		{
 		}
+#if WINDOWS
+		Assert.That(App.FindElement(TestEntry).GetText(), Is.EqualTo(""));
+#else
 		Assert.That(App.FindElement(TestEntry).GetText(), Is.EqualTo("Type here to test child interaction"));
+#endif
 	}
 
-#if TEST_FAILS_ON_CATALYST // Overscroll gesture is not working
+//#if TEST_FAILS_ON_CATALYST // Overscroll gesture is not working
 	[Test]
 	public void PullToRefreshWorksWhenEnabled()
 	{
 		// Find the scroll view content to perform pull gesture on
-		App.WaitForElement(TestRefreshView);
+		App.WaitForElement(ScrollViewContent);
 
 		// Perform pull-to-refresh
 		PullToRefresh();
-		Assert.That(GetStatusText(), Contains.Substring("Refreshing..."));
+		App.WaitForTextToBePresentInElement(StatusLabel, "Refreshing...", timeout: TimeSpan.FromSeconds(5));
 
 		// Wait for refresh to complete and verify it worked
 		App.WaitForTextToBePresentInElement(StatusLabel, "Refresh completed", timeout: TimeSpan.FromSeconds(5));
@@ -134,8 +138,8 @@ public class Issue30690 : _IssuesUITest
 		// Perform pull-to-refresh
 		PullToRefresh();
 
-		// Wait for refresh to complete and verify it worked
-		App.WaitForTextToBePresentInElement(StatusLabel, "IsRefreshEnabled: False", timeout: TimeSpan.FromSeconds(5));
+		// Wait for refresh to complete and verify it failed
+		Assert.That(GetStatusText(), Contains.Substring("IsRefreshEnabled: False"));
 	}
 
 	[Test]
@@ -148,14 +152,14 @@ public class Issue30690 : _IssuesUITest
 		// Perform pull-to-refresh
 		PullToRefresh();
 
-		// Wait for refresh to complete and verify it worked
-		App.WaitForTextToBePresentInElement(StatusLabel, "IsEnabled: False", timeout: TimeSpan.FromSeconds(5));
+		// Wait for refresh to complete and verify it failed
+		Assert.That(GetStatusText(), Contains.Substring("IsEnabled: False"));
 	}
-#endif
+//#endif
 
 	string GetStatusText() =>
 		App.FindElement(StatusLabel).GetText() ?? "";
 
 	void PullToRefresh() =>
-		App.ScrollUp(TestRefreshView);
+		App.ScrollUp(ScrollViewContent);
 }
