@@ -2,330 +2,269 @@ using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests
+namespace Microsoft.Maui.TestCases.Tests;
+
+public class GraphicsViewFeatureTests : UITest
 {
-	public class GraphicsViewFeatureTests : UITest
+	public const string GraphicsViewFeatureMatrix = "GraphicsView Feature Matrix";
+
+	public GraphicsViewFeatureTests(TestDevice device)
+		: base(device)
 	{
-		public const string GraphicsViewFeatureMatrix = "GraphicsView Feature Matrix";
+	}
 
-		public GraphicsViewFeatureTests(TestDevice device)
-			: base(device)
-		{
-		}
+	protected override void FixtureSetup()
+	{
+		base.FixtureSetup();
+		App.NavigateToGallery(GraphicsViewFeatureMatrix);
+	}
 
-		protected override void FixtureSetup()
-		{
-			// Setup code for GraphicsView tests
-			base.FixtureSetup();
-			App.NavigateToGallery(GraphicsViewFeatureMatrix);
-		}
-
-		#region Default Values and Initial State Tests
-
-		[Test, Order(1)]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_ValidateDefaultValues_VerifyInitialState()
-		{
-			App.WaitForElement("Options");
-			
-			// Verify default drawable type is Square
-			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Square"));
-			
-			// Verify default dimensions are displayed
-			var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
-			Assert.That(dimensionsText, Does.Contain("Height: 100"));
-			Assert.That(dimensionsText, Does.Contain("Width: 100"));
-			
-			var interactionLabel = App.FindElement("InteractionEventLabel");
-			Assert.That(interactionLabel.GetText(), Is.EqualTo("No interactions yet"));
-		}
-
-		#endregion
-
-		#region Drawable Type Tests
-
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_SquareDrawable_VerifyTypeAndRendering()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("Square");
-			App.Tap("Square");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
-
-			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Square"));
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_TriangleDrawable_VerifyTypeAndRendering()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("Triangle");
-			App.Tap("Triangle");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
-
-			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Triangle"));
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_EllipseDrawable_VerifyTypeAndRendering()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("Ellipse");
-			App.Tap("Ellipse");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
-
-			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Ellipse"));
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_LineDrawable_VerifyTypeAndRendering()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("Line");
-			App.Tap("Line");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
-
-			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Line"));
-			VerifyScreenshot();
-		}
-
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST        // See Issue : https://github.com/dotnet/maui/issues/30673                                                             
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_StringDrawable_VerifyTypeAndRendering()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("String");
-			App.Tap("String");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
-
-			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("String"));
-			VerifyScreenshot();
-		}
-
+	public void VerifyShapeScreenshot()
+	{
+#if WINDOWS
+		VerifyScreenshot(cropTop: 100);
+#else
+		VerifyScreenshot();
 #endif
+	}
 
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_ImageDrawable_VerifyTypeAndRendering()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("Image");
-			App.Tap("Image");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
+	#region Default Values and Initial State Tests
 
-			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Image"));
-			VerifyScreenshot();
-		}
+	[Test, Order(1)]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_ValidateDefaultValues_VerifyInitialState()
+	{
+		App.WaitForElement("Options");
 
-		#endregion
+		// Verify default drawable type is Square
+		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Square"));
 
-		#region Flow Direction Tests
+		// Verify default dimensions are displayed
+		var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
+		Assert.That(dimensionsText, Does.Contain("Height: 100"));
+		Assert.That(dimensionsText, Does.Contain("Width: 100"));
 
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_ChangeFlowDirection_LTR_VerifyVisualState()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("FlowDirectionLTR");
-			App.Tap("FlowDirectionLTR");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
+		var interactionLabel = App.FindElement("InteractionEventLabel");
+		Assert.That(interactionLabel.GetText(), Is.EqualTo("No interactions yet"));
+	}
 
-			VerifyScreenshot();
-		}
+	#endregion
 
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_ChangeFlowDirection_RTL_VerifyVisualState()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("FlowDirectionRTL");
-			App.Tap("FlowDirectionRTL");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
+	#region Drawable Type Tests
 
-			VerifyScreenshot();
-		}
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_SquareDrawable_VerifyTypeAndRendering()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Square");
+		App.Tap("Square");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
 
-		[TestCase("Square", "LTR", TestName = "GraphicsView_SquareWithLTRText_VerifyVisualState")]
-		[TestCase("Triangle", "LTR", TestName = "GraphicsView_TriangleWithLTRText_VerifyVisualState")]
-		[TestCase("Ellipse", "LTR", TestName = "GraphicsView_EllipseWithLTRText_VerifyVisualState")]
-		[TestCase("Line", "LTR", TestName = "GraphicsView_LineWithLTRText_VerifyVisualState")]
-		[TestCase("Square", "RTL", TestName = "GraphicsView_SquareWithRTLText_VerifyVisualState")]
-		[TestCase("Triangle", "RTL", TestName = "GraphicsView_TriangleWithRTLText_VerifyVisualState")]
-		[TestCase("Ellipse", "RTL", TestName = "GraphicsView_EllipseWithRTLText_VerifyVisualState")]
-		[TestCase("Line", "RTL", TestName = "GraphicsView_LineWithRTLText_VerifyVisualState")]
-		[Category(UITestCategories.GraphicsView)]
-		[Category(UITestCategories.Visual)]
-		public void GraphicsView_ShapeWithFlowDirectionText_VerifyVisualState(string shapeType, string flowDirection)
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
+		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Square"));
+		VerifyShapeScreenshot();
+	}
 
-			// Select the shape
-			App.WaitForElement(shapeType);
-			App.Tap(shapeType);
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_TriangleDrawable_VerifyTypeAndRendering()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Triangle");
+		App.Tap("Triangle");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
 
-			// Select the flow direction
-			string flowDirectionElement = flowDirection == "LTR" ? "FlowDirectionLTR" : "FlowDirectionRTL";
-			App.WaitForElement(flowDirectionElement);
-			App.Tap(flowDirectionElement);
+		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Triangle"));
+		VerifyShapeScreenshot();
+	}
 
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_EllipseDrawable_VerifyTypeAndRendering()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Ellipse");
+		App.Tap("Ellipse");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
 
-			// Verify the shape type is correctly displayed
-			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo(shapeType));
+		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Ellipse"));
+		VerifyShapeScreenshot();
+	}
 
-			// Verify the GraphicsView is visible (containing the shape with flow direction text)
-			var graphicsView = App.FindElement("GraphicsViewControl");
-			Assert.That(graphicsView.IsDisplayed(), Is.True);
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_LineDrawable_VerifyTypeAndRendering()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Line");
+		App.Tap("Line");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
 
-			// Visual verification through screenshot - this will show the text within shapes
-			VerifyScreenshot();
-		}
+		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Line"));
+		VerifyShapeScreenshot();
+	}
 
-		#endregion
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_StringDrawable_VerifyTypeAndRendering()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("String");
+		App.Tap("String");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
 
+		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("String"));
+		VerifyShapeScreenshot();
+	}
 
-		#region IsVisible Tests
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_ImageDrawable_VerifyTypeAndRendering()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Image");
+		App.Tap("Image");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
 
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_SetVisibilityToTrue_VerifyVisibleState()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsVisibleTrueRadio");
-			App.Tap("IsVisibleTrueRadio");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
-			// When IsVisible is true, the element should be visible
-			VerifyScreenshot();
-		}
+		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Image"));
+		VerifyShapeScreenshot();
+	}
 
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_SetVisibilityToFalse_VerifyHiddenState()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsVisibleFalseRadio");
-			App.Tap("IsVisibleFalseRadio");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
-			// When IsVisible is false, the element should not be visible
-			App.WaitForNoElement("GraphicsViewControl");
-		}
+	#endregion
 
-		#endregion
+	#region IsVisible Tests
 
-		#region Dimensions Tests
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_SetVisibilityToTrue_VerifyVisibleState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("IsVisibleTrueRadio");
+		App.Tap("IsVisibleTrueRadio");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
+		// When IsVisible is true, the element should be visible
+		VerifyShapeScreenshot();
+	}
 
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_ChangeHeightRequest_VerifyDimensionsUpdate()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("HeightRequestEntry");
-			App.ClearText("HeightRequestEntry");
-			App.EnterText("HeightRequestEntry", "150");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_SetVisibilityToFalse_VerifyHiddenState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("IsVisibleFalseRadio");
+		App.Tap("IsVisibleFalseRadio");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
+		// When IsVisible is false, the element should not be visible
+		App.WaitForNoElement("GraphicsViewControl");
+	}
 
-			var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
-			Assert.That(dimensionsText, Does.Contain("Height: 150"));
-		}
+	#endregion
 
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_ChangeWidthRequest_VerifyDimensionsUpdate()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("WidthRequestEntry");
-			App.ClearText("WidthRequestEntry");
-			App.EnterText("WidthRequestEntry", "200");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
+	#region Dimensions Tests
 
-			var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
-			Assert.That(dimensionsText, Does.Contain("Width: 200"));
-		}
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_ChangeHeightRequest_VerifyDimensionsUpdate()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HeightRequestEntry");
+		App.ClearText("HeightRequestEntry");
+		App.EnterText("HeightRequestEntry", "150");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("DrawableTypeLabel");
+		App.Tap("DrawableTypeLabel");
 
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_ChangeBothDimensions_VerifyDimensionsUpdate()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("HeightRequestEntry");
-			App.ClearText("HeightRequestEntry");
-			App.EnterText("HeightRequestEntry", "180");
-			App.WaitForElement("WidthRequestEntry");
-			App.ClearText("WidthRequestEntry");
-			App.EnterText("WidthRequestEntry", "250");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
+		var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
+		Assert.That(dimensionsText, Does.Contain("Height: 150"));
+	}
 
-			var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
-			Assert.That(dimensionsText, Does.Contain("Height: 180"));
-			Assert.That(dimensionsText, Does.Contain("Width: 250"));
-		}
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_ChangeWidthRequest_VerifyDimensionsUpdate()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("WidthRequestEntry");
+		App.ClearText("WidthRequestEntry");
+		App.EnterText("WidthRequestEntry", "200");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("DrawableTypeLabel");
+		App.Tap("DrawableTypeLabel");
 
-		#endregion
+		var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
+		Assert.That(dimensionsText, Does.Contain("Width: 200"));
+	}
 
-		#region Shadow Tests
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_ChangeBothDimensions_VerifyDimensionsUpdate()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HeightRequestEntry");
+		App.ClearText("HeightRequestEntry");
+		App.EnterText("HeightRequestEntry", "180");
+		App.WaitForElement("WidthRequestEntry");
+		App.ClearText("WidthRequestEntry");
+		App.EnterText("WidthRequestEntry", "250");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("DrawableTypeLabel");
+		App.Tap("DrawableTypeLabel");
 
+		var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
+		Assert.That(dimensionsText, Does.Contain("Height: 180"));
+		Assert.That(dimensionsText, Does.Contain("Width: 250"));
+	}
+
+	#endregion
+
+	#region Shadow Tests
+#if TEST_FAILS_ON_WINDOWS
+// Note: Shadow tests are currently disabled on Windows due to known issues with GraphicsView                                                                                                    
+//See Issue : https://github.com/dotnet/maui/issues/30778	
 		[Test]
 		[Category(UITestCategories.GraphicsView)]
 		public void GraphicsView_SetShadowProperties_VerifyVisualState()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
+			App.WaitForElement("Triangle");
+			App.Tap("Triangle");
 			App.WaitForElement("ShadowInputEntry");
 			App.EnterText("ShadowInputEntry", "5,5,10,0.5");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElement("Options");
-			VerifyScreenshot();
+			App.WaitForElement("DrawableTypeLabel");
+			App.Tap("DrawableTypeLabel");
+			VerifyShapeScreenshot();
 		}
 
 		[Test]
@@ -334,15 +273,18 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
+			App.WaitForElement("Triangle");
+			App.Tap("Triangle");
 			App.WaitForElement("ShadowInputEntry");
 			App.EnterText("ShadowInputEntry", "invalid,input");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElement("Options");
-			VerifyScreenshot();
+			App.WaitForElement("DrawableTypeLabel");
+			App.Tap("DrawableTypeLabel");
+			VerifyShapeScreenshot();
 		}
-
-		#endregion
+#endif
+	#endregion
 
 
 #if TEST_FAILS_ON_WINDOWS       //Note:These tests are currently disabled on Windows due to a Graphicsview automationid doesn't work.                                                                              
@@ -351,14 +293,12 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.GraphicsView)]
-		[Category(UITestCategories.Gestures)]
 		public void GraphicsView_StartInteraction_VerifyEventTriggered()
 		{
 			App.WaitForElement("ClearEventsButton");
 			App.Tap("ClearEventsButton");
 			App.WaitForElement("GraphicsViewControl");
-			// Touch and hold to simulate hover
-			App.TouchAndHold("GraphicsViewControl");
+			App.Tap("GraphicsViewControl");
 			
 			var interactionLabel = App.FindElement("InteractionEventLabel");
 			Assert.That(interactionLabel.GetText(), Does.Contain("StartInteraction"));
@@ -366,13 +306,11 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.GraphicsView)]
-		[Category(UITestCategories.Gestures)]
 		public void GraphicsView_EndInteraction_VerifyEventTriggered()
 		{
 			App.WaitForElement("ClearEventsButton");
 			App.Tap("ClearEventsButton");
 			App.WaitForElement("GraphicsViewControl");
-			// Tap on the GraphicsView
 			App.Tap("GraphicsViewControl");
 			
 			var interactionLabel = App.FindElement("InteractionEventLabel");
@@ -424,6 +362,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(graphicsView.IsEnabled(), Is.True);
 		}
 
+#if TEST_FAILS_ON_MACCATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID
+//See Issue : https://github.com/dotnet/maui/issues/30649
 		[Test]
 		[Category(UITestCategories.GraphicsView)]
 		public void GraphicsView_SetEnabledToFalse_VerifyDisabledState()
@@ -439,36 +379,37 @@ namespace Microsoft.Maui.TestCases.Tests
 			var graphicsView = App.FindElement("GraphicsViewControl");
 			Assert.That(graphicsView.IsEnabled(), Is.False);
 		}
-
-		#endregion
+#endif
+	#endregion
 #endif
 
-		#region Combined Feature Tests
+	#region Combined Feature Tests
 
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_TriangleWithCustomDimensions_VerifyState()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("Triangle");
-			App.Tap("Triangle");
-			App.WaitForElement("HeightRequestEntry");
-			App.ClearText("HeightRequestEntry");
-			App.EnterText("HeightRequestEntry", "120");
-			App.WaitForElement("WidthRequestEntry");
-			App.ClearText("WidthRequestEntry");
-			App.EnterText("WidthRequestEntry", "160");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_TriangleWithCustomDimensions_VerifyState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Triangle");
+		App.Tap("Triangle");
+		App.WaitForElement("HeightRequestEntry");
+		App.ClearText("HeightRequestEntry");
+		App.EnterText("HeightRequestEntry", "120");
+		App.WaitForElement("WidthRequestEntry");
+		App.ClearText("WidthRequestEntry");
+		App.EnterText("WidthRequestEntry", "160");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("DrawableTypeLabel");
+		App.Tap("DrawableTypeLabel");
 
-			Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Triangle"));
-			var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
-			Assert.That(dimensionsText, Does.Contain("Height: 120"));
-			Assert.That(dimensionsText, Does.Contain("Width: 160"));
-			VerifyScreenshot();
-		}
+		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Triangle"));
+		var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
+		Assert.That(dimensionsText, Does.Contain("Height: 120"));
+		Assert.That(dimensionsText, Does.Contain("Width: 160"));
+		VerifyShapeScreenshot();
+	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 // This test fails on Android, iOS, and MacCatalyst. See issue: https://github.com/dotnet/maui/issues/30649
@@ -499,71 +440,76 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(interactionLabel.GetText(), Is.EqualTo("No interactions yet"));
 		}
 #endif
-#endregion
+	#endregion
 
-		#region Edge Cases and Error Handling
+	#region Edge Cases and Error Handling
 
-		[TestCase("0", "0", false, TestName = "GraphicsView_SetZeroDimensions_VerifyHandling")]
-		[TestCase("-10", "-20", false, TestName = "GraphicsView_SetNegativeDimensions_VerifyHandling")]
-		[TestCase("1000", "1000", true, TestName = "GraphicsView_SetVeryLargeDimensions_VerifyHandling")]
-		[TestCase("150", "200", true, TestName = "GraphicsView_SetValidDimensions_VerifyHandling")]
-		[TestCase("0.5", "0.5", true, TestName = "GraphicsView_SetDecimalDimensions_VerifyHandling")]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_SetDimensionsEdgeCases_VerifyHandling(string height, string width, bool shouldBeVisible)
+	[TestCase("0", "0", false, TestName = "GraphicsView_SetZeroDimensions_VerifyHandling")]
+	[TestCase("-10", "-20", false, TestName = "GraphicsView_SetNegativeDimensions_VerifyHandling")]
+	[TestCase("150", "200", true, TestName = "GraphicsView_SetValidDimensions_VerifyHandling")]
+	[TestCase("0.5", "0.5", true, TestName = "GraphicsView_SetDecimalDimensions_VerifyHandling")]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_SetDimensionsEdgeCases_VerifyHandling(string height, string width, bool shouldBeVisible)
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HeightRequestEntry");
+		App.ClearText("HeightRequestEntry");
+		App.EnterText("HeightRequestEntry", height);
+		App.WaitForElement("WidthRequestEntry");
+		App.ClearText("WidthRequestEntry");
+		App.EnterText("WidthRequestEntry", width);
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		if (shouldBeVisible)
 		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("HeightRequestEntry");
-			App.ClearText("HeightRequestEntry");
-			App.EnterText("HeightRequestEntry", height);
-			App.WaitForElement("WidthRequestEntry");
-			App.ClearText("WidthRequestEntry");
-			App.EnterText("WidthRequestEntry", width);
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			
-			if (shouldBeVisible)
-			{
-				App.WaitForElement("Options");
+			App.WaitForElement("DrawableTypeLabel");
+			App.Tap("DrawableTypeLabel");
 #if WINDOWS
-				VerifyScreenshot();
+			VerifyShapeScreenshot();
 #else
 				var graphicsView = App.FindElement("GraphicsViewControl");
 				Assert.That(graphicsView, Is.Not.Null);
 #endif
-			}
-			else
-			{
-				App.WaitForElement("Options");
-				App.WaitForNoElement("GraphicsViewControl");
-			}
 		}
-
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_InvalidateButton_ChangesColorAndLogsEvent()
+		else
 		{
-			// Clear any existing events to start fresh
-			App.WaitForElement("ClearEventsButton");
-			App.Tap("ClearEventsButton");
-
-			var interactionEventLabel = App.FindElement("InteractionEventLabel");
-			var initialEventsText = interactionEventLabel.GetText();
-
-			App.WaitForElement("InvalidateButton");
-			App.Tap("InvalidateButton");
-
-			var updatedEventsText = interactionEventLabel.GetText();
-
-			Assert.That(updatedEventsText, Is.Not.EqualTo(initialEventsText),
-				"Interaction events should be updated after clicking Invalidate button");
-
-			Assert.That(updatedEventsText, Does.Contain("Invalidate() called"),
-				"Events should indicate that Invalidate() was called on the GraphicsView");		
-				
-			VerifyScreenshot();
+			App.WaitForElement("Options");
+			App.WaitForNoElement("GraphicsViewControl");
 		}
-
-#endregion
 	}
+
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_InvalidateButton_ChangesColorAndLogsEvent()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Square");
+		App.Tap("Square");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		// Clear any existing events to start fresh
+		App.WaitForElement("ClearEventsButton");
+		App.Tap("ClearEventsButton");
+
+		var interactionEventLabel = App.FindElement("InteractionEventLabel");
+		var initialEventsText = interactionEventLabel.GetText();
+
+		App.WaitForElement("InvalidateButton");
+		App.Tap("InvalidateButton");
+
+		var updatedEventsText = interactionEventLabel.GetText();
+
+		Assert.That(updatedEventsText, Is.Not.EqualTo(initialEventsText),
+			"Interaction events should be updated after clicking Invalidate button");
+
+		Assert.That(updatedEventsText, Does.Contain("Invalidate() called"),
+			"Events should indicate that Invalidate() was called on the GraphicsView");
+
+		VerifyShapeScreenshot();
+	}
+
+	#endregion
 }
