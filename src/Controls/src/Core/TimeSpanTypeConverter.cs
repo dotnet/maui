@@ -21,11 +21,11 @@ public class TimeSpanTypeConverter : TypeConverter
         {
             return timeSpan;
         }
-        if (value is TimeOnly timeOnly)
+        else if (value is TimeOnly timeOnly)
         {
             return timeOnly.ToTimeSpan();
         }
-        if (value is string stringValue && TimeOnly.TryParse(stringValue, out var result))
+        else if (value is string stringValue && TimeOnly.TryParse(stringValue, out var result))
         {
             return result.ToTimeSpan();
         }
@@ -63,11 +63,11 @@ public class TimeSpanTypeConverter : TypeConverter
         {
             return timeOnly.ToString(culture);
         }
-        if (destinationType == typeof(TimeSpan))
+        else if (destinationType == typeof(TimeSpan))
         {
             return timeOnly.ToTimeSpan();
         }
-        if (destinationType == typeof(TimeOnly))
+        else if (destinationType == typeof(TimeOnly))
         {
             return timeOnly;
         }
@@ -81,11 +81,11 @@ public class TimeSpanTypeConverter : TypeConverter
         {
             return timeSpan.ToString();
         }
-        if (destinationType == typeof(TimeSpan))
+        else if (destinationType == typeof(TimeSpan))
         {
             return timeSpan;
         }
-        if (destinationType == typeof(TimeOnly))
+        else if (destinationType == typeof(TimeOnly))
         {
             return TimeOnly.FromTimeSpan(timeSpan);
         }
