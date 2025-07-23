@@ -56,6 +56,8 @@ namespace Microsoft.Maui.Platform
 		/// Represents the areas that should be avoided when placing content (e.g., status bar, home indicator).
 		/// </summary>
 		SafeAreaPadding _safeArea = SafeAreaPadding.Empty;
+
+		UIEdgeInsets _systemAdjustedContentInset = UIEdgeInsets.Zero;
 		
 		/// <summary>
 		/// Flag indicating whether the safe area needs to be recalculated.
@@ -256,6 +258,12 @@ namespace Microsoft.Maui.Platform
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
+
+			if (_systemAdjustedContentInset != SystemAdjustedContentInset)
+			{
+				_systemAdjustedContentInset = SystemAdjustedContentInset;
+				return false;
+			}
 
 			// Return whether the way safe area interacts with our view has changed
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
