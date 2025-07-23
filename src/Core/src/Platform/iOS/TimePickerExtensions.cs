@@ -89,7 +89,7 @@ public static class TimePickerExtensions
 		// TODO: Update TextAlignment based on the EffectiveFlowDirection property.
 	}
 
-	public static void UpdateIsOpen(this UIDatePicker picker, ITimePicker timePicker)
+	internal static void UpdateIsOpen(this UIDatePicker picker, ITimePicker timePicker)
 	{
 		if (timePicker.IsOpen)
 			picker.BecomeFirstResponder();
@@ -97,7 +97,7 @@ public static class TimePickerExtensions
 			picker.ResignFirstResponder();
 	}
 
-	public static void UpdateIsOpen(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
+	internal static void UpdateIsOpen(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
 	{
 		if (timePicker.IsOpen)
 			mauiTimePicker.BecomeFirstResponder();

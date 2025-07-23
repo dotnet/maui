@@ -90,7 +90,7 @@ public static class TimePickerExtensions
 		"TimePickerButtonBackgroundFocused",
 	};
 
-	public static void UpdateIsOpen(this TimePicker platformTimePicker, ITimePicker timePicker)
+	internal static void UpdateIsOpen(this TimePicker platformTimePicker, ITimePicker timePicker)
 	{
 		if (!platformTimePicker.IsLoaded)
 		{
