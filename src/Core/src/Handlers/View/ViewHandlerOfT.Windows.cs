@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 				oldParentChildren?.RemoveAt(oldIdx);
 			}
 
-			ContainerView ??= new WrapperView();
+			ContainerView ??= OnCreateContainer() ?? new WrapperView();
 			((WrapperView)ContainerView).Child = PlatformView;
 
 			if (oldIndex is int idx && idx >= 0)
