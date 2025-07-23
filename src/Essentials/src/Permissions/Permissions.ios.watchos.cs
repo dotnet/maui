@@ -215,9 +215,8 @@ namespace Microsoft.Maui.ApplicationModel
 					if (results != null)
 						return PermissionStatus.Granted;
 				}
-				catch (Exception ex)
+				catch (NSErrorException)
 				{
-					Debug.WriteLine("Unable to query activity manager: " + ex.Message);
 					// Fall back to checking the authorization status directly when QueryActivityAsync fails.
 					// This can happen for several reasons:
 					// 1. Motion & Fitness permission has been denied by the user
@@ -228,6 +227,11 @@ namespace Microsoft.Maui.ApplicationModel
 					// state information even when the query method fails, ensuring the permission
 					// request flow completes properly and returns the correct PermissionStatus.
 					return ConvertAuthorizationStatus(CMMotionActivityManager.AuthorizationStatus);
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine("Unable to query activity manager: " + ex.Message);
+					return PermissionStatus.Denied;
 				}
 
 				return PermissionStatus.Unknown;
