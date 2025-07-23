@@ -64,7 +64,20 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
-			return ResizeInternal(maxWidth, maxHeight, 0, 0, maxWidth, maxHeight, disposeOriginal);
+			if (Width > maxWidth || Height > maxHeight)
+			{
+				float factorX = maxWidth / Width;
+				float factorY = maxHeight / Height;
+
+				float factor = Math.Min(factorX, factorY);
+
+				var targetWidth = factor * Width;
+				var targetHeight = factor * Height;
+
+				return ResizeInternal(targetWidth, targetHeight, 0, 0, targetWidth, targetHeight, disposeOriginal);
+			}
+
+			return this;
 		}
 
 		IImage ResizeInternal(float canvasWidth, float canvasHeight, float drawX, float drawY, float drawWidth, float drawHeight, bool disposeOriginal)
