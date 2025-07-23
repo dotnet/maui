@@ -350,3 +350,32 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 ~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.VisualElement.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+override Microsoft.Maui.Controls.BoundsTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.BoundsTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.BoundsTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.BoundsTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Controls.CarouselLayoutTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.CarouselLayoutTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.CarouselLayoutTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.CarouselLayoutTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Controls.ItemsLayoutTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.ItemsLayoutTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.ItemsLayoutTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.ItemsLayoutTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Controls.Shapes.PointCollectionConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.Shapes.PointCollectionConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.Shapes.PointCollectionConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.Shapes.PointCollectionConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Controls.Shapes.TransformTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.Shapes.TransformTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.Shapes.TransformTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.Shapes.TransformTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Controls.UriTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.UriTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.UriTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.UriTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Controls.WebViewSourceTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.WebViewSourceTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.WebViewSourceTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.WebViewSourceTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+
