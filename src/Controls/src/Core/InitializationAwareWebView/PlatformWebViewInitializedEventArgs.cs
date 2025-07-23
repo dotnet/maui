@@ -2,7 +2,7 @@
 using PlatformWebView = WebKit.WKWebView;
 using PlatformSettings = WebKit.WKWebViewConfiguration;
 #elif ANDROID
-using PlatformWebView = Microsoft.Maui.Platform.MauiHybridWebView;
+using PlatformWebView = Android.Webkit.WebView;
 using PlatformSettings = Android.Webkit.WebSettings;
 #elif WINDOWS
 using PlatformWebView = Microsoft.Web.WebView2.Core.CoreWebView2;
