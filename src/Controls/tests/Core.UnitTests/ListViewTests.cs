@@ -1324,6 +1324,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SendRefreshingCanBind()
+		{
+			var lv = new ListView();
+			MockViewModel vm;
+			lv.BindingContext = vm = new MockViewModel();
+			lv.SetBinding(ListView.IsRefreshingProperty, nameof(MockViewModel.Boolean), mode: BindingMode.OneWay);
+
+			bool isRefreshing = false;
+			lv.PropertyChanged += (sender, arg) =>
+			{
+				if (arg.PropertyName == ListView.IsRefreshingProperty.PropertyName)
+					isRefreshing = !isRefreshing;
+			};
+
+			//pull down to refresh
+			IListViewController controller = lv;
+			controller.SendRefreshing(); //called by renderer
+			Assert.True(isRefreshing);
+			Assert.True(lv.IsRefreshing);
+
+			//start to execute command
+			vm.Boolean = true;
+			Assert.True(isRefreshing);
+			Assert.True(lv.IsRefreshing);
+
+			//stop refresh after finish command
+			vm.Boolean = false;
+			Assert.False(isRefreshing);
+			Assert.False(lv.IsRefreshing);
+		}
+
+		[Fact]
 		public void RefreshCommand()
 		{
 			var lv = new ListView();
