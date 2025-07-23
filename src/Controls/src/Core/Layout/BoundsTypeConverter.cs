@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 			// IMPORTANT! Update BoundsDesignTypeConverter.IsValid if making changes here
 			var strValue = value?.ToString();
 
-			if (strValue != null)
+			if (strValue is not null)
 			{
 				double x = -1, y = -1, w = -1, h = -1;
 				string[] xywh = strValue.Split(',');
