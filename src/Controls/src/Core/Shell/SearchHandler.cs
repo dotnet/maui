@@ -20,6 +20,9 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<EventArgs> Focused;
 		public event EventHandler<EventArgs> Unfocused;
+		
+		internal event EventHandler<EventArgs> ShowSoftInputRequested;
+		internal event EventHandler<EventArgs> HideSoftInputRequested;
 
 		/// <summary>Bindable property for <see cref="IsFocused"/>.</summary>
 		public static readonly BindableProperty IsFocusedProperty = IsFocusedPropertyKey.BindableProperty;
@@ -82,6 +85,16 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			FocusChangeRequested?.Invoke(this, new FocusRequestArgs());
+		}
+
+		public void ShowSoftInputAsync()
+		{
+			ShowSoftInputRequested?.Invoke(this, new EventArgs());
+		}
+
+		public void HideSoftInputAsync()
+		{
+			HideSoftInputRequested?.Invoke(this, new EventArgs());
 		}
 
 		protected virtual void OnFocused()
