@@ -20,8 +20,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override WKWebView CreatePlatformView()
 		{
-			var customConfig = VirtualView?.InitializingWebView() as WebViewInitializingEventArgs;
-
 			var config = new WKWebViewConfiguration();
 
 			// By default, setting inline media playback to allowed, including autoplay
@@ -45,8 +43,9 @@ namespace Microsoft.Maui.Handlers
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
-			// Allow additional custom settings to be applied through the WebViewInitializingEventArgs Class
-			customConfig?.AdditionalSettings?.Invoke(config);
+			// Invoke the WebViewInitializing event to allow custom configuration of the web view
+			var initializingArgs = new WebViewInitializationStartedEventArgs(config);
+			VirtualView?.WebViewInitializationStarted(initializingArgs);
 
 			var webview = new MauiHybridWebView(this, RectangleF.Empty, config)
 			{
@@ -66,7 +65,9 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			VirtualView?.InitializedWebView(webview);
+			// Invoke the WebViewInitialized event to signal that the web view has been initialized
+			var initializedArgs = new WebViewInitializationCompletedEventArgs(webview);
+			VirtualView?.WebViewInitializationCompleted(initializedArgs);
 
 			return webview;
 		}
