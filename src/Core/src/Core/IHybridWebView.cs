@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui
 {
-	public interface IHybridWebView : IView, IWebRequestInterceptingWebView
+	public interface IHybridWebView : IView, IWebRequestInterceptingWebView, IInitializationAwareWebView
 	{
 		/// <summary>
 		/// Specifies the file within the <see cref="HybridRoot"/> that should be served as the default file. The
@@ -49,9 +49,6 @@ namespace Microsoft.Maui
 		/// <param name="script">The JavaScript code to run.</param>
 		/// <returns>The return value (if any) of running the script.</returns>
 		Task<string?> EvaluateJavaScriptAsync(string script);
-
-		object? InitializingWebView();
-		void InitializedWebView(object webView);
 
 		/// <summary>
 		/// Invokes a JavaScript method named <paramref name="methodName"/> and optionally passes in the parameter values specified
