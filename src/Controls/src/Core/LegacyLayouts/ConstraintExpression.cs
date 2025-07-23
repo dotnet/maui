@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
+
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[RequireService([typeof(IReferenceProvider), typeof(IProvideValueTarget)])]
@@ -62,11 +64,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 							return null;
 						view = ((INameScope)valueProvider.TargetObject).FindByName<View>(ElementName);
 					}
-#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 					return Constraint.RelativeToView(view, delegate (RelativeLayout p, View v)
 					{ return (double)minfo.Invoke(v, Array.Empty<object>()) * Factor + Constant; });
-#pragma warning restore CS0618, CS0619 // Type or member is obsolete
 			}
 		}
 	}
 }
+
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete

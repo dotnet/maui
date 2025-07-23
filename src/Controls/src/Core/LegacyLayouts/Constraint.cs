@@ -5,14 +5,14 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using Microsoft.Maui.Controls.Internals;
 
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
+
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[System.ComponentModel.TypeConverter(typeof(ConstraintTypeConverter))]
 	public class Constraint
 	{
-#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 		Func<RelativeLayout, double> _measureFunc;
-#pragma warning restore CS0618, CS0619 // Type or member is obsolete
 
 		public Constraint()
 		{
@@ -39,7 +39,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return result;
 		}
 
-#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 		public static Constraint RelativeToParent(Func<RelativeLayout, double> measure)
 		{
 			var result = new Constraint { _measureFunc = measure };
@@ -58,6 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			return _measureFunc(parent);
 		}
-#pragma warning restore CS0618, CS0619 // Type or member is obsolete
 	}
 }
+
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete
