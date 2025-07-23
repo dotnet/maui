@@ -178,7 +178,7 @@ namespace Maui.Controls.Sample
 						 Description = attribute.Description,
 						 IsInternetRequired = attribute.IsInternetRequired,
 						 Action = ActivatePageAndNavigate(attribute, type),
-						 // PageFactory has used to retrives the instance of the page.
+						 // PageFactory is used to retrieve the instance of the page.
 						 PageFactory = () => ActivatePage(type)
 					 }).ToList();
 #endif
