@@ -22,7 +22,7 @@ namespace Microsoft.Maui
 		const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
 		const bool IsHybridWebViewSupportedByDefault = true;
 		const bool SupportNamescopesByDefault = true;
-    const bool IsMetricsSupportedByDefault = true;
+		const bool IsMetricsSupportedByDefault = true;
 		const string FeatureSwitchPrefix = "Microsoft.Maui.RuntimeFeature";
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
@@ -88,7 +88,7 @@ namespace Microsoft.Maui
 				? isSupported
 				: IsHybridWebViewSupportedByDefault;
 
-  #if NET9_0_OR_GREATER
+#if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(AreNamescopesSupported)}")]
 #endif
 		public static bool AreNamescopesSupported
@@ -99,9 +99,7 @@ namespace Microsoft.Maui
 			//for testing purposes only
 			internal set => AppContext.SetSwitch($"{FeatureSwitchPrefix}.{nameof(AreNamescopesSupported)}", value);
 		}
-#pragma warning restore IL4000
-    }
-  
+		
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
 #endif
@@ -110,5 +108,5 @@ namespace Microsoft.Maui
 				? isSupported
 				: IsMetricsSupportedByDefault;
 #pragma warning restore IL4000
-	}
+    }
 }
