@@ -57,7 +57,7 @@ public class TimeSpanTypeConverter : TypeConverter
         throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
     }
 
-    private static object ConvertToDestinationType(TimeOnly timeOnly, Type? destinationType, CultureInfo? culture)
+    static object ConvertToDestinationType(TimeOnly timeOnly, Type? destinationType, CultureInfo? culture)
     {
         if (destinationType == typeof(string))
         {
@@ -75,7 +75,7 @@ public class TimeSpanTypeConverter : TypeConverter
         throw new NotSupportedException($"Cannot convert \"{timeOnly}\" into {destinationType}");
     }
 
-    private static object ConvertToDestinationType(TimeSpan timeSpan, Type? destinationType, CultureInfo? culture)
+    static object ConvertToDestinationType(TimeSpan timeSpan, Type? destinationType, CultureInfo? culture)
     {
         if (destinationType == typeof(string))
         {

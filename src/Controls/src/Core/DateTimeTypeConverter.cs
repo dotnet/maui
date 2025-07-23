@@ -62,7 +62,7 @@ public class DateTimeTypeConverter : TypeConverter
         throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
     }
 
-    private static object ConvertToDestinationType(DateOnly dateOnly, Type? destinationType, CultureInfo? culture)
+    static object ConvertToDestinationType(DateOnly dateOnly, Type? destinationType, CultureInfo? culture)
     {
         if (destinationType == typeof(string))
         {
@@ -80,7 +80,7 @@ public class DateTimeTypeConverter : TypeConverter
         throw new NotSupportedException($"Cannot convert \"{dateOnly}\" into {destinationType}");
     }
 
-    private static object ConvertToDestinationType(DateTime dateTime, Type? destinationType, CultureInfo? culture)
+    static object ConvertToDestinationType(DateTime dateTime, Type? destinationType, CultureInfo? culture)
     {
         if (destinationType == typeof(string))
         {
