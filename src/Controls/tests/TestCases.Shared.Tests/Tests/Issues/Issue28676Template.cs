@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 [Category(UITestCategories.CollectionView)]
 public class Issue28676Template : _IssuesUITest
 {

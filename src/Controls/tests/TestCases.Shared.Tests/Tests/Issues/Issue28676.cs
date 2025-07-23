@@ -3,10 +3,11 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 [Category(UITestCategories.CollectionView)]
 public class Issue28676 : _IssuesUITest
 {
-	public override string Issue => "Android Dynamic Updates to CollectionView Header and Footer and Templates Are Not Displayed";
+	public override string Issue => "Android Dynamic Updates to CollectionView Header and Footer Are Not Displayed";
 
 	public Issue28676(TestDevice device) : base(device)
 	{
