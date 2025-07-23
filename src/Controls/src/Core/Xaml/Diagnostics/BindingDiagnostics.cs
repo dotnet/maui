@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 		internal static void SendBindingFailure(BindingBase binding, string errorCode, string message, params object[] messageArgs)
 		{
 			if (RuntimeFeature.EnableMauiDiagnostics == false)
+			{
 				return;
+			}
 			Application.Current?.FindMauiContext()?.CreateLogger<BindingDiagnostics>()?.LogWarning(message, messageArgs);
 			BindingFailed?.Invoke(null, new BindingBaseErrorEventArgs(VisualDiagnostics.GetSourceInfo(binding), binding, errorCode, message, messageArgs));
 		}
