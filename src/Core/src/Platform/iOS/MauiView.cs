@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Platform
 				return false;
 			}
 
-			return true;
+			return Superview.GetParentOfType<UIScrollView>() is null;
 		}
 
 		/// <summary>

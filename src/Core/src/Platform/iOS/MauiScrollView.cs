@@ -242,7 +242,17 @@ namespace Microsoft.Maui.Platform
 			_safeAreaInvalidated = false;
 
 			var oldSafeArea = _safeArea;
-			_safeArea = AdjustedContentInset.ToSafeAreaInsets();
+
+			// iOS sets AdjustedContentInset only when the ContentSize exceeds the ScrollView's Bounds.
+			// If ContentSize is smaller, AdjustedContentInset is zero, and SafeAreaInsets are applied to child views instead.
+			// This makes sense for non-scrolling scenarios, but creates a problem: if a child view's height increases due to safe area,
+			// it can push ContentSize over the Bounds, causing AdjustedContentInset to become non-zero and SafeAreaInsets on the child to reset to zero.
+			// This can result in a loop of invalidations as the layout toggles between these states.
+			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
+			if (AdjustedContentInset == UIEdgeInsets.Zero)
+				_safeArea = SafeAreaInsets.ToSafeAreaInsets();
+			else
+				_safeArea = AdjustedContentInset.ToSafeAreaInsets();
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
@@ -268,9 +278,13 @@ namespace Microsoft.Maui.Platform
 			}
 
 			adjustedBounds = bounds.Size.ToSize();
-			
-			// Arrange the content within the (possibly adjusted) bounds
-			var size = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
+
+			Size size;
+			if (AdjustedContentInset == UIEdgeInsets.Zero)
+				size = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
+			else
+				size = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
+
 			return size;
 		}
 
