@@ -113,7 +113,6 @@ public class Issue30690 : _IssuesUITest
 #endif
 	}
 
-//#if TEST_FAILS_ON_CATALYST // Overscroll gesture is not working
 	[Test]
 	public void PullToRefreshWorksWhenEnabled()
 	{
@@ -155,7 +154,6 @@ public class Issue30690 : _IssuesUITest
 		// Wait for refresh to complete and verify it failed
 		Assert.That(GetStatusText(), Contains.Substring("IsEnabled: False"));
 	}
-//#endif
 
 	string GetStatusText() =>
 		App.FindElement(StatusLabel).GetText() ?? "";
