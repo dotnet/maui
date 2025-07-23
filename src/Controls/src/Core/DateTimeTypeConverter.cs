@@ -21,14 +21,19 @@ public class DateTimeTypeConverter : TypeConverter
         {
             return dateTime;
         }
-		if (value is string stringValue && DateOnly.TryParse(stringValue, culture, DateTimeStyles.None, out DateOnly dateTimeOnly))
-		{
-			return dateTimeOnly;
-		}
-		if (value is string stringValue2 && DateTime.TryParse(stringValue2, culture, DateTimeStyles.None, out dateTime))
+
+        if (value is string stringValue)
         {
-            return dateTime;
+            if (DateOnly.TryParse(stringValue, culture, DateTimeStyles.None, out DateOnly dateTimeOnly))
+            {
+                return dateTimeOnly;
+            }
+            else if (DateTime.TryParse(stringValue, culture, DateTimeStyles.None, out dateTime))
+            {
+                return dateTime;
+            }
         }
+
         throw new NotSupportedException($"Cannot convert \"{value}\" into {typeof(DateTime)}");
     }
 
@@ -36,61 +41,62 @@ public class DateTimeTypeConverter : TypeConverter
     {
         if (value is DateOnly dateOnly)
         {
-			return ConvertToDestinationType(dateOnly, destinationType, culture);
+            return ConvertToDestinationType(dateOnly, destinationType, culture);
         }
-		else if (value is DateTime dateTime)
+        else if (value is DateTime dateTime)
         {
-			return ConvertToDestinationType(dateTime, destinationType, culture);
+            return ConvertToDestinationType(dateTime, destinationType, culture);
         }
-		else if (value is string stringValue)
-		{
-			if (DateTime.TryParse(stringValue, culture, DateTimeStyles.None, out dateTime))
-			{
-				return ConvertToDestinationType(dateTime, destinationType, culture);
-			}
-			else if (DateOnly.TryParse(stringValue, culture, out dateOnly))
-			{
-				return ConvertToDestinationType(dateOnly, destinationType, culture);
-			}
-		}
+        else if (value is string stringValue)
+        {
+            if (DateTime.TryParse(stringValue, culture, DateTimeStyles.None, out dateTime))
+            {
+                return ConvertToDestinationType(dateTime, destinationType, culture);
+            }
+            else if (DateOnly.TryParse(stringValue, culture, out dateOnly))
+            {
+                return ConvertToDestinationType(dateOnly, destinationType, culture);
+            }
+        }
 
         throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
     }
 
-	private static object ConvertToDestinationType(DateOnly dateOnly, Type? destinationType, CultureInfo? culture)
-	{
-		if (destinationType == typeof(string))
-		{
-			return dateOnly.ToString(culture);
-		}
-		if (destinationType == typeof(DateTime))
-		{
-			return dateOnly.ToDateTime(TimeOnly.MinValue);
-		}
-		if (destinationType == typeof(DateOnly))
-		{
-			return dateOnly;
-		}
+    private static object ConvertToDestinationType(DateOnly dateOnly, Type? destinationType, CultureInfo? culture)
+    {
+        if (destinationType == typeof(string))
+        {
+            return dateOnly.ToString(culture);
+        }
+        else if (destinationType == typeof(DateTime))
+        {
+            return dateOnly.ToDateTime(TimeOnly.MinValue);
+        }
+        else if (destinationType == typeof(DateOnly))
+        {
+            return dateOnly;
+        }
 
-		throw new NotSupportedException($"Cannot convert \"{dateOnly}\" into {destinationType}");
-	}
+        throw new NotSupportedException($"Cannot convert \"{dateOnly}\" into {destinationType}");
+    }
 
-	private static object ConvertToDestinationType(DateTime dateTime, Type? destinationType, CultureInfo? culture)
-	{
-		if (destinationType == typeof(string))
-		{
-			return dateTime.ToString(culture);
-		}
-		if (destinationType == typeof(DateTime))
-		{
-			return dateTime;
-		}
-		if (destinationType == typeof(DateOnly))
-		{
-			return DateOnly.FromDateTime(dateTime);
-		}
+    private static object ConvertToDestinationType(DateTime dateTime, Type? destinationType, CultureInfo? culture)
+    {
+        if (destinationType == typeof(string))
+        {
+            return dateTime.ToString(culture);
+        }
+        else if (destinationType == typeof(DateTime))
+        {
+            return dateTime;
+        }
+        else if (destinationType == typeof(DateOnly))
+        {
+            return DateOnly.FromDateTime(dateTime);
+        }
 
-		throw new NotSupportedException($"Cannot convert \"{dateTime}\" into {destinationType}");
-	}
+        throw new NotSupportedException($"Cannot convert \"{dateTime}\" into {destinationType}");
+    }
 }
+
 #endif
