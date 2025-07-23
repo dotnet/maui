@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue25842">
+    <ContentView>
+        <CollectionView HeightRequest="600"
+            AutomationId="CollectionView"
+                VerticalOptions="Center"
+                ItemsSource="{Binding Students}">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout
+                    Orientation="Vertical"
+                    Span="1"
+                    HorizontalItemSpacing="10"
+                    VerticalItemSpacing="10"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Stroke="Black"
+                            StrokeThickness="1"
+                            Padding="10"
+                            BackgroundColor="Gray"
+                            StrokeShape="RoundRectangle 10">
+                        <VerticalStackLayout Spacing="10">
+                            <HorizontalStackLayout VerticalOptions="FillAndExpand"
+                                                   HorizontalOptions="FillAndExpand"
+                                                   Spacing="10">
+                                <Label Text="Name:"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="CenterAndExpand"
+                                       HorizontalOptions="FillAndExpand"/>
+                                <Label Text="{Binding Name}"
+                                       FontSize="Medium"
+                                       VerticalOptions="CenterAndExpand"
+                                       HorizontalOptions="FillAndExpand"/>
+                            </HorizontalStackLayout>
+
+                            <HorizontalStackLayout VerticalOptions="FillAndExpand"
+                                                   HorizontalOptions="FillAndExpand"
+                                                   Spacing="10">
+                                <Label Text="Country:"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="CenterAndExpand"
+                                       HorizontalOptions="FillAndExpand"/>
+                                <Picker Title="Country"
+                                        WidthRequest="300"
+                                        ItemsSource="{Binding Countries}"
+                                        SelectedItem="{Binding Country}"
+                                        VerticalOptions="CenterAndExpand"
+                                        HorizontalOptions="FillAndExpand"
+                                        FontSize="Medium"/>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </ContentView>
+</ContentPage>
