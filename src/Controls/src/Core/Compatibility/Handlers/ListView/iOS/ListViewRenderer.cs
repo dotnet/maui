@@ -1147,7 +1147,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					throw new NotSupportedException("Header cells do not support context actions");
 
 				const string reuseIdentifier = "HeaderWrapper";
-				var header = (HeaderWrapperView)tableView.DequeueReusableHeaderFooterView(reuseIdentifier) ?? new HeaderWrapperView(reuseIdentifier);
+				HeaderWrapperView header = null;
+				if (tableView.DequeueReusableHeaderFooterView(reuseIdentifier) is HeaderWrapperView headerWrapperView)
+				{
+					header = headerWrapperView;
+					header.IsReused = true;
+				}
+				else
+				{
+					header = new HeaderWrapperView(reuseIdentifier);
+				}
 				header.Cell = cell;
 
 				cell.TableView = tableView;
@@ -1544,13 +1553,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		UITableViewCell _tableViewCell;
 
+		internal bool IsReused;
+		
 		public Cell Cell { get; set; }
 
 		public void SetTableViewCell(UITableViewCell value)
 		{
 			if (ReferenceEquals(_tableViewCell, value))
 				return;
-			_tableViewCell?.RemoveFromSuperview();
+
+			if (!IsReused)
+				_tableViewCell?.RemoveFromSuperview();
 			_tableViewCell = value;
 			AddSubview(value);
 		}
