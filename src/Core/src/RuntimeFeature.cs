@@ -99,5 +99,5 @@ namespace Microsoft.Maui
 			internal set => AppContext.SetSwitch($"{FeatureSwitchPrefix}.{nameof(AreNamescopesSupported)}", value);
 		}
 #pragma warning restore IL4000
-    }
+	}
 }
