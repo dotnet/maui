@@ -60,6 +60,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='Date']/Docs/*" />
+#if NET6_0_OR_GREATER
+		[System.ComponentModel.TypeConverter(typeof(DateTimeTypeConverter))]
+#endif
 		public DateTime? Date
 		{
 			get { return (DateTime?)GetValue(DateProperty); }
