@@ -21,7 +21,6 @@ using Xunit;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
-using System.Diagnostics.CodeAnalysis;
 
 #endif
 
