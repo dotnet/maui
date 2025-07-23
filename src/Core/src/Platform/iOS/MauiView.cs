@@ -53,6 +53,12 @@ namespace Microsoft.Maui.Platform
 		/// and the safe area is not empty.
 		/// </summary>
 		bool _appliesSafeAreaAdjustments;
+		
+		// Indicates whether this view should respond to safe area insets.
+		// Cached to avoid repeated hierarchy checks.
+		// True if the view is an ISafeAreaView, does not ignore safe area, and is not inside a UIScrollView;
+		// otherwise, false. Null means not yet determined.
+		bool? _scrollViewDescendant;
 
 
 		/// <summary>
@@ -92,11 +98,28 @@ namespace Microsoft.Maui.Platform
 		{
 			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea)
 			{
+				_scrollViewDescendant = false;
 				return false;
 			}
 
-			return Superview.GetParentOfType<UIScrollView>() is null;
+			if (_scrollViewDescendant.HasValue)
+				return _scrollViewDescendant.Value;				
+
+			// iOS sets AdjustedContentInset on UIScrollView only when the ContentSize exceeds the ScrollView's Bounds.
+			// If ContentSize is smaller, AdjustedContentInset is zero, and SafeAreaInsets are applied to child views instead.
+			// This makes sense for non-scrolling scenarios, but creates a problem: if a child view's height increases due to safe area,
+			// it can push ContentSize over the Bounds, causing AdjustedContentInset to become non-zero and SafeAreaInsets on the child to reset to zero.
+			// This can result in a loop of invalidations as the layout toggles between these states (child applies safe area, triggers scrollview to adjust, which removes safe area from child, and so on).
+			//
+			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
+			// The scrollview itself is responsible for applying the correct insets, and child views should not apply additional safe area logic.
+			//
+			// For more details and implementation specifics, see MauiScrollView.cs, which contains the logic for safe area management
+			// within scroll views and explains how this interacts with the overall layout system.
+			_scrollViewDescendant = Superview.GetParentOfType<UIScrollView>() is null;
+			return _scrollViewDescendant.Value;
 		}
+
 
 		/// <summary>
 		/// Adjusts the given bounds rectangle to account for safe area insets.
@@ -432,6 +455,8 @@ namespace Microsoft.Maui.Platform
 		public override void MovedToWindow()
 		{
 			base.MovedToWindow();
+			
+			_scrollViewDescendant = null;
 
 			// Notify any subscribers that this view has been moved to a window
 			_movedToWindow?.Invoke(this, EventArgs.Empty);

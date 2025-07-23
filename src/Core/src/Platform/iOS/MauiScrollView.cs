@@ -14,6 +14,8 @@ namespace Microsoft.Maui.Platform
 	/// </summary>
 	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, ICrossPlatformLayoutBacking, IPlatformMeasureInvalidationController
 	{
+		internal const nint ContentTag = 0x845fed;
+
 		/// <summary>
 		/// Flag indicating whether the parent view hierarchy should be invalidated when this view is moved to a window.
 		/// Used to ensure proper layout recalculation when the view becomes visible.
@@ -254,7 +256,7 @@ namespace Microsoft.Maui.Platform
 			if (SystemAdjustedContentInset == UIEdgeInsets.Zero)
 				_safeArea = SafeAreaInsets.ToSafeAreaInsets();
 			else
-				_safeArea = AdjustedContentInset.ToSafeAreaInsets();
+				_safeArea = SystemAdjustedContentInset.ToSafeAreaInsets();
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
@@ -307,9 +309,13 @@ namespace Microsoft.Maui.Platform
 			Size size;
 
 			if (SystemAdjustedContentInset == UIEdgeInsets.Zero)
+			{
 				size = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
+			}
 			else
+			{
 				size = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
+			}
 
 			return size;
 		}
