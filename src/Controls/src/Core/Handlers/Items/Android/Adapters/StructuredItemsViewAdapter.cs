@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				UpdateHasFooter();
 				NotifyDataSetChanged();
 			}
+
 		}
 
 		public override int GetItemViewType(int position)
@@ -84,18 +85,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (holder is TemplatedItemViewHolder templatedItemViewHolder)
 				{
-					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsView.HeaderTemplate);
-				}
-				else if (holder is SimpleViewHolder simpleViewHolder)
-				{
-					if (simpleViewHolder.ItemView is Android.Widget.TextView textView && ItemsView.Header is string headerString)
-					{
-						textView.Text = headerString;
-					}
-					else
-					{
-						simpleViewHolder.ItemView = CreateHeaderFooterViewHolder(ItemsView.Header, ItemsView.HeaderTemplate, holder.ItemView.Context).ItemView;
-					}
+					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsView.Header);
 				}
 
 				return;
@@ -105,20 +95,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (holder is TemplatedItemViewHolder templatedItemViewHolder)
 				{
-					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsView.FooterTemplate);
+					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsView.Footer);
 				}
-				else if (holder is SimpleViewHolder simpleViewHolder)
-				{
-					if (simpleViewHolder.ItemView is Android.Widget.TextView textView && ItemsView.Footer is string footerString)
-					{
-						textView.Text = footerString;
-					}
-					else
-					{
-						simpleViewHolder.ItemView = CreateHeaderFooterViewHolder(ItemsView.Footer, ItemsView.FooterTemplate, holder.ItemView.Context).ItemView;
-					}
-				}
-
 				return;
 			}
 

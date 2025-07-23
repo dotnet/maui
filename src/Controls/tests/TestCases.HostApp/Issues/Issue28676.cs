@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 28676, "Android Dynamic Updates to CollectionView Header and Footer and Templates Are Not Displayed",
+	[Issue(IssueTracker.Github, 28676, "Android Dynamic Updates to CollectionView Header and Footer Are Not Displayed",
 		PlatformAffected.Android)]
 	public class Issue28676 : ContentPage
 	{
