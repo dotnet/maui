@@ -734,6 +734,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			});
 
 			searchBar.BookmarkButtonClicked += BookmarkButtonClicked;
+			searchBar.OnEditingStopped += OnSearchBarEditingStopped;
 
 			searchBar.Placeholder = SearchHandler.Placeholder;
 			UpdateSearchIsEnabled(_searchController);
@@ -767,6 +768,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateAutomationId();
 		}
 
+		private void OnSearchBarEditingStopped(object sender, EventArgs e)
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				_searchController.Active = false;
+			}
+			else
+			{
+				_searchController.SearchBar.ResignFirstResponder();
+			}
+		}
+
 		void BookmarkButtonClicked(object sender, EventArgs e)
 		{
 			((ISearchHandlerController)SearchHandler).ClearPlaceholderClicked();
@@ -776,6 +789,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_searchHandlerAppearanceTracker.Dispose();
 			_searchHandlerAppearanceTracker = null;
+
+			var searchBar = _searchController.SearchBar;
+			searchBar.OnEditingStopped -= OnSearchBarEditingStopped;
+			searchBar.BookmarkButtonClicked -= BookmarkButtonClicked;
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				RemoveSearchController(NavigationItem);
