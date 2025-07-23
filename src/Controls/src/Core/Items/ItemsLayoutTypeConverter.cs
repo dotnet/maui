@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
 			var strValue = value?.ToString();
-			if (strValue == null)
+			if (strValue is null)
 			{
 				throw new ArgumentNullException(nameof(strValue));
 			}
