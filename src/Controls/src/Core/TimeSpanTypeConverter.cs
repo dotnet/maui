@@ -5,22 +5,13 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls;
 
-public class TimeSpanTypeConverter : TypeConverter, IExtendedTypeConverter
+public class TimeSpanTypeConverter : TypeConverter
 {
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type? sourceType)
         => sourceType == typeof(string) || sourceType == typeof(TimeOnly) || sourceType == typeof(TimeSpan);
 
     public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
         => destinationType == typeof(string) || destinationType == typeof(TimeSpan) || destinationType == typeof(TimeOnly);
-
-    object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
-    {
-        if (TimeOnly.TryParse(value, out var result))
-        {
-            return result.ToTimeSpan();
-        }
-        throw new NotSupportedException($"Cannot convert \"{value}\" into {typeof(TimeSpan)}");
-    }
 
     public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
     {
