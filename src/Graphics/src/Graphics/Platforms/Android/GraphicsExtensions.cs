@@ -432,33 +432,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static Bitmap Downsize(this Bitmap target, int maxSize, bool dispose = true)
 		{
-			if (target.Width > maxSize || target.Height > maxSize)
-			{
-				float factor;
-
-				if (target.Width > target.Height)
-				{
-					factor = maxSize / (float)target.Width;
-				}
-				else
-				{
-					factor = maxSize / (float)target.Height;
-				}
-
-				var w = (int)Math.Round(factor * target.Width);
-				var h = (int)Math.Round(factor * target.Height);
-
-				var newImage = Bitmap.CreateScaledBitmap(target, w, h, true);
-				if (dispose)
-				{
-					target.Recycle();
-					target.Dispose();
-				}
-
-				return newImage;
-			}
-
-			return target;
+			return Downsize(target, maxSize, maxSize, dispose);
 		}
 
 		public static Bitmap Downsize(this Bitmap target, int maxWidth, int maxHeight, bool dispose = true)
