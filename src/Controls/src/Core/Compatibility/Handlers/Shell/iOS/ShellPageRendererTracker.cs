@@ -770,14 +770,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		private void OnSearchBarEditingStopped(object sender, EventArgs e)
 		{
-			if (OperatingSystem.IsIOSVersionAtLeast(11))
-			{
-				_searchController.Active = false;
-			}
-			else
-			{
-				_searchController.SearchBar.ResignFirstResponder();
-			}
+			_searchController.Active = false;
 		}
 
 		void BookmarkButtonClicked(object sender, EventArgs e)
