@@ -40,19 +40,26 @@ namespace Microsoft.Maui
 
 					// Decode the byte array into a Bitmap
 					var bitmap = global::Android.Graphics.BitmapFactory.DecodeByteArray(buffer, 0, length);
+					if (bitmap == null)
+					{
+						Logger?.LogWarning("Failed to decode image from stream data.");
+						return null;
+					}
 
 					// Set the bitmap to the ImageView
 					imageView.SetImageBitmap(bitmap);
 
-					// Convert Bitmap to Drawable
-					var drawable = new BitmapDrawable(imageView.Resources, bitmap);
-
-					// Create a result object
-					var result = new ImageSourceServiceResult(drawable);
+					// Convert Bitmap to Drawable for consistent return type
+					var drawable = new global::Android.Graphics.Drawables.BitmapDrawable(imageView.Resources, bitmap);
 
 					stream?.Dispose();
 
-					return result;
+					// Create a result object with proper dispose handling
+					return new ImageSourceServiceLoadResult(() =>
+					{
+						bitmap?.Dispose();
+						drawable?.Dispose();
+					});
 				}
 				catch (Exception ex)
 				{
