@@ -24,7 +24,6 @@ namespace Microsoft.Maui
 		const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
 		const bool IsHybridWebViewSupportedByDefault = true;
 		const bool SupportNamescopesByDefault = true;
-		const string FeatureSwitchPrefix = "Microsoft.Maui.RuntimeFeature";
 		const bool EnableDiagnosticsByDefault = false;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
