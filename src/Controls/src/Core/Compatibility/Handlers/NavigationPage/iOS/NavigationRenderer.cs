@@ -976,7 +976,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			FlyoutPage.Flyout.IconImageSource.LoadImage(FlyoutPage.FindMauiContext(), result =>
 			{
 				var icon = result?.Value;
-				var originalImageSize = result?.Value?.Size ?? CGSize.Empty;
+				var originalImageSize = icon?.Size ?? CGSize.Empty;
 				// Referred from the default hamburger size 
 				var defaultIconHeight = 23f;
 				var defaultIconWidth = 23f;
@@ -984,10 +984,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// if the image is bigger than the default available size, resize it
 				if (icon is not null)
 				{
-					bool enableResizing = !AppContext.TryGetSwitch("iOSDisableFlyoutIconAutoResizing", out bool disableResizing) || !disableResizing;
-
-					if (enableResizing &&
-						(originalImageSize.Height - defaultIconHeight > buffer || originalImageSize.Width - defaultIconWidth > buffer))
+					if (originalImageSize.Height - defaultIconHeight > buffer || originalImageSize.Width - defaultIconWidth > buffer)
 					{
 						icon = icon.ResizeImageSource(defaultIconWidth, defaultIconHeight, originalImageSize);
 					}
