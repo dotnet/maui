@@ -63,6 +63,23 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateFormat(timePicker);
 		}
 
+		static void MapFocus(ITimePickerHandler handler, ITimePicker timePicker, object? args)
+		{
+			if (args is FocusRequest request && handler is TimePickerHandler timePickerHandler)
+			{
+				timePickerHandler.ShowPickerDialog();
+				request.TrySetResult(true);
+			}
+		}
+
+		static void MapUnfocus(ITimePickerHandler handler, ITimePicker timePicker, object? args)
+		{
+			if (handler is TimePickerHandler timePickerHandler)
+			{
+				timePickerHandler.HidePickerDialog();
+			}
+		}
+
 		public static void MapTime(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateTime(timePicker);
@@ -101,12 +118,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			_dialog = CreateTimePickerDialog(hour, minute);
 			_dialog.Show();
+			VirtualView.IsFocused = true;
 		}
 
 		void HidePickerDialog()
 		{
 			_dialog?.Hide();
 
+			VirtualView.IsFocused = false;
 			_dialog = null;
 		}
 
