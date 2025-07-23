@@ -83,8 +83,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 		}
-		
-		public static void MapIsOpen(IPickerHandler handler, IPicker picker)
+
+		internal static void MapIsOpen(IPickerHandler handler, IPicker picker)
 		{
 			if (handler.IsConnected() && handler is PickerHandler pickerHandler)
 			{

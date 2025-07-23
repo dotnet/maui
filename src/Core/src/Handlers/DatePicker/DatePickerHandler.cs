@@ -134,6 +134,6 @@ namespace Microsoft.Maui.Handlers
 		/// <remarks>
 		/// This method is responsible for ensuring that opening and closing the date picker is correctly handled across different platforms.
 		/// </remarks>
-		public static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker);
+		internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker);
 	}
 }

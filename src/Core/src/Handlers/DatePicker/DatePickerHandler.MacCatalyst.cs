@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
+		internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 
 		}

@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextAlignment(datePicker);
 		}
 
-		public static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
+		internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateIsOpen(datePicker);
 		}

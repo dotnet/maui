@@ -18,6 +18,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(IPickerHandler handler, IPicker view) { }
 		public static void MapHorizontalTextAlignment(IPickerHandler handler, IPicker view) { }
 		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker view) { }
-		public static void MapIsOpen(IPickerHandler handler, IPicker picker) { }
+		internal static void MapIsOpen(IPickerHandler handler, IPicker picker) { }
 	}
 }

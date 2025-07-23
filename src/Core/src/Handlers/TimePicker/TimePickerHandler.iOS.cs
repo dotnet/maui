@@ -61,8 +61,8 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateFlowDirection(timePicker);
 			handler.PlatformView?.UpdateTextAlignment(timePicker);
 		}
-		
-		public static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker)
+
+		internal static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateIsOpen(timePicker);
 		}

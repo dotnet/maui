@@ -150,7 +150,6 @@ override Microsoft.Maui.SwipeViewSwipeStarted.ToString() -> string!
 static Microsoft.Maui.Handlers.ButtonHandler.MapBackground(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IButton! button) -> void
 static Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.operator !=(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? left, Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? right) -> bool
 static Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.operator ==(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? left, Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? right) -> bool
-static Microsoft.Maui.Handlers.DatePickerHandler.MapIsOpen(Microsoft.Maui.Handlers.IDatePickerHandler! handler, Microsoft.Maui.IDatePicker! datePicker) -> void
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapBackground(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void
 static Microsoft.Maui.Handlers.LayoutHandlerUpdate.operator !=(Microsoft.Maui.Handlers.LayoutHandlerUpdate? left, Microsoft.Maui.Handlers.LayoutHandlerUpdate? right) -> bool
 static Microsoft.Maui.Handlers.LayoutHandlerUpdate.operator ==(Microsoft.Maui.Handlers.LayoutHandlerUpdate? left, Microsoft.Maui.Handlers.LayoutHandlerUpdate? right) -> bool
@@ -162,9 +161,7 @@ static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.operator !=(Micros
 static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.operator ==(Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate? left, Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate? right) -> bool
 static Microsoft.Maui.Handlers.OpenWindowRequest.operator !=(Microsoft.Maui.Handlers.OpenWindowRequest? left, Microsoft.Maui.Handlers.OpenWindowRequest? right) -> bool
 static Microsoft.Maui.Handlers.OpenWindowRequest.operator ==(Microsoft.Maui.Handlers.OpenWindowRequest? left, Microsoft.Maui.Handlers.OpenWindowRequest? right) -> bool
-static Microsoft.Maui.Handlers.PickerHandler.MapIsOpen(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.IPicker! picker) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
-static Microsoft.Maui.Handlers.TimePickerHandler.MapIsOpen(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureEnvironmentVariables(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 *REMOVED*static Microsoft.Maui.Platform.ApplicationExtensions.CreatePlatformWindow(this UIKit.IUIApplicationDelegate! platformApplication, Microsoft.Maui.IApplication! application, UIKit.UIApplication! uiApplication, Foundation.NSDictionary! launchOptions) -> void
 static Microsoft.Maui.Platform.ApplicationExtensions.CreatePlatformWindow(this UIKit.IUIApplicationDelegate! platformApplication, Microsoft.Maui.IApplication! application, UIKit.UIApplication! uiApplication, Foundation.NSDictionary? launchOptions) -> void

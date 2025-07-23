@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextColor(timePicker);
 		}
 
-		public static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker)
+		internal static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			if (handler.IsConnected() && handler is TimePickerHandler timePickerHandler)
 			{

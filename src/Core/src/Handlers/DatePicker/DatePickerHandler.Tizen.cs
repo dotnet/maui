@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker) { }
+		internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker) { }
 
 		bool OnTouch(object source, Tizen.NUI.BaseComponents.View.TouchEventArgs e)
 		{

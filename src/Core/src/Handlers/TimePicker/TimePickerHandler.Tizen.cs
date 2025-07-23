@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker) { }
+		internal static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker) { }
 
 		bool OnTouch(object source, Tizen.NUI.BaseComponents.View.TouchEventArgs e)
 		{

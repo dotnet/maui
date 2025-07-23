@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapIsOpen(IPickerHandler handler, IPicker picker) { }
+		internal static void MapIsOpen(IPickerHandler handler, IPicker picker) { }
 
 
 		static void Reload(IPickerHandler handler)

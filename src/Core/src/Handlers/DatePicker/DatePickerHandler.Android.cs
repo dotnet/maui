@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView?.UpdateTextColor(datePicker);
 		}
 
-		public static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
+		internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler.IsConnected() && handler is DatePickerHandler platformHandler)
 			{

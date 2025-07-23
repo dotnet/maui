@@ -57,7 +57,7 @@ public partial class DatePickerHandler : ViewHandler<IDatePicker, CalendarDatePi
 		handler.PlatformView.UpdateTextColor(datePicker);
 	}
 
-	public static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
+	internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
 	{
 		handler.PlatformView?.UpdateIsOpen(datePicker);
 	}
