@@ -17,10 +17,10 @@ public class TimeSpanTypeConverter : TypeConverter
 
     public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
     {
-		if (value is TimeSpan timeSpan)
-		{
-			return timeSpan;
-		}
+        if (value is TimeSpan timeSpan)
+        {
+            return timeSpan;
+        }
         if (value is TimeOnly timeOnly)
         {
             return timeOnly.ToTimeSpan();
@@ -38,59 +38,59 @@ public class TimeSpanTypeConverter : TypeConverter
         {
             return ConvertToDestinationType(timeSpan, destinationType, culture);
         }
-		else if (value is TimeOnly timeOnly)
-		{
-			return ConvertToDestinationType(timeOnly, destinationType, culture);
-		}
-		else if (value is string stringValue)
-		{
-			if (TimeOnly.TryParse(stringValue, culture, out timeOnly))
-			{
-				return ConvertToDestinationType(timeOnly, destinationType, culture);
-			}
-			else if (TimeSpan.TryParse(stringValue, culture, out var timeSpan1))
-			{
-				return ConvertToDestinationType(timeSpan1, destinationType, culture);
-			}
-		}
+        else if (value is TimeOnly timeOnly)
+        {
+            return ConvertToDestinationType(timeOnly, destinationType, culture);
+        }
+        else if (value is string stringValue)
+        {
+            if (TimeOnly.TryParse(stringValue, culture, out timeOnly))
+            {
+                return ConvertToDestinationType(timeOnly, destinationType, culture);
+            }
+            else if (TimeSpan.TryParse(stringValue, culture, out var timeSpan1))
+            {
+                return ConvertToDestinationType(timeSpan1, destinationType, culture);
+            }
+        }
 
         throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
     }
 
-	private static object ConvertToDestinationType(TimeOnly timeOnly, Type? destinationType, CultureInfo? culture)
-	{
-		if (destinationType == typeof(string))
-		{
-			return timeOnly.ToString(culture);
-		}
-		if (destinationType == typeof(TimeSpan))
-		{
-			return timeOnly.ToTimeSpan();
-		}
-		if (destinationType == typeof(TimeOnly))
-		{
-			return timeOnly;
-		}
+    private static object ConvertToDestinationType(TimeOnly timeOnly, Type? destinationType, CultureInfo? culture)
+    {
+        if (destinationType == typeof(string))
+        {
+            return timeOnly.ToString(culture);
+        }
+        if (destinationType == typeof(TimeSpan))
+        {
+            return timeOnly.ToTimeSpan();
+        }
+        if (destinationType == typeof(TimeOnly))
+        {
+            return timeOnly;
+        }
 
-		throw new NotSupportedException($"Cannot convert \"{timeOnly}\" into {destinationType}");
-	}
+        throw new NotSupportedException($"Cannot convert \"{timeOnly}\" into {destinationType}");
+    }
 
-	private static object ConvertToDestinationType(TimeSpan timeSpan, Type? destinationType, CultureInfo? culture)
-	{
-		if (destinationType == typeof(string))
-		{
-			return timeSpan.ToString();
-		}
-		if (destinationType == typeof(TimeSpan))
-		{
-			return timeSpan;
-		}
-		if (destinationType == typeof(TimeOnly))
-		{
-			return TimeOnly.FromTimeSpan(timeSpan);
-		}
+    private static object ConvertToDestinationType(TimeSpan timeSpan, Type? destinationType, CultureInfo? culture)
+    {
+        if (destinationType == typeof(string))
+        {
+            return timeSpan.ToString();
+        }
+        if (destinationType == typeof(TimeSpan))
+        {
+            return timeSpan;
+        }
+        if (destinationType == typeof(TimeOnly))
+        {
+            return TimeOnly.FromTimeSpan(timeSpan);
+        }
 
-		throw new NotSupportedException($"Cannot convert \"{timeSpan}\" into {destinationType}");
-	}
+        throw new NotSupportedException($"Cannot convert \"{timeSpan}\" into {destinationType}");
+    }
 }
 #endif
