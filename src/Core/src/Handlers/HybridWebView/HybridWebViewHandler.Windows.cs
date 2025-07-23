@@ -271,20 +271,21 @@ namespace Microsoft.Maui.Handlers
 				if (VirtualView is null)
 					return false;
 
-				var customSettings = VirtualView.InitializingWebView() as WebViewInitializingEventArgs;
+				// Invoke the WebViewInitializing event to allow custom configuration of the web view
+				var initializingArgs = new WebViewInitializationStartedEventArgs(webView.CoreWebView2, webView.CoreWebView2.Settings);
+				VirtualView?.WebViewInitializationStarted(initializingArgs);
 
 				webView.CoreWebView2.Settings.AreDevToolsEnabled = Handler?.DeveloperTools.Enabled ?? false;
 				webView.CoreWebView2.Settings.IsWebMessageEnabled = true;
 
-				// Allow additional custom settings to be applied through the WebViewInitializingEventArgs Class
-				customSettings?.AdditionalSettings?.Invoke(webView.CoreWebView2.Settings);
-
 				webView.CoreWebView2.AddWebResourceRequestedFilter($"*", CoreWebView2WebResourceContext.All);
+
+				// Invoke the WebViewInitialized event to signal that the web view has been initialized
+				var initializedArgs = new WebViewInitializationCompletedEventArgs(webView.CoreWebView2);
+				VirtualView?.WebViewInitializationCompleted(initializedArgs);
 
 				webView.WebMessageReceived += OnWebMessageReceived;
 				webView.CoreWebView2.WebResourceRequested += OnWebResourceRequested;
-
-				VirtualView.InitializedWebView(webView);
 
 				return true;
 			}

@@ -54,7 +54,7 @@ public partial class HybridWebViewTests_Initialization : HybridWebViewTestsBase
 #elif ANDROID
 					e.PlatformArgs.Settings.UserAgentString = UserAgent;
 #elif WINDOWS
-					e.PlatformArgs.Settings.UserAgentString = UserAgent;
+					e.PlatformArgs.Settings.UserAgent = UserAgent;
 #endif
 				};
 			},
@@ -65,7 +65,7 @@ public partial class HybridWebViewTests_Initialization : HybridWebViewTestsBase
 #elif ANDROID
 				var actual = handler.PlatformView.Settings.UserAgentString;
 #elif WINDOWS
-				var actual = handler.PlatformView.Settings.UserAgent;
+				var actual = handler.PlatformView.CoreWebView2.Settings.UserAgent;
 #endif
 				Assert.Equal(UserAgent, actual);
 			});
