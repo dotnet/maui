@@ -9,191 +9,201 @@ namespace Maui.Controls.Sample;
 
 public class SamplePinTemplateSelector : DataTemplateSelector
 {
-	public DataTemplate GenericTemplate { get; set; }
-	public DataTemplate PlaceTemplate { get; set; }
+    public DataTemplate GenericTemplate { get; set; }
+    public DataTemplate PlaceTemplate { get; set; }
 
-	protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
-	{
-		if (item is Pin pin)
-		{
-			return pin.Type == PinType.Place ? PlaceTemplate : GenericTemplate;
-		}
-		return GenericTemplate;
-	}
+    protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
+    {
+        if (item is Pin pin)
+        {
+            return pin.Type == PinType.Place ? PlaceTemplate : GenericTemplate;
+        }
+        return GenericTemplate;
+    }
 }
 
 public class MapViewModel : INotifyPropertyChanged
 {
-	// Pearl City, Hawaii coordinates
-	public static readonly Location PearlCityLocation = new Location(21.3933, -157.9751);
+    // Pearl City, Hawaii coordinates
+    public static readonly Location PearlCityLocation = new Location(21.3933, -157.9751);
 
-	private bool _isShowingUser = true; // Enable user location by default
-	private bool _isScrollEnabled = true;
-	private bool _isTrafficEnabled;
-	private bool _isZoomEnabled = true;
-	private MapType _mapType = MapType.Street;
-	private ObservableCollection<Pin> _pins = new();
-	private ObservableCollection<MapElement> _mapElements = new();
-	private IEnumerable _itemsSource;
-	private DataTemplate _itemTemplate;
-	private DataTemplateSelector _itemTemplateSelector;
-	private MapSpan _initialRegion;
+    private bool _isShowingUser = false; // Enable user location by default
+    private bool _isScrollEnabled = true;
+    private bool _isTrafficEnabled;
+    private bool _isZoomEnabled = true;
+    private MapType _mapType = MapType.Street;
+    private ObservableCollection<Pin> _pins = new();
+    private ObservableCollection<MapElement> _mapElements = new();
+    private IEnumerable _itemsSource;
+    private DataTemplate _itemTemplate;
+    private DataTemplateSelector _itemTemplateSelector;
+    private MapSpan _initialRegion;
+    private MapSpan _visibleRegion;
 
-	public MapViewModel()
-	{
-		// Set initial location to Pearl City, Hawaii
-		_initialRegion = MapSpan.FromCenterAndRadius(
-			PearlCityLocation, // Pearl City coordinates
-			Distance.FromMiles(5)
-		);
+    public MapViewModel()
+    {
+        // Set initial location to Pearl City, Hawaii
+        _initialRegion = MapSpan.FromCenterAndRadius(
+            PearlCityLocation, // Pearl City coordinates
+            Distance.FromMiles(5)
+        );
 
-		// Add a sample pin for Pearl City as the main location
-		Pins.Add(new Pin
-		{
-			Label = "Pearl City",
-			Address = "Pearl City, Hawaii",
-			Type = PinType.Place,
-			Location = PearlCityLocation
-		});
+        // Initialize visible region to the same as initial region
+        _visibleRegion = _initialRegion;
 
-		// Note: IsShowingUser is set to true by default, 
-		// which will show user location as Pearl City coordinates
-	}
+        // Set ItemsSource to Pins collection by default to ensure pin persistence
+        // This ensures pins are displayed through data binding and persist across navigation
+        _itemsSource = _pins;
 
-	public event PropertyChangedEventHandler PropertyChanged;
+        // Note: IsShowingUser is set to false by default
+        // No pins are added initially - pins will only appear when user clicks "Add Pin"
+    }
 
-	public bool IsShowingUser
-	{
-		get => _isShowingUser;
-		set
-		{
-			_isShowingUser = value;
-			OnPropertyChanged();
-		}
-	}
+    public event PropertyChangedEventHandler PropertyChanged;
 
-	public bool IsScrollEnabled
-	{
-		get => _isScrollEnabled;
-		set
-		{
-			_isScrollEnabled = value;
-			OnPropertyChanged();
-		}
-	}
+    public bool IsShowingUser
+    {
+        get => _isShowingUser;
+        set
+        {
+            _isShowingUser = value;
+            OnPropertyChanged();
+        }
+    }
 
-	public bool IsTrafficEnabled
-	{
-		get => _isTrafficEnabled;
-		set
-		{
-			_isTrafficEnabled = value;
-			OnPropertyChanged();
-		}
-	}
+    public bool IsScrollEnabled
+    {
+        get => _isScrollEnabled;
+        set
+        {
+            _isScrollEnabled = value;
+            OnPropertyChanged();
+        }
+    }
 
-	public bool IsZoomEnabled
-	{
-		get => _isZoomEnabled;
-		set
-		{
-			_isZoomEnabled = value;
-			OnPropertyChanged();
-		}
-	}
+    public bool IsTrafficEnabled
+    {
+        get => _isTrafficEnabled;
+        set
+        {
+            _isTrafficEnabled = value;
+            OnPropertyChanged();
+        }
+    }
 
-	public MapType MapType
-	{
-		get => _mapType;
-		set
-		{
-			_mapType = value;
-			OnPropertyChanged();
-		}
-	}
+    public bool IsZoomEnabled
+    {
+        get => _isZoomEnabled;
+        set
+        {
+            _isZoomEnabled = value;
+            OnPropertyChanged();
+        }
+    }
 
-	public ObservableCollection<Pin> Pins
-	{
-		get => _pins;
-		set
-		{
-			_pins = value;
-			OnPropertyChanged();
-		}
-	}
+    public MapType MapType
+    {
+        get => _mapType;
+        set
+        {
+            _mapType = value;
+            OnPropertyChanged();
+        }
+    }
 
-	public ObservableCollection<MapElement> MapElements
-	{
-		get => _mapElements;
-		set
-		{
-			_mapElements = value;
-			OnPropertyChanged();
-		}
-	}
+    public ObservableCollection<Pin> Pins
+    {
+        get => _pins;
+        set
+        {
+            _pins = value;
+            OnPropertyChanged();
+        }
+    }
 
-	// ItemsSource for data templating
-	public IEnumerable ItemsSource
-	{
-		get => _itemsSource;
-		set
-		{
-			_itemsSource = value;
-			OnPropertyChanged();
-		}
-	}
+    public ObservableCollection<MapElement> MapElements
+    {
+        get => _mapElements;
+        set
+        {
+            _mapElements = value;
+            OnPropertyChanged();
+        }
+    }
 
-	// ItemTemplate for pin data templating
-	public DataTemplate ItemTemplate
-	{
-		get => _itemTemplate;
-		set
-		{
-			_itemTemplate = value;
-			OnPropertyChanged();
-		}
-	}
+    // ItemsSource for data templating
+    public IEnumerable ItemsSource
+    {
+        get => _itemsSource;
+        set
+        {
+            _itemsSource = value;
+            OnPropertyChanged();
+        }
+    }
 
-	// ItemTemplateSelector for dynamic template selection
-	public DataTemplateSelector ItemTemplateSelector
-	{
-		get => _itemTemplateSelector;
-		set
-		{
-			_itemTemplateSelector = value;
-			OnPropertyChanged();
-		}
-	}
+    // ItemTemplate for pin data templating
+    public DataTemplate ItemTemplate
+    {
+        get => _itemTemplate;
+        set
+        {
+            _itemTemplate = value;
+            OnPropertyChanged();
+        }
+    }
 
-	// MapType options for picker
-	public List<MapType> MapTypeOptions { get; } = new List<MapType>
-	{
-		MapType.Street,
-		MapType.Satellite,
-		MapType.Hybrid
-	};
+    // ItemTemplateSelector for dynamic template selection
+    public DataTemplateSelector ItemTemplateSelector
+    {
+        get => _itemTemplateSelector;
+        set
+        {
+            _itemTemplateSelector = value;
+            OnPropertyChanged();
+        }
+    }
 
-	public MapSpan InitialRegion
-	{
-		get => _initialRegion;
-		set
-		{
-			_initialRegion = value;
-			OnPropertyChanged();
-		}
-	}
+    // MapType options for picker
+    public List<MapType> MapTypeOptions { get; } = new List<MapType>
+    {
+        MapType.Street,
+        MapType.Satellite,
+        MapType.Hybrid
+    };
 
-	// Current location property for binding - set to Pearl City
-	public Location CurrentLocation => PearlCityLocation;
+    public MapSpan InitialRegion
+    {
+        get => _initialRegion;
+        set
+        {
+            _initialRegion = value;
+            OnPropertyChanged();
+        }
+    }
 
-	// Method to get simulated user location (Pearl City)
-	public Location GetSimulatedUserLocation()
-	{
-		return PearlCityLocation;
-	}
+    // VisibleRegion represents the currently displayed region of the map
+    public MapSpan VisibleRegion
+    {
+        get => _visibleRegion;
+        set
+        {
+            _visibleRegion = value;
+            OnPropertyChanged();
+        }
+    }
 
-	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-	{
-		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-	}
+    // Current location property for binding - set to Pearl City
+    public Location CurrentLocation => PearlCityLocation;
+
+    // Method to get simulated user location (Pearl City)
+    public Location GetSimulatedUserLocation()
+    {
+        return PearlCityLocation;
+    }
+
+    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

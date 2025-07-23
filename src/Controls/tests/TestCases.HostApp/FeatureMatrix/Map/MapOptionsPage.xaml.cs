@@ -1,207 +1,362 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
+using System.Linq;
+using System.ComponentModel;
+using System;
 namespace Maui.Controls.Sample;
 
 public partial class MapOptionsPage : ContentPage
 {
-	private MapViewModel _viewModel;
+    private MapViewModel _viewModel;
 
-	public MapOptionsPage(MapViewModel viewModel)
-	{
-		InitializeComponent();
-		_viewModel = viewModel;
-		BindingContext = _viewModel;
+    public MapOptionsPage(MapViewModel viewModel)
+    {
+        InitializeComponent();
+        _viewModel = viewModel;
+        BindingContext = _viewModel;
 
-		// Set up a basic ItemTemplate for demonstration
-		SetupSampleItemTemplate();
+        // Set up a basic ItemTemplate for demonstration
+        SetupSampleItemTemplate();
 
-		// Initialize radio buttons based on current MapType
-		UpdateRadioButtonsFromMapType();
-	}
+        // Initialize radio buttons based on current MapType
+        UpdateRadioButtonsFromMapType();
 
-	private void UpdateRadioButtonsFromMapType()
-	{
-		switch (_viewModel.MapType)
-		{
-			case MapType.Street:
-				StreetRadioButton.IsChecked = true;
-				break;
-			case MapType.Satellite:
-				SatelliteRadioButton.IsChecked = true;
-				break;
-			case MapType.Hybrid:
-				HybridRadioButton.IsChecked = true;
-				break;
-		}
-	}
+        // Subscribe to checkbox events
+        IsShowingUserCheckBox.CheckedChanged += OnIsShowingUserCheckBoxChanged;
 
-	private void MapTypeRadioButton_CheckedChanged(object sender, CheckedChangedEventArgs e)
-	{
-		if (e.Value) // Only respond to checked events, not unchecked
-		{
-			if (sender == StreetRadioButton)
-				_viewModel.MapType = MapType.Street;
-			else if (sender == SatelliteRadioButton)
-				_viewModel.MapType = MapType.Satellite;
-			else if (sender == HybridRadioButton)
-				_viewModel.MapType = MapType.Hybrid;
-		}
-	}
+        // Subscribe to VisibleRegion property changes to update the UI
+        _viewModel.PropertyChanged += OnViewModelPropertyChanged;
 
-	private void SetupSampleItemTemplate()
-	{
-		// Create a sample DataTemplate for pins
-		var pinTemplate = new DataTemplate(() =>
-		{
-			var pin = new Pin();
-			pin.SetBinding(Pin.LabelProperty, "Label");
-			pin.SetBinding(Pin.AddressProperty, "Address");
-			pin.SetBinding(Pin.LocationProperty, "Location");
-			pin.SetBinding(Pin.TypeProperty, "Type");
-			return pin;
-		});
+        // Initialize the VisibleRegion display
+        UpdateVisibleRegionDisplay();
+    }
 
-		_viewModel.ItemTemplate = pinTemplate;
+    private void UpdateRadioButtonsFromMapType()
+    {
+        switch (_viewModel.MapType)
+        {
+            case MapType.Street:
+                StreetRadioButton.IsChecked = true;
+                break;
+            case MapType.Satellite:
+                SatelliteRadioButton.IsChecked = true;
+                break;
+            case MapType.Hybrid:
+                HybridRadioButton.IsChecked = true;
+                break;
+        }
+    }
 
-		// Create sample templates for the selector
-		var genericTemplate = new DataTemplate(() =>
-		{
-			var pin = new Pin { Type = PinType.Generic };
-			pin.SetBinding(Pin.LabelProperty, "Label");
-			pin.SetBinding(Pin.AddressProperty, "Address");
-			pin.SetBinding(Pin.LocationProperty, "Location");
-			return pin;
-		});
+    private void MapTypeRadioButton_CheckedChanged(object sender, CheckedChangedEventArgs e)
+    {
+        if (e.Value) // Only respond to checked events, not unchecked
+        {
+            if (sender == StreetRadioButton)
+                _viewModel.MapType = MapType.Street;
+            else if (sender == SatelliteRadioButton)
+                _viewModel.MapType = MapType.Satellite;
+            else if (sender == HybridRadioButton)
+                _viewModel.MapType = MapType.Hybrid;
+        }
+    }
 
-		var placeTemplate = new DataTemplate(() =>
-		{
-			var pin = new Pin { Type = PinType.Place };
-			pin.SetBinding(Pin.LabelProperty, "Label");
-			pin.SetBinding(Pin.AddressProperty, "Address");
-			pin.SetBinding(Pin.LocationProperty, "Location");
-			return pin;
-		});
+    private void OnIsShowingUserCheckBoxChanged(object sender, CheckedChangedEventArgs e)
+    {
+        if (e.Value)
+        {
+            // Add current location pin when IsShowingUser is checked
+            AddCurrentLocationPin();
+        }
+        else
+        {
+            // Remove current location pin when IsShowingUser is unchecked
+            RemoveCurrentLocationPin();
+        }
+    }
 
-		// Setup ItemTemplateSelector
-		var templateSelector = new SamplePinTemplateSelector
-		{
-			GenericTemplate = genericTemplate,
-			PlaceTemplate = placeTemplate
+    private void AddCurrentLocationPin()
+    {
+        // Check if current location pin already exists
+        var existingCurrentLocationPin = _viewModel.Pins.FirstOrDefault(p => p.Label == "Current Location");
+        if (existingCurrentLocationPin == null)
+        {
+            var currentLocationPin = new Pin
+            {
+                Label = "Current Location",
+                Address = "Pearl City, Hawaii (Current Location)",
+                Type = PinType.Generic,
+                Location = MapViewModel.PearlCityLocation
+            };
+            _viewModel.Pins.Add(currentLocationPin);
+        }
+    }
+
+    private void RemoveCurrentLocationPin()
+    {
+        // Find and remove the current location pin
+        var currentLocationPin = _viewModel.Pins.FirstOrDefault(p => p.Label == "Current Location");
+        if (currentLocationPin != null)
+        {
+            _viewModel.Pins.Remove(currentLocationPin);
+        }
+    }
+
+    private void SetupSampleItemTemplate()
+    {
+        // Create a sample DataTemplate for pins
+        var pinTemplate = new DataTemplate(() =>
+        {
+            var pin = new Pin();
+            pin.SetBinding(Pin.LabelProperty, "Label");
+            pin.SetBinding(Pin.AddressProperty, "Address");
+            pin.SetBinding(Pin.LocationProperty, "Location");
+            pin.SetBinding(Pin.TypeProperty, "Type");
+            return pin;
+        });
+
+        _viewModel.ItemTemplate = pinTemplate;
+
+        // Create sample templates for the selector
+        var genericTemplate = new DataTemplate(() =>
+        {
+            var pin = new Pin { Type = PinType.Generic };
+            pin.SetBinding(Pin.LabelProperty, "Label");
+            pin.SetBinding(Pin.AddressProperty, "Address");
+            pin.SetBinding(Pin.LocationProperty, "Location");
+            return pin;
+        });
+
+        var placeTemplate = new DataTemplate(() =>
+        {
+            var pin = new Pin { Type = PinType.Place };
+            pin.SetBinding(Pin.LabelProperty, "Label");
+            pin.SetBinding(Pin.AddressProperty, "Address");
+            pin.SetBinding(Pin.LocationProperty, "Location");
+            return pin;
+        });
+
+        // Setup ItemTemplateSelector
+        var templateSelector = new SamplePinTemplateSelector
+        {
+            GenericTemplate = genericTemplate,
+            PlaceTemplate = placeTemplate
+        };
+
+        _viewModel.ItemTemplateSelector = templateSelector;
+    }
+
+    private void ApplyButton_Clicked(object sender, EventArgs e)
+    {
+        Navigation.PopAsync();
+    }
+
+    private void AddPinButton_Clicked(object sender, EventArgs e)
+    {
+        // Count only numbered pins (Pin1, Pin2, etc.), exclude "Current Location" pin
+        var numberedPinsCount = _viewModel.Pins.Count(p => p.Label != "Current Location");
+
+        // Maximum of 10 numbered pins allowed
+        if (numberedPinsCount >= 10)
+        {
+            return; // Don't add more than 10 numbered pins
+        }
+
+        // Predefined pin locations around Pearl City, Hawaii
+        var pinLocations = new[]
+        {
+            new { Lat = 21.3933, Lng = -157.9751, Name = "Pin1" }, // Pin 1
+			new { Lat = 21.3986, Lng = -158.0097, Name = "Pin2" }, // Pin 2
+			new { Lat = 21.3649, Lng = -157.9634, Name = "Pin3" }, // Pin 3
+			new { Lat = 21.4513, Lng = -158.0147, Name = "Pin4" }, // Pin 4
+			new { Lat = 21.3847, Lng = -157.9261, Name = "Pin5" }, // Pin 5
+			new { Lat = 21.4644, Lng = -158.0411, Name = "Pin6" }, // Pin 6
+			new { Lat = 21.3408, Lng = -158.0061, Name = "Pin7" }, // Pin 7
+			new { Lat = 21.3247, Lng = -157.9772, Name = "Pin8" }, // Pin 8
+			new { Lat = 21.3142, Lng = -158.0397, Name = "Pin9" }, // Pin 9
+			new { Lat = 21.3350, Lng = -158.0550, Name = "Pin10" } // Pin 10
 		};
 
-		_viewModel.ItemTemplateSelector = templateSelector;
-	}
+        // Get the next pin location based on numbered pins count
+        var pinData = pinLocations[numberedPinsCount];
 
-	private void ApplyButton_Clicked(object sender, EventArgs e)
-	{
-		Navigation.PopAsync();
-	}
+        var pin = new Pin
+        {
+            Label = pinData.Name,
+            Address = $"{pinData.Name}, Hawaii",
+            Type = PinType.Generic,
+            Location = new Location(pinData.Lat, pinData.Lng)
+        };
+        _viewModel.Pins.Add(pin);
+    }
 
-	private void AddPinButton_Clicked(object sender, EventArgs e)
-	{
-		// Use Pearl City as the current location for adding pins
-		var location = MapViewModel.PearlCityLocation;
+    private void ClearPinsButton_Clicked(object sender, EventArgs e)
+    {
+        _viewModel.Pins.Clear();
+    }
 
-		// Add some randomization to avoid overlapping pins
-		var random = new Random();
-		var offsetLat = (random.NextDouble() - 0.5) * 0.01; // ±0.005 degrees
-		var offsetLng = (random.NextDouble() - 0.5) * 0.01; // ±0.005 degrees
+    private void AddElementButton_Clicked(object sender, EventArgs e)
+    {
+        // Maximum of 9 elements allowed
+        if (_viewModel.MapElements.Count >= 9)
+        {
+            return; // Don't add more than 9 elements
+        }
 
-		var randomLocation = new Location(
-			location.Latitude + offsetLat,
-			location.Longitude + offsetLng
-		);
+        // Use the same locations as pins for map elements, with different colors
+        var destinations = new[]
+        {
+            new { Name = "Pin2", Location = new Location(21.3986, -158.0097), Color = Colors.Red },
+            new { Name = "Pin3", Location = new Location(21.3649, -157.9634), Color = Colors.Green },
+            new { Name = "Pin4", Location = new Location(21.4513, -158.0147), Color = Colors.Orange },
+            new { Name = "Pin5", Location = new Location(21.3847, -157.9261), Color = Colors.Purple },
+            new { Name = "Pin6", Location = new Location(21.4644, -158.0411), Color = Colors.Brown },
+            new { Name = "Pin7", Location = new Location(21.3408, -158.0061), Color = Colors.Pink },
+            new { Name = "Pin8", Location = new Location(21.3247, -157.9772), Color = Colors.Navy },
+            new { Name = "Pin9", Location = new Location(21.3142, -158.0397), Color = Colors.Teal },
+            new { Name = "Pin10", Location = new Location(21.3350, -158.0550), Color = Colors.Maroon }
+        };
 
-		var pin = new Pin
-		{
-			Label = $"Pin {_viewModel.Pins.Count + 1}",
-			Address = "Near Pearl City, Hawaii",
-			Type = PinType.Generic,
-			Location = randomLocation
-		};
-		_viewModel.Pins.Add(pin);
-	}
+        // Get the destination based on current count (starts from 0, so first element goes to Pin2)
+        var count = _viewModel.MapElements.Count;
+        var destination = destinations[count];
 
-	private void ClearPinsButton_Clicked(object sender, EventArgs e)
-	{
-		_viewModel.Pins.Clear();
-	}
+        // Create a polyline from Pearl City to the destination
+        var polyline = new Polyline
+        {
+            StrokeColor = destination.Color,
+            StrokeWidth = 4
+        };
 
-	private void AddElementButton_Clicked(object sender, EventArgs e)
-	{
-		// Define different destinations around Oahu, Hawaii
-		var destinations = new[]
-		{
-			new { Name = "Honolulu Airport", Location = new Location(21.3099, -157.8581), Color = Colors.Blue },
-			new { Name = "Waikiki Beach", Location = new Location(21.2761, -157.8294), Color = Colors.Red },
-			new { Name = "Diamond Head", Location = new Location(21.2616, -157.8055), Color = Colors.Green },
-			new { Name = "North Shore (Haleiwa)", Location = new Location(21.5934, -158.1064), Color = Colors.Orange },
-			new { Name = "Kailua Beach", Location = new Location(21.4022, -157.7394), Color = Colors.Purple },
-			new { Name = "Hanauma Bay", Location = new Location(21.2693, -157.6946), Color = Colors.Brown },
-			new { Name = "Polynesian Cultural Center", Location = new Location(21.6401, -157.9220), Color = Colors.Pink },
-			new { Name = "USS Arizona Memorial", Location = new Location(21.3649, -157.9502), Color = Colors.Navy }
-		};
+        // Start from Pearl City
+        polyline.Geopath.Add(MapViewModel.PearlCityLocation);
 
-		// Get the current count to cycle through destinations
-		var count = _viewModel.MapElements.Count;
-		var destination = destinations[count % destinations.Length];
+        // Add intermediate points for a more realistic route
+        var startLat = MapViewModel.PearlCityLocation.Latitude;
+        var startLng = MapViewModel.PearlCityLocation.Longitude;
+        var endLat = destination.Location.Latitude;
+        var endLng = destination.Location.Longitude;
 
-		// Create a polyline from Pearl City to the destination
-		var polyline = new Polyline
-		{
-			StrokeColor = destination.Color,
-			StrokeWidth = 4
-		};
+        // Add 2-3 intermediate points to make the route more interesting
+        var midLat1 = startLat + (endLat - startLat) * 0.33;
+        var midLng1 = startLng + (endLng - startLng) * 0.33;
+        polyline.Geopath.Add(new Location(midLat1, midLng1));
 
-		// Start from Pearl City
-		polyline.Geopath.Add(MapViewModel.PearlCityLocation);
+        var midLat2 = startLat + (endLat - startLat) * 0.67;
+        var midLng2 = startLng + (endLng - startLng) * 0.67;
+        polyline.Geopath.Add(new Location(midLat2, midLng2));
 
-		// Add intermediate points for a more realistic route
-		var startLat = MapViewModel.PearlCityLocation.Latitude;
-		var startLng = MapViewModel.PearlCityLocation.Longitude;
-		var endLat = destination.Location.Latitude;
-		var endLng = destination.Location.Longitude;
+        // End at the destination
+        polyline.Geopath.Add(destination.Location);
 
-		// Add 2-3 intermediate points to make the route more interesting
-		var midLat1 = startLat + (endLat - startLat) * 0.33;
-		var midLng1 = startLng + (endLng - startLng) * 0.33;
-		polyline.Geopath.Add(new Location(midLat1, midLng1));
+        _viewModel.MapElements.Add(polyline);
+    }
 
-		var midLat2 = startLat + (endLat - startLat) * 0.67;
-		var midLng2 = startLng + (endLng - startLng) * 0.67;
-		polyline.Geopath.Add(new Location(midLat2, midLng2));
+    private void ClearElementsButton_Clicked(object sender, EventArgs e)
+    {
+        _viewModel.MapElements.Clear();
+    }
 
-		// End at the destination
-		polyline.Geopath.Add(destination.Location);
+    private void SetItemsSourceButton_Clicked(object sender, EventArgs e)
+    {
+        // Set the ItemsSource to the pins collection to enable data templating
+        // This will cause the Map to use data binding instead of manual pin management
+        _viewModel.ItemsSource = _viewModel.Pins;
+    }
 
-		_viewModel.MapElements.Add(polyline);
+    private void ClearItemsSourceButton_Clicked(object sender, EventArgs e)
+    {
+        // Clear the ItemsSource to disable data templating
+        // This will revert to manual pin management
+        _viewModel.ItemsSource = null;
+    }
 
-		// Add a pin at the destination for reference
-		var destinationPin = new Pin
-		{
-			Label = destination.Name,
-			Address = $"{destination.Name}, Oahu, Hawaii",
-			Type = PinType.Place,
-			Location = destination.Location
-		};
-		_viewModel.Pins.Add(destinationPin);
-	}
+    private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(_viewModel.VisibleRegion))
+        {
+            UpdateVisibleRegionDisplay();
+        }
+    }
 
-	private void ClearElementsButton_Clicked(object sender, EventArgs e)
-	{
-		_viewModel.MapElements.Clear();
-	}
+    private void UpdateVisibleRegionDisplay()
+    {
+        if (_viewModel.VisibleRegion != null)
+        {
+            var region = _viewModel.VisibleRegion;
+            RegionDetailsLabel.Text = $"Lat: {region.Center.Latitude:F4}, Lng: {region.Center.Longitude:F4}, " +
+                                      $"LatDeg: {region.LatitudeDegrees:F4}, LngDeg: {region.LongitudeDegrees:F4}";
+        }
+        else
+        {
+            RegionDetailsLabel.Text = "Latitude: --, Longitude: --, Radius: --";
+        }
+    }
 
-	private void SetItemsSourceButton_Clicked(object sender, EventArgs e)
-	{
-		// Set the ItemsSource to the pins collection
-		_viewModel.ItemsSource = _viewModel.Pins;
-	}
+    private void ZoomInButton_Clicked(object sender, EventArgs e)
+    {
+        // Zoom in by reducing the radius by half
+        if (_viewModel.VisibleRegion != null)
+        {
+            var currentRegion = _viewModel.VisibleRegion;
+            var newRadius = Distance.FromMeters(currentRegion.Radius.Meters / 2);
+            _viewModel.VisibleRegion = MapSpan.FromCenterAndRadius(currentRegion.Center, newRadius);
+        }
+    }
 
-	private void ClearItemsSourceButton_Clicked(object sender, EventArgs e)
-	{
-		// Clear the ItemsSource
-		_viewModel.ItemsSource = null;
-	}
+    private void ZoomOutButton_Clicked(object sender, EventArgs e)
+    {
+        // Zoom out by doubling the radius
+        if (_viewModel.VisibleRegion != null)
+        {
+            var currentRegion = _viewModel.VisibleRegion;
+            var newRadius = Distance.FromMeters(currentRegion.Radius.Meters * 2);
+            _viewModel.VisibleRegion = MapSpan.FromCenterAndRadius(currentRegion.Center, newRadius);
+        }
+    }
+
+    private void ShowAllPinsButton_Clicked(object sender, EventArgs e)
+    {
+        // Calculate a region that encompasses all pins
+        if (_viewModel.Pins.Any())
+        {
+            var pins = _viewModel.Pins.ToList();
+
+            // Find the bounds of all pins
+            var minLat = pins.Min(p => p.Location.Latitude);
+            var maxLat = pins.Max(p => p.Location.Latitude);
+            var minLng = pins.Min(p => p.Location.Longitude);
+            var maxLng = pins.Max(p => p.Location.Longitude);
+
+            // Calculate center point
+            var centerLat = (minLat + maxLat) / 2;
+            var centerLng = (minLng + maxLng) / 2;
+            var center = new Location(centerLat, centerLng);
+
+            // Calculate the distance to encompass all pins with some padding
+            var latDelta = Math.Abs(maxLat - minLat);
+            var lngDelta = Math.Abs(maxLng - minLng);
+            var maxDelta = Math.Max(latDelta, lngDelta);
+
+            // Add 20% padding and ensure minimum radius
+            var radiusKm = Math.Max(maxDelta * 111 * 0.6, 1); // 111 km per degree, 20% padding
+            var radius = Distance.FromKilometers(radiusKm);
+
+            _viewModel.VisibleRegion = MapSpan.FromCenterAndRadius(center, radius);
+        }
+        else
+        {
+            // If no pins, just move to Pearl City
+            MoveToPearlCityButton_Clicked(sender, e);
+        }
+    }
+
+    private void MoveToPearlCityButton_Clicked(object sender, EventArgs e)
+    {
+        // Move the visible region to Pearl City with default zoom
+        _viewModel.VisibleRegion = MapSpan.FromCenterAndRadius(
+            MapViewModel.PearlCityLocation,
+            Distance.FromMiles(5)
+        );
+    }
 }

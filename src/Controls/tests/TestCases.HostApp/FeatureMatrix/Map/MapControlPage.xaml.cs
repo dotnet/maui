@@ -1,4 +1,5 @@
 using System.Collections.Specialized;
+using System.ComponentModel;
 using Microsoft.Maui.Controls.Maps;
 
 namespace Maui.Controls.Sample;
@@ -26,16 +27,19 @@ public partial class MapControlMainPage : ContentPage
 		// Handle MapElements collection changes manually since it's not directly bindable
 		_viewModel.MapElements.CollectionChanged += OnMapElementsCollectionChanged;
 
-		// Handle Pins collection changes to sync with the map's Pins collection
+		// Note: Pins collection changes are handled through ItemsSource binding
+		// Manual Pins handling is only needed when ItemsSource is null
 		_viewModel.Pins.CollectionChanged += OnPinsCollectionChanged;
+		_viewModel.PropertyChanged += OnViewModelPropertyChanged;
 
-		// Bind ItemsSource, ItemTemplate, and ItemTemplateSelector programmatically to ensure proper binding
-		TestMap.SetBinding(Microsoft.Maui.Controls.Maps.Map.ItemsSourceProperty, new Binding("ItemsSource"));
-		TestMap.SetBinding(Microsoft.Maui.Controls.Maps.Map.ItemTemplateProperty, new Binding("ItemTemplate"));
-		TestMap.SetBinding(Microsoft.Maui.Controls.Maps.Map.ItemTemplateSelectorProperty, new Binding("ItemTemplateSelector"));
+		// ItemsSource, ItemTemplate, and ItemTemplateSelector are already bound in XAML
+		// No need for programmatic binding as it can cause conflicts
 
 		// Set initial map region to Pearl City
 		TestMap.MoveToRegion(_viewModel.InitialRegion);
+
+		// Subscribe to map events to sync VisibleRegion back to ViewModel
+		TestMap.PropertyChanged += OnMapPropertyChanged;
 	}
 
 	private void OnMapElementsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -62,23 +66,71 @@ public partial class MapControlMainPage : ContentPage
 
 	private void OnPinsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 	{
-		if (e.Action == NotifyCollectionChangedAction.Add)
+		// Only handle pins manually when ItemsSource is null
+		// When ItemsSource is set, the binding handles pin display automatically
+		if (_viewModel.ItemsSource == null)
 		{
-			foreach (Pin pin in e.NewItems)
+			if (e.Action == NotifyCollectionChangedAction.Add)
 			{
-				TestMap.Pins.Add(pin);
+				foreach (Pin pin in e.NewItems)
+				{
+					TestMap.Pins.Add(pin);
+				}
+			}
+			else if (e.Action == NotifyCollectionChangedAction.Remove)
+			{
+				foreach (Pin pin in e.OldItems)
+				{
+					TestMap.Pins.Remove(pin);
+				}
+			}
+			else if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				TestMap.Pins.Clear();
 			}
 		}
-		else if (e.Action == NotifyCollectionChangedAction.Remove)
+	}
+
+	private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		if (e.PropertyName == nameof(_viewModel.ItemsSource))
 		{
-			foreach (Pin pin in e.OldItems)
+			// When ItemsSource changes, clear manual pins and let binding handle it
+			if (_viewModel.ItemsSource != null)
 			{
-				TestMap.Pins.Remove(pin);
+				// Clear manual pins when ItemsSource is set
+				TestMap.Pins.Clear();
+			}
+			else
+			{
+				// Re-add pins manually when ItemsSource is cleared
+				TestMap.Pins.Clear();
+				foreach (var pin in _viewModel.Pins)
+				{
+					TestMap.Pins.Add(pin);
+				}
 			}
 		}
-		else if (e.Action == NotifyCollectionChangedAction.Reset)
+		else if (e.PropertyName == nameof(_viewModel.VisibleRegion))
 		{
-			TestMap.Pins.Clear();
+			// When VisibleRegion changes in ViewModel, update the actual Map
+			if (_viewModel.VisibleRegion != null)
+			{
+				TestMap.MoveToRegion(_viewModel.VisibleRegion);
+			}
+		}
+	}
+
+	private void OnMapPropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		// Update ViewModel's VisibleRegion when the map's VisibleRegion changes
+		if (e.PropertyName == "VisibleRegion" && TestMap.VisibleRegion != null)
+		{
+			// Only update if it's different to avoid infinite loops
+			if (_viewModel.VisibleRegion != TestMap.VisibleRegion)
+			{
+				_viewModel.VisibleRegion = TestMap.VisibleRegion;
+			}
 		}
 	}
 
