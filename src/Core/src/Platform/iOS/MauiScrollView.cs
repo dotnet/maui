@@ -295,6 +295,7 @@ namespace Microsoft.Maui.Platform
 		/// <returns>The size of the arranged content.</returns>
 		Size CrossPlatformArrange(CGRect bounds, out Size adjustedBounds)
 		{
+			bounds = new Rect(new Point(), bounds.Size.ToSize());
 			// Apply safe area adjustments to the bounds if this scroll view responds to safe area
 			if (_appliesSafeAreaAdjustments)
 			{
