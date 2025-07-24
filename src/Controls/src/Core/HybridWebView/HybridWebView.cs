@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Raised when the web view is initialized. This event allows the application to perform additional configuration.
+		/// Raised when the web view is initializing. This event allows the application to perform additional configuration.
 		/// </summary>
 		public event EventHandler<WebViewInitializingEventArgs>? WebViewInitializing;
 
