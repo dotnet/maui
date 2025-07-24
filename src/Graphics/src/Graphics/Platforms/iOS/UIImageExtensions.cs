@@ -10,20 +10,13 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			if (target.Size.Width > maxWidth || target.Size.Height > maxHeight)
 			{
-				float originalWidth = (float)target.Size.Width;
-				float originalHeight = (float)target.Size.Height;
+				float factorX = maxWidth / (float)target.Size.Width;
+				float factorY = maxHeight / (float)target.Size.Height;
 
-				float scale = originalWidth / maxWidth;
+				float factor = Math.Min(factorX, factorY);
 
-				float targetWidth = originalWidth / scale;
-				float targetHeight = originalHeight / scale;
-
-				if (targetHeight > maxHeight)
-				{
-					scale = targetHeight / maxHeight;
-					targetHeight = targetHeight / scale;
-					targetWidth = targetWidth / scale;
-				}
+				float targetWidth = factor * (float)target.Size.Width;
+				float targetHeight = factor * (float)target.Size.Height;
 
 				return ScaleImage(target, new CGSize(targetWidth, targetHeight), disposeOriginal);
 			}
