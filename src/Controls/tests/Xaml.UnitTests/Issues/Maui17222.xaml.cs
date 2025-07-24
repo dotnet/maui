@@ -25,8 +25,22 @@ public partial class Maui17222 : ContentPage
 	class Test
 	{
 #if DEBUG
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		bool enableDiagnosticsInitialState;
+		
+		[SetUp]
+		public void Setup()
+		{
+			AppInfo.SetCurrent(new MockAppInfo());
+			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
+			RuntimeFeature.EnableMauiDiagnostics = true;
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;			
+			AppInfo.SetCurrent(null);
+		}
 
 		[Test]
 		public void GetsourceInfo([Values(false)] bool useCompiledXaml)

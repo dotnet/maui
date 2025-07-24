@@ -20,6 +20,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class BindingUnitTests
 		: BindingBaseUnitTests
 	{
+		bool enableDiagnosticsInitialState;
+		public BindingUnitTests()
+		{
+			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
+			RuntimeFeature.EnableMauiDiagnostics = true;
+		}
+
+		bool _disposed;
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			if (disposing)
+			{
+				RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
+			}
+
+			_disposed = true;
+		}
+
 		protected override BindingBase CreateBinding(BindingMode mode = BindingMode.Default, string stringFormat = null)
 		{
 			return new Binding("Text", mode, stringFormat: stringFormat);
