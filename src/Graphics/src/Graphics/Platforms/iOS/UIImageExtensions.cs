@@ -28,8 +28,10 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		internal static UIImage ResizeImageSource(this UIImage sourceImage, nfloat maxWidth, nfloat maxHeight, CGSize originalImageSize, bool shouldScaleUp = false)
 		{
-			if (sourceImage is null || sourceImage.CGImage is null)
+			if (sourceImage?.CGImage is null)
+			{
 				return null;
+			}
 
 			maxWidth = (nfloat)Math.Min(maxWidth, originalImageSize.Width);
 			maxHeight = (nfloat)Math.Min(maxHeight, originalImageSize.Height);
