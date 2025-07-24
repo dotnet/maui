@@ -58,6 +58,8 @@ Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView
 Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.MauiCollectionView(CoreGraphics.CGRect frame, UIKit.UICollectionViewLayout! layout) -> void
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.HybridWebView.WebResourceRequested -> System.EventHandler<Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs!>?
+Microsoft.Maui.Controls.HybridWebView.WebViewInitialized -> System.EventHandler<Microsoft.Maui.Controls.WebViewInitializedEventArgs!>?
+Microsoft.Maui.Controls.HybridWebView.WebViewInitializing -> System.EventHandler<Microsoft.Maui.Controls.WebViewInitializingEventArgs!>?
 Microsoft.Maui.Controls.ICornerElement
 Microsoft.Maui.Controls.ICornerElement.CornerRadius.get -> Microsoft.Maui.CornerRadius
 Microsoft.Maui.Controls.IExtendedTypeConverter.ConvertFromInvariantString(string! value, System.IServiceProvider! serviceProvider) -> object?
@@ -107,6 +109,11 @@ Microsoft.Maui.Controls.PickerClosedEventArgs.PickerClosedEventArgs() -> void
 Microsoft.Maui.Controls.PickerOpenedEventArgs
 Microsoft.Maui.Controls.PickerOpenedEventArgs.PickerOpenedEventArgs() -> void
 Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.Popover = 5 -> Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle
+Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs
+Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs.Sender.get -> WebKit.WKWebView!
+Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs.Settings.get -> WebKit.WKWebViewConfiguration!
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs.Configuration.get -> WebKit.WKWebViewConfiguration!
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Request.get -> Foundation.NSUrlRequest!
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Sender.get -> WebKit.WKWebView!
@@ -155,6 +162,12 @@ Microsoft.Maui.Controls.TimePickerClosedEventArgs
 Microsoft.Maui.Controls.TimePickerClosedEventArgs.TimePickerClosedEventArgs() -> void
 Microsoft.Maui.Controls.TimePickerOpenedEventArgs
 Microsoft.Maui.Controls.TimePickerOpenedEventArgs.TimePickerOpenedEventArgs() -> void
+Microsoft.Maui.Controls.WebViewInitializedEventArgs
+Microsoft.Maui.Controls.WebViewInitializedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs?
+Microsoft.Maui.Controls.WebViewInitializedEventArgs.WebViewInitializedEventArgs(Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs! platformArgs) -> void
+Microsoft.Maui.Controls.WebViewInitializingEventArgs
+Microsoft.Maui.Controls.WebViewInitializingEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs?
+Microsoft.Maui.Controls.WebViewInitializingEventArgs.WebViewInitializingEventArgs(Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs! platformArgs) -> void
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Handled.get -> bool
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Handled.set -> void
