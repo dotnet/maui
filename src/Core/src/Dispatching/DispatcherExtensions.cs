@@ -99,11 +99,20 @@ namespace Microsoft.Maui.Dispatching
 			if (dispatcher?.IsDispatchRequired == true)
 			{
 				dispatcher.Dispatch(action);
+				return;
 			}
-			else
+
+			if (dispatcher is null)
 			{
-				action();
+				var currentThreadDispatcher = Dispatcher.GetForCurrentThread();
+				if (currentThreadDispatcher?.IsDispatchRequired == true)
+				{
+					currentThreadDispatcher.Dispatch(action);
+					return;
+				}
 			}
+
+			action();
 		}
 
 		/// <summary>
