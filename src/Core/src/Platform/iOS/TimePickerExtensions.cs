@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using Foundation;
+using Microsoft.Maui.Storage;
 using UIKit;
 
 namespace Microsoft.Maui.Platform;
@@ -86,5 +87,21 @@ public static class TimePickerExtensions
 	public static void UpdateTextAlignment(this MauiTimePicker textField, ITimePicker timePicker)
 	{
 		// TODO: Update TextAlignment based on the EffectiveFlowDirection property.
+	}
+
+	internal static void UpdateIsOpen(this UIDatePicker picker, ITimePicker timePicker)
+	{
+		if (timePicker.IsOpen)
+			picker.BecomeFirstResponder();
+		else
+			picker.ResignFirstResponder();
+	}
+
+	internal static void UpdateIsOpen(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
+	{
+		if (timePicker.IsOpen)
+			mauiTimePicker.BecomeFirstResponder();
+		else
+			mauiTimePicker.ResignFirstResponder();
 	}
 }

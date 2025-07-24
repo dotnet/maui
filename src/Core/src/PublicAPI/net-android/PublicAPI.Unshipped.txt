@@ -29,12 +29,18 @@ Microsoft.Maui.Hosting.MauiHostEnvironment.EnvironmentName.set -> void
 Microsoft.Maui.Hosting.MauiHostEnvironment.MauiHostEnvironment() -> void
 *REMOVED*Microsoft.Maui.IDatePicker.Date.get -> System.DateTime
 Microsoft.Maui.IDatePicker.Date.get -> System.DateTime?
+Microsoft.Maui.IDatePicker.IsOpen.get -> bool
+Microsoft.Maui.IDatePicker.IsOpen.set -> void
 *REMOVED*Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
+Microsoft.Maui.IPicker.IsOpen.get -> bool
+Microsoft.Maui.IPicker.IsOpen.set -> void
 Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
 Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.ITimePicker.IsOpen.get -> bool
+Microsoft.Maui.ITimePicker.IsOpen.set -> void
 *REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
 Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
 Microsoft.Maui.IWebRequestInterceptingWebView
@@ -131,6 +137,7 @@ override Microsoft.Maui.Handlers.OpenWindowRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.Handlers.OpenWindowRequest.GetHashCode() -> int
 override Microsoft.Maui.Handlers.OpenWindowRequest.ToString() -> string!
 override Microsoft.Maui.Handlers.RefreshViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Handlers.TimePickerHandler.ConnectHandler(Microsoft.Maui.Platform.MauiTimePicker! platformView) -> void
 override Microsoft.Maui.Platform.MauiDatePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
 *REMOVED*override Microsoft.Maui.Platform.MauiPicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
 *REMOVED*override Microsoft.Maui.Platform.MauiPicker.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
