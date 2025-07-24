@@ -254,6 +254,9 @@ namespace Microsoft.Maui.Controls.Platform
 			int i = 0;
 			foreach (var item in sortedToolbarItems)
 			{
+				if (!item.IsVisible)
+					continue;
+
 				UpdateMenuItem(toolbar, item, i, mauiContext, tintColor, toolbarItemChanged, previousMenuItems, previousToolBarItems, updateMenuItemIcon);
 				i++;
 			}

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
@@ -41,66 +40,69 @@ namespace Microsoft.Maui.Controls
 			commandBar.PrimaryCommands.Clear();
 			commandBar.SecondaryCommands.Clear();
 
-			var visibleToolbarItems = new List<ToolbarItem>();
+			List<ToolbarItem> toolbarItems = new List<ToolbarItem>(ToolbarItems ?? Array.Empty<ToolbarItem>());
 
-			if (ToolbarItems != null)
+			foreach (ToolbarItem item in toolbarItems)
 			{
-				foreach (ToolbarItem item in ToolbarItems)
+				if (!item.IsVisible)
+					continue;
+
+				var button = new AppBarButton();
+				button.SetBinding(AppBarButton.LabelProperty, "Text");
+
+				if (commandBar.IsDynamicOverflowEnabled && item.Order == ToolbarItemOrder.Secondary)
 				{
-					if (!item.IsVisible)
-						continue;
-
-					visibleToolbarItems.Add(item);
-
-					var button = new AppBarButton();
-					button.SetBinding(AppBarButton.LabelProperty, "Text");
-
-					if (commandBar.IsDynamicOverflowEnabled && item.Order == ToolbarItemOrder.Secondary)
-					{
-						button.SetBinding(AppBarButton.IconProperty, "IconImageSource", _imageSourceIconElementConverter);
-					}
-					else if (!item.IconImageSource.IsNullOrEmpty())
-					{
-						var img = new WImage();
-						img.SetBinding(WImage.SourceProperty, "Value");
-						img.SetBinding(WImage.DataContextProperty, "IconImageSource", _imageConverter);
-						button.Content = img;
-					}
-
-					button.Command = new MenuItemCommand(item);
-					button.DataContext = item;
-					button.SetValue(NativeAutomationProperties.AutomationIdProperty, item.AutomationId);
-					button.SetAutomationPropertiesName(item);
-					button.SetAutomationPropertiesAccessibilityView(item);
-					button.SetAutomationPropertiesHelpText(item);
-					button.SetAutomationPropertiesLabeledBy(item, null);
-
-					ToolbarItemOrder order = item.Order == ToolbarItemOrder.Default ? ToolbarItemOrder.Primary : item.Order;
-					if (order == ToolbarItemOrder.Primary)
-					{
-						button.UpdateTextColor(BarTextColor);
-						commandBar.PrimaryCommands.Add(button);
-					}
-					else
-					{
-						commandBar.SecondaryCommands.Add(button);
-					}
-
-					item.PropertyChanged -= OnToolbarItemPropertyChanged;
-					item.PropertyChanged += OnToolbarItemPropertyChanged;
+					button.SetBinding(AppBarButton.IconProperty, "IconImageSource", _imageSourceIconElementConverter);
 				}
+				else if (!item.IconImageSource.IsNullOrEmpty())
+				{
+					var img = new WImage();
+					img.SetBinding(WImage.SourceProperty, "Value");
+					img.SetBinding(WImage.DataContextProperty, "IconImageSource", _imageConverter);
+					button.Content = img;
+				}
+
+				button.Command = new MenuItemCommand(item);
+				button.DataContext = item;
+				button.SetValue(NativeAutomationProperties.AutomationIdProperty, item.AutomationId);
+				button.SetAutomationPropertiesName(item);
+				button.SetAutomationPropertiesAccessibilityView(item);
+				button.SetAutomationPropertiesHelpText(item);
+				button.SetAutomationPropertiesLabeledBy(item, null);
+
+				ToolbarItemOrder order = item.Order == ToolbarItemOrder.Default ? ToolbarItemOrder.Primary : item.Order;
+				if (order == ToolbarItemOrder.Primary)
+				{
+					button.UpdateTextColor(BarTextColor);
+					commandBar.PrimaryCommands.Add(button);
+				}
+				else
+				{
+					commandBar.SecondaryCommands.Add(button);
+				}
+
+				item.PropertyChanged -= OnToolbarItemPropertyChanged;
+				item.PropertyChanged += OnToolbarItemPropertyChanged;
 			}
 
-			SetDefaultLabelPosition(commandBar, visibleToolbarItems);
+			SetDefaultLabelPosition(commandBar, toolbarItems);
 		}
 
 		internal void OnToolbarItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == nameof(ToolbarItem.Text) || 
-			    e.PropertyName == nameof(ToolbarItem.IconImageSource) ||
-			    e.PropertyName == nameof(ToolbarItem.IsVisible))
+			if (Handler?.PlatformView is not MauiToolbar wh)
+				return;
+
+			var commandBar = wh.CommandBar;
+			if (commandBar == null)
 			{
-				UpdateMenu();
+				return;
+			}
+
+			if (e.PropertyName == nameof(ToolbarItem.Text) || e.PropertyName == nameof(ToolbarItem.IconImageSource))
+			{
+				var toolbarItems = new List<ToolbarItem>(ToolbarItems ?? Array.Empty<ToolbarItem>());
+				SetDefaultLabelPosition(commandBar, toolbarItems);
 			}
 		}
 

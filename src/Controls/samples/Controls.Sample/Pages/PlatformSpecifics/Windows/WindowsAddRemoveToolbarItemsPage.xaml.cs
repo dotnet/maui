@@ -45,5 +45,14 @@ namespace Maui.Controls.Sample.Pages
 				ParentPage.ToolbarItems.RemoveAt(0);
 			}
 		}
+
+		void OnToggleVisibilityClicked(object sender, EventArgs e)
+		{
+			if (ParentPage.ToolbarItems.Any())
+			{
+				var firstItem = ParentPage.ToolbarItems.First();
+				firstItem.IsVisible = !firstItem.IsVisible;
+			}
+		}
 	}
 }
