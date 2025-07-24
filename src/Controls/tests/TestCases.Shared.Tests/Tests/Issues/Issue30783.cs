@@ -23,7 +23,7 @@ public class Issue30783 : _IssuesUITest
 		App.WaitForElement("StatusLabel");
 
 		// Verify that the status shows success (no crash occurred)
-		var statusText = App.GetText("StatusLabel");
+		var statusText = App.FindElement("StatusLabel").GetText();
 		Assert.That(statusText, Does.Contain("Image loaded successfully"),
 			"PlatformImage.FromStream should successfully load image without crashing");
 

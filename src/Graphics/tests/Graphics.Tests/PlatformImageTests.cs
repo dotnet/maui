@@ -24,7 +24,7 @@ public class PlatformImageTests
 	[Fact]
  	public void PlatformImageFromStreamSurvivesStreamDisposal()
  	{
- 		// This test reproduces the scenario from issue #42 where the stream
+ 		// This test reproduces the scenario from issue #30783 where the stream
  		// might be disposed or become invalid during processing in release builds
  		byte[] orange1x1pxPngBytes = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P4v5ThPwAG7wKklwQ/bwAAAABJRU5ErkJggg==");
 
@@ -89,7 +89,7 @@ public class PlatformImageTests
     [Fact]
     public void PlatformImageFromManifestResourceStream()
     {
-	    // This test  reproduces the https://github.com/dotnet/maui/issues/30783 scenario:
+	    // This test reproduces the https://github.com/dotnet/maui/issues/30783 scenario:
 	    // - Uses reflection to get the current assembly
 	    // - Uses GetManifestResourceStream with an embedded resource
 	    // - Calls PlatformImage.FromStream directly within a using statement
