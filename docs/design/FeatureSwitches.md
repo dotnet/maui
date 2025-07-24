@@ -15,6 +15,8 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | MauiHybridWebViewSupported | Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported | Enables HybridWebView, which makes use of dynamic System.Text.Json serialization features |
 | MauiNamescopesSupported | Microsoft.Maui.RuntimeFeature.AreNamescopesSupported | Enable support for Namescopes, FindByName if the application uses it, or to keep supporting runtime and XamlC XAML inflators |
 | MetricsSupport | System.Diagnostics.Metrics.Meter.IsSupported | Enables .NET MAUI metrics instrumentation via `Meter`. Metrics are on by default; set to `false` to disable.   |
+| EnableDiagnostics | Microsoft.Maui.RuntimeFeature.EnableDiagnostics | Enables diagnostic for the running app |
+| EnableMauiDiagnostics | Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics | Enables MAUI specific diagnostics, like VisualDiagnostics and BindingDiagnostics. Defaults to EnableDiagnostics |
 
 ## MauiEnableIVisualAssemblyScanning
 
@@ -90,3 +92,15 @@ As of NET10.0, the default is `true` so full compatibility is maintained, but mi
 ## MauiEnableMetrics
 
 When **MetricsSupport** is not explicitly disabled, MAUI will register a `System.Diagnostics.Metrics.Meter` named `"Microsoft.Maui"` and emit performance related metrics (e.g. measure/arrange durations) to any configured listeners.
+
+## EnableDiagnostics
+
+Turn on various diagnostics at runtime and Maui level.
+
+Defaults to `false`
+
+## EnableMauiDiagnostics
+
+Enable VisualDiagnostics and BindingDiagnostics
+
+Defaults to `EnableDiagnostics`
