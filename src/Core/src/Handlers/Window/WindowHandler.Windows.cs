@@ -108,6 +108,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapMinimumHeight(IWindowHandler handler, IWindow view) =>
 			handler.PlatformView?.UpdateMinimumHeight(view);
 
+		public static void MapIsMinimizable(IWindowHandler handler, IWindow window) =>
+			handler.PlatformView?.UpdateIsMinimizable(window);
+
+		public static void MapIsMaximizable(IWindowHandler handler, IWindow window) =>
+			handler.PlatformView?.UpdateIsMaximizable(window);
+
 		public static void MapToolbar(IWindowHandler handler, IWindow view)
 		{
 			if (view is IToolbarElement tb)
