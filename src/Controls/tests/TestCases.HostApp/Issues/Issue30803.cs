@@ -4,11 +4,11 @@ using IImage = Microsoft.Maui.Graphics.IImage;
 
 namespace Controls.TestCases.HostApp.Issues;
 
-[Issue(IssueTracker.Github, 30784, "Aspect ratio not maintained when Downsize is called with MaxWidth and MaxHeight", PlatformAffected.Android | PlatformAffected.UWP)]
-public class Issue30784 : ContentPage
+[Issue(IssueTracker.Github, 30803, "Aspect ratio not maintained when Downsize is called with MaxWidth and MaxHeight", PlatformAffected.Android | PlatformAffected.UWP)]
+public class Issue30803 : ContentPage
 {
 	Label _convertedImageStatusLabel;
-	public Issue30784()
+	public Issue30803()
 	{
 		_convertedImageStatusLabel = new Label
 		{
@@ -34,7 +34,7 @@ public class Issue30784 : ContentPage
 	{
 		Button button = new Button
 		{
-			AutomationId = "Issue30784DownSizeBtn",
+			AutomationId = "Issue30803DownSizeBtn",
 			Text = text,
 			HorizontalOptions = LayoutOptions.Fill
 		};
