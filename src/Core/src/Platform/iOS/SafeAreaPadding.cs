@@ -25,6 +25,9 @@ internal readonly record struct SafeAreaPadding(double Left, double Right, doubl
 			bounds.Width - HorizontalThickness,
 			bounds.Height - VerticalThickness);
 	}
+
+	public CGRect ToCGRect() =>
+		new((nfloat)Top, (nfloat)Left, (nfloat)Bottom, (nfloat)Right);
 }
 
 internal static class SafeAreaInsetsExtensions

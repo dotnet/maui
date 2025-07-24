@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -59,7 +60,12 @@ namespace Microsoft.Maui.Platform
 		// True if the view is an ISafeAreaView, does not ignore safe area, and is not inside a UIScrollView;
 		// otherwise, false. Null means not yet determined.
 		bool? _scrollViewDescendant;
-
+		
+		// Keyboard tracking
+		CGRect _keyboardFrame = CGRect.Empty;
+		bool _isKeyboardShowing;
+		WeakReference<NSObject>? _keyboardWillShowObserver;
+		WeakReference<NSObject>? _keyboardWillHideObserver;
 
 		/// <summary>
 		/// Weak reference to the cross-platform IView that this native view represents.
@@ -103,7 +109,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (_scrollViewDescendant.HasValue)
-				return _scrollViewDescendant.Value;				
+				return _scrollViewDescendant.Value;
 
 			// iOS sets AdjustedContentInset on UIScrollView only when the ContentSize exceeds the ScrollView's Bounds.
 			// If ContentSize is smaller, AdjustedContentInset is zero, and SafeAreaInsets are applied to child views instead.
@@ -118,6 +124,35 @@ namespace Microsoft.Maui.Platform
 			// within scroll views and explains how this interacts with the overall layout system.
 			_scrollViewDescendant = Superview.GetParentOfType<UIScrollView>() is null;
 			return _scrollViewDescendant.Value;
+		}
+
+		SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
+		{
+			if (View is ISafeAreaView2 safeAreaPage)
+			{
+				return safeAreaPage.GetSafeAreaRegionsForEdge(edge);
+			}
+			
+			// Fallback to legacy ISafeAreaView behavior
+			if (View is ISafeAreaView sav)
+			{
+				return sav.IgnoreSafeArea ? SafeAreaRegions.All : SafeAreaRegions.Default;
+			}
+			
+			return SafeAreaRegions.Default; // Default: respect safe area
+		}
+
+		static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea)
+		{
+			return safeAreaRegion switch
+			{
+				SafeAreaRegions.None => 0, // Edge-to-edge content (no safe area padding)
+				SafeAreaRegions.SoftInput => originalSafeArea, // Always pad for keyboard/soft input
+				SafeAreaRegions.Container => originalSafeArea, // Content flows under keyboard but stays out of bars/notch
+				SafeAreaRegions.Default => originalSafeArea, // Platform default behavior
+				SafeAreaRegions.All => originalSafeArea, // Obey all safe area insets
+				_ => originalSafeArea // Default case - respect safe area
+			};
 		}
 
 
@@ -135,8 +170,173 @@ namespace Microsoft.Maui.Platform
 			{
 				KeyboardAutoManagerScroll.ShouldScrollAgain = true;
 			}
-
+			
+			ValidateSafeArea();
 			return _safeArea.InsetRect(bounds);
+		}
+
+		bool ShouldSubscribeToKeyboardNotifications()
+		{
+			// Only subscribe if any edge has All or SoftInput regions
+			if (View is ISafeAreaView2 safeAreaPage)
+			{
+				for (int edge = 0; edge < 4; edge++)
+				{
+					var region = safeAreaPage.GetSafeAreaRegionsForEdge(edge);
+					if (region == SafeAreaRegions.All || region == SafeAreaRegions.SoftInput)
+					{
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		void SubscribeToKeyboardNotifications()
+		{
+			if (_keyboardWillShowObserver != null || _keyboardWillHideObserver != null)
+			{
+				// Already subscribed, no need to re-subscribe
+				return;
+			}
+
+			var showObserver = NSNotificationCenter.DefaultCenter.AddObserver(
+				UIKeyboard.WillShowNotification,
+				OnKeyboardWillShow);
+			_keyboardWillShowObserver = new WeakReference<NSObject>(showObserver);
+
+			var hideObserver = NSNotificationCenter.DefaultCenter.AddObserver(
+				UIKeyboard.WillHideNotification,
+				OnKeyboardWillHide);
+			_keyboardWillHideObserver = new WeakReference<NSObject>(hideObserver);
+		}
+
+		void UnsubscribeFromKeyboardNotifications()
+		{
+			if (_keyboardWillShowObserver?.TryGetTarget(out var showObserver) == true)
+			{
+				NSNotificationCenter.DefaultCenter.RemoveObserver(showObserver);
+				_keyboardWillShowObserver = null;
+			}
+			
+			if (_keyboardWillHideObserver?.TryGetTarget(out var hideObserver) == true)
+			{
+				NSNotificationCenter.DefaultCenter.RemoveObserver(hideObserver);
+				_keyboardWillHideObserver = null;
+			}
+		}
+
+		void UpdateKeyboardSubscription()
+		{
+			// Update keyboard subscription based on current SafeAreaEdges settings
+			if (Window != null)
+			{
+				if (ShouldSubscribeToKeyboardNotifications())
+				{
+					SubscribeToKeyboardNotifications();
+				}
+				else
+				{
+					UnsubscribeFromKeyboardNotifications();
+				}
+			}
+		}
+
+		void OnKeyboardWillShow(NSNotification notification)
+		{
+			var keyboardFrame = GetKeyboardFrame(notification);
+			if (keyboardFrame.HasValue)
+			{
+				_keyboardFrame = keyboardFrame.Value;
+				_isKeyboardShowing = true;
+				SetNeedsLayout();
+			}
+		}
+
+		void OnKeyboardWillHide(NSNotification notification)
+		{
+			_keyboardFrame = CGRect.Empty;
+			_isKeyboardShowing = false;
+			SetNeedsLayout();
+		}
+
+		static CGRect? GetKeyboardFrame(NSNotification notification)
+		{
+			if (notification.UserInfo?[UIKeyboard.FrameEndUserInfoKey] is NSValue frameValue)
+			{
+				return frameValue.CGRectValue;
+			}
+			return null;
+		}
+		
+		SafeAreaPadding GetAdjustedSafeAreaInsets()
+		{
+			var baseSafeArea = SafeAreaInsets.ToSafeAreaInsets();
+
+			// Check if keyboard-aware safe area adjustments are needed
+			if (View is ISafeAreaView2 safeAreaPage && _isKeyboardShowing)
+			{
+				// Check if any edge has SafeAreaRegions.SoftInput set
+				var needsKeyboardAdjustment = false;
+				for (int edge = 0; edge < 4; edge++)
+				{
+					var safeAreaRegion = safeAreaPage.GetSafeAreaRegionsForEdge(edge);
+					if (safeAreaRegion == SafeAreaRegions.SoftInput)
+					{
+						needsKeyboardAdjustment = true;
+						break;
+					}
+				}
+
+				if (needsKeyboardAdjustment)
+				{
+					// Get the keyboard frame and calculate its intersection with the current window
+					var window = this.Window;
+					
+					if (window != null && !_keyboardFrame.IsEmpty)
+					{
+						var windowFrame = window.Frame;
+						var keyboardIntersection = CGRect.Intersect(_keyboardFrame, windowFrame);
+						
+						// If keyboard is visible and intersects with window
+						if (!keyboardIntersection.IsEmpty)
+						{
+							// Calculate keyboard height in the window's coordinate system
+							var keyboardHeight = keyboardIntersection.Height;
+							
+							// For SafeAreaRegions.SoftInput: Always pad so content doesn't go under the keyboard
+							
+							// Bottom edge is most commonly affected by keyboard
+							var bottomEdgeRegion = safeAreaPage.GetSafeAreaRegionsForEdge(3); // 3 = bottom edge
+							if (bottomEdgeRegion == SafeAreaRegions.SoftInput)
+							{
+								// Use the larger of the current bottom safe area or the keyboard height
+								var adjustedBottom = Math.Max(baseSafeArea.Bottom, keyboardHeight);
+								baseSafeArea = new SafeAreaPadding(baseSafeArea.Left, baseSafeArea.Right, baseSafeArea.Top, adjustedBottom);
+							}
+						}
+					}
+				}
+			}
+
+			if (View is ISafeAreaView2)
+			{
+				// Apply safe area selectively per edge based on SafeAreaRegions
+				var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0), baseSafeArea.Left);
+				var top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1), baseSafeArea.Top);
+				var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2), baseSafeArea.Right);
+				var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3), baseSafeArea.Bottom);
+
+				return new SafeAreaPadding(left, right, top, bottom);
+			}
+
+			// Fallback to legacy behavior
+			if (View is ISafeAreaView sav && sav.IgnoreSafeArea)
+			{
+				return SafeAreaPadding.Empty;
+			}
+
+			return baseSafeArea;
 		}
 
 		/// <summary>
@@ -148,9 +348,15 @@ namespace Microsoft.Maui.Platform
 		/// <returns>True if the cached measure is still valid, false otherwise</returns>
 		protected bool IsMeasureValid(double widthConstraint, double heightConstraint)
 		{
-			// Check the last constraints this View was measured with; if they're the same,
-			// then the current measure info is already correct and we don't need to repeat it
-			return heightConstraint == _lastMeasureHeight && widthConstraint == _lastMeasureWidth;
+			return !HasFixedConstraints
+				&& widthConstraint == _lastMeasureWidth
+				&& heightConstraint == _lastMeasureHeight;
+		}
+
+		protected void CacheMeasureConstraints(double widthConstraint, double heightConstraint)
+		{
+			_lastMeasureWidth = widthConstraint;
+			_lastMeasureHeight = heightConstraint;
 		}
 
 		/// <summary>
@@ -174,38 +380,6 @@ namespace Microsoft.Maui.Platform
 			_lastMeasureHeight = double.NaN;
 		}
 
-		/// <summary>
-		/// Caches the measure constraints for future comparison.
-		/// This optimization prevents redundant measure operations when
-		/// the same constraints are applied repeatedly.
-		/// </summary>
-		/// <param name="widthConstraint">The width constraint to cache</param>
-		/// <param name="heightConstraint">The height constraint to cache</param>
-		protected void CacheMeasureConstraints(double widthConstraint, double heightConstraint)
-		{
-			_lastMeasureWidth = widthConstraint;
-			_lastMeasureHeight = heightConstraint;
-		}
-
-		/// <summary>
-		/// Called by iOS when the safe area insets change (e.g., device rotation, status bar changes).
-		/// We can't perform full safe area processing here because this method is called multiple times
-		/// during the layout process with different values, so we just mark the safe area as invalidated.
-		/// </summary>
-		public override void SafeAreaInsetsDidChange()
-		{
-			base.SafeAreaInsetsDidChange();
-
-			// We can't do anything more than this here because `SafeAreaInsetsDidChange()` is triggered twice with
-			// different values when setting the frame via `Center` and `Bounds` in `PlatformArrangeHandler`.
-			_safeAreaInvalidated = true;
-		}
-
-		/// <summary>
-		/// Gets or sets the cross-platform layout manager for this view.
-		/// This delegates measure and arrange operations to the MAUI layout system
-		/// rather than handling them natively.
-		/// </summary>
 		public ICrossPlatformLayout? CrossPlatformLayout
 		{
 			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
@@ -342,6 +516,8 @@ namespace Microsoft.Maui.Platform
 		/// <returns>True if the safe area interaction hasn't changed, false if it has changed and requires layout updates</returns>
 		bool ValidateSafeArea()
 		{
+			UpdateKeyboardSubscription();
+
 			// If nothing changed, we don't need to do anything
 			if (!_safeAreaInvalidated)
 			{
@@ -349,7 +525,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Mark the safe area as validated given that we're about to check it
-			_safeAreaInvalidated = false;
+			_safeAreaInvalidated = true;
 
 			// Store the information about the safe area for developers to use
 			if (View is ISafeAreaView2 safeAreaPage)
@@ -358,7 +534,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var oldSafeArea = _safeArea;
-			_safeArea = SafeAreaInsets.ToSafeAreaInsets();
+			_safeArea = GetAdjustedSafeAreaInsets();
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
@@ -470,6 +646,8 @@ namespace Microsoft.Maui.Platform
 				_invalidateParentWhenMovedToWindow = false;
 				this.InvalidateAncestorsMeasures();
 			}
+
+			UpdateKeyboardSubscription();
 		}
 	}
 }

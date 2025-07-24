@@ -1,7 +1,5 @@
 ﻿using System;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.PlatformConfiguration;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -14,7 +12,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnButtonClicked(object sender, EventArgs e)
 		{
-			On<iOS>().SetUseSafeArea(false);
+			SafeAreaElement.SetIgnore(this, SafeAreaEdges.All);
 			(sender as Button)!.IsEnabled = false;
 		}
 	}

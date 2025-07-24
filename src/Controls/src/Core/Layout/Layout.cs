@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Children))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement
+	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement, ISafeAreaView2, ISafeAreaElement
 	{
 		protected ILayoutManager _layoutManager;
 
@@ -122,7 +123,29 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(PaddingElement.PaddingProperty, value);
 		}
 
+		/// <summary>Bindable property for <see cref="SafeAreaEdges"/>.</summary>
+		public static readonly BindableProperty SafeAreaEdgesProperty = SafeAreaElement.SafeAreaEdgesProperty;
+
+		/// <summary>
+		/// Gets or sets the safe area edges to obey for this layout.
+		/// The default value is SafeAreaEdges.Default (None - edge to edge).
+		/// </summary>
+		/// <remarks>
+		/// This property controls which edges of the layout should obey safe area insets.
+		/// Use SafeAreaRegions.None for edge-to-edge content, SafeAreaRegions.All to obey all safe area insets, 
+		/// SafeAreaRegions.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaRegions.SoftInput for keyboard-aware behavior.
+		/// </remarks>
+		public SafeAreaEdges SafeAreaEdges
+		{
+			get => (SafeAreaEdges)GetValue(SafeAreaElement.SafeAreaEdgesProperty);
+			set => SetValue(SafeAreaElement.SafeAreaEdgesProperty, value);
+		}
+
 		/// <inheritdoc cref="ISafeAreaView.IgnoreSafeArea"/>
+		/// <remarks>
+		/// This property is deprecated. Use SafeAreaElement.IgnoreSafeArea attached property instead for per-edge safe area control.
+		/// </remarks>
+		[System.Obsolete("Use SafeAreaElement.IgnoreSafeArea attached property instead for per-edge safe area control.")]
 		public bool IgnoreSafeArea { get; set; }
 
 		/// <summary>
@@ -346,6 +369,11 @@ namespace Microsoft.Maui.Controls
 			return new Thickness(0);
 		}
 
+		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		{
+			return SafeAreaEdges.Default;
+		}
+
 		public Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			return LayoutManager.Measure(widthConstraint, heightConstraint);
@@ -377,6 +405,43 @@ namespace Microsoft.Maui.Controls
 		private protected override string GetDebuggerDisplay()
 		{
 			return $"{base.GetDebuggerDisplay()}, ChildCount = {Count}";
+		}
+
+
+		/// <inheritdoc cref="ISafeAreaView2.SafeAreaInsets"/>
+		Thickness ISafeAreaView2.SafeAreaInsets { set { } } // Default no-op implementation for layouts
+
+		/// <inheritdoc cref="ISafeAreaView2.IgnoreSafeAreaForEdge"/>
+		bool ISafeAreaView2.IgnoreSafeAreaForEdge(int edge)
+		{
+			// Use new SafeAreaEdges property with inverted logic (obey -> ignore conversion)
+			var regionForEdge = SafeAreaEdges.GetEdge(edge);
+			
+			// Convert from "obey" logic to "ignore" logic for backwards compatibility
+			switch (regionForEdge)
+			{
+				case SafeAreaRegions.None:
+					return true; // None means edge-to-edge, so ignore safe area
+				case SafeAreaRegions.All:
+				case SafeAreaRegions.Container:
+				case SafeAreaRegions.SoftInput:
+				case SafeAreaRegions.Default:
+					return false; // These obey safe area, so don't ignore
+				default:
+					// For Layout views, default to None behavior (edge-to-edge)
+					return true;
+			}
+		}
+
+		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
+		{
+			// Use direct property first
+			var regionForEdge = SafeAreaEdges.GetEdge(edge);
+			
+			// For Layout views, never return the old Default - return None instead
+			// (since Default no longer exists in the new enum)
+			return regionForEdge;
 		}
 	}
 }
