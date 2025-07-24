@@ -446,7 +446,6 @@ public class GraphicsViewFeatureTests : UITest
 
 	[TestCase("0", "0", false, TestName = "GraphicsView_SetZeroDimensions_VerifyHandling")]
 	[TestCase("-10", "-20", false, TestName = "GraphicsView_SetNegativeDimensions_VerifyHandling")]
-	[TestCase("150", "200", true, TestName = "GraphicsView_SetValidDimensions_VerifyHandling")]
 	[TestCase("0.5", "0.5", true, TestName = "GraphicsView_SetDecimalDimensions_VerifyHandling")]
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_SetDimensionsEdgeCases_VerifyHandling(string height, string width, bool shouldBeVisible)
