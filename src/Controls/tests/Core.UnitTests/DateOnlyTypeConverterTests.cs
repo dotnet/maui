@@ -19,7 +19,7 @@ public class DateOnlyTypeConverterTests : BaseTestFixture
 		var actualDateTime = converter.ConvertFromInvariantString(dateOnlyValue.ToString(CultureInfo.InvariantCulture));
 		var expectedDateTime = new DateTime(2025, 2, 21);
 
-		Assert.Equal(DateOnly.FromDateTime(expectedDateTime), actualDateTime);
+		Assert.Equal(expectedDateTime, actualDateTime);
 	}
 
 	[Fact]
