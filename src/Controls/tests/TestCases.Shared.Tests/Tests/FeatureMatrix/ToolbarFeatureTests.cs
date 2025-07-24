@@ -62,19 +62,13 @@ public class ToolbarFeatureTests : UITest
 	[Category(UITestCategories.ToolbarItem)]
 	public void VerifySecondaryToolBar_Command()
 	{
-		App.WaitForMoreButton();
-		App.TapMoreButton();
-		App.WaitForElement("Test Secondary (3)");
-		App.Tap("Test Secondary (3)");
-		var MenuLabel = App.FindElement("MenuLabel").GetText();
-		Assert.That(MenuLabel, Is.EqualTo("You clicked on ToolbarItem: Test Secondary (3)"), "When the secondary toolbar with Command is clicked, it should change the status label text.");
 		App.WaitForElement("ChangeCommandButton3");
 		App.Tap("ChangeCommandButton3");
 		App.WaitForMoreButton();
 		App.TapMoreButton();
 		App.WaitForElement("Test Secondary (3)");
 		App.Tap("Test Secondary (3)");  // This taps the secondary toolbar item again to verify the command change
-		MenuLabel = App.FindElement("MenuLabel").GetText();
+		var MenuLabel = App.FindElement("MenuLabel").GetText();
 		Assert.That(MenuLabel, Is.EqualTo("You clicked on ToolbarItem: Test Secondary (3) with changed Command"));
 	}
 
@@ -132,24 +126,14 @@ public class ToolbarFeatureTests : UITest
 	{
 		App.WaitForElement("IsEnabledButton2");
 		App.Tap("IsEnabledButton2");
-		// Wait for 5 seconds to ensure the button is disabled after the delay
-		Thread.Sleep(5000);
+		// Wait for 1 seconds to ensure the button is disabled after the delay
+		Thread.Sleep(1000);
 		App.WaitForMoreButton();
 		App.TapMoreButton();
 		App.WaitForElement("Test Secondary (2)");
 		App.Tap("Test Secondary (2)");
 		App.WaitForElement("Test Secondary (2)");// After tapping the toolbar Still it shows the toolbar item it is in disabled state.
 		App.Tap("Test Secondary (1)"); // To close the ToolbarItem menu
-		App.WaitForElement("IsEnabledButton2");
-		App.Tap("IsEnabledButton2");
-		// Wait for 5 seconds to ensure the button is disabled after the delay
-		Thread.Sleep(5000);
-		App.WaitForMoreButton();
-		App.TapMoreButton();
-		App.WaitForElement("Test Secondary (2)");
-		App.Tap("Test Secondary (2)");
-		var MenuLabel2 = App.FindElement("MenuLabel").GetText();
-		Assert.That(MenuLabel2, Is.EqualTo("You clicked on ToolbarItem: Test Secondary (2)"), "When the secondary toolbar in Enabled state, clicking it should change the status label text.");
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/30675

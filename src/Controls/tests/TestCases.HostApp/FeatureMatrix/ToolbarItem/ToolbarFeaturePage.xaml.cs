@@ -41,9 +41,9 @@ public partial class ToolbarFeatureMainPage : ContentPage
     }
     void Button_Clicked2(object sender, EventArgs e)
     {
-        // 5 second delay so you can have the menu open and see the change.
+        // 1 second delay so you can have the menu open and see the change.
         // However, the menu will close if change happens. There is no way around this.
-        Task.Delay(5000).ContinueWith(t =>
+        Task.Delay(1000).ContinueWith(t =>
         {
             Dispatcher.Dispatch(() =>
             {
