@@ -2,13 +2,13 @@ namespace Microsoft.Maui;
 
 public interface IInitializationAwareWebView : IView
 {
-    /// <summary>
-    /// Invoked when a web resource is requested. This event allows the application to perform additional configuration.
-    /// </summary>
+	/// <summary>
+	/// Invoked when web view initialization is starting. This event allows the application to perform additional configuration.
+	/// </summary>
 #if NETSTANDARD
 	void WebViewInitializationStarted(WebViewInitializationStartedEventArgs args);
 #else
-    void WebViewInitializationStarted(WebViewInitializationStartedEventArgs args) { }
+	void WebViewInitializationStarted(WebViewInitializationStartedEventArgs args) { }
 #endif
 
 	/// <summary>
