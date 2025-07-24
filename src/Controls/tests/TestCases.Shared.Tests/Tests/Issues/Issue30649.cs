@@ -1,3 +1,4 @@
+#if !WINDOWS // The fix is related with Android, iOS and Mac.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -77,3 +78,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
