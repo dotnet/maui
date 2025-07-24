@@ -11,6 +11,7 @@ namespace Microsoft.Maui.DeviceTests;
 public partial class HybridWebViewTests_Initialization : HybridWebViewTestsBase
 {
 	const string UserAgent = "HybridWebViewTests User Agent";
+	const string ProfileName = "HybridWebViewTests Test Profile";
 
 	protected async Task RunTest(Action<HybridWebView> setup, Action<HybridWebViewHandler, HybridWebView>? test = null)
 	{
@@ -50,11 +51,11 @@ public partial class HybridWebViewTests_Initialization : HybridWebViewTestsBase
 					Assert.NotNull(e.PlatformArgs);
 
 #if IOS || MACCATALYST
-					e.PlatformArgs.Settings.ApplicationNameForUserAgent = UserAgent;
+					e.PlatformArgs.Configuration.ApplicationNameForUserAgent = UserAgent;
 #elif ANDROID
-					e.PlatformArgs.Settings.UserAgentString = UserAgent;
+					// No values for Android
 #elif WINDOWS
-					e.PlatformArgs.Settings.UserAgent = UserAgent;
+					e.PlatformArgs.ProfileName = ProfileName;
 #endif
 				};
 			},
@@ -62,12 +63,12 @@ public partial class HybridWebViewTests_Initialization : HybridWebViewTestsBase
 			{
 #if IOS || MACCATALYST
 				var actual = handler.PlatformView.Configuration.ApplicationNameForUserAgent;
-#elif ANDROID
-				var actual = handler.PlatformView.Settings.UserAgentString;
-#elif WINDOWS
-				var actual = handler.PlatformView.CoreWebView2.Settings.UserAgent;
-#endif
 				Assert.Equal(UserAgent, actual);
+#elif ANDROID
+#elif WINDOWS
+				var actual = handler.PlatformView.CoreWebView2.Profile.ProfileName;
+				Assert.Equal(ProfileName, actual);
+#endif
 			});
 
 		Assert.Equal(1, calledCount);
@@ -87,9 +88,46 @@ public partial class HybridWebViewTests_Initialization : HybridWebViewTestsBase
 
 					Assert.NotNull(e.PlatformArgs);
 					Assert.NotNull(e.PlatformArgs.Sender);
+					Assert.NotNull(e.PlatformArgs.Settings);
 				};
 			});
 
 		Assert.Equal(1, calledCount);
 	}
+
+	[Fact]
+	public Task CanSetUserAgent() =>
+		RunTest(
+			hybridWebView =>
+			{
+				hybridWebView.WebViewInitializing += (s, e) =>
+				{
+					Assert.NotNull(e.PlatformArgs);
+
+#if IOS || MACCATALYST
+					e.PlatformArgs.Configuration.ApplicationNameForUserAgent = UserAgent;
+#endif
+				};
+				hybridWebView.WebViewInitialized += (s, e) =>
+				{
+					Assert.NotNull(e.PlatformArgs);
+
+#if ANDROID
+					e.PlatformArgs.Settings.UserAgentString = UserAgent;
+#elif WINDOWS
+					e.PlatformArgs.Settings.UserAgent = UserAgent;
+#endif
+				};
+			},
+			(handler, view) =>
+			{
+#if IOS || MACCATALYST
+				var actual = handler.PlatformView.Configuration.ApplicationNameForUserAgent;
+#elif ANDROID
+				var actual = handler.PlatformView.Settings.UserAgentString;
+#elif WINDOWS
+				var actual = handler.PlatformView.CoreWebView2.Settings.UserAgent;
+#endif
+				Assert.Equal(UserAgent, actual);
+			});
 }

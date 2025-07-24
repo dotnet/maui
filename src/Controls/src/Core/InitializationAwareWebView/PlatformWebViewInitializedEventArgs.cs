@@ -18,13 +18,14 @@ public class PlatformWebViewInitializedEventArgs
 {
 #if IOS || MACCATALYST || ANDROID || WINDOWS
 
-	internal PlatformWebViewInitializedEventArgs(PlatformWebView? sender)
+	internal PlatformWebViewInitializedEventArgs(PlatformWebView sender, PlatformSettings settings)
 	{
 		Sender = sender;
+		Settings = settings;
 	}
 
 	internal PlatformWebViewInitializedEventArgs(WebViewInitializationCompletedEventArgs args)
-		: this(args.Sender)
+		: this(args.Sender, args.Settings)
 	{
 	}
 
@@ -34,7 +35,15 @@ public class PlatformWebViewInitializedEventArgs
 	/// <remarks>
 	/// This is only available on Android, iOS, Mac Catalyst and Windows.
 	/// </remarks>
-	public PlatformWebView? Sender { get; }
+	public PlatformWebView Sender { get; }
+
+	/// <summary>
+	/// Gets or sets the settings for the web view.
+	/// </summary>
+	/// <remarks>
+	/// This property can be used to configure various aspects of the web view, such as JavaScript support, caching, etc.
+	/// </remarks>
+	public PlatformSettings Settings { get; }
 
 #else
 
