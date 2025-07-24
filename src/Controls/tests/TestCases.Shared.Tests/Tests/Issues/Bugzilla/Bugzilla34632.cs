@@ -27,7 +27,6 @@ public class Bugzilla34632 : _IssuesUITest
 		App.Tap("btnDismissModal");
 		App.WaitForElement("btnModal");
 		App.Tap("btnModal");
-		Thread.Sleep(1000);
 		App.SetOrientationPortrait();
 		Thread.Sleep(1000);
 		App.WaitForElement("btnDismissModal");
