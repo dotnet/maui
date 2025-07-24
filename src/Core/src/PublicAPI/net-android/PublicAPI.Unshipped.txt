@@ -33,6 +33,7 @@ Microsoft.Maui.IDatePicker.Date.get -> System.DateTime?
 Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
+Microsoft.Maui.IRefreshView.IsRefreshEnabled.get -> bool
 Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
 Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
 *REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
@@ -43,6 +44,8 @@ Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Mau
 *REMOVED*Microsoft.Maui.Platform.MauiPicker.ShowPopupOnFocus.set -> void
 Microsoft.Maui.Platform.MauiSwipeRefreshLayout.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.Platform.MauiSwipeRefreshLayout.CrossPlatformLayout.set -> void
+Microsoft.Maui.Platform.MauiSwipeRefreshLayout.RefreshEnabled.get -> bool
+Microsoft.Maui.Platform.MauiSwipeRefreshLayout.RefreshEnabled.set -> void
 *REMOVED*Microsoft.Maui.PlatformWrapperView.SetHasShadow(bool hasShadow) -> void
 Microsoft.Maui.ScrollToRequest.Deconstruct(out double HorizontalOffset, out double VerticalOffset, out bool Instant) -> void
 Microsoft.Maui.ScrollToRequest.ScrollToRequest(Microsoft.Maui.ScrollToRequest! original) -> void
@@ -173,6 +176,7 @@ static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.operator !=(Micros
 static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.operator ==(Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate? left, Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate? right) -> bool
 static Microsoft.Maui.Handlers.OpenWindowRequest.operator !=(Microsoft.Maui.Handlers.OpenWindowRequest? left, Microsoft.Maui.Handlers.OpenWindowRequest? right) -> bool
 static Microsoft.Maui.Handlers.OpenWindowRequest.operator ==(Microsoft.Maui.Handlers.OpenWindowRequest? left, Microsoft.Maui.Handlers.OpenWindowRequest? right) -> bool
+static Microsoft.Maui.Handlers.RefreshViewHandler.MapIsEnabled(Microsoft.Maui.Handlers.IRefreshViewHandler! handler, Microsoft.Maui.IRefreshView! refreshView) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureEnvironmentVariables(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 static Microsoft.Maui.Platform.ButtonExtensions.UpdateRippleColor(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.Graphics.Color? rippleColor) -> void

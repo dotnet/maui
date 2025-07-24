@@ -13,6 +13,16 @@ namespace Microsoft.Maui
 		bool IsRefreshing { get; set; }
 
 		/// <summary>
+		/// Gets a value indicating whether the pull-to-refresh gesture is enabled.
+		/// When false, the refresh gesture is disabled but child controls remain interactive.
+		/// </summary>
+#if NETSTANDARD2_0
+		bool IsRefreshEnabled { get; }
+#else
+		bool IsRefreshEnabled => true;
+#endif
+
+		/// <summary>
 		/// Gets the loading indicator color.
 		/// </summary>
 		Paint? RefreshColor { get; }
