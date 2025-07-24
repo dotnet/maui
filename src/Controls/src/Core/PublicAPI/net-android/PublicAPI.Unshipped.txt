@@ -61,17 +61,19 @@ Microsoft.Maui.Controls.DatePickerOpenedEventArgs.DatePickerOpenedEventArgs() ->
 ~Microsoft.Maui.Controls.Element.transientNamescope -> Microsoft.Maui.Controls.Internals.INameScope
 Microsoft.Maui.Controls.FlexLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.Handlers.TabbedPageManager
+~Microsoft.Maui.Controls.Handlers.TabbedPageManager.BarItemColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.Handlers.TabbedPageManager.BarSelectedItemColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.Handlers.TabbedPageManager.BottomNavigationView.get -> Google.Android.Material.BottomNavigation.BottomNavigationView
+~Microsoft.Maui.Controls.Handlers.TabbedPageManager.Element.get -> Microsoft.Maui.Controls.TabbedPage
+~Microsoft.Maui.Controls.Handlers.TabbedPageManager.Element.set -> void
+~Microsoft.Maui.Controls.Handlers.TabbedPageManager.FragmentManager.get -> AndroidX.Fragment.App.FragmentManager
 Microsoft.Maui.Controls.Handlers.TabbedPageManager.IsBottomTabPlacement.get -> bool
+~Microsoft.Maui.Controls.Handlers.TabbedPageManager.NavigationRootManager.get -> Microsoft.Maui.Platform.NavigationRootManager
 Microsoft.Maui.Controls.Handlers.TabbedPageManager.NotifyDataSetChanged() -> void
-Microsoft.Maui.Controls.TabbedPage.TabbedPageManager.get -> Microsoft.Maui.Controls.Handlers.TabbedPageManager!
-Microsoft.Maui.Controls.TabbedPage.TabbedPageManager.set -> void
-static Microsoft.Maui.Controls.Handlers.TabbedPageManager.IsDarkTheme.get -> bool
-virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.RefreshBarBackground() -> void
-virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.SetupBottomNavigationView() -> void
-virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.UpdateBarBackground() -> void
-virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.UpdateBarBackgroundColor() -> void
-virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.UpdateStyleForTabItem() -> void
-virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.UpdateTabIcons() -> void
+~Microsoft.Maui.Controls.Handlers.TabbedPageManager.TabLayout.get -> Google.Android.Material.Tabs.TabLayout
+~Microsoft.Maui.Controls.Handlers.TabbedPageManager.TabbedPageManager(Microsoft.Maui.IMauiContext context) -> void
+~Microsoft.Maui.Controls.Handlers.TabbedPageManager.ViewPager.get -> AndroidX.ViewPager2.Widget.ViewPager2
+~Microsoft.Maui.Controls.Handlers.TabbedPageManager.previousPage -> Microsoft.Maui.Controls.Page
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.HybridWebView.WebResourceRequested -> System.EventHandler<Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs!>?
 Microsoft.Maui.Controls.ICornerElement
@@ -150,6 +152,8 @@ Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
 ~Microsoft.Maui.Controls.Switch.OffColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.Switch.OffColor.set -> void
+Microsoft.Maui.Controls.TabbedPage.TabbedPageManager.get -> Microsoft.Maui.Controls.Handlers.TabbedPageManager!
+Microsoft.Maui.Controls.TabbedPage.TabbedPageManager.set -> void
 Microsoft.Maui.Controls.TemplatedView.CascadeInputTransparent.get -> bool
 Microsoft.Maui.Controls.TemplatedView.CascadeInputTransparent.set -> void
 Microsoft.Maui.Controls.TemplatedView.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element!>!
@@ -353,6 +357,7 @@ override Microsoft.Maui.Controls.WebViewSourceTypeConverter.ConvertTo(System.Com
 *REMOVED*~static Microsoft.Maui.Controls.Accelerator.FromString(string text) -> Microsoft.Maui.Controls.Accelerator
 *REMOVED*~static Microsoft.Maui.Controls.Accelerator.implicit operator Microsoft.Maui.Controls.Accelerator(string accelerator) -> Microsoft.Maui.Controls.Accelerator
 ~static Microsoft.Maui.Controls.Button.MapRippleColor(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+static Microsoft.Maui.Controls.Handlers.TabbedPageManager.IsDarkTheme.get -> bool
 static Microsoft.Maui.Controls.ImageButton.MapRippleColor(Microsoft.Maui.Handlers.IImageButtonHandler! handler, Microsoft.Maui.Controls.ImageButton! imageButton) -> void
 ~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.GetTransformedText(string source, Microsoft.Maui.TextTransform textTransform) -> string
 ~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.SetPlainText(Microsoft.Maui.Controls.InputView inputView, string platformText) -> void
@@ -433,18 +438,6 @@ static readonly Microsoft.Maui.Controls.Border.SafeAreaEdgesProperty -> Microsof
 ~static readonly Microsoft.Maui.Controls.TimePicker.IsOpenProperty -> Microsoft.Maui.Controls.BindableProperty
 static readonly Microsoft.Maui.Controls.Window.IsMaximizableProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.IsMinimizableProperty -> Microsoft.Maui.Controls.BindableProperty!
-virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDeclarer, TPropertyType>.Invoke(TDeclarer bindable) -> TPropertyType
-~Microsoft.Maui.Controls.Handlers.TabbedPageManager.BarItemColor.get -> Microsoft.Maui.Graphics.Color
-~Microsoft.Maui.Controls.Handlers.TabbedPageManager.BarSelectedItemColor.get -> Microsoft.Maui.Graphics.Color
-~Microsoft.Maui.Controls.Handlers.TabbedPageManager.BottomNavigationView.get -> Google.Android.Material.BottomNavigation.BottomNavigationView
-~Microsoft.Maui.Controls.Handlers.TabbedPageManager.Element.get -> Microsoft.Maui.Controls.TabbedPage
-~Microsoft.Maui.Controls.Handlers.TabbedPageManager.Element.set -> void
-~Microsoft.Maui.Controls.Handlers.TabbedPageManager.FragmentManager.get -> AndroidX.Fragment.App.FragmentManager
-~Microsoft.Maui.Controls.Handlers.TabbedPageManager.NavigationRootManager.get -> Microsoft.Maui.Platform.NavigationRootManager
-~Microsoft.Maui.Controls.Handlers.TabbedPageManager.previousPage -> Microsoft.Maui.Controls.Page
-~Microsoft.Maui.Controls.Handlers.TabbedPageManager.TabbedPageManager(Microsoft.Maui.IMauiContext context) -> void
-~Microsoft.Maui.Controls.Handlers.TabbedPageManager.TabLayout.get -> Google.Android.Material.Tabs.TabLayout
-~Microsoft.Maui.Controls.Handlers.TabbedPageManager.ViewPager.get -> AndroidX.ViewPager2.Widget.ViewPager2
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue) -> void
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate<TPropertyType>.Invoke(Microsoft.Maui.Controls.BindableObject bindable, TPropertyType oldValue, TPropertyType newValue) -> void
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangingDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue) -> void
@@ -465,11 +458,17 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 ~virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.OnPagePropertyChanged(Microsoft.Maui.Controls.Page page, System.ComponentModel.PropertyChangedEventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.OnTabbedPageAppearing(object sender, System.EventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.OnTabbedPageDisappearing(object sender, System.EventArgs e) -> void
+virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.RefreshBarBackground() -> void
 ~virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.RootViewChanged(object sender, System.EventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.SetElement(Microsoft.Maui.Controls.TabbedPage tabbedPage) -> void
 ~virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.SetIconColorFilter(Microsoft.Maui.Controls.Page page, Google.Android.Material.Tabs.TabLayout.Tab tab, bool selected) -> void
 ~virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.SetTabIconImageSource(Microsoft.Maui.Controls.Page page, Google.Android.Material.Tabs.TabLayout.Tab tab, Android.Graphics.Drawables.Drawable icon) -> void
+virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.SetupBottomNavigationView() -> void
 ~virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.TabSelected(Google.Android.Material.Tabs.TabLayout.Tab tab) -> void
+virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.UpdateBarBackground() -> void
+virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.UpdateBarBackgroundColor() -> void
+virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.UpdateStyleForTabItem() -> void
+virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.UpdateTabIcons() -> void
 ~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.VisualElement.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
