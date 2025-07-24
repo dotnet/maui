@@ -23,13 +23,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				return (PointCollection)pointArray;
 			}
 
-			var strValue = value?.ToString();
-			if (string.IsNullOrWhiteSpace(strValue))
-			{
-				throw new InvalidOperationException("Cannot convert null or empty string into PointCollection.");
-			}
+			var strValue = value.ToString();
 
-			string[] points = strValue!.Split(new char[] { ' ', ',' });
+			string[] points = strValue.Split(new char[] { ' ', ',' });
 			var pointCollection = new PointCollection();
 			double x = 0;
 			bool hasX = false;
