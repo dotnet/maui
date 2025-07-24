@@ -695,7 +695,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				return true;
 			}
-			catch
+			catch (Exception ex)
 			{
 				// Log the exception for diagnostics
 				Application.Current?.FindMauiContext()?.CreateLogger<GesturePlatformManager>()?.LogError(ex, "An error occurred while validating pointer event relevance.");
