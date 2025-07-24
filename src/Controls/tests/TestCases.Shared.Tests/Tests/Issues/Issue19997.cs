@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         {
         }
 
-        public override string Issue => "[Android, iOS, MacOS]Entry ClearButton Color Not Updating on Theme Change";
+        public override string Issue => "[Android, iOS, MacOS]Entry ClearButton Color Not Updating on AppThemeBinding Change";
 
         [Test]
         [Category(UITestCategories.Entry)]
