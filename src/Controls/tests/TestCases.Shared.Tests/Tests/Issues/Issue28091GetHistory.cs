@@ -22,7 +22,7 @@ public class Issue28091GetHistory : _IssuesUITest
 	[Category(UITestCategories.Performance)]
 	public async Task ShowHistory_ShouldDisplay_ProfilerDataAfterResizing()
 	{
-		App.WaitForElement("ResizableRectangle");
+		App.WaitForElement("WaitForStubControl");
 		var initialText = App.FindElement("HistoryLabel").GetText();
 
 		// Trigger some layout updates

@@ -12,6 +12,12 @@ public class Issue28091GetHistory : ContentPage
 	
 	public Issue28091GetHistory()
     {
+		var infoLabel = new Label
+		{
+			AutomationId = "WaitForStubControl",
+			Text = "Issue 28091"
+		};
+
         // Rectangle inside a Border
         _rectangle = new Rectangle
         {
@@ -78,6 +84,7 @@ public class Issue28091GetHistory : ContentPage
             Padding = new Thickness(20),
             Children =
             {
+				infoLabel,
                 _rectangle,
                 increaseWidthButton,
                 decreaseWidthButton,

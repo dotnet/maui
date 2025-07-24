@@ -16,8 +16,14 @@ public class Issue28091SubscribeToUpdates : ContentPage
 
     public Issue28091SubscribeToUpdates()
     {
-        // Initialize StringBuilder for history
-        _historyBuilder = new StringBuilder();
+		var infoLabel = new Label
+		{
+			AutomationId = "WaitForStubControl",
+			Text = "Issue 28091"
+		};
+
+		// Initialize StringBuilder for history
+		_historyBuilder = new StringBuilder();
 
         // Rectangle inside a Border
         _rectangle = new Rectangle
@@ -77,7 +83,8 @@ public class Issue28091SubscribeToUpdates : ContentPage
             Padding = new Thickness(20),
             Children =
             {
-                _rectangle,
+				infoLabel,
+				_rectangle,
                 increaseWidthButton,
                 decreaseWidthButton,
                 increaseHeightButton,
