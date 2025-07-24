@@ -24,13 +24,12 @@ public class SamplePinTemplateSelector : DataTemplateSelector
 
 public class MapViewModel : INotifyPropertyChanged
 {
-    // Pearl City, Hawaii coordinates
     public static readonly Location PearlCityLocation = new Location(21.3933, -157.9751);
-
-    private bool _isShowingUser = false; // Enable user location by default
-    private bool _isScrollEnabled = true;
+    private bool _isShowingUser = false;
+    private bool _isScrollEnabled = false;
     private bool _isTrafficEnabled;
-    private bool _isZoomEnabled = true;
+    private bool _isZoomEnabled = false;
+    private bool _isVisible = true;
     private MapType _mapType = MapType.Street;
     private ObservableCollection<Pin> _pins = new();
     private ObservableCollection<MapElement> _mapElements = new();
@@ -39,21 +38,22 @@ public class MapViewModel : INotifyPropertyChanged
     private DataTemplateSelector _itemTemplateSelector;
     private MapSpan _initialRegion;
     private MapSpan _visibleRegion;
+    private int _userAddedPinCount = 0;
 
     public MapViewModel()
     {
-        // Set initial location to Pearl City, Hawaii
+
         _initialRegion = MapSpan.FromCenterAndRadius(
-            PearlCityLocation, // Pearl City coordinates
+            PearlCityLocation,
             Distance.FromMiles(5)
         );
 
         // Initialize visible region to the same as initial region
         _visibleRegion = _initialRegion;
 
-        // Set ItemsSource to Pins collection by default to ensure pin persistence
-        // This ensures pins are displayed through data binding and persist across navigation
-        _itemsSource = _pins;
+        // Start with ItemsSource cleared (null) - user must click "Set ItemsSource" button to enable data templating
+        // This allows manual pin management by default, and data templating only when explicitly requested
+        _itemsSource = null;
 
         // Note: IsShowingUser is set to false by default
         // No pins are added initially - pins will only appear when user clicks "Add Pin"
@@ -101,6 +101,16 @@ public class MapViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool IsVisible
+    {
+        get => _isVisible;
+        set
+        {
+            _isVisible = value;
+            OnPropertyChanged();
+        }
+    }
+
     public MapType MapType
     {
         get => _mapType;
@@ -121,6 +131,16 @@ public class MapViewModel : INotifyPropertyChanged
         }
     }
 
+    public int UserAddedPinCount
+    {
+        get => _userAddedPinCount;
+        set
+        {
+            _userAddedPinCount = value;
+            OnPropertyChanged();
+        }
+    }
+
     public ObservableCollection<MapElement> MapElements
     {
         get => _mapElements;
@@ -131,7 +151,6 @@ public class MapViewModel : INotifyPropertyChanged
         }
     }
 
-    // ItemsSource for data templating
     public IEnumerable ItemsSource
     {
         get => _itemsSource;
@@ -142,7 +161,6 @@ public class MapViewModel : INotifyPropertyChanged
         }
     }
 
-    // ItemTemplate for pin data templating
     public DataTemplate ItemTemplate
     {
         get => _itemTemplate;
@@ -153,7 +171,6 @@ public class MapViewModel : INotifyPropertyChanged
         }
     }
 
-    // ItemTemplateSelector for dynamic template selection
     public DataTemplateSelector ItemTemplateSelector
     {
         get => _itemTemplateSelector;
@@ -164,7 +181,6 @@ public class MapViewModel : INotifyPropertyChanged
         }
     }
 
-    // MapType options for picker
     public List<MapType> MapTypeOptions { get; } = new List<MapType>
     {
         MapType.Street,
@@ -182,7 +198,6 @@ public class MapViewModel : INotifyPropertyChanged
         }
     }
 
-    // VisibleRegion represents the currently displayed region of the map
     public MapSpan VisibleRegion
     {
         get => _visibleRegion;
@@ -191,15 +206,6 @@ public class MapViewModel : INotifyPropertyChanged
             _visibleRegion = value;
             OnPropertyChanged();
         }
-    }
-
-    // Current location property for binding - set to Pearl City
-    public Location CurrentLocation => PearlCityLocation;
-
-    // Method to get simulated user location (Pearl City)
-    public Location GetSimulatedUserLocation()
-    {
-        return PearlCityLocation;
     }
 
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

@@ -31,7 +31,7 @@
                 <!-- Boolean Properties Section - Left Column -->
                 <StackLayout Grid.Row="0"
                              Grid.Column="0"
-                             Spacing="1">
+                             Spacing="5">
                         <Label Text="Map Behavior Options"
                                FontSize="16"
                                FontAttributes="Bold"/>
@@ -72,6 +72,16 @@
                                           IsChecked="{Binding IsZoomEnabled}"
                                           AutomationId="IsZoomEnabledCheckBox"/>
                                 <Label Text="Enable Zoom"
+                                       VerticalOptions="Center"
+                                       FontSize="12"/>
+                        </StackLayout>
+
+                        <StackLayout Orientation="Horizontal"
+                                     Spacing="10">
+                                <CheckBox x:Name="IsVisibleCheckBox"
+                                          IsChecked="{Binding IsVisible}"
+                                          AutomationId="IsVisibleCheckBox"/>
+                                <Label Text="Map Visible"
                                        VerticalOptions="Center"
                                        FontSize="12"/>
                         </StackLayout>
@@ -116,17 +126,12 @@
                                FontSize="16"
                                FontAttributes="Bold"/>
 
-                        <Label Text="{Binding Pins.Count, StringFormat='Pins: {0}'}"
+                        <Label Text="{Binding UserAddedPinCount, StringFormat='Pins: {0}'}"
                                FontSize="12"/>
                         <Button Text="Add Pin"
                                 x:Name="AddPinButton"
                                 Clicked="AddPinButton_Clicked"
                                 AutomationId="AddPinButton"
-                                FontSize="11"/>
-                        <Button Text="Clear Pins"
-                                x:Name="ClearPinsButton"
-                                Clicked="ClearPinsButton_Clicked"
-                                AutomationId="ClearPinsButton"
                                 FontSize="11"/>
                 </StackLayout>
 
@@ -144,11 +149,6 @@
                                 x:Name="AddElementButton"
                                 Clicked="AddElementButton_Clicked"
                                 AutomationId="AddElementButton"
-                                FontSize="11"/>
-                        <Button Text="Clear Elements"
-                                x:Name="ClearElementsButton"
-                                Clicked="ClearElementsButton_Clicked"
-                                AutomationId="ClearElementsButton"
                                 FontSize="11"/>
                 </StackLayout>
 
@@ -231,7 +231,7 @@
                         <Label Text="Visible Region"
                                FontSize="16"
                                FontAttributes="Bold"/>
-<!-- 
+                        <!-- 
                         <Label x:Name="VisibleRegionLabel"
                                Text="{Binding VisibleRegion, StringFormat='Center: {0}'}"
                                FontSize="10"
@@ -262,10 +262,10 @@
                                         AutomationId="ShowAllPinsButton"
                                         FontSize="11"/>
                                 <Button Grid.Column="1"
-                                        Text="Move to Pearl City"
-                                        x:Name="MoveToPearlCityButton"
-                                        Clicked="MoveToPearlCityButton_Clicked"
-                                        AutomationId="MoveToPearlCityButton"
+                                        Text="Reset to Initial"
+                                        x:Name="ResetToInitialButton"
+                                        Clicked="ResetToInitialButton_Clicked"
+                                        AutomationId="ResetToInitialButton"
                                         FontSize="11"/>
                         </Grid>
 

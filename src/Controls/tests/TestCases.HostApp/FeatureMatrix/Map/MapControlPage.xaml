@@ -13,10 +13,12 @@
   <StackLayout Padding="20"
                Spacing="20">
     <maps:Map x:Name="TestMap"
+              AutomationId="MapView"
               IsShowingUser="{Binding IsShowingUser}"
               IsScrollEnabled="{Binding IsScrollEnabled}"
               IsTrafficEnabled="{Binding IsTrafficEnabled}"
               IsZoomEnabled="{Binding IsZoomEnabled}"
+              IsVisible="{Binding IsVisible}"
               MapType="{Binding MapType}"
               ItemsSource="{Binding ItemsSource}"
               ItemTemplate="{Binding ItemTemplate}"

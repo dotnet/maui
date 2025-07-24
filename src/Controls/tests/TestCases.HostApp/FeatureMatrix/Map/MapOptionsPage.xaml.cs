@@ -17,7 +17,7 @@ public partial class MapOptionsPage : ContentPage
         BindingContext = _viewModel;
 
         // Set up a basic ItemTemplate for demonstration
-        SetupSampleItemTemplate();
+        // Templates are now set via UI controls - SetItemTemplateButton_Clicked and SetTemplateSelectorButton_Clicked
 
         // Initialize radio buttons based on current MapType
         UpdateRadioButtonsFromMapType();
@@ -102,16 +102,6 @@ public partial class MapOptionsPage : ContentPage
         }
     }
 
-    private void SetupSampleItemTemplate()
-    {
-        // Templates are now set via UI controls
-        // SetItemTemplateButton_Clicked and SetTemplateSelectorButton_Clicked
-        // handle the creation of ItemTemplate and ItemTemplateSelector
-        
-        // This method can be kept for reference or removed in future iterations
-        // The actual template setup is now user-controlled via the UI
-    }
-
     private void ApplyButton_Clicked(object sender, EventArgs e)
     {
         Navigation.PopAsync();
@@ -154,11 +144,7 @@ public partial class MapOptionsPage : ContentPage
             Location = new Location(pinData.Lat, pinData.Lng)
         };
         _viewModel.Pins.Add(pin);
-    }
-
-    private void ClearPinsButton_Clicked(object sender, EventArgs e)
-    {
-        _viewModel.Pins.Clear();
+        _viewModel.UserAddedPinCount++;
     }
 
     private void AddElementButton_Clicked(object sender, EventArgs e)
@@ -216,11 +202,6 @@ public partial class MapOptionsPage : ContentPage
         polyline.Geopath.Add(destination.Location);
 
         _viewModel.MapElements.Add(polyline);
-    }
-
-    private void ClearElementsButton_Clicked(object sender, EventArgs e)
-    {
-        _viewModel.MapElements.Clear();
     }
 
     private void SetItemsSourceButton_Clicked(object sender, EventArgs e)
@@ -287,11 +268,8 @@ public partial class MapOptionsPage : ContentPage
 
         _viewModel.ItemTemplate = pinTemplate;
 
-        // Ensure ItemsSource is set for the template to work
-        if (_viewModel.ItemsSource == null)
-        {
-            _viewModel.ItemsSource = _viewModel.Pins;
-        }
+        // Note: ItemsSource must be set separately via "Set ItemsSource" button
+        // Templates only work when ItemsSource is explicitly set by the user
     }
 
     private void ClearItemTemplateButton_Clicked(object sender, EventArgs e)
@@ -405,12 +383,9 @@ public partial class MapOptionsPage : ContentPage
         };
 
         _viewModel.ItemTemplateSelector = templateSelector;
-        
-        // Ensure ItemsSource is set for the template selector to work
-        if (_viewModel.ItemsSource == null)
-        {
-            _viewModel.ItemsSource = _viewModel.Pins;
-        }
+
+        // Note: ItemsSource must be set separately via "Set ItemsSource" button
+        // Template selector only works when ItemsSource is explicitly set by the user
     }
 
     private void ClearTemplateSelectorButton_Clicked(object sender, EventArgs e)
@@ -504,17 +479,41 @@ public partial class MapOptionsPage : ContentPage
         }
         else
         {
-            // If no pins, just move to Pearl City
-            MoveToPearlCityButton_Clicked(sender, e);
+            // If no pins, just reset to initial state
+            ResetToInitialButton_Clicked(sender, e);
         }
     }
 
-    private void MoveToPearlCityButton_Clicked(object sender, EventArgs e)
+    private void ResetToInitialButton_Clicked(object sender, EventArgs e)
     {
-        // Move the visible region to Pearl City with default zoom
-        _viewModel.VisibleRegion = MapSpan.FromCenterAndRadius(
-            MapViewModel.PearlCityLocation,
-            Distance.FromMiles(5)
-        );
+        // Reset all properties to their original state
+
+        // Reset boolean properties to their default values
+        _viewModel.IsShowingUser = false;
+        _viewModel.IsScrollEnabled = false;
+        _viewModel.IsTrafficEnabled = false;
+        _viewModel.IsZoomEnabled = false;
+        _viewModel.IsVisible = true;
+
+        // Reset MapType to default
+        _viewModel.MapType = MapType.Street;
+
+        // Clear all pins and reset user pin count (from ClearPinsButton functionality)
+        _viewModel.Pins.Clear();
+        _viewModel.UserAddedPinCount = 0;
+
+        // Clear all map elements (from ClearElementsButton functionality)
+        _viewModel.MapElements.Clear();
+
+        // Reset template properties
+        _viewModel.ItemsSource = null;
+        _viewModel.ItemTemplate = null;
+        _viewModel.ItemTemplateSelector = null;
+
+        // Reset visible region to initial region
+        _viewModel.VisibleRegion = _viewModel.InitialRegion;
+
+        // Update radio buttons to reflect the reset MapType
+        UpdateRadioButtonsFromMapType();
     }
 }
