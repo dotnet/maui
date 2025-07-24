@@ -394,6 +394,7 @@ namespace Microsoft.Maui.Platform
 			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 			{
 				contentSize = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
+				contentSize = new Size(contentSize.Width + _safeArea.HorizontalThickness, contentSize.Height + _safeArea.VerticalThickness);
 			}
 			else
 			{
