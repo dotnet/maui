@@ -8,16 +8,18 @@ using Xunit;
 
 namespace Microsoft.Maui.UnitTests
 {
-	[Collection("PerformanceProfilerTests")]
+
+	[CollectionDefinition("PerformanceProfilerTests", DisableParallelization = true)]
 	[Category(TestCategory.Core)]
 	public class PerformanceProfilerTests
 	{
+		const double DurationTolerance = 0.1;
+
 		void ResetLayout()
 		{
 			var layoutProperty = typeof(PerformanceProfiler).GetProperty(
 				"Layout",
 				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-
 			layoutProperty?.SetValue(null, null);
 		}
 
@@ -79,16 +81,20 @@ namespace Microsoft.Maui.UnitTests
 			ResetLayout();
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
+			const double expectedDelayMs = 5.0;
+			double minDuration = expectedDelayMs * (1 - DurationTolerance);
 
 			// Act
 			var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "ElementA");
-			await Task.Delay(5); // Simulate layout work
+			await Task.Delay(TimeSpan.FromMilliseconds(expectedDelayMs)); // Simulate layout work
 			perfTracker.Stop();
 
 			// Assert
 			Assert.Equal(1, tracker.MeasureCallCount);
 			Assert.Equal("ElementA", tracker.MeasuredElement);
-			Assert.True(tracker.MeasuredDuration > 0, $"Expected MeasuredDuration > 0, got {tracker.MeasuredDuration}");
+			Assert.True(tracker.MeasuredDuration >= minDuration,
+				$"Expected MeasuredDuration ≥ {minDuration:F2}ms (with {DurationTolerance:P} tolerance), " +
+				$"got {tracker.MeasuredDuration:F2}ms");
 		}
 
 		[Fact]
@@ -98,16 +104,20 @@ namespace Microsoft.Maui.UnitTests
 			ResetLayout();
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
+			const double expectedDelayMs = 5.0;
+			double minDuration = expectedDelayMs * (1 - DurationTolerance);
 
 			// Act
 			var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "ElementB");
-			await Task.Delay(5); // Simulate layout work
+			await Task.Delay(TimeSpan.FromMilliseconds(expectedDelayMs)); // Simulate layout work
 			perfTracker.Stop();
 
 			// Assert
 			Assert.Equal(1, tracker.ArrangeCallCount);
 			Assert.Equal("ElementB", tracker.ArrangedElement);
-			Assert.True(tracker.ArrangedDuration > 0, $"Expected ArrangedDuration > 0, got {tracker.ArrangedDuration}");
+			Assert.True(tracker.ArrangedDuration >= minDuration,
+				$"Expected ArrangedDuration ≥ {minDuration:F2}ms (with {DurationTolerance:P} tolerance), " +
+				$"got {tracker.ArrangedDuration:F2}ms");
 		}
 
 		[Fact]
@@ -117,31 +127,35 @@ namespace Microsoft.Maui.UnitTests
 			ResetLayout();
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
+			const double expectedDelayMs = 5.0;
+			double minDuration = expectedDelayMs * (1 - DurationTolerance);
 
 			// Track measure
 			var measureTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "M");
-			await Task.Delay(5); // Simulate short work
+			await Task.Delay(TimeSpan.FromMilliseconds(expectedDelayMs)); // Simulate layout work
 			measureTracker.Stop();
 			var statsAfterMeasure = PerformanceProfiler.GetStats();
 
 			// Track arrange
 			var arrangeTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "A");
-			await Task.Delay(5); // Simulate short work
+			await Task.Delay(TimeSpan.FromMilliseconds(expectedDelayMs)); // Simulate layout work
 			arrangeTracker.Stop();
 			var statsAfterArrange = PerformanceProfiler.GetStats();
 
 			// Assert measure stats
 			Assert.NotNull(statsAfterMeasure.Layout);
-			Assert.True(statsAfterMeasure.Layout.MeasureDuration > 0,
-				$"Expected MeasureDuration > 0 after tracking, got {statsAfterMeasure.Layout.MeasureDuration}");
+			Assert.True(statsAfterMeasure.Layout.MeasureDuration >= minDuration,
+				$"Expected MeasureDuration ≥ {minDuration:F2}ms, got {statsAfterMeasure.Layout.MeasureDuration:F2}ms");
+
 			Assert.Equal(0, statsAfterMeasure.Layout.ArrangeDuration);
 
 			// Assert arrange stats
 			Assert.NotNull(statsAfterArrange.Layout);
-			Assert.True(statsAfterArrange.Layout.ArrangeDuration > 0,
-				$"Expected ArrangeDuration > 0 after tracking, got {statsAfterArrange.Layout.ArrangeDuration}");
-			Assert.True(statsAfterArrange.Layout.MeasureDuration > 0,
-				$"Expected MeasureDuration still present, got {statsAfterArrange.Layout.MeasureDuration}");
+			Assert.True(statsAfterArrange.Layout.ArrangeDuration >= minDuration,
+				$"Expected ArrangeDuration ≥ {minDuration:F2}ms, got {statsAfterArrange.Layout.ArrangeDuration:F2}ms");
+
+			Assert.True(statsAfterArrange.Layout.MeasureDuration >= minDuration,
+				$"Expected MeasureDuration still present, got {statsAfterArrange.Layout.MeasureDuration:F2}ms");
 		}
 
 		[Fact]
@@ -151,16 +165,13 @@ namespace Microsoft.Maui.UnitTests
 			ResetLayout();
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
-
 			const PerformanceCategory unknownType = (PerformanceCategory)99;
 
 			// Act
-			// Attempt to track with an undefined performance category
 			var perfTracker = PerformanceProfiler.Start(unknownType, "TestElement");
 			perfTracker.Stop();
 
 			// Assert
-			// Ensure no measure or arrange calls were registered
 			Assert.Equal(0, tracker.MeasureCallCount);
 			Assert.Equal(0, tracker.ArrangeCallCount);
 		}
@@ -172,48 +183,50 @@ namespace Microsoft.Maui.UnitTests
 			ResetLayout();
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
+			const double expectedDelayMs = 5.0;
+			double minDuration = expectedDelayMs * (1 - DurationTolerance);
 
 			// Act
-			// Measure tracker
 			var tracker1 = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "Element1");
-			await Task.Delay(5);
+			await Task.Delay(TimeSpan.FromMilliseconds(expectedDelayMs)); // Simulate layout work
 			tracker1.Stop();
 
-			// Act
-			// Arrange tracker
 			var tracker2 = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "Element2");
-			await Task.Delay(5);
+			await Task.Delay(TimeSpan.FromMilliseconds(expectedDelayMs)); // Simulate layout work
 			tracker2.Stop();
 
 			// Assert
-			// Measure
 			Assert.Equal(1, tracker.MeasureCallCount);
 			Assert.Equal("Element1", tracker.MeasuredElement);
-			Assert.True(tracker.MeasuredDuration > 0, $"Expected MeasuredDuration > 0, got {tracker.MeasuredDuration}");
+			Assert.True(tracker.MeasuredDuration >= minDuration,
+				$"Expected MeasuredDuration ≥ {minDuration:F2}ms, got {tracker.MeasuredDuration:F2}ms");
 
-			// Assert
-			// Arrange
 			Assert.Equal(1, tracker.ArrangeCallCount);
 			Assert.Equal("Element2", tracker.ArrangedElement);
-			Assert.True(tracker.ArrangedDuration > 0, $"Expected ArrangedDuration > 0, got {tracker.ArrangedDuration}");
+			Assert.True(tracker.ArrangedDuration >= minDuration,
+				$"Expected ArrangedDuration ≥ {minDuration:F2}ms, got {tracker.ArrangedDuration:F2}ms");
 		}
 
 		[Fact]
-		public void Start_WithoutElement_RecordsDuration()
+		public async Task Start_WithoutElement_RecordsDuration()
 		{
 			// Arrange
 			ResetLayout();
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
+			const double expectedDelayMs = 5.0;
+			double minDuration = expectedDelayMs * (1 - DurationTolerance);
 
 			// Act
 			var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure);
-			Thread.Sleep(5); // Simulate work with a short delay
+			await Task.Delay(TimeSpan.FromMilliseconds(expectedDelayMs)); // Simulate layout work
 			perfTracker.Stop();
 
 			// Assert
+			await Task.Delay(10);
 			Assert.Equal(1, tracker.MeasureCallCount);
-			Assert.True(tracker.MeasuredDuration > 0);
+			Assert.True(tracker.MeasuredDuration >= minDuration,
+				$"Expected MeasuredDuration ≥ {minDuration:F2}ms, got {tracker.MeasuredDuration:F2}ms");
 		}
 
 		[Fact]
@@ -223,18 +236,21 @@ namespace Microsoft.Maui.UnitTests
 			ResetLayout();
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
+			const double expectedDelayMs = 5.0;
+			double minDuration = expectedDelayMs * (1 - DurationTolerance);
 
 			// Act
-			// Duration measured and disposed via using var
 			{
-				using var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "UsingElement");
-				await Task.Delay(5); // Simulate short work
+				using var perfTracker =
+					PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "UsingElement");
+				await Task.Delay(TimeSpan.FromMilliseconds(expectedDelayMs));
 			}
 
 			// Assert
 			Assert.Equal(1, tracker.MeasureCallCount);
-			Assert.True(tracker.MeasuredDuration > 0, $"Expected MeasuredDuration > 0, got {tracker.MeasuredDuration}");
 			Assert.Equal("UsingElement", tracker.MeasuredElement);
+			Assert.True(tracker.MeasuredDuration >= minDuration,
+				$"Expected MeasuredDuration ≥ {minDuration:F2}ms, got {tracker.MeasuredDuration:F2}ms");
 		}
 
 		[Fact]
@@ -244,18 +260,22 @@ namespace Microsoft.Maui.UnitTests
 			ResetLayout();
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
+			const double expectedDelayMs = 5.0;
+			double minDuration = expectedDelayMs * (1 - DurationTolerance);
 
 			// Act
 			{
 				using var perfTracker =
 					PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "UsingArrangeElement");
-				await Task.Delay(5);
+				await Task.Delay(TimeSpan.FromMilliseconds(expectedDelayMs));
 			}
 
 			// Assert
+			await Task.Delay(10);
 			Assert.Equal(1, tracker.ArrangeCallCount);
-			Assert.True(tracker.ArrangedDuration > 0, $"Expected ArrangedDuration > 0, got {tracker.ArrangedDuration}");
 			Assert.Equal("UsingArrangeElement", tracker.ArrangedElement);
+			Assert.True(tracker.ArrangedDuration >= minDuration,
+				$"Expected ArrangedDuration ≥ {minDuration:F2}ms, got {tracker.ArrangedDuration:F2}ms");
 		}
 
 		[Fact]
@@ -265,7 +285,6 @@ namespace Microsoft.Maui.UnitTests
 			ResetLayout();
 
 			// Act & Assert
-			// No exception expected
 			using var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "Test");
 			await Task.Delay(5);
 		}
@@ -277,13 +296,15 @@ namespace Microsoft.Maui.UnitTests
 			ResetLayout();
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
+			const double expectedDelayMs = 5.0;
+			double minDuration = expectedDelayMs * (1 - DurationTolerance);
 
 			// Act
 			try
 			{
 				using var perfTracker =
 					PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "ExceptionElement");
-				await Task.Delay(5); // Simulate work before exception
+				await Task.Delay(TimeSpan.FromMilliseconds(expectedDelayMs));
 				throw new InvalidOperationException("Intentional test exception");
 			}
 			catch (InvalidOperationException)
@@ -293,7 +314,8 @@ namespace Microsoft.Maui.UnitTests
 
 			// Assert
 			Assert.Equal(1, tracker.MeasureCallCount);
-			Assert.True(tracker.MeasuredDuration > 0, $"Expected MeasuredDuration > 0, got {tracker.MeasuredDuration}");
+			Assert.True(tracker.MeasuredDuration >= minDuration,
+				$"Expected MeasuredDuration ≥ {minDuration:F2}ms, got {tracker.MeasuredDuration:F2}ms");
 		}
 
 		[Fact]
@@ -304,12 +326,11 @@ namespace Microsoft.Maui.UnitTests
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
 
-			// Act – nested scope simulation
+			// Act
 			{
 				using var outerTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "Outer");
 				await Task.Delay(5);
 			}
-
 			{
 				using var innerTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "Inner");
 				await Task.Delay(5);
@@ -318,7 +339,6 @@ namespace Microsoft.Maui.UnitTests
 			// Assert
 			Assert.Equal(1, tracker.MeasureCallCount);
 			Assert.Equal("Outer", tracker.MeasuredElement);
-
 			Assert.Equal(1, tracker.ArrangeCallCount);
 			Assert.Equal("Inner", tracker.ArrangedElement);
 		}
@@ -330,15 +350,14 @@ namespace Microsoft.Maui.UnitTests
 			ResetLayout();
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
-			const PerformanceCategory unknownType = (PerformanceCategory)99;
 
-			// Act – simulate unknown category tracking
+			// Act
 			{
-				using var perfTracker = PerformanceProfiler.Start(unknownType, "UnknownElement");
-				await Task.Delay(5); // Simulate short usage
+				using var perfTracker = PerformanceProfiler.Start((PerformanceCategory)99, "UnknownElement");
+				await Task.Delay(5);
 			}
 
-			// Assert – ensure no measure/arrange tracking occurred
+			// Assert
 			Assert.Equal(0, tracker.MeasureCallCount);
 			Assert.Equal(0, tracker.ArrangeCallCount);
 		}
@@ -348,8 +367,6 @@ namespace Microsoft.Maui.UnitTests
 		{
 			// Arrange
 			ResetLayout();
-			var tracker = new FakeLayoutTracker();
-			PerformanceProfiler.Initialize(tracker);
 
 			// Act & Assert
 			var ex = Assert.Throws<ArgumentNullException>(() => PerformanceProfiler.SubscribeToUpdates(null));
@@ -362,7 +379,7 @@ namespace Microsoft.Maui.UnitTests
 			// Arrange
 			ResetLayout();
 
-			// Act & Assert – subscribing before profiler initialization should not throw
+			// Act & Assert
 			var exception = Record.Exception(() =>
 			{
 				PerformanceProfiler.SubscribeToUpdates(update =>
@@ -370,7 +387,6 @@ namespace Microsoft.Maui.UnitTests
 					/* no-op */
 				});
 			});
-
 			Assert.Null(exception);
 		}
 
@@ -392,23 +408,18 @@ namespace Microsoft.Maui.UnitTests
 
 			// Act
 			PerformanceProfiler.SubscribeToUpdates(callback);
-
 			var measureTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "Element1");
-			Thread.Sleep(5); // Simulate work with a short delay
+			Thread.Sleep(5);
 			measureTracker.Stop();
-
 			var arrangeTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "Element2");
-			Thread.Sleep(5); // Simulate work with a short delay
+			Thread.Sleep(5);
 			arrangeTracker.Stop();
-
-			// Wait for events to propagate
 			await Task.Delay(250);
 
 			// Assert
 			Assert.Equal(2, receivedUpdates.Count);
 			Assert.Equal(LayoutPassType.Measure, receivedUpdates[0].PassType);
 			Assert.Equal("Element1", receivedUpdates[0].Element);
-
 			Assert.Equal(LayoutPassType.Arrange, receivedUpdates[1].PassType);
 			Assert.Equal("Element2", receivedUpdates[1].Element);
 		}
@@ -424,28 +435,19 @@ namespace Microsoft.Maui.UnitTests
 			var subscriber2Updates = new List<LayoutUpdate>();
 			Action<LayoutUpdate> callback1 = update =>
 			{
-				lock (subscriber1Updates)
-				{
-					subscriber1Updates.Add(update);
-				}
+				lock (subscriber1Updates) { subscriber1Updates.Add(update); }
 			};
 			Action<LayoutUpdate> callback2 = update =>
 			{
-				lock (subscriber2Updates)
-				{
-					subscriber2Updates.Add(update);
-				}
+				lock (subscriber2Updates) { subscriber2Updates.Add(update); }
 			};
 
 			// Act
 			PerformanceProfiler.SubscribeToUpdates(callback1);
 			PerformanceProfiler.SubscribeToUpdates(callback2);
-
 			var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "MultiSubscriber");
-			Thread.Sleep(5); // Simulate work with a short delay
+			Thread.Sleep(5);
 			perfTracker.Stop();
-
-			// Wait for events to propagate
 			await Task.Delay(250);
 
 			// Assert
@@ -468,21 +470,15 @@ namespace Microsoft.Maui.UnitTests
 			Action<LayoutUpdate> badSubscriber = _ => throw new InvalidOperationException("Bad subscriber");
 			Action<LayoutUpdate> goodSubscriber = update =>
 			{
-				lock (goodSubscriberUpdates)
-				{
-					goodSubscriberUpdates.Add(update);
-				}
+				lock (goodSubscriberUpdates) { goodSubscriberUpdates.Add(update); }
 			};
 
 			// Act
 			PerformanceProfiler.SubscribeToUpdates(badSubscriber);
 			PerformanceProfiler.SubscribeToUpdates(goodSubscriber);
-
 			var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "TestElement");
-			Thread.Sleep(5); // Simulate work with a short delay
+			Thread.Sleep(5);
 			perfTracker.Stop();
-
-			// Wait for events to propagate
 			await Task.Delay(250);
 
 			// Assert
@@ -515,20 +511,17 @@ namespace Microsoft.Maui.UnitTests
 
 			// Act
 			var tracker1 = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "Element1");
-			Thread.Sleep(5); // Simulate work with a short delay
+			Thread.Sleep(5);
 			tracker1.Stop();
-
 			var tracker2 = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "Element2");
-			Thread.Sleep(5); // Simulate work with a short delay
+			Thread.Sleep(5);
 			tracker2.Stop();
-
-			// Wait for events to propagate
 			await Task.Delay(250);
 
 			var history = PerformanceProfiler.GetHistory("Element1");
+			var layoutHistory = new List<LayoutUpdate>(history.Layout);
 
 			// Assert
-			var layoutHistory = new List<LayoutUpdate>(history.Layout);
 			Assert.Single(layoutHistory);
 			Assert.Equal("Element1", layoutHistory[0].Element);
 			Assert.Equal(LayoutPassType.Measure, layoutHistory[0].PassType);
@@ -543,24 +536,25 @@ namespace Microsoft.Maui.UnitTests
 			PerformanceProfiler.Initialize(tracker);
 
 			// Act
-			var tracker1 = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "Element1");
-			Thread.Sleep(5); // Simulate work with a short delay
-			tracker1.Stop();
-
-			var tracker2 = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "Element2");
-			Thread.Sleep(5); // Simulate work with a short delay
-			tracker2.Stop();
-
-			// Wait for events to propagate
+			{
+				var tracker1 = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "Element1");
+				await Task.Delay(10); // Simulate layout work
+				tracker1.Stop();
+			}
+			{
+				var tracker2 = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "Element2");
+				await Task.Delay(10); // Simulate layout work
+				tracker2.Stop();
+			}
 			await Task.Delay(250);
 
-			var history = PerformanceProfiler.GetHistory();
-
 			// Assert
-			var layoutHistory = new List<LayoutUpdate>(history.Layout);
+			var layoutHistory = new List<LayoutUpdate>(PerformanceProfiler.GetHistory().Layout);
 			Assert.Equal(2, layoutHistory.Count);
-			Assert.Contains(layoutHistory, u => u.Element.Equals("Element1") && u.PassType == LayoutPassType.Measure);
-			Assert.Contains(layoutHistory, u => u.Element.Equals("Element2") && u.PassType == LayoutPassType.Arrange);
+			Assert.Contains(layoutHistory,
+				u => u.Element.Equals("Element1") && u.PassType == LayoutPassType.Measure);
+			Assert.Contains(layoutHistory,
+				u => u.Element.Equals("Element2") && u.PassType == LayoutPassType.Arrange);
 		}
 
 		[Fact]
@@ -574,13 +568,14 @@ namespace Microsoft.Maui.UnitTests
 			// Act
 			{
 				var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "ZeroDuration");
-				perfTracker.Stop(); // Stop immediately
+				perfTracker.Stop();
 			}
 
 			// Assert
 			Assert.Equal(1, tracker.MeasureCallCount);
 			Assert.Equal("ZeroDuration", tracker.MeasuredElement);
-			Assert.True(tracker.MeasuredDuration > 0);
+			Assert.True(tracker.MeasuredDuration > 0,
+				$"Expected small positive duration due to Stopwatch overhead, got {tracker.MeasuredDuration:F4}ms");
 		}
 
 		[Fact]
@@ -590,13 +585,13 @@ namespace Microsoft.Maui.UnitTests
 			ResetLayout();
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
+			const double expectedDelayMs = 5.0;
+			double minDuration = expectedDelayMs * (1 - DurationTolerance); // 4.25ms
 
 			// Act
 			var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange);
-			Thread.Sleep(5); // Simulate work with a short delay
+			Thread.Sleep(5);
 			perfTracker.Stop();
-
-			// Wait for events to propagate
 			await Task.Delay(250);
 
 			// Assert
@@ -605,7 +600,8 @@ namespace Microsoft.Maui.UnitTests
 			Assert.Single(layoutHistory);
 			Assert.Equal(string.Empty, layoutHistory[0].Element);
 			Assert.Equal(LayoutPassType.Arrange, layoutHistory[0].PassType);
-			Assert.True(layoutHistory[0].TotalTime > 0);
+			Assert.True(layoutHistory[0].TotalTime >= minDuration,
+				$"Expected TotalTime ≥ {minDuration:F2}ms, got {layoutHistory[0].TotalTime:F2}ms");
 		}
 
 		[Fact]
@@ -616,46 +612,43 @@ namespace Microsoft.Maui.UnitTests
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
 
-			// Create mock layout elements
-			var parent = new MockVisualTreeElement(true); // e.g., VerticalStackLayout
-			var child = new MockVisualTreeElement(false) { Parent = parent }; // e.g., Label
+			var parent = new MockVisualTreeElement(true);
+			var child = new MockVisualTreeElement(false) { Parent = parent };
 			parent.Children.Add(child);
 
 			// Act
-			// Simulate layout measure passes
 			var childTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, child);
-			await Task.Delay(30); // Simulate child measure
+			await Task.Delay(30); // Simulate layout work
 			childTracker.Stop();
 
 			var parentTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, parent);
-			await Task.Delay(10); // Simulate parent measure (excluding child)
+			await Task.Delay(10); // Simulate layout work
 			parentTracker.Stop();
 
-			await Task.Delay(250); // Allow profiler updates to settle
+			await Task.Delay(250);
 
-			// Assert profiler stats
+			// Assert
 			var stats = PerformanceProfiler.GetStats();
 			Assert.NotNull(stats.Layout);
 			Assert.True(stats.Layout.MeasureDuration > 0.0,
-				$"Expected non-zero MeasureDuration, got {stats.Layout.MeasureDuration}ms");
+				$"Expected non-zero MeasureDuration, got {stats.Layout.MeasureDuration:F2}ms");
 
-			// Assert history updates
-			var history = PerformanceProfiler.GetHistory().Layout;
-			var layoutHistory = new List<LayoutUpdate>(history);
-
+			var layoutHistory = new List<LayoutUpdate>(PerformanceProfiler.GetHistory().Layout);
 			Assert.Equal(2, layoutHistory.Count);
 
 			var parentUpdate = layoutHistory.Find(u => u.Element == parent);
 			Assert.NotNull(parentUpdate);
 			Assert.Equal(LayoutPassType.Measure, parentUpdate.PassType);
-			Assert.True(parentUpdate.TotalTime >= 10.0,
-				$"Expected parent TotalTime ≥ 10ms, got {parentUpdate.TotalTime}ms");
+			double parentMin = 10.0 * (1 - DurationTolerance);
+			Assert.True(parentUpdate.TotalTime >= parentMin,
+				$"Expected parent TotalTime ≥ {parentMin:F2}ms, got {parentUpdate.TotalTime:F2}ms");
 
 			var childUpdate = layoutHistory.Find(u => u.Element == child);
 			Assert.NotNull(childUpdate);
 			Assert.Equal(LayoutPassType.Measure, childUpdate.PassType);
-			Assert.True(childUpdate.TotalTime >= 30.0,
-				$"Expected child TotalTime ≥ 30ms, got {childUpdate.TotalTime}ms");
+			double childMin = 30.0 * (1 - DurationTolerance);
+			Assert.True(childUpdate.TotalTime >= childMin,
+				$"Expected child TotalTime ≥ {childMin:F2}ms, got {childUpdate.TotalTime:F2}ms");
 		}
 
 		[Fact]
@@ -666,74 +659,61 @@ namespace Microsoft.Maui.UnitTests
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
 
-			// Build hierarchy:
-			// RootLayout
-			// └── Layout
-			//     ├── Label1
-			//     └── Label2
-			var root = new MockVisualTreeElement(true); // e.g., Grid
-			var panel = new MockVisualTreeElement(true) { Parent = root }; // e.g., StackLayout
+			var root = new MockVisualTreeElement(true);
+			var panel = new MockVisualTreeElement(true) { Parent = root };
 			var label1 = new MockVisualTreeElement(false) { Parent = panel };
 			var label2 = new MockVisualTreeElement(false) { Parent = panel };
-
 			root.Children.Add(panel);
 			panel.Children.Add(label1);
 			panel.Children.Add(label2);
 
-			// Act – simulate layout measure passes
-			using (var label1Tracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, label1))
-			{
-				await Task.Delay(15); // Simulate Label1 measure
-			}
+			// Act
+			var rootTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, root);
+			await Task.Delay(10);
+			var panelTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, panel);
+			await Task.Delay(15);
+			var label1Tracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, label1);
+			await Task.Delay(25);
+			label1Tracker.Stop();
+			var label2Tracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, label2);
+			await Task.Delay(30);
+			label2Tracker.Stop();
+			panelTracker.Stop();
+			rootTracker.Stop();
+			await Task.Delay(50);
 
-			using (var label2Tracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, label2))
-			{
-				await Task.Delay(20); // Simulate Label2 measure
-			}
-
-			using (var panelTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, panel))
-			{
-				await Task.Delay(10); // Simulate Panel's own measure (excluding children)
-			}
-
-			using (var rootTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, root))
-			{
-				await Task.Delay(5); // Simulate Root's own measure (excluding children)
-			}
-
-			await Task.Delay(250); // Allow profiler updates to settle
-
-			// Assert profiler stats
+			// Assert
 			var stats = PerformanceProfiler.GetStats();
 			Assert.NotNull(stats.Layout);
 			Assert.True(stats.Layout.MeasureDuration > 0.0,
-				$"Expected MeasureDuration > 0, got {stats.Layout.MeasureDuration}");
+				$"Expected non-zero MeasureDuration, got {stats.Layout.MeasureDuration:F2}ms");
 
-			// Assert layout history
 			var layoutHistory = new List<LayoutUpdate>(PerformanceProfiler.GetHistory().Layout);
 			Assert.Equal(4, layoutHistory.Count);
 
 			var rootUpdate = layoutHistory.Find(u => u.Element == root);
 			Assert.NotNull(rootUpdate);
 			Assert.Equal(LayoutPassType.Measure, rootUpdate.PassType);
-			Assert.True(rootUpdate.TotalTime >= 5.0, $"Expected Root measure ≥ 5ms, got {rootUpdate.TotalTime}ms");
+			Assert.True(rootUpdate.TotalTime >= 10.0 * (1 - DurationTolerance),
+				$"Expected Root ≥ {10.0 * 0.85:F2}ms, got {rootUpdate.TotalTime:F2}ms");
 
 			var panelUpdate = layoutHistory.Find(u => u.Element == panel);
 			Assert.NotNull(panelUpdate);
 			Assert.Equal(LayoutPassType.Measure, panelUpdate.PassType);
-			Assert.True(panelUpdate.TotalTime >= 10.0, $"Expected Panel measure ≥ 10ms, got {panelUpdate.TotalTime}ms");
+			Assert.True(panelUpdate.TotalTime >= 15.0 * (1 - DurationTolerance),
+				$"Expected Panel ≥ {15.0 * 0.85:F2}ms, got {panelUpdate.TotalTime:F2}ms");
 
 			var label1Update = layoutHistory.Find(u => u.Element == label1);
 			Assert.NotNull(label1Update);
 			Assert.Equal(LayoutPassType.Measure, label1Update.PassType);
-			Assert.True(label1Update.TotalTime >= 15.0,
-				$"Expected Label1 measure ≥ 15ms, got {label1Update.TotalTime}ms");
+			Assert.True(label1Update.TotalTime >= 25.0 * (1 - DurationTolerance),
+				$"Expected Label1 ≥ {25.0 * 0.85:F2}ms, got {label1Update.TotalTime:F2}ms");
 
 			var label2Update = layoutHistory.Find(u => u.Element == label2);
 			Assert.NotNull(label2Update);
 			Assert.Equal(LayoutPassType.Measure, label2Update.PassType);
-			Assert.True(label2Update.TotalTime >= 20.0,
-				$"Expected Label2 measure ≥ 20ms, got {label2Update.TotalTime}ms");
+			Assert.True(label2Update.TotalTime >= 30.0 * (1 - DurationTolerance),
+				$"Expected Label2 ≥ {30.0 * 0.85:F2}ms, got {label2Update.TotalTime:F2}ms");
 		}
 	}
 
@@ -824,9 +804,10 @@ namespace Microsoft.Maui.UnitTests
 
 			if (element is ILayout)
 			{
-				standaloneDuration = _childDurations.TryGetValue((element, LayoutPassType.Measure), out var childTime)
-					? duration - childTime
-					: duration;
+				standaloneDuration =
+					_childDurations.TryGetValue((element, LayoutPassType.Measure), out var childTime)
+						? duration - childTime
+						: duration;
 				_childDurations.TryRemove((element, LayoutPassType.Measure), out _);
 			}
 
@@ -868,9 +849,10 @@ namespace Microsoft.Maui.UnitTests
 
 			if (element is ILayout)
 			{
-				standaloneDuration = _childDurations.TryGetValue((element, LayoutPassType.Arrange), out var childTime)
-					? duration - childTime
-					: duration;
+				standaloneDuration =
+					_childDurations.TryGetValue((element, LayoutPassType.Arrange), out var childTime)
+						? duration - childTime
+						: duration;
 				_childDurations.TryRemove((element, LayoutPassType.Arrange), out _);
 			}
 
