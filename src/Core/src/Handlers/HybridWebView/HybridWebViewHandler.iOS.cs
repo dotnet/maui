@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			// Invoke the WebViewInitialized event to signal that the web view has been initialized
-			var initializedArgs = new WebViewInitializationCompletedEventArgs(webview);
+			var initializedArgs = new WebViewInitializationCompletedEventArgs(webview, config);
 			VirtualView?.WebViewInitializationCompleted(initializedArgs);
 
 			return webview;
