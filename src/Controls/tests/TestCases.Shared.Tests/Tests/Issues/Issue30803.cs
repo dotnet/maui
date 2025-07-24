@@ -4,9 +4,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue30784 : _IssuesUITest
+public class Issue30803 : _IssuesUITest
 {
-	public Issue30784(TestDevice device) : base(device)
+	public Issue30803(TestDevice device) : base(device)
 	{
 	}
 
@@ -16,8 +16,8 @@ public class Issue30784 : _IssuesUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void VerifyDownsizeMaintainsRatioWithMaxWidthHeight()
 	{
-		App.WaitForElement("Issue30784DownSizeBtn");
-		App.Tap("Issue30784DownSizeBtn");
+		App.WaitForElement("Issue30803DownSizeBtn");
+		App.Tap("Issue30803DownSizeBtn");
 
 		var downsizedImageLabelText = App.WaitForElement("ConvertedImageStatusLabel").GetText();
 		Assert.That(downsizedImageLabelText, Is.EqualTo("Success"));
