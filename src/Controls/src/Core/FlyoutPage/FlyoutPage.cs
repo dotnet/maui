@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls
 				var previousPage = previousDetail is NavigationPage previousNavPage ? previousNavPage.CurrentPage : previousDetail;
 				
 				// TODO MAUI refine this to fire earlier
-				_detail?.SendNavigatingFrom(new NavigatingFromEventArgs(destinationPage, NavigationType.Replace));
+				previousDetail?.SendNavigatingFrom(new NavigatingFromEventArgs(value, NavigationType.Replace));
 		
 				OnPropertyChanging();
 				if (_detail != null)
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls
 				var previousFlyout = _flyout;
 				
 				// TODO MAUI refine this to fire earlier
-				_flyout?.SendNavigatingFrom(new NavigatingFromEventArgs(_flyout, NavigationType.Replace));
+				previousFlyout?.SendNavigatingFrom(new NavigatingFromEventArgs(value, NavigationType.Replace));
 
 				OnPropertyChanging();
 				if (_flyout != null)
