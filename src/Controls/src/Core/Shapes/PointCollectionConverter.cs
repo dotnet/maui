@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Shapes
 				return (PointCollection)pointArray;
 			}
 
-			var strValue = value.ToString();
+			var strValue = value?.ToString() ?? string.Empty;
 
 			string[] points = strValue.Split(new char[] { ' ', ',' });
 			var pointCollection = new PointCollection();
