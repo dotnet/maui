@@ -11,7 +11,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
-	[Obsolete("RelativeLayout is obsolete. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts", true)]
+	[Obsolete("RelativeLayout is obsolete. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts")]
 #pragma warning disable CS0618 // Type or member is obsolete
 	public class RelativeLayout : Layout<View>, IElementConfiguration<RelativeLayout>
 #pragma warning restore CS0618 // Type or member is obsolete
