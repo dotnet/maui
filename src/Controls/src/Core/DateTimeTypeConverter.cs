@@ -26,7 +26,7 @@ public class DateTimeTypeConverter : TypeConverter
         {
             if (DateOnly.TryParse(stringValue, culture, DateTimeStyles.None, out DateOnly dateTimeOnly))
             {
-                return dateTimeOnly;
+                return dateTimeOnly.ToDateTime(TimeOnly.MinValue);
             }
             else if (DateTime.TryParse(stringValue, culture, DateTimeStyles.None, out dateTime))
             {
