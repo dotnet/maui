@@ -56,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			if (useNewApi)
 			{
-				SafeArea.SetIgnore(page, SafeAreaEdges.None);
+				page.SafeAreaEdges = SafeAreaEdges.All;
 			}
 			else
 			{

@@ -730,7 +730,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 
 			if (useNewApi)
 			{
-				SafeArea.SetIgnore(layout, SafeAreaEdges.All);
+				layout.SafeAreaEdges = SafeAreaEdges.None;
 			}
 			else
 			{

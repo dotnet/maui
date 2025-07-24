@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 28986, "Test SafeArea ScrollView for per-edge safe area control", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 28986, "Test SafeArea ScrollView for per-edge safe area control", PlatformAffected.All, issueTestNumber: 4)]
 public partial class Issue28986_ScrollView : ContentPage
 {
 	public Issue28986_ScrollView()
