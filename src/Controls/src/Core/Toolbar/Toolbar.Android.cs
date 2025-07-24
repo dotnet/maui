@@ -70,7 +70,23 @@ namespace Microsoft.Maui.Controls
 			if (_currentMenuItems == null)
 				return;
 
-			PlatformView.UpdateMenuItems(ToolbarItems?.Where(item => item.IsVisible), MauiContext, BarTextColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
+			IEnumerable<ToolbarItem> visibleItems;
+			if (ToolbarItems != null)
+			{
+				var visibleList = new List<ToolbarItem>();
+				foreach (ToolbarItem item in ToolbarItems)
+				{
+					if (item.IsVisible)
+						visibleList.Add(item);
+				}
+				visibleItems = visibleList;
+			}
+			else
+			{
+				visibleItems = Array.Empty<ToolbarItem>();
+			}
+
+			PlatformView.UpdateMenuItems(visibleItems, MauiContext, BarTextColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
 
 		void UpdateTitleView()

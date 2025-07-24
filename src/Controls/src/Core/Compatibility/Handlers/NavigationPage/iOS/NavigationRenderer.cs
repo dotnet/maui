@@ -1700,9 +1700,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				List<UIBarButtonItem> primaries = null;
 				List<UIBarButtonItem> secondaries = null;
-				var toolbarItems = _tracker.ToolbarItems.Where(item => item.IsVisible);
-				foreach (var item in toolbarItems)
+				
+				foreach (var item in _tracker.ToolbarItems)
 				{
+					if (!item.IsVisible)
+						continue;
+						
 					if (item.Order == ToolbarItemOrder.Secondary)
 						(secondaries = secondaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(true));
 					else
@@ -1710,8 +1713,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				primaries?.Reverse();
-				NavigationItem.SetRightBarButtonItems(primaries == null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
-				ToolbarItems = secondaries == null ? Array.Empty<UIBarButtonItem>() : secondaries.ToArray();
+				NavigationItem.SetRightBarButtonItems(primaries?.ToArray() ?? Array.Empty<UIBarButtonItem>(), false);
+				ToolbarItems = secondaries?.ToArray() ?? Array.Empty<UIBarButtonItem>();
 
 				NavigationRenderer n;
 				if (_navigation.TryGetTarget(out n))
