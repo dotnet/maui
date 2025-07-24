@@ -36,6 +36,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 using Launcher = Windows.System.Launcher;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui;
+
 #endif
 
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
@@ -200,18 +203,41 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		private async Task<bool> TryInitializeWebView2()
 		{
-			var args = new BlazorWebViewInitializingEventArgs();
 #if WEBVIEW2_MAUI
-			_blazorWebViewHandler.VirtualView.BlazorWebViewInitializing(args);
+			// Invoke the WebViewInitializing event to allow custom configuration of the web view
+			var initializingArgs = new WebViewInitializationStartedEventArgs();
+			_blazorWebViewHandler.VirtualView.WebViewInitializationStarted(initializingArgs);
 
+#pragma warning disable CS0618 // Type or member is obsolete
+			// Map new args to old args so old subscribers still get values
+			var legacyArgs = new BlazorWebViewInitializingEventArgs
+			{
+				BrowserExecutableFolder = initializingArgs.BrowserExecutableFolder,
+				UserDataFolder = initializingArgs.UserDataFolder,
+				EnvironmentOptions = initializingArgs.EnvironmentOptions
+			};
+
+			// Raise the old (obsolete) event
+			_blazorWebViewHandler.VirtualView.BlazorWebViewInitializing(legacyArgs);
+
+			// Copy back changes in case legacy handler made changes
+			initializingArgs.BrowserExecutableFolder = legacyArgs.BrowserExecutableFolder;
+			initializingArgs.UserDataFolder = legacyArgs.UserDataFolder;
+			initializingArgs.EnvironmentOptions = legacyArgs.EnvironmentOptions;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+			CoreWebView2ControllerOptions? options = null;
 			try
 			{
 				_coreWebView2Environment = await CoreWebView2Environment.CreateWithOptionsAsync(
-					browserExecutableFolder: args.BrowserExecutableFolder,
-					userDataFolder: args.UserDataFolder,
-					options: args.EnvironmentOptions)
-					.AsTask()
-					.ConfigureAwait(true);
+					browserExecutableFolder: initializingArgs.BrowserExecutableFolder,
+					userDataFolder: initializingArgs.UserDataFolder,
+					options: initializingArgs.EnvironmentOptions);
+
+				options = _coreWebView2Environment.CreateCoreWebView2ControllerOptions();
+				options.ScriptLocale = initializingArgs.ScriptLocale;
+				options.IsInPrivateModeEnabled = initializingArgs.IsInPrivateModeEnabled;
+				options.ProfileName = initializingArgs.ProfileName;
 			}
 			catch (FileNotFoundException)
 			{
@@ -225,11 +251,12 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			}
 
 			_logger.StartingWebView2();
-			await _webview.EnsureCoreWebView2Async();
+			await _webview.EnsureCoreWebView2Async(_coreWebView2Environment, options);
 			_logger.StartedWebView2();
 
 			var developerTools = _blazorWebViewHandler.DeveloperTools;
 #elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
+			var args = new BlazorWebViewInitializingEventArgs();
 			_blazorWebViewInitializing?.Invoke(args);
 			var userDataFolder = args.UserDataFolder ?? GetWebView2UserDataFolder();
 			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync(
@@ -248,10 +275,12 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			ApplyDefaultWebViewSettings(developerTools);
 
 #if WEBVIEW2_MAUI
+#pragma warning disable CS0618 // Type or member is obsolete
 			_blazorWebViewHandler.VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
 			{
 				WebView = _webview,
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
 #elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 			_blazorWebViewInitialized?.Invoke(new BlazorWebViewInitializedEventArgs
 			{
@@ -260,6 +289,12 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #endif
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+
+#if WEBVIEW2_MAUI
+			// Invoke the WebViewInitialized event to signal that the web view has been initialized
+			var initializedArgs = new WebViewInitializationCompletedEventArgs(_webview.CoreWebView2, _webview.CoreWebView2.Settings);
+			_blazorWebViewHandler.VirtualView.WebViewInitializationCompleted(initializedArgs);
+#endif
 
 			_webview.CoreWebView2.WebResourceRequested += async (s, eventArgs) =>
 			{

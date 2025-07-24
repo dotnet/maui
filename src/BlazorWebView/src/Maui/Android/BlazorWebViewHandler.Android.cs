@@ -29,6 +29,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			Logger.CreatingAndroidWebkitWebView();
 
+			// Invoke the WebViewInitializing event to allow custom configuration of the web view
+			var initializingArgs = new WebViewInitializationStartedEventArgs();
+			VirtualView.WebViewInitializationStarted(initializingArgs);
+
 #pragma warning disable CA1416, CA1412, CA1422 // Validate platform compatibility
 			var blazorAndroidWebView = new BlazorAndroidWebView(Context!)
 			{
@@ -54,6 +58,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			_webChromeClient = new BlazorWebChromeClient();
 			blazorAndroidWebView.SetWebChromeClient(_webChromeClient);
+
+			// Invoke the WebViewInitialized event to signal that the web view has been initialized
+			var initializedArgs = new WebViewInitializationCompletedEventArgs(blazorAndroidWebView, blazorAndroidWebView.Settings!);
+			VirtualView?.WebViewInitializationCompleted(initializedArgs);
 
 			Logger.CreatedAndroidWebkitWebView();
 
@@ -140,11 +148,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs());
 			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
 			{
 				WebView = PlatformView,
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (RootComponents != null)
 			{

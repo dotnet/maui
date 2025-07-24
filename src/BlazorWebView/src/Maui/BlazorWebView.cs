@@ -59,11 +59,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <summary>
 		/// Raised before the web view is initialized. On some platforms this enables customizing the web view configuration.
 		/// </summary>
+		[Obsolete("Use WebViewInitializing instead.")]
 		public event EventHandler<BlazorWebViewInitializingEventArgs>? BlazorWebViewInitializing;
 
 		/// <summary>
 		/// Raised after the web view is initialized but before any component has been rendered. The event arguments provide the instance of the platform-specific web view control.
 		/// </summary>
+		[Obsolete("Use WebViewInitialized instead.")]
 		public event EventHandler<BlazorWebViewInitializedEventArgs>? BlazorWebViewInitialized;
 
 		/// <summary>
@@ -77,6 +79,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// method to provide a response to the request.
 		/// </summary>
 		public event EventHandler<WebViewWebResourceRequestedEventArgs>? WebResourceRequested;
+
+		/// <summary>
+		/// Raised when the web view is initializing. This event allows the application to perform additional configuration.
+		/// </summary>
+		public event EventHandler<WebViewInitializingEventArgs>? WebViewInitializing;
+
+		/// <summary>
+		/// Raised when the web view has been initialized.
+		/// </summary>
+		public event EventHandler<WebViewInitializedEventArgs>? WebViewInitialized;
 
 		/// <inheritdoc />
 #if ANDROID
@@ -115,10 +127,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			UrlLoading?.Invoke(this, args);
 
 		/// <inheritdoc />
+		[Obsolete("Use IInitializationAwareWebView.WebViewInitializationStarted instead.")]
 		void IBlazorWebView.BlazorWebViewInitializing(BlazorWebViewInitializingEventArgs args) =>
 			BlazorWebViewInitializing?.Invoke(this, args);
 
 		/// <inheritdoc />
+		[Obsolete("Use IInitializationAwareWebView.WebViewInitializationCompleted instead.")]
 		void IBlazorWebView.BlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args) =>
 			BlazorWebViewInitialized?.Invoke(this, args);
 
@@ -129,6 +143,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var e = new WebViewWebResourceRequestedEventArgs(platformArgs);
 			WebResourceRequested?.Invoke(this, e);
 			return e.Handled;
+		}
+
+		/// <inheritdoc/>
+		void IInitializationAwareWebView.WebViewInitializationStarted(WebViewInitializationStartedEventArgs args)
+		{
+			var platformArgs = new PlatformWebViewInitializingEventArgs(args);
+			var e = new WebViewInitializingEventArgs(platformArgs);
+			WebViewInitializing?.Invoke(this, e);
+		}
+
+		/// <inheritdoc/>
+		void IInitializationAwareWebView.WebViewInitializationCompleted(WebViewInitializationCompletedEventArgs args)
+		{
+			var platformArgs = new PlatformWebViewInitializedEventArgs(args);
+			var e = new WebViewInitializedEventArgs(platformArgs);
+			WebViewInitialized?.Invoke(this, e);
 		}
 	}
 }

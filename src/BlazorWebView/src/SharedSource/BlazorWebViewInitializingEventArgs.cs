@@ -21,6 +21,9 @@ namespace Microsoft.AspNetCore.Components.WebView
 	/// <summary>
 	/// Allows configuring the underlying web view when the application is initializing.
 	/// </summary>
+#if WEBVIEW2_MAUI
+	[Obsolete("Use WebViewInitializingEventArgs instead.")]
+#endif
 	public class BlazorWebViewInitializingEventArgs : EventArgs
 	{
 #nullable disable

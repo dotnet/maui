@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// <summary>
 	/// Defines a contract for a view that renders Blazor content.
 	/// </summary>
-	public interface IBlazorWebView : IView, IWebRequestInterceptingWebView
+	public interface IBlazorWebView : IView, IWebRequestInterceptingWebView, IInitializationAwareWebView
 	{
 		/// <summary>
 		/// Gets the path to the HTML file to render.
@@ -54,12 +54,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// Notifies the control that the BlazorWebViewInitializing event should be raised with the specified <paramref name="args"/>.
 		/// </summary>
 		/// <param name="args">The arguments for the event.</param>
+		[Obsolete("Use WebViewInitializationStarted instead.")]
 		void BlazorWebViewInitializing(BlazorWebViewInitializingEventArgs args);
 
 		/// <summary>
 		/// Notifies the control that the BlazorWebViewInitialized event should be raised with the specified <paramref name="args"/>.
 		/// </summary>
 		/// <param name="args">The arguments for the event.</param>
+		[Obsolete("Use WebViewInitializationCompleted instead.")]
 		void BlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args);
 	}
 }

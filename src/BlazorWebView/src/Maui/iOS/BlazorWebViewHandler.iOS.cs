@@ -77,10 +77,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				config.MediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypes.None;
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs()
 			{
 				Configuration = config
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(MessageReceived), "webwindowinterop");
 			config.UserContentController.AddUserScript(new WKUserScript(
@@ -88,6 +90,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
+
+			// Invoke the WebViewInitializing event to allow custom configuration of the web view
+			var initializingArgs = new WebViewInitializationStartedEventArgs(config);
+			VirtualView.WebViewInitializationStarted(initializingArgs);
 
 			var webview = new WKWebView(RectangleF.Empty, config)
 			{
@@ -107,10 +113,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
 			{
 				WebView = webview
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			// Disable bounce scrolling to make Blazor apps feel more native
 			if (webview.ScrollView != null)
@@ -119,6 +127,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				webview.ScrollView.AlwaysBounceVertical = false;
 				webview.ScrollView.AlwaysBounceHorizontal = false;
 			}
+
+			// Invoke the WebViewInitialized event to signal that the web view has been initialized
+			var initializedArgs = new WebViewInitializationCompletedEventArgs(webview, config);
+			VirtualView.WebViewInitializationCompleted(initializedArgs);
 
 			Logger.CreatedWebKitWKWebView();
 
