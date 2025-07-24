@@ -104,46 +104,12 @@ public partial class MapOptionsPage : ContentPage
 
     private void SetupSampleItemTemplate()
     {
-        // Create a sample DataTemplate for pins
-        var pinTemplate = new DataTemplate(() =>
-        {
-            var pin = new Pin();
-            pin.SetBinding(Pin.LabelProperty, "Label");
-            pin.SetBinding(Pin.AddressProperty, "Address");
-            pin.SetBinding(Pin.LocationProperty, "Location");
-            pin.SetBinding(Pin.TypeProperty, "Type");
-            return pin;
-        });
-
-        _viewModel.ItemTemplate = pinTemplate;
-
-        // Create sample templates for the selector
-        var genericTemplate = new DataTemplate(() =>
-        {
-            var pin = new Pin { Type = PinType.Generic };
-            pin.SetBinding(Pin.LabelProperty, "Label");
-            pin.SetBinding(Pin.AddressProperty, "Address");
-            pin.SetBinding(Pin.LocationProperty, "Location");
-            return pin;
-        });
-
-        var placeTemplate = new DataTemplate(() =>
-        {
-            var pin = new Pin { Type = PinType.Place };
-            pin.SetBinding(Pin.LabelProperty, "Label");
-            pin.SetBinding(Pin.AddressProperty, "Address");
-            pin.SetBinding(Pin.LocationProperty, "Location");
-            return pin;
-        });
-
-        // Setup ItemTemplateSelector
-        var templateSelector = new SamplePinTemplateSelector
-        {
-            GenericTemplate = genericTemplate,
-            PlaceTemplate = placeTemplate
-        };
-
-        _viewModel.ItemTemplateSelector = templateSelector;
+        // Templates are now set via UI controls
+        // SetItemTemplateButton_Clicked and SetTemplateSelectorButton_Clicked
+        // handle the creation of ItemTemplate and ItemTemplateSelector
+        
+        // This method can be kept for reference or removed in future iterations
+        // The actual template setup is now user-controlled via the UI
     }
 
     private void ApplyButton_Clicked(object sender, EventArgs e)
@@ -271,6 +237,188 @@ public partial class MapOptionsPage : ContentPage
         _viewModel.ItemsSource = null;
     }
 
+    private void SetItemTemplateButton_Clicked(object sender, EventArgs e)
+    {
+        // Create a sample DataTemplate using a Grid to render pin info
+        var pinTemplate = new DataTemplate(() =>
+        {
+            var grid = new Grid
+            {
+                Padding = new Thickness(8),
+                ColumnDefinitions =
+                {
+                    new ColumnDefinition { Width = GridLength.Auto },
+                    new ColumnDefinition { Width = GridLength.Star }
+                },
+                RowDefinitions =
+                {
+                    new RowDefinition { Height = GridLength.Auto },
+                    new RowDefinition { Height = GridLength.Auto }
+                }
+            };
+
+            var label = new Label
+            {
+                FontAttributes = FontAttributes.Bold,
+                TextColor = Colors.Black
+            };
+            label.SetBinding(Label.TextProperty, "Label");
+            grid.Add(label, 0, 0);
+
+            var address = new Label
+            {
+                FontSize = 12,
+                TextColor = Colors.Gray
+            };
+            address.SetBinding(Label.TextProperty, "Address");
+            grid.Add(address, 0, 1);
+
+            var location = new Label
+            {
+                FontSize = 10,
+                TextColor = Colors.DarkGray
+            };
+            location.SetBinding(Label.TextProperty, new Binding("Location", stringFormat: "Lat: {0.Latitude:F4}, Lng: {0.Longitude:F4}"));
+            grid.Add(location, 1, 0);
+            Grid.SetRowSpan(location, 2);
+
+            return grid;
+        });
+
+        _viewModel.ItemTemplate = pinTemplate;
+
+        // Ensure ItemsSource is set for the template to work
+        if (_viewModel.ItemsSource == null)
+        {
+            _viewModel.ItemsSource = _viewModel.Pins;
+        }
+    }
+
+    private void ClearItemTemplateButton_Clicked(object sender, EventArgs e)
+    {
+        // Clear the ItemTemplate
+        _viewModel.ItemTemplate = null;
+    }
+
+    private void SetTemplateSelectorButton_Clicked(object sender, EventArgs e)
+    {
+        // Create sample templates for the selector using Grid with red background
+        var genericTemplate = new DataTemplate(() =>
+        {
+            var grid = new Grid
+            {
+                BackgroundColor = Colors.Red,
+                Padding = new Thickness(8),
+                ColumnDefinitions =
+                {
+                    new ColumnDefinition { Width = GridLength.Auto },
+                    new ColumnDefinition { Width = GridLength.Star }
+                },
+                RowDefinitions =
+                {
+                    new RowDefinition { Height = GridLength.Auto },
+                    new RowDefinition { Height = GridLength.Auto }
+                }
+            };
+
+            var label = new Label
+            {
+                FontAttributes = FontAttributes.Bold,
+                TextColor = Colors.White,
+                Text = "[Generic]"
+            };
+            label.SetBinding(Label.TextProperty, "Label");
+            grid.Add(label, 0, 0);
+
+            var address = new Label
+            {
+                FontSize = 12,
+                TextColor = Colors.White
+            };
+            address.SetBinding(Label.TextProperty, "Address");
+            grid.Add(address, 0, 1);
+
+            var location = new Label
+            {
+                FontSize = 10,
+                TextColor = Colors.White
+            };
+            location.SetBinding(Label.TextProperty, new Binding("Location", stringFormat: "Lat: {0.Latitude:F4}, Lng: {0.Longitude:F4}"));
+            grid.Add(location, 1, 0);
+            Grid.SetRowSpan(location, 2);
+
+            return grid;
+        });
+
+        var placeTemplate = new DataTemplate(() =>
+        {
+            var grid = new Grid
+            {
+                BackgroundColor = Colors.DarkRed,
+                Padding = new Thickness(8),
+                ColumnDefinitions =
+                {
+                    new ColumnDefinition { Width = GridLength.Auto },
+                    new ColumnDefinition { Width = GridLength.Star }
+                },
+                RowDefinitions =
+                {
+                    new RowDefinition { Height = GridLength.Auto },
+                    new RowDefinition { Height = GridLength.Auto }
+                }
+            };
+
+            var label = new Label
+            {
+                FontAttributes = FontAttributes.Bold,
+                TextColor = Colors.Yellow,
+                Text = "[Place]"
+            };
+            label.SetBinding(Label.TextProperty, "Label");
+            grid.Add(label, 0, 0);
+
+            var address = new Label
+            {
+                FontSize = 12,
+                TextColor = Colors.Yellow
+            };
+            address.SetBinding(Label.TextProperty, "Address");
+            grid.Add(address, 0, 1);
+
+            var location = new Label
+            {
+                FontSize = 10,
+                TextColor = Colors.Yellow
+            };
+            location.SetBinding(Label.TextProperty, new Binding("Location", stringFormat: "Lat: {0.Latitude:F4}, Lng: {0.Longitude:F4}"));
+            grid.Add(location, 1, 0);
+            Grid.SetRowSpan(location, 2);
+
+            return grid;
+        });
+
+        // Setup ItemTemplateSelector
+        var templateSelector = new SamplePinTemplateSelector
+        {
+            GenericTemplate = genericTemplate,
+            PlaceTemplate = placeTemplate
+        };
+
+        _viewModel.ItemTemplateSelector = templateSelector;
+        
+        // Ensure ItemsSource is set for the template selector to work
+        if (_viewModel.ItemsSource == null)
+        {
+            _viewModel.ItemsSource = _viewModel.Pins;
+        }
+    }
+
+    private void ClearTemplateSelectorButton_Clicked(object sender, EventArgs e)
+    {
+        // Clear the ItemTemplateSelector
+        _viewModel.ItemTemplateSelector = null;
+    }
+
     private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(_viewModel.VisibleRegion))
@@ -281,20 +429,24 @@ public partial class MapOptionsPage : ContentPage
 
     private void UpdateVisibleRegionDisplay()
     {
+        // RegionDetailsLabel is commented out in XAML, so no UI update needed
+        // This method can be used for debugging or future implementation
         if (_viewModel.VisibleRegion != null)
         {
             var region = _viewModel.VisibleRegion;
-            RegionDetailsLabel.Text = $"Lat: {region.Center.Latitude:F4}, Lng: {region.Center.Longitude:F4}, " +
-                                      $"LatDeg: {region.LatitudeDegrees:F4}, LngDeg: {region.LongitudeDegrees:F4}";
-        }
-        else
-        {
-            RegionDetailsLabel.Text = "Latitude: --, Longitude: --, Radius: --";
+            // Could log or store region info for debugging: 
+            // $"Lat: {region.Center.Latitude:F4}, Lng: {region.Center.Longitude:F4}, LatDeg: {region.LatitudeDegrees:F4}, LngDeg: {region.LongitudeDegrees:F4}"
         }
     }
 
     private void ZoomInButton_Clicked(object sender, EventArgs e)
     {
+        // Only allow zoom if IsZoomEnabled is checked
+        if (!_viewModel.IsZoomEnabled)
+        {
+            return; // Don't zoom if zoom is disabled
+        }
+
         // Zoom in by reducing the radius by half
         if (_viewModel.VisibleRegion != null)
         {
@@ -306,6 +458,12 @@ public partial class MapOptionsPage : ContentPage
 
     private void ZoomOutButton_Clicked(object sender, EventArgs e)
     {
+        // Only allow zoom if IsZoomEnabled is checked
+        if (!_viewModel.IsZoomEnabled)
+        {
+            return; // Don't zoom if zoom is disabled
+        }
+
         // Zoom out by doubling the radius
         if (_viewModel.VisibleRegion != null)
         {

@@ -38,6 +38,16 @@ public partial class MapControlMainPage : ContentPage
 		// Set initial map region to Pearl City
 		TestMap.MoveToRegion(_viewModel.InitialRegion);
 
+		// Ensure ItemTemplate and ItemTemplateSelector are synchronized with ViewModel
+		if (_viewModel.ItemTemplate != null)
+		{
+			TestMap.ItemTemplate = _viewModel.ItemTemplate;
+		}
+		if (_viewModel.ItemTemplateSelector != null)
+		{
+			TestMap.ItemTemplateSelector = _viewModel.ItemTemplateSelector;
+		}
+
 		// Subscribe to map events to sync VisibleRegion back to ViewModel
 		TestMap.PropertyChanged += OnMapPropertyChanged;
 	}
@@ -110,6 +120,16 @@ public partial class MapControlMainPage : ContentPage
 					TestMap.Pins.Add(pin);
 				}
 			}
+		}
+		else if (e.PropertyName == nameof(_viewModel.ItemTemplate))
+		{
+			// When ItemTemplate changes in ViewModel, update the actual Map
+			TestMap.ItemTemplate = _viewModel.ItemTemplate;
+		}
+		else if (e.PropertyName == nameof(_viewModel.ItemTemplateSelector))
+		{
+			// When ItemTemplateSelector changes in ViewModel, update the actual Map
+			TestMap.ItemTemplateSelector = _viewModel.ItemTemplateSelector;
 		}
 		else if (e.PropertyName == nameof(_viewModel.VisibleRegion))
 		{

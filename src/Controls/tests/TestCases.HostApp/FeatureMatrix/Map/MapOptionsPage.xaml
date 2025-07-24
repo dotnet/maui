@@ -11,8 +11,8 @@
                              AutomationId="Apply"/>
         </ContentPage.ToolbarItems>
 
-        <Grid Padding="15"
-              RowSpacing="10"
+        <Grid Padding="5"
+              RowSpacing="15"
               ColumnSpacing="15">
                 <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -31,7 +31,7 @@
                 <!-- Boolean Properties Section - Left Column -->
                 <StackLayout Grid.Row="0"
                              Grid.Column="0"
-                             Spacing="8">
+                             Spacing="1">
                         <Label Text="Map Behavior Options"
                                FontSize="16"
                                FontAttributes="Bold"/>
@@ -80,7 +80,7 @@
                 <!-- MapType Section - Right Column -->
                 <StackLayout Grid.Row="0"
                              Grid.Column="1"
-                             Spacing="8">
+                             Spacing="4">
                         <Label Text="Map Type"
                                FontSize="16"
                                FontAttributes="Bold"/>
@@ -111,7 +111,7 @@
                 <!-- Collections Section - Left Column -->
                 <StackLayout Grid.Row="1"
                              Grid.Column="0"
-                             Spacing="5">
+                             Spacing="3">
                         <Label Text="Map Collections"
                                FontSize="16"
                                FontAttributes="Bold"/>
@@ -133,7 +133,7 @@
                 <!-- Map Elements Section - Right Column -->
                 <StackLayout Grid.Row="1"
                              Grid.Column="1"
-                             Spacing="5">
+                             Spacing="3">
                         <Label Text="Map Elements"
                                FontSize="16"
                                FontAttributes="Bold"/>
@@ -180,7 +180,45 @@
                         <Label Text="{Binding ItemsSource, StringFormat='ItemsSource: {0}'}"
                                FontSize="10"
                                TextColor="Gray"/>
-                        <Label Text="ItemTemplate &amp; Selector: Set programmatically"
+
+                        <!-- ItemTemplate Section -->
+                        <Grid ColumnDefinitions="*,*"
+                              ColumnSpacing="10">
+                                <Button Grid.Column="0"
+                                        Text="Set ItemTemplate"
+                                        x:Name="SetItemTemplateButton"
+                                        Clicked="SetItemTemplateButton_Clicked"
+                                        AutomationId="SetItemTemplateButton"
+                                        FontSize="11"/>
+                                <Button Grid.Column="1"
+                                        Text="Clear ItemTemplate"
+                                        x:Name="ClearItemTemplateButton"
+                                        Clicked="ClearItemTemplateButton_Clicked"
+                                        AutomationId="ClearItemTemplateButton"
+                                        FontSize="11"/>
+                        </Grid>
+
+                        <!-- ItemTemplateSelector Section -->
+                        <Grid ColumnDefinitions="*,*"
+                              ColumnSpacing="10">
+                                <Button Grid.Column="0"
+                                        Text="Set TemplateSelector"
+                                        x:Name="SetTemplateSelectorButton"
+                                        Clicked="SetTemplateSelectorButton_Clicked"
+                                        AutomationId="SetTemplateSelectorButton"
+                                        FontSize="11"/>
+                                <Button Grid.Column="1"
+                                        Text="Clear TemplateSelector"
+                                        x:Name="ClearTemplateSelectorButton"
+                                        Clicked="ClearTemplateSelectorButton_Clicked"
+                                        AutomationId="ClearTemplateSelectorButton"
+                                        FontSize="11"/>
+                        </Grid>
+
+                        <Label Text="{Binding ItemTemplate, StringFormat='ItemTemplate: {0}'}"
+                               FontSize="10"
+                               TextColor="Gray"/>
+                        <Label Text="{Binding ItemTemplateSelector, StringFormat='ItemTemplateSelector: {0}'}"
                                FontSize="10"
                                TextColor="Gray"/>
                 </StackLayout>
@@ -193,11 +231,11 @@
                         <Label Text="Visible Region"
                                FontSize="16"
                                FontAttributes="Bold"/>
-
+<!-- 
                         <Label x:Name="VisibleRegionLabel"
                                Text="{Binding VisibleRegion, StringFormat='Center: {0}'}"
                                FontSize="10"
-                               TextColor="Gray"/>
+                               TextColor="Gray"/> -->
 
                         <Grid ColumnDefinitions="*,*"
                               ColumnSpacing="10">
@@ -231,10 +269,10 @@
                                         FontSize="11"/>
                         </Grid>
 
-                        <Label x:Name="RegionDetailsLabel"
-                               Text="Latitude: --, Longitude: --, Radius: --"
+                        <!-- <Label x:Name="RegionDetailsLabel"
+                               Text="Latitude: , Longitude: , Radius: "
                                FontSize="10"
-                               TextColor="Gray"/>
+                               TextColor="Gray"/> -->
                 </StackLayout>
         </Grid>
 </ContentPage>
