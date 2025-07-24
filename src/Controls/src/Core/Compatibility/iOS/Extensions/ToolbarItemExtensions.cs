@@ -29,15 +29,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		internal static SecondarySubToolbarItem ToSecondarySubToolbarItem(this ToolbarItem item)
 		{
+			var weakItem = new WeakReference<ToolbarItem>(item);
+
 			var action = UIAction.Create(item.Text, null, null, _ =>
 			{
-				if (item is IMenuItemController menuItemController)
+				if (weakItem.TryGetTarget(out var targetItem))
 				{
-					menuItemController.Activate();
-				}
-				else
-				{
-					item.Command?.Execute(item.CommandParameter);
+					if (targetItem is IMenuItemController menuItemController)
+					{
+						menuItemController.Activate();
+					}
+					else
+					{
+						targetItem.Command?.Execute(targetItem.CommandParameter);
+					}
 				}
 			});
 

@@ -273,6 +273,10 @@
                                       Condition="'$(MauiNamescopesSupported)' != ''"
                                       Value="$(MauiNamescopesSupported)"
                                       Trim="true" />      
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableDiagnostics"
+                                      Condition="'$(EnableDiagnostics)' != ''"
+                                      Value="$(EnableDiagnostics)"
+                                      Trim="true" />
     </ItemGroup>
   </Target>
 </Project>

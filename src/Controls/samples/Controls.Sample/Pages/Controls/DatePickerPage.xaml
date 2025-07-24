@@ -97,6 +97,13 @@
                 Date="{x:Null}"/>
         <Button Text="Set to null" Clicked="SetDatePickerToNull" />
         <Button Text="Set to today" Clicked="SetDatePickerToToday" />
+      <Label      
+               Text="IsOpen"
+               Style="{StaticResource Headline}"/>
+      <DatePicker
+               x:Name="IsOpenDatePicker"/>
+      <Button Text="Open DatePicker" Clicked="OnOpenClicked" />
+      <Button Text="Close DatePicker" Clicked="OnCloseClicked" />
     </VerticalStackLayout>
     </views:BasePage.Content>               
 </views:BasePage>

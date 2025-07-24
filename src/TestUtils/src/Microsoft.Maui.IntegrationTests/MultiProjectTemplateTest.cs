@@ -6,9 +6,8 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 	[Test]
 	[TestCase("Debug", "simplemulti")]
 	[TestCase("Release", "simplemulti")]
-	//TODO: Reenable when we have a fix for the issue https://github.com/dotnet/maui/issues/30351
-	// [TestCase("Debug", "MultiProject@Symbol & More")]
-	// [TestCase("Release", "MultiProject@Symbol & More")]
+	[TestCase("Debug", "MultiProject@Symbol & More")]
+	[TestCase("Release", "MultiProject@Symbol & More")]
 	public void BuildMultiProject(string config, string projectName)
 	{
 		var projectDir = Path.Combine(TestDirectory, projectName);

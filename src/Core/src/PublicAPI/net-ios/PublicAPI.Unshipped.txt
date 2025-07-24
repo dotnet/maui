@@ -28,12 +28,18 @@ Microsoft.Maui.Hosting.MauiHostEnvironment.EnvironmentName.set -> void
 Microsoft.Maui.Hosting.MauiHostEnvironment.MauiHostEnvironment() -> void
 *REMOVED*Microsoft.Maui.IDatePicker.Date.get -> System.DateTime
 Microsoft.Maui.IDatePicker.Date.get -> System.DateTime?
+Microsoft.Maui.IDatePicker.IsOpen.get -> bool
+Microsoft.Maui.IDatePicker.IsOpen.set -> void
 *REMOVED*Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
+Microsoft.Maui.IPicker.IsOpen.get -> bool
+Microsoft.Maui.IPicker.IsOpen.set -> void
 Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
 Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.ITimePicker.IsOpen.get -> bool
+Microsoft.Maui.ITimePicker.IsOpen.set -> void
 *REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
 Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
 Microsoft.Maui.IWebRequestInterceptingWebView
