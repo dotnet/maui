@@ -117,7 +117,7 @@ public class ToolbarFeatureTests : UITest
 		App.WaitForMoreButton();
 		App.TapMoreButton();
 		App.WaitForElement("Test Secondary (1)");
-		App.Tap("Test Secondary (1)");
+		CloseSecondaryToolbarMenu();
 	}
 
 	[Test, Order(9)]
@@ -132,12 +132,67 @@ public class ToolbarFeatureTests : UITest
 		App.TapMoreButton();
 		App.WaitForElement("Test Secondary (2)");
 		App.Tap("Test Secondary (2)");
-		App.WaitForElement("Test Secondary (2)");// After tapping the toolbar Still it shows the toolbar item it is in disabled state.
-		App.Tap("Test Secondary (1)"); // To close the ToolbarItem menu
+		App.WaitForElement("Test Secondary (2)");// The toolbar item it is in disabled state.
+		CloseSecondaryToolbarMenu();
 	}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/30675
 	[Test, Order(10)]
+	[Category(UITestCategories.ToolbarItem)]
+	public void VerifyToolBar_MultiplePrimaryItems()
+	{
+		// Test both primary toolbar items
+		App.WaitForElement("Test (1)");
+		App.Tap("Test (1)");
+		var menuLabel1 = App.FindElement("MenuLabel").GetText();
+		Assert.That(menuLabel1, Is.EqualTo("You clicked on ToolbarItem: Test (1)"));
+
+		App.WaitForElement("Test (2)");
+		App.Tap("Test (2)");
+		var menuLabel2 = App.FindElement("MenuLabel").GetText();
+		Assert.That(menuLabel2, Is.EqualTo("You clicked on ToolbarItem: Test (2)"));
+	}
+
+#if TEST_FAILS_ON_WINDOWS // When running on Windows, the test fails because tapping the Secondary Toolbar a second time results in a QA.Selenium.ElementNotFoundException.
+	[Test, Order(11)]
+	[Category(UITestCategories.ToolbarItem)]
+	public void VerifyToolBar_PrimaryAndSecondaryInteraction()
+	{
+		// Click primary first
+		App.WaitForElement("Test (1)");
+		App.Tap("Test (1)");
+
+		// Then click secondary
+		App.WaitForMoreButton();
+		App.TapMoreButton();
+		App.WaitForElement("Test Secondary (1)");
+		App.Tap("Test Secondary (1)");
+
+		var menuLabel = App.FindElement("MenuLabel").GetText();
+		Assert.That(menuLabel, Is.EqualTo("You clicked on ToolbarItem: Test Secondary (1)"));
+	}
+
+	[Test, Order(12)]
+	[Category(UITestCategories.ToolbarItem)]
+	public void VerifyToolBar_MultipleSecondaryInteractions()
+	{
+		App.WaitForMoreButton();
+		App.TapMoreButton();
+		// Click on the secondary toolbar item
+		App.WaitForElement("Test Secondary (1)");
+		App.Tap("Test Secondary (1)");
+		var menuLabel = App.FindElement("MenuLabel").GetText();
+		Assert.That(menuLabel, Is.EqualTo("You clicked on ToolbarItem: Test Secondary (1)"));
+		App.WaitForMoreButton();
+		App.TapMoreButton();
+		App.WaitForElement("Test Secondary (4)");
+		App.Tap("Test Secondary (4)");
+		var menuLabel2 = App.FindElement("MenuLabel").GetText();
+		Assert.That(menuLabel2, Is.EqualTo("You clicked on ToolbarItem: Test Secondary (4)"));
+	}
+#endif
+
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/30675
+	[Test, Order(13)]
 	[Category(UITestCategories.ToolbarItem)]
 	public void VerifySecondaryToolBar_IconAppearance()
 	{
@@ -147,4 +202,13 @@ public class ToolbarFeatureTests : UITest
 		VerifyScreenshot();
 	}
 #endif
+
+	public void CloseSecondaryToolbarMenu() // This method is used to close the secondary toolbar menu  
+	{
+#if WINDOWS
+		App.Tap("MenuLabel");  
+#else
+		App.Tap("Test Secondary (1)");
+#endif
+	}
 }
