@@ -53,7 +53,7 @@ public partial class DatePickerHandler : ViewHandler<IDatePicker, CalendarDatePi
 		handler.PlatformView.UpdateTextColor(datePicker);
 	}
 
-	private void DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
+	void DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
 	{
 		if (VirtualView is null)
 		{
@@ -66,7 +66,7 @@ public partial class DatePickerHandler : ViewHandler<IDatePicker, CalendarDatePi
 			return;
 		}
 
-		if (VirtualView.Date is null)
+		if (VirtualView.Date != args.NewDate.Value.DateTime)
 		{
 			VirtualView.Date = args.NewDate.Value.DateTime;
 		}
