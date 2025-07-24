@@ -39,6 +39,9 @@ Microsoft.Maui.IDatePicker.IsOpen.set -> void
 Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
+Microsoft.Maui.IInitializationAwareWebView
+Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationCompleted(Microsoft.Maui.WebViewInitializationCompletedEventArgs! args) -> void
+Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationStarted(Microsoft.Maui.WebViewInitializationStartedEventArgs! args) -> void
 Microsoft.Maui.IPicker.IsOpen.get -> bool
 Microsoft.Maui.IPicker.IsOpen.set -> void
 Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
@@ -94,6 +97,10 @@ Microsoft.Maui.WebResourceRequestedEventArgs.Request.get -> Android.Webkit.IWebR
 Microsoft.Maui.WebResourceRequestedEventArgs.Response.get -> Android.Webkit.WebResourceResponse?
 Microsoft.Maui.WebResourceRequestedEventArgs.Response.set -> void
 Microsoft.Maui.WebResourceRequestedEventArgs.Sender.get -> Android.Webkit.WebView!
+Microsoft.Maui.WebViewInitializationCompletedEventArgs
+Microsoft.Maui.WebViewInitializationCompletedEventArgs.Sender.get -> Android.Webkit.WebView!
+Microsoft.Maui.WebViewInitializationCompletedEventArgs.Settings.get -> Android.Webkit.WebSettings!
+Microsoft.Maui.WebViewInitializationStartedEventArgs
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
