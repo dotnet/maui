@@ -15,10 +15,12 @@
 
   <windows:ColorConverter x:Key="ColorConverter" />
 
+  <x:Double x:Key="FlyoutMinWidth">350</x:Double>
+
   <Style x:Key="MauiFlyoutPresenterStyle" TargetType="FlyoutPresenter">
     <Setter Property="MaxHeight" Value="{x:Null}" />
     <Setter Property="MaxWidth" Value="{x:Null}" />
-    <Setter Property="MinWidth" Value="350"/>
+    <Setter Property="MinWidth" Value="{StaticResource FlyoutMinWidth}"/>
     <Setter Property="HorizontalAlignment" Value="Center"/>
     <Setter Property="VerticalAlignment" Value="Center"/>
     <Setter Property="Template">
@@ -35,7 +37,7 @@
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}">
-            <ScrollViewer x:Name="ScrollViewer"
+            <ScrollViewer x:Name="FlyoutScrollViewer"
                           AutomationProperties.AccessibilityView="Raw"
                           HorizontalScrollBarVisibility="Disabled"
                           HorizontalScrollMode="Disabled"
