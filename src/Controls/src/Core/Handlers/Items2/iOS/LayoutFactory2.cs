@@ -378,6 +378,11 @@ internal static class LayoutFactory2
 
 						var goToIndexPath = cv2Controller.GetScrollToIndexPath(carouselPosition);
 
+						if (!IsIndexPathValid(goToIndexPath, cv2Controller.CollectionView))
+						{
+							return;
+						}
+
 						//This will move the carousel to fake the loop
 						cv2Controller.CollectionView.ScrollToItem(
 							NSIndexPath.FromItemSection(pageIndex, 0),
@@ -396,6 +401,26 @@ internal static class LayoutFactory2
 		return layout;
 	}
 #nullable enable
+
+	public static bool IsIndexPathValid(NSIndexPath indexPath, UICollectionView collectionView)
+	{
+		if (indexPath.Item < 0 || indexPath.Section < 0)
+		{
+			return false;
+		}
+
+		if (indexPath.Section >= collectionView.NumberOfSections())
+		{
+			return false;
+		}
+
+		if (indexPath.Item >= collectionView.NumberOfItemsInSection(indexPath.Section))
+		{
+			return false;
+		}
+
+		return true;
+	}
 	class CustomUICollectionViewCompositionalLayout : UICollectionViewCompositionalLayout
 	{
 		LayoutSnapInfo _snapInfo;
