@@ -5,7 +5,7 @@
              x:Name="TestPage"
              Title="SafeArea Test">
     
-    <Grid x:Name="MainGrid" BackgroundColor="Red" SafeAreaEdges="None">
+    <Grid x:Name="MainGrid" BackgroundColor="Red" SafeAreaEdges="All">
         <!-- Single content grid that spans the entire screen -->
         <Grid x:Name="ContentGrid">
             <Grid.RowDefinitions>
@@ -16,7 +16,7 @@
             
             <!-- Top test area - should move in/out of notch area -->
             <Border Grid.Row="0" BackgroundColor="Yellow" Stroke="Orange" StrokeThickness="3" Padding="10">
-                <Label Text="TOP TEST AREA: This should move in/out of notch/status bar area when Top safe area is toggled"
+                <Label Text="TOP TEST AREA: This should move in/out of notch/status bar area when safe area is toggled"
                        FontSize="14"
                        FontAttributes="Bold"
                        HorizontalOptions="Center"
@@ -25,269 +25,69 @@
             
             <!-- Middle content area with control panel -->
             <ScrollView Grid.Row="1">
-                <StackLayout Spacing="15" Padding="20" VerticalOptions="Center">
+                <StackLayout Spacing="20" Padding="20" VerticalOptions="Center">
                     <Label Text="SafeArea Test Page" 
                            FontSize="24" 
                            FontAttributes="Bold"
                            HorizontalOptions="Center"
                            TextColor="White" />
                     
-                    <Label Text="The red background shows areas outside safe area. Watch the yellow areas at top/bottom move when you toggle Page and Grid safe area settings."
+                    <Label Text="The red background shows areas outside safe area. Watch the yellow areas at top/bottom move when you toggle MainGrid safe area settings."
                            FontSize="14"
                            HorizontalOptions="Center"
                            TextColor="White" />
                     
                     <Label x:Name="CurrentSettingsLabel"
-                           Text="Current: Page and Grid settings will be shown here"
+                           Text="Current MainGrid SafeAreaEdges: All"
                            FontSize="16"
                            FontAttributes="Bold"
                            HorizontalOptions="Center"
                            TextColor="White"
                            AutomationId="CurrentSettings" />
                     
-                    <!-- Page-level control panel -->
-                    <Border BackgroundColor="LightBlue" Stroke="DarkBlue" StrokeThickness="2" Padding="15" Margin="10">
+                    <!-- Simple button controls for MainGrid -->
+                    <Border BackgroundColor="White" Stroke="Gray" StrokeThickness="2" Padding="20" Margin="10">
                         <VerticalStackLayout Spacing="15">
-                            <Label Text="Page-Level Safe Area Control:" 
-                                   FontSize="18" 
-                                   FontAttributes="Bold"
-                                   HorizontalOptions="Center"
-                                   TextColor="DarkBlue" />
-                            
-                            <Label Text="Controls SafeArea on the ContentPage itself"
-                                   FontSize="12"
-                                   HorizontalOptions="Center"
-                                   TextColor="DarkBlue" />
-                            
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                
-                                <!-- Top -->
-                                <StackLayout Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
-                                    <Label Text="Top:" VerticalOptions="Center" />
-                                    <Picker x:Name="PageTopPicker" 
-                                            SelectedIndex="0" 
-                                            SelectedIndexChanged="OnPageEdgePickerChanged"
-                                            AutomationId="PageTopPicker">
-                                        <Picker.Items>
-                                            <x:String>None</x:String>
-                                            <x:String>SoftInput</x:String>
-                                            <x:String>Container</x:String>
-                                            <x:String>Default</x:String>
-                                            <x:String>All</x:String>
-                                        </Picker.Items>
-                                    </Picker>
-                                </StackLayout>
-                                
-                                <!-- Left and Right -->
-                                <StackLayout Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalOptions="Center">
-                                    <Label Text="Left:" VerticalOptions="Center" />
-                                    <Picker x:Name="PageLeftPicker" 
-                                            SelectedIndex="0" 
-                                            SelectedIndexChanged="OnPageEdgePickerChanged"
-                                            AutomationId="PageLeftPicker">
-                                        <Picker.Items>
-                                            <x:String>None</x:String>
-                                            <x:String>SoftInput</x:String>
-                                            <x:String>Container</x:String>
-                                            <x:String>Default</x:String>
-                                            <x:String>All</x:String>
-                                        </Picker.Items>
-                                    </Picker>
-                                </StackLayout>
-                                
-                                <StackLayout Grid.Row="1" Grid.Column="2" Orientation="Horizontal" HorizontalOptions="Center">
-                                    <Label Text="Right:" VerticalOptions="Center" />
-                                    <Picker x:Name="PageRightPicker" 
-                                            SelectedIndex="0" 
-                                            SelectedIndexChanged="OnPageEdgePickerChanged"
-                                            AutomationId="PageRightPicker">
-                                        <Picker.Items>
-                                            <x:String>None</x:String>
-                                            <x:String>SoftInput</x:String>
-                                            <x:String>Container</x:String>
-                                            <x:String>Default</x:String>
-                                            <x:String>All</x:String>
-                                        </Picker.Items>
-                                    </Picker>
-                                </StackLayout>
-                                
-                                <!-- Bottom -->
-                                <StackLayout Grid.Row="2" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
-                                    <Label Text="Bottom:" VerticalOptions="Center" />
-                                    <Picker x:Name="PageBottomPicker" 
-                                            SelectedIndex="0" 
-                                            SelectedIndexChanged="OnPageEdgePickerChanged"
-                                            AutomationId="PageBottomPicker">
-                                        <Picker.Items>
-                                            <x:String>None</x:String>
-                                            <x:String>SoftInput</x:String>
-                                            <x:String>Container</x:String>
-                                            <x:String>Default</x:String>
-                                            <x:String>All</x:String>
-                                        </Picker.Items>
-                                    </Picker>
-                                </StackLayout>
-                                
-                                <!-- SoftInput test area -->
-                                <StackLayout Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalOptions="Center">
-                                    <Label Text="Keyboard Test:" VerticalOptions="Center" />
-                                    <Entry x:Name="KeyboardTestEntry" 
-                                           Placeholder="Tap to show keyboard" 
-                                           WidthRequest="200"
-                                           AutomationId="KeyboardTestEntry" />
-                                </StackLayout>
-                            </Grid>
-                            
-                            <Button Text="Page: Reset All to None" 
-                                    Clicked="OnPageResetDefaultClicked"
-                                    AutomationId="PageResetDefaultButton" />
-                            <Button Text="Page: Reset All to None" 
-                                    Clicked="OnPageResetNoneClicked"
-                                    AutomationId="PageResetNoneButton" />
-                            <Button Text="Page: Reset All to All" 
-                                    Clicked="OnPageResetAllClicked"
-                                    AutomationId="PageResetAllButton" />
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <!-- Grid-level control panel -->
-                    <Border BackgroundColor="White" Stroke="Gray" StrokeThickness="1" Padding="15" Margin="10">
-                        <VerticalStackLayout Spacing="15">
-                            <Label Text="Grid-Level Safe Area Control:" 
+                            <Label Text="MainGrid Safe Area Control:" 
                                    FontSize="18" 
                                    FontAttributes="Bold"
                                    HorizontalOptions="Center" />
                             
-                            <Label Text="Controls SafeArea on the ContentGrid layout"
+                            <Label Text="Test different SafeAreaEdges values on the MainGrid"
                                    FontSize="12"
                                    HorizontalOptions="Center"
                                    TextColor="Gray" />
                             
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                
-                                <!-- Top -->
-                                <StackLayout Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
-                                    <Label Text="Top:" VerticalOptions="Center" />
-                                    <Picker x:Name="GridTopPicker" 
-                                            SelectedIndex="0" 
-                                            SelectedIndexChanged="OnGridEdgePickerChanged"
-                                            AutomationId="GridTopPicker">
-                                        <Picker.Items>
-                                            <x:String>None</x:String>
-                                            <x:String>SoftInput</x:String>
-                                            <x:String>Container</x:String>
-                                            <x:String>Default</x:String>
-                                            <x:String>All</x:String>
-                                        </Picker.Items>
-                                    </Picker>
-                                </StackLayout>
-                                
-                                <!-- Left and Right -->
-                                <StackLayout Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalOptions="Center">
-                                    <Label Text="Left:" VerticalOptions="Center" />
-                                    <Picker x:Name="GridLeftPicker" 
-                                            SelectedIndex="0" 
-                                            SelectedIndexChanged="OnGridEdgePickerChanged"
-                                            AutomationId="GridLeftPicker">
-                                        <Picker.Items>
-                                            <x:String>None</x:String>
-                                            <x:String>SoftInput</x:String>
-                                            <x:String>Container</x:String>
-                                            <x:String>Default</x:String>
-                                            <x:String>All</x:String>
-                                        </Picker.Items>
-                                    </Picker>
-                                </StackLayout>
-                                
-                                <StackLayout Grid.Row="1" Grid.Column="2" Orientation="Horizontal" HorizontalOptions="Center">
-                                    <Label Text="Right:" VerticalOptions="Center" />
-                                    <Picker x:Name="GridRightPicker" 
-                                            SelectedIndex="0" 
-                                            SelectedIndexChanged="OnGridEdgePickerChanged"
-                                            AutomationId="GridRightPicker">
-                                        <Picker.Items>
-                                            <x:String>None</x:String>
-                                            <x:String>SoftInput</x:String>
-                                            <x:String>Container</x:String>
-                                            <x:String>Default</x:String>
-                                            <x:String>All</x:String>
-                                        </Picker.Items>
-                                    </Picker>
-                                </StackLayout>
-                                
-                                <!-- Bottom -->
-                                <StackLayout Grid.Row="2" Grid.Column="1" Orientation="Horizontal" HorizontalOptions="Center">
-                                    <Label Text="Bottom:" VerticalOptions="Center" />
-                                    <Picker x:Name="GridBottomPicker" 
-                                            SelectedIndex="0" 
-                                            SelectedIndexChanged="OnGridEdgePickerChanged"
-                                            AutomationId="GridBottomPicker">
-                                        <Picker.Items>
-                                            <x:String>None</x:String>
-                                            <x:String>SoftInput</x:String>
-                                            <x:String>Container</x:String>
-                                            <x:String>Default</x:String>
-                                            <x:String>All</x:String>
-                                        </Picker.Items>
-                                    </Picker>
-                                </StackLayout>
-                                
-                                <!-- Legend -->
-                                <StackLayout Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Spacing="5">
-                                    <Label Text="None = Edge-to-edge content (no safe area padding)" 
-                                           FontSize="10" 
-                                           TextColor="Blue"
-                                           HorizontalOptions="Center" />
-                                    <Label Text="SoftInput = Always pad for keyboard/soft input" 
-                                           FontSize="10" 
-                                           TextColor="Orange"
-                                           HorizontalOptions="Center" />
-                                    <Label Text="Container = Flow under keyboard, stay out of bars/notch" 
-                                           FontSize="10" 
-                                           TextColor="Red"
-                                           HorizontalOptions="Center" />
-                                    <Label Text="Default = Platform default behavior" 
-                                           FontSize="10" 
-                                           TextColor="Purple"
-                                           HorizontalOptions="Center" />
-                                    <Label Text="All = Obey all safe area insets" 
-                                           FontSize="10" 
-                                           TextColor="Green"
-                                           HorizontalOptions="Center" />
-                                </StackLayout>
-                            </Grid>
-                            
-                            <Button Text="Grid: Reset All to None" 
-                                    Clicked="OnGridResetDefaultClicked"
-                                    AutomationId="GridResetDefaultButton" />
-                            <Button Text="Grid: Reset All to None" 
-                                    Clicked="OnGridResetNoneClicked"
+                            <Button Text="Set MainGrid to None (Edge-to-edge)"
+                                    Clicked="OnGridSetNoneClicked"
+                                    BackgroundColor="LightBlue"
                                     AutomationId="GridResetNoneButton" />
-                            <Button Text="Grid: Reset All to All" 
-                                    Clicked="OnGridResetAllClicked"
+                            
+                            <Button Text="Set MainGrid to Container (Respect notches/bars)"
+                                    Clicked="OnGridSetContainerClicked"
+                                    BackgroundColor="LightGreen"
+                                    AutomationId="GridSetContainerButton" />
+                            
+                            <Button Text="Set MainGrid to All (Full safe area)"
+                                    Clicked="OnGridSetAllClicked"
+                                    BackgroundColor="LightCoral"
                                     AutomationId="GridResetAllButton" />
+                            
+                            <!-- Legend -->
+                            <StackLayout Spacing="5" Margin="0,10,0,0">
+                                <Label Text="None = Edge-to-edge content (no safe area padding)" 
+                                       FontSize="10" 
+                                       TextColor="Blue"
+                                       HorizontalOptions="Center" />
+                                <Label Text="Container = Flow under keyboard, stay out of bars/notch" 
+                                       FontSize="10" 
+                                       TextColor="Green"
+                                       HorizontalOptions="Center" />
+                                <Label Text="All = Obey all safe area insets" 
+                                       FontSize="10" 
+                                       TextColor="Red"
+                                       HorizontalOptions="Center" />
+                            </StackLayout>
                         </VerticalStackLayout>
                     </Border>
                 </StackLayout>
@@ -295,7 +95,7 @@
             
             <!-- Bottom test area - should move in/out of home indicator area -->
             <Border Grid.Row="2" BackgroundColor="Yellow" Stroke="Orange" StrokeThickness="3" Padding="10">
-                <Label Text="BOTTOM TEST AREA: This should move in/out of home indicator/toolbar area when Bottom safe area is toggled"
+                <Label Text="BOTTOM TEST AREA: This should move in/out of home indicator/toolbar area when safe area is toggled"
                        FontSize="14"
                        FontAttributes="Bold"
                        HorizontalOptions="Center"

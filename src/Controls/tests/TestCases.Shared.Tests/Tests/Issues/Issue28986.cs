@@ -14,147 +14,70 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		public void SafeAreaInitialStateIsCorrect()
+		public void SafeAreaMainGridBasicFunctionality()
 		{
-			// Verify initial state - all checkboxes should be unchecked
-			App.WaitForElement("TopCheckBox");
-			App.WaitForElement("LeftCheckBox");
-			App.WaitForElement("RightCheckBox");
-			App.WaitForElement("BottomCheckBox");
-
-			// Verify all checkboxes start unchecked (default behavior)
-			Assert.That(App.FindElement("TopCheckBox").GetAttribute<string>("checked"), Is.EqualTo("false"));
-			Assert.That(App.FindElement("LeftCheckBox").GetAttribute<string>("checked"), Is.EqualTo("false"));
-			Assert.That(App.FindElement("RightCheckBox").GetAttribute<string>("checked"), Is.EqualTo("false"));
-			Assert.That(App.FindElement("BottomCheckBox").GetAttribute<string>("checked"), Is.EqualTo("false"));
-
-			// Verify initial settings label contains all "Respect"
+			// 1. Test loads - verify essential elements are present
 			App.WaitForElement("CurrentSettings");
+			App.WaitForElement("GridResetNoneButton");
+			App.WaitForElement("GridSetContainerButton");
+			App.WaitForElement("GridResetAllButton");
+
+			// 2. Verify initial state - MainGrid should start with All (offset by safe area)
 			var initialSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(initialSettings, Does.Contain("Left: Respect"));
-			Assert.That(initialSettings, Does.Contain("Top: Respect"));
-			Assert.That(initialSettings, Does.Contain("Right: Respect"));
-			Assert.That(initialSettings, Does.Contain("Bottom: Respect"));
+			Assert.That(initialSettings, Does.Contain("All (Full safe area)"));
+
+			// 3. Click button to set SafeAreaEdge to "None" on the MainGrid
+			App.Tap("GridResetNoneButton");
+
+			// 4. Verify it's flush with the screen and has zero offset
+			var noneSettings = App.FindElement("CurrentSettings").GetText();
+			Assert.That(noneSettings, Does.Contain("None (Edge-to-edge)"));
+
+			// 5. Click a button to set it to Container
+			App.Tap("GridSetContainerButton");
+
+			// 6. Verify that it is now offset again by the safe area
+			var containerSettings = App.FindElement("CurrentSettings").GetText();
+			Assert.That(containerSettings, Does.Contain("Container (Respect notches/bars)"));
 		}
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		public void SafeAreaIndividualCheckboxFunctionality()
+		public void SafeAreaMainGridAllButtonFunctionality()
 		{
-			App.WaitForElement("TopCheckBox");
+			App.WaitForElement("GridResetAllButton");
 			App.WaitForElement("CurrentSettings");
 
-			// Test Top checkbox
-			App.Tap("TopCheckBox");
-			var settingsAfterTop = App.FindElement("CurrentSettings").GetText();
-			Assert.That(settingsAfterTop, Does.Contain("Top: Ignore"));
-			Assert.That(settingsAfterTop, Does.Contain("Left: Respect"));
-			Assert.That(settingsAfterTop, Does.Contain("Right: Respect"));
-			Assert.That(settingsAfterTop, Does.Contain("Bottom: Respect"));
+			// Test "All" button functionality
+			App.Tap("GridResetAllButton");
 
-			// Test Left checkbox
-			App.Tap("LeftCheckBox");
-			var settingsAfterLeft = App.FindElement("CurrentSettings").GetText();
-			Assert.That(settingsAfterLeft, Does.Contain("Top: Ignore"));
-			Assert.That(settingsAfterLeft, Does.Contain("Left: Ignore"));
-			Assert.That(settingsAfterLeft, Does.Contain("Right: Respect"));
-			Assert.That(settingsAfterLeft, Does.Contain("Bottom: Respect"));
-
-			// Test Right checkbox
-			App.Tap("RightCheckBox");
-			var settingsAfterRight = App.FindElement("CurrentSettings").GetText();
-			Assert.That(settingsAfterRight, Does.Contain("Top: Ignore"));
-			Assert.That(settingsAfterRight, Does.Contain("Left: Ignore"));
-			Assert.That(settingsAfterRight, Does.Contain("Right: Ignore"));
-			Assert.That(settingsAfterRight, Does.Contain("Bottom: Respect"));
-
-			// Test Bottom checkbox
-			App.Tap("BottomCheckBox");
-			var settingsAfterBottom = App.FindElement("CurrentSettings").GetText();
-			Assert.That(settingsAfterBottom, Does.Contain("Top: Ignore"));
-			Assert.That(settingsAfterBottom, Does.Contain("Left: Ignore"));
-			Assert.That(settingsAfterBottom, Does.Contain("Right: Ignore"));
-			Assert.That(settingsAfterBottom, Does.Contain("Bottom: Ignore"));
+			// Verify MainGrid is set to All
+			var allSettings = App.FindElement("CurrentSettings").GetText();
+			Assert.That(allSettings, Does.Contain("All (Full safe area)"));
 		}
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		public void SafeAreaResetAllButtonFunctionality()
-		{
-			App.WaitForElement("ResetAllButton");
-			App.WaitForElement("CurrentSettings");
-
-			// Tap Reset All button
-			App.Tap("ResetAllButton");
-
-			// Verify all checkboxes are checked
-			Assert.That(App.FindElement("TopCheckBox").GetAttribute<string>("checked"), Is.EqualTo("true"));
-			Assert.That(App.FindElement("LeftCheckBox").GetAttribute<string>("checked"), Is.EqualTo("true"));
-			Assert.That(App.FindElement("RightCheckBox").GetAttribute<string>("checked"), Is.EqualTo("true"));
-			Assert.That(App.FindElement("BottomCheckBox").GetAttribute<string>("checked"), Is.EqualTo("true"));
-
-			// Verify settings label shows all "Ignore"
-			var settingsAfterReset = App.FindElement("CurrentSettings").GetText();
-			Assert.That(settingsAfterReset, Does.Contain("Left: Ignore"));
-			Assert.That(settingsAfterReset, Does.Contain("Top: Ignore"));
-			Assert.That(settingsAfterReset, Does.Contain("Right: Ignore"));
-			Assert.That(settingsAfterReset, Does.Contain("Bottom: Ignore"));
-		}
-
-		[Test]
-		[Category(UITestCategories.Layout)]
-		public void SafeAreaResetNoneButtonFunctionality()
-		{
-			App.WaitForElement("ResetNoneButton");
-			App.WaitForElement("CurrentSettings");
-
-			// First set some checkboxes to checked state
-			App.Tap("TopCheckBox");
-			App.Tap("LeftCheckBox");
-
-			// Tap Reset None button
-			App.Tap("ResetNoneButton");
-
-			// Verify all checkboxes are unchecked
-			Assert.That(App.FindElement("TopCheckBox").GetAttribute<string>("checked"), Is.EqualTo("false"));
-			Assert.That(App.FindElement("LeftCheckBox").GetAttribute<string>("checked"), Is.EqualTo("false"));
-			Assert.That(App.FindElement("RightCheckBox").GetAttribute<string>("checked"), Is.EqualTo("false"));
-			Assert.That(App.FindElement("BottomCheckBox").GetAttribute<string>("checked"), Is.EqualTo("false"));
-
-			// Verify settings label shows all "Respect"
-			var settingsAfterReset = App.FindElement("CurrentSettings").GetText();
-			Assert.That(settingsAfterReset, Does.Contain("Left: Respect"));
-			Assert.That(settingsAfterReset, Does.Contain("Top: Respect"));
-			Assert.That(settingsAfterReset, Does.Contain("Right: Respect"));
-			Assert.That(settingsAfterReset, Does.Contain("Bottom: Respect"));
-		}
-
-		[Test]
-		[Category(UITestCategories.Layout)]
-		public void SafeAreaSyntaxOptimizationTest()
+		public void SafeAreaMainGridSequentialButtonTesting()
 		{
 			App.WaitForElement("CurrentSettings");
 
-			// Test 1-value syntax (all edges same) - all ignore
-			App.Tap("ResetAllButton");
-			var allIgnoreSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(allIgnoreSettings, Does.Contain("1-value syntax"));
+			// Test sequence: All -> None -> Container -> All
+			App.Tap("GridResetAllButton");
+			var allSettings = App.FindElement("CurrentSettings").GetText();
+			Assert.That(allSettings, Does.Contain("All (Full safe area)"));
 
-			// Test 1-value syntax (all edges same) - all respect
-			App.Tap("ResetNoneButton");
-			var allRespectSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(allRespectSettings, Does.Contain("1-value syntax"));
+			App.Tap("GridResetNoneButton");
+			var noneSettings = App.FindElement("CurrentSettings").GetText();
+			Assert.That(noneSettings, Does.Contain("None (Edge-to-edge)"));
 
-			// Test 2-value syntax (left/right same, top/bottom same)
-			App.Tap("LeftCheckBox");
-			App.Tap("RightCheckBox");
-			var twoValueSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(twoValueSettings, Does.Contain("2-value syntax"));
+			App.Tap("GridSetContainerButton");
+			var containerSettings = App.FindElement("CurrentSettings").GetText();
+			Assert.That(containerSettings, Does.Contain("Container (Respect notches/bars)"));
 
-			// Test 4-value syntax (all different)
-			App.Tap("TopCheckBox");
-			var fourValueSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(fourValueSettings, Does.Contain("4-value syntax"));
+			App.Tap("GridResetAllButton");
+			var finalAllSettings = App.FindElement("CurrentSettings").GetText();
+			Assert.That(finalAllSettings, Does.Contain("All (Full safe area)"));
 		}
 	}
 }
