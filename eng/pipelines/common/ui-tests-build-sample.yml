@@ -74,6 +74,10 @@ steps:
   artifact: ui-tests-samples-nativeaot
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), succeeded())
+  artifact: ui-tests-samples-coreclr
+
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(eq('${{ parameters.platform }}' , 'windows'), succeeded())
   artifact: ui-tests-samples-windows
 
@@ -84,6 +88,10 @@ steps:
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'NativeAOT'), failed())
   artifact: ui-tests-samples-nativeaot_failed_$(System.JobAttempt)
+
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), failed())
+  artifact: ui-tests-samples-coreclr_failed_$(System.JobAttempt)
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(eq('${{ parameters.platform }}' , 'windows'), failed())
