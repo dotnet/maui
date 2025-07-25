@@ -376,8 +376,13 @@ namespace Microsoft.Maui.Controls.Platform
 					using (var newDrawable = constant!.NewDrawable())
 					using (var iconDrawable = newDrawable.Mutate())
 					{
-						if (tintColor != null)
-							iconDrawable.SetColorFilter(tintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
+						var iconColor = toolBarItem.IconColor ?? tintColor;
+
+						if (iconColor is not null)
+						{
+							iconDrawable.SetColorFilter(iconColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
+						}
+
 
 						if (!menuItem.IsEnabled)
 						{

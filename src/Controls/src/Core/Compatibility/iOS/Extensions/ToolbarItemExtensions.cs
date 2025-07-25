@@ -146,10 +146,30 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					}
 					item.IconImageSource.LoadImage(mauiContext, result =>
 					{
-						Image = item.IconImageSource is not FontImageSource
-							? result?.Value.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal)
-							: result?.Value;
 						Style = UIBarButtonItemStyle.Plain;
+
+						if (result?.Value is null)
+						{
+							Image = null;
+							return;
+						}
+
+						Image = item.IconImageSource is not FontImageSource
+							? result.Value.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal)
+							: result.Value;
+
+						if (item.IconColor is Color iconColor)
+						{
+							if (item.IconImageSource is FontImageSource fontImageSource && fontImageSource.Color is null)
+							{
+								TintColor = iconColor.ToPlatform();
+							}
+							else
+							{
+								Image = result.Value.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+								TintColor = iconColor.ToPlatform();
+							}
+						}
 					});
 				}
 			}

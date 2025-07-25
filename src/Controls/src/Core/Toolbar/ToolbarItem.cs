@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls;
 
@@ -16,6 +17,10 @@ public class ToolbarItem : MenuItem
 	});
 
 	static readonly BindableProperty PriorityProperty = BindableProperty.Create(nameof(Priority), typeof(int), typeof(ToolbarItem), 0);
+
+#pragma warning disable RS0016
+	public static readonly BindableProperty IconColorProperty = BindableProperty.Create(nameof(IconColor), typeof(Color), typeof(ToolbarItem), null,
+		propertyChanged: (bindable, oldValue, newValue) => ((ToolbarItem)bindable).UpdateImageSource());
 
 	/// <summary>
 	/// Constructs and initializes a new instance of the ToolbarItem class.
@@ -64,5 +69,19 @@ public class ToolbarItem : MenuItem
 	{
 		get { return (int)GetValue(PriorityProperty); }
 		set { SetValue(PriorityProperty, value); }
+	}
+
+	/// <summary>
+	/// Gets or sets the color of the IconImage ToolbarItem element. This is a bindable property.
+	/// </summary>
+	public Color IconColor
+	{
+		get { return (Color)GetValue(IconColorProperty); }
+		set { SetValue(IconColorProperty, value); }
+	}
+
+	void UpdateImageSource()
+	{
+		OnPropertyChanged(IconImageSourceProperty.PropertyName);
 	}
 }
