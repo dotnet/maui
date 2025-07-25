@@ -20,9 +20,8 @@ namespace Microsoft.Maui.Performance
             // Check if the performance profiling feature is enabled.
             if (RuntimeFeature.IsMetricsSupported)
             {
-                // Register the Meter
-                var meter = new Meter("Microsoft.Maui");
-                builder.Services.AddSingleton(meter);
+	            // Register the Meter wrapper
+	            builder.Services.AddSingleton<MauiPerformanceMeter>();
 
                 // Register core services
                 builder.Services.AddSingleton<ILayoutPerformanceTracker, LayoutPerformanceTracker>();

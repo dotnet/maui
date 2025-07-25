@@ -30,15 +30,15 @@ namespace Microsoft.Maui.Performance
         /// <summary>
         /// Initializes a new instance of the <see cref="LayoutPerformanceTracker"/> class with the specified meter for metrics collection.
         /// </summary>
-        /// <param name="meter">The meter used to create histograms for tracking measure and arrange durations.</param>
-        public LayoutPerformanceTracker(Meter meter)
+        /// <param name="mauiPerformanceMeter">The meter used to create histograms for tracking measure and arrange durations.</param>
+        public LayoutPerformanceTracker(MauiPerformanceMeter mauiPerformanceMeter)
         {
-            _measureDurationHistogram = meter.CreateHistogram<double>(
+            _measureDurationHistogram = mauiPerformanceMeter.Meter.CreateHistogram<double>(
                 "maui.layout.measure.duration",
                 unit: "ms",
                 description: "Duration of layout measure passes");
 
-            _arrangeDurationHistogram = meter.CreateHistogram<double>(
+            _arrangeDurationHistogram = mauiPerformanceMeter.Meter.CreateHistogram<double>(
                 "maui.layout.arrange.duration",
                 unit: "ms",
                 description: "Duration of layout arrange passes");
