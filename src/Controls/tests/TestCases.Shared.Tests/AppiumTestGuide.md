@@ -152,7 +152,6 @@ public abstract class UITest : UITestBase
 
 **Usage Example:**
 ```csharp
-[TestFixture(TestDevice.Android)]
 public class MyTest : UITest
 {
     public MyTest(TestDevice device) : base(device) { }
@@ -279,12 +278,12 @@ public class ButtonUITests : _ViewUITests
         var remote = GoToEventRemote();
         
         var textBeforeClick = remote.GetEventLabel().GetText();
-        ClassicAssert.AreEqual("Event: Clicked (none)", textBeforeClick);
+        Assert.That(textBeforeClick, Is.EqualTo("Event: Clicked (none)"));
         
         remote.TapView();
         
         var textAfterClick = remote.GetEventLabel().GetText();
-        ClassicAssert.AreEqual("Event: Clicked (fired 1)", textAfterClick);
+        Assert.That(textAfterClick, Is.EqualTo("Event: Clicked (fired 1)"));
     }
 }
 ```
@@ -299,14 +298,14 @@ public void TestProperty()
     
     // Get property value via BindableProperty
     var enabled = remote.GetProperty<bool>(View.IsEnabledProperty);
-    ClassicAssert.IsTrue(enabled);
+    Assert.That(enabled, Is.True);
     
     // Change state
     remote.TapStateButton();
     
     // Verify property changed
     enabled = remote.GetProperty<bool>(View.IsEnabledProperty);
-    ClassicAssert.IsFalse(enabled);
+    Assert.That(enabled, Is.False);
 }
 ```
 
@@ -372,24 +371,6 @@ public class MyControlUITests : _ViewUITests
     {
         App.NavigateToGallery(MyControlGallery);
     }
-}
-```
-
-### Step 3: Add Platform Fixtures
-
-```csharp
-#if ANDROID
-[TestFixture(TestDevice.Android)]
-#elif IOSUITEST
-[TestFixture(TestDevice.iOS)]
-#elif MACUITEST
-[TestFixture(TestDevice.Mac)]
-#elif WINTEST
-[TestFixture(TestDevice.Windows)]
-#endif
-public class MyTest : UITest
-{
-    // Test implementation
 }
 ```
 
@@ -808,35 +789,9 @@ public void ButtonTest() { }
 public void ButtonTapTest() { }
 ```
 
-### 5. Not Handling Test Setup Failures
+### 5. Test Setup and Failure Handling
 
-```csharp
-// ❌ Problem: No retry logic in setup
-protected override void FixtureSetup()
-{
-    base.FixtureSetup();
-    NavigateToIssue(Issue); // May fail
-}
-
-// ✅ Solution: Implement retry logic (see _IssuesUITest)
-protected override void FixtureSetup()
-{
-    int retries = 0;
-    while (true)
-    {
-        try
-        {
-            base.FixtureSetup();
-            NavigateToIssue(Issue);
-            break;
-        }
-        catch (Exception e) when (retries++ < SetupMaxRetries)
-        {
-            Reset();
-        }
-    }
-}
-```
+The test framework includes built-in retry logic for test setup and automatic screenshot capture when tests fail. This helps handle transient issues and provides debugging information when problems occur.
 
 ### 6. Incorrect Visual Test Environment
 
