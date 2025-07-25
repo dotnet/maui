@@ -345,8 +345,6 @@ public class TimePickerFeatureTests : UITest
 	}
 #endif
 
-
-
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30192
 
     [Test, Order(5)]
