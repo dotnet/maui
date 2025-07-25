@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Shell xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       x:Class="Maui.Controls.Sample.Issues.Issue30771">
+        <ShellContent
+                Title="Home"
+                Route="MainPage">
+                <ContentPage>
+                        <Shell.SearchHandler>
+                                <SearchHandler x:Name="searchHandler"
+                                               Placeholder="Search here"
+                                               Keyboard="Plain"/>
+                        </Shell.SearchHandler>
+                        <Entry Text="Type text here"
+                               AutomationId="SearchEntry"/>
+                </ContentPage>
+        </ShellContent>
+</Shell>
