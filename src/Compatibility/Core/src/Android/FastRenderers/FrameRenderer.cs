@@ -119,17 +119,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 					Element.PropertyChanged -= OnElementPropertyChanged;
 				}
 
-				_visualElementTracker?.Dispose();
-				_visualElementTracker = null;
+				if (_visualElementTracker != null)
+				{
+					_visualElementTracker.Dispose();
+					_visualElementTracker = null;
+				}
 
-				_visualElementPackager?.Dispose();
-				_visualElementPackager = null;
+				if (_visualElementPackager != null)
+				{
+					_visualElementPackager.Dispose();
+					_visualElementPackager = null;
+				}
 
-				_backgroundDrawable?.Dispose();
-				_backgroundDrawable = null;
+				if (_backgroundDrawable != null)
+				{
+					_backgroundDrawable.Dispose();
+					_backgroundDrawable = null;
+				}
 
-				_visualElementRenderer?.Dispose();
-				_visualElementRenderer = null;
+				if (_visualElementRenderer != null)
+				{
+					_visualElementRenderer.Dispose();
+					_visualElementRenderer = null;
+				}
 
 				while (ChildCount > 0)
 				{

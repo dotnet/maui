@@ -1922,7 +1922,7 @@ namespace Microsoft.Maui.Controls
 				Bounds = bounds;
 				return;
 			}
-
+			
 			// This forces any call to Layout to use the newer Arrange passes
 			// This should make it so legacy code that calls Layout will still work, but will use the new Measure and Arrange passes.
 			Arrange(bounds);

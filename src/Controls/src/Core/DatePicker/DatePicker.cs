@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
 		/// <summary>Bindable property for <see cref="IsOpen"/>.</summary>
-		public static readonly BindableProperty IsOpenProperty =
+		public static readonly BindableProperty IsOpenProperty =	
 			BindableProperty.Create(nameof(IDatePicker.IsOpen), typeof(bool), typeof(DatePicker), default, BindingMode.TwoWay,
 				propertyChanged: OnIsOpenPropertyChanged);
 
@@ -138,18 +138,18 @@ namespace Microsoft.Maui.Controls
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
-
+		
 		public bool IsOpen
 		{
 			get => (bool)GetValue(IsOpenProperty);
 			set => SetValue(IsOpenProperty, value);
 		}
-
+		
 		static void OnIsOpenPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			((DatePicker)bindable).OnIsOpenPropertyChanged((bool)oldValue, (bool)newValue);
 		}
-
+		
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
 			HandleFontChanged();
 
@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		readonly Queue<Action> _pendingIsOpenActions = new Queue<Action>();
-
+		
 		void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
 		{
 			if (Handler?.VirtualView is DatePicker)
@@ -188,11 +188,11 @@ namespace Microsoft.Maui.Controls
 				_pendingIsOpenActions.Enqueue(HandleIsOpenChanged);
 			}
 		}
-
+		
 		protected override void OnHandlerChanged()
 		{
 			base.OnHandlerChanged();
-
+            
 			// Process any pending actions when handler becomes available
 			while (_pendingIsOpenActions.Count > 0 && Handler != null)
 			{
@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls
 				action.Invoke();
 			}
 		}
-
+		
 		void HandleIsOpenChanged()
 		{
 			if (Handler?.VirtualView is not DatePicker datePicker)

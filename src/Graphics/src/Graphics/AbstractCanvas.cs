@@ -52,8 +52,11 @@ namespace Microsoft.Maui.Graphics
 
 		public virtual void Dispose()
 		{
-			_currentState?.Dispose();
-			_currentState = null;
+			if (_currentState != null)
+			{
+				_currentState.Dispose();
+				_currentState = null;
+			}
 		}
 
 		public bool LimitStrokeScaling
@@ -212,15 +215,21 @@ namespace Microsoft.Maui.Graphics
 		{
 			while (_stateStack.Count > 0)
 			{
-				_currentState?.Dispose();
-				_currentState = null;
+				if (_currentState != null)
+				{
+					_currentState.Dispose();
+					_currentState = null;
+				}
 
 				_currentState = _stateStack.Pop();
 				StateRestored(_currentState);
 			}
 
-			_currentState?.Dispose();
-			_currentState = null;
+			if (_currentState != null)
+			{
+				_currentState.Dispose();
+				_currentState = null;
+			}
 
 			_currentState = _stateService.CreateNew(this);
 		}
@@ -234,8 +243,11 @@ namespace Microsoft.Maui.Graphics
 		{
 			_strokeDashPatternDirty = true;
 
-			_currentState?.Dispose();
-			_currentState = null;
+			if (_currentState != null)
+			{
+				_currentState.Dispose();
+				_currentState = null;
+			}
 
 			if (_stateStack.Count > 0)
 			{

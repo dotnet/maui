@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<EventArgs> Focused;
 		public event EventHandler<EventArgs> Unfocused;
-
+		
 		internal event EventHandler<EventArgs> ShowSoftInputRequested;
 		internal event EventHandler<EventArgs> HideSoftInputRequested;
 

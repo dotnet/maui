@@ -222,11 +222,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 					_toolbarTracker = null;
 				}
 
-				_currentMenuItems?.Clear();
-				_currentMenuItems = null;
+				if (_currentMenuItems != null)
+				{
+					_currentMenuItems.Clear();
+					_currentMenuItems = null;
+				}
 
-				_currentToolbarItems?.Clear();
-				_currentToolbarItems = null;
+				if (_currentToolbarItems != null)
+				{
+					_currentToolbarItems.Clear();
+					_currentToolbarItems = null;
+				}
 
 				if (_toolbar != null)
 				{
@@ -246,8 +252,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 					RemoveView(_drawerLayout);
 				}
 
-				_drawerListener?.Dispose();
-				_drawerListener = null;
+				if (_drawerListener != null)
+				{
+					_drawerListener.Dispose();
+					_drawerListener = null;
+				}
 
 				if (_drawerToggle != null)
 				{
@@ -256,8 +265,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 					_drawerToggle = null;
 				}
 
-				_backgroundDrawable?.Dispose();
-				_backgroundDrawable = null;
+				if (_backgroundDrawable != null)
+				{
+					_backgroundDrawable.Dispose();
+					_backgroundDrawable = null;
+				}
 
 				Current = null;
 

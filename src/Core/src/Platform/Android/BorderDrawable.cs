@@ -332,8 +332,11 @@ namespace Microsoft.Maui.Platform
 
 			if (disposing)
 			{
-				_clipPath?.Dispose();
-				_clipPath = null;
+				if (_clipPath != null)
+				{
+					_clipPath.Dispose();
+					_clipPath = null;
+				}
 			}
 
 			DisposeBorder(disposing);
@@ -345,8 +348,11 @@ namespace Microsoft.Maui.Platform
 		{
 			if (disposing)
 			{
-				_borderPaint?.Dispose();
-				_borderPaint = null;
+				if (_borderPaint != null)
+				{
+					_borderPaint.Dispose();
+					_borderPaint = null;
+				}
 			}
 		}
 

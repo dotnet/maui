@@ -200,8 +200,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					Control.Adapter = null;
 				}
 
-				_adapter?.Dispose();
-				_adapter = null;
+				if (_adapter != null)
+				{
+					_adapter.Dispose();
+					_adapter = null;
+				}
 			}
 
 

@@ -198,8 +198,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 					_bottomNavigationView = null;
 				}
 
-				_relativeLayout?.Dispose();
-				_relativeLayout = null;
+				if (_relativeLayout != null)
+				{
+					_relativeLayout.Dispose();
+					_relativeLayout = null;
+				}
 
 				if (Element != null)
 				{

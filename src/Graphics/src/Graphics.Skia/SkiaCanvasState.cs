@@ -197,8 +197,11 @@ namespace Microsoft.Maui.Graphics.Skia
 		{
 			if (radius != _blurRadius)
 			{
-				_blurFilter?.Dispose();
-				_blurFilter = null;
+				if (_blurFilter != null)
+				{
+					_blurFilter.Dispose();
+					_blurFilter = null;
+				}
 
 				if (radius > 0)
 				{

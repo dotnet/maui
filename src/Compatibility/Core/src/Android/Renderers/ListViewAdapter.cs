@@ -447,8 +447,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
 				_listView.ItemSelected -= OnItemSelected;
 
-				_lastSelected?.Dispose();
-				_lastSelected = null;
+				if (_lastSelected != null)
+				{
+					_lastSelected.Dispose();
+					_lastSelected = null;
+				}
 
 				DisposeCells();
 			}

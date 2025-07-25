@@ -515,7 +515,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (!RuntimeFeature.AreNamescopesSupported)
 				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
-
+			
 			var namescope = GetNameScope() ?? transientNamescope;
 			if (namescope == null)
 				throw new InvalidOperationException("this element is not in a namescope");

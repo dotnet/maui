@@ -22,9 +22,9 @@ namespace Microsoft.Maui
 #if NETSTANDARD2_0
 		bool IsOpen { get; set; }
 #else
-		bool IsOpen { get => false; set { } }
+		bool IsOpen { get => false; set {} }
 #endif
-
+		
 		/// <summary>
 		/// Gets the list of choices.
 		/// </summary>

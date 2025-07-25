@@ -41,8 +41,11 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void Dispose()
 		{
-			_androidCanvas?.Dispose();
-			_androidCanvas = null;
+			if (_androidCanvas != null)
+			{
+				_androidCanvas.Dispose();
+				_androidCanvas = null;
+			}
 
 			if (_bitmap != null && _disposeBitmap)
 			{

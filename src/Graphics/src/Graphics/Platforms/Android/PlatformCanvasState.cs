@@ -150,8 +150,11 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			if (aRadius != _blurRadius)
 			{
-				_blurFilter?.Dispose();
-				_blurFilter = null;
+				if (_blurFilter != null)
+				{
+					_blurFilter.Dispose();
+					_blurFilter = null;
+				}
 
 				if (aRadius > 0)
 				{
@@ -324,14 +327,23 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void Dispose()
 		{
-			_fontPaint?.Dispose();
-			_fontPaint = null;
+			if (_fontPaint != null)
+			{
+				_fontPaint.Dispose();
+				_fontPaint = null;
+			}
 
-			_strokePaint?.Dispose();
-			_strokePaint = null;
+			if (_strokePaint != null)
+			{
+				_strokePaint.Dispose();
+				_strokePaint = null;
+			}
 
-			_fillPaint?.Dispose();
-			_fillPaint = null;
+			if (_fillPaint != null)
+			{
+				_fillPaint.Dispose();
+				_fillPaint = null;
+			}
 
 			base.Dispose();
 		}

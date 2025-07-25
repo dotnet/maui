@@ -128,7 +128,7 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 				await Task.Delay(10); // Wait for Android to render the view
 #pragma warning restore CS0618 // Obsolete				
 			var bitmap = global::Android.Graphics.Bitmap.CreateBitmap(view.Width, view.Height, global::Android.Graphics.Bitmap.Config.Argb8888);
-			global::Android.Graphics.Canvas canvas = new(bitmap);
+			global::Android.Graphics.Canvas canvas = new (bitmap);
 			view.Draw(canvas);
 			int[] pixels = new int[bitmap.Width * bitmap.Height];
 			bitmap.GetPixels(pixels, 0, bitmap.Width, 0, 0, bitmap.Width, bitmap.Height);
