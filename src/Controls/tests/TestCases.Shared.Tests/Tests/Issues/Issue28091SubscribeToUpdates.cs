@@ -16,9 +16,9 @@ public class Issue28091SubscribeToUpdates : _IssuesUITest
     /// This test verifies that layout performance updates are reflected in the HistoryLabel.
     /// It performs resizing actions and asserts that the label text is updated to include the profiling information.
     /// </summary>
-    [Test, Order(3)]
+    [Test]
     [Category(UITestCategories.Performance)]
-    public async Task HistoryLabel_ShouldUpdate_AfterInteractions()
+    public void HistoryLabel_ShouldUpdate_AfterInteractions()
     {
         App.WaitForElement("WaitForStubControl");
         var initialText = App.FindElement("HistoryLabel")?.GetText();
@@ -27,10 +27,15 @@ public class Issue28091SubscribeToUpdates : _IssuesUITest
         App.Tap("IncreaseWidthButton");
         App.Tap("IncreaseHeightButton");
         
-        // Wait briefly to allow profiler tracking events
-        await Task.Delay(500);
-        
+        // Wait for history label to update with profiler data
+        App.QueryUntilPresent(() => "Rectangle"
+	        .Union("Duration")
+	        .ToArray());
+
+        // Capture updated history
         var updatedText = App.FindElement("HistoryLabel")?.GetText();
+        
+        // Validate history contains expected profiler data
         Assert.That(updatedText, Is.Not.Null
 	        .And.Contains("Rectangle")
 	        .And.Contains("Duration")

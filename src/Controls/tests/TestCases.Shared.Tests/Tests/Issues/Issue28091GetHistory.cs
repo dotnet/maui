@@ -20,7 +20,7 @@ public class Issue28091GetHistory : _IssuesUITest
 	/// </summary>
 	[Test]
 	[Category(UITestCategories.Performance)]
-	public async Task ShowHistory_ShouldDisplay_ProfilerDataAfterResizing()
+	public void ShowHistory_ShouldDisplay_ProfilerDataAfterResizing()
 	{
 		App.WaitForElement("WaitForStubControl");
 		var initialText = App.FindElement("HistoryLabel").GetText();
@@ -34,8 +34,10 @@ public class Issue28091GetHistory : _IssuesUITest
 		// Show the recorded history
 		App.Tap("ShowHistoryButton");
 
-		// Wait briefly to allow profiler history to appear
-		await Task.Delay(500);
+		// Wait for history label to update with profiler data
+		App.QueryUntilPresent(() => "Rectangle"
+			.Union("Duration")
+			.ToArray());
 		
 		// Capture updated history
 		var updatedText = App.FindElement("HistoryLabel")?.GetText();
