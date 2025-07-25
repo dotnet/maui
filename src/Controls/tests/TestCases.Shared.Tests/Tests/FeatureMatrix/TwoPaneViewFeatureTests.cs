@@ -49,7 +49,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
-            
+
             VerifyScreenshot();
         }
 
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
-            
+
             var pane1Y = App.WaitForElement("Pane1Label").GetRect().Y;
             var pane2Y = App.WaitForElement("Pane2Label").GetRect().Y;
 
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.TestCases.Tests
             Assert.That(App.WaitForElement("CurrentModeLabel").GetText(), Is.EqualTo("Wide Mode"));
         }
 
-         [Test]
+        [Test]
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_IsWideWithRTL_UsingRect()
         {
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
             App.WaitForElement("FlowDirectionRTLCheckBox");
             App.Tap("FlowDirectionRTLCheckBox");
-            
+
             App.WaitForElement("Apply");
             App.Tap("Apply");
 
@@ -264,7 +264,9 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
+            App.WaitForElement("Pane1LengthLabel");
             App.IncreaseStepper("Pane1LengthStepper");
+            App.WaitForElement("Pane1LengthLabel");
             App.IncreaseStepper("Pane1LengthStepper");
 
             App.WaitForElement("Apply");
@@ -280,7 +282,9 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
+            App.WaitForElement("Pane2LengthLabel");
             App.IncreaseStepper("Pane2LengthStepper");
+            App.WaitForElement("Pane2LengthLabel");
             App.IncreaseStepper("Pane2LengthStepper");
 
             App.WaitForElement("Apply");
