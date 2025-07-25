@@ -4,13 +4,13 @@ using System.Runtime.CompilerServices;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 1100, "Add DateOnly and TimeOnly converters to DatePicker and TimePicker", PlatformAffected.All)]
-public class Issue1100 : ContentPage
+[Issue(IssueTracker.Github, 20438, "Add DateOnly and TimeOnly converters to DatePicker and TimePicker", PlatformAffected.All)]
+public class Issue20438 : ContentPage
 {
-    public Issue1100()
+    public Issue20438()
     {
         Title = "Page";
-        var viewModel = new Issue1100ViewModel();
+        var viewModel = new Issue20438ViewModel();
         BindingContext = viewModel;
 
         var datePickerDateOnly = new DatePicker { AutomationId = "TestDatePickerWithDateOnly" };
@@ -67,7 +67,7 @@ public class Issue1100 : ContentPage
     }
 }
 
-public class Issue1100ViewModel : INotifyPropertyChanged
+public class Issue20438ViewModel : INotifyPropertyChanged
 {
     public DateOnly DateWithDateOnly { get; set; } = new(2025, 7, 28);
     public TimeOnly TimeWithTimeOnly { get; set; } = new(10, 30, 0);

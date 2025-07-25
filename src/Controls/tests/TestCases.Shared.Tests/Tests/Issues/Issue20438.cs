@@ -4,9 +4,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue1100 : _IssuesUITest
+public class Issue20438 : _IssuesUITest
 {
-	public Issue1100(TestDevice testDevice) : base(testDevice)
+	public Issue20438(TestDevice testDevice) : base(testDevice)
 	{
 	}
 	public override string Issue => "Add DateOnly and TimeOnly converters to DatePicker and TimePicker";
