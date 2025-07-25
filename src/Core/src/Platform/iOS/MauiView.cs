@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Platform
 				return sav.IgnoreSafeArea ? SafeAreaRegions.None : SafeAreaRegions.Container;
 			}
 			
-			return SafeAreaRegions.Container; // Default: respect safe area
+			return SafeAreaRegions.None;
 		}
 
 		static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea)

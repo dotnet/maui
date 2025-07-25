@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls
 
 		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
 		{
-			return SafeAreaEdges.Default;
+			return SafeAreaEdges.None;
 		}
 
 		private protected override string GetDebuggerDisplay()
