@@ -39,38 +39,61 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void SafeAreaMainGridAllButtonFunctionality()
 		{
 			App.WaitForElement("GridResetAllButton");
-			App.WaitForElement("CurrentSettings");
+			App.WaitForElement("ContentGrid");
+
+			// First set to None to establish baseline position
+			App.Tap("GridResetNoneButton");
+			var nonePosition = App.WaitForElement("ContentGrid").GetRect();
 
 			// Test "All" button functionality
 			App.Tap("GridResetAllButton");
+			var allPosition = App.WaitForElement("ContentGrid").GetRect();
 
 			// Verify MainGrid is set to All
 			var allSettings = App.FindElement("CurrentSettings").GetText();
 			Assert.That(allSettings, Does.Contain("All (Full safe area)"));
+
+			// Verify position changes - All should offset content away from screen edges
+			Assert.That(allPosition.Y, Is.Not.EqualTo(0), "ContentGrid Y position should not be 0 when SafeAreaEdges is set to All");
+			Assert.That(allPosition.Y, Is.GreaterThan(nonePosition.Y), "ContentGrid should be positioned lower when SafeAreaEdges is All vs None");
 		}
 
 		[Test]
 		[Category(UITestCategories.Layout)]
 		public void SafeAreaMainGridSequentialButtonTesting()
 		{
+			App.WaitForElement("ContentGrid");
 			App.WaitForElement("CurrentSettings");
 
-			// Test sequence: All -> None -> Container -> All
+			// Test sequence: All -> None -> Container -> All with position validation
+			
+			// 1. Set to All and capture position
 			App.Tap("GridResetAllButton");
+			var allPosition = App.WaitForElement("ContentGrid").GetRect();
 			var allSettings = App.FindElement("CurrentSettings").GetText();
 			Assert.That(allSettings, Does.Contain("All (Full safe area)"));
 
+			// 2. Set to None and verify position changes
 			App.Tap("GridResetNoneButton");
+			var nonePosition = App.WaitForElement("ContentGrid").GetRect();
 			var noneSettings = App.FindElement("CurrentSettings").GetText();
 			Assert.That(noneSettings, Does.Contain("None (Edge-to-edge)"));
+			Assert.That(nonePosition.Y, Is.EqualTo(0), "ContentGrid Y position should be 0 when SafeAreaEdges is None (edge-to-edge)");
+			Assert.That(allPosition.Y, Is.GreaterThan(nonePosition.Y), "All position should be lower than None position");
 
+			// 3. Set to Container and verify position changes
 			App.Tap("GridSetContainerButton");
+			var containerPosition = App.WaitForElement("ContentGrid").GetRect();
 			var containerSettings = App.FindElement("CurrentSettings").GetText();
 			Assert.That(containerSettings, Does.Contain("Container (Respect notches/bars)"));
+			Assert.That(containerPosition.Y, Is.GreaterThan(nonePosition.Y), "Container position should be lower than None position");
 
+			// 4. Return to All and verify position matches original
 			App.Tap("GridResetAllButton");
+			var finalAllPosition = App.WaitForElement("ContentGrid").GetRect();
 			var finalAllSettings = App.FindElement("CurrentSettings").GetText();
 			Assert.That(finalAllSettings, Does.Contain("All (Full safe area)"));
+			Assert.That(finalAllPosition.Y, Is.EqualTo(allPosition.Y), "Final All position should match initial All position");
 		}
 	}
 }
