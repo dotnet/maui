@@ -1,6 +1,20 @@
-#nullable enable
+﻿#nullable enable
+*REMOVED*Microsoft.Maui.ApplicationModel.Communication.IPhoneDialer.IsSupported.get -> bool
+*REMOVED*Microsoft.Maui.ApplicationModel.IAppActions.IsSupported.get -> bool
 Microsoft.Maui.Authentication.IWebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+Microsoft.Maui.Devices.IDeviceCapabilities
+Microsoft.Maui.Devices.IDeviceCapabilities.IsSupported.get -> bool
+*REMOVED*Microsoft.Maui.Devices.IHapticFeedback.IsSupported.get -> bool
+*REMOVED*Microsoft.Maui.Devices.IVibration.IsSupported.get -> bool
 Microsoft.Maui.Devices.Sensors.IGeolocation.IsEnabled.get -> bool
+*REMOVED*Microsoft.Maui.Devices.Sensors.IOrientationSensor.IsMonitoring.get -> bool
+*REMOVED*Microsoft.Maui.Devices.Sensors.IOrientationSensor.IsSupported.get -> bool
+*REMOVED*Microsoft.Maui.Devices.Sensors.IOrientationSensor.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
+*REMOVED*Microsoft.Maui.Devices.Sensors.IOrientationSensor.Stop() -> void
+Microsoft.Maui.Devices.Sensors.ISensor
+Microsoft.Maui.Devices.Sensors.ISensor.IsMonitoring.get -> bool
+Microsoft.Maui.Devices.Sensors.ISensor.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
+Microsoft.Maui.Devices.Sensors.ISensor.Stop() -> void
 Microsoft.Maui.Media.IMediaPicker.PickPhotosAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.List<Microsoft.Maui.Storage.FileResult!>!>!
 Microsoft.Maui.Media.IMediaPicker.PickVideosAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.List<Microsoft.Maui.Storage.FileResult!>!>!
 Microsoft.Maui.Media.MediaPickerOptions.CompressionQuality.get -> int
@@ -18,44 +32,10 @@ Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.Pick
 static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.AuthenticateAsync(this Microsoft.Maui.Authentication.IWebAuthenticator! webAuthenticator, System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+static Microsoft.Maui.Devices.HapticFeedback.IsSupported.get -> bool
 static Microsoft.Maui.Devices.Sensors.Geolocation.IsEnabled.get -> bool
+static Microsoft.Maui.Devices.Vibration.IsSupported.get -> bool
 static Microsoft.Maui.Media.MediaPicker.PickPhotosAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.List<Microsoft.Maui.Storage.FileResult!>!>!
 static Microsoft.Maui.Media.MediaPicker.PickVideosAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.List<Microsoft.Maui.Storage.FileResult!>!>!
-static Microsoft.Maui.Devices.HapticFeedback.IsSupported.get -> bool
-static Microsoft.Maui.Devices.Vibration.IsSupported.get -> bool
 *REMOVED*static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>!>!
 static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
-Microsoft.Maui.Devices.Sensors.ISensor
-Microsoft.Maui.Devices.Sensors.ISensor.IsMonitoring.get -> bool
-Microsoft.Maui.Devices.Sensors.ISensor.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
-Microsoft.Maui.Devices.Sensors.ISensor.Stop() -> void
-Microsoft.Maui.Devices.IDeviceCapabilities
-Microsoft.Maui.Devices.IDeviceCapabilities.IsSupported.get -> bool
-*REMOVED*Microsoft.Maui.ApplicationModel.Communication.IPhoneDialer.IsSupported.get -> bool
-*REMOVED*Microsoft.Maui.ApplicationModel.IAppActions.IsSupported.get -> bool
-*REMOVED*Microsoft.Maui.Devices.IHapticFeedback.IsSupported.get -> bool
-*REMOVED*Microsoft.Maui.Devices.IVibration.IsSupported.get -> bool
-*REMOVED*Microsoft.Maui.Devices.Sensors.IAccelerometer.IsMonitoring.get -> bool
-*REMOVED*Microsoft.Maui.Devices.Sensors.IAccelerometer.IsSupported.get -> bool
-*REMOVED*Microsoft.Maui.Devices.Sensors.IAccelerometer.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
-*REMOVED*Microsoft.Maui.Devices.Sensors.IAccelerometer.Stop() -> void
-*REMOVED*Microsoft.Maui.Devices.Sensors.IBarometer.IsMonitoring.get -> bool
-*REMOVED*Microsoft.Maui.Devices.Sensors.IBarometer.IsSupported.get -> bool
-*REMOVED*Microsoft.Maui.Devices.Sensors.IBarometer.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
-*REMOVED*Microsoft.Maui.Devices.Sensors.IBarometer.Stop() -> void
-*REMOVED*Microsoft.Maui.Devices.Sensors.ICompass.IsMonitoring.get -> bool
-*REMOVED*Microsoft.Maui.Devices.Sensors.ICompass.IsSupported.get -> bool
-*REMOVED*Microsoft.Maui.Devices.Sensors.ICompass.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
-*REMOVED*Microsoft.Maui.Devices.Sensors.ICompass.Stop() -> void
-*REMOVED*Microsoft.Maui.Devices.Sensors.IGyroscope.IsMonitoring.get -> bool
-*REMOVED*Microsoft.Maui.Devices.Sensors.IGyroscope.IsSupported.get -> bool
-*REMOVED*Microsoft.Maui.Devices.Sensors.IGyroscope.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
-*REMOVED*Microsoft.Maui.Devices.Sensors.IGyroscope.Stop() -> void
-*REMOVED*Microsoft.Maui.Devices.Sensors.IMagnetometer.IsMonitoring.get -> bool
-*REMOVED*Microsoft.Maui.Devices.Sensors.IMagnetometer.IsSupported.get -> bool
-*REMOVED*Microsoft.Maui.Devices.Sensors.IMagnetometer.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
-*REMOVED*Microsoft.Maui.Devices.Sensors.IMagnetometer.Stop() -> void
-*REMOVED*Microsoft.Maui.Devices.Sensors.IOrientationSensor.IsMonitoring.get -> bool
-*REMOVED*Microsoft.Maui.Devices.Sensors.IOrientationSensor.IsSupported.get -> bool
-*REMOVED*Microsoft.Maui.Devices.Sensors.IOrientationSensor.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
-*REMOVED*Microsoft.Maui.Devices.Sensors.IOrientationSensor.Stop() -> void

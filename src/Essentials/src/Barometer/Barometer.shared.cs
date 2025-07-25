@@ -7,8 +7,29 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// <summary>
 	/// Monitor changes to the atmospheric pressure.
 	/// </summary>
-	public interface IBarometer : ISensor
+	public interface IBarometer
 	{
+		/// <summary>
+		/// Gets a value indicating whether reading the barometer is supported on this device.
+		/// </summary>
+		bool IsSupported { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether the barometer is actively being monitored.
+		/// </summary>
+		bool IsMonitoring { get; }
+
+		/// <summary>
+		/// Start monitoring for changes to the barometer.
+		/// </summary>
+		/// <param name="sensorSpeed">The speed to listen for changes.</param>
+		void Start(SensorSpeed sensorSpeed);
+
+		/// <summary>
+		/// Stop monitoring for changes to the barometer.
+		/// </summary>
+		void Stop();
+
 		/// <summary>
 		/// Occurs when the barometer reading changes.
 		/// </summary>
@@ -149,7 +170,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public override string ToString() => $"{nameof(PressureInHectopascals)}: {PressureInHectopascals}";
 	}
 
-	partial class BarometerImplementation : IBarometer
+	partial class BarometerImplementation : IBarometer, ISensor, IDeviceCapabilities
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 
@@ -218,5 +239,17 @@ namespace Microsoft.Maui.Devices.Sensors
 				throw;
 			}
 		}
+
+		#region Explicit Interface Implementations
+
+		// Explicit implementation of ISensor members delegating to public members
+		bool ISensor.IsMonitoring => IsMonitoring;
+		void ISensor.Start(SensorSpeed sensorSpeed) => Start(sensorSpeed);
+		void ISensor.Stop() => Stop();
+
+		// Explicit implementation of IDeviceCapabilities members delegating to public members  
+		bool IDeviceCapabilities.IsSupported => IsSupported;
+
+		#endregion
 	}
 }

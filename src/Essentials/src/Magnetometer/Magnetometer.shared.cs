@@ -6,10 +6,31 @@ using Microsoft.Maui.ApplicationModel;
 namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <summary>
-	/// Detect device's orentation relative to Earth's magnetic field in microteslas (�).
+	/// Detect device's orentation relative to Earth's magnetic field in microteslas (μ).
 	/// </summary>
-	public interface IMagnetometer : ISensor
+	public interface IMagnetometer
 	{
+		/// <summary>
+		/// Gets a value indicating whether reading the magnetometer is supported on this device.
+		/// </summary>
+		bool IsSupported { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether the magnetometer is actively being monitored.
+		/// </summary>
+		bool IsMonitoring { get; }
+
+		/// <summary>
+		/// Start monitoring for changes to the magnetometer.
+		/// </summary>
+		/// <param name="sensorSpeed">The speed to listen for changes.</param>
+		void Start(SensorSpeed sensorSpeed);
+
+		/// <summary>
+		/// Stop monitoring for changes to the magnetometer.
+		/// </summary>
+		void Stop();
+
 		/// <summary>
 		/// Occurs when the magnetometer reading changes.
 		/// </summary>
@@ -169,7 +190,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			$"{nameof(MagneticField.Z)}: {MagneticField.Z}";
 	}
 
-	partial class MagnetometerImplementation : IMagnetometer
+	partial class MagnetometerImplementation : IMagnetometer, ISensor, IDeviceCapabilities
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 
@@ -232,5 +253,17 @@ namespace Microsoft.Maui.Devices.Sensors
 			else
 				ReadingChanged?.Invoke(this, args);
 		}
+
+		#region Explicit Interface Implementations
+
+		// Explicit implementation of ISensor members delegating to public members
+		bool ISensor.IsMonitoring => IsMonitoring;
+		void ISensor.Start(SensorSpeed sensorSpeed) => Start(sensorSpeed);
+		void ISensor.Stop() => Stop();
+
+		// Explicit implementation of IDeviceCapabilities members delegating to public members  
+		bool IDeviceCapabilities.IsSupported => IsSupported;
+
+		#endregion
 	}
 }
