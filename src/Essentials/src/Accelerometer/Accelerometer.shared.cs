@@ -8,8 +8,29 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// <summary>
 	/// Accelerometer data of the acceleration of the device in three-dimensional space.
 	/// </summary>
-	public interface IAccelerometer : ISensor
+	public interface IAccelerometer
 	{
+		/// <summary>
+		/// Gets a value indicating whether reading the accelerometer is supported on this device.
+		/// </summary>
+		bool IsSupported { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether the accelerometer is being monitored.
+		/// </summary>
+		bool IsMonitoring { get; }
+
+		/// <summary>
+		/// Start monitoring for changes to accelerometer.
+		/// </summary>
+		/// <param name="sensorSpeed">Speed to monitor the sensor.</param>
+		void Start(SensorSpeed sensorSpeed);
+
+		/// <summary>
+		/// Stop monitoring for changes to accelerometer.
+		/// </summary>
+		void Stop();
+
 		/// <summary>
 		/// Occurs when the sensor reading changes.
 		/// </summary>
@@ -170,7 +191,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			$"{nameof(Acceleration.Z)}: {Acceleration.Z}";
 	}
 
-	partial class AccelerometerImplementation : IAccelerometer
+	partial class AccelerometerImplementation : IAccelerometer, ISensor, IDeviceCapabilities
 	{
 		const double accelerationThreshold = 169;
 
@@ -276,5 +297,17 @@ namespace Microsoft.Maui.Devices.Sensors
 			static long Nanoseconds(DateTime time) =>
 				(time.Ticks / TimeSpan.TicksPerMillisecond) * 1_000_000;
 		}
+
+		#region Explicit Interface Implementations
+
+		// Explicit implementation of ISensor members delegating to public members
+		bool ISensor.IsMonitoring => IsMonitoring;
+		void ISensor.Start(SensorSpeed sensorSpeed) => Start(sensorSpeed);
+		void ISensor.Stop() => Stop();
+
+		// Explicit implementation of IDeviceCapabilities members delegating to public members  
+		bool IDeviceCapabilities.IsSupported => IsSupported;
+
+		#endregion
 	}
 }

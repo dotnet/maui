@@ -7,14 +7,35 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// <summary>
 	/// Monitor changes to the orientation of the user's device.
 	/// </summary>
-	public interface ICompass : ISensor
+	public interface ICompass
 	{
+		/// <summary>
+		/// Gets a value indicating whether reading the compass is supported on this device.
+		/// </summary>
+		bool IsSupported { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether the compass is actively being monitored.
+		/// </summary>
+		bool IsMonitoring { get; }
+
+		/// <summary>
+		/// Start monitoring for changes to the compass.
+		/// </summary>
+		/// <param name="sensorSpeed">The speed to monitor for changes.</param>
+		void Start(SensorSpeed sensorSpeed);
+
 		/// <summary>
 		/// Start monitoring for changes to the compass.
 		/// </summary>
 		/// <param name="sensorSpeed">The speed to monitor for changes.</param>
 		/// <param name="applyLowPassFilter">Whether or not to apply a moving average filter (only used on Android).</param>
 		void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter);
+
+		/// <summary>
+		/// Stop monitoring for changes to the compass.
+		/// </summary>
+		void Stop();
 
 		/// <summary>
 		/// Occurs when compass reading changes.
@@ -226,7 +247,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			$"{nameof(HeadingMagneticNorth)}: {HeadingMagneticNorth}";
 	}
 
-	partial class CompassImplementation : ICompass
+	partial class CompassImplementation : ICompass, ISensor, IDeviceCapabilities
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 
@@ -293,5 +314,17 @@ namespace Microsoft.Maui.Devices.Sensors
 			else
 				ReadingChanged?.Invoke(null, args);
 		}
+
+		#region Explicit Interface Implementations
+
+		// Explicit implementation of ISensor members delegating to public members
+		bool ISensor.IsMonitoring => IsMonitoring;
+		void ISensor.Start(SensorSpeed sensorSpeed) => Start(sensorSpeed);
+		void ISensor.Stop() => Stop();
+
+		// Explicit implementation of IDeviceCapabilities members delegating to public members  
+		bool IDeviceCapabilities.IsSupported => IsSupported;
+
+		#endregion
 	}
 }

@@ -8,8 +8,29 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// <summary>
 	/// The Gyroscope API lets you monitor the device's gyroscope sensor which is the rotation around the device's three primary axes.
 	/// </summary>
-	public interface IGyroscope : ISensor
+	public interface IGyroscope
 	{
+		/// <summary>
+		/// Gets a value indicating whether reading the gyroscope is supported on this device.
+		/// </summary>
+		bool IsSupported { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether the gyroscope is actively being monitored.
+		/// </summary>
+		bool IsMonitoring { get; }
+
+		/// <summary>
+		/// Start monitoring for changes to the gyroscope.
+		/// </summary>
+		/// <param name="sensorSpeed">The speed to listen for changes.</param>
+		void Start(SensorSpeed sensorSpeed);
+
+		/// <summary>
+		/// Stop monitoring for changes to the gyroscope.
+		/// </summary>
+		void Stop();
+
 		/// <summary>
 		/// Occurs when the gyroscope reading changes.
 		/// </summary>
@@ -165,7 +186,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			$"{nameof(AngularVelocity.Z)}: {AngularVelocity.Z}";
 	}
 
-	partial class GyroscopeImplementation : IGyroscope
+	partial class GyroscopeImplementation : IGyroscope, ISensor, IDeviceCapabilities
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 
@@ -228,5 +249,17 @@ namespace Microsoft.Maui.Devices.Sensors
 			else
 				ReadingChanged?.Invoke(null, args);
 		}
+
+		#region Explicit Interface Implementations
+
+		// Explicit implementation of ISensor members delegating to public members
+		bool ISensor.IsMonitoring => IsMonitoring;
+		void ISensor.Start(SensorSpeed sensorSpeed) => Start(sensorSpeed);
+		void ISensor.Stop() => Stop();
+
+		// Explicit implementation of IDeviceCapabilities members delegating to public members  
+		bool IDeviceCapabilities.IsSupported => IsSupported;
+
+		#endregion
 	}
 }
