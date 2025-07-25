@@ -58,7 +58,7 @@ namespace UITest.Appium.NUnit
 		{
 			try
 			{
-				if (!ResetAfterEachTest)
+				if (!ResetAfterEachTest || Device is TestDevice.Mac)
 				{
 					if (Device is TestDevice.Mac)
 					{
