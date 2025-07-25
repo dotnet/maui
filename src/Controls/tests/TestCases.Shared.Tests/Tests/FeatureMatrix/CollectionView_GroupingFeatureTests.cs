@@ -514,6 +514,8 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("Carrot");
+		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("GroupFooterTemplate");
 	}
 
