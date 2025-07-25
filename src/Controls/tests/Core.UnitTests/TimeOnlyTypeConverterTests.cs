@@ -23,13 +23,13 @@ public class TimeOnlyTypeConverterTests : BaseTestFixture
 	}
 
 	[Fact]
-	public async Task ConvertToInvariantStringThrowsNotSupportedException()
+	public async Task ConvertToInvariantStringThrowsNotImplementedException()
 	{
 		var converter = new TimeSpanTypeConverter();
 
 		var stringValue = "Not a TimeOnly string";
 
-		await Assert.ThrowsAsync<NotSupportedException>(async () => converter.ConvertToInvariantString(stringValue));
+		await Assert.ThrowsAsync<NotImplementedException>(async () => converter.ConvertToInvariantString(stringValue));
 	}
 }
 #endif

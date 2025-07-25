@@ -29,7 +29,7 @@ public class TimeSpanTypeConverter : TypeConverter
         {
             return result.ToTimeSpan();
         }
-        throw new NotSupportedException($"Cannot convert \"{value}\" into {typeof(TimeSpan)}");
+        throw new NotImplementedException($"Cannot convert \"{value}\" into {typeof(TimeSpan)}");
     }
 
     public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type? destinationType)
@@ -54,7 +54,7 @@ public class TimeSpanTypeConverter : TypeConverter
             }
         }
 
-        throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
+        throw new NotImplementedException($"Cannot convert \"{value}\" into {destinationType}");
     }
 
     static object ConvertToDestinationType(TimeOnly timeOnly, Type? destinationType, CultureInfo? culture)
@@ -72,7 +72,7 @@ public class TimeSpanTypeConverter : TypeConverter
             return timeOnly;
         }
 
-        throw new NotSupportedException($"Cannot convert \"{timeOnly}\" into {destinationType}");
+        throw new NotImplementedException($"Cannot convert \"{timeOnly}\" into {destinationType}");
     }
 
     static object ConvertToDestinationType(TimeSpan timeSpan, Type? destinationType, CultureInfo? culture)
@@ -90,7 +90,7 @@ public class TimeSpanTypeConverter : TypeConverter
             return TimeOnly.FromTimeSpan(timeSpan);
         }
 
-        throw new NotSupportedException($"Cannot convert \"{timeSpan}\" into {destinationType}");
+        throw new NotImplementedException($"Cannot convert \"{timeSpan}\" into {destinationType}");
     }
 }
 #endif
