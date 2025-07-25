@@ -132,7 +132,7 @@ public class ToolbarFeatureTests : UITest
 		App.TapMoreButton();
 		App.WaitForElement("Test Secondary (2)");
 		App.Tap("Test Secondary (2)");
-		App.WaitForElement("Test Secondary (2)");// The toolbar item it is in disabled state.
+		App.WaitForElement("Test Secondary (2)");// The toolbar item is in a disabled state.
 		CloseSecondaryToolbarMenu();
 	}
 
