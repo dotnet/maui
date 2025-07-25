@@ -325,7 +325,7 @@ void RunMacAndiOSTests(
                         if (isLaunchFailure)
                         {
                             Information("Adding delay before retry due to launch failure...");
-                            System.Threading.Thread.Sleep(5000); // 5 second delay
+                            Task.Delay(5000).Wait(); // 5 second delay
                         }
                     }
 				}
