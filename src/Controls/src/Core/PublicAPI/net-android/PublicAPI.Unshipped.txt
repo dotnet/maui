@@ -423,6 +423,3 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 Microsoft.Maui.Controls.ToolbarItem.IsVisible.get -> bool
 Microsoft.Maui.Controls.ToolbarItem.IsVisible.set -> void
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.IsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
-Microsoft.Maui.Controls.ToolbarItem.IsVisible.get -> bool
-Microsoft.Maui.Controls.ToolbarItem.IsVisible.set -> void
-~static readonly Microsoft.Maui.Controls.ToolbarItem.IsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
