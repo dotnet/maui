@@ -1,5 +1,11 @@
 ---
-applyTo: "src/Controls/tests/**/*.cs"
+applyTo: 
+  - "src/Controls/tests/TestCases.HostApp/**/*.cs"
+  - "src/Controls/tests/TestCases.iOS.Tests/**/*.cs"
+  - "src/Controls/tests/TestCases.Android.Tests/**/*.cs"
+  - "src/Controls/tests/TestCases.Shared.Tests/**/*.cs"
+  - "src/Controls/tests/TestCases.Mac.Tests/**/*.cs"
+  - "src/Controls/tests/TestCases.WinUI.Tests/**/*.cs"
 ---
 
 # UI Testing Guidelines for .NET MAUI
