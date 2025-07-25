@@ -18,6 +18,8 @@ using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.ListView;
 
+#pragma warning disable CS0618 // Performance is obsolete
+
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class ListViewRenderer : ViewRenderer<ListView, UITableView>

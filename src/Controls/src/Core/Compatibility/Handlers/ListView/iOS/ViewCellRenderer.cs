@@ -8,6 +8,8 @@ using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 
+#pragma warning disable CS0618 // Performance is obsolete
+
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class ViewCellRenderer : CellRenderer

@@ -14,6 +14,8 @@ using Microsoft.Maui.Graphics;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
 
+#pragma warning disable CS0618 // Performance is obsolete
+
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	internal class ListViewAdapter : CellAdapter
