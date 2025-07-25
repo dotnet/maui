@@ -58,18 +58,17 @@ namespace UITest.Appium.NUnit
 		{
 			try
 			{
-				if (!ResetAfterEachTest || Device is TestDevice.Mac)
+
+				if (Device is TestDevice.Mac)
 				{
-					if (Device is TestDevice.Mac)
-					{
-						// For Mac, here needed to close the app itself, re-open happens on InitialSetup
-						Close();
-					}
-					else
-					{
-						Reset();
-					}
+					// For Mac, here needed to close the app itself, re-open happens on InitialSetup
+					Close();
 				}
+				else if (!ResetAfterEachTest)
+				{
+					Reset();
+				}
+
 			}
 			catch (Exception e)
 			{
