@@ -477,6 +477,3 @@ virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.UpdateTabIcons() -> v
 Microsoft.Maui.Controls.ToolbarItem.IsVisible.get -> bool
 Microsoft.Maui.Controls.ToolbarItem.IsVisible.set -> void
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.IsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
-Microsoft.Maui.Controls.ToolbarItem.IsVisible.get -> bool
-Microsoft.Maui.Controls.ToolbarItem.IsVisible.set -> void
-~static readonly Microsoft.Maui.Controls.ToolbarItem.IsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
