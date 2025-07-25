@@ -278,5 +278,93 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return ((Toolbar)(navPage.Window as IToolbarElement).Toolbar).ToolbarItems.ToArray();
 		}
+
+#if !IOS && !MACCATALYST
+		[Fact(DisplayName = "ToolbarItem IsVisible Property Works")]
+		public async Task ToolbarItemIsVisibleWorks()
+		{
+			SetupBuilder();
+			var visibleItem = new ToolbarItem() { Text = "Visible Item", IsVisible = true };
+			var hiddenItem = new ToolbarItem() { Text = "Hidden Item", IsVisible = false };
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				ToolbarItems =
+				{
+					visibleItem,
+					hiddenItem
+				}
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
+			{
+				var platformToolbarItems = GetPlatformToolbarItems(handler);
+				
+				// Should only contain the visible item
+				Assert.Single(platformToolbarItems);
+				Assert.Equal("Visible Item", GetToolbarItemText(platformToolbarItems[0]));
+				
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "ToolbarItem IsVisible Changes Dynamically")]
+		public async Task ToolbarItemIsVisibleChangesDynamically()
+		{
+			SetupBuilder();
+			var toolbarItem = new ToolbarItem() { Text = "Test Item", IsVisible = true };
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				ToolbarItems = { toolbarItem }
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				// Initially visible
+				var platformToolbarItems = GetPlatformToolbarItems(handler);
+				Assert.Single(platformToolbarItems);
+
+				// Hide the item
+				toolbarItem.IsVisible = false;
+				await Task.Delay(100); // Allow for UI update
+
+				platformToolbarItems = GetPlatformToolbarItems(handler);
+				Assert.Empty(platformToolbarItems);
+
+				// Show it again
+				toolbarItem.IsVisible = true;
+				await Task.Delay(100); // Allow for UI update
+
+				platformToolbarItems = GetPlatformToolbarItems(handler);
+				Assert.Single(platformToolbarItems);
+			});
+		}
+
+		[Fact(DisplayName = "Multiple ToolbarItems IsVisible")]
+		public async Task MultipleToolbarItemsIsVisible()
+		{
+			SetupBuilder();
+			var item1 = new ToolbarItem() { Text = "Item 1", IsVisible = true };
+			var item2 = new ToolbarItem() { Text = "Item 2", IsVisible = false };
+			var item3 = new ToolbarItem() { Text = "Item 3", IsVisible = true };
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				ToolbarItems = { item1, item2, item3 }
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
+			{
+				var platformToolbarItems = GetPlatformToolbarItems(handler);
+				
+				// Should contain items 1 and 3, but not 2
+				Assert.Equal(2, platformToolbarItems.Count);
+				var texts = platformToolbarItems.Select(GetToolbarItemText).ToArray();
+				Assert.Contains("Item 1", texts);
+				Assert.Contains("Item 3", texts);
+				Assert.DoesNotContain("Item 2", texts);
+				
+				return Task.CompletedTask;
+			});
+		}
+#endif
 	}
 }

@@ -1763,6 +1763,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// Subscribe to property changes for all current toolbar items
 				foreach (var item in toolbarItems)
 				{
+					if (!item.IsVisible)
+						continue;
+
 					item.PropertyChanged += OnToolbarItemPropertyChanged;
 					_trackedToolbarItems.Add(item);
 

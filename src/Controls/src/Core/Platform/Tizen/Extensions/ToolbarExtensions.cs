@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Platform
 				platformToolbar.Actions.Add(action);
 			}
 
-			var secondaryActions = toolbar.ToolbarItems.Where(i => i.Order == ToolbarItemOrder.Secondary).OrderBy(i => i.Priority);
+			var secondaryActions = toolbar.ToolbarItems.Where(i => i.IsVisible && i.Order == ToolbarItemOrder.Secondary).OrderBy(i => i.Priority);
 			if (secondaryActions.Any())
 			{
 				var more = CreateMoreButton(platformToolbar, toolbar);
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static IEnumerable<NView> GetPrimaryActionButtons(MauiToolbar platformToolbar, IEnumerable<ToolbarItem> toolbarItems)
 		{
-			return toolbarItems.Where(i => i.Order <= ToolbarItemOrder.Primary).OrderBy(i => i.Priority).Select(i => CreateToolbarButton(platformToolbar, i));
+			return toolbarItems.Where(i => i.IsVisible && i.Order <= ToolbarItemOrder.Primary).OrderBy(i => i.Priority).Select(i => CreateToolbarButton(platformToolbar, i));
 		}
 
 		static TMaterialIconButton CreateBackButton(MauiToolbar platformToolbar, Toolbar toolbar)

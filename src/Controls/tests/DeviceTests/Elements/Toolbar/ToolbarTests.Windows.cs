@@ -125,5 +125,33 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.CompletedTask;
 			});
 		}
+
+		List<object> GetPlatformToolbarItems(IElementHandler handler)
+		{
+			var window = handler.PlatformView as Microsoft.UI.Xaml.Window;
+			var toolbar = window?.Content?.FindDescendant<MauiToolbar>();
+			var commandBar = toolbar?.CommandBar;
+			
+			var items = new List<object>();
+			if (commandBar?.PrimaryCommands != null)
+			{
+				items.AddRange(commandBar.PrimaryCommands.Cast<object>());
+			}
+			if (commandBar?.SecondaryCommands != null)
+			{
+				items.AddRange(commandBar.SecondaryCommands.Cast<object>());
+			}
+			
+			return items;
+		}
+
+		string GetToolbarItemText(object platformItem)
+		{
+			if (platformItem is AppBarButton button)
+			{
+				return button.Label ?? button.Content?.ToString() ?? "";
+			}
+			return "";
+		}
 	}
 }

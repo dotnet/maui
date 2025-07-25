@@ -474,3 +474,9 @@ virtual Microsoft.Maui.Controls.Handlers.TabbedPageManager.UpdateTabIcons() -> v
 ~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.VisualElement.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+Microsoft.Maui.Controls.ToolbarItem.IsVisible.get -> bool
+Microsoft.Maui.Controls.ToolbarItem.IsVisible.set -> void
+~static readonly Microsoft.Maui.Controls.ToolbarItem.IsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.ToolbarItem.IsVisible.get -> bool
+Microsoft.Maui.Controls.ToolbarItem.IsVisible.set -> void
+~static readonly Microsoft.Maui.Controls.ToolbarItem.IsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty

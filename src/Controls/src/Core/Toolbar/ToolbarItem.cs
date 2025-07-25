@@ -17,6 +17,9 @@ public class ToolbarItem : MenuItem
 
 	static readonly BindableProperty PriorityProperty = BindableProperty.Create(nameof(Priority), typeof(int), typeof(ToolbarItem), 0);
 
+	/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
+	public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(ToolbarItem), true, propertyChanged: OnIsVisibleChanged);
+
 	/// <summary>
 	/// Constructs and initializes a new instance of the ToolbarItem class.
 	/// </summary>
@@ -64,5 +67,21 @@ public class ToolbarItem : MenuItem
 	{
 		get { return (int)GetValue(PriorityProperty); }
 		set { SetValue(PriorityProperty, value); }
+	}
+
+	/// <summary>
+	/// Gets or sets a value that indicates whether this ToolbarItem is visible.
+	/// This is a bindable property.
+	/// </summary>
+	public bool IsVisible
+	{
+		get { return (bool)GetValue(IsVisibleProperty); }
+		set { SetValue(IsVisibleProperty, value); }
+	}
+
+	static void OnIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		// Platform-specific toolbar rendering will handle filtering invisible items
+		// when the toolbar is refreshed
 	}
 }

@@ -44,6 +44,9 @@ namespace Microsoft.Maui.Controls
 
 			foreach (ToolbarItem item in toolbarItems)
 			{
+				if (!item.IsVisible)
+					continue;
+
 				var button = new AppBarButton();
 				button.SetBinding(AppBarButton.LabelProperty, "Text");
 

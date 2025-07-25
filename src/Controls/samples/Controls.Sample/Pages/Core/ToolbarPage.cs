@@ -79,4 +79,32 @@ public partial class ToolbarPage
 			menuLabel.Text = "You clicked on ToolbarItem: Test Secondary (3) with changed Command";
 		});
 	}
+
+	void ToggleVisibility_Clicked(object sender, EventArgs e)
+	{
+		primary1.IsVisible = !primary1.IsVisible;
+	}
+
+	void ToggleSecondaryVisibility_Clicked(object sender, EventArgs e)
+	{
+		secondary2.IsVisible = !secondary2.IsVisible;
+	}
+
+	void HideAll_Clicked(object sender, EventArgs e)
+	{
+		primary1.IsVisible = false;
+		secondary1.IsVisible = false;
+		secondary2.IsVisible = false;
+		secondary3.IsVisible = false;
+		secondary4.IsVisible = false;
+	}
+
+	void ShowAll_Clicked(object sender, EventArgs e)
+	{
+		primary1.IsVisible = true;
+		secondary1.IsVisible = true;
+		secondary2.IsVisible = true;
+		secondary3.IsVisible = true;
+		secondary4.IsVisible = true;
+	}
 }
