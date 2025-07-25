@@ -102,12 +102,6 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool RespondsToSafeArea()
 		{
-			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea)
-			{
-				_scrollViewDescendant = false;
-				return false;
-			}
-
 			if (_scrollViewDescendant.HasValue)
 				return _scrollViewDescendant.Value;
 

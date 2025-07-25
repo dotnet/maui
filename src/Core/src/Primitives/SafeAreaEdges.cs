@@ -145,9 +145,21 @@ namespace Microsoft.Maui
 			return obj is SafeAreaEdges other && Equals(other);
 		}
 
-#if !NETSTANDARD2_0
-		public override int GetHashCode() =>
-			HashCode.Combine(Left, Top, Right, Bottom);
+#if NETSTANDARD2_0
+	public override int GetHashCode()
+	{
+		unchecked
+		{
+			int hashCode = Left.GetHashCode();
+			hashCode = (hashCode * 397) ^ Top.GetHashCode();
+			hashCode = (hashCode * 397) ^ Right.GetHashCode();
+			hashCode = (hashCode * 397) ^ Bottom.GetHashCode();
+			return hashCode;
+		}
+	}
+#else
+	public override int GetHashCode() =>
+		HashCode.Combine(Left, Top, Right, Bottom);
 #endif
 		public override string ToString() =>
 			$"{Left}, {Top}, {Right}, {Bottom}";
