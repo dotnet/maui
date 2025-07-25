@@ -66,13 +66,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					return;
 				case 0:
 					if (Last == ItemsViewAdapter.ItemsSource.Count - 1)
-						_itemsView.SendRemainingItemsThresholdReached();
+						HandleRemainingItemsThresholdReached(recyclerView);
 					break;
 				default:
 					if (ItemsViewAdapter.ItemsSource.Count - 1 - Last <= _itemsView.RemainingItemsThreshold)
-						_itemsView.SendRemainingItemsThresholdReached();
+						HandleRemainingItemsThresholdReached(recyclerView);
 					break;
 			}
+		}
+
+		void HandleRemainingItemsThresholdReached(RecyclerView recyclerView)
+		{
+			// Post the command execution to the next frame to avoid "Cannot call this method in a scroll callback" exception
+			// This ensures the RecyclerView has finished its scroll operations before we modify the collection
+			recyclerView.Post(() =>
+			{
+				if (!_disposed && _itemsView is not null)
+				{
+					_itemsView.SendRemainingItemsThresholdReached();
+				}
+			});
 		}
 
 		protected virtual (int First, int Center, int Last) GetVisibleItemsIndex(RecyclerView recyclerView)
