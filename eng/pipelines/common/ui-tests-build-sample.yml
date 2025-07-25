@@ -10,7 +10,7 @@ parameters:
   skipProvisioning: true
   configuration: "Release"
   testFilter: ''
-  runtimeVariant: 'Mono'
+  runtimeVariant: 'Mono' #Mono, CoreCLR, NativeAOT
 
 steps:
 - ${{ if eq(parameters.platform, 'ios')}}:
