@@ -1,12 +1,9 @@
-#if IOS || MACCATALYST
-using PlatformWebView = WebKit.WKWebView;
-using PlatformSettings = WebKit.WKWebViewConfiguration;
+#if WINDOWS
+using Microsoft.Web.WebView2.Core;
+#elif IOS || MACCATALYST
+using WebKit;
 #elif ANDROID
-using PlatformWebView = Android.Webkit.WebView;
-using PlatformSettings = Android.Webkit.WebSettings;
-#elif WINDOWS
-using PlatformWebView = Microsoft.Web.WebView2.Core.CoreWebView2;
-using PlatformSettings = Microsoft.Web.WebView2.Core.CoreWebView2Settings;
+using Android.Webkit;
 #endif
 
 namespace Microsoft.Maui;
@@ -16,14 +13,37 @@ namespace Microsoft.Maui;
 /// </summary>
 public class WebViewInitializationCompletedEventArgs
 {
-#if IOS || MACCATALYST || ANDROID || WINDOWS
+#if IOS || MACCATALYST
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="WebViewInitializationCompletedEventArgs"/> class.
+	/// </summary>
+	/// <param name="sender">The native view that is being initialized.</param>
+	/// <param name="configuration">The settings for the web view, which can be used to configure various aspects of the web view.</param>
+	internal WebViewInitializationCompletedEventArgs(WKWebView sender, WKWebViewConfiguration configuration)
+	{
+		Sender = sender;
+		Configuration = configuration;
+	}
+
+	/// <summary>
+	/// Gets the native view attached to the event.
+	/// </summary>
+	public WKWebView Sender { get; }
+
+	/// <summary>
+	/// Gets or sets the settings attached to the web view.
+	/// </summary>
+	public WKWebViewConfiguration Configuration { get; }
+
+#elif ANDROID
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="WebViewInitializationCompletedEventArgs"/> class.
 	/// </summary>
 	/// <param name="sender">The native view that is being initialized.</param>
 	/// <param name="settings">The settings for the web view, which can be used to configure various aspects of the web view.</param>
-	internal WebViewInitializationCompletedEventArgs(PlatformWebView sender, PlatformSettings settings)
+	internal WebViewInitializationCompletedEventArgs(WebView sender, WebSettings settings)
 	{
 		Sender = sender;
 		Settings = settings;
@@ -32,15 +52,35 @@ public class WebViewInitializationCompletedEventArgs
 	/// <summary>
 	/// Gets the native view attached to the event.
 	/// </summary>
-	public PlatformWebView Sender { get; }
+	public WebView Sender { get; }
 
 	/// <summary>
-	/// Gets or sets the settings for the web view.
+	/// Gets or sets the settings attached to the web view.
 	/// </summary>
-	/// <remarks>
-	/// This property can be used to configure various aspects of the web view, such as JavaScript support, caching, etc.
-	/// </remarks>
-	public PlatformSettings Settings { get; }
+	public WebSettings Settings { get; }
+
+#elif WINDOWS
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="WebViewInitializationCompletedEventArgs"/> class.
+	/// </summary>
+	/// <param name="sender">The native view that is being initialized.</param>
+	/// <param name="settings">The settings for the web view, which can be used to configure various aspects of the web view.</param>
+	internal WebViewInitializationCompletedEventArgs(CoreWebView2 sender, CoreWebView2Settings settings)
+	{
+		Sender = sender;
+		Settings = settings;
+	}
+
+	/// <summary>
+	/// Gets the native view attached to the event.
+	/// </summary>
+	public CoreWebView2 Sender { get; }
+
+	/// <summary>
+	/// Gets or sets the settings attached to the web view.
+	/// </summary>
+	public CoreWebView2Settings Settings { get; }
 
 #else
 
