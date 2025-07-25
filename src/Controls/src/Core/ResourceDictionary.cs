@@ -365,7 +365,7 @@ namespace Microsoft.Maui.Controls
 				if (_mergedInstance != null)
 					foreach (var key in _mergedInstance.MergedResourcesKeys)
 						yield return key;
-				
+
 				foreach (var key in _innerDictionary.Keys)
 					yield return key;
 			}
@@ -524,7 +524,7 @@ namespace Microsoft.Maui.Controls
 			public object GetValue()
 			{
 				_invocationCount++;
-				
+
 				if (!_shared)
 					return _factory();
 
@@ -572,11 +572,11 @@ namespace Microsoft.Maui.Controls
 		internal ResourceDiagnostics GetDiagnostics()
 		{
 			var diag = new ResourceDiagnostics();
-			
+
 			foreach (var kvp in _innerDictionary)
 			{
 				diag.TotalCount++;
-				
+
 				if (kvp.Value is LazyResource lazy)
 				{
 					diag.LazyCount++;
@@ -597,7 +597,7 @@ namespace Microsoft.Maui.Controls
 					diag.EagerKeys.Add(kvp.Key);
 				}
 			}
-			
+
 			return diag;
 		}
 
@@ -617,14 +617,29 @@ namespace Microsoft.Maui.Controls
 		}
 #endif
 
+#nullable enable
 		[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.RDSourceTypeConverter")]
 		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter
 		{
-			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 				=> sourceType == typeof(string);
 
-			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 				=> true;
+
+			public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+							=> throw new NotImplementedException();
+
+			public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+			{
+				if (value is not Uri uri)
+				{
+					throw new NotSupportedException();
+				}
+
+				return uri.ToString();
+			}
+#nullable disable
 
 			object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 			{
@@ -673,16 +688,6 @@ namespace Microsoft.Maui.Controls
 
 				//drop the leading '/'
 				return resourceUri.AbsolutePath.Substring(1);
-			}
-
-			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-				=> throw new NotImplementedException();
-
-			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
-			{
-				if (value is not Uri uri)
-					throw new NotSupportedException();
-				return uri.ToString();
 			}
 		}
 	}
