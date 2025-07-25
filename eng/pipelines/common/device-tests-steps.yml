@@ -140,7 +140,7 @@ steps:
   displayName: Execute Test Run
   workingDirectory: ${{ parameters.checkoutDirectory }}
   condition: and(succeeded(), ne('${{ parameters.buildType }}', 'buildOnly'))
-  ${{ if or(eq(parameters.buildType, 'windows'), eq(parameters.platform, 'android')) }}:
+  ${{ if or(eq(parameters.buildType, 'windows'), eq(parameters.platform, 'android'), eq(parameters.platform, 'ios')) }}:
     retryCountOnTaskFailure: 1
 
 ##################################################

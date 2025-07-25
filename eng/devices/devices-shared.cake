@@ -299,6 +299,13 @@ void RunMacAndiOSTests(
 				catch (Exception ex)
 				{
 					Information($"Test attempt {i} failed: {ex.Message}");
+					bool isLaunchFailure = IsSimulatorLaunchFailure(ex);
+					
+					if (isLaunchFailure)
+					{
+						Information("Detected simulator launch failure (exit code 4). This may be a transient issue.");
+					}
+					
 					if (i == 1)
                     {
 						throw;
@@ -312,6 +319,13 @@ void RunMacAndiOSTests(
                         foreach (var logFile in logFiles)
                         {
                             DeleteFile(logFile);
+                        }
+                        
+                        // For launch failures, add a small delay to let the simulator settle
+                        if (isLaunchFailure)
+                        {
+                            Information("Adding delay before retry due to launch failure...");
+                            System.Threading.Thread.Sleep(5000); // 5 second delay
                         }
                     }
 				}
@@ -375,4 +389,15 @@ string SanitizeTestResultsFilename(string input)
     string resultFilename = input.Replace("|", "_").Replace("TestCategory=", "");
 
     return resultFilename;
+}
+
+bool IsSimulatorLaunchFailure(Exception ex)
+{
+    // Check if the exception message contains indicators of simulator launch failures
+    var message = ex.Message;
+    return message.Contains("simctl returned exit code 4") || 
+           message.Contains("HE0042") ||
+           message.Contains("Could not launch the app") ||
+           message.Contains("FBSOpenApplicationServiceErrorDomain") ||
+           message.Contains("Simulator device failed to launch");
 }
