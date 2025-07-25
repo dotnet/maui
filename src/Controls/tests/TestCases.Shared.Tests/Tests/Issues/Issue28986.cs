@@ -17,28 +17,21 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void SafeAreaMainGridBasicFunctionality()
 		{
 			// 1. Test loads - verify essential elements are present
-			App.WaitForElement("CurrentSettings");
-			App.WaitForElement("GridResetNoneButton");
-			App.WaitForElement("GridSetContainerButton");
-			App.WaitForElement("GridResetAllButton");
+			App.WaitForElement("ContentGrid");
 
 			// 2. Verify initial state - MainGrid should start with All (offset by safe area)
 			var initialSettings = App.FindElement("CurrentSettings").GetText();
 			Assert.That(initialSettings, Does.Contain("All (Full safe area)"));
 
+
+			var safePosition = App.WaitForElement("ContentGrid").GetRect();
 			// 3. Click button to set SafeAreaEdge to "None" on the MainGrid
 			App.Tap("GridResetNoneButton");
 
-			// 4. Verify it's flush with the screen and has zero offset
-			var noneSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(noneSettings, Does.Contain("None (Edge-to-edge)"));
+			var unSafePosition = App.WaitForElement("ContentGrid").GetRect();
 
-			// 5. Click a button to set it to Container
-			App.Tap("GridSetContainerButton");
-
-			// 6. Verify that it is now offset again by the safe area
-			var containerSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(containerSettings, Does.Contain("Container (Respect notches/bars)"));
+			Assert.That(unSafePosition.Y, Is.EqualTo(0), "ContentGrid Y position should be 0 when SafeAreaEdges is set to None");
+			Assert.That(safePosition.Y, Is.Not.EqualTo(0), "ContentGrid Y position should not be 0 when SafeAreaEdges is set to All");
 		}
 
 		[Test]

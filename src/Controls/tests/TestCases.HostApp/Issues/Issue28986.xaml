@@ -5,9 +5,9 @@
              x:Name="TestPage"
              Title="SafeArea Test">
     
-    <Grid x:Name="MainGrid" BackgroundColor="Red" SafeAreaEdges="All">
+    <Grid x:Name="MainGrid" BackgroundColor="Red" SafeAreaEdges="All" AutomationId="MainGrid">
         <!-- Single content grid that spans the entire screen -->
-        <Grid x:Name="ContentGrid">
+        <Grid x:Name="ContentGrid" SafeAreaEdges="None" AutomationId="ContentGrid">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -15,7 +15,7 @@
             </Grid.RowDefinitions>
             
             <!-- Top test area - should move in/out of notch area -->
-            <Border Grid.Row="0" BackgroundColor="Yellow" Stroke="Orange" StrokeThickness="3" Padding="10">
+            <Border Grid.Row="0" BackgroundColor="Yellow" Stroke="Orange" StrokeThickness="3" Padding="10" SafeAreaEdges="None">
                 <Label Text="TOP TEST AREA: This should move in/out of notch/status bar area when safe area is toggled"
                        FontSize="14"
                        FontAttributes="Bold"
