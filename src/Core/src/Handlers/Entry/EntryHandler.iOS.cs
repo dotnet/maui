@@ -28,9 +28,6 @@ namespace Microsoft.Maui.Handlers
 			base.SetVirtualView(view);
 
 			_proxy.SetVirtualView(PlatformView);
-
-			// Store the virtual view reference in MauiTextField for theme change handling
-			PlatformView?.SetEntryView(VirtualView);
 		}
 
 		protected override void ConnectHandler(MauiTextField platformView)
@@ -41,9 +38,6 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiTextField platformView)
 		{
 			_proxy.Disconnect(platformView);
-
-			// Clear the virtual view reference when disconnecting
-			platformView?.SetEntryView(null);
 		}
 
 		public static void MapText(IEntryHandler handler, IEntry entry)
@@ -54,8 +48,14 @@ namespace Microsoft.Maui.Handlers
 			MapFormatting(handler, entry);
 		}
 
-		public static void MapTextColor(IEntryHandler handler, IEntry entry) =>
+		public static void MapTextColor(IEntryHandler handler, IEntry entry)
+		{
 			handler.PlatformView?.UpdateTextColor(entry);
+			if (entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
+			{
+				handler.PlatformView?.UpdateClearButtonColor(entry);
+			}
+		}
 
 		public static void MapIsPassword(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateIsPassword(entry);
