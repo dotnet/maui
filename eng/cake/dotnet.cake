@@ -11,6 +11,8 @@ string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
 string officialBuildId = Argument("officialbuildid", "");
 
+string DotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net10.0");
+
 string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
 
 var rootFolder = Context.Environment.WorkingDirectory;
@@ -207,6 +209,7 @@ Task("uitests-apphost")
         {
             Information("Building for CoreCLR");
             properties.Add("UseMonoRuntime", "false");
+            properties.Add("UseCoreCLR", $"{DotnetVersion}-android");
         }
 
         if (USE_NATIVE_AOT)

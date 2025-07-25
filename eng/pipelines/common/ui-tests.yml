@@ -60,7 +60,7 @@ stages:
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: build_ui_tests_coreclr
-    displayName: Build UITests Sample App
+    displayName: Build UITests Sample App CoreCLR
     dependsOn: []
     jobs:
       - job: build_ui_tests
