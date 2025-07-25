@@ -18,6 +18,14 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateSelectedIndex(this MauiPicker platformPicker, IPicker picker) =>
 			platformPicker.UpdatePicker(picker, picker.SelectedIndex);
 
+		internal static void UpdateIsOpen(this MauiPicker platformPicker, IPicker picker)
+		{
+			if (picker.IsOpen)
+				platformPicker.BecomeFirstResponder();
+			else
+				platformPicker.ResignFirstResponder();
+		}
+
 		internal static void UpdateAttributedPlaceholder(this MauiPicker platformPicker, NSAttributedString nsAttributedString)
 		{
 			platformPicker.AttributedPlaceholder = nsAttributedString;
