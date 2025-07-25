@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 	/// Represents safe area settings for each edge of a layout or visual element.
 	/// </summary>
 	[TypeConverter(typeof(Converters.SafeAreaEdgesTypeConverter))]
-	public struct SafeAreaEdges : IEquatable<SafeAreaEdges>
+	public readonly struct SafeAreaEdges : IEquatable<SafeAreaEdges>
 	{
 		/// <summary>
 		/// Gets the safe area behavior for the left edge.
