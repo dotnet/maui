@@ -187,7 +187,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	//[InlineData(typeof(WebView))] - This test was moved to MemoryTests.cs inside Appium
 	[InlineData(typeof(CollectionView))]
 #if IOS || MACCATALYST
-	//[InlineData(typeof(CollectionView2))] - Fails, Check https://github.com/dotnet/maui/issues/29619
+	[InlineData(typeof(CollectionView2))]
 	[InlineData(typeof(CarouselView2))]
 #endif
 	public async Task HandlerDoesNotLeak(Type type)
@@ -282,7 +282,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[Theory("CollectionView Header/Footer Doesn't Leak")]
 	[InlineData(typeof(CollectionView))]
 #if IOS || MACCATALYST
-	//[InlineData(typeof(CollectionView2))] Fails, Check https://github.com/dotnet/maui/issues/29619
+	[InlineData(typeof(CollectionView2))]
 #endif
 	public async Task CollectionViewHeaderFooterDoesntLeak(Type type)
 	{
