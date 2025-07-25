@@ -67,9 +67,12 @@ namespace Microsoft.Maui.Platform
 		}
 		public void TouchesBegan(PointF[] points)
 		{
+			if (_graphicsView is null || !_graphicsView.IsEnabled)
+				return;
+			
 			_dragStarted = false;
 			_lastMovedViewPoints = points;
-			_graphicsView?.StartInteraction(points);
+			_graphicsView.StartInteraction(points);
 			_pressedContained = true;
 		}
 
@@ -95,13 +98,19 @@ namespace Microsoft.Maui.Platform
 
 		public void TouchesEnded(PointF[] points)
 		{
+			if (_graphicsView is null || !_graphicsView.IsEnabled)
+				return;
+			
 			_graphicsView?.EndInteraction(points, _pressedContained);
 		}
 
 		public void TouchesCanceled()
 		{
+			if (_graphicsView is null || !_graphicsView.IsEnabled)
+				return;
+			
 			_pressedContained = false;
-			_graphicsView?.CancelInteraction();
+			_graphicsView.CancelInteraction();
 		}
 
 		public override bool OnHoverEvent(MotionEvent? e)
