@@ -516,6 +516,61 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "ShellContentFragment.Destroy handles null _shellContext gracefully")]
+		public async Task ShellContentFragmentDestroyHandlesNullShellContext()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Item1",
+							Content = new ContentPage { Title = "Page 1" }
+						},
+						new ShellContent()
+						{
+							Route = "Item2", 
+							Content = new ContentPage { Title = "Page 2" }
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+				await OnNavigatedToAsync(shell.CurrentPage);
+
+				// Navigate to trigger fragment creation
+				await shell.GoToAsync("//Item2");
+				await OnNavigatedToAsync(shell.CurrentPage);
+
+				// Test normal destruction - should work without issues
+				await shell.GoToAsync("//Item1");
+				await OnNavigatedToAsync(shell.CurrentPage);
+
+				// Test null context scenario
+				var exception = Record.Exception(() => 
+				{
+					// Create fragment with null context - this should not throw
+					Page page = new ContentPage();
+					var fragment = new ShellContentFragment((IShellContext)null, page);
+			
+					// Dispose the fragment which calls Destroy internally
+					// This validates the null-conditional operators in Destroy method
+					fragment.Dispose();
+				});
+
+				// Verify no exception was thrown - validates (_shellContext?.Shell as IShellController)?.RemoveAppearanceObserver(this);
+				Assert.Null(exception);
+			});
+		}
+
 		protected AView GetFlyoutPlatformView(ShellRenderer shellRenderer)
 		{
 			var drawerLayout = GetDrawerLayout(shellRenderer);
