@@ -203,7 +203,7 @@ public class ToolbarFeatureTests : UITest
 	}
 #endif
 
-	public void CloseSecondaryToolbarMenu() // This method is used to close the secondary toolbar menu  
+	public void CloseSecondaryToolbarMenu() // This method is used to close the secondary toolbar menu
 	{
 #if WINDOWS
 		App.Tap("MenuLabel");  
