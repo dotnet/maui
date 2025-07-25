@@ -25,6 +25,10 @@
             <Button Text="Change text on Test Secondary (1)" Clicked="Button_Clicked3" />
             <Button Text="Remove/Add Secondary (3)" Clicked="Button_Clicked4" />
             <Button Text="Change Command Property on Secondary (3)" Clicked="Button_Clicked5" />
+            <Button Text="Toggle Visibility of Test (1)" Clicked="ToggleVisibility_Clicked" BackgroundColor="LightBlue" />
+            <Button Text="Toggle Visibility of Test Secondary (2)" Clicked="ToggleSecondaryVisibility_Clicked" BackgroundColor="LightGreen" />
+            <Button Text="Hide All Toolbar Items" Clicked="HideAll_Clicked" BackgroundColor="Orange" />
+            <Button Text="Show All Toolbar Items" Clicked="ShowAll_Clicked" BackgroundColor="LightCoral" />
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
