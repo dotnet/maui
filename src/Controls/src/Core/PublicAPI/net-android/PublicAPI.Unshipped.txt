@@ -147,6 +147,7 @@ Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs
 Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs.Sender.get -> Android.Webkit.WebView!
 Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs.Settings.get -> Android.Webkit.WebSettings!
 Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs.Settings.get -> Android.Webkit.WebSettings!
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Request.get -> Android.Webkit.IWebResourceRequest!
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Response.get -> Android.Webkit.WebResourceResponse?
