@@ -262,13 +262,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <inheritdoc cref="ISafeAreaView2.IgnoreSafeAreaForEdge"/>
-		bool ISafeAreaView2.IgnoreSafeAreaForEdge(int edge)
-		{
-			// Use new SafeAreaElement logic with inverted behavior
-			return !SafeAreaElement.ShouldObeySafeAreaForEdge(this, edge);
-		}
-
 		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
 		{

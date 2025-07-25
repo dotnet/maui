@@ -364,28 +364,6 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="ISafeAreaView2.SafeAreaInsets"/>
 		Thickness ISafeAreaView2.SafeAreaInsets { set { } } // Default no-op implementation for borders
 
-		/// <inheritdoc cref="ISafeAreaView2.IgnoreSafeAreaForEdge"/>
-		bool ISafeAreaView2.IgnoreSafeAreaForEdge(int edge)
-		{
-			// Use new SafeAreaEdges property with inverted logic (obey -> ignore conversion)
-			var regionForEdge = SafeAreaEdges.GetEdge(edge);
-			
-			// Convert from "obey" logic to "ignore" logic for backwards compatibility
-			switch (regionForEdge)
-			{
-				case SafeAreaRegions.None:
-					return true; // None means edge-to-edge, so ignore safe area
-				case SafeAreaRegions.All:
-				case SafeAreaRegions.Container:
-				case SafeAreaRegions.SoftInput:
-				case SafeAreaRegions.Default:
-					return false; // These obey safe area, so don't ignore
-				default:
-					// For Border, default to None behavior (edge-to-edge)
-					return true;
-			}
-		}
-
 		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
 		{
 			return SafeAreaEdges.Default;
