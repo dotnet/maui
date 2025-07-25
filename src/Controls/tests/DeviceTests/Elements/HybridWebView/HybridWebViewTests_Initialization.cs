@@ -179,7 +179,10 @@ public partial class HybridWebViewTests_Initialization : HybridWebViewTestsBase
 #elif ANDROID
 					e.PlatformArgs.Settings.UserAgentString = UserAgent;
 #elif WINDOWS
-					e.PlatformArgs.EnvironmentOptions.AdditionalBrowserArguments = $"--user-agent=\"{UserAgent}\"";
+					e.PlatformArgs.EnvironmentOptions = new Web.WebView2.Core.CoreWebView2EnvironmentOptions
+					{
+						AdditionalBrowserArguments = $"--user-agent=\"{UserAgent}\""
+					};
 #endif
 				};
 			},
