@@ -285,3 +285,6 @@ override Microsoft.Maui.Controls.WebViewSourceTypeConverter.CanConvertTo(System.
 override Microsoft.Maui.Controls.WebViewSourceTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.WebViewSourceTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
 
+Microsoft.Maui.Controls.ToolbarItem.IsVisible.get -> bool
+Microsoft.Maui.Controls.ToolbarItem.IsVisible.set -> void
+~static readonly Microsoft.Maui.Controls.ToolbarItem.IsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
