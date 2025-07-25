@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellToolbarTracker : Java.Lang.Object, AView.IOnClickListener, IShellToolbarTracker, IFlyoutBehaviorObserver
 	{
+		const int _placeholderMenuItemId = 100;
 		#region IFlyoutBehaviorObserver
 
 		void IFlyoutBehaviorObserver.OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
@@ -632,7 +633,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		private void UpdateToolbarItemsTintColors(AToolbar toolbar)
 		{
 			var menu = toolbar.Menu;
-			int _placeholderMenuItemId = 100;
 			if (menu.FindItem(_placeholderMenuItemId) is IMenuItem item)
 			{
 				using (var icon = item.Icon)
@@ -643,7 +643,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void UpdateToolbarItems(AToolbar toolbar, Page page)
 		{
 			var menu = toolbar.Menu;
-			int _placeholderMenuItemId = 100;
 			SearchHandler = Shell.GetSearchHandler(page);
 			if (SearchHandler != null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
 			{
@@ -662,6 +661,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Collapsible)
 				{
+					menu.RemoveItem(_placeholderMenuItemId);
+
 					var placeholder = new Java.Lang.String(SearchHandler.Placeholder);
 					var item = menu.Add(0, _placeholderMenuItemId, 0, placeholder);
 					placeholder.Dispose();
