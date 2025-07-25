@@ -65,20 +65,12 @@ Task("dotnet")
             ReplaceTextInFiles(originalNuget, "NUGET_ONLY_PLACEHOLDER", nugetSource);
         }
 
-        var buildStartTime = DateTime.UtcNow;
-        Information($"[{buildStartTime:HH:mm:ss}] Starting .NET SDK provisioning build");
-        
         DotNetBuild($"{rootFolder}/src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
             MSBuildSettings = new DotNetMSBuildSettings()
                 .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration),
-            Verbosity = DotNetVerbosity.Diagnostic,
         });
-        
-        var buildEndTime = DateTime.UtcNow;
-        var duration = buildEndTime - buildStartTime;
-        Information($"[{buildEndTime:HH:mm:ss}] .NET SDK provisioning completed in {duration.TotalSeconds:F1} seconds");
 
         DotNetTool("tool",  new DotNetToolSettings {
 		    ToolPath = dotnetPath,
@@ -93,24 +85,14 @@ Task("dotnet-local-workloads")
         if (!localDotnet) 
             return;
         
-        var workloadStartTime = DateTime.UtcNow;
-        Information($"[{workloadStartTime:HH:mm:ss}] Starting workload builds");
-        
-        Information("Building workloads (without install)...");
-        var buildStart1 = DateTime.UtcNow;
         DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
             MSBuildSettings = new DotNetMSBuildSettings()
                 .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration)
                 .WithProperty("InstallWorkloadPacks", "false"),
-            Verbosity = DotNetVerbosity.Diagnostic,
         });
-        var buildEnd1 = DateTime.UtcNow;
-        Information($"Workload build completed in {(buildEnd1 - buildStart1).TotalSeconds:F1} seconds");
 
-        Information("Installing workloads...");
-        var installStart = DateTime.UtcNow;
         DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
             MSBuildSettings = new DotNetMSBuildSettings()
@@ -118,14 +100,7 @@ Task("dotnet-local-workloads")
                 .SetConfiguration(configuration)
                 .WithTarget("Install"),
             ToolPath = dotnetPath,
-            Verbosity = DotNetVerbosity.Diagnostic,
         });
-        var installEnd = DateTime.UtcNow;
-        Information($"Workload installation completed in {(installEnd - installStart).TotalSeconds:F1} seconds");
-        
-        var workloadEndTime = DateTime.UtcNow;
-        var totalDuration = workloadEndTime - workloadStartTime;
-        Information($"[{workloadEndTime:HH:mm:ss}] All workload operations completed in {totalDuration.TotalMinutes:F2} minutes");
 
         DotNetTool("tool",  new DotNetToolSettings {
 		    ToolPath = dotnetPath,
@@ -827,18 +802,6 @@ void RunMSBuildWithDotNet(
         $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{type}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog\"" :
         $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{targetFramework}-{type}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog\"";
     
-    // Build timing and diagnostic logging
-    var buildStartTime = DateTime.UtcNow;
-    Information("========================================");
-    Information($"Starting build: {name}");
-    Information($"Target: {target}");
-    Information($"Configuration: {configuration}");
-    Information($"Framework: {targetFramework ?? "All"}");
-    Information($"Build type: {type}");
-    Information($"Binary log: {binlog}");
-    Information($"Start time: {buildStartTime:yyyy-MM-dd HH:mm:ss} UTC");
-    Information("========================================");
-    
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
@@ -847,8 +810,8 @@ void RunMSBuildWithDotNet(
         .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
         .EnableBinaryLogger(binlog)
-        .WithProperty("GenerateApplicationDiagnosticTelemetry", "true")  // Enable build telemetry
-        .WithProperty("MeasureTargetFrameworkResolverDuration", "true")  // Measure resolver time
+        
+       // .SetVerbosity(Verbosity.Diagnostic)
         ;
 
     if (warningsAsError)
@@ -867,7 +830,6 @@ void RunMSBuildWithDotNet(
     var dotnetBuildSettings = new DotNetBuildSettings
     {
         MSBuildSettings = msbuildSettings,
-        Verbosity = DotNetVerbosity.Diagnostic,  // Enable diagnostic verbosity for performance analysis
     };
 
     dotnetBuildSettings.ArgumentCustomization = args =>
@@ -877,11 +839,6 @@ void RunMSBuildWithDotNet(
 
         if (!string.IsNullOrEmpty(targetFramework))
             args.Append($"-f {targetFramework}");
-        
-        // Add additional diagnostic arguments
-        args.Append("--verbosity diagnostic");
-        args.Append("/clp:PerformanceSummary");  // Show performance summary
-        args.Append("/clp:ShowTimestamp");       // Show timestamps
     
         return args;
     };
@@ -889,43 +846,11 @@ void RunMSBuildWithDotNet(
     if (localDotnet)
         dotnetBuildSettings.ToolPath = dotnetPath;
 
-    try 
-    {
-        DotNetBuild(sln, dotnetBuildSettings);
-        
-        var buildEndTime = DateTime.UtcNow;
-        var buildDuration = buildEndTime - buildStartTime;
-        Information("========================================");
-        Information($"Build completed successfully: {name}");
-        Information($"End time: {buildEndTime:yyyy-MM-dd HH:mm:ss} UTC");
-        Information($"Total duration: {buildDuration.TotalMinutes:F2} minutes ({buildDuration.TotalSeconds:F1} seconds)");
-        Information("========================================");
-    }
-    catch (Exception ex)
-    {
-        var buildEndTime = DateTime.UtcNow;
-        var buildDuration = buildEndTime - buildStartTime;
-        Error("========================================");
-        Error($"Build failed: {name}");
-        Error($"End time: {buildEndTime:yyyy-MM-dd HH:mm:ss} UTC");
-        Error($"Duration before failure: {buildDuration.TotalMinutes:F2} minutes ({buildDuration.TotalSeconds:F1} seconds)");
-        Error($"Error: {ex.Message}");
-        Error("========================================");
-        throw;
-    }
+    DotNetBuild(sln, dotnetBuildSettings);
 }
 
 void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "", int maxCpuCount = 0)
 {
-    var testStartTime = DateTime.UtcNow;
-    var projectName = System.IO.Path.GetFileNameWithoutExtension(csproj);
-    Information("========================================");
-    Information($"Starting test run: {projectName}");
-    Information($"Configuration: {config}");
-    Information($"Filter: {filter ?? "None"}");
-    Information($"Start time: {testStartTime:yyyy-MM-dd HH:mm:ss} UTC");
-    Information("========================================");
-    
     if (string.IsNullOrWhiteSpace(filter))
     {
         filter = testFilter;
@@ -971,17 +896,13 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
             Filter = filter,
             Loggers = { 
                 $"trx;LogFileName={results}",
-                $"console;verbosity=diagnostic"  // Enhanced verbosity for test diagnostics
+                $"console;verbosity=normal"
             }, 
            	ResultsDirectory = GetTestResultsDirectory(),
-            Verbosity = DotNetVerbosity.Diagnostic,  // Enable diagnostic verbosity
+        //    Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
             ArgumentCustomization = args => 
             { 
                 args.Append($"-bl:{binlog}");
-                args.Append("--verbosity diagnostic");  // Additional diagnostic verbosity
-                args.Append("/clp:PerformanceSummary");  // Show performance summary for tests
-                args.Append("/clp:ShowTimestamp");       // Show timestamps
-                
                 if(maxCpuCount > 0)
                 {
                     args.Append($"-maxcpucount:{maxCpuCount}");
@@ -1009,24 +930,6 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
 
     try {
         DotNetTest(csproj, settings);
-        
-        var testEndTime = DateTime.UtcNow;
-        var testDuration = testEndTime - testStartTime;
-        Information("========================================");
-        Information($"Test run completed successfully: {projectName}");
-        Information($"End time: {testEndTime:yyyy-MM-dd HH:mm:ss} UTC");
-        Information($"Total duration: {testDuration.TotalMinutes:F2} minutes ({testDuration.TotalSeconds:F1} seconds)");
-        Information("========================================");
-    } catch (Exception ex) {
-        var testEndTime = DateTime.UtcNow;
-        var testDuration = testEndTime - testStartTime;
-        Error("========================================");
-        Error($"Test run failed: {projectName}");
-        Error($"End time: {testEndTime:yyyy-MM-dd HH:mm:ss} UTC");
-        Error($"Duration before failure: {testDuration.TotalMinutes:F2} minutes ({testDuration.TotalSeconds:F1} seconds)");
-        Error($"Error: {ex.Message}");
-        Error("========================================");
-        throw;
     } finally {
         Information("Test Run complete: {0}", results);
     }
