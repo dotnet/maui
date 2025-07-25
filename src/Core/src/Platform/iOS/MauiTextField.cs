@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Platform
 
 	public class MauiTextField : UITextField, IUIViewLifeCycleEvents
 	{
-		WeakReference<IEntry>? _virtualView;
 
 		public MauiTextField(CGRect frame)
 			: base(frame)
@@ -18,11 +17,6 @@ namespace Microsoft.Maui.Platform
 
 		public MauiTextField()
 		{
-		}
-
-		internal void SetEntryView(IEntry? entry)
-		{
-			_virtualView = entry != null ? new WeakReference<IEntry>(entry) : null;
 		}
 
 		public override void WillMoveToWindow(UIWindow? window)
@@ -84,28 +78,6 @@ namespace Microsoft.Maui.Platform
 		{
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
-		}
-
-		public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
-		{
-
-#pragma warning disable CA1422 // Validate platform compatibility
-			base.TraitCollectionDidChange(previousTraitCollection);
-#pragma warning restore CA1422 // Validate platform compatibility
-
-			// Update clear button color when theme changes (UserInterfaceStyle change)
-			if (previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
-			{
-				UpdateClearButtonIconColor();
-			}
-		}
-
-		void UpdateClearButtonIconColor()
-		{
-			if (ClearButtonMode != UITextFieldViewMode.Never && _virtualView?.TryGetTarget(out var entry) == true)
-			{
-				this.UpdateClearButtonVisibility(entry);
-			}
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
