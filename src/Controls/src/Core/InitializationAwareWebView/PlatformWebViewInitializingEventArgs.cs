@@ -120,6 +120,11 @@ public class PlatformWebViewInitializingEventArgs
 
 #elif ANDROID
 
+	/// <summary>
+	/// Gets the platform-specific settings for the WebView.
+	/// </summary>
+	public WebSettings Settings => _coreArgs.Settings;
+
 #else
 
 #endif

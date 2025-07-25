@@ -92,6 +92,7 @@ public class WebViewInitializationStartedEventArgs
 	/// <summary>
 	/// Initializes a new instance of the <see cref="WebViewInitializationStartedEventArgs"/> class.
 	/// </summary>
+	/// <param name="configuration">The configuration to be used in the construction of the WKWebView instance.</param>
 	internal WebViewInitializationStartedEventArgs(WKWebViewConfiguration configuration)
 	{
 		Configuration = configuration;
@@ -107,9 +108,16 @@ public class WebViewInitializationStartedEventArgs
 	/// <summary>
 	/// Initializes a new instance of the <see cref="WebViewInitializationStartedEventArgs"/> class.
 	/// </summary>
-	internal WebViewInitializationStartedEventArgs()
+	/// <param name="settings">The settings for the WebView.</param>
+	internal WebViewInitializationStartedEventArgs(WebSettings settings)
 	{
+		Settings = settings;
 	}
+
+	/// <summary>
+	/// Gets the platform-specific settings for the WebView.
+	/// </summary>
+	public WebSettings Settings { get; }
 
 #else
 

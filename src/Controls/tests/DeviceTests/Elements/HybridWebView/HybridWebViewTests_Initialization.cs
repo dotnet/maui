@@ -51,24 +51,12 @@ public partial class HybridWebViewTests_Initialization : HybridWebViewTestsBase
 					Assert.NotNull(e.PlatformArgs);
 
 #if IOS || MACCATALYST
-					e.PlatformArgs.Configuration.ApplicationNameForUserAgent = UserAgent;
+					Assert.NotNull(e.PlatformArgs.Configuration);
 #elif ANDROID
-					// No values for Android
+					Assert.NotNull(e.PlatformArgs.Settings);
 #elif WINDOWS
-					e.PlatformArgs.ProfileName = ProfileName;
 #endif
 				};
-			},
-			(handler, view) =>
-			{
-#if IOS || MACCATALYST
-				var actual = handler.PlatformView.Configuration.ApplicationNameForUserAgent;
-				Assert.Equal(UserAgent, actual);
-#elif ANDROID
-#elif WINDOWS
-				var actual = handler.PlatformView.CoreWebView2.Profile.ProfileName;
-				Assert.Equal(ProfileName, actual);
-#endif
 			});
 
 		Assert.Equal(1, calledCount);
@@ -88,7 +76,11 @@ public partial class HybridWebViewTests_Initialization : HybridWebViewTestsBase
 
 					Assert.NotNull(e.PlatformArgs);
 					Assert.NotNull(e.PlatformArgs.Sender);
+#if IOS || MACCATALYST
+					Assert.NotNull(e.PlatformArgs.Configuration);
+#elif ANDROID || WINDOWS
 					Assert.NotNull(e.PlatformArgs.Settings);
+#endif
 				};
 			});
 
@@ -96,7 +88,49 @@ public partial class HybridWebViewTests_Initialization : HybridWebViewTestsBase
 	}
 
 	[Fact]
-	public Task CanSetUserAgent() =>
+	public async Task InitializingEventIsRaisedAndPropertiesSetAreApplied()
+	{
+		var calledCount = 0;
+
+		await RunTest(
+			hybridWebView =>
+			{
+				hybridWebView.WebViewInitializing += (s, e) =>
+				{
+					calledCount++;
+
+					Assert.NotNull(e.PlatformArgs);
+
+#if IOS || MACCATALYST
+					Assert.NotNull(e.PlatformArgs.Configuration);
+					e.PlatformArgs.Configuration.ApplicationNameForUserAgent = UserAgent;
+#elif ANDROID
+					Assert.NotNull(e.PlatformArgs.Settings);
+					e.PlatformArgs.Settings.UserAgentString = UserAgent;
+#elif WINDOWS
+					e.PlatformArgs.ProfileName = ProfileName;
+#endif
+				};
+			},
+			(handler, view) =>
+			{
+#if IOS || MACCATALYST
+				var actual = handler.PlatformView.Configuration.ApplicationNameForUserAgent;
+				Assert.Equal(UserAgent, actual);
+#elif ANDROID
+				var actual = handler.PlatformView.Settings.UserAgentString;
+				Assert.Equal(UserAgent, actual);
+#elif WINDOWS
+				var actual = handler.PlatformView.CoreWebView2.Profile.ProfileName;
+				Assert.Equal(ProfileName, actual);
+#endif
+			});
+
+		Assert.Equal(1, calledCount);
+	}
+
+	[Fact]
+	public Task CanSetUserAgentUsingProperties() =>
 		RunTest(
 			hybridWebView =>
 			{
@@ -106,16 +140,46 @@ public partial class HybridWebViewTests_Initialization : HybridWebViewTestsBase
 
 #if IOS || MACCATALYST
 					e.PlatformArgs.Configuration.ApplicationNameForUserAgent = UserAgent;
+#elif ANDROID
+					e.PlatformArgs.Settings.UserAgentString = UserAgent;
 #endif
 				};
 				hybridWebView.WebViewInitialized += (s, e) =>
 				{
 					Assert.NotNull(e.PlatformArgs);
 
-#if ANDROID
+#if WINDOWS
+					e.PlatformArgs.Settings.UserAgent = UserAgent;
+#endif
+				};
+			},
+			(handler, view) =>
+			{
+#if IOS || MACCATALYST
+				var actual = handler.PlatformView.Configuration.ApplicationNameForUserAgent;
+#elif ANDROID
+				var actual = handler.PlatformView.Settings.UserAgentString;
+#elif WINDOWS
+				var actual = handler.PlatformView.CoreWebView2.Settings.UserAgent;
+#endif
+				Assert.Equal(UserAgent, actual);
+			});
+
+	[Fact]
+	public Task CanSetUserAgentUsingInitializingEvent() =>
+		RunTest(
+			hybridWebView =>
+			{
+				hybridWebView.WebViewInitializing += (s, e) =>
+				{
+					Assert.NotNull(e.PlatformArgs);
+
+#if IOS || MACCATALYST
+					e.PlatformArgs.Configuration.ApplicationNameForUserAgent = UserAgent;
+#elif ANDROID
 					e.PlatformArgs.Settings.UserAgentString = UserAgent;
 #elif WINDOWS
-					e.PlatformArgs.Settings.UserAgent = UserAgent;
+					e.PlatformArgs.EnvironmentOptions.AdditionalBrowserArguments = $"--user-agent=\"{UserAgent}\"";
 #endif
 				};
 			},
