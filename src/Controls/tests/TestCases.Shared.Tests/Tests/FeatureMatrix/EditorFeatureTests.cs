@@ -338,7 +338,7 @@ public class EditorFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID  // On iOS and Maccatalyst While updating CursorPosition and SelectionLength, the Editor text gets deleted. & On Android, changing CursorPosition keeps the cursor visible even when IsCursorVisible is set to false, which is unexpected.
-	[Test]
+	[Test, Order(5)]
 	public void VerifyEditorTextWhenSelectionLengthSetValue()
 	{
 		App.WaitForElement("Options");
