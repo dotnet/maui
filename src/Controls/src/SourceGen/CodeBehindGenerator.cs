@@ -303,6 +303,9 @@ public class CodeBehindGenerator : IIncrementalGenerator
 
 		sb.AppendLine($"namespace {rootClrNamespace}");
 		sb.AppendLine("{");
+		sb.AppendLine($"\t/// <summary>");
+		sb.AppendLine($"\t/// Generated XAML code behind for {projItem.RelativePath}");
+		sb.AppendLine($"\t/// </summary>");
 		sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{projItem.RelativePath?.Replace("\\", "\\\\")}\")]");
 		if (addXamlCompilationAttribute)
 		{
@@ -320,6 +323,9 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		//optional default ctor
 		if (generateDefaultCtor)
 		{
+			sb.AppendLine($"\t\t/// <summary>");
+			sb.AppendLine($"\t\t/// Creates a new {rootType}");
+			sb.AppendLine($"\t\t/// </summary>");
 			sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
 			sb.AppendLine($"\t\tpublic {rootType}()");
 			sb.AppendLine("\t\t{");
