@@ -23,13 +23,13 @@ public class DateOnlyTypeConverterTests : BaseTestFixture
 	}
 
 	[Fact]
-	public async Task ConvertToInvariantStringThrowsNotSupportedException()
+	public async Task ConvertToInvariantStringThrowsNotImplementedException()
 	{
 		var converter = new DateTimeTypeConverter();
 
 		var stringValue = "Not a DateOnly string";
 
-		await Assert.ThrowsAsync<NotSupportedException>(async () => converter.ConvertToInvariantString(stringValue));
+		await Assert.ThrowsAsync<NotImplementedException>(async () => converter.ConvertToInvariantString(stringValue));
 	}
 }
 #endif
