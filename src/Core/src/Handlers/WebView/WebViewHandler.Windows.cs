@@ -320,6 +320,12 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		internal static void MapFlowDirection(IWebViewHandler handler, IWebView webView)
+		{
+			// Explicitly do nothing here to override the base ViewHandler.MapFlowDirection behavior
+			// This prevents the WebView2.FlowDirection from being set, avoiding content mirroring
+		}
+
 		class WebView2Proxy
 		{
 			WeakReference<Window>? _window;
