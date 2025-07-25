@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 			var oldIndex = oldParent?.IndexOfSubview(PlatformView);
 			PlatformView.RemoveFromSuperview();
 
-			ContainerView ??= new WrapperView(PlatformView.Bounds);
+			ContainerView ??= OnCreateContainer() ?? new WrapperView(PlatformView.Bounds);
 			ContainerView.AddSubview(PlatformView);
 
 			if (oldIndex is int idx && idx >= 0)
