@@ -60,7 +60,7 @@ stages:
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: build_ui_tests_coreclr
-    displayName: Build UITests Sample App CoreCLR
+    displayName: Build UITests CoreCLR Sample App
     dependsOn: []
     jobs:
       - job: build_ui_tests
@@ -77,7 +77,7 @@ stages:
   
   - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
     - stage: build_ui_tests_nativeaot
-      displayName: Build UITests Sample App NativeAOT
+      displayName: Build UITests NativeAOT Sample App
       dependsOn: []
       jobs:
         - job: build_ui_tests
@@ -184,7 +184,6 @@ stages:
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                       runtimeVariant : "CoreCLR"
-
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
