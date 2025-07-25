@@ -19,6 +19,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
             App.WaitForElement("EntryWithAppThemeBinding");
             App.Tap("EntryWithAppThemeBinding");
             App.Tap("ThemeButton");
+#if WINDOWS
+            App.Tap("EntryWithAppThemeBinding");
+#endif
             VerifyScreenshot();
         }
     }
