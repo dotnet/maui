@@ -7,5 +7,6 @@
     <Button Text="Add Primary" BackgroundColor="Gray" Clicked="OnAddPrimaryButtonClicked" />
     <Button Text="Add Secondary" BackgroundColor="Gray" Clicked="OnAddSecondaryButtonClicked" />
     <Button Text="Remove" BackgroundColor="Gray" Clicked="OnRemoveButtonClicked" />
+    <Button Text="Toggle Visibility" BackgroundColor="LightBlue" Clicked="OnToggleVisibilityClicked" />
   </StackLayout>
 </ContentPage>

@@ -4,6 +4,9 @@ Microsoft.Maui.Controls.FlexLayout.CrossPlatformMeasure(double widthConstraint, 
 override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.ScrollView.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, double height) -> void
+Microsoft.Maui.Controls.ToolbarItem.IsVisible.get -> bool
+Microsoft.Maui.Controls.ToolbarItem.IsVisible.set -> void
+~static readonly Microsoft.Maui.Controls.ToolbarItem.IsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
 virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDeclarer, TPropertyType>.Invoke(TDeclarer bindable) -> TPropertyType
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue) -> void
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate<TPropertyType>.Invoke(Microsoft.Maui.Controls.BindableObject bindable, TPropertyType oldValue, TPropertyType newValue) -> void

@@ -1686,6 +1686,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var toolbarItems = _tracker.ToolbarItems;
 				foreach (var item in toolbarItems)
 				{
+					if (!item.IsVisible)
+						continue;
+
 					if (item.Order == ToolbarItemOrder.Secondary)
 						(secondaries = secondaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(true));
 					else
