@@ -37,7 +37,7 @@ public class DateTimeTypeConverter : TypeConverter
             }
         }
 
-        throw new NotSupportedException($"Cannot convert \"{value}\" into {typeof(DateTime)}");
+        throw new NotImplementedException($"Cannot convert \"{value}\" into {typeof(DateTime)}");
     }
 
     public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type? destinationType)
@@ -62,7 +62,7 @@ public class DateTimeTypeConverter : TypeConverter
             }
         }
 
-        throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
+        throw new NotImplementedException($"Cannot convert \"{value}\" into {destinationType}");
     }
 
     static object ConvertToDestinationType(DateOnly dateOnly, Type? destinationType, CultureInfo? culture)
@@ -80,7 +80,7 @@ public class DateTimeTypeConverter : TypeConverter
             return dateOnly;
         }
 
-        throw new NotSupportedException($"Cannot convert \"{dateOnly}\" into {destinationType}");
+        throw new NotImplementedException($"Cannot convert \"{dateOnly}\" into {destinationType}");
     }
 
     static object ConvertToDestinationType(DateTime dateTime, Type? destinationType, CultureInfo? culture)
@@ -98,7 +98,7 @@ public class DateTimeTypeConverter : TypeConverter
             return DateOnly.FromDateTime(dateTime);
         }
 
-        throw new NotSupportedException($"Cannot convert \"{dateTime}\" into {destinationType}");
+        throw new NotImplementedException($"Cannot convert \"{dateTime}\" into {destinationType}");
     }
 }
 
