@@ -92,7 +92,7 @@ public class ToolbarFeatureTests : UITest
 		App.Tap("RemoveAddButton3");
 		App.WaitForMoreButton();
 		App.TapMoreButton();
-		App.WaitForElement("Test Secondary (3)");// // To verify that the secondary toolbar item is added back
+		App.WaitForElement("Test Secondary (3)"); // To verify that the secondary toolbar item is added back
 		App.Tap("Test Secondary (3)");
 	}
 
