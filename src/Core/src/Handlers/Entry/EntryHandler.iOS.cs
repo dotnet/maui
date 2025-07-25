@@ -182,6 +182,7 @@ namespace Microsoft.Maui.Handlers
 				if (sender is MauiTextField platformView)
 				{
 					VirtualView?.UpdateText(platformView.Text);
+					VirtualView?.UpdateCursorPosition(platformView.GetCursorPosition());
 				}
 			}
 
