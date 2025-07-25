@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS // https://github.com/dotnet/maui/issues/29245 - test failes on windows due to appium related issues in carouselview
+﻿#if TEST_FAILS_ON_WINDOWS // https://github.com/dotnet/maui/issues/29245 - test fails on windows due to appium related issues in carouselview
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
