@@ -132,8 +132,8 @@ Microsoft.Maui.Controls.PickerOpenedEventArgs
 Microsoft.Maui.Controls.PickerOpenedEventArgs.PickerOpenedEventArgs() -> void
 Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.Popover = 5 -> Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle
 Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs
+Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs.Configuration.get -> WebKit.WKWebViewConfiguration!
 Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs.Sender.get -> WebKit.WKWebView!
-Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs.Settings.get -> WebKit.WKWebViewConfiguration!
 Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs
 Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs.Configuration.get -> WebKit.WKWebViewConfiguration!
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs

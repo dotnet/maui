@@ -91,8 +91,8 @@ Microsoft.Maui.WebResourceRequestedEventArgs
 Microsoft.Maui.WebResourceRequestedEventArgs.Sender.get -> WebKit.WKWebView!
 Microsoft.Maui.WebResourceRequestedEventArgs.UrlSchemeTask.get -> WebKit.IWKUrlSchemeTask!
 Microsoft.Maui.WebViewInitializationCompletedEventArgs
+Microsoft.Maui.WebViewInitializationCompletedEventArgs.Configuration.get -> WebKit.WKWebViewConfiguration!
 Microsoft.Maui.WebViewInitializationCompletedEventArgs.Sender.get -> WebKit.WKWebView!
-Microsoft.Maui.WebViewInitializationCompletedEventArgs.Settings.get -> WebKit.WKWebViewConfiguration!
 Microsoft.Maui.WebViewInitializationStartedEventArgs
 Microsoft.Maui.WebViewInitializationStartedEventArgs.Configuration.get -> WebKit.WKWebViewConfiguration!
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool

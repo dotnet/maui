@@ -101,6 +101,7 @@ Microsoft.Maui.WebViewInitializationCompletedEventArgs
 Microsoft.Maui.WebViewInitializationCompletedEventArgs.Sender.get -> Android.Webkit.WebView!
 Microsoft.Maui.WebViewInitializationCompletedEventArgs.Settings.get -> Android.Webkit.WebSettings!
 Microsoft.Maui.WebViewInitializationStartedEventArgs
+Microsoft.Maui.WebViewInitializationStartedEventArgs.Settings.get -> Android.Webkit.WebSettings!
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
