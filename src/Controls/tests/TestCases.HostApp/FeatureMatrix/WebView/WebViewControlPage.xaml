@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.WebViewControlMainPage"
+             x:DataType="local:WebViewViewModel"
+             Title="WebView Feature Matrix">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options"
+                     Clicked="NavigateToOptionsPage_Clicked"
+                     AutomationId="Options"/>
+    </ContentPage.ToolbarItems>
+    <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+          ColumnDefinitions="0.5*, 0.5*"
+          RowSpacing="10">
+        <!-- WebView Control -->
+        <WebView Grid.Row="0"
+                 Grid.Column="0"
+                 Grid.ColumnSpan="2"
+                 x:Name="WebViewControl"
+                 Source="{Binding Source}"
+                 Cookies="{Binding Cookies}"
+                 IsVisible="{Binding IsVisible}"
+                 Navigating="OnWebViewNavigating"
+                 Navigated="OnWebViewNavigated"
+                 ProcessTerminated="OnWebViewProcessTerminated"
+                 Shadow="{Binding Shadow}"
+                 HeightRequest="200"
+                 WidthRequest="350"
+                 AutomationId="WebViewControl"/>
+        <!-- Navigation Status -->
+        <HorizontalStackLayout Grid.Row="1"
+                               Grid.Column="0">
+            <Label
+                Text="Can Go Back:"
+                FontSize="15"
+                FontAttributes="Bold"
+                VerticalTextAlignment="Start"
+                HorizontalTextAlignment="Start"
+                Margin="10,0,10,10"/>
+            <Label
+                Text="{Binding CanGoBack}"
+                FontSize="16"
+                AutomationId="CanGoBackLabel"/>
+        </HorizontalStackLayout>
+        <HorizontalStackLayout Grid.Row="1"
+                               Grid.Column="1">
+            <Label
+                Text="Can Go Forward:"
+                FontSize="15"
+                FontAttributes="Bold"
+                VerticalTextAlignment="Start"
+                HorizontalTextAlignment="Start"
+                Margin="10,0,10,10"/>
+            <Label Grid.Row="2"
+                   Grid.Column="1"
+                   Text="{Binding CanGoForward}"
+                   FontSize="14"
+                   VerticalTextAlignment="Start"
+                   HorizontalTextAlignment="Start"
+                   AutomationId="CanGoForwardLabel"/>
+        </HorizontalStackLayout>
+        <!-- Navigation Buttons -->
+        <HorizontalStackLayout Grid.Row="2"
+                               Grid.Column="0"
+                               Grid.ColumnSpan="2"
+                               HorizontalOptions="Center"
+                               Spacing="3">
+            <Button Text="Go Back"
+                    Command="{Binding GoBackCommand}"
+                    AutomationId="GoBackButton"/>
+            <Button Text="Go Forward"
+                    Command="{Binding GoForwardCommand}"
+                    AutomationId="GoForwardButton"/>
+            <Button Text="Reload"
+                    Command="{Binding ReloadCommand}"
+                    AutomationId="ReloadButton"/>
+            <Button Text="Evaluate JS"
+                    Command="{Binding EvaluateJavaScriptCommand}"
+                    AutomationId="EvaluateJSButton"/>
+        </HorizontalStackLayout>
+        <!-- JavaScript Result -->
+        <Label Grid.Row="3"
+               Grid.Column="0"
+               Grid.ColumnSpan="2"
+               Text="{Binding JsEvaluationResult}"
+               FontSize="14"
+               FontAttributes="Bold"
+               VerticalTextAlignment="Start"
+               HorizontalTextAlignment="Start"
+               AutomationId="JSResultLabel"
+               Margin="10,0,10,10"/>
+        <!-- Event Status -->
+        <Label Grid.Row="4"
+               Grid.Column="0"
+               Grid.ColumnSpan="2"
+               FontSize="16"
+               Text="Event Status:"
+               FontAttributes="Bold"
+               IsVisible="{Binding IsEventStatusLabelVisible}"
+               VerticalTextAlignment="Start"
+               HorizontalTextAlignment="Start"
+               Margin="10,0,10,10"/>
+        <Label Grid.Row="5"
+               Grid.Column="0"
+               Grid.ColumnSpan="2"
+               Text="{Binding NavigatingStatus}"
+               FontSize="14"
+               VerticalTextAlignment="Start"
+               HorizontalTextAlignment="Start"
+               AutomationId="NavigatingStatusLabel"
+               Margin="10,0,10,5"/>
+        <Label Grid.Row="6"
+               Grid.Column="0"
+               Grid.ColumnSpan="2"
+               Text="{Binding NavigatedStatus}"
+               FontSize="14"
+               VerticalTextAlignment="Start"
+               HorizontalTextAlignment="Start"
+               AutomationId="NavigatedStatusLabel"
+               Margin="10,0,10,5"/>
+        <Label Grid.Row="8"
+               Grid.Column="0"
+               Grid.ColumnSpan="2"
+               Text="{Binding ProcessTerminatedStatus}"
+               FontSize="14"
+               VerticalTextAlignment="Start"
+               HorizontalTextAlignment="Start"
+               AutomationId="ProcessTerminatedStatusLabel"
+               Margin="10,0,10,10"/>
+        <HorizontalStackLayout Grid.Row="7"
+                               Grid.Column="0"
+                               Grid.ColumnSpan="2">
+            <Label
+                Text="Cookie Status:"
+                FontSize="15"
+                FontAttributes="Bold"
+                Margin="10,0,10,5"/>
+            <Label
+                Text="{Binding CookiesDisplay}"
+                FontSize="14"
+                AutomationId="CookieStatusMainLabel"/>
+        </HorizontalStackLayout>
+    </Grid>
+</ContentPage>
