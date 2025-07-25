@@ -11,13 +11,13 @@ public partial class Issue28986 : ContentPage
 		PageTopPicker.SelectedIndex = 0;    // None
 		PageRightPicker.SelectedIndex = 0;  // None
 		PageBottomPicker.SelectedIndex = 0; // None
-		
+
 		// Initialize grid-level controls (start with all None)
 		GridLeftPicker.SelectedIndex = 0;   // None
 		GridTopPicker.SelectedIndex = 0;    // None
 		GridRightPicker.SelectedIndex = 0;  // None
 		GridBottomPicker.SelectedIndex = 0; // None
-		
+
 		UpdateSafeAreaSettings();
 	}
 
@@ -126,15 +126,15 @@ public partial class Issue28986 : ContentPage
 
 		// Update the display label
 		var pageSettingsText = $"Page - Left: {GetSafeAreaRegionsFromPickerIndex(PageLeftPicker.SelectedIndex)}, " +
-		                      $"Top: {GetSafeAreaRegionsFromPickerIndex(PageTopPicker.SelectedIndex)}, " +
-		                      $"Right: {GetSafeAreaRegionsFromPickerIndex(PageRightPicker.SelectedIndex)}, " +
-		                      $"Bottom: {GetSafeAreaRegionsFromPickerIndex(PageBottomPicker.SelectedIndex)}";
+							  $"Top: {GetSafeAreaRegionsFromPickerIndex(PageTopPicker.SelectedIndex)}, " +
+							  $"Right: {GetSafeAreaRegionsFromPickerIndex(PageRightPicker.SelectedIndex)}, " +
+							  $"Bottom: {GetSafeAreaRegionsFromPickerIndex(PageBottomPicker.SelectedIndex)}";
 
 		var gridSettingsText = $"Grid - Left: {GetSafeAreaRegionsFromPickerIndex(GridLeftPicker.SelectedIndex)}, " +
-		                      $"Top: {GetSafeAreaRegionsFromPickerIndex(GridTopPicker.SelectedIndex)}, " +
-		                      $"Right: {GetSafeAreaRegionsFromPickerIndex(GridRightPicker.SelectedIndex)}, " +
-		                      $"Bottom: {GetSafeAreaRegionsFromPickerIndex(GridBottomPicker.SelectedIndex)}";
-		
+							  $"Top: {GetSafeAreaRegionsFromPickerIndex(GridTopPicker.SelectedIndex)}, " +
+							  $"Right: {GetSafeAreaRegionsFromPickerIndex(GridRightPicker.SelectedIndex)}, " +
+							  $"Bottom: {GetSafeAreaRegionsFromPickerIndex(GridBottomPicker.SelectedIndex)}";
+
 		CurrentSettingsLabel.Text = $"Current:\n{pageSettingsText}\n{gridSettingsText}";
 
 		// Test different syntax formats based on the current selections
@@ -145,7 +145,7 @@ public partial class Issue28986 : ContentPage
 	{
 		// Optimize page-level syntax when possible to test different input formats
 		var pageLeft = pageSettings.Left;
-		var pageTop = pageSettings.Top; 
+		var pageTop = pageSettings.Top;
 		var pageRight = pageSettings.Right;
 		var pageBottom = pageSettings.Bottom;
 
@@ -169,7 +169,7 @@ public partial class Issue28986 : ContentPage
 
 		// Optimize grid-level syntax when possible
 		var gridLeft = gridSettings.Left;
-		var gridTop = gridSettings.Top; 
+		var gridTop = gridSettings.Top;
 		var gridRight = gridSettings.Right;
 		var gridBottom = gridSettings.Bottom;
 
@@ -197,12 +197,12 @@ public partial class Issue28986 : ContentPage
 
 		// Update the label to show which syntax is being used
 		var pageSyntaxInfo = (pageLeft == pageTop && pageTop == pageRight && pageRight == pageBottom) ? " (1-value)" :
-		                    (pageLeft == pageRight && pageTop == pageBottom) ? " (2-value)" : 
-		                    " (4-value)";
+							(pageLeft == pageRight && pageTop == pageBottom) ? " (2-value)" :
+							" (4-value)";
 
 		var gridSyntaxInfo = (gridLeft == gridTop && gridTop == gridRight && gridRight == gridBottom) ? " (1-value)" :
-		                    (gridLeft == gridRight && gridTop == gridBottom) ? " (2-value)" : 
-		                    " (4-value)";
+							(gridLeft == gridRight && gridTop == gridBottom) ? " (2-value)" :
+							" (4-value)";
 
 		CurrentSettingsLabel.Text += $"\nPage{pageSyntaxInfo}, Grid{gridSyntaxInfo}";
 	}

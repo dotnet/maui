@@ -46,8 +46,6 @@ Microsoft.Maui.ITimePicker.IsOpen.set -> void
 Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
 Microsoft.Maui.IWebRequestInterceptingWebView
 Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
-Microsoft.Maui.IWindow.IsMaximizable.get -> bool
-Microsoft.Maui.IWindow.IsMinimizable.get -> bool
 Microsoft.Maui.Platform.IAutoSizableCALayer
 Microsoft.Maui.Platform.IAutoSizableCALayer.AutoSizeToSuperLayer() -> void
 *REMOVED*Microsoft.Maui.Platform.MauiTimePicker.UpdateTime(System.TimeSpan time) -> void
@@ -60,15 +58,20 @@ Microsoft.Maui.Platform.TextInputExtensions
 Microsoft.Maui.Platform.UIApplicationExtensions
 Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.SafeAreaEdges.Bottom.get -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaEdges.Bottom.set -> void
 Microsoft.Maui.SafeAreaEdges.Equals(Microsoft.Maui.SafeAreaEdges other) -> bool
 Microsoft.Maui.SafeAreaEdges.GetEdge(int edge) -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaEdges.Left.get -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaEdges.Left.set -> void
 Microsoft.Maui.SafeAreaEdges.Right.get -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaEdges.Right.set -> void
 Microsoft.Maui.SafeAreaEdges.SafeAreaEdges() -> void
 Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions horizontal, Microsoft.Maui.SafeAreaRegions vertical) -> void
 Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions left, Microsoft.Maui.SafeAreaRegions top, Microsoft.Maui.SafeAreaRegions right, Microsoft.Maui.SafeAreaRegions bottom) -> void
 Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions uniformValue) -> void
+Microsoft.Maui.SafeAreaEdges.SetEdge(int edge, Microsoft.Maui.SafeAreaRegions value) -> void
 Microsoft.Maui.SafeAreaEdges.Top.get -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaEdges.Top.set -> void
 Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.All = Microsoft.Maui.SafeAreaRegions.SoftInput | Microsoft.Maui.SafeAreaRegions.Container -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.Container = 2 -> Microsoft.Maui.SafeAreaRegions
@@ -177,7 +180,6 @@ override Microsoft.Maui.SwipeViewSwipeStarted.Equals(object? obj) -> bool
 override Microsoft.Maui.SwipeViewSwipeStarted.GetHashCode() -> int
 override Microsoft.Maui.SwipeViewSwipeStarted.ToString() -> string!
 *REMOVED*readonly Microsoft.Maui.PropertyMapper._mapper -> System.Collections.Generic.Dictionary<string!, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>!>!
-static Microsoft.Maui.Handlers.ButtonHandler.MapBackground(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IButton! button) -> void
 static Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.operator !=(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? left, Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? right) -> bool
 static Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.operator ==(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? left, Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? right) -> bool
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapBackground(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void

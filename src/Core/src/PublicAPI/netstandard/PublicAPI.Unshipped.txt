@@ -48,20 +48,15 @@ Microsoft.Maui.IWebRequestInterceptingWebView
 Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
 Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.SafeAreaEdges.Bottom.get -> Microsoft.Maui.SafeAreaRegions
-Microsoft.Maui.SafeAreaEdges.Bottom.set -> void
 Microsoft.Maui.SafeAreaEdges.Equals(Microsoft.Maui.SafeAreaEdges other) -> bool
 Microsoft.Maui.SafeAreaEdges.GetEdge(int edge) -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaEdges.Left.get -> Microsoft.Maui.SafeAreaRegions
-Microsoft.Maui.SafeAreaEdges.Left.set -> void
 Microsoft.Maui.SafeAreaEdges.Right.get -> Microsoft.Maui.SafeAreaRegions
-Microsoft.Maui.SafeAreaEdges.Right.set -> void
 Microsoft.Maui.SafeAreaEdges.SafeAreaEdges() -> void
 Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions horizontal, Microsoft.Maui.SafeAreaRegions vertical) -> void
 Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions left, Microsoft.Maui.SafeAreaRegions top, Microsoft.Maui.SafeAreaRegions right, Microsoft.Maui.SafeAreaRegions bottom) -> void
 Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions uniformValue) -> void
-Microsoft.Maui.SafeAreaEdges.SetEdge(int edge, Microsoft.Maui.SafeAreaRegions value) -> void
 Microsoft.Maui.SafeAreaEdges.Top.get -> Microsoft.Maui.SafeAreaRegions
-Microsoft.Maui.SafeAreaEdges.Top.set -> void
 Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.All = Microsoft.Maui.SafeAreaRegions.SoftInput | Microsoft.Maui.SafeAreaRegions.Container -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.Container = 2 -> Microsoft.Maui.SafeAreaRegions

@@ -356,7 +356,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// Use direct property
 			var regionForEdge = SafeAreaEdges.GetEdge(edge);
-			
+
 			// For Border, return as-is
 			return regionForEdge;
 		}

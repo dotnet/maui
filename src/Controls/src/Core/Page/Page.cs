@@ -267,7 +267,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// Use new SafeAreaElement method
 			var regionForEdge = SafeAreaElement.GetEdgeValue(this, edge);
-			
+
 			// For Page (but not ContentPage), return as-is
 			return regionForEdge;
 		}
@@ -570,7 +570,7 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("Use ArrangeOverride instead")]
 		protected void UpdateChildrenLayout()
 		{
-			
+
 		}
 
 		internal void OnAppearing(Action action)

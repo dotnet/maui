@@ -7,7 +7,7 @@ using Microsoft.Maui.Devices;
 namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
-	{		
+	{
 		DatePickerDialog? _dialog;
 
 		internal DatePickerDialog? DatePickerDialog => _dialog;
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.ShowPicker = ShowPickerDialog;
 			platformView.HidePicker = HidePickerDialog;
-				
+
 			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
 
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
 			if (_dialog != null)
-			{	
+			{
 				_dialog.DismissEvent -= OnDialogDismiss;
 				_dialog.Hide();
 				_dialog.Dispose();
@@ -65,10 +65,10 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
-			
+
 			platformView.ShowPicker = null;
 			platformView.HidePicker = null;
-			
+
 			OnViewDetachedFromWindow();
 
 			base.DisconnectHandler(platformView);
@@ -83,9 +83,9 @@ namespace Microsoft.Maui.Handlers
 					VirtualView.Date = e.Date;
 				}
 			}, year, month, day);
-		
+
 			dialog.DismissEvent += OnDialogDismiss;
-			
+
 			return dialog;
 		}
 
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView is null)
 			{
 				return;
-			} 
+			}
 
 			if (_dialog is not null && _dialog.IsShowing)
 			{
@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Handlers
 				_dialog.DismissEvent -= OnDialogDismiss;
 				_dialog.Hide();
 			}
-			
+
 			VirtualView.IsOpen = false;
 		}
 

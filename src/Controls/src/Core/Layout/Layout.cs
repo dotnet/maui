@@ -428,7 +428,7 @@ namespace Microsoft.Maui.Controls
 
 				return SafeAreaRegions.Container;
 			}
-			
+
 			// For Layout views, never return the old Default - return None instead
 			// (since Default no longer exists in the new enum)
 			return regionForEdge;

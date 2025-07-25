@@ -11,7 +11,7 @@ public partial class Issue28986_ScrollView : ContentPage
 		TopPicker.SelectedIndex = 3;    // All
 		RightPicker.SelectedIndex = 3;  // All
 		BottomPicker.SelectedIndex = 3; // All
-		
+
 		UpdateSafeAreaSettings();
 	}
 
@@ -75,10 +75,10 @@ public partial class Issue28986_ScrollView : ContentPage
 
 		// Update the display label
 		var settingsText = $"Left: {GetSafeAreaRegionsFromPickerIndex(LeftPicker.SelectedIndex)}, " +
-		                  $"Top: {GetSafeAreaRegionsFromPickerIndex(TopPicker.SelectedIndex)}, " +
-		                  $"Right: {GetSafeAreaRegionsFromPickerIndex(RightPicker.SelectedIndex)}, " +
-		                  $"Bottom: {GetSafeAreaRegionsFromPickerIndex(BottomPicker.SelectedIndex)}";
-		
+						  $"Top: {GetSafeAreaRegionsFromPickerIndex(TopPicker.SelectedIndex)}, " +
+						  $"Right: {GetSafeAreaRegionsFromPickerIndex(RightPicker.SelectedIndex)}, " +
+						  $"Bottom: {GetSafeAreaRegionsFromPickerIndex(BottomPicker.SelectedIndex)}";
+
 		CurrentSettingsLabel.Text = $"Current ScrollView SafeAreaEdges: {settingsText}";
 	}
 }

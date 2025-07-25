@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// Check the SafeAreaEdges property
 			var regionForEdge = GetEdgeValue(bindable, edge);
-			
+
 			// Handle the new SafeAreaRegions behavior (now obey-based instead of ignore-based)
 			if (regionForEdge == SafeAreaRegions.All)
 			{

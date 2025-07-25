@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Platform
 			// It looks like this issue is fixed on the main branch of Android but it hasn't made its way into the packages yet
 			SetProgressViewOffset(true, ProgressViewStartOffset, ProgressViewEndOffset - Math.Abs(ProgressViewStartOffset));
 		}
-		
+
 		public ICrossPlatformLayout? CrossPlatformLayout
 		{
 			get;

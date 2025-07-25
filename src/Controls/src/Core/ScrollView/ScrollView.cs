@@ -511,7 +511,7 @@ namespace Microsoft.Maui.Controls
 
 		Size IContentView.CrossPlatformArrange(Rect bounds) =>
 			((ICrossPlatformLayout)this).CrossPlatformArrange(bounds);
-			
+
 		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
 		{
 			return SafeAreaEdges.Default;
@@ -532,7 +532,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// Use direct property 
 			var regionForEdge = SafeAreaEdges.GetEdge(edge);
-			
+
 			// For ScrollView, return Default behavior as-is (it's special)
 			return regionForEdge;
 		}
@@ -554,7 +554,7 @@ namespace Microsoft.Maui.Controls
 			return base.Measure(widthConstraint, heightConstraint);
 		}
 
-		
+
 		/// <summary>
 		/// Sends a child to the back of the visual stack.
 		/// </summary>
@@ -621,7 +621,7 @@ namespace Microsoft.Maui.Controls
 		protected new void UpdateChildrenLayout()
 		{
 		}
-		
+
 		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{

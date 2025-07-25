@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Converters
 			if (strValue != null)
 			{
 				strValue = strValue.Trim();
-				
+
 				// Split by comma - if no comma, we get array with single element
 				var parts = strValue.Split(',');
 				var regions = new SafeAreaRegions[parts.Length];
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Converters
 				for (int i = 0; i < parts.Length; i++)
 				{
 					var part = parts[i].Trim();
-					
+
 					// Performance optimization: use string comparison instead of Enum.TryParse
 					// since SafeAreaRegions has specific values
 					if (string.Equals(part, "All", StringComparison.OrdinalIgnoreCase))

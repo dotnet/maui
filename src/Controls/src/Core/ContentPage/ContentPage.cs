@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls
 				// Developer has explicitly set SafeAreaEdges, use it directly
 				return SafeAreaEdges.GetEdge(edge);
 			}
-			
+
 			// Developer hasn't set SafeAreaEdges, fall back to legacy IgnoreSafeArea behavior
 			var ignoreSafeArea = ((ISafeAreaView)this).IgnoreSafeArea;
 			if (ignoreSafeArea)

@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void SingleValueConversions(bool useCompiledXaml)
 			{
 				var layout = new SafeAreaEdgesTests(useCompiledXaml);
-				
+
 				Assert.AreEqual(SafeAreaEdges.None, layout.singleValueNone.SafeAreaEdges);
 				Assert.AreEqual(SafeAreaEdges.All, layout.singleValueAll.SafeAreaEdges);
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.SoftInput), layout.singleValueSoftInput.SafeAreaEdges);
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void TwoValueConversions(bool useCompiledXaml)
 			{
 				var layout = new SafeAreaEdgesTests(useCompiledXaml);
-				
+
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.SoftInput, SafeAreaRegions.Container), layout.twoValueHorVert.SafeAreaEdges);
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All), layout.twoValueMixed.SafeAreaEdges);
 			}
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void FourValueConversions(bool useCompiledXaml)
 			{
 				var layout = new SafeAreaEdgesTests(useCompiledXaml);
-				
+
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.SoftInput, SafeAreaRegions.Container, SafeAreaRegions.All), layout.fourValueMixed.SafeAreaEdges);
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.Default, SafeAreaRegions.None, SafeAreaRegions.Default, SafeAreaRegions.All), layout.fourValueDefault.SafeAreaEdges);
 			}
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void ControlSpecificProperties(bool useCompiledXaml)
 			{
 				var layout = new SafeAreaEdgesTests(useCompiledXaml);
-				
+
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.Container, SafeAreaRegions.SoftInput), layout.contentViewTest.SafeAreaEdges);
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None), layout.contentPageTest.SafeAreaEdges);
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.SoftInput), layout.borderTest.SafeAreaEdges);
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void PropertyInflation_WorksWithAllEnumValues(bool useCompiledXaml)
 			{
 				var layout = new SafeAreaEdgesTests(useCompiledXaml);
-				
+
 				// Verify all enum values are properly inflated from XAML strings
 				var noneGrid = layout.singleValueNone;
 				var allGrid = layout.singleValueAll;

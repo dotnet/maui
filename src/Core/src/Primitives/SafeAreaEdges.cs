@@ -10,24 +10,24 @@ namespace Microsoft.Maui
 	public struct SafeAreaEdges : IEquatable<SafeAreaEdges>
 	{
 		/// <summary>
-		/// Gets or sets the safe area behavior for the left edge.
+		/// Gets the safe area behavior for the left edge.
 		/// </summary>
-		public SafeAreaRegions Left { get; set; }
+		public SafeAreaRegions Left { get; }
 
 		/// <summary>
-		/// Gets or sets the safe area behavior for the top edge.
+		/// Gets the safe area behavior for the top edge.
 		/// </summary>
-		public SafeAreaRegions Top { get; set; }
+		public SafeAreaRegions Top { get; }
 
 		/// <summary>
-		/// Gets or sets the safe area behavior for the right edge.
+		/// Gets the safe area behavior for the right edge.
 		/// </summary>
-		public SafeAreaRegions Right { get; set; }
+		public SafeAreaRegions Right { get; }
 
 		/// <summary>
-		/// Gets or sets the safe area behavior for the bottom edge.
+		/// Gets the safe area behavior for the bottom edge.
 		/// </summary>
-		public SafeAreaRegions Bottom { get; set; }
+		public SafeAreaRegions Bottom { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SafeAreaEdges"/> struct with the same value for all edges.
@@ -87,30 +87,6 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// Sets the safe area behavior for the specified edge.
-		/// </summary>
-		/// <param name="edge">The edge index (0=Left, 1=Top, 2=Right, 3=Bottom).</param>
-		/// <param name="value">The value to set.</param>
-		public void SetEdge(int edge, SafeAreaRegions value)
-		{
-			switch (edge)
-			{
-				case 0:
-					Left = value;
-					break;
-				case 1:
-					Top = value;
-					break;
-				case 2:
-					Right = value;
-					break;
-				case 3:
-					Bottom = value;
-					break;
-			}
-		}
-
-		/// <summary>
 		/// A <see cref="SafeAreaEdges"/> with all edges set to <see cref="SafeAreaRegions.None"/>.
 		/// </summary>
 		public static SafeAreaEdges Default => new(SafeAreaRegions.Default);
@@ -158,8 +134,8 @@ namespace Microsoft.Maui
 		}
 	}
 #else
-	public override int GetHashCode() =>
-		HashCode.Combine(Left, Top, Right, Bottom);
+		public override int GetHashCode() =>
+			HashCode.Combine(Left, Top, Right, Bottom);
 #endif
 		public override string ToString() =>
 			$"{Left}, {Top}, {Right}, {Bottom}";

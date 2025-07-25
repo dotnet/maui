@@ -751,7 +751,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
 			{
 				await Task.Delay(100);
-				
+
 				// Both APIs should result in the same layout behavior
 				// The layout should fill the container and ignore safe area
 				var layoutBounds = layout.GetPlatformViewBounds();

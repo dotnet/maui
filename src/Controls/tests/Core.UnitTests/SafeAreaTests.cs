@@ -12,9 +12,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void GetEdges_DefaultValue_ReturnsDefault()
 		{
 			var layout = new Grid();
-			
+
 			var result = layout.SafeAreaEdges;
-			
+
 			Assert.Equal(SafeAreaEdges.Default, result);
 		}
 
@@ -23,10 +23,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 			var value = SafeAreaEdges.All;
-			
+
 			layout.SafeAreaEdges = value;
 			var result = layout.SafeAreaEdges;
-			
+
 			Assert.Equal(value, result);
 		}
 
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 			layout.SafeAreaEdges = SafeAreaEdges.All;
-			
+
 			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetEdgeValue(layout, 0)); // Left
 			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetEdgeValue(layout, 1)); // Top
 			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetEdgeValue(layout, 2)); // Right
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 			layout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None);
-			
+
 			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetEdgeValue(layout, 0)); // Left
 			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetEdgeValue(layout, 1)); // Top
 			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetEdgeValue(layout, 2)); // Right
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				SafeAreaRegions.All,   // Right
 				SafeAreaRegions.None   // Bottom
 			);
-			
+
 			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetEdgeValue(layout, 0)); // Left
 			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetEdgeValue(layout, 1)); // Top
 			Assert.Equal(SafeAreaRegions.All, SafeAreaElement.GetEdgeValue(layout, 2)); // Right
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 			layout.SafeAreaEdges = SafeAreaEdges.All;
-			
+
 			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetEdgeValue(layout, -1));
 			Assert.Equal(SafeAreaRegions.None, SafeAreaElement.GetEdgeValue(layout, 4));
 		}
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SafeAreaEdges_DefaultConstructor_ReturnsNone()
 		{
 			var edges = new SafeAreaEdges();
-			
+
 			Assert.Equal(SafeAreaRegions.None, edges.Left);
 			Assert.Equal(SafeAreaRegions.None, edges.Top);
 			Assert.Equal(SafeAreaRegions.None, edges.Right);
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SafeAreaEdges_UniformConstructor_AppliesAllEdges()
 		{
 			var edges = new SafeAreaEdges(SafeAreaRegions.All);
-			
+
 			Assert.Equal(SafeAreaRegions.All, edges.Left);
 			Assert.Equal(SafeAreaRegions.All, edges.Top);
 			Assert.Equal(SafeAreaRegions.All, edges.Right);
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SafeAreaEdges_HorizontalVerticalConstructor_AppliesCorrectly()
 		{
 			var edges = new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None);
-			
+
 			Assert.Equal(SafeAreaRegions.All, edges.Left);   // horizontal
 			Assert.Equal(SafeAreaRegions.None, edges.Top);   // vertical
 			Assert.Equal(SafeAreaRegions.All, edges.Right);  // horizontal
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				SafeAreaRegions.All,   // Right
 				SafeAreaRegions.None   // Bottom
 			);
-			
+
 			Assert.Equal(SafeAreaRegions.All, edges.Left);
 			Assert.Equal(SafeAreaRegions.None, edges.Top);
 			Assert.Equal(SafeAreaRegions.All, edges.Right);
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				SafeAreaRegions.All,   // Right
 				SafeAreaRegions.None   // Bottom
 			);
-			
+
 			Assert.Equal(SafeAreaRegions.All, edges.GetEdge(0));   // Left
 			Assert.Equal(SafeAreaRegions.None, edges.GetEdge(1));  // Top
 			Assert.Equal(SafeAreaRegions.All, edges.GetEdge(2));   // Right
@@ -149,19 +149,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void SafeAreaEdges_SetEdge_UpdatesCorrectValues()
+		public void SafeAreaEdges_GetEdge_ReturnsCorrectValues()
 		{
-			var edges = new SafeAreaEdges();
-			
-			edges.SetEdge(0, SafeAreaRegions.All); // Left
-			edges.SetEdge(1, SafeAreaRegions.None); // Top
-			edges.SetEdge(2, SafeAreaRegions.All); // Right
-			edges.SetEdge(3, SafeAreaRegions.None); // Bottom
-			
-			Assert.Equal(SafeAreaRegions.All, edges.Left);
-			Assert.Equal(SafeAreaRegions.None, edges.Top);
-			Assert.Equal(SafeAreaRegions.All, edges.Right);
-			Assert.Equal(SafeAreaRegions.None, edges.Bottom);
+			var edges = new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None);
+
+			Assert.Equal(SafeAreaRegions.All, edges.GetEdge(0)); // Left
+			Assert.Equal(SafeAreaRegions.None, edges.GetEdge(1)); // Top
+			Assert.Equal(SafeAreaRegions.All, edges.GetEdge(2)); // Right
+			Assert.Equal(SafeAreaRegions.None, edges.GetEdge(3)); // Bottom
 		}
 
 		[Fact]
@@ -177,7 +172,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var edges1 = new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None);
 			var edges2 = new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None);
 			var edges3 = new SafeAreaEdges(SafeAreaRegions.None);
-			
+
 			Assert.True(edges1 == edges2);
 			Assert.False(edges1 == edges3);
 			Assert.True(edges1 != edges3);
@@ -192,7 +187,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var twoValue = new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None);
 			var fourValue = new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None);
 			var asymmetric = new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.None, SafeAreaRegions.All);
-			
+
 			Assert.Equal("All", uniform.ToString());
 			Assert.Equal("All, None", twoValue.ToString());
 			Assert.Equal("All, None", fourValue.ToString()); // Optimized: Left==Right, Top==Bottom
@@ -203,7 +198,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void Layout_ImplementsISafeAreaView()
 		{
 			var layout = new Grid();
-			
+
 			Assert.IsAssignableFrom<ISafeAreaView>(layout);
 			Assert.IsAssignableFrom<ISafeAreaView2>(layout);
 		}
@@ -216,7 +211,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Test via ISafeAreaView2 interface - direct region values
 			var safeAreaView2 = (ISafeAreaView2)layout;
-			
+
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(0)); // Left = None
 			Assert.Equal(SafeAreaRegions.All, safeAreaView2.GetSafeAreaRegionsForEdge(1));  // Top = All
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(2)); // Right = None
@@ -232,7 +227,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Should fall back to legacy property when no direct property is set
 			// IgnoreSafeArea = true should result in SafeAreaRegions.None (edge-to-edge)
 			var safeAreaView2 = (ISafeAreaView2)layout;
-			
+
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(0));
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(1));
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(2));
@@ -243,7 +238,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void Page_ImplementsISafeAreaView()
 		{
 			var page = new ContentPage();
-			
+
 			Assert.IsAssignableFrom<ISafeAreaView>(page);
 			Assert.IsAssignableFrom<ISafeAreaView2>(page);
 		}
@@ -252,7 +247,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ContentView_ImplementsISafeAreaView()
 		{
 			var contentView = new ContentView();
-			
+
 			Assert.IsAssignableFrom<ISafeAreaView2>(contentView);
 		}
 
@@ -264,7 +259,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Test via ISafeAreaView2 interface - direct region values
 			var safeAreaView2 = (ISafeAreaView2)page;
-			
+
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(0)); // Left = None
 			Assert.Equal(SafeAreaRegions.All, safeAreaView2.GetSafeAreaRegionsForEdge(1));  // Top = All
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(2)); // Right = None
@@ -278,7 +273,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Should default to SafeAreaRegions.None when no property is set (edge-to-edge behavior)
 			var safeAreaView2 = (ISafeAreaView2)contentView;
-			
+
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(0));
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(1));
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(2));
@@ -292,7 +287,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// ContentPage has special logic - defaults to SafeAreaRegions.None (edge-to-edge) on iOS
 			var safeAreaView2 = (ISafeAreaView2)page;
-			
+
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(0));
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(1));
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(2));
@@ -304,8 +299,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SafeArea_CanReplaceUseSafeAreaScenario()
 		{
 			// This test mimics the usage pattern from Issue3809 and ShellTests.iOS
-			var contentView = new ContentView() 
-			{ 
+			var contentView = new ContentView()
+			{
 				Content = new Label() { Text = "Test Page" }
 			};
 
@@ -314,7 +309,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			contentView.SafeAreaEdges = SafeAreaEdges.All; // Obey all safe areas
 
 			var safeAreaView2 = (ISafeAreaView2)contentView;
-			
+
 			// All edges should obey safe area (return All region)
 			Assert.Equal(SafeAreaRegions.All, safeAreaView2.GetSafeAreaRegionsForEdge(0));
 			Assert.Equal(SafeAreaRegions.All, safeAreaView2.GetSafeAreaRegionsForEdge(1));
@@ -327,12 +322,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			// Common use case: ignore safe area for top and bottom edges only (e.g., for full-width background)
 			var stackLayout = new VerticalStackLayout();
-			
+
 			// Edge-to-edge for top and bottom (None), obey for left and right (All)
 			stackLayout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.None);
 
 			var safeAreaView2 = (ISafeAreaView2)stackLayout;
-			
+
 			Assert.Equal(SafeAreaRegions.All, safeAreaView2.GetSafeAreaRegionsForEdge(0));  // Left = All
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(1)); // Top = None
 			Assert.Equal(SafeAreaRegions.All, safeAreaView2.GetSafeAreaRegionsForEdge(2));  // Right = All
@@ -344,11 +339,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			// Test two-value shorthand: first value for left/right, second for top/bottom
 			var grid = new Grid();
-			
+
 			grid.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All);
 
 			var safeAreaView2 = (ISafeAreaView2)grid;
-			
+
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(0)); // Left = None
 			Assert.Equal(SafeAreaRegions.All, safeAreaView2.GetSafeAreaRegionsForEdge(1));  // Top = All
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(2)); // Right = None
@@ -359,7 +354,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SafeAreaEdgesTypeConverter_CanConvertFromString()
 		{
 			var converter = new SafeAreaEdgesTypeConverter();
-			
+
 			Assert.True(converter.CanConvertFrom(null, typeof(string)));
 			Assert.False(converter.CanConvertFrom(null, typeof(int)));
 		}
@@ -368,9 +363,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SafeAreaEdgesTypeConverter_ConvertFromSingleValue()
 		{
 			var converter = new SafeAreaEdgesTypeConverter();
-			
+
 			var result = (SafeAreaEdges)converter.ConvertFrom(null, null, "All");
-			
+
 			Assert.Equal(SafeAreaEdges.All, result);
 		}
 
@@ -378,9 +373,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SafeAreaEdgesTypeConverter_ConvertFromTwoValues()
 		{
 			var converter = new SafeAreaEdgesTypeConverter();
-			
+
 			var result = (SafeAreaEdges)converter.ConvertFrom(null, null, "None,Container");
-			
+
 			Assert.Equal(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.Container), result);
 		}
 
@@ -388,9 +383,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SafeAreaEdgesTypeConverter_ConvertFromFourValues()
 		{
 			var converter = new SafeAreaEdgesTypeConverter();
-			
+
 			var result = (SafeAreaEdges)converter.ConvertFrom(null, null, "None,All,Container,SoftInput");
-			
+
 			Assert.Equal(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.Container, SafeAreaRegions.SoftInput), result);
 		}
 
@@ -398,8 +393,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SafeAreaEdgesTypeConverter_ConvertFromInvalidValue_ThrowsException()
 		{
 			var converter = new SafeAreaEdgesTypeConverter();
-			
-			Assert.Throws<FormatException>(() => 
+
+			Assert.Throws<FormatException>(() =>
 				converter.ConvertFrom(null, null, "InvalidValue"));
 		}
 
@@ -407,8 +402,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SafeAreaEdgesTypeConverter_ConvertFromInvalidLength_ThrowsException()
 		{
 			var converter = new SafeAreaEdgesTypeConverter();
-			
-			Assert.Throws<FormatException>(() => 
+
+			Assert.Throws<FormatException>(() =>
 				converter.ConvertFrom(null, null, "None,Container,All")); // 3 values not supported
 		}
 
@@ -417,9 +412,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var converter = new SafeAreaEdgesTypeConverter();
 			var edges = new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.Container);
-			
+
 			var result = converter.ConvertTo(null, null, edges, typeof(string));
-			
+
 			Assert.Equal("None, Container", result);
 		}
 
@@ -488,22 +483,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			// Test that the type converter works as it would in a binding scenario
 			var converter = new SafeAreaEdgesTypeConverter();
-			
+
 			// Simulate what happens when binding encounters a string value
 			// and needs to convert it to SafeAreaEdges
-			
+
 			// Test single value conversion (what binding would do)
 			var allResult = converter.ConvertFrom(null, null, "All");
 			Assert.Equal(SafeAreaEdges.All, allResult);
-			
+
 			// Test two values conversion
 			var twoValueResult = converter.ConvertFrom(null, null, "SoftInput,Container");
 			Assert.Equal(new SafeAreaEdges(SafeAreaRegions.SoftInput, SafeAreaRegions.Container), twoValueResult);
-			
+
 			// Test four values conversion
 			var fourValueResult = converter.ConvertFrom(null, null, "None,SoftInput,Container,All");
 			Assert.Equal(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.SoftInput, SafeAreaRegions.Container, SafeAreaRegions.All), fourValueResult);
-			
+
 			// Test that conversion back to string works (for two-way binding)
 			var backToString = converter.ConvertTo(null, null, SafeAreaEdges.All, typeof(string));
 			Assert.Equal("All", backToString);
@@ -514,14 +509,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			// Test direct property assignment (what would happen after successful binding conversion)
 			var layout = new Grid();
-			
+
 			// Test setting from converted values (simulating what binding would do after conversion)
 			layout.SafeAreaEdges = SafeAreaEdges.All;
 			Assert.Equal(SafeAreaEdges.All, layout.SafeAreaEdges);
-			
+
 			layout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.SoftInput, SafeAreaRegions.Container);
 			Assert.Equal(new SafeAreaEdges(SafeAreaRegions.SoftInput, SafeAreaRegions.Container), layout.SafeAreaEdges);
-			
+
 			layout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.SoftInput, SafeAreaRegions.Container, SafeAreaRegions.All);
 			Assert.Equal(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.SoftInput, SafeAreaRegions.Container, SafeAreaRegions.All), layout.SafeAreaEdges);
 		}
@@ -532,10 +527,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void HorizontalStackLayout_BehavesLikeRegularLayout()
 		{
 			var stackLayout = new HorizontalStackLayout();
-			
+
 			// Should behave like regular layout with default SafeAreaEdges.None (edge-to-edge)
 			var safeAreaView2 = (ISafeAreaView2)stackLayout;
-			
+
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(0)); // Left
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(1)); // Top
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(2)); // Right
@@ -548,10 +543,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var stackLayout = new HorizontalStackLayout();
 			stackLayout.FlowDirection = FlowDirection.RightToLeft;
 			stackLayout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.All, SafeAreaRegions.All);
-			
+
 			// Should respect SafeAreaEdges direct property
 			var safeAreaView2 = (ISafeAreaView2)stackLayout;
-			
+
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(0)); // Left (set to None)
 			Assert.Equal(SafeAreaRegions.All, safeAreaView2.GetSafeAreaRegionsForEdge(1));  // Top (set to All)
 			Assert.Equal(SafeAreaRegions.All, safeAreaView2.GetSafeAreaRegionsForEdge(2));  // Right (set to All)
@@ -562,10 +557,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VerticalStackLayout_BehavesLikeRegularLayout()
 		{
 			var stackLayout = new VerticalStackLayout();
-			
+
 			// Should behave like regular layout with default SafeAreaEdges.None (edge-to-edge)
 			var safeAreaView2 = (ISafeAreaView2)stackLayout;
-			
+
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(0)); // Left
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(1)); // Top
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(2)); // Right
@@ -576,10 +571,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void StackLayout_HorizontalOrientation_BehavesLikeRegularLayout_LTR()
 		{
 			var stackLayout = new StackLayout { Orientation = StackOrientation.Horizontal };
-			
+
 			// Should behave like regular layout with default SafeAreaEdges.None (edge-to-edge)
 			var safeAreaView2 = (ISafeAreaView2)stackLayout;
-			
+
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(0)); // Left
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(1)); // Top
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(2)); // Right
@@ -592,10 +587,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var stackLayout = new StackLayout { Orientation = StackOrientation.Horizontal };
 			stackLayout.FlowDirection = FlowDirection.RightToLeft;
 			stackLayout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All, SafeAreaRegions.All, SafeAreaRegions.All);
-			
+
 			// Should respect SafeAreaEdges direct property
 			var safeAreaView2 = (ISafeAreaView2)stackLayout;
-			
+
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(0)); // Left (set to None)
 			Assert.Equal(SafeAreaRegions.All, safeAreaView2.GetSafeAreaRegionsForEdge(1));  // Top (set to All)
 			Assert.Equal(SafeAreaRegions.All, safeAreaView2.GetSafeAreaRegionsForEdge(2));  // Right (set to All)
@@ -606,10 +601,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void StackLayout_VerticalOrientation_BehavesLikeRegularLayout()
 		{
 			var stackLayout = new StackLayout { Orientation = StackOrientation.Vertical };
-			
+
 			// Should behave like regular layout with default SafeAreaEdges.None (edge-to-edge)
 			var safeAreaView2 = (ISafeAreaView2)stackLayout;
-			
+
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(0)); // Left
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(1)); // Top
 			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(2)); // Right
@@ -621,20 +616,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var verticalStackLayout = new VerticalStackLayout();
 			var horizontalStackLayout = new HorizontalStackLayout();
-			
+
 			// Set explicit SafeAreaEdges property - this should be respected
 			verticalStackLayout.SafeAreaEdges = SafeAreaEdges.All; // Obey all edges
 			horizontalStackLayout.SafeAreaEdges = SafeAreaEdges.None; // Edge-to-edge all edges
-			
+
 			var verticalSafeAreaView2 = (ISafeAreaView2)verticalStackLayout;
 			var horizontalSafeAreaView2 = (ISafeAreaView2)horizontalStackLayout;
-			
+
 			// VerticalStackLayout should respect user setting (All = obey safe area)
 			Assert.Equal(SafeAreaRegions.All, verticalSafeAreaView2.GetSafeAreaRegionsForEdge(0)); // Left
 			Assert.Equal(SafeAreaRegions.All, verticalSafeAreaView2.GetSafeAreaRegionsForEdge(1)); // Top
 			Assert.Equal(SafeAreaRegions.All, verticalSafeAreaView2.GetSafeAreaRegionsForEdge(2)); // Right
 			Assert.Equal(SafeAreaRegions.All, verticalSafeAreaView2.GetSafeAreaRegionsForEdge(3)); // Bottom
-			
+
 			// HorizontalStackLayout should respect user setting (None = edge-to-edge)
 			Assert.Equal(SafeAreaRegions.None, horizontalSafeAreaView2.GetSafeAreaRegionsForEdge(0)); // Left
 			Assert.Equal(SafeAreaRegions.None, horizontalSafeAreaView2.GetSafeAreaRegionsForEdge(1)); // Top

@@ -1,6 +1,7 @@
 ﻿#nullable enable
 Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter
 Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.SafeAreaEdgesTypeConverter() -> void
+Microsoft.Maui.Graphics.MauiDrawable.SetEmptyBorderBrush() -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
 Microsoft.Maui.Handlers.DataFlowDirection
@@ -46,29 +47,27 @@ Microsoft.Maui.ITimePicker.IsOpen.set -> void
 Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
 Microsoft.Maui.IWebRequestInterceptingWebView
 Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
-Microsoft.Maui.IWindow.IsMaximizable.get -> bool
-Microsoft.Maui.IWindow.IsMinimizable.get -> bool
-Microsoft.Maui.Platform.IAutoSizableCALayer
-Microsoft.Maui.Platform.IAutoSizableCALayer.AutoSizeToSuperLayer() -> void
-*REMOVED*Microsoft.Maui.Platform.MauiTimePicker.UpdateTime(System.TimeSpan time) -> void
-Microsoft.Maui.Platform.MauiTimePicker.UpdateTime(System.TimeSpan? time) -> void
-*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKit.WKWebView! webView, WebKit.WKNavigationAction! navigationAction, System.Action<WebKit.WKNavigationActionPolicy>! decisionHandler) -> void
-*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
-*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisionalNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
-*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
-Microsoft.Maui.Platform.TextInputExtensions
-Microsoft.Maui.Platform.UIApplicationExtensions
+*REMOVED*Microsoft.Maui.Platform.MauiPicker.ShowPopupOnFocus.get -> bool
+*REMOVED*Microsoft.Maui.Platform.MauiPicker.ShowPopupOnFocus.set -> void
+Microsoft.Maui.Platform.MauiSwipeRefreshLayout.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
+Microsoft.Maui.Platform.MauiSwipeRefreshLayout.CrossPlatformLayout.set -> void
+*REMOVED*Microsoft.Maui.PlatformWrapperView.SetHasShadow(bool hasShadow) -> void
 Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.SafeAreaEdges.Bottom.get -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaEdges.Bottom.set -> void
 Microsoft.Maui.SafeAreaEdges.Equals(Microsoft.Maui.SafeAreaEdges other) -> bool
 Microsoft.Maui.SafeAreaEdges.GetEdge(int edge) -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaEdges.Left.get -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaEdges.Left.set -> void
 Microsoft.Maui.SafeAreaEdges.Right.get -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaEdges.Right.set -> void
 Microsoft.Maui.SafeAreaEdges.SafeAreaEdges() -> void
 Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions horizontal, Microsoft.Maui.SafeAreaRegions vertical) -> void
 Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions left, Microsoft.Maui.SafeAreaRegions top, Microsoft.Maui.SafeAreaRegions right, Microsoft.Maui.SafeAreaRegions bottom) -> void
 Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions uniformValue) -> void
+Microsoft.Maui.SafeAreaEdges.SetEdge(int edge, Microsoft.Maui.SafeAreaRegions value) -> void
 Microsoft.Maui.SafeAreaEdges.Top.get -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaEdges.Top.set -> void
 Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.All = Microsoft.Maui.SafeAreaRegions.SoftInput | Microsoft.Maui.SafeAreaRegions.Container -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.Container = 2 -> Microsoft.Maui.SafeAreaRegions
@@ -88,8 +87,10 @@ Microsoft.Maui.SwipeViewSwipeEnded.SwipeViewSwipeEnded(Microsoft.Maui.SwipeViewS
 Microsoft.Maui.SwipeViewSwipeStarted.Deconstruct(out Microsoft.Maui.SwipeDirection SwipeDirection) -> void
 Microsoft.Maui.SwipeViewSwipeStarted.SwipeViewSwipeStarted(Microsoft.Maui.SwipeViewSwipeStarted! original) -> void
 Microsoft.Maui.WebResourceRequestedEventArgs
-Microsoft.Maui.WebResourceRequestedEventArgs.Sender.get -> WebKit.WKWebView!
-Microsoft.Maui.WebResourceRequestedEventArgs.UrlSchemeTask.get -> WebKit.IWKUrlSchemeTask!
+Microsoft.Maui.WebResourceRequestedEventArgs.Request.get -> Android.Webkit.IWebResourceRequest!
+Microsoft.Maui.WebResourceRequestedEventArgs.Response.get -> Android.Webkit.WebResourceResponse?
+Microsoft.Maui.WebResourceRequestedEventArgs.Response.set -> void
+Microsoft.Maui.WebResourceRequestedEventArgs.Sender.get -> Android.Webkit.WebView!
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
@@ -136,6 +137,18 @@ override Microsoft.Maui.Converters.ThicknessTypeConverter.ConvertTo(System.Compo
 override Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Equals(object? obj) -> bool
 override Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.GetHashCode() -> int
 override Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ToString() -> string!
+*REMOVED*override Microsoft.Maui.Handlers.EditorHandler.ConnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
+override Microsoft.Maui.Handlers.EditorHandler.ConnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.EditorHandler.CreatePlatformView() -> AndroidX.AppCompat.Widget.AppCompatEditText!
+override Microsoft.Maui.Handlers.EditorHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiAppCompatEditText!
+*REMOVED*override Microsoft.Maui.Handlers.EditorHandler.DisconnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
+override Microsoft.Maui.Handlers.EditorHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.EntryHandler.ConnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
+override Microsoft.Maui.Handlers.EntryHandler.ConnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.EntryHandler.CreatePlatformView() -> AndroidX.AppCompat.Widget.AppCompatEditText!
+override Microsoft.Maui.Handlers.EntryHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiAppCompatEditText!
+*REMOVED*override Microsoft.Maui.Handlers.EntryHandler.DisconnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
+override Microsoft.Maui.Handlers.EntryHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
 override Microsoft.Maui.Handlers.LayoutHandlerUpdate.Equals(object? obj) -> bool
 override Microsoft.Maui.Handlers.LayoutHandlerUpdate.GetHashCode() -> int
 override Microsoft.Maui.Handlers.LayoutHandlerUpdate.ToString() -> string!
@@ -151,10 +164,18 @@ override Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.ToString() -> st
 override Microsoft.Maui.Handlers.OpenWindowRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.Handlers.OpenWindowRequest.GetHashCode() -> int
 override Microsoft.Maui.Handlers.OpenWindowRequest.ToString() -> string!
-override Microsoft.Maui.Handlers.ScrollViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
-override Microsoft.Maui.Platform.MauiScrollView.AdjustedContentInsetDidChange() -> void
-override Microsoft.Maui.Platform.MauiScrollView.SafeAreaInsetsDidChange() -> void
-*REMOVED*override Microsoft.Maui.Platform.MauiView.SafeAreaInsetsDidChange() -> void
+override Microsoft.Maui.Handlers.RefreshViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Handlers.TimePickerHandler.ConnectHandler(Microsoft.Maui.Platform.MauiTimePicker! platformView) -> void
+override Microsoft.Maui.Platform.MauiDatePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
+*REMOVED*override Microsoft.Maui.Platform.MauiPicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
+*REMOVED*override Microsoft.Maui.Platform.MauiPicker.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
+override Microsoft.Maui.Platform.MauiPickerBase.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
+override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
+override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
+*REMOVED*override Microsoft.Maui.Platform.MauiTextView.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
+override Microsoft.Maui.Platform.MauiTimePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
+override Microsoft.Maui.Platform.MauiWebChromeClient.OnHideCustomView() -> void
+~override Microsoft.Maui.Platform.MauiWebChromeClient.OnShowCustomView(Android.Views.View view, Android.Webkit.WebChromeClient.ICustomViewCallback callback) -> void
 override Microsoft.Maui.SafeAreaEdges.Equals(object? obj) -> bool
 override Microsoft.Maui.SafeAreaEdges.GetHashCode() -> int
 override Microsoft.Maui.SafeAreaEdges.ToString() -> string!
@@ -177,7 +198,6 @@ override Microsoft.Maui.SwipeViewSwipeStarted.Equals(object? obj) -> bool
 override Microsoft.Maui.SwipeViewSwipeStarted.GetHashCode() -> int
 override Microsoft.Maui.SwipeViewSwipeStarted.ToString() -> string!
 *REMOVED*readonly Microsoft.Maui.PropertyMapper._mapper -> System.Collections.Generic.Dictionary<string!, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>!>!
-static Microsoft.Maui.Handlers.ButtonHandler.MapBackground(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IButton! button) -> void
 static Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.operator !=(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? left, Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? right) -> bool
 static Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.operator ==(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? left, Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? right) -> bool
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapBackground(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void
@@ -193,14 +213,17 @@ static Microsoft.Maui.Handlers.OpenWindowRequest.operator !=(Microsoft.Maui.Hand
 static Microsoft.Maui.Handlers.OpenWindowRequest.operator ==(Microsoft.Maui.Handlers.OpenWindowRequest? left, Microsoft.Maui.Handlers.OpenWindowRequest? right) -> bool
 static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureEnvironmentVariables(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
-*REMOVED*static Microsoft.Maui.Platform.ApplicationExtensions.CreatePlatformWindow(this UIKit.IUIApplicationDelegate! platformApplication, Microsoft.Maui.IApplication! application, UIKit.UIApplication! uiApplication, Foundation.NSDictionary! launchOptions) -> void
-static Microsoft.Maui.Platform.ApplicationExtensions.CreatePlatformWindow(this UIKit.IUIApplicationDelegate! platformApplication, Microsoft.Maui.IApplication! application, UIKit.UIApplication! uiApplication, Foundation.NSDictionary? launchOptions) -> void
-static Microsoft.Maui.Platform.SearchBarExtensions.UpdateReturnType(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void
-static Microsoft.Maui.Platform.TextInputExtensions.GetCursorPosition(this UIKit.IUITextInput! platformView, int cursorOffset = 0) -> int
-static Microsoft.Maui.Platform.TextInputExtensions.GetSelectedTextLength(this UIKit.IUITextInput! platformView) -> int
-static Microsoft.Maui.Platform.TextInputExtensions.SetTextRange(this UIKit.IUITextInput! platformView, int start, int selectedTextLength) -> void
-static Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(this UIKit.UIApplication! application) -> UIKit.UIWindow?
-static Microsoft.Maui.Platform.UIApplicationExtensions.GetWindow(this UIKit.UIApplication! application) -> Microsoft.Maui.IWindow?
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateRippleColor(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.Graphics.Color? rippleColor) -> void
+static Microsoft.Maui.Platform.EditTextExtensions.GetCursorPosition(this Android.Widget.EditText! editText, int cursorOffset = 0) -> int
+static Microsoft.Maui.Platform.EditTextExtensions.GetSelectedTextLength(this Android.Widget.EditText! editText) -> int
+static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
+*REMOVED*static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry, Android.Graphics.Drawables.Drawable? clearButtonDrawable) -> void
+*REMOVED*static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry, System.Func<Android.Graphics.Drawables.Drawable?>? getClearButtonDrawable) -> void
+static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformButton, Microsoft.Maui.IImageButton! imageButton) -> void
+static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateButtonBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformView, Microsoft.Maui.IImageButton! button) -> void
+static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateButtonStroke(this Google.Android.Material.ImageView.ShapeableImageView! platformView, Microsoft.Maui.IButtonStroke! button) -> void
+static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateRippleColor(this Google.Android.Material.ImageView.ShapeableImageView! platformView, Microsoft.Maui.Graphics.Color! rippleColor) -> void
+static Microsoft.Maui.Platform.SearchViewExtensions.UpdateReturnType(this AndroidX.AppCompat.Widget.SearchView! searchView, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.SafeAreaEdges.All.get -> Microsoft.Maui.SafeAreaEdges
 static Microsoft.Maui.SafeAreaEdges.Default.get -> Microsoft.Maui.SafeAreaEdges
 static Microsoft.Maui.SafeAreaEdges.None.get -> Microsoft.Maui.SafeAreaEdges
@@ -243,39 +266,27 @@ virtual Microsoft.Maui.Handlers.OpenWindowRequest.<Clone>$() -> Microsoft.Maui.H
 virtual Microsoft.Maui.Handlers.OpenWindowRequest.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.Handlers.OpenWindowRequest.Equals(Microsoft.Maui.Handlers.OpenWindowRequest? other) -> bool
 virtual Microsoft.Maui.Handlers.OpenWindowRequest.PrintMembers(System.Text.StringBuilder! builder) -> bool
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.ApplicationSignificantTimeChange.Invoke(UIKit.UIApplication! application) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.ContinueUserActivity.Invoke(UIKit.UIApplication! application, Foundation.NSUserActivity! userActivity, UIKit.UIApplicationRestorationHandler! completionHandler) -> bool
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.DidEnterBackground.Invoke(UIKit.UIApplication! application) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.FinishedLaunching.Invoke(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.OnActivated.Invoke(UIKit.UIApplication! application) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.OnResignActivation.Invoke(UIKit.UIApplication! application) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.OpenUrl.Invoke(UIKit.UIApplication! app, Foundation.NSUrl! url, Foundation.NSDictionary! options) -> bool
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformActionForShortcutItem.Invoke(UIKit.UIApplication! application, UIKit.UIApplicationShortcutItem! shortcutItem, UIKit.UIOperationHandler! completionHandler) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformFetch.Invoke(UIKit.UIApplication! application, System.Action<UIKit.UIBackgroundFetchResult>! completionHandler) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneContinueUserActivity.Invoke(UIKit.UIScene! scene, Foundation.NSUserActivity! userActivity) -> bool
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidDisconnect.Invoke(UIKit.UIScene! scene) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidEnterBackground.Invoke(UIKit.UIScene! scene) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidFailToContinueUserActivity.Invoke(UIKit.UIScene! scene, string! userActivityType, Foundation.NSError! error) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidUpdateUserActivity.Invoke(UIKit.UIScene! scene, Foundation.NSUserActivity! userActivity) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOnActivated.Invoke(UIKit.UIScene! scene) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOnResignActivation.Invoke(UIKit.UIScene! scene) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOpenUrl.Invoke(UIKit.UIScene! scene, Foundation.NSSet<UIKit.UIOpenUrlContext!>! urlContexts) -> bool
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneRestoreInteractionState.Invoke(UIKit.UIScene! scene, Foundation.NSUserActivity! stateRestorationActivity) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillConnect.Invoke(UIKit.UIScene! scene, UIKit.UISceneSession! session, UIKit.UISceneConnectionOptions! connectionOptions) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillContinueUserActivity.Invoke(UIKit.UIScene! scene, string! userActivityType) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillEnterForeground.Invoke(UIKit.UIScene! scene) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillEnterForeground.Invoke(UIKit.UIApplication! application) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillFinishLaunching.Invoke(UIKit.UIApplication! application, Foundation.NSDictionary? launchOptions) -> bool
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WillTerminate.Invoke(UIKit.UIApplication! application) -> void
-virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.WindowSceneDidUpdateCoordinateSpace.Invoke(UIKit.UIWindowScene! windowScene, UIKit.IUICoordinateSpace! previousCoordinateSpace, UIKit.UIInterfaceOrientation previousInterfaceOrientation, UIKit.UITraitCollection! previousTraitCollection) -> void
-*REMOVED*virtual Microsoft.Maui.MauiUIApplicationDelegate.FinishedLaunching(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
-virtual Microsoft.Maui.MauiUIApplicationDelegate.FinishedLaunching(UIKit.UIApplication! application, Foundation.NSDictionary? launchOptions) -> bool
-*REMOVED*virtual Microsoft.Maui.MauiUIApplicationDelegate.WillFinishLaunching(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
-virtual Microsoft.Maui.MauiUIApplicationDelegate.WillFinishLaunching(UIKit.UIApplication! application, Foundation.NSDictionary? launchOptions) -> bool
-virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKit.WKWebView! webView, WebKit.WKNavigationAction! navigationAction, System.Action<WebKit.WKNavigationActionPolicy>! decisionHandler) -> void
-virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
-virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisionalNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
-virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnActivityResult.Invoke(Android.App.Activity! activity, int requestCode, Android.App.Result resultCode, Android.Content.Intent? data) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationConfigurationChanged.Invoke(Android.App.Application! application, Android.Content.Res.Configuration! newConfig) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationCreate.Invoke(Android.App.Application! application) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationCreating.Invoke(Android.App.Application! application) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationLowMemory.Invoke(Android.App.Application! application) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationTrimMemory.Invoke(Android.App.Application! application, Android.Content.TrimMemory level) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnBackPressed.Invoke(Android.App.Activity! activity) -> bool
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnConfigurationChanged.Invoke(Android.App.Activity! activity, Android.Content.Res.Configuration! newConfig) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnCreate.Invoke(Android.App.Activity! activity, Android.OS.Bundle? savedInstanceState) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnDestroy.Invoke(Android.App.Activity! activity) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnNewIntent.Invoke(Android.App.Activity! activity, Android.Content.Intent? intent) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnPause.Invoke(Android.App.Activity! activity) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnPostCreate.Invoke(Android.App.Activity! activity, Android.OS.Bundle? savedInstanceState) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnPostResume.Invoke(Android.App.Activity! activity) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnRequestPermissionsResult.Invoke(Android.App.Activity! activity, int requestCode, string![]! permissions, Android.Content.PM.Permission[]! grantResults) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnRestart.Invoke(Android.App.Activity! activity) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnRestoreInstanceState.Invoke(Android.App.Activity! activity, Android.OS.Bundle! savedInstanceState) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnResume.Invoke(Android.App.Activity! activity) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnSaveInstanceState.Invoke(Android.App.Activity! activity, Android.OS.Bundle! outState) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnStart.Invoke(Android.App.Activity! activity) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnStop.Invoke(Android.App.Activity! activity) -> void
 *REMOVED*virtual Microsoft.Maui.PropertyMapper.ClearKeyCache() -> void
 *REMOVED*virtual Microsoft.Maui.PropertyMapper.UpdateKeys.get -> System.Collections.Generic.IReadOnlyCollection<string!>!
 virtual Microsoft.Maui.ScrollToRequest.<Clone>$() -> Microsoft.Maui.ScrollToRequest!

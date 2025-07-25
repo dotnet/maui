@@ -16,17 +16,17 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Always pad so content doesn't go under the soft input/keyboard.
 		/// </summary>
-		SoftInput = 1 << 0,
+		SoftInput = 1,
 
 		/// <summary>
 		/// Content flows under keyboard but stays out of top and bottom bars and notch.
 		/// </summary>
-		Container = 1 << 1,
+		Container = 2,
 
 		/// <summary>
 		/// Default behavior - apply platform safe area insets.
 		/// </summary>
-		Default = 1 << 2,
+		Default = 4,
 
 		/// <summary>
 		/// Obey all safe area insets - content will be positioned only in the safe area.
