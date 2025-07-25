@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls
 
 		internal override void SetChildInheritedBindingContext(Element child, object context)
 		{
-			// We never want to use the standard inheritance mechanism, we will get this set by our parent
+			SetInheritedBindingContext(child, context);
 		}
 
 		static async void OnContentChanged(BindableObject bindable, object oldValue, object newValue)
