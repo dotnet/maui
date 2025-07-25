@@ -416,6 +416,18 @@ namespace Microsoft.Maui.Controls
 		{
 			// Use direct property first
 			var regionForEdge = SafeAreaEdges.GetEdge(edge);
+
+			if (regionForEdge == SafeAreaRegions.Default)
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				if (IgnoreSafeArea)
+				{
+					return SafeAreaRegions.None;
+				}
+#pragma warning restore CS0618 // Type or member is obsolete
+
+				return SafeAreaRegions.Container;
+			}
 			
 			// For Layout views, never return the old Default - return None instead
 			// (since Default no longer exists in the new enum)

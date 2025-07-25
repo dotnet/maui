@@ -113,7 +113,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// A <see cref="SafeAreaEdges"/> with all edges set to <see cref="SafeAreaRegions.None"/>.
 		/// </summary>
-		public static SafeAreaEdges Default => new(SafeAreaRegions.None);
+		public static SafeAreaEdges Default => new(SafeAreaRegions.Default);
 
 		/// <summary>
 		/// A <see cref="SafeAreaEdges"/> with all edges set to <see cref="SafeAreaRegions.None"/>.
@@ -145,31 +145,10 @@ namespace Microsoft.Maui
 			return obj is SafeAreaEdges other && Equals(other);
 		}
 
-		public override int GetHashCode()
-		{
-#if NET
-			return HashCode.Combine(Left, Top, Right, Bottom);
-#else
-			unchecked
-			{
-				int hashCode = Left.GetHashCode();
-				hashCode = (hashCode * 397) ^ Top.GetHashCode();
-				hashCode = (hashCode * 397) ^ Right.GetHashCode();
-				hashCode = (hashCode * 397) ^ Bottom.GetHashCode();
-				return hashCode;
-			}
-#endif
-		}
+		public override int GetHashCode() =>
+			HashCode.Combine(Left, Top, Right, Bottom);
 
-		public override string ToString()
-		{
-			if (Left == Top && Top == Right && Right == Bottom)
-				return Left.ToString();
-
-			if (Left == Right && Top == Bottom)
-				return $"{Left}, {Top}";
-
-			return $"{Left}, {Top}, {Right}, {Bottom}";
-		}
+		public override string ToString() =>
+			$"{Left}, {Top}, {Right}, {Bottom}";
 	}
 }

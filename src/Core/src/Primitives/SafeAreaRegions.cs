@@ -32,6 +32,6 @@ namespace Microsoft.Maui
 		/// Obey all safe area insets - content will be positioned only in the safe area.
 		/// This includes top and bottom bars, notch, and keyboard.
 		/// </summary>
-		All = int.MaxValue
+		All = Container | SoftInput
 	}
 }

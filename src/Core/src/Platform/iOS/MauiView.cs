@@ -136,10 +136,10 @@ namespace Microsoft.Maui.Platform
 			// Fallback to legacy ISafeAreaView behavior
 			if (View is ISafeAreaView sav)
 			{
-				return sav.IgnoreSafeArea ? SafeAreaRegions.All : SafeAreaRegions.Default;
+				return sav.IgnoreSafeArea ? SafeAreaRegions.None : SafeAreaRegions.Container;
 			}
 			
-			return SafeAreaRegions.Default; // Default: respect safe area
+			return SafeAreaRegions.Container; // Default: respect safe area
 		}
 
 		static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea)

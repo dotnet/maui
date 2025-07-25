@@ -73,7 +73,7 @@ Microsoft.Maui.SafeAreaEdges.SetEdge(int edge, Microsoft.Maui.SafeAreaRegions va
 Microsoft.Maui.SafeAreaEdges.Top.get -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaEdges.Top.set -> void
 Microsoft.Maui.SafeAreaRegions
-Microsoft.Maui.SafeAreaRegions.All = 2147483647 -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaRegions.All = Microsoft.Maui.SafeAreaRegions.SoftInput | Microsoft.Maui.SafeAreaRegions.Container -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.Container = 2 -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.Default = 4 -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.None = 0 -> Microsoft.Maui.SafeAreaRegions
