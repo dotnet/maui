@@ -43,10 +43,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		ItemTouchHelper _itemTouchHelper;
 		SimpleItemTouchHelperCallback _itemTouchHelperCallback;
-		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
-		PropertyChangedEventHandler _layoutPropertyChanged;
 
-		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
+		//TODO: Remove this in .NET 10
+		~MauiRecyclerView() { }
 
 		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(new ContextThemeWrapper(context, Resource.Style.collectionViewTheme))
 		{
@@ -59,13 +58,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public virtual void TearDownOldElement(TItemsView oldElement)
 		{
-			// Stop listening for layout property changes
-			if (_layoutPropertyChangedProxy is not null)
-			{
-				_layoutPropertyChangedProxy.Unsubscribe();
-				_layoutPropertyChanged = null;
-			}
-
 			// Stop listening for ScrollTo requests
 			oldElement.ScrollToRequested -= ScrollToRequested;
 
@@ -286,16 +278,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public virtual void UpdateLayoutManager()
 		{
-			_layoutPropertyChangedProxy?.Unsubscribe();
-
 			ItemsLayout = _getItemsLayout();
-
-			// Keep track of the ItemsLayout's property changes
-			if (ItemsLayout != null)
-			{
-				_layoutPropertyChanged ??= LayoutPropertyChanged;
-				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(ItemsLayout, _layoutPropertyChanged);
-			}
 
 			SetLayoutManager(SelectLayoutManager(ItemsLayout));
 
@@ -506,8 +489,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ScrollTo(args);
 		}
 
+		//TODO: Remove this in .NET 10
 		protected virtual void LayoutPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
 		{
+		}
+
+		void IMauiRecyclerView<TItemsView>.UpdateItemsLayoutProperties(object args)
+		{
+			if (args is not PropertyChangedEventArgs propertyChanged)
+			{
+				return;
+			}
+
 			if (propertyChanged.Is(GridItemsLayout.SpanProperty))
 			{
 				if (GetLayoutManager() is GridLayoutManager gridLayoutManager)

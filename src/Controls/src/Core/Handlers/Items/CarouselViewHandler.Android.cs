@@ -62,6 +62,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		//TODO Make this public in .NET10
+		internal static void MapItemsLayoutPropertyChanged(CarouselViewHandler handler, CarouselView view, object args)
+		{
+			if (handler.PlatformView is IMauiRecyclerView<CarouselView> recyclerView)
+			{
+				recyclerView.UpdateItemsLayoutProperties(args);
+			}
+		}
+
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			_widthConstraint = widthConstraint;
