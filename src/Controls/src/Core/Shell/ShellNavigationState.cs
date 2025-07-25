@@ -112,16 +112,16 @@ namespace Microsoft.Maui.Controls
 			toKeep.Insert(0, "");
 			return new Uri(string.Join(Routing.PathSeparator, toKeep), UriKind.Relative);
 		}
-
+#nullable enable
 		private sealed class ShellNavigationStateTypeConverter : TypeConverter
 		{
-			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) => false;
-			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo cultureInfo, object value, Type destinationType) => throw new NotSupportedException();
+			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => false;
+			public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? cultureInfo, object? value, Type? destinationType) => throw new NotSupportedException();
 
-			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 				=> sourceType == typeof(string) || sourceType == typeof(Uri);
 
-			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+			public override object? ConvertFrom(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
 				=> value switch
 				{
 					string str => (ShellNavigationState)str,

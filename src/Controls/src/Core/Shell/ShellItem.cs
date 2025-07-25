@@ -363,19 +363,19 @@ namespace Microsoft.Maui.Controls
 			if (this.IsVisibleItem && CurrentItem != null)
 				((IShellController)Parent)?.AppearanceChanged(CurrentItem, false);
 		}
-
+#nullable enable
 		private sealed class ShellItemConverter : TypeConverter
 		{
-			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 				=> sourceType == typeof(ShellSection)
 					|| sourceType == typeof(ShellContent)
 					|| sourceType == typeof(TemplatedPage)
 					|| sourceType == typeof(MenuItem);
 
-			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 				=> false;
 
-			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+			public override object? ConvertFrom(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
 				=> value switch
 				{
 					ShellSection shellSection => (ShellItem)shellSection,
@@ -385,10 +385,10 @@ namespace Microsoft.Maui.Controls
 					_ => throw new NotSupportedException(),
 				};
 
-			public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+			public override object? ConvertTo(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, Type destinationType)
 				=> throw new NotSupportedException();
 		}
-
+#nullable disable
 		/// <summary>
 		/// Provides a debug view for the <see cref="ShellItem"/> class.
 		/// </summary>

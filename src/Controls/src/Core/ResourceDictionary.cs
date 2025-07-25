@@ -434,14 +434,29 @@ namespace Microsoft.Maui.Controls
 		//only used for unit testing
 		internal static void ClearCache() => s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 
+#nullable enable
 		[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.RDSourceTypeConverter")]
 		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter
 		{
-			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 				=> sourceType == typeof(string);
 
-			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 				=> true;
+
+			public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+							=> throw new NotImplementedException();
+
+			public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+			{
+				if (value is not Uri uri)
+				{
+					throw new NotSupportedException();
+				}
+
+				return uri.ToString();
+			}
+#nullable disable
 
 			object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 			{
@@ -490,16 +505,6 @@ namespace Microsoft.Maui.Controls
 
 				//drop the leading '/'
 				return resourceUri.AbsolutePath.Substring(1);
-			}
-
-			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-				=> throw new NotImplementedException();
-
-			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
-			{
-				if (value is not Uri uri)
-					throw new NotSupportedException();
-				return uri.ToString();
 			}
 		}
 	}
