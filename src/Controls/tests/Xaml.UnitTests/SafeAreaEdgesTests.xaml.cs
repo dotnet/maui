@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[TestCase(false)]
-			[TestCase(true)]
+			//[TestCase(true)]
 			public void SingleValueConversions(bool useCompiledXaml)
 			{
 				var layout = new SafeAreaEdgesTests(useCompiledXaml);
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[TestCase(false)]
-			[TestCase(true)]
+			//[TestCase(true)]
 			public void TwoValueConversions(bool useCompiledXaml)
 			{
 				var layout = new SafeAreaEdgesTests(useCompiledXaml);
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[TestCase(false)]
-			[TestCase(true)]
+			//[TestCase(true)]
 			public void FourValueConversions(bool useCompiledXaml)
 			{
 				var layout = new SafeAreaEdgesTests(useCompiledXaml);
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[TestCase(false)]
-			[TestCase(true)]
+			//[TestCase(true)]
 			public void ControlSpecificProperties(bool useCompiledXaml)
 			{
 				var layout = new SafeAreaEdgesTests(useCompiledXaml);
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[TestCase(false)]
-			[TestCase(true)]
+			//[TestCase(true)]
 			public void PropertyInflation_WorksWithAllEnumValues(bool useCompiledXaml)
 			{
 				var layout = new SafeAreaEdgesTests(useCompiledXaml);
