@@ -1,32 +1,44 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh5378_1 : ContentPage
-	{
-		public Gh5378_1() => InitializeComponent();
-		public Gh5378_1(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
-		[TestFixture]
-		class Tests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class Gh5378_1 : ContentPage
+{
+	public Gh5378_1() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
+	{
+		[Test]
+		public void ReportSyntaxError([Values] XamlInflator inflator)
 		{
-			[Test]
-			public void ReportSyntaxError([Values(false/*, true*/)] bool useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
+				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh5378_1)));
+			else if (inflator == XamlInflator.Runtime)
+				Assert.Throws<XamlParseException>(() => new Gh5378_1(inflator));
+			else if (inflator == XamlInflator.SourceGen)
 			{
-				if (useCompiledXaml)
-					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh5378_1)));
-				else
-					Assert.Throws<XamlParseException>(() => new Gh5378_1(useCompiledXaml));
+				var result = CreateMauiCompilation()
+					.WithAdditionalSource(
+"""
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class Gh5378_1 : ContentPage
+{
+	public Gh5378_1() => InitializeComponent();
+}
+""")
+					.RunMauiSourceGenerator(typeof(Gh5378_1));
+				//FIXME check diagnostic code
+				Assert.That(result.Diagnostics.Length, Is.EqualTo(1));
 			}
+			else
+				Assert.Ignore($"Test not supported for {inflator}");
 		}
 	}
 }

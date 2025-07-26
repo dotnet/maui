@@ -1,7 +1,4 @@
-using System;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
@@ -13,29 +10,21 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui26369 : ContentPage
 {
-	public static readonly BindableProperty NullableGridLengthProperty =
-		BindableProperty.Create(nameof(NullableGridLength), typeof(GridLength?), typeof(Maui26369), null);
+    public static readonly BindableProperty NullableGridLengthProperty = 
+        BindableProperty.Create(nameof(NullableGridLength), typeof(GridLength?), typeof(Maui26369), null);
+        
+    [TypeConverter(typeof(GridLengthTypeConverter))]
+    public GridLength? NullableGridLength 
+    { 
+        get => (GridLength?)GetValue(NullableGridLengthProperty); 
+        set => SetValue(NullableGridLengthProperty, value);
+    }
 
-	[TypeConverter(typeof(GridLengthTypeConverter))]
-	public GridLength? NullableGridLength
-	{
-		get => (GridLength?)GetValue(NullableGridLengthProperty);
-		set => SetValue(NullableGridLengthProperty, value);
-	}
+	public Maui26369() => InitializeComponent();
 
-	public Maui26369()
-	{
-		InitializeComponent();
-	}
-
-	public Maui26369(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		[SetUp]
@@ -52,16 +41,16 @@ public partial class Maui26369 : ContentPage
 		}
 
 		[Test]
-		public void CompilationDoesNotFail([Values] bool useCompiledXaml)
+		public void CompilationDoesNotFail([Values] XamlInflator inflator)
 		{
-			if (useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
 			{
 				MockCompiler.Compile(typeof(Maui26369), out var methodDef, out var hasLoggedErrors);
 				Assert.IsFalse(hasLoggedErrors);
 				Assert.False(ContainsBoxToNullable(methodDef));
 			}
 
-			var page = new Maui26369(useCompiledXaml);
+			var page = new Maui26369(inflator);
 			Assert.That(page.NullableGridLength, Is.EqualTo(new GridLength(30)));
 		}
 

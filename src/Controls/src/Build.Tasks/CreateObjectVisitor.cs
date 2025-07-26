@@ -362,13 +362,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		static bool IsXaml2009LanguagePrimitive(IElementNode node)
 		{
 			if (node.NamespaceURI == XamlParser.X2009Uri)
-			{
-				var n = node.XmlType.Name.Split(':')[1];
-				return n != "Array";
-			}
+				return node.XmlType.Name != "Array";
 			if (node.NamespaceURI != "clr-namespace:System;assembly=mscorlib")
 				return false;
-			var name = node.XmlType.Name.Split(':')[1];
+			var name = node.XmlType.Name;
 			if (name == "SByte" ||
 				name == "Int16" ||
 				name == "Int32" ||

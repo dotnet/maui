@@ -1,31 +1,40 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
+
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime | XamlInflator.XamlC, true)]
+public partial class Gh2007 : ContentPage
 {
-	public partial class Gh2007 : ContentPage
+	public Gh2007() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
 	{
-		public Gh2007()
+		[Test]
+		public void UsefullxResourceErrorMessages([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Gh2007(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(false), TestCase(true)]
-			public void UsefullxResourceErrorMessages(bool useCompiledXaml)
+			if (inflator == XamlInflator.Runtime || inflator == XamlInflator.XamlC)
+				Assert.Throws<XamlParseException>(() => new Gh2007(inflator));
+			else if (inflator == XamlInflator.SourceGen)
 			{
-				Assert.Throws<XamlParseException>(() => new Gh2007(useCompiledXaml));
+				var result = CreateMauiCompilation()
+					.WithAdditionalSource(
+"""
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime | XamlInflator.XamlC, true)]
+public partial class Gh2007 : ContentPage
+{
+	public Gh2007() => InitializeComponent();
+}
+""")
+					.RunMauiSourceGenerator(typeof(Gh2007));
+				Assert.That(result.Diagnostics, Is.Not.Empty);
 			}
+			else
+				Assert.Ignore("ignoring test for {inflator} as it is not supported in this context");
 		}
 	}
 }

@@ -7,29 +7,17 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+[XamlProcessing(XamlInflator.Default, true)]
 public partial class XmlnsAggregattion : ContentPage
 {
 	public XmlnsAggregattion() => InitializeComponent();
-	public XmlnsAggregattion(bool useCompiledXaml)
+	[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+	[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+
+	[Test]
+	public void XamlWithAggregatedXmlns([Values] XamlInflator inflator)
 	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
-	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-		[Test]
-		public void XamlWithAggregatedXmlns([Values] bool useCompiledXaml)
-		{
-			if (useCompiledXaml)
-				MockCompiler.Compile(typeof(XmlnsAggregattion));
-
-			var layout = new XmlnsAggregattion(useCompiledXaml);
-			Assert.That(layout.label.Text, Is.EqualTo("Welcome to .NET MAUI!"));
-
-		}
+		var layout = new XmlnsAggregattion(inflator);
+		Assert.That(layout.label.Text, Is.EqualTo("Welcome to .NET MAUI!"));
 	}
 }
