@@ -23,6 +23,10 @@
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
+    <IsBindingProject>true</IsBindingProject>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- NuGet package information -->
     <IsPackable>true</IsPackable>
@@ -60,6 +64,14 @@
     <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" />
     <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" />
     <PackageReference Include="Xamarin.AndroidX.Navigation.Common" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
+    <NativeReference Include="../AppleNative/PlatformInterop/PlatformInterop.xcframework.zip">
+      <Kind>Static</Kind>
+      <ForceLoad>True</ForceLoad>
+    </NativeReference>
+    <ObjcBindingApiDefinition Include="../AppleNative/ApiDefinition.cs" />
+    <ObjcBindingCoreSource Include="../AppleNative/StructsAndEnums.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="Tizen.UIExtensions.NUI" />
