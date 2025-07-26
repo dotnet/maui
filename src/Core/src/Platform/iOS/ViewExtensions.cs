@@ -811,6 +811,11 @@ namespace Microsoft.Maui.Platform
 			return disposable;
 		}
 
+		internal static void SetAutoresizeMask(this CALayer layer, UIViewAutoresizing mask)
+		{
+			layer.SetValueForKey(NSObject.FromObject(mask), new NSString("platformAutoresizingMask"));
+		}
+
 		internal static void UpdateLayerBorder(this CoreAnimation.CALayer layer, IButtonStroke? stroke)
 		{
 			if (stroke == null)

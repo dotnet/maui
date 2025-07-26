@@ -1,31 +1,15 @@
-using System.Diagnostics.CodeAnalysis;
+using System;
 using CoreAnimation;
+using UIKit;
 
 namespace Microsoft.Maui.Platform;
 
 class StaticCAGradientLayer : CAGradientLayer, IAutoSizableCALayer
 {
-	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in CALayerAutosizeObserver_DoesNotLeak test.")]
-	CALayerAutosizeObserver? _boundsObserver;
-
-	protected override void Dispose(bool disposing)
-	{
-		_boundsObserver?.Dispose();
-		_boundsObserver = null;
-		base.Dispose(disposing);
-	}
-
-	public override void RemoveFromSuperLayer()
-	{
-		_boundsObserver?.Dispose();
-		_boundsObserver = null;
-		base.RemoveFromSuperLayer();
-	}
-
 	void IAutoSizableCALayer.AutoSizeToSuperLayer()
 	{
-		_boundsObserver?.Dispose();
-		_boundsObserver = CALayerAutosizeObserver.Attach(this);
+		Frame = SuperLayer?.Bounds ?? throw new InvalidOperationException("SuperLayer should be set before invoking AutoSizeToSuperLayer");
+		this.SetAutoresizeMask(UIViewAutoresizing.FlexibleDimensions);
 	}
 
 	public override void AddAnimation(CAAnimation animation, string? key)
