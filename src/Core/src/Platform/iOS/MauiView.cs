@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Platform
 		bool RespondsToSafeArea()
 		{
 			if (_scrollViewDescendant.HasValue)
-				return _scrollViewDescendant.Value;
+				return !_scrollViewDescendant.Value;
 
 			// iOS sets AdjustedContentInset on UIScrollView only when the ContentSize exceeds the ScrollView's Bounds.
 			// If ContentSize is smaller, AdjustedContentInset is zero, and SafeAreaInsets are applied to child views instead.
@@ -116,8 +116,8 @@ namespace Microsoft.Maui.Platform
 			//
 			// For more details and implementation specifics, see MauiScrollView.cs, which contains the logic for safe area management
 			// within scroll views and explains how this interacts with the overall layout system.
-			_scrollViewDescendant = Superview.GetParentOfType<UIScrollView>() is null;
-			return _scrollViewDescendant.Value;
+			_scrollViewDescendant = this.GetParentOfType<UIScrollView>() is not null;
+			return !_scrollViewDescendant.Value;
 		}
 
 		SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
