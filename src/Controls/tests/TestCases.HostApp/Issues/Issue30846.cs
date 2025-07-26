@@ -108,10 +108,8 @@ public partial class Issue30846 : ContentPage
 		hybridWebView.WebViewInitializing += (s, e) =>
 		{
 #if IOS || MACCATALYST
-			// Make things look decent
+			// Make things look better
 			e.PlatformArgs.Configuration.AllowsInlineMediaPlayback = true;
-			e.PlatformArgs.Configuration.AllowsAirPlayForMediaPlayback = true;
-			e.PlatformArgs.Configuration.AllowsPictureInPictureMediaPlayback = true;
 
 			// Set media playback requirements based on the switch state
 			e.PlatformArgs.Configuration.MediaTypesRequiringUserActionForPlayback = requireUserGesture
