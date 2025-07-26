@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Handlers
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 
 			PlatformView.CrossPlatformLayout = VirtualView;
+			PlatformView.View = VirtualView;
 		}
 
 		public static void MapContent(ISwipeViewHandler handler, ISwipeView view)

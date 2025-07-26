@@ -8,9 +8,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 	/// <remarks><see cref = "Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="Page"/> class are most prominently used as the top level UI element in .NET MAUI applications. In addition to their role as the main pages of applications, <see cref="Page"/> objects and their descendants can be used with navigation classes, such as <see cref="NavigationPage"/> or <see cref="FlyoutPage"/>, among others, to provide rich user experiences that conform to the expected behaviors on each platform.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement, IConstrainedView
+	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView2, IView, ITitledElement, IToolbarElement, ISafeAreaView, IConstrainedView
 #if IOS
 	,IiOSPageSpecifics
 #endif
@@ -141,6 +141,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(PaddingElement.PaddingProperty, value); }
 		}
 
+
 		Thickness IPaddingElement.PaddingDefaultValueCreator()
 		{
 			return default(Thickness);
@@ -150,6 +151,8 @@ namespace Microsoft.Maui.Controls
 		{
 			(this as IView).InvalidateMeasure();
 		}
+
+
 
 		/// <summary>
 		/// Gets or sets the page's title.
@@ -206,7 +209,9 @@ namespace Microsoft.Maui.Controls
 		public ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
 		/// <inheritdoc/>
+#pragma warning disable CS0618 // Type or member is obsolete
 		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		bool IConstrainedView.HasFixedConstraints => true;
 
@@ -255,6 +260,16 @@ namespace Microsoft.Maui.Controls
 			{
 				On<PlatformConfiguration.iOS>().SetSafeAreaInsets(value);
 			}
+		}
+
+		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
+		{
+			// Use new SafeAreaElement method
+			var regionForEdge = SafeAreaElement.GetEdgeValue(this, edge);
+
+			// For Page (but not ContentPage), return as-is
+			return regionForEdge;
 		}
 
 		/// <summary>
@@ -555,7 +570,7 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("Use ArrangeOverride instead")]
 		protected void UpdateChildrenLayout()
 		{
-			
+
 		}
 
 		internal void OnAppearing(Action action)

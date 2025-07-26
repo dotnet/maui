@@ -10,7 +10,7 @@ public class Issue8945TimePicker : _IssuesUITest
 #if ANDROID
 	const string CancelBtn = "Cancel";
 #endif
-	
+
 	public Issue8945TimePicker(TestDevice testDevice) : base(testDevice)
 	{
 	}

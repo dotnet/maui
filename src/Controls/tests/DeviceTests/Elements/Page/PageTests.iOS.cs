@@ -45,6 +45,38 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory("SafeArea behavior works with both old and new APIs")]
+		[InlineData(true)] // Use new SafeArea API
+		[InlineData(false)] // Use old UseSafeArea API
+		public async Task SafeAreaBehaviorConsistency(bool useNewApi)
+		{
+			SetupBuilder();
+
+			var page = new ContentPage { Background = Colors.Blue };
+
+			if (useNewApi)
+			{
+				page.SafeAreaEdges = SafeAreaEdges.All;
+			}
+			else
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				page.On<iOS>().SetUseSafeArea(true);
+#pragma warning restore CS0618 // Type or member is obsolete
+			}
+
+			var shell = new Shell() { CurrentItem = page };
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, (handler) =>
+			{
+				if (handler.VirtualView is Window window && window.Page is Shell shellPage)
+				{
+					// Both APIs should result in safe area being respected (non-zero insets)
+					Assert.NotEqual(shellPage.CurrentPage.On<iOS>().SafeAreaInsets(), Thickness.Zero);
+				}
+			});
+		}
+
 		//src/Compatibility/Core/tests/iOS/EmbeddingTests.cs
 		[Fact(DisplayName = "Can Create Platform View From ContentPage")]
 		public async Task CanCreateViewControllerFromContentPage()
