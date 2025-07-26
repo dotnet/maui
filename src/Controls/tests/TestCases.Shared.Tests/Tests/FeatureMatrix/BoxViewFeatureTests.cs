@@ -5,19 +5,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class BoxViewFeatureTests : UITest
+	public class BoxViewFeatureTests : _GalleryUITest
 	{
 		public const string BoxViewFeatureMatrix = "BoxView Feature Matrix";
+
+		public override string GalleryPageName => BoxViewFeatureMatrix;
 
 		public BoxViewFeatureTests(TestDevice device)
 			: base(device)
 		{
-		}
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery(BoxViewFeatureMatrix);
 		}
 
 
