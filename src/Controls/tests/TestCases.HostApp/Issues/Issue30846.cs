@@ -65,9 +65,7 @@ public partial class Issue30846 : ContentPage
 		_videoStatusLabel = new Label
 		{
 			AutomationId = "VideoStatusLabel",
-			Text = "",
-			HorizontalOptions = LayoutOptions.Start,
-			VerticalOptions = LayoutOptions.Center,
+			Text = "Loading...",
 		};
 		Grid.SetRow(_videoStatusLabel, 1);
 		Grid.SetColumnSpan(_videoStatusLabel, 2);
@@ -76,9 +74,7 @@ public partial class Issue30846 : ContentPage
 		_audioStatusLabel = new Label
 		{
 			AutomationId = "AudioStatusLabel",
-			Text = "",
-			HorizontalOptions = LayoutOptions.Start,
-			VerticalOptions = LayoutOptions.Center,
+			Text = "Loading...",
 		};
 		Grid.SetRow(_audioStatusLabel, 2);
 		Grid.SetColumnSpan(_audioStatusLabel, 2);
@@ -100,10 +96,13 @@ public partial class Issue30846 : ContentPage
 
 		hybridWebView.RawMessageReceived += (s, e) =>
 		{
-			if (e.Message.StartsWith("Video"))
-				_videoStatusLabel.Text = e.Message;
-			else if (e.Message.StartsWith("Audio"))
-				_audioStatusLabel.Text = e.Message;
+			Dispatcher.Dispatch(() =>
+			{
+				if (e.Message.StartsWith("Video"))
+					_videoStatusLabel.Text = e.Message;
+				else if (e.Message.StartsWith("Audio"))
+					_audioStatusLabel.Text = e.Message;
+			});
 		};
 
 		hybridWebView.WebViewInitializing += (s, e) =>
