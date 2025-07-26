@@ -26,7 +26,7 @@ public partial class Maui17222 : ContentPage
 	{
 #if DEBUG
 		bool enableDiagnosticsInitialState;
-		
+
 		[SetUp]
 		public void Setup()
 		{
@@ -38,7 +38,7 @@ public partial class Maui17222 : ContentPage
 		[TearDown]
 		public void TearDown()
 		{
-			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;			
+			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 			AppInfo.SetCurrent(null);
 		}
 

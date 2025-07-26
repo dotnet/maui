@@ -10,7 +10,7 @@ public class Issue8945Picker : _IssuesUITest
 #if ANDROID
 	const string CancelBtn = "Cancel";
 #endif
-	
+
 	public Issue8945Picker(TestDevice testDevice) : base(testDevice)
 	{
 	}

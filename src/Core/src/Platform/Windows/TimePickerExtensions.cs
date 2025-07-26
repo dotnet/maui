@@ -113,7 +113,7 @@ public static class TimePickerExtensions
 
 			// Look for button inside and invoke it
 			var children = peer.GetChildren();
-		
+
 			if (children is null)
 				return;
 

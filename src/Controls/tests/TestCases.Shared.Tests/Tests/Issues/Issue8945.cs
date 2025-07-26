@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test, Order(1)]
 		[Category(UITestCategories.DatePicker)]
 		public void OpenCloseDatePicker()
-		{ 
+		{
 			App.WaitForElement("OpenDatePickerButton");
 			App.Tap("OpenDatePickerButton");
 #if ANDROID

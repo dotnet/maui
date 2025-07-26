@@ -20,9 +20,9 @@ public interface IDatePicker : IView, ITextStyle
 #if NETSTANDARD2_0
 	bool IsOpen { get; set; }
 #else
-	bool IsOpen { get => false; set {} }
+	bool IsOpen { get => false; set { } }
 #endif
-	
+
 	/// <summary>
 	/// Gets the format of the date to display to the user. 
 	/// </summary>
