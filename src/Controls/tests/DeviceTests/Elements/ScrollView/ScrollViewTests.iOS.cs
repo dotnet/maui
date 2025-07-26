@@ -19,7 +19,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			EnsureHandlerCreated(builder => { builder.ConfigureMauiHandlers(handlers => { handlers.AddHandler<Entry, EntryHandler>(); }); });
 
-			var scrollView = new ScrollView();
+			// we set this to none because if it's set to automatic it should become scrollable
+			// so the bottom content doesn't go off the screen
+			var scrollView = new ScrollView() { SafeAreaEdges = SafeAreaEdges.None };
 			var entry = new Entry() { Text = "In a ScrollView", HeightRequest = 10000 };
 			scrollView.Content = entry;
 			await AttachAndRun<ScrollViewHandler>(scrollView, handler =>

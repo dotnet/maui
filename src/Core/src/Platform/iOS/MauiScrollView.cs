@@ -427,6 +427,7 @@ namespace Microsoft.Maui.Platform
 			{
 				// We do this to keep the content scrollable
 				// if we don't do this the ContentAdjustedInset + contentSize will cause the content to go off the screen and not be scrollable
+				// So the bottom content will just go off the screen until the contentsize triggers the scrollable area
 				if (width <= Bounds.Width &&
 					(_safeArea.HorizontalThickness + width) > Bounds.Width)
 				{
