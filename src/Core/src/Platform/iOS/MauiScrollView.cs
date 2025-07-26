@@ -394,7 +394,46 @@ namespace Microsoft.Maui.Platform
 			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 			{
 				contentSize = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
-				contentSize = new Size(contentSize.Width + _safeArea.HorizontalThickness, contentSize.Height + _safeArea.VerticalThickness);
+
+				var width = contentSize.Width;
+				var height = contentSize.Height;
+
+				// When using ContentInsetAdjustmentBehavior.Automatic, UIKit decides whether to apply safe area insets
+				// to the scroll view (via AdjustedContentInset) or push them into the child views (via SafeAreaInsets).
+				// This decision is based on whether the scrollView is considered scrollable—i.e., whether the contentSize
+				// exceeds the bounds. If it's not scrollable, UIKit pushes the insets to the child.
+				//
+				// However, when the content size is *just slightly less than or equal to* the scroll view’s bounds,
+				// UIKit may flip-flop between applying the insets to the scroll view or its child, depending on minor layout
+				// changes. This can lead to layout loops, incorrect centering, or unstable behavior.
+				//
+				// The logic below prevents that by artificially increasing contentSize only when:
+				//   - The content would not be scrollable on its own, AND
+				//   - Adding the safe area would make it scrollable.
+				//
+				// This ensures the scroll view remains in a "scrollable" state, so UIKit consistently applies
+				// the insets at the scroll view level—avoiding child view SafeAreaInsets changes and stabilizing layout.
+				if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Automatic)
+				{
+					if (width <= Bounds.Width &&
+						(width + _safeArea.HorizontalThickness) > Bounds.Width)
+					{
+						width += _safeArea.HorizontalThickness;
+					}
+
+					if (height <= Bounds.Height &&
+						(height + _safeArea.VerticalThickness) > Bounds.Height)
+					{
+						height += _safeArea.VerticalThickness;
+					}
+				}
+				else
+				{
+					width += _safeArea.HorizontalThickness;
+					height += _safeArea.VerticalThickness;
+				}
+
+				contentSize = new Size(width, height);
 			}
 			else
 			{
@@ -419,7 +458,6 @@ namespace Microsoft.Maui.Platform
 				// This avoids inset flip-flopping and keeps layout behavior stable and predictable.
 				if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Automatic)
 				{
-					// If the content size is smaller than the bounds, we need to adjust it to fit within the safe area
 					if (width <= Bounds.Width &&
 						(_safeArea.HorizontalThickness + width) > Bounds.Width)
 					{

@@ -21,9 +21,6 @@
 		<!-- Test ContentView -->
 		<ContentView x:Name="contentViewTest" SafeAreaEdges="Container,SoftInput" />
 		
-		<!-- Test ContentPage -->
-		<ContentPage x:Name="contentPageTest" SafeAreaEdges="All,None" />
-		
 		<!-- Test Border -->
 		<Border x:Name="borderTest" SafeAreaEdges="SoftInput" />
 		

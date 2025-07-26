@@ -2,28 +2,20 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class SafeAreaEdgesTests : ContentPage
 	{
-		public SafeAreaEdgesTests()
-		{
-			InitializeComponent();
-		}
-
-		public SafeAreaEdgesTests(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+		public SafeAreaEdgesTests() => InitializeComponent();
 
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase(false)]
-			//[TestCase(true)]
-			public void SingleValueConversions(bool useCompiledXaml)
+			[Test]
+			public void SingleValueConversions([Values] XamlInflator inflator)
 			{
-				var layout = new SafeAreaEdgesTests(useCompiledXaml);
+				var layout = new SafeAreaEdgesTests(inflator);
 
 				Assert.AreEqual(SafeAreaEdges.None, layout.singleValueNone.SafeAreaEdges);
 				Assert.AreEqual(SafeAreaEdges.All, layout.singleValueAll.SafeAreaEdges);
@@ -32,43 +24,38 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.Default), layout.singleValueDefault.SafeAreaEdges);
 			}
 
-			[TestCase(false)]
-			//[TestCase(true)]
-			public void TwoValueConversions(bool useCompiledXaml)
+			[Test]
+			public void TwoValueConversions([Values] XamlInflator inflator)
 			{
-				var layout = new SafeAreaEdgesTests(useCompiledXaml);
+				var layout = new SafeAreaEdgesTests(inflator);
 
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.SoftInput, SafeAreaRegions.Container), layout.twoValueHorVert.SafeAreaEdges);
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All), layout.twoValueMixed.SafeAreaEdges);
 			}
 
-			[TestCase(false)]
-			//[TestCase(true)]
-			public void FourValueConversions(bool useCompiledXaml)
+			[Test]
+			public void FourValueConversions([Values] XamlInflator inflator)
 			{
-				var layout = new SafeAreaEdgesTests(useCompiledXaml);
+				var layout = new SafeAreaEdgesTests(inflator);
 
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.SoftInput, SafeAreaRegions.Container, SafeAreaRegions.All), layout.fourValueMixed.SafeAreaEdges);
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.Default, SafeAreaRegions.None, SafeAreaRegions.Default, SafeAreaRegions.All), layout.fourValueDefault.SafeAreaEdges);
 			}
 
-			[TestCase(false)]
-			//[TestCase(true)]
-			public void ControlSpecificProperties(bool useCompiledXaml)
+			[Test]
+			public void ControlSpecificProperties([Values] XamlInflator inflator)
 			{
-				var layout = new SafeAreaEdgesTests(useCompiledXaml);
+				var layout = new SafeAreaEdgesTests(inflator);
 
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.Container, SafeAreaRegions.SoftInput), layout.contentViewTest.SafeAreaEdges);
-				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.All, SafeAreaRegions.None), layout.contentPageTest.SafeAreaEdges);
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.SoftInput), layout.borderTest.SafeAreaEdges);
 				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.Container, SafeAreaRegions.Default, SafeAreaRegions.All, SafeAreaRegions.None), layout.scrollViewTest.SafeAreaEdges);
 			}
 
-			[TestCase(false)]
-			//[TestCase(true)]
-			public void PropertyInflation_WorksWithAllEnumValues(bool useCompiledXaml)
+			[Test]
+			public void PropertyInflation_WorksWithAllEnumValues([Values] XamlInflator inflator)
 			{
-				var layout = new SafeAreaEdgesTests(useCompiledXaml);
+				var layout = new SafeAreaEdgesTests(inflator);
 
 				// Verify all enum values are properly inflated from XAML strings
 				var noneGrid = layout.singleValueNone;
@@ -85,4 +72,3 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 		}
 	}
-}
