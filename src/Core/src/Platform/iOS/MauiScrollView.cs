@@ -391,62 +391,63 @@ namespace Microsoft.Maui.Platform
 			Size contentSize;
 
 
+			double width;
+			double height;
 			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 			{
 				contentSize = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
 
-				var width = contentSize.Width;
-				var height = contentSize.Height;
-
-				if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Automatic)
-				{
-				}
-				else
-				{
-					width += _safeArea.HorizontalThickness;
-					height += _safeArea.VerticalThickness;
-				}
-
-				contentSize = new Size(width, height);
+				width = contentSize.Width;
+				height = contentSize.Height;
 			}
 			else
 			{
 				contentSize = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
 
-				var width = contentSize.Width;
-				var height = contentSize.Height;
-
-				// When using ContentInsetAdjustmentBehavior.Automatic, UIKit dynamically decides whether to apply 
-				// safe area insets to the scroll view (via AdjustedContentInset) or to push them into the child view's SafeAreaInsets.
-				// This decision depends on whether the scroll view is considered "scrollable"—i.e., whether the contentSize 
-				// is larger than the visible bounds (after accounting for safe areas).
-				//
-				// If the content size is *just* smaller than or equal to the scroll view’s bounds, UIKit may decide that
-				// scrolling isn’t needed and push the safe area insets into the child instead. This can cause:
-				//   - content centering to behave incorrectly (e.g., not respecting safe areas),
-				//   - layout loops where the child resizes in response to changing safe area insets,
-				//   - instability when transitioning between scrollable and non-scrollable states.
-				//
-				// This logic adds safe area padding to the contentSize *only if* the content is nearly large enough to require scrolling,
-				// ensuring the scroll view remains in "scrollable mode" and keeps safe area insets at the scroll view level.
-				// This avoids inset flip-flopping and keeps layout behavior stable and predictable.
-				if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Automatic)
-				{
-					if (width <= Bounds.Width &&
-						(_safeArea.HorizontalThickness + width) > Bounds.Width)
-					{
-						width += _safeArea.HorizontalThickness;
-					}
-
-					if (height <= Bounds.Height &&
-						(_safeArea.VerticalThickness + height) > Bounds.Height)
-					{
-						height += _safeArea.VerticalThickness;
-					}
-
-					contentSize = new Size(width, height);
-				}
+				width = contentSize.Width;
+				height = contentSize.Height;
 			}
+
+
+			// When using ContentInsetAdjustmentBehavior.Automatic, UIKit dynamically decides whether to apply 
+			// safe area insets to the scroll view (via AdjustedContentInset) or to push them into the child view's SafeAreaInsets.
+			// This decision depends on whether the scroll view is considered "scrollable"—i.e., whether the contentSize 
+			// is larger than the visible bounds (after accounting for safe areas).
+			//
+			// If the content size is *just* smaller than or equal to the scroll view’s bounds, UIKit may decide that
+			// scrolling isn’t needed and push the safe area insets into the child instead. This can cause:
+			//   - content centering to behave incorrectly (e.g., not respecting safe areas),
+			//   - layout loops where the child resizes in response to changing safe area insets,
+			//   - instability when transitioning between scrollable and non-scrollable states.
+			//
+			// This logic adds safe area padding to the contentSize *only if* the content is nearly large enough to require scrolling,
+			// ensuring the scroll view remains in "scrollable mode" and keeps safe area insets at the scroll view level.
+			// This avoids inset flip-flopping and keeps layout behavior stable and predictable.
+			if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Automatic)
+			{
+				// We do this to keep the content scrollable
+				// if we don't do this the ContentAdjustedInset + contentSize will cause the content to go off the screen and not be scrollable
+				if (width <= Bounds.Width &&
+					(_safeArea.HorizontalThickness + width) > Bounds.Width)
+				{
+					width += Bounds.Width + 1;
+				}
+
+				if (height <= Bounds.Height &&
+					(_safeArea.VerticalThickness + height) > Bounds.Height)
+				{
+					height = Bounds.Height + 1;
+				}
+
+				contentSize = new Size(width, height);
+			}
+			else if (ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Automatic)
+			{
+				width += _safeArea.HorizontalThickness;
+				height += _safeArea.VerticalThickness;
+			}
+
+			contentSize = new Size(width, height);
 
 			// For Right-To-Left (RTL) layouts, we need to adjust the content arrangement and offset
 			// to ensure the content is correctly aligned and scrolled. This involves a second layout
