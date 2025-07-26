@@ -38,6 +38,9 @@
     <PackageReference Include="System.Numerics.Vectors" Condition="$(TargetFramework.StartsWith('netstandard'))" />
     <PackageReference Include="System.Text.Json" Condition="$(TargetFramework.StartsWith('netstandard'))" />
   </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
+    <ProjectReference Include="..\AppleNative\AppleNative.csproj" />
+  </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Web.WebView2" />

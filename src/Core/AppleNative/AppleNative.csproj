@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net$(_MauiDotNetVersion)-ios$(IosTargetFrameworkVersionSdkDefault);net$(_MauiDotNetVersion)-maccatalyst$(MacCatalystTargetFrameworkVersionSdkDefault)</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>true</ImplicitUsings>
+    <IsBindingProject>true</IsBindingProject>
+
+    <!--
+      Enable trim analyzers for class libraries.
+      To learn more, see: https://learn.microsoft.com/dotnet/core/deploying/trimming/prepare-libraries-for-trimming
+    -->
+    <IsTrimmable>false</IsTrimmable>
+    <RootNamespace>Microsoft.Maui.Platform</RootNamespace>
+  </PropertyGroup>
+  
+  <ItemGroup Label="Hide Xcode Project Files">
+    <None Update="PlatformInterop\Framework\**\*">
+      <Visible>false</Visible>
+    </None>
+    <None Update="PlatformInterop\PlatformInterop.xcodeproj\**\*">
+      <Visible>false</Visible>
+    </None>
+    <None Update="PlatformInterop\.gitignore">
+      <Visible>false</Visible>
+    </None>
+    <None Update="PlatformInterop\build-xcframework.sh">
+      <Visible>false</Visible>
+    </None>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <NativeReference Include="PlatformInterop/Framework/PlatformInterop.xcframework" Kind="Static" NoSymbolStrip="True" ForceLoad="True" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ObjcBindingApiDefinition Include="ApiDefinition.cs" />
+    <ObjcBindingCoreSource Include="StructsAndEnums.cs" />
+  </ItemGroup>
+</Project>
