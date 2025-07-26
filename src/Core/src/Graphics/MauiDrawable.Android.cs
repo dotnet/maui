@@ -509,23 +509,14 @@ namespace Microsoft.Maui.Graphics
 
 			if (disposing)
 			{
-				if (_borderPathEffect != null)
-				{
-					_borderPathEffect.Dispose();
-					_borderPathEffect = null;
-				}
+				_borderPathEffect?.Dispose();
+				_borderPathEffect = null;
 
-				if (_clipPath != null)
-				{
-					_clipPath.Dispose();
-					_clipPath = null;
-				}
+				_clipPath?.Dispose();
+				_clipPath = null;
 
-				if (_fullClipPath != null)
-				{
-					_fullClipPath.Dispose();
-					_fullClipPath = null;
-				}
+				_fullClipPath?.Dispose();
+				_fullClipPath = null;
 			}
 
 			DisposeBorder(disposing);
@@ -537,11 +528,8 @@ namespace Microsoft.Maui.Graphics
 		{
 			if (disposing)
 			{
-				if (_borderPaint != null)
-				{
-					_borderPaint.Dispose();
-					_borderPaint = null;
-				}
+				_borderPaint?.Dispose();
+				_borderPaint = null;
 			}
 		}
 

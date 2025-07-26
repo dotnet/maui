@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
 		/// <summary>Bindable property for <see cref="IsOpen"/>.</summary>
-		public static readonly BindableProperty IsOpenProperty =	
+		public static readonly BindableProperty IsOpenProperty =
 			BindableProperty.Create(nameof(IPicker.IsOpen), typeof(bool), typeof(Picker), default, BindingMode.TwoWay,
 				propertyChanged: OnIsOpenPropertyChanged);
 
@@ -235,7 +235,7 @@ namespace Microsoft.Maui.Controls
 		{
 			((Picker)bindable).OnIsOpenPropertyChanged((bool)oldValue, (bool)newValue);
 		}
-		
+
 		public event EventHandler SelectedIndexChanged;
 		public event EventHandler<PickerOpenedEventArgs> Opened;
 		public event EventHandler<PickerClosedEventArgs> Closed;
@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		readonly Queue<Action> _pendingIsOpenActions = new Queue<Action>();
-		
+
 		void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
 		{
 			if (Handler?.VirtualView is Picker)
@@ -318,11 +318,11 @@ namespace Microsoft.Maui.Controls
 				_pendingIsOpenActions.Enqueue(HandleIsOpenChanged);
 			}
 		}
-		
+
 		protected override void OnHandlerChanged()
 		{
 			base.OnHandlerChanged();
-            
+
 			// Process any pending actions when handler becomes available
 			while (_pendingIsOpenActions.Count > 0 && Handler != null)
 			{
@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Controls
 				action.Invoke();
 			}
 		}
-		
+
 		void HandleIsOpenChanged()
 		{
 			if (Handler?.VirtualView is not Picker picker)

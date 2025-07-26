@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Platform
 		/// and the safe area is not empty.
 		/// </summary>
 		bool _appliesSafeAreaAdjustments;
-		
+
 		// Indicates whether this view should respond to safe area insets.
 		// Cached to avoid repeated hierarchy checks.
 		// True if the view is an ISafeAreaView, does not ignore safe area, and is not inside a UIScrollView;
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (_scrollViewDescendant.HasValue)
-				return _scrollViewDescendant.Value;				
+				return _scrollViewDescendant.Value;
 
 			// iOS sets AdjustedContentInset on UIScrollView only when the ContentSize exceeds the ScrollView's Bounds.
 			// If ContentSize is smaller, AdjustedContentInset is zero, and SafeAreaInsets are applied to child views instead.
@@ -455,7 +455,7 @@ namespace Microsoft.Maui.Platform
 		public override void MovedToWindow()
 		{
 			base.MovedToWindow();
-			
+
 			_scrollViewDescendant = null;
 
 			// Notify any subscribers that this view has been moved to a window

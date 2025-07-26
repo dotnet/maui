@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			bool enableDiagnosticsInitialState;
-			
+
 			[SetUp]
 			public void Setup()
 			{
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TearDown]
 			public void TearDown()
 			{
-				RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;			
+				RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 			}
 
 			[TestCase(false)]

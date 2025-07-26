@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -152,7 +153,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		FlyoutPage CreateFlyoutPage(Type type, Page detail, Page flyout)
+		FlyoutPage CreateFlyoutPage([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type, Page detail, Page flyout)
 		{
 			var flyoutPage = (FlyoutPage)Activator.CreateInstance(type);
 			flyoutPage.Detail = detail;

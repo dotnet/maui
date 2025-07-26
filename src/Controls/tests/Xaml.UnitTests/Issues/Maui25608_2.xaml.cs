@@ -25,7 +25,7 @@ public partial class Maui25608_2
 	{
 		EventHandler<BindingBaseErrorEventArgs> _bindingFailureHandler;
 		bool enableDiagnosticsInitialState;
-			
+
 
 		[SetUp]
 		public void Setup()
@@ -43,7 +43,7 @@ public partial class Maui25608_2
 			{
 				BindingDiagnostics.BindingFailed -= _bindingFailureHandler;
 			}
-			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;			
+			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 
 			AppInfo.SetCurrent(null);
 		}

@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Controls
 		{
 			return base.OnMeasure(widthConstraint, heightConstraint);
 		}
-		
+
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		[Obsolete("Use IVisualTreeElement.GetVisualChildren() instead.")]
 		public new IReadOnlyList<Element> Children => base.Children;

@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
 		/// <summary>Bindable property for <see cref="IsOpen"/>.</summary>
-		public static readonly BindableProperty IsOpenProperty =	
+		public static readonly BindableProperty IsOpenProperty =
 			BindableProperty.Create(nameof(ITimePicker.IsOpen), typeof(bool), typeof(TimePicker), default, BindingMode.TwoWay,
 				propertyChanged: OnIsOpenPropertyChanged);
 
@@ -115,12 +115,12 @@ namespace Microsoft.Maui.Controls
 			get => (bool)GetValue(IsOpenProperty);
 			set => SetValue(IsOpenProperty, value);
 		}
-		
+
 		static void OnIsOpenPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			((TimePicker)bindable).OnIsOpenPropertyChanged((bool)oldValue, (bool)newValue);
 		}
-		
+
 		TextTransform ITextElement.TextTransform
 		{
 			get => TextTransform.Default;
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		readonly Queue<Action> _pendingIsOpenActions = new Queue<Action>();
-		
+
 		void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
 		{
 			if (Handler?.VirtualView is TimePicker)
@@ -169,11 +169,11 @@ namespace Microsoft.Maui.Controls
 				_pendingIsOpenActions.Enqueue(HandleIsOpenChanged);
 			}
 		}
-		
+
 		protected override void OnHandlerChanged()
 		{
 			base.OnHandlerChanged();
-            
+
 			// Process any pending actions when handler becomes available
 			while (_pendingIsOpenActions.Count > 0 && Handler != null)
 			{
@@ -181,7 +181,7 @@ namespace Microsoft.Maui.Controls
 				action.Invoke();
 			}
 		}
-		
+
 		void HandleIsOpenChanged()
 		{
 			if (Handler?.VirtualView is not TimePicker timePicker)

@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ScrollViewShouldRenderWithinBounds()
 		{
 			App.WaitForElement("WaitForStubControl");
-			VerifyScreenshot();	
+			VerifyScreenshot();
 		}
 	}
 }
