@@ -11,10 +11,10 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// A view that displays content with a control template, and the base class for <see cref="ContentView" />.
 	/// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 	public partial class TemplatedView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IControlTemplated, IContentView, IClippedToBoundsElement
 	{
-#pragma warning restore CS0618 
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete
 		/// <summary>Bindable property for <see cref="ControlTemplate"/>.</summary>
 		public static readonly BindableProperty ControlTemplateProperty = BindableProperty.Create(nameof(ControlTemplate), typeof(ControlTemplate), typeof(TemplatedView), null,
 			propertyChanged: TemplateUtilities.OnControlTemplateChanged);
