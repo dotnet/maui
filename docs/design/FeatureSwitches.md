@@ -14,6 +14,7 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | MauiEnableXamlCBindingWithSourceCompilation | Microsoft.Maui.RuntimeFeature.XamlCBindingWithSourceCompilationEnabled | When enabled, MAUI will compile all bindings, including those where the `Source` property is used. |
 | MauiHybridWebViewSupported | Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported | Enables HybridWebView, which makes use of dynamic System.Text.Json serialization features |
 | MauiNamescopesSupported | Microsoft.Maui.RuntimeFeature.AreNamescopesSupported | Enable support for Namescopes, FindByName if the application uses it, or to keep supporting runtime and XamlC XAML inflators |
+| MetricsSupport | System.Diagnostics.Metrics.Meter.IsSupported | Enables .NET MAUI metrics instrumentation via `Meter`. Metrics are on by default; set to `false` to disable.   |
 | EnableDiagnostics | Microsoft.Maui.RuntimeFeature.EnableDiagnostics | Enables diagnostic for the running app |
 | EnableMauiDiagnostics | Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics | Enables MAUI specific diagnostics, like VisualDiagnostics and BindingDiagnostics. Defaults to EnableDiagnostics |
 
@@ -87,6 +88,10 @@ With (upcoming) sourcegen XAML inflation, the xaml infrastructure no longer need
 Having this off reduce method body size, making them faster to JIT, and release the pressure on the GC as there are way less allocations.
 
 As of NET10.0, the default is `true` so full compatibility is maintained, but might be changed in the future.
+
+## MauiEnableMetrics
+
+When **MetricsSupport** is not explicitly disabled, MAUI will register a `System.Diagnostics.Metrics.Meter` named `"Microsoft.Maui"` and emit performance related metrics (e.g. measure/arrange durations) to any configured listeners.
 
 ## EnableDiagnostics
 

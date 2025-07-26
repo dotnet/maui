@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			RadioButton oldElement = Element;
 			Element = (RadioButton)element;
 
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			if (oldElement != null)
 			{
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			SendVisualElementInitialized(element, this);
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 		}
 
 		void IVisualElementRenderer.SetLabelFor(int? id)
