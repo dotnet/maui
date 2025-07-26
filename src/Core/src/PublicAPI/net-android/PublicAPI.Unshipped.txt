@@ -64,9 +64,9 @@ Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions left, 
 Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions uniformValue) -> void
 Microsoft.Maui.SafeAreaEdges.Top.get -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions
-Microsoft.Maui.SafeAreaRegions.All = Microsoft.Maui.SafeAreaRegions.SoftInput | Microsoft.Maui.SafeAreaRegions.Container -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaRegions.All = 32768 -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.Container = 2 -> Microsoft.Maui.SafeAreaRegions
-Microsoft.Maui.SafeAreaRegions.Default = 4 -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaRegions.Default = -1 -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.None = 0 -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.SoftInput = 1 -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.ScrollToRequest.Deconstruct(out double HorizontalOffset, out double VerticalOffset, out bool Instant) -> void

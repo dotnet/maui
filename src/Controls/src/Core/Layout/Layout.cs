@@ -429,6 +429,15 @@ namespace Microsoft.Maui.Controls
 				return SafeAreaRegions.Container;
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
+			// By default this is false so if someone sets this to true, we return None for all edges
+			if (IgnoreSafeArea)
+			{
+				// If IgnoreSafeArea is set, we return None for all edges
+				return SafeAreaRegions.None;
+			}
+#pragma warning restore CS0618 // Type or member is obsolete
+
 			// For Layout views, never return the old Default - return None instead
 			// (since Default no longer exists in the new enum)
 			return regionForEdge;

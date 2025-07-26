@@ -90,8 +90,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			if (useNewApi)
 			{
-				SafeArea.SetIgnore(pageWithTopTabs, SafeAreaEdges.None);
-				SafeArea.SetIgnore(pageWithoutTopTabs, SafeAreaEdges.None);
+				pageWithTopTabs.SafeAreaEdges = SafeAreaEdges.Container;
+				pageWithoutTopTabs.SafeAreaEdges = SafeAreaEdges.Container;
 			}
 			else
 			{
