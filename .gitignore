@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Test files for compiler error testing
+TestCompilerError.cs
+TestCompilerError.csproj
+
 .nuspec/
 .buildtasks/
 templatesTest/

@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+// Test change: Adding test modifications for log testing
+
 
 // examples
 /*
@@ -44,6 +46,30 @@ if(String.IsNullOrWhiteSpace(target))
 //////////////////////////////////////////////////////////////////////
 
 Task("Default").IsDependentOn("dotnet").IsDependentOn("dotnet-pack");
+
+// Test task with intentional compiler error for log testing
+Task("test-compiler-error")
+    .Description("Test task that intentionally causes a compiler error to test logging")
+    .Does(() =>
+    {
+        Information("Testing compiler error logging...");
+        
+        try 
+        {
+            // This should fail due to syntax error in TestCompilerError.cs
+            DotNetBuild("./TestCompilerError.csproj", new DotNetBuildSettings
+            {
+                Configuration = "Debug",
+                MSBuildSettings = new DotNetMSBuildSettings()
+                    .EnableBinaryLogger($"{GetLogDirectory()}/test-compiler-error-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
+            });
+        }
+        catch (Exception ex)
+        {
+            Information("Expected compiler error occurred for log testing: " + ex.Message);
+            throw; // Re-throw to ensure the error is logged properly
+        }
+    });
 
 //////////////////////////////////////////////////////////////////////
 // EXECUTION
