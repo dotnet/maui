@@ -1,4 +1,7 @@
 #nullable enable
+~static readonly Microsoft.Maui.Controls.ToolbarItem.IconColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~Microsoft.Maui.Controls.ToolbarItem.IconColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.ToolbarItem.IconColor.set -> void
 const Microsoft.Maui.Controls.BrushTypeConverter.Hsl = "hsl" -> string!
 const Microsoft.Maui.Controls.BrushTypeConverter.Hsla = "hsla" -> string!
 const Microsoft.Maui.Controls.BrushTypeConverter.LinearGradient = "linear-gradient" -> string!

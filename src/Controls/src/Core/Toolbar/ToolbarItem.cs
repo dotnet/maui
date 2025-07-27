@@ -18,7 +18,6 @@ public class ToolbarItem : MenuItem
 
 	static readonly BindableProperty PriorityProperty = BindableProperty.Create(nameof(Priority), typeof(int), typeof(ToolbarItem), 0);
 
-#pragma warning disable RS0016
 	public static readonly BindableProperty IconColorProperty = BindableProperty.Create(nameof(IconColor), typeof(Color), typeof(ToolbarItem), null,
 		propertyChanged: (bindable, oldValue, newValue) => ((ToolbarItem)bindable).UpdateImageSource());
 

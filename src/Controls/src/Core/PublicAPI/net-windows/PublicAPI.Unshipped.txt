@@ -1,4 +1,7 @@
 ﻿#nullable enable
+~static readonly Microsoft.Maui.Controls.ToolbarItem.IconColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~Microsoft.Maui.Controls.ToolbarItem.IconColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.ToolbarItem.IconColor.set -> void
 *REMOVED*Microsoft.Maui.Controls.Accelerator
 *REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.get -> System.Collections.Generic.IEnumerable<string>
 *REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.set -> void
