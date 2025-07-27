@@ -546,8 +546,9 @@ static class NodeSGExtensions
 				writer.WriteLine($"if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo({variable.Name}!) == null)");
 				writer.Indent++;
 			}
-			filePath = new UriBuilder() { Path = filePath }.Path; // ensure the file use the right separator
-			writer.WriteLine($"global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo({variable.Name}!, new global::System.Uri(\"{filePath};assembly={assembly}\", global::System.UriKind.Relative), {lineInfo?.LineNumber ?? -1}, {lineInfo?.LinePosition ?? -1});");
+			// on other inflators, we do not replace path separator, so keep the bug for compat
+			// filePath = new UriBuilder() { Path = filePath }.Path; // ensure the file use the right separator
+			writer.WriteLine($"global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo({variable.Name}!, new global::System.Uri(@\"{filePath};assembly={assembly}\", global::System.UriKind.Relative), {lineInfo?.LineNumber ?? -1}, {lineInfo?.LinePosition ?? -1});");
 			if (!update)
 				writer.Indent--;
 		}
