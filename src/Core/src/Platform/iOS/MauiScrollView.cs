@@ -213,13 +213,16 @@ namespace Microsoft.Maui.Platform
 			if (leftRegion == topRegion && topRegion == rightRegion && rightRegion == bottomRegion)
 			{
 				// All edges have the same value, use built-in iOS behavior
-				ContentInsetAdjustmentBehavior = leftRegion switch
+				// Cache the region value to avoid redundant comparisons
+				var region = leftRegion;
+				
+				ContentInsetAdjustmentBehavior = region switch
 				{
+					SafeAreaRegions.Default => UIScrollViewContentInsetAdjustmentBehavior.Automatic, // Default behavior
 					SafeAreaRegions.None => UIScrollViewContentInsetAdjustmentBehavior.Never, // Edge-to-edge content
 					SafeAreaRegions.All => UIScrollViewContentInsetAdjustmentBehavior.Never, // We calculate insets ourselves and include keyboard
-					SafeAreaRegions.Container => UIScrollViewContentInsetAdjustmentBehavior.Always, // Content flows under keyboard but stays out of bars/notch
-					SafeAreaRegions.SoftInput => UIScrollViewContentInsetAdjustmentBehavior.Never, // We calculate insets ourselves and include keyboard
-					SafeAreaRegions.Default => UIScrollViewContentInsetAdjustmentBehavior.Automatic, // Default behavior
+					_ when SafeAreaEdges.IsContainer(region) => UIScrollViewContentInsetAdjustmentBehavior.Always, // Content flows under keyboard but stays out of bars/notch
+					_ when SafeAreaEdges.IsSoftInput(region) => UIScrollViewContentInsetAdjustmentBehavior.Never, // We calculate insets ourselves and include keyboard
 					_ => UIScrollViewContentInsetAdjustmentBehavior.Never // Default: edge-to-edge
 				};
 			}
@@ -234,15 +237,11 @@ namespace Microsoft.Maui.Platform
 
 		static nfloat GetManualInsetForEdge(SafeAreaRegions safeAreaRegion, nfloat safeAreaInset)
 		{
-			return safeAreaRegion switch
-			{
-				SafeAreaRegions.None => 0, // Edge-to-edge content - no inset
-				SafeAreaRegions.All => (nfloat)safeAreaInset, // Obey all safe area insets
-				SafeAreaRegions.Container => safeAreaInset, // Content flows under keyboard but stays out of bars/notch
-				//SafeAreaRegions.SoftInput => (nfloat)safeAreaInset, // Always pad for keyboard - currently not implemented pending design discussions
-				SafeAreaRegions.Default => safeAreaInset, // Default behavior - obey safe area
-				_ => 0 // Default: edge-to-edge
-			};
+			// Edge-to-edge content - no safe area padding
+			if (safeAreaRegion == SafeAreaRegions.None)
+				return 0;
+
+			return safeAreaInset;
 		}
 
 		public override void LayoutSubviews()

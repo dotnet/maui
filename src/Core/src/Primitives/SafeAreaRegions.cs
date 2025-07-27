@@ -24,7 +24,7 @@ namespace Microsoft.Maui
 		Container = 1 << 1,
 
 		/// <summary>
-		/// Default behavior - apply platform safe area insets.
+		/// Default behavior - apply platform defaults.
 		/// </summary>
 		Default = -1,
 

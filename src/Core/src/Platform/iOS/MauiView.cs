@@ -138,15 +138,18 @@ namespace Microsoft.Maui.Platform
 
 		static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea)
 		{
-			return safeAreaRegion switch
-			{
-				SafeAreaRegions.None => 0, // Edge-to-edge content (no safe area padding)
-				SafeAreaRegions.SoftInput => originalSafeArea, // Always pad for keyboard/soft input
-				SafeAreaRegions.Container => originalSafeArea, // Content flows under keyboard but stays out of bars/notch
-				SafeAreaRegions.Default => originalSafeArea, // Platform default behavior
-				SafeAreaRegions.All => originalSafeArea, // Obey all safe area insets
-				_ => originalSafeArea // Default case - respect safe area
-			};
+			// Edge-to-edge content - no safe area padding
+			if (safeAreaRegion == SafeAreaRegions.None)
+				return 0;
+			
+			// All other regions respect safe area in some form
+			// This includes:
+			// - Default: Platform default behavior
+			// - All: Obey all safe area insets  
+			// - SoftInput: Always pad for keyboard/soft input
+			// - Container: Content flows under keyboard but stays out of bars/notch
+			// - Any combination of the above flags
+			return originalSafeArea;
 		}
 
 
@@ -177,7 +180,7 @@ namespace Microsoft.Maui.Platform
 				for (int edge = 0; edge < 4; edge++)
 				{
 					var region = safeAreaPage.GetSafeAreaRegionsForEdge(edge);
-					if (region == SafeAreaRegions.All || region == SafeAreaRegions.SoftInput)
+					if (SafeAreaEdges.IsSoftInput(region))
 					{
 						return true;
 					}
@@ -238,6 +241,7 @@ namespace Microsoft.Maui.Platform
 
 		void OnKeyboardWillShow(NSNotification notification)
 		{
+			_safeAreaInvalidated = true;
 			var keyboardFrame = GetKeyboardFrame(notification);
 			if (keyboardFrame.HasValue)
 			{
@@ -249,6 +253,7 @@ namespace Microsoft.Maui.Platform
 
 		void OnKeyboardWillHide(NSNotification notification)
 		{
+			_safeAreaInvalidated = true;
 			_keyboardFrame = CGRect.Empty;
 			_isKeyboardShowing = false;
 			SetNeedsLayout();
@@ -274,8 +279,9 @@ namespace Microsoft.Maui.Platform
 				var needsKeyboardAdjustment = false;
 				for (int edge = 0; edge < 4; edge++)
 				{
+
 					var safeAreaRegion = safeAreaPage.GetSafeAreaRegionsForEdge(edge);
-					if (safeAreaRegion == SafeAreaRegions.SoftInput)
+					if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
 					{
 						needsKeyboardAdjustment = true;
 						break;
@@ -302,7 +308,7 @@ namespace Microsoft.Maui.Platform
 							
 							// Bottom edge is most commonly affected by keyboard
 							var bottomEdgeRegion = safeAreaPage.GetSafeAreaRegionsForEdge(3); // 3 = bottom edge
-							if (bottomEdgeRegion == SafeAreaRegions.SoftInput)
+							if (SafeAreaEdges.IsSoftInput(bottomEdgeRegion))
 							{
 								// Use the larger of the current bottom safe area or the keyboard height
 								var adjustedBottom = Math.Max(baseSafeArea.Bottom, keyboardHeight);
@@ -519,7 +525,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Mark the safe area as validated given that we're about to check it
-			_safeAreaInvalidated = true;
+			_safeAreaInvalidated = false;
 
 			// Store the information about the safe area for developers to use
 			if (View is ISafeAreaView2 safeAreaPage)
@@ -579,6 +585,7 @@ namespace Microsoft.Maui.Platform
 		/// <returns>True if the invalidation should continue propagating to ancestors, false to stop propagation</returns>
 		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
+			_safeAreaInvalidated = true;
 			InvalidateConstraintsCache();
 			SetNeedsLayout();
 
@@ -618,6 +625,13 @@ namespace Microsoft.Maui.Platform
 			remove => _movedToWindow -= value;
 		}
 
+
+		public override void SafeAreaInsetsDidChange()
+		{
+			_safeAreaInvalidated = true;
+			base.SafeAreaInsetsDidChange();
+		}
+
 		/// <summary>
 		/// Called when this view is moved to a window (added to or removed from the view hierarchy).
 		/// This triggers safe area invalidation and any pending ancestor measure invalidations.
@@ -625,7 +639,7 @@ namespace Microsoft.Maui.Platform
 		public override void MovedToWindow()
 		{
 			base.MovedToWindow();
-			
+
 			_scrollViewDescendant = null;
 
 			// Notify any subscribers that this view has been moved to a window

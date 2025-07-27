@@ -8,7 +8,7 @@
     <Grid x:Name="MainGrid" BackgroundColor="Blue" SafeAreaEdges="None">
         <!-- ScrollView that spans the entire screen -->
         <ScrollView x:Name="TestScrollView" SafeAreaEdges="All" AutomationId="TestScrollView" BackgroundColor="White">
-            <StackLayout Spacing="20" Padding="20">
+            <StackLayout Spacing="20" Padding="20,0,20,20" AutomationId="ScrollViewContent">
                 <Label Text="SafeArea ScrollView Test Page" 
                        FontSize="24" 
                        FontAttributes="Bold"

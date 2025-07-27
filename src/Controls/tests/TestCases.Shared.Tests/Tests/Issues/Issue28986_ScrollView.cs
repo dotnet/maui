@@ -24,15 +24,22 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var initialSettings = App.FindElement("CurrentSettings").GetText();
 			Assert.That(initialSettings, Does.Contain("All (Full safe area)"));
 
-			// 3. Test None button functionality
+			// 3. Get initial ScrollView position when SafeAreaEdges is All
+			var scrollViewWithSafeArea = App.WaitForElement("ScrollViewContent").GetRect();
+
+			// 4. Set ScrollView SafeAreaEdges to None (edge-to-edge)
 			App.Tap("ScrollViewResetNoneButton");
 			var noneSettings = App.FindElement("CurrentSettings").GetText();
 			Assert.That(noneSettings, Does.Contain("None (Edge-to-edge)"));
 
-			// 4. Test All button functionality
-			App.Tap("ScrollViewResetAllButton");
-			var allSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(allSettings, Does.Contain("All (Full safe area)"));
+			// 5. Get ScrollView position after setting to None
+			var scrollViewEdgeToEdge = App.WaitForElement("ScrollViewContent").GetRect();
+
+			// 6. Verify that ScrollView position/size changes when SafeAreaEdges changes
+			// When ScrollView has SafeAreaEdges.All, it respects safe area insets
+			// When ScrollView has SafeAreaEdges.None, it goes edge-to-edge
+			Assert.That(scrollViewEdgeToEdge.Y, Is.LessThan(scrollViewWithSafeArea.Y), 
+				"ScrollView should move up (smaller Y position) when SafeAreaEdges changes from All to None");
 		}
 
 		[Test]
@@ -40,52 +47,24 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void SafeAreaScrollViewContainerFunctionality()
 		{
 			App.WaitForElement("TestScrollView");
-			App.WaitForElement("CurrentSettings");
+
+			// Start with None to establish baseline
+			App.Tap("ScrollViewResetNoneButton");
+			var nonePosition = App.WaitForElement("ScrollViewContent").GetRect();
 
 			// Test Container button functionality
 			App.Tap("ScrollViewSetContainerButton");
 			var containerSettings = App.FindElement("CurrentSettings").GetText();
 			Assert.That(containerSettings, Does.Contain("Container (Respect notches/bars)"));
 
-			// Test SoftInput button functionality
-			App.Tap("ScrollViewSetSoftInputButton");
-			var softInputSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(softInputSettings, Does.Contain("SoftInput (Avoid keyboard only)"));
-		}
+			// When you change from none back to container
+			// the scrollview will just stay scrolled up at this point
+			// it doesn't reset to zero
+			App.ScrollUp("CurrentSettings");
 
-		[Test]
-		[Category(UITestCategories.ScrollView)]
-		public void SafeAreaScrollViewSequentialTesting()
-		{
-			App.WaitForElement("TestScrollView");
-			App.WaitForElement("CurrentSettings");
-
-			// Test sequence: All -> None -> Container -> SoftInput -> All
-			
-			// 1. Set to All
-			App.Tap("ScrollViewResetAllButton");
-			var allSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(allSettings, Does.Contain("All (Full safe area)"));
-
-			// 2. Set to None
-			App.Tap("ScrollViewResetNoneButton");
-			var noneSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(noneSettings, Does.Contain("None (Edge-to-edge)"));
-
-			// 3. Set to Container
-			App.Tap("ScrollViewSetContainerButton");
-			var containerSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(containerSettings, Does.Contain("Container (Respect notches/bars)"));
-
-			// 4. Set to SoftInput
-			App.Tap("ScrollViewSetSoftInputButton");
-			var softInputSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(softInputSettings, Does.Contain("SoftInput (Avoid keyboard only)"));
-
-			// 5. Return to All
-			App.Tap("ScrollViewResetAllButton");
-			var finalAllSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(finalAllSettings, Does.Contain("All (Full safe area)"));
+			var containerPosition = App.WaitForElement("ScrollViewContent").GetRect();
+			Assert.That(containerPosition.Y, Is.GreaterThan(nonePosition.Y), 
+				"ScrollView should move down when SafeAreaEdges changes from None to Container");
 		}
 	}
 }

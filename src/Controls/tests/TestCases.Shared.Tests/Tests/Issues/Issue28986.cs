@@ -102,26 +102,24 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void SafeAreaPerEdgeValidation()
 		{
 			App.WaitForElement("ContentGrid");
-			App.WaitForElement("CurrentSettings");
 
-			// Test per-edge scenario: bottom edge to SoftInput, then top edge to Container, then top edge to None
-			
-			// 1. Set bottom edge to SoftInput
+			// Set all 4 edges to Container
+			App.Tap("GridSetContainerButton");
 			App.Tap("GridSetBottomSoftInputButton");
-			var bottomSoftInputSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(bottomSoftInputSettings, Does.Contain("Bottom:SoftInput"), "Should show bottom edge set to SoftInput");
+			
+			var containerPosition = App.WaitForElement("ContentGrid").GetRect();
 
-			// 2. Set top edge to Container (while keeping bottom as SoftInput)
-			App.Tap("GridSetTopContainerButton");
-			var topContainerSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(topContainerSettings, Does.Contain("Top:Container"), "Should show top edge set to Container");
-			Assert.That(topContainerSettings, Does.Contain("Bottom:SoftInput"), "Should maintain bottom edge as SoftInput");
+			// Open Soft Input test entry
+			App.Tap("SoftInputTestEntry");
+			var containerPositionWithSoftInput = App.WaitForElement("ContentGrid").GetRect();
 
-			// 3. Set top edge to None (while keeping bottom as SoftInput)
-			App.Tap("GridSetTopNoneButton");
-			var topNoneSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(topNoneSettings, Does.Contain("Top:None"), "Should show top edge set to None");
-			Assert.That(topNoneSettings, Does.Contain("Bottom:SoftInput"), "Should maintain bottom edge as SoftInput");
+			Assert.That(containerPositionWithSoftInput.Height, Is.LessThan(containerPosition.Height), "ContentGrid height should be less when Soft Input is shown with Container edges");
+
+			App.DismissKeyboard();
+
+			var containerPositionWithoutSoftInput = App.WaitForElement("ContentGrid").GetRect();
+
+			Assert.That(containerPositionWithoutSoftInput.Height, Is.EqualTo(containerPosition.Height), "ContentGrid height should return to original when Soft Input is dismissed with Container edges");
 		}
 	}
 }

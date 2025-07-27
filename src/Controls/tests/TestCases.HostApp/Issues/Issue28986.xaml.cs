@@ -29,11 +29,12 @@ public partial class Issue28986 : ContentPage
 
 	private void OnGridSetBottomSoftInputClicked(object sender, EventArgs e)
 	{
+		var current = MainGrid.SafeAreaEdges;
 		MainGrid.SafeAreaEdges = new SafeAreaEdges(
-			SafeAreaRegions.None,     // Left
-			SafeAreaRegions.None,     // Top
-			SafeAreaRegions.None,     // Right
-			SafeAreaRegions.SoftInput // Bottom
+			current.Left,     // Left
+			current.Top,     // Top
+			current.Right,   // Right
+			SafeAreaRegions.SoftInput       // Bottom
 		);
 		UpdateCurrentSettingsLabel();
 	}

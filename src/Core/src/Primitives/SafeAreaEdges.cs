@@ -69,6 +69,24 @@ namespace Microsoft.Maui
 			Bottom = bottom;
 		}
 
+		internal static bool IsSoftInput(SafeAreaRegions region)
+		{
+			if (region == SafeAreaRegions.Default)
+				return false;
+			if (region == SafeAreaRegions.All)
+				return true;
+			return (region & SafeAreaRegions.SoftInput) == SafeAreaRegions.SoftInput;
+		}
+
+		internal static bool IsContainer(SafeAreaRegions region)
+		{
+			if (region == SafeAreaRegions.Default)
+				return false;
+			if (region == SafeAreaRegions.All)
+				return true;
+			return (region & SafeAreaRegions.Container) == SafeAreaRegions.Container;	
+		}
+
 		/// <summary>
 		/// Gets the safe area behavior for the specified edge.
 		/// </summary>

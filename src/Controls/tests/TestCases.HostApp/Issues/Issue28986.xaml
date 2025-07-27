@@ -53,11 +53,6 @@
                                    FontAttributes="Bold"
                                    HorizontalOptions="Center" />
                             
-                            <Label Text="Test different SafeAreaEdges values on the MainGrid"
-                                   FontSize="12"
-                                   HorizontalOptions="Center"
-                                   TextColor="Gray" />
-                            
                             <Button Text="Set MainGrid to None (Edge-to-edge)"
                                     Clicked="OnGridSetNoneClicked"
                                     BackgroundColor="LightBlue"
@@ -72,6 +67,12 @@
                                     Clicked="OnGridSetAllClicked"
                                     BackgroundColor="LightCoral"
                                     AutomationId="GridResetAllButton" />
+                            
+                            <!-- Entry for testing SoftInput behavior -->
+                            
+                            <Entry Placeholder="Focus me to test SoftInput behavior"
+                                   BackgroundColor="White"
+                                   AutomationId="SoftInputTestEntry" />
                             
                             <!-- Per-edge controls for specific scenarios -->
                             <Label Text="Per-Edge Controls:" 
@@ -94,17 +95,6 @@
                                     Clicked="OnGridSetTopNoneClicked"
                                     BackgroundColor="LightGray"
                                     AutomationId="GridSetTopNoneButton" />
-                            
-                            <!-- Entry for testing SoftInput behavior -->
-                            <Label Text="SoftInput Test:" 
-                                   FontSize="14" 
-                                   FontAttributes="Bold"
-                                   HorizontalOptions="Center"
-                                   Margin="0,10,0,0" />
-                            
-                            <Entry Placeholder="Focus me to test SoftInput behavior"
-                                   BackgroundColor="White"
-                                   AutomationId="SoftInputTestEntry" />
                             
                             <!-- Legend -->
                             <StackLayout Spacing="5" Margin="0,10,0,0">
