@@ -20,7 +20,7 @@ public class Bugzilla40092 : _IssuesUITest
 	[Category(UITestCategories.BoxView)]
 	public void AllScreenIsBlack()
 	{
-#if !ANDROID // Display alert not shown in android also this is not a needed one for ensuring this case, so ignored the below steps on Android.
+#if !ANDROID && !MACCATALYST // Display alert is not shown on Android, and it is not required to validate this case, so the following steps are skipped for Android. For Catalyst, the test page loading flow has been modified, making the popup validation unnecessary here as well.
 		App.TapDisplayAlertButton(Ok);
 #else
 		App.WaitForElement("black");
