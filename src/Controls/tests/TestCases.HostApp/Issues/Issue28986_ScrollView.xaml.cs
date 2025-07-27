@@ -6,79 +6,68 @@ public partial class Issue28986_ScrollView : ContentPage
 	public Issue28986_ScrollView()
 	{
 		InitializeComponent();
-		// Initialize controls (start with all All)
-		LeftPicker.SelectedIndex = 3;   // All
-		TopPicker.SelectedIndex = 3;    // All
-		RightPicker.SelectedIndex = 3;  // All
-		BottomPicker.SelectedIndex = 3; // All
-
-		UpdateSafeAreaSettings();
+		UpdateCurrentSettingsLabel();
 	}
 
-	private void OnEdgePickerChanged(object sender, EventArgs e)
+	private void OnScrollViewSetNoneClicked(object sender, EventArgs e)
 	{
-		UpdateSafeAreaSettings();
+		TestScrollView.SafeAreaEdges = SafeAreaEdges.None;
+		UpdateCurrentSettingsLabel();
 	}
 
-	private void OnResetDefaultClicked(object sender, EventArgs e)
+	private void OnScrollViewSetContainerClicked(object sender, EventArgs e)
 	{
-		LeftPicker.SelectedIndex = 3;   // Default
-		TopPicker.SelectedIndex = 3;    // Default
-		RightPicker.SelectedIndex = 3;  // Default
-		BottomPicker.SelectedIndex = 3; // Default
-		UpdateSafeAreaSettings();
+		TestScrollView.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
+		UpdateCurrentSettingsLabel();
 	}
 
-	private void OnResetNoneClicked(object sender, EventArgs e)
+	private void OnScrollViewSetAllClicked(object sender, EventArgs e)
 	{
-		LeftPicker.SelectedIndex = 0;   // None
-		TopPicker.SelectedIndex = 0;    // None
-		RightPicker.SelectedIndex = 0;  // None
-		BottomPicker.SelectedIndex = 0; // None
-		UpdateSafeAreaSettings();
+		TestScrollView.SafeAreaEdges = SafeAreaEdges.All;
+		UpdateCurrentSettingsLabel();
 	}
 
-	private void OnResetAllClicked(object sender, EventArgs e)
+	private void OnScrollViewSetSoftInputClicked(object sender, EventArgs e)
 	{
-		LeftPicker.SelectedIndex = 4;   // All
-		TopPicker.SelectedIndex = 4;    // All
-		RightPicker.SelectedIndex = 4;  // All
-		BottomPicker.SelectedIndex = 4; // All
-		UpdateSafeAreaSettings();
+		TestScrollView.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.SoftInput);
+		UpdateCurrentSettingsLabel();
 	}
 
-	private SafeAreaRegions GetSafeAreaRegionsFromPickerIndex(int index)
+	private void UpdateCurrentSettingsLabel()
 	{
-		return index switch
+		var edges = TestScrollView.SafeAreaEdges;
+		var settingText = GetSafeAreaEdgesDescription(edges);
+		CurrentSettingsLabel.Text = $"Current ScrollView SafeAreaEdges: {settingText}";
+	}
+
+	private string GetSafeAreaEdgesDescription(SafeAreaEdges edges)
+	{
+		// Check for common patterns
+		if (edges.Left == SafeAreaRegions.None && edges.Top == SafeAreaRegions.None && 
+		    edges.Right == SafeAreaRegions.None && edges.Bottom == SafeAreaRegions.None)
 		{
-			0 => SafeAreaRegions.None,
-			1 => SafeAreaRegions.SoftInput,
-			2 => SafeAreaRegions.Container,
-			3 => SafeAreaRegions.Default,
-			4 => SafeAreaRegions.All,
-			_ => SafeAreaRegions.None
-		};
-	}
+			return "None (Edge-to-edge)";
+		}
+		
+		if (edges.Left == SafeAreaRegions.All && edges.Top == SafeAreaRegions.All && 
+		    edges.Right == SafeAreaRegions.All && edges.Bottom == SafeAreaRegions.All)
+		{
+			return "All (Full safe area)";
+		}
+		
+		if (edges.Left == SafeAreaRegions.Container && edges.Top == SafeAreaRegions.Container && 
+		    edges.Right == SafeAreaRegions.Container && edges.Bottom == SafeAreaRegions.Container)
+		{
+			return "Container (Respect notches/bars)";
+		}
 
-	private void UpdateSafeAreaSettings()
-	{
-		// Create SafeAreaEdges for ScrollView settings
-		var safeAreaSettings = new SafeAreaEdges(
-			GetSafeAreaRegionsFromPickerIndex(LeftPicker.SelectedIndex),   // Left
-			GetSafeAreaRegionsFromPickerIndex(TopPicker.SelectedIndex),    // Top  
-			GetSafeAreaRegionsFromPickerIndex(RightPicker.SelectedIndex),  // Right
-			GetSafeAreaRegionsFromPickerIndex(BottomPicker.SelectedIndex)  // Bottom
-		);
+		if (edges.Left == SafeAreaRegions.SoftInput && edges.Top == SafeAreaRegions.SoftInput && 
+		    edges.Right == SafeAreaRegions.SoftInput && edges.Bottom == SafeAreaRegions.SoftInput)
+		{
+			return "SoftInput (Avoid keyboard only)";
+		}
 
-		// Apply SafeAreaEdges to the ScrollView
-		TestScrollView.SafeAreaEdges = safeAreaSettings;
-
-		// Update the display label
-		var settingsText = $"Left: {GetSafeAreaRegionsFromPickerIndex(LeftPicker.SelectedIndex)}, " +
-						  $"Top: {GetSafeAreaRegionsFromPickerIndex(TopPicker.SelectedIndex)}, " +
-						  $"Right: {GetSafeAreaRegionsFromPickerIndex(RightPicker.SelectedIndex)}, " +
-						  $"Bottom: {GetSafeAreaRegionsFromPickerIndex(BottomPicker.SelectedIndex)}";
-
-		CurrentSettingsLabel.Text = $"Current ScrollView SafeAreaEdges: {settingsText}";
+		// For mixed values, show individual edges
+		return $"Left:{edges.Left}, Top:{edges.Top}, Right:{edges.Right}, Bottom:{edges.Bottom}";
 	}
 }

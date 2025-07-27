@@ -96,6 +96,33 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.That(finalAllSettings, Does.Contain("All (Full safe area)"));
 			Assert.That(finalAllPosition.Y, Is.EqualTo(allPosition.Y), "Final All position should match initial All position");
 		}
+
+		[Test]
+		[Category(UITestCategories.Layout)]
+		public void SafeAreaPerEdgeValidation()
+		{
+			App.WaitForElement("ContentGrid");
+			App.WaitForElement("CurrentSettings");
+
+			// Test per-edge scenario: bottom edge to SoftInput, then top edge to Container, then top edge to None
+			
+			// 1. Set bottom edge to SoftInput
+			App.Tap("GridSetBottomSoftInputButton");
+			var bottomSoftInputSettings = App.FindElement("CurrentSettings").GetText();
+			Assert.That(bottomSoftInputSettings, Does.Contain("Bottom:SoftInput"), "Should show bottom edge set to SoftInput");
+
+			// 2. Set top edge to Container (while keeping bottom as SoftInput)
+			App.Tap("GridSetTopContainerButton");
+			var topContainerSettings = App.FindElement("CurrentSettings").GetText();
+			Assert.That(topContainerSettings, Does.Contain("Top:Container"), "Should show top edge set to Container");
+			Assert.That(topContainerSettings, Does.Contain("Bottom:SoftInput"), "Should maintain bottom edge as SoftInput");
+
+			// 3. Set top edge to None (while keeping bottom as SoftInput)
+			App.Tap("GridSetTopNoneButton");
+			var topNoneSettings = App.FindElement("CurrentSettings").GetText();
+			Assert.That(topNoneSettings, Does.Contain("Top:None"), "Should show top edge set to None");
+			Assert.That(topNoneSettings, Does.Contain("Bottom:SoftInput"), "Should maintain bottom edge as SoftInput");
+		}
 	}
 }
 #endif

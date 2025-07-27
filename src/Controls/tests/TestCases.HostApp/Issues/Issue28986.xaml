@@ -73,6 +73,28 @@
                                     BackgroundColor="LightCoral"
                                     AutomationId="GridResetAllButton" />
                             
+                            <!-- Per-edge controls for specific scenarios -->
+                            <Label Text="Per-Edge Controls:" 
+                                   FontSize="16" 
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   Margin="0,10,0,0" />
+                            
+                            <Button Text="Set Bottom Edge to SoftInput"
+                                    Clicked="OnGridSetBottomSoftInputClicked"
+                                    BackgroundColor="LightYellow"
+                                    AutomationId="GridSetBottomSoftInputButton" />
+                            
+                            <Button Text="Set Top Edge to Container"
+                                    Clicked="OnGridSetTopContainerClicked"
+                                    BackgroundColor="LightPink"
+                                    AutomationId="GridSetTopContainerButton" />
+                            
+                            <Button Text="Set Top Edge to None"
+                                    Clicked="OnGridSetTopNoneClicked"
+                                    BackgroundColor="LightGray"
+                                    AutomationId="GridSetTopNoneButton" />
+                            
                             <!-- Legend -->
                             <StackLayout Spacing="5" Margin="0,10,0,0">
                                 <Label Text="None = Edge-to-edge content (no safe area padding)" 

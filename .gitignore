@@ -6,7 +6,6 @@
 .nuspec/
 .buildtasks/
 templatesTest/
-*.bak
 
 # User-specific files
 *.rsuser

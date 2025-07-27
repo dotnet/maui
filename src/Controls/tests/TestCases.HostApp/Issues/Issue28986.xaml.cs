@@ -27,6 +27,41 @@ public partial class Issue28986 : ContentPage
 		UpdateCurrentSettingsLabel();
 	}
 
+	private void OnGridSetBottomSoftInputClicked(object sender, EventArgs e)
+	{
+		MainGrid.SafeAreaEdges = new SafeAreaEdges(
+			SafeAreaRegions.None,     // Left
+			SafeAreaRegions.None,     // Top
+			SafeAreaRegions.None,     // Right
+			SafeAreaRegions.SoftInput // Bottom
+		);
+		UpdateCurrentSettingsLabel();
+	}
+
+	private void OnGridSetTopContainerClicked(object sender, EventArgs e)
+	{
+		var current = MainGrid.SafeAreaEdges;
+		MainGrid.SafeAreaEdges = new SafeAreaEdges(
+			current.Left,              // Left (keep current)
+			SafeAreaRegions.Container, // Top
+			current.Right,             // Right (keep current)
+			current.Bottom             // Bottom (keep current)
+		);
+		UpdateCurrentSettingsLabel();
+	}
+
+	private void OnGridSetTopNoneClicked(object sender, EventArgs e)
+	{
+		var current = MainGrid.SafeAreaEdges;
+		MainGrid.SafeAreaEdges = new SafeAreaEdges(
+			current.Left,         // Left (keep current)
+			SafeAreaRegions.None, // Top
+			current.Right,        // Right (keep current)
+			current.Bottom        // Bottom (keep current)
+		);
+		UpdateCurrentSettingsLabel();
+	}
+
 	private void UpdateCurrentSettingsLabel()
 	{
 		var edges = MainGrid.SafeAreaEdges;
