@@ -5,7 +5,7 @@
              x:Name="TestPage"
              Title="SafeArea ScrollView Test">
     
-    <Grid x:Name="MainGrid" BackgroundColor="Blue" SafeAreaEdges="All">
+    <Grid x:Name="MainGrid" BackgroundColor="Blue" SafeAreaEdges="None">
         <!-- ScrollView that spans the entire screen -->
         <ScrollView x:Name="TestScrollView" SafeAreaEdges="All" AutomationId="TestScrollView" BackgroundColor="White">
             <StackLayout Spacing="20" Padding="20">
