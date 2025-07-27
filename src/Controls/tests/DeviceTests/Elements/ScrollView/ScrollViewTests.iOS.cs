@@ -35,16 +35,12 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			EnsureHandlerCreated(builder => { builder.ConfigureMauiHandlers(handlers => { handlers.AddHandler<Entry, EntryHandler>(); }); });
 
-			var scrollView = new ScrollView();
+			var scrollView = new ScrollView()
+			{
+				SafeAreaEdges = SafeAreaEdges.Container
+			};
 
 			var entry = new Entry() { Text = "In a ScrollView", HeightRequest = 10 };
-
-
-			static CoreGraphics.CGSize getViewportSize(UIScrollView scrollView)
-			{
-				return scrollView.AdjustedContentInset.InsetRect(scrollView.Bounds).Size;
-			}
-			;
 
 			var scrollViewHandler = await InvokeOnMainThreadAsync(() =>
 			{
@@ -57,7 +53,6 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var uiScrollView = scrollViewHandler.PlatformView;
 
-					uiScrollView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Always;
 					var parent = uiScrollView.Superview;
 					uiScrollView.Bounds = parent.Bounds;
 					uiScrollView.Center = parent.Center;
@@ -69,8 +64,13 @@ namespace Microsoft.Maui.DeviceTests
 
 					await Task.Yield();
 
-					var contentSize = uiScrollView.ContentSize;
-					var viewportSize = getViewportSize(uiScrollView);
+					// When the scroll view is set to SafeAreaEdges.Container, the uiScrollView 
+					// ContentAdjustmentInsetBehavior is set to Always
+					// This means we should always inset the content by the safe area insets
+					// This way the content doesn't go under the top and bottom bars and notch
+					var contentRect = new CoreGraphics.CGRect(0, 0, uiScrollView.ContentSize.Width, uiScrollView.ContentSize.Height);
+					var contentSize = uiScrollView.SafeAreaInsets.InsetRect(contentRect).Size;
+					var viewportSize = uiScrollView.AdjustedContentInset.InsetRect(uiScrollView.Bounds).Size;
 
 					Assert.Equal(viewportSize.Height, contentSize.Height);
 					Assert.Equal(viewportSize.Width, contentSize.Width);
