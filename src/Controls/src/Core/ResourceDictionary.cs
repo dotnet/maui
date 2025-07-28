@@ -689,6 +689,7 @@ namespace Microsoft.Maui.Controls
 				//drop the leading '/'
 				return resourceUri.AbsolutePath.Substring(1);
 			}
+
 		}
 	}
 }
