@@ -30,6 +30,11 @@ Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.get -> Microsoft.Maui.SafeArea
 Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.set -> void
 Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.get -> bool
 Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.set -> void
+override Microsoft.Maui.Controls.CheckBox.IsEnabledCore.get -> bool
+~Microsoft.Maui.Controls.CheckBox.Command.get -> System.Windows.Input.ICommand
+~Microsoft.Maui.Controls.CheckBox.Command.set -> void
+~Microsoft.Maui.Controls.CheckBox.CommandParameter.get -> object
+~Microsoft.Maui.Controls.CheckBox.CommandParameter.set -> void
 ~Microsoft.Maui.Controls.ContentPresenter.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~Microsoft.Maui.Controls.ContentPresenter.LowerChild(Microsoft.Maui.Controls.View view) -> void
 Microsoft.Maui.Controls.ContentPresenter.Padding.get -> Microsoft.Maui.Thickness
@@ -414,6 +419,8 @@ static readonly Microsoft.Maui.Controls.Border.SafeAreaEdgesProperty -> Microsof
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.CommandProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequiredProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.CheckBox.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.CheckBox.CommandProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ContentPage.SafeAreaEdgesProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparentProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ContentPresenter.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty
