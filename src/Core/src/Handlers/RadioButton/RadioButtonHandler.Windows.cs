@@ -33,6 +33,14 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateBackground(radioButton);
 		}
 
+		internal static void MapRadioButtonMinimumWidth(IViewHandler handler, IView view)
+		{
+			if (view is IRadioButton radioButtonView && handler is RadioButtonHandler radioButtonHandler)
+			{
+				radioButtonHandler.PlatformView?.UpdateMinWidth(radioButtonView);
+			}
+		}
+
 		public static void MapIsChecked(IRadioButtonHandler handler, IRadioButton radioButton)
 		{
 			handler.PlatformView?.UpdateIsChecked(radioButton);

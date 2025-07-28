@@ -47,6 +47,20 @@ namespace Microsoft.Maui.Platform
 			platformRadioButton.RefreshThemeResources();
 		}
 
+		internal static void UpdateMinWidth(this RadioButton radioButton, IRadioButton view)
+		{
+			double minWidth = view.MinimumWidth;
+
+			if (double.IsNaN(minWidth))
+			{
+				radioButton.MinWidth = 0;
+			}
+			else
+			{
+				radioButton.MinWidth = minWidth;
+			}
+		}
+
 		public static void UpdateContent(this RadioButton platformRadioButton, IRadioButton radioButton)
 		{
 			_ = radioButton.Handler?.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
