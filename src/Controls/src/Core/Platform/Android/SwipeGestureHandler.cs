@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal class SwipeGestureHandler
 	{
+		double _totalX, _totalY;
+
 		Func<double, double> PixelTranslation
 		{
 			get
@@ -36,15 +38,43 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view == null)
 				return false;
 
+			var transformedCoords = TransformSwipeCoordinatesWithRotation(x, y, view.Rotation);
+
+			_totalX += PixelTranslation(transformedCoords.x);
+			_totalY += PixelTranslation(transformedCoords.y);
+
 			var result = false;
 			foreach (SwipeGestureRecognizer swipeGesture in
-					 view.GestureRecognizers.GetGesturesFor<SwipeGestureRecognizer>())
+					view.GestureRecognizers.GetGesturesFor<SwipeGestureRecognizer>())
 			{
-				((ISwipeGestureController)swipeGesture).SendSwipe(view, PixelTranslation(x), PixelTranslation(y));
+				((ISwipeGestureController)swipeGesture).SendSwipe(view, _totalX, _totalY);
 				result = true;
 			}
 
 			return result;
+		}
+
+		(float x, float y) TransformSwipeCoordinatesWithRotation(float x, float y, double rotation)
+		{
+			var correctedX = x; 
+			var correctedY = y;  
+
+			if (Math.Abs(rotation) < 0.01)
+			{
+				return (correctedX, correctedY);
+			}
+
+			rotation = rotation % 360;
+			if (rotation < 0) rotation += 360;
+
+			var radians = rotation * Math.PI / 180.0;
+			var cos = Math.Cos(radians);
+			var sin = Math.Sin(radians);
+
+			var transformedX = (float)(correctedX * cos - correctedY * sin);
+			var transformedY = (float)(correctedX * sin + correctedY * cos);
+
+			return (transformedX, transformedY);
 		}
 
 		public bool OnSwipeComplete()
@@ -54,16 +84,19 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view == null)
 				return false;
 
+			var detected = false;
 			foreach (SwipeGestureRecognizer swipeGesture in view.GestureRecognizers.GetGesturesFor<SwipeGestureRecognizer>())
 			{
-				var detected = ((ISwipeGestureController)swipeGesture).DetectSwipe(view, swipeGesture.Direction);
-				if (detected)
+				var gestureDetected = ((ISwipeGestureController)swipeGesture).DetectSwipe(view, swipeGesture.Direction);
+				if (gestureDetected)
 				{
-					return true;
+					detected = true;
 				}
 			}
+			_totalX = 0;
+			_totalY = 0;
 
-			return false;
+			return detected;
 		}
 
 		public bool HasAnyGestures()
