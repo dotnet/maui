@@ -27,7 +27,29 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCharacterSpacing(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			platformControl.CharacterSpacing = searchBar.CharacterSpacing.ToEm();
+			var characterSpacing = searchBar.CharacterSpacing.ToEm();
+			platformControl.CharacterSpacing = characterSpacing;
+
+			if (platformControl.IsLoaded)
+			{
+				ApplyCharacterSpacing(platformControl, characterSpacing);
+			}
+			else
+			{
+				platformControl.OnLoaded(() =>
+				{
+					ApplyCharacterSpacing(platformControl, characterSpacing);
+				});
+			}
+		}
+
+		static void ApplyCharacterSpacing(AutoSuggestBox platformControl, int characterSpacing)
+		{
+			var placeholderContentControl = platformControl.GetDescendantByName<ContentControl>("PlaceholderTextContentPresenter");
+			if (placeholderContentControl?.ContentTemplateRoot is TextBlock textBlock)
+			{
+				textBlock.CharacterSpacing = characterSpacing;
+			}
 		}
 
 		public static void UpdatePlaceholder(this AutoSuggestBox platformControl, ISearchBar searchBar)
