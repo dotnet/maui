@@ -197,12 +197,6 @@ namespace Microsoft.Maui.Controls.Xaml
 						return TimeSpan.Parse(str, CultureInfo.InvariantCulture);
 					if (toType == typeof(DateTime))
 						return DateTime.Parse(str, CultureInfo.InvariantCulture);
-#if NET6_0_OR_GREATER
-					if (toType == typeof(DateOnly))
-						return DateOnly.Parse(str, CultureInfo.InvariantCulture);
-					if (toType == typeof(TimeOnly))
-						return TimeOnly.Parse(str, CultureInfo.InvariantCulture);
-#endif
 					if (toType == typeof(Char))
 					{
 						Char.TryParse(str, out var c);

@@ -10,26 +10,29 @@ using Xunit;
 public class TimeOnlyTypeConverterTests : BaseTestFixture
 {
 	[Fact]
-	public void TimeOnlyToStringCanConvertToTimeSpan()
+	public void TimeOnlyToTimeSpanConversion()
 	{
 		var converter = new TimeSpanTypeConverter();
 
 		var timeOnlyValue = new TimeOnly(8, 30, 0);
 
-		var actualTimeSpan = converter.ConvertFromInvariantString(timeOnlyValue.ToString(CultureInfo.InvariantCulture));
+		var actualTimeSpan = converter.ConvertFrom(null, CultureInfo.InvariantCulture, timeOnlyValue);
 		var expectedTimeSpan = new TimeSpan(8, 30, 0);
 
 		Assert.Equal(expectedTimeSpan, actualTimeSpan);
 	}
 
 	[Fact]
-	public async Task ConvertToInvariantStringThrowsNotImplementedException()
+	public void TimeSpanToTimeOnlyConversion()
 	{
 		var converter = new TimeSpanTypeConverter();
 
-		var stringValue = "Not a TimeOnly string";
+		var timeSpanValue = new TimeSpan(8, 30, 0);
 
-		await Assert.ThrowsAsync<NotImplementedException>(async () => converter.ConvertToInvariantString(stringValue));
+		var actualTimeOnly = converter.ConvertTo(null, CultureInfo.InvariantCulture, timeSpanValue, typeof(TimeOnly));
+		var expectedTimeOnly = new TimeOnly(8, 30, 0);
+
+		Assert.Equal(expectedTimeOnly, actualTimeOnly);
 	}
 }
 #endif

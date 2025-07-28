@@ -74,18 +74,6 @@ Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute
 Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.Allow.get -> bool
 Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.AllowImplicitXmlnsDeclarationAttribute(bool allow = true) -> void
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.Target.get -> string
-Microsoft.Maui.Controls.DateTimeTypeConverter
-Microsoft.Maui.Controls.DateTimeTypeConverter.DateTimeTypeConverter() -> void
-Microsoft.Maui.Controls.TimeSpanTypeConverter
-Microsoft.Maui.Controls.TimeSpanTypeConverter.TimeSpanTypeConverter() -> void
-override Microsoft.Maui.Controls.DateTimeTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType) -> bool
-override Microsoft.Maui.Controls.DateTimeTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
-override Microsoft.Maui.Controls.DateTimeTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
-override Microsoft.Maui.Controls.DateTimeTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
-override Microsoft.Maui.Controls.TimeSpanTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType) -> bool
-override Microsoft.Maui.Controls.TimeSpanTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
-override Microsoft.Maui.Controls.TimeSpanTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
-override Microsoft.Maui.Controls.TimeSpanTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
 *REMOVED*~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.XmlnsDefinitionAttribute(string xmlNamespace, string clrNamespace) -> void
 *REMOVED*Microsoft.Maui.Controls.Accelerator
 *REMOVED*Microsoft.Maui.Controls.AcceleratorTypeConverter
