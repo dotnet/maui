@@ -938,30 +938,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void DettachSearchController()
 		{
 
-<<<<<<< TODO: Unmerged change from project 'Controls.Core(net10.0-maccatalyst18.5)', Before:
-			if (_searchHandlerAppearanceTracker is not null)
-			{
-				_searchHandlerAppearanceTracker.Dispose();
-				_searchHandlerAppearanceTracker = null;
-			}
-=======
-			_searchHandlerAppearanceTracker?.Dispose();
-			_searchHandlerAppearanceTracker = null;
->>>>>>> After
 			_searchHandlerAppearanceTracker?.Dispose();
 			_searchHandlerAppearanceTracker = null;
 
-
-<<<<<<< TODO: Unmerged change from project 'Controls.Core(net10.0-maccatalyst18.5)', Before:
-			if (_searchController is not null)
-			{
-				_searchController.SetSearchResultsUpdater(_ => { });
-				_searchController = null;
-			}
-=======
-			_searchController?.SetSearchResultsUpdater(_ => { });
-			_searchController = null;
->>>>>>> After
 			if (NavigationItem is not null)
 			{
 				if (OperatingSystem.IsIOSVersionAtLeast(11))
