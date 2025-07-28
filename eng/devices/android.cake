@@ -634,7 +634,7 @@ void PrepareDevice(bool waitForBoot)
         var total = EmulatorBootTimeoutSeconds;
         while (AdbShell("getprop sys.boot_completed", settings).FirstOrDefault() != "1")
 		{
-		    System.Threading.Thread.Sleep(500);
+		    System.Threading.Thread.Sleep(1000);
 
             Information("Waiting {0}/{1} seconds for the emulator to boot up.", waited, total);
             if (waited++ > total)
@@ -678,95 +678,199 @@ void EnsureAdbKeys(AdbToolSettings settings)
 {
     Information("Configuring ADB keys...");
 
+    // Key Paths
+    var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+    var adbKeyPath = Path.Combine(homeDir, ".android");
+    var adbKeyFile = Path.Combine(adbKeyPath, "adbkey");
+    var adbKeyPubFile = Path.Combine(adbKeyPath, "adbkey.pub");
+
     try
     {
-        // Stop ADB server
-        Information("Stopping ADB server...");
-        AdbKillServer(settings);
-        System.Threading.Thread.Sleep(2000);
+        // Ensure .android directory exists
+        Directory.CreateDirectory(adbKeyPath);
 
-        // Set up file paths
-        var homeDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile);
-        var adbKeyPath = System.IO.Path.Combine(homeDir, ".android");
-        var adbKeyFile = System.IO.Path.Combine(adbKeyPath, "adbkey");
-        var adbKeyPubFile = System.IO.Path.Combine(adbKeyPath, "adbkey.pub");
-
-        // Clean setup
-        Information("Setting up ADB keys...");
-        System.IO.Directory.CreateDirectory(adbKeyPath);
-        
-        if (System.IO.File.Exists(adbKeyFile)) System.IO.File.Delete(adbKeyFile);
-        if (System.IO.File.Exists(adbKeyPubFile)) System.IO.File.Delete(adbKeyPubFile);
-
-        // Generate new keys
-        var keygenResult = StartProcess("adb", $"keygen \"{adbKeyFile}\"");
-        if (keygenResult != 0 || !System.IO.File.Exists(adbKeyFile))
+        // Check if keys already exist
+        bool keysExist = File.Exists(adbKeyFile) && File.Exists(adbKeyPubFile);
+        if (keysExist)
         {
-            throw new System.Exception("Failed to generate ADB keys");
+            Information("ADB keys already exist. Skipping generation.");
+        }
+        else
+        {
+            Information("ADB keys not found. Generating new keys...");
+
+            // Generate ADB Keys
+            // Try using 'adb keygen' first (standard method for modern ADB)
+            var keygenProcessSettings = new ProcessSettings
+            {
+                Arguments = $"keygen \"{adbKeyFile}\"",
+                Timeout = 60000 // 1 minute timeout
+            };
+            var keygenResult = StartProcess("adb", keygenProcessSettings);
+
+            if (keygenResult != 0 || !File.Exists(adbKeyFile) || !File.Exists(adbKeyPubFile))
+            {
+                Information("'adb keygen' failed or files not created. Trying ssh-keygen fallback...");
+                // Fallback: Use ssh-keygen to generate an RSA key pair
+                var sshKeygenProcessSettings = new ProcessSettings
+                {
+                    Arguments = $"-t rsa -b 2048 -f \"{adbKeyFile}\" -N \"\"", // 2048-bit RSA, no passphrase
+                    Timeout = 60000
+                };
+                var sshKeygenResult = StartProcess("ssh-keygen", sshKeygenProcessSettings);
+
+                if (sshKeygenResult != 0 || !File.Exists(adbKeyFile) || !File.Exists(adbKeyPubFile))
+                {
+                    Error("Failed to generate ADB keys using both 'adb keygen' and 'ssh-keygen'.");
+                    throw new CakeException("Critical failure: Could not generate ADB keys.");
+                }
+                else
+                {
+                    Information("Successfully generated ADB keys using ssh-keygen.");
+                }
+            }
+            else
+            {
+                Information("Successfully generated ADB keys using 'adb keygen'.");
+            }
+
+            // Set Permissions
+            if (IsRunningOnUnix())
+            {
+                Information("Setting permissions for ADB keys (Unix/MacOS)...");
+                try
+                {
+                    // Use 600 for private key (owner read/write only)
+                    StartProcess("chmod", new ProcessSettings { Arguments = $"600 \"{adbKeyFile}\"", Timeout = 10000 });
+                    // Use 644 for public key (owner read/write, group/others read)
+                    StartProcess("chmod", new ProcessSettings { Arguments = $"644 \"{adbKeyPubFile}\"", Timeout = 10000 });
+                }
+                catch (Exception chmodEx)
+                {
+                    Warning($"Setting file permissions failed (non-fatal): {chmodEx.Message}");
+                }
+            }
         }
 
-        // Set permissions (Unix only)
-        if (System.Environment.OSVersion.Platform == System.PlatformID.Unix || 
-            System.Environment.OSVersion.Platform == System.PlatformID.MacOSX)
+        // Restart ADB Server
+        // Restarting ensures the ADB server picks up the newly generated keys.
+        Information("Restarting ADB server to ensure it uses the correct keys...");
+        try
         {
-            StartProcess("chmod", $"600 \"{adbKeyFile}\"");
-            StartProcess("chmod", $"600 \"{adbKeyPubFile}\"");
+            AdbKillServer(settings);
+            Thread.Sleep(2000); // Brief pause
+            AdbStartServer(settings);
+            Thread.Sleep(2000); // Brief pause after start
+        }
+        catch (Exception restartEx)
+        {
+            Error($"Failed to restart ADB server: {restartEx.Message}");
+            // If restart fails, subsequent device communication might be unreliable.
+            throw new CakeException("Failed to restart ADB server after key setup.", restartEx);
         }
 
-        // Start server and wait for device
-        Information("Starting ADB server...");
-        AdbStartServer(settings);
-        
-        var waitResult = StartProcess("adb", "wait-for-device", new ProcessSettings { Timeout = 180000 });
+        // Wait for Device to be Present.
+        // The `PrepareDevice` method already waits for full boot. This step just ensures
+        // ADB sees *a* device connected.
+        Information("Waiting for a device to be connected...");
+        var waitProcessSettings = new ProcessSettings
+        {
+            Arguments = "wait-for-any-device",
+            Timeout = 180000 // 3 minutes
+        };
+        var waitResult = StartProcess("adb", waitProcessSettings);
         if (waitResult != 0)
         {
-            throw new System.Exception("Device not found");
+            Warning("Timeout or error waiting for any ADB device to connect.");
+            // Don't fail the whole process yet, as PrepareDevice will also check.
         }
 
-        // Check device state
-        var devices = AdbDevices(settings);
-        var device = devices.FirstOrDefault();
-        
-        if (device?.State == "unauthorized")
+        // Identify and Wait for Device Readiness
+        // `PrepareDevice` (which calls this method) already has a robust waiting
+        // mechanism. We just need to get a serial to push keys to a specific device.
+        // Let's get the first available device that seems ready.
+        string targetDeviceSerial = null;
+        var readyCheckTimeout = DateTime.UtcNow.AddSeconds(60); // Wait up to 1 min for a ready device
+        while (DateTime.UtcNow < readyCheckTimeout)
         {
-            Information("Pushing keys to unauthorized device...");
-            
-            // Setup device directory and push key
-            AdbShell("mkdir -p /data/misc/adb && chmod 771 /data/misc/adb", settings);
-            
-            var pushResult = StartProcess("adb", $"push \"{adbKeyPubFile}\" /data/misc/adb/adb_keys");
-            if (pushResult != 0)
+            var devices = AdbDevices(settings);
+            if (devices.Any())
             {
-                throw new System.Exception("Failed to push keys to device");
+                var targetDevice = devices.FirstOrDefault(d => d.Serial == DEVICE_UDID) ?? devices.First();
+                targetDeviceSerial = targetDevice.Serial;
+
+                try
+                {
+                    var shellCheckSettings = new AdbToolSettings { SdkRoot = settings.SdkRoot, Serial = targetDeviceSerial };
+                    var echoResult = AdbShell("echo 'adb_keys_ready_check'", shellCheckSettings);
+                    if (echoResult.FirstOrDefault()?.Contains("adb_keys_ready_check") == true)
+                    {
+                        Information($"Device {targetDeviceSerial} is responsive. Proceeding to push keys.");
+                        break; // Found a device
+                    }
+                }
+                catch
+                {
+                    // Shell not ready yet, continue waiting
+                }
             }
-            
-            AdbShell("chmod 600 /data/misc/adb/adb_keys", settings);
-            AdbShell("stop adbd && sleep 1 && start adbd", settings);
-            System.Threading.Thread.Sleep(3000);
+            Information("Waiting for a responsive device...");
+            Thread.Sleep(5000);
         }
 
-        // Final check
-        var finalDevices = AdbDevices(settings);
-        if (!finalDevices.Any(d => d.State == "device"))
+        if (string.IsNullOrEmpty(targetDeviceSerial))
         {
-            throw new System.Exception("Device not authorized after setup");
+            Warning("No responsive device found within timeout. Skipping key push step.");
+            return;
         }
 
-        Information("ADB keys configured successfully");
-    }
-    catch (System.Exception ex)
-    {
-        Error($"ADB key setup failed: {ex.Message}");
+        // Push Keys to the Identified Device
+        try
+        {
+            Information($"Attempting to push ADB keys to device {targetDeviceSerial}...");
+            var deviceSpecificSettings = new AdbToolSettings { SdkRoot = settings.SdkRoot, Serial = targetDeviceSerial };
 
-		try
-		{
-			AdbKillServer(settings);
-			System.Threading.Thread.Sleep(2000);
-			AdbStartServer(settings);
-		}
-		catch (Exception innerEx)
-		{
-			Error($"Recovery attempt also failed: {innerEx.Message}");
-		}
+            // Ensure the directory exists on the device
+            AdbShell("mkdir -p /data/misc/adb", deviceSpecificSettings);
+            AdbShell("chmod 771 /data/misc/adb", deviceSpecificSettings);
+
+            // Push the PUBLIC key file to the device's adb_keys file
+            // This allows the host's corresponding private key to authenticate.
+            var pushProcessSettings = new ProcessSettings
+            {
+                Arguments = $"-s {targetDeviceSerial} push \"{adbKeyPubFile}\" /data/misc/adb/adb_keys",
+                Timeout = 120000 // 2 minutes timeout for push
+            };
+            var pushResult = StartProcess("adb", pushProcessSettings);
+
+            if (pushResult == 0)
+            {
+                Information($"Successfully pushed ADB keys to device {targetDeviceSerial}.");
+                // Set correct permissions on the device
+                AdbShell("chmod 600 /data/misc/adb/adb_keys", deviceSpecificSettings);
+                // Restart adbd on the device to pick up the new keys
+                Information($"Restarting adbd on device {targetDeviceSerial}...");
+                AdbShell("stop adbd && sleep 1 && start adbd", deviceSpecificSettings);
+                // Give adbd a moment to restart
+                Thread.Sleep(3000);
+                Information($"adbd restarted on device {targetDeviceSerial}.");
+            }
+            else
+            {
+                Error($"Failed to push ADB keys to device {targetDeviceSerial}. ADB push exit code: {pushResult}");
+            }
+        }
+        catch (Exception pushEx)
+        {
+            Error($"Exception while pushing keys to device {targetDeviceSerial}: {pushEx.Message}");
+        }
+
+        Information("ADB keys configuration process completed.");
+    }
+    catch (Exception ex) when (!(ex is CakeException))
+    {
+        Error($"ADB key setup encountered an unexpected error: {ex.Message}");
+        Error($"Stack Trace: {ex.StackTrace}");
+        throw new CakeException("Failed during ADB key setup process.", ex);
     }
 }

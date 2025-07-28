@@ -8,7 +8,7 @@ namespace UITest.Appium
 	public class AppiumServerContext : IServerContext
 	{
 		const int Port = 4723;
-		readonly int _serverStartWaitDelay = 500;
+		readonly int _serverStartWaitDelay = 1000;
 		readonly List<AppiumUIClientContext> _contexts = new(); // Since tests don't know when they are done, we need to keep track of all the contexts we create so we can dispose them
 		readonly TimeSpan _maxServerWaitTime = TimeSpan.FromSeconds(15);
 		readonly object _serverLock = new object();
