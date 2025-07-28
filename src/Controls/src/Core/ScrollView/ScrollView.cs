@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Performance;
 
 namespace Microsoft.Maui.Controls
 {
@@ -361,16 +362,19 @@ namespace Microsoft.Maui.Controls
 
 		void OnScrollToRequested(ScrollToRequestedEventArgs e)
 		{
-			CheckTaskCompletionSource();
-			ScrollToRequested?.Invoke(this, e);
+			using (PerformanceProfiler.Start(PerformanceCategory.Scrolling, this))
+			{
+				CheckTaskCompletionSource();
+				ScrollToRequested?.Invoke(this, e);
 
-			if (Handler is null)
-			{
-				_pendingScrollToRequested = e;
-			}
-			else
-			{
-				Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(e).ToRequest());
+				if (Handler is null)
+				{
+					_pendingScrollToRequested = e;
+				}
+				else
+				{
+					Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(e).ToRequest());
+				}
 			}
 		}
 

@@ -94,7 +94,7 @@ public class Issue28091SubscribeToUpdates : ContentPage
         };
 
         // Subscribe to real-time layout updates
-        PerformanceProfiler.SubscribeToUpdates(OnLayoutUpdate);
+        PerformanceProfiler.SubscribeToUpdates(OnLayoutUpdate, null);
     }
 
     void OnLayoutUpdate(LayoutUpdate update)

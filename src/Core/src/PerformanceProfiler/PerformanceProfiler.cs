@@ -14,14 +14,22 @@ internal static class PerformanceProfiler
 	/// </summary>
 	public static ILayoutPerformanceTracker Layout { get; private set; }
 
+	
 	/// <summary>
-	/// Initializes the performance profiler with a performance tracker.
+	/// Gets the scrolling performance tracker used to monitor scrolling-related operations.
+	/// </summary>
+	public static IScrollingPerformanceTracker Scrolling { get; private set; }
+	
+	/// <summary>
+	/// Initializes the performance profiler with the performance trackers.
 	/// </summary>
 	/// <param name="layout">An instance of <see cref="ILayoutPerformanceTracker"/> to be used for tracking layout performance.</param>
+	/// <param name="scrolling">An instance of <see cref="IScrollingPerformanceTracker"/> to be used for tracking scrolling performance.</param>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="layout"/> is null.</exception>
-	public static void Initialize(ILayoutPerformanceTracker layout)
+	public static void Initialize(ILayoutPerformanceTracker layout, IScrollingPerformanceTracker scrolling)
 	{
 		Layout = layout ?? throw new ArgumentNullException(nameof(layout));
+		Scrolling = scrolling ?? throw new ArgumentNullException(nameof(scrolling));
 	}
 
 	/// <summary>
@@ -32,12 +40,13 @@ internal static class PerformanceProfiler
 	/// </returns>
 	public static PerformanceStats GetStats()
 	{
-		if (Layout is null)
+		if (Layout is null && Scrolling is null)
 			return PerformanceStats.Empty;
 
 		return new PerformanceStats
 		{
-			Layout = Layout.GetStats(),
+			Layout = Layout?.GetStats(),
+			Scrolling = Scrolling?.GetStats(),
 			TimestampUtc = DateTime.UtcNow
 		};
 	}
@@ -52,31 +61,38 @@ internal static class PerformanceProfiler
 	/// </returns>
 	public static PerformanceUpdate GetHistory(object element = null)
 	{
-		if (Layout is null)
+		if (Layout is null && Scrolling is null)
 			return PerformanceUpdate.Empty;
-		
-		var layout = Layout.GetHistory(element);
+
+		var layout = Layout?.GetHistory(element);
+		var scrolling = Scrolling?.GetHistory(element);
 
 		var performanceUpdate = new PerformanceUpdate
 		{
 			Layout = layout,
+			Scrolling = scrolling,
 			TimestampUtc = DateTime.UtcNow
 		};
-		
+
 		return performanceUpdate;
 	}
 	
 	/// <summary>
 	/// Subscribe to receive real-time LayoutUpdate events (Measure or Arrange).
 	/// </summary>
-	/// <param name="callback">The callback to invoke when a layout update occurs.</param>
-	/// <exception cref="ArgumentNullException">Thrown if <paramref name="callback"/> is null.</exception>
-	public static void SubscribeToUpdates(Action<LayoutUpdate> callback)
+	/// <param name="layoutCallback">The callback to invoke when a layout update occurs.</param>
+	/// <param name="scrollingCallback">The callback to invoke when a scrolling update occurs.</param>
+	/// <exception cref="ArgumentNullException">Thrown if both <paramref name="layoutCallback"/> and <paramref name="scrollingCallback"/> are null.</exception>
+	public static void SubscribeToUpdates(Action<LayoutUpdate> layoutCallback, Action<ScrollingUpdate> scrollingCallback)
 	{
-		if (callback == null)
-			throw new ArgumentNullException(nameof(callback));
+		if (layoutCallback == null && scrollingCallback == null)
+			throw new ArgumentNullException("At least one callback must be provided.");
 
-		Layout?.SubscribeToLayoutUpdates(callback);
+		if (layoutCallback != null)
+			Layout?.SubscribeToLayoutUpdates(layoutCallback);
+
+		if (scrollingCallback != null)
+			Scrolling?.SubscribeToScrollingUpdates(scrollingCallback);
 	}
 
 	/// <summary>
@@ -136,6 +152,10 @@ internal static class PerformanceProfiler
 					Layout.RecordArrangePass(elapsed, _element);
 					break;
 
+				case PerformanceCategory.Scrolling:
+					Scrolling?.RecordScrollingTime(elapsed, _element);
+					break;
+				
 				default:
 					Debug.WriteLine($"[Performance Profiler] {_category} took {elapsed:0.00} ms.");
 					break;

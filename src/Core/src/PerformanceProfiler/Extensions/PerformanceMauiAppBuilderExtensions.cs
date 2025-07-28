@@ -25,12 +25,21 @@ namespace Microsoft.Maui.Performance
 
                 // Register core services
                 builder.Services.AddSingleton<ILayoutPerformanceTracker, LayoutPerformanceTracker>();
-
+                
+#if ANDROID
+                builder.Services.AddSingleton<IScrollingPerformanceTracker, AndroidScrollingPerformanceTracker>();
+#elif IOS
+                builder.Services.AddSingleton<IScrollingPerformanceTracker, iOSScrollingPerformanceTracker>();
+#else
+                builder.Services.AddSingleton<IScrollingPerformanceTracker, ScrollingPerformanceTracker>();
+#endif
+	            
 				// Initialize the PerformanceProfiler
 				using (var serviceProvider = builder.Services.BuildServiceProvider())
                 {
                     var layout = serviceProvider.GetRequiredService<ILayoutPerformanceTracker>();
-                    PerformanceProfiler.Initialize(layout);
+                    var scrolling = serviceProvider.GetRequiredService<IScrollingPerformanceTracker>();
+                    PerformanceProfiler.Initialize(layout, scrolling);
                 }
             }
 

@@ -14,4 +14,9 @@ internal enum PerformanceCategory : byte
 	/// Represents the layout arrangement phase.
 	/// </summary>
 	LayoutArrange,
+	
+	/// <summary>
+	/// Represents the scrolling operation phase.
+	/// </summary>
+	Scrolling
 }

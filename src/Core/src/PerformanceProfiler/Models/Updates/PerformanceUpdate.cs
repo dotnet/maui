@@ -14,6 +14,11 @@ internal class PerformanceUpdate
 	public IEnumerable<LayoutUpdate>? Layout { get; set; } = new List<LayoutUpdate>();
 	
 	/// <summary>
+	/// Gets or sets a collection of scrolling-related performance updates.
+	/// </summary>
+	public IEnumerable<ScrollingUpdate>? Scrolling { get; set; } = new List<ScrollingUpdate>();
+	
+	/// <summary>
 	/// The timestamp (UTC) when the performance update was recorded.
 	/// </summary>
 	/// <remarks>
@@ -28,6 +33,7 @@ internal class PerformanceUpdate
 	public static PerformanceUpdate Empty { get; } = new PerformanceUpdate
 	{
 		Layout = null,
+		Scrolling = null,
 		TimestampUtc = DateTime.UtcNow
 	};
 }

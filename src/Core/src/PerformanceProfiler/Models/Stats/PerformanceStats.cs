@@ -13,6 +13,11 @@ internal class PerformanceStats
 	public LayoutStats? Layout { get; set; }
 	
 	/// <summary>
+	/// Gets or sets the scrolling-related performance statistics.
+	/// </summary>
+	public ScrollingStats? Scrolling { get; set; }
+	
+	/// <summary>
 	/// The timestamp (UTC) when the performance update was recorded.
 	/// </summary>
 	/// <remarks>
@@ -27,6 +32,7 @@ internal class PerformanceStats
 	public static PerformanceStats Empty { get; } = new PerformanceStats
 	{
 		Layout = null,
+		Scrolling = null,
 		TimestampUtc = DateTime.UtcNow
 	};
 }
