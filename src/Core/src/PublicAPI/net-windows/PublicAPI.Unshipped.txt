@@ -158,6 +158,11 @@ static Microsoft.Maui.Handlers.WindowHandler.MapIsMinimizable(Microsoft.Maui.Han
 static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureEnvironmentVariables(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 static Microsoft.Maui.Platform.CalendarDatePickerExtensions.ToDateFormat(this string! dateFormat) -> string!
 static Microsoft.Maui.Platform.DatePickerExtensions.UpdateBackground(this Microsoft.UI.Xaml.Controls.CalendarDatePicker! platformDatePicker, Microsoft.Maui.IDatePicker! datePicker) -> void
+static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequired(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Action! action) -> void
+static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Action! action) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<System.Threading.Tasks.Task!>! action) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync<T>(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<T>! func) -> System.Threading.Tasks.Task<T>!
+static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync<T>(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<System.Threading.Tasks.Task<T>!>! funcTask) -> System.Threading.Tasks.Task<T>!
 *REMOVED*static Microsoft.Maui.Platform.ScrollViewerExtensions.UpdateScrollBarVisibility(this Microsoft.UI.Xaml.Controls.ScrollViewer! scrollViewer, Microsoft.Maui.ScrollOrientation orientation, Microsoft.Maui.ScrollBarVisibility horizontalScrollBarVisibility) -> void
 static Microsoft.Maui.Platform.ScrollViewerExtensions.UpdateScrollBarVisibility(this Microsoft.UI.Xaml.Controls.ScrollViewer! scrollViewer, Microsoft.Maui.ScrollOrientation orientation, Microsoft.Maui.ScrollBarVisibility visibility) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateReturnType(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
