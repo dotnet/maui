@@ -77,11 +77,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var mockViewHandler = Substitute.For<IViewHandler>();
 
 			// Set up the mock handler to properly participate in the layout system
-			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo => {
+			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo =>
+			{
 				// Extract the constraints passed to GetDesiredSize
 				var width = (double)callInfo[0];
 				var height = (double)callInfo[1];
-				
+
 				// Return the child's requested size (100x200)
 				return new Size(100, 200);
 			});
@@ -111,10 +112,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(new Rect(100, 50, 100, 200), child.Bounds);
 
 			// Verify the PlatformArrange method was called on the handler with the correct frame
-			mockViewHandler.Received().PlatformArrange(Arg.Is<Rect>(r => 
-				Math.Abs(r.X - 100) < 0.001 && 
-				Math.Abs(r.Y - 50) < 0.001 && 
-				Math.Abs(r.Width - 100) < 0.001 && 
+			mockViewHandler.Received().PlatformArrange(Arg.Is<Rect>(r =>
+				Math.Abs(r.X - 100) < 0.001 &&
+				Math.Abs(r.Y - 50) < 0.001 &&
+				Math.Abs(r.Width - 100) < 0.001 &&
 				Math.Abs(r.Height - 200) < 0.001));
 		}
 
@@ -125,11 +126,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var mockViewHandler = Substitute.For<IViewHandler>();
 
 			// Set up the mock handler to properly participate in the layout system
-			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo => {
+			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo =>
+			{
 				// Extract the constraints passed to GetDesiredSize
 				var width = (double)callInfo[0];
 				var height = (double)callInfo[1];
-				
+
 				// Return the child's requested size
 				return new Size(100, 200);
 			});
@@ -150,7 +152,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Get the ICrossPlatformLayout implementation
 			ICrossPlatformLayout crossPlatformLayout = contentView;
-			
+
 			// Test that the measure includes padding and respects the contentView's WidthRequest
 			var result = crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.Equal(new Size(120, 220), result);
@@ -163,11 +165,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var mockViewHandler = Substitute.For<IViewHandler>();
 
 			// Set up the mock handler to properly participate in the layout system
-			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo => {
+			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo =>
+			{
 				// Extract the constraints passed to GetDesiredSize
 				var width = (double)callInfo[0];
 				var height = (double)callInfo[1];
-				
+
 				// Return the child's requested size
 				return new Size(100, 200);
 			});
@@ -188,7 +191,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Get the ICrossPlatformLayout implementation
 			ICrossPlatformLayout crossPlatformLayout = contentView;
-			
+
 			// Test that the measure includes padding and respects the contentView's HeightRequest
 			var result = crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.Equal(new Size(120, 220), result);
@@ -201,11 +204,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var mockViewHandler = Substitute.For<IViewHandler>();
 
 			// Set up the mock handler to properly participate in the layout system
-			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo => {
+			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo =>
+			{
 				// Extract the constraints passed to GetDesiredSize
 				var width = (double)callInfo[0];
 				var height = (double)callInfo[1];
-				
+
 				// Return the child's requested size
 				return new Size(100, 100);
 			});
@@ -230,10 +234,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(new Rect(100, 100, 0, 0), child.Bounds);
 
 			// Verify the PlatformArrange method was called on the handler with the correct frame
-			mockViewHandler.Received().PlatformArrange(Arg.Is<Rect>(r => 
-				Math.Abs(r.X - 100) < 0.001 && 
-				Math.Abs(r.Y - 100) < 0.001 && 
-				Math.Abs(r.Width - 0) < 0.001 && 
+			mockViewHandler.Received().PlatformArrange(Arg.Is<Rect>(r =>
+				Math.Abs(r.X - 100) < 0.001 &&
+				Math.Abs(r.Y - 100) < 0.001 &&
+				Math.Abs(r.Width - 0) < 0.001 &&
 				Math.Abs(r.Height - 0) < 0.001));
 		}
 
@@ -244,11 +248,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var mockViewHandler = Substitute.For<IViewHandler>();
 
 			// Set up the mock handler to properly participate in the layout system
-			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo => {
+			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo =>
+			{
 				// Extract the constraints passed to GetDesiredSize
 				var width = (double)callInfo[0];
 				var height = (double)callInfo[1];
-				
+
 				// Return the child's requested size
 				return new Size(100, 100);
 			});
@@ -273,10 +278,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(new Rect(100, 0, 0, 0), child.Bounds);
 
 			// Verify the PlatformArrange method was called on the handler with the correct frame
-			mockViewHandler.Received().PlatformArrange(Arg.Is<Rect>(r => 
-				Math.Abs(r.X - 100) < 0.001 && 
-				Math.Abs(r.Y - 0) < 0.001 && 
-				Math.Abs(r.Width - 0) < 0.001 && 
+			mockViewHandler.Received().PlatformArrange(Arg.Is<Rect>(r =>
+				Math.Abs(r.X - 100) < 0.001 &&
+				Math.Abs(r.Y - 0) < 0.001 &&
+				Math.Abs(r.Width - 0) < 0.001 &&
 				Math.Abs(r.Height - 0) < 0.001));
 		}
 
@@ -287,11 +292,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var mockViewHandler = Substitute.For<IViewHandler>();
 
 			// Set up the mock handler to properly participate in the layout system
-			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo => {
+			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo =>
+			{
 				// Extract the constraints passed to GetDesiredSize
 				var width = (double)callInfo[0];
 				var height = (double)callInfo[1];
-				
+
 				// Return the child's requested size
 				return new Size(100, 100);
 			});
@@ -316,10 +322,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(new Rect(100, 200, 0, 0), child.Bounds);
 
 			// Verify the PlatformArrange method was called on the handler with the correct frame
-			mockViewHandler.Received().PlatformArrange(Arg.Is<Rect>(r => 
-				Math.Abs(r.X - 100) < 0.001 && 
-				Math.Abs(r.Y - 200) < 0.001 && 
-				Math.Abs(r.Width - 0) < 0.001 && 
+			mockViewHandler.Received().PlatformArrange(Arg.Is<Rect>(r =>
+				Math.Abs(r.X - 100) < 0.001 &&
+				Math.Abs(r.Y - 200) < 0.001 &&
+				Math.Abs(r.Width - 0) < 0.001 &&
 				Math.Abs(r.Height - 0) < 0.001));
 		}
 
@@ -330,11 +336,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var mockViewHandler = Substitute.For<IViewHandler>();
 
 			// Set up the mock handler to properly participate in the layout system
-			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo => {
+			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo =>
+			{
 				// Extract the constraints passed to GetDesiredSize
 				var width = (double)callInfo[0];
 				var height = (double)callInfo[1];
-				
+
 				// Return the child's requested size
 				return new Size(100, 100);
 			});
@@ -359,10 +366,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(new Rect(100, 100, 0, 0), child.Bounds);
 
 			// Verify the PlatformArrange method was called on the handler with the correct frame
-			mockViewHandler.Received().PlatformArrange(Arg.Is<Rect>(r => 
-				Math.Abs(r.X - 100) < 0.001 && 
-				Math.Abs(r.Y - 100) < 0.001 && 
-				Math.Abs(r.Width - 0) < 0.001 && 
+			mockViewHandler.Received().PlatformArrange(Arg.Is<Rect>(r =>
+				Math.Abs(r.X - 100) < 0.001 &&
+				Math.Abs(r.Y - 100) < 0.001 &&
+				Math.Abs(r.Width - 0) < 0.001 &&
 				Math.Abs(r.Height - 0) < 0.001));
 		}
 
@@ -373,11 +380,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var mockViewHandler = Substitute.For<IViewHandler>();
 
 			// Set up the mock handler to properly participate in the layout system
-			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo => {
+			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo =>
+			{
 				// Extract the constraints passed to GetDesiredSize
 				var width = (double)callInfo[0];
 				var height = (double)callInfo[1];
-				
+
 				// Return the child's requested size
 				return new Size(100, 100);
 			});
@@ -402,10 +410,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(new Rect(0, 100, 0, 0), child.Bounds);
 
 			// Verify the PlatformArrange method was called on the handler with the correct frame
-			mockViewHandler.Received().PlatformArrange(Arg.Is<Rect>(r => 
-				Math.Abs(r.X - 0) < 0.001 && 
-				Math.Abs(r.Y - 100) < 0.001 && 
-				Math.Abs(r.Width - 0) < 0.001 && 
+			mockViewHandler.Received().PlatformArrange(Arg.Is<Rect>(r =>
+				Math.Abs(r.X - 0) < 0.001 &&
+				Math.Abs(r.Y - 100) < 0.001 &&
+				Math.Abs(r.Width - 0) < 0.001 &&
 				Math.Abs(r.Height - 0) < 0.001));
 		}
 
@@ -416,11 +424,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var mockViewHandler = Substitute.For<IViewHandler>();
 
 			// Set up the mock handler to properly participate in the layout system
-			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo => {
+			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(callInfo =>
+			{
 				// Extract the constraints passed to GetDesiredSize
 				var width = (double)callInfo[0];
 				var height = (double)callInfo[1];
-				
+
 				// Return the child's requested size
 				return new Size(100, 100);
 			});
@@ -445,10 +454,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(new Rect(200, 100, 0, 0), child.Bounds);
 
 			// Verify the PlatformArrange method was called on the handler with the correct frame
-			mockViewHandler.Received().PlatformArrange(Arg.Is<Rect>(r => 
-				Math.Abs(r.X - 200) < 0.001 && 
-				Math.Abs(r.Y - 100) < 0.001 && 
-				Math.Abs(r.Width - 0) < 0.001 && 
+			mockViewHandler.Received().PlatformArrange(Arg.Is<Rect>(r =>
+				Math.Abs(r.X - 200) < 0.001 &&
+				Math.Abs(r.Y - 100) < 0.001 &&
+				Math.Abs(r.Width - 0) < 0.001 &&
 				Math.Abs(r.Height - 0) < 0.001));
 		}
 

@@ -10,7 +10,7 @@
 		bool _timePickerClosed;
 		bool _pickerOpened;
 		bool _pickerClosed;
-		
+
 		public Issue8945()
 		{
 			InitializeComponent();
@@ -113,8 +113,8 @@
 		{
 			_pickerClosed = true;
 			UpdatePickerStatus();
-		}  
-		
+		}
+
 		void UpdateDatePickerStatus()
 		{
 			if (_datePickerOpened && _datePickerClosed)
