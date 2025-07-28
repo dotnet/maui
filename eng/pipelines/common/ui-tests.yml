@@ -147,7 +147,7 @@ stages:
                       skipProvisioning: ${{ parameters.skipProvisioning }}
   
   - stage: android_ui_tests_coreclr
-    displayName: Android UITests
+    displayName: Android UITests CoreClr
     dependsOn: build_ui_tests_coreclr
     jobs:
       - ${{ each project in parameters.projects }}:
@@ -183,7 +183,7 @@ stages:
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
-                      runtimeVariant : "CoreCLR"
+                      runtimeVariant: "CoreCLR"
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
