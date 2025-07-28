@@ -33,7 +33,7 @@ public sealed class FontAttributesConverter : TypeConverter
 	{
 		var strValue = value?.ToString() ?? string.Empty;
 
-		if (string.IsNullOrEmpty(strValue) || string.IsNullOrWhiteSpace(strValue))
+		if (string.IsNullOrEmpty(strValue))
 		{
 			return FontAttributes.None;
 		}
