@@ -24,7 +24,7 @@ public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConv
 	{
 		var strValue = value?.ToString() ?? string.Empty;
 
-		if (string.IsNullOrWhiteSpace(strValue) || string.IsNullOrEmpty(strValue))
+		if (string.IsNullOrWhiteSpace(strValue))
 		{
 			return null;
 		}
