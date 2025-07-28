@@ -16,7 +16,8 @@ public partial class Bz37524 : ContentPage
 	[TestFixture]
 	class Tests
 	{
-		[Test] public void MultiTriggerConditionNotApplied([Values]XamlInflator inflator)
+		[Test]
+		public void MultiTriggerConditionNotApplied([Values] XamlInflator inflator)
 		{
 			var layout = new Bz37524(inflator);
 			Assert.AreEqual(false, layout.TheButton.IsEnabled);

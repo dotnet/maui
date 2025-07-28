@@ -25,7 +25,7 @@ public partial class Maui25871 : ContentPage
 		[Test]
 		public void CompilationDoesNotFail()
 		{
-			MockCompiler.Compile(typeof(Maui25871));			
+			MockCompiler.Compile(typeof(Maui25871));
 		}
 	}
 }

@@ -12,7 +12,7 @@ public partial class SetStyleIdFromXName : ContentPage
 	public class Tests
 	{
 		[Test]
-		public void SetStyleId([Values]XamlInflator inflator)
+		public void SetStyleId([Values] XamlInflator inflator)
 		{
 			var layout = new SetStyleIdFromXName(inflator);
 			Assert.That(layout.label0.StyleId, Is.EqualTo("label0"));

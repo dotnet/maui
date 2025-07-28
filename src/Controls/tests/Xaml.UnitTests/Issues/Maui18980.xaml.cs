@@ -16,7 +16,8 @@ public partial class Maui18980 : ContentPage
 	[TestFixture]
 	class Test
 	{
-		[SetUp] public void Setup()
+		[SetUp]
+		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());

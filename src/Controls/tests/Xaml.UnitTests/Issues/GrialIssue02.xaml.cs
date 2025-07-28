@@ -42,7 +42,8 @@ public partial class GrialIssue02 : ContentPage
 	[TestFixture]
 	class Tests
 	{
-		[Test] public void BoxValueTypes([Values] XamlInflator inflator)
+		[Test]
+		public void BoxValueTypes([Values] XamlInflator inflator)
 		{
 			var layout = new GrialIssue02(inflator);
 			var res = (GrialIssue02Converter)layout.Resources["converter"];

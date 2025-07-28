@@ -18,8 +18,9 @@ public partial class AutoMergedResourceDictionaries : ContentPage
 	{
 		[SetUp] public void Setup() => Application.Current = new MockApplication();
 		[TearDown] public void TearDown() => Application.Current = null;
-		
-		[Test] public void AutoMergedRd([Values]XamlInflator inflator)
+
+		[Test]
+		public void AutoMergedRd([Values] XamlInflator inflator)
 		{
 			var layout = new AutoMergedResourceDictionaries(inflator);
 			Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Purple));

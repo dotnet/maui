@@ -30,7 +30,7 @@ public partial class Bz45891 : ContentPage
 		[TearDown] public void TearDown() => DeviceInfo.SetCurrent(null);
 
 		[Test]
-		public void LookForInheritanceOnOpImplicit([Values]XamlInflator inflator)
+		public void LookForInheritanceOnOpImplicit([Values] XamlInflator inflator)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var p = new Bz45891(inflator);

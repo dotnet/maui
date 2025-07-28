@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			[Test] public void AllowWhiteSpacesInMarkups([Values]XamlInflator inflator)
+			[Test]
+			public void AllowWhiteSpacesInMarkups([Values] XamlInflator inflator)
 			{
 				var layout = new Bz31529(inflator);
 				Assert.AreEqual("Foo", layout.button.CommandParameter);

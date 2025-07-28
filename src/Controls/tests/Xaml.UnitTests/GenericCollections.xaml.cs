@@ -31,7 +31,7 @@ public partial class GenericCollections : ContentPage
 	public class Tests
 	{
 		[Test]
-		public void SupportsCrookedGenericScenarios([Values]XamlInflator inflator)
+		public void SupportsCrookedGenericScenarios([Values] XamlInflator inflator)
 		{
 			var p = new GenericCollections(inflator);
 			Assert.AreEqual("Foo", (p.label0.GetValue(AttachedBP.AttachedBPProperty) as GenericCollection)[0]);

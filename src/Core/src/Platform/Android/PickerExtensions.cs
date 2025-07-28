@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateSelectedIndex(this MauiPicker platformPicker, IPicker picker) =>
 			UpdatePicker(platformPicker, picker);
-		
+
 		internal static void UpdatePicker(this MauiPicker platformPicker, IPicker picker)
 		{
 			platformPicker.Hint = picker.Title;

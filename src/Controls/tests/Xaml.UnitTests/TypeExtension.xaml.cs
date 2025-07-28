@@ -54,7 +54,7 @@ public partial class TypeExtension : ContentPage
 
 		[Test]
 		//https://bugzilla.xamarin.com/show_bug.cgi?id=55027
-		public void TypeExtensionSupportsNamespace([Values] XamlInflator 	inflator)
+		public void TypeExtensionSupportsNamespace([Values] XamlInflator inflator)
 		{
 			var page = new TypeExtension(inflator);
 			var button = page.button0;

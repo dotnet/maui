@@ -29,7 +29,8 @@ public partial class Pr3384 : ContentPage
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test] public void RecyclingStrategyIsHandled([Values] XamlInflator inflator)
+		[Test]
+		public void RecyclingStrategyIsHandled([Values] XamlInflator inflator)
 		{
 			var p = new Pr3384(inflator);
 			Assert.AreEqual(ListViewCachingStrategy.RecycleElement, p.listView.CachingStrategy);

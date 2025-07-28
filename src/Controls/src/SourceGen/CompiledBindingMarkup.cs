@@ -5,8 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using Microsoft.CodeAnalysis;
-using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.BindingSourceGen;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -215,7 +215,7 @@ internal struct CompiledBindingMarkup
 							&& property.Parameters.Length == 1
 							&& property.Parameters[0].Type.SpecialType == SpecialType.System_Int32);
 				}
-				
+
 				indexer ??= previousPartType
 					.GetAllProperties(indexerName, _context)
 					.FirstOrDefault(property =>

@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			public bool last = last;
 			public string? name = name;
 			public string? strValue = strValue;
-			 public object? value = value;
+			public object? value = value;
 		}
 
 #if NET
@@ -150,11 +150,11 @@ namespace Microsoft.Maui.Controls.Xaml
 				name = null;
 			}
 
-			return new Property { last = next == '}', name = name, strValue = str_value};
+			return new Property { last = next == '}', name = name, strValue = str_value };
 		}
 #if NET
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
-#endif		
+#endif
 		Property ParsePropertyExpression(string? prop, IServiceProvider serviceProvider, ref string remaining)
 		{
 			bool last;

@@ -18,12 +18,12 @@ public partial class Bz53381 : ContentView
 	{
 		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 
-    		[TearDown]
-    		public void TearDown()
-    		{
-    			Application.Current = null;
-    			DispatcherProvider.SetCurrent(null);
-    		}
+		[TearDown]
+		public void TearDown()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
+		}
 
 		public void ControlTemplateAsImplicitAppLevelStyles([Values] XamlInflator inflator)
 		{

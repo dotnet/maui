@@ -17,7 +17,8 @@ public partial class ColorConverter : ContentPage
 	[TestFixture]
 	public class Tests
 	{
-		[Test] public void StringsAreValidAsColor([Values]XamlInflator inflator)
+		[Test]
+		public void StringsAreValidAsColor([Values] XamlInflator inflator)
 		{
 			var page = new ColorConverter(inflator);
 			page.BindingContext = new ColorConverterVM();

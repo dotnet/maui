@@ -12,7 +12,7 @@ public partial class Bz37306 : ContentPage
 	class Tests
 	{
 		[Test]
-		public void xStringInResourcesDictionaries([Values]XamlInflator inflator)
+		public void xStringInResourcesDictionaries([Values] XamlInflator inflator)
 		{
 			var layout = new Bz37306(inflator);
 			Assert.AreEqual("Mobile App", layout.Resources["AppName"]);

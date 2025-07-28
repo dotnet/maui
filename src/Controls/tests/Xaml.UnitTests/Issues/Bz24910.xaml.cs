@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		class Tests
 		{
 			[Test]
-			public void AllowNullableIntProperties([Values]XamlInflator inflator)
+			public void AllowNullableIntProperties([Values] XamlInflator inflator)
 			{
 				var page = new Bz24910(inflator);
 				var control = page.control0;
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Test]
-			public void AllowNullableDoubleProperties([Values]XamlInflator inflator)
+			public void AllowNullableDoubleProperties([Values] XamlInflator inflator)
 			{
 				var page = new Bz24910(inflator);
 				var control = page.control0;
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Test]
-			public void ConversionForNullable([Values]XamlInflator inflator)
+			public void ConversionForNullable([Values] XamlInflator inflator)
 			{
 				var page = new Bz24910(inflator);
 				var control = page.control1;
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Test]
-			public void AllowNull([Values]XamlInflator inflator)
+			public void AllowNull([Values] XamlInflator inflator)
 			{
 				var page = new Bz24910(inflator);
 				var control = page.control2;
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Test]
-			public void AllowBindingToNullable([Values]XamlInflator inflator)
+			public void AllowBindingToNullable([Values] XamlInflator inflator)
 			{
 				var page = new Bz24910(inflator);
 				var control = page.control3;
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Test]
-			public void NullableAttachedBPs([Values]XamlInflator inflator)
+			public void NullableAttachedBPs([Values] XamlInflator inflator)
 			{
 				var page = new Bz24910(inflator);
 				var control = page.control4;
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Test]
-			public void AllowNonBindableNullable([Values]XamlInflator inflator)
+			public void AllowNonBindableNullable([Values] XamlInflator inflator)
 			{
 				var page = new Bz24910(inflator);
 				var control = page.control5;

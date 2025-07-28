@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 			[Test]
-			public void BaseClassIdentifiersAreValidForResources([Values]XamlInflator inflator)
+			public void BaseClassIdentifiersAreValidForResources([Values] XamlInflator inflator)
 			{
 				var layout = new Bz27968(inflator);
 				Assert.That(layout.Resources["listView"], Is.TypeOf<ListView>());

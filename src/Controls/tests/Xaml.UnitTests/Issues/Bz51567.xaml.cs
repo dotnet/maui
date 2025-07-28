@@ -14,7 +14,7 @@ public partial class Bz51567 : ContentPage
 	class Tests
 	{
 		[Test]
-		public void SetterWithElementValue([Values]XamlInflator inflator)
+		public void SetterWithElementValue([Values] XamlInflator inflator)
 		{
 			var page = new Bz51567(inflator);
 			var style = page.Resources["ListText"] as Style;

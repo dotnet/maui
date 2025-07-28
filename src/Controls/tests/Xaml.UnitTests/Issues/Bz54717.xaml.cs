@@ -17,7 +17,8 @@ public partial class Bz54717 : ContentPage
 	{
 		[TearDown] public void TearDown() => Application.Current = null;
 
-		[Test] public void FooBz54717([Values]XamlInflator inflator)
+		[Test]
+		public void FooBz54717([Values] XamlInflator inflator)
 		{
 			Application.Current = new MockApplication
 			{

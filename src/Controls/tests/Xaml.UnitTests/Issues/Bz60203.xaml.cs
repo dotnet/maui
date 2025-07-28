@@ -12,7 +12,7 @@ public partial class Bz60203 : ContentPage
 	class Tests
 	{
 		[Test]
-		public void CanCompileMultiTriggersWithDifferentConditions([Values]XamlInflator inflator)
+		public void CanCompileMultiTriggersWithDifferentConditions([Values] XamlInflator inflator)
 		{
 			var layout = new Bz60203(inflator);
 			Assert.That(layout.label.BackgroundColor, Is.EqualTo(BackgroundColorProperty.DefaultValue));

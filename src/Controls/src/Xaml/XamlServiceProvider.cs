@@ -322,7 +322,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 	public class XamlDataTypeProvider : IXamlDataTypeProvider
 	{
-		public XamlDataTypeProvider (string dataType) => this.dataType = dataType;
+		public XamlDataTypeProvider(string dataType) => this.dataType = dataType;
 
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #if !NETSTANDARD

@@ -1,14 +1,11 @@
 using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Xml;
-
-using Microsoft.Maui.Controls.Xaml;
-
-using Microsoft.CodeAnalysis;
-
 using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
+using System.Xml;
+using Microsoft.CodeAnalysis;
+using Microsoft.Maui.Controls.Xaml;
 
 
 namespace Microsoft.Maui.Controls.SourceGen;

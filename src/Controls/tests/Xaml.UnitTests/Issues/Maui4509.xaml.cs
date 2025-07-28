@@ -38,7 +38,7 @@ public partial class Maui4509 : ContentPage
 		public void OnPlatformAsCollectionElementAndroid([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
 #else
 		public void OnPlatformAsCollectionElementAndroid([Values] XamlInflator inflator)
-#endif	
+#endif
 		{
 			DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.Android));
 			var page = new Maui4509(inflator);

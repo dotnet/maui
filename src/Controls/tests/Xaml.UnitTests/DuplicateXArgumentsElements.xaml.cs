@@ -1,7 +1,7 @@
 using System.Linq;
 using NUnit.Framework;
 
-using static  Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -37,7 +37,7 @@ public partial class DuplicateXArgumentsElements : BindableObject
 	public DuplicateXArgumentsElements() => InitializeComponent();
 }
 """)
-					.RunMauiSourceGenerator(typeof(DuplicateXArgumentsElements));				
+					.RunMauiSourceGenerator(typeof(DuplicateXArgumentsElements));
 				Assert.That(result.Diagnostics.Any());
 			}
 		}

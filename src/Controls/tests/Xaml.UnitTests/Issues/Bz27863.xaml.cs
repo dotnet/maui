@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 			[Test]
-			public void DataTemplateInResourceDictionaries([Values]XamlInflator inflator)
+			public void DataTemplateInResourceDictionaries([Values] XamlInflator inflator)
 			{
 				var layout = new Bz27863(inflator);
 				var listview = layout.Resources["listview"] as ListView;

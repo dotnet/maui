@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			return new Bz34037Converter0();
 		}
 	}
-	
+
 	[AcceptEmptyServiceProvider]
 	public class Bz34037Converter1 : IValueConverter, IMarkupExtension
 	{
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 
 			[Test]
-			public void ConverterParameterOrderDoesNotMatters([Values]XamlInflator inflator)
+			public void ConverterParameterOrderDoesNotMatters([Values] XamlInflator inflator)
 			{
 				var layout = new Bz34037(inflator);
 				Assert.AreEqual(1, Bz34037Converter0.Invoked);

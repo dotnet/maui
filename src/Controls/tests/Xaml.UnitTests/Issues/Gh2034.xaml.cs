@@ -14,7 +14,7 @@ public partial class Gh2034 : ContentPage
 		public void Compiles([Values] XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
-			{	
+			{
 				MockCompiler.Compile(typeof(Gh2034));
 				Assert.Pass();
 			}

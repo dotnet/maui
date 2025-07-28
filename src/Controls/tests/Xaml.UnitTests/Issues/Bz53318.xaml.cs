@@ -7,7 +7,7 @@ public class Bz53318ListView : ListView
 	public Bz53318ListView([Parameter("CachingStrategy")] ListViewCachingStrategy cachingStrategy) : base(cachingStrategy) { }
 }
 
-[XamlProcessing(XamlInflator.Runtime|XamlInflator.SourceGen, true)]
+[XamlProcessing(XamlInflator.Runtime | XamlInflator.SourceGen, true)]
 public partial class Bz53318 : ContentPage
 {
 	public Bz53318() => InitializeComponent();

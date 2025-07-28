@@ -47,7 +47,8 @@ public partial class BindablePropertiesAccessModifiers : ContentPage
 		[SetUp] public void Setup() => Application.Current = new MockApplication();
 		[TearDown] public void TearDown() => Application.Current = null;
 
-		[Test] public void BindProperties([Values]XamlInflator inflator)
+		[Test]
+		public void BindProperties([Values] XamlInflator inflator)
 		{
 			var page = new BindablePropertiesAccessModifiers(inflator) { BindingContext = new BindablePropertiesAccessModifiersVM() };
 			Assert.AreEqual("Bar", page.AMC.GetValue(AccessModifiersControl.InternalBarProperty));

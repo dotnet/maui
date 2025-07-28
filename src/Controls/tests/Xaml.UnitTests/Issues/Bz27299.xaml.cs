@@ -37,13 +37,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			[SetUp] public void SetUp()
+			[SetUp]
+			public void SetUp()
 			{
 				Bz27299ViewModelLocator.Count = 0;
 			}
 
 			[Test]
-			public void ViewModelLocatorOnlyCalledOnce([Values]XamlInflator inflator)
+			public void ViewModelLocatorOnlyCalledOnce([Values] XamlInflator inflator)
 			{
 				Assert.AreEqual(0, Bz27299ViewModelLocator.Count);
 				var layout = new Bz27299(inflator);

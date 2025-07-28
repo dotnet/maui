@@ -30,7 +30,8 @@ public partial class Maui21757_2
 			{
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui21757_2));
 				Assert.That(result.Diagnostics, Is.Empty);
-			} else if (inflator == XamlInflator.XamlC)
+			}
+			else if (inflator == XamlInflator.XamlC)
 				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui21757_2)));
 			else
 				Assert.Ignore("Only XamlC and SourceGen support this feature");

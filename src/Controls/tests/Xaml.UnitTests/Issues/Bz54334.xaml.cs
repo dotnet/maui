@@ -60,8 +60,8 @@ public partial class Bz54334 : ContentPage
 		}
 
 		[Test]
-//		[TestCase(false, Ignore = "This is failing on CI on macOS: https://github.com/dotnet/maui/issues/15054")]
-		public void FooBz54334([Values]XamlInflator inflator)
+		//		[TestCase(false, Ignore = "This is failing on CI on macOS: https://github.com/dotnet/maui/issues/15054")]
+		public void FooBz54334([Values] XamlInflator inflator)
 		{
 			var app = Application.Current = new Bz54334App(inflator);
 			var page = app.MainPage as Bz54334;

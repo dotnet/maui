@@ -210,12 +210,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								ca => ca.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute")) != null)
 					{
 						var inflator = (XamlInflator)xamlProcessingAttr.ConstructorArguments[0].Value;
-						var generateInflatorSwitch =   xamlProcessingAttr.ConstructorArguments.Count > 1
+						var generateInflatorSwitch = xamlProcessingAttr.ConstructorArguments.Count > 1
 													&& (bool)xamlProcessingAttr.ConstructorArguments[1].Value;
 						assemblyInflatorOptions = (generateInflatorSwitch, inflator);
-						if (!generateInflatorSwitch)						
+						if (!generateInflatorSwitch)
 							skipassembly = (inflator & XamlInflator.XamlC) != XamlInflator.XamlC && inflator != XamlInflator.Default;
-						
+
 					}
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 									ca => ca.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute")) != null)
 						{
 							var inflator = (XamlInflator)xamlProcessingAttr.ConstructorArguments[0].Value;
-							var generateInflatorSwitch =   xamlProcessingAttr.ConstructorArguments.Count > 1
+							var generateInflatorSwitch = xamlProcessingAttr.ConstructorArguments.Count > 1
 														&& (bool)xamlProcessingAttr.ConstructorArguments[1].Value;
 							moduleInflatorOptions = (generateInflatorSwitch, inflator);
 							if (!generateInflatorSwitch)
@@ -307,9 +307,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 										ca => ca.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute")) != null)
 							{
 								var inflator = (XamlInflator)xamlProcessingAttr.ConstructorArguments[0].Value;
-								var generateInflatorSwitch =   xamlProcessingAttr.ConstructorArguments.Count > 1
+								var generateInflatorSwitch = xamlProcessingAttr.ConstructorArguments.Count > 1
 															&& (bool)xamlProcessingAttr.ConstructorArguments[1].Value;
-				
+
 								typeInflatorOptions = (generateInflatorSwitch, inflator);
 								if (generateInflatorSwitch)
 								{
@@ -336,7 +336,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 										skiptype = false;
 								}
 								else
-									LoggingHelper.LogWarning($"{new string(' ', 6)}Type {typeDef.Name} has both XamlCompilationAttribute and XamlProcessingAttribute. XamlCompilationAttribute will be ignored.");							
+									LoggingHelper.LogWarning($"{new string(' ', 6)}Type {typeDef.Name} has both XamlCompilationAttribute and XamlProcessingAttribute. XamlCompilationAttribute will be ignored.");
 							}
 #pragma warning restore CS0618 // Type or member is obsolete
 

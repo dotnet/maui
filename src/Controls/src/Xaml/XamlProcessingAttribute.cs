@@ -10,8 +10,8 @@ namespace Microsoft.Maui.Controls.Xaml;
 #endif
 public sealed class XamlProcessingAttribute : Attribute
 {
-	public XamlProcessingAttribute(XamlInflator inflator) 
-	{ 
+	public XamlProcessingAttribute(XamlInflator inflator)
+	{
 		if ((inflator & (inflator - 1)) != 0) //check if only one bit is set (http://graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2
 			throw new ArgumentException("Only one option can be set at a time");
 		XamlInflator = inflator;

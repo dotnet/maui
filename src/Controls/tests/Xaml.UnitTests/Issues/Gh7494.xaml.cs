@@ -23,7 +23,7 @@ public partial class Gh7494 : ContentPage
 			var layout = new Gh7494(inflator);
 			var view = layout.Content as Gh7494Content;
 			var templatedLabel = ((StackLayout)(view as IVisualTreeElement).GetVisualChildren()[0]).Children[0] as Label;
-			
+
 			Assert.That(templatedLabel.FormattedText.Spans[0].Text, Is.EqualTo(view.Title));
 		}
 	}

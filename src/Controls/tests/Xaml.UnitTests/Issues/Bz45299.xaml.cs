@@ -160,7 +160,7 @@ public partial class Bz45299 : ContentPage
 	class Tests
 	{
 		[Test]
-		public void XamlCCustomTypeConverter([Values]XamlInflator inflator)
+		public void XamlCCustomTypeConverter([Values] XamlInflator inflator)
 		{
 			var p = new Bz45299(inflator);
 			Assert.AreEqual(0d, p.ctrl.PortraitLayout.Spacing.Value);

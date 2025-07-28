@@ -15,15 +15,17 @@ public partial class Border : ContentPage
 	[TestFixture]
 	public class Tests
 	{
-		[Test] public void InitializeStrokeShape([Values]XamlInflator inflator)
+		[Test]
+		public void InitializeStrokeShape([Values] XamlInflator inflator)
 		{
 			var layout = new Border(inflator);
 			Assert.NotNull(layout.Border0.StrokeShape);
 			Assert.NotNull(layout.Border1.StrokeShape);
-			Assert.NotNull(layout.Border2.StrokeShape); 
+			Assert.NotNull(layout.Border2.StrokeShape);
 		}
 
-		[Test] public void BindingToStrokeShapeWorks([Values]XamlInflator inflator)
+		[Test]
+		public void BindingToStrokeShapeWorks([Values] XamlInflator inflator)
 		{
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			var layout = new Border(inflator);

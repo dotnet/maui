@@ -53,7 +53,8 @@ public partial class Bz48554 : ContentPage
 	[TestFixture]
 	class Tests
 	{
-		[Test] public void XStaticWithXamlC([Values]XamlInflator inflator)
+		[Test]
+		public void XStaticWithXamlC([Values] XamlInflator inflator)
 		{
 			Bz48554 page = null;
 			Assert.DoesNotThrow(() => page = new Bz48554(inflator));

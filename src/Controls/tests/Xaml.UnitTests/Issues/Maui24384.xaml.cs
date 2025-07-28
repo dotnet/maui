@@ -24,7 +24,8 @@ public partial class Maui24384 : ContentPage
 
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test] public void ImmutableToIList([Values] XamlInflator inflator)
+		[Test]
+		public void ImmutableToIList([Values] XamlInflator inflator)
 		{
 			var page = new Maui24384(inflator);
 			var picker = page.Content as Picker;

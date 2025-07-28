@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			[Test]
-			public void EscapedStringsAreTreatedAsLiterals([Values]XamlInflator inflator)
+			public void EscapedStringsAreTreatedAsLiterals([Values] XamlInflator inflator)
 			{
 				var layout = new StringLiterals(inflator);
 				Assert.AreEqual("Foo", layout.label0.Text);

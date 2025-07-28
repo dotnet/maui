@@ -46,7 +46,8 @@ public partial class Bz47703 : ContentPage
 	[TestFixture]
 	class Tests
 	{
-		[Test] public void IValueConverterOnBindings([Values]XamlInflator inflator)
+		[Test]
+		public void IValueConverterOnBindings([Values] XamlInflator inflator)
 		{
 			var page = new Bz47703(inflator);
 			page.BindingContext = new { Name = "Foo" };

@@ -32,7 +32,7 @@ public partial class GenericsTests : ContentPage
 		}
 
 		[Test]
-		public void GenericSupportOnXaml2009([Values]XamlInflator inflator)
+		public void GenericSupportOnXaml2009([Values] XamlInflator inflator)
 		{
 			var layout = new GenericsTests(inflator);
 			Assert.True(layout.Resources.ContainsKey("genericButtonList"));
@@ -42,7 +42,7 @@ public partial class GenericsTests : ContentPage
 		}
 
 		[Test]
-		public void FindGenericByName([Values]XamlInflator inflator)
+		public void FindGenericByName([Values] XamlInflator inflator)
 		{
 			var layout = new GenericsTests(inflator);
 			var list = layout.FindByName<List<Button>>("myList");
@@ -57,7 +57,7 @@ public partial class GenericsTests : ContentPage
 		}
 
 		[Test]
-		public void TestGenericParsing([Values]XamlInflator inflator)
+		public void TestGenericParsing([Values] XamlInflator inflator)
 		{
 			var layout = new GenericsTests(inflator);
 
@@ -77,7 +77,7 @@ public partial class GenericsTests : ContentPage
 		}
 
 		[Test]
-		public void TestXamlPrimitives([Values]XamlInflator inflator)
+		public void TestXamlPrimitives([Values] XamlInflator inflator)
 		{
 			var layout = new GenericsTests(inflator);
 			var list = layout.Resources["stringList"];

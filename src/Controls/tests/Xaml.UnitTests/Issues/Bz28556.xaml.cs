@@ -17,7 +17,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			[Test] public void SettersAppliedBeforeTriggers([Values]XamlInflator inflator)
+			[Test]
+			public void SettersAppliedBeforeTriggers([Values] XamlInflator inflator)
 			{
 				var layout = new Bz28556(inflator);
 

@@ -24,7 +24,8 @@ public partial class Bz42531 : ContentPage
 		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		[Test] public void RDInDataTemplates([Values]XamlInflator inflator)
+		[Test]
+		public void RDInDataTemplates([Values] XamlInflator inflator)
 		{
 			var p = new Bz42531(inflator);
 			ListView lv = p.lv;

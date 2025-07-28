@@ -26,7 +26,8 @@ public partial class Bz45179 : ContentPage
 	[TestFixture]
 	class Tests
 	{
-		[Test] public void DTDoNotInstantiateTheirContent([Values]XamlInflator inflator)
+		[Test]
+		public void DTDoNotInstantiateTheirContent([Values] XamlInflator inflator)
 		{
 			Bz45179_0.creator_count = 0;
 			Assume.That(Bz45179_0.creator_count, Is.EqualTo(0));

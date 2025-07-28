@@ -62,15 +62,16 @@ static class GeneratorHelpers
 		};
 	}
 
-	public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem? , AssemblyCaches) itemAdnCaches, CancellationToken cancellationToken)
+	public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyCaches) itemAdnCaches, CancellationToken cancellationToken)
 	{
-		var(projectItem, assemblyCaches) = itemAdnCaches;
+		var (projectItem, assemblyCaches) = itemAdnCaches;
 		var text = projectItem?.AdditionalText.GetText(cancellationToken);
 		if (text == null)
 		{
 			return null;
 		}
-		try { 
+		try
+		{
 			return new XamlProjectItemForIC(projectItem!, ParseXaml(text.ToString(), assemblyCaches));
 		}
 		catch (Exception e)
@@ -80,7 +81,7 @@ static class GeneratorHelpers
 	}
 
 	static SGRootNode? ParseXaml(string xaml, AssemblyCaches assemblyCaches)
-    {
+	{
 		List<string> warningDisableList = [];
 		var nsmgr = new XmlNamespaceManager(new NameTable());
 		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
@@ -93,13 +94,13 @@ static class GeneratorHelpers
 		}
 		using var reader = XmlReader.Create(new StringReader(xaml),
 											new XmlReaderSettings { ConformanceLevel = assemblyCaches.AllowImplicitXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
-											new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None));	
-        {
-            while (reader.Read())
-            {
-                //Skip until element
-                if (reader.NodeType == XmlNodeType.Whitespace)
-                    continue;
+											new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None));
+		{
+			while (reader.Read())
+			{
+				//Skip until element
+				if (reader.NodeType == XmlNodeType.Whitespace)
+					continue;
 				if (reader.NodeType == XmlNodeType.ProcessingInstruction)
 				{
 					if (reader.Name != "xaml-comp")
@@ -110,26 +111,26 @@ static class GeneratorHelpers
 						reader.Value.Split(' ').Select(v => v.Trim()).Where(w => w.StartsWith("warning-disable")).ToList().ForEach(s =>
 							warningDisableList.AddRange(s.Split('=').Last().Trim('"').Split(',').Select(s => s.Trim())));
 					}
-					continue;						
+					continue;
 				}
 
-                if (reader.NodeType != XmlNodeType.Element)
-                {
-                    Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
-                    continue;
-                }
+				if (reader.NodeType != XmlNodeType.Element)
+				{
+					Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
+					continue;
+				}
 
 				var rootnode = new SGRootNode(new XmlType(reader.NamespaceURI, reader.Name, XamlParser.GetTypeArguments(reader)), /*typeReference, */(IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition)
 				{
 					DisableWarnings = warningDisableList,
 				};
-                XamlParser.ParseXaml(rootnode, reader);
+				XamlParser.ParseXaml(rootnode, reader);
 
-                return rootnode;
-            }
-        }
-        return null;
-    }
+				return rootnode;
+			}
+		}
+		return null;
+	}
 
 	public static XamlProjectItemForCB? ComputeXamlProjectItemForCB((ProjectItem?, AssemblyCaches) itemAndCaches, CancellationToken cancellationToken)
 	{
@@ -145,9 +146,12 @@ static class GeneratorHelpers
 
 		XmlNode? root;
 		XmlNamespaceManager nsmgr;
-		try {
+		try
+		{
 			(root, nsmgr) = LoadXmlDocument(text, xmlnsCache, cancellationToken);
-		} catch (Exception xe) {
+		}
+		catch (Exception xe)
+		{
 			return new XamlProjectItemForCB(projectItem!, xe);
 		}
 
@@ -187,14 +191,14 @@ static class GeneratorHelpers
 											new XmlReaderSettings { ConformanceLevel = assemblyCaches.AllowImplicitXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
 											new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None));
 
-		
+
 		var xmlDoc = new XmlDocument();
 		xmlDoc.Load(reader);
 
 
 #pragma warning disable CS0618 // Type or member is obsolete
-			if (xmlDoc.DocumentElement.NamespaceURI == XamlParser.FormsUri)
-				throw new Exception($"{XamlParser.FormsUri} is not a valid namespace. Use {XamlParser.MauiUri} instead");
+		if (xmlDoc.DocumentElement.NamespaceURI == XamlParser.FormsUri)
+			throw new Exception($"{XamlParser.FormsUri} is not a valid namespace. Use {XamlParser.MauiUri} instead");
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		cancellationToken.ThrowIfCancellationRequested();
@@ -384,10 +388,13 @@ static class GeneratorHelpers
 	public static SyntaxTree? GetSyntaxTree((XamlProjectItemForCB? xamlItem, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, Compilation compilation) tuple, CancellationToken cancellationToken)
 	{
 		var options = tuple.compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions;
-		try {
+		try
+		{
 			var code = CodeBehindCodeWriter.GenerateXamlCodeBehind(tuple.xamlItem, tuple.compilation, null, cancellationToken, tuple.xmlnsCache, tuple.typeCache);
 			return CSharpSyntaxTree.ParseText(code, options: options, cancellationToken: cancellationToken);
-		} catch (Exception) {
+		}
+		catch (Exception)
+		{
 		}
 		return null;
 	}

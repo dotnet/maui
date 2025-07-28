@@ -1,17 +1,14 @@
 using System;
+using System.CodeDom.Compiler;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
-
-using Microsoft.Maui.Controls.Xaml;
-
+using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-
-using System.CodeDom.Compiler;
-using System.Collections.Generic;
-using System.Xml;
-using System.Collections.Immutable;
-using System.Collections;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -109,7 +106,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 			return;
 		}
 
-		if (   NodeSGExtensions.GetKnownEarlyMarkupExtensions(Context).TryGetValue(type, out var provideValue)
+		if (NodeSGExtensions.GetKnownEarlyMarkupExtensions(Context).TryGetValue(type, out var provideValue)
 			&& provideValue(node, Context, out var returnType, out var value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
@@ -188,7 +185,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		ctor ??= type.InstanceConstructors.FirstOrDefault(c => c.Parameters.Length == 0);
 
 		//is there an implicit operator from a string ? (XamlC only supports from string, but this could be extended)
-		var implicitOperator = type.GetMembers().OfType<IMethodSymbol>().Where(m=> m.MethodKind == MethodKind.Conversion && m.Parameters.Length == 1 && m.Parameters[0].Type.SpecialType == SpecialType.System_String).FirstOrDefault();
+		var implicitOperator = type.GetMembers().OfType<IMethodSymbol>().Where(m => m.MethodKind == MethodKind.Conversion && m.Parameters.Length == 1 && m.Parameters[0].Type.SpecialType == SpecialType.System_String).FirstOrDefault();
 
 		bool isColor = type.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color"), SymbolEqualityComparer.Default);
 
@@ -205,7 +202,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 			return;
 		}
 		//TODO we could also check if there's a TypeConverter, but we have no test (so no need?) for it
-		
+
 		else if (node.CollectionItems.Count == 1
 				&& node.CollectionItems[0] is ValueNode valueNode1
 				&& implicitOperator != null)

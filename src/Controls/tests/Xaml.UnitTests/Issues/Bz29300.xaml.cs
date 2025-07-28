@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		class Tests
 		{
 			[Test]
-			public void AccessUserDefinedBindableProperties([Values]XamlInflator inflator)
+			public void AccessUserDefinedBindableProperties([Values] XamlInflator inflator)
 			{
 				var layout = new Bz29300(inflator);
 				Assert.AreEqual(4, layout.dummy.NumOfRepeat);

@@ -18,7 +18,7 @@ public partial class BindingDiagnosticsTests : ContentPage
 	public class Tests
 	{
 		bool enableDiagnosticsInitialState;
-		
+
 		[SetUp]
 		public void Setup()
 		{
@@ -29,7 +29,7 @@ public partial class BindingDiagnosticsTests : ContentPage
 		[TearDown]
 		public void TearDown()
 		{
-			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;			
+			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 		}
 
 		[Test]

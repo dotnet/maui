@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Handlers
 				_dialog.Hide();
 				_dialog = null;
 			}
-			
+
 			platformView.ShowPicker = null;
 			platformView.HidePicker = null;
 		}
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 
 			var dialog = new TimePickerDialog(Context!, onTimeSetCallback, hour, minute, Use24HourView);
 			dialog.DismissEvent += OnDialogDismiss;
-			
+
 			return dialog;
 		}
 
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Handlers
 					timePickerHandler.HidePickerDialog();
 			}
 		}
-		
+
 		void ShowPickerDialog()
 		{
 			if (VirtualView is null)
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
-			
+
 			var hour = time?.Hours ?? 0;
 			var minute = time?.Minutes ?? 0;
 

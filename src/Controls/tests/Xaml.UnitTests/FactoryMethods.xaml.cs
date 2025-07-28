@@ -45,28 +45,28 @@ public partial class FactoryMethods : ContentPage
 	public class Tests
 	{
 		[Test]
-		public void TestDefaultCtor([Values]XamlInflator inflator)
+		public void TestDefaultCtor([Values] XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
 			Assert.AreEqual("default ctor", layout.v0.Content.Content);
 		}
 
 		[Test]
-		public void TestStringCtor([Values]XamlInflator inflator)
+		public void TestStringCtor([Values] XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
 			Assert.AreEqual("alternate ctor foobar", layout.v1.Content.Content);
 		}
 
 		[Test]
-		public void TestIntCtor([Values]XamlInflator inflator)
+		public void TestIntCtor([Values] XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
 			Assert.AreEqual("int ctor 42", layout.v2.Content.Content);
 		}
 
 		[Test]
-		public void TestArgumentlessFactoryMethod([Values]XamlInflator inflator)
+		public void TestArgumentlessFactoryMethod([Values] XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 				MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(FactoryMethods));
@@ -76,35 +76,35 @@ public partial class FactoryMethods : ContentPage
 		}
 
 		[Test]
-		public void TestFactoryMethod([Values]XamlInflator inflator)
+		public void TestFactoryMethod([Values] XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
 			Assert.AreEqual("factory foo42", layout.v4.Content.Content);
 		}
 
 		[Test]
-		public void TestFactoryMethodParametersOrder([Values]XamlInflator inflator)
+		public void TestFactoryMethodParametersOrder([Values] XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
 			Assert.AreEqual("factory 42foo", layout.v5.Content.Content);
 		}
 
 		[Test]
-		public void TestCtorWithxStatic([Values]XamlInflator inflator)
+		public void TestCtorWithxStatic([Values] XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
 			Assert.AreEqual("alternate ctor Property", layout.v6.Content.Content);
 		}
 
 		[Test]
-		public void TestCtorWithxStaticAttribute([Values]XamlInflator inflator)
+		public void TestCtorWithxStaticAttribute([Values] XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
 			Assert.AreEqual("alternate ctor Property", layout.v7.Content.Content);
 		}
 
 		[Test]
-		public void TestCtorWithArrayParameter([Values]XamlInflator inflator)
+		public void TestCtorWithArrayParameter([Values] XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
 			Assert.AreEqual("Foo Bar", layout.v8.Content.Content);

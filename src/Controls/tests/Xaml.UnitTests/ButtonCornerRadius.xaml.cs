@@ -14,7 +14,8 @@ public partial class ButtonCornerRadius : ContentPage
 		[SetUp] public void Setup() => Application.Current = new MockApplication();
 		[TearDown] public void TearDown() => Application.Current = null;
 
-		[Test] public void EscapedStringsAreTreatedAsLiterals([Values]XamlInflator inflator)
+		[Test]
+		public void EscapedStringsAreTreatedAsLiterals([Values] XamlInflator inflator)
 		{
 			var layout = new ButtonCornerRadius(inflator);
 			Assert.AreEqual(0, layout.Button0.CornerRadius);

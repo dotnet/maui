@@ -55,11 +55,11 @@ static class XmlTypeExtensions
 		// 		symbol = null;
 		// 		if (reportDiagnostic is not null)
 		// 			reportDiagnostic(Diagnostic.Create(Descriptors.DuplicateTypeError, null, $"{xmlType.NamespaceUri}:{xmlType.Name}"));
-								
+
 		// 		return false;
 		// 	}
 		// }
-	
+
 		var xmlnsDefinitions = xmlnsCache.XmlnsDefinitions;
 		var symbols = xmlType.GetTypeReferences(
 			xmlnsDefinitions,
@@ -96,10 +96,10 @@ static class XmlTypeExtensions
 			return false;
 
 		if (symbol.IsGenericType && xmlType.TypeArguments is not null)
-			{
-				var typeArguments = xmlType.TypeArguments.Select(typeArg => typeArg.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache)!).ToArray();
-				symbol = symbol.Construct(typeArguments);
-			}
+		{
+			var typeArguments = xmlType.TypeArguments.Select(typeArg => typeArg.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache)!).ToArray();
+			symbol = symbol.Construct(typeArguments);
+		}
 		return true;
 	}
 
@@ -113,7 +113,7 @@ static class XmlTypeExtensions
 	}
 
 	//FIXME should return a ITypeSymbol, and properly construct it for generics. globalalias param should go away
-    // public static ITypeSymbol GetTypeSymbol(this XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, bool globalAlias = true)
+	// public static ITypeSymbol GetTypeSymbol(this XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, bool globalAlias = true)
 	// {
 	// 	if (typeCache.TryGetValue(xmlType, out string returnType))
 	// 	{
@@ -156,46 +156,46 @@ static class XmlTypeExtensions
 		return xmlType.Name == name && xmlType.NamespaceUri == namespaceUri;
 	}
 
-// 	static string GetTypeNameFromCustomNamespace(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache)
-// 	{
-// #nullable disable
-// 		string typeName = xmlType.GetTypeReference<string>(xmlnsCache.XmlnsDefinitions, null,
-// 			(typeInfo) =>
-// 			{
-// 				string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
-// 				string fullName = $"{typeInfo.clrNamespace}.{typeInfo.typeName}";
-// 				IList<INamedTypeSymbol> types = compilation.GetTypesByMetadataName(fullName);
+	// 	static string GetTypeNameFromCustomNamespace(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache)
+	// 	{
+	// #nullable disable
+	// 		string typeName = xmlType.GetTypeReference<string>(xmlnsCache.XmlnsDefinitions, null,
+	// 			(typeInfo) =>
+	// 			{
+	// 				string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
+	// 				string fullName = $"{typeInfo.clrNamespace}.{typeInfo.typeName}";
+	// 				IList<INamedTypeSymbol> types = compilation.GetTypesByMetadataName(fullName);
 
-// 				if (types.Count == 0)
-// 				{
-// 					return null;
-// 				}
+	// 				if (types.Count == 0)
+	// 				{
+	// 					return null;
+	// 				}
 
-// 				foreach (INamedTypeSymbol type in types)
-// 				{
-// 					// skip over types that are not in the correct assemblies
-// 					if (type.ContainingAssembly.Identity.Name != typeInfo.assemblyName)
-// 					{
-// 						continue;
-// 					}
+	// 				foreach (INamedTypeSymbol type in types)
+	// 				{
+	// 					// skip over types that are not in the correct assemblies
+	// 					if (type.ContainingAssembly.Identity.Name != typeInfo.assemblyName)
+	// 					{
+	// 						continue;
+	// 					}
 
-// 					if (!type.IsPublicOrVisibleInternal(xmlnsCache.InternalsVisible))
-// 					{
-// 						continue;
-// 					}
+	// 					if (!type.IsPublicOrVisibleInternal(xmlnsCache.InternalsVisible))
+	// 					{
+	// 						continue;
+	// 					}
 
-// 					int i = fullName.IndexOf('`');
-// 					if (i > 0)
-// 					{
-// 						fullName = fullName.Substring(0, i);
-// 					}
-// 					return fullName;
-// 				}
+	// 					int i = fullName.IndexOf('`');
+	// 					if (i > 0)
+	// 					{
+	// 						fullName = fullName.Substring(0, i);
+	// 					}
+	// 					return fullName;
+	// 				}
 
-// 				return null;
-// 			});
+	// 				return null;
+	// 			});
 
-// 		return typeName;
-// #nullable enable
-// 	}
+	// 		return typeName;
+	// #nullable enable
+	// 	}
 }

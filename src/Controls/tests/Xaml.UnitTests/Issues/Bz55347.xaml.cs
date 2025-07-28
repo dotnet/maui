@@ -15,7 +15,8 @@ public partial class Bz55347 : ContentPage
 	{
 		[TearDown] public void TearDown() => Application.Current = null;
 
-		[Test] public void PaddingThicknessResource([Values]XamlInflator inflator)
+		[Test]
+		public void PaddingThicknessResource([Values] XamlInflator inflator)
 		{
 			Application.Current = new MockApplication
 			{

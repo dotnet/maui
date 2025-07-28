@@ -18,12 +18,12 @@ namespace Microsoft.Maui.Controls.Xaml
 	[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Module | AttributeTargets.Class, Inherited = false)]
 	public sealed class XamlCompilationAttribute : Attribute
 	{
-		public XamlCompilationAttribute(XamlCompilationOptions xamlCompilationOptions) 
-		{ 
+		public XamlCompilationAttribute(XamlCompilationOptions xamlCompilationOptions)
+		{
 			XamlCompilationOptions = xamlCompilationOptions;
 		}
 
-		public XamlCompilationOptions XamlCompilationOptions { get; set;}
+		public XamlCompilationOptions XamlCompilationOptions { get; set; }
 	}
 
 	static class XamlCExtensions

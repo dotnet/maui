@@ -11,12 +11,12 @@ public partial class DataTemplateExtension : ContentPage
 	class Tests
 	{
 		[Test]
-		public void DataTemplateExtension([Values]XamlInflator inflator)
+		public void DataTemplateExtension([Values] XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(DataTemplateExtension));
-			}	
+			}
 			var layout = new DataTemplateExtension(inflator);
 			var content = layout.Resources["content"] as ShellContent;
 			var template = content.ContentTemplate;

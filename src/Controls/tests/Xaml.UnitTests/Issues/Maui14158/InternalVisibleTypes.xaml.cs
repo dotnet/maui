@@ -12,7 +12,7 @@ public partial class InternalVisibleTypes : ContentPage
 	class Tests
 	{
 		[Test]
-		public void VerifyCorrectTypesUsed([Values]XamlInflator inflator)
+		public void VerifyCorrectTypesUsed([Values] XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(InternalVisibleTypes)));

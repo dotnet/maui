@@ -38,7 +38,8 @@ public partial class Bz53350
 			Application.Current = null;
 		}
 
-		[Test] public void PropertiesWithGenericType([Values]XamlInflator inflator)
+		[Test]
+		public void PropertiesWithGenericType([Values] XamlInflator inflator)
 		{
 			var layout = new Bz53350(inflator);
 			Assert.That(layout.content.SomeBP, Is.EqualTo("Foo"));

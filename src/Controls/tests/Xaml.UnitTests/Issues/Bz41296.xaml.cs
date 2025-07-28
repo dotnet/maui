@@ -17,7 +17,8 @@ public partial class Bz41296 : ContentPage
 	[TestFixture]
 	class Tests
 	{
-		[Test] public void MarkupExtensionInDefaultNamespace([Values]XamlInflator inflator)
+		[Test]
+		public void MarkupExtensionInDefaultNamespace([Values] XamlInflator inflator)
 		{
 			var layout = new Bz41296(inflator);
 			Assert.AreEqual("FooBar", layout.TestLabel.Text.ToString());

@@ -1,7 +1,7 @@
 using System.Linq;
 using NUnit.Framework;
 
-using static  Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 

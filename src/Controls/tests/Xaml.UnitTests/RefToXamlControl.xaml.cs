@@ -31,9 +31,9 @@ public partial class RefToXamlControl : ContentPage
 		{
 			var page = new RefToXamlControl(inflator);
 			Assert.That(page.Content, Is.TypeOf<CustomButtonNoBaseClass>());
-                
+
 		}
-        static string GetThisFilePath([System.Runtime.CompilerServices.CallerFilePath] string path = null) => path ?? string.Empty;
+		static string GetThisFilePath([System.Runtime.CompilerServices.CallerFilePath] string path = null) => path ?? string.Empty;
 
 	}
 }
