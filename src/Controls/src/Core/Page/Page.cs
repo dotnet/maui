@@ -265,11 +265,15 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
 		{
-			// Use new SafeAreaElement method
-			var regionForEdge = SafeAreaElement.GetEdgeValue(this, edge);
-
-			// For Page (but not ContentPage), return as-is
-			return regionForEdge;
+			var ignoreSafeArea = ((ISafeAreaView)this).IgnoreSafeArea;
+			if (ignoreSafeArea)
+			{
+				return SafeAreaRegions.None; // If legacy says "ignore", return None (edge-to-edge)
+			}
+			else
+			{
+				return SafeAreaRegions.Container; // If legacy says "don't ignore", return Container
+			}
 		}
 
 		/// <summary>
