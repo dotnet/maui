@@ -5,13 +5,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public class Unreported008View : ContentView
 {
-    public static readonly BindableProperty DateProperty = BindableProperty.Create(nameof(Date), typeof(DateTime?), typeof(Unreported008View), null);
+	public static readonly BindableProperty DateProperty = BindableProperty.Create(nameof(Date), typeof(DateTime?), typeof(Unreported008View), null);
 
-    public DateTime? Date
-    {
-	get { return (DateTime?)GetValue(DateProperty); }
-	set { SetValue(DateProperty, value); }
-    }
+	public DateTime? Date
+	{
+		get { return (DateTime?)GetValue(DateProperty); }
+		set { SetValue(DateProperty, value); }
+	}
 }
 
 [XamlProcessing(XamlInflator.Default, true)]

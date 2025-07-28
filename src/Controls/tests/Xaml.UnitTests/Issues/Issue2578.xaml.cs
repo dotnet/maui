@@ -13,7 +13,7 @@ public partial class Issue2578 : ContentPage
 	{
 		[Ignore("[Bug] NamedSizes don't work in triggers: https://github.com/xamarin/Microsoft.Maui.Controls/issues/13831")]
 		[Test]
-		public void MultipleTriggers([Values]XamlInflator inflator)
+		public void MultipleTriggers([Values] XamlInflator inflator)
 		{
 			Issue2578 layout = new Issue2578(inflator);
 

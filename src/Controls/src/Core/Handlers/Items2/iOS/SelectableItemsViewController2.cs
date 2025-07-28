@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						return;
 					}
-					
+
 					CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
 				});
 			}

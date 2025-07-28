@@ -2,6 +2,7 @@ using System.Linq;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
+
 public class BasicCase : SourceGenXamlInitializeComponentTestBase
 {
 	[Test]

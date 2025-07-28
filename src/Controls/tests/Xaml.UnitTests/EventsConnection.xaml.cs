@@ -56,7 +56,7 @@ public partial class EventsConnection : BaseForEvents
 	public class Tests
 	{
 		[Test]
-		public void TestClicked([Values]XamlInflator inflator)
+		public void TestClicked([Values] XamlInflator inflator)
 		{
 			var layout = new EventsConnection(inflator);
 			Assert.AreEqual(0, layout.clicked);
@@ -65,7 +65,7 @@ public partial class EventsConnection : BaseForEvents
 		}
 
 		[Test]
-		public void TestGenericClicked([Values]XamlInflator inflator)
+		public void TestGenericClicked([Values] XamlInflator inflator)
 		{
 			var layout = new EventsConnection(inflator);
 			Assert.AreEqual(0, layout.genericClicked);
@@ -74,7 +74,7 @@ public partial class EventsConnection : BaseForEvents
 		}
 
 		[Test]
-		public void TestHandlerOnBase([Values]XamlInflator inflator)
+		public void TestHandlerOnBase([Values] XamlInflator inflator)
 		{
 			var layout = new EventsConnection(inflator);
 			Assert.AreEqual(0, layout.baseClicked);
@@ -83,7 +83,7 @@ public partial class EventsConnection : BaseForEvents
 		}
 
 		[Test]
-		public void TestAsyncPrivateHandler([Values]XamlInflator inflator)
+		public void TestAsyncPrivateHandler([Values] XamlInflator inflator)
 		{
 			var layout = new EventsConnection(inflator);
 			Assert.AreEqual(0, layout.asyncPrivateClicked);
@@ -92,7 +92,7 @@ public partial class EventsConnection : BaseForEvents
 		}
 
 		[Test]
-		public void TestVirtualHandler([Values]XamlInflator inflator)
+		public void TestVirtualHandler([Values] XamlInflator inflator)
 		{
 			var layout = new SubForEvents(inflator);
 			Assert.AreEqual(0, layout.baseForVirtualClicked);
@@ -103,7 +103,7 @@ public partial class EventsConnection : BaseForEvents
 		}
 
 		[Test]
-		public void TestStaticHandler([Values]XamlInflator inflator)
+		public void TestStaticHandler([Values] XamlInflator inflator)
 		{
 			try
 			{

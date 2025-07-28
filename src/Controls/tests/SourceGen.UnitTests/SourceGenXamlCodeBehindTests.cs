@@ -9,6 +9,7 @@ using NUnit.Framework;
 using static Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen.SourceGeneratorDriver;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
+
 public class SourceGenXamlCodeBehindTests : SourceGenTestsBase
 {
 	private record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null)
@@ -36,7 +37,7 @@ public class SourceGenXamlCodeBehindTests : SourceGenTestsBase
 
 		Assert.IsTrue(generated.Contains("Microsoft.Maui.Controls.Button MyButton", StringComparison.Ordinal));
 		Assert.IsTrue(generated.Contains("public partial class TestPage : global::Microsoft.Maui.Controls.ContentPage", StringComparison.Ordinal));
-		
+
 	}
 
 	[Test]
@@ -91,7 +92,7 @@ using Microsoft.Maui.Controls;
 		Assert.IsTrue(generated.Contains("global::Microsoft.Maui.Controls.Label label", StringComparison.Ordinal));
 	}
 
-	public void TestCodeBehindGenerator_LocalXaml([Values]bool resolvedType)
+	public void TestCodeBehindGenerator_LocalXaml([Values] bool resolvedType)
 	{
 		var xaml =
 """
@@ -351,9 +352,10 @@ namespace Ns2
 		//var generated = result.Results.Single().GeneratedSources.Single().SourceText.ToString();
 	}
 
-	[Test] public void TestCodeBehindGenerator_DuplicateNames()
+	[Test]
+	public void TestCodeBehindGenerator_DuplicateNames()
 	{
-		var xaml ="""
+		var xaml = """
 <?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -368,7 +370,7 @@ namespace Ns2
 </ContentPage>
 """;
 
-		var code ="""
+		var code = """
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
@@ -385,7 +387,7 @@ public partial class TestPage : ContentPage
 }
 """;
 
-		var externalone ="""
+		var externalone = """
 using System.ComponentModel;
 using Microsoft.Maui.Controls;
 
@@ -401,7 +403,7 @@ public class PublicWithSuffix : Button { }
 
 """;
 
-		var externaltwo ="""
+		var externaltwo = """
 using System.ComponentModel;
 using Microsoft.Maui.Controls;
 
@@ -414,7 +416,7 @@ internal class PublicWithSuffixExtension : Button { }
 internal class InternalWithSuffixExtension : Button { }
 """;
 
-		var externalthree ="""
+		var externalthree = """
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
@@ -436,7 +438,7 @@ internal class InternalWithSuffix : Button { }
 				SourceGeneratorDriver.CreateMauiCompilation("external1.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externalone)).ToMetadataReference(),
 				SourceGeneratorDriver.CreateMauiCompilation("external2.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externaltwo)).ToMetadataReference(),
 				SourceGeneratorDriver.CreateMauiCompilation("external3.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externalthree)).ToMetadataReference());
-		
+
 		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		Assert.IsFalse(result.Diagnostics.Any());
@@ -446,9 +448,10 @@ internal class InternalWithSuffix : Button { }
 		Assert.IsTrue(generated.Contains("External.PublicInExternal publicInExternal", StringComparison.Ordinal));
 	}
 
-	[Test] public void TestCodeBehindGenerator_InternalsVisibleTo()
+	[Test]
+	public void TestCodeBehindGenerator_InternalsVisibleTo()
 	{
-		var xaml ="""
+		var xaml = """
 <?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -500,8 +503,8 @@ internal class InternalButVisible : Label { }
 
 		var externalCompilation = SourceGeneratorDriver.CreateMauiCompilation("external.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externalcode));
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code)).AddReferences(externalCompilation.ToMetadataReference());
-		
-		
+
+
 		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		Assert.IsFalse(result.Diagnostics.Any());

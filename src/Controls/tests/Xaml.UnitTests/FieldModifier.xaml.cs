@@ -13,7 +13,7 @@ public partial class FieldModifier : ContentPage
 	public class FindByNameTests
 	{
 		[Test]
-		public void TestFieldModifier([Values]XamlInflator inflator)
+		public void TestFieldModifier([Values] XamlInflator inflator)
 		{
 			var layout = new FieldModifier();
 			Assert.That(layout.privateLabel, Is.Not.Null);

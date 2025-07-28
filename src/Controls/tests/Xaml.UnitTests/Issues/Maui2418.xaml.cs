@@ -7,13 +7,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 public partial class Maui2418 : ContentPage
 {
 	public Maui2418() => InitializeComponent();
-	
+
 #if DEBUG
 	[TestFixture]
 	class Tests
 	{
 		bool enableDiagnosticsInitialState;
-		
+
 		[SetUp]
 		public void Setup()
 		{
@@ -24,8 +24,8 @@ public partial class Maui2418 : ContentPage
 		[TearDown]
 		public void TearDown()
 		{
-			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;			
-			}
+			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
+		}
 
 		[Test]
 		public void SourceInfoIsRelative([Values(XamlInflator.Runtime, XamlInflator.SourceGen)] XamlInflator inflator)

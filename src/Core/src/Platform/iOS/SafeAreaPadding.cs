@@ -1,6 +1,6 @@
-﻿using CoreGraphics;
+﻿using System;
+using CoreGraphics;
 using UIKit;
-using System;
 
 namespace Microsoft.Maui.Platform;
 
@@ -36,13 +36,13 @@ internal static class SafeAreaInsetsExtensions
 	{
 		// Filters out negligible floating-point values from UIKit that may cause layout issues (e.g., 3.5527136788005009e-15).
 		const double tolerance = 1e-14;
-		
+
 		static double ApplyTolerance(double value) => Math.Abs(value) < tolerance ? 0 : value;
-		
+
 		return new(
-			ApplyTolerance(insets.Left), 
-			ApplyTolerance(insets.Right), 
-			ApplyTolerance(insets.Top), 
+			ApplyTolerance(insets.Left),
+			ApplyTolerance(insets.Right),
+			ApplyTolerance(insets.Top),
 			ApplyTolerance(insets.Bottom)
 		);
 	}

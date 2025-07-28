@@ -20,9 +20,9 @@ public interface ITimePicker : IView, ITextStyle
 #if NETSTANDARD2_0
 	bool IsOpen { get; set; }
 #else
-	bool IsOpen { get => false; set {} }
+	bool IsOpen { get => false; set { } }
 #endif
-	
+
 	/// <summary>
 	/// The format of the time to display to the user.
 	/// </summary>

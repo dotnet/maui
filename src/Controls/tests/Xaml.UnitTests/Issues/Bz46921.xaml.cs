@@ -13,7 +13,8 @@ public partial class Bz46921 : ContentPage
 	[TestFixture]
 	class Tests
 	{
-		[Test] public void MultipleWaysToCreateAThicknessResource([Values]XamlInflator inflator)
+		[Test]
+		public void MultipleWaysToCreateAThicknessResource([Values] XamlInflator inflator)
 		{
 			var page = new Bz46921(inflator);
 			foreach (var resname in new string[] { "thickness0", "thickness1", "thickness2", "thickness3", })

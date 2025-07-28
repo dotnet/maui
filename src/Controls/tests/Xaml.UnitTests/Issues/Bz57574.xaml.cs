@@ -39,7 +39,7 @@ public partial class Bz57574
 		[TearDown] public void TearDown() => Application.Current = null;
 
 		[Test]
-		public void EventWithGenericEventHandlers([Values]XamlInflator inflator)
+		public void EventWithGenericEventHandlers([Values] XamlInflator inflator)
 		{
 			var layout = new Bz57574(inflator);
 			Assume.That(layout.notification, Is.Null);

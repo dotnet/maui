@@ -34,12 +34,14 @@ public partial class Bz53203 : ContentPage
 	[TestFixture]
 	class Tests
 	{
-		[Test] public void MarkupOnAttachedBPDoesNotThrowAtCompileTime([Values(XamlInflator.XamlC)]XamlInflator inflator)
+		[Test]
+		public void MarkupOnAttachedBPDoesNotThrowAtCompileTime([Values(XamlInflator.XamlC)] XamlInflator inflator)
 		{
 			MockCompiler.Compile(typeof(Bz53203));
 		}
 
-		[Test] public void MarkupOnAttachedBP([Values]XamlInflator inflator)
+		[Test]
+		public void MarkupOnAttachedBP([Values] XamlInflator inflator)
 		{
 			var page = new Bz53203(inflator);
 			var label = page.label0;

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace Maui.Controls.Sample
 {
@@ -87,7 +88,7 @@ namespace Maui.Controls.Sample
 				return navigationAction;
 			}
 
-			Page ActivatePage(Type type)
+			Page ActivatePage([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 			{
 				var page = Activator.CreateInstance(type) as Page;
 				if (page == null)
@@ -153,6 +154,7 @@ namespace Maui.Controls.Sample
 				});
 			}
 
+			[RequiresUnreferencedCode("TestCaseScreen uses reflection for test case discovery")]
 			public TestCaseScreen()
 			{
 				AutomationId = "TestCasesIssueList";

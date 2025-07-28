@@ -30,7 +30,7 @@ public partial class Maui25819 : ContentPage
 
 
 		[Test]
-		public void DoesntThrow([Values]XamlInflator inflator)
+		public void DoesntThrow([Values] XamlInflator inflator)
 		{
 			MockCompiler.Compile(typeof(Maui25819));
 			var layout = new Maui25819(inflator);

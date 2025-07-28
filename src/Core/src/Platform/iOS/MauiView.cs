@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Platform
 		/// and the safe area is not empty.
 		/// </summary>
 		bool _appliesSafeAreaAdjustments;
-		
+
 		// Indicates whether this view should respond to safe area insets.
 		// Cached to avoid repeated hierarchy checks.
 		// True if the view is an ISafeAreaView, does not ignore safe area, and is not inside a UIScrollView;

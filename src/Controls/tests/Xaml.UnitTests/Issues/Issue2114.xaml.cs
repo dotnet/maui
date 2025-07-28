@@ -12,7 +12,8 @@ public partial class Issue2114 : Application
 	{
 		[SetUp] public void SetUp() => Application.Current = null;
 
-		[Test] public void StaticResourceOnApplication([Values] XamlInflator inflator)
+		[Test]
+		public void StaticResourceOnApplication([Values] XamlInflator inflator)
 		{
 			Issue2114 app;
 			Assert.DoesNotThrow(() => app = new Issue2114(inflator));

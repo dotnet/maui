@@ -211,17 +211,11 @@ namespace Microsoft.Maui.Platform
 				_shadowCanvasCachedChildren.RemoveAt(0);
 			}
 
-			if (_shadowVisual != null)
-			{
-				_shadowVisual.Dispose();
-				_shadowVisual = null;
-			}
+			_shadowVisual?.Dispose();
+			_shadowVisual = null;
 
-			if (_dropShadow != null)
-			{
-				_dropShadow.Dispose();
-				_dropShadow = null;
-			}
+			_dropShadow?.Dispose();
+			_dropShadow = null;
 
 			_shadowCanvasCachedChildren = null;
 			_shadowCanvas = null;

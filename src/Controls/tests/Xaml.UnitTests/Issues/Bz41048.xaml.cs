@@ -25,7 +25,8 @@ public partial class Bz41048 : ContentPage
 			Application.Current = null;
 		}
 
-		[Test] public void StyleDoesNotOverrideValues([Values]XamlInflator inflator)
+		[Test]
+		public void StyleDoesNotOverrideValues([Values] XamlInflator inflator)
 		{
 			var layout = new Bz41048(inflator);
 			var label = layout.label0;

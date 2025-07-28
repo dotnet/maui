@@ -14,8 +14,9 @@ public partial class BuiltInConversions : ContentPage
 	{
 		[SetUp] public void Setup() => Application.Current = new MockApplication();
 		[TearDown] public void TearDown() => Application.Current = null;
-		
-		[Test] public void Datetime([Values] XamlInflator inflator)
+
+		[Test]
+		public void Datetime([Values] XamlInflator inflator)
 		{
 			var layout = new BuiltInConversions(inflator);
 
@@ -23,7 +24,8 @@ public partial class BuiltInConversions : ContentPage
 			Assert.AreEqual(new DateTime(2015, 01, 16), layout.datetime1.Date);
 		}
 
-		[Test] public void String([Values] XamlInflator inflator)
+		[Test]
+		public void String([Values] XamlInflator inflator)
 		{
 			var layout = new BuiltInConversions(inflator);
 

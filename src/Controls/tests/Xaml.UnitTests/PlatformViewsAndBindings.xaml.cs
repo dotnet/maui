@@ -268,7 +268,7 @@ public partial class PlatformViewsAndBindings : ContentPage
 		[Test]
 		[Ignore("fails for now")]
 		//[TestCase(true)]
-		public void PlatformInContentView([Values] XamlInflator inflator, [Values("iOS", "Android")]string platform)
+		public void PlatformInContentView([Values] XamlInflator inflator, [Values("iOS", "Android")] string platform)
 		{
 			var realPlatform = SetUpPlatform(platform);
 

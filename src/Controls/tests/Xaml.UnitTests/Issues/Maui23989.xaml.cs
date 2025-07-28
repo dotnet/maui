@@ -30,7 +30,7 @@ public partial class Maui23989
 		{
 			if (inflator == XamlInflator.Default)
 				Assert.Ignore("not testing for default");
-				
+
 			if (inflator == XamlInflator.XamlC)
 				Assert.Throws(new BuildExceptionConstraint(12, 13, s => s.Contains("0022", StringComparison.Ordinal)), () => MockCompiler.Compile(typeof(Maui23989), treatWarningsAsErrors: true));
 

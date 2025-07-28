@@ -20,7 +20,7 @@ public partial class Gh3606 : ContentPage
 		public void BindingsWithSourceAndInvalidPathAreNotCompiled([Values] XamlInflator inflator)
 		{
 			var view = new Gh3606(inflator);
-			
+
 			var binding = view.Label.GetContext(Label.TextProperty).Bindings.GetValue();
 			Assert.That(binding, Is.TypeOf<Binding>());
 		}

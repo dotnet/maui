@@ -47,9 +47,10 @@ public partial class Bz60575 : ContentPage
 	class Tests
 	{
 		[Test]
-		public void CollectionProperties([Values]XamlInflator inflator)
+		public void CollectionProperties([Values] XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.SourceGen){
+			if (inflator == XamlInflator.SourceGen)
+			{
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Bz60575));
 			}
 			var layout = new Bz60575(inflator);

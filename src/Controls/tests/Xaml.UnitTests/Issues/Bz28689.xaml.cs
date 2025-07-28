@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		class Tests
 		{
 			[Test]
-			public void XArrayInResources([Values]XamlInflator inflator)
+			public void XArrayInResources([Values] XamlInflator inflator)
 			{
 				var layout = new Bz28689(inflator);
 				var array = layout.Resources["stringArray"];

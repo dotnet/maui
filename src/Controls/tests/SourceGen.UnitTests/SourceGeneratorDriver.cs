@@ -65,7 +65,7 @@ public static class SourceGeneratorDriver
 		return (runResult1, runResult2);
 	}
 
-	public static Compilation CreateMauiCompilation(string name = $"{nameof(SourceGeneratorDriver)}.Generated" )
+	public static Compilation CreateMauiCompilation(string name = $"{nameof(SourceGeneratorDriver)}.Generated")
 	{
 		var references = GetMauiReferences();
 

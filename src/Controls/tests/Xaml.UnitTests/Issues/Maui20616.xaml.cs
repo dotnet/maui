@@ -31,7 +31,7 @@ public partial class Maui20616
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui20616));
 
 			}
-			var page = new Maui20616(inflator) {BindingContext = new ViewModel20616<string> { Value = "Foo" }};
+			var page = new Maui20616(inflator) { BindingContext = new ViewModel20616<string> { Value = "Foo" } };
 
 			page.LabelA.BindingContext = new ViewModel20616<string> { Value = "ABC" };
 			Assert.AreEqual("ABC", page.LabelA.Text);

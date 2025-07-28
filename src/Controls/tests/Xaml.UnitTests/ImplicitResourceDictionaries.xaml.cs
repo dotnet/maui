@@ -12,7 +12,7 @@ public partial class ImplicitResourceDictionaries : ContentPage
 	public class Tests
 	{
 		[Test]
-		public void ImplicitRDonContentViews([Values]XamlInflator inflator)
+		public void ImplicitRDonContentViews([Values] XamlInflator inflator)
 		{
 			var layout = new ImplicitResourceDictionaries(inflator);
 			Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Purple));

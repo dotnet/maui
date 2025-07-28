@@ -35,7 +35,7 @@ static class NamingHelpers
 			parameterOptions: SymbolDisplayParameterOptions.IncludeName,
 			miscellaneousOptions:
 				SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers |
-				SymbolDisplayMiscellaneousOptions.UseSpecialTypes); 
+				SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
 
 #pragma warning disable RS0030 // Do not use banned APIs
 		return CreateUniqueVariableNameImpl(context, symbol.ToDisplayString(ShortFormat) + suffix);

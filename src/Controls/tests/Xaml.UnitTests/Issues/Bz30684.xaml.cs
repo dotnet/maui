@@ -21,7 +21,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[Test] public void XReferenceFindObjectsInParentNamescopes([Values]XamlInflator inflator)
+			[Test]
+			public void XReferenceFindObjectsInParentNamescopes([Values] XamlInflator inflator)
 			{
 				var layout = new Bz30684(inflator);
 				var cell = (TextCell)layout.listView.TemplatedItems.GetOrCreateContent(0, null);

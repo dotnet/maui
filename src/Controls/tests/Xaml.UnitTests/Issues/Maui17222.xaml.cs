@@ -39,7 +39,8 @@ public partial class Maui17222 : ContentPage
 			AppInfo.SetCurrent(null);
 		}
 
-		[Test] public void GetsourceInfo([Values(XamlInflator.Runtime, XamlInflator.SourceGen)] XamlInflator inflator)
+		[Test]
+		public void GetsourceInfo([Values(XamlInflator.Runtime, XamlInflator.SourceGen)] XamlInflator inflator)
 		{
 			var app = new MockApplication();
 			app.Resources.Add(new Maui17222BaseStyle(inflator));

@@ -1,17 +1,14 @@
 using System;
-using System.Xml;
-
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
-using System.Linq;
 using System.Collections.Immutable;
-using System.Globalization;
 using System.Diagnostics;
-
+using System.Globalization;
+using System.Linq;
+using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -501,7 +498,7 @@ static class NodeSGExtensions
 		if (variable.Type is null)
 			return false;
 
-		if (   GetKnownLateMarkupExtensions(context).TryGetValue(variable.Type, out var provideValue)
+		if (GetKnownLateMarkupExtensions(context).TryGetValue(variable.Type, out var provideValue)
 			&& provideValue.Invoke(node, context, out var returnType0, out var value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
@@ -512,7 +509,7 @@ static class NodeSGExtensions
 			return true;
 		}
 
-		if (   GetKnownValueProviders(context).TryGetValue(variable.Type, out provideValue)
+		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out provideValue)
 			&& provideValue.Invoke(node, context, out returnType0, out value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);

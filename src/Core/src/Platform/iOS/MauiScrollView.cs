@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Platform
 		/// Used to ensure proper layout recalculation when the view becomes visible.
 		/// </summary>
 		bool _invalidateParentWhenMovedToWindow;
-		
+
 		/// <summary>
 		/// Cached result of whether this scroll view is a descendant of another UIScrollView.
 		/// Null when not yet calculated, true if nested within another scroll view, false otherwise.
@@ -35,19 +35,19 @@ namespace Microsoft.Maui.Platform
 		/// Used to determine if a re-measure is needed when constraints change.
 		/// </summary>
 		double _lastMeasureHeight;
-		
+
 		/// <summary>
 		/// The width constraint used in the last measure operation.
 		/// Used to determine if a re-measure is needed when constraints change.
 		/// </summary>
 		double _lastMeasureWidth;
-		
+
 		/// <summary>
 		/// The height constraint used in the last arrange operation.
 		/// Used to determine if a re-arrange is needed when the frame changes.
 		/// </summary>
 		double _lastArrangeHeight;
-		
+
 		/// <summary>
 		/// The width constraint used in the last arrange operation.
 		/// Used to determine if a re-arrange is needed when the frame changes.
@@ -61,19 +61,19 @@ namespace Microsoft.Maui.Platform
 		SafeAreaPadding _safeArea = SafeAreaPadding.Empty;
 
 		UIEdgeInsets _systemAdjustedContentInset = UIEdgeInsets.Zero;
-		
+
 		/// <summary>
 		/// Flag indicating whether the safe area needs to be recalculated.
 		/// Set to true when iOS notifies us of safe area changes.
 		/// </summary>
 		bool _safeAreaInvalidated = true;
-		
+
 		/// <summary>
 		/// Flag indicating whether this scroll view should apply safe area adjustments to its content.
 		/// Only true when not nested in another scroll view and safe area is not empty.
 		/// </summary>
 		bool _appliesSafeAreaAdjustments;
-		
+
 		/// <summary>
 		/// The previous effective user interface layout direction (LTR/RTL).
 		/// Used to detect when the layout direction changes and trigger appropriate content repositioning.
@@ -497,7 +497,7 @@ namespace Microsoft.Maui.Platform
 				widthConstraint -= _safeArea.HorizontalThickness;
 				heightConstraint -= _safeArea.VerticalThickness;
 			}
-			
+
 			var crossPlatformSize = CrossPlatformLayout?.CrossPlatformMeasure(widthConstraint, heightConstraint) ?? Size.Zero;
 
 			if (_appliesSafeAreaAdjustments)
@@ -635,10 +635,10 @@ namespace Microsoft.Maui.Platform
 
 			// Notify any subscribers that the view has been moved to a window
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
-			
+
 			// Clear cached scroll view descendant status since the view hierarchy may have changed
 			_scrollViewDescendant = null;
-			
+
 			// Mark safe area as invalidated since moving to a new window may change safe area
 			_safeAreaInvalidated = true;
 

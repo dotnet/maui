@@ -10,7 +10,8 @@ public partial class XNull : ContentPage
 	[TestFixture]
 	public class Tests
 	{
-		[Test] public void SupportsXNull([Values] XamlInflator inflator)
+		[Test]
+		public void SupportsXNull([Values] XamlInflator inflator)
 		{
 			var layout = new XNull(inflator);
 			Assert.True(layout.Resources.ContainsKey("null"));

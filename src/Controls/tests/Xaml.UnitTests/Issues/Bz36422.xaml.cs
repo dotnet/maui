@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		class Tests
 		{
 			[Test]
-			public void xArrayCanBeAssignedToIListT([Values]XamlInflator inflator)
+			public void xArrayCanBeAssignedToIListT([Values] XamlInflator inflator)
 			{
 				var layout = new Bz36422(inflator);
 				Assert.AreEqual(3, layout.control.Views.Count);

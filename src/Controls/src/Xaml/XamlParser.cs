@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (targetPlatform == null)
 					continue;
 
-//FIXME
+				//FIXME
 #if !__SOURCEGEN__
 				try
 				{

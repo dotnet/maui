@@ -25,7 +25,8 @@ public partial class Bz43733 : ContentPage
 	[TestFixture]
 	class Tests
 	{
-		[Test] public void ThrowOnMissingDictionary([Values]XamlInflator inflator)
+		[Test]
+		public void ThrowOnMissingDictionary([Values] XamlInflator inflator)
 		{
 			Application.Current = new MockApplication
 			{

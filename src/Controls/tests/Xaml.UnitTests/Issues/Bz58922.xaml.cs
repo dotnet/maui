@@ -23,7 +23,7 @@ public partial class Bz58922 : ContentPage
 		[TearDown] public void TearDown() => DeviceInfo.SetCurrent(null);
 
 		[Test]
-		public void OnIdiomXDouble([Values]XamlInflator inflator)
+		public void OnIdiomXDouble([Values] XamlInflator inflator)
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Phone;
 			var layout = new Bz58922(inflator);

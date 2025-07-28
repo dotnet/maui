@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public static class MockSourceGenerator
 {
-	public static Compilation CreateMauiCompilation(string name = $"{nameof(MockSourceGenerator)}.Generated" )
+	public static Compilation CreateMauiCompilation(string name = $"{nameof(MockSourceGenerator)}.Generated")
 	{
 		var references = GetMauiReferences();
 
@@ -32,16 +32,16 @@ public static class MockSourceGenerator
 	public static Compilation WithAdditionalSource(this Compilation compilation, string sourceCode, string hintName = "File.Xaml.cs") =>
 		compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(sourceCode, path: hintName));
 
-    public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework);
-    public record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null)
-        : AdditionalFile(Text: ToAdditionalText(Path, Content), Kind: "Xaml", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName, TargetFramework: TargetFramework);
+	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework);
+	public record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null)
+		: AdditionalFile(Text: ToAdditionalText(Path, Content), Kind: "Xaml", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName, TargetFramework: TargetFramework);
 
 	public static AdditionalText ToAdditionalText(string path, string text) => CustomAdditionalText.From(path, text);
 
 	public static GeneratorDriverRunResult RunMauiSourceGenerator(Type xamlType)
 		=> CreateMauiCompilation().RunMauiSourceGenerator(xamlType);
-		
-    public static GeneratorDriverRunResult RunMauiSourceGenerator(this Compilation compilation, Type xamlType)
+
+	public static GeneratorDriverRunResult RunMauiSourceGenerator(this Compilation compilation, Type xamlType)
 	{
 		var resourceId = XamlResourceIdAttribute.GetResourceIdForType(xamlType);
 		var resourcePath = XamlResourceIdAttribute.GetPathForType(xamlType);
@@ -94,14 +94,14 @@ public static class MockSourceGenerator
 		return runResult;
 	}
 
-    public static string GeneratedCodeBehind(this GeneratorDriverRunResult result)
-        =>	result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
+	public static string GeneratedCodeBehind(this GeneratorDriverRunResult result)
+		=> result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
 
-    public static string GeneratedInitializeComponent(this GeneratorDriverRunResult result)
-        =>	result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".xsg.cs")).SourceText.ToString();
+	public static string GeneratedInitializeComponent(this GeneratorDriverRunResult result)
+		=> result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".xsg.cs")).SourceText.ToString();
 
-    static MetadataReference[]? MauiReferences;
-    static MetadataReference[] GetMauiReferences()
+	static MetadataReference[]? MauiReferences;
+	static MetadataReference[] GetMauiReferences()
 	{
 		string dotNetAssemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
 
@@ -128,7 +128,7 @@ public static class MockSourceGenerator
 		return MauiReferences;
 	}
 
-    class CustomAdditionalText : AdditionalText
+	class CustomAdditionalText : AdditionalText
 	{
 		private readonly SourceText _sourceText;
 
@@ -145,7 +145,7 @@ public static class MockSourceGenerator
 		public override SourceText GetText(CancellationToken cancellationToken = default) => _sourceText;
 	}
 
-    class CustomAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
+	class CustomAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
 	{
 		private readonly IImmutableDictionary<string, AdditionalFile> _additionalFiles;
 

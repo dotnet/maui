@@ -1,9 +1,9 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
-using Microsoft.Maui.Controls.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Xml;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -127,7 +127,7 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 			if (!string.IsNullOrEmpty(prefix) && string.IsNullOrEmpty(namespaceuri))
 				//FIXME report error properly
 				throw new Exception();
-				//throw new BuildException(BuildExceptionCode.XmlnsUndeclared, xmlLineInfo, null, prefix);
+			//throw new BuildException(BuildExceptionCode.XmlnsUndeclared, xmlLineInfo, null, prefix);
 
 			IList<XmlType>? typeArguments = null;
 			var childnodes = new List<(XmlName, INode)>();
@@ -142,10 +142,11 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 				Property parsed = new Property();
 				do
 				{
-					try {
+					try
+					{
 						parsed = ParseProperty(serviceProvider, ref remaining);
 					}
-					catch (XamlParseException xpe )
+					catch (XamlParseException xpe)
 					{
 						if (contextProvider != null)
 							contextProvider.Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationHelpers.LocationCreate(contextProvider.Context.FilePath!, xmlLineInfo!, match), xpe.Message));

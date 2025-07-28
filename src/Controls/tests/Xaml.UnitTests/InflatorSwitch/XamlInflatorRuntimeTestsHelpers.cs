@@ -45,7 +45,7 @@ public class XamlInflatorRuntimeTestsHelpers
 			Assert.AreEqual(36, runtime.GetMethodBody().GetILAsByteArray().Length, "Method body should be 36 bytes long");
 #else
 			Assert.AreEqual(35, runtime.GetMethodBody().GetILAsByteArray().Length, "Method body should be 35 bytes long");
-#endif	
+#endif
 
 			var xamlc = type.GetMethod("InitializeComponentXamlC", BindingFlags.Instance | BindingFlags.NonPublic);
 			Assert.IsNotNull(xamlc, $"{type.Name} should have InitializeComponentXamlC method");
@@ -54,7 +54,7 @@ public class XamlInflatorRuntimeTestsHelpers
 			var sourcegen = type.GetMethod("InitializeComponentSourceGen", BindingFlags.Instance | BindingFlags.NonPublic);
 			Assert.IsNotNull(sourcegen, $"{type.Name} should have InitializeComponentSourceGen method");
 #if DEBUG
-			Assert.AreEqual(267, sourcegen.GetMethodBody().GetILAsByteArray().Length, "Method body should be 267 bytes long");	
+			Assert.AreEqual(267, sourcegen.GetMethodBody().GetILAsByteArray().Length, "Method body should be 267 bytes long");
 #else
 			Assert.AreEqual(254, sourcegen.GetMethodBody().GetILAsByteArray().Length, "Method body should be 254 bytes long");
 #endif

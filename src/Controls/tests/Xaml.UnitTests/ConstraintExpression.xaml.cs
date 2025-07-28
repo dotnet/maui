@@ -15,7 +15,7 @@ public partial class ConstraintExpression : ContentPage
 	public class Tests
 	{
 		[Test]
-		public void ConstantConstraint([Values]XamlInflator inflator)
+		public void ConstantConstraint([Values] XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -29,7 +29,7 @@ public partial class ConstraintExpression : ContentPage
 		}
 
 		[Test]
-		public void ConstraintRelativeToParent([Values]XamlInflator inflator)
+		public void ConstraintRelativeToParent([Values] XamlInflator inflator)
 		{
 			var layout = new ConstraintExpression(inflator);
 			layout.relativeLayout.Layout(new Rect(0, 0, 200, 200));
@@ -40,7 +40,7 @@ public partial class ConstraintExpression : ContentPage
 		}
 
 		[Test]
-		public void ContraintRelativeToView([Values]XamlInflator inflator)
+		public void ContraintRelativeToView([Values] XamlInflator inflator)
 		{
 			var layout = new ConstraintExpression(inflator)
 			{

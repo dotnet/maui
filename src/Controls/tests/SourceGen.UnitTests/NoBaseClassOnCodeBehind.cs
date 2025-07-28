@@ -4,11 +4,11 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
-public class NoBaseClassOnCodeBehind: SourceGenXamlInitializeComponentTestBase
+public class NoBaseClassOnCodeBehind : SourceGenXamlInitializeComponentTestBase
 {
 	[Test]
-    //as the base class ContentPage is only defined in the sg.cs, 
-    //it's not part of the compilation when we generate initializecomponent, and the Resources property can't be found
+	//as the base class ContentPage is only defined in the sg.cs, 
+	//it's not part of the compilation when we generate initializecomponent, and the Resources property can't be found
 	public void CodeBehindWithNoBaseClass()
 	{
 		var xaml =

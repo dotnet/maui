@@ -19,7 +19,8 @@ public partial class DefinitionCollectionTests : ContentPage
 	[TestFixture]
 	class Tests
 	{
-		[Test] public void DefinitionCollectionsParsedFromMarkup([Values] XamlInflator inflator)
+		[Test]
+		public void DefinitionCollectionsParsedFromMarkup([Values] XamlInflator inflator)
 		{
 			var layout = new DefinitionCollectionTests(inflator);
 			var coldef = layout.grid.ColumnDefinitions;

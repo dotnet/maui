@@ -107,7 +107,8 @@ public partial class CompiledTypeConverter : ContentPage
 			Assert.AreEqual("Bar", p.List[1]);
 		}
 
-		[Test] public void ConvertersAreReplaced(
+		[Test]
+		public void ConvertersAreReplaced(
 				[Values] XamlInflator inflator,
 				[Values(typeof(BrushTypeConverter), typeof(ImageSourceConverter), typeof(StrokeShapeTypeConverter), typeof(Graphics.Converters.PointTypeConverter), typeof(Graphics.Converters.RectTypeConverter))] Type converterType)
 		{

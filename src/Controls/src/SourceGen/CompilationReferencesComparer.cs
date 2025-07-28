@@ -10,7 +10,7 @@ class CompilationReferencesComparer : IEqualityComparer<Compilation>
 {
 	public bool Equals(Compilation x, Compilation y)
 	{
-		if (   x.AssemblyName != y.AssemblyName
+		if (x.AssemblyName != y.AssemblyName
 			|| x.ExternalReferences.Length != y.ExternalReferences.Length)
 			return false;
 

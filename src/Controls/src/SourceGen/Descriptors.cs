@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
-			
+
 		public static DiagnosticDescriptor LayoutOptionsConversionFailed = new DiagnosticDescriptor(
 			id: "MAUIG1010",
 			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			category: "XamlInflation",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
-		
+
 		public static DiagnosticDescriptor DuplicateTypeError = new DiagnosticDescriptor(
 			id: "MAUIX2001",
 			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),

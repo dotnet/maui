@@ -20,7 +20,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			[Test] public void TypeConverterAreAppliedForSettersToAttachedBP([Values]XamlInflator inflator)
+			[Test]
+			public void TypeConverterAreAppliedForSettersToAttachedBP([Values] XamlInflator inflator)
 			{
 				var layout = new Bz28545(inflator);
 				Assert.AreEqual(Colors.Pink, layout.label.TextColor);

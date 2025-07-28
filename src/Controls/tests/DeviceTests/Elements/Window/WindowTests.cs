@@ -16,10 +16,12 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
+using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+
 #endif
 
 #if IOS || MACCATALYST
@@ -66,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 #if !IOS
 		[Theory]
 		[ClassData(typeof(ChangingToNewMauiContextDoesntCrashTestCases))]
-		public async Task ChangingToNewMauiContextDoesntCrash(bool useAppMainPage, Type rootPageType)
+		public async Task ChangingToNewMauiContextDoesntCrash(bool useAppMainPage, [DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type rootPageType)
 		{
 			SetupBuilder();
 			IWindow window;

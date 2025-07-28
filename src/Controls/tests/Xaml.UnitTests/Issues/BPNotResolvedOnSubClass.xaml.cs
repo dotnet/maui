@@ -28,7 +28,7 @@ public partial class BPNotResolvedOnSubClass : ContentPage
 	class Tests
 	{
 		[Test]
-		public void CorrectlyResolveBPOnSubClasses([Values]XamlInflator inflator)
+		public void CorrectlyResolveBPOnSubClasses([Values] XamlInflator inflator)
 		{
 			var layout = new BPNotResolvedOnSubClass(inflator);
 			var style = (Style)layout.Resources["Microsoft.Maui.Controls.Button"];

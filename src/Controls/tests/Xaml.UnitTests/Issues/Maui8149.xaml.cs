@@ -18,7 +18,8 @@ public partial class Maui8149 : ContentView
 		[Test]
 		public void NamescopeWithXamlC([Values] XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.SourceGen){
+			if (inflator == XamlInflator.SourceGen)
+			{
 				var compilation = MockSourceGenerator.CreateMauiCompilation();
 				compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(
 """

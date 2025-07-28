@@ -51,9 +51,9 @@ public class EventToCommandBehavior : Behavior
 }
 """;
 
-        var (result, generated) = RunGenerator(xaml, code);
+		var (result, generated) = RunGenerator(xaml, code);
 		Assert.IsFalse(result.Diagnostics.Any());
-		
+
 		Assert.IsTrue(generated?.Contains("Test.EventToCommandBehavior", StringComparison.Ordinal));
 		Assert.IsTrue(generated?.Contains("eventToCommandBehavior.SetValue(global::Test.EventToCommandBehavior.EventNameProperty", StringComparison.Ordinal));
 	}

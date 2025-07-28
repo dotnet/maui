@@ -10,13 +10,15 @@ public partial class XReference : ContentPage
 	[TestFixture]
 	public class Tests
 	{
-		[Test] public void SupportsXReference([Values] XamlInflator inflator)
+		[Test]
+		public void SupportsXReference([Values] XamlInflator inflator)
 		{
 			var layout = new XReference(inflator);
 			Assert.AreSame(layout.image, layout.imageView.Content);
 		}
 
-		[Test] public void XReferenceAsCommandParameterToSelf([Values] XamlInflator inflator)
+		[Test]
+		public void XReferenceAsCommandParameterToSelf([Values] XamlInflator inflator)
 		{
 			var layout = new XReference(inflator);
 
@@ -33,7 +35,8 @@ public partial class XReference : ContentPage
 			Assert.Fail();
 		}
 
-		[Test] public void XReferenceAsBindingSource([Values] XamlInflator inflator)
+		[Test]
+		public void XReferenceAsBindingSource([Values] XamlInflator inflator)
 		{
 			var layout = new XReference(inflator);
 
@@ -41,7 +44,8 @@ public partial class XReference : ContentPage
 			Assert.AreEqual("bar", layout.entry.Placeholder);
 		}
 
-		[Test] public void CrossXReference([Values] XamlInflator inflator)
+		[Test]
+		public void CrossXReference([Values] XamlInflator inflator)
 		{
 			var layout = new XReference(inflator);
 

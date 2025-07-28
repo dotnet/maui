@@ -11,7 +11,8 @@ public partial class XamlInflatorDefault : ContentPage
 	}
 	[Test] public void TestRuntimeInflator() => XamlInflatorRuntimeTestsHelpers.TestInflator(typeof(XamlInflatorDefault), XamlInflator.Runtime);
 
-	[Test] public void TestInflation()
+	[Test]
+	public void TestInflation()
 	{
 		var page = new XamlInflatorDefault();
 		Assert.That(page.label.Text, Is.EqualTo("Welcome to .NET MAUI!"), "Label text should be 'Welcome to .NET MAUI!'");

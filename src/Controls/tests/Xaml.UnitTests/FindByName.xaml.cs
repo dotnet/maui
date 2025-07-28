@@ -11,7 +11,7 @@ public partial class FindByName : ContentPage
 	public class FindByNameTests
 	{
 		[Test]
-		public void TestRootName([Values]XamlInflator inflator)
+		public void TestRootName([Values] XamlInflator inflator)
 		{
 			var page = new FindByName(inflator);
 			Assert.AreSame(page, ((Maui.Controls.Internals.INameScope)page).FindByName("root"));
@@ -19,7 +19,7 @@ public partial class FindByName : ContentPage
 		}
 
 		[Test]
-		public void TestName([Values]XamlInflator inflator)
+		public void TestName([Values] XamlInflator inflator)
 		{
 			var page = new FindByName(inflator);
 			Assert.AreSame(page.label0, page.FindByName<Label>("label0"));

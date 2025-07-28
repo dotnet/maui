@@ -17,7 +17,7 @@ public partial class FontImageExtension : TabBar
 	class Tests
 	{
 		[Test]
-		public void FontImageExtension_Positive([Values]XamlInflator inflator)
+		public void FontImageExtension_Positive([Values] XamlInflator inflator)
 		{
 			var layout = new FontImageExtension(inflator);
 			var tabs = ((IVisualTreeElement)layout).GetVisualChildren();
@@ -46,7 +46,7 @@ public partial class FontImageExtension : TabBar
 		}
 
 		[Test]
-		public void FontImageExtension_Negative([Values]XamlInflator inflator)
+		public void FontImageExtension_Negative([Values] XamlInflator inflator)
 		{
 			var layout = new FontImageExtension(inflator);
 			var tabs = ((IVisualTreeElement)layout).GetVisualChildren();

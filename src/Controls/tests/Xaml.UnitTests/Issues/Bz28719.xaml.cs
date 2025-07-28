@@ -19,7 +19,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[Test] public void DataTriggerInTemplates([Values]XamlInflator inflator)
+			[Test]
+			public void DataTriggerInTemplates([Values] XamlInflator inflator)
 			{
 				var layout = new Bz28719(inflator);
 				var template = layout.listView.ItemTemplate;

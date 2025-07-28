@@ -32,14 +32,14 @@ public partial class Maui25608_2
 		public void TearDown()
 		{
 			BindingDiagnostics.BindingFailed -= BindingFailed;
-			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;			
+			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 
 			AppInfo.SetCurrent(null);
 		}
 
 		bool bindingFailureReported = false;
 
-		void BindingFailed (object sender, BindingBaseErrorEventArgs args)
+		void BindingFailed(object sender, BindingBaseErrorEventArgs args)
 		{
 			bindingFailureReported = true;
 			Assert.AreEqual("Mismatch between the specified x:DataType (Microsoft.Maui.Controls.VerticalStackLayout) and the current binding context (Microsoft.Maui.Controls.Xaml.UnitTests.Maui25608_2).", args.Message);

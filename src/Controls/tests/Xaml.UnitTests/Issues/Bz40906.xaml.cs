@@ -17,7 +17,8 @@ public partial class Bz40906 : ContentPage
 	[TestFixture]
 	class Tests
 	{
-		[Test] public void ParsingCDATA([Values]XamlInflator inflator)
+		[Test]
+		public void ParsingCDATA([Values] XamlInflator inflator)
 		{
 			var page = new Bz40906(inflator);
 			Assert.AreEqual("Foo", page.label0.Text);

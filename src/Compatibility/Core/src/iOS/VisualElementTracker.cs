@@ -94,11 +94,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			{
 				SetElement(_element, null);
 
-				if (_layer != null)
-				{
-					_layer.Dispose();
-					_layer = null;
-				}
+				_layer?.Dispose();
+				_layer = null;
 
 				Renderer.ElementChanged -= OnRendererElementChanged;
 				Renderer = null;

@@ -12,7 +12,7 @@ public partial class Bz60788 : ContentPage
 	{
 
 		[Test]
-		public void KeyedRDWithImplicitStyles([Values]XamlInflator inflator)
+		public void KeyedRDWithImplicitStyles([Values] XamlInflator inflator)
 		{
 			var layout = new Bz60788(inflator);
 			Assert.That(layout.Resources.Count, Is.EqualTo(2));

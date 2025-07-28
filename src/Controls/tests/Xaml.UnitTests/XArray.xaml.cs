@@ -20,7 +20,8 @@ public partial class XArray : MockBindableForArray
 	[TestFixture]
 	public class Tests
 	{
-		[Test] public void SupportsXArray([Values] XamlInflator inflator)
+		[Test]
+		public void SupportsXArray([Values] XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -58,7 +59,8 @@ public partial class XArray : MockBindableForArray
 			Assert.AreEqual("World", ((string[])layout.Content)[1]);
 		}
 
-		[Test] public void ArrayExtensionNotPresentInGeneratedCode()
+		[Test]
+		public void ArrayExtensionNotPresentInGeneratedCode()
 		{
 			MockCompiler.Compile(typeof(XArray), out var methodDef, out var hasLoggedErrors);
 			Assert.That(!hasLoggedErrors);

@@ -24,7 +24,7 @@ public partial class GlobalXmlnsWithStyle : ContentPage
 """));
 			compilation.RunMauiSourceGenerator(typeof(GlobalXmlnsWithStyle));
 		}
-		
+
 		var page = new GlobalXmlnsWithStyle(inflator);
 		Assert.That(page.label0.TextColor, Is.EqualTo(Colors.Red));
 		Assert.That(page.label0.BackgroundColor, Is.EqualTo(Colors.Blue));

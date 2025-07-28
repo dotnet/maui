@@ -27,7 +27,8 @@ public partial class I8 : ContentPage
 	[TestFixture]
 	public class Tests
 	{
-		[Test] public void I8AreConverted([Values] XamlInflator inflator)
+		[Test]
+		public void I8AreConverted([Values] XamlInflator inflator)
 		{
 			var p = new I8(inflator);
 			Assert.AreEqual(0L, p.l0);

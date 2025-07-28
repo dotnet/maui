@@ -18,7 +18,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[Test] public void EmptyTextCell([Values]XamlInflator inflator)
+			[Test]
+			public void EmptyTextCell([Values] XamlInflator inflator)
 			{
 				var layout = new DataTemplate(inflator);
 
@@ -33,7 +34,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreNotSame(cell0, cell1);
 			}
 
-			[Test] public void TextCell([Values]XamlInflator inflator)
+			[Test]
+			public void TextCell([Values] XamlInflator inflator)
 			{
 				var layout = new DataTemplate(inflator);
 				var cell0 = layout.textCell.ItemTemplate.CreateContent();
@@ -51,7 +53,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreNotSame(cell0, cell1);
 			}
 
-			[Test] public void FromResource([Values]XamlInflator inflator)
+			[Test]
+			public void FromResource([Values] XamlInflator inflator)
 			{
 				var layout = new DataTemplate(inflator);
 				var cell0 = layout.fromResource.ItemTemplate.CreateContent();
@@ -69,7 +72,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreNotSame(cell0, cell1);
 			}
 
-			[Test] public void TextCellAccessResources([Values]XamlInflator inflator)
+			[Test]
+			public void TextCellAccessResources([Values] XamlInflator inflator)
 			{
 				var layout = new DataTemplate(inflator);
 				var cell0 = layout.textCellAccessResource.ItemTemplate.CreateContent();
@@ -87,7 +91,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreNotSame(cell0, cell1);
 			}
 
-			[Test] public void ViewCellAccessResources([Values]XamlInflator inflator)
+			[Test]
+			public void ViewCellAccessResources([Values] XamlInflator inflator)
 			{
 				var layout = new DataTemplate(inflator);
 				var cell0 = layout.viewCellAccessResource.ItemTemplate.CreateContent();

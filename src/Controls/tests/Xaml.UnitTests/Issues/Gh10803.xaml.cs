@@ -15,7 +15,8 @@ public partial class Gh10803 : ContentPage
 		bool enableDiagnosticsInitialState;
 		int failures = 0;
 
-		[SetUp] public void Setup()
+		[SetUp]
+		public void Setup()
 		{
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			VisualDiagnostics.VisualTreeChanged += VTChanged;
@@ -23,7 +24,8 @@ public partial class Gh10803 : ContentPage
 			RuntimeFeature.EnableMauiDiagnostics = true;
 		}
 
-		[TearDown] public void TearDown()
+		[TearDown]
+		public void TearDown()
 		{
 			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 			DispatcherProvider.SetCurrent(null);
@@ -31,13 +33,14 @@ public partial class Gh10803 : ContentPage
 			failures = 0;
 		}
 
-		[Test] public void SourceInfoForElementsInDT([Values] XamlInflator inflator)
+		[Test]
+		public void SourceInfoForElementsInDT([Values] XamlInflator inflator)
 		{
 			var layout = new Gh10803(inflator);
 			var listview = layout.listview;
 			var cell = listview.TemplatedItems.GetOrCreateContent(0, null);
 			if (inflator == XamlInflator.Runtime || inflator == XamlInflator.SourceGen)
-				Assert.That(failures, Is.EqualTo(0), "one or more element without source info, or with invalid ChildIndex");				
+				Assert.That(failures, Is.EqualTo(0), "one or more element without source info, or with invalid ChildIndex");
 		}
 
 		void VTChanged(object sender, VisualTreeChangeEventArgs e)

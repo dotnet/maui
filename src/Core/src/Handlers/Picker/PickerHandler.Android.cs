@@ -5,9 +5,9 @@ using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Text.Style;
+using Google.Android.Material.Dialog;
 using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
 using AResource = Android.Resource;
-using Google.Android.Material.Dialog;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Handlers
 			else
 				OnClick(PlatformView, EventArgs.Empty);
 		}
-		
+
 		void DismissDialog()
 		{
 			_dialog?.Dismiss();
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Handlers
 
 				_dialog.Show();
 
-				VirtualView.IsOpen = true;		
+				VirtualView.IsOpen = true;
 			}
 		}
 

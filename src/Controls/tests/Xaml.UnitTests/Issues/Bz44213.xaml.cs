@@ -22,7 +22,8 @@ public partial class Bz44213 : ContentPage
 
 		[TearDown] public void TearDown() => DeviceInfo.SetCurrent(null);
 
-		[Test] public void BindingInOnPlatform([Values]XamlInflator inflator)
+		[Test]
+		public void BindingInOnPlatform([Values] XamlInflator inflator)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var p = new Bz44213(inflator);

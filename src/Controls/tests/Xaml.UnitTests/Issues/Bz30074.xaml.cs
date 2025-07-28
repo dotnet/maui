@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		class Tests
 		{
 			[Test]
-			public void DataTriggerInTemplates([Values]XamlInflator inflator)
+			public void DataTriggerInTemplates([Values] XamlInflator inflator)
 			{
 				var layout = new Bz30074(inflator);
 				Assert.Null(layout.image.Source);

@@ -3,9 +3,11 @@ using Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
+
 public class SetValue : SourceGenXamlInitializeComponentTestBase
 {
-	[Test] public void Test()
+	[Test]
+	public void Test()
 	{
 		var xaml =
 """

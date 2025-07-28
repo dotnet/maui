@@ -10,7 +10,7 @@ public class TargetPropertyExtension : IMarkupExtension
 	public object ProvideValue(IServiceProvider serviceProvider)
 	{
 		var targetProperty = (serviceProvider?.GetService(typeof(IProvideValueTarget)) as IProvideValueTarget)?.TargetProperty;
-		return (targetProperty as BindableProperty)?.PropertyName ?? (targetProperty as PropertyInfo)?.Name;		
+		return (targetProperty as BindableProperty)?.PropertyName ?? (targetProperty as PropertyInfo)?.Name;
 	}
 }
 
@@ -27,7 +27,8 @@ public partial class Bz53275 : ContentPage
 	[TestFixture]
 	class Tests
 	{
-		[Test] public void TargetPropertyIsSetOnMarkups([Values]XamlInflator inflator)
+		[Test]
+		public void TargetPropertyIsSetOnMarkups([Values] XamlInflator inflator)
 		{
 			var page = new Bz53275(inflator);
 			Assert.AreEqual("ANonBindableProperty", page.ANonBindableProperty);

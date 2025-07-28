@@ -47,11 +47,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				switch (inflator)
 				{
 					case XamlInflator.XamlC:
-					Assert.Throws<BuildException>(() =>
-					{
-						MockCompiler.Compile(typeof(XmlnsCollision), out var hasLoggedErrors);
-						Assert.IsTrue(hasLoggedErrors);
-					});
+						Assert.Throws<BuildException>(() =>
+						{
+							MockCompiler.Compile(typeof(XmlnsCollision), out var hasLoggedErrors);
+							Assert.IsTrue(hasLoggedErrors);
+						});
 						break;
 					case XamlInflator.SourceGen:
 						var result = CreateMauiCompilation()

@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.Versioning;
-using Microsoft.Maui.Graphics.Platform;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics.Platform;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions;
@@ -937,11 +937,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void DettachSearchController()
 		{
-			if (_searchHandlerAppearanceTracker is not null)
-			{
-				_searchHandlerAppearanceTracker.Dispose();
-				_searchHandlerAppearanceTracker = null;
-			}
+
+			_searchHandlerAppearanceTracker?.Dispose();
+			_searchHandlerAppearanceTracker = null;
 
 			if (NavigationItem is not null)
 			{
@@ -955,11 +953,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
-			if (_searchController is not null)
-			{
-				_searchController.SetSearchResultsUpdater(_ => { });
-				_searchController = null;
-			}
+			_searchController?.SetSearchResultsUpdater(_ => { });
+			_searchController = null;
 		}
 
 		void OnSearchItemSelected(object? sender, object e)

@@ -11,7 +11,7 @@ public partial class McIgnorable : ContentPage
 	public class Tests
 	{
 		[Test]
-		public void DoesNotThrow([Values]XamlInflator inflator)
+		public void DoesNotThrow([Values] XamlInflator inflator)
 		{
 			var layout = new McIgnorable(inflator);
 		}

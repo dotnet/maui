@@ -14,7 +14,7 @@ public partial class DynamicResource : ContentPage
 	public class Tests
 	{
 		[Test]
-		public void TestDynamicResources([Values]XamlInflator inflator)
+		public void TestDynamicResources([Values] XamlInflator inflator)
 		{
 			var layout = new DynamicResource(inflator);
 			var label = layout.label0;
