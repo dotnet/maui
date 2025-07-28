@@ -35,10 +35,8 @@ public class Issue28091GetHistory : _IssuesUITest
 		App.Tap("ShowHistoryButton");
 
 		// Wait for history label to update with profiler data
-		App.QueryUntilPresent(() => "Rectangle"
-			.Union("Duration")
-			.ToArray());
-		
+		WaitForPerformanceData();
+
 		// Capture updated history
 		var updatedText = App.FindElement("HistoryLabel")?.GetText();
 
@@ -48,5 +46,33 @@ public class Issue28091GetHistory : _IssuesUITest
 			.And.Contains("Duration")
 			.IgnoreCase);
 		Assert.That(updatedText, Is.Not.EqualTo(initialText));
+	}
+
+	void WaitForPerformanceData()
+	{
+		const int maxRetries = 5;
+		const int delayMs = 500;
+
+		for (int i = 0; i < maxRetries; i++)
+		{
+			try
+			{
+				var historyText = App.FindElement("HistoryLabel")?.GetText();
+				if (!string.IsNullOrEmpty(historyText) &&
+				    (historyText.Contains("Rectangle", StringComparison.OrdinalIgnoreCase) ||
+				     historyText.Contains("Duration", StringComparison.OrdinalIgnoreCase)))
+				{
+					return; // Found
+				}
+			}
+			catch
+			{
+				// Ignore exceptions during polling
+			}
+
+			Thread.Sleep(delayMs);
+		}
+
+		// If we reach here, the retry failed, let the main test assertions handle it
 	}
 }
