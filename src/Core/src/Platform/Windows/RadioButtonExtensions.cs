@@ -50,15 +50,7 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateMinWidth(this RadioButton radioButton, IRadioButton view)
 		{
 			double minWidth = view.MinimumWidth;
-
-			if (double.IsNaN(minWidth))
-			{
-				radioButton.MinWidth = 0;
-			}
-			else
-			{
-				radioButton.MinWidth = minWidth;
-			}
+			radioButton.MinWidth = double.IsNaN(minWidth) ? 0 : minWidth;
 		}
 
 		public static void UpdateContent(this RadioButton platformRadioButton, IRadioButton radioButton)
