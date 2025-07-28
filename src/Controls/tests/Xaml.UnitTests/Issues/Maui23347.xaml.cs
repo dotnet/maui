@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
@@ -8,17 +6,10 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui23347
 {
-	public Maui23347()
-	{
-		InitializeComponent();
-	}
-
-	public Maui23347(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
+	public Maui23347() => InitializeComponent();
 
 	[TestFixture]
 	class Test
@@ -33,10 +24,10 @@ public partial class Maui23347
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void FontImageSourceIssue([Values(false, true)] bool useCompiledXaml)
+		public void FontImageSourceIssue([Values] XamlInflator inflator)
 		{
 			Application.Current.UserAppTheme = AppTheme.Light;
-			var page = new Maui23347(useCompiledXaml);
+			var page = new Maui23347(inflator);
 			Application.Current.MainPage = page;
 		}
 	}

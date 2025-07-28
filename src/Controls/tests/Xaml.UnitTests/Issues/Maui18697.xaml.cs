@@ -1,33 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
-
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui18697 : ContentPage
 {
-	public Maui18697()
-	{
-		InitializeComponent();
-	}
+	public Maui18697() => InitializeComponent();
 
-	public Maui18697(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
@@ -49,13 +35,11 @@ public partial class Maui18697 : ContentPage
 		}
 
 		[Test]
-		public void OnBindingRelease([Values(false, true)] bool useCompiledXaml)
+		public void OnBindingRelease([Values] XamlInflator inflator)
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Desktop;
-			var page = new Maui18697(useCompiledXaml);
+			var page = new Maui18697(inflator);
 			Assert.That(page.ToolbarItems[0].Text, Is.EqualTo("_ProfileToolBarText"));
-
-
 		}
 	}
 }
@@ -80,8 +64,5 @@ public class Maui18697TranslateExtension : IMarkupExtension<BindingBase>
 		};
 	}
 
-	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
-	{
-		return ProvideValue(serviceProvider);
-	}
+	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
 }

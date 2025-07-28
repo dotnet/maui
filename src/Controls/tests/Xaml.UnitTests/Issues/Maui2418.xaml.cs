@@ -1,44 +1,40 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime | XamlInflator.SourceGen, true)]
+public partial class Maui2418 : ContentPage
 {
+	public Maui2418() => InitializeComponent();
+	
 #if DEBUG
-	public partial class Maui2418 : ContentPage
+	[TestFixture]
+	class Tests
 	{
-		public Maui2418() => InitializeComponent();
-		public Maui2418(bool useCompiledXaml)
+		bool enableDiagnosticsInitialState;
+		
+		[SetUp]
+		public void Setup()
 		{
-			//this stub will be replaced at compile time
+			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
+			RuntimeFeature.EnableMauiDiagnostics = true;
 		}
 
-		[TestFixture]
-		class Tests
+		[TearDown]
+		public void TearDown()
 		{
-			bool enableDiagnosticsInitialState;
-			
-			[SetUp]
-			public void Setup()
-			{
-				enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
-				RuntimeFeature.EnableMauiDiagnostics = true;
+			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;			
 			}
 
-			[TearDown]
-			public void TearDown()
-			{
-				RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;			
-			}
-
-			[Test]
-			public void SourceInfoIsRelative([Values(false)] bool useCompiledXaml)
-			{
-				var page = new Maui2418(useCompiledXaml);
-				Assert.That(page, Is.Not.Null);
-				var label0 = page.label0;
-				var sourceInfo = VisualDiagnostics.GetSourceInfo(label0);
-				Assert.That(sourceInfo.SourceUri.OriginalString, Is.EqualTo($"Issues{System.IO.Path.DirectorySeparatorChar}Maui2418.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"));
-			}
+		[Test]
+		public void SourceInfoIsRelative([Values(XamlInflator.Runtime, XamlInflator.SourceGen)] XamlInflator inflator)
+		{
+			var page = new Maui2418(inflator);
+			Assert.That(page, Is.Not.Null);
+			var label0 = page.label0;
+			var sourceInfo = VisualDiagnostics.GetSourceInfo(label0);
+			Assert.That(sourceInfo.SourceUri.OriginalString, Is.EqualTo($"Issues{System.IO.Path.DirectorySeparatorChar}Maui2418.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"));
 		}
 	}
 #endif

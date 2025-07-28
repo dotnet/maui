@@ -6,6 +6,8 @@
 *REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
 *REMOVED*Microsoft.Maui.Controls.AcceleratorTypeConverter
 *REMOVED*Microsoft.Maui.Controls.AcceleratorTypeConverter.AcceleratorTypeConverter() -> void
+Microsoft.Maui.Controls.Border.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
+Microsoft.Maui.Controls.Border.SafeAreaEdges.set -> void
 Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.GradientBrushParser(Microsoft.Maui.Graphics.Converters.ColorTypeConverter? colorConverter = null) -> void
 Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.Parse(string? css) -> Microsoft.Maui.Controls.GradientBrush?
 *REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer
@@ -24,6 +26,8 @@ Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.Parse(string? css
 *REMOVED*Microsoft.Maui.Controls.ClickedEventArgs.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
 *REMOVED*~Microsoft.Maui.Controls.ClickedEventArgs.ClickedEventArgs(Microsoft.Maui.Controls.ButtonsMask buttons, object commandParameter) -> void
 *REMOVED*~Microsoft.Maui.Controls.ClickedEventArgs.Parameter.get -> object
+Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
+Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.set -> void
 Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.get -> bool
 Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.set -> void
 Microsoft.Maui.Controls.Platform.MauiViewPager
@@ -36,6 +40,8 @@ Microsoft.Maui.Controls.ContentPresenter.Padding.get -> Microsoft.Maui.Thickness
 Microsoft.Maui.Controls.ContentPresenter.Padding.set -> void
 ~Microsoft.Maui.Controls.ContentPresenter.RaiseChild(Microsoft.Maui.Controls.View view) -> void
 Microsoft.Maui.Controls.ContentPresenter.UpdateChildrenLayout() -> void
+Microsoft.Maui.Controls.ContentView.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
+Microsoft.Maui.Controls.ContentView.SafeAreaEdges.set -> void
 *REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime oldDate, System.DateTime newDate) -> void
 Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime? oldDate, System.DateTime? newDate) -> void
 *REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.NewDate.get -> System.DateTime
@@ -87,6 +93,8 @@ Microsoft.Maui.Controls.ITextElement.TextTransform.get -> Microsoft.Maui.TextTra
 Microsoft.Maui.Controls.ITextElement.TextTransform.set -> void
 ~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string
 Microsoft.Maui.Controls.Internals.TextTransformUtilities
+Microsoft.Maui.Controls.Layout.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
+Microsoft.Maui.Controls.Layout.SafeAreaEdges.set -> void
 Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.Fixed = Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed | Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Controls.LayoutConstraint
@@ -123,6 +131,8 @@ Microsoft.Maui.Controls.ScrollView.CascadeInputTransparent.set -> void
 Microsoft.Maui.Controls.ScrollView.Padding.get -> Microsoft.Maui.Thickness
 Microsoft.Maui.Controls.ScrollView.Padding.set -> void
 ~Microsoft.Maui.Controls.ScrollView.RaiseChild(Microsoft.Maui.Controls.View view) -> void
+Microsoft.Maui.Controls.ScrollView.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
+Microsoft.Maui.Controls.ScrollView.SafeAreaEdges.set -> void
 Microsoft.Maui.Controls.ScrollView.UpdateChildrenLayout() -> void
 Microsoft.Maui.Controls.SearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
 Microsoft.Maui.Controls.SearchBar.ReturnType.set -> void
@@ -388,13 +398,17 @@ static Microsoft.Maui.Controls.ViewExtensions.ScaleXToAsync(this Microsoft.Maui.
 static Microsoft.Maui.Controls.ViewExtensions.ScaleYToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double x, double y, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 ~static Microsoft.Maui.Controls.WebView.MapJavaScriptEnabled(Microsoft.Maui.Handlers.IWebViewHandler handler, Microsoft.Maui.Controls.WebView webView) -> void
+static readonly Microsoft.Maui.Controls.Border.SafeAreaEdgesProperty -> Microsoft.Maui.Controls.BindableProperty!
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.CommandProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequiredProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ContentPage.SafeAreaEdgesProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparentProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ContentPresenter.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ContentView.SafeAreaEdgesProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.DatePicker.IsOpenProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Layout.SafeAreaEdgesProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.MenuItem.AcceleratorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Picker.IsOpenProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.RippleColorProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -404,6 +418,7 @@ static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Ma
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverSourceViewProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ScrollView.CascadeInputTransparentProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ScrollView.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ScrollView.SafeAreaEdgesProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.SearchBar.ReturnTypeProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.SearchBar.SearchIconColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Shell.NavBarVisibilityAnimationEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -428,3 +443,5 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 ~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.VisualElement.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider
+Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider.BindingDataType.get -> string!

@@ -1,32 +1,45 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh5095 : ContentPage
-	{
-		public Gh5095() => InitializeComponent();
-		public Gh5095(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
-		[TestFixture]
-		class Tests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class Gh5095 : ContentPage
+{
+	public Gh5095() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
+	{
+		[Test]
+		public void ThrowsOnInvalidXaml([Values] XamlInflator inflator)
 		{
-			[Test]
-			public void ThrowsOnInvalidXaml([Values(false, true)] bool useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
+				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh5095)));
+			else if (inflator == XamlInflator.Runtime)
+				Assert.Throws<XamlParseException>(() => new Gh5095(inflator));
+			else if (inflator == XamlInflator.SourceGen)
 			{
-				if (useCompiledXaml)
-					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh5095)));
-				else
-					Assert.Throws<XamlParseException>(() => new Gh5095(false));
+				var result = CreateMauiCompilation()
+					.WithAdditionalSource(
+"""
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class Gh5095 : ContentPage
+{
+	public Gh5095() => InitializeComponent();
+}
+""")
+					.RunMauiSourceGenerator(typeof(Gh5095));
+
+				//FIXME check the diagnostic code
+				Assert.That(result.Diagnostics.Length, Is.EqualTo(1));
 			}
+			else if (inflator == XamlInflator.Default)
+				Assert.Ignore($"no test for inflator {inflator}");
 		}
 	}
 }

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -79,11 +80,14 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		UIUserInterfaceLayoutDirection? _previousEffectiveUserInterfaceLayoutDirection;
 
+		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
+
+
 		/// <summary>
 		/// Weak reference to the cross-platform layout that manages the content of this scroll view.
 		/// Weak reference prevents circular references and allows proper garbage collection.
 		/// </summary>
-		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
+		WeakReference<IView>? _reference;
 
 		/// <summary>
 		/// Gets or sets the cross-platform layout that manages the content of this scroll view.
@@ -153,6 +157,93 @@ namespace Microsoft.Maui.Platform
 		/// This method handles safe area validation, measures and arranges content, and manages RTL layout adjustments.
 		/// It's called by iOS whenever the view needs to be laid out, including during scrolling operations.
 		/// </summary>
+		internal IView? View
+		{
+			get => _reference != null && _reference.TryGetTarget(out var v) ? v : null;
+			set => _reference = value == null ? null : new(value);
+		}
+
+		SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
+		{
+			if (View is ISafeAreaView2 safeAreaPage)
+			{
+				return safeAreaPage.GetSafeAreaRegionsForEdge(edge);
+			}
+			
+			return SafeAreaRegions.None; // Default: edge-to-edge content
+		}
+
+		SafeAreaEdges? _previousEdges;
+
+		UIEdgeInsets GetInset()
+		{
+			var leftRegion = GetSafeAreaRegionForEdge(0);
+			var topRegion = GetSafeAreaRegionForEdge(1);
+			var rightRegion = GetSafeAreaRegionForEdge(2);
+			var bottomRegion = GetSafeAreaRegionForEdge(3);
+
+			var safeAreaInsets = SafeAreaInsets;
+
+			var manualInset = new UIEdgeInsets(
+					top: GetManualInsetForEdge(topRegion, safeAreaInsets.Top),
+					left: GetManualInsetForEdge(leftRegion, safeAreaInsets.Left),
+					bottom: GetManualInsetForEdge(bottomRegion, safeAreaInsets.Bottom),
+					right: GetManualInsetForEdge(rightRegion, safeAreaInsets.Right)
+				);
+
+			return manualInset;
+		}
+
+		bool UpdateContentInsetAdjustmentBehavior()
+		{
+			// Get SafeAreaRegions for all edges
+			var leftRegion = GetSafeAreaRegionForEdge(0);
+			var topRegion = GetSafeAreaRegionForEdge(1);
+			var rightRegion = GetSafeAreaRegionForEdge(2);
+			var bottomRegion = GetSafeAreaRegionForEdge(3);
+
+			SafeAreaEdges safeAreaEdges = new SafeAreaEdges(leftRegion, topRegion, rightRegion, bottomRegion);
+
+			if (_previousEdges is not null && _previousEdges.Equals(safeAreaEdges))
+				return false;
+
+			_previousEdges = safeAreaEdges;
+
+			// Check if all edges have the same SafeAreaRegions value
+			if (leftRegion == topRegion && topRegion == rightRegion && rightRegion == bottomRegion)
+			{
+				// All edges have the same value, use built-in iOS behavior
+				// Cache the region value to avoid redundant comparisons
+				var region = leftRegion;
+				
+				ContentInsetAdjustmentBehavior = region switch
+				{
+					SafeAreaRegions.Default => UIScrollViewContentInsetAdjustmentBehavior.Automatic, // Default behavior
+					SafeAreaRegions.None => UIScrollViewContentInsetAdjustmentBehavior.Never, // Edge-to-edge content
+					SafeAreaRegions.All => UIScrollViewContentInsetAdjustmentBehavior.Never, // We calculate insets ourselves and include keyboard
+					_ when SafeAreaEdges.IsContainer(region) => UIScrollViewContentInsetAdjustmentBehavior.Always, // Content flows under keyboard but stays out of bars/notch
+					_ when SafeAreaEdges.IsSoftInput(region) => UIScrollViewContentInsetAdjustmentBehavior.Never, // We calculate insets ourselves and include keyboard
+					_ => UIScrollViewContentInsetAdjustmentBehavior.Never // Default: edge-to-edge
+				};
+			}
+			else
+			{
+				// Mixed edges - use manual calculation
+				ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
+			}
+
+			return true;
+		}
+
+		static nfloat GetManualInsetForEdge(SafeAreaRegions safeAreaRegion, nfloat safeAreaInset)
+		{
+			// Edge-to-edge content - no safe area padding
+			if (safeAreaRegion == SafeAreaRegions.None)
+				return 0;
+
+			return safeAreaInset;
+		}
+
 		public override void LayoutSubviews()
 		{
 			// If there's no cross-platform layout, fall back to default UIScrollView behavior
@@ -174,6 +265,7 @@ namespace Microsoft.Maui.Platform
 			var bounds = Bounds;
 			var widthConstraint = (double)bounds.Width;
 			var heightConstraint = (double)bounds.Height;
+			ValidateSafeArea();
 			var frameChanged = _lastArrangeWidth != widthConstraint || _lastArrangeHeight != heightConstraint;
 
 			// If the frame changed, we need to arrange (and potentially measure) the content again
@@ -189,30 +281,7 @@ namespace Microsoft.Maui.Platform
 					CacheMeasureConstraints(widthConstraint, heightConstraint);
 				}
 
-				Size crossPlatformBounds;
-				// Account for safe area adjustments automatically added by iOS
-				var contentSize = CrossPlatformArrange(Bounds, out crossPlatformBounds).ToCGSize();
-
-				// For Right-To-Left (RTL) layouts, we need to adjust the content arrangement and offset
-				// to ensure the content is correctly aligned and scrolled. This involves a second layout
-				// arrangement with an adjusted starting point and recalculating the content offset.
-				if (_previousEffectiveUserInterfaceLayoutDirection is not null && _previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection)
-				{
-					if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
-					{
-						var horizontalOffset = contentSize.Width - crossPlatformBounds.Width;
-						CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), crossPlatformBounds), out _);
-						ContentOffset = new CGPoint(horizontalOffset, 0);
-					}
-					else
-					{
-						ContentOffset = new CGPoint(0, ContentOffset.Y);
-					}
-				}
-
-				// When switching between LTR and RTL, we need to re-arrange and offset content exactly once
-				// to avoid cumulative shifts or incorrect offsets on subsequent layouts.
-				_previousEffectiveUserInterfaceLayoutDirection = EffectiveUserInterfaceLayoutDirection;
+				var contentSize = CrossPlatformArrange(Bounds).ToCGSize();
 
 				// When the content size changes, we need to adjust the scrollable area size so that the content can fit in it.
 				if (ContentSize != contentSize)
@@ -229,6 +298,7 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSubviews();
 		}
 
+
 		/// <summary>
 		/// Validates and updates the safe area configuration. This method checks if the safe area
 		/// has changed and updates the internal state accordingly.
@@ -236,14 +306,22 @@ namespace Microsoft.Maui.Platform
 		/// <returns>True if the safe area configuration hasn't changed in a way that affects layout, false otherwise.</returns>
 		bool ValidateSafeArea()
 		{
+			//UpdateKeyboardSubscription();
 			// If nothing changed, we don't need to do anything
+
+			if (!UpdateContentInsetAdjustmentBehavior())
+			{
+				InvalidateConstraintsCache();
+				_safeAreaInvalidated = true;
+			}
+
 			if (!_safeAreaInvalidated)
 			{
 				return true;
 			}
 
 			// Mark the safe area as validated given that we're about to check it
-			_safeAreaInvalidated = false;
+			_safeAreaInvalidated = true;
 
 			var oldSafeArea = _safeArea;
 
@@ -253,8 +331,8 @@ namespace Microsoft.Maui.Platform
 			// it can push ContentSize over the Bounds, causing AdjustedContentInset to become non-zero and SafeAreaInsets on the child to reset to zero.
 			// This can result in a loop of invalidations as the layout toggles between these states.
 			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
-			if (SystemAdjustedContentInset == UIEdgeInsets.Zero)
-				_safeArea = SafeAreaInsets.ToSafeAreaInsets();
+			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+				_safeArea = GetInset().ToSafeAreaInsets();
 			else
 				_safeArea = SystemAdjustedContentInset.ToSafeAreaInsets();
 
@@ -263,13 +341,19 @@ namespace Microsoft.Maui.Platform
 
 			if (_systemAdjustedContentInset != SystemAdjustedContentInset)
 			{
+				InvalidateConstraintsCache();
 				_systemAdjustedContentInset = SystemAdjustedContentInset;
 				return false;
 			}
 
+			if (!oldSafeArea.Equals(_safeArea))
+			{
+				InvalidateConstraintsCache();
+			}
+
 			// Return whether the way safe area interacts with our view has changed
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
-			       (oldSafeArea == _safeArea || !_appliesSafeAreaAdjustments);
+				   (oldSafeArea == _safeArea || !_appliesSafeAreaAdjustments);
 		}
 
 		UIEdgeInsets SystemAdjustedContentInset
@@ -293,9 +377,8 @@ namespace Microsoft.Maui.Platform
 		/// This method applies safe area insets to the bounds before arranging the content.
 		/// </summary>
 		/// <param name="bounds">The bounds within which to arrange the content.</param>
-		/// <param name="adjustedBounds">The bounds after safe area adjustments have been applied.</param>
 		/// <returns>The size of the arranged content.</returns>
-		Size CrossPlatformArrange(CGRect bounds, out Size adjustedBounds)
+		Size CrossPlatformArrange(CGRect bounds)
 		{
 			bounds = new Rect(new Point(), bounds.Size.ToSize());
 			// Apply safe area adjustments to the bounds if this scroll view responds to safe area
@@ -304,20 +387,98 @@ namespace Microsoft.Maui.Platform
 				bounds = _safeArea.InsetRect(bounds);
 			}
 
-			adjustedBounds = bounds.Size.ToSize();
+			Size contentSize;
 
-			Size size;
 
-			if (SystemAdjustedContentInset == UIEdgeInsets.Zero)
+			double width;
+			double height;
+			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 			{
-				size = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
+				contentSize = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
+
+				width = contentSize.Width;
+				height = contentSize.Height;
 			}
 			else
 			{
-				size = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
+				contentSize = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
+
+				width = contentSize.Width;
+				height = contentSize.Height;
 			}
 
-			return size;
+
+			// When using ContentInsetAdjustmentBehavior.Automatic, UIKit dynamically decides whether to apply 
+			// safe area insets to the scroll view (via AdjustedContentInset) or to push them into the child view's SafeAreaInsets.
+			// This decision depends on whether the scroll view is considered "scrollable"—i.e., whether the contentSize 
+			// is larger than the visible bounds (after accounting for safe areas).
+			//
+			// If the content size is *just* smaller than or equal to the scroll view’s bounds, UIKit may decide that
+			// scrolling isn’t needed and push the safe area insets into the child instead. This can cause:
+			//   - content centering to behave incorrectly (e.g., not respecting safe areas),
+			//   - layout loops where the child resizes in response to changing safe area insets,
+			//   - instability when transitioning between scrollable and non-scrollable states.
+			//
+			// This logic adds safe area padding to the contentSize *only if* the content is nearly large enough to require scrolling,
+			// ensuring the scroll view remains in "scrollable mode" and keeps safe area insets at the scroll view level.
+			// This avoids inset flip-flopping and keeps layout behavior stable and predictable.
+			if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Automatic)
+			{
+				// We do this to keep the content scrollable
+				// if we don't do this the ContentAdjustedInset + contentSize will cause the content to go off the screen and not be scrollable
+				// So the bottom content will just go off the screen until the contentsize triggers the scrollable area
+				if (width <= Bounds.Width &&
+					(_safeArea.HorizontalThickness + width) > Bounds.Width)
+				{
+					width += Bounds.Width + 1;
+				}
+
+				if (height <= Bounds.Height &&
+					(_safeArea.VerticalThickness + height) > Bounds.Height)
+				{
+					height = Bounds.Height + 1;
+				}
+
+				contentSize = new Size(width, height);
+			}
+			else if (ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Automatic)
+			{
+				width += _safeArea.HorizontalThickness;
+				height += _safeArea.VerticalThickness;
+			}
+
+			contentSize = new Size(width, height);
+
+			// For Right-To-Left (RTL) layouts, we need to adjust the content arrangement and offset
+			// to ensure the content is correctly aligned and scrolled. This involves a second layout
+			// arrangement with an adjusted starting point and recalculating the content offset.
+			if (_previousEffectiveUserInterfaceLayoutDirection is not null && _previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection)
+			{
+				if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+				{
+					var horizontalOffset = contentSize.Width - contentSize.Width;
+					if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+					{
+						CrossPlatformArrange(new Rect(new Point(-horizontalOffset, bounds.Y), contentSize));
+					}
+					else
+					{
+						CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), contentSize));
+					}
+
+					ContentOffset = new CGPoint(horizontalOffset, 0);
+				}
+				else
+				{
+					ContentOffset = new CGPoint(0, ContentOffset.Y);
+				}
+			}
+
+			// When switching between LTR and RTL, we need to re-arrange and offset content exactly once
+			// to avoid cumulative shifts or incorrect offsets on subsequent layouts.
+			_previousEffectiveUserInterfaceLayoutDirection = EffectiveUserInterfaceLayoutDirection;
+
+			return contentSize;
 		}
 
 		/// <summary>
@@ -354,6 +515,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		/// <param name="size">The available size constraints.</param>
 		/// <returns>The size that fits within the constraints.</returns>
+		
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			if (CrossPlatformLayout is null)
@@ -388,6 +550,7 @@ namespace Microsoft.Maui.Platform
 		/// <returns>True if the invalidation should stop propagating, false otherwise.</returns>
 		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
+			ValidateSafeArea();
 			SetNeedsLayout();
 			InvalidateConstraintsCache();
 

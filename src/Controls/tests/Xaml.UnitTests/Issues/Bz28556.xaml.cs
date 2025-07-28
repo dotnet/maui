@@ -6,6 +6,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class Bz28556 : ContentPage
 	{
 		public Bz28556()
@@ -13,19 +14,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz28556(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		[TestFixture]
 		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void SettersAppliedBeforeTriggers(bool useCompiledXaml)
+			[Test] public void SettersAppliedBeforeTriggers([Values]XamlInflator inflator)
 			{
-				var layout = new Bz28556(useCompiledXaml);
+				var layout = new Bz28556(inflator);
 
 				Assert.AreEqual(Colors.Yellow, layout.entry.TextColor);
 				Assert.AreEqual(Colors.Green, layout.entry.BackgroundColor);

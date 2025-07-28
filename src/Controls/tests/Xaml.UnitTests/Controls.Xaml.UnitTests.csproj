@@ -6,14 +6,20 @@
     <AssemblyName>Microsoft.Maui.Controls.Xaml.UnitTests</AssemblyName>
     <WarningLevel>4</WarningLevel>
     <NoWarn>$(NoWarn);0672;0219;0414;CS0436;CS0618</NoWarn>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0022;XC0023;XC0025;XC0045</WarningsNotAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0022;XC0023;XC0025;XC0045;MAUID1000</WarningsNotAsErrors>
     <IsPackable>false</IsPackable>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
-    <DefineConstants>$(DefineConstants);MauiAllowImplicitXmlnsDeclaration</DefineConstants>
-    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <DefineConstants>$(DefineConstants);MauiAllowImplicitXmlnsDeclaration;_MAUIXAML_SG_SOURCEINFO;_MAUIXAML_SG_NULLABLE_ENABLE</DefineConstants>
+    <!-- We can't yet disable the namescope generation, ConstraintTypeConverter and ReferenceTypeConverter need to be ported to sourcegen
+    <DefineConstants>$(DefineConstants);_MAUIXAML_SG_NAMESCOPE_DISABLE</DefineConstants>
+    -->
+    <!-- We have to remove this before XAML sourcegen goes public-->
+    <DefineConstants>$(DefineConstants);FIXME_BEFORE_PUBLIC_RELEASE</DefineConstants>
+
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+    <EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -32,6 +38,8 @@
     <PackageReference Include="Microsoft.Build.Framework" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -55,6 +63,7 @@
     <Compile Include="..\Core.UnitTests\MockServiceProvider.cs" />
     <Compile Include="..\Core.UnitTests\MockFontManager.cs" />
     <Compile Include="..\Core.UnitTests\MockDeviceDisplay.cs" />
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

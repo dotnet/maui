@@ -56,7 +56,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				TargetFramework = targetFramework,
 				TreatWarningsAsErrors = treatWarningsAsErrors,
 				CompileBindingsWithSource = compileBindingsWithSource,
-				BuildEngine = new MSBuild.UnitTests.DummyBuildEngine()
+				BuildEngine = new MSBuild.UnitTests.DummyBuildEngine(),
+				MockCompile = true,
+
 			};
 
 			if (xamlc.Execute(out IList<Exception> exceptions) || exceptions == null || !exceptions.Any())
