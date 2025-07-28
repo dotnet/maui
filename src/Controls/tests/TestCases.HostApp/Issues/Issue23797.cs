@@ -29,7 +29,7 @@ public class Issue23797 : ContentPage
         label.SetBinding(Label.TextProperty, new Binding("Message", source: Issue23797_ViewModel));
         stackLayout.Children.Add(label);
 
-        var customControl = new CustomControlWithCustomContent
+        var customControl = new CustomControlWithCustomContent_Issue23797
         {
             BindingContext = Issue23797_ViewModel
         };
@@ -49,12 +49,12 @@ public class Issue23797 : ContentPage
     }
 }
 
-public class CustomControlWithCustomContent : ContentView
+public class CustomControlWithCustomContent_Issue23797 : ContentView
 {
     public static readonly BindableProperty MyContentProperty = BindableProperty.Create(
         nameof(MyContent),
         typeof(View),
-        typeof(CustomControlWithCustomContent),
+        typeof(CustomControlWithCustomContent_Issue23797),
         null);
 
     public View MyContent
@@ -63,7 +63,7 @@ public class CustomControlWithCustomContent : ContentView
         set => SetValue(MyContentProperty, value);
     }
 
-    public CustomControlWithCustomContent()
+    public CustomControlWithCustomContent_Issue23797()
     {
         ControlTemplate = new ControlTemplate(() =>
         {
