@@ -325,7 +325,7 @@ namespace Microsoft.Maui.Platform
 		internal Func<Graphics.Rect, Graphics.Size>? CrossPlatformArrange { get; set; }
 	}
 
-	internal class MauiHorizontalScrollView : HorizontalScrollView, IScrollBarView
+	public class MauiHorizontalScrollView : HorizontalScrollView, IScrollBarView
 	{
 		readonly MauiScrollView? _parentScrollView;
 
