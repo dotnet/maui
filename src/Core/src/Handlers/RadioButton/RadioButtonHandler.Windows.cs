@@ -33,7 +33,6 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateBackground(radioButton);
 		}
 
-		// TODO: Make it public in .NET 10.0
 		internal static void MapRadioButtonMinimumWidth(IViewHandler handler, IView view)
 		{
 			if (view is IRadioButton radioButtonView && handler is RadioButtonHandler radioButtonHandler)
