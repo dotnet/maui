@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	public class XamlTests
 	{
 		[Fact("Parsed XAML can use mscorlib")]
-		[RequiresUnreferencedCode()]
+		[RequiresUnreferencedCode("XAML parsing may require unreferenced code")]
 		public void Namespace_mscorlib_Parsed()
 		{
 			var page = new ContentPage();
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact("Parsed XAML can use x:Array")]
-		[RequiresUnreferencedCode()]
+		[RequiresUnreferencedCode("XAML parsing may require unreferenced code")]
 		public void x_Array_Parsed()
 		{
 			var page = new ContentPage();

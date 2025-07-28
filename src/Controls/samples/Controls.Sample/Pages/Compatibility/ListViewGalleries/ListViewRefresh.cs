@@ -9,7 +9,7 @@ namespace Maui.Controls.Sample.Pages.ListViewGalleries
 {
 	public class ListViewRefresh : ContentPage
 	{
-		[RequiresUnreferencedCode()]
+		[RequiresUnreferencedCode("ListViewRefresh may require unreferenced code for data binding")]
 		public ListViewRefresh()
 		{
 			var refreshingCount = 0;

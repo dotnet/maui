@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Pages
 		TitleBarSampleViewModel _viewModel;
 		TitleBar _customTitleBar;
 
-		[RequiresUnreferencedCode()]
+		[RequiresUnreferencedCode("TitleBarPage uses LoadFromXaml which may require unreferenced code")]
 		public TitleBarPage()
 		{
 			InitializeComponent();

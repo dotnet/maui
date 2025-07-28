@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 	[Preserve(AllMembers = true)]
 	public class CollectionCarouselViewGallery : ContentPage
 	{
-		[RequiresUnreferencedCode()]
+		[RequiresUnreferencedCode("CollectionCarouselViewGallery may require unreferenced code for data binding")]
 		public CollectionCarouselViewGallery()
 		{
 			Title = "Working with ObservableCollections and CarouselView";
