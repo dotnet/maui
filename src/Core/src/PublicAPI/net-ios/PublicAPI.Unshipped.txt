@@ -1,1 +1,3 @@
 #nullable enable
+override Microsoft.Maui.Platform.MauiTextView.TextAlignment.get -> UIKit.UITextAlignment
+override Microsoft.Maui.Platform.MauiTextView.TextAlignment.set -> void
