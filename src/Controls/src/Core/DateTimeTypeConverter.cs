@@ -6,14 +6,13 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls;
 
-[ProvideCompiled("Microsoft.Maui.Controls.XamlC.DateTimeTypeConverter")]
-public class DateTimeTypeConverter : TypeConverter
+internal class DateTimeTypeConverter : TypeConverter
 {
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type? sourceType)
-        => sourceType == typeof(string) || sourceType == typeof(DateTime) || sourceType == typeof(DateOnly);
+        => sourceType == typeof(DateTime) || sourceType == typeof(DateOnly);
 
     public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
-        => destinationType == typeof(string) || destinationType == typeof(DateTime) || destinationType == typeof(DateOnly);
+        => destinationType == typeof(DateTime) || destinationType == typeof(DateOnly);
 
     public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
     {

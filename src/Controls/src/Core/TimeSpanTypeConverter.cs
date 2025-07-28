@@ -6,8 +6,7 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls;
 
-[ProvideCompiled("Microsoft.Maui.Controls.XamlC.TimeSpanTypeConverter")]
-public class TimeSpanTypeConverter : TypeConverter
+internal class TimeSpanTypeConverter : TypeConverter
 {
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type? sourceType)
         => sourceType == typeof(string) || sourceType == typeof(TimeOnly) || sourceType == typeof(TimeSpan);
@@ -25,9 +24,16 @@ public class TimeSpanTypeConverter : TypeConverter
         {
             return timeOnly.ToTimeSpan();
         }
-        else if (value is string stringValue && TimeOnly.TryParse(stringValue, out var result))
+        else if (value is string stringValue)
         {
-            return result.ToTimeSpan();
+            if (TimeOnly.TryParse(stringValue, culture, out var timeOnlyResult))
+            {
+                return timeOnlyResult.ToTimeSpan();
+            }
+            else if (TimeSpan.TryParse(stringValue, culture, out var timeSpanResult))
+            {
+                return timeSpanResult;
+            }
         }
         throw new NotImplementedException($"Cannot convert \"{value}\" into {typeof(TimeSpan)}");
     }

@@ -3,6 +3,7 @@
 namespace Microsoft.Maui.Controls.Core.UnitTests;
 
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Threading.Tasks;
 using Xunit;
@@ -10,26 +11,29 @@ using Xunit;
 public class DateOnlyTypeConverterTests : BaseTestFixture
 {
 	[Fact]
-	public void DateOnlyToStringCanConvertToDateTime()
+	public void DateOnlyToDateTimeConversion()
 	{
 		var converter = new DateTimeTypeConverter();
 
 		var dateOnlyValue = new DateOnly(2025, 2, 21);
 
-		var actualDateTime = converter.ConvertFromInvariantString(dateOnlyValue.ToString(CultureInfo.InvariantCulture));
+		var actualDateTime = converter.ConvertFrom(null, CultureInfo.InvariantCulture, dateOnlyValue);
 		var expectedDateTime = new DateTime(2025, 2, 21);
 
 		Assert.Equal(expectedDateTime, actualDateTime);
 	}
 
 	[Fact]
-	public async Task ConvertToInvariantStringThrowsNotImplementedException()
+	public void DateTimeToDateOnlyConversion()
 	{
 		var converter = new DateTimeTypeConverter();
 
-		var stringValue = "Not a DateOnly string";
+		var dateTimeValue = new DateTime(2025, 2, 21);
 
-		await Assert.ThrowsAsync<NotImplementedException>(async () => converter.ConvertToInvariantString(stringValue));
+		var actualDateOnly = converter.ConvertTo(null, CultureInfo.InvariantCulture, dateTimeValue, typeof(DateOnly));
+		var expectedDateOnly = new DateOnly(2025, 2, 21);
+
+		Assert.Equal(expectedDateOnly, actualDateOnly);
 	}
 }
 #endif
