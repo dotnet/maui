@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Performance;
@@ -525,7 +526,7 @@ namespace Microsoft.Maui.UnitTests
 			var tracker2 = PerformanceProfiler.Start(PerformanceCategory.LayoutArrange, "Element2");
 			await Task.Delay(5);
 			tracker2.Stop();
-	
+
 			await tracker.WaitForUpdatesAsync();
 			var history = PerformanceProfiler.GetHistory("Element1");
 			var layoutHistory = new List<LayoutUpdate>(history.Layout);
@@ -752,11 +753,11 @@ namespace Microsoft.Maui.UnitTests
 
 	internal class FakeLayoutTracker : ILayoutPerformanceTracker
 	{
-		private readonly object _lock = new();
-		private readonly List<LayoutUpdate> _history = new();
-		private readonly List<Action<LayoutUpdate>> _subscribers = new();
+		readonly object _lock = new();
+		readonly List<LayoutUpdate> _history = new();
+		readonly List<Action<LayoutUpdate>> _subscribers = new();
 
-		private readonly ConcurrentDictionary<(object Element, LayoutPassType PassType), double>
+		readonly ConcurrentDictionary<(object Element, LayoutPassType PassType), double>
 			_childDurations = new();
 
 		public int MeasureCallCount { get; private set; }
@@ -765,13 +766,12 @@ namespace Microsoft.Maui.UnitTests
 		public int ArrangeCallCount { get; private set; }
 		public double ArrangedDuration { get; private set; }
 		public object ArrangedElement { get; private set; }
-		
-		TaskCompletionSource<bool> _updateProcessed = new();
+
+		// Track pending updates with a list of tasks
+		readonly List<Task> _pendingTasks = new();
 
 		public FakeLayoutTracker()
 		{
-			// Initialize with a completed TCS to avoid null checks
-			_updateProcessed.TrySetResult(true);
 		}
 
 		public LayoutStats GetStats()
@@ -786,7 +786,7 @@ namespace Microsoft.Maui.UnitTests
 		{
 			lock (_lock)
 			{
-				return element == null
+				return element is null
 					? new List<LayoutUpdate>(_history)
 					: _history.FindAll(u => Equals(u.Element, element));
 			}
@@ -794,7 +794,7 @@ namespace Microsoft.Maui.UnitTests
 
 		public void SubscribeToLayoutUpdates(Action<LayoutUpdate> callback)
 		{
-			if (callback == null)
+			if (callback is null)
 				throw new ArgumentNullException(nameof(callback));
 
 			lock (_lock)
@@ -813,43 +813,37 @@ namespace Microsoft.Maui.UnitTests
 			ProcessUpdate(LayoutPassType.Arrange, duration, element);
 		}
 
-		private void ProcessUpdate(LayoutPassType passType, double duration, object element)
+		void ProcessUpdate(LayoutPassType passType, double duration, object element)
 		{
-			// Reset TCS for new update
-			lock (_lock)
-			{
-				if (!_updateProcessed.Task.IsCompleted)
-					_updateProcessed.TrySetResult(true);
-				_updateProcessed = new TaskCompletionSource<bool>();
-			}
-
-			double standaloneDuration = duration;
-
-			// Calculate child durations if element is provided
-			if (element != null)
-			{
-				bool hasChildren = element is IVisualTreeElement vte && vte.GetVisualChildren().Count > 0;
-				object parent = element is IVisualTreeElement vteParent ? vteParent.GetVisualParent() : null;
-
-				if (parent != null)
-				{
-					_childDurations.AddOrUpdate(
-						(parent, passType),
-						duration,
-						(key, oldValue) => oldValue + duration);
-				}
-
-				if (element is ILayout)
-				{
-					standaloneDuration = _childDurations.TryGetValue((element, passType), out var childTime)
-						? duration - childTime
-						: duration;
-					_childDurations.TryRemove((element, passType), out _);
-				}
-			}
+			LayoutUpdate update;
+			Task asyncTask;
 
 			lock (_lock)
 			{
+				double standaloneDuration = duration;
+
+				// Calculate child durations if element is provided
+				if (element is not null)
+				{
+					object parent = element is IVisualTreeElement vteParent ? vteParent.GetVisualParent() : null;
+
+					if (parent is not null)
+					{
+						_childDurations.AddOrUpdate(
+							(parent, passType),
+							duration,
+							(key, oldValue) => oldValue + duration);
+					}
+
+					if (element is ILayout)
+					{
+						standaloneDuration = _childDurations.TryGetValue((element, passType), out var childTime)
+							? duration - childTime
+							: duration;
+						_childDurations.TryRemove((element, passType), out _);
+					}
+				}
+
 				if (passType == LayoutPassType.Measure)
 				{
 					MeasureCallCount++;
@@ -863,16 +857,25 @@ namespace Microsoft.Maui.UnitTests
 					ArrangedElement = element;
 				}
 
-				var update = new LayoutUpdate(passType, standaloneDuration, element ?? string.Empty, DateTime.UtcNow);
+				// Create the update object and add to history immediately
+				update = new LayoutUpdate(passType, standaloneDuration, element ?? string.Empty, DateTime.UtcNow);
 				_history.Add(update);
-				PublishLayoutUpdateAsync(update).GetAwaiter().GetResult();
-			}
 
-			// Signal that update is processed
-			_updateProcessed.TrySetResult(true);
+				// Create async task for subscriber notifications
+				asyncTask = Task.Run(async () =>
+				{
+					await PublishLayoutUpdateAsync(update);
+				});
+
+				// Track the task so we can wait for it
+				_pendingTasks.Add(asyncTask);
+
+				// Clean up completed tasks to prevent memory leaks
+				_pendingTasks.RemoveAll(t => t.IsCompleted);
+			}
 		}
 
-		private async Task PublishLayoutUpdateAsync(LayoutUpdate update)
+		async Task PublishLayoutUpdateAsync(LayoutUpdate update)
 		{
 			Action<LayoutUpdate>[] subscribersSnapshot;
 			lock (_lock)
@@ -884,7 +887,7 @@ namespace Microsoft.Maui.UnitTests
 			{
 				try
 				{
-					await Task.Run(() => subscriber.Invoke(update)); // Run subscriber in background
+					await Task.Run(() => subscriber.Invoke(update));
 				}
 				catch
 				{
@@ -893,10 +896,24 @@ namespace Microsoft.Maui.UnitTests
 			}
 		}
 
-		// Added to allow tests to wait for updates
-		public Task WaitForUpdatesAsync(CancellationToken cancellationToken = default)
+		// Wait for all pending updates to be processed
+		public async Task WaitForUpdatesAsync(CancellationToken cancellationToken = default)
 		{
-			return _updateProcessed.Task.WaitAsync(cancellationToken);
+			Task[] tasksToWait;
+
+			lock (_lock)
+			{
+				// Get a snapshot of pending tasks
+				tasksToWait = _pendingTasks.Where(t => !t.IsCompleted).ToArray();
+			}
+
+			if (tasksToWait.Length > 0)
+			{
+				await Task.WhenAll(tasksToWait).WaitAsync(cancellationToken);
+			}
+
+			// Small delay to ensure all operations are complete
+			await Task.Delay(1, cancellationToken);
 		}
 	}
 }
