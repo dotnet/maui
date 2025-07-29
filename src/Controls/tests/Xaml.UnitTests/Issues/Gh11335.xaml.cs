@@ -1,3 +1,4 @@
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 using System;
 using NUnit.Framework;
 
@@ -54,3 +55,4 @@ public partial class Gh11335 : ContentPage
 		}
 	}
 }
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete

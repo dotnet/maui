@@ -1,3 +1,4 @@
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
@@ -55,3 +56,4 @@ public partial class Gh11334 : ContentPage
 		}
 	}
 }
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete
