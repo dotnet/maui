@@ -85,6 +85,9 @@ static class CodeBehindCodeWriter
 			sb.AppendLine($"\t[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
 		}
 
+		if (generateDefaultCtor)
+			sb.AppendLine($"\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
+
 		sb.AppendLine($"\t{accessModifier} partial class {rootType} : {baseType!.ToFQDisplayString()}");
 		sb.AppendLine("\t{");
 
