@@ -17,7 +17,7 @@ public class Issue30846 : _IssuesUITest
     public void HybridWebView_Autoplay_Respects_UserGestureSetting()
     {
         // Wait for the page to load
-        App.WaitForElement("WebViewContainer");
+        App.WaitForElement("AutoPlaybackSwitch");
 
         // Test with user gesture required (default: switch is off)
         App.WaitForTextToBePresentInElement("VideoStatusLabel", "Video did not autoplay");
