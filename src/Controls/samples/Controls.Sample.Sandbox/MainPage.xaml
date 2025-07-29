@@ -2,4 +2,25 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+    <VerticalStackLayout>
+        <Label Text="Tap gesture recognizer with event">
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer
+                    Tapped="TapGestureRecognizer_Tapped"/>
+            </Label.GestureRecognizers>
+        </Label>
+        <Label Text="Tap gesture recognizer with command">
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer
+                    Command="{Binding TapCommand}"/>
+            </Label.GestureRecognizers>
+        </Label>
+        <Label Text="No tap gesture recognizer"/>
+        <Switch>
+            <Switch.GestureRecognizers>
+                <TapGestureRecognizer
+                    Tapped="TapGestureRecognizer_Tapped"/>
+            </Switch.GestureRecognizers>
+        </Switch>
+    </VerticalStackLayout>
 </ContentPage>
