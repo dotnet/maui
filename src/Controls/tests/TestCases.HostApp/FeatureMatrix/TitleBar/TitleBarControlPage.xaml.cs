@@ -11,29 +11,12 @@ public partial class TitleBarControlPage : ContentPage
         _viewModel = new TitleBarViewModel();
         BindingContext = _viewModel;
 
-        // Subscribe to property changes to update the TitleBar
-        _viewModel.PropertyChanged += ViewModel_PropertyChanged;
-
-        // Initial setup after window is created
         Loaded += MainPage_Loaded;
     }
 
     private void MainPage_Loaded(object sender, EventArgs e)
     {
         // Setup TitleBar once the page is loaded and the Window is available
-        SetupTitleBar();
-    }
-
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
-        // Ensure TitleBar is configured when page appears
-        SetupTitleBar();
-    }
-
-    private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        // Update the TitleBar when relevant properties change
         SetupTitleBar();
     }
 
@@ -114,23 +97,11 @@ public partial class TitleBarControlPage : ContentPage
 
     private void OnResetButtonClicked(object sender, EventArgs e)
     {
-        // Unsubscribe from the old view model
-        if (_viewModel != null)
-        {
-            _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
-        }
-
-        // Create a new view model instance and update the field
         _viewModel = new TitleBarViewModel();
         this.BindingContext = _viewModel;
 
-        // Subscribe to the new view model's PropertyChanged event
-        _viewModel.PropertyChanged += ViewModel_PropertyChanged;
-
-        // Reset the FlowDirection checkbox to unchecked state
         FlowDirectionRTLCheckBox.IsChecked = false;
 
-        // Re-setup the TitleBar after resetting values
         SetupTitleBar();
     }
 
@@ -153,5 +124,10 @@ public partial class TitleBarControlPage : ContentPage
                     break;
             }
         }
+    }
+
+    private void OnApplyButtonClicked(object sender, EventArgs e)
+    {
+        SetupTitleBar();
     }
 }

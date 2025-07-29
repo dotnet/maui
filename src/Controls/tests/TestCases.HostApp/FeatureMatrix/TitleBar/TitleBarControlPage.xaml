@@ -77,10 +77,10 @@
                             <Label Text="Right to Left"
                                    VerticalOptions="Center"/>
                      </HorizontalStackLayout>
-                     <Button AutomationId="ResetButton"
-                             Text="Reset"
+                     <Button AutomationId="ApplyButton"
+                             Text="Apply"
                              HorizontalOptions="Start"
-                             Clicked="OnResetButtonClicked"
+                             Clicked="OnApplyButtonClicked"
                              WidthRequest="300"/>
               </VerticalStackLayout>
 
@@ -151,6 +151,11 @@
                                          CheckedChanged="OnTitleBarContentChanged"
                                          Value="ProgressBar"/>
                      </VerticalStackLayout>
+                      <Button AutomationId="ResetButton"
+                             Text="Reset"
+                             HorizontalOptions="Start"
+                             Clicked="OnResetButtonClicked"
+                             WidthRequest="300"/>
               </VerticalStackLayout>
        </Grid>
 </ContentPage>

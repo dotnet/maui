@@ -59,6 +59,9 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ProgressBarRadioButton");
 		App.Tap("ProgressBarRadioButton");
 
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+
 		VerifyScreenshot(includeTitleBar: true);
 	}
 
@@ -76,6 +79,9 @@ public class TitleBarFeatureTests : UITest
 		App.Tap("ShowLeadingContentCheckBox");
 		App.WaitForElement("ShowTrailingContentCheckBox");
 		App.Tap("ShowTrailingContentCheckBox");
+
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
 
 		VerifyScreenshot(includeTitleBar: true);
 	}
@@ -95,6 +101,9 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("RedRadioButton");
 		App.Tap("RedRadioButton");
 
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+
 		VerifyScreenshot(includeTitleBar: true);
 	}
 
@@ -112,6 +121,9 @@ public class TitleBarFeatureTests : UITest
 		App.Tap("IsTitleBarContentVisibleCheckBox");
 		App.WaitForElement("SearchBarRadioButton");
 		App.Tap("SearchBarRadioButton");
+
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
 
 		VerifyScreenshot(includeTitleBar: true);
 	}
@@ -135,6 +147,9 @@ public class TitleBarFeatureTests : UITest
 		App.Tap("ShowForegroundColorCheckBox");
 		App.WaitForElement("WhiteForegroundRadioButton");
 		App.Tap("WhiteForegroundRadioButton");
+
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
 
 		VerifyScreenshot(includeTitleBar: true);
 	}
@@ -161,6 +176,9 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("RedRadioButton");
 		App.Tap("RedRadioButton");
 
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+
 		VerifyScreenshot(includeTitleBar: true);
 	}
 
@@ -186,6 +204,9 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ProgressBarRadioButton");
 		App.Tap("ProgressBarRadioButton");
 
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+
 		VerifyScreenshot(includeTitleBar: true);
 	}
 
@@ -205,6 +226,9 @@ public class TitleBarFeatureTests : UITest
 		App.Tap("IsTitleBarContentVisibleCheckBox");
 		App.WaitForElement("HorizontalStackLayoutRadioButton");
 		App.Tap("HorizontalStackLayoutRadioButton");
+
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
 
 		VerifyScreenshot(includeTitleBar: true);
 	}
@@ -226,6 +250,9 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ProgressBarRadioButton");
 		App.Tap("ProgressBarRadioButton");
 
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+
 		VerifyScreenshot(includeTitleBar: true);
 	}
 
@@ -245,6 +272,9 @@ public class TitleBarFeatureTests : UITest
 		App.Tap("ShowTitleCheckBox");
 		App.WaitForElement("ShowSubtitleCheckBox");
 		App.Tap("ShowSubtitleCheckBox");
+
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
 
 		VerifyScreenshot(includeTitleBar: true);
 	}
@@ -266,6 +296,9 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("OrangeRadioButton");
 		App.Tap("OrangeRadioButton");
 
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+
 		VerifyScreenshot(includeTitleBar: true);
 	}
 
@@ -285,6 +318,9 @@ public class TitleBarFeatureTests : UITest
 		App.Tap("IsTitleBarContentVisibleCheckBox");
 		App.WaitForElement("SearchBarRadioButton");
 		App.Tap("SearchBarRadioButton");
+
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
 
 		VerifyScreenshot(includeTitleBar: true);
 	}
@@ -306,6 +342,9 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("OrangeRadioButton");
 		App.Tap("OrangeRadioButton");
 
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+
 		VerifyScreenshot(includeTitleBar: true);
 	}
 
@@ -324,6 +363,9 @@ public class TitleBarFeatureTests : UITest
 		App.Tap("IsTitleBarContentVisibleCheckBox");
 		App.WaitForElement("HorizontalStackLayoutRadioButton");
 		App.Tap("HorizontalStackLayoutRadioButton");
+
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
 
 		VerifyScreenshot(includeTitleBar: true);
 	}
@@ -344,6 +386,9 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ProgressBarRadioButton");
 		App.Tap("ProgressBarRadioButton");
 
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+
 		VerifyScreenshot(includeTitleBar: true);
 	}
 
@@ -362,6 +407,9 @@ public class TitleBarFeatureTests : UITest
 		App.Tap("IsTitleBarContentVisibleCheckBox");
 		App.WaitForElement("SearchBarRadioButton");
 		App.Tap("SearchBarRadioButton");
+
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
 
 		VerifyScreenshot(includeTitleBar: true);
 	}
@@ -382,6 +430,9 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ProgressBarRadioButton");
 		App.Tap("ProgressBarRadioButton");
 
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+
 		VerifyScreenshot(includeTitleBar: true);
 	}
 
@@ -395,10 +446,13 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ShowTitleBarCheckBox");
 		App.Tap("ShowTitleBarCheckBox");
 
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+
 		VerifyScreenshot(includeTitleBar: true);
 	}
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_MACCATALYST //For more information see:
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_MACCATALYST //For more information see:
 	[Test]
 	[Category(UITestCategories.TitleView)]
 	public void TitleBar_RTL_WithTrailingContentAndLeadingContent()
@@ -412,6 +466,9 @@ public class TitleBarFeatureTests : UITest
 		App.Tap("ShowTrailingContentCheckBox");
 		App.WaitForElement("FlowDirectionRTLCheckBox");
 		App.Tap("FlowDirectionRTLCheckBox");
+
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
 
 		VerifyScreenshot(includeTitleBar:true);
 	}
@@ -430,6 +487,9 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("ShowSubtitleCheckBox");
 		App.Tap("ShowSubtitleCheckBox");
 
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+
 		VerifyScreenshot(includeTitleBar:true);
 	}
 
@@ -446,6 +506,9 @@ public class TitleBarFeatureTests : UITest
 		App.Tap("IsTitleBarContentVisibleCheckBox");
 		App.WaitForElement("SearchBarRadioButton");
 		App.Tap("SearchBarRadioButton");
+
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
 
 		VerifyScreenshot(includeTitleBar:true);
 	}
@@ -464,6 +527,9 @@ public class TitleBarFeatureTests : UITest
 		App.WaitForElement("HorizontalStackLayoutRadioButton");
 		App.Tap("HorizontalStackLayoutRadioButton");
 
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+
 		VerifyScreenshot(includeTitleBar:true);
 	}
 
@@ -480,6 +546,9 @@ public class TitleBarFeatureTests : UITest
 		App.Tap("IsTitleBarContentVisibleCheckBox");
 		App.WaitForElement("ProgressBarRadioButton");
 		App.Tap("ProgressBarRadioButton");
+
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
 
 		VerifyScreenshot(includeTitleBar:true);
 	}
@@ -504,6 +573,9 @@ public class TitleBarFeatureTests : UITest
 		App.Tap("SubtitleEntry");
 		App.ClearText("SubtitleEntry");
 		App.EnterText("SubtitleEntry", "Custom Subtitle");
+
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
 
 		VerifyScreenshot(includeTitleBar: true);
 	}

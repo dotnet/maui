@@ -19,7 +19,6 @@ public class TitleBarViewModel : INotifyPropertyChanged
 			if (_titleBarContent != value)
 			{
 				_titleBarContent = value;
-				OnPropertyChanged();
 			}
 		}
 	}
@@ -33,7 +32,6 @@ public class TitleBarViewModel : INotifyPropertyChanged
 			if (_isTitleBarContentVisible != value)
 			{
 				_isTitleBarContentVisible = value;
-				OnPropertyChanged();
 				IsSearchBarChecked = false;
 				IsHorizontalStackLayoutChecked = false;
 				IsGridWithProgressBarChecked = false;
@@ -55,7 +53,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 			if (_isSearchBarChecked != value)
 			{
 				_isSearchBarChecked = value;
-				OnPropertyChanged();
+				
 			}
 		}
 	}
@@ -69,7 +67,6 @@ public class TitleBarViewModel : INotifyPropertyChanged
 			if (_isHorizontalStackLayoutChecked != value)
 			{
 				_isHorizontalStackLayoutChecked = value;
-				OnPropertyChanged();
 			}
 		}
 	}
@@ -83,7 +80,6 @@ public class TitleBarViewModel : INotifyPropertyChanged
 			if (_isGridWithProgressBarChecked != value)
 			{
 				_isGridWithProgressBarChecked = value;
-				OnPropertyChanged();
 			}
 		}
 	}
@@ -175,8 +171,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		{
 			if (_foregroundColor != value)
 			{
-				_foregroundColor = value;
-				OnPropertyChanged();
+				_foregroundColor = value;		
 			}
 		}
 	}
@@ -188,8 +183,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		{
 			if (_icon != value)
 			{
-				_icon = value;
-				OnPropertyChanged();
+				_icon = value;			
 			}
 		}
 	}
@@ -198,7 +192,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 	public Color Color
 	{
 		get => _color;
-		set { _color = value; OnPropertyChanged(); }
+		set { _color = value;  }
 	}
 
 	private bool _isRedChecked = false;
@@ -212,7 +206,6 @@ public class TitleBarViewModel : INotifyPropertyChanged
 				_isRedChecked = value;
 				if (value && ShowBackgroundColor) // Check if ShowBackgroundColor is true
 					Color = Colors.Red;
-				OnPropertyChanged();
 			}
 		}
 	}
@@ -228,11 +221,9 @@ public class TitleBarViewModel : INotifyPropertyChanged
 				_isOrangeChecked = value;
 				if (value && ShowBackgroundColor)
 					Color = Colors.Orange;
-				OnPropertyChanged();
 			}
 		}
 	}
-
 
 	private bool _isVisible = true;
 	public bool IsVisible
@@ -243,7 +234,6 @@ public class TitleBarViewModel : INotifyPropertyChanged
 			if (_isVisible != value)
 			{
 				_isVisible = value;
-				OnPropertyChanged();
 			}
 		}
 	}
@@ -256,8 +246,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		{
 			if (_flowDirection != value)
 			{
-				_flowDirection = value;
-				OnPropertyChanged();
+				_flowDirection = value;		
 			}
 		}
 	}
@@ -271,7 +260,6 @@ public class TitleBarViewModel : INotifyPropertyChanged
 			if (_showLeadingContent != value)
 			{
 				_showLeadingContent = value;
-				OnPropertyChanged();
 
 				LeadingContent = _showLeadingContent ? new Image
 				{
@@ -292,8 +280,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		{
 			if (_leadingContent != value)
 			{
-				_leadingContent = value;
-				OnPropertyChanged();
+				_leadingContent = value;		
 			}
 		}
 	}
@@ -305,8 +292,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		{
 			if (_trailingContent != value)
 			{
-				_trailingContent = value;
-				OnPropertyChanged();
+				_trailingContent = value;	
 			}
 		}
 	}
@@ -319,7 +305,6 @@ public class TitleBarViewModel : INotifyPropertyChanged
 			if (_showTrailingContent != value)
 			{
 				_showTrailingContent = value;
-				OnPropertyChanged();
 
 				TrailingContent = _showTrailingContent ? new ImageButton
 				{
@@ -341,8 +326,8 @@ public class TitleBarViewModel : INotifyPropertyChanged
 			if (_showTitle != value)
 			{
 				_showTitle = value;
-				OnPropertyChanged();
 				Title = _showTitle ? "My MAUI App" : string.Empty;
+				OnPropertyChanged();
 			}
 		}
 	}
@@ -356,8 +341,8 @@ public class TitleBarViewModel : INotifyPropertyChanged
 			if (_showSubtitle != value)
 			{
 				_showSubtitle = value;
-				OnPropertyChanged();
 				Subtitle = _showSubtitle ? "Demo TitleBar Integration" : string.Empty;
+				OnPropertyChanged();
 			}
 		}
 	}
@@ -371,7 +356,6 @@ public class TitleBarViewModel : INotifyPropertyChanged
 			if (_showForegroundColor != value)
 			{
 				_showForegroundColor = value;
-				OnPropertyChanged();
 				ForegroundColor = _showForegroundColor ? Colors.Black : Colors.Black;
 				IsWhiteForegroundChecked = false;
 			}
@@ -389,7 +373,6 @@ public class TitleBarViewModel : INotifyPropertyChanged
 				_isWhiteForegroundChecked = value;
 				if (value && ShowForegroundColor)
 					ForegroundColor = Colors.White;
-				OnPropertyChanged();
 			}
 		}
 	}
@@ -402,13 +385,11 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		{
 			if (_showIcon != value)
 			{
-				_showIcon = value;
-				OnPropertyChanged();
+				_showIcon = value;			
 				Icon = _showIcon ? ImageSource.FromFile("green.png") : null;
 			}
 		}
 	}
-
 
 	private bool _showBackgroundColor = false;
 	public bool ShowBackgroundColor
@@ -418,8 +399,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		{
 			if (_showBackgroundColor != value)
 			{
-				_showBackgroundColor = value;
-				OnPropertyChanged();
+				_showBackgroundColor = value;				
 				Color = _showBackgroundColor ? Color.FromArgb("#6600ff") : Color.FromArgb("#6600ff");
 				IsOrangeChecked = false;
 				IsRedChecked = false;
