@@ -21,21 +21,21 @@
       </Item>
       <Item ItemId=";description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Tizen]]></Val>
+          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Projekt pro vytvoření .NET MAUI aplikace pro iOS, Android, Mac Catalyst, WinUI a Tizen]]></Val>
+            <Val><![CDATA[Projekt pro vytvoření .NET MAUI aplikace pro iOS, Android, Mac Catalyst a WinUI]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, Tizen, and WinUI]]></Val>
+            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Tizen]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[aplikace .NET MAUI]]></Val>
+            <Val><![CDATA[Aplikace .NET MAUI]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[.NET MAUI App (Preview)]]></Val>
@@ -56,7 +56,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Restore NuGet packages required by this project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Obnoví balíčky NuGet vyžadované tímto projektem.]]></Val>
+            <Val><![CDATA[Obnovte balíčky NuGet vyžadované tímto projektem.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -65,7 +65,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Run 'dotnet restore']]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Spustit dotnet restore]]></Val>
+            <Val><![CDATA[Spustit „dotnet restore“]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -83,7 +83,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The target framework for the project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Cílová architektura pro projekt]]></Val>
+            <Val><![CDATA[Cílová architektura pro projekt.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -110,7 +110,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Overrides the $(ApplicationId) in the project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Přepíše v projektu $(ApplicationId).]]></Val>
+            <Val><![CDATA[Přepíše v projektu $(ApplicationId)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -119,7 +119,7 @@
         <Str Cat="Text">
           <Val><![CDATA[If specified, skips the automatic restore of the project on create.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Je-li zadáno, přeskočí automatické obnovení projektu při vytvoření.]]></Val>
+            <Val><![CDATA[Je-li zadáno, při vytvoření přeskočí automatické obnovení projektu.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

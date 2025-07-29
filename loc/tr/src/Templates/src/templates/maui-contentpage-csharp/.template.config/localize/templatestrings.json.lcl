@@ -23,12 +23,12 @@
         <Str Cat="Text">
           <Val><![CDATA[A page for displaying content using C#.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[C# kullanarak içeriği görüntülemek için bir sayfa.]]></Val>
+            <Val><![CDATA[C# kullanarak içerik görüntülemek için bir sayfa.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI ContentPage (C#)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
