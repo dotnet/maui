@@ -19,11 +19,14 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ControlTemplateProperty = BindableProperty.Create(nameof(ControlTemplate), typeof(ControlTemplate), typeof(TemplatedView), null,
 			propertyChanged: TemplateUtilities.OnControlTemplateChanged);
 
-		/// <summary>Bindable property for <see cref="IClippedToBoundsElement.IsClippedToBounds"/>.</summary>
+		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
 		public new static readonly BindableProperty IsClippedToBoundsProperty =
 			ClippedToBoundsElement.IsClippedToBoundsProperty;
 
-		/// <inheritdoc cref="IClippedToBoundsElement.IsClippedToBounds"/>
+		/// <summary>
+		/// Gets or sets a value which determines if the layout should clip its children to its bounds.
+		/// The default value is <see langword="false"/>.
+		/// </summary>
 		public new bool IsClippedToBounds
 		{
 			get => (bool)GetValue(IsClippedToBoundsProperty);
