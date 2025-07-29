@@ -34,14 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 		static int GetPlatformSelectionLength(EntryHandler entryHandler)
 		{
 			var editText = GetPlatformControl(entryHandler);
-
-			if (editText != null)
-			{
-				// Use the extension method from EditTextExtensions which handles right-to-left selection correctly
-				return editText.GetSelectedTextLength();
-			}
-
-			return -1;
+			return editText?.GetSelectedTextLength() ?? -1;
 		}
 		Task<float> GetPlatformOpacity(EntryHandler entryHandler)
 		{

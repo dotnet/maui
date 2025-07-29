@@ -35,12 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 		static int GetPlatformSelectionLength(EditorHandler editorHandler)
 		{
 			var textView = GetPlatformControl(editorHandler);
-
-			if (textView != null)
-			{
-				return textView.GetSelectedTextLength();
-			}
-			return -1;
+			return textView?.GetSelectedTextLength() ?? -1;
 		}
 
 		Task<float> GetPlatformOpacity(EditorHandler editorHandler)
