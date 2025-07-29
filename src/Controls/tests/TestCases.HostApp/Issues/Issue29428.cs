@@ -23,7 +23,6 @@ public class Issue29428 : Shell
         };
 
         var secondPage = new EventOrderTestPage29428();
-
         Items.Add(new FlyoutItem
         {
             Title = "Main Page",
@@ -39,7 +38,6 @@ public class Issue29428 : Shell
         Items.Add(new FlyoutItem
         {
             Title = "Page 2",
-            AutomationId = "Page2FlyoutItem",
             Items =
             {
                 new ShellSection
@@ -56,9 +54,8 @@ public class Issue29428 : Shell
 
         public EventOrderTestPage29428()
         {
-            Title = "Page 2";
+            Title = "SecondPage";
             AutomationId = "SecondPage";
-
             _eventOrderLabel = new Label
             {
                 AutomationId = "EventOrderLabel",

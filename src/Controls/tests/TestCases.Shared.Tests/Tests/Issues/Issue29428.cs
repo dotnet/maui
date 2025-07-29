@@ -16,11 +16,8 @@ public class Issue29428 : _IssuesUITest
     {
         App.WaitForElement("MainPageLabel");
         App.TapShellFlyoutIcon();
-        App.Tap("Page2FlyoutItem");
-        App.WaitForElement("SecondPage");
+        App.Tap("Page 2");
         var eventOrderText = App.WaitForElement("EventOrderLabel").GetText();
         Assert.That(eventOrderText, Is.EqualTo("Loaded called first then NavigatedTo called"));
     }
 }
-
-
