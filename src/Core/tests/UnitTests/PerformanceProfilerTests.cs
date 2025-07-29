@@ -785,15 +785,14 @@ internal class FakeLayoutTracker : ILayoutPerformanceTracker
 
                 if (_subscribers.Count > 0)
                 {
-                    var subscribersSnapshot = _subscribers.ToArray();
-                    
-                    notificationTask = new Task(() => PublishLayoutUpdateSafe(update, subscribersSnapshot));
-                    _pendingTasks.Add(notificationTask);
-
-                    if (_pendingTasks.Count > TaskCleanupThreshold)
-                    {
-                        _pendingTasks.RemoveAll(t => t.IsCompleted);
-                    }
+	                var subscribersSnapshot = _subscribers.ToArray();
+	                notificationTask = Task.Run(() => PublishLayoutUpdateSafe(update, subscribersSnapshot));
+	                _pendingTasks.Add(notificationTask);
+	                
+	                if (_pendingTasks.Count > TaskCleanupThreshold)
+	                {
+		                _pendingTasks.RemoveAll(t => t.IsCompleted);
+	                }
                 }
                 else
                 {
@@ -845,6 +844,7 @@ internal class FakeLayoutTracker : ILayoutPerformanceTracker
                 }
                 catch
                 {
+	                // Swallow any non-cancellation exceptions from the subscriber notifications
                 }
             }
 
@@ -861,7 +861,7 @@ internal class FakeLayoutTracker : ILayoutPerformanceTracker
                 _pendingTasks.RemoveAll(t => t.IsCompleted);
             }
 
-            await Task.Delay(20, cancellationToken);
+            await Task.Delay(25, cancellationToken);
         }
     }
 }
