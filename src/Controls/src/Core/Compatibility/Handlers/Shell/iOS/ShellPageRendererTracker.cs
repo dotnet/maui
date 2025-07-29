@@ -9,6 +9,7 @@ using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Graphics.Platform;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
@@ -16,7 +17,7 @@ using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExten
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class ShellPageRendererTracker : IShellPageRendererTracker, IFlyoutBehaviorObserver
+	public class ShellPageRendererTracker : IShellPageRendererTracker, IFlyoutBehaviorObserver, IAppearanceObserver
 	{
 		#region IShellPageRendererTracker
 
@@ -63,6 +64,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		Page _page;
 		NSCache _nSCache;
 		SearchHandlerAppearanceTracker _searchHandlerAppearanceTracker;
+		Graphics.Color _toolbarItemColor;
 		IFontManager _fontManager;
 		bool _isVisiblePage;
 
@@ -218,11 +220,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (oldPage == null)
 				{
 					((IShellController)_context.Shell).AddFlyoutBehaviorObserver(this);
+					((IShellController)_context.Shell).AddAppearanceObserver(this, newPage);
 				}
 			}
 			else if (newPage == null && _context?.Shell is IShellController shellController)
 			{
 				shellController.RemoveFlyoutBehaviorObserver(this);
+				shellController.RemoveAppearanceObserver(this);
 			}
 		}
 
@@ -280,8 +284,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateTitleView();
 		}
 
-		internal void UpdateToolbarItemsInternal(bool updateWhenLoaded = true)
+		internal void UpdateToolbarItemsInternal(bool updateWhenLoaded = true, Graphics.Color toolbarItemColor = null)
 		{
+			if (toolbarItemColor != null)
+				_toolbarItemColor = toolbarItemColor;
+
 			if (updateWhenLoaded && Page.IsLoaded || !updateWhenLoaded)
 				UpdateToolbarItems();
 		}
@@ -305,7 +312,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				foreach (var item in System.Linq.Enumerable.OrderBy(Page.ToolbarItems, x => x.Priority))
 				{
-					(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(false, true));
+					(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(_toolbarItemColor));
 				}
 			}
 			else if (shellToolbarItems != null && shellToolbarItems.Count > 0) // If the page has no toolbar items use the ones defined for the shell
@@ -906,6 +913,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				Page.PropertyChanged -= OnPagePropertyChanged;
 				((INotifyCollectionChanged)Page.ToolbarItems).CollectionChanged -= OnToolbarItemsChanged;
 				((IShellController)_context.Shell).RemoveFlyoutBehaviorObserver(this);
+				((IShellController)_context.Shell).RemoveAppearanceObserver(this);
 
 				if (BackButtonBehavior != null)
 					BackButtonBehavior.PropertyChanged -= OnBackButtonBehaviorPropertyChanged;
@@ -929,5 +937,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_disposed = true;
 		}
 		#endregion IDisposable Support
+
+		#region IAppearanceObserver
+
+		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
+		{
+			UpdateToolbarItemsInternal(true, appearance?.TitleColor);
+		}
+		
+		#endregion
 	}
 }
