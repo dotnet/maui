@@ -49,27 +49,40 @@ namespace Microsoft.Maui.Platform
 
 			var time = timePicker.Time;
 			var format = timePicker.Format;
-
-			mauiTimePicker.Text = time.ToFormattedString(format, cultureInfo);
-
+			
+			// Determine if format contains AM/PM designator
+			bool hasAmPmFormat = format != null && format.Contains('t', StringComparison.Ordinal);
+			
+			// Determine which culture to use for consistent formatting
+			CultureInfo formattingCulture;
 			if (format != null)
 			{
-				if (format.Contains('H', StringComparison.Ordinal))
+				if (hasAmPmFormat || format.Contains('h', StringComparison.Ordinal))
 				{
-					var ci = new CultureInfo("de-DE");
-					NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
-
-					if (picker != null)
-						picker.Locale = locale;
+					// For 12-hour format or any format with AM/PM, use US locale
+					formattingCulture = new CultureInfo("en-US");
 				}
-				else if (format.Contains('h', StringComparison.Ordinal))
+				else if (format.Contains('H', StringComparison.Ordinal))
 				{
-					var ci = new CultureInfo("en-US");
-					NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
-
-					if (picker != null)
-						picker.Locale = locale;
+					// For 24-hour format without AM/PM, use German locale
+					formattingCulture = new CultureInfo("de-DE");
 				}
+				else
+				{
+					formattingCulture = cultureInfo;
+				}
+			}
+			else
+			{
+				formattingCulture = cultureInfo;
+			}
+			
+			// Apply the same culture to both the text display and the picker
+			mauiTimePicker.Text = time.ToFormattedString(format ?? string.Empty, formattingCulture);
+			
+			if (picker != null && format != null)
+			{
+				picker.Locale = new NSLocale(formattingCulture.TwoLetterISOLanguageName);
 			}
 
 			mauiTimePicker.UpdateCharacterSpacing(timePicker);
