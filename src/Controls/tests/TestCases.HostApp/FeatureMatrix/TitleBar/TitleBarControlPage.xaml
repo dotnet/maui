@@ -151,7 +151,7 @@
                                          CheckedChanged="OnTitleBarContentChanged"
                                          Value="ProgressBar"/>
                      </VerticalStackLayout>
-                      <Button AutomationId="ResetButton"
+                     <Button AutomationId="ResetButton"
                              Text="Reset"
                              HorizontalOptions="Start"
                              Clicked="OnResetButtonClicked"

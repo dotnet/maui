@@ -1,3 +1,4 @@
+// This feature test is applicable only on desktop platforms (Windows and Mac).
 #if MACCATALYST || WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
@@ -452,7 +453,7 @@ public class TitleBarFeatureTests : UITest
 		VerifyScreenshot(includeTitleBar: true);
 	}
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_MACCATALYST //For more information see:
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_MACCATALYST //For more information see: https://github.com/dotnet/maui/issues/30399
 	[Test]
 	[Category(UITestCategories.TitleView)]
 	public void TitleBar_RTL_WithTrailingContentAndLeadingContent()
