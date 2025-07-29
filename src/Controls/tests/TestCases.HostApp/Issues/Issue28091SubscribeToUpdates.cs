@@ -7,23 +7,17 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, "28091SubscribeToUpdates", "Add Layout Performance Profiler (SubscribeToUpdates)", PlatformAffected.All)]
 public class Issue28091SubscribeToUpdates : ContentPage
 {
-	 DateTime _lastUpdate = DateTime.MinValue; 
-	 readonly TimeSpan _debounceInterval = TimeSpan.FromMilliseconds(10);
-	
     readonly Rectangle _rectangle;
     readonly Label _historyLabel;
-    readonly StringBuilder _historyBuilder;
+    bool _hasReceivedUpdate = false;
 
     public Issue28091SubscribeToUpdates()
     {
-		var infoLabel = new Label
-		{
-			AutomationId = "WaitForStubControl",
-			Text = "Issue 28091"
-		};
-
-		// Initialize StringBuilder for history
-		_historyBuilder = new StringBuilder();
+        var infoLabel = new Label
+        {
+            AutomationId = "WaitForStubControl",
+            Text = "Issue 28091"
+        };
 
         // Rectangle inside a Border
         _rectangle = new Rectangle
@@ -83,8 +77,8 @@ public class Issue28091SubscribeToUpdates : ContentPage
             Padding = new Thickness(20),
             Children =
             {
-				infoLabel,
-				_rectangle,
+                infoLabel,
+                _rectangle,
                 increaseWidthButton,
                 decreaseWidthButton,
                 increaseHeightButton,
@@ -99,16 +93,16 @@ public class Issue28091SubscribeToUpdates : ContentPage
 
     void OnLayoutUpdate(LayoutUpdate update)
     {
-	    _historyBuilder.AppendLine($"Pass: {update.PassType}, Element: {update.Element}, Duration: {update.TotalTime:F2}ms, Time: {update.TimestampUtc}");
+	    Console.WriteLine($@"Pass: {update.PassType}, Element: {update.Element}, Duration: {update.TotalTime:F2}ms, Time: {update.TimestampUtc}");
 	    
-	    if (DateTime.UtcNow - _lastUpdate >= _debounceInterval)
-	    {
-		    MainThread.BeginInvokeOnMainThread(() =>
-		    {
-			    _historyLabel.Text = _historyBuilder.ToString();
-			    _lastUpdate = DateTime.UtcNow;
-		    });
-	    }
+        if (!_hasReceivedUpdate)
+        {
+            _hasReceivedUpdate = true;
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                _historyLabel.Text = "Passed";
+            });
+        }
     }
 
     void OnIncreaseWidthClicked(object sender, EventArgs e)

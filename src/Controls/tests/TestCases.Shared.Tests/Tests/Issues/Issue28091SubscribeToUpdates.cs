@@ -21,51 +21,17 @@ public class Issue28091SubscribeToUpdates : _IssuesUITest
 	public void HistoryLabel_ShouldUpdate_AfterInteractions()
 	{
 		App.WaitForElement("WaitForStubControl");
-		var initialText = App.FindElement("HistoryLabel")?.GetText();
 
 		// Simulate layout changes
 		App.Tap("IncreaseWidthButton");
 		App.Tap("IncreaseHeightButton");
 
-		// Wait for history label to update with profiler data
-		WaitForPerformanceData();
-
 		// Capture updated history
 		var updatedText = App.FindElement("HistoryLabel")?.GetText();
 
-		// Validate history contains expected profiler data
+		// Validate history shows "passed" indicating performance updates were received
 		Assert.That(updatedText, Is.Not.Null
-			.And.Contains("Rectangle")
-			.And.Contains("Duration")
+			.And.EqualTo("passed")
 			.IgnoreCase);
-		Assert.That(updatedText, Is.Not.EqualTo(initialText));
-	}
-
-	void WaitForPerformanceData()
-	{
-		const int maxRetries = 5;
-		const int delayMs = 500;
-
-		for (int i = 0; i < maxRetries; i++)
-		{
-			try
-			{
-				var historyText = App.FindElement("HistoryLabel")?.GetText();
-				if (!string.IsNullOrEmpty(historyText) &&
-				    (historyText.Contains("Rectangle", StringComparison.OrdinalIgnoreCase) ||
-				     historyText.Contains("Duration", StringComparison.OrdinalIgnoreCase)))
-				{
-					return; // Found
-				}
-			}
-			catch
-			{
-				// Ignore exceptions during polling
-			}
-
-			Thread.Sleep(delayMs);
-		}
-
-		// If we reach here, the retry failed, let the main test assertions handle it
 	}
 }

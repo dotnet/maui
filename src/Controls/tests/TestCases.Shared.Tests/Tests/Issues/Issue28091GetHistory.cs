@@ -26,10 +26,17 @@ public class Issue28091GetHistory : _IssuesUITest
 		var initialText = App.FindElement("HistoryLabel").GetText();
 
 		// Trigger some layout updates
-		App.Tap("IncreaseWidthButton");
-		App.Tap("IncreaseHeightButton");
-		App.Tap("DecreaseWidthButton");
-		App.Tap("DecreaseHeightButton");
+		for (int i = 0; i < 5; i++)
+		{	
+			App.WaitForElement("IncreaseWidthButton");
+			App.Tap("IncreaseWidthButton");
+		}
+
+		for (int i = 0; i < 5; i++)
+		{
+			App.WaitForElement("DecreaseHeightButton");
+			App.Tap("DecreaseHeightButton");
+		}
 
 		// Show the recorded history
 		App.Tap("ShowHistoryButton");
