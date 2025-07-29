@@ -57,7 +57,6 @@ namespace Microsoft.Maui
 					// Create a result object with proper dispose handling
 					return new ImageSourceServiceLoadResult(() =>
 					{
-						bitmap?.Dispose();
 						drawable?.Dispose();
 					});
 				}
