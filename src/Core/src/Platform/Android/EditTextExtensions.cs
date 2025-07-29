@@ -262,13 +262,12 @@ namespace Microsoft.Maui.Platform
 		static int GetSelectionEnd(EditText editText, ITextInput entry, int start)
 		{
 			int selectionLength = entry.SelectionLength;
-			int end = start;
-			end = Math.Max(start, Math.Min(editText.Length(), start + selectionLength));
+			int end = Math.Max(start, Math.Min(editText.Length(), start + selectionLength));
 			int newSelectionLength = Math.Max(0, end - start);
-			if (start > editText.SelectionEnd && entry.SelectionLength > 0)
+			if (start > editText.SelectionEnd && selectionLength > 0)
 			{
 				end = editText.SelectionEnd;
-				newSelectionLength = entry.SelectionLength;
+				newSelectionLength = selectionLength;
 			}
 
 			// Updating this property results in UpdateSelectionLength being called again messing things up
