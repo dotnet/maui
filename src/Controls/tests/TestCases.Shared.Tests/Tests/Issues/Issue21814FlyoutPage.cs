@@ -75,6 +75,7 @@ public class Issue21814FlyoutPage : _IssuesUITest
 	[Category(UITestCategories.Navigation)]
 	public void NavigationFromItem2ToItem3ShowsCorrectParameters()
 	{
+		// Starting on Item 1
 #if ANDROID || WINDOWS
 		App.TapBackArrow();
 #elif IOS || MACCATALYST
@@ -91,7 +92,36 @@ public class Issue21814FlyoutPage : _IssuesUITest
 		Assert.That(item3OnNavigatedToText, Does.Contain("PreviousPage: Issue21814FlyoutItem1"));
 		Assert.That(item3OnNavigatedToText, Does.Contain("NavigationType: Replace"));
 	}
+	
+	[Test, Order(4)]
+	[Category(UITestCategories.FlyoutPage)]
+	[Category(UITestCategories.Navigation)]
+	public void PopNavigationPageAfterPush()
+	{
+#if ANDROID || WINDOWS
+		App.TapBackArrow();
+#elif IOS || MACCATALYST
+		App.TapBackArrow("Item 1");
+#endif
+		
+		// Navigating to Item 2
+		OpenFlyoutMenu();
+		App.Tap(Item2MenuItem);
+		App.WaitForElement(FlyoutContent2);
 
+		// Popping back to Item 1
+		App.Back();
+		App.WaitForElement(FlyoutContent1);
+
+		// Verifying navigation events for pop from Item 2 to Item 1
+		// Popping to Item 1 does not trigger OnNavigatedFrom for Item 1
+		// Item 1's OnNavigatedFrom remains from the earlier navigation to Item 2
+		var onNavigatedFromText = App.FindElement(FlyoutItem1OnNavigatedFromLabel).GetText();
+		Console.WriteLine($"Item2 OnNavigatedFrom: {onNavigatedFromText}");
+		Assert.That(onNavigatedFromText, Does.Contain("DestinationPage: Issue21814FlyoutItem2"));
+		Assert.That(onNavigatedFromText, Does.Contain("NavigationType: Replace"));
+	}
+	
 	void OpenFlyoutMenu()
 	{
 		App.TapFlyoutPageIcon("Flyout Menu");

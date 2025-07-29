@@ -52,13 +52,34 @@ namespace Microsoft.Maui.Controls
 				if (value.RealParent != null)
 					throw new InvalidOperationException("Detail must not already have a parent.");
 
-				var previousDetail = _detail;				
-				var destinationPage = _detail is NavigationPage currentNavPage ? currentNavPage.CurrentPage : _detail;
-				var previousPage = previousDetail is NavigationPage previousNavPage ? previousNavPage.CurrentPage : previousDetail;
-				
-				// TODO MAUI refine this to fire earlier
-				previousDetail?.SendNavigatingFrom(new NavigatingFromEventArgs(value, NavigationType.Replace));
-		
+				var previousDetail = _detail;
+				var destinationPage = value is NavigationPage destinationNavPage ? destinationNavPage.CurrentPage : value;
+				var previousPage = previousDetail is NavigationPage previousNavPage
+					? previousNavPage.CurrentPage
+					: previousDetail;
+
+				// Triggering NavigatingFrom event for the previous or initial Detail
+				if (previousDetail != null)
+				{
+					if (previousDetail is NavigationPage prevNavPage)
+						prevNavPage.CurrentPage?.SendNavigatingFrom(
+							new NavigatingFromEventArgs(destinationPage, NavigationType.Replace));
+					else
+						previousDetail?.SendNavigatingFrom(new NavigatingFromEventArgs(value, NavigationType.Replace));
+				}
+				else if (value is NavigationPage currentNavPage)
+				{
+					// Triggering NavigatingFrom for initial Detail when it is a NavigationPage
+					currentNavPage.CurrentPage?.SendNavigatingFrom(
+						new NavigatingFromEventArgs(currentNavPage.CurrentPage, NavigationType.Replace)); // Initial Detail
+				}
+				else
+				{
+					// Triggering NavigatingFrom for initial Detail when it is not a NavigationPage
+					value?.SendNavigatingFrom(new NavigatingFromEventArgs(value,
+						NavigationType.Replace)); // Initial Detail
+				}
+
 				OnPropertyChanging();
 				if (_detail != null)
 					InternalChildren.Remove(_detail);
@@ -66,14 +87,38 @@ namespace Microsoft.Maui.Controls
 				InternalChildren.Add(_detail);
 				OnPropertyChanged();
 
-				if (this.HasAppeared)
+				// Handling Appearing and Disappearing events if the FlyoutPage has appeared
+				if (HasAppeared)
 				{
-					previousDetail?.SendDisappearing();
-					_detail?.SendAppearing();
+					// Triggering Disappearing for the previous Detail
+					if (previousDetail is NavigationPage prevNavPage)
+						prevNavPage.CurrentPage?.SendDisappearing();
+					else
+						previousDetail?.SendDisappearing();
+
+					// Triggering Appearing for the new Detail
+					if (_detail is NavigationPage detailNavPage)
+						detailNavPage.CurrentPage?.SendAppearing();
+					else
+						_detail?.SendAppearing();
 				}
-	
-				previousDetail?.SendNavigatedFrom(new NavigatedFromEventArgs(destinationPage, NavigationType.Replace));
-				_detail?.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace));
+
+				// Trigger NavigatedFrom for previousDetail, NavigatedTo for new Detail
+				if (previousDetail != null)
+				{
+					if (previousDetail is NavigationPage prevNavPage)
+						prevNavPage.CurrentPage?.SendNavigatedFrom(
+							new NavigatedFromEventArgs(destinationPage, NavigationType.Replace));
+					else
+						previousDetail?.SendNavigatedFrom(new NavigatedFromEventArgs(destinationPage,
+							NavigationType.Replace));
+				}
+
+				if (_detail is NavigationPage newNavPage)
+					newNavPage.CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(previousPage,
+						NavigationType.Replace));
+				else
+					_detail?.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace));
 			}
 		}
 

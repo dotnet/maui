@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -160,6 +161,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(secondPage, firstPage.NavigatedFromArgs.DestinationPage);
 		}
 
+        [Fact]
+        public async Task FlyoutPageToggleIsPresented()
+        {
+            // Testing toggling IsPresented in FlyoutPage without changing navigation events
+            var flyout = new LCPage { Title = "Flyout" };
+            var detail = new LCPage { Title = "Detail" };
+            var flyoutPage = new FlyoutPage { Flyout = flyout, Detail = detail }.AddToTestWindow();
+
+            // Clearing initial navigation args to focus on IsPresented toggle
+            detail.ClearNavigationArgs();
+            flyout.ClearNavigationArgs();
+
+            // Toggling IsPresented
+            flyoutPage.IsPresented = true;
+            await Task.Yield();
+            flyoutPage.IsPresented = false;
+            await Task.Yield();
+
+            // Verifying no navigation events are triggered
+            Assert.Null(flyout.NavigatingFromArgs);
+            Assert.Null(flyout.NavigatedFromArgs);
+            Assert.Null(flyout.NavigatedToArgs);
+            Assert.Null(detail.NavigatingFromArgs);
+            Assert.Null(detail.NavigatedFromArgs);
+            Assert.Null(detail.NavigatedToArgs);
+
+            // Verifying Loaded/Unloaded counts remain unchanged
+            Assert.Equal(1, flyout.AppearingCount);
+            Assert.Equal(0, flyout.DisappearingCount);
+            Assert.Equal(1, detail.AppearingCount);
+            Assert.Equal(0, detail.DisappearingCount);
+        }
+        
 		[Fact]
 		public async Task PushModalPage()
 		{
