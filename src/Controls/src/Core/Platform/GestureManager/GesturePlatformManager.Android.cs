@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _isEnabled;
 		bool _focusableDefaultValue;
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
+		IEnumerable<TapGestureRecognizer>? _keyPressGestureRecognizers;
 
 		View? View => Element as View;
 		WeakReference<AView>? _control;
@@ -221,7 +222,13 @@ namespace Microsoft.Maui.Controls.Platform
 			if (shouldAddTouchEvent)
 			{
 				platformView.Touch += OnPlatformViewTouched;
-				platformView.KeyPress += OnKeyPress;
+
+				// If we have a TapGestureRecognizer, we need to handle key presses
+				_keyPressGestureRecognizers = View.GestureRecognizers.OfType<TapGestureRecognizer>().Where(x => x.NumberOfTapsRequired == 1);
+				if (_keyPressGestureRecognizers.Any())
+				{
+					platformView.KeyPress += OnKeyPress;
+				}
 				platformView.Focusable = true;
 			}
 		}
@@ -233,9 +240,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (View is null)
 				return;
 
-			if (e.KeyCode == Keycode.Space && e.Event?.Action == KeyEventActions.Down)
+			if (e.KeyCode == Keycode.Space && e.Event?.Action == KeyEventActions.Down && _keyPressGestureRecognizers is not null)
 			{
-				foreach (var tapGestureRecognizer in View.GestureRecognizers.OfType<TapGestureRecognizer>())
+				foreach (var tapGestureRecognizer in _keyPressGestureRecognizers)
 				{
 					tapGestureRecognizer.SendTapped(View, (v) => Point.Zero);
 				}
