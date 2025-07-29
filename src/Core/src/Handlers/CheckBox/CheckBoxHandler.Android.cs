@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override AppCompatCheckBox CreatePlatformView()
 		{
-			var platformCheckBox = new MaterialCheckBox(Context)
+			var platformCheckBox = new MaterialCheckBox(MauiMaterialContextThemeWrapper.Create(Context))
 			{
 				SoundEffectsEnabled = false
 			};
