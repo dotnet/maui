@@ -1,7 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 
 namespace Microsoft.Maui.Handlers
@@ -53,6 +55,38 @@ namespace Microsoft.Maui.Handlers
 
 			UpdateValue(nameof(IView.Height));
 			UpdateValue(nameof(IView.Width));
+		}
+
+		/// <inheritdoc/>
+		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			if (VirtualView.Aspect == Aspect.AspectFit
+				&& VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill
+				&& VirtualView.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill)
+			{
+				if (PlatformView.MaxWidth == double.PositiveInfinity
+					&& PlatformView.MaxHeight == double.PositiveInfinity)
+				{
+					var imageSize = GetImageSize();
+
+					if (imageSize.Width != 0 && imageSize.Height != 0)
+					{
+						PlatformView.MaxWidth = imageSize.Width;
+						PlatformView.MaxHeight = imageSize.Height;
+					}
+				}
+			}
+			else
+			{
+				if (VirtualView.MaximumHeight != PlatformView.MaxHeight
+					|| VirtualView.MaximumWidth != PlatformView.MaxWidth)
+				{
+					PlatformView.MaxWidth = VirtualView.MaximumWidth;
+					PlatformView.MaxHeight = VirtualView.MaximumHeight;
+				}
+			}
+
+			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		/// <summary>
@@ -144,6 +178,20 @@ namespace Microsoft.Maui.Handlers
 			// handler hasn't been disconnected
 			if (this.IsConnected())
 				UpdateValue(nameof(IImage.IsAnimationPlaying));
+		}
+
+		private Graphics.Size GetImageSize()
+		{
+			if (PlatformView.Source is BitmapSource bitmap)
+			{
+				// BitmapSource may not have PixelWidth/PixelHeight set until image is loaded
+				if (bitmap.PixelWidth > 0 && bitmap.PixelHeight > 0)
+				{
+					return new Graphics.Size(bitmap.PixelWidth, bitmap.PixelHeight);
+				}
+				// If not available, set to zero
+			}
+			return Graphics.Size.Zero;
 		}
 
 		partial class ImageImageSourcePartSetter
