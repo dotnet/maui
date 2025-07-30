@@ -19,11 +19,14 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ControlTemplateProperty = BindableProperty.Create(nameof(ControlTemplate), typeof(ControlTemplate), typeof(TemplatedView), null,
 			propertyChanged: TemplateUtilities.OnControlTemplateChanged);
 
-		/// <summary>Bindable property for <see cref="IClippedToBoundsElement.IsClippedToBounds"/>.</summary>
+		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
 		public new static readonly BindableProperty IsClippedToBoundsProperty =
 			ClippedToBoundsElement.IsClippedToBoundsProperty;
 
-		/// <inheritdoc cref="IClippedToBoundsElement.IsClippedToBounds"/>
+		/// <summary>
+		/// Gets or sets a value which determines if the layout should clip its children to its bounds.
+		/// The default value is <see langword="false"/>.
+		/// </summary>
 		public new bool IsClippedToBounds
 		{
 			get => (bool)GetValue(IsClippedToBoundsProperty);
@@ -43,7 +46,15 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
 		public new static readonly BindableProperty CascadeInputTransparentProperty = InputTransparentContainerElement.CascadeInputTransparentProperty;
 
-		/// <inheritdoc cref="IInputTransparentContainerElement.CascadeInputTransparent"/>
+		/// <summary>
+		/// Gets or sets a value that controls whether child elements
+		/// inherit the input transparency of this layout when the transparency is <see langword="true"/>.
+		/// </summary>
+		/// <value>
+		/// <see langword="true" /> to cause child elements to inherit the input transparency of this layout,
+		/// when this layout's <see cref="VisualElement.InputTransparent" /> property is <see langword="true" />.
+		/// <see langword="false" /> to cause child elements to ignore the input transparency of this layout.
+		/// </value>
 		public new bool CascadeInputTransparent
 		{
 			get => (bool)GetValue(CascadeInputTransparentProperty);
