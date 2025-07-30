@@ -1,10 +1,12 @@
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // This test will fail on Windows due to lack of Map control support, and on Android unless a valid API key is configured for Maps.
+
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.Layout)]
+[Category(UITestCategories.Maps)]
 public class MapFeatureTests : UITest
 {
 	public const string MapFeatureMatrix = "Map Feature Matrix";
@@ -617,4 +619,197 @@ public class MapFeatureTests : UITest
 
 		Assert.That(App.WaitForElement("MapClickedLabel").GetText(), Is.Not.EqualTo("Not Clicked"));
 	}
+
+	[Test]
+	public void Map_IsShowingUser_WithItemTemplate()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		for (int i = 0; i < 6; i++)
+		{
+			App.WaitForElement("AddPinButton");
+			App.Tap("AddPinButton");
+		}
+
+		App.WaitForElement("SetItemsSourceButton");
+		App.Tap("SetItemsSourceButton");
+
+		App.WaitForElement("SetItemTemplateButton");
+		App.Tap("SetItemTemplateButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	public void Map_IsShowingUser_WithItemTemplateSelector()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		for (int i = 0; i < 6; i++)
+		{
+			App.WaitForElement("AddPinButton");
+			App.Tap("AddPinButton");
+		}
+
+		App.WaitForElement("SetItemsSourceButton");
+		App.Tap("SetItemsSourceButton");
+
+		App.WaitForElement("SetTemplateSelectorButton");
+		App.Tap("SetTemplateSelectorButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	public void Map_IsEnabledScroll_Hybrid_WithItemTemplate()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		App.WaitForElement("IsScrollEnabledCheckBox");
+		App.Tap("IsScrollEnabledCheckBox");
+
+		App.WaitForElement("HybridRadioButton");
+		App.Tap("HybridRadioButton");
+
+		for (int i = 0; i < 7; i++)
+		{
+			App.WaitForElement("AddPinButton");
+			App.Tap("AddPinButton");
+		}
+
+		App.WaitForElement("SetItemsSourceButton");
+		App.Tap("SetItemsSourceButton");
+
+		App.WaitForElement("SetItemTemplateButton");
+		App.Tap("SetItemTemplateButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		App.WaitForElement("MapView");
+		App.ScrollLeft("MapView");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	public void Map_IsZoomEnabled_Satellite_WithItemTemplateSelector()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		App.WaitForElement("IsZoomEnabledCheckBox");
+		App.Tap("IsZoomEnabledCheckBox");
+
+		App.WaitForElement("ZoomOutButton");
+		App.Tap("ZoomOutButton");
+
+		App.WaitForElement("SatelliteRadioButton");
+		App.Tap("SatelliteRadioButton");
+
+		for (int i = 0; i < 6; i++)
+		{
+			App.WaitForElement("AddPinButton");
+			App.Tap("AddPinButton");
+		}
+
+		App.WaitForElement("SetItemsSourceButton");
+		App.Tap("SetItemsSourceButton");
+
+		App.WaitForElement("SetTemplateSelectorButton");
+		App.Tap("SetTemplateSelectorButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	public void Map_Elements_PolyLine_WithTemplate_HybridMapType()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		App.WaitForElement("HybridRadioButton");
+		App.Tap("HybridRadioButton");
+
+		for (int i = 0; i < 10; i++)
+		{
+			App.WaitForElement("AddPinButton");
+			App.Tap("AddPinButton");
+		}
+
+		for (int i = 0; i < 9; i++)
+		{
+			App.WaitForElement("AddElementButton");
+			App.Tap("AddElementButton");
+		}
+
+		App.WaitForElement("SetItemsSourceButton");
+		App.Tap("SetItemsSourceButton");
+
+		App.WaitForElement("SetItemTemplateButton");
+		App.Tap("SetItemTemplateButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	public void Map_Pins_WitItemTemplateSelector_WithVisibleRegion()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		for (int i = 0; i < 10; i++)
+		{
+			App.WaitForElement("AddPinButton");
+			App.Tap("AddPinButton");
+		}
+
+		App.WaitForElement("ShowAllPinsButton");
+		App.Tap("ShowAllPinsButton");
+
+		App.WaitForElement("SetItemsSourceButton");
+		App.Tap("SetItemsSourceButton");
+
+		App.WaitForElement("SetTemplateSelectorButton");
+		App.Tap("SetTemplateSelectorButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
 }
+#endif
