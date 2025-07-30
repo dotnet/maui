@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 19997, "[Android, iOS, MacOS]Entry ClearButton Color Not Updating on AppThemeBinding Change", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.macOS)]
+[Issue(IssueTracker.Github, 19997, "[Android, iOS, MacOS] Entry ClearButton Color Not Updating on AppThemeBinding Change", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue19997 : TestContentPage
 {
 	protected override void Init()
