@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var measure = PlatformHandler.VirtualView.Measure(double.PositiveInfinity, ConstrainedDimension);
 
+			IntrinsicCellSize = new CGSize(measure.Width, measure.Height);
 			return new CGSize(measure.Width, ConstrainedDimension);
 		}
 
