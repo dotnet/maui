@@ -110,8 +110,11 @@ public class Issue21814FlyoutPage : _IssuesUITest
 		App.WaitForElement(FlyoutContent2);
 
 		// Popping back to Item 1
-		App.Back();
-		App.WaitForElement(FlyoutContent1);
+#if ANDROID || WINDOWS
+		App.TapBackArrow();
+#elif IOS || MACCATALYST
+		App.TapBackArrow("Item 1");
+#endif
 
 		// Verifying navigation events for pop from Item 2 to Item 1
 		// Popping to Item 1 does not trigger OnNavigatedFrom for Item 1

@@ -53,72 +53,49 @@ namespace Microsoft.Maui.Controls
 					throw new InvalidOperationException("Detail must not already have a parent.");
 
 				var previousDetail = _detail;
-				var destinationPage = value is NavigationPage destinationNavPage ? destinationNavPage.CurrentPage : value;
+
+				// Get the actual pages for navigation events (unwrap NavigationPages)
+				var destinationPage =
+					value is NavigationPage destinationNavPage ? destinationNavPage.CurrentPage : value;
 				var previousPage = previousDetail is NavigationPage previousNavPage
 					? previousNavPage.CurrentPage
 					: previousDetail;
 
-				// Triggering NavigatingFrom event for the previous or initial Detail
-				if (previousDetail != null)
+				// Send NavigatingFrom event to the previous detail (if any)
+				if (previousDetail is not null)
 				{
-					if (previousDetail is NavigationPage prevNavPage)
-						prevNavPage.CurrentPage?.SendNavigatingFrom(
-							new NavigatingFromEventArgs(destinationPage, NavigationType.Replace));
-					else
-						previousDetail?.SendNavigatingFrom(new NavigatingFromEventArgs(value, NavigationType.Replace));
-				}
-				else if (value is NavigationPage currentNavPage)
-				{
-					// Triggering NavigatingFrom for initial Detail when it is a NavigationPage
-					currentNavPage.CurrentPage?.SendNavigatingFrom(
-						new NavigatingFromEventArgs(currentNavPage.CurrentPage, NavigationType.Replace)); // Initial Detail
+					previousDetail.SendNavigatingFrom(new NavigatingFromEventArgs(destinationPage,
+						NavigationType.Replace));
 				}
 				else
 				{
-					// Triggering NavigatingFrom for initial Detail when it is not a NavigationPage
-					value?.SendNavigatingFrom(new NavigatingFromEventArgs(value,
-						NavigationType.Replace)); // Initial Detail
+					// For initial detail, send NavigatingFrom to itself
+					value.SendNavigatingFrom(new NavigatingFromEventArgs(destinationPage, NavigationType.Replace));
 				}
 
+				// Update the detail property
 				OnPropertyChanging();
-				if (_detail != null)
+				if (_detail is not null)
 					InternalChildren.Remove(_detail);
 				_detail = value;
 				InternalChildren.Add(_detail);
 				OnPropertyChanged();
 
-				// Handling Appearing and Disappearing events if the FlyoutPage has appeared
+				// Handle Appearing/Disappearing events if the FlyoutPage has appeared
 				if (HasAppeared)
 				{
-					// Triggering Disappearing for the previous Detail
-					if (previousDetail is NavigationPage prevNavPage)
-						prevNavPage.CurrentPage?.SendDisappearing();
-					else
-						previousDetail?.SendDisappearing();
-
-					// Triggering Appearing for the new Detail
-					if (_detail is NavigationPage detailNavPage)
-						detailNavPage.CurrentPage?.SendAppearing();
-					else
-						_detail?.SendAppearing();
+					previousDetail?.SendDisappearing();
+					_detail?.SendAppearing();
 				}
 
-				// Trigger NavigatedFrom for previousDetail, NavigatedTo for new Detail
-				if (previousDetail != null)
+				// Send NavigatedFrom and NavigatedTo events
+				if (previousDetail is not null)
 				{
-					if (previousDetail is NavigationPage prevNavPage)
-						prevNavPage.CurrentPage?.SendNavigatedFrom(
-							new NavigatedFromEventArgs(destinationPage, NavigationType.Replace));
-					else
-						previousDetail?.SendNavigatedFrom(new NavigatedFromEventArgs(destinationPage,
-							NavigationType.Replace));
+					previousDetail.SendNavigatedFrom(
+						new NavigatedFromEventArgs(destinationPage, NavigationType.Replace));
 				}
 
-				if (_detail is NavigationPage newNavPage)
-					newNavPage.CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(previousPage,
-						NavigationType.Replace));
-				else
-					_detail?.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace));
+				_detail.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace));
 			}
 		}
 
