@@ -10,16 +10,16 @@ namespace Maui.Controls.Sample;
 
 public class SamplePinTemplateSelector : DataTemplateSelector
 {
-    public DataTemplate GenericTemplate { get; set; }
-    public DataTemplate PlaceTemplate { get; set; }
+    public DataTemplate RestaurantTemplate { get; set; }
+    public DataTemplate TouristTemplate { get; set; }
 
     protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
     {
-        if (item is Pin pin)
+        if (item is PlaceInfo placeInfo)
         {
-            return pin.Type == PinType.Place ? PlaceTemplate : GenericTemplate;
+            return placeInfo.Type == PlaceType.Tourist ? TouristTemplate : RestaurantTemplate;
         }
-        return GenericTemplate;
+        return RestaurantTemplate;
     }
 }
 
@@ -41,6 +41,8 @@ public class MapViewModel : INotifyPropertyChanged
     private MapSpan _visibleRegion;
     private ICommand _mapClickedCommand;
     private int _userAddedPinCount = 0;
+
+    public ObservableCollection<PlaceInfo> Places { get; set; } = new();
 
     public MapViewModel()
     {
@@ -220,18 +222,23 @@ public class MapViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-    // public ICommand MarkerClickedCommand
-    // {
-    //     get => _markerClickedCommand;
-    //     set
-    //     {
-    //         _markerClickedCommand = value;
-    //         OnPropertyChanged();
-    //     }
-    // }
 
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+}
+
+public class PlaceInfo
+{
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public Location Location { get; set; } = new Location();
+    public PlaceType Type { get; set; }
+}
+
+public enum PlaceType
+{
+    Restaurant,
+    Tourist,
 }

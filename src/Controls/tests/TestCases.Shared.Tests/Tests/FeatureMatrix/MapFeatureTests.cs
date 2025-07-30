@@ -599,4 +599,22 @@ public class MapFeatureTests : UITest
 
 		VerifyScreenshot();
 	}
+
+	[Test]
+	public void Map_MapClicked()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		App.WaitForElement("MapView");
+		App.TapCoordinates(300, 300);
+
+		Assert.That(App.WaitForElement("MapClickedLabel").GetText(), Is.Not.EqualTo("Not Clicked"));
+	}
 }

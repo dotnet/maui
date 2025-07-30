@@ -201,11 +201,6 @@
                                     AutomationId="ClearItemsSourceButton"
                                     FontSize="11"/>
                      </Grid>
-
-                     <Label Text="{Binding ItemsSource, StringFormat='ItemsSource: {0}'}"
-                            FontSize="10"
-                            TextColor="Gray"/>
-
                      <!-- ItemTemplate Section -->
                      <Grid ColumnDefinitions="*,*"
                            ColumnSpacing="10">
@@ -239,13 +234,6 @@
                                     AutomationId="ClearTemplateSelectorButton"
                                     FontSize="11"/>
                      </Grid>
-
-                     <Label Text="{Binding ItemTemplate, StringFormat='ItemTemplate: {0}'}"
-                            FontSize="10"
-                            TextColor="Gray"/>
-                     <Label Text="{Binding ItemTemplateSelector, StringFormat='ItemTemplateSelector: {0}'}"
-                            FontSize="10"
-                            TextColor="Gray"/>
               </StackLayout>
 
               <!-- VisibleRegion Section - Spanning both columns -->
@@ -256,11 +244,6 @@
                      <Label Text="Visible Region"
                             FontSize="16"
                             FontAttributes="Bold"/>
-                     <!-- 
-                        <Label x:Name="VisibleRegionLabel"
-                               Text="{Binding VisibleRegion, StringFormat='Center: {0}'}"
-                               FontSize="10"
-                               TextColor="Gray"/> -->
 
                      <Grid ColumnDefinitions="*,*"
                            ColumnSpacing="10">

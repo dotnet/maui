@@ -109,7 +109,7 @@ public partial class MapControlMainPage : ContentPage
 			{
 				foreach (Pin pin in e.NewItems)
 				{
-					TestMap.Pins.Add(pin);
+				   TestMap.Pins.Add(pin);
 				}
 			}
 			else if (e.Action == NotifyCollectionChangedAction.Remove)
@@ -130,21 +130,8 @@ public partial class MapControlMainPage : ContentPage
 	{
 		if (e.PropertyName == nameof(_viewModel.ItemsSource))
 		{
-			// When ItemsSource changes, clear manual pins and let binding handle it
-			if (_viewModel.ItemsSource != null)
-			{
-				// Clear manual pins when ItemsSource is set
-				TestMap.Pins.Clear();
-			}
-			else
-			{
-				// Re-add pins manually when ItemsSource is cleared
-				TestMap.Pins.Clear();
-				foreach (var pin in _viewModel.Pins)
-				{
-					TestMap.Pins.Add(pin);
-				}
-			}
+			TestMap.Pins.Clear(); // Clear existing pins if any
+			TestMap.ItemsSource = _viewModel.ItemsSource;
 		}
 		else if (e.PropertyName == nameof(_viewModel.ItemTemplate))
 		{
@@ -153,6 +140,7 @@ public partial class MapControlMainPage : ContentPage
 		}
 		else if (e.PropertyName == nameof(_viewModel.ItemTemplateSelector))
 		{
+			TestMap.ItemTemplate = null;
 			// When ItemTemplateSelector changes in ViewModel, update the actual Map
 			TestMap.ItemTemplateSelector = _viewModel.ItemTemplateSelector;
 		}

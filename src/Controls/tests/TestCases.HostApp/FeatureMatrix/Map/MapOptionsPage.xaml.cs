@@ -1,9 +1,6 @@
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
-using System.Linq;
 using System.ComponentModel;
-using System;
 namespace Maui.Controls.Sample;
 
 public partial class MapOptionsPage : ContentPage
@@ -88,7 +85,17 @@ public partial class MapOptionsPage : ContentPage
                 Type = PinType.Generic,
                 Location = MapViewModel.PearlCityLocation
             };
+
+             var placeInfo = new PlaceInfo
+            {
+                Name = "Current Location",
+                Description = "Pearl City, Hawaii (Current Location)",
+                Location = MapViewModel.PearlCityLocation,
+                Type = PlaceType.Tourist
+            };
+
             _viewModel.Pins.Add(currentLocationPin);
+            _viewModel.Places.Add(placeInfo); 
         }
     }
 
@@ -111,7 +118,6 @@ public partial class MapOptionsPage : ContentPage
     {
         // Count only numbered pins (Pin1, Pin2, etc.), exclude "Current Location" pin
         var numberedPinsCount = _viewModel.Pins.Count(p => p.Label != "Current Location");
-
         // Maximum of 10 numbered pins allowed
         if (numberedPinsCount >= 10)
         {
@@ -122,25 +128,25 @@ public partial class MapOptionsPage : ContentPage
         var pinLocations = new[]
         {
             // Pin 1: Pearl City, Hawaii
-            new { Lat = 21.3933, Lng = -157.9751, Name = "Pearl City", Description = "Suburb, shopping, residential, schools, parks" },
+            new { Lat = 21.3933, Lng = -157.9751, Name = "Pearl City", Description = "Suburb, shopping, residential, schools, parks" , Type = PlaceType.Tourist },
             // Pin 2: Waipahu, Hawaii
-            new { Lat = 21.3986, Lng = -158.0097, Name = "Waipahu", Description = "Historic sugar town, diverse community" },
+            new { Lat = 21.3986, Lng = -158.0097, Name = "Waipahu", Description = "Historic sugar town, diverse community" , Type = PlaceType.Restaurant },
             // Pin 3: Aiea, Hawaii
-            new { Lat = 21.3649, Lng = -157.9634, Name = "Aiea", Description = "Residential, Pearl Harbor views, mall" },
+            new { Lat = 21.3649, Lng = -157.9634, Name = "Aiea", Description = "Residential, Pearl Harbor views, mall" , Type = PlaceType.Restaurant },
             // Pin 4: Waikele, Hawaii
-            new { Lat = 21.4513, Lng = -158.0147, Name = "Waikele", Description = "Outlet shopping, golf, residential area" },
+            new { Lat = 21.4513, Lng = -158.0147, Name = "Waikele", Description = "Outlet shopping, golf, residential area" , Type = PlaceType.Tourist },
             // Pin 5: Halawa, Hawaii
-            new { Lat = 21.3847, Lng = -157.9261, Name = "Halawa", Description = "Aloha Stadium, neighborhoods, valley, events" },
+            new { Lat = 21.3847, Lng = -157.9261, Name = "Halawa", Description = "Aloha Stadium, neighborhoods, valley, events", Type = PlaceType.Restaurant },
             // Pin 6: Mililani, Hawaii
-            new { Lat = 21.4644, Lng = -158.0411, Name = "Mililani", Description = "Planned community, schools, parks, shopping" },
+            new { Lat = 21.4644, Lng = -158.0411, Name = "Mililani", Description = "Planned community, schools, parks, shopping" , Type = PlaceType.Tourist },
             // Pin 7: Ewa Beach, Hawaii
-            new { Lat = 21.3408, Lng = -158.0061, Name = "Ewa Beach", Description = "Coastal, golf, growing, residential, beaches" },
+            new { Lat = 21.3408, Lng = -158.0061, Name = "Ewa Beach", Description = "Coastal, golf, growing, residential, beaches" , Type = PlaceType.Restaurant },
             // Pin 8: Waimalu, Hawaii
-            new { Lat = 21.3247, Lng = -157.9772, Name = "Waimalu", Description = "Small community, shopping, residential, eateries" },
+            new { Lat = 21.3247, Lng = -157.9772, Name = "Waimalu", Description = "Small community, shopping, residential, eateries", Type = PlaceType.Tourist },
             // Pin 9: Kapolei, Hawaii
-            new { Lat = 21.3142, Lng = -158.0397, Name = "Kapolei", Description = "Second city, business, shopping, growth" },
+            new { Lat = 21.3142, Lng = -158.0397, Name = "Kapolei", Description = "Second city, business, shopping, growth", Type = PlaceType.Restaurant },
             // Pin 10: Makakilo, Hawaii
-            new { Lat = 21.3350, Lng = -158.0550, Name = "Makakilo", Description = "Hillside, residential, views, breezy, quiet" }
+            new { Lat = 21.3350, Lng = -158.0550, Name = "Makakilo", Description = "Hillside, residential, views, breezy, quiet", Type = PlaceType.Tourist },
         };
 
         // Get the next pin location based on numbered pins count
@@ -153,6 +159,16 @@ public partial class MapOptionsPage : ContentPage
             Type = PinType.Place,
             Location = new Location(pinData.Lat, pinData.Lng)
         };
+
+        var placeInfo = new PlaceInfo
+        {
+            Name = pinData.Name,
+            Description = "Pin Added from ItemsSource",
+            Location = new Location(pinData.Lat, pinData.Lng),
+            Type = pinData.Type
+        };
+
+        _viewModel.Places.Add(placeInfo);
         _viewModel.Pins.Add(pin);
         _viewModel.UserAddedPinCount++;
     }
@@ -208,15 +224,15 @@ public partial class MapOptionsPage : ContentPage
         // Use the same destinations for all shapes
         var destinations = new[]
         {
-            new { Name = "Pin2", Location = new Location(21.3986, -158.0097), Color = Colors.Red },
-            new { Name = "Pin3", Location = new Location(21.3649, -157.9634), Color = Colors.Green },
-            new { Name = "Pin4", Location = new Location(21.4513, -158.0147), Color = Colors.Orange },
-            new { Name = "Pin5", Location = new Location(21.3847, -157.9261), Color = Colors.Purple },
-            new { Name = "Pin6", Location = new Location(21.4644, -158.0411), Color = Colors.Brown },
-            new { Name = "Pin7", Location = new Location(21.3408, -158.0061), Color = Colors.Pink },
-            new { Name = "Pin8", Location = new Location(21.3247, -157.9772), Color = Colors.Navy },
-            new { Name = "Pin9", Location = new Location(21.3142, -158.0397), Color = Colors.Teal },
-            new { Name = "Pin10", Location = new Location(21.3350, -158.0550), Color = Colors.Maroon }
+            new { Name = "Pin2", Location = new Location(21.3986, -158.0097), Color = Colors.Red, Type = PlaceType.Restaurant },
+            new { Name = "Pin3", Location = new Location(21.3649, -157.9634), Color = Colors.Green, Type = PlaceType.Tourist },
+            new { Name = "Pin4", Location = new Location(21.4513, -158.0147), Color = Colors.Orange, Type = PlaceType.Restaurant },
+            new { Name = "Pin5", Location = new Location(21.3847, -157.9261), Color = Colors.Purple, Type = PlaceType.Tourist },
+            new { Name = "Pin6", Location = new Location(21.4644, -158.0411), Color = Colors.Brown, Type = PlaceType.Restaurant },
+            new { Name = "Pin7", Location = new Location(21.3408, -158.0061), Color = Colors.Pink, Type = PlaceType.Tourist },
+            new { Name = "Pin8", Location = new Location(21.3247, -157.9772), Color = Colors.Navy, Type = PlaceType.Restaurant },
+            new { Name = "Pin9", Location = new Location(21.3142, -158.0397), Color = Colors.Teal, Type = PlaceType.Tourist },
+            new { Name = "Pin10", Location = new Location(21.3350, -158.0550), Color = Colors.Maroon, Type = PlaceType.Restaurant }
         };
 
         if (_selectedShape == "Polyline")
@@ -284,9 +300,8 @@ public partial class MapOptionsPage : ContentPage
     }
     private void SetItemsSourceButton_Clicked(object sender, EventArgs e)
     {
-        // Set the ItemsSource to the pins collection to enable data templating
-        // This will cause the Map to use data binding instead of manual pin management
-        _viewModel.ItemsSource = _viewModel.Pins;
+        _viewModel.Pins.Clear(); // Clear any existing pins
+        _viewModel.ItemsSource = _viewModel.Places;
     }
 
     private void ClearItemsSourceButton_Clicked(object sender, EventArgs e)
@@ -298,56 +313,21 @@ public partial class MapOptionsPage : ContentPage
 
     private void SetItemTemplateButton_Clicked(object sender, EventArgs e)
     {
-        // Create a sample DataTemplate using a Grid to render pin info
+        // Create a sample DataTemplate using a Pin to render place info
         var pinTemplate = new DataTemplate(() =>
         {
-            var grid = new Grid
+            var pin = new Pin
             {
-                Padding = new Thickness(8),
-                ColumnDefinitions =
-                {
-                    new ColumnDefinition { Width = GridLength.Auto },
-                    new ColumnDefinition { Width = GridLength.Star }
-                },
-                RowDefinitions =
-                {
-                    new RowDefinition { Height = GridLength.Auto },
-                    new RowDefinition { Height = GridLength.Auto }
-                }
+                Type = PinType.SearchResult
             };
+            pin.SetBinding(Pin.LocationProperty, new Binding("Location"));
+            pin.SetBinding(Pin.LabelProperty, new Binding("Name"));
+            pin.SetBinding(Pin.AddressProperty, new Binding("Description"));
 
-            var label = new Label
-            {
-                FontAttributes = FontAttributes.Bold,
-                TextColor = Colors.Black
-            };
-            label.SetBinding(Label.TextProperty, "Label");
-            grid.Add(label, 0, 0);
-
-            var address = new Label
-            {
-                FontSize = 12,
-                TextColor = Colors.Gray
-            };
-            address.SetBinding(Label.TextProperty, "Address");
-            grid.Add(address, 0, 1);
-
-            var location = new Label
-            {
-                FontSize = 10,
-                TextColor = Colors.DarkGray
-            };
-            location.SetBinding(Label.TextProperty, new Binding("Location", stringFormat: "Lat: {0.Latitude:F4}, Lng: {0.Longitude:F4}"));
-            grid.Add(location, 1, 0);
-            Grid.SetRowSpan(location, 2);
-
-            return grid;
+            return pin;
         });
 
         _viewModel.ItemTemplate = pinTemplate;
-
-        // Note: ItemsSource must be set separately via "Set ItemsSource" button
-        // Templates only work when ItemsSource is explicitly set by the user
     }
 
     private void ClearItemTemplateButton_Clicked(object sender, EventArgs e)
@@ -359,105 +339,36 @@ public partial class MapOptionsPage : ContentPage
     private void SetTemplateSelectorButton_Clicked(object sender, EventArgs e)
     {
         // Create sample templates for the selector using Grid with red background
-        var genericTemplate = new DataTemplate(() =>
+        var restaurantTemplate = new DataTemplate(() =>
         {
-            var grid = new Grid
+            var pin = new Pin
             {
-                BackgroundColor = Colors.Red,
-                Padding = new Thickness(8),
-                ColumnDefinitions =
-                {
-                    new ColumnDefinition { Width = GridLength.Auto },
-                    new ColumnDefinition { Width = GridLength.Star }
-                },
-                RowDefinitions =
-                {
-                    new RowDefinition { Height = GridLength.Auto },
-                    new RowDefinition { Height = GridLength.Auto }
-                }
+                Type = PinType.Place,
+                Address ="Restaurant Pin",
             };
-
-            var label = new Label
-            {
-                FontAttributes = FontAttributes.Bold,
-                TextColor = Colors.White,
-                Text = "[Generic]"
-            };
-            label.SetBinding(Label.TextProperty, "Label");
-            grid.Add(label, 0, 0);
-
-            var address = new Label
-            {
-                FontSize = 12,
-                TextColor = Colors.White
-            };
-            address.SetBinding(Label.TextProperty, "Address");
-            grid.Add(address, 0, 1);
-
-            var location = new Label
-            {
-                FontSize = 10,
-                TextColor = Colors.White
-            };
-            location.SetBinding(Label.TextProperty, new Binding("Location", stringFormat: "Lat: {0.Latitude:F4}, Lng: {0.Longitude:F4}"));
-            grid.Add(location, 1, 0);
-            Grid.SetRowSpan(location, 2);
-
-            return grid;
+            pin.SetBinding(Pin.LocationProperty, new Binding("Location"));
+            pin.SetBinding(Pin.LabelProperty, new Binding("Name"));
+            return pin;
         });
 
-        var placeTemplate = new DataTemplate(() =>
+        var touristTemplate = new DataTemplate(() =>
         {
-            var grid = new Grid
+            var pin = new Pin
             {
-                BackgroundColor = Colors.DarkRed,
-                Padding = new Thickness(8),
-                ColumnDefinitions =
-                {
-                    new ColumnDefinition { Width = GridLength.Auto },
-                    new ColumnDefinition { Width = GridLength.Star }
-                },
-                RowDefinitions =
-                {
-                    new RowDefinition { Height = GridLength.Auto },
-                    new RowDefinition { Height = GridLength.Auto }
-                }
+                Type = PinType.SearchResult,
+                Address = "Tourist Pin"
             };
+            pin.SetBinding(Pin.LocationProperty, new Binding("Location"));
+            pin.SetBinding(Pin.LabelProperty, new Binding("Name"));
 
-            var label = new Label
-            {
-                FontAttributes = FontAttributes.Bold,
-                TextColor = Colors.Yellow,
-                Text = "[Place]"
-            };
-            label.SetBinding(Label.TextProperty, "Label");
-            grid.Add(label, 0, 0);
-
-            var address = new Label
-            {
-                FontSize = 12,
-                TextColor = Colors.Yellow
-            };
-            address.SetBinding(Label.TextProperty, "Address");
-            grid.Add(address, 0, 1);
-
-            var location = new Label
-            {
-                FontSize = 10,
-                TextColor = Colors.Yellow
-            };
-            location.SetBinding(Label.TextProperty, new Binding("Location", stringFormat: "Lat: {0.Latitude:F4}, Lng: {0.Longitude:F4}"));
-            grid.Add(location, 1, 0);
-            Grid.SetRowSpan(location, 2);
-
-            return grid;
+            return pin;
         });
 
         // Setup ItemTemplateSelector
         var templateSelector = new SamplePinTemplateSelector
         {
-            GenericTemplate = genericTemplate,
-            PlaceTemplate = placeTemplate
+            RestaurantTemplate = restaurantTemplate,
+            TouristTemplate = touristTemplate
         };
 
         _viewModel.ItemTemplateSelector = templateSelector;
