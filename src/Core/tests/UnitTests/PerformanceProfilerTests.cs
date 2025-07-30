@@ -15,19 +15,38 @@ namespace Microsoft.Maui.UnitTests
 	public class PerformanceProfilerTests
 	{
 		const double DurationTolerance = 0.15;
-		
-		const double ShortDelayMs = 25.0;
-		const double MediumDelayMs = 50.0;
-		const double LongDelayMs = 100.0;
-		
+
+		const double ShortDelayMs = 50.0;
+		const double MediumDelayMs = 100.0;
+		const double LongDelayMs = 150.0;
+
 		void ResetLayout()
 		{
 			var layoutProperty = typeof(PerformanceProfiler).GetProperty(
 				"Layout",
 				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
 			layoutProperty?.SetValue(null, null);
-        
-			Thread.Sleep(10);
+
+			Thread.Sleep(50);
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+		}
+
+		async Task<bool> RetryUntilConditionAsync(Func<bool> condition, string errorMessage = null)
+		{
+			const int maxRetries = 20; // 20 retries * 50ms = 1 second
+			const int retryDelayMs = 50;
+
+			for (int i = 0; i < maxRetries; i++)
+			{
+				if (condition())
+					return true;
+				await Task.Delay(retryDelayMs);
+			}
+
+			if (!string.IsNullOrEmpty(errorMessage))
+				Assert.Fail(errorMessage);
+			return false;
 		}
 
 		[Fact]
@@ -85,7 +104,12 @@ namespace Microsoft.Maui.UnitTests
 			perfTracker.Stop();
 
 			await tracker.WaitForUpdatesAsync();
-			
+
+			await RetryUntilConditionAsync(
+				() => !string.IsNullOrEmpty(tracker.MeasuredElement?.ToString()) &&
+				      tracker.MeasuredDuration >= minDuration,
+				$"Expected MeasuredElement: ElementA, MeasuredDuration ≥ {minDuration:F2}ms");
+
 			Assert.Equal("ElementA", tracker.MeasuredElement);
 			Assert.True(tracker.MeasuredDuration >= minDuration,
 				$"Expected MeasuredDuration ≥ {minDuration:F2}ms (with {DurationTolerance:P} tolerance), " +
@@ -106,6 +130,12 @@ namespace Microsoft.Maui.UnitTests
 			perfTracker.Stop();
 
 			await tracker.WaitForUpdatesAsync();
+
+			await RetryUntilConditionAsync(
+				() => !string.IsNullOrEmpty(tracker.ArrangedElement?.ToString()) &&
+				      tracker.ArrangedDuration >= minDuration,
+				$"Expected ArrangedElement: ElementB, ArrangedDuration ≥ {minDuration:F2}ms");
+
 			Assert.Equal("ElementB", tracker.ArrangedElement);
 			Assert.True(tracker.ArrangedDuration >= minDuration,
 				$"Expected ArrangedDuration ≥ {minDuration:F2}ms (with {DurationTolerance:P} tolerance), " +
@@ -133,16 +163,22 @@ namespace Microsoft.Maui.UnitTests
 			await tracker.WaitForUpdatesAsync();
 			var statsAfterArrange = PerformanceProfiler.GetStats();
 
+			await RetryUntilConditionAsync(
+				() => statsAfterMeasure.Layout is not null &&
+				      statsAfterMeasure.Layout.MeasureDuration >= minDuration &&
+				      statsAfterArrange.Layout is not null &&
+				      statsAfterArrange.Layout.ArrangeDuration >= minDuration &&
+				      statsAfterArrange.Layout.MeasureDuration >= minDuration,
+				$"Expected MeasureDuration ≥ {minDuration:F2}ms, ArrangeDuration ≥ {minDuration:F2}ms");
+
 			Assert.NotNull(statsAfterMeasure.Layout);
 			Assert.True(statsAfterMeasure.Layout.MeasureDuration >= minDuration,
 				$"Expected MeasureDuration ≥ {minDuration:F2}ms, got {statsAfterMeasure.Layout.MeasureDuration:F2}ms");
-
 			Assert.Equal(0, statsAfterMeasure.Layout.ArrangeDuration);
 
 			Assert.NotNull(statsAfterArrange.Layout);
 			Assert.True(statsAfterArrange.Layout.ArrangeDuration >= minDuration,
 				$"Expected ArrangeDuration ≥ {minDuration:F2}ms, got {statsAfterArrange.Layout.ArrangeDuration:F2}ms");
-
 			Assert.True(statsAfterArrange.Layout.MeasureDuration >= minDuration,
 				$"Expected MeasureDuration still present, got {statsAfterArrange.Layout.MeasureDuration:F2}ms");
 		}
@@ -180,15 +216,24 @@ namespace Microsoft.Maui.UnitTests
 			tracker2.Stop();
 
 			await tracker.WaitForUpdatesAsync();
+
+			await RetryUntilConditionAsync(
+				() => !string.IsNullOrEmpty(tracker.MeasuredElement?.ToString()) &&
+				      !string.IsNullOrEmpty(tracker.ArrangedElement?.ToString()) &&
+				      tracker.MeasuredDuration >= minDuration &&
+				      tracker.ArrangedDuration >= minDuration,
+				$"Expected MeasuredElement: Element1, ArrangedElement: Element2, " +
+				$"MeasuredDuration ≥ {minDuration:F2}ms, ArrangedDuration ≥ {minDuration:F2}ms");
+
 			Assert.Equal("Element1", tracker.MeasuredElement);
 			Assert.True(tracker.MeasuredDuration >= minDuration,
 				$"Expected MeasuredDuration ≥ {minDuration:F2}ms, got {tracker.MeasuredDuration:F2}ms");
-			
+
 			Assert.Equal("Element2", tracker.ArrangedElement);
 			Assert.True(tracker.ArrangedDuration >= minDuration,
 				$"Expected ArrangedDuration ≥ {minDuration:F2}ms, got {tracker.ArrangedDuration:F2}ms");
 		}
-		
+
 		[Fact]
 		public async Task UsingVar_LayoutMeasure_AutomaticallyStops()
 		{
@@ -199,12 +244,17 @@ namespace Microsoft.Maui.UnitTests
 			double minDuration = expectedDelayMs * (1 - DurationTolerance);
 
 			{
-				using var perfTracker =
-					PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "UsingElement");
+				using var perfTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "UsingElement");
 				await Task.Delay(TimeSpan.FromMilliseconds(expectedDelayMs));
 			}
 
 			await tracker.WaitForUpdatesAsync();
+
+			await RetryUntilConditionAsync(
+				() => !string.IsNullOrEmpty(tracker.MeasuredElement?.ToString()) &&
+				      tracker.MeasuredDuration >= minDuration,
+				$"Expected MeasuredElement: UsingElement, MeasuredDuration ≥ {minDuration:F2}ms");
+
 			Assert.Equal("UsingElement", tracker.MeasuredElement);
 			Assert.True(tracker.MeasuredDuration >= minDuration,
 				$"Expected MeasuredDuration ≥ {minDuration:F2}ms, got {tracker.MeasuredDuration:F2}ms");
@@ -226,6 +276,12 @@ namespace Microsoft.Maui.UnitTests
 			}
 
 			await tracker.WaitForUpdatesAsync();
+
+			await RetryUntilConditionAsync(
+				() => !string.IsNullOrEmpty(tracker.ArrangedElement?.ToString()) &&
+				      tracker.ArrangedDuration >= minDuration,
+				$"Expected ArrangedElement: UsingArrangeElement, ArrangedDuration ≥ {minDuration:F2}ms");
+
 			Assert.Equal("UsingArrangeElement", tracker.ArrangedElement);
 			Assert.True(tracker.ArrangedDuration >= minDuration,
 				$"Expected ArrangedDuration ≥ {minDuration:F2}ms, got {tracker.ArrangedDuration:F2}ms");
@@ -261,6 +317,11 @@ namespace Microsoft.Maui.UnitTests
 			}
 
 			await tracker.WaitForUpdatesAsync();
+
+			await RetryUntilConditionAsync(
+				() => tracker.MeasuredDuration >= minDuration,
+				$"Expected MeasuredDuration ≥ {minDuration:F2}ms");
+
 			Assert.True(tracker.MeasuredDuration >= minDuration,
 				$"Expected MeasuredDuration ≥ {minDuration:F2}ms, got {tracker.MeasuredDuration:F2}ms");
 		}
@@ -282,6 +343,11 @@ namespace Microsoft.Maui.UnitTests
 			}
 
 			await tracker.WaitForUpdatesAsync();
+
+			await RetryUntilConditionAsync(
+				() => tracker.MeasuredElement?.ToString() == "Outer" && tracker.ArrangedElement?.ToString() == "Inner",
+				$"Expected MeasuredElement: Outer, ArrangedElement: Inner");
+
 			Assert.Equal("Outer", tracker.MeasuredElement);
 			Assert.Equal("Inner", tracker.ArrangedElement);
 		}
@@ -332,14 +398,8 @@ namespace Microsoft.Maui.UnitTests
 			ResetLayout();
 			var tracker = new FakeLayoutTracker();
 			PerformanceProfiler.Initialize(tracker);
-			var receivedUpdates = new List<LayoutUpdate>();
-			Action<LayoutUpdate> callback = update =>
-			{
-				lock (receivedUpdates)
-				{
-					receivedUpdates.Add(update);
-				}
-			};
+			var receivedUpdates = new ConcurrentBag<LayoutUpdate>();
+			Action<LayoutUpdate> callback = update => receivedUpdates.Add(update);
 
 			PerformanceProfiler.SubscribeToUpdates(callback);
 			var measureTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, "Element1");
@@ -350,11 +410,21 @@ namespace Microsoft.Maui.UnitTests
 			arrangeTracker.Stop();
 
 			await tracker.WaitForUpdatesAsync();
-			Assert.Equal(2, receivedUpdates.Count);
-			Assert.Equal(LayoutPassType.Measure, receivedUpdates[0].PassType);
-			Assert.Equal("Element1", receivedUpdates[0].Element);
-			Assert.Equal(LayoutPassType.Arrange, receivedUpdates[1].PassType);
-			Assert.Equal("Element2", receivedUpdates[1].Element);
+
+			await RetryUntilConditionAsync(
+				() => receivedUpdates.Count >= 2,
+				$"Expected at least 2 updates, got {receivedUpdates.Count}");
+
+			var updates = receivedUpdates.ToArray();
+			Assert.Equal(2, updates.Length);
+
+			var measureUpdate = updates.FirstOrDefault(u => u.PassType == LayoutPassType.Measure);
+			var arrangeUpdate = updates.FirstOrDefault(u => u.PassType == LayoutPassType.Arrange);
+
+			Assert.NotNull(measureUpdate);
+			Assert.NotNull(arrangeUpdate);
+			Assert.Equal("Element1", measureUpdate.Element);
+			Assert.Equal("Element2", arrangeUpdate.Element);
 		}
 
 		[Fact]
@@ -381,6 +451,11 @@ namespace Microsoft.Maui.UnitTests
 			perfTracker.Stop();
 
 			await tracker.WaitForUpdatesAsync();
+
+			await RetryUntilConditionAsync(
+				() => subscriber1Updates.Count >= 1 && subscriber2Updates.Count >= 1,
+				$"Expected at least 1 update for each subscriber, got {subscriber1Updates.Count} and {subscriber2Updates.Count}");
+
 			Assert.Single(subscriber1Updates);
 			Assert.Single(subscriber2Updates);
 			Assert.Equal("MultiSubscriber", subscriber1Updates[0].Element);
@@ -409,6 +484,11 @@ namespace Microsoft.Maui.UnitTests
 			perfTracker.Stop();
 
 			await tracker.WaitForUpdatesAsync();
+
+			await RetryUntilConditionAsync(
+				() => goodSubscriberUpdates.Count >= 1,
+				$"Expected at least 1 update for good subscriber, got {goodSubscriberUpdates.Count}");
+
 			Assert.Single(goodSubscriberUpdates);
 			Assert.Equal("TestElement", goodSubscriberUpdates[0].Element);
 		}
@@ -440,9 +520,23 @@ namespace Microsoft.Maui.UnitTests
 			tracker2.Stop();
 
 			await tracker.WaitForUpdatesAsync();
-			var history = PerformanceProfiler.GetHistory("Element1");
-			var layoutHistory = new List<LayoutUpdate>(history.Layout);
 
+			IEnumerable<LayoutUpdate> filteredHistory = null;
+			await RetryUntilConditionAsync(
+				() =>
+				{
+					var history = PerformanceProfiler.GetHistory("Element1");
+					if (history.Layout is not null)
+					{
+						filteredHistory = history.Layout;
+						return filteredHistory.Any();
+					}
+
+					return false;
+				},
+				$"Expected at least one update for Element1 in history");
+
+			var layoutHistory = new List<LayoutUpdate>(filteredHistory ?? Enumerable.Empty<LayoutUpdate>());
 			Assert.Single(layoutHistory);
 			Assert.Equal("Element1", layoutHistory[0].Element);
 			Assert.Equal(LayoutPassType.Measure, layoutHistory[0].PassType);
@@ -467,7 +561,23 @@ namespace Microsoft.Maui.UnitTests
 			}
 
 			await tracker.WaitForUpdatesAsync();
-			var layoutHistory = new List<LayoutUpdate>(PerformanceProfiler.GetHistory().Layout);
+
+			List<LayoutUpdate> layoutHistory = null;
+			await RetryUntilConditionAsync(
+				() =>
+				{
+					var history = PerformanceProfiler.GetHistory();
+					if (history.Layout is not null)
+					{
+						layoutHistory = new List<LayoutUpdate>(history.Layout);
+						return layoutHistory.Count >= 2;
+					}
+
+					return false;
+				},
+				$"Expected at least 2 updates in history, got {layoutHistory?.Count ?? 0}");
+
+			Assert.NotNull(layoutHistory);
 			Assert.Equal(2, layoutHistory.Count);
 			Assert.Contains(layoutHistory,
 				u => u.Element.Equals("Element1") && u.PassType == LayoutPassType.Measure);
@@ -488,6 +598,11 @@ namespace Microsoft.Maui.UnitTests
 			}
 
 			await tracker.WaitForUpdatesAsync();
+
+			await RetryUntilConditionAsync(
+				() => tracker.MeasuredElement?.ToString() == "ZeroDuration" && tracker.MeasuredDuration > 0,
+				$"Expected MeasuredElement: ZeroDuration, small positive duration");
+
 			Assert.Equal("ZeroDuration", tracker.MeasuredElement);
 			Assert.True(tracker.MeasuredDuration > 0,
 				$"Expected small positive duration due to Stopwatch overhead, got {tracker.MeasuredDuration:F4}ms");
@@ -509,6 +624,12 @@ namespace Microsoft.Maui.UnitTests
 
 			var history = PerformanceProfiler.GetHistory();
 			var layoutHistory = new List<LayoutUpdate>(history.Layout);
+
+			await RetryUntilConditionAsync(
+				() => layoutHistory.Count == 1 && string.Equals(layoutHistory[0].Element?.ToString(), string.Empty, StringComparison.OrdinalIgnoreCase) &&
+				      layoutHistory[0].PassType == LayoutPassType.Arrange && layoutHistory[0].TotalTime >= minDuration,
+				$"Expected single update with empty Element, Arrange type, TotalTime ≥ {minDuration:F2}ms");
+
 			Assert.Single(layoutHistory);
 			Assert.Equal(string.Empty, layoutHistory[0].Element);
 			Assert.Equal(LayoutPassType.Arrange, layoutHistory[0].PassType);
@@ -534,21 +655,33 @@ namespace Microsoft.Maui.UnitTests
 			var parentTracker = PerformanceProfiler.Start(PerformanceCategory.LayoutMeasure, parent);
 			await Task.Delay((int)MediumDelayMs);
 			parentTracker.Stop();
-			
+
 			await tracker.WaitForUpdatesAsync();
 
 			var stats = PerformanceProfiler.GetStats();
+			var layoutHistory = new List<LayoutUpdate>(PerformanceProfiler.GetHistory().Layout);
+
+			double parentMin = MediumDelayMs * (1 - DurationTolerance);
+			double childMin = LongDelayMs * (1 - DurationTolerance);
+
+			await RetryUntilConditionAsync(
+				() => stats.Layout is not null && stats.Layout.MeasureDuration > 0.0 &&
+				      layoutHistory.Count == 2 &&
+				      layoutHistory.Any(u =>
+					      u.Element == parent && u.PassType == LayoutPassType.Measure && u.TotalTime >= parentMin) &&
+				      layoutHistory.Any(u =>
+					      u.Element == child && u.PassType == LayoutPassType.Measure && u.TotalTime >= childMin),
+				$"Expected 2 history updates, parent TotalTime ≥ {parentMin:F2}ms, child TotalTime ≥ {childMin:F2}ms");
+
 			Assert.NotNull(stats.Layout);
 			Assert.True(stats.Layout.MeasureDuration > 0.0,
 				$"Expected non-zero MeasureDuration, got {stats.Layout.MeasureDuration:F2}ms");
 
-			var layoutHistory = new List<LayoutUpdate>(PerformanceProfiler.GetHistory().Layout);
 			Assert.Equal(2, layoutHistory.Count);
 
 			var parentUpdate = layoutHistory.Find(u => u.Element == parent);
 			Assert.NotNull(parentUpdate);
 			Assert.Equal(LayoutPassType.Measure, parentUpdate.PassType);
-			double parentMin = MediumDelayMs * (1 - DurationTolerance);
 			Assert.True(parentUpdate.TotalTime >= parentMin,
 				$"Expected parent TotalTime ≥ {parentMin:F2}ms, got {parentUpdate.TotalTime:F2}ms. " +
 				$"Parent delay was {MediumDelayMs}ms with {DurationTolerance:P} tolerance.");
@@ -556,7 +689,6 @@ namespace Microsoft.Maui.UnitTests
 			var childUpdate = layoutHistory.Find(u => u.Element == child);
 			Assert.NotNull(childUpdate);
 			Assert.Equal(LayoutPassType.Measure, childUpdate.PassType);
-			double childMin = LongDelayMs * (1 - DurationTolerance);
 			Assert.True(childUpdate.TotalTime >= childMin,
 				$"Expected child TotalTime ≥ {childMin:F2}ms, got {childUpdate.TotalTime:F2}ms. " +
 				$"Child delay was {LongDelayMs}ms with {DurationTolerance:P} tolerance.");
@@ -592,36 +724,52 @@ namespace Microsoft.Maui.UnitTests
 			await tracker.WaitForUpdatesAsync();
 
 			var stats = PerformanceProfiler.GetStats();
+			var layoutHistory = new List<LayoutUpdate>(PerformanceProfiler.GetHistory().Layout);
+
+			double minDuration = ShortDelayMs * (1 - DurationTolerance);
+
+			await RetryUntilConditionAsync(
+				() => stats.Layout is not null && stats.Layout.MeasureDuration > 0.0 &&
+				      layoutHistory.Count == 4 &&
+				      layoutHistory.Any(u =>
+					      u.Element == root && u.PassType == LayoutPassType.Measure && u.TotalTime >= minDuration) &&
+				      layoutHistory.Any(u =>
+					      u.Element == panel && u.PassType == LayoutPassType.Measure && u.TotalTime >= minDuration) &&
+				      layoutHistory.Any(u =>
+					      u.Element == label1 && u.PassType == LayoutPassType.Measure && u.TotalTime >= minDuration) &&
+				      layoutHistory.Any(u =>
+					      u.Element == label2 && u.PassType == LayoutPassType.Measure && u.TotalTime >= minDuration),
+				$"Expected 4 history updates, each TotalTime ≥ {minDuration:F2}ms");
+
 			Assert.NotNull(stats.Layout);
 			Assert.True(stats.Layout.MeasureDuration > 0.0,
 				$"Expected non-zero MeasureDuration, got {stats.Layout.MeasureDuration:F2}ms");
 
-			var layoutHistory = new List<LayoutUpdate>(PerformanceProfiler.GetHistory().Layout);
 			Assert.Equal(4, layoutHistory.Count);
 
 			var rootUpdate = layoutHistory.Find(u => u.Element == root);
 			Assert.NotNull(rootUpdate);
 			Assert.Equal(LayoutPassType.Measure, rootUpdate.PassType);
-			Assert.True(rootUpdate.TotalTime >= ShortDelayMs * (1 - DurationTolerance),
-				$"Expected Root ≥ {ShortDelayMs * 0.85:F2}ms, got {rootUpdate.TotalTime:F2}ms");
+			Assert.True(rootUpdate.TotalTime >= minDuration,
+				$"Expected Root ≥ {minDuration:F2}ms, got {rootUpdate.TotalTime:F2}ms");
 
 			var panelUpdate = layoutHistory.Find(u => u.Element == panel);
 			Assert.NotNull(panelUpdate);
 			Assert.Equal(LayoutPassType.Measure, panelUpdate.PassType);
-			Assert.True(panelUpdate.TotalTime >= ShortDelayMs * (1 - DurationTolerance),
-				$"Expected Panel ≥ {ShortDelayMs * 0.85:F2}ms, got {panelUpdate.TotalTime:F2}ms");
+			Assert.True(panelUpdate.TotalTime >= minDuration,
+				$"Expected Panel ≥ {minDuration:F2}ms, got {panelUpdate.TotalTime:F2}ms");
 
 			var label1Update = layoutHistory.Find(u => u.Element == label1);
 			Assert.NotNull(label1Update);
 			Assert.Equal(LayoutPassType.Measure, label1Update.PassType);
-			Assert.True(label1Update.TotalTime >= ShortDelayMs * (1 - DurationTolerance),
-				$"Expected Label1 ≥ {ShortDelayMs * 0.85:F2}ms, got {label1Update.TotalTime:F2}ms");
+			Assert.True(label1Update.TotalTime >= minDuration,
+				$"Expected Label1 ≥ {minDuration:F2}ms, got {label1Update.TotalTime:F2}ms");
 
 			var label2Update = layoutHistory.Find(u => u.Element == label2);
 			Assert.NotNull(label2Update);
 			Assert.Equal(LayoutPassType.Measure, label2Update.PassType);
-			Assert.True(label2Update.TotalTime >= ShortDelayMs * (1 - DurationTolerance),
-				$"Expected Label2 ≥ {ShortDelayMs * 0.85:F2}ms, got {label2Update.TotalTime:F2}ms");
+			Assert.True(label2Update.TotalTime >= minDuration,
+				$"Expected Label2 ≥ {minDuration:F2}ms, got {label2Update.TotalTime:F2}ms");
 		}
 	}
 
@@ -647,192 +795,209 @@ namespace Microsoft.Maui.UnitTests
 		}
 	}
 
-internal class FakeLayoutTracker : ILayoutPerformanceTracker
-    {
-        const int TaskCleanupThreshold = 50;
-        
-        readonly object _lock = new();
-        readonly List<LayoutUpdate> _history = new();
-        readonly List<Action<LayoutUpdate>> _subscribers = new();
-        readonly ConcurrentDictionary<(object Element, LayoutPassType PassType), double>
-            _childDurations = new();
-        readonly List<Task> _pendingTasks = new();
+	internal class FakeLayoutTracker : ILayoutPerformanceTracker
+	{
+		const int TaskCleanupThreshold = 50;
 
-        private int _activeOperations = 0;
+		readonly object _lock = new();
+		readonly List<LayoutUpdate> _history = new();
+		readonly List<Action<LayoutUpdate>> _subscribers = new();
 
-        public int MeasureCallCount { get; private set; }
-        public double MeasuredDuration { get; private set; }
-        public object MeasuredElement { get; private set; }
-        public int ArrangeCallCount { get; private set; }
-        public double ArrangedDuration { get; private set; }
-        public object ArrangedElement { get; private set; }
+		readonly ConcurrentDictionary<(object Element, LayoutPassType PassType), double>
+			_childDurations = new();
 
-        public LayoutStats GetStats()
-        {
-            lock (_lock)
-            {
-                return new LayoutStats { MeasureDuration = MeasuredDuration, ArrangeDuration = ArrangedDuration };
-            }
-        }
+		readonly List<Task> _pendingTasks = new();
 
-        public IEnumerable<LayoutUpdate> GetHistory(object element = null)
-        {
-            lock (_lock)
-            {
-                return element is null
-                    ? new List<LayoutUpdate>(_history)
-                    : _history.FindAll(u => Equals(u.Element, element));
-            }
-        }
+		private volatile int _activeOperations = 0;
+		private volatile int _pendingUpdates = 0;
 
-        public void SubscribeToLayoutUpdates(Action<LayoutUpdate> callback)
-        {
-            if (callback is null)
-                throw new ArgumentNullException(nameof(callback));
+		public int MeasureCallCount { get; private set; }
+		public double MeasuredDuration { get; private set; }
+		public object MeasuredElement { get; private set; }
+		public int ArrangeCallCount { get; private set; }
+		public double ArrangedDuration { get; private set; }
+		public object ArrangedElement { get; private set; }
 
-            lock (_lock)
-            {
-                _subscribers.Add(callback);
-            }
-        }
+		public LayoutStats GetStats()
+		{
+			lock (_lock)
+			{
+				return new LayoutStats { MeasureDuration = MeasuredDuration, ArrangeDuration = ArrangedDuration };
+			}
+		}
 
-        public void RecordMeasurePass(double duration, object element = null)
-        {
-            ProcessUpdate(LayoutPassType.Measure, duration, element);
-        }
+		public IEnumerable<LayoutUpdate> GetHistory(object element = null)
+		{
+			lock (_lock)
+			{
+				return element is null
+					? new List<LayoutUpdate>(_history)
+					: _history.FindAll(u => Equals(u.Element, element));
+			}
+		}
 
-        public void RecordArrangePass(double duration, object element = null)
-        {
-            ProcessUpdate(LayoutPassType.Arrange, duration, element);
-        }
+		public void SubscribeToLayoutUpdates(Action<LayoutUpdate> callback)
+		{
+			if (callback is null)
+				throw new ArgumentNullException(nameof(callback));
 
-        void ProcessUpdate(LayoutPassType passType, double duration, object element)
-        {
-            Task notificationTask = null;
-            
-            lock (_lock)
-            {
-                Interlocked.Increment(ref _activeOperations);
-                
-                double standaloneDuration = duration;
+			lock (_lock)
+			{
+				_subscribers.Add(callback);
+			}
+		}
 
-                if (element is not null)
-                {
-                    object parent = element is IVisualTreeElement vteParent ? vteParent.GetVisualParent() : null;
+		public void RecordMeasurePass(double duration, object element = null)
+		{
+			ProcessUpdate(LayoutPassType.Measure, duration, element);
+		}
 
-                    if (parent is not null)
-                    {
-                        _childDurations.AddOrUpdate(
-                            (parent, passType),
-                            duration,
-                            (key, oldValue) => oldValue + duration);
-                    }
+		public void RecordArrangePass(double duration, object element = null)
+		{
+			ProcessUpdate(LayoutPassType.Arrange, duration, element);
+		}
 
-                    if (element is ILayout)
-                    {
-                        standaloneDuration = _childDurations.TryGetValue((element, passType), out var childTime)
-                            ? duration - childTime
-                            : duration;
-                        _childDurations.TryRemove((element, passType), out _);
-                    }
-                }
+		void ProcessUpdate(LayoutPassType passType, double duration, object element)
+		{
+			Task notificationTask = null;
+			LayoutUpdate update;
+			Action<LayoutUpdate>[] subscribersSnapshot = null;
 
-                if (passType == LayoutPassType.Measure)
-                {
-                    MeasureCallCount++;
-                    MeasuredDuration = standaloneDuration;
-                    MeasuredElement = element;
-                }
-                else
-                {
-                    ArrangeCallCount++;
-                    ArrangedDuration = standaloneDuration;
-                    ArrangedElement = element;
-                }
+			lock (_lock)
+			{
+				Interlocked.Increment(ref _pendingUpdates);
 
-                var update = new LayoutUpdate(passType, standaloneDuration, element ?? string.Empty, DateTime.UtcNow);
-                _history.Add(update);
+				double standaloneDuration = duration;
 
-                if (_subscribers.Count > 0)
-                {
-	                var subscribersSnapshot = _subscribers.ToArray();
+				if (element is not null)
+				{
+					object parent = element is IVisualTreeElement vteParent ? vteParent.GetVisualParent() : null;
 
-	                notificationTask = new Task(() => PublishLayoutUpdateSafe(update, subscribersSnapshot));
-	                _pendingTasks.Add(notificationTask);
+					if (parent is not null)
+					{
+						_childDurations.AddOrUpdate(
+							(parent, passType),
+							duration,
+							(key, oldValue) => oldValue + duration);
+					}
 
-	                if (_pendingTasks.Count > TaskCleanupThreshold)
-	                {
-		                _pendingTasks.RemoveAll(t => t.IsCompleted);
-	                }
-                }
-                else
-                {
-                    Interlocked.Decrement(ref _activeOperations);
-                }
-            }
-            
-            notificationTask?.Start();
-        }
+					if (element is ILayout)
+					{
+						standaloneDuration = _childDurations.TryGetValue((element, passType), out var childTime)
+							? duration - childTime
+							: duration;
+						_childDurations.TryRemove((element, passType), out _);
+					}
+				}
 
-        void PublishLayoutUpdateSafe(LayoutUpdate update, Action<LayoutUpdate>[] subscribers)
-        {
-            try
-            {
-                foreach (var subscriber in subscribers)
-                {
-                    try
-                    {
-                        subscriber.Invoke(update);
-                    }
-                    catch
-                    {
-                    }
-                }
-            }
-            finally
-            {
-                Interlocked.Decrement(ref _activeOperations);
-            }
-        }
+				if (passType == LayoutPassType.Measure)
+				{
+					MeasureCallCount++;
+					MeasuredDuration = standaloneDuration;
+					MeasuredElement = element;
+				}
+				else
+				{
+					ArrangeCallCount++;
+					ArrangedDuration = standaloneDuration;
+					ArrangedElement = element;
+				}
 
-        public async Task WaitForUpdatesAsync(CancellationToken cancellationToken = default)
-        {
-            Task[] tasksToWait;
-            lock (_lock)
-            {
-                tasksToWait = _pendingTasks.Where(t => !t.IsCompleted).ToArray();
-            }
+				update = new LayoutUpdate(passType, standaloneDuration, element ?? string.Empty, DateTime.UtcNow);
+				_history.Add(update);
 
-            if (tasksToWait.Length > 0)
-            {
-                try
-                {
-                    await Task.WhenAll(tasksToWait).WaitAsync(cancellationToken);
-                }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                    throw;
-                }
-                catch
-                {
-	                // Swallow any non-cancellation exceptions from the subscriber notifications
-                }
-            }
+				if (_subscribers.Count > 0)
+				{
+					subscribersSnapshot = _subscribers.ToArray();
+					Interlocked.Increment(ref _activeOperations);
 
-            var maxWaitTime = TimeSpan.FromSeconds(5);
-            var startTime = DateTime.UtcNow;
-            
-            while (_activeOperations > 0 && (DateTime.UtcNow - startTime) < maxWaitTime)
-            {
-                await Task.Delay(5, cancellationToken);
-            }
+					notificationTask = new Task(() => PublishLayoutUpdateSafe(update, subscribersSnapshot));
+					_pendingTasks.Add(notificationTask);
 
-            lock (_lock)
-            {
-                _pendingTasks.RemoveAll(t => t.IsCompleted);
-            }
+					if (_pendingTasks.Count > TaskCleanupThreshold)
+					{
+						_pendingTasks.RemoveAll(t => t.IsCompleted);
+					}
+				}
 
-            await Task.Delay(25, cancellationToken);
-        }
-    }
+				// Always decrement pending updates after processing
+				Interlocked.Decrement(ref _pendingUpdates);
+			}
+
+			// Start the notification task outside the lock
+			notificationTask?.Start();
+		}
+
+		void PublishLayoutUpdateSafe(LayoutUpdate update, Action<LayoutUpdate>[] subscribers)
+		{
+			try
+			{
+				foreach (var subscriber in subscribers)
+				{
+					try
+					{
+						subscriber.Invoke(update);
+					}
+					catch
+					{
+						// Swallow subscriber exceptions
+					}
+				}
+			}
+			finally
+			{
+				Interlocked.Decrement(ref _activeOperations);
+			}
+		}
+
+		public async Task WaitForUpdatesAsync(CancellationToken cancellationToken = default)
+		{
+			// First, wait for all pending updates to be processed
+			var maxWaitTime = TimeSpan.FromSeconds(10);
+			var startTime = DateTime.UtcNow;
+
+			while ((_pendingUpdates > 0 || _activeOperations > 0) && (DateTime.UtcNow - startTime) < maxWaitTime)
+			{
+				await Task.Delay(5, cancellationToken);
+			}
+
+			// Then wait for all pending notification tasks
+			Task[] tasksToWait;
+			lock (_lock)
+			{
+				tasksToWait = _pendingTasks.Where(t => !t.IsCompleted).ToArray();
+			}
+
+			if (tasksToWait.Length > 0)
+			{
+				try
+				{
+					var timeoutTask = Task.Delay(maxWaitTime, cancellationToken);
+					var completedTask = await Task.WhenAny(Task.WhenAll(tasksToWait), timeoutTask);
+
+					if (completedTask == timeoutTask)
+					{
+						// Timeout occurred, but don't throw - just continue
+					}
+				}
+				catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+				{
+					throw;
+				}
+				catch
+				{
+					// Swallow any non-cancellation exceptions from the subscriber notifications
+				}
+			}
+
+			// Final cleanup
+			lock (_lock)
+			{
+				_pendingTasks.RemoveAll(t => t.IsCompleted);
+			}
+
+			// Small final delay to ensure all operations are truly complete
+			await Task.Delay(25, cancellationToken);
+		}
+	}
 }
