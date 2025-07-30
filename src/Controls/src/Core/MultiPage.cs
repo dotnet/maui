@@ -85,7 +85,17 @@ namespace Microsoft.Maui.Controls
 				OnPropertyChanging();
  				
 				// TODO: MAUI refine this to fire earlier
-				_current?.SendNavigatingFrom(new NavigatingFromEventArgs(value, NavigationType.Replace));
+				
+				// Send NavigatingFrom to the previous page or to the new page if no previous page exists
+				if (_current is not null)
+				{
+					_current.SendNavigatingFrom(new NavigatingFromEventArgs(value, NavigationType.Replace));
+				}
+				else
+				{
+					// For initial page, send NavigatingFrom to itself
+					value?.SendNavigatingFrom(new NavigatingFromEventArgs(value, NavigationType.Replace));
+				}
 				
 				_current = value;
 
