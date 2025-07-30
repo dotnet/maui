@@ -133,10 +133,16 @@ namespace Microsoft.Maui
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
 #endif
-		public static bool IsMetricsSupported =>
-			AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out bool isSupported)
+		public static bool IsMetricsSupported
+		{
+			get => AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsMetricsSupported)}", out bool isSupported)
 				? isSupported
 				: IsMetricsSupportedByDefault;
+			// This property is internal settable to allow tests to enable metrics.
+			// It should not be set in production code.
+			internal set => AppContext.SetSwitch($"{FeatureSwitchPrefix}.{nameof(IsMetricsSupported)}", value);
+
+		}
 #pragma warning restore IL4000
     }
 }

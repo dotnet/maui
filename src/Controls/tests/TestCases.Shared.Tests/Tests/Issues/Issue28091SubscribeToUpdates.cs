@@ -6,10 +6,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue28091SubscribeToUpdates : _IssuesUITest
 {
+	bool _isMetricsSupported;
+	
 	public override string Issue => "Add Layout Performance Profiler (SubscribeToUpdates)";
 
 	public Issue28091SubscribeToUpdates(TestDevice device) : base(device)
 	{
+	}
+
+	[SetUp]
+	public void SetUp()
+	{
+		_isMetricsSupported = RuntimeFeature.IsMetricsSupported;
+		RuntimeFeature.IsMetricsSupported = true;
+	}
+
+	[TearDown]
+	public void TearDown()
+	{
+		RuntimeFeature.IsMetricsSupported = _isMetricsSupported;
 	}
 
 	/// <summary>
@@ -25,7 +40,7 @@ public class Issue28091SubscribeToUpdates : _IssuesUITest
 		// Simulate layout changes
 		App.Tap("IncreaseWidthButton");
 		App.Tap("IncreaseHeightButton");
-
+		
 		// Capture updated history
 		var updatedText = App.FindElement("HistoryLabel")?.GetText();
 

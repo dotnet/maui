@@ -44,3 +44,8 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Microsoft.Maui.TestUtils.DeviceTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.DeviceTests.Shared")]
 [assembly: InternalsVisibleTo("Controls.TestCases.HostApp")]
+[assembly: InternalsVisibleTo("Controls.TestCases.Shared.Tests")]
+[assembly: InternalsVisibleTo("Controls.TestCases.Android.Tests")]
+[assembly: InternalsVisibleTo("Controls.TestCases.iOS.Tests")]
+[assembly: InternalsVisibleTo("Controls.TestCases.Mac.Tests")]
+[assembly: InternalsVisibleTo("Controls.TestCases.WinUI.Tests")]

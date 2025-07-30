@@ -6,10 +6,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue28091GetHistory : _IssuesUITest
 {
+	bool _isMetricsSupported;
+	
 	public override string Issue => "Add Layout Performance Profiler (GetHistory)";
 
 	public Issue28091GetHistory(TestDevice device) : base(device)
 	{
+	}
+	
+	[SetUp]
+	public void SetUp()
+	{
+		_isMetricsSupported = RuntimeFeature.IsMetricsSupported;
+		RuntimeFeature.IsMetricsSupported = true;
+	}
+
+	[TearDown]
+	public void TearDown()
+	{
+		RuntimeFeature.IsMetricsSupported = _isMetricsSupported;
 	}
 
 	/// <summary>
@@ -45,7 +60,6 @@ public class Issue28091GetHistory : _IssuesUITest
 		WaitForPerformanceData();
 
 		// Capture updated history
-		App.WaitForElement("HistoryLabel");
 		var updatedText = App.FindElement("HistoryLabel")?.GetText();
 
 		// Validate output contains expected profiler terms and differs from initial state
