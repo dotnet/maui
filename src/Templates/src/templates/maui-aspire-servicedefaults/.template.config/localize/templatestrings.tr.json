@@ -1,10 +1,10 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI for .NET Aspire Service Defaults",
-  "description": "A project template for creating a .NET Aspire service defaults project for .NET MAUI.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "name": ".NET MAUI için .NET Aspire Hizmet Varsayılanları",
+  "description": ".NET MAUI için .NET Aspire hizmeti varsayılan projesi oluşturmak için bir proje şablonu.",
+  "symbols/Framework/description": "Projenin hedef çerçevesi.",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Hedef DOTNET_TFM_VALUE",
+  "symbols/skipRestore/description": "Belirtilmişse oluştururken projenin otomatik geri yüklenmesini atlar.",
+  "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
+  "postActions/restore/manualInstructions/default/text": "\"dotnet restore\" komutunu çalıştır"
 }
