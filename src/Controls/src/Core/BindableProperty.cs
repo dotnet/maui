@@ -12,7 +12,7 @@ using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindableProperty']/Docs/*" />
+	/// <summary>A BindableProperty is a backing store for properties allowing bindings on <see cref="Microsoft.Maui.Controls.BindableObject"/>.</summary>
 	[DebuggerDisplay("{PropertyName}")]
 	[System.ComponentModel.TypeConverter(typeof(BindablePropertyConverter))]
 	public sealed class BindableProperty
@@ -112,23 +112,24 @@ namespace Microsoft.Maui.Controls
 			DefaultValueCreator = defaultValueCreator;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='DeclaringType']/Docs/*" />
+		/// <summary>Gets the type declaring the BindableProperty</summary>
+		/// <remarks>Unused</remarks>
 		[DynamicallyAccessedMembers(DeclaringTypeMembers)]
 		public Type DeclaringType { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='DefaultBindingMode']/Docs/*" />
+		/// <summary>Gets the default BindingMode.</summary>
 		public BindingMode DefaultBindingMode { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='DefaultValue']/Docs/*" />
+		/// <summary>Gets the default value for the BindableProperty.</summary>
 		public object DefaultValue { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='IsReadOnly']/Docs/*" />
+		/// <summary>Gets a value indicating if the BindableProperty is created form a BindablePropertyKey.</summary>
 		public bool IsReadOnly { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='PropertyName']/Docs/*" />
+		/// <summary>Gets the property name.</summary>
 		public string PropertyName { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='ReturnType']/Docs/*" />
+		/// <summary>Gets the type of the BindableProperty.</summary>
 		[DynamicallyAccessedMembers(ReturnTypeMembers)]
 		public Type ReturnType { get; }
 
@@ -144,7 +145,18 @@ namespace Microsoft.Maui.Controls
 
 		internal ValidateValueDelegate ValidateValue { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='Create']/Docs/*" />
+		/// <summary>Creates a new instance of the BindableProperty class.</summary>
+		/// <param name="propertyName">The name of the BindableProperty.</param>
+		/// <param name="returnType">The type of the property.</param>
+		/// <param name="declaringType">The type of the declaring object.</param>
+		/// <param name="defaultValue">The default value for the property.</param>
+		/// <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
+		/// <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
+		/// <param name="propertyChanged">A delegate to be run when the value has changed. This parameter is optional. Default is null.</param>
+		/// <param name="propertyChanging">A delegate to be run when the value will change. This parameter is optional. Default is null.</param>
+		/// <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
+		/// <param name="defaultValueCreator">A Func used to initialize default value for reference types.</param>
+		/// <returns>A newly created BindableProperty.</returns>
 		public static BindableProperty Create(string propertyName, [DynamicallyAccessedMembers(ReturnTypeMembers)] Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue = null, BindingMode defaultBindingMode = BindingMode.OneWay,
 											  ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 											  CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)
@@ -153,7 +165,18 @@ namespace Microsoft.Maui.Controls
 				defaultValueCreator: defaultValueCreator);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='CreateAttached']/Docs/*" />
+		/// <summary>Creates a new instance of the BindableProperty class for an attached property.</summary>
+		/// <param name="propertyName">The name of the BindableProperty.</param>
+		/// <param name="returnType">The type of the property.</param>
+		/// <param name="declaringType">The type of the declaring object.</param>
+		/// <param name="defaultValue">The default value for the property.</param>
+		/// <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
+		/// <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
+		/// <param name="propertyChanged">A delegate to be run when the value has changed. This parameter is optional. Default is null.</param>
+		/// <param name="propertyChanging">A delegate to be run when the value will change. This parameter is optional. Default is null.</param>
+		/// <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
+		/// <param name="defaultValueCreator">A Func used to initialize default value for reference types.</param>
+		/// <returns>A newly created attached BindableProperty.</returns>
 		public static BindableProperty CreateAttached(string propertyName, [DynamicallyAccessedMembers(ReturnTypeMembers)] Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWay,
 													  ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 													  CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)
@@ -161,7 +184,19 @@ namespace Microsoft.Maui.Controls
 			return CreateAttached(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValue, propertyChanged, propertyChanging, coerceValue, null, false, defaultValueCreator);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='CreateAttachedReadOnly']/Docs/*" />
+		/// <summary>Creates a new instance of the BindableProperty class for attached read-only properties.</summary>
+		/// <param name="propertyName">The name of the BindableProperty.</param>
+		/// <param name="returnType">The type of the property.</param>
+		/// <param name="declaringType">The type of the declaring object.</param>
+		/// <param name="defaultValue">The default value for the property.</param>
+		/// <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
+		/// <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
+		/// <param name="propertyChanged">A delegate to be run when the value has changed. This parameter is optional. Default is null.</param>
+		/// <param name="propertyChanging">A delegate to be run when the value will change. This parameter is optional. Default is null.</param>
+		/// <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
+		/// <param name="defaultValueCreator">A Func used to initialize default value for reference types.</param>
+		/// <returns>A newly created attached read-only BindableProperty.</returns>
+		/// <remarks>Attached properties are bindable properties that are bound to an object other than their parent. Often, they are used for child items in tables and grids, where data about the location of an item is maintained by its parent, but must be accessed from the child item itself.</remarks>
 		public static BindablePropertyKey CreateAttachedReadOnly(string propertyName, [DynamicallyAccessedMembers(ReturnTypeMembers)] Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWayToSource,
 																 ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 																 CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)
@@ -171,7 +206,17 @@ namespace Microsoft.Maui.Controls
 					defaultValueCreator));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='CreateReadOnly']/Docs/*" />
+		/// <summary>Creates a new instance of the BindablePropertyKey class.</summary>
+		/// <param name="propertyName">The name of the BindableProperty.</param>
+		/// <param name="returnType">The type of the property.</param>
+		/// <param name="declaringType">The type of the declaring object.</param>
+		/// <param name="defaultValue">The default value for the property.</param>
+		/// <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
+		/// <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
+		/// <param name="propertyChanged">A delegate to be run when the value has changed. This parameter is optional. Default is null.</param>
+		/// <param name="propertyChanging">A delegate to be run when the value will change. This parameter is optional. Default is null.</param>
+		/// <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
+		/// <param name="defaultValueCreator">A Func used to initialize default value for reference types.</param>
 		public static BindablePropertyKey CreateReadOnly(string propertyName, [DynamicallyAccessedMembers(ReturnTypeMembers)] Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWayToSource,
 														 ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 														 CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)

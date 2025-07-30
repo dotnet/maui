@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
 	using FormsElement = Maui.Controls.Label;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Label.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Label']/Docs/*" />
+	/// <summary>Provides access to the font weight for labels on the Tizen platform.</summary>
 	public static class Label
 	{
 		/// <summary>Bindable property for <see cref="FontWeight"/>.</summary>

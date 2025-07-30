@@ -3,23 +3,23 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FocusDirection.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.FocusDirection']/Docs/*" />
+	/// <summary>Contains constants for describing focus directions.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class FocusDirection
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FocusDirection.xml" path="//Member[@MemberName='None']/Docs/*" />
+		/// <summary>The constant for specifying no focus direction.</summary>
 		public const string None = "None";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FocusDirection.xml" path="//Member[@MemberName='Back']/Docs/*" />
+		/// <summary>The constant for specifying the back focus direction.</summary>
 		public const string Back = "Back";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FocusDirection.xml" path="//Member[@MemberName='Forward']/Docs/*" />
+		/// <summary>The constant for specifying the forward focus direction.</summary>
 		public const string Forward = "Forward";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FocusDirection.xml" path="//Member[@MemberName='Up']/Docs/*" />
+		/// <summary>The constant for specifying the up focus direction.</summary>
 		public const string Up = "Up";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FocusDirection.xml" path="//Member[@MemberName='Down']/Docs/*" />
+		/// <summary>The constant for specifying the down focus direction.</summary>
 		public const string Down = "Down";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FocusDirection.xml" path="//Member[@MemberName='Right']/Docs/*" />
+		/// <summary>The constant for specifying the right focus direction.</summary>
 		public const string Right = "Right";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/FocusDirection.xml" path="//Member[@MemberName='Left']/Docs/*" />
+		/// <summary>The constant for specifying the left focus direction.</summary>
 		public const string Left = "Left";
 	}
 }
