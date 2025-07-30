@@ -2,6 +2,7 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Widget;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -32,17 +33,44 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimum(ISliderHandler handler, ISlider slider)
 		{
+			if (handler.IsConnectingHandler())
+			{
+				return;
+			}
 			handler.PlatformView?.UpdateMinimum(slider);
 		}
 
 		public static void MapMaximum(ISliderHandler handler, ISlider slider)
 		{
+			if (handler.IsConnectingHandler())
+			{
+				return;
+			}
 			handler.PlatformView?.UpdateMaximum(slider);
 		}
 
 		public static void MapValue(ISliderHandler handler, ISlider slider)
 		{
+			if (handler.IsConnectingHandler())
+			{
+				return;
+			}
 			handler.PlatformView?.UpdateValue(slider);
+		}
+
+		internal static void MapInitializeRangeProperties(ISliderHandler handler, ISlider slider)
+		{
+			handler.PlatformView?.UpdateMaximum(slider);
+			handler.PlatformView?.UpdateMinimum(slider);
+			var clampedValue = slider.Value.Clamp(slider.Minimum, slider.Maximum);
+			if (Equals(slider.Value, clampedValue))
+			{
+				handler.PlatformView?.UpdateValue(slider);
+			}
+			else
+			{
+				slider.Value = clampedValue;
+			}
 		}
 
 		public static void MapMinimumTrackColor(ISliderHandler handler, ISlider slider)
