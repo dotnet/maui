@@ -16,7 +16,7 @@ public class Issue29091Tabbed : _IssuesUITest
 	[Category(UITestCategories.TabbedPage)]
 	public void TabBarIconsShouldAutoscaleTabbedPage()
 	{
-		App.WaitForElement("Tab1");
+		App.WaitForElement("Tab1Loaded");
 		VerifyScreenshot();
 	}
 }
