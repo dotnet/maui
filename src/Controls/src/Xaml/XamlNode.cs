@@ -150,6 +150,29 @@ namespace Microsoft.Maui.Controls.Xaml
 		};
 	}
 
+	static class XmlNameExtensions
+	{ 
+		public static bool TryGetValue(this Dictionary<XmlName, INode> properties, string name, out INode node, out XmlName xmlName)
+		{
+			xmlName = new XmlName("", name);
+			if (properties.TryGetValue(xmlName, out node))
+				return true;
+
+#if NETSTANDARD2_0
+			var kvp = properties.FirstOrDefault(kvp => kvp.Key.LocalName == name);
+			if (kvp.Key != null)
+			{
+				xmlName = kvp.Key;
+				node = kvp.Value;
+			}
+#else
+			(xmlName, node) = properties.FirstOrDefault(kvp => kvp.Key.LocalName == name);
+#endif
+			return node != null;
+		}
+
+		public static bool TryGetValue(this Dictionary<XmlName, INode> properties, string name, out INode node) => properties.TryGetValue(name, out node, out _);
+	}
 
 	[DebuggerDisplay("{XmlType.Name}")]
 	class ElementNode : BaseNode, IValueNode, IElementNode
