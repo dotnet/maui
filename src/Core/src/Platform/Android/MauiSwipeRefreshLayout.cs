@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly Context _context;
 		AView? _contentView;
+		bool _refreshEnabled = true;
 
 		public MauiSwipeRefreshLayout(Context context) : base(context)
 		{
@@ -63,7 +64,11 @@ namespace Microsoft.Maui.Platform
 			CrossPlatformLayout?.CrossPlatformArrange(destination);
 		}
 
-
+		public bool RefreshEnabled
+		{
+			get => _refreshEnabled;
+			set => _refreshEnabled = value;
+		}
 
 		public void UpdateContent(IView? content, IMauiContext? mauiContext)
 		{
@@ -95,6 +100,10 @@ namespace Microsoft.Maui.Platform
 
 		public override bool CanChildScrollUp()
 		{
+			// When refresh is disabled, always return true to prevent pull-to-refresh
+			if (!_refreshEnabled)
+				return true;
+
 			if (ChildCount == 0)
 				return base.CanChildScrollUp();
 
