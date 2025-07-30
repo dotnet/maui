@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="XamlParsingErrorMessage" xml:space="preserve">
-    <value>Wystąpił błąd podczas analizowania kodu Xaml: {0}.</value>
+    <value>Wystąpił błąd podczas analizowania kodu XAML: {0}.</value>
     <comment>{0} is the error message</comment>
   </data>
   <data name="XamlParsingFailed" xml:space="preserve">
@@ -234,11 +234,11 @@
     <comment>/</comment>
   </data>
   <data name="AmbiguousTypeTitle" xml:space="preserve">
-    <value>Ambiguous Type</value>
+    <value>Typ niejednoznaczny</value>
     <comment>/</comment>
   </data>
   <data name="AmbiguousTypeMessage" xml:space="preserve">
-    <value>Multiple names found in the current xml namespace. use a more specific prefix.</value>
+    <value>Znaleziono wiele nazw w bieżącej przestrzeni nazw XML. Użyj bardziej szczegółowego prefiksu.</value>
     <comment>/</comment>
   </data>
 </root>

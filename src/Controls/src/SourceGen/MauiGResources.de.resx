@@ -234,11 +234,11 @@
     <comment>/</comment>
   </data>
   <data name="AmbiguousTypeTitle" xml:space="preserve">
-    <value>Ambiguous Type</value>
+    <value>Mehrdeutiger Typ</value>
     <comment>/</comment>
   </data>
   <data name="AmbiguousTypeMessage" xml:space="preserve">
-    <value>Multiple names found in the current xml namespace. use a more specific prefix.</value>
+    <value>Im aktuellen XML-Namespace wurden mehrere Namen gefunden. Verwenden Sie ein spezifischeres Präfix.</value>
     <comment>/</comment>
   </data>
 </root>
