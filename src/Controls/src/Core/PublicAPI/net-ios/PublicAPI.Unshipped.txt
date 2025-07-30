@@ -259,6 +259,8 @@ override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.PlatformArra
 override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.MovedToWindow() -> void
 override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.ScrollRectToVisible(CoreGraphics.CGRect rect, bool animated) -> void
 ~override Microsoft.Maui.Controls.HorizontalStackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
 override Microsoft.Maui.Controls.ImageSourceConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Controls.ImageSourceConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ImageSourceConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?

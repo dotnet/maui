@@ -43,7 +43,12 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (maxResizeFactor > 1 && !shouldScaleUp)
 				return sourceImage;
 
-			return UIImage.FromImage(sourceImage.CGImage, sourceImage.CurrentScale / maxResizeFactor, sourceImage.Orientation);
+			var resizedImage = UIImage.FromImage(sourceImage.CGImage, sourceImage.CurrentScale / maxResizeFactor, sourceImage.Orientation);
+
+			// Preserve the rendering mode to maintain color behavior
+			resizedImage = resizedImage.ImageWithRenderingMode(sourceImage.RenderingMode);
+
+			return resizedImage;
 		}
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
