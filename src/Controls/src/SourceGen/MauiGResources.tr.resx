@@ -234,11 +234,11 @@
     <comment>/</comment>
   </data>
   <data name="AmbiguousTypeTitle" xml:space="preserve">
-    <value>Ambiguous Type</value>
+    <value>Belirsiz Tür</value>
     <comment>/</comment>
   </data>
   <data name="AmbiguousTypeMessage" xml:space="preserve">
-    <value>Multiple names found in the current xml namespace. use a more specific prefix.</value>
+    <value>Mevcut xml ad alanında birden fazla ad bulundu. Daha spesifik bir önek kullanın.</value>
     <comment>/</comment>
   </data>
 </root>
