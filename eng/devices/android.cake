@@ -6,6 +6,7 @@ const int DefaultApiLevel = 30;
 
 const int EmulatorStartProcessTimeoutSeconds = 1 * 60;
 const int EmulatorBootTimeoutSeconds = 2 * 60;
+const int EmulatorKillTimeoutSeconds = 1 * 60;
 
 Information("Local Dotnet: {0}", localDotnet);
 
@@ -473,8 +474,39 @@ void CleanUpVirtualDevice(AndroidEmulatorProcess emulatorProcess, AndroidAvdMana
 
 	// kill the process if it has not already exited
 	Information("emulatorProcess.Kill()");
-	try { emulatorProcess.Kill(); }
-	catch { }
+	try 
+	{ 
+		var killTask = System.Threading.Tasks.Task.Run(() => emulatorProcess.Kill());
+		if (killTask.Wait(TimeSpan.FromSeconds(EmulatorKillTimeoutSeconds)))
+		{
+			Information("Emulator process killed successfully.");
+		}
+		else
+		{
+			Warning("Emulator process kill operation timed out after {0} seconds. Attempting to restart ADB server...", EmulatorKillTimeoutSeconds);
+			
+			try
+			{
+				Information("Stopping ADB server...");
+				AdbKillServer(adbSettings);
+				System.Threading.Thread.Sleep(2000);
+				
+				Information("Starting ADB server...");
+				AdbStartServer(adbSettings);
+				System.Threading.Thread.Sleep(2000);
+				
+				Information("ADB server restart completed successfully.");
+			}
+			catch (Exception adbEx)
+			{
+				Error("Failed to restart ADB server after emulator kill timeout: {0}", adbEx.Message);
+			}
+		}
+	}
+	catch (Exception ex) 
+	{ 
+		Warning("Failed to kill emulator process: {0}", ex.Message);
+	}
 
 	if (deviceCreate)
 	{
