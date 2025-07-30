@@ -121,17 +121,27 @@ public partial class MapOptionsPage : ContentPage
         // Predefined pin locations around Pearl City, Hawaii
         var pinLocations = new[]
         {
-            new { Lat = 21.3933, Lng = -157.9751, Name = "Pin1" }, // Pin 1
-			new { Lat = 21.3986, Lng = -158.0097, Name = "Pin2" }, // Pin 2
-			new { Lat = 21.3649, Lng = -157.9634, Name = "Pin3" }, // Pin 3
-			new { Lat = 21.4513, Lng = -158.0147, Name = "Pin4" }, // Pin 4
-			new { Lat = 21.3847, Lng = -157.9261, Name = "Pin5" }, // Pin 5
-			new { Lat = 21.4644, Lng = -158.0411, Name = "Pin6" }, // Pin 6
-			new { Lat = 21.3408, Lng = -158.0061, Name = "Pin7" }, // Pin 7
-			new { Lat = 21.3247, Lng = -157.9772, Name = "Pin8" }, // Pin 8
-			new { Lat = 21.3142, Lng = -158.0397, Name = "Pin9" }, // Pin 9
-			new { Lat = 21.3350, Lng = -158.0550, Name = "Pin10" } // Pin 10
-		};
+            // Pin 1: Pearl City, Hawaii
+            new { Lat = 21.3933, Lng = -157.9751, Name = "Pearl City", Description = "Suburb, shopping, residential, schools, parks" },
+            // Pin 2: Waipahu, Hawaii
+            new { Lat = 21.3986, Lng = -158.0097, Name = "Waipahu", Description = "Historic sugar town, diverse community" },
+            // Pin 3: Aiea, Hawaii
+            new { Lat = 21.3649, Lng = -157.9634, Name = "Aiea", Description = "Residential, Pearl Harbor views, mall" },
+            // Pin 4: Waikele, Hawaii
+            new { Lat = 21.4513, Lng = -158.0147, Name = "Waikele", Description = "Outlet shopping, golf, residential area" },
+            // Pin 5: Halawa, Hawaii
+            new { Lat = 21.3847, Lng = -157.9261, Name = "Halawa", Description = "Aloha Stadium, neighborhoods, valley, events" },
+            // Pin 6: Mililani, Hawaii
+            new { Lat = 21.4644, Lng = -158.0411, Name = "Mililani", Description = "Planned community, schools, parks, shopping" },
+            // Pin 7: Ewa Beach, Hawaii
+            new { Lat = 21.3408, Lng = -158.0061, Name = "Ewa Beach", Description = "Coastal, golf, growing, residential, beaches" },
+            // Pin 8: Waimalu, Hawaii
+            new { Lat = 21.3247, Lng = -157.9772, Name = "Waimalu", Description = "Small community, shopping, residential, eateries" },
+            // Pin 9: Kapolei, Hawaii
+            new { Lat = 21.3142, Lng = -158.0397, Name = "Kapolei", Description = "Second city, business, shopping, growth" },
+            // Pin 10: Makakilo, Hawaii
+            new { Lat = 21.3350, Lng = -158.0550, Name = "Makakilo", Description = "Hillside, residential, views, breezy, quiet" }
+        };
 
         // Get the next pin location based on numbered pins count
         var pinData = pinLocations[numberedPinsCount];
@@ -139,23 +149,63 @@ public partial class MapOptionsPage : ContentPage
         var pin = new Pin
         {
             Label = pinData.Name,
-            Address = $"{pinData.Name}, Hawaii",
-            Type = PinType.Generic,
+            Address = $"{pinData.Description}",
+            Type = PinType.Place,
             Location = new Location(pinData.Lat, pinData.Lng)
         };
         _viewModel.Pins.Add(pin);
         _viewModel.UserAddedPinCount++;
     }
 
+    // Shape selection for Map Elements
+    private string _selectedShape = "Polyline"; // Default
+
+    private void ShapeRadioButton_CheckedChanged(object sender, CheckedChangedEventArgs e)
+    {
+        if (e.Value && sender is RadioButton rb && rb.Content is string content)
+        {
+            _selectedShape = content;
+
+            // If Polygon is selected, render the polygon immediately
+            if (_selectedShape == "Polygon")
+            {
+                // Remove any existing polygon
+                var polygons = _viewModel.MapElements.Where(el => el is Polygon).ToList();
+                foreach (var poly in polygons)
+                    _viewModel.MapElements.Remove(poly);
+
+                // Add the polygon connecting all 9 locations
+                var destinations = new[]
+                {
+                    new Location(21.3649, -157.9634), // Pin3
+                    new Location(21.3986, -158.0097), // Pin2
+                    
+                    new Location(21.4513, -158.0147), // Pin4
+                    new Location(21.3847, -157.9261), // Pin5
+                };
+                var polygon = new Polygon
+                {
+                    StrokeColor = Colors.Blue,
+                    StrokeWidth = 3,
+                    FillColor = Color.FromArgb("#330000FF")
+                };
+                foreach (var loc in destinations)
+                    polygon.Geopath.Add(loc);
+                _viewModel.MapElements.Add(polygon);
+            }
+            else
+            {
+                // Remove any existing polygon if another shape is selected
+                var polygons = _viewModel.MapElements.Where(el => el is Polygon).ToList();
+                foreach (var poly in polygons)
+                    _viewModel.MapElements.Remove(poly);
+            }
+        }
+    }
+
     private void AddElementButton_Clicked(object sender, EventArgs e)
     {
-        // Maximum of 9 elements allowed
-        if (_viewModel.MapElements.Count >= 9)
-        {
-            return; // Don't add more than 9 elements
-        }
-
-        // Use the same locations as pins for map elements, with different colors
+        // Use the same destinations for all shapes
         var destinations = new[]
         {
             new { Name = "Pin2", Location = new Location(21.3986, -158.0097), Color = Colors.Red },
@@ -169,41 +219,69 @@ public partial class MapOptionsPage : ContentPage
             new { Name = "Pin10", Location = new Location(21.3350, -158.0550), Color = Colors.Maroon }
         };
 
-        // Get the destination based on current count (starts from 0, so first element goes to Pin2)
-        var count = _viewModel.MapElements.Count;
-        var destination = destinations[count];
-
-        // Create a polyline from Pearl City to the destination
-        var polyline = new Polyline
+        if (_selectedShape == "Polyline")
         {
-            StrokeColor = destination.Color,
-            StrokeWidth = 4
-        };
+            // Add up to 9 polylines, one per click
+            int polylineCount = _viewModel.MapElements.Count(e => e is Polyline);
+            if (polylineCount >= 9)
+                return;
+            var destination = destinations[polylineCount];
+            var polyline = new Polyline
+            {
+                StrokeColor = destination.Color,
+                StrokeWidth = 4
+            };
+            polyline.Geopath.Add(MapViewModel.PearlCityLocation);
+            var startLat = MapViewModel.PearlCityLocation.Latitude;
+            var startLng = MapViewModel.PearlCityLocation.Longitude;
+            var endLat = destination.Location.Latitude;
+            var endLng = destination.Location.Longitude;
+            var midLat1 = startLat + (endLat - startLat) * 0.33;
+            var midLng1 = startLng + (endLng - startLng) * 0.33;
+            polyline.Geopath.Add(new Location(midLat1, midLng1));
+            var midLat2 = startLat + (endLat - startLat) * 0.67;
+            var midLng2 = startLng + (endLng - startLng) * 0.67;
+            polyline.Geopath.Add(new Location(midLat2, midLng2));
+            polyline.Geopath.Add(destination.Location);
+            _viewModel.MapElements.Add(polyline);
+        }
+        else if (_selectedShape == "Circle")
+        {
+            // Add up to 9 circles, one per click
+            int circleCount = _viewModel.MapElements.Count(e => e is Circle && ((Circle)e).Radius.Kilometers == 2);
+            if (circleCount >= 9)
+                return;
+            var destination = destinations[circleCount];
+            var circle = new Circle
+            {
+                Center = destination.Location,
+                Radius = Distance.FromKilometers(2),
+                StrokeColor = destination.Color,
+                StrokeWidth = 2,
+                FillColor = Color.FromArgb("#3300FF00")
+            };
+            _viewModel.MapElements.Add(circle);
+        }
+        else if (_selectedShape == "Polygon")
+        {
+            bool polygonExists = _viewModel.MapElements.Any(e => e is Polygon);
+            if (polygonExists)
+                return;
 
-        // Start from Pearl City
-        polyline.Geopath.Add(MapViewModel.PearlCityLocation);
+            var polygon = new Polygon
+            {
+                StrokeColor = Colors.Blue,
+                StrokeWidth = 3,
+                FillColor = Color.FromArgb("#330000FF")
+            };
+            polygon.Geopath.Add(MapViewModel.PearlCityLocation);
+            polygon.Geopath.Add(destinations[0].Location);
+            polygon.Geopath.Add(destinations[1].Location);
+            polygon.Geopath.Add(destinations[3].Location);
 
-        // Add intermediate points for a more realistic route
-        var startLat = MapViewModel.PearlCityLocation.Latitude;
-        var startLng = MapViewModel.PearlCityLocation.Longitude;
-        var endLat = destination.Location.Latitude;
-        var endLng = destination.Location.Longitude;
-
-        // Add 2-3 intermediate points to make the route more interesting
-        var midLat1 = startLat + (endLat - startLat) * 0.33;
-        var midLng1 = startLng + (endLng - startLng) * 0.33;
-        polyline.Geopath.Add(new Location(midLat1, midLng1));
-
-        var midLat2 = startLat + (endLat - startLat) * 0.67;
-        var midLng2 = startLng + (endLng - startLng) * 0.67;
-        polyline.Geopath.Add(new Location(midLat2, midLng2));
-
-        // End at the destination
-        polyline.Geopath.Add(destination.Location);
-
-        _viewModel.MapElements.Add(polyline);
+            _viewModel.MapElements.Add(polygon);
+        }
     }
-
     private void SetItemsSourceButton_Clicked(object sender, EventArgs e)
     {
         // Set the ItemsSource to the pins collection to enable data templating
@@ -498,6 +576,9 @@ public partial class MapOptionsPage : ContentPage
         // Reset MapType to default
         _viewModel.MapType = MapType.Street;
 
+        // Reset Map Element radio button to Polyline
+        _selectedShape = "Polyline";
+
         // Clear all pins and reset user pin count (from ClearPinsButton functionality)
         _viewModel.Pins.Clear();
         _viewModel.UserAddedPinCount = 0;
@@ -515,5 +596,20 @@ public partial class MapOptionsPage : ContentPage
 
         // Update radio buttons to reflect the reset MapType
         UpdateRadioButtonsFromMapType();
+
+        // Also reset the clicked location pin and label on the map page
+        var nav = this.Navigation;
+        if (nav != null && nav.NavigationStack.Count > 0)
+        {
+            // Find the MapControlMainPage in the navigation stack
+            foreach (var page in nav.NavigationStack)
+            {
+                if (page is Maui.Controls.Sample.MapControlMainPage mainPage)
+                {
+                    mainPage.ResetClickedLocationPinAndLabel();
+                    break;
+                }
+            }
+        }
     }
 }

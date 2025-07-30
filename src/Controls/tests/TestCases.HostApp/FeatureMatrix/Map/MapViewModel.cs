@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Maps;
 using Microsoft.Maui.Controls.Maps;
+using System.Windows.Input;
 
 namespace Maui.Controls.Sample;
 
@@ -38,6 +39,7 @@ public class MapViewModel : INotifyPropertyChanged
     private DataTemplateSelector _itemTemplateSelector;
     private MapSpan _initialRegion;
     private MapSpan _visibleRegion;
+    private ICommand _mapClickedCommand;
     private int _userAddedPinCount = 0;
 
     public MapViewModel()
@@ -207,6 +209,26 @@ public class MapViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+
+    public ICommand MapClickedCommand
+    {
+
+        get => _mapClickedCommand;
+        set
+        {
+            _mapClickedCommand = value;
+            OnPropertyChanged();
+        }
+    }
+    // public ICommand MarkerClickedCommand
+    // {
+    //     get => _markerClickedCommand;
+    //     set
+    //     {
+    //         _markerClickedCommand = value;
+    //         OnPropertyChanged();
+    //     }
+    // }
 
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {

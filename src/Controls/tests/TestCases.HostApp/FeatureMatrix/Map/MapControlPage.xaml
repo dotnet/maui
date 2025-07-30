@@ -23,7 +23,22 @@
               ItemsSource="{Binding ItemsSource}"
               ItemTemplate="{Binding ItemTemplate}"
               ItemTemplateSelector="{Binding ItemTemplateSelector}"
+              MapClicked="OnMapClicked"
               VerticalOptions="FillAndExpand"
               HorizontalOptions="FillAndExpand"/>
+    <!-- Map Clicked and Marker Clicked Event Labels -->
+    <StackLayout Spacing="2"
+        Padding="10,0,10,0">
+      <Label x:Name="MapClickedLabel"
+             Text="Map Clicked: "
+             FontSize="12"
+             TextColor="DarkBlue"
+             AutomationId="MapClickedLabel"/>
+      <Label x:Name="MarkerClickedLabel"
+             Text="Marker Clicked: "
+             FontSize="12"
+             TextColor="DarkGreen"
+             AutomationId="MarkerClickedLabel"/>
+    </StackLayout>
   </StackLayout>
 </ContentPage>

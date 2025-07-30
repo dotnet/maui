@@ -17,12 +17,20 @@ public class MapControlPage : NavigationPage
 public partial class MapControlMainPage : ContentPage
 {
 	private MapViewModel _viewModel;
-
 	public MapControlMainPage(MapViewModel viewModel)
 	{
+
 		InitializeComponent();
 		_viewModel = viewModel;
 		BindingContext = _viewModel;
+
+		// Set initial label text to 'Not clicked'
+		var mapLabel = this.FindByName<Microsoft.Maui.Controls.Label>("MapClickedLabel");
+		if (mapLabel != null)
+			mapLabel.Text = "Map Clicked: Not clicked";
+		var markerLabel = this.FindByName<Microsoft.Maui.Controls.Label>("MarkerClickedLabel");
+		if (markerLabel != null)
+			markerLabel.Text = "Marker Clicked: Not clicked";
 
 		// Handle MapElements collection changes manually since it's not directly bindable
 		_viewModel.MapElements.CollectionChanged += OnMapElementsCollectionChanged;
@@ -50,6 +58,23 @@ public partial class MapControlMainPage : ContentPage
 
 		// Subscribe to map events to sync VisibleRegion back to ViewModel
 		TestMap.PropertyChanged += OnMapPropertyChanged;
+
+		// Subscribe to MessagingCenter for label updates
+		Microsoft.Maui.Controls.MessagingCenter.Subscribe<object, string>(this, "MapClickedLabelUpdate", (sender, value) =>
+		{
+			var label = this.FindByName<Microsoft.Maui.Controls.Label>("MapClickedLabel");
+			if (label != null)
+				label.Text = value;
+		});
+		Microsoft.Maui.Controls.MessagingCenter.Subscribe<object, string>(this, "MarkerClickedLabelUpdate", (sender, value) =>
+		{
+			var label = this.FindByName<Microsoft.Maui.Controls.Label>("MarkerClickedLabel");
+			if (label != null)
+				label.Text = value;
+		});
+
+		TestMap.MapClicked += OnMapClicked;
+
 	}
 
 	private void OnMapElementsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -154,6 +179,68 @@ public partial class MapControlMainPage : ContentPage
 		}
 	}
 
+	private Pin _lastClickPin;
+	private void OnMapClicked(object sender, Microsoft.Maui.Controls.Maps.MapClickedEventArgs e)
+	{
+		var label = this.FindByName<Microsoft.Maui.Controls.Label>("MapClickedLabel");
+		if (label != null)
+			label.Text = $"Map Clicked: Latitude: {e.Location.Latitude:F6}, Longitude: {e.Location.Longitude:F6}";
+
+		// Remove previous click marker if it exists
+		if (_lastClickPin != null)
+		{
+			if (TestMap.Pins.Contains(_lastClickPin))
+				TestMap.Pins.Remove(_lastClickPin);
+			_lastClickPin = null;
+		}
+
+		// Add a new pin at the clicked location
+		var clickPin = new Pin
+		{
+			Label = "Clicked Location",
+			Location = e.Location,
+			Address = $"Lat: {e.Location.Latitude:F6}, Lng: {e.Location.Longitude:F6}",
+			Type = PinType.Place
+		};
+		// Attach MarkerClicked and InfoWindowClicked events
+		clickPin.MarkerClicked += OnPinMarkerClicked;
+		clickPin.InfoWindowClicked += OnPinInfoWindowClicked;
+		TestMap.Pins.Add(clickPin);
+		_lastClickPin = clickPin;
+	}
+	private void OnPinMarkerClicked(object sender, PinClickedEventArgs e)
+	{
+		var label = this.FindByName<Microsoft.Maui.Controls.Label>("MarkerClickedLabel");
+		if (label != null)
+			label.Text = "Marker Clicked: Pin tapped (info window will show)";
+		e.HideInfoWindow = false;
+	}
+
+	private void OnPinInfoWindowClicked(object sender, PinClickedEventArgs e)
+	{
+		var label = this.FindByName<Microsoft.Maui.Controls.Label>("MarkerClickedLabel");
+		if (label != null)
+			label.Text = "Marker Clicked: Info window tapped (info window will hide)";
+		e.HideInfoWindow = true;
+	}
+
+	public void ResetClickedLocationPinAndLabel()
+	{
+		// Remove the clicked location pin if it exists
+		if (_lastClickPin != null)
+		{
+			if (TestMap.Pins.Contains(_lastClickPin))
+				TestMap.Pins.Remove(_lastClickPin);
+			_lastClickPin = null;
+		}
+		// Reset the labels to 'Not clicked'
+		var mapLabel = this.FindByName<Microsoft.Maui.Controls.Label>("MapClickedLabel");
+		if (mapLabel != null)
+			mapLabel.Text = "Map Clicked: Not clicked";
+		var markerLabel = this.FindByName<Microsoft.Maui.Controls.Label>("MarkerClickedLabel");
+		if (markerLabel != null)
+			markerLabel.Text = "Marker Clicked: Not clicked";
+	}
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
 		// Use the existing view model instead of creating a new one

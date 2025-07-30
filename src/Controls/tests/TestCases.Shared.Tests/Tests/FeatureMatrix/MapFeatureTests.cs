@@ -60,7 +60,7 @@ public class MapFeatureTests : UITest
 	}
 
 	[Test]
-	public void Map_IsShowingUser_WithElements()
+	public void Map_IsShowingUser_WithElements_PolyLine()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -76,6 +76,53 @@ public class MapFeatureTests : UITest
 			App.WaitForElement("AddElementButton");
 			App.Tap("AddElementButton");
 		}
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+	[Test]
+	public void Map_IsShowingUser_WithElements_Circle()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		App.WaitForElement("IsShowingUserCheckBox");
+		App.Tap("IsShowingUserCheckBox");
+
+		App.WaitForElement("CircleRadioButton");
+		App.Tap("CircleRadioButton");
+
+		for (int i = 0; i < 5; i++)
+		{
+			App.WaitForElement("AddElementButton");
+			App.Tap("AddElementButton");
+		}
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	public void Map_IsShowingUser_WithElements_Polygon()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		App.WaitForElement("IsShowingUserCheckBox");
+		App.Tap("IsShowingUserCheckBox");
+
+		App.WaitForElement("PolygonRadioButton");
+		App.Tap("PolygonRadioButton");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -191,7 +238,7 @@ public class MapFeatureTests : UITest
 	}
 
 	[Test]
-	public void Map_IsEnabledScroll_Street_AndElements()
+	public void Map_IsEnabledScroll_Street_AndElements_PolyLine()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -207,6 +254,60 @@ public class MapFeatureTests : UITest
 			App.WaitForElement("AddElementButton");
 			App.Tap("AddElementButton");
 		}
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		App.WaitForElement("MapView");
+		App.ScrollUp("MapView");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	public void Map_IsEnabledScroll_Street_AndElements_Circle()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		App.WaitForElement("IsScrollEnabledCheckBox");
+		App.Tap("IsScrollEnabledCheckBox");
+
+		App.WaitForElement("CircleRadioButton");
+		App.Tap("CircleRadioButton");
+
+		for (int i = 0; i < 7; i++)
+		{
+			App.WaitForElement("AddElementButton");
+			App.Tap("AddElementButton");
+		}
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		App.WaitForElement("MapView");
+		App.ScrollUp("MapView");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	public void Map_IsEnabledScroll_Street_AndElements_Polygon()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		App.WaitForElement("IsScrollEnabledCheckBox");
+		App.Tap("IsScrollEnabledCheckBox");
+
+		App.WaitForElement("PolygonRadioButton");
+		App.Tap("PolygonRadioButton");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -275,7 +376,31 @@ public class MapFeatureTests : UITest
 	}
 
 	[Test]
-	public void Map_Elements_WithPins_AndZoomOut()
+	public void Map_IsZoomEnabled_Street_AndElements_Polygon()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		App.WaitForElement("IsZoomEnabledCheckBox");
+		App.Tap("IsZoomEnabledCheckBox");
+
+		App.WaitForElement("ZoomInButton");
+		App.Tap("ZoomInButton");
+
+		App.WaitForElement("PolygonRadioButton");
+		App.Tap("PolygonRadioButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	public void Map_Elements_PolyLine_WithPins_AndZoomOut()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -308,7 +433,37 @@ public class MapFeatureTests : UITest
 	}
 
 	[Test]
-	public void Map_Elements_WithPins_HybridMapType()
+	public void Map_Elements_Polygon_WithPins_AndZoomOut()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		App.WaitForElement("PolygonRadioButton");
+		App.Tap("PolygonRadioButton");
+
+		App.WaitForElement("IsZoomEnabledCheckBox");
+		App.Tap("IsZoomEnabledCheckBox");
+
+		App.WaitForElement("ZoomOutButton");
+		App.Tap("ZoomOutButton");
+
+		for (int i = 0; i < 10; i++)
+		{
+			App.WaitForElement("AddPinButton");
+			App.Tap("AddPinButton");
+		}
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	public void Map_Elements_PolyLine_WithPins_HybridMapType()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -318,6 +473,39 @@ public class MapFeatureTests : UITest
 
 		App.WaitForElement("HybridRadioButton");
 		App.Tap("HybridRadioButton");
+
+		for (int i = 0; i < 10; i++)
+		{
+			App.WaitForElement("AddPinButton");
+			App.Tap("AddPinButton");
+		}
+
+		for (int i = 0; i < 9; i++)
+		{
+			App.WaitForElement("AddElementButton");
+			App.Tap("AddElementButton");
+		}
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot();
+	}
+
+	[Test]
+	public void Map_Elements_Circle_WithPins_HybridMapType()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		App.WaitForElement("HybridRadioButton");
+		App.Tap("HybridRadioButton");
+
+		App.WaitForElement("CircleRadioButton");
+		App.Tap("CircleRadioButton");
 
 		for (int i = 0; i < 10; i++)
 		{
