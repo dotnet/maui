@@ -45,6 +45,7 @@ public class Issue28091GetHistory : _IssuesUITest
 		WaitForPerformanceData();
 
 		// Capture updated history
+		App.WaitForElement("HistoryLabel");
 		var updatedText = App.FindElement("HistoryLabel")?.GetText();
 
 		// Validate output contains expected profiler terms and differs from initial state
