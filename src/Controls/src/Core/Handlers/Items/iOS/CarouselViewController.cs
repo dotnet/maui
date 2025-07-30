@@ -96,7 +96,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 				else
 				{
-					// Fallback to base implementation if manager couldn't be initialized
+					// Fallback case: If _carouselViewLoopManager is still null after attempted initialization,
+					// we bypass loop-specific behavior and use base implementation directly.
+
 					cell = base.GetCell(collectionView, indexPath);
 				}
 			}
