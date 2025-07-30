@@ -680,17 +680,17 @@ void EnsureAdbKeys(AdbToolSettings settings)
 
     // Key Paths
     var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-    var adbKeyPath = Path.Combine(homeDir, ".android");
-    var adbKeyFile = Path.Combine(adbKeyPath, "adbkey");
-    var adbKeyPubFile = Path.Combine(adbKeyPath, "adbkey.pub");
+    var adbKeyPath = System.IO.Path.Combine(homeDir, ".android");
+    var adbKeyFile = System.IO.Path.Combine(adbKeyPath, "adbkey");
+    var adbKeyPubFile = System.IO.Path.Combine(adbKeyPath, "adbkey.pub");
 
     try
     {
         // Ensure .android directory exists
-        Directory.CreateDirectory(adbKeyPath);
+        EnsureDirectoryExists(adbKeyPath);
 
         // Check if keys already exist
-        bool keysExist = File.Exists(adbKeyFile) && File.Exists(adbKeyPubFile);
+        bool keysExist = System.IO.File.Exists(adbKeyFile) && System.IO.File.Exists(adbKeyPubFile);
         if (keysExist)
         {
             Information("ADB keys already exist. Skipping generation.");
@@ -708,7 +708,7 @@ void EnsureAdbKeys(AdbToolSettings settings)
             };
             var keygenResult = StartProcess("adb", keygenProcessSettings);
 
-            if (keygenResult != 0 || !File.Exists(adbKeyFile) || !File.Exists(adbKeyPubFile))
+            if (keygenResult != 0 || !System.IO.File.Exists(adbKeyFile) || !System.IO.File.Exists(adbKeyPubFile))
             {
                 Information("'adb keygen' failed or files not created. Trying ssh-keygen fallback...");
                 // Fallback: Use ssh-keygen to generate an RSA key pair
@@ -719,7 +719,7 @@ void EnsureAdbKeys(AdbToolSettings settings)
                 };
                 var sshKeygenResult = StartProcess("ssh-keygen", sshKeygenProcessSettings);
 
-                if (sshKeygenResult != 0 || !File.Exists(adbKeyFile) || !File.Exists(adbKeyPubFile))
+                if (sshKeygenResult != 0 || !System.IO.File.Exists(adbKeyFile) || !System.IO.File.Exists(adbKeyPubFile))
                 {
                     Error("Failed to generate ADB keys using both 'adb keygen' and 'ssh-keygen'.");
                     throw new CakeException("Critical failure: Could not generate ADB keys.");
@@ -753,25 +753,23 @@ void EnsureAdbKeys(AdbToolSettings settings)
         }
 
         // Restart ADB Server
-        // Restarting ensures the ADB server picks up the newly generated keys.
         Information("Restarting ADB server to ensure it uses the correct keys...");
         try
         {
             AdbKillServer(settings);
-            Thread.Sleep(2000); // Brief pause
+            System.Threading.Thread.Sleep(2000); // Brief pause
             AdbStartServer(settings);
-            Thread.Sleep(2000); // Brief pause after start
+            System.Threading.Thread.Sleep(2000); // Brief pause after start
         }
         catch (Exception restartEx)
         {
             Error($"Failed to restart ADB server: {restartEx.Message}");
-            // If restart fails, subsequent device communication might be unreliable.
             throw new CakeException("Failed to restart ADB server after key setup.", restartEx);
         }
 
         // Wait for Device to be Present.
-        // The `PrepareDevice` method already waits for full boot. This step just ensures
-        // ADB sees *a* device connected.
+        // The `PrepareDevice` method already waits for full boot. 
+        // This step just ensures ADB sees a device connected.
         Information("Waiting for a device to be connected...");
         var waitProcessSettings = new ProcessSettings
         {
@@ -782,7 +780,6 @@ void EnsureAdbKeys(AdbToolSettings settings)
         if (waitResult != 0)
         {
             Warning("Timeout or error waiting for any ADB device to connect.");
-            // Don't fail the whole process yet, as PrepareDevice will also check.
         }
 
         // Identify and Wait for Device Readiness
@@ -815,7 +812,7 @@ void EnsureAdbKeys(AdbToolSettings settings)
                 }
             }
             Information("Waiting for a responsive device...");
-            Thread.Sleep(5000);
+            System.Threading.Thread.Sleep(5000);
         }
 
         if (string.IsNullOrEmpty(targetDeviceSerial))
@@ -835,7 +832,6 @@ void EnsureAdbKeys(AdbToolSettings settings)
             AdbShell("chmod 771 /data/misc/adb", deviceSpecificSettings);
 
             // Push the PUBLIC key file to the device's adb_keys file
-            // This allows the host's corresponding private key to authenticate.
             var pushProcessSettings = new ProcessSettings
             {
                 Arguments = $"-s {targetDeviceSerial} push \"{adbKeyPubFile}\" /data/misc/adb/adb_keys",
@@ -851,8 +847,7 @@ void EnsureAdbKeys(AdbToolSettings settings)
                 // Restart adbd on the device to pick up the new keys
                 Information($"Restarting adbd on device {targetDeviceSerial}...");
                 AdbShell("stop adbd && sleep 1 && start adbd", deviceSpecificSettings);
-                // Give adbd a moment to restart
-                Thread.Sleep(3000);
+                System.Threading.Thread.Sleep(3000);
                 Information($"adbd restarted on device {targetDeviceSerial}.");
             }
             else
