@@ -805,4 +805,5 @@ namespace Microsoft.Maui.Platform
 					return false;
 			}
 		}
+	}
 }
