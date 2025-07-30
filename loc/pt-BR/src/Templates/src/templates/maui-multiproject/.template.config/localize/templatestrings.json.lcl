@@ -131,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the Windows app head project (using WinUI 3)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Incluir o projeto principal do aplicativo do Windows (usando o WinUI 3)]]></Val>
+            <Val><![CDATA[Incluir o projeto principal do aplicativo do Windows (usando WinUI 3)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
