@@ -180,29 +180,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName)
 			{
 				var page = (Page)sender;
-				UpdateTabBarItem(page);
+
+				IPlatformViewHandler renderer = page.ToHandler(_mauiContext);
+
+				if (renderer?.ViewController.TabBarItem == null)
+					return;
+
+				SetTabBarItem(renderer);
 			}
-		}
-		
-		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
-		{
-			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
-				return;
-
-			if (Element is not null)
-			{
-				UpdateTabBarItems();
-			}
-		}
-
-		void UpdateTabBarItem(Page page)
-		{
-			IPlatformViewHandler renderer = page.ToHandler(_mauiContext);
-
-			if (renderer?.ViewController.TabBarItem == null)
-				return;
-
-			SetTabBarItem(renderer);
 		}
 
 		void OnPagesChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -463,14 +448,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		void UpdateTabBarItems()
-		{
-			foreach (var page in Tabbed.InternalChildren)
-			{
-				UpdateTabBarItem((Page)page);
-			}
-		}
-
 		void UpdateChildrenOrderIndex(UIViewController[] viewControllers)
 		{
 			if (Tabbed is not TabbedPage tabbed)
@@ -503,21 +480,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				throw new InvalidCastException($"{nameof(renderer)} must be a {nameof(Page)} renderer.");
 
 			var icons = await GetIcon(page);
-			var resizedImage = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icons?.Item1);
-			var resizedSelectedImage = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icons?.Item2);
-			SetTabBarItem(resizedImage, resizedSelectedImage);
-			resizedImage?.Dispose();
-			resizedSelectedImage?.Dispose();
-
-			void SetTabBarItem(UIImage image, UIImage selectedImage)
+			renderer.ViewController.TabBarItem = new UITabBarItem(page.Title, icons?.Item1, icons?.Item2)
 			{
-				renderer.ViewController.TabBarItem = new UITabBarItem(page.Title, image, selectedImage)
-				{
-					Tag = Tabbed?.Children.IndexOf(page) ?? -1,
-					AccessibilityIdentifier = page.AutomationId
-				};
-			}
-
+				Tag = Tabbed?.Children.IndexOf(page) ?? -1,
+				AccessibilityIdentifier = page.AutomationId
+			};
 			icons?.Item1?.Dispose();
 			icons?.Item2?.Dispose();
 		}

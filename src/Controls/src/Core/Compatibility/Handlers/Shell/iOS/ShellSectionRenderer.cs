@@ -547,8 +547,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			ShellSection.Icon.LoadImage(ShellSection.FindMauiContext(), icon =>
 			{
-				var image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icon?.Value);
-				TabBarItem = new UITabBarItem(ShellSection.Title, image, null);
+				TabBarItem = new UITabBarItem(ShellSection.Title, icon?.Value, null);
 				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
 			});
 		}
