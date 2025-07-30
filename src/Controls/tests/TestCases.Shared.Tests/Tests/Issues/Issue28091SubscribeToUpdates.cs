@@ -31,7 +31,7 @@ public class Issue28091SubscribeToUpdates : _IssuesUITest
 
 		// Validate history shows "passed" indicating performance updates were received
 		Assert.That(updatedText, Is.Not.Null
-			.And.EqualTo("passed")
+			.And.EqualTo("Passed")
 			.IgnoreCase);
 	}
 }
