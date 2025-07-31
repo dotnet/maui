@@ -75,8 +75,7 @@ public partial class LayoutMainPage : ContentPage
             HorizontalOptions = _viewModel.HorizontalOptions,
             VerticalOptions = _viewModel.VerticalOptions,
             BackgroundColor = Colors.LightBlue,
-            Padding = 10,
-            Spacing = 8,
+            Spacing = 10,
             Children =
         {
             new Label { Text = "Layout inside ContentView", FontSize = 18, FontAttributes = FontAttributes.Bold }
@@ -98,8 +97,7 @@ public partial class LayoutMainPage : ContentPage
             HorizontalOptions = _viewModel.HorizontalOptions,
             VerticalOptions = _viewModel.VerticalOptions,
             BackgroundColor = Colors.Beige,
-            Padding = 10,
-            Spacing = 8,
+            Spacing = 10,
             Children =
         {
             new Label { Text = "Layout inside Grid", FontSize = 18, FontAttributes = FontAttributes.Bold }
@@ -120,9 +118,8 @@ public partial class LayoutMainPage : ContentPage
     {
         var innerStack = new VerticalStackLayout
         {
-            Padding = 10,
-            Spacing = 6,
-            BackgroundColor = Colors.LightPink
+            Spacing = 10,
+            BackgroundColor = Colors.LightPink,
         };
 
         innerStack.Children.Add(new Label
@@ -146,9 +143,8 @@ public partial class LayoutMainPage : ContentPage
         {
             HorizontalOptions = _viewModel.HorizontalOptions,
             VerticalOptions = _viewModel.VerticalOptions,
-            BackgroundColor = Colors.LightGray,
-            Padding = 10,
             Spacing = 10,
+            BackgroundColor = Colors.LightGray,
             Children =
         {
             innerStack
@@ -158,8 +154,6 @@ public partial class LayoutMainPage : ContentPage
         var contentView = new ContentView
         {
             Content = parentLayout,
-            Padding = 10,
-
         };
 
         MyScrollView.Content = contentView;
@@ -174,7 +168,6 @@ public partial class LayoutMainPage : ContentPage
             VerticalOptions = _viewModel.VerticalOptions,
             BackgroundColor = Colors.MistyRose,
             Spacing = 10,
-            Padding = 10,
             Children =
         {
             new Label { Text = "Layout", FontSize = 16, FontAttributes = FontAttributes.Bold }
@@ -289,5 +282,4 @@ public partial class LayoutMainPage : ContentPage
 
         MyScrollView.Content = absoluteLayout;
     }
-
 }
