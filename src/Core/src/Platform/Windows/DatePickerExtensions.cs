@@ -30,7 +30,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMinimumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.MinDate = datePicker?.MinimumDate ?? DateTime.MinValue;
+			if (datePicker?.MinimumDate is not null)
+			{
+				platformDatePicker.MinDate = datePicker.MinimumDate.Value;
+			}
 		}
 
 		public static void UpdateMaximumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
