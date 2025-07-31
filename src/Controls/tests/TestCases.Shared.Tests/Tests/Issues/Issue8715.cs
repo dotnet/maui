@@ -22,12 +22,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.TapShellFlyoutIcon();
 			App.WaitForElement("CollectionView");
 			App.Tap("CollectionView");
-			App.WaitForElement("Toggle");
 			App.Tap("Toggle");
 			App.WaitForElement("Toggle");
 			App.Tap("Toggle");
 			App.TapShellFlyoutIcon();
-			App.WaitForElement("About");
 			App.Tap("About");
 			App.WaitForElement("8715 About");
 			App.TapShellFlyoutIcon();
