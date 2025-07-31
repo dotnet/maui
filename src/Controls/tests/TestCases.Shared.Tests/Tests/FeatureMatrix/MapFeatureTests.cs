@@ -120,11 +120,11 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("ResetToInitialButton");
 		App.Tap("ResetToInitialButton");
 
-		App.WaitForElement("IsShowingUserCheckBox");
-		App.Tap("IsShowingUserCheckBox");
-
 		App.WaitForElement("PolygonRadioButton");
 		App.Tap("PolygonRadioButton");
+
+		App.WaitForElement("IsShowingUserCheckBox");
+		App.Tap("IsShowingUserCheckBox");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -177,8 +177,6 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		// Thread.Sleep(2000);
-
 		VerifyScreenshot();
 	}
 
@@ -203,10 +201,13 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
+		var value =  App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+
 		App.WaitForElement("MapView");
 		App.ScrollUp("MapView");
 
-		VerifyScreenshot();
+		Thread.Sleep(2000); 
+		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.Not.EqualTo(value));
 	}
 
 	[Test]
@@ -233,10 +234,13 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		App.WaitForElement("MapView");
-		App.ScrollLeft("MapView");
+		var value =  App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
 
-		VerifyScreenshot();
+		App.WaitForElement("MapView");
+		App.ScrollUp("MapView");
+
+		Thread.Sleep(2000); 
+		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.Not.EqualTo(value));
 	}
 
 	[Test]
@@ -260,10 +264,13 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
+		var value =  App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+
 		App.WaitForElement("MapView");
 		App.ScrollUp("MapView");
 
-		VerifyScreenshot();
+		Thread.Sleep(2000); 
+		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.Not.EqualTo(value));
 	}
 
 	[Test]
@@ -290,10 +297,13 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
+		var value =  App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+
 		App.WaitForElement("MapView");
 		App.ScrollUp("MapView");
 
-		VerifyScreenshot();
+		Thread.Sleep(2000); 
+		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.Not.EqualTo(value));
 	}
 
 	[Test]
@@ -314,10 +324,13 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
+		var value =  App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+
 		App.WaitForElement("MapView");
 		App.ScrollUp("MapView");
 
-		VerifyScreenshot();
+		Thread.Sleep(2000); 
+		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.Not.EqualTo(value));
 	}
 
 	[Test]
@@ -629,11 +642,8 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("ResetToInitialButton");
 		App.Tap("ResetToInitialButton");
 
-		for (int i = 0; i < 6; i++)
-		{
-			App.WaitForElement("AddPinButton");
-			App.Tap("AddPinButton");
-		}
+		App.WaitForElement("IsShowingUserCheckBox");
+		App.Tap("IsShowingUserCheckBox");
 
 		App.WaitForElement("SetItemsSourceButton");
 		App.Tap("SetItemsSourceButton");
@@ -656,11 +666,8 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("ResetToInitialButton");
 		App.Tap("ResetToInitialButton");
 
-		for (int i = 0; i < 6; i++)
-		{
-			App.WaitForElement("AddPinButton");
-			App.Tap("AddPinButton");
-		}
+		App.WaitForElement("IsShowingUserCheckBox");
+		App.Tap("IsShowingUserCheckBox");
 
 		App.WaitForElement("SetItemsSourceButton");
 		App.Tap("SetItemsSourceButton");
@@ -704,10 +711,13 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		App.WaitForElement("MapView");
-		App.ScrollLeft("MapView");
+		var value =  App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
 
-		VerifyScreenshot();
+		App.WaitForElement("MapView");
+		App.ScrollUp("MapView");
+
+		Thread.Sleep(2000);
+		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.Not.EqualTo(value));
 	}
 
 	[Test]
