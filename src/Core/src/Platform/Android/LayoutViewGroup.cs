@@ -135,11 +135,7 @@ namespace Microsoft.Maui.Platform
 			if (_safeArea.IsEmpty)
 				return bounds;
 
-			return new Graphics.Rect(
-				bounds.X + _safeArea.Left,
-				bounds.Y + _safeArea.Top,
-				bounds.Width - _safeArea.HorizontalThickness,
-				bounds.Height - _safeArea.VerticalThickness);
+			return _safeArea.InsetRectF(bounds);
 		}
 
 		SafeAreaPadding GetAdjustedSafeAreaInsets()
@@ -153,8 +149,8 @@ namespace Microsoft.Maui.Platform
 			if (windowInsets == null)
 				return SafeAreaPadding.Empty;
 
-			var baseSafeArea = windowInsets.ToSafeAreaInsets();
-			var keyboardInsets = windowInsets.GetKeyboardInsets();
+			var baseSafeArea = windowInsets.ToSafeAreaInsets(_context);
+			var keyboardInsets = windowInsets.GetKeyboardInsets(_context);
 
 			// Apply safe area selectively per edge based on SafeAreaRegions
 			if (CrossPlatformLayout is ISafeAreaView2)

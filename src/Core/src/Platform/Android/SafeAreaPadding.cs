@@ -2,6 +2,7 @@ using System;
 using Android.Graphics;
 using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform;
 
@@ -27,13 +28,27 @@ internal readonly record struct SafeAreaPadding(double Left, double Right, doubl
 			(int)(bounds.Bottom - Bottom));
 	}
 
+	public Graphics.Rect InsetRectF(Graphics.Rect bounds)
+	{
+		if (IsEmpty)
+		{
+			return bounds;
+		}
+
+		return new Graphics.Rect(
+			bounds.X + Left,
+			bounds.Y + Top,
+			bounds.Width - HorizontalThickness,
+			bounds.Height - VerticalThickness);
+	}
+
 	public Insets ToInsets() =>
 		Insets.Of((int)Left, (int)Top, (int)Right, (int)Bottom);
 }
 
 internal static class WindowInsetsExtensions
 {
-	public static SafeAreaPadding ToSafeAreaInsets(this WindowInsetsCompat insets)
+	public static SafeAreaPadding ToSafeAreaInsets(this WindowInsetsCompat insets, Context context)
 	{
 		// Get system bars insets (status bar, navigation bar)
 		var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
@@ -42,37 +57,40 @@ internal static class WindowInsetsExtensions
 		var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
 		
 		// Combine insets, taking the maximum for each edge
+		// Convert from pixels to device-independent units
 		return new(
-			Math.Max(systemBars.Left, displayCutout.Left),
-			Math.Max(systemBars.Right, displayCutout.Right),
-			Math.Max(systemBars.Top, displayCutout.Top),
-			Math.Max(systemBars.Bottom, displayCutout.Bottom)
+			Math.Max(systemBars.Left, displayCutout.Left) / context.GetDisplayDensity(),
+			Math.Max(systemBars.Right, displayCutout.Right) / context.GetDisplayDensity(),
+			Math.Max(systemBars.Top, displayCutout.Top) / context.GetDisplayDensity(),
+			Math.Max(systemBars.Bottom, displayCutout.Bottom) / context.GetDisplayDensity()
 		);
 	}
 
-	public static SafeAreaPadding ToSafeAreaInsetsWithKeyboard(this WindowInsetsCompat insets)
+	public static SafeAreaPadding ToSafeAreaInsetsWithKeyboard(this WindowInsetsCompat insets, Context context)
 	{
 		// Get base safe area insets
-		var safeArea = insets.ToSafeAreaInsets();
+		var safeArea = insets.ToSafeAreaInsets(context);
 		
 		// Get keyboard insets if available (API 30+)
 		var keyboard = insets.GetInsets(WindowInsetsCompat.Type.Ime());
 		
 		// For keyboard, we only care about the bottom inset and take the maximum
+		// Convert from pixels to device-independent units
 		return new(
 			safeArea.Left,
 			safeArea.Right,
 			safeArea.Top,
-			Math.Max(safeArea.Bottom, keyboard.Bottom)
+			Math.Max(safeArea.Bottom, keyboard.Bottom / context.GetDisplayDensity())
 		);
 	}
 
-	public static SafeAreaPadding GetKeyboardInsets(this WindowInsetsCompat insets)
+	public static SafeAreaPadding GetKeyboardInsets(this WindowInsetsCompat insets, Context context)
 	{
 		// Get keyboard insets if available (API 30+)
 		var keyboard = insets.GetInsets(WindowInsetsCompat.Type.Ime());
 		
 		// Return only keyboard insets (typically only bottom)
-		return new(0, 0, 0, keyboard.Bottom);
+		// Convert from pixels to device-independent units
+		return new(0, 0, 0, keyboard.Bottom / context.GetDisplayDensity());
 	}
 }
