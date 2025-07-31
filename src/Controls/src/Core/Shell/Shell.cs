@@ -1620,19 +1620,6 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				CurrentPage.Loaded += OnCurrentPageLoaded;
-
-				void OnCurrentPageLoaded(object sender, EventArgs e)
-				{
-					if (sender is Page page)
-					{
-						page.Loaded -= OnCurrentPageLoaded;
-						page.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
-
-						// Restore flyout behavior observers after deferred NavigatedTo timing
-						// Android requires this call to maintain flyout functionality
-						CurrentContent?.EvaluateDisconnect();
-					}
-				}
 			}
 		}
 
