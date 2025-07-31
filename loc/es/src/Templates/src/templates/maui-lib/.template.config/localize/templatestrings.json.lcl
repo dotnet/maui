@@ -44,7 +44,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Opens Class1.cs in the editor.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Abre Class1.cs en el editor]]></Val>
+            <Val><![CDATA[Abre Class1.cs en el editor.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

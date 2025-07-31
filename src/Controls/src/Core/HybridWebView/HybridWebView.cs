@@ -136,7 +136,15 @@ namespace Microsoft.Maui.Controls
 				new HybridWebViewInvokeJavaScriptRequest(methodName, null, paramValues, paramJsonTypeInfos))!;
 		}
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Invokes a JavaScript method named <paramref name="methodName"/> and optionally passes in the parameter values specified
+		/// by <paramref name="paramValues"/> by JSON-encoding each one.
+		/// </summary>
+		/// <param name="methodName">The name of the JavaScript method to invoke.</param>
+		/// <param name="returnTypeJsonTypeInfo">Metadata about deserializing the return value from the JavaScript method call to type <typeparamref name="TReturnType"/>.</param>
+		/// <param name="paramValues">Optional array of objects to be passed to the JavaScript method by JSON-encoding each one.</param>
+		/// <param name="paramJsonTypeInfos">Optional array of metadata about serializing the types of the parameters specified by <paramref name="paramValues"/>.</param>
+		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
 		public async Task<TReturnType?> InvokeJavaScriptAsync<TReturnType>(
 			string methodName,
 			JsonTypeInfo<TReturnType> returnTypeJsonTypeInfo,

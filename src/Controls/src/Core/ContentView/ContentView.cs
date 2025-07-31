@@ -88,6 +88,12 @@ namespace Microsoft.Maui.Controls
 			// Use direct property
 			var regionForEdge = SafeAreaEdges.GetEdge(edge);
 
+			if (regionForEdge == SafeAreaRegions.Default)
+			{
+				// If no safe area edges are set, return None
+				return SafeAreaRegions.None;
+			}
+
 			// For ContentView, return the region directly
 			return regionForEdge;
 		}

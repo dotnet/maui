@@ -184,6 +184,8 @@ Microsoft.Maui.Controls.Window.IsMaximizable.get -> bool
 Microsoft.Maui.Controls.Window.IsMaximizable.set -> void
 Microsoft.Maui.Controls.Window.IsMinimizable.get -> bool
 Microsoft.Maui.Controls.Window.IsMinimizable.set -> void
+Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider
+Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider.BindingDataType.get -> string!
 Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute
 Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.Allow.get -> bool
 Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.AllowImplicitXmlnsDeclarationAttribute(bool allow = true) -> void
@@ -256,6 +258,8 @@ override Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertTo(System.Compon
 override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.MovedToWindow() -> void
 override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.ScrollRectToVisible(CoreGraphics.CGRect rect, bool animated) -> void
+~override Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
 ~override Microsoft.Maui.Controls.HorizontalStackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 override Microsoft.Maui.Controls.ImageSourceConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Controls.ImageSourceConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
@@ -443,5 +447,3 @@ virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.GetSecondaryToolbarMenuButtonImage() -> UIKit.UIImage
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.VisualElement.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
-Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider
-Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider.BindingDataType.get -> string!

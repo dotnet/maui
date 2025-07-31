@@ -32,7 +32,7 @@
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI Class Library]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[.NET MAUI Class Bibliothek]]></Val>
+            <Val><![CDATA[.NET MAUI Class-Bibliothek]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[.NET MAUI Class Library (Preview)]]></Val>
