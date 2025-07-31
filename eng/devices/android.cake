@@ -713,7 +713,29 @@ void PrepareDevice(bool waitForBoot)
                 throw new Exception("The emulator did not finish booting in time.");
             }
 
-            if (waited % 60 == 0 && IsCIBuild())
+            // At 90 seconds, restart ADB server to recover from authorization issues
+            if (waited == 90 && IsCIBuild())
+            {
+                Information("Emulator boot taking longer than expected (90/{0} seconds). Restarting ADB server...", total);
+                try
+                {
+                    Information("Stopping ADB server...");
+                    AdbKillServer(settings);
+                    System.Threading.Thread.Sleep(2000);
+                    
+                    Information("Starting ADB server...");
+                    AdbStartServer(settings);
+                    System.Threading.Thread.Sleep(2000);
+                    
+                    Information("ADB server restart completed. Continuing to wait for emulator boot...");
+                }
+                catch (Exception ex)
+                {
+                    Warning("Failed to restart ADB server during boot wait: {0}", ex.Message);
+                    // Continue without throwing - this is a recovery attempt
+                }
+            }
+            else if (waited % 60 == 0 && IsCIBuild())
             {
                 // Ensure ADB keys are configured
                 try
