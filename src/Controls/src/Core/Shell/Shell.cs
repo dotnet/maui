@@ -1612,6 +1612,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
+			// On Windows, the Loaded event has already fired (IsLoaded=true), so SendNavigatedTo runs immediately without altering the flow.
 			if (CurrentPage.IsLoaded)
 			{
 				CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
