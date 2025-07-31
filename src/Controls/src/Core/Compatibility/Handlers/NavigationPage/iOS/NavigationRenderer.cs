@@ -986,7 +986,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					if (originalImageSize.Height - defaultIconHeight > buffer || originalImageSize.Width - defaultIconWidth > buffer)
 					{
-						icon = icon.ResizeImageSource(defaultIconWidth, defaultIconHeight, originalImageSize);
+						if (FlyoutPage.Flyout.IconImageSource is not FontImageSource fontImageSource || !fontImageSource.IsSet(FontImageSource.SizeProperty))
+						{
+							icon = icon.ResizeImageSource(defaultIconWidth, defaultIconHeight, originalImageSize);
+						}
 					}
 					try
 					{

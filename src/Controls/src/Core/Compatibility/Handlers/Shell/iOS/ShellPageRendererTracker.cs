@@ -473,7 +473,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					if (icon is not null && originalImageSize.Height - defaultIconHeight > buffer || originalImageSize.Width - defaultIconWidth > buffer)
 					{
-						icon = icon.ResizeImageSource(defaultIconWidth, defaultIconHeight, originalImageSize);
+						if (image is not FontImageSource fontImageSource || !fontImageSource.IsSet(FontImageSource.SizeProperty))
+						{
+							icon = icon.ResizeImageSource(defaultIconWidth, defaultIconHeight, originalImageSize);
+						}
 					}
 				}
 				else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
