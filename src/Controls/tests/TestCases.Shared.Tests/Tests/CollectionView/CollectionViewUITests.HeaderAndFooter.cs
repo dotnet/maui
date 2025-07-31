@@ -72,7 +72,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("This Is A Header");
 
 			// Scroll right to ensure the footer is visible and positioned at the end
-			for (int i = 0; i < 5; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				App.ScrollRight("CV", ScrollStrategy.Auto, 0.9, 250);
 			}

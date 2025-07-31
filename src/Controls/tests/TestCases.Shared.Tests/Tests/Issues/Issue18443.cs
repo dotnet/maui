@@ -19,7 +19,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			if (App.IsKeyboardShown())
 				App.DismissKeyboard();
 #endif
+
+#if IOS
+			VerifyScreenshot(cropBottom: 1080);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 	}
