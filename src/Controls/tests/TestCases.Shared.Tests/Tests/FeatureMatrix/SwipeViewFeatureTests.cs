@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
+[Category(UITestCategories.SwipeView)]
 public class SwipeViewFeatureTests : UITest
 {
 	public const string SwipeViewFeatureMatrix = "SwipeView Feature Matrix";
@@ -20,7 +21,6 @@ public class SwipeViewFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30949 && https://github.com/dotnet/maui/issues/30947
 	[Test, Order(1)]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWhenLabelSwipeItemAndEvents()
 	{
 		App.WaitForElement("SwipeViewControl");
@@ -34,7 +34,6 @@ public class SwipeViewFeatureTests : UITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWhenImageSwipeItemAndEvents()
 	{
 		App.WaitForElement("Options");
@@ -55,7 +54,6 @@ public class SwipeViewFeatureTests : UITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS //In Android, Buttton SwipeItem is not Invoked & On Windows, related issue link: https://github.com/dotnet/maui/issues/27436
 	[Test, Order(3)]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWhenButtonSwipeItemAndEvents()
 	{
 		App.WaitForElement("Options");
@@ -73,12 +71,11 @@ public class SwipeViewFeatureTests : UITest
 		Assert.That(App.WaitForElement("SwipeChangingLabel").GetText(), Is.EqualTo("Swipe Changing: Right"));
 		Assert.That(App.WaitForElement("SwipeEndedLabel").GetText(), Is.EqualTo("Swipe Ended: Right, IsOpen: Open"));
 	}
-	#endif 
+#endif
 #endif
 
 #if TEST_FAILS_ON_WINDOWS //related issue link:  https://github.com/dotnet/maui/issues/14777
 	[Test, Order(4)]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWhenLabelContentAndProgrammaticActions()
 	{
 		App.WaitForElement("Options");
@@ -100,7 +97,6 @@ public class SwipeViewFeatureTests : UITest
 	}
 
 	[Test, Order(5)]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithImageContentAndProgrammaticActions()
 	{
 		App.WaitForElement("Options");
@@ -125,7 +121,6 @@ public class SwipeViewFeatureTests : UITest
 	}
 
 	[Test, Order(6)]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithCollectionViewContentAndProgrammaticActions()
 	{
 		App.WaitForElement("Options");
@@ -149,7 +144,6 @@ public class SwipeViewFeatureTests : UITest
 #endif
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithImageContentChanged()
 	{
 		App.WaitForElement("Options");
@@ -158,12 +152,13 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("ImageContent");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("SwipeViewImage");
-		VerifyScreenshot();
+		App.WaitForElement("SwipeViewControlLabel");
+		VerifySwipeViewScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // AutomationId not working for SwipeView inside CollectionView item template and Label
+
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithCollectionViewContentChanged()
 	{
 		App.WaitForElement("Options");
@@ -172,13 +167,13 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("CollectionViewContent");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("SwipeViewCollectionItem");
-		VerifyScreenshot();
+		App.WaitForElement("SwipeViewControlLabel");
+		VerifySwipeViewScreenshot();
 	}
+#endif
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30947
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithLabelContentAndThreshold()
 	{
 		App.WaitForElement("Options");
@@ -190,11 +185,10 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("SwipeViewLabel");
 		App.SwipeLeftToRight("SwipeViewLabel");
-		VerifyScreenshot();
+		VerifySwipeViewScreenshot();
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithImageContentAndThreshold()
 	{
 		App.WaitForElement("Options");
@@ -208,11 +202,10 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("SwipeViewImage");
 		App.SwipeLeftToRight("SwipeViewImage");
-		VerifyScreenshot();
+		VerifySwipeViewScreenshot();
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithCollectionViewContentAndThreshold()
 	{
 		App.WaitForElement("Options");
@@ -224,14 +217,13 @@ public class SwipeViewFeatureTests : UITest
 		App.EnterText("ThresholdEntry", "30");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("SwipeViewCollectionItem");
+		App.WaitForElement("SwipeViewControlLabel");
 		App.SwipeLeftToRight("Item 4");
-		VerifyScreenshot();
+		VerifySwipeViewScreenshot();
 	}
 #endif
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithLabelContentAndBackgroundColor()
 	{
 		App.WaitForElement("Options");
@@ -240,12 +232,11 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("LightGreenBackground");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("SwipeViewControl");
-		VerifyScreenshot();
+		App.WaitForElement("SwipeViewControlLabel");
+		VerifySwipeViewScreenshot();
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithImageContentAndBackgroundColor()
 	{
 		App.WaitForElement("Options");
@@ -256,12 +247,11 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("LightGreenBackground");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("SwipeViewImage");
-		VerifyScreenshot();
+		App.WaitForElement("SwipeViewControlLabel");
+		VerifySwipeViewScreenshot();
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithCollectionViewContentAndBackgroundColor()
 	{
 		App.WaitForElement("Options");
@@ -272,12 +262,11 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("LightPinkBackground");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("SwipeViewCollectionItem");
-		VerifyScreenshot();
+		App.WaitForElement("SwipeViewControlLabel");
+		VerifySwipeViewScreenshot();
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithLabelContentAndFlowDirection()
 	{
 		App.WaitForElement("Options");
@@ -286,12 +275,11 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("FlowDirectionRightToLeft");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("SwipeViewControl");
-		VerifyScreenshot();
+		App.WaitForElement("SwipeViewControlLabel");
+		VerifySwipeViewScreenshot();
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithImageContentAndFlowDirection()
 	{
 		App.WaitForElement("Options");
@@ -302,12 +290,11 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("FlowDirectionRightToLeft");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("SwipeViewImage");
-		VerifyScreenshot();
+		App.WaitForElement("SwipeViewControlLabel");
+		VerifySwipeViewScreenshot();
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithCollectionViewContentAndFlowDirection()
 	{
 		App.WaitForElement("Options");
@@ -318,13 +305,12 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("FlowDirectionRightToLeft");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("SwipeViewCollectionItem");
-		VerifyScreenshot();
+		App.WaitForElement("SwipeViewControlLabel");
+		VerifySwipeViewScreenshot();
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/29812
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithLabelContentAndShadow()
 	{
 		App.WaitForElement("Options");
@@ -333,12 +319,11 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("ShadowCheckBox");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("SwipeViewControl");
-		VerifyScreenshot();
+		App.WaitForElement("SwipeViewControlLabel");
+		VerifySwipeViewScreenshot();
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithImageContentAndShadow()
 	{
 		App.WaitForElement("Options");
@@ -349,14 +334,13 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("ShadowCheckBox");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("SwipeViewImage");
-		VerifyScreenshot();
+		App.WaitForElement("SwipeViewControlLabel");
+		VerifySwipeViewScreenshot();
 	}
 #endif
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30947
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithLabelContentAndIsEnabledFalse()
 	{
 		App.WaitForElement("Options");
@@ -371,7 +355,6 @@ public class SwipeViewFeatureTests : UITest
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithImageContentAndIsEnabledFalse()
 	{
 		App.WaitForElement("Options");
@@ -388,7 +371,6 @@ public class SwipeViewFeatureTests : UITest
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithCollectionViewContentAndIsEnabledFalse()
 	{
 		App.WaitForElement("Options");
@@ -406,7 +388,6 @@ public class SwipeViewFeatureTests : UITest
 #endif
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithLabelContentAndIsVisibleFalse()
 	{
 		App.WaitForElement("Options");
@@ -419,7 +400,6 @@ public class SwipeViewFeatureTests : UITest
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithImageContentAndIsVisibleFalse()
 	{
 		App.WaitForElement("Options");
@@ -434,7 +414,6 @@ public class SwipeViewFeatureTests : UITest
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithCollectionViewContentAndIsVisibleFalse()
 	{
 		App.WaitForElement("Options");
@@ -450,7 +429,6 @@ public class SwipeViewFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30947
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithLabelContentSwipeMode()
 	{
 		App.WaitForElement("Options");
@@ -465,7 +443,6 @@ public class SwipeViewFeatureTests : UITest
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithImageContentSwipeMode()
 	{
 		App.WaitForElement("Options");
@@ -482,7 +459,6 @@ public class SwipeViewFeatureTests : UITest
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithCollectionViewContentSwipeMode()
 	{
 		App.WaitForElement("Options");
@@ -499,7 +475,6 @@ public class SwipeViewFeatureTests : UITest
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifyLabelWithSwipeRevealAndSwipeBehaviorOnInvokedAuto()
 	{
 		App.WaitForElement("Options");
@@ -514,7 +489,6 @@ public class SwipeViewFeatureTests : UITest
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifyImageWithSwipeRevealAndSwipeBehaviorOnInvokedAuto()
 	{
 		App.WaitForElement("Options");
@@ -534,7 +508,6 @@ public class SwipeViewFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifyCollectionViewWithSwipeRevealAndSwipeBehaviorOnInvokedAuto()
 	{
 		App.WaitForElement("Options");
@@ -554,7 +527,6 @@ public class SwipeViewFeatureTests : UITest
 #endif
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeModeRevealWithSwipeBehaviorOnInvokedRemainOpen()
 	{
 		App.WaitForElement("Options");
@@ -571,7 +543,6 @@ public class SwipeViewFeatureTests : UITest
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeModeRevealWithSwipeBehaviorOnInvokedCloseSwipeViewButton()
 	{
 		App.WaitForElement("Options");
@@ -588,7 +559,6 @@ public class SwipeViewFeatureTests : UITest
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeModeExecuteWithSwipeBehaviorOnInvokedAuto()
 	{
 		App.WaitForElement("Options");
@@ -600,11 +570,10 @@ public class SwipeViewFeatureTests : UITest
 		App.WaitForElement("SwipeViewControl");
 		App.SwipeLeftToRight("SwipeViewControl");
 		Assert.That(App.WaitForElement("EventInvokedLabel").GetText(), Is.EqualTo("Label Invoked"));
-		VerifyScreenshot();
+		VerifySwipeViewScreenshot();
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeModeExecuteWithSwipeBehaviorOnInvokedRemainOpen()
 	{
 		App.WaitForElement("Options");
@@ -623,7 +592,6 @@ public class SwipeViewFeatureTests : UITest
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeModeExecuteWithSwipeBehaviorOnInvokedCloseSwipeViewButton()
 	{
 		App.WaitForElement("Options");
@@ -637,11 +605,10 @@ public class SwipeViewFeatureTests : UITest
 		App.WaitForElement("SwipeViewControl");
 		App.SwipeLeftToRight("SwipeViewControl");
 		Assert.That(App.WaitForElement("EventInvokedLabel").GetText(), Is.EqualTo("Label Invoked"));
-		VerifyScreenshot();
+		VerifySwipeViewScreenshot();
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithLabelSwipeItemsBackgroundColor()
 	{
 		App.WaitForElement("Options");
@@ -652,11 +619,10 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("SwipeViewControl");
 		App.SwipeLeftToRight("SwipeViewControl");
-		VerifyScreenshot();
+		VerifySwipeViewScreenshot();
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithIconImageSwipeItemsBackgroundColor()
 	{
 		App.WaitForElement("Options");
@@ -669,12 +635,11 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("SwipeViewControl");
 		App.SwipeLeftToRight("SwipeViewControl");
-		VerifyScreenshot();
+		VerifySwipeViewScreenshot();
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithButtonSwipeItemsBackgroundColor()
 	{
 		App.WaitForElement("Options");
@@ -687,12 +652,11 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("SwipeViewControl");
 		App.SwipeLeftToRight("SwipeViewControl");
-		VerifyScreenshot();
+		VerifySwipeViewScreenshot();
 	}
 #endif
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithIconImageSwipeItemChanged()
 	{
 		App.WaitForElement("Options");
@@ -708,7 +672,6 @@ public class SwipeViewFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithButtonSwipeItemChanged()
 	{
 		App.WaitForElement("Options");
@@ -724,7 +687,6 @@ public class SwipeViewFeatureTests : UITest
 #endif
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifyCollectionViewContentWithLabelSwipeItem()
 	{
 		App.WaitForElement("Options");
@@ -739,11 +701,10 @@ public class SwipeViewFeatureTests : UITest
 		App.SwipeLeftToRight("Item 3");
 		App.SwipeLeftToRight("Item 6");
 		App.WaitForElement("Label");
-		VerifyScreenshot();
+		VerifySwipeViewScreenshot();
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifyCollectionViewContentWithIconImageSwipeItem()
 	{
 		App.WaitForElement("Options");
@@ -758,12 +719,11 @@ public class SwipeViewFeatureTests : UITest
 		App.SwipeLeftToRight("Item 2");
 		App.SwipeLeftToRight("Item 4");
 		App.WaitForElement("Icon");
-		VerifyScreenshot();
+		VerifySwipeViewScreenshot();
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifyCollectionViewContentWithButtonSwipeItem()
 	{
 		App.WaitForElement("Options");
@@ -778,12 +738,11 @@ public class SwipeViewFeatureTests : UITest
 		App.SwipeLeftToRight("Item 1");
 		App.SwipeLeftToRight("Item 5");
 		App.WaitForElement("Click Me");
-		VerifyScreenshot();
+		VerifySwipeViewScreenshot();
 	}
 #endif
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifyImageContentWithLabelSwipeItem()
 	{
 		App.WaitForElement("Options");
@@ -800,7 +759,6 @@ public class SwipeViewFeatureTests : UITest
 	}
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifyImageContentWithIconImageSwipeItem()
 	{
 		App.WaitForElement("Options");
@@ -818,7 +776,6 @@ public class SwipeViewFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifyImageContentWithButtonSwipeItem()
 	{
 		App.WaitForElement("Options");
@@ -836,7 +793,6 @@ public class SwipeViewFeatureTests : UITest
 #endif
 
 	[Test]
-	[Category(UITestCategories.SwipeView)]
 	public void VerifyThresholdWithSwipeMode()
 	{
 		App.WaitForElement("Options");
@@ -853,4 +809,13 @@ public class SwipeViewFeatureTests : UITest
 		Assert.That(App.WaitForElement("SwipeStartedLabel").GetText(), Is.EqualTo("Swipe Started: Right"));
 	}
 #endif
+
+	private void VerifySwipeViewScreenshot()
+	{
+#if WINDOWS
+		VerifyScreenshot(cropTop: 100);
+#else
+		VerifyScreenshot();
+#endif
+	}
 }
