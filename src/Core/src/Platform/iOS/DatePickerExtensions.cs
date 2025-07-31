@@ -52,23 +52,34 @@ public static class DatePickerExtensions
 
 	public static void UpdateDate(this UIDatePicker picker, IDatePicker datePicker)
 	{
-		if (picker is not null && picker.Date.ToDateTime() != datePicker.Date)
+		if (picker is not null)
 		{
-			picker.SetDate(datePicker.Date?.ToNSDate() ?? NSDate.DistantPast, false);
+			var targetDate = datePicker.Date ?? DateTime.Today;
+			if (picker.Date.ToDateTime() != targetDate)
+			{
+				picker.SetDate(targetDate.ToNSDate(), false);
+			}
 		}
 	}
 
 	public static void UpdateDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, UIDatePicker? picker)
 	{
-		if (picker is not null && picker.Date != NSDate.DistantPast && picker.Date.ToDateTime() != datePicker.Date)
+		if (picker is not null)
 		{
-			picker.SetDate(datePicker.Date?.ToNSDate() ?? NSDate.DistantPast, false);
+			var targetDate = datePicker.Date ?? DateTime.Today;
+			if (picker.Date.ToDateTime() != targetDate)
+			{
+				picker.SetDate(targetDate.ToNSDate(), false);
+			}
 		}
 
 		string format = datePicker.Format ?? string.Empty;
 
-		// Can't use VirtualView.Format because it won't display the correct format if the region and language are set differently
-		if (picker is not null && (string.IsNullOrWhiteSpace(format) || format.Equals("d", StringComparison.OrdinalIgnoreCase)))
+		if (datePicker.Date is null)
+		{
+			platformDatePicker.Text = string.Empty;
+		}
+		else if (picker is not null && (string.IsNullOrWhiteSpace(format) || format.Equals("d", StringComparison.OrdinalIgnoreCase)))
 		{
 			NSDateFormatter dateFormatter = new NSDateFormatter
 			{
