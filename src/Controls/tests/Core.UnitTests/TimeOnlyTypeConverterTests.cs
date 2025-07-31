@@ -34,5 +34,24 @@ public class TimeOnlyTypeConverterTests : BaseTestFixture
 
 		Assert.Equal(expectedTimeOnly, actualTimeOnly);
 	}
+
+	[Fact]
+	public void TimeOnlyToTimePickerBinding()
+	{
+		var timePicker = new TimePicker();
+		var source = new Issue20438TimePickerViewModel
+		{
+			SelectedTime = new TimeOnly(14, 30, 0)
+		};
+		timePicker.BindingContext = source;
+		timePicker.SetBinding(TimePicker.TimeProperty, "SelectedTime");
+		var expectedTimeSpan = new TimeSpan(14, 30, 0);
+		Assert.Equal(expectedTimeSpan, timePicker.Time);
+	}
+
+	public class Issue20438TimePickerViewModel
+	{
+		public TimeOnly SelectedTime { get; set; }
+	}
 }
 #endif
