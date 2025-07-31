@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.LayoutMainPage"
+             x:DataType="local:LayoutViewModel"
+             Title="LayoutPage">
+        <Grid RowDefinitions="Auto,*,Auto,Auto,Auto,Auto"
+              ColumnDefinitions="*,*"
+              Padding="0,10"
+              RowSpacing="10"
+              ColumnSpacing="3">
+
+                <Button Text="Options"
+                        Grid.Row="0"
+                                Grid.ColumnSpan="2"
+                        HorizontalOptions="Center"
+                        FontSize="16"
+                        WidthRequest="150"
+                        Clicked="NavigateToOptionsPage_Clicked"
+                        AutomationId="OptionsButton"/>
+
+                <ScrollView Grid.Row="1"
+                                Grid.ColumnSpan="2"
+                            x:Name="MyScrollView"
+                            HeightRequest="{Binding HeightRequest}"
+                            WidthRequest="{Binding WidthRequest}"
+                            BackgroundColor="Lavender"/>
+
+                <!-- Row 2 -->
+                <Button Text="VerticalStackLayout"
+                        Grid.Row="2"
+                                Grid.Column="0"
+                        Clicked="OnScrollViewWithStackLayoutClicked"
+                        AutomationId="VerticalStackLayoutButton"
+                        WidthRequest="200"/>
+
+                <Button Text="HorizontalStackLayout"
+                        Grid.Row="2"
+                                Grid.Column="1"
+                        Clicked="OnHorizontalStackLayoutClicked"
+                        AutomationId="HorizontalStackLayoutButton"
+                        WidthRequest="200"/>
+
+                <!-- Row 3 -->
+                <Button Text="Layout Inside Grid"
+                        Grid.Row="3"
+                                Grid.Column="0"
+                        Clicked="OnGridWithStackLayoutClicked"
+                        AutomationId="LayoutInsideGridButton"
+                        WidthRequest="200"/>
+
+                <Button Text="Nested Layout"
+                        Grid.Row="3"
+                                Grid.Column="1"
+                        Clicked="OnNestedStackLayoutsClicked"
+                        AutomationId="NestedLayoutButton"
+                        WidthRequest="200"/>
+
+                <!-- Row 4 -->
+                <Button Text="Grid"
+                        Grid.Row="4"
+                                Grid.Column="0"
+                        Clicked="OnGridWithChildrenClicked"
+                        AutomationId="GridButton"
+                        WidthRequest="200"/>
+
+                <Button Text="Layout Inside ContentView"
+                        Grid.Row="4"
+                                Grid.Column="1"
+                        Clicked="OnContentViewWithStackLayoutClicked"
+                        AutomationId="LayoutInsideContentViewButton"
+                        WidthRequest="200"/>
+
+                <!-- Row 5 -->
+                <Button Text="Grid With ContentView"
+                        Grid.Row="5"
+                                Grid.Column="0"
+                        Clicked="OnGridWithContentViewClicked"
+                        AutomationId="GridWithContentViewButton"
+                        WidthRequest="200"/>
+
+                <Button Text="AbsoluteLayout"
+                        Grid.Row="5"
+                                Grid.Column="1"
+                        Clicked="OnScrollViewWithAbsoluteLayoutClicked"
+                        AutomationId="AbsoluteLayoutButton"
+                        WidthRequest="200"/>
+        </Grid>
+</ContentPage>
