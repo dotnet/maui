@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Recipes.Views.MyRecipesPage"
+             Title="{Binding Title}"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             xmlns:vm="clr-namespace:Recipes.ViewModels"
+             xmlns:local="clr-namespace:Recipes">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <local:EvenIndexBackgroundConverter x:Key="evenIndexBackgroundConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="New" Command="{Binding NewRecipeCommand}" />
+    </ContentPage.ToolbarItems>
+    <StackLayout Margin="20">
+        <Label Text="Your recipes" SemanticProperties.HeadingLevel="Level1" FontSize="30" FontAttributes="Bold" />
+        <CarouselView
+            x:Name="vMyRecipesListView"
+            WidthRequest="350"
+            HeightRequest="570"
+			HorizontalOptions="Fill"
+			VerticalOptions="Fill"
+            ItemsSource="{Binding Items}"
+            Loop="False">
+            <CarouselView.ItemTemplate>
+                <DataTemplate>
+                    <Grid RowDefinitions="*" 
+                          ColumnDefinitions="*" 
+                          Padding="0,0,10,0"
+                          WidthRequest="340"
+                          HorizontalOptions="Fill"
+                          VerticalOptions="Fill"
+                          SemanticProperties.Description="{Binding RecipeName}">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="MyRecipesPage_Tapped" NumberOfTapsRequired="1"  />
+                        </Grid.GestureRecognizers>
+
+                        <Image Source="{Binding ImageUrl}" Aspect="AspectFill" VerticalOptions="Fill" HorizontalOptions="Fill" AutomationProperties.IsInAccessibleTree="False"/>
+                        <Label x:Name="recipeName"
+                               Padding="10"
+                               HorizontalOptions="Center" 
+                               VerticalOptions="Center"
+                               Text="{Binding RecipeName}"
+                               Style="{StaticResource RecipeNameStyle}"
+                               LineBreakMode="WordWrap" 
+                               MaxLines="3"
+                               FontSize="16" />
+                    </Grid>
+
+                </DataTemplate>
+            </CarouselView.ItemTemplate>
+        </CarouselView>
+        <!--<CarouselView
+            x:Name="vMyRecipesListView"
+            WidthRequest="350"
+            HeightRequest="570"
+			HorizontalOptions="Fill"
+			VerticalOptions="Fill"
+            ItemsSource="{Binding Items}"
+			Loop="False">
+            <CarouselView.ItemsLayout>
+                <LinearItemsLayout ItemSpacing="30" Orientation="Horizontal" />
+            </CarouselView.ItemsLayout>
+            <CarouselView.ItemTemplate>
+                <DataTemplate>
+                    <Grid RowDefinitions="*, Auto" 
+                              Padding="0,0,20,0" 
+                              HorizontalOptions="Fill" VerticalOptions="Fill"
+                              SemanticProperties.Description="{Binding RecipeName}">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="MyRecipesPage_Tapped" NumberOfTapsRequired="1"  />
+                        </Grid.GestureRecognizers>
+                        <Image Source="{Binding ImageUrl}" VerticalOptions="Fill" WidthRequest="340" Aspect="AspectFill"/>
+                        <Label Grid.Row="1"  x:Name="recipeName" Padding="10" Text="{Binding RecipeName}" LineBreakMode="WordWrap" MaxLines="3" Style="{DynamicResource ListItemTextStyle}" FontSize="24" VerticalTextAlignment="Center" FontAttributes="Bold" />
+                    </Grid>
+                </DataTemplate>
+            </CarouselView.ItemTemplate>
+        </CarouselView>-->
+    </StackLayout>
+</ContentPage>

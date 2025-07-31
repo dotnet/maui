@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Recipes.Views.StartingPage"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             Title="{Binding Title}">
+    <ScrollView>
+        <Grid Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Label Grid.Column="0" Grid.Row="0" Text="Find the recipe for you"
+                SemanticProperties.HeadingLevel="Level1" FontSize="24" FontAttributes="Bold" Margin="15,15,15,0" />
+            <SearchBar Grid.Column="0" Grid.Row="1"
+                    x:Name="searchBar"
+                    ios:SearchBar.SearchBarStyle="Default"
+                    Placeholder="Search recipes"
+                    FontSize="14"
+                    Text="{Binding SearchQuery}"
+                    Margin="0,5,0,5"
+                    SearchCommand="{Binding SearchCommand}"
+                    SearchCommandParameter="{Binding Text, Source={x:Reference searchBar}}"/>
+
+            <Grid Grid.Column="0" Grid.Row="2" Margin="20,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="4.5*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="4.5*" />
+                </Grid.RowDefinitions>
+
+                <Label Grid.Column="0" Grid.Row="0" Text="Search by meal type" SemanticProperties.HeadingLevel="Level2" FontSize="24" FontAttributes="Bold" />
+                <ScrollView Grid.Column="0" Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+                    <StackLayout Orientation="Horizontal" Spacing="10" Padding="0,5">
+                        <Button Text="Breakfast" ImageSource="breakfast.png" Command="{Binding FilteredSearchCommand}" CommandParameter="mealType=breakfast" Style="{StaticResource RecipeCategoryButtonStyle}" />
+                        <Button Text="Lunch" ImageSource="lunch.png" Command="{Binding FilteredSearchCommand}" CommandParameter="mealType=lunch" Style="{StaticResource RecipeCategoryButtonStyle}" />
+                        <Button Text="Dinner" ImageSource="dinner.png" Command="{Binding FilteredSearchCommand}" CommandParameter="mealType=dinner" Style="{StaticResource RecipeCategoryButtonStyle}" />
+                        <Button Text="Snack" ImageSource="snack.png" Command="{Binding FilteredSearchCommand}" CommandParameter="mealType=snack" Style="{StaticResource RecipeCategoryButtonStyle}" />
+                        <Button Text="Dessert" ImageSource="dessert.png" Command="{Binding FilteredSearchCommand}" CommandParameter="dishType=dessert" Style="{StaticResource RecipeCategoryButtonStyle}"/>
+                        <Button Text="Drinks" ImageSource="drinks.png" Command="{Binding FilteredSearchCommand}" CommandParameter="dishType=drinks" Style="{StaticResource RecipeCategoryButtonStyle}" />
+                    </StackLayout>
+                </ScrollView>
+
+                <Label Grid.Column="0" Grid.Row="2" Text="Search by diet" SemanticProperties.HeadingLevel="Level2" FontSize="24" FontAttributes="Bold" />
+                <ScrollView Grid.Column="0" Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,10">
+                    <StackLayout Orientation="Horizontal" Spacing="10" Padding="0,5">
+                        <Button Text="Balanced" ImageSource="balanced.png" Command="{Binding FilteredSearchCommand}" CommandParameter="diet=balanced" Style="{StaticResource RecipeCategoryButtonStyle}"/>
+                        <Button Text="Vegetarian" ImageSource="vegetarian.png" Command="{Binding FilteredSearchCommand}" CommandParameter="health=vegetarian" Style="{StaticResource RecipeCategoryButtonStyle}"/>
+                        <Button Text="Vegan" ImageSource="vegan.png" Command="{Binding FilteredSearchCommand}" CommandParameter="health=vegan" Style="{StaticResource RecipeCategoryButtonStyle}"/>
+                        <Button Text="Kosher" ImageSource="kosher.png" Command="{Binding FilteredSearchCommand}" CommandParameter="health=kosher" Style="{StaticResource RecipeCategoryButtonStyle}"/>
+                        <Button Text="Gluten-free" ImageSource="gluten_free.png" Command="{Binding FilteredSearchCommand}" CommandParameter="health=gluten-free" Style="{StaticResource RecipeCategoryButtonStyle}"/>
+                        <Button Text="Keto" ImageSource="keto.png" Command="{Binding FilteredSearchCommand}" CommandParameter="health=keto-friendly" Style="{StaticResource RecipeCategoryButtonStyle}"/>
+                    </StackLayout>
+                </ScrollView>
+            </Grid>
+        </Grid>
+    </ScrollView>
+</ContentPage>
