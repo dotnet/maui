@@ -35,6 +35,7 @@ public partial class GraphicsViewOptionsPage : ContentPage
 				DrawableType.Line => new LineDrawable(_viewModel),
 				DrawableType.String => new StringDrawable(_viewModel),
 				DrawableType.Image => new ImageDrawable(_viewModel),
+				DrawableType.TransparentEllipse => new TransparentEllipseDrawable(_viewModel),
 				_ => null
 			};
 

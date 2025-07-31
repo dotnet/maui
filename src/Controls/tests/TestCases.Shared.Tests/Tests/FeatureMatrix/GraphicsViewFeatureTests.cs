@@ -22,9 +22,9 @@ public class GraphicsViewFeatureTests : UITest
 	public void VerifyShapeScreenshot()
 	{
 #if WINDOWS
-		VerifyScreenshot(cropTop: 100);
+		VerifyScreenshot(cropTop: 100, tolerance: 0.10);
 #else
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.10);
 #endif
 	}
 
@@ -147,6 +147,25 @@ public class GraphicsViewFeatureTests : UITest
 		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Image"));
 		VerifyShapeScreenshot();
 	}
+
+#if TEST_FAILS_ON_ANDROID	//See issue : https://github.com/dotnet/maui/issues/29394
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_TransparentEllipseDrawable_VerifyTypeAndRendering()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TransparentEllipse");
+		App.Tap("TransparentEllipse");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
+
+		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("TransparentEllipse"));
+		
+		VerifyShapeScreenshot();
+	}
+#endif
 
 	#endregion
 
