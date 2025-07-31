@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_WINDOWS //related issue link:  https://github.com/dotnet/maui/issues/14777
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,6 +18,7 @@ public class SwipeViewFeatureTests : UITest
 		App.NavigateToGallery(SwipeViewFeatureMatrix);
 	}
 
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30949 && https://github.com/dotnet/maui/issues/30947
 	[Test, Order(1)]
 	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWhenLabelSwipeItemAndEvents()
@@ -53,7 +53,7 @@ public class SwipeViewFeatureTests : UITest
 		Assert.That(App.WaitForElement("SwipeEndedLabel").GetText(), Is.EqualTo("Swipe Ended: Right, IsOpen: Open"));
 	}
 
-#if TEST_FAILS_ON_ANDROID //Buttton SwipeItem is not Invoked on Android
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS //In Android, Buttton SwipeItem is not Invoked & On Windows, related issue link: https://github.com/dotnet/maui/issues/27436
 	[Test, Order(3)]
 	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWhenButtonSwipeItemAndEvents()
@@ -74,7 +74,9 @@ public class SwipeViewFeatureTests : UITest
 		Assert.That(App.WaitForElement("SwipeEndedLabel").GetText(), Is.EqualTo("Swipe Ended: Right, IsOpen: Open"));
 	}
 	#endif 
+#endif
 
+#if TEST_FAILS_ON_WINDOWS //related issue link:  https://github.com/dotnet/maui/issues/14777
 	[Test, Order(4)]
 	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWhenLabelContentAndProgrammaticActions()
@@ -144,6 +146,7 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("CloseSwipeViewButton");
 		App.WaitForElement("Label");
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.SwipeView)]
@@ -173,6 +176,7 @@ public class SwipeViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30947
 	[Test]
 	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithLabelContentAndThreshold()
@@ -224,6 +228,7 @@ public class SwipeViewFeatureTests : UITest
 		App.SwipeLeftToRight("Item 4");
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.SwipeView)]
@@ -317,6 +322,7 @@ public class SwipeViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/29812
 	[Test]
 	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithLabelContentAndShadow()
@@ -346,7 +352,9 @@ public class SwipeViewFeatureTests : UITest
 		App.WaitForElement("SwipeViewImage");
 		VerifyScreenshot();
 	}
+#endif
 
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30947
 	[Test]
 	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithLabelContentAndIsEnabledFalse()
@@ -395,6 +403,7 @@ public class SwipeViewFeatureTests : UITest
 		App.SwipeLeftToRight("SwipeViewCollectionItem");
 		App.WaitForNoElement("Label");
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.SwipeView)]
@@ -439,6 +448,7 @@ public class SwipeViewFeatureTests : UITest
 		App.WaitForNoElement("SwipeViewCollectionItem");
 	}
 
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30947
 	[Test]
 	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithLabelContentSwipeMode()
@@ -522,6 +532,7 @@ public class SwipeViewFeatureTests : UITest
 		App.WaitForNoElement("Icon");
 	}
 
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
 	[Test]
 	[Category(UITestCategories.SwipeView)]
 	public void VerifyCollectionViewWithSwipeRevealAndSwipeBehaviorOnInvokedAuto()
@@ -540,6 +551,7 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("Click Me");
 		App.WaitForNoElement("Click Me");
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.SwipeView)]
@@ -660,6 +672,7 @@ public class SwipeViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
 	[Test]
 	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithButtonSwipeItemsBackgroundColor()
@@ -676,6 +689,7 @@ public class SwipeViewFeatureTests : UITest
 		App.SwipeLeftToRight("SwipeViewControl");
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.SwipeView)]
@@ -692,6 +706,7 @@ public class SwipeViewFeatureTests : UITest
 		App.WaitForElement("Icon");
 	}
 
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
 	[Test]
 	[Category(UITestCategories.SwipeView)]
 	public void VerifySwipeViewWithButtonSwipeItemChanged()
@@ -706,6 +721,7 @@ public class SwipeViewFeatureTests : UITest
 		App.SwipeLeftToRight("SwipeViewControl");
 		App.WaitForElement("Click Me");
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.SwipeView)]
@@ -745,6 +761,7 @@ public class SwipeViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
 	[Test]
 	[Category(UITestCategories.SwipeView)]
 	public void VerifyCollectionViewContentWithButtonSwipeItem()
@@ -763,6 +780,7 @@ public class SwipeViewFeatureTests : UITest
 		App.WaitForElement("Click Me");
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.SwipeView)]
@@ -798,6 +816,7 @@ public class SwipeViewFeatureTests : UITest
 		App.WaitForElement("Icon");
 	}
 
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
 	[Test]
 	[Category(UITestCategories.SwipeView)]
 	public void VerifyImageContentWithButtonSwipeItem()
@@ -814,6 +833,7 @@ public class SwipeViewFeatureTests : UITest
 		App.SwipeLeftToRight("SwipeViewImage");
 		App.WaitForElement("Click Me");
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.SwipeView)]
@@ -832,5 +852,5 @@ public class SwipeViewFeatureTests : UITest
 		App.SwipeLeftToRight("SwipeViewControl");
 		Assert.That(App.WaitForElement("SwipeStartedLabel").GetText(), Is.EqualTo("Swipe Started: Right"));
 	}
-}
 #endif
+}
