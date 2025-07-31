@@ -30,36 +30,36 @@
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
     <MicrosoftMauiPreviousDotNetReleasedVersion>9.0.82</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/sdk -->
-    <MicrosoftNETSdkPackageVersion>10.0.100-preview.7.25378.103</MicrosoftNETSdkPackageVersion>
+    <MicrosoftNETSdkPackageVersion>10.0.100-preview.7.25380.108</MicrosoftNETSdkPackageVersion>
     <MicrosoftDotnetSdkInternalPackageVersion>$(MicrosoftNETSdkPackageVersion)</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>10.0.0-preview.7.25378.103</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>10.0.0-preview.7.25380.108</MicrosoftNETCoreAppRefPackageVersion>
     <SystemTextJsonPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextJsonPackageVersion>
     <SystemTextEncodingsWebPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextEncodingsWebPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
     <!-- Microsoft/Extensions -->
     <SystemCodeDomPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemCodeDomPackageVersion>
-    <MicrosoftExtensionsConfigurationVersion>10.0.0-preview.7.25378.103</MicrosoftExtensionsConfigurationVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.0-preview.7.25378.103</MicrosoftExtensionsConfigurationAbstractionsVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>10.0.0-preview.7.25378.103</MicrosoftExtensionsConfigurationJsonVersion>
-    <MicrosoftExtensionsDependencyInjectionVersion>10.0.0-preview.7.25378.103</MicrosoftExtensionsDependencyInjectionVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.0-preview.7.25378.103</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsVersion>10.0.0-preview.7.25378.103</MicrosoftExtensionsFileProvidersAbstractionsVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>10.0.0-preview.7.25378.103</MicrosoftExtensionsLoggingAbstractionsVersion>
-    <MicrosoftExtensionsLoggingVersion>10.0.0-preview.7.25378.103</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>10.0.0-preview.7.25378.103</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingDebugVersion>10.0.0-preview.7.25378.103</MicrosoftExtensionsLoggingDebugVersion>
-    <MicrosoftExtensionsPrimitivesVersion>10.0.0-preview.7.25378.103</MicrosoftExtensionsPrimitivesVersion>
-    <MicrosoftExtensionsHostingAbstractionsVersion>10.0.0-preview.7.25378.103</MicrosoftExtensionsHostingAbstractionsVersion>
+    <MicrosoftExtensionsConfigurationVersion>10.0.0-preview.7.25380.108</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.0-preview.7.25380.108</MicrosoftExtensionsConfigurationAbstractionsVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>10.0.0-preview.7.25380.108</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>10.0.0-preview.7.25380.108</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.0-preview.7.25380.108</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsVersion>10.0.0-preview.7.25380.108</MicrosoftExtensionsFileProvidersAbstractionsVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>10.0.0-preview.7.25380.108</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingVersion>10.0.0-preview.7.25380.108</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>10.0.0-preview.7.25380.108</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingDebugVersion>10.0.0-preview.7.25380.108</MicrosoftExtensionsLoggingDebugVersion>
+    <MicrosoftExtensionsPrimitivesVersion>10.0.0-preview.7.25380.108</MicrosoftExtensionsPrimitivesVersion>
+    <MicrosoftExtensionsHostingAbstractionsVersion>10.0.0-preview.7.25380.108</MicrosoftExtensionsHostingAbstractionsVersion>
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>36.0.0-preview.7.229</MicrosoftAndroidSdkWindowsPackageVersion>
     <MicrosoftNETSdkAndroidManifest90100PackageVersion>35.0.92</MicrosoftNETSdkAndroidManifest90100PackageVersion>
     <AndroidNetPreviousVersion>$(MicrosoftNETSdkAndroidManifest90100PackageVersion)</AndroidNetPreviousVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdknet100_185PackageVersion>18.5.10601-net10-p7</MicrosoftMacCatalystSdknet100_185PackageVersion>
-    <MicrosoftmacOSSdknet100_155PackageVersion>15.5.10601-net10-p7</MicrosoftmacOSSdknet100_155PackageVersion>
-    <MicrosoftiOSSdknet100_185PackageVersion>18.5.10601-net10-p7</MicrosoftiOSSdknet100_185PackageVersion>
-    <MicrosofttvOSSdknet100_185PackageVersion>18.5.10601-net10-p7</MicrosofttvOSSdknet100_185PackageVersion>
+    <MicrosoftMacCatalystSdknet100_185PackageVersion>18.5.10603-net10-p7</MicrosoftMacCatalystSdknet100_185PackageVersion>
+    <MicrosoftmacOSSdknet100_155PackageVersion>15.5.10603-net10-p7</MicrosoftmacOSSdknet100_155PackageVersion>
+    <MicrosoftiOSSdknet100_185PackageVersion>18.5.10603-net10-p7</MicrosoftiOSSdknet100_185PackageVersion>
+    <MicrosofttvOSSdknet100_185PackageVersion>18.5.10603-net10-p7</MicrosofttvOSSdknet100_185PackageVersion>
     <!-- This is a subscription of the .NET 9 latest stable versions of our packages -->
     <MicrosoftMacCatalystSdknet90_185PackageVersion>18.5.9215</MicrosoftMacCatalystSdknet90_185PackageVersion>
     <MicrosoftmacOSSdknet90_155PackageVersion>15.5.9215</MicrosoftmacOSSdknet90_155PackageVersion>
@@ -73,19 +73,19 @@
     <MicrosoftGraphicsWin2DPackageVersion>1.3.2</MicrosoftGraphicsWin2DPackageVersion>
     <MicrosoftWindowsWebView2PackageVersion>1.0.3179.45</MicrosoftWindowsWebView2PackageVersion>
     <!-- Everything else -->
-    <MicrosoftAspNetCoreAuthorizationPackageVersion>10.0.0-preview.7.25378.103</MicrosoftAspNetCoreAuthorizationPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>10.0.0-preview.7.25378.103</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>10.0.0-preview.7.25378.103</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
-    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>10.0.0-preview.7.25378.103</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>
-    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>10.0.0-preview.7.25378.103</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreComponentsFormsPackageVersion>10.0.0-preview.7.25378.103</MicrosoftAspNetCoreComponentsFormsPackageVersion>
-    <MicrosoftAspNetCoreComponentsPackageVersion>10.0.0-preview.7.25378.103</MicrosoftAspNetCoreComponentsPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebPackageVersion>10.0.0-preview.7.25378.103</MicrosoftAspNetCoreComponentsWebPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>10.0.0-preview.7.25378.103</MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>10.0.0-preview.7.25378.103</MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>10.0.0-preview.7.25378.103</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
-    <MicrosoftAspNetCoreMetadataPackageVersion>10.0.0-preview.7.25378.103</MicrosoftAspNetCoreMetadataPackageVersion>
-    <MicrosoftJSInteropPackageVersion>10.0.0-preview.7.25378.103</MicrosoftJSInteropPackageVersion>
+    <MicrosoftAspNetCoreAuthorizationPackageVersion>10.0.0-preview.7.25380.108</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>10.0.0-preview.7.25380.108</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>10.0.0-preview.7.25380.108</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>10.0.0-preview.7.25380.108</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>
+    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>10.0.0-preview.7.25380.108</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreComponentsFormsPackageVersion>10.0.0-preview.7.25380.108</MicrosoftAspNetCoreComponentsFormsPackageVersion>
+    <MicrosoftAspNetCoreComponentsPackageVersion>10.0.0-preview.7.25380.108</MicrosoftAspNetCoreComponentsPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebPackageVersion>10.0.0-preview.7.25380.108</MicrosoftAspNetCoreComponentsWebPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>10.0.0-preview.7.25380.108</MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>10.0.0-preview.7.25380.108</MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>10.0.0-preview.7.25380.108</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
+    <MicrosoftAspNetCoreMetadataPackageVersion>10.0.0-preview.7.25380.108</MicrosoftAspNetCoreMetadataPackageVersion>
+    <MicrosoftJSInteropPackageVersion>10.0.0-preview.7.25380.108</MicrosoftJSInteropPackageVersion>
     <!-- Everything else (previous edition) -->
     <MicrosoftAspNetCorePackageVersion>8.0.16</MicrosoftAspNetCorePackageVersion>
     <MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>
@@ -142,13 +142,13 @@
     <TizenUIExtensionsVersion>0.9.0</TizenUIExtensionsVersion>
     <ExCSSPackageVersion>4.2.3</ExCSSPackageVersion>
     <SystemDrawingCommonPackageVersion>9.0.0</SystemDrawingCommonPackageVersion>
-    <MicrosoftDotNetBuildTasksFeedVersion>10.0.0-beta.25378.103</MicrosoftDotNetBuildTasksFeedVersion>
-    <MicrosoftDotNetBuildTasksInstallersPackageVersion>10.0.0-beta.25378.103</MicrosoftDotNetBuildTasksInstallersPackageVersion>
-    <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>10.0.0-beta.25378.103</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
-    <MicrosoftDotNetHelixSdkPackageVersion>10.0.0-beta.25378.103</MicrosoftDotNetHelixSdkPackageVersion>
+    <MicrosoftDotNetBuildTasksFeedVersion>10.0.0-beta.25380.108</MicrosoftDotNetBuildTasksFeedVersion>
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>10.0.0-beta.25380.108</MicrosoftDotNetBuildTasksInstallersPackageVersion>
+    <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>10.0.0-beta.25380.108</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
+    <MicrosoftDotNetHelixSdkPackageVersion>10.0.0-beta.25380.108</MicrosoftDotNetHelixSdkPackageVersion>
     <MicroBuildPluginsSwixBuildDotnetPackageVersion>1.1.87-gba258badda</MicroBuildPluginsSwixBuildDotnetPackageVersion>
-    <MicrosoftDotNetRemoteExecutorPackageVersion>10.0.0-beta.25378.103</MicrosoftDotNetRemoteExecutorPackageVersion>
-    <MicrosoftDotNetXUnitExtensionsPackageVersion>10.0.0-beta.25378.103</MicrosoftDotNetXUnitExtensionsPackageVersion>
+    <MicrosoftDotNetRemoteExecutorPackageVersion>10.0.0-beta.25380.108</MicrosoftDotNetRemoteExecutorPackageVersion>
+    <MicrosoftDotNetXUnitExtensionsPackageVersion>10.0.0-beta.25380.108</MicrosoftDotNetXUnitExtensionsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <MicrosoftNETTestSdkPackageVersion>17.6.0</MicrosoftNETTestSdkPackageVersion>
