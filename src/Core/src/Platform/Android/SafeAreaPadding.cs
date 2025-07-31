@@ -66,4 +66,13 @@ internal static class WindowInsetsExtensions
 			Math.Max(safeArea.Bottom, keyboard.Bottom)
 		);
 	}
+
+	public static SafeAreaPadding GetKeyboardInsets(this WindowInsetsCompat insets)
+	{
+		// Get keyboard insets if available (API 30+)
+		var keyboard = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+		
+		// Return only keyboard insets (typically only bottom)
+		return new(0, 0, 0, keyboard.Bottom);
+	}
 }

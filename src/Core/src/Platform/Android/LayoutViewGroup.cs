@@ -101,18 +101,29 @@ namespace Microsoft.Maui.Platform
 			return SafeAreaRegions.None;
 		}
 
-		static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea)
+		static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, double keyboardInset)
 		{
 			// Edge-to-edge content - no safe area padding
 			if (safeAreaRegion == SafeAreaRegions.None)
 				return 0;
 
+			// SoftInput region - always pad for keyboard/soft input
+			if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
+			{
+				return Math.Max(originalSafeArea, keyboardInset);
+			}
+
+			// Container region - content flows under keyboard but stays out of bars/notch
+			if (SafeAreaEdges.IsContainer(safeAreaRegion))
+			{
+				// For now, treat Container same as Default (can be enhanced later for keyboard-specific behavior)
+				return originalSafeArea;
+			}
+
 			// All other regions respect safe area in some form
 			// This includes:
 			// - Default: Platform default behavior
 			// - All: Obey all safe area insets  
-			// - SoftInput: Always pad for keyboard/soft input
-			// - Container: Content flows under keyboard but stays out of bars/notch
 			// - Any combination of the above flags
 			return originalSafeArea;
 		}
@@ -143,14 +154,15 @@ namespace Microsoft.Maui.Platform
 				return SafeAreaPadding.Empty;
 
 			var baseSafeArea = windowInsets.ToSafeAreaInsets();
+			var keyboardInsets = windowInsets.GetKeyboardInsets();
 
 			// Apply safe area selectively per edge based on SafeAreaRegions
 			if (CrossPlatformLayout is ISafeAreaView2)
 			{
-				var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0), baseSafeArea.Left);
-				var top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1), baseSafeArea.Top);
-				var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2), baseSafeArea.Right);
-				var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3), baseSafeArea.Bottom);
+				var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0), baseSafeArea.Left, keyboardInsets.Left);
+				var top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1), baseSafeArea.Top, keyboardInsets.Top);
+				var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2), baseSafeArea.Right, keyboardInsets.Right);
+				var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3), baseSafeArea.Bottom, keyboardInsets.Bottom);
 
 				return new SafeAreaPadding(left, right, top, bottom);
 			}
