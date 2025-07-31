@@ -16,6 +16,7 @@ public enum DrawableType
     Line,
     String,
     Image,
+    TransparentEllipse,
 }
 
 public class GraphicsViewViewModel : INotifyPropertyChanged
@@ -148,6 +149,7 @@ public class GraphicsViewViewModel : INotifyPropertyChanged
             {
                 _widthRequest = value;
                 OnPropertyChanged();
+
             }
         }
     }
@@ -204,6 +206,7 @@ public class GraphicsViewViewModel : INotifyPropertyChanged
             DrawableType.Line => new LineDrawable(this),
             DrawableType.String => new StringDrawable(this),
             DrawableType.Image => new ImageDrawable(this),
+            DrawableType.TransparentEllipse => new TransparentEllipseDrawable(this),
             _ => null,
         };
     }
@@ -303,29 +306,46 @@ public class SquareDrawable : IDrawable
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
+        canvas.SaveState();
+
         RectFHeight = dirtyRect.Height;
         RectFWidth = dirtyRect.Width;
         Debug.WriteLine(dirtyRect);
         // Notify ViewModel about updated dimensions including X and Y
         _viewModel.UpdateDrawableDimensions(dirtyRect.X, dirtyRect.Y, RectFWidth, RectFHeight);
 
+        // Check if GraphicsView has valid dimensions (like your simple sample)
+        if (dirtyRect.Width <= 0 || dirtyRect.Height <= 0)
+        {
+            canvas.RestoreState();
+            return;
+        }
+
+        float centerX = dirtyRect.Width / 2;
+        float centerY = dirtyRect.Height / 2;
+        
+        // Use the actual rectangle dimensions with scaling, not just the minimum
+        float width = dirtyRect.Width * 0.8f;  // Use 80% of width
+        float height = dirtyRect.Height * 0.8f; // Use 80% of height
+
+        // Draw a rectangle that respects the actual GraphicsView proportions
+        float rectX = centerX - width / 2;
+        float rectY = centerY - height / 2;
+
         // SetShadow - used once across all drawables
         canvas.SetShadow(new SizeF(3, 3), 5, Colors.Gray);
 
-        // FillRoundedRectangle - used once across all drawables
+        // FillRoundedRectangle - using actual dimensions
         canvas.FillColor = _viewModel.CurrentDrawColor;
-        float cornerRadius = 15;
-        canvas.FillRoundedRectangle(dirtyRect.X + 10, dirtyRect.Y + 10,
-            dirtyRect.Width - 20, dirtyRect.Height - 20, cornerRadius);
+        float cornerRadius = 5;
+        canvas.FillRoundedRectangle(rectX, rectY, width, height, cornerRadius);
 
         // DrawRoundedRectangle - outline the rounded rectangle
         canvas.StrokeColor = Colors.Black;
         canvas.StrokeSize = 2;
-        canvas.DrawRoundedRectangle(dirtyRect.X + 10, dirtyRect.Y + 10,
-            dirtyRect.Width - 20, dirtyRect.Height - 20, cornerRadius);
+        canvas.DrawRoundedRectangle(rectX, rectY, width, height, cornerRadius);
 
-        // Reset shadow
-        canvas.SetShadow(SizeF.Zero, 0, Colors.Transparent);
+        canvas.RestoreState();
     }
 }
 
@@ -343,17 +363,41 @@ public class TriangleDrawable : IDrawable
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
+        canvas.SaveState();
+
         RectFHeight = dirtyRect.Height;
         RectFWidth = dirtyRect.Width;
 
         // Notify ViewModel about updated dimensions including X and Y
         _viewModel.UpdateDrawableDimensions(dirtyRect.X, dirtyRect.Y, RectFWidth, RectFHeight);
 
-        // DrawPath/FillPath - used once across all drawables
+        // Check if GraphicsView has valid dimensions
+        if (dirtyRect.Width <= 0 || dirtyRect.Height <= 0)
+        {
+            canvas.RestoreState();
+            return;
+        }
+
+        float centerX = dirtyRect.Width / 2;
+        float centerY = dirtyRect.Height / 2;
+        
+        // Use the actual rectangle dimensions with scaling
+        float width = dirtyRect.Width * 0.8f;  // Use 80% of width
+        float height = dirtyRect.Height * 0.8f; // Use 80% of height
+
+        // Calculate triangle bounds that respect the actual GraphicsView dimensions
+        float triangleX = centerX - width / 2;
+        float triangleY = centerY - height / 2;
+
+        float strokeWidth = 3;
+
+        RectF triangleRect = new RectF(triangleX, triangleY, width, height);
+
+        // DrawPath/FillPath - triangle that fills the available rectangle
         PathF path = new PathF();
-        path.MoveTo(dirtyRect.Left, dirtyRect.Bottom);
-        path.LineTo(dirtyRect.Right, dirtyRect.Bottom);
-        path.LineTo(dirtyRect.Center.X, dirtyRect.Top);
+        path.MoveTo(triangleRect.Left, triangleRect.Bottom);
+        path.LineTo(triangleRect.Right, triangleRect.Bottom);
+        path.LineTo(triangleRect.Center.X, triangleRect.Top);
         path.Close();
 
         canvas.FillColor = _viewModel.CurrentDrawColor;
@@ -361,9 +405,11 @@ public class TriangleDrawable : IDrawable
 
         // StrokeLineJoin - used once across all drawables
         canvas.StrokeColor = Colors.Black;
-        canvas.StrokeSize = 3;
+        canvas.StrokeSize = strokeWidth;
         canvas.StrokeLineJoin = LineJoin.Round;
         canvas.DrawPath(path);
+
+        canvas.RestoreState();
     }
 }
 
@@ -378,29 +424,64 @@ public class EllipseDrawable : IDrawable
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
+        canvas.SaveState();
+
         // Notify ViewModel about updated dimensions including X and Y
         _viewModel.UpdateDrawableDimensions(dirtyRect.X, dirtyRect.Y, dirtyRect.Width, dirtyRect.Height);
 
+        // Check if GraphicsView has valid dimensions
+        if (dirtyRect.Width <= 0 || dirtyRect.Height <= 0)
+        {
+            canvas.RestoreState();
+            return;
+        }
+
+        float centerX = dirtyRect.Width / 2;
+        float centerY = dirtyRect.Height / 2;
+        
+        // Use the actual rectangle dimensions with scaling
+        float width = dirtyRect.Width * 0.8f;  // Use 80% of width
+        float height = dirtyRect.Height * 0.8f; // Use 80% of height
+
+        float strokeWidth = 2;
+
+        // Create ellipse rect that respects the actual GraphicsView dimensions
+        RectF ellipseRect = new RectF(
+            centerX - width / 2,
+            centerY - height / 2,
+            width,
+            height
+        );
+
         // Fill the ellipse with the selected color
         canvas.FillColor = _viewModel.CurrentDrawColor;
-        canvas.FillEllipse(dirtyRect);
+        canvas.FillEllipse(ellipseRect);
 
-        // DrawEllipse - outline the ellipse
+        // DrawEllipse - outline the ellipse with proper bounds
         canvas.StrokeColor = Colors.Black;
-        canvas.StrokeSize = 2;
-        canvas.DrawEllipse(dirtyRect);
+        canvas.StrokeSize = strokeWidth;
+        canvas.DrawEllipse(ellipseRect);
 
-        // DrawArc and FillArc - used once across all drawables
-        float centerX = dirtyRect.Center.X;
-        float centerY = dirtyRect.Center.Y;
-        float arcRadius = Math.Min(dirtyRect.Width, dirtyRect.Height) / 4;
+        // DrawArc and FillArc - scaled to the ellipse size
+        float arcWidth = width / 4;
+        float arcHeight = height / 4;
 
-        canvas.FillColor = Colors.Yellow;
-        canvas.FillArc(centerX - arcRadius, centerY - arcRadius, arcRadius * 2, arcRadius * 2, 0, 90, true);
+        // Ensure arc with stroke fits within bounds
+        float arcStrokeWidth = 3;
+        float maxArcWidth = arcWidth - (arcStrokeWidth / 2 + 1);
+        float maxArcHeight = arcHeight - (arcStrokeWidth / 2 + 1);
 
-        canvas.StrokeColor = Colors.Orange;
-        canvas.StrokeSize = 3;
-        canvas.DrawArc(centerX - arcRadius, centerY - arcRadius, arcRadius * 2, arcRadius * 2, 180, 90, true, false);
+        if (maxArcWidth > 0 && maxArcHeight > 0)
+        {
+            canvas.FillColor = Colors.Yellow;
+            canvas.FillArc(centerX - maxArcWidth, centerY - maxArcHeight, maxArcWidth * 2, maxArcHeight * 2, 0, 90, true);
+
+            canvas.StrokeColor = Colors.Orange;
+            canvas.StrokeSize = arcStrokeWidth;
+            canvas.DrawArc(centerX - maxArcWidth, centerY - maxArcHeight, maxArcWidth * 2, maxArcHeight * 2, 180, 90, true, false);
+        }
+
+        canvas.RestoreState();
     }
 }
 
@@ -415,18 +496,42 @@ public class LineDrawable : IDrawable
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
+        canvas.SaveState();
+
         // Notify ViewModel about updated dimensions including X and Y
         _viewModel.UpdateDrawableDimensions(dirtyRect.X, dirtyRect.Y, dirtyRect.Width, dirtyRect.Height);
 
+        // Check if GraphicsView has valid dimensions
+        if (dirtyRect.Width <= 0 || dirtyRect.Height <= 0)
+        {
+            canvas.RestoreState();
+            return;
+        }
+
+        float centerX = dirtyRect.Width / 2;
+        float centerY = dirtyRect.Height / 2;
+        float size = Math.Min(dirtyRect.Width, dirtyRect.Height) * 0.7f;
+
+        float strokeWidth = 4;
+        float padding = strokeWidth / 2 + 1;
+
+        // Calculate line bounds centered in the canvas
+        float lineSize = size;
+        float lineX1 = centerX - lineSize / 2;
+        float lineY1 = centerY - lineSize / 2;
+        float lineX2 = centerX + lineSize / 2;
+        float lineY2 = centerY + lineSize / 2;
+
         // StrokeLineCap and StrokeDashPattern - used once across all drawables
         canvas.StrokeColor = _viewModel.CurrentDrawColor;
-        canvas.StrokeSize = 4;
+        canvas.StrokeSize = strokeWidth;
         canvas.StrokeLineCap = LineCap.Round;
         canvas.StrokeDashPattern = new float[] { 15, 5, 10, 5 };
-        canvas.DrawLine(dirtyRect.Left, dirtyRect.Top, dirtyRect.Right, dirtyRect.Bottom);
 
-        // Reset dash pattern
-        canvas.StrokeDashPattern = null;
+        // Draw diagonal line centered in the canvas
+        canvas.DrawLine(lineX1, lineY1, lineX2, lineY2);
+
+        canvas.RestoreState();
     }
 }
 
@@ -441,52 +546,72 @@ public class StringDrawable : IDrawable
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
+        canvas.SaveState();
+
         // Notify ViewModel about updated dimensions including X and Y
         _viewModel.UpdateDrawableDimensions(dirtyRect.X, dirtyRect.Y, dirtyRect.Width, dirtyRect.Height);
 
+        // Check if GraphicsView has valid dimensions
+        if (dirtyRect.Width <= 0 || dirtyRect.Height <= 0)
+        {
+            canvas.RestoreState();
+            return;
+        }
+
+        // Calculate center and size for the string drawable (like your simple sample)
+        float centerX = dirtyRect.Width / 2;
+        float centerY = dirtyRect.Height / 2;
+        float size = Math.Min(dirtyRect.Width, dirtyRect.Height) * 0.7f;
+
         // ClipPath - used once across all drawables
-        canvas.SaveState();
         PathF clipPath = new PathF();
-        clipPath.MoveTo(dirtyRect.X + 10, dirtyRect.Y);
-        clipPath.LineTo(dirtyRect.Right - 10, dirtyRect.Y);
-        clipPath.LineTo(dirtyRect.Right, dirtyRect.Y + 10);
-        clipPath.LineTo(dirtyRect.Right, dirtyRect.Bottom - 10);
-        clipPath.LineTo(dirtyRect.Right - 10, dirtyRect.Bottom);
-        clipPath.LineTo(dirtyRect.X + 10, dirtyRect.Bottom);
-        clipPath.LineTo(dirtyRect.X, dirtyRect.Bottom - 10);
-        clipPath.LineTo(dirtyRect.X, dirtyRect.Y + 10);
+        float clipSize = size;
+        float clipX = centerX - clipSize / 2;
+        float clipY = centerY - clipSize / 2;
+        
+        clipPath.MoveTo(clipX + 10, clipY);
+        clipPath.LineTo(clipX + clipSize - 10, clipY);
+        clipPath.LineTo(clipX + clipSize, clipY + 10);
+        clipPath.LineTo(clipX + clipSize, clipY + clipSize - 10);
+        clipPath.LineTo(clipX + clipSize - 10, clipY + clipSize);
+        clipPath.LineTo(clipX + 10, clipY + clipSize);
+        clipPath.LineTo(clipX, clipY + clipSize - 10);
+        clipPath.LineTo(clipX, clipY + 10);
         clipPath.Close();
         canvas.ClipPath(clipPath);
 
-        // DrawCircle - use circle background instead of rectangle
-        float centerX = dirtyRect.Center.X;
-        float centerY = dirtyRect.Center.Y;
-        float circleRadius = Math.Min(dirtyRect.Width, dirtyRect.Height) / 3;
+        float maxRadius = size / 3;
 
-        canvas.FillColor = Colors.LightYellow;
-        canvas.FillCircle(centerX, centerY, circleRadius);
+        float strokeWidth = 2;
+        float circleRadius = maxRadius - (strokeWidth / 2 + 1);
 
-        canvas.StrokeColor = Colors.Blue;
-        canvas.StrokeSize = 2;
-        canvas.DrawCircle(centerX, centerY, circleRadius);
+        if (circleRadius > 0)
+        {
+            canvas.FillColor = Colors.LightYellow;
+            canvas.FillCircle(centerX, centerY, circleRadius);
 
-        // Set font properties following the documentation pattern
-        canvas.FontColor = Colors.Blue;
-        canvas.FontSize = 18;
-        canvas.Font = Microsoft.Maui.Graphics.Font.Default;
+            canvas.StrokeColor = Colors.Blue;
+            canvas.StrokeSize = strokeWidth;
+            canvas.DrawCircle(centerX, centerY, circleRadius);
 
-        // Define the text and bounding box
-        string displayText = "Hello";
+            canvas.FontColor = Colors.Blue;
+            canvas.FontSize = 14;
+            canvas.Font = Microsoft.Maui.Graphics.Font.Default;
 
-        // Use a proper bounding box within the dirtyRect, leaving some padding
-        float padding = 20;
-        float textX = dirtyRect.X + padding;
-        float textY = dirtyRect.Y + padding;
-        float textWidth = dirtyRect.Width - (2 * padding);
-        float textHeight = dirtyRect.Height - (2 * padding);
+            string displayText = "Hello";
 
-        // Center aligned text
-        canvas.DrawString(displayText, textX, textY + 40, textWidth, 30, HorizontalAlignment.Center, VerticalAlignment.Top);
+            // Position text at the center of the circle, not relative to the clip area
+            float textWidth = circleRadius * 2; // Use full circle diameter for text width
+            float textHeight = 20; // Reduce height to fit better
+            float textX = centerX - textWidth / 2;
+            float textY = centerY - textHeight / 2;
+
+            // Ensure text area is valid and draw it centered in the circle
+            if (textWidth > 0 && textHeight > 0)
+            {
+                canvas.DrawString(displayText, textX, textY, textWidth, textHeight, HorizontalAlignment.Center, VerticalAlignment.Center);
+            }
+        }
 
         canvas.RestoreState();
     }
@@ -546,68 +671,146 @@ public class ImageDrawable : IDrawable
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
+        canvas.SaveState();
+
         // Notify ViewModel about updated dimensions including X and Y
         _viewModel.UpdateDrawableDimensions(dirtyRect.X, dirtyRect.Y, dirtyRect.Width, dirtyRect.Height);
 
-        // SubtractFromClip - used once across all drawables to create frame effect
-        canvas.SaveState();
+        // Check if GraphicsView has valid dimensions
+        if (dirtyRect.Width <= 0 || dirtyRect.Height <= 0)
+        {
+            canvas.RestoreState();
+            return;
+        }
 
-        // Draw outer rectangle
+        // Calculate center and size for the image (like your simple sample)
+        float centerX = dirtyRect.Width / 2;
+        float centerY = dirtyRect.Height / 2;
+        float size = Math.Min(dirtyRect.Width, dirtyRect.Height) * 0.7f;
+
+        // Draw a simple background frame
+        float frameWidth = 10;
+        float frameSize = size;
+        float frameX = centerX - frameSize / 2;
+        float frameY = centerY - frameSize / 2;
+
+        // Draw frame background
         canvas.FillColor = Colors.Gold;
-        canvas.FillRectangle(dirtyRect);
+        canvas.FillRectangle(frameX, frameY, frameSize, frameSize);
 
-        // Subtract inner rectangle to create frame
-        float frameWidth = 15;
-        canvas.SubtractFromClip(dirtyRect.X + frameWidth, dirtyRect.Y + frameWidth,
-            dirtyRect.Width - (2 * frameWidth), dirtyRect.Height - (2 * frameWidth));
+        // Draw inner area for the image
+        float innerX = frameX + frameWidth;
+        float innerY = frameY + frameWidth;
+        float innerSize = frameSize - (2 * frameWidth);
 
-        canvas.RestoreState();
-
-        // Draw inner content area
         canvas.FillColor = Colors.LightGray;
-        canvas.FillRectangle(dirtyRect.X + frameWidth, dirtyRect.Y + frameWidth,
-            dirtyRect.Width - (2 * frameWidth), dirtyRect.Height - (2 * frameWidth));
+        canvas.FillRectangle(innerX, innerY, innerSize, innerSize);
 
         if (_image != null)
         {
             // Calculate image position and size to fit within the inner area
-            float padding = 5 + frameWidth; // Reduced padding to make image larger
-            float availableWidth = dirtyRect.Width - (2 * padding);
-            float availableHeight = dirtyRect.Height - (2 * padding);
+            float padding = 5;
+            float availableWidth = innerSize - (2 * padding);
+            float availableHeight = innerSize - (2 * padding);
 
-            // Calculate scale to fit image while maintaining aspect ratio
-            float scaleX = availableWidth / _image.Width;
-            float scaleY = availableHeight / _image.Height;
-            float scale = Math.Min(scaleX, scaleY);
+            if (availableWidth > 0 && availableHeight > 0)
+            {
+                // Calculate scale to fit image while maintaining aspect ratio
+                float scaleX = availableWidth / _image.Width;
+                float scaleY = availableHeight / _image.Height;
+                float scale = Math.Min(scaleX, scaleY);
 
-            float imageWidth = _image.Width * scale;
-            float imageHeight = _image.Height * scale;
+                float imageWidth = _image.Width * scale;
+                float imageHeight = _image.Height * scale;
 
-            // Center the image
-            float imageX = dirtyRect.X + (dirtyRect.Width - imageWidth) / 2;
-            float imageY = dirtyRect.Y + (dirtyRect.Height - imageHeight) / 2;
+                // Center the image within the inner area
+                float imageX = innerX + (innerSize - imageWidth) / 2;
+                float imageY = innerY + (innerSize - imageHeight) / 2;
 
-            // Draw the actual PNG image
-            canvas.DrawImage(_image, imageX, imageY, imageWidth, imageHeight);
+                // Draw the actual image
+                canvas.DrawImage(_image, imageX, imageY, imageWidth, imageHeight);
 
-            Debug.WriteLine($"Drew image at ({imageX}, {imageY}) with size ({imageWidth}, {imageHeight})");
+                Debug.WriteLine($"Drew image at ({imageX}, {imageY}) with size ({imageWidth}, {imageHeight})");
+            }
         }
         else
         {
             // Fallback: draw text if image couldn't be loaded
             canvas.FontColor = Colors.Red;
-            canvas.FontSize = 14;
+            canvas.FontSize = 12;
             canvas.Font = Microsoft.Maui.Graphics.Font.Default;
 
             string errorText = "Image not found";
-            float textX = dirtyRect.X + 10 + frameWidth;
-            float textY = dirtyRect.Y + 30 + frameWidth;
-            float textWidth = dirtyRect.Width - 20 - (2 * frameWidth);
-            float textHeight = 30;
+            float textX = innerX + 5;
+            float textY = innerY + 20;
+            float textWidth = innerSize - 10;
+            float textHeight = 20;
 
-            canvas.DrawString(errorText, textX, textY, textWidth, textHeight, HorizontalAlignment.Center, VerticalAlignment.Top);
+            if (textWidth > 0 && textHeight > 0)
+            {
+                canvas.DrawString(errorText, textX, textY, textWidth, textHeight, HorizontalAlignment.Center, VerticalAlignment.Top);
+            }
 
             Debug.WriteLine("Image could not be loaded, showing error message");
         }
+
+        canvas.RestoreState();
     }
 }
+
+public class TransparentEllipseDrawable : IDrawable
+{
+    private readonly GraphicsViewViewModel _viewModel;
+
+    public TransparentEllipseDrawable(GraphicsViewViewModel viewModel)
+    {
+        _viewModel = viewModel;
+    }
+
+    public void Draw(ICanvas canvas, RectF dirtyRect)
+    {
+        canvas.SaveState();
+
+        // Notify ViewModel about updated dimensions including X and Y
+        _viewModel.UpdateDrawableDimensions(dirtyRect.X, dirtyRect.Y, dirtyRect.Width, dirtyRect.Height);
+
+        // Check if GraphicsView has valid dimensions
+        if (dirtyRect.Width <= 0 || dirtyRect.Height <= 0)
+        {
+            canvas.RestoreState();
+            return;
+        }
+
+        // Calculate center and size for the ellipse (following the scaling pattern)
+        float centerX = dirtyRect.Width / 2;
+        float centerY = dirtyRect.Height / 2;
+        float size = Math.Min(dirtyRect.Width, dirtyRect.Height) * 0.7f;
+
+        float ellipseSize = size * 0.8f; // Make it slightly smaller for better visibility
+        float ellipseX = centerX - ellipseSize / 2;
+        float ellipseY = centerY - ellipseSize / 2;
+        var outerRect = new RectF(ellipseX, ellipseY, ellipseSize, ellipseSize);
+
+        // Set transparent fill color - this demonstrates the issue on Android
+        Color transparentColor = Colors.Transparent;
+        
+        canvas.SetFillPaint(transparentColor.AsPaint(), outerRect);
+        
+        canvas.SetShadow(new SizeF(0, 2), 
+                        Microsoft.Maui.Devices.DeviceInfo.Platform == Microsoft.Maui.Devices.DevicePlatform.Android ? 4 : 3, 
+                        Color.FromArgb("#59000000"));
+        
+        // Draw the transparent ellipse with shadow
+        canvas.FillEllipse(outerRect.X, outerRect.Y, outerRect.Width, outerRect.Height);
+
+        float arcSize = ellipseSize * 0.5f;
+        float arcX = outerRect.X + (outerRect.Width - arcSize) / 2;
+        float arcY = outerRect.Y + (outerRect.Height - arcSize) / 2;
+
+        canvas.FillColor = Colors.Blue;
+        canvas.DrawArc(arcX, arcY, arcSize, arcSize, 45, 90, true, false);
+
+        canvas.RestoreState();
+    }
+}
+

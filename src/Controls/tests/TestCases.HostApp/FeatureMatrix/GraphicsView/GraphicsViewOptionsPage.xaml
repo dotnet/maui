@@ -53,6 +53,11 @@
             GroupName="DrawableType"
             Content="Image"
             CheckedChanged="OnDrawableChanged"/>
+        <RadioButton x:Name="DrawableTransparentEllipse"
+            AutomationId="TransparentEllipse"
+            GroupName="DrawableType"
+            Content="TransparentEllipse"
+            CheckedChanged="OnDrawableChanged"/>
       </StackLayout>
 
       <!-- Is Enabled -->
@@ -106,8 +111,8 @@
     <StackLayout Grid.Column="1"
         Padding="10"
         Spacing="12">
-      <!-- Height Request -->
-      <Label Text="Height Request:"
+      <!-- GraphicsView Height -->
+      <Label Text="GraphicsView Height:"
           FontSize="15"/>
       <StackLayout Orientation="Horizontal"
           Spacing="5">
@@ -117,8 +122,8 @@
             AutomationId="HeightRequestEntry"/>
       </StackLayout>
 
-      <!-- Width Request -->
-      <Label Text="Width Request:"
+      <!-- GraphicsView Width -->
+      <Label Text="GraphicsView Width:"
           FontSize="15"/>
       <StackLayout Orientation="Horizontal"
           Spacing="5">
