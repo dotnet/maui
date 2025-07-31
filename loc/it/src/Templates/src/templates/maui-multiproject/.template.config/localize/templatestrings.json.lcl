@@ -23,16 +23,16 @@
         <Str Cat="Text">
           <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI with multiple, separate app projects.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Progetto per la creazione di un'applicazione .NET MAUI per iOS, Android, Mac E WinUI con più progetti di app separati.]]></Val>
+            <Val><![CDATA[Progetto per la creazione di un'applicazione iOS, Android, Mac Catalyst e WinUI con più progetti di app separati.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI Multi-Project App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[.NET MAUI app multi-progetto]]></Val>
+            <Val><![CDATA[App .NET MAUI multiprogetto]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The target framework for the project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Il framework di destinazione per il progetto.]]></Val>
+            <Val><![CDATA[Framework di destinazione per il progetto.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the Android app head project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Includi il progetto head dell'app Android]]></Val>
+            <Val><![CDATA[Consente di includere il progetto head dell'app Android]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -95,7 +95,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the iOS app head project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Includi il progetto head dell'app iOS]]></Val>
+            <Val><![CDATA[Consente di includere il progetto head dell'app iOS]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -113,7 +113,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the macOS app head project (using Mac Catalyst)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Includi il progetto head dell'app macOS (usando Mac ESO)]]></Val>
+            <Val><![CDATA[Consente di includere il progetto head dell'app macOS (usando Mac Parametro)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[macOS using Mac Catalyst]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[macOS che usa Mac ESore]]></Val>
+            <Val><![CDATA[macOS con Mac Catalyst]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -131,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the Windows app head project (using WinUI 3)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Includi il progetto head dell'app di Windows (con WinUI 3)]]></Val>
+            <Val><![CDATA[Consente di includere il progetto head dell'app di Windows (con WinUI 3)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

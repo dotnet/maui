@@ -1,4 +1,6 @@
 #nullable enable
+Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter
+Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.SafeAreaEdgesTypeConverter() -> void
 Microsoft.Maui.FontManager.GetFontFamily(string? fontFamily) -> string!
 *REMOVED*Microsoft.Maui.FontManager.GetFontFamily(string? fontFamliy) -> string!
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
@@ -85,6 +87,10 @@ override Microsoft.Maui.Converters.FlexWrapTypeConverter.CanConvertFrom(System.C
 override Microsoft.Maui.Converters.FlexWrapTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.FlexWrapTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Converters.FlexWrapTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value) -> object!
+override Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object!
 override Microsoft.Maui.Converters.ThicknessTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Converters.ThicknessTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.ThicknessTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
@@ -152,6 +158,11 @@ static Microsoft.Maui.SwipeViewSwipeEnded.operator !=(Microsoft.Maui.SwipeViewSw
 static Microsoft.Maui.SwipeViewSwipeEnded.operator ==(Microsoft.Maui.SwipeViewSwipeEnded? left, Microsoft.Maui.SwipeViewSwipeEnded? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator !=(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator ==(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
+static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequired(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Action! action) -> void
+static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Action! action) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<System.Threading.Tasks.Task!>! action) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync<T>(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<T>! func) -> System.Threading.Tasks.Task<T>!
+static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync<T>(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<System.Threading.Tasks.Task<T>!>! funcTask) -> System.Threading.Tasks.Task<T>!
 virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.<Clone>$() -> Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.EqualityContract.get -> System.Type!

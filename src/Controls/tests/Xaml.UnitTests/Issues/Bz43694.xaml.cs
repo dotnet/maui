@@ -1,36 +1,47 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
+using System.Linq;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
+
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class Bz43694 : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Bz43694 : ContentPage
+	public Bz43694() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
 	{
-		public Bz43694()
+		[Test]
+#if FIXME_BEFORE_PUBLIC_RELEASE
+		public void xStaticWithOnPlatformChildInRD([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
+#else
+		public void xStaticWithOnPlatformChildInRD([Values] XamlInflator inflator)
+#endif
 		{
-			InitializeComponent();
-		}
-
-		public Bz43694(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void xStaticWithOnPlatformChildInRD(bool useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
+				Assert.Throws(new BuildExceptionConstraint(9, 6), () => MockCompiler.Compile(typeof(Bz43694)));
+			else if (inflator == XamlInflator.Runtime)
+				Assert.Throws(new XamlParseExceptionConstraint(9, 6), () => new Bz43694(inflator));
+			else if (inflator == XamlInflator.SourceGen)
 			{
-				if (useCompiledXaml)
-					Assert.Throws(new BuildExceptionConstraint(9, 6), () => MockCompiler.Compile(typeof(Bz43694)));
-				else
-					Assert.Throws(new XamlParseExceptionConstraint(9, 6), () => new Bz43694(useCompiledXaml));
+				var result = CreateMauiCompilation()
+					.WithAdditionalSource(
+"""
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class Bz43694 : ContentPage
+{
+	public Bz43694() => InitializeComponent();
+}
+""")
+					.RunMauiSourceGenerator(typeof(Bz43694));
+				Assert.That(result.Diagnostics.Any());
 			}
+			else
+				Assert.Ignore("Unknown inflator");
 		}
 	}
 }

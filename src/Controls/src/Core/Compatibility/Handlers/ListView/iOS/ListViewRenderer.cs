@@ -176,34 +176,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
 			}
 
-			if (_dataSource != null)
-			{
-				_dataSource.Dispose();
-				_dataSource = null;
-			}
+			_dataSource?.Dispose();
+			_dataSource = null;
 
-			if (_tableViewController != null)
-			{
-				_tableViewController.Dispose();
-				_tableViewController = null;
-			}
+			_tableViewController?.Dispose();
+			_tableViewController = null;
 
-			if (_headerRenderer != null)
-			{
-				_headerRenderer.VirtualView?.DisposeModalAndChildHandlers();
-				_headerRenderer = null;
-			}
-			if (_footerRenderer != null)
-			{
-				_footerRenderer.VirtualView?.DisposeModalAndChildHandlers();
-				_footerRenderer = null;
-			}
+			_headerRenderer?.VirtualView?.DisposeModalAndChildHandlers();
+			_headerRenderer = null;
+			_footerRenderer?.VirtualView?.DisposeModalAndChildHandlers();
+			_footerRenderer = null;
 
-			if (_backgroundUIView != null)
-			{
-				_backgroundUIView.Dispose();
-				_backgroundUIView = null;
-			}
+			_backgroundUIView?.Dispose();
+			_backgroundUIView = null;
 
 			var headerView = ListView?.HeaderElement as VisualElement;
 			if (headerView != null)

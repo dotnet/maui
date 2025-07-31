@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Content))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #pragma warning disable CS0618 // Type or member is obsolete
-	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView
+	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, ISafeAreaElement, ISafeAreaView2
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
 		#region IScrollViewController
@@ -137,6 +137,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="VerticalScrollBarVisibility"/>.</summary>
 		public static readonly BindableProperty VerticalScrollBarVisibilityProperty = BindableProperty.Create(nameof(VerticalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ScrollView), ScrollBarVisibility.Default);
 
+		/// <summary>Bindable property for <see cref="SafeAreaEdges"/>.</summary>
+		public static readonly BindableProperty SafeAreaEdgesProperty = SafeAreaElement.SafeAreaEdgesProperty;
+
 		View _content;
 		TaskCompletionSource<bool> _scrollCompletionSource;
 		Rect _layoutAreaOverride;
@@ -172,7 +175,15 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
 		public new static readonly BindableProperty CascadeInputTransparentProperty = InputTransparentContainerElement.CascadeInputTransparentProperty;
 
-		/// <inheritdoc cref="IInputTransparentContainerElement.CascadeInputTransparent"/>
+		/// <summary>
+		/// Gets or sets a value that controls whether child elements
+		/// inherit the input transparency of this layout when the transparency is <see langword="true"/>.
+		/// </summary>
+		/// <value>
+		/// <see langword="true" /> to cause child elements to inherit the input transparency of this layout,
+		/// when this layout's <see cref="VisualElement.InputTransparent" /> property is <see langword="true" />.
+		/// <see langword="false" /> to cause child elements to ignore the input transparency of this layout.
+		/// </value>
 		public new bool CascadeInputTransparent
 		{
 			get => (bool)GetValue(CascadeInputTransparentProperty);
@@ -250,6 +261,21 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (ScrollBarVisibility)GetValue(VerticalScrollBarVisibilityProperty); }
 			set { SetValue(VerticalScrollBarVisibilityProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets the safe area edges to obey for this scroll view.
+		/// The default value is SafeAreaEdges.Default (None - edge to edge).
+		/// </summary>
+		/// <remarks>
+		/// This property controls which edges of the scroll view should obey safe area insets.
+		/// Use SafeAreaRegions.None for edge-to-edge content, SafeAreaRegions.All to obey all safe area insets, 
+		/// SafeAreaRegions.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaRegions.SoftInput for keyboard-aware behavior.
+		/// </remarks>
+		public SafeAreaEdges SafeAreaEdges
+		{
+			get => (SafeAreaEdges)GetValue(SafeAreaElement.SafeAreaEdgesProperty);
+			set => SetValue(SafeAreaElement.SafeAreaEdgesProperty, value);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
@@ -494,6 +520,31 @@ namespace Microsoft.Maui.Controls
 		Size IContentView.CrossPlatformArrange(Rect bounds) =>
 			((ICrossPlatformLayout)this).CrossPlatformArrange(bounds);
 
+		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		{
+			return SafeAreaEdges.Default;
+		}
+
+		/// <inheritdoc cref="ISafeAreaView2.SafeAreaInsets"/>
+		Thickness ISafeAreaView2.SafeAreaInsets
+		{
+			set
+			{
+				// For ScrollView, we don't need to store the SafeAreaInsets
+				// The platform-specific MauiScrollView handles this
+			}
+		}
+
+		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
+		{
+			// Use direct property 
+			var regionForEdge = SafeAreaEdges.GetEdge(edge);
+
+			// For ScrollView, return Default behavior as-is (it's special)
+			return regionForEdge;
+		}
+
 		private protected override string GetDebuggerDisplay()
 		{
 			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Content), Content);
@@ -511,7 +562,7 @@ namespace Microsoft.Maui.Controls
 			return base.Measure(widthConstraint, heightConstraint);
 		}
 
-		
+
 		/// <summary>
 		/// Sends a child to the back of the visual stack.
 		/// </summary>
@@ -578,7 +629,7 @@ namespace Microsoft.Maui.Controls
 		protected new void UpdateChildrenLayout()
 		{
 		}
-		
+
 		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{

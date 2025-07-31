@@ -5,6 +5,7 @@ using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Text.Style;
+using Google.Android.Material.Dialog;
 using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
 using AResource = Android.Resource;
 
@@ -84,12 +85,23 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 		}
 
+		internal static void MapIsOpen(IPickerHandler handler, IPicker picker)
+		{
+			if (handler.IsConnected() && handler is PickerHandler pickerHandler)
+			{
+				if (picker.IsOpen)
+					pickerHandler.ShowDialog();
+				else
+					pickerHandler.DismissDialog();
+			}
+		}
+
 		internal static void MapFocus(IPickerHandler handler, IPicker picker, object? args)
 		{
-			if (handler.IsConnected())
+			if (handler.IsConnected() && handler is PickerHandler pickerHandler)
 			{
 				ViewHandler.MapFocus(handler, picker, args);
-				handler.PlatformView.CallOnClick();
+				pickerHandler.ShowDialog();
 			}
 		}
 
@@ -102,6 +114,14 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		void ShowDialog()
+		{
+			if (PlatformView.Clickable)
+				PlatformView.CallOnClick();
+			else
+				OnClick(PlatformView, EventArgs.Empty);
+		}
+
 		void DismissDialog()
 		{
 			_dialog?.Dismiss();
@@ -111,7 +131,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog == null && VirtualView != null)
 			{
-				using (var builder = new AppCompatAlertDialog.Builder(Context))
+				using (var builder = new MaterialAlertDialogBuilder(Context))
 				{
 					if (VirtualView.TitleColor == null)
 					{
@@ -135,11 +155,13 @@ namespace Microsoft.Maui.Handlers
 							items[i] = String.Empty;
 					}
 
-					builder.SetItems(items, (s, e) =>
+					builder.SetSingleChoiceItems(items, VirtualView.SelectedIndex, (s, e) =>
 					{
 						var selectedIndex = e.Which;
 						VirtualView.SelectedIndex = selectedIndex;
 						base.PlatformView?.UpdatePicker(VirtualView);
+
+						_dialog?.Dismiss();
 					});
 
 					builder.SetNegativeButton(AResource.String.Cancel, (o, args) => { });
@@ -159,6 +181,8 @@ namespace Microsoft.Maui.Handlers
 				_dialog.DismissEvent += OnDialogDismiss;
 
 				_dialog.Show();
+
+				VirtualView.IsOpen = true;
 			}
 		}
 

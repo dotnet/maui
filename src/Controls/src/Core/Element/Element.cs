@@ -502,7 +502,8 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		//this is only used by XAMLC, not added to public API
+		//this is only used by Xaml inflators, to avoid crash hen VSM applies before parenting. Not added to the public API
+		//https://github.com/dotnet/maui/issues/16208
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public INameScope transientNamescope;
 
@@ -514,7 +515,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (!RuntimeFeature.AreNamescopesSupported)
 				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
-			
+
 			var namescope = GetNameScope() ?? transientNamescope;
 			if (namescope == null)
 				throw new InvalidOperationException("this element is not in a namescope");

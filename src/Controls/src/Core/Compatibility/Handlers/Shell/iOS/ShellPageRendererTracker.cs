@@ -7,6 +7,7 @@ using System.Runtime.Versioning;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics.Platform;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions;
@@ -460,9 +461,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UIImage? icon = null;
 
-				if (image != null)
+				if (image is not null)
 				{
 					icon = result?.Value;
+					var originalImageSize = icon?.Size ?? CGSize.Empty;
+					// Referred from the default hamburger size 
+					var defaultIconHeight = 23f;
+					var defaultIconWidth = 23f;
+					var buffer = 0.1;
+					// if the image is bigger than the default available size, resize it
+
+					if (icon is not null && originalImageSize.Height - defaultIconHeight > buffer || originalImageSize.Width - defaultIconWidth > buffer)
+					{
+						icon = icon.ResizeImageSource(defaultIconWidth, defaultIconHeight, originalImageSize);
+					}
 				}
 				else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
 				{
@@ -925,11 +937,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void DettachSearchController()
 		{
-			if (_searchHandlerAppearanceTracker is not null)
-			{
-				_searchHandlerAppearanceTracker.Dispose();
-				_searchHandlerAppearanceTracker = null;
-			}
+
+			_searchHandlerAppearanceTracker?.Dispose();
+			_searchHandlerAppearanceTracker = null;
 
 			if (NavigationItem is not null)
 			{
@@ -943,11 +953,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
-			if (_searchController is not null)
-			{
-				_searchController.SetSearchResultsUpdater(_ => { });
-				_searchController = null;
-			}
+			_searchController?.SetSearchResultsUpdater(_ => { });
+			_searchController = null;
 		}
 
 		void OnSearchItemSelected(object? sender, object e)

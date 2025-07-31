@@ -1,32 +1,25 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Xaml;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class Bz53318ListView : ListView
 {
-	public class Bz53318ListView : ListView
-	{
-	}
+	public Bz53318ListView([Parameter("CachingStrategy")] ListViewCachingStrategy cachingStrategy) : base(cachingStrategy) { }
+}
 
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Bz53318 : ContentPage
-	{
-		public Bz53318()
-		{
-			InitializeComponent();
-		}
+[XamlProcessing(XamlInflator.Runtime | XamlInflator.SourceGen, true)]
+public partial class Bz53318 : ContentPage
+{
+	public Bz53318() => InitializeComponent();
 
-		[TestFixture]
-		public class Tests
+	[TestFixture]
+	public class Tests
+	{
+		[Test]
+		public void DoesCompilesArgsInsideDataTemplate([Values(XamlInflator.XamlC)] XamlInflator inflator)
 		{
-			[Test]
-			public void DoesCompilesArgsInsideDataTemplate()
-			{
+			if (inflator == XamlInflator.XamlC)
 				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Bz53318)));
-			}
 		}
 	}
 }

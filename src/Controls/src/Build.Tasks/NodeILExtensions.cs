@@ -472,8 +472,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			INode n = node.Parent;
 			while (n != null)
 			{
-				var en = n as IElementNode;
-				if (en != null && context.Variables.ContainsKey(en))
+				if (n is IElementNode en && context.Variables.ContainsKey(en))
 					nodes.Add(en);
 				n = n.Parent;
 			}
@@ -581,7 +580,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var scopes = new List<VariableDefinition>();
 			do
 			{
-
 				if (context.Scopes.TryGetValue(node, out var scope))
 					scopes.Add(scope.Item1);
 				node = node.Parent;

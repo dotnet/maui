@@ -50,17 +50,11 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void Dispose()
 		{
-			if (_bitmapContext != null)
-			{
-				_bitmapContext.Dispose();
-				_bitmapContext = null;
-			}
+			_bitmapContext?.Dispose();
+			_bitmapContext = null;
 
-			if (_canvas != null)
-			{
-				_canvas.Dispose();
-				_canvas = null;
-			}
+			_canvas?.Dispose();
+			_canvas = null;
 
 			base.Dispose();
 		}

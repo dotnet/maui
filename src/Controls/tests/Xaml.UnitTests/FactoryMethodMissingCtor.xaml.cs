@@ -1,29 +1,125 @@
 using System;
-using Microsoft.Maui.Controls.Core.UnitTests;
+using System.IO;
+using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class FactoryMethodMissingCtor : MockView
-	{
-		public FactoryMethodMissingCtor() => InitializeComponent();
-		public FactoryMethodMissingCtor(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
-		[TestFixture]
-		public class Tests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class FactoryMethodMissingCtor : MockView
+{
+	public FactoryMethodMissingCtor() => InitializeComponent();
+
+	[TestFixture]
+	public class Tests
+	{
+		[Test]
+		public void Throw([Values] XamlInflator inflator)
 		{
-			[Test]
-			public void Throw([Values(false, true)] bool useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
+				Assert.Throws(new BuildExceptionConstraint(7, 4), () => MockCompiler.Compile(typeof(FactoryMethodMissingCtor)));
+			else if (inflator == XamlInflator.Runtime)
+				Assert.Throws<MissingMethodException>(() => new FactoryMethodMissingCtor(inflator));
+			else if (inflator == XamlInflator.SourceGen)
 			{
-				if (useCompiledXaml)
-					Assert.Throws(new BuildExceptionConstraint(7, 4), () => MockCompiler.Compile(typeof(FactoryMethodMissingCtor)));
-				else
-					Assert.Throws<MissingMethodException>(() => new FactoryMethodMissingCtor(useCompiledXaml));
+				var result = CreateMauiCompilation()
+					.WithAdditionalSource(
+"""
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class MockView : View
+{
+	public MockFactory Content { get; set; }
+}
+
+public class MockFactory
+{
+	public string Content { get; set; }
+	public MockFactory() => Content = "default ctor";
+
+	public MockFactory(string arg0, string arg1) => Content = "alternate ctor " + arg0 + arg1;
+
+	public MockFactory(string arg0) => Content = "alternate ctor " + arg0;
+
+	public MockFactory(int arg) => Content = "int ctor " + arg.ToString();
+
+	public MockFactory(object[] args) => Content = string.Join(" ", args);
+
+	public static MockFactory ParameterlessFactory() => new MockFactory
+	{
+		Content = "parameterless factory",
+	};
+
+	public static MockFactory Factory(string arg0, int arg1) => new MockFactory
+	{
+		Content = "factory " + arg0 + arg1,
+	};
+
+	public static MockFactory Factory(int arg0, string arg1) => new MockFactory
+	{
+		Content = "factory " + arg0 + arg1,
+	};
+}
+
+[XamlProcessing(XamlInflator.Default, true)]
+public partial class FactoryMethods : ContentPage
+{
+	public FactoryMethods() => InitializeComponent();
+}
+"""
+					)
+					.WithAdditionalSource(
+"""
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class FactoryMethodMissingCtor : MockView
+{
+	public FactoryMethodMissingCtor() => InitializeComponent();
+}
+
+public class MockView : View
+{
+	public MockFactory Content { get; set; }
+}
+
+public class MockFactory
+{
+	public string Content { get; set; }
+	public MockFactory() => Content = "default ctor";
+
+	public MockFactory(string arg0, string arg1) => Content = "alternate ctor " + arg0 + arg1;
+
+	public MockFactory(string arg0) => Content = "alternate ctor " + arg0;
+
+	public MockFactory(int arg) => Content = "int ctor " + arg.ToString();
+
+	public MockFactory(object[] args) => Content = string.Join(" ", args);
+
+	public static MockFactory ParameterlessFactory() => new MockFactory
+	{
+		Content = "parameterless factory",
+	};
+
+	public static MockFactory Factory(string arg0, int arg1) => new MockFactory
+	{
+		Content = "factory " + arg0 + arg1,
+	};
+
+	public static MockFactory Factory(int arg0, string arg1) => new MockFactory
+	{
+		Content = "factory " + arg0 + arg1,
+	};
+}
+""")
+					.RunMauiSourceGenerator(typeof(FactoryMethodMissingCtor));
+				Assert.That(result.Diagnostics.Any(d => d.Id == "MAUIX2003"));
 			}
 		}
+
+		static string GetThisFilePath([System.Runtime.CompilerServices.CallerFilePath] string path = null) => path ?? string.Empty;
 	}
 }

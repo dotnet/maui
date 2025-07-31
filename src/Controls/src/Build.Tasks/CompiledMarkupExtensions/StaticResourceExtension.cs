@@ -98,7 +98,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				n = n.Parent as ElementNode;
 			}
 
-
 			//Fallback
 			foreach (var instruction in FallBack(keyValueNode.Value as string, eNode, module, context).ToList())
 				yield return instruction;

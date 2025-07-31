@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[No Add() method defined on "{0}{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Não foi definido nenhum método Add() em "{0}{1}".]]></Val>
+            <Val><![CDATA[Nenhum método Add() definido em "{0}{1}".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing a "public static Get{0}" method or a public instance property getter for the attached property "{1}.{0}Property".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Um método "public static Get{0}" ou um getter de propriedade de instância pública está ausente da propriedade anexada "{1}.{0}Property".]]></Val>
+            <Val><![CDATA[Falta um método "Get estático público{0}" ou um getter de propriedade de instância pública para a propriedade anexada "{1}.{0}Propriedade".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Binding: "{0}" cannot be parsed as an index for a "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Associação: não é possível analisar "{0}" como um índice de uma "{1}".]]></Val>
+            <Val><![CDATA[Associação: "{0}" não pode ser analisado como um índice para um "{1}".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Binding: Unsupported indexer index type: "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Associação: tipo de índice do indexador sem suporte: "{0}".]]></Val>
+            <Val><![CDATA[Associação: tipo de índice de indexador sem suporte: "{0}".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Binding: Property "{0}" not found on "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Associação: a propriedade "{0}" não foi encontrada em "{1}".]]></Val>
+            <Val><![CDATA[Associação: propriedade "{0}" não encontrada em "{1}".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing default constructor for "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Construtor padrão ausente de "{0}".]]></Val>
+            <Val><![CDATA[Construtor padrão ausente para "{0}".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -131,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing constructor for "{0}" with matching x:Arguments.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Construtor ausente de "{0}" com x:Arguments correspondentes.]]></Val>
+            <Val><![CDATA[Construtor ausente para "{0}" com x:Arguments correspondentes.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -194,7 +194,7 @@
         <Str Cat="Text">
           <Val><![CDATA[No property, BindableProperty, or event found for "{0}", or mismatching type between value and property.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Não foi encontrada nenhuma propriedade, nenhuma BindableProperty nem nenhum evento para "{0}". Ou o valor e a propriedade apresentam tipos incompatíveis.]]></Val>
+            <Val><![CDATA[Nenhuma propriedade, BindableProperty ou evento encontrado para "{0}" ou tipo incompatível entre valor e propriedade.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -203,7 +203,7 @@
         <Str Cat="Text">
           <Val><![CDATA[No static method found for "{0}::{1} ({2})".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Não foi encontrado nenhum método estático para "{0}::{1} ({2})".]]></Val>
+            <Val><![CDATA[Nenhum método estático encontrado para "{0}::{1} ({2})".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -212,7 +212,7 @@
         <Str Cat="Text">
           <Val><![CDATA[EventHandler "{0}" with correct signature not found in type "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O EventHandler "{0}" com a assinatura correta não foi encontrado no tipo "{1}".]]></Val>
+            <Val><![CDATA[EventHandler "{0}" com assinatura correta não encontrado no tipo "{1}".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -239,7 +239,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing mandatory property "{0}" on "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Propriedade obrigatória "{0}" ausente de "{1}".]]></Val>
+            <Val><![CDATA[Propriedade obrigatória "{0}" ausente em "{1}".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -248,7 +248,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot resolve property "{0}" on type "{1} (property missing or missing accessors)".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Não é possível resolver a propriedade "{0}" no tipo "{1} (propriedade ou acessadores ausentes)".]]></Val>
+            <Val><![CDATA[Não é possível resolver a propriedade "{0}" no tipo "{1} (acessadores ausentes ou ausentes da propriedade)".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -275,7 +275,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Resource "{0}" not found.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O recurso "{0}" não foi encontrado.]]></Val>
+            <Val><![CDATA[Recurso "{0}" não encontrado.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -380,7 +380,7 @@
         <Str Cat="Text">
           <Val><![CDATA[x:Static: unable to find a public -- or accessible internal -- static field, static property, const or enum value named "{0}" in "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O x:Static: não pôde encontrar um campo estático, uma propriedade estática, um valor const ou enumerado público (ou interno acessível) denominado "{0}" em "{1}".]]></Val>
+            <Val><![CDATA[x:Static: não é possível localizar um campo estático, propriedade estática, const ou valor de enumeração chamado "{0}" em "{1}" públicos ou internos acessíveis.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

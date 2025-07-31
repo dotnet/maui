@@ -144,5 +144,5 @@ namespace Microsoft.Maui
 
 		}
 #pragma warning restore IL4000
-    }
+	}
 }

@@ -6,6 +6,7 @@ using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Dispatching;
 
 #if __MOBILE__
 using ObjCRuntime;
@@ -93,11 +94,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			{
 				SetElement(_element, null);
 
-				if (_layer != null)
-				{
-					_layer.Dispose();
-					_layer = null;
-				}
+				_layer?.Dispose();
+				_layer = null;
 
 				Renderer.ElementChanged -= OnRendererElementChanged;
 				Renderer = null;

@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				await pickerController.DismissViewControllerAsync(true);
 				if (VirtualView is IPicker virtualView)
-					virtualView.IsFocused = false;
+					virtualView.IsFocused = virtualView.IsOpen = false;
 				uITextField.EditingDidEnd -= editingDidEndHandler;
 			};
 
@@ -172,6 +172,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateVerticalTextAlignment(picker);
 		}
 
+		internal static void MapIsOpen(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView?.UpdateIsOpen(picker);
+		}
+
 		void UpdatePickerFromPickerSource(PickerSource? pickerSource)
 		{
 			if (VirtualView == null || PlatformView == null || pickerSource == null)
@@ -241,7 +246,7 @@ namespace Microsoft.Maui.Handlers
 			void OnStarted(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is IPicker virtualView)
-					virtualView.IsFocused = true;
+					virtualView.IsFocused = virtualView.IsOpen = true;
 #if MACCATALYST
 				if (Handler is not PickerHandler handler)
 					return;
@@ -261,7 +266,7 @@ namespace Microsoft.Maui.Handlers
 					pickerView.Select(model.SelectedIndex, 0, false);
 				}
 				if (VirtualView is IPicker virtualView)
-					virtualView.IsFocused = false;
+					virtualView.IsFocused = virtualView.IsOpen = false;
 			}
 
 			void OnEditing(object? sender, EventArgs eventArgs)

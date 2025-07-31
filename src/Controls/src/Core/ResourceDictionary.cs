@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls
 		internal static Action<ResourceDictionary, Uri, string, Assembly, System.Xml.IXmlLineInfo> s_setAndLoadSource;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Source']/Docs/*" />
-		[System.ComponentModel.TypeConverter(typeof(RDSourceTypeConverter))]
+		[TypeConverter(typeof(RDSourceTypeConverter))]
 		public Uri Source
 		{
 			get { return _source; }

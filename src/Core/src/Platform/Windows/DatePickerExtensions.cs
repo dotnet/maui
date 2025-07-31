@@ -109,5 +109,10 @@ namespace Microsoft.Maui.Platform
 			"CalendarDatePickerBackgroundDisabled",
 			"CalendarDatePickerBackgroundFocused",
 		};
+
+		internal static void UpdateIsOpen(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
+		{
+			platformDatePicker.IsCalendarOpen = datePicker.IsOpen;
+		}
 	}
 }

@@ -28,11 +28,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI Multi-Project App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[aplicación multiproyecto de .NET MAUI]]></Val>
+            <Val><![CDATA[Aplicación multiproyecto .NET MAUI]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -95,7 +95,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the iOS app head project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Incluir el proyecto principal de la aplicación de iOS]]></Val>
+            <Val><![CDATA[Incluir el proyecto principal de la aplicación iOS]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -113,7 +113,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the macOS app head project (using Mac Catalyst)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Incluir el proyecto principal de la aplicación macOS (con Mac Mac Mac)]]></Val>
+            <Val><![CDATA[Incluir el proyecto principal de la aplicación macOS (usando Mac Catalyst)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[macOS using Mac Catalyst]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[macOS con Mac Mac Mac]]></Val>
+            <Val><![CDATA[macOS utilizando Mac Catalyst]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -140,7 +140,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Windows using WinUI 3]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Windows con WinUI 3]]></Val>
+            <Val><![CDATA[Windows utilizando WinUI 3]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

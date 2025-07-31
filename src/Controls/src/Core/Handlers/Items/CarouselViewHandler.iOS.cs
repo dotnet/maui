@@ -71,7 +71,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.Controller as CarouselViewController)?.UpdateLoop();
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
-			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			var size = this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
+
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(11))
+			{
+				// Ensure size never exceeds constraints.
+				// In the 22417 test sample on Mac, if widthConstraint is 1085, it becomes 1512 after the SizeThatFits call 
+				// inside ViewHandlerExtensions.iOS. This causes the view's width to appear larger on Mac.
+				// On iOS, the value remains correct — for example, if widthConstraint is 375, SizeThatFits also returns 375.
+				// This issue happened on Main also.
+
+				if (!double.IsInfinity(widthConstraint) && size.Width > widthConstraint)
+				{
+					size.Width = (float)widthConstraint;
+				}
+
+				if (!double.IsInfinity(heightConstraint) && size.Height > heightConstraint)
+				{
+					size.Height = (float)heightConstraint;
+				}
+
+			}
+
+			return size;
+		}
+
+		public override void PlatformArrange(Rect rect)
+		{
+			(Controller.Layout as CarouselViewLayout)?.UpdateConstraints(rect.Size);
+			base.PlatformArrange(rect);
+		}
 	}
 }

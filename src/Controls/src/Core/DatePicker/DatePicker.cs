@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -44,6 +45,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="FontAutoScalingEnabled"/>.</summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
+
+		/// <summary>Bindable property for <see cref="IsOpen"/>.</summary>
+		public static readonly BindableProperty IsOpenProperty =
+			BindableProperty.Create(nameof(IDatePicker.IsOpen), typeof(bool), typeof(DatePicker), default, BindingMode.TwoWay,
+				propertyChanged: OnIsOpenPropertyChanged);
 
 		readonly Lazy<PlatformConfigurationRegistry<DatePicker>> _platformConfigurationRegistry;
 
@@ -133,6 +139,17 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
+		public bool IsOpen
+		{
+			get => (bool)GetValue(IsOpenProperty);
+			set => SetValue(IsOpenProperty, value);
+		}
+
+		static void OnIsOpenPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			((DatePicker)bindable).OnIsOpenPropertyChanged((bool)oldValue, (bool)newValue);
+		}
+
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
 			HandleFontChanged();
 
@@ -158,11 +175,50 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
+		readonly Queue<Action> _pendingIsOpenActions = new Queue<Action>();
+
+		void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
+		{
+			if (Handler?.VirtualView is DatePicker)
+			{
+				HandleIsOpenChanged();
+			}
+			else
+			{
+				_pendingIsOpenActions.Enqueue(HandleIsOpenChanged);
+			}
+		}
+
+		protected override void OnHandlerChanged()
+		{
+			base.OnHandlerChanged();
+
+			// Process any pending actions when handler becomes available
+			while (_pendingIsOpenActions.Count > 0 && Handler != null)
+			{
+				var action = _pendingIsOpenActions.Dequeue();
+				action.Invoke();
+			}
+		}
+
+		void HandleIsOpenChanged()
+		{
+			if (Handler?.VirtualView is not DatePicker datePicker)
+				return;
+
+			if (datePicker.IsOpen)
+				datePicker.Opened?.Invoke(datePicker, DatePickerOpenedEventArgs.Empty);
+			else
+				datePicker.Closed?.Invoke(datePicker, DatePickerClosedEventArgs.Empty);
+		}
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
 		public event EventHandler<DateChangedEventArgs> DateSelected;
+		public event EventHandler<DatePickerOpenedEventArgs> Opened;
+		public event EventHandler<DatePickerClosedEventArgs> Closed;
 
 		static object CoerceDate(BindableObject bindable, object value)
 		{

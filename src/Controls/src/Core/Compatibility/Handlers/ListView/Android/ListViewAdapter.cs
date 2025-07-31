@@ -533,11 +533,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
 				_listView.ItemSelected -= OnItemSelected;
 
-				if (_lastSelected != null)
-				{
-					_lastSelected.Dispose();
-					_lastSelected = null;
-				}
+				_lastSelected?.Dispose();
+				_lastSelected = null;
 
 				DisposeCells();
 			}

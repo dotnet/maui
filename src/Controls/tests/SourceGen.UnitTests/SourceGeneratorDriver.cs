@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.CodeAnalysis;
@@ -64,9 +65,8 @@ public static class SourceGeneratorDriver
 		return (runResult1, runResult2);
 	}
 
-	public static Compilation CreateMauiCompilation()
+	public static Compilation CreateMauiCompilation(string name = $"{nameof(SourceGeneratorDriver)}.Generated")
 	{
-		var name = $"{nameof(SourceGeneratorDriver)}.Generated";
 		var references = GetMauiReferences();
 
 		var compilation = CSharpCompilation.Create(name,
