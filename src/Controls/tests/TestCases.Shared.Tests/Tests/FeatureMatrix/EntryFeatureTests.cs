@@ -70,7 +70,15 @@ public class EntryFeatureTests : UITest
 	{
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
+		Thread.Sleep(1000);
+#if ANDROID // Add this code to maintain CI stability in Android
+		if (App.IsKeyboardShown())
+		{
+			App.TapCoordinates(990, 1720);
+		}
+#else
 		App.DismissKeyboard();
+#endif
 		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
 	}
 
