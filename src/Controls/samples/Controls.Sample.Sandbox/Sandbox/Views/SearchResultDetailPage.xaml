@@ -4,8 +4,7 @@
              xmlns:xct="http://xamarin.com/schemas/2020/toolkit" x:Class="Recipes.Views.SearchResultDetailPage"
              Title="{Binding Title}"
              Visual="Material"
-             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
-             ios:Page.UseSafeArea="true">
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls">
     <Grid Margin="15">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
