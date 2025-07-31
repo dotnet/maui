@@ -65,7 +65,8 @@ public class SwipeViewControlMainPage : ContentPage
 				Text = "SwipeView Control Label",
 				FontSize = 20,
 				HorizontalOptions = LayoutOptions.Center,
-				Margin = new Thickness(0, 0, 0, 10)
+				Margin = new Thickness(0, 0, 0, 10),
+				AutomationId = "SwipeViewControlLabel"
 			},
 
 			ApplyContentWithSwipeItems("Label", "Label"),
