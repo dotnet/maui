@@ -14,7 +14,7 @@ public class Issue29091Shell : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
-	public void TabBarIconsShouldAutoscale()
+	public void TabBarIconsShouldAutoscaleShell()
 	{
 		App.WaitForElement("Tab1");
 		VerifyScreenshot();
