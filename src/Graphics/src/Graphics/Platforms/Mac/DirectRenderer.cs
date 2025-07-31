@@ -32,6 +32,12 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public void Draw(CGContext coreGraphics, RectF dirtyRect)
 		{
+			// Ensure we have a valid context
+			if (coreGraphics is null)
+			{
+				return;
+			}
+			
 			_canvas.Context = coreGraphics;
 
 			try
