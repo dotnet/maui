@@ -202,10 +202,9 @@ namespace Microsoft.Maui.Controls
 			if (message == null)
 				throw new ArgumentNullException(nameof(message));
 			var key = new Sender(message, senderType, argType);
-			if (!_subscriptions.ContainsKey(key))
+			if (!_subscriptions.TryGetValue(key, out List<Subscription> subscriptions))
 				return;
-			List<Subscription> subcriptions = _subscriptions[key];
-			if (subcriptions == null || !subcriptions.Any())
+			if (subscriptions == null || !subscriptions.Any())
 				return; // should not be reachable
 
 			// ok so this code looks a bit funky but here is the gist of the problem. It is possible that in the course
@@ -213,10 +212,10 @@ namespace Microsoft.Maui.Controls
 			// the callback. This would invalidate the enumerator. To work around this we make a copy. However if you unsubscribe 
 			// from a message you can fairly reasonably expect that you will therefor not receive a call. To fix this we then
 			// check that the item we are about to send the message to actually exists in the live list.
-			List<Subscription> subscriptionsCopy = subcriptions.ToList();
+			List<Subscription> subscriptionsCopy = subscriptions.ToList();
 			foreach (Subscription subscription in subscriptionsCopy)
 			{
-				if (subscription.Subscriber.Target != null && subcriptions.Contains(subscription))
+				if (subscription.Subscriber.Target != null && subscriptions.Contains(subscription))
 				{
 					subscription.InvokeCallback(sender, args);
 				}
@@ -229,9 +228,9 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(message));
 			var key = new Sender(message, senderType, argType);
 			var value = new Subscription(subscriber, target, methodInfo, filter);
-			if (_subscriptions.ContainsKey(key))
+			if (_subscriptions.TryGetValue(key, out List<Subscription> subscriptions))
 			{
-				_subscriptions[key].Add(value);
+				subscriptions.Add(value);
 			}
 			else
 			{
@@ -248,10 +247,10 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(message));
 
 			var key = new Sender(message, senderType, argType);
-			if (!_subscriptions.ContainsKey(key))
+			if (!_subscriptions.TryGetValue(key, out List<Subscription> subscriptions))
 				return;
-			_subscriptions[key].RemoveAll(sub => sub.CanBeRemoved() || sub.Subscriber.Target == subscriber);
-			if (!_subscriptions[key].Any())
+			subscriptions.RemoveAll(sub => sub.CanBeRemoved() || sub.Subscriber.Target == subscriber);
+			if (!subscriptions.Any())
 				_subscriptions.Remove(key);
 		}
 

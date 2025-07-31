@@ -213,10 +213,10 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (_innerDictionary.ContainsKey(index))
-					return _innerDictionary[index];
-				if (_mergedInstance != null && _mergedInstance.ContainsKey(index))
-					return _mergedInstance[index];
+				if (_innerDictionary.TryGetValue(index, out var innerItem))
+					return innerItem;
+				if (_mergedInstance != null && _mergedInstance.TryGetValue(index, out var mergeItem))
+					return mergeItem;
 				if (_mergedDictionaries != null)
 				{
 					var dictionaries = (ObservableCollection<ResourceDictionary>)MergedDictionaries;
