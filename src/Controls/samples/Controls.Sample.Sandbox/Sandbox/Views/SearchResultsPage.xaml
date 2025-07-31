@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Recipes.Views.SearchResultsPage"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             xmlns:vm="clr-namespace:Recipes.ViewModels"
+             Title="{Binding Title}" xmlns:local="clr-namespace:Recipes">
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="5,5,5,0" HandlerChanged="OnImageHandlerChanged" >
+        
+        <SearchBar Grid.Row="0" x:Name="searchBar"
+                   ios:SearchBar.SearchBarStyle="Default"
+                   Placeholder="Search recipes"
+                   Text="{Binding SearchQuery}"
+                   SearchCommand="{Binding SearchCommand}"
+                   SearchCommandParameter="{Binding Text, Source={x:Reference searchBar}}"/>
+        
+        <Label Grid.Row="1" Text="{Binding NoResultsLabel}" IsVisible="{Binding NoResultsLabelVisible}" Padding="20,10,20,0" HorizontalTextAlignment="Center" FontAttributes="Italic"/>
+
+        <CollectionView
+            Grid.Row="2"
+            Margin="10"
+			HorizontalOptions="Fill"
+			VerticalOptions="Fill"
+            ItemsSource="{Binding RecipeData.Hits}"
+            x:Name="vListView"
+			SelectionMode="None">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="2" HorizontalItemSpacing="15" VerticalItemSpacing="15" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid SemanticProperties.Description="{Binding Recipe.RecipeName}"
+                          HandlerChanged="OnImageHandlerChanged" 
+                          HeightRequest="220" 
+                          RowDefinitions="*" 
+                          ColumnDefinitions="*">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="SearchResultsPage_Tapped" NumberOfTapsRequired="1"  />
+                        </Grid.GestureRecognizers>
+
+                        <Grid>
+                            <Image Source="{Binding Recipe.ImageUrl}" Aspect="AspectFill" VerticalOptions="Fill" HorizontalOptions="Fill" AutomationProperties.IsInAccessibleTree="False"/>
+                            <Label x:Name="recipeName"
+                                   Padding="5"
+                                   HorizontalOptions="Fill" 
+                                   VerticalOptions="End"
+                                   VerticalTextAlignment="Start"
+                                   HorizontalTextAlignment="Center"
+                                   Text="{Binding Recipe.RecipeName}"
+                                   Style="{StaticResource RecipeNameStyle}"
+                                   LineBreakMode="WordWrap" 
+                                   MaxLines="2"
+                                   HeightRequest="80"
+                                   FontSize="16"/>
+                        </Grid>
+
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

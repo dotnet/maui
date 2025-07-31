@@ -1,3 +1,16 @@
+﻿global using global::System;
+global using global::System.Collections.Generic;
+global using global::System.IO;
+global using global::System.Linq;
+global using global::System.Net.Http;
+global using global::System.Threading;
+global using global::System.Threading.Tasks;
+
+global using Microsoft.Maui;
+global using Microsoft.Maui.Controls;
+global using Microsoft.Maui.Controls.Hosting;
+global using Microsoft.Maui.Hosting;
+global using Microsoft.Maui.Graphics;
 ﻿namespace Maui.Controls.Sample;
 
 public static class MauiProgram
@@ -8,7 +21,7 @@ public static class MauiProgram
 #if __ANDROID__ || __IOS__
 			.UseMauiMaps()
 #endif
-			.UseMauiApp<App>()
+			.UseMauiApp<Recipes.App>()
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");

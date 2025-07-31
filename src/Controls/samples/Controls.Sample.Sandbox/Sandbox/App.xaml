@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+             x:Class="Recipes.App"
+             xmlns:windows="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;assembly=Microsoft.Maui.Controls"
+             windows:Application.ImageDirectory="Assets">
+    <!--
+        Define global resources and styles here, that apply to all pages in your app.
+    -->
+    <Application.Resources>
+        <ResourceDictionary>
+            <Color x:Key="Primary">#176515</Color>
+            <Color x:Key="Secondary">#90b28d</Color>
+
+            <Style TargetType="Button">
+                <Setter Property="MinimumHeightRequest" Value="44"></Setter>
+                <Setter Property="MinimumWidthRequest" Value="44"></Setter>
+            </Style>
+            <Style TargetType="Button" x:Key="DefaultButtonStyle">
+                <Setter Property="FontSize" Value="16"/>
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource Primary}, Light=White}"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=White, Light={StaticResource Primary}}"/>
+            </Style>
+            <Style TargetType="Button" x:Key="RecipeCategoryButtonStyle" BasedOn="{StaticResource DefaultButtonStyle}">
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark=White, Light={StaticResource Primary}}"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#2A2A2A, Light=#F7F7F7}"/>
+                <Setter Property="ContentLayout" Value="Top,0"/>
+                <Setter Property="FontAttributes" Value="Bold"/>
+                <Setter Property="Padding" Value="5,15"/>
+                <Setter Property="FontSize" Value="24"></Setter>
+                <Setter Property="MinimumWidthRequest" Value="150"></Setter>
+                <Setter Property="MinimumHeightRequest" Value="{OnPlatform Android=150, Default=-1}"></Setter>
+            </Style>
+
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark=White, Light=Black}"/>
+            </Style>
+            <Style TargetType="Label" x:Key="RecipeNameStyle">
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark=White, Light=Black}"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=Black, Light=White}"/>
+                <Setter Property="FontAttributes" Value="Bold"/>
+            </Style>
+            <Style TargetType="Label" x:Key="RecipeItemLabelStyle">
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark=White, Light={StaticResource Primary}}"/>
+                <Setter Property="FontSize" Value="16"/>
+            </Style>
+
+            <Style TargetType="SearchBar">
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark=White, Light=Black}"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=Black, Light=White}"></Setter>
+                <Setter Property="PlaceholderColor" Value="{AppThemeBinding Dark=LightGray, Light={StaticResource Primary}}"></Setter>
+                <Setter Property="CancelButtonColor" Value="{AppThemeBinding Dark=LightGray, Light={StaticResource Primary}}"></Setter>
+                <Setter Property="MinimumHeightRequest" Value="44"></Setter>
+            </Style>
+            <Style TargetType="Entry">
+                <Setter Property="MinimumHeightRequest" Value="44"></Setter>
+            </Style>
+            <Style TargetType="Editor">
+                <Setter Property="MinimumHeightRequest" Value="44"></Setter>
+            </Style>
+            <Style TargetType="CheckBox">
+                <Setter Property="MinimumHeightRequest" Value="44"></Setter>
+            </Style>
+            <Style TargetType="RadioButton">
+                <Setter Property="MinimumHeightRequest" Value="44"></Setter>
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
