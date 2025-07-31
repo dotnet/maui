@@ -96,6 +96,7 @@ extends:
             skipProvisioning: true
             skipXcode: true
         postSteps:
+        steps:
         - script: dir $(Build.SourcesDirectory)\artifacts\bin\Controls.Core /s
           displayName: List CLI output for debugging
 
@@ -107,6 +108,7 @@ extends:
             **/*.dll
             **/*.pdb
           TargetFolder: '$(Agent.TempDirectory)\APIScanFiles'
+
       # Publish and validation steps. Only run in official builds
     - template: /eng/common/templates-official/post-build/post-build.yml@self
       parameters:
