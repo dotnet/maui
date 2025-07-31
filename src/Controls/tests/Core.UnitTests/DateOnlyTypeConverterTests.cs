@@ -35,5 +35,24 @@ public class DateOnlyTypeConverterTests : BaseTestFixture
 
 		Assert.Equal(expectedDateOnly, actualDateOnly);
 	}
+
+	[Fact]
+	public void DateOnlyToDatePickerBinding()
+	{
+		var datePicker = new DatePicker();
+		var source = new Issue20438DatePickerViewModel
+		{
+			SelectedDate = new DateOnly(2025, 3, 15)
+		};
+		datePicker.BindingContext = source;
+		datePicker.SetBinding(DatePicker.DateProperty, "SelectedDate");
+		var expectedDateTime = new DateTime(2025, 3, 15);
+		Assert.Equal(expectedDateTime, datePicker.Date);
+	}
+
+	public class Issue20438DatePickerViewModel
+	{
+		public DateOnly SelectedDate { get; set; }
+	}
 }
 #endif

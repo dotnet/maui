@@ -9,10 +9,10 @@ namespace Microsoft.Maui.Controls;
 internal class DateTimeTypeConverter : TypeConverter
 {
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type? sourceType)
-        => sourceType == typeof(DateTime) || sourceType == typeof(DateOnly);
+        => sourceType == typeof(DateOnly);
 
     public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
-        => destinationType == typeof(DateTime) || destinationType == typeof(DateOnly);
+        => destinationType == typeof(DateTime);
 
     public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
     {
