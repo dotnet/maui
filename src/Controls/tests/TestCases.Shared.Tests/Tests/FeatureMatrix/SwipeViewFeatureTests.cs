@@ -156,8 +156,6 @@ public class SwipeViewFeatureTests : UITest
 		VerifySwipeViewScreenshot();
 	}
 
-#if TEST_FAILS_ON_WINDOWS // AutomationId not working for SwipeView inside CollectionView item template and Label
-
 	[Test]
 	public void VerifySwipeViewWithCollectionViewContentChanged()
 	{
@@ -170,7 +168,6 @@ public class SwipeViewFeatureTests : UITest
 		App.WaitForElement("SwipeViewControlLabel");
 		VerifySwipeViewScreenshot();
 	}
-#endif
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30947
 	[Test]
