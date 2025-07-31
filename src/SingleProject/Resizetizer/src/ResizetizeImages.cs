@@ -227,7 +227,6 @@ namespace Microsoft.Maui.Resizetizer
 					continue;
 				}
 
-				appTool.Resize(dpi, destination);
 				var r = appTool.Resize(dpi, destination);
 				resizedImages.Add(r);
 			}
