@@ -22,6 +22,6 @@ internal class MauiPerformanceMeter
 	/// </summary>
 	public MauiPerformanceMeter()
 	{
-		Meter = new Meter("Microsoft.Maui");
+		Meter = new Meter("Microsoft.Maui.Performance");
 	}
 }
