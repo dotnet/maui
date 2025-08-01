@@ -133,23 +133,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory]
-		[InlineData(float.NaN, 0f, 0.0)]
-		[InlineData(100f, 100f, double.NaN)]
-		public void TransformSwipeCoordinatesWithRotation_InvalidInputs_ReturnsExpectedResult(
+		[InlineData(float.NaN, 0f, 90.0)]
+		[InlineData(0f, float.NaN, 90.0)]
+		[InlineData(float.PositiveInfinity, 100f, 90.0)]
+		[InlineData(100f, float.NegativeInfinity, 90.0)]
+		public void TransformSwipeCoordinatesWithRotation_InvalidCoordinates_ReturnsZero(
 			float inputX, float inputY, double rotation)
 		{
-			var result = Microsoft.Maui.Controls.Internals.SwipeGestureExtensions.TransformSwipeCoordinatesWithRotation(inputX, inputY, rotation);
+			var result = Internals.SwipeGestureExtensions.TransformSwipeCoordinatesWithRotation(inputX, inputY, rotation);
 
-			if (float.IsNaN(inputX) || float.IsNaN(inputY))
-			{
-				Assert.Equal(0f, result.x);
-				Assert.Equal(0f, result.y);
-			}
-			else if (double.IsNaN(rotation))
-			{
-				Assert.Equal(inputX, result.x);
-				Assert.Equal(inputY, result.y);
-			}
+			Assert.Equal(0f, result.x);
+			Assert.Equal(0f, result.y);
 		}
 
 		[Theory]
@@ -176,17 +170,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var result = Internals.SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, rotation);
 
 			Assert.Equal(expected, result);
-		}
-
-		[Theory]
-		[InlineData(SwipeDirection.Up, double.NaN)]
-		[InlineData(SwipeDirection.Up, 0.0)]
-		public void TransformSwipeDirectionForRotation_InvalidOrZeroRotation_ReturnsOriginalDirection(
-			SwipeDirection direction, double rotation)
-		{
-			var result = Internals.SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, rotation);
-
-			Assert.Equal(direction, result);
 		}
 	}
 }

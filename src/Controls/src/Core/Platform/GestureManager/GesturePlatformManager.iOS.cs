@@ -260,8 +260,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 					if (swipeGestureRecognizer != null && view != null)
 					{
-						var transformedDirection = SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, view.Rotation);
-						swipeGestureRecognizer.SendSwiped(view, transformedDirection);
+						if (view.Rotation != 0)
+						{
+							var transformedDirection = SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, view.Rotation);
+							swipeGestureRecognizer.SendSwiped(view, transformedDirection);
+						}
+						else
+						{
+							swipeGestureRecognizer.SendSwiped(view, direction);
+						}
 					}
 				});
 				var uiRecognizer = CreateSwipeRecognizer(swipeRecognizer.Direction, returnAction, 1);
