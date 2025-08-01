@@ -67,11 +67,6 @@ namespace Microsoft.Maui.Controls
 					previousDetail.SendNavigatingFrom(new NavigatingFromEventArgs(destinationPage,
 						NavigationType.Replace));
 				}
-				else
-				{
-					// For initial detail, send NavigatingFrom to itself
-					value.SendNavigatingFrom(new NavigatingFromEventArgs(destinationPage, NavigationType.Replace));
-				}
 
 				// Update the detail property
 				OnPropertyChanging();

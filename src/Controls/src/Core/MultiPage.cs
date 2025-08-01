@@ -91,11 +91,6 @@ namespace Microsoft.Maui.Controls
 				{
 					_current.SendNavigatingFrom(new NavigatingFromEventArgs(value, NavigationType.Replace));
 				}
-				else
-				{
-					// For initial page, send NavigatingFrom to itself
-					value?.SendNavigatingFrom(new NavigatingFromEventArgs(value, NavigationType.Replace));
-				}
 				
 				_current = value;
 
