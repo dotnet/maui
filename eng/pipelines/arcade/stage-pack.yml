@@ -87,11 +87,11 @@ stages:
         - task: CopyFiles@2
           displayName: Copy CLI assemblies for APIScan
           inputs:
-          SourceFolder: '$(Build.SourcesDirectory)\artifacts\bin\Controls.Core'
-          Contents: |
-            **/*.dll
-            **/*.pdb
-          TargetFolder: '$(Agent.TempDirectory)\APIScanFiles'
+            SourceFolder: '$(Build.SourcesDirectory)\artifacts\bin\Controls.Core'
+            Contents: |
+              **/*.dll
+              **/*.pdb
+            TargetFolder: '$(Agent.TempDirectory)\APIScanFiles'
 
         - task: 1ES.PublishPipelineArtifact@1
           inputs:
