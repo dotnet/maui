@@ -30,15 +30,16 @@ stages:
   - job: api_scan
     displayName: APIScan Job
     pool: ${{ parameters.pool }}
+    templateContext:
+      type: releaseJob
+      inputs:
+      - input: pipelineArtifact
+        artifactName: APIScanFiles
+        targetPath: $(Agent.TempDirectory)/APIScanFiles
     steps:
     - ${{ each step in parameters.prepareSteps }}:
       - ${{ each pair in step }}:
           ${{ pair.key }}: ${{ pair.value }}
-
-    - task: 1ES.DownloadPipelineArtifact@1
-      inputs:
-        artifactName: APIScanFiles
-        targetPath: $(Agent.TempDirectory)/APIScanFiles
 
     - task: APIScan@2
       displayName: Run APIScan
