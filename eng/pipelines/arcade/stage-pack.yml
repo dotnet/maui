@@ -79,3 +79,7 @@ stages:
           # only for workloads
           - script: $(_buildScript) -restore -build -sign $(_SignArgs) -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/build-workloads.binlog -projects src/Workload/workloads.csproj $(_OfficialBuildIdArgs)
             displayName: Build Workloads, Sign & Publish
+
+        - ${{ each step in parameters.postSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
