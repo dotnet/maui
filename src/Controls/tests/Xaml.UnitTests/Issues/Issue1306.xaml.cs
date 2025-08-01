@@ -4,13 +4,12 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Issue1306 : ListView
 {
 	public Issue1306() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);

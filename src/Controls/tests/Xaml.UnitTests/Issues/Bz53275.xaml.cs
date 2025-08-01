@@ -14,7 +14,6 @@ public class TargetPropertyExtension : IMarkupExtension
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Bz53275 : ContentPage
 {
 	public Bz53275()

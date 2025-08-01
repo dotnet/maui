@@ -2,12 +2,11 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class TriggerTests : ContentPage
 {
 	public TriggerTests() => InitializeComponent();
 
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void ValueIsConverted([Values] XamlInflator inflator)

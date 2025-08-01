@@ -14,7 +14,6 @@ public class Unreported008View : ContentView
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Unreported008 : ContentPage
 {
 	public Unreported008() => InitializeComponent();

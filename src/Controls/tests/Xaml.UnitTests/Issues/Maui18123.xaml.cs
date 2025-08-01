@@ -18,7 +18,6 @@ public class Maui18123MultiValueConverter : IMultiValueConverter
 		=> throw new NotImplementedException();
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui18123 : ContentPage
 {
 	public Maui18123() => InitializeComponent();

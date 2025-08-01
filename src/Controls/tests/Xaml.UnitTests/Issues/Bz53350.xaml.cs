@@ -22,7 +22,6 @@ public class Bz53350String : Bz53350Generic<string>
 
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Bz53350
 {
 	public Bz53350()

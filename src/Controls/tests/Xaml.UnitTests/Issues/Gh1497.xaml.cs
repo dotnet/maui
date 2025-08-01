@@ -10,7 +10,6 @@ sealed class Gh1497EntryValidationBehavior<TModel> : Gh1497BaseValidationBehavio
 {
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh1497 : ContentPage
 {
 	public Gh1497()

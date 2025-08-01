@@ -4,7 +4,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class GlobalXmlnsWithStyle : ContentPage
 {
 	public GlobalXmlnsWithStyle()
@@ -12,22 +11,25 @@ public partial class GlobalXmlnsWithStyle : ContentPage
 		InitializeComponent();
 	}
 
-	[Test]
-	public void GlobalXmlnsWithStyleTest([Values] XamlInflator inflator)
+	[TestFixture]
+	class Tests
 	{
-		if (inflator == XamlInflator.SourceGen)
+		[Test]
+		public void GlobalXmlnsWithStyleTest([Values] XamlInflator inflator)
 		{
-			var compilation = MockSourceGenerator.CreateMauiCompilation();
-			compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(
-"""
+			if (inflator == XamlInflator.SourceGen)
+			{
+				var compilation = MockSourceGenerator.CreateMauiCompilation();
+				compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(
+	"""
 [assembly: global::Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclaration]
 """));
-			compilation.RunMauiSourceGenerator(typeof(GlobalXmlnsWithStyle));
+				compilation.RunMauiSourceGenerator(typeof(GlobalXmlnsWithStyle));
+			}
+
+			var page = new GlobalXmlnsWithStyle(inflator);
+			Assert.That(page.label0.TextColor, Is.EqualTo(Colors.Red));
+			Assert.That(page.label0.BackgroundColor, Is.EqualTo(Colors.Blue));
 		}
-
-		var page = new GlobalXmlnsWithStyle(inflator);
-		Assert.That(page.label0.TextColor, Is.EqualTo(Colors.Red));
-		Assert.That(page.label0.BackgroundColor, Is.EqualTo(Colors.Blue));
-
 	}
 }

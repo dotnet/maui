@@ -7,7 +7,6 @@ public class Gh4103VM
 	public string SomeNullableValue { get; set; } = "initial";
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh4103 : ContentPage
 {
 	public Gh4103() => InitializeComponent();

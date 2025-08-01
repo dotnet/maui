@@ -4,7 +4,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Issue2659 : ContentPage
 {
 	public Issue2659() => InitializeComponent();
@@ -50,7 +49,7 @@ public partial class Issue2659 : ContentPage
 	}
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		void AssertStyleApplied(Button button)
 		{

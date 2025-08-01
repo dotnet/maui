@@ -8,7 +8,6 @@ public class Gh4102VM
 	public string SomeProperty { get; set; } = "Foo";
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh4102 : ContentPage
 {
 	public Gh4102() => InitializeComponent();

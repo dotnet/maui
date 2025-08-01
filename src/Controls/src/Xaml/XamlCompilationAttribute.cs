@@ -4,8 +4,9 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
-	// TODO: obsolete when we are ready to switch to SourceGen
-	// [Obsolete("use XamlProcessingOptions instead.")]
+#if !_MAUIXAML_SOURCEGEN_BACKCOMPAT
+	[Obsolete("Specify xaml inflator and other options using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />", error: true)]
+#endif
 	[Flags]
 	public enum XamlCompilationOptions
 	{
@@ -13,8 +14,9 @@ namespace Microsoft.Maui.Controls.Xaml
 		Compile = XamlInflator.XamlC,
 	}
 
-	// TODO: obsolete when we are ready to switch to SourceGen
-	// [Obsolete("use XamlProcessingAttribute instead.")]
+#if !_MAUIXAML_SOURCEGEN_BACKCOMPAT
+	[Obsolete("Specify xaml inflator and other options using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />", error: true)]
+#endif
 	[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Module | AttributeTargets.Class, Inherited = false)]
 	public sealed class XamlCompilationAttribute : Attribute
 	{
@@ -26,11 +28,11 @@ namespace Microsoft.Maui.Controls.Xaml
 		public XamlCompilationOptions XamlCompilationOptions { get; set; }
 	}
 
+#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
 	static class XamlCExtensions
 	{
 		public static bool IsCompiled(this Type type)
 		{
-#pragma warning disable CS0618 // Type or member is obsolete
 			var attr = type.GetCustomAttribute<XamlCompilationAttribute>();
 			if (attr != null)
 				return attr.XamlCompilationOptions == XamlCompilationOptions.Compile;
@@ -42,7 +44,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				return attr.XamlCompilationOptions == XamlCompilationOptions.Compile;
 
 			return false;
-#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
+#endif
 }

@@ -12,7 +12,6 @@ public class Gh2483Custom : ResourceDictionary
 	public Gh2483Custom() => Add("foo", Colors.Orange);
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh2483 : ContentPage
 {
 	public Gh2483() => InitializeComponent();
