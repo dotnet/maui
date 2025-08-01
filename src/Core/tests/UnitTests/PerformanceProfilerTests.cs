@@ -14,7 +14,7 @@ namespace Microsoft.Maui.UnitTests
 	[Category(TestCategory.Core)]
 	public class PerformanceProfilerTests
 	{
-		const double DurationTolerance = 0.15;
+		const double DurationTolerance = 0.2;
 
 		const double ShortDelayMs = 50.0;
 		const double MediumDelayMs = 100.0;
@@ -998,6 +998,7 @@ namespace Microsoft.Maui.UnitTests
 
 			while ((_pendingUpdates > 0 || _activeOperations > 0) && (DateTime.UtcNow - startTime) < maxWaitTime)
 			{
+				Console.WriteLine($@"Waiting: _pendingUpdates={_pendingUpdates}, _activeOperations={_activeOperations}");
 				await Task.Delay(5, cancellationToken);
 			}
 

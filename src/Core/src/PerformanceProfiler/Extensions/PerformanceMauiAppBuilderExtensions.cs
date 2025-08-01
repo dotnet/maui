@@ -1,4 +1,4 @@
-using System.Diagnostics.Metrics;
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 
@@ -23,18 +23,32 @@ namespace Microsoft.Maui.Performance
 	            // Register the Meter wrapper
 	            builder.Services.AddSingleton<MauiPerformanceMeter>();
 
-                // Register core services
-                builder.Services.AddSingleton<ILayoutPerformanceTracker, LayoutPerformanceTracker>();
+	            // Register core services
+	            builder.Services.AddSingleton<ILayoutPerformanceTracker, LayoutPerformanceTracker>();
 
-				// Initialize the PerformanceProfiler
-				using (var serviceProvider = builder.Services.BuildServiceProvider())
-                {
-                    var layout = serviceProvider.GetRequiredService<ILayoutPerformanceTracker>();
-                    PerformanceProfiler.Initialize(layout);
-                }
+	            // Register initializer service to set up PerformanceProfiler
+	            builder.Services.AddTransient<IMauiInitializeService, PerformanceProfilerInitializer>();
             }
 
             return builder;
+        }
+        
+        /// <summary>
+        /// Service to initialize PerformanceProfiler at application startup.
+        /// </summary>
+        internal class PerformanceProfilerInitializer : IMauiInitializeService
+        {
+	        private readonly ILayoutPerformanceTracker _layoutTracker;
+
+	        public PerformanceProfilerInitializer(ILayoutPerformanceTracker layoutTracker)
+	        {
+		        _layoutTracker = layoutTracker ?? throw new ArgumentNullException(nameof(layoutTracker));
+	        }
+
+	        public void Initialize(IServiceProvider services)
+	        {
+		        PerformanceProfiler.Initialize(_layoutTracker);
+	        }
         }
     }
 }
