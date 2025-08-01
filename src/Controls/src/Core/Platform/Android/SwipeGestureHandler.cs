@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view == null)
 				return false;
 
-			var transformedCoords = TransformSwipeCoordinatesWithRotation(x, y, view.Rotation);
+			var transformedCoords = SwipeGestureExtensions.TransformSwipeCoordinatesWithRotation(x, y, view.Rotation);
 
 			_totalX += PixelTranslation(transformedCoords.x);
 			_totalY += PixelTranslation(transformedCoords.y);
@@ -52,29 +52,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			return result;
-		}
-
-		(float x, float y) TransformSwipeCoordinatesWithRotation(float x, float y, double rotation)
-		{
-			var correctedX = x; 
-			var correctedY = y;  
-
-			if (Math.Abs(rotation) < 0.01)
-			{
-				return (correctedX, correctedY);
-			}
-
-			rotation = rotation % 360;
-			if (rotation < 0) rotation += 360;
-
-			var radians = rotation * Math.PI / 180.0;
-			var cos = Math.Cos(radians);
-			var sin = Math.Sin(radians);
-
-			var transformedX = (float)(correctedX * cos - correctedY * sin);
-			var transformedY = (float)(correctedX * sin + correctedY * cos);
-
-			return (transformedX, transformedY);
 		}
 
 		public bool OnSwipeComplete()

@@ -117,5 +117,76 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			((ISwipeGestureController)swipe).DetectSwipe(view, SwipeDirection.Up | SwipeDirection.Down);
 			Assert.Equal(SwipeDirection.Up, direction);
 		}
+
+		[Theory]
+		[InlineData(100f, 0f, 90.0, 0f, 100f)]
+		[InlineData(100f, 100f, 90.0, -100f, 100f)]
+		[InlineData(100f, 0f, 180.0, -100f, 0f)]
+		[InlineData(100f, 100f, 270.0, 100f, -100f)]
+		public void TransformSwipeCoordinatesWithRotation_ValidInputs_ReturnsCorrectTransformation(
+			float inputX, float inputY, double rotation, float expectedX, float expectedY)
+		{
+			var result = Internals.SwipeGestureExtensions.TransformSwipeCoordinatesWithRotation(inputX, inputY, rotation);
+
+			Assert.Equal(expectedX, result.x, 1);
+			Assert.Equal(expectedY, result.y, 1);
+		}
+
+		[Theory]
+		[InlineData(float.NaN, 0f, 0.0)]
+		[InlineData(100f, 100f, double.NaN)]
+		public void TransformSwipeCoordinatesWithRotation_InvalidInputs_ReturnsExpectedResult(
+			float inputX, float inputY, double rotation)
+		{
+			var result = Microsoft.Maui.Controls.Internals.SwipeGestureExtensions.TransformSwipeCoordinatesWithRotation(inputX, inputY, rotation);
+
+			if (float.IsNaN(inputX) || float.IsNaN(inputY))
+			{
+				Assert.Equal(0f, result.x);
+				Assert.Equal(0f, result.y);
+			}
+			else if (double.IsNaN(rotation))
+			{
+				Assert.Equal(inputX, result.x);
+				Assert.Equal(inputY, result.y);
+			}
+		}
+
+		[Theory]
+		[InlineData(SwipeDirection.Up, 90.0, SwipeDirection.Right)]
+		[InlineData(SwipeDirection.Right, 90.0, SwipeDirection.Down)]
+		[InlineData(SwipeDirection.Down, 90.0, SwipeDirection.Left)]
+		[InlineData(SwipeDirection.Left, 90.0, SwipeDirection.Up)]
+		public void TransformSwipeDirectionForRotation_90DegreeClockwise_ReturnsCorrectDirection(
+			SwipeDirection direction, double rotation, SwipeDirection expected)
+		{
+			var result = Internals.SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, rotation);
+
+			Assert.Equal(expected, result);
+		}
+
+		[Theory]
+		[InlineData(SwipeDirection.Up, 180.0, SwipeDirection.Down)]
+		[InlineData(SwipeDirection.Right, 180.0, SwipeDirection.Left)]
+		[InlineData(SwipeDirection.Down, 180.0, SwipeDirection.Up)]
+		[InlineData(SwipeDirection.Left, 180.0, SwipeDirection.Right)]
+		public void TransformSwipeDirectionForRotation_180Degree_ReturnsCorrectDirection(
+			SwipeDirection direction, double rotation, SwipeDirection expected)
+		{
+			var result = Internals.SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, rotation);
+
+			Assert.Equal(expected, result);
+		}
+
+		[Theory]
+		[InlineData(SwipeDirection.Up, double.NaN)]
+		[InlineData(SwipeDirection.Up, 0.0)]
+		public void TransformSwipeDirectionForRotation_InvalidOrZeroRotation_ReturnsOriginalDirection(
+			SwipeDirection direction, double rotation)
+		{
+			var result = Internals.SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, rotation);
+
+			Assert.Equal(direction, result);
+		}
 	}
 }
