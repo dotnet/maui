@@ -1,37 +1,66 @@
+# Template for APIScan stage
+
 parameters:
-  AppId: 'bde2fca-1ca1-47f7-8212-fcdf1a556eb2'
-  TenantId: '72f988bf-86f1-41af-91ab-2d7cd011db47'
-  ServiceConnectionId: '334a6802-ebad-4fb1-bc3b-105bcc70bda2'
+- name: prepareSteps
+  type: stepList
+  default: []
+- name: postSteps
+  type: stepList
+  default: []
+- name: pool
+  type: object
+- name: AppId
+  type: string
+  default: 'bde2fca-1ca1-47f7-8212-fcdf1a556eb2'
+- name: TenantId
+  type: string
+  default: '72f988bf-86f1-41af-91ab-2d7cd011db47'
+- name: ServiceConnectionId
+  type: string
+  default: '334a6802-ebad-4fb1-bc3b-105bcc70bda2'
+- name: dependsOnStage
+  type: object
+  default: []
 
-steps:
-- script: dir $(Build.SourcesDirectory)\artifacts\bin\Controls.Core /s
-  displayName: List CLI output for debugging
-
-- task: CopyFiles@2
-  displayName: Copy CLI assemblies for APIScan
-  inputs:
-    SourceFolder: '$(Build.SourcesDirectory)\artifacts\bin\Controls.Core'
-    Contents: |
-      **/*.dll
-      **/*.pdb
-    TargetFolder: '$(Agent.TempDirectory)\APIScanFiles'
-
-- task: APIScan@2
+stages:
+- stage: APIScan
   displayName: Run APIScan
-  inputs:
-    softwareFolder: '$(Agent.TempDirectory)\APIScanFiles'
-    softwareName: 'MAUI'
-    softwareVersionNum: '9.0'
-    softwareBuildNum: '$(Build.BuildId)'
-    azureSubscription: 'dotnet-apiscan'
-  env:
-    AzureServicesAuthConnectionString: RunAs=App;AppId=${{ parameters.AppId }};TenantId=${{ parameters.TenantId }};ServiceConnectionId=${{ parameters.ServiceConnectionId }};
-    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+  dependsOn: ${{ parameters.dependsOnStage }}
+  jobs:
+  - job: api_scan
+    displayName: APIScan Job
+    pool: ${{ parameters.pool }}
+    steps:
+    - ${{ each step in parameters.prepareSteps }}:
+      - ${{ each pair in step }}:
+          ${{ pair.key }}: ${{ pair.value }}
 
-- task: PublishSecurityAnalysisLogs@3
-  displayName: Publishing analysis artifacts
-  inputs:
-    ArtifactName: 'CodeAnalysisLogs'
-    ArtifactType: 'Container'
-    AllTools: true
-    ToolLogsNotFoundAction: 'Standard'
+    - task: DownloadPipelineArtifact@2
+      displayName: Download APIScanFiles artifact
+      inputs:
+        artifact: APIScanFiles
+        path: '$(Agent.TempDirectory)/APIScanFiles'
+
+    - task: APIScan@2
+      displayName: Run APIScan
+      inputs:
+        softwareFolder: '$(Agent.TempDirectory)/APIScanFiles'
+        softwareName: 'MAUI'
+        softwareVersionNum: '9.0'
+        softwareBuildNum: '$(Build.BuildId)'
+        azureSubscription: 'dotnet-apiscan'
+      env:
+        AzureServicesAuthConnectionString: RunAs=App;AppId=${{ parameters.AppId }};TenantId=${{ parameters.TenantId }};ServiceConnectionId=${{ parameters.ServiceConnectionId }};
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+    - task: PublishSecurityAnalysisLogs@3
+      displayName: Publishing analysis artifacts
+      inputs:
+        ArtifactName: 'CodeAnalysisLogs'
+        ArtifactType: 'Container'
+        AllTools: true
+        ToolLogsNotFoundAction: 'Standard'
+
+    - ${{ each step in parameters.postSteps }}:
+      - ${{ each pair in step }}:
+          ${{ pair.key }}: ${{ pair.value }}

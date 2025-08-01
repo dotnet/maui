@@ -96,7 +96,17 @@ extends:
             skipProvisioning: true
             skipXcode: true
         postSteps:
-        - template: /eng/pipelines/arcade/stage-api-scan.yml@self
+        - task: PublishPipelineArtifact@1
+          displayName: Publish APIScanFiles artifact
+          inputs:
+            targetPath: '$(Build.SourcesDirectory)/artifacts/bin/Controls.Core'
+            artifactName: 'APIScanFiles'
+            publishLocation: 'pipeline'
+
+    - template: /eng/pipelines/arcade/stage-api-scan.yml@self
+      parameters:
+        pool: ${{ parameters.VM_IMAGE_HOST }}
+        dependsOnStage: Pack
 
     # Publish and validation steps. Only run in official builds
     - template: /eng/common/templates-official/post-build/post-build.yml@self
