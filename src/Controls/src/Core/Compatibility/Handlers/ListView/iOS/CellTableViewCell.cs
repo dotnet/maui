@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var handler = cell.ToHandler(cell.FindMauiContext());
 			var renderer = (handler as CellRenderer) ?? (handler.PlatformView as CellRenderer);
 
-			var platformCell = renderer.PlatformView;
+			var platformCell = cell is not ViewCell ? renderer.GetCell(cell, reusableCell, tableView) : renderer.PlatformView;
 
 			var cellWithContent = platformCell;
 
