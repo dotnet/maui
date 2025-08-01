@@ -6,7 +6,6 @@ namespace Microsoft.Maui.Controls.Internals
 	/// <summary>
 	/// Extension methods for swipe gesture-related operations
 	/// </summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
 	internal static class SwipeGestureExtensions
 	{
 		/// <summary>
@@ -27,48 +26,13 @@ namespace Microsoft.Maui.Controls.Internals
 		/// <summary>
 		/// Validates that floating-point coordinates are finite (not NaN or Infinity)
 		/// </summary>
-		/// <param name="coordinates">Tuple containing x and y coordinates</param>
-		/// <returns>True if both coordinates are finite, false otherwise</returns>
-		internal static bool AreCoordinatesValid(this (float x, float y) coordinates)
-		{
-			return IsFiniteFloat(coordinates.x) && IsFiniteFloat(coordinates.y);
-		}
-
-		/// <summary>
-		/// Validates that floating-point coordinates are finite (not NaN or Infinity)
-		/// </summary>
 		/// <param name="x">X coordinate</param>
 		/// <param name="y">Y coordinate</param>
 		/// <returns>True if both coordinates are finite, false otherwise</returns>
 		internal static bool AreCoordinatesValid(float x, float y)
 		{
-			return IsFiniteFloat(x) && IsFiniteFloat(y);
-		}
-
-		/// <summary>
-		/// Validates that a rotation value is finite (not NaN or Infinity)
-		/// </summary>
-		/// <param name="rotation">The rotation angle</param>
-		/// <returns>True if the rotation is finite, false otherwise</returns>
-		internal static bool IsRotationValid(this double rotation)
-		{
-			return IsFiniteDouble(rotation);
-		}
-
-		/// <summary>
-		/// Helper method to check if a float is finite (compatible with .NET Standard 2.0/2.1)
-		/// </summary>
-		static bool IsFiniteFloat(float value)
-		{
-			return !float.IsNaN(value) && !float.IsInfinity(value);
-		}
-
-		/// <summary>
-		/// Helper method to check if a double is finite (compatible with .NET Standard 2.0/2.1)
-		/// </summary>
-		static bool IsFiniteDouble(double value)
-		{
-			return !double.IsNaN(value) && !double.IsInfinity(value);
+			return !float.IsNaN(x) && !float.IsInfinity(x) &&
+				   !float.IsNaN(y) && !float.IsInfinity(y);
 		}
 
 		internal static (float x, float y) TransformSwipeCoordinatesWithRotation(float x, float y, double rotation)
@@ -79,29 +43,23 @@ namespace Microsoft.Maui.Controls.Internals
 				return (0f, 0f);
 			}
 
-			// Validate rotation for NaN or Infinity
-			if (!rotation.IsRotationValid())
-			{
-				return (x, y);
-			}
-
 			// Skip transformation for negligible rotation values to avoid unnecessary computation
 			if (Math.Abs(rotation) < RotationThreshold)
 			{
 				return (x, y);
 			}
 
+			// Normalize rotation to [0, 360) range to handle negative angles and values > 360
 			var normalizedRotation = rotation.NormalizeRotation();
-
 			var radians = normalizedRotation * Math.PI / 180.0;
+
 			var cos = Math.Cos(radians);
 			var sin = Math.Sin(radians);
-
 			var transformedX = (float)(x * cos - y * sin);
 			var transformedY = (float)(x * sin + y * cos);
 
 			// Validate transformed coordinates for NaN or Infinity
-			if (!(transformedX, transformedY).AreCoordinatesValid())
+			if (!AreCoordinatesValid(transformedX, transformedY))
 			{
 				return (x, y);
 			}
@@ -111,23 +69,20 @@ namespace Microsoft.Maui.Controls.Internals
 
 		internal static SwipeDirection TransformSwipeDirectionForRotation(SwipeDirection direction, double rotation)
 		{
-			// Validate rotation for NaN or Infinity
-			if (!rotation.IsRotationValid())
-			{
-				return direction;
-			}
-
+			// Normalize rotation to [0, 360) range to handle negative angles and values > 360
 			var normalizedRotation = rotation.NormalizeRotation();
 
+			// Round to nearest 90-degree increment (0, 90, 180, 270) to work with cardinal rotations
 			var rotationRounded = Math.Round(normalizedRotation / 90) * 90;
-			
+
+			// Only transform direction if rotation is close to a cardinal angle (within 45 degrees) to prevent transformation for arbitrary rotations
 			if (Math.Abs(normalizedRotation - rotationRounded) > 45)
 			{
 				return direction;
 			}
-			
+
+			// Calculate rotation steps as multiples of 90 degrees (0=0°, 1=90°, 2=180°, 3=270°) for directional transformation
 			var rotationSteps = (int)(rotationRounded / 90) % 4;
-			
 			return rotationSteps switch
 			{
 				0 => direction, // No rotation
