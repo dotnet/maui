@@ -40,6 +40,14 @@ stages:
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
       enablePublishTestResults: true
+      templateContext:
+        type: releaseJob
+        isProduction: true
+        outputs:
+        - output: pipelineArtifact
+          ArtifactName: APIScanFiles
+          targetPath: $(Agent.TempDirectory)/APIScanFiles
+
       workspace:
         clean: all
 
@@ -92,11 +100,6 @@ stages:
               **/*.dll
               **/*.pdb
             TargetFolder: '$(Agent.TempDirectory)\APIScanFiles'
-
-        - task: 1ES.PublishPipelineArtifact@1
-          inputs:
-            path: $(Agent.TempDirectory)\APIScanFiles
-            artifact: APIScanFiles
 
         - ${{ each step in parameters.postSteps }}:
           - ${{ each pair in step }}:
