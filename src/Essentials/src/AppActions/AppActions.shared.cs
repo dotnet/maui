@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Maui.Devices;
 #if ANDROID
 using Android.Content;
 #endif
@@ -11,13 +12,8 @@ namespace Microsoft.Maui.ApplicationModel
 	/// <summary>
 	/// The AppActions API lets you create and respond to app shortcuts from the app icon.
 	/// </summary>
-	public interface IAppActions
+	public interface IAppActions : IDeviceCapabilities
 	{
-		/// <summary>
-		/// Gets if app actions are supported on this device.
-		/// </summary>
-		bool IsSupported { get; }
-
 		/// <summary>
 		/// Retrieves all the currently available <see cref="AppAction"/> instances.
 		/// </summary>
