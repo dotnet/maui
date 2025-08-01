@@ -979,16 +979,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var originalImageSize = icon?.Size ?? CGSize.Empty;
 				// Referred from the default hamburger size 
 				var defaultIconHeight = 23f;
-				var defaultIconWidth = 23f;
 				var buffer = 0.1;
 				// if the image is bigger than the default available size, resize it
 				if (icon is not null)
 				{
-					if (originalImageSize.Height - defaultIconHeight > buffer || originalImageSize.Width - defaultIconWidth > buffer)
+					if (originalImageSize.Height - defaultIconHeight > buffer)
 					{
 						if (FlyoutPage.Flyout.IconImageSource is not FontImageSource fontImageSource || !fontImageSource.IsSet(FontImageSource.SizeProperty))
 						{
-							icon = icon.ResizeImageSource(defaultIconWidth, defaultIconHeight, originalImageSize);
+							icon = icon.ResizeImageSource(originalImageSize.Width, defaultIconHeight, originalImageSize);
 						}
 					}
 					try
