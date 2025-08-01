@@ -42,6 +42,7 @@ stages:
       enablePublishTestResults: true
       workspace:
         clean: all
+
       jobs:
       - job: pack_net_Windows
         displayName: Pack Windows
@@ -79,6 +80,23 @@ stages:
           # only for workloads
           - script: $(_buildScript) -restore -build -sign $(_SignArgs) -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/build-workloads.binlog -projects src/Workload/workloads.csproj $(_OfficialBuildIdArgs)
             displayName: Build Workloads, Sign & Publish
+
+        - script: dir $(Build.SourcesDirectory)\artifacts\bin\Controls.Core /s
+          displayName: List CLI output for debugging
+
+        - task: CopyFiles@2
+          displayName: Copy CLI assemblies for APIScan
+          inputs:
+          SourceFolder: '$(Build.SourcesDirectory)\artifacts\bin\Controls.Core'
+          Contents: |
+            **/*.dll
+            **/*.pdb
+          TargetFolder: '$(Agent.TempDirectory)\APIScanFiles'
+
+        - task: 1ES.PublishPipelineArtifact@1
+          inputs:
+            path: $(Agent.TempDirectory)\APIScanFiles
+            artifact: APIScanFiles
 
         - ${{ each step in parameters.postSteps }}:
           - ${{ each pair in step }}:

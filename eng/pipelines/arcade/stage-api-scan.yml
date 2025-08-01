@@ -35,11 +35,10 @@ stages:
       - ${{ each pair in step }}:
           ${{ pair.key }}: ${{ pair.value }}
 
-    - task: DownloadPipelineArtifact@2
-      displayName: Download APIScanFiles artifact
+    - task: 1ES.DownloadPipelineArtifact@1
       inputs:
-        artifact: APIScanFiles
-        path: '$(Agent.TempDirectory)/APIScanFiles'
+        artifactName: APIScanFiles
+        targetPath: $(Agent.TempDirectory)/APIScanFiles
 
     - task: APIScan@2
       displayName: Run APIScan
