@@ -56,7 +56,9 @@ public partial class Issue15280 : ContentPage
             }
         };
 
-        Content = new ScrollView { Content = mainLayout };
+        var grid = new Grid();
+        grid.Children.Add(mainLayout);
+        Content = grid;
     }
 
     void SwipeGestureRecognizer_Swiped(object sender, SwipedEventArgs e)
