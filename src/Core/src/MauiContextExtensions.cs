@@ -47,7 +47,6 @@ namespace Microsoft.Maui
 		public static IMauiContext MakeWindowScope(this IMauiContext mauiContext, NativeWindow platformWindow, out IServiceScope scope)
 		{
 			// Create the window-level scopes that will only be used for the lifetime of the window
-			// TODO: We need to dispose of these services once the window closes
 			scope = mauiContext.Services.CreateScope();
 
 #if ANDROID
@@ -55,6 +54,9 @@ namespace Microsoft.Maui
 #else
 			var scopedContext = new MauiContext(scope.ServiceProvider);
 #endif
+
+			// Store the scope in the scoped context so it can be disposed when the window is destroyed
+			scopedContext.SetWindowScope(scope);
 
 			scopedContext.AddWeakSpecific(platformWindow);
 
