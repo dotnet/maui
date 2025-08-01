@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using AddressBook;
 using AVFoundation;
+using CoreBluetooth;
 using MediaPlayer;
 using Speech;
 
@@ -150,6 +151,49 @@ namespace Microsoft.Maui.ApplicationModel
 				EnsureMainThread();
 
 				return ContactsRead.RequestAddressBookPermission();
+			}
+		}
+
+		public partial class Bluetooth : BasePlatformPermission
+		{
+			static CBCentralManager CentralManager;
+
+			static void EnsureCBManagerInitialized()
+			{
+				CentralManager ??= new CBCentralManager();
+			}
+
+			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
+				() => new string[] { "NSBluetoothAlwaysUsageDescription" };
+
+			public override Task<PermissionStatus> CheckStatusAsync()
+			{
+				EnsureDeclared();
+				EnsureCBManagerInitialized();
+				EnsureMainThread();
+
+				var status = CheckPermissionsStatus(CBManager.Authorization);
+				return Task.FromResult(status);
+			}
+
+
+			static PermissionStatus CheckPermissionsStatus(CBManagerAuthorization authorization)
+			{
+				return authorization switch
+				{
+					CBManagerAuthorization.NotDetermined => PermissionStatus.Unknown,
+					CBManagerAuthorization.Restricted => PermissionStatus.Restricted,
+					CBManagerAuthorization.Denied => PermissionStatus.Denied,
+					CBManagerAuthorization.AllowedAlways => PermissionStatus.Granted,
+					_ => PermissionStatus.Unknown,
+				};
+			}
+
+			public override Task<PermissionStatus> RequestAsync()
+			{
+				// A request for Bluetooth permissions is prompted as soon as the CBManager is used. 
+				// Therefore, CheckStatus and RequestAsync have the same implementation.
+				return CheckStatusAsync();
 			}
 		}
 
