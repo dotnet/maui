@@ -16,7 +16,6 @@ public class Gh5256Entry : Entry
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh5256 : ContentPage
 {
 	public Gh5256() => InitializeComponent();

@@ -3,13 +3,12 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class InlineCSS : ContentPage
 {
 	public InlineCSS() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void InlineCSSParsed([Values] XamlInflator inflator)

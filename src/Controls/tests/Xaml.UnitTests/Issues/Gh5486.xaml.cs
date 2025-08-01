@@ -34,7 +34,6 @@ public interface IGh5486VMBase<T>
 	T Data { get; }
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh5486 : ContentPage
 {
 	public Gh5486() => InitializeComponent();

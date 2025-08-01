@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 public class Bz54334App : Application
 {
 	bool daymode = true;
-	public Bz54334App(XamlInflator inflator)
+	internal Bz54334App(XamlInflator inflator)
 	{
 		Resources = new ResourceDictionary{
 			new Style(typeof(Label)) {
@@ -42,7 +42,6 @@ public class Bz54334App : Application
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Bz54334 : ContentPage
 {
 	public Bz54334()

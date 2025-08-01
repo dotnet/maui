@@ -12,7 +12,6 @@ public class Bz47950Behavior : Behavior<View>
 	public static void SetColorTest(BindableObject bindable, Color value) => bindable.SetValue(ColorTestProperty, value);
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Bz47950 : ContentPage
 {
 	public Bz47950()

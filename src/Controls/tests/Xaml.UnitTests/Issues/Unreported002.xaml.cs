@@ -5,12 +5,11 @@ using AbsoluteLayoutCompat = Microsoft.Maui.Controls.Compatibility.AbsoluteLayou
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Unreported002 : ContentPage
 {
 	public Unreported002() => InitializeComponent();
 
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void TypeConvertersOnAttachedBP([Values] XamlInflator inflator)
