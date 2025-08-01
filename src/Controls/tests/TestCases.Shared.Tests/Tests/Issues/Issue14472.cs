@@ -14,7 +14,7 @@ public class Issue14472 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.Slider)]
-    public void HeaderAndFooterRender()
+    public void SliderShouldInitializeCorrectly()
     {
         App.WaitForElement("MauiSlider");
         VerifyScreenshot();
