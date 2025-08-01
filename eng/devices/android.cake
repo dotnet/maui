@@ -478,7 +478,10 @@ void CleanUpVirtualDevice(AndroidEmulatorProcess emulatorProcess, AndroidAvdMana
 	try 
 	{ 
 		emulatorProcess.Kill();
-		if (emulatorProcess.WaitForExit(EmulatorKillTimeoutSeconds * 1000))
+		
+		// Use Task.Run to wrap WaitForExit() (not Kill()) with timeout
+		var waitTask = System.Threading.Tasks.Task.Run(() => emulatorProcess.WaitForExit());
+		if (waitTask.Wait(TimeSpan.FromSeconds(EmulatorKillTimeoutSeconds)))
 		{
 			Information("Emulator process killed successfully.");
 		}
