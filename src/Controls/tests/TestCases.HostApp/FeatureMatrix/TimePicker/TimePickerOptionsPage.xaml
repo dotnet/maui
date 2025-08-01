@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.TimePickerOptionsPage"
+             x:DataType="local:TimePickerViewModel"
+             Title="TimePickerOptionsPage">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Apply"
+                           Clicked="ApplyButton_Clicked"
+                           AutomationId="Apply"/>
+       </ContentPage.ToolbarItems>
+       <Grid ColumnSpacing="5"
+             RowSpacing="5"
+             Padding="0,50,0,0"
+             RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+             ColumnDefinitions="Auto,Auto"
+             HorizontalOptions="Center">
+
+              <!-- Time -->
+              <Label Grid.Row="0"
+                     Grid.Column="0"
+                     Text="Time:"
+                     VerticalOptions="Center"/>
+              <HorizontalStackLayout Grid.Row="0"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
+                     <Entry x:Name="Time"
+                            AutomationId="TimeEntry"
+                            HeightRequest="37"
+                            HorizontalOptions="Start"
+                            Text="10:00"
+                            VerticalOptions="Center"
+                            WidthRequest="100"/>
+                     <Button AutomationId="SetTimeButton"
+                             Text="Set Time"
+                             Clicked="SetTimeButton_Clicked"/>
+              </HorizontalStackLayout>
+
+              <!-- Format -->
+              <Label Grid.Row="1"
+                     Grid.Column="0"
+                     Text="Format:"
+                     VerticalOptions="Center"/>
+              <HorizontalStackLayout Grid.Row="1"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
+                     <Entry x:Name="Format"
+                            AutomationId="FormatEntry"
+                            HeightRequest="37"
+                            HorizontalOptions="Start"
+                            Text="hh:mm tt"
+                            VerticalOptions="Center"
+                            WidthRequest="100"/>
+                     <Button AutomationId="SetFormatButton"
+                             Text="Set Format"
+                             Clicked="SetFormatButton_Clicked"/>
+              </HorizontalStackLayout>
+
+              <!-- Text Color -->
+              <Label Grid.Row="2"
+                     Grid.Column="0"
+                     Text="TextColor:"
+                     VerticalOptions="Center"/>
+              <HorizontalStackLayout Grid.Row="2"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
+                     <RadioButton GroupName="TextColor"
+                                  AutomationId="TextColorRedButton"
+                                  Content="Red"
+                                  CheckedChanged="OnTextColorRadioButtonCheckedChanged"/>
+                     <RadioButton GroupName="TextColor"
+                                  AutomationId="TextColorGreenButton"
+                                  Content="Green"
+                                  CheckedChanged="OnTextColorRadioButtonCheckedChanged"/>
+              </HorizontalStackLayout>
+
+              <!-- CharacterSpacing -->
+              <Label Grid.Row="3"
+                     Grid.Column="0"
+                     Text="CharacterSpacing:"
+                     VerticalOptions="Center"/>
+              <Entry Grid.Row="3"
+                     Grid.Column="1"
+                     AutomationId="CharacterSpacingEntry"
+                     HeightRequest="37"
+                     HorizontalOptions="Start"
+                     Text="{Binding CharacterSpacing}"
+                     VerticalOptions="Center"
+                     WidthRequest="200"/>
+
+              <!-- Flow Direction -->
+              <Label Grid.Row="4"
+                     Grid.Column="0"
+                     Text="Flow Direction:"
+                     FontSize="15"
+                     VerticalOptions="Center"/>
+              <HorizontalStackLayout Grid.Row="4"
+                                     Grid.Column="1"
+                                     VerticalOptions="Center">
+                     <RadioButton x:Name="FlowDirectionLTR"
+                                  AutomationId="FlowDirectionLTR"
+                                  GroupName="FlowDirection"
+                                  IsChecked="True"
+                                  Content="LTR"
+                                  CheckedChanged="OnFlowDirectionRadioButtonCheckedChanged"/>
+                     <RadioButton x:Name="FlowDirectionRTL"
+                                  AutomationId="FlowDirectionRTL"
+                                  GroupName="FlowDirection"
+                                  Content="RTL"
+                                  CheckedChanged="OnFlowDirectionRadioButtonCheckedChanged"/>
+              </HorizontalStackLayout>
+
+              <!-- Font Attributes -->
+              <Label Grid.Row="5"
+                     Grid.Column="0"
+                     Text="FontAttributes:"
+                     VerticalOptions="Center"/>
+              <HorizontalStackLayout Grid.Row="5"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
+                     <RadioButton GroupName="FontAttributes"
+                                  AutomationId="FontAttributesItalicButton"
+                                  Content="Italic"
+                                  CheckedChanged="OnFontAttributesRadioButtonCheckedChanged"/>
+                     <RadioButton GroupName="FontAttributes"
+                                  AutomationId="FontAttributesBoldButton"
+                                  Content="Bold"
+                                  CheckedChanged="OnFontAttributesRadioButtonCheckedChanged"/>
+                     <RadioButton GroupName="FontAttributes"
+                                  AutomationId="FontAttributesNoneButton"
+                                  Content="None"
+                                  CheckedChanged="OnFontAttributesRadioButtonCheckedChanged"/>
+              </HorizontalStackLayout>
+
+              <!-- Font Family -->
+              <Label Grid.Row="6"
+                     Grid.Column="0"
+                     Text="FontFamily:"
+                     VerticalOptions="Center"/>
+              <HorizontalStackLayout Grid.Row="6"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
+                     <RadioButton GroupName="FontFamily"
+                                  AutomationId="FontFamilyDokdoButton"
+                                  Content="Dokdo"
+                                  CheckedChanged="OnFontFamilyRadioButtonCheckedChanged"/>
+
+                     <RadioButton GroupName="FontFamily"
+                                  AutomationId="FontFamilyMontserratBoldButton"
+                                  Content="MontserratBold"
+                                  CheckedChanged="OnFontFamilyRadioButtonCheckedChanged"/>
+              </HorizontalStackLayout>
+
+              <!-- Font Size -->
+              <Label Grid.Row="7"
+                     Grid.Column="0"
+                     Text="FontSize:"
+                     VerticalOptions="Center"/>
+              <Entry Grid.Row="7"
+                     Grid.Column="1"
+                     AutomationId="FontSizeEntry"
+                     HeightRequest="37"
+                     HorizontalOptions="Start"
+                     Text="{Binding FontSize}"
+                     VerticalOptions="Center"
+                     WidthRequest="100"/>
+
+              <!-- IsEnabled -->
+              <Label Grid.Row="8"
+                     Grid.Column="0"
+                     Text="IsEnabled:"
+                     VerticalOptions="Center"/>
+              <RadioButton Grid.Row="8"
+                           Grid.Column="1"
+                           GroupName="IsEnabled"
+                           AutomationId="IsEnabledFalseButton"
+                           Content="False"
+                           CheckedChanged="OnIsEnabledRadioButtonCheckedChanged"/>
+
+              <!-- IsVisible -->
+              <Label Grid.Row="9"
+                     Grid.Column="0"
+                     Text="IsVisible:"
+                     VerticalOptions="Center"/>
+              <RadioButton Grid.Row="9"
+                           Grid.Column="1"
+                           GroupName="IsVisible"
+                           AutomationId="IsVisibleFalseButton"
+                           Content="False"
+                           CheckedChanged="OnIsVisibleRadioButtonCheckedChanged"/>
+
+              <!-- Shadow -->
+              <Label Grid.Row="10"
+                     Grid.Column="0"
+                     Text="Shadow:"
+                     VerticalOptions="Center"/>
+              <RadioButton Grid.Row="10"
+                           Grid.Column="1"
+                           GroupName="Shadow"
+                           AutomationId="ShadowTrueButton"
+                           Content="True"
+                           CheckedChanged="OnShadowRadioButtonCheckedChanged"/>
+
+              <!-- Culture -->
+              <Label Grid.Row="11"
+                     Grid.Column="0"
+                     Text="Culture:"
+                     VerticalOptions="Center"/>
+              <HorizontalStackLayout Grid.Row="11"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
+                     <Button AutomationId="CultureUSButton"
+                             Clicked="OnCultureButtonClicked"
+                             Text="en-US"/>
+                     <Button AutomationId="CultureEGButton"
+                             Clicked="OnCultureButtonClicked"
+                             Text="ar-EG"/>
+                     <Button AutomationId="CultureJPButton"
+                             Clicked="OnCultureButtonClicked"
+                             Text="ja-JP"/>
+              </HorizontalStackLayout>
+       </Grid>
+</ContentPage>
