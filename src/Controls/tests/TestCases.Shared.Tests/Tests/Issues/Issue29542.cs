@@ -19,7 +19,20 @@ public class Issue29542 : _IssuesUITest
 		App.Tap("ScrollToDownButton");
 		App.SetOrientationLandscape();
 		App.WaitForElement("TestCollectionView");
-		VerifyScreenshot();
+		App.Tap("ScrollToDownButton");
+		App.WaitForElement("TestCollectionView");
+		App.WaitForElement("Label_12");
+		var label12Width = App.WaitForElement("Label_12").GetRect().Width;
+		App.WaitForElement("Label_13");
+		var label13Width = App.WaitForElement("Label_13").GetRect().Width;
+		App.WaitForElement("Label_14");
+		var label14Width = App.WaitForElement("Label_14").GetRect().Width;
+		App.WaitForElement("Label_15");
+		var label15Width = App.WaitForElement("Label_15").GetRect().Width;
+
+		Assert.That(label15Width, Is.EqualTo(label14Width));
+		Assert.That(label14Width, Is.EqualTo(label13Width));
+		Assert.That(label13Width, Is.EqualTo(label12Width));
 	}
 
 	[TearDown]
