@@ -2,6 +2,7 @@
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
+	using System;
 	using FormsElement = Maui.Controls.NavigationPage;
 
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage']/Docs/*" />
@@ -9,29 +10,35 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 	{
 		#region Translucent
 		/// <summary>Bindable property for <see cref="IsNavigationBarTranslucent"/>.</summary>
+
+		[Obsolete("IsNavigationBarTranslucent is deprecated. The Translucent will be enabled by default by setting the BarBackgroundColor to a transparent color.")]
 		public static readonly BindableProperty IsNavigationBarTranslucentProperty =
-			BindableProperty.Create("IsNavigationBarTranslucent", typeof(bool),
-			typeof(NavigationPage), false);
+					BindableProperty.Create("IsNavigationBarTranslucent", typeof(bool),
+					typeof(NavigationPage), false);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetIsNavigationBarTranslucent']/Docs/*" />
+		[Obsolete("IsNavigationBarTranslucent is deprecated. The Translucent will be enabled by default by setting the BarBackgroundColor to a transparent color.")]
 		public static bool GetIsNavigationBarTranslucent(BindableObject element)
 		{
 			return (bool)element.GetValue(IsNavigationBarTranslucentProperty);
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetIsNavigationBarTranslucent'][1]/Docs/*" />
+		[Obsolete("IsNavigationBarTranslucent is deprecated. The Translucent will be enabled by default by setting the BarBackgroundColor to a transparent color.")]
 		public static void SetIsNavigationBarTranslucent(BindableObject element, bool value)
 		{
 			element.SetValue(IsNavigationBarTranslucentProperty, value);
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='IsNavigationBarTranslucent']/Docs/*" />
+		[Obsolete("IsNavigationBarTranslucent is deprecated. The Translucent will be enabled by default by setting the BarBackgroundColor to a transparent color.")]
 		public static bool IsNavigationBarTranslucent(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetIsNavigationBarTranslucent(config.Element);
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetIsNavigationBarTranslucent'][2]/Docs/*" />
+		[Obsolete("IsNavigationBarTranslucent is deprecated. The Translucent will be enabled by default by setting the BarBackgroundColor to a transparent color.")]
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetIsNavigationBarTranslucent(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetIsNavigationBarTranslucent(config.Element, value);
@@ -39,6 +46,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='EnableTranslucentNavigationBar']/Docs/*" />
+		[Obsolete("IsNavigationBarTranslucent is deprecated. The Translucent will be enabled by default by setting the BarBackgroundColor to a transparent color.")]
 		public static IPlatformElementConfiguration<iOS, FormsElement> EnableTranslucentNavigationBar(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			SetIsNavigationBarTranslucent(config.Element, true);
@@ -46,6 +54,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='DisableTranslucentNavigationBar']/Docs/*" />
+		[Obsolete("IsNavigationBarTranslucent is deprecated. The Translucent will be enabled by default by setting the BarBackgroundColor to a transparent color.")]
 		public static IPlatformElementConfiguration<iOS, FormsElement> DisableTranslucentNavigationBar(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			SetIsNavigationBarTranslucent(config.Element, false);
