@@ -8,10 +8,6 @@ namespace UITest.Appium.NUnit
 {
 	public abstract class UITestBase : UITestContextBase
 	{
-		// Timeout configurations
-		protected virtual TimeSpan TeardownTimeout => TimeSpan.FromSeconds(30);
-		protected virtual TimeSpan ResetTimeout => TimeSpan.FromSeconds(15);
-		
 		protected virtual bool ResetAfterEachTest => false;
 
 		public UITestBase(TestDevice testDevice)
@@ -29,78 +25,20 @@ namespace UITest.Appium.NUnit
 		public virtual void TestSetup()
 		{
 			RecordTestSetup();
-			
 			if (ResetAfterEachTest)
 			{
 				FixtureSetup();
 			}
 		}
-		
+
 		[TearDown]
 		public virtual void TestTearDown()
 		{
 			RecordTestTeardown();
-
-			// Run teardown with overall timeout protection
-			var teardownTask = Task.Run(ExecuteTeardown);
-
-			if (!teardownTask.Wait(TeardownTimeout))
-			{
-				TestContext.Error.WriteLine(
-					$">>>>> {DateTime.Now} TearDown timed out after {TeardownTimeout.TotalSeconds} seconds");
-				SaveDeviceDiagnosticInfo();
-				return;
-			}
-
-			// Check for any exceptions from teardown
-			if (teardownTask.Exception is not null)
-			{
-				TestContext.Error.WriteLine(
-					$">>>>> {DateTime.Now} TearDown failed: {teardownTask.Exception.InnerException?.Message}");
-			}
-		}
-
-		void ExecuteTeardown()
-		{
-			// Always check for diagnostics first, before any reset operations
-			UiTestBaseTearDown();
-            
-			// Handle reset after each test efficiently
+			UITestBaseTearDown();
 			if (ResetAfterEachTest)
 			{
-				ExecuteReset();
-			}
-		}
-		
-		void ExecuteReset()
-		{
-			try
-			{
-				var appState = GetSafeAppState();
-				
-				// Only reset if app is still running, no point resetting a crashed app
-				if (appState == ApplicationState.Running)
-				{
-					var resetTask = Task.Run(Reset);
-					
-					if (!resetTask.Wait(ResetTimeout))
-					{
-						TestContext.Error.WriteLine($">>>>> {DateTime.Now} Reset timed out after {ResetTimeout.TotalSeconds} seconds");
-					}
-					else if (resetTask.Exception != null)
-					{
-						TestContext.Error.WriteLine($">>>>> {DateTime.Now} Reset failed: {resetTask.Exception.InnerException?.Message}");
-					}
-				}
-				else
-				{
-					TestContext.Progress.WriteLine($">>>>> {DateTime.Now} App not running ({appState}), skipping reset in teardown");
-				}
-			}
-			catch (Exception resetException)
-			{
-				TestContext.Error.WriteLine($">>>>> {DateTime.Now} Reset in teardown failed: {resetException.Message}");
-				// Don't rethrow, teardown should be resilient
+				Reset();
 			}
 		}
 
@@ -130,50 +68,37 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
-		void UiTestBaseTearDown()
+		public void UITestBaseTearDown()
 		{
 			try
 			{
-				// Check app state
-				var appState = GetSafeAppState();
-
-				if (appState == ApplicationState.NotRunning)
+				if (App.AppState != ApplicationState.Running)
 				{
-					TestContext.Error.WriteLine($">>>>> {DateTime.Now} App is not running, possible crash detected");
-					
-					// App has crashed, save diagnostics
 					SaveDeviceDiagnosticInfo();
-				
-				}
-				else
-				{
-					// App is running - handle reset if needed
+
 					if (!ResetAfterEachTest)
 					{
-						try
-						{
-							Reset();
-							FixtureSetup();
-						}
-						catch (Exception resetException)
-						{
-							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Reset after test failed: {resetException.Message}");
-						}
+						Reset();
+						FixtureSetup();
 					}
-					// If ResetAfterEachTest is true, reset will happen in TestTearDown()
+
+					// Assert.Fail will immediately exit the test which is desirable as the app is not
+					// running anymore so we can't capture any UI structures or any screenshots
+					Assert.Fail("The app was expected to be running still, investigate as possible crash");
 				}
 			}
 			finally
 			{
 				var testOutcome = TestContext.CurrentContext.Result.Outcome;
-				if (testOutcome == ResultState.Error || testOutcome == ResultState.Failure)
+				if (testOutcome == ResultState.Error ||
+					testOutcome == ResultState.Failure)
 				{
 					SaveDeviceDiagnosticInfo();
 					SaveUIDiagnosticInfo();
 				}
 			}
 		}
-		
+
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
@@ -182,6 +107,7 @@ namespace UITest.Appium.NUnit
 			{
 				if (!ResetAfterEachTest)
 				{
+					//SaveDiagnosticLogs("BeforeFixtureSetup");
 					FixtureSetup();
 				}
 			}
@@ -203,10 +129,8 @@ namespace UITest.Appium.NUnit
 				outcome.Site == ResultState.SetUpFailure.Site)
 			{
 				SaveDeviceDiagnosticInfo();
-				
-				var appState = GetSafeAppState();
-				
-				if (appState== ApplicationState.Running)
+
+				if (App.AppState == ApplicationState.Running)
 					SaveUIDiagnosticInfo();
 			}
 
@@ -244,9 +168,7 @@ namespace UITest.Appium.NUnit
 
 		protected bool SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
 		{
-			var appState = GetSafeAppState();
-			
-			if (appState != ApplicationState.Running)
+			if (App.AppState != ApplicationState.Running)
 				return false;
 
 			var screenshotPath = GetGeneratedFilePath("ScreenShot.png", note);
@@ -302,19 +224,6 @@ namespace UITest.Appium.NUnit
 			{
 				// Add the file path to better troubleshoot when these errors occur
 				throw new FileNotFoundException($"Test attachment file path could not be found: '{filePath}' {description}", e);
-			}
-		}
-		
-		ApplicationState GetSafeAppState()
-		{
-			try
-			{
-				return App?.AppState ?? ApplicationState.Unknown;
-			}
-			catch (Exception ex)
-			{
-				TestContext.Error.WriteLine($">>>>> {DateTime.Now} Error getting app state: {ex.Message}");
-				return ApplicationState.Unknown;
 			}
 		}
 	}
