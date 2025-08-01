@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			window.Page = page;
 
 			((IPageController)page).SendAppearing();
-			page.SendNavigatedTo(new NavigatedToEventArgs(null));
+			page.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.Push));
 
 			sub.Received().OnPageBusy(Arg.Is(page), Arg.Is(true));
 		}
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			window.Page = page;
 
 			((IPageController)page).SendAppearing();
-			page.SendNavigatedTo(new NavigatedToEventArgs(null));
+			page.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.Push));
 
 			sub.ClearReceivedCalls();
 
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			window.Page = page;
 
 			((IPageController)page).SendAppearing();
-			page.SendNavigatedTo(new NavigatedToEventArgs(null));
+			page.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.Push));
 
 			sub.ClearReceivedCalls();
 
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			window.Page = page;
 
 			((IPageController)page).SendAppearing();
-			page.SendNavigatedTo(new NavigatedToEventArgs(null));
+			page.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.Push));
 
 			sub.ClearReceivedCalls();
 
