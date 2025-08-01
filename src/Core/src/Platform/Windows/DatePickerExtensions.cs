@@ -34,6 +34,12 @@ namespace Microsoft.Maui.Platform
 			{
 				platformDatePicker.MinDate = datePicker.MinimumDate.Value;
 			}
+			else
+			{
+				// Matches WinUI default MinDate behavior by jumping 100 years back if MinDate is null.
+				// Ref: https://github.com/microsoft/microsoft-ui-xaml/blob/2aa50f0dff795cbd948588ee0e62cac7da3a396f/src/dxaml/xcp/components/DependencyObject/DependencyProperty.cpp#L253
+				platformDatePicker.MinDate = DateTime.Now.AddYears(-100);
+			}
 		}
 
 		public static void UpdateMaximumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
