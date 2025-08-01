@@ -318,7 +318,7 @@ namespace Microsoft.Maui.Platform
 		}
 	}
 
-	internal class MauiHorizontalScrollView : HorizontalScrollView, IScrollBarView
+	public class MauiHorizontalScrollView : HorizontalScrollView, IScrollBarView
 	{
 		readonly MauiScrollView? _parentScrollView;
 
