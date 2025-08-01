@@ -220,7 +220,6 @@ void ExecuteTests(string project, string device, string appPackageName, string r
 
 void ExecutePrepareUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
 {
-	string platform = "android";
 	Information("Preparing UI Tests...");
 
 	var testApp = GetTestApplications(app, device, config, tfm, "").FirstOrDefault();
@@ -462,70 +461,75 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 
 void CleanUpVirtualDevice(AndroidEmulatorProcess emulatorProcess, AndroidAvdManagerToolSettings avdSettings)
 {
-	// no virtual device was used
-	if (emulatorProcess == null || !deviceBoot || targetBoot)
-		return;
+    // No virtual device was used
+    if (emulatorProcess == null || !deviceBoot || targetBoot)
+        return;
 
-	//stop and cleanup the emulator
-	Information("AdbEmuKill");
-	AdbEmuKill(adbSettings);
+    // Stop and cleanup the emulator using ADB
+    Information("Stopping emulator via AdbEmuKill...");
+    try
+    {
+        AdbEmuKill(adbSettings);
+        // Wait for the emulator to shut down
+        System.Threading.Thread.Sleep(5000);
+        Information("Emulator stop command issued successfully.");
+    }
+    catch (Exception ex)
+    {
+        Warning("Failed to stop emulator via AdbEmuKill: {0}", ex.Message);
+    }
 
-	System.Threading.Thread.Sleep(5000);
-
-	// kill the process if it has not already exited
-	Information("emulatorProcess.Kill()");
-    try 
-    { 
-        if (emulatorProcess != null && !emulatorProcess.HasExited)
+    // Verify emulator is no longer running by checking ADB devices
+    try
+    {
+        var devices = AdbDevices(adbSettings);
+        if (!devices.Any(d => d.Serial == DEVICE_UDID))
         {
-            emulatorProcess.Kill();
-            if (emulatorProcess.WaitForExit(EmulatorKillTimeoutSeconds * 1000))
-            {
-                Information("Emulator process killed successfully.");
-            }
-            else
-            {
-                Warning("Emulator process kill operation timed out after {0} seconds. Attempting to restart ADB server...", EmulatorKillTimeoutSeconds);
-                
-                try
-                {
-                    Information("Stopping ADB server...");
-                    AdbKillServer(adbSettings);
-                    System.Threading.Thread.Sleep(2000);
-                    
-                    Information("Starting ADB server...");
-                    AdbStartServer(adbSettings);
-                    System.Threading.Thread.Sleep(2000);
-                    
-                    Information("ADB server restart completed successfully.");
-                }
-                catch (Exception adbEx)
-                {
-                    Error("Failed to restart ADB server after emulator kill timeout: {0}", adbEx.Message);
-                }
-            }
+            Information("Emulator {0} is no longer detected, cleanup successful.", DEVICE_UDID);
         }
         else
         {
-            Information("Emulator process was null or already exited.");
+            Warning("Emulator {0} is still detected after AdbEmuKill. Attempting to force stop via ADB...");
+            AdbShell("stop", new AdbToolSettings { SdkRoot = androidSdkRoot, Serial = DEVICE_UDID });
+            System.Threading.Thread.Sleep(2000);
+            AdbShell("start", new AdbToolSettings { SdkRoot = androidSdkRoot, Serial = DEVICE_UDID });
+            Information("ADB server restarted to ensure emulator is terminated.");
         }
     }
-    catch (InvalidOperationException)
+    catch (Exception ex)
     {
-        Information("Emulator process was already terminated.");
-    }
-    catch (Exception ex) 
-    { 
-        Warning("Failed to kill emulator process: {0}", ex.Message);
+        Warning("Error while verifying emulator state: {0}", ex.Message);
     }
 
-	if (deviceCreate)
-	{
-		Information("AndroidAvdDelete");
-		// delete the AVD
-		try { AndroidAvdDelete(androidAvd, avdSettings); }
-		catch { }
-	}
+    // Restart ADB server to ensure clean state
+    try
+    {
+        Information("Restarting ADB server...");
+        AdbKillServer(adbSettings);
+        System.Threading.Thread.Sleep(2000);
+        AdbStartServer(adbSettings);
+        System.Threading.Thread.Sleep(2000);
+        Information("ADB server restarted successfully.");
+    }
+    catch (Exception adbEx)
+    {
+        Error("Failed to restart ADB server: {0}", adbEx.Message);
+    }
+
+    // Delete the AVD if it was created
+    if (deviceCreate)
+    {
+        Information("Deleting AVD: {0}...", androidAvd);
+        try
+        {
+            AndroidAvdDelete(androidAvd, avdSettings);
+            Information("AVD deleted successfully.");
+        }
+        catch (Exception ex)
+        {
+            Warning("Failed to delete AVD {0}: {1}", androidAvd, ex.Message);
+        }
+    }
 }
 
 void WriteLogCat(string filename = null)
