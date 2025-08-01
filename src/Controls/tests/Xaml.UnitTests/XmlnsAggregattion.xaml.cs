@@ -7,7 +7,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class XmlnsAggregattion : ContentPage
 {
 	public XmlnsAggregattion() => InitializeComponent();
@@ -15,7 +14,7 @@ public partial class XmlnsAggregattion : ContentPage
 	[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 	[Test]
-	public void XamlWithAggregatedXmlns([Values] XamlInflator inflator)
+	internal void XamlWithAggregatedXmlns([Values] XamlInflator inflator)
 	{
 		var layout = new XmlnsAggregattion(inflator);
 		Assert.That(layout.label.Text, Is.EqualTo("Welcome to .NET MAUI!"));

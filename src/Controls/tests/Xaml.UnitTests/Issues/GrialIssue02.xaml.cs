@@ -34,7 +34,6 @@ public class GrialIssue02Converter : IValueConverter
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class GrialIssue02 : ContentPage
 {
 	public GrialIssue02() => InitializeComponent();

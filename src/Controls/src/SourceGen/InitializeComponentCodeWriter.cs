@@ -65,12 +65,10 @@ static class InitializeComponentCodeWriter
 				if (rootType == null)
 					goto exit;
 
-				(var genSwitch, var xamlInflators, var set) = rootType.GetXamlProcessing();
+				var genSwitch = compilation.AssemblyName == "Microsoft.Maui.Controls.Xaml.UnitTests";
+				var xamlInflators = xamlItem.ProjectItem.Inflator;
 
-				//FIXME later we shouln't gnerate the file at all if generate is false
-				var generate = (xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen
-					|| xamlItem.ProjectItem.ForceSourceGen
-					|| xamlInflators == XamlInflator.Default && genSwitch;
+				var generate = (xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen;
 
 				if (!generate)
 					goto exit;

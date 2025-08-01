@@ -4,7 +4,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class GlobalXmlnsWithStyle : ContentPage
 {
 	public GlobalXmlnsWithStyle()
@@ -13,7 +12,7 @@ public partial class GlobalXmlnsWithStyle : ContentPage
 	}
 
 	[Test]
-	public void GlobalXmlnsWithStyleTest([Values] XamlInflator inflator)
+	internal void GlobalXmlnsWithStyleTest([Values] XamlInflator inflator)
 	{
 		if (inflator == XamlInflator.SourceGen)
 		{

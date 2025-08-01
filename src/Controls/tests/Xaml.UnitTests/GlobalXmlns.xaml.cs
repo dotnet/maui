@@ -7,7 +7,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class GlobalXmlns
 {
 	public GlobalXmlns() => InitializeComponent();
@@ -22,7 +21,7 @@ public partial class GlobalXmlns
 	[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 	[Test]
-	public void WorksWithoutXDeclaration([Values] XamlInflator inflator)
+	internal void WorksWithoutXDeclaration([Values] XamlInflator inflator)
 	{
 		var page = new GlobalXmlns(inflator);
 		Assert.That(page.label, Is.Not.Null);

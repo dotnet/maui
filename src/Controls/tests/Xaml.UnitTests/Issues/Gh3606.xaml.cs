@@ -5,7 +5,6 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 // related to https://github.com/dotnet/maui/issues/23711
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh3606 : ContentPage
 {
 	public Gh3606() => InitializeComponent();

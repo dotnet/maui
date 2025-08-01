@@ -3,12 +3,11 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class StyleSheet : ContentPage
 {
 	public StyleSheet() => InitializeComponent();
 
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void EmbeddedStyleSheetsAreLoaded([Values] XamlInflator inflator)

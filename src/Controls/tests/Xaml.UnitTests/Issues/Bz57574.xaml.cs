@@ -18,7 +18,6 @@ public class Bz57574Notificator<T> : View
 	public event EventHandler<Bz57574NotificationEventArgs<T>> Notified;
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Bz57574
 {
 	public Bz57574()

@@ -20,7 +20,6 @@ public class Bz60575Helpers
 
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Bz60575 : ContentPage
 {
 	public Bz60575() => InitializeComponent();

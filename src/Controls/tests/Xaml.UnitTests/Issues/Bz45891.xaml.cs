@@ -6,7 +6,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Bz45891 : ContentPage
 {
 	public Bz45891() => InitializeComponent();

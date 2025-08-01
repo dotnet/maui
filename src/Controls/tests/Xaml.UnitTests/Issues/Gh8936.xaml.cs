@@ -11,7 +11,6 @@ public class Gh8936VM
 	public Dict Data { get; set; } = new Dict { { "Key", "Value" } };
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh8936 : ContentPage
 {
 	public Gh8936() => InitializeComponent();

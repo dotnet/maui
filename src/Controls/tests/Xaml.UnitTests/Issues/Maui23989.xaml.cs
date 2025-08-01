@@ -9,12 +9,11 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui23989
 {
 	public Maui23989() => InitializeComponent();
 
-	public class Test
+	class Test
 	{
 		[SetUp]
 		public void Setup()
@@ -28,9 +27,6 @@ public partial class Maui23989
 		[Test]
 		public void ItemDisplayBindingWithoutDataTypeFails([Values] XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.Default)
-				Assert.Ignore("not testing for default");
-
 			if (inflator == XamlInflator.XamlC)
 				Assert.Throws(new BuildExceptionConstraint(12, 13, s => s.Contains("0022", StringComparison.Ordinal)), () => MockCompiler.Compile(typeof(Maui23989), treatWarningsAsErrors: true));
 
@@ -53,7 +49,6 @@ public partial class Maui23989
 
 			Assert.That(layout.picker0.Items[0], Is.EqualTo("item1"));
 			Assert.That(layout.picker1.Items[0], Is.EqualTo("item1"));
-
 		}
 	}
 }

@@ -6,7 +6,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui27121
 {
 	public Maui27121() => InitializeComponent();

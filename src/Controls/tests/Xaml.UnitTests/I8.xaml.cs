@@ -2,7 +2,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class I8 : ContentPage
 {
 	public long l0 { get; set; }
@@ -25,7 +24,7 @@ public partial class I8 : ContentPage
 	public I8() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void I8AreConverted([Values] XamlInflator inflator)

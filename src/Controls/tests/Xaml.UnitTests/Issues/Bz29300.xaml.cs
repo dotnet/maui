@@ -61,7 +61,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
-	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class Bz29300 : ContentPage
 	{
 		public Bz29300()

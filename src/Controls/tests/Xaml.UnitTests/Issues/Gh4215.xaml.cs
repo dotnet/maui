@@ -39,7 +39,6 @@ public class Gh4215VM
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh4215 : ContentPage
 {
 	public Gh4215() => InitializeComponent();

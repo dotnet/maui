@@ -8,7 +8,6 @@ public class Gh4516VM
 	public Uri[] Images { get; } = Array.Empty<Uri>();
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh4516 : ContentPage
 {
 	public Gh4516() => InitializeComponent();

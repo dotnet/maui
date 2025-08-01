@@ -4,13 +4,12 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class FieldModifier : ContentPage
 {
 	public FieldModifier() => InitializeComponent();
 
 	[TestFixture]
-	public class FindByNameTests
+	class FindByNameTests
 	{
 		[Test]
 		public void TestFieldModifier([Values] XamlInflator inflator)
