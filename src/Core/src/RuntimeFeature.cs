@@ -24,6 +24,7 @@ namespace Microsoft.Maui
 		const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
 		const bool IsHybridWebViewSupportedByDefault = true;
 		const bool SupportNamescopesByDefault = true;
+		const bool IsMetricsSupportedByDefault = true;
 		const bool EnableDiagnosticsByDefault = false;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
@@ -127,6 +128,20 @@ namespace Microsoft.Maui
 				// It should not be set in production code.
 				AppContext.SetSwitch($"{FeatureSwitchPrefix}.{nameof(EnableMauiDiagnostics)}", value);
 			}
+		}
+		
+#if NET9_0_OR_GREATER
+		[FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
+#endif
+		public static bool IsMetricsSupported
+		{
+			get => AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsMetricsSupported)}", out bool isSupported)
+				? isSupported
+				: IsMetricsSupportedByDefault;
+			// This property is internal settable to allow tests to enable metrics.
+			// It should not be set in production code.
+			internal set => AppContext.SetSwitch($"{FeatureSwitchPrefix}.{nameof(IsMetricsSupported)}", value);
+
 		}
 #pragma warning restore IL4000
 	}

@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Cell cell = null;
 #pragma warning restore CS0618 // Type or member is obsolete
 
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			ListViewCachingStrategy cachingStrategy = Controller.CachingStrategy;
 			var nextCellIsHeader = false;
@@ -267,7 +267,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (cell == null)
 					{
-						Performance.Stop(reference);
+						Internals.Performance.Stop(reference);
 
 						return new AView(_context);
 					}
@@ -353,13 +353,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else
 					UnsetSelectedBackground(layout);
 
-				Performance.Stop(reference);
+				Internals.Performance.Stop(reference);
 				return layout;
 			}
 
 			AView view = CellFactory.GetCell(cell, convertView, parent, _context, _listView);
 
-			Performance.Start(reference, "AddView");
+			Internals.Performance.Start(reference, "AddView");
 
 			if (cellIsBeingReused)
 			{
@@ -377,7 +377,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			Performance.Stop(reference, "AddView");
+			Internals.Performance.Stop(reference, "AddView");
 
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -407,7 +407,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			layout.ApplyTouchListenersToSpecialCells(cell);
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 
 			return layout;
 		}

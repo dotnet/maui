@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void AddChild(VisualElement view, IVisualElementRenderer oldRenderer = null, RendererPool pool = null, bool sameChildren = false)
 		{
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			if (CompressedLayout.GetIsHeadless(view))
 			{
@@ -135,9 +135,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					renderer = pool.GetFreeRenderer(view);
 				if (renderer == null || (renderer.View?.Handle ?? IntPtr.Zero) == IntPtr.Zero)
 				{
-					Performance.Start(reference, "New renderer");
+					Internals.Performance.Start(reference, "New renderer");
 					renderer = Platform.CreateRenderer(view, _renderer.View.Context);
-					Performance.Stop(reference, "New renderer");
+					Internals.Performance.Stop(reference, "New renderer");
 				}
 
 				if (renderer == oldRenderer)
@@ -146,20 +146,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					renderer.SetElement(view);
 				}
 
-				Performance.Start(reference, "Set renderer");
+				Internals.Performance.Start(reference, "Set renderer");
 				Platform.SetRenderer(view, renderer);
-				Performance.Stop(reference, "Set renderer");
+				Internals.Performance.Stop(reference, "Set renderer");
 
-				Performance.Start(reference, "Add view");
+				Internals.Performance.Start(reference, "Add view");
 				if (!sameChildren)
 				{
 					(_renderer.View as ViewGroup)?.AddView(renderer.View);
 					_childViews.Add(renderer);
 				}
-				Performance.Stop(reference, "Add view");
+				Internals.Performance.Stop(reference, "Add view");
 			}
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 		}
 
 		void EnsureChildOrder() => EnsureChildOrder(false);
@@ -230,12 +230,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void OnChildRemoved(object sender, ElementEventArgs e)
 		{
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 			var view = e.Element as VisualElement;
 			if (view != null)
 				RemoveChild(view);
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 		}
 
 		void OnChildrenReordered(object sender, EventArgs e)
@@ -272,7 +272,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void SetElement(VisualElement oldElement, VisualElement newElement)
 		{
-			Performance.Start(out string reference);
+			Internals.Performance.Start(out string reference);
 
 			var sameChildrenTypes = false;
 
@@ -326,7 +326,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (newElement != null)
 			{
-				Performance.Start(reference, "Setup");
+				Internals.Performance.Start(reference, "Setup");
 
 				newElement.ChildAdded += _childAddedHandler;
 				newElement.ChildRemoved += _childRemovedHandler;
@@ -349,10 +349,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				//	throw new InvalidOperationException ("SetElement did not create the correct number of children");
 #endif
 				EnsureChildOrder();
-				Performance.Stop(reference, "Setup");
+				Internals.Performance.Stop(reference, "Setup");
 			}
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop(reference);
 		}
 	}
 }
