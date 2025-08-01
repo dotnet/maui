@@ -32,6 +32,7 @@ stages:
     pool: ${{ parameters.pool }}
     templateContext:
       type: releaseJob
+      isProduction: true
       inputs:
       - input: pipelineArtifact
         artifactName: APIScanFiles
