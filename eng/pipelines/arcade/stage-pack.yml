@@ -41,8 +41,6 @@ stages:
       enablePublishBuildArtifacts: true
       enablePublishTestResults: true
       templateContext:
-        type: releaseJob
-        isProduction: true
         outputs:
         - output: pipelineArtifact
           ArtifactName: APIScanFiles
