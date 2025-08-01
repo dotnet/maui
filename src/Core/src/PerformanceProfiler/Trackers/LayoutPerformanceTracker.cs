@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Performance
 		        var filtered = new List<LayoutUpdate>();
 		        foreach (var update in _updateHistory)
 		        {
-			        if (update.Element?.TryGetTarget(out var target) == true && 
+			        if (update.ElementRef?.TryGetTarget(out var target) == true && 
 			            ReferenceEquals(target, element))
 			        {
 				        filtered.Add(update);

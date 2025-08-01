@@ -30,4 +30,29 @@ internal class PerformanceUpdate
 		Layout = null,
 		TimestampUtc = DateTime.UtcNow
 	};
+	
+	/// <summary>
+	/// Returns a string representation of the performance update.
+	/// </summary>
+	public override string ToString()
+	{
+		string layoutEntries;
+
+		if (Layout is not null)
+		{
+			var lines = new List<string>();
+			foreach (var layoutUpdate in Layout)
+			{
+				lines.Add("  " + layoutUpdate);
+			}
+			layoutEntries = lines.Count > 0 ? string.Join(Environment.NewLine, lines) : "  (no layout updates)";
+		}
+		else
+		{
+			layoutEntries = "  (no layout updates)";
+		}
+
+		return $"Performance Update at {TimestampUtc:u}\nLayout Updates:\n{layoutEntries}";
+	}
+
 }

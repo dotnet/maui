@@ -30,8 +30,13 @@ internal class LayoutUpdate
 	/// <summary>
 	/// Weak reference to the element (e.g. "StackLayout", "Grid") on which the pass was performed.
 	/// </summary>
-	public WeakReference<object>? Element { get; set; }
+	public WeakReference<object>? ElementRef { get; set; }
 
+	/// <summary>
+	/// Gets the target element object, or null if the element is not available or has been garbage collected.
+	/// </summary>
+	public object? Element => TryGetElement(out var target) ? target : null;
+	
 	/// <summary>
 	/// UTC timestamp when this layout pass was completed.
 	/// </summary>
@@ -42,17 +47,17 @@ internal class LayoutUpdate
 	/// </summary>
 	/// <param name="passType">Measure or Arrange.</param>
 	/// <param name="totalTime">Elapsed time in milliseconds.</param>
-	/// <param name="element">Weak reference to the element, or null.</param>
+	/// <param name="elementRef">Weak reference to the element, or null.</param>
 	/// <param name="timestampUtc">Optional override for timestamp; otherwise uses UtcNow.</param>
 	public LayoutUpdate(
 		LayoutPassType passType,
 		double totalTime,
-		WeakReference<object>? element,
+		WeakReference<object>? elementRef,
 		DateTime? timestampUtc = null)
 	{
 		PassType = passType;
 		TotalTime = totalTime;
-		Element = element;
+		ElementRef = elementRef;
 		TimestampUtc = timestampUtc ?? DateTime.UtcNow;
 	}
 	
@@ -64,6 +69,15 @@ internal class LayoutUpdate
 	public bool TryGetElement([NotNullWhen(true)] out object? target)
 	{
 		target = null;
-		return Element?.TryGetTarget(out target) == true;
+		return ElementRef?.TryGetTarget(out target) == true;
+	}
+	
+	/// <summary>
+	/// Returns a string representation of the layout update.
+	/// </summary>
+	public override string ToString()
+	{
+		string elementString = TryGetElement(out var target) ? target?.ToString() ?? "null" : "null";
+		return $"Pass: {PassType}, Element: {elementString}, Duration: {TotalTime:F2}ms, Time: {TimestampUtc}";
 	}
 }

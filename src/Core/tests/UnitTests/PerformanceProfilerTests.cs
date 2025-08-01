@@ -870,7 +870,7 @@ namespace Microsoft.Maui.UnitTests
 				var filtered = new List<LayoutUpdate>();
 				foreach (var update in _history)
 				{
-					if (update.Element?.TryGetTarget(out var target) == true && ReferenceEquals(target, element))
+					if (update.ElementRef?.TryGetTarget(out var target) == true && ReferenceEquals(target, element))
 					{
 						filtered.Add(update);
 					}
@@ -933,13 +933,13 @@ namespace Microsoft.Maui.UnitTests
 				{
 					MeasureCallCount++;
 					MeasuredDuration = standaloneDuration;
-					MeasuredElement = element;
+					MeasuredElement = (element as WeakReference<object>)?.TryGetTarget(out var measuredElement) == true ? measuredElement : element;
 				}
 				else
 				{
 					ArrangeCallCount++;
 					ArrangedDuration = standaloneDuration;
-					ArrangedElement = element;
+					ArrangedElement = (element as WeakReference<object>)?.TryGetTarget(out var arrangedElement) == true ? arrangedElement : element;
 				}
 				
 				var targetElement = (element as WeakReference<object>)?.TryGetTarget(out var target) == true
