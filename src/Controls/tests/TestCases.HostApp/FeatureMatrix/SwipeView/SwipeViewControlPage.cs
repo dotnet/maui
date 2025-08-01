@@ -135,7 +135,7 @@ public class SwipeViewControlMainPage : ContentPage
 					ItemsSource = _viewModel.Items,
 					ItemTemplate = new DataTemplate(() =>
 					{
-						var itemLabel = new Label { FontSize = 18 };
+						var itemLabel = new Label { FontSize = 18, HeightRequest = 30 };
 						itemLabel.SetBinding(Label.TextProperty, nameof(SwipeViewViewModel.ItemModel.Title));
 
 						var swipeItems = CreateSwipeItems(swipeItemType);
