@@ -226,50 +226,6 @@ namespace Microsoft.Maui.Controls.Platform
 			return new Point((int)result.Value.X, (int)result.Value.Y);
 		}
 
-		static SwipeDirection TransformSwipeDirectionForRotation(SwipeDirection direction, double rotation)
-		{
-			var normalizedRotation = ((rotation % 360) + 360) % 360;
-
-			var rotationRounded = Math.Round(normalizedRotation / 90) * 90;
-			
-			if (Math.Abs(normalizedRotation - rotationRounded) > 45)
-			{
-				return direction;
-			}
-			
-			var rotationSteps = (int)(rotationRounded / 90) % 4;
-			
-			return rotationSteps switch
-			{
-				0 => direction, // No rotation
-				1 => direction switch // 90° clockwise
-				{
-					SwipeDirection.Up => SwipeDirection.Right,
-					SwipeDirection.Right => SwipeDirection.Down,
-					SwipeDirection.Down => SwipeDirection.Left,
-					SwipeDirection.Left => SwipeDirection.Up,
-					_ => direction
-				},
-				2 => direction switch // 180°
-				{
-					SwipeDirection.Up => SwipeDirection.Down,
-					SwipeDirection.Right => SwipeDirection.Left,
-					SwipeDirection.Down => SwipeDirection.Up,
-					SwipeDirection.Left => SwipeDirection.Right,
-					_ => direction
-				},
-				3 => direction switch // 270° clockwise (90° counter-clockwise)
-				{
-					SwipeDirection.Up => SwipeDirection.Left,
-					SwipeDirection.Right => SwipeDirection.Up,
-					SwipeDirection.Down => SwipeDirection.Right,
-					SwipeDirection.Left => SwipeDirection.Down,
-					_ => direction
-				},
-				_ => direction
-			};
-		}
-
 		protected virtual List<UIGestureRecognizer?>? GetPlatformRecognizer(IGestureRecognizer recognizer)
 		{
 			if (recognizer == null)
@@ -304,7 +260,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 					if (swipeGestureRecognizer != null && view != null)
 					{
-						var transformedDirection = TransformSwipeDirectionForRotation(direction, view.Rotation);
+						var transformedDirection = SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, view.Rotation);
 						swipeGestureRecognizer.SendSwiped(view, transformedDirection);
 					}
 				});
