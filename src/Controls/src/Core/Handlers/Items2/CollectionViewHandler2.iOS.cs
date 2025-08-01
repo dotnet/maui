@@ -35,12 +35,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	public partial class CollectionViewHandler2
 	{
 
-		public CollectionViewHandler2() : base(Mapper)
+		public CollectionViewHandler2() : base(Mapper,CommandMapper)
 		{
 
 
 		}
-		public CollectionViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper)
+		public CollectionViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper,CommandMapper)
 		{
 
 		}
@@ -58,6 +58,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[StructuredItemsView.FooterProperty.PropertyName] = MapFooterTemplate,
 			[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 			[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapFooterTemplate,
+			[SelectableItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout
+		};
+
+		//TODO Make this public in .NET10
+		internal static CommandMapper<CollectionView, CollectionViewHandler2> CommandMapper = new(ViewCommandMapper)
+		{
+			[nameof(StructuredItemsView.ItemsLayout.PropertyChanged)] = MapItemsLayoutPropertyChanged
 		};
 	}
 
@@ -158,7 +165,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var itemSizingStrategy = ItemsView.ItemSizingStrategy;
 			var itemsLayout = ItemsView.ItemsLayout;
 
-			SubscribeToItemsLayoutPropertyChanged(itemsLayout);
+	
 
 			if (itemsLayout is GridItemsLayout gridItemsLayout)
 			{
@@ -199,24 +206,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			handler.UpdateLayout();
 		}
 
-		void SubscribeToItemsLayoutPropertyChanged(IItemsLayout itemsLayout)
-		{
-			if (itemsLayout is not null)
-			{
-				itemsLayout.PropertyChanged += (sender, args) =>
-				{
-					if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
-						args.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
-						args.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
-						args.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) ||
-						args.PropertyName == nameof(GridItemsLayout.Span) ||
-						args.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
+//TODO Make this public in .NET10
+internal static void MapItemsLayoutPropertyChanged(CollectionViewHandler2 handler, CollectionView view, object arg3)
+{
+	// Defensive programming: ensure handler is valid before updating layout
+	if (handler?.VirtualView == null || handler.PlatformView == null)
+		return;
 
-					{
-						UpdateLayout();
-					}
-				};
-			}
-		}
-	}
+	handler.UpdateLayout();
+}
+}
 }
