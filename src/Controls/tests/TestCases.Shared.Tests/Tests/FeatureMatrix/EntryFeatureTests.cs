@@ -70,7 +70,11 @@ public class EntryFeatureTests : UITest
 	{
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		App.DismissKeyboard();
+#if ANDROID || IOS
+		Thread.Sleep(1000); // Wait for the keyboard to appear
+		if (App.IsKeyboardShown())
+			App.DismissKeyboard();
+#endif
 		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
 	}
 
