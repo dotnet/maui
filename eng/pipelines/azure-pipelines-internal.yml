@@ -95,13 +95,6 @@ extends:
             skipAndroidCreateAvds: true
             skipProvisioning: true
             skipXcode: true
-        postSteps:
-        - task: PublishPipelineArtifact@1
-          displayName: Publish APIScanFiles artifact
-          inputs:
-            targetPath: '$(Build.SourcesDirectory)/artifacts/bin/Controls.Core'
-            artifactName: 'APIScanFiles'
-            publishLocation: 'pipeline'
 
     - template: /eng/pipelines/arcade/stage-api-scan.yml@self
       parameters:
