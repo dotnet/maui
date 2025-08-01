@@ -477,14 +477,14 @@ void CleanUpVirtualDevice(AndroidEmulatorProcess emulatorProcess, AndroidAvdMana
 	Information("emulatorProcess.Kill()");
 	try 
 	{ 
-		var killTask = System.Threading.Tasks.Task.Run(() => emulatorProcess.Kill());
-		if (killTask.Wait(TimeSpan.FromSeconds(EmulatorKillTimeoutSeconds)))
+		emulatorProcess.Kill();
+		if (emulatorProcess.WaitForExit(EmulatorKillTimeoutSeconds * 1000))
 		{
 			Information("Emulator process killed successfully.");
 		}
 		else
 		{
-			Warning("Emulator process kill operation timed out after {0} seconds. Attempting to restart ADB server...", EmulatorKillTimeoutSeconds);
+			Warning("Emulator process did not exit within {0} seconds after kill signal. Attempting to restart ADB server...", EmulatorKillTimeoutSeconds);
 			
 			try
 			{
