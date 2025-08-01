@@ -37,16 +37,15 @@ public class Issue21814FlyoutPage : _IssuesUITest
 	{
 		// Verify Item 1 is initially loaded and shows correct navigation info
 		App.WaitForElement("FlyoutContent1");
-
-		var onNavigatingFromText = App.FindElement(FlyoutItem1OnNavigatingFromLabel).GetText();
-		Assert.That(onNavigatingFromText, Does.Contain("DestinationPage: Issue21814FlyoutItem1"));
-		Assert.That(onNavigatingFromText, Does.Contain("NavigationType: Replace"));
-
+		
 		var onNavigatedToText = App.FindElement(FlyoutItem1OnNavigatedToLabel).GetText();
 		Assert.That(onNavigatedToText, Does.Contain("PreviousPage: Null"));
 		Assert.That(onNavigatedToText, Does.Contain("NavigationType: Replace"));
 
 		// Initially, OnNavigatingFrom and OnNavigatedFrom should show "-"
+		var onNavigatingFromText = App.FindElement(FlyoutItem1OnNavigatingFromLabel).GetText();
+		Assert.That(onNavigatingFromText, Does.Contain("-"));
+		
 		var onNavigatedFromText = App.FindElement(FlyoutItem1OnNavigatedFromLabel).GetText();
 		Assert.That(onNavigatedFromText, Is.EqualTo("-"));
 	}

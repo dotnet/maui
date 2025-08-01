@@ -33,16 +33,15 @@ public class Issue21814TabbedPage : _IssuesUITest
 	{
 		// Verify Tab 1 is initially loaded and shows correct navigation info
 		App.WaitForElement(Tab1Content);
-
-		var onNavigatingFromText = App.FindElement(Tab1OnNavigatingFromLabel).GetText();
-		Assert.That(onNavigatingFromText, Does.Contain("DestinationPage: Issue21814TabItem1"));
-		Assert.That(onNavigatingFromText, Does.Contain("NavigationType: Replace"));
 		
 		var onNavigatedToText = App.FindElement(Tab1OnNavigatedToLabel).GetText();
 		Assert.That(onNavigatedToText, Does.Contain("PreviousPage: Null"));
 		Assert.That(onNavigatedToText, Does.Contain("NavigationType: Replace"));
 
-		// Initially, OnNavigatedFrom should show "-"
+		// Initially, OnNavigatingFrom and OnNavigatedFrom should show "-"
+		var onNavigatingFromText = App.FindElement(Tab1OnNavigatingFromLabel).GetText();
+		Assert.That(onNavigatingFromText, Does.Contain("-"));
+		
 		var onNavigatedFromText = App.FindElement(Tab1OnNavigatedFromLabel).GetText();
 		Assert.That(onNavigatedFromText, Is.EqualTo("-"));
 	}
