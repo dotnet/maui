@@ -6,116 +6,116 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls;
+
+/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="Type[@FullName='Microsoft.Maui.Controls.FormattedString']/Docs/*" />
+[ContentProperty("Spans")]
+[TypeConverter(typeof(FormattedStringConverter))]
+public class FormattedString : Element
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="Type[@FullName='Microsoft.Maui.Controls.FormattedString']/Docs/*" />
-	[ContentProperty("Spans")]
-	[TypeConverter(typeof(FormattedStringConverter))]
-	public class FormattedString : Element
+	readonly SpanCollection _spans = new SpanCollection();
+	internal event NotifyCollectionChangedEventHandler SpansCollectionChanged;
+
+	/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+	public FormattedString() => _spans.CollectionChanged += OnCollectionChanged;
+
+	protected override void OnBindingContextChanged()
 	{
-		readonly SpanCollection _spans = new SpanCollection();
-		internal event NotifyCollectionChangedEventHandler SpansCollectionChanged;
+		base.OnBindingContextChanged();
+		for (int i = 0; i < Spans.Count; i++)
+			SetInheritedBindingContext(Spans[i], BindingContext);
+	}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
-		public FormattedString() => _spans.CollectionChanged += OnCollectionChanged;
+	/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="//Member[@MemberName='Spans']/Docs/*" />
+	public IList<Span> Spans => _spans;
 
-		protected override void OnBindingContextChanged()
+	public static explicit operator string(FormattedString formatted) => formatted.ToString();
+
+	public static implicit operator FormattedString(string text) => new FormattedString { Spans = { new Span { Text = text } } };
+
+	/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="//Member[@MemberName='ToString']/Docs/*" />
+	public override string ToString() => string.Concat(Spans.Select(span => span.Text));
+
+	void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		if (e.OldItems != null)
 		{
-			base.OnBindingContextChanged();
-			for (int i = 0; i < Spans.Count; i++)
-				SetInheritedBindingContext(Spans[i], BindingContext);
-		}
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="//Member[@MemberName='Spans']/Docs/*" />
-		public IList<Span> Spans => _spans;
-
-		public static explicit operator string(FormattedString formatted) => formatted.ToString();
-
-		public static implicit operator FormattedString(string text) => new FormattedString { Spans = { new Span { Text = text } } };
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="//Member[@MemberName='ToString']/Docs/*" />
-		public override string ToString() => string.Concat(Spans.Select(span => span.Text));
-
-		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-		{
-			if (e.OldItems != null)
+			foreach (object item in e.OldItems)
 			{
-				foreach (object item in e.OldItems)
+				var bo = item as Span;
+				if (bo != null)
 				{
-					var bo = item as Span;
-					if (bo != null)
-					{
-						bo.Parent?.RemoveLogicalChild(bo);
-						bo.PropertyChanging -= OnItemPropertyChanging;
-						bo.PropertyChanged -= OnItemPropertyChanged;
-					}
-
+					bo.Parent?.RemoveLogicalChild(bo);
+					bo.PropertyChanging -= OnItemPropertyChanging;
+					bo.PropertyChanged -= OnItemPropertyChanged;
 				}
-			}
 
-			if (e.NewItems != null)
-			{
-				foreach (object item in e.NewItems)
-				{
-					var bo = item as Span;
-					if (bo != null)
-					{
-						this.AddLogicalChild(bo);
-						bo.PropertyChanging += OnItemPropertyChanging;
-						bo.PropertyChanged += OnItemPropertyChanged;
-					}
-
-				}
-			}
-
-			OnPropertyChanged(nameof(Spans));
-			SpansCollectionChanged?.Invoke(sender, e);
-		}
-
-		void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e) => OnPropertyChanged(nameof(Spans));
-
-		void OnItemPropertyChanging(object sender, PropertyChangingEventArgs e) => OnPropertyChanging(nameof(Spans));
-
-		class SpanCollection : ObservableCollection<Span>
-		{
-			protected override void InsertItem(int index, Span item) => base.InsertItem(index, item ?? throw new ArgumentNullException(nameof(item)));
-			protected override void SetItem(int index, Span item) => base.SetItem(index, item ?? throw new ArgumentNullException(nameof(item)));
-
-			protected override void ClearItems()
-			{
-				var removed = new List<Span>(this);
-				base.ClearItems();
-				base.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removed));
 			}
 		}
 
-		private sealed class FormattedStringConverter : TypeConverter
+		if (e.NewItems != null)
 		{
-			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-				=> sourceType == typeof(string);
-
-			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
-				=> destinationType == typeof(string);
-
-			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+			foreach (object item in e.NewItems)
 			{
-				if (value is string strValue)
+				var bo = item as Span;
+				if (bo != null)
 				{
-					return (FormattedString)strValue;
+					this.AddLogicalChild(bo);
+					bo.PropertyChanging += OnItemPropertyChanging;
+					bo.PropertyChanged += OnItemPropertyChanged;
 				}
 
-				throw new NotSupportedException();
 			}
+		}
 
-			public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+		OnPropertyChanged(nameof(Spans));
+		SpansCollectionChanged?.Invoke(sender, e);
+	}
+
+	void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e) => OnPropertyChanged(nameof(Spans));
+
+	void OnItemPropertyChanging(object sender, PropertyChangingEventArgs e) => OnPropertyChanging(nameof(Spans));
+
+	class SpanCollection : ObservableCollection<Span>
+	{
+		protected override void InsertItem(int index, Span item) => base.InsertItem(index, item ?? throw new ArgumentNullException(nameof(item)));
+		protected override void SetItem(int index, Span item) => base.SetItem(index, item ?? throw new ArgumentNullException(nameof(item)));
+
+		protected override void ClearItems()
+		{
+			var removed = new List<Span>(this);
+			base.ClearItems();
+			base.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removed));
+		}
+	}
+
+#nullable enable
+	private sealed class FormattedStringConverter : TypeConverter
+	{
+		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
+			=> destinationType == typeof(string);
+
+		public override object? ConvertFrom(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
+		{
+			if (value is string strValue)
 			{
-				if (value is FormattedString formattedStr)
-				{
-					return (string)formattedStr;
-				}
-
-				throw new NotSupportedException();
+				return (FormattedString)strValue;
 			}
+
+			throw new NotSupportedException();
+		}
+
+		public override object? ConvertTo(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, Type destinationType)
+		{
+			if (value is FormattedString formattedStr)
+			{
+				return (string)formattedStr;
+			}
+
+			throw new NotSupportedException();
 		}
 	}
 }
