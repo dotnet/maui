@@ -255,6 +255,7 @@ namespace Microsoft.Maui.Handlers
 
 			private Window? Window => _window is not null && _window.TryGetTarget(out var w) ? w : null;
 			private HybridWebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
+			private IHybridWebView? VirtualView => Handler?.VirtualView;
 
 			public void Connect(HybridWebViewHandler handler, WebView2 platformView)
 			{
@@ -265,11 +266,30 @@ namespace Microsoft.Maui.Handlers
 
 			private async Task<bool> TryInitializeWebView2(WebView2 webView)
 			{
-				await webView.EnsureCoreWebView2Async();
+				// Invoke the WebViewInitializing event to allow custom configuration of the web view
+				var initializingArgs = new WebViewInitializationStartedEventArgs();
+				VirtualView?.WebViewInitializationStarted(initializingArgs);
+
+				var env = await CoreWebView2Environment.CreateWithOptionsAsync(
+					browserExecutableFolder: initializingArgs.BrowserExecutableFolder,
+					userDataFolder: initializingArgs.UserDataFolder,
+					options: initializingArgs.EnvironmentOptions);
+
+				var options = env.CreateCoreWebView2ControllerOptions();
+				options.ScriptLocale = initializingArgs.ScriptLocale;
+				options.IsInPrivateModeEnabled = initializingArgs.IsInPrivateModeEnabled;
+				options.ProfileName = initializingArgs.ProfileName;
+
+				await webView.EnsureCoreWebView2Async(env, options);
 
 				webView.CoreWebView2.Settings.AreDevToolsEnabled = Handler?.DeveloperTools.Enabled ?? false;
 				webView.CoreWebView2.Settings.IsWebMessageEnabled = true;
-				webView.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+
+				webView.CoreWebView2.AddWebResourceRequestedFilter($"*", CoreWebView2WebResourceContext.All);
+
+				// Invoke the WebViewInitialized event to signal that the web view has been initialized
+				var initializedArgs = new WebViewInitializationCompletedEventArgs(webView.CoreWebView2, webView.CoreWebView2.Settings);
+				VirtualView?.WebViewInitializationCompleted(initializedArgs);
 
 				webView.WebMessageReceived += OnWebMessageReceived;
 				webView.CoreWebView2.WebResourceRequested += OnWebResourceRequested;

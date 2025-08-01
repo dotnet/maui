@@ -35,6 +35,14 @@ namespace Microsoft.Maui.Handlers
 			_javaScriptInterface = new HybridWebViewJavaScriptInterface(this);
 			platformView.AddJavascriptInterface(_javaScriptInterface, HybridWebViewHostJsName);
 
+			// Invoke the WebViewInitializing event to allow custom configuration of the web view
+			var initializingArgs = new WebViewInitializationStartedEventArgs(platformView.Settings);
+			VirtualView.WebViewInitializationStarted(initializingArgs);
+
+			// Invoke the WebViewInitialized event to signal that the web view has been initialized
+			var initializedArgs = new WebViewInitializationCompletedEventArgs(platformView, platformView.Settings);
+			VirtualView?.WebViewInitializationCompleted(initializedArgs);
+
 			return platformView;
 		}
 

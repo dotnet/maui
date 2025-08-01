@@ -36,6 +36,9 @@ Microsoft.Maui.IDatePicker.IsOpen.set -> void
 Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
+Microsoft.Maui.IInitializationAwareWebView
+Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationCompleted(Microsoft.Maui.WebViewInitializationCompletedEventArgs! args) -> void
+Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationStarted(Microsoft.Maui.WebViewInitializationStartedEventArgs! args) -> void
 Microsoft.Maui.IPicker.IsOpen.get -> bool
 Microsoft.Maui.IPicker.IsOpen.set -> void
 Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
@@ -75,6 +78,8 @@ Microsoft.Maui.SwipeViewSwipeEnded.SwipeViewSwipeEnded(Microsoft.Maui.SwipeViewS
 Microsoft.Maui.SwipeViewSwipeStarted.Deconstruct(out Microsoft.Maui.SwipeDirection SwipeDirection) -> void
 Microsoft.Maui.SwipeViewSwipeStarted.SwipeViewSwipeStarted(Microsoft.Maui.SwipeViewSwipeStarted! original) -> void
 Microsoft.Maui.WebResourceRequestedEventArgs
+Microsoft.Maui.WebViewInitializationCompletedEventArgs
+Microsoft.Maui.WebViewInitializationStartedEventArgs
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
