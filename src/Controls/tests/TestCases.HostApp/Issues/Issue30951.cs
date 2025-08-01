@@ -3,11 +3,11 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 30951, "Fix Android ScrollView to measure content correctly", PlatformAffected.Android)]
 public class Issue30951 : ContentPage
 {
-	private Label mealTypeLabel;
-	private ScrollView mealTypeScrollView;
-	private StackLayout mealTypeStack;
-	private ScrollView mainScrollView;
-	private Grid mainGrid;
+	Label mealTypeLabel;
+	ScrollView mealTypeScrollView;
+	StackLayout mealTypeStack;
+	ScrollView mainScrollView;
+	Grid mainGrid;
 
 	public Issue30951()
 	{
