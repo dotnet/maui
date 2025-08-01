@@ -1,4 +1,5 @@
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using System.Diagnostics;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -150,10 +151,20 @@ namespace Microsoft.Maui.Handlers
 		protected abstract void RemoveContainer();
 
 		/// <summary>
+		/// Creates a custom container view for the <see cref="PlatformView"/>.
+		/// </summary>
+		/// <returns>A <see cref="WrapperView"/> instance or null to use the default <see cref="WrapperView"/>.</returns>
+		/// <remarks>Override this method to provide a custom <see cref="WrapperView"/> implementation that will be used as the container for the <see cref="PlatformView"/>.</remarks>
+		public virtual WrapperView? OnCreateContainer()
+		{
+			return null;
+		}
+
+		/// <summary>
 		/// Gets the view that acts as a container for the <see cref="PlatformView"/>.
 		/// </summary>
 		/// <remarks>Note that this can be <see langword="null"/>. Especially when <see cref="HasContainer"/> is set to <see langword="false"/> this value might not be set.</remarks>
-		public PlatformView? ContainerView { get; private protected set; }
+		public PlatformView? ContainerView { get; protected set; }
 
 		object? IViewHandler.ContainerView => ContainerView;
 
