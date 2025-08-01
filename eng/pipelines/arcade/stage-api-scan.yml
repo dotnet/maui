@@ -1,0 +1,35 @@
+parameters:
+  federatedServiceConnection: 'dotnetbuilds-internal-read'
+
+steps:
+- script: dir $(Build.SourcesDirectory)\artifacts\bin\Controls.Core /s
+  displayName: List CLI output for debugging
+
+- task: CopyFiles@2
+  displayName: Copy CLI assemblies for APIScan
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)\artifacts\bin\Controls.Core'
+    Contents: |
+      **/*.dll
+      **/*.pdb
+    TargetFolder: '$(Agent.TempDirectory)\APIScanFiles'
+
+- task: APIScan@2
+  displayName: Run APIScan
+  inputs:
+    softwareFolder: '$(Agent.TempDirectory)\APIScanFiles'
+    softwareName: 'MAUI'
+    softwareVersionNum: '9.0'
+    softwareBuildNum: '$(Build.BuildId)'
+    azureSubscription: 'dotnet-apiscan'
+  env:
+    AzureServicesAuthConnectionString: RunAs=App;AppId=$(AppId);TenantId=$(TenantId);ServiceConnectionId=$(ServiceConnectionId);
+    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+- task: PublishSecurityAnalysisLogs@3
+  displayName: Publishing analysis artifacts
+  inputs:
+    ArtifactName: 'CodeAnalysisLogs'
+    ArtifactType: 'Container'
+    AllTools: true
+    ToolLogsNotFoundAction: 'Standard'
