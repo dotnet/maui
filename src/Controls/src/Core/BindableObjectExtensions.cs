@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				// support normal/code properties
-				self.SetValue(property, value, SetterSpecificity.FromHandler);
+				self.SetValue(property, value, SetterSpecificity.FromUnknown);
 			}
 		}
 
