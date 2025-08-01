@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Performance;
 	
@@ -27,9 +28,9 @@ internal class LayoutUpdate
 	public double TotalTime { get; set; }
 
 	/// <summary>
-	/// The element (e.g. "StackLayout", "Grid") on which the pass was performed.
+	/// Weak reference to the element (e.g. "StackLayout", "Grid") on which the pass was performed.
 	/// </summary>
-	public object Element { get; set; }
+	public WeakReference<object>? Element { get; set; }
 
 	/// <summary>
 	/// UTC timestamp when this layout pass was completed.
@@ -41,17 +42,28 @@ internal class LayoutUpdate
 	/// </summary>
 	/// <param name="passType">Measure or Arrange.</param>
 	/// <param name="totalTime">Elapsed time in milliseconds.</param>
-	/// <param name="element">The element on which the pass was performed.</param>
+	/// <param name="element">Weak reference to the element, or null.</param>
 	/// <param name="timestampUtc">Optional override for timestamp; otherwise uses UtcNow.</param>
 	public LayoutUpdate(
 		LayoutPassType passType,
 		double totalTime,
-		object element,
+		WeakReference<object>? element,
 		DateTime? timestampUtc = null)
 	{
 		PassType = passType;
 		TotalTime = totalTime;
 		Element = element;
 		TimestampUtc = timestampUtc ?? DateTime.UtcNow;
+	}
+	
+	/// <summary>
+	/// Attempts to get the target element if it's still alive.
+	/// </summary>
+	/// <param name="target">The target element if available; otherwise null.</param>
+	/// <returns>True if the element is available, false if garbage collected or not set.</returns>
+	public bool TryGetElement([NotNullWhen(true)] out object? target)
+	{
+		target = null;
+		return Element?.TryGetTarget(out target) == true;
 	}
 }

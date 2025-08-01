@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using Microsoft.Maui;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Performance
 {
@@ -14,18 +14,15 @@ namespace Microsoft.Maui.Performance
     {
         readonly Histogram<double> _measureDurationHistogram;
         readonly Histogram<double> _arrangeDurationHistogram;
-
         double _measureDuration;
         double _arrangeDuration;
-
         readonly List<LayoutUpdate> _updateHistory = new();
         readonly object _historyLock = new();
-
-        readonly List<Action<LayoutUpdate>> _subscribers = new();
+        readonly List<WeakReference<Action<LayoutUpdate>>> _subscribers = new();
         readonly object _subscriberLock = new();
-
+        
         // Tracks cumulative duration spent on direct children for each element and pass type
-        readonly ConcurrentDictionary<(object Element, LayoutPassType PassType), double> _childDurations = new();
+        readonly ConditionalWeakTable<object, ConcurrentDictionary<LayoutPassType, double>> _childDurations = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LayoutPerformanceTracker"/> class with the specified meter for metrics collection.
@@ -64,21 +61,24 @@ namespace Microsoft.Maui.Performance
         /// <returns>An enumerable of <see cref="LayoutUpdate"/> objects representing the layout history.</returns>
         public IEnumerable<LayoutUpdate> GetHistory(object? element = null)
         {
-            lock (_historyLock)
-            {
-                if (element is null)
-                    return new List<LayoutUpdate>(_updateHistory);
+	        lock (_historyLock)
+	        {
+		        if (element is null)
+		        {
+			        return new List<LayoutUpdate>(_updateHistory);
+		        }
 
-                var filtered = new List<LayoutUpdate>();
-                foreach (var update in _updateHistory)
-                {
-                    if (Equals(update.Element, element))
-                    {
-                        filtered.Add(update);
-                    }
-                }
-                return filtered;
-            }
+		        var filtered = new List<LayoutUpdate>();
+		        foreach (var update in _updateHistory)
+		        {
+			        if (update.Element?.TryGetTarget(out var target) == true && 
+			            ReferenceEquals(target, element))
+			        {
+				        filtered.Add(update);
+			        }
+		        }
+		        return filtered;
+	        }
         }
 
         /// <summary>
@@ -89,13 +89,11 @@ namespace Microsoft.Maui.Performance
         public void SubscribeToLayoutUpdates(Action<LayoutUpdate> callback)
         {
             if (callback is null)
-            {
                 throw new ArgumentNullException(nameof(callback));
-            }
 
             lock (_subscriberLock)
             {
-                _subscribers.Add(callback);
+                _subscribers.Add(new WeakReference<Action<LayoutUpdate>>(callback));
             }
         }
 
@@ -108,45 +106,48 @@ namespace Microsoft.Maui.Performance
         {
             double standaloneDuration = duration;
 
-            // Check if element has children and get parent
-            bool hasChildren = element is ILayout layout && layout.Count > 0;
-            object? parent = element is IView view ? view.Parent : null;
-
-            // If element has a parent, accumulate child duration
-            if (parent is not null)
-            {
-                _childDurations.AddOrUpdate(
-                    (parent, LayoutPassType.Measure),
-                    duration,
-                    (key, oldValue) => oldValue + duration);
-            }
-
-            // For ILayout elements, subtract child durations to get standalone duration
-            if (element is ILayout)
-            {
-                standaloneDuration = _childDurations.TryGetValue((element, LayoutPassType.Measure), out var childTime)
-                    ? duration - childTime
-                    : duration;
-                _childDurations.TryRemove((element, LayoutPassType.Measure), out _);
-            }
-
-            // Update fields with standalone duration for ILayout, total duration otherwise
-            _measureDuration += element is ILayout ? standaloneDuration : duration;
-
-            // Record metrics
-            var tags = new TagList();
             if (element is not null)
             {
-                tags.Add("element.type", element.GetType().Name);
+                bool hasChildren = element is ILayout layout && layout.Count > 0;
+                object? parent = element is IView view ? view.Parent : null;
+
+                if (parent is not null)
+                {
+                    var parentDurations = _childDurations.GetOrCreateValue(parent);
+                    parentDurations.AddOrUpdate(
+                        LayoutPassType.Measure,
+                        duration,
+                        (key, oldValue) => oldValue + duration);
+                }
+
+                if (element is ILayout)
+                {
+                    if (_childDurations.TryGetValue(element, out var elementDurations) &&
+                        elementDurations.TryGetValue(LayoutPassType.Measure, out var childTime))
+                    {
+                        standaloneDuration = duration - childTime;
+                        elementDurations.TryRemove(LayoutPassType.Measure, out _);
+                    }
+                }
+
+                _measureDuration += element is ILayout ? standaloneDuration : duration;
+
+                var tags = new TagList { { "element.type", element.GetType().Name } };
                 if (hasChildren)
                 {
                     tags.Add("element.childrencount", ((ILayout)element).Count.ToString());
                 }
+
+                _measureDurationHistogram.Record(standaloneDuration, tags);
+            }
+            else
+            {
+                _measureDuration += duration;
+                _measureDurationHistogram.Record(standaloneDuration);
             }
 
-            _measureDurationHistogram.Record(standaloneDuration, tags);
-
-            var update = new LayoutUpdate(LayoutPassType.Measure, duration, element ?? string.Empty, DateTime.UtcNow);
+            var elementRef = element is not null ? new WeakReference<object>(element) : null;
+            var update = new LayoutUpdate(LayoutPassType.Measure, duration, elementRef, DateTime.UtcNow);
 
             lock (_historyLock)
             {
@@ -165,45 +166,48 @@ namespace Microsoft.Maui.Performance
         {
             double standaloneDuration = duration;
 
-            // Check if element has children and get parent
-            bool hasChildren = element is ILayout layout && layout.Count > 0;
-            object? parent = element is IView view ? view.Parent : null;
-            
-            // If element has a parent, accumulate child duration
-            if (parent is not null)
-            {
-                _childDurations.AddOrUpdate(
-                    (parent, LayoutPassType.Arrange),
-                    duration,
-                    (key, oldValue) => oldValue + duration);
-            }
-
-            // For ILayout elements, subtract child durations to get standalone duration
-            if (element is ILayout)
-            {
-                standaloneDuration = _childDurations.TryGetValue((element, LayoutPassType.Arrange), out var childTime)
-                    ? duration - childTime
-                    : duration;
-                _childDurations.TryRemove((element, LayoutPassType.Arrange), out _);
-            }
-
-            // Update fields with standalone duration for ILayout, total duration otherwise
-            _arrangeDuration += element is ILayout ? standaloneDuration : duration;
-
-            // Record metrics
-            var tags = new TagList();
             if (element is not null)
             {
-                tags.Add("element.type", element.GetType().Name);
+                bool hasChildren = element is ILayout layout && layout.Count > 0;
+                object? parent = element is IView view ? view.Parent : null;
+
+                if (parent is not null)
+                {
+                    var parentDurations = _childDurations.GetOrCreateValue(parent);
+                    parentDurations.AddOrUpdate(
+                        LayoutPassType.Arrange,
+                        duration,
+                        (key, oldValue) => oldValue + duration);
+                }
+
+                if (element is ILayout)
+                {
+                    if (_childDurations.TryGetValue(element, out var elementDurations) &&
+                        elementDurations.TryGetValue(LayoutPassType.Arrange, out var childTime))
+                    {
+                        standaloneDuration = duration - childTime;
+                        elementDurations.TryRemove(LayoutPassType.Arrange, out _);
+                    }
+                }
+
+                _arrangeDuration += element is ILayout ? standaloneDuration : duration;
+
+                var tags = new TagList { { "element.type", element.GetType().Name } };
                 if (hasChildren)
                 {
                     tags.Add("element.childrencount", ((ILayout)element).Count.ToString());
                 }
+
+                _arrangeDurationHistogram.Record(standaloneDuration, tags);
+            }
+            else
+            {
+                _arrangeDuration += duration;
+                _arrangeDurationHistogram.Record(standaloneDuration);
             }
 
-            _arrangeDurationHistogram.Record(standaloneDuration, tags);
-
-            var update = new LayoutUpdate(LayoutPassType.Arrange, duration, element ?? string.Empty, DateTime.UtcNow);
+            var elementRef = element is not null ? new WeakReference<object>(element) : null;
+            var update = new LayoutUpdate(LayoutPassType.Arrange, duration, elementRef, DateTime.UtcNow);
 
             lock (_historyLock)
             {
@@ -219,22 +223,34 @@ namespace Microsoft.Maui.Performance
         /// <param name="update">The layout update to publish.</param>
         private void PublishLayoutUpdate(LayoutUpdate update)
         {
-            Action<LayoutUpdate>[] subscribersSnapshot;
+            List<WeakReference<Action<LayoutUpdate>>> subscribersSnapshot;
             lock (_subscriberLock)
             {
-                subscribersSnapshot = _subscribers.ToArray();
+                subscribersSnapshot = new List<WeakReference<Action<LayoutUpdate>>>(_subscribers);
             }
 
-            foreach (var subscriber in subscribersSnapshot)
+            var aliveSubscribers = new List<WeakReference<Action<LayoutUpdate>>>();
+            foreach (var subscriberRef in subscribersSnapshot)
             {
-                try
+                if (subscriberRef.TryGetTarget(out var subscriber))
                 {
-                    subscriber.Invoke(update);
+                    aliveSubscribers.Add(subscriberRef);
+                    try
+                    {
+                        subscriber.Invoke(update);
+                    }
+                    catch
+                    {
+                        // Swallow exceptions from subscribers.
+                    }
                 }
-                catch
-                {
-                    // Swallow exceptions from subscribers to avoid breaking the tracker.
-                }
+            }
+
+            // Clean up dead references
+            lock (_subscriberLock)
+            {
+                _subscribers.Clear();
+                _subscribers.AddRange(aliveSubscribers);
             }
         }
     }
