@@ -38,14 +38,20 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view == null)
 				return false;
 
-			var transformedCoords = SwipeGestureExtensions.TransformSwipeCoordinatesWithRotation(x, y, view.Rotation);
-
-			_totalX += PixelTranslation(transformedCoords.x);
-			_totalY += PixelTranslation(transformedCoords.y);
+			if (view.Rotation != 0)
+			{
+				var transformedCoords = SwipeGestureExtensions.TransformSwipeCoordinatesWithRotation(x, y, view.Rotation);
+				_totalX = PixelTranslation(transformedCoords.x);
+				_totalY = PixelTranslation(transformedCoords.y);
+			}
+			else
+			{
+				_totalX = PixelTranslation(x);
+				_totalY = PixelTranslation(y);
+			}
 
 			var result = false;
-			foreach (SwipeGestureRecognizer swipeGesture in
-					view.GestureRecognizers.GetGesturesFor<SwipeGestureRecognizer>())
+			foreach (SwipeGestureRecognizer swipeGesture in view.GestureRecognizers.GetGesturesFor<SwipeGestureRecognizer>())
 			{
 				((ISwipeGestureController)swipeGesture).SendSwipe(view, _totalX, _totalY);
 				result = true;
@@ -61,19 +67,15 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view == null)
 				return false;
 
-			var detected = false;
 			foreach (SwipeGestureRecognizer swipeGesture in view.GestureRecognizers.GetGesturesFor<SwipeGestureRecognizer>())
 			{
-				var gestureDetected = ((ISwipeGestureController)swipeGesture).DetectSwipe(view, swipeGesture.Direction);
-				if (gestureDetected)
+				var detected = ((ISwipeGestureController)swipeGesture).DetectSwipe(view, swipeGesture.Direction);
+				if (detected)
 				{
-					detected = true;
+					return true;
 				}
 			}
-			_totalX = 0;
-			_totalY = 0;
-
-			return detected;
+			return false;
 		}
 
 		public bool HasAnyGestures()
