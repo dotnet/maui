@@ -474,34 +474,45 @@ void CleanUpVirtualDevice(AndroidEmulatorProcess emulatorProcess, AndroidAvdMana
 
 	// kill the process if it has not already exited
 	Information("emulatorProcess.Kill()");
-	try 
+    try 
     { 
-        var killTask = System.Threading.Tasks.Task.Run(() => emulatorProcess.Kill());
-        if (killTask.Wait(TimeSpan.FromSeconds(EmulatorKillTimeoutSeconds)))
+        if (emulatorProcess != null && !emulatorProcess.HasExited)
         {
-            Information("Emulator process killed successfully.");
+            emulatorProcess.Kill();
+            if (emulatorProcess.WaitForExit(EmulatorKillTimeoutSeconds * 1000))
+            {
+                Information("Emulator process killed successfully.");
+            }
+            else
+            {
+                Warning("Emulator process kill operation timed out after {0} seconds. Attempting to restart ADB server...", EmulatorKillTimeoutSeconds);
+                
+                try
+                {
+                    Information("Stopping ADB server...");
+                    AdbKillServer(adbSettings);
+                    System.Threading.Thread.Sleep(2000);
+                    
+                    Information("Starting ADB server...");
+                    AdbStartServer(adbSettings);
+                    System.Threading.Thread.Sleep(2000);
+                    
+                    Information("ADB server restart completed successfully.");
+                }
+                catch (Exception adbEx)
+                {
+                    Error("Failed to restart ADB server after emulator kill timeout: {0}", adbEx.Message);
+                }
+            }
         }
         else
         {
-            Warning("Emulator process kill operation timed out after {0} seconds. Attempting to restart ADB server...", EmulatorKillTimeoutSeconds);
-            
-            try
-            {
-                Information("Stopping ADB server...");
-                AdbKillServer(adbSettings);
-                System.Threading.Thread.Sleep(2000);
-                
-                Information("Starting ADB server...");
-                AdbStartServer(adbSettings);
-                System.Threading.Thread.Sleep(2000);
-                
-                Information("ADB server restart completed successfully.");
-            }
-            catch (Exception adbEx)
-            {
-                Error("Failed to restart ADB server after emulator kill timeout: {0}", adbEx.Message);
-            }
+            Information("Emulator process was null or already exited.");
         }
+    }
+    catch (InvalidOperationException)
+    {
+        Information("Emulator process was already terminated.");
     }
     catch (Exception ex) 
     { 
