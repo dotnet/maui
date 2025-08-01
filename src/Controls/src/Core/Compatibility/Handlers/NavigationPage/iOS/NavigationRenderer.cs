@@ -978,7 +978,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var icon = result?.Value;
 				var originalImageSize = icon?.Size ?? CGSize.Empty;
 				// Referred from the default hamburger size 
-				var defaultIconHeight = 23f;
+				var defaultIconHeight = 24f;
 				var buffer = 0.1;
 				// if the image is bigger than the default available size, resize it
 				if (icon is not null)
