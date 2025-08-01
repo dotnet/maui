@@ -324,7 +324,7 @@ namespace Microsoft.Maui.Controls
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
 
-		internal bool IsActivated
+		public bool IsActivated
 		{
 			get
 			{
