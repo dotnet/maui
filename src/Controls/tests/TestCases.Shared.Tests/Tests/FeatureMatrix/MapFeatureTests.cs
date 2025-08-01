@@ -708,7 +708,7 @@ public class MapFeatureTests : UITest
 
 		var value =  App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
 		var rect =App.WaitForElement("MapView").GetRect();
-		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() - 100);
+		App.DragCoordinates(rect.CenterX() - 100, rect.CenterY(), rect.CenterX(), rect.CenterY() - 100);
 
 		Thread.Sleep(2000);
 		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.Not.EqualTo(value));
