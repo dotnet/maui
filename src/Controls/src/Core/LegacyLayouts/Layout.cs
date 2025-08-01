@@ -293,7 +293,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <param name="view">The view to lower in the visual stack.</param>
 		/// <remarks>Children are internally stored in visual stack order.
 		/// This means that raising or lowering a child also changes the order in which the children are enumerated.</remarks>
-		[Obsolete("Use the ZIndex Property instead. This property no longer works on .NET 10 and later.", true)]
+		[Obsolete("Use the ZIndex Property instead. This property no longer works on .NET 10 and later.")]
 		public void LowerChild(View view)
 		{
 			if (!UseCompatibilityMode)
@@ -314,7 +314,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <param name="view">The view to raise in the visual stack.</param>
 		/// <remarks>Children are internally stored in visual stack order.
 		/// This means that raising or lowering a child also changes the order in which the children are enumerated.</remarks>
-		[Obsolete("Use the ZIndex Property instead. This property no longer works on .NET 10 and later.", true)]
+		[Obsolete("Use the ZIndex Property instead. This property no longer works on .NET 10 and later.")]
 		public void RaiseChild(View view)
 		{
 			if (!UseCompatibilityMode)
@@ -365,7 +365,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <remarks>Implementors wishing to change the default behavior of a Layout should override this method.
 		/// It is suggested to still call the base method and modify its calculated results.</remarks>
 
-		[Obsolete("Use ArrangeOverride", true)]
+		[Obsolete("Use ArrangeOverride")]
 		protected abstract void LayoutChildren(double x, double y, double width, double height);
 
 		internal override void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
