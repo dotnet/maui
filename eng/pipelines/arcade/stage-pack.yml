@@ -43,8 +43,8 @@ stages:
       templateContext:
         outputs:
         - output: pipelineArtifact
-          ArtifactName: APIScanFiles
-          targetPath: $(Agent.TempDirectory)/APIScanFiles
+          artifact: APIScanFiles
+          path: $(Agent.TempDirectory)/APIScanFiles
 
       workspace:
         clean: all
@@ -63,16 +63,6 @@ stages:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
 
-        # - script: $(_buildScript)
-        #           -restore -build
-        #           -configuration $(_BuildConfig)
-        #           /p:ArchiveTests=true
-        #           /p:TreatWarningsAsErrors=false
-        #           /p:_SkipUpdateBuildNumber=true
-        #           /bl:$(Build.Arcade.LogsPath)build.binlog
-        #           $(_OfficialBuildIdArgs)
-        #   displayName: 🛠️ Build
-
         # Run on public pipeline
         - ${{ if parameters.runAsPublic }}:
           - script: $(_buildScript) -restore -pack -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack.binlog $(_OfficialBuildIdArgs)
@@ -87,11 +77,8 @@ stages:
           - script: $(_buildScript) -restore -build -sign $(_SignArgs) -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/build-workloads.binlog -projects src/Workload/workloads.csproj $(_OfficialBuildIdArgs)
             displayName: Build Workloads, Sign & Publish
 
-        - script: dir $(Build.SourcesDirectory)\artifacts\bin\Controls.Core /s
-          displayName: List CLI output for debugging
-
         - task: CopyFiles@2
-          displayName: Copy CLI assemblies for APIScan
+          displayName: Copy assemblies for APIScan
           inputs:
             SourceFolder: '$(Build.SourcesDirectory)\artifacts\bin\Controls.Core'
             Contents: |
