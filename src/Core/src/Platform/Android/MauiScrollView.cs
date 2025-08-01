@@ -157,6 +157,11 @@ namespace Microsoft.Maui.Platform
 			if (ev == null || !Enabled || _scrollOrientation == ScrollOrientation.Neither)
 				return false;
 
+			if (ev.Action == MotionEventActions.Cancel || ev.Action == MotionEventActions.Up)
+			{
+				ShouldSkipOnTouch = false;
+			}
+
 			if (ShouldSkipOnTouch)
 			{
 				ShouldSkipOnTouch = false;
