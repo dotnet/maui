@@ -16,7 +16,8 @@ public class Issue30951 : ContentPage
 		mainScrollView = new ScrollView
 		{
 			AutomationId = "Issue30951_MainScrollView",
-			HeightRequest = 500
+			HeightRequest = 500,
+			HorizontalScrollBarVisibility = ScrollBarVisibility.Never
 		};
 
 		mainGrid = new Grid
@@ -68,6 +69,7 @@ public class Issue30951 : ContentPage
 			Orientation = ScrollOrientation.Horizontal,
 			Content = mealTypeStack,
 			Margin = new Thickness(0, 0, 0, 10),
+			HorizontalScrollBarVisibility = ScrollBarVisibility.Never,
 			AutomationId = "Issue30951_HorizontalScrollView"
 		};
 		mealTypeScrollView.SetValue(Grid.RowProperty, 1);

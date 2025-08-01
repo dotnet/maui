@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
         [Test]
         [Category(UITestCategories.ScrollView)]
-        public void ButtonTextShouldRenderProperly()
+        public void Issue30951_ScrollViewContentMeasurementFix()
         {
             App.WaitForElement("Issue30951_MealTypeLabel");
             VerifyScreenshot();
