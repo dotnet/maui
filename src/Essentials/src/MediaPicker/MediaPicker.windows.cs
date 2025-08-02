@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Media
 				{
 					using var originalStream = await result.OpenStreamForReadAsync();
 					using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, result.Name);
-					
+
 					// Save rotated image to temporary file
 					var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}{Path.GetExtension(result.Name)}");
 					using (var fileStream = File.Create(tempFileName))
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Media
 						rotatedStream.Position = 0;
 						await rotatedStream.CopyToAsync(fileStream);
 					}
-					
+
 					fileResult = new FileResult(tempFileName);
 				}
 				catch (Exception ex)
@@ -162,12 +162,12 @@ namespace Microsoft.Maui.Media
 				{
 					var originalFile = result[i];
 					var fileResult = fileResults[i];
-					
+
 					try
 					{
 						using var originalStream = await originalFile.OpenStreamForReadAsync();
 						using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, originalFile.Name);
-						
+
 						// Save rotated image to temporary file
 						var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}{Path.GetExtension(originalFile.Name)}");
 						using (var fileStream = File.Create(tempFileName))
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Media
 							rotatedStream.Position = 0;
 							await rotatedStream.CopyToAsync(fileStream);
 						}
-						
+
 						rotatedResults.Add(new FileResult(tempFileName));
 					}
 					catch (Exception ex)
@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Media
 					{
 						using var originalStream = await file.OpenStreamForReadAsync();
 						using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, file.Name);
-						
+
 						// Save rotated image to temporary file
 						var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}");
 						using (var fileStream = File.Create(tempFileName))
@@ -267,7 +267,7 @@ namespace Microsoft.Maui.Media
 							rotatedStream.Position = 0;
 							await rotatedStream.CopyToAsync(fileStream);
 						}
-						
+
 						fileResult = new FileResult(tempFileName);
 					}
 					catch (Exception ex)

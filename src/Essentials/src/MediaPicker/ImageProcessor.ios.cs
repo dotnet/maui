@@ -20,7 +20,7 @@ internal static partial class ImageProcessor
 		}
 
 		using var image = UIImage.LoadFromData(data);
-		
+
 		if (image?.CGImage is null)
 		{
 			return inputStream;
@@ -35,10 +35,10 @@ internal static partial class ImageProcessor
 		// Create a new image with corrected orientation metadata (no pixel manipulation)
 		// This preserves the original image data while fixing the display orientation
 		var correctedImage = UIImage.FromImage(image.CGImage, image.CurrentScale, UIImageOrientation.Up);
-		
+
 		// Write the corrected image back to a stream, preserving original quality
 		var outputStream = new MemoryStream();
-		
+
 		// Determine output format based on original file
 		NSData? imageData = null;
 		if (!string.IsNullOrEmpty(originalFileName))
@@ -60,7 +60,7 @@ internal static partial class ImageProcessor
 			// Default to JPEG with maximum quality (1.0)
 			imageData = correctedImage.AsJPEG(1f);
 		}
-		
+
 		if (imageData is not null)
 		{
 			await imageData.AsStream().CopyToAsync(outputStream);

@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Platform
 			{
 				return safeAreaPage.GetSafeAreaRegionsForEdge(edge);
 			}
-			
+
 			return SafeAreaRegions.None; // Default: edge-to-edge content
 		}
 
@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Platform
 				// All edges have the same value, use built-in iOS behavior
 				// Cache the region value to avoid redundant comparisons
 				var region = leftRegion;
-				
+
 				ContentInsetAdjustmentBehavior = region switch
 				{
 					SafeAreaRegions.Default => UIScrollViewContentInsetAdjustmentBehavior.Automatic, // Default behavior
@@ -515,7 +515,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		/// <param name="size">The available size constraints.</param>
 		/// <returns>The size that fits within the constraints.</returns>
-		
+
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			if (CrossPlatformLayout is null)
