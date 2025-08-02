@@ -2,6 +2,7 @@
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UISlider;
 #elif MONOANDROID
+using System;
 using PlatformView = Android.Widget.SeekBar;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.Slider;
@@ -24,7 +25,12 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISlider.ThumbColor)] = MapThumbColor,
 			[nameof(ISlider.ThumbImageSource)] = MapThumbImageSource,
 			[nameof(ISlider.Value)] = MapValue,
+			//We skip first mapping for Maximum, Minimum and Value and map all those values through _initializeRangeProperties
+			#if ANDROID || IOS || WINDOWS
+			["_initializeRangeProperties"] = MapInitializeRangeProperties,
+			#endif
 		};
+
 
 		public static CommandMapper<ISlider, ISliderHandler> CommandMapper = new(ViewCommandMapper)
 		{
