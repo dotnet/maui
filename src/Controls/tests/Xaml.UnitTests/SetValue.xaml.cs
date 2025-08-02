@@ -1,3 +1,4 @@
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -574,3 +575,4 @@ public partial class SetValue : ContentPage
 
 	}
 }
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete

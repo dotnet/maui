@@ -10,9 +10,9 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// Layout manager for templated views.
 	/// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 	public class ContentPresenter : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IContentView
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete
 	{
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
