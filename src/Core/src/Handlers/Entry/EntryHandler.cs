@@ -20,21 +20,22 @@ namespace Microsoft.Maui.Handlers
 		public static IPropertyMapper<IEntry, IEntryHandler> Mapper = new PropertyMapper<IEntry, IEntryHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IEntry.Background)] = MapBackground,
-			[nameof(IEntry.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,
-			[nameof(IEntry.Font)] = MapFont,
 			[nameof(IEntry.IsPassword)] = MapIsPassword,
-			[nameof(IEntry.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
-			[nameof(IEntry.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly,
 			[nameof(IEntry.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
 			[nameof(IEntry.IsSpellCheckEnabled)] = MapIsSpellCheckEnabled,
 			[nameof(IEntry.Keyboard)] = MapKeyboard,
-			[nameof(IEntry.MaxLength)] = MapMaxLength,
 			[nameof(IEntry.Placeholder)] = MapPlaceholder,
 			[nameof(IEntry.PlaceholderColor)] = MapPlaceholderColor,
 			[nameof(IEntry.ReturnType)] = MapReturnType,
+			// Map text before the other text-related properties to ensure the native text is created, especially on iOS (attributed text)
 			[nameof(IEntry.Text)] = MapText,
+			[nameof(IEntry.Font)] = MapFont,
+			[nameof(IEntry.MaxLength)] = MapMaxLength,
+			[nameof(IEntry.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(IEntry.VerticalTextAlignment)] = MapVerticalTextAlignment,
+			[nameof(IEntry.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEntry.TextColor)] = MapTextColor,
 			[nameof(IEntry.CursorPosition)] = MapCursorPosition,
 			[nameof(IEntry.SelectionLength)] = MapSelectionLength
