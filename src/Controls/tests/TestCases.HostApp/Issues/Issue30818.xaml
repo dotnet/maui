@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       x:Class="Maui.Controls.Sample.Issues.Issue30818">
+    <ShellContent>
+        <ContentPage>
+            <ContentPage.ToolbarItems>
+                <ToolbarItem IconColor="Blue"
+                             IconImageSource="groceries.png"/>
+                <ToolbarItem IconColor="Green"
+                             IconImageSource="coffee.png"/>
+            </ContentPage.ToolbarItems>
+
+            <Label Text="This is a test page for Issue 30818"
+                   AutomationId="Label"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+
+        </ContentPage>
+    </ShellContent>
+
+</Shell>
