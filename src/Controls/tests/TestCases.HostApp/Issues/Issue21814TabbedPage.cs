@@ -21,15 +21,15 @@ namespace Maui.Controls.Sample.Issues
 		readonly Label _onNavigatedToLabel;
 		readonly Label _onNavigatingFromLabel;
 		readonly Label _onNavigatedFromLabel;
-		
+
 		public Issue21814TabItem1()
 		{
 			Title = "Tab 1";
-			
+
 			_onNavigatedToLabel = new Label { AutomationId = "Tab1OnNavigatedToLabel", Text = "-" };
 			_onNavigatingFromLabel = new Label { AutomationId = "Tab1OnNavigatingFromLabel", Text = "-" };
 			_onNavigatedFromLabel = new Label { AutomationId = "Tab1OnNavigatedFromLabel", Text = "-" };
-			
+
 			Content = new StackLayout
 			{
 				Padding = 20,
@@ -45,7 +45,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-		
+
 		protected override void OnNavigatedTo(NavigatedToEventArgs args)
 		{
 			base.OnNavigatedTo(args);
@@ -76,15 +76,15 @@ namespace Maui.Controls.Sample.Issues
 		readonly Label _onNavigatedToLabel;
 		readonly Label _onNavigatingFromLabel;
 		readonly Label _onNavigatedFromLabel;
-		
+
 		public Issue21814TabItem2()
 		{
 			Title = "Tab 2";
-			
+
 			_onNavigatedToLabel = new Label { AutomationId = "Tab2OnNavigatedToLabel", Text = "-" };
 			_onNavigatingFromLabel = new Label { AutomationId = "Tab2OnNavigatingFromLabel", Text = "-" };
 			_onNavigatedFromLabel = new Label { AutomationId = "Tab2OnNavigatedFromLabel", Text = "-" };
-			
+
 			Content = new StackLayout
 			{
 				Padding = 20,
@@ -100,7 +100,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-		
+
 		protected override void OnNavigatedTo(NavigatedToEventArgs args)
 		{
 			base.OnNavigatedTo(args);
@@ -131,15 +131,15 @@ namespace Maui.Controls.Sample.Issues
 		readonly Label _onNavigatedToLabel;
 		readonly Label _onNavigatingFromLabel;
 		readonly Label _onNavigatedFromLabel;
-		
+
 		public Issue21814TabItem3()
 		{
 			Title = "Tab 3";
-			
+
 			_onNavigatedToLabel = new Label { AutomationId = "Tab3OnNavigatedToLabel", Text = "-" };
 			_onNavigatingFromLabel = new Label { AutomationId = "Tab3OnNavigatingFromLabel", Text = "-" };
 			_onNavigatedFromLabel = new Label { AutomationId = "Tab3OnNavigatedFromLabel", Text = "-" };
-			
+
 			Content = new StackLayout
 			{
 				Padding = 20,
@@ -155,7 +155,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-		
+
 		protected override void OnNavigatedTo(NavigatedToEventArgs args)
 		{
 			base.OnNavigatedTo(args);

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 
 		public TabbedPageManager TabbedPageManager
 		{
-			get => _tabbedPageManager ??= new (MauiContext);
+			get => _tabbedPageManager ??= new(MauiContext);
 			set
 			{
 				if (_tabbedPageManager is not null && _tabbedPageManager != value)
