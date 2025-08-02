@@ -214,11 +214,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 													&& (bool)xamlProcessingAttr.ConstructorArguments[1].Value;
 						assemblyInflatorOptions = (generateInflatorSwitch, inflator);
 						if (!generateInflatorSwitch)
-							skipassembly = (inflator & XamlInflator.XamlC) != XamlInflator.XamlC && inflator != XamlInflator.Default;
+							skipassembly = (inflator & XamlInflator.XamlC) != XamlInflator.XamlC;
 
 					}
 
-#pragma warning disable CS0618 // Type or member is obsolete
+#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
 					CustomAttribute xamlcAttr = null;
 					if (assemblyDefinition.HasCustomAttributes &&
 						(xamlcAttr =
@@ -236,9 +236,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						else
 							LoggingHelper.LogWarning($"{new string(' ', 2)}Assembly has both XamlCompilationAttribute and XamlProcessingAttribute. XamlCompilationAttribute will be ignored.");
 					}
-#pragma warning restore CS0618 // Type or member is obsolete
 
-					xamlcAttr = xamlProcessingAttr = null;
+					xamlcAttr = null;
+#endif
+					xamlProcessingAttr = null;
 
 					foreach (var module in assemblyDefinition.Modules)
 					{
@@ -255,10 +256,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 														&& (bool)xamlProcessingAttr.ConstructorArguments[1].Value;
 							moduleInflatorOptions = (generateInflatorSwitch, inflator);
 							if (!generateInflatorSwitch)
-								skipmodule = (inflator & XamlInflator.XamlC) != XamlInflator.XamlC && inflator != XamlInflator.Default;
+								skipmodule = (inflator & XamlInflator.XamlC) != XamlInflator.XamlC;
 						}
 
-#pragma warning disable CS0618 // Type or member is obsolete
+#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
 						if (module.HasCustomAttributes &&
 							(xamlcAttr =
 								module.CustomAttributes.FirstOrDefault(
@@ -276,9 +277,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 							else
 								LoggingHelper.LogWarning($"{new string(' ', 2)}Module {module.Name} has both XamlCompilationAttribute and XamlProcessingAttribute. XamlCompilationAttribute will be ignored.");
 						}
-#pragma warning restore CS0618 // Type or member is obsolete
-
-						xamlcAttr = xamlProcessingAttr = null;
+						xamlcAttr = null;
+#endif
+						xamlProcessingAttr = null;
 
 						LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Module: {module.Name}");
 						var resourcesToPrune = new List<EmbeddedResource>();
@@ -313,13 +314,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								typeInflatorOptions = (generateInflatorSwitch, inflator);
 								if (generateInflatorSwitch)
 								{
-									skiptype = (inflator & XamlInflator.XamlC) != XamlInflator.XamlC && inflator != XamlInflator.Default;
+									skiptype = (inflator & XamlInflator.XamlC) != XamlInflator.XamlC;
 									initCompName = "InitializeComponentXamlC";
 								}
 								else
 									skiptype = inflator != XamlInflator.XamlC;
 							}
-#pragma warning disable CS0618 // Type or member is obsolete
+#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
 							if (typeDef.HasCustomAttributes &&
 								(xamlcAttr =
 									typeDef.CustomAttributes.FirstOrDefault(
@@ -338,9 +339,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								else
 									LoggingHelper.LogWarning($"{new string(' ', 6)}Type {typeDef.Name} has both XamlCompilationAttribute and XamlProcessingAttribute. XamlCompilationAttribute will be ignored.");
 							}
-#pragma warning restore CS0618 // Type or member is obsolete
-
-							xamlcAttr = xamlProcessingAttr = null;
+							xamlcAttr = null;
+#endif
+							xamlProcessingAttr = null;
 
 							if (Type != null)
 								skiptype = !(Type == classname);

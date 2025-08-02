@@ -2,7 +2,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default)]
 public partial class XamlInflatorDefault : ContentPage
 {
 	public XamlInflatorDefault()

@@ -23,7 +23,6 @@ public class ElementWithGenericEvent : ContentView
 	public void SendClicked() => Clicked?.Invoke(this, new ItemTappedEventArgs("foo", "bar", -1));
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class EventsConnection : BaseForEvents
 {
 	public EventsConnection()
@@ -53,7 +52,7 @@ public partial class EventsConnection : BaseForEvents
 	static void HandleStaticClicked(object sender, EventArgs e) => staticClicked++;
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void TestClicked([Values] XamlInflator inflator)
@@ -120,7 +119,7 @@ public partial class EventsConnection : BaseForEvents
 	}
 }
 
-public class SubForEvents : EventsConnection
+class SubForEvents : EventsConnection
 {
 	public SubForEvents(XamlInflator inflator) : base(inflator)
 	{

@@ -12,13 +12,12 @@ public class MockBindableForArray : View
 	public object Content { get; set; }
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class XArray : MockBindableForArray
 {
 	public XArray() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void SupportsXArray([Values] XamlInflator inflator)

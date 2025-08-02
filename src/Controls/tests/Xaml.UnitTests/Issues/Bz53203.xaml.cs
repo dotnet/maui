@@ -11,7 +11,6 @@ public enum Bz53203Values
 	Best
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Bz53203 : ContentPage
 {
 	public static int IntValue = 42;

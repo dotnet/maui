@@ -2,7 +2,6 @@ using System;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class ParentButton : Button
 {
 	public ParentButton() => InitializeComponent();

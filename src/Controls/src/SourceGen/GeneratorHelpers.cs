@@ -53,11 +53,27 @@ static class GeneratorHelpers
 		fileOptions.TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out var manifestResourceName);
 		fileOptions.TryGetValue("build_metadata.additionalfiles.RelativePath", out var relativePath);
 		fileOptions.TryGetValue("build_property.targetframework", out var targetFramework);
-		fileOptions.TryGetValue("build_property._MauiForceXamlSourcegen", out var forceSourceGen);
 		fileOptions.TryGetValue("build_property.Configuration", out var configuration);
-		return new ProjectItem(additionalText, targetPath: targetPath, relativePath: relativePath, manifestResourceName: manifestResourceName, kind: kind, targetFramework: targetFramework)
+
+		fileOptions.TryGetValue("build_metadata.additionalfiles.Inflator", out var inflator);
+
+
+		var xamlinflator = string.IsNullOrEmpty(inflator) ? 0 : inflator!.Split(',').Select(s => s.Trim()).Select(s =>
 		{
-			ForceSourceGen = forceSourceGen == true.ToString(),
+			if (!Enum.TryParse<XamlInflator>(s, true, out var xinfl))
+				throw new InvalidOperationException($"Invalid inflator '{s}' for {additionalText.Path}.");
+			return xinfl;
+		}).Aggregate(0, (acc, xamlinflator) => acc | (int)xamlinflator);
+
+		return new ProjectItem
+		{
+			AdditionalText = additionalText,
+			TargetPath = targetPath,
+			RelativePath = relativePath,
+			ManifestResourceName = manifestResourceName,
+			Kind = kind,
+			Inflator = (XamlInflator)xamlinflator,
+			TargetFramework = targetFramework,
 			Configuration = configuration!,
 		};
 	}

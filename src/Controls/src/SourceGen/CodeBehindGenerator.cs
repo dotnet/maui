@@ -229,15 +229,9 @@ $"""
 		if (rootType == null)
 			return false;
 
-		(_, var xamlInflators, var set) = rootType.GetXamlProcessing();
+		var xamlInflators = xamlItem.ProjectItem.Inflator;
 
-		//this test must go as soon as 'set' goes away
-		if (!set)
-			return false;
-
-		if ((xamlInflators & XamlInflator.SourceGen) != XamlInflator.SourceGen
-			&& xamlInflators != XamlInflator.Default
-			&& xamlItem.ProjectItem.ForceSourceGen == false)
+		if ((xamlInflators & XamlInflator.SourceGen) != XamlInflator.SourceGen)
 			return false;
 
 		return true;

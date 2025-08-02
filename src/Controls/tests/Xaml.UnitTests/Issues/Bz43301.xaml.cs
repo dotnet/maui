@@ -4,7 +4,6 @@ using NUnit.Framework;
 
 namespace Foo.Microsoft.Maui.Controls.Bar;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Bz43301 : ContentPage
 {
 	public Bz43301() => InitializeComponent();

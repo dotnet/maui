@@ -35,7 +35,6 @@ public class Bz47703View : Label
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Bz47703 : ContentPage
 {
 	public Bz47703()

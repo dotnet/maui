@@ -3,7 +3,6 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	[TestFixture]
-	[XamlProcessing(XamlInflator.Default)]
 	public partial class Gh4238
 	{
 		public System.Collections.ArrayList Property { get; set; }

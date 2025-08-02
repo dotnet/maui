@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public class XamlInflatorRuntimeTestsHelpers
 {
-	public static void TestInflator(Type type, XamlInflator inflator, bool generateinflatorswitch = false)
+	internal static void TestInflator(Type type, XamlInflator inflator, bool generateinflatorswitch = false)
 	{
 		if (!generateinflatorswitch)
 			Assert.IsNull(type.GetMethod("InitializeComponentSourceGen", BindingFlags.Instance | BindingFlags.NonPublic), $"{type.Name} should not have InitializeComponentSourceGen method");

@@ -3,7 +3,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests.Maui14158;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class InternalVisibleTypes : ContentPage
 {
 	public InternalVisibleTypes() => InitializeComponent();

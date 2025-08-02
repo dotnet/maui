@@ -16,7 +16,6 @@ public class Gh7837VM : Gh7837VMBase
 	public new string this[string index] => index.ToUpperInvariant();
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh7837 : ContentPage
 {
 	public Gh7837() => InitializeComponent();

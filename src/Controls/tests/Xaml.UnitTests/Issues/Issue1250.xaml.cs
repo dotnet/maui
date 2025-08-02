@@ -14,13 +14,12 @@ public class Issue1250AspectRatioContainer : ContentView
 	public double AspectRatio { get; set; }
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Issue1250 : ContentPage
 {
 	public Issue1250() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void AddCustomElementInCollection([Values] XamlInflator inflator)

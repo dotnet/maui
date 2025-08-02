@@ -10,7 +10,6 @@ public class Gh12025NavPage : NavigationPage
 	public static Color GetIconColor(Page page) => (Color)page.GetValue(IconColorProperty);
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh12025 : ContentPage
 {
 	public Gh12025() => InitializeComponent();

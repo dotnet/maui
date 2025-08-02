@@ -4,12 +4,11 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class ResourceDictionaryWithSource : ContentPage
 {
 	public ResourceDictionaryWithSource() => InitializeComponent();
 
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void RDWithSourceAreFound([Values] XamlInflator inflator)
