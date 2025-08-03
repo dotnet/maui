@@ -101,7 +101,6 @@ namespace Microsoft.Maui.Platform
 					{
 						FillViewport = true
 					};
-
 					_hScrollView.HorizontalFadingEdgeEnabled = HorizontalFadingEdgeEnabled;
 					_hScrollView.SetFadingEdgeLength(HorizontalFadingEdgeLength);
 					SetHorizontalScrollBarVisibility(_horizontalScrollVisibility);
