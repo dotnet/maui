@@ -25,12 +25,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 			platformView.ScrollChange += ScrollChange;
+			platformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
 		protected override void DisconnectHandler(MauiScrollView platformView)
 		{
 			base.DisconnectHandler(platformView);
 			platformView.ScrollChange -= ScrollChange;
+			platformView.CrossPlatformArrange = null;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -232,10 +234,7 @@ namespace Microsoft.Maui.Handlers
 
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			if (VirtualView is not { } scrollView)
-			{
-				return Size.Zero;
-			}
+			var scrollView = VirtualView;
 
 			var padding = scrollView.Padding;
 
@@ -244,25 +243,31 @@ namespace Microsoft.Maui.Handlers
 				return new Size(padding.HorizontalThickness, padding.VerticalThickness);
 			}
 
-			var scrollOrientation = scrollView.Orientation;
-			var contentWidthConstraint = scrollOrientation is ScrollOrientation.Horizontal or ScrollOrientation.Both ? double.PositiveInfinity : widthConstraint;
-			var contentHeightConstraint = scrollOrientation is ScrollOrientation.Vertical or ScrollOrientation.Both ? double.PositiveInfinity : heightConstraint;
-			var contentSize = scrollView.MeasureContent(scrollView.Padding, contentWidthConstraint, contentHeightConstraint, !double.IsInfinity(contentWidthConstraint), !double.IsInfinity(contentHeightConstraint));
+			// Exclude the padding while measuring the internal content ...
+			var measurementWidth = widthConstraint - padding.HorizontalThickness;
+			var measurementHeight = heightConstraint - padding.VerticalThickness;
+
+			var result = (scrollView as ICrossPlatformLayout).CrossPlatformMeasure(measurementWidth, measurementHeight);
+
+			// ... and add the padding back in to the final result
+			var fullSize = new Size(result.Width + padding.HorizontalThickness, result.Height + padding.VerticalThickness);
 
 			if (double.IsInfinity(widthConstraint))
 			{
-				widthConstraint = contentSize.Width;
+				widthConstraint = result.Width;
 			}
 
 			if (double.IsInfinity(heightConstraint))
 			{
-				heightConstraint = contentSize.Height;
+				heightConstraint = result.Height;
 			}
 
-			return contentSize.AdjustForFill(new Rect(0, 0, widthConstraint, heightConstraint), scrollView.PresentedContent);
+			return fullSize.AdjustForFill(new Rect(0, 0, widthConstraint, heightConstraint), scrollView.PresentedContent);
 		}
 
-		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds) =>
-			(VirtualView as ICrossPlatformLayout)?.CrossPlatformArrange(bounds) ?? Size.Zero;
+		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
+		{
+			return (VirtualView as ICrossPlatformLayout).CrossPlatformArrange(bounds);
+		}
 	}
 }
