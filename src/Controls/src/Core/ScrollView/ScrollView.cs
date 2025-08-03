@@ -515,7 +515,8 @@ namespace Microsoft.Maui.Controls
 			return bounds.Size;
 		}
 
-		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint) => ((ICrossPlatformLayout)this).CrossPlatformMeasure(widthConstraint, heightConstraint);
+		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint) =>
+			((ICrossPlatformLayout)this).CrossPlatformMeasure(widthConstraint, heightConstraint);
 
 		Size IContentView.CrossPlatformArrange(Rect bounds) =>
 			((ICrossPlatformLayout)this).CrossPlatformArrange(bounds);
