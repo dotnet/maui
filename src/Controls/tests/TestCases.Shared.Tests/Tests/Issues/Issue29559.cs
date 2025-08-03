@@ -24,7 +24,7 @@ public class Issue29559 : _IssuesUITest
 		App.Click("HideKeyboardButton");
 
 		IskeyboardVisible = App.WaitForKeyboardToHide(timeout: TimeSpan.FromSeconds(1));
-		Assert.That(IskeyboardVisible, Is.False);
+		Assert.That(IskeyboardVisible, Is.True);
 	}
 }
 #endif
