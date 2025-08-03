@@ -286,6 +286,7 @@ public class EditorFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
+		App.Tap("Editor Control");
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
