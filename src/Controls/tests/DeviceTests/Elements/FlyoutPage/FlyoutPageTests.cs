@@ -67,11 +67,23 @@ namespace Microsoft.Maui.DeviceTests
 					// Set with new page
 					var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
 					flyoutPage.Detail = navPage;
-					await OnNavigatedToAsync(navPage);
+          
+					// For NavigationPages, check the CurrentPage instead
+					var pageToCheck = navPage is NavigationPage np ? np.CurrentPage : navPage;
+					if (!pageToCheck.HasNavigatedTo)
+					{
+						await OnNavigatedToAsync(navPage);
+					}
 
 					// Set back to previous page
 					flyoutPage.Detail = currentDetailPage;
-					await OnNavigatedToAsync(currentDetailPage);
+          
+					// Check the current page again
+					var previousPageToCheck = currentDetailPage is NavigationPage cp ? cp.CurrentPage : currentDetailPage;
+					if (!previousPageToCheck.HasNavigatedTo)
+					{
+						await OnNavigatedToAsync(currentDetailPage);
+					}
 				});
 			});
 		}
