@@ -247,6 +247,68 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Waits for the soft keyboard to be shown on the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing. Default is 15 seconds.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each check. Default is 500ms.</param>
+		/// <returns>true if the keyboard becomes visible within the timeout; otherwise, false.</returns>
+		public static bool WaitForKeyboardToShow(this IApp app, TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
+		{
+			timeout ??= DefaultTimeout;
+			retryFrequency ??= TimeSpan.FromMilliseconds(500);
+
+			DateTime start = DateTime.Now;
+
+			while (true)
+			{
+				if (app.IsKeyboardShown())
+				{
+					return true;
+				}
+
+				long elapsed = DateTime.Now.Subtract(start).Ticks;
+				if (elapsed >= timeout.Value.Ticks)
+				{
+					return false;
+				}
+
+				Task.Delay(retryFrequency.Value.Milliseconds).Wait();
+			}
+		}
+
+		/// <summary>
+		/// Waits for the soft keyboard to be hidden from the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing. Default is 15 seconds.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each check. Default is 500ms.</param>
+		/// <returns>true if the keyboard becomes hidden within the timeout; otherwise, false.</returns>
+		public static bool WaitForKeyboardToHide(this IApp app, TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
+		{
+			timeout ??= DefaultTimeout;
+			retryFrequency ??= TimeSpan.FromMilliseconds(500);
+
+			DateTime start = DateTime.Now;
+
+			while (true)
+			{
+				if (!app.IsKeyboardShown())
+				{
+					return true;
+				}
+
+				long elapsed = DateTime.Now.Subtract(start).Ticks;
+				if (elapsed >= timeout.Value.Ticks)
+				{
+					return false;
+				}
+
+				Task.Delay(retryFrequency.Value.Milliseconds).Wait();
+			}
+		}
+
+		/// <summary>
 		/// (Android Only) Sends a device key event with meta state.
 		/// </summary>
 		/// <param name="app"></param>
