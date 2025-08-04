@@ -177,6 +177,8 @@ Microsoft.Maui.Controls.TimePickerClosedEventArgs
 Microsoft.Maui.Controls.TimePickerClosedEventArgs.TimePickerClosedEventArgs() -> void
 Microsoft.Maui.Controls.TimePickerOpenedEventArgs
 Microsoft.Maui.Controls.TimePickerOpenedEventArgs.TimePickerOpenedEventArgs() -> void
+Microsoft.Maui.Controls.ToolbarItem.IsVisible.get -> bool
+Microsoft.Maui.Controls.ToolbarItem.IsVisible.set -> void
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Handled.get -> bool
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Handled.set -> void
@@ -432,6 +434,7 @@ static readonly Microsoft.Maui.Controls.Border.SafeAreaEdgesProperty -> Microsof
 ~static readonly Microsoft.Maui.Controls.TemplatedView.IsClippedToBoundsProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.TemplatedView.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.TimePicker.IsOpenProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ToolbarItem.IsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
 static readonly Microsoft.Maui.Controls.Window.IsMaximizableProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.IsMinimizableProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue) -> void

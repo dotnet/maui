@@ -24,10 +24,10 @@ namespace Maui.Controls.Sample.Issues
 
 		class ConditionalToolbarItem : ToolbarItem
 		{
-			public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(ConditionalToolbarItem), true, propertyChanged: IsVisiblePropertyChanged);
+			public new static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(ConditionalToolbarItem), true, propertyChanged: IsVisiblePropertyChanged);
 			public static readonly BindableProperty IndexProperty = BindableProperty.Create(nameof(Index), typeof(int), typeof(ConditionalToolbarItem), 0);
 
-			public bool IsVisible
+			public new bool IsVisible
 			{
 				get { return (bool)GetValue(IsVisibleProperty); }
 				set { SetValue(IsVisibleProperty, value); }
