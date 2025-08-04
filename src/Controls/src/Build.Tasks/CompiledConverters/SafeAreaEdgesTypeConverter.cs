@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.XamlC
 					}
 					else
 					{
-						throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(SafeAreaEdges));
+						throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(string));
 					}
 				}
 
@@ -59,11 +59,11 @@ namespace Microsoft.Maui.Controls.XamlC
 					1 => GenerateILUniform(module, context, regions[0]),
 					2 => GenerateILHorizontalVertical(module, context, regions[0], regions[1]),
 					4 => GenerateILAllEdges(module, context, regions[0], regions[1], regions[2], regions[3]),
-					_ => throw new BuildException(BuildExceptionCode.Conversion, node, null, $"SafeAreaEdges must have 1, 2, or 4 values, but got {regions.Length}", typeof(SafeAreaEdges))
+					_ => throw new BuildException(BuildExceptionCode.Conversion, node, null, $"SafeAreaEdges must have 1, 2, or 4 values, but got {regions.Length}", typeof(string))
 				};
 			}
 
-			throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(SafeAreaEdges));
+			throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(string));
 		}
 
 		// Generate IL for uniform constructor: new SafeAreaEdges(SafeAreaRegions uniformValue)
