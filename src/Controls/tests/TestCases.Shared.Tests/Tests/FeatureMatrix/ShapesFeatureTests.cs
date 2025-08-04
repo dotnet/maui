@@ -74,7 +74,7 @@ public class ShapesFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		VerifyShapeScreenshot();
 	}
 
 	[Test]
