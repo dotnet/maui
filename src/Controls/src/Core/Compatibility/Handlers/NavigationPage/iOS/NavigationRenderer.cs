@@ -1301,7 +1301,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				base.ViewDidLoad();
 
 				_tracker.Target = Child;
-				_tracker.AdditionalTargets = Child.GetParentPages();
+				_tracker.AdditionalTargets = GetIOSAdditionalTargets(Child);
 
 				UpdateToolbarItems();
 			}
@@ -1573,6 +1573,25 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					UpdateTitleImage(titleViewContainer, titleIcon);
 					NavigationItem.TitleView = titleViewContainer;
 				}
+			}
+
+			IEnumerable<Page> GetIOSAdditionalTargets(Page child)
+			{
+				var parentPages = child.GetParentPages();
+				var result = new List<Page>();
+				foreach (var page in parentPages)
+				{
+					result.Add(page);
+					if (page is FlyoutPage flyoutPage)
+					{
+						if (flyoutPage.Flyout != null && flyoutPage.Flyout.ToolbarItems.Count > 0)
+						{
+							result.Add(flyoutPage.Flyout);
+						}
+					}
+				}
+
+				return result;
 			}
 
 			void UpdateIconColor()
