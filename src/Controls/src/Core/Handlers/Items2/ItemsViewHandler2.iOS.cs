@@ -184,6 +184,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			var contentSize = Controller.GetSize();
 
+			// If contentSize comes back null, it means none of the content has been realized yet;
+			// we need to return the expansive size the collection view wants by default to get
+			// it to start measuring its content
+			if (contentSize.Height == 0 || contentSize.Width == 0)
+			{
+				return base.GetDesiredSize(widthConstraint, heightConstraint);
+			}
+
 			// Our target size is the smaller of it and the constraints
 			var width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
 			var height = contentSize.Height <= heightConstraint ? contentSize.Height : heightConstraint;
