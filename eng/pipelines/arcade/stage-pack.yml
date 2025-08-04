@@ -39,12 +39,15 @@ stages:
       sourceIndexParams: ${{ parameters.sourceIndexParams }}
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
-      enablePublishTestResults: true
+      enablePublishTestResults: false
       templateContext:
         outputs:
         - output: pipelineArtifact
           artifact: APIScanFiles
           path: $(Agent.TempDirectory)/APIScanFiles
+        - output: pipelineArtifact
+          artifact: Metadata
+          path: $(Agent.TempDirectory)/metadata
 
       workspace:
         clean: all
@@ -85,6 +88,14 @@ stages:
               **/*.dll
               **/*.pdb
             TargetFolder: '$(Agent.TempDirectory)\APIScanFiles'
+
+        - task: CopyFiles@2
+          displayName: Copy Metadata
+          inputs:
+            SourceFolder: '$(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\Shipping\metadata'
+            Contents: |
+              **/*.json
+            TargetFolder: '$(Agent.TempDirectory)\metadata'
 
         - ${{ each step in parameters.postSteps }}:
           - ${{ each pair in step }}:
