@@ -25,6 +25,7 @@ public class ShapesViewModel : INotifyPropertyChanged
     private FlowDirection _flowDirection = FlowDirection.LeftToRight;
     private bool _hasShadow = false;
     private Shadow _boxShadow = null;
+    private PathGeometryConverter _pathGeometryConverter = new PathGeometryConverter();
 
     public bool HasShadow
     {
@@ -95,7 +96,6 @@ public class ShapesViewModel : INotifyPropertyChanged
                 if (!value)
                 {
                     _fillColor = null;
-                    OnPropertyChanged(nameof(FillColor));
                 }
             }
         }
@@ -217,7 +217,8 @@ public class ShapesViewModel : INotifyPropertyChanged
 
     // Path Data
     private string _pathData = "M 10,100 L 100,100 100,50Z";
-    public string PathData
+
+	public string PathData
     {
         get => _pathData;
         set
@@ -304,14 +305,14 @@ public class ShapesViewModel : INotifyPropertyChanged
             {
                 if (!string.IsNullOrWhiteSpace(_pathData))
                 {
-                    return (Geometry)new PathGeometryConverter().ConvertFromInvariantString(_pathData);
+                   return (Geometry)_pathGeometryConverter.ConvertFromInvariantString(_pathData);
                 }
             }
             catch
             {
                 // Return a simple default path if parsing fails
             }
-            return (Geometry)new PathGeometryConverter().ConvertFromInvariantString("M 10,100 L 100,100");
+            return (Geometry)_pathGeometryConverter.ConvertFromInvariantString("M 10,100 L 100,100");
         }
     }
 
