@@ -55,11 +55,15 @@ public partial class HybridWebViewTests_Initialization : HybridWebViewTestsBase
 #elif ANDROID
 					Assert.NotNull(e.PlatformArgs.Settings);
 #elif WINDOWS
+					// Windows does not have a object to configure, but rather a set of properties for each setting
 #endif
 				};
-			});
 
-		Assert.Equal(1, calledCount);
+			},
+			(handler, view) =>
+			{
+				Assert.Equal(1, calledCount);
+			});
 	}
 
 	[Fact]
@@ -82,9 +86,11 @@ public partial class HybridWebViewTests_Initialization : HybridWebViewTestsBase
 					Assert.NotNull(e.PlatformArgs.Settings);
 #endif
 				};
+			},
+			(handler, view) =>
+			{
+				Assert.Equal(1, calledCount);
 			});
-
-		Assert.Equal(1, calledCount);
 	}
 
 	[Fact]
@@ -124,9 +130,9 @@ public partial class HybridWebViewTests_Initialization : HybridWebViewTestsBase
 				var actual = handler.PlatformView.CoreWebView2.Profile.ProfileName;
 				Assert.Equal(ProfileName, actual);
 #endif
-			});
 
-		Assert.Equal(1, calledCount);
+				Assert.Equal(1, calledCount);
+			});
 	}
 
 	[Fact]
