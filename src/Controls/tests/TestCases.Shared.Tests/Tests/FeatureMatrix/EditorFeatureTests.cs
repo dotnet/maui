@@ -286,7 +286,7 @@ public class EditorFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
-		App.Tap("Editor Control"); // Add a additonal tap to make the Entry control unfocus.
+		App.Tap("Editor Control"); // Add a additonal tap to make the Editor control unfocus.
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
