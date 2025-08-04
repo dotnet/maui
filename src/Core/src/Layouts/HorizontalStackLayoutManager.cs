@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Layouts
 
 			double top = padding.Top + bounds.Top;
 
-			var height = bounds.Height - padding.VerticalThickness;
+			var height = Math.Max(0, bounds.Height - padding.VerticalThickness);
 
 			// Figure out where we're starting from 
 			double xPosition = padding.Left + bounds.Left;
