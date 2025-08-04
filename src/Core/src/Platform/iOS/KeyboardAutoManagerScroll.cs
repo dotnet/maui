@@ -318,7 +318,7 @@ public static class KeyboardAutoManagerScroll
 			AdjustPosition();
 
 			// See if the layout requests to scroll again after our initial scroll
-			await Task.Delay(5);
+			await Task.Delay(30);
 			if (ShouldScrollAgain)
 			{
 				AdjustPosition();
