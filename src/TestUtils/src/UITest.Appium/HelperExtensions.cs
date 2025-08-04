@@ -304,7 +304,7 @@ namespace UITest.Appium
 					return false;
 				}
 
-				Task.Delay(retryFrequency.Value.Milliseconds).Wait();
+				Thread.Sleep(retryFrequency.Value);
 			}
 		}
 
