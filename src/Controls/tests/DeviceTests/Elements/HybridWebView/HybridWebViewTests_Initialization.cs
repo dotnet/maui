@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
@@ -188,6 +189,10 @@ public partial class HybridWebViewTests_Initialization : HybridWebViewTestsBase
 #elif ANDROID
 					e.PlatformArgs.Settings.UserAgentString = UserAgent;
 #elif WINDOWS
+					// WebView2 requires that different environments have different UDF to support multiple simultaneous instances.
+					var lad = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+					e.PlatformArgs.UserDataFolder = Path.Combine(lad, "Microsoft.Maui.Controls.DeviceTests", $"UserDataFolder-{CanSetUserAgentUsingInitializingEvent}");
+
 					e.PlatformArgs.EnvironmentOptions = new Web.WebView2.Core.CoreWebView2EnvironmentOptions
 					{
 						AdditionalBrowserArguments = $"--user-agent=\"{UserAgent}\""
