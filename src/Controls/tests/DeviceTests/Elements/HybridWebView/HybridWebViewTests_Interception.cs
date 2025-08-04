@@ -13,6 +13,9 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests;
 
 [Category(TestCategory.HybridWebView)]
+#if WINDOWS
+[Collection(WebViewsCollection)]
+#endif
 public partial class HybridWebViewTests_Interception : HybridWebViewTestsBase
 {
 	[Fact]
