@@ -222,6 +222,7 @@ Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.SetResponse(int cod
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Uri.get -> System.Uri!
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.WebViewWebResourceRequestedEventArgs(Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs! platformArgs) -> void
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.WebViewWebResourceRequestedEventArgs(System.Uri! uri, string! method) -> void
+Microsoft.Maui.Controls.Window.IsActivated.get -> bool
 Microsoft.Maui.Controls.Window.IsMaximizable.get -> bool
 Microsoft.Maui.Controls.Window.IsMaximizable.set -> void
 Microsoft.Maui.Controls.Window.IsMinimizable.get -> bool
