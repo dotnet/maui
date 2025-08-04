@@ -10,6 +10,7 @@ using System.Web;
 using Android.Webkit;
 using Java.Net;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Storage;
 using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Platform
@@ -141,7 +142,7 @@ namespace Microsoft.Maui.Platform
 				return null;
 			}
 
-			filename = PathUtils.NormalizePath(filename);
+			filename = FileSystemUtils.NormalizePath(filename);
 
 			try
 			{
@@ -152,15 +153,7 @@ namespace Microsoft.Maui.Platform
 				return null;
 			}
 		}
-
-		internal static class PathUtils
-		{
-			public static string NormalizePath(string filename) =>
-				filename
-					.Replace('\\', Path.DirectorySeparatorChar)
-					.Replace('/', Path.DirectorySeparatorChar);
-		}
-
+		
 		private protected static IDictionary<string, string> GetHeaders(string contentType) =>
 			new Dictionary<string, string> {
 				{ "Content-Type", contentType },
