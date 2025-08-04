@@ -27,7 +27,7 @@ variables:
 - name: _OfficialBuildIdArgs
   value: /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
 - name: AppId
-  value: bde2fca-1ca1-47f7-8212-fcdf1a556eb2
+  value: cbde2fca-1ca1-47f7-8212-fcdf1a556eb2
 - name: TenantId
   value: 72f988bf-86f1-41af-91ab-2d7cd011db47
 - name: ServiceConnectionId

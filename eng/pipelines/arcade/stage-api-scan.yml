@@ -42,7 +42,7 @@ stages:
         softwareBuildNum: '$(Build.BuildId)'
         azureSubscription: 'dotnet-apiscan'
       env:
-        AzureServicesAuthConnectionString: RunAs=App;AppId=bde2fca-1ca1-47f7-8212-fcdf1a556eb2;TenantId=72f988bf-86f1-41af-91ab-2d7cd011db47;ServiceConnectionId=334a6802-ebad-4fb1-bc3b-105bcc70bda2;
+        AzureServicesAuthConnectionString: RunAs=App;AppId=$(AppId);TenantId=$(TenantId);ServiceConnectionId=$(ServiceConnectionId);
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
     - task: PublishSecurityAnalysisLogs@3
