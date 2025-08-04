@@ -12,6 +12,27 @@ parameters:
 - name: dependsOnStage
   type: object
   default: []
+- name: softwareName
+  type: string
+  default: 'MAUI'
+- name: softwareVersion
+  type: string
+  default: '9.0'
+- name: softwareBuildNum
+  type: string
+  default: '$(Build.BuildId)'
+- name: softwareFolder
+  type: string
+  default: '$(Agent.TempDirectory)/APIScanFiles'
+- name: AppId
+  type: string
+  default: $(ApiScanAppId)
+- name: TenantId
+  type: string
+  default: $(ApiScanTenantId)
+- name: ServiceConnectionId
+  type: string
+  default: $(ApiScanServiceConnectionId)
 
 stages:
 - stage: APIScan
@@ -27,7 +48,7 @@ stages:
       inputs:
       - input: pipelineArtifact
         artifactName: APIScanFiles
-        targetPath: $(Agent.TempDirectory)/APIScanFiles
+        targetPath: ${{ parameters.softwareFolder }}
     steps:
     - ${{ each step in parameters.prepareSteps }}:
       - ${{ each pair in step }}:
@@ -36,13 +57,13 @@ stages:
     - task: APIScan@2
       displayName: Run APIScan
       inputs:
-        softwareFolder: '$(Agent.TempDirectory)/APIScanFiles'
-        softwareName: 'MAUI'
-        softwareVersionNum: '9.0'
-        softwareBuildNum: '$(Build.BuildId)'
+        softwareFolder: ${{ parameters.softwareFolder }}
+        softwareName: ${{ parameters.softwareName }}
+        softwareVersionNum: ${{ parameters.softwareVersion }}
+        softwareBuildNum: ${{ parameters.softwareBuildNum }}
         azureSubscription: 'dotnet-apiscan'
       env:
-        AzureServicesAuthConnectionString: RunAs=App;AppId=$(AppId);TenantId=$(TenantId);ServiceConnectionId=$(ServiceConnectionId);
+        AzureServicesAuthConnectionString: RunAs=App;AppId=${{ parameters.AppId }};TenantId=${{ parameters.TenantId }};ServiceConnectionId=${{ parameters.ServiceConnectionId }};
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
     - task: PublishSecurityAnalysisLogs@3
