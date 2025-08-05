@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Internals
 {
