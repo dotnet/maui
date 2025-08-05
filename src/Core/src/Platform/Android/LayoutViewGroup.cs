@@ -4,6 +4,7 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
 using Rectangle = Microsoft.Maui.Graphics.Rect;
@@ -15,12 +16,15 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly ARect _clipRect = new();
 		readonly Context _context;
+		readonly SafeAreaHandler _safeAreaHandler;
 
 		public bool InputTransparent { get; set; }
 
 		public LayoutViewGroup(Context context) : base(context)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public LayoutViewGroup(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -28,22 +32,36 @@ namespace Microsoft.Maui.Platform
 			var context = Context;
 			ArgumentNullException.ThrowIfNull(context);
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public LayoutViewGroup(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public LayoutViewGroup(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public LayoutViewGroup(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
+
+		void SetupWindowInsetsHandling()
+		{
+			ViewCompat.SetOnApplyWindowInsetsListener(this, _safeAreaHandler.GetWindowInsetsListener());
+		}
+
 
 		public bool ClipsToBounds { get; set; }
 
@@ -107,6 +125,12 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var destination = _context.ToCrossPlatformRectInReferenceFrame(l, t, r, b);
+
+			// Apply safe area adjustments if needed
+			if (_safeAreaHandler.RespondsToSafeArea())
+			{
+				destination = _safeAreaHandler.AdjustForSafeArea(destination);
+			}
 
 			CrossPlatformArrange(destination);
 
