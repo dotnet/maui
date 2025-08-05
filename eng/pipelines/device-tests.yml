@@ -214,7 +214,6 @@ stages:
           catalyst: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
           windows: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
         platforms:
-        - catalyst
         - windows
 
   - ${{ else }}:
