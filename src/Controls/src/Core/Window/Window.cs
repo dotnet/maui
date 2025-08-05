@@ -648,7 +648,7 @@ namespace Microsoft.Maui.Controls
 			var window = (Window)bindable;
 			if ((bool)newValue)
 			{
-				bindable.SendWindowAppearing();
+				window.SendWindowAppearing();
 			}
 		}
 
