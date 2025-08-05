@@ -74,6 +74,10 @@ Microsoft.Maui.SwipeViewSwipeEnded.Deconstruct(out Microsoft.Maui.SwipeDirection
 Microsoft.Maui.SwipeViewSwipeEnded.SwipeViewSwipeEnded(Microsoft.Maui.SwipeViewSwipeEnded! original) -> void
 Microsoft.Maui.SwipeViewSwipeStarted.Deconstruct(out Microsoft.Maui.SwipeDirection SwipeDirection) -> void
 Microsoft.Maui.SwipeViewSwipeStarted.SwipeViewSwipeStarted(Microsoft.Maui.SwipeViewSwipeStarted! original) -> void
+Microsoft.Maui.ToolTip.Delay.get -> int?
+Microsoft.Maui.ToolTip.Delay.set -> void
+Microsoft.Maui.ToolTip.Duration.get -> int?
+Microsoft.Maui.ToolTip.Duration.set -> void
 Microsoft.Maui.WebResourceRequestedEventArgs
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool

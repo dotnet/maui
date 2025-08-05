@@ -274,13 +274,15 @@ namespace Microsoft.Maui.Platform
 			// Set delay if specified
 			if (tooltip?.Delay.HasValue == true)
 			{
-				ToolTipService.SetInitialShowDelay(platformView, tooltip.Delay.Value);
+				// TODO: this does not exist
+				// ToolTipService.SetInitialShowDelay(platformView, tooltip.Delay.Value);
 			}
 			
 			// Set duration if specified
 			if (tooltip?.Duration.HasValue == true)
 			{
-				ToolTipService.SetShowDuration(platformView, tooltip.Duration.Value);
+				// TODO: this does not exist
+				// ToolTipService.SetShowDuration(platformView, tooltip.Duration.Value);
 			}
 		}
 

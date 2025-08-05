@@ -77,6 +77,10 @@ Microsoft.Maui.SwipeViewSwipeEnded.Deconstruct(out Microsoft.Maui.SwipeDirection
 Microsoft.Maui.SwipeViewSwipeEnded.SwipeViewSwipeEnded(Microsoft.Maui.SwipeViewSwipeEnded! original) -> void
 Microsoft.Maui.SwipeViewSwipeStarted.Deconstruct(out Microsoft.Maui.SwipeDirection SwipeDirection) -> void
 Microsoft.Maui.SwipeViewSwipeStarted.SwipeViewSwipeStarted(Microsoft.Maui.SwipeViewSwipeStarted! original) -> void
+Microsoft.Maui.ToolTip.Delay.get -> int?
+Microsoft.Maui.ToolTip.Delay.set -> void
+Microsoft.Maui.ToolTip.Duration.get -> int?
+Microsoft.Maui.ToolTip.Duration.set -> void
 Microsoft.Maui.WebResourceRequestedEventArgs
 Microsoft.Maui.WebResourceRequestedEventArgs.RequestEventArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs!
 Microsoft.Maui.WebResourceRequestedEventArgs.Sender.get -> Microsoft.Web.WebView2.Core.CoreWebView2!

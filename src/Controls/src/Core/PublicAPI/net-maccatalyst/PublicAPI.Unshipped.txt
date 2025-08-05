@@ -400,6 +400,10 @@ static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToNSAttributed
 static Microsoft.Maui.Controls.Shapes.PathFigureCollectionConverter.ParseStringToPathFigureCollection(Microsoft.Maui.Controls.Shapes.PathFigureCollection! pathFigureCollection, string? pathString) -> void
 ~static Microsoft.Maui.Controls.Shell.GetNavBarVisibilityAnimationEnabled(Microsoft.Maui.Controls.BindableObject obj) -> bool
 ~static Microsoft.Maui.Controls.Shell.SetNavBarVisibilityAnimationEnabled(Microsoft.Maui.Controls.BindableObject obj, bool value) -> void
+static Microsoft.Maui.Controls.ToolTipProperties.GetDelay(Microsoft.Maui.Controls.BindableObject! bindable) -> int?
+static Microsoft.Maui.Controls.ToolTipProperties.GetDuration(Microsoft.Maui.Controls.BindableObject! bindable) -> int?
+static Microsoft.Maui.Controls.ToolTipProperties.SetDelay(Microsoft.Maui.Controls.BindableObject! bindable, int? value) -> void
+static Microsoft.Maui.Controls.ToolTipProperties.SetDuration(Microsoft.Maui.Controls.BindableObject! bindable, int? value) -> void
 static Microsoft.Maui.Controls.ViewExtensions.FadeToAsync(this Microsoft.Maui.Controls.VisualElement! view, double opacity, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.LayoutToAsync(this Microsoft.Maui.Controls.VisualElement! view, Microsoft.Maui.Graphics.Rect bounds, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.RelRotateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double drotation, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
@@ -440,6 +444,8 @@ static readonly Microsoft.Maui.Controls.Border.SafeAreaEdgesProperty -> Microsof
 ~static readonly Microsoft.Maui.Controls.TemplatedView.IsClippedToBoundsProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.TemplatedView.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.TimePicker.IsOpenProperty -> Microsoft.Maui.Controls.BindableProperty
+static readonly Microsoft.Maui.Controls.ToolTipProperties.DelayProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ToolTipProperties.DurationProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.IsMaximizableProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.IsMinimizableProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue) -> void
