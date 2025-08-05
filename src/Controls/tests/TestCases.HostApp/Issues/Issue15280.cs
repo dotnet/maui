@@ -1,4 +1,4 @@
-﻿namespace Maui.Controls.Sample.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 15280, "Swipe gestures attached to rotated controls are rotated on Android", PlatformAffected.Android)]
 public partial class Issue15280 : ContentPage
