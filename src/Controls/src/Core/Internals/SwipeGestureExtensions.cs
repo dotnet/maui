@@ -29,20 +29,14 @@ namespace Microsoft.Maui.Controls.Internals
 		/// <param name="x">X coordinate</param>
 		/// <param name="y">Y coordinate</param>
 		/// <returns>True if both coordinates are finite, false otherwise</returns>
-		internal static bool AreCoordinatesValid(float x, float y)
+		internal static bool AreCoordinatesValid(double x, double y)
 		{
-			return !float.IsNaN(x) && !float.IsInfinity(x) &&
-				   !float.IsNaN(y) && !float.IsInfinity(y);
+			return !double.IsNaN(x) && !double.IsInfinity(x) &&
+				   !double.IsNaN(y) && !double.IsInfinity(y);
 		}
 
-		internal static (float x, float y) TransformSwipeCoordinatesWithRotation(float x, float y, double rotation)
+		internal static (double x, double y) TransformSwipeCoordinatesWithRotation(double x, double y, double rotation)
 		{
-			// Validate input coordinates for NaN or Infinity
-			if (!AreCoordinatesValid(x, y))
-			{
-				return (0f, 0f);
-			}
-
 			// Skip transformation for negligible rotation values to avoid unnecessary computation
 			if (Math.Abs(rotation) < RotationThreshold)
 			{
@@ -55,8 +49,8 @@ namespace Microsoft.Maui.Controls.Internals
 
 			var cos = Math.Cos(radians);
 			var sin = Math.Sin(radians);
-			var transformedX = (float)(x * cos - y * sin);
-			var transformedY = (float)(x * sin + y * cos);
+			var transformedX = x * cos - y * sin;
+			var transformedY = x * sin + y * cos;
 
 			// Validate transformed coordinates for NaN or Infinity
 			if (!AreCoordinatesValid(transformedX, transformedY))
