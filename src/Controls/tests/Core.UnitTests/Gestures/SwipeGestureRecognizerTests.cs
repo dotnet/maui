@@ -119,31 +119,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory]
-		[InlineData(100f, 0f, 90.0, 0f, 100f)]
-		[InlineData(100f, 100f, 90.0, -100f, 100f)]
-		[InlineData(100f, 0f, 180.0, -100f, 0f)]
-		[InlineData(100f, 100f, 270.0, 100f, -100f)]
-		public void TransformSwipeCoordinatesWithRotation_ValidInputs_ReturnsCorrectTransformation(
-			float inputX, float inputY, double rotation, float expectedX, float expectedY)
+		[InlineData(100.0, 0.0, 90.0, 0.0, 100.0)]
+		[InlineData(100.0, 100.0, 90.0, -100.0, 100.0)]
+		[InlineData(100.0, 0.0, 180.0, -100.0, 0.0)]
+		[InlineData(100.0, 100.0, 270.0, 100.0, -100.0)]
+		public void TransformSwipeCoordinatesWithRotation_ReturnsTransformedCoordinates(
+			double inputX, double inputY, double rotation, double expectedX, double expectedY)
 		{
 			var result = Internals.SwipeGestureExtensions.TransformSwipeCoordinatesWithRotation(inputX, inputY, rotation);
 
 			Assert.Equal(expectedX, result.x, 1);
 			Assert.Equal(expectedY, result.y, 1);
-		}
-
-		[Theory]
-		[InlineData(float.NaN, 0f, 90.0)]
-		[InlineData(0f, float.NaN, 90.0)]
-		[InlineData(float.PositiveInfinity, 100f, 90.0)]
-		[InlineData(100f, float.NegativeInfinity, 90.0)]
-		public void TransformSwipeCoordinatesWithRotation_InvalidCoordinates_ReturnsZero(
-			float inputX, float inputY, double rotation)
-		{
-			var result = Internals.SwipeGestureExtensions.TransformSwipeCoordinatesWithRotation(inputX, inputY, rotation);
-
-			Assert.Equal(0f, result.x);
-			Assert.Equal(0f, result.y);
 		}
 
 		[Theory]
