@@ -17,6 +17,8 @@ public class SwipeViewControlMainPage : ContentPage
 {
 	private SwipeViewViewModel _viewModel;
 	private VerticalStackLayout layout;
+	private Action<OpenSwipeItem> _requestOpenHandler;
+	private Action _requestCloseHandler;
 
 	public SwipeViewControlMainPage(SwipeViewViewModel viewModel)
 	{
@@ -138,14 +140,17 @@ public class SwipeViewControlMainPage : ContentPage
 						var itemLabel = new Label { FontSize = 18, HeightRequest = 30 };
 						itemLabel.SetBinding(Label.TextProperty, nameof(SwipeViewViewModel.ItemModel.Title));
 
-						var swipeItems = CreateSwipeItems(swipeItemType);
+						var leftSwipeItems = CreateSwipeItems(swipeItemType);
+						var rightSwipeItems = CreateSwipeItems(swipeItemType);
+						var topSwipeItems = CreateSwipeItems(swipeItemType);
+						var bottomSwipeItems = CreateSwipeItems(swipeItemType);
 						var swipeView = new SwipeView
 						{
 							Content = itemLabel,
-							LeftItems = swipeItems,
-							RightItems = swipeItems,
-							TopItems = swipeItems,
-							BottomItems = swipeItems,
+							LeftItems = leftSwipeItems,
+							RightItems = rightSwipeItems,
+							TopItems = topSwipeItems,
+							BottomItems = bottomSwipeItems,
 							Threshold = _viewModel.Threshold,
 							FlowDirection = _viewModel.FlowDirection,
 							BackgroundColor = _viewModel.BackgroundColor,
@@ -228,15 +233,17 @@ public class SwipeViewControlMainPage : ContentPage
 
 	private SwipeView CreateSwipeView(View contentView, string swipeItemType)
 	{
-		var swipeItems = CreateSwipeItems(swipeItemType);
-
+		var leftItems = CreateSwipeItems(swipeItemType);
+		var rightItems = CreateSwipeItems(swipeItemType);
+		var topItems = CreateSwipeItems(swipeItemType);
+		var bottomItems = CreateSwipeItems(swipeItemType);
 		var swipeView = new SwipeView
 		{
 			Content = contentView,
-			LeftItems = swipeItems,
-			RightItems = swipeItems,
-			TopItems = swipeItems,
-			BottomItems = swipeItems,
+			LeftItems = leftItems,
+			RightItems = rightItems,
+			TopItems = topItems,
+			BottomItems = bottomItems,
 			Threshold = _viewModel.Threshold,
 			FlowDirection = _viewModel.FlowDirection,
 			BackgroundColor = _viewModel.BackgroundColor,
@@ -314,15 +321,29 @@ public class SwipeViewControlMainPage : ContentPage
 
 	private void WireUpOpenCloseHandlers(SwipeView swipeView)
 	{
-		_viewModel.RequestOpen += dir =>
-	{
-		Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() => swipeView.Open(dir));
-	};
+		// Unsubscribe previous handlers if they exist
+		if (_requestOpenHandler != null)
+		{
+			_viewModel.RequestOpen -= _requestOpenHandler;
+		}
+		if (_requestCloseHandler != null)
+		{
+			_viewModel.RequestClose -= _requestCloseHandler;
+		}
 
-		_viewModel.RequestClose += () =>
+		// Create new handlers
+		_requestOpenHandler = dir =>
+		{
+			Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() => swipeView.Open(dir));
+		};
+		_requestCloseHandler = () =>
 		{
 			Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() => swipeView.Close());
 		};
+
+		// Subscribe new handlers
+		_viewModel.RequestOpen += _requestOpenHandler;
+		_viewModel.RequestClose += _requestCloseHandler;
 	}
 
 	public void UpdateSwipeViewContent(string contentType, string swipeItemType)
