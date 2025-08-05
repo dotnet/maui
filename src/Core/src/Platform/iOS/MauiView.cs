@@ -16,6 +16,12 @@ namespace Microsoft.Maui.Platform
 	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 	{
 		/// <summary>
+		/// Tracks whether this view currently has native iOS focus.
+		/// Used to synchronize focus state between the platform and cross-platform layers.
+		/// </summary>
+		bool _isFocused;
+
+		/// <summary>
 		/// Flag indicating that parent views should be invalidated when this view is moved to a window.
 		/// This is used to trigger layout updates when the view hierarchy changes.
 		/// </summary>
@@ -715,6 +721,78 @@ namespace Microsoft.Maui.Platform
 			}
 
 			UpdateKeyboardSubscription();
+		}
+
+		/// <summary>
+		/// Gets a value indicating whether this view can become the first responder.
+		/// Always returns <c>true</c>, allowing the view to receive input events.
+		/// </summary>
+		public override bool CanBecomeFirstResponder => true;
+
+		/// <summary>
+		/// Called when the focus environment updates. This method propagates native iOS focus
+		/// changes to the cross-platform layer by updating the IsFocused property of the
+		/// associated IView when this MauiView gains or loses focus.
+		/// </summary>
+		/// <param name="context">Information about the focus update</param>
+		/// <param name="coordinator">Coordinator for focus animations</param>
+		public override void DidUpdateFocus(UIFocusUpdateContext context, UIFocusAnimationCoordinator coordinator)
+		{
+			base.DidUpdateFocus(context, coordinator);
+
+			var wasFocused = _isFocused;
+			var isFocused = context.NextFocusedView == this;
+
+			// Only update if focus state actually changed to avoid unnecessary work
+			if (wasFocused != isFocused)
+			{
+				_isFocused = isFocused;
+				UpdateCrossPlatformFocusState(isFocused);
+			}
+		}
+
+		/// <summary>
+		/// Updates the cross-platform layer's focus state
+		/// </summary>
+		/// <param name="isFocused">The new focus state</param>
+		void UpdateCrossPlatformFocusState(bool isFocused)
+		{
+			if (CrossPlatformLayout is IView view)
+			{
+				// Update the cross-platform focus state
+				view.IsFocused = isFocused;
+
+				if (isFocused)
+				{
+					view.Focus();
+				}
+				else
+				{
+					view.Unfocus();
+				}
+			}
+		}
+
+		public override bool BecomeFirstResponder()
+		{
+			var result = base.BecomeFirstResponder();
+			if (result && !_isFocused)
+			{
+				_isFocused = true;
+				UpdateCrossPlatformFocusState(true);
+			}
+			return result;
+		}
+
+		public override bool ResignFirstResponder()
+		{
+			var result = base.ResignFirstResponder();
+			if (result && _isFocused)
+			{
+				_isFocused = false;
+				UpdateCrossPlatformFocusState(false);
+			}
+			return result;
 		}
 	}
 }
