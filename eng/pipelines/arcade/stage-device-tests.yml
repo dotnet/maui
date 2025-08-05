@@ -160,6 +160,34 @@ stages:
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsIOS
 
+      - job: device_tests_maccatalyst
+        dependsOn:
+        - builddevice_tests
+        displayName: Run DeviceTests MacCatalyst
+        timeoutInMinutes: 240
+        variables:
+        - name: _BuildConfig
+          value: ${{ parameters.BuildConfiguration }}
+        preSteps:
+        - checkout: self
+          fetchDepth: 1
+          clean: true
+
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download Build'
+          condition: succeeded()
+          inputs:
+            artifactName: ${{ parameters.appArtifactName }}
+            targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
+
+        - template: /eng/common/templates-official/steps/send-to-helix.yml
+          parameters:
+            HelixProjectPath: ${{ parameters.helixProject }}
+            HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix="_$(_BuildConfig)" /p:TestRunNamePrefix="DeviceTestsMacCatalyst_"
+            HelixConfiguration: $(_BuildConfig)
+            IncludeDotNetCli: true
+            DisplayNamePrefix: DeviceTestsMacCatalyst
+
       - job: device_tests_android
         dependsOn:
         - builddevice_tests
