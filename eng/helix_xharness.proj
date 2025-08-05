@@ -99,7 +99,7 @@
 
           <ItemGroup Condition="'$(TargetOS)' == 'maccatalyst'">
             <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/net9.0-maccatalyst/', '*.app', System.IO.SearchOption.AllDirectories))" >
-                <TestTarget>ios-simulator-64</TestTarget>
+                <TestTarget>maccatalyst</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
                 <WorkItemPrefix>%(_MAUIScenarioSearch.ScenarioDirectoryName)</WorkItemPrefix>
