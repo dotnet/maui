@@ -50,6 +50,21 @@ public class DateOnlyTypeConverterTests : BaseTestFixture
 		Assert.Equal(expectedDateTime, datePicker.Date);
 	}
 
+	[Fact]
+	public void DateOnlyToNonNullableBinding()
+	{
+		var dateProperty = BindableProperty.Create("Date", typeof(DateTime), typeof(DatePicker), null, BindingMode.TwoWay);
+		var source = new Issue20438DatePickerViewModel
+		{
+			SelectedDate = new DateOnly(2025, 3, 15)
+		};
+		var bo = new MockBindable { BindingContext = source };
+
+		bo.SetBinding(dateProperty, "SelectedDate");
+		var expectedDateTime = new DateTime(2025, 3, 15);
+		Assert.Equal(expectedDateTime, bo.GetValue(dateProperty));
+	}
+
 	public class Issue20438DatePickerViewModel
 	{
 		public DateOnly SelectedDate { get; set; }

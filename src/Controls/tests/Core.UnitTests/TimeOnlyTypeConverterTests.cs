@@ -49,6 +49,21 @@ public class TimeOnlyTypeConverterTests : BaseTestFixture
 		Assert.Equal(expectedTimeSpan, timePicker.Time);
 	}
 
+	[Fact]
+	public void TimeOnlyToNonNullableBinding()
+	{
+		var timeProperty = BindableProperty.Create("Time", typeof(TimeSpan), typeof(TimePicker), null, BindingMode.TwoWay);
+		var source = new Issue20438TimePickerViewModel
+		{
+			SelectedTime = new TimeOnly(14, 30, 0)
+		};
+		var bo = new MockBindable { BindingContext = source };
+
+		bo.SetBinding(timeProperty, "SelectedTime");
+		var expectedTimeSpan = new TimeSpan(14, 30, 0);
+		Assert.Equal(expectedTimeSpan, bo.GetValue(timeProperty));
+	}
+
 	public class Issue20438TimePickerViewModel
 	{
 		public TimeOnly SelectedTime { get; set; }
