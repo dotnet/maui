@@ -4,6 +4,7 @@
         <HelixBuild Condition="'$(HelixBuild)' == ''">$(BUILD_BUILDNUMBER)</HelixBuild>
         <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'ios'">osx.15.arm64.Open</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst'">osx.15.arm64.Open</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'android'">ubuntu.2204.amd64.android.29.open</HelixTargetQueues>
         <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
         <IncludeDotNetCli>true</IncludeDotNetCli>
@@ -97,7 +98,7 @@
             </XHarnessAppBundleToTest>
         </ItemGroup>
 
-          <ItemGroup Condition="'$(TargetOS)' == 'maccatalyst'">
+        <ItemGroup Condition="'$(TargetOS)' == 'maccatalyst'">
             <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/net9.0-maccatalyst/', '*.app', System.IO.SearchOption.AllDirectories))" >
                 <TestTarget>maccatalyst</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
