@@ -1,5 +1,21 @@
 <Dependencies>
   <ProductDependencies>
+    <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_18.5" Version="18.5.9215">
+      <Uri>https://github.com/dotnet/macios</Uri>
+      <Sha>807153429630114a7186d246285c3a4a504f23c1</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.macOS.Sdk.net9.0_15.5" Version="15.5.9215">
+      <Uri>https://github.com/dotnet/macios</Uri>
+      <Sha>807153429630114a7186d246285c3a4a504f23c1</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.iOS.Sdk.net9.0_18.5" Version="18.5.9215">
+      <Uri>https://github.com/dotnet/macios</Uri>
+      <Sha>807153429630114a7186d246285c3a4a504f23c1</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.tvOS.Sdk.net9.0_18.5" Version="18.5.9215">
+      <Uri>https://github.com/dotnet/macios</Uri>
+      <Sha>807153429630114a7186d246285c3a4a504f23c1</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="9.0.0-prerelease.25317.3">
       <Uri>https://github.com/dotnet/xharness</Uri>
       <Sha>d20661676ca197f1f09a4322817b20a45da84290</Sha>
