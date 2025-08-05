@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// for example
 				// e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
 				// Even if AcceptedOperation is already set to Copy it will cause the copy animation
-				// to remain even after the the dragged element has left
+				// to remain even after the dragged element has left
 				if (!dragEventArgs.PlatformArgs?.Handled ?? true && operationPriorToSend != dragEventArgs.AcceptedOperation)
 				{
 					var result = (int)dragEventArgs.AcceptedOperation;
@@ -565,11 +565,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPointerCanceled(object sender, PointerRoutedEventArgs e)
 		{
-			uint id = e.Pointer.PointerId;
-			if (_fingers.Contains(id))
-			{
-				_fingers.Remove(id);
-			}
+			_fingers.Remove(e.Pointer.PointerId);
 
 			SwipeComplete(false);
 			PinchComplete(false);
@@ -580,9 +576,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (!_isPanning)
 			{
-				uint id = e.Pointer.PointerId;
-				if (_fingers.Contains(id))
-					_fingers.Remove(id);
+				_fingers.Remove(e.Pointer.PointerId);
 			}
 
 			SwipeComplete(true);
@@ -600,11 +594,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
-			uint id = e.Pointer.PointerId;
-			if (_fingers.Contains(id))
-			{
-				_fingers.Remove(id);
-			}
+			_fingers.Remove(e.Pointer.PointerId);
 
 			SwipeComplete(true);
 			PinchComplete(true);
