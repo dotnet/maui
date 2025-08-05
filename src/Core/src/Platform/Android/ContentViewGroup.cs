@@ -4,6 +4,7 @@ using Android.Graphics;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
+using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 
@@ -13,10 +14,13 @@ namespace Microsoft.Maui.Platform
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;
+		readonly SafeAreaHandler _safeAreaHandler;
 
 		public ContentViewGroup(Context context) : base(context)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -24,21 +28,34 @@ namespace Microsoft.Maui.Platform
 			var context = Context;
 			ArgumentNullException.ThrowIfNull(context);
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
+		}
+
+		void SetupWindowInsetsHandling()
+		{
+			ViewCompat.SetOnApplyWindowInsetsListener(this, _safeAreaHandler.GetWindowInsetsListener());
 		}
 
 		public ICrossPlatformLayout? CrossPlatformLayout
@@ -95,6 +112,12 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var destination = _context.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
+
+			// Apply safe area adjustments if needed
+			if (_safeAreaHandler.RespondsToSafeArea())
+			{
+				destination = _safeAreaHandler.AdjustForSafeArea(destination);
+			}
 
 			CrossPlatformArrange(destination);
 		}
