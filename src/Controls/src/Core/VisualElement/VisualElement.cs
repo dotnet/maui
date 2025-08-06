@@ -7,7 +7,7 @@ using System.Globalization;
 using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Diagnostics;
+
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
@@ -1889,7 +1889,7 @@ namespace Microsoft.Maui.Controls
 		public void Arrange(Rect bounds)
 		{
 			ArrangeOverride(bounds);
-		}		
+		}
 
 		/// <inheritdoc/>
 		Size IView.Arrange(Rect bounds)

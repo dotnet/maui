@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages;
@@ -71,14 +72,15 @@ namespace Maui.Controls.Sample
 #endif
 			}
 
-			
+
 			appBuilder.Services.AddMetrics();
+
 			ActivitySource.AddActivityListener(new ActivityListener
 			{
 				ShouldListenTo = source => true,
 				Sample = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
-				ActivityStarted = activity => Console.WriteLine("Started: {0,-15} {1,-60}", activity.OperationName, activity.Id),
-				ActivityStopped = activity => Console.WriteLine("Stopped: {0,-15} {1,-60} {2,-15}", activity.OperationName, activity.Id, activity.Duration)
+				ActivityStarted = activity => Console.WriteLine("Started: {0,-15} {1,-60} [{2}]", activity.OperationName, activity.Id, string.Join(", ", activity.Tags.Select(t => t.Key))),
+				ActivityStopped = activity => Console.WriteLine("Stopped: {0,-15} {1,-60} {2,-15} [{3}]", activity.OperationName, activity.Id, activity.Duration, string.Join(", ", activity.Tags.Select(t => t.Key))),
 			});
 
 			MeterListener meterListener = new();
@@ -89,12 +91,10 @@ namespace Maui.Controls.Sample
 					listener.EnableMeasurementEvents(instrument);
 				}
 			};
-
-			meterListener.SetMeasurementEventCallback<int>((Instrument instrument, int measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state) =>
+			meterListener.SetMeasurementEventCallback<int>((instrument, measurement, tags, state) =>
 			{
-				Console.WriteLine($"{instrument.Name} recorded measurement {measurement}");
+				Console.WriteLine($"{instrument.Name} recorded measurement {measurement} [{string.Join(", ", tags.ToArray().Select(t => t.Key))}]");
 			});
-			// Start the meterListener, enabling InstrumentPublished callbacks.
 			meterListener.Start();
 
 
@@ -105,13 +105,13 @@ namespace Maui.Controls.Sample
 				{
 					handlers.AddHandler<GraphicsView, SkiaGraphicsViewHandler>();
 					handlers.AddHandler<BoxView, SkiaShapeViewHandler>();
-				handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Ellipse, SkiaShapeViewHandler>();
-				handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Line, SkiaShapeViewHandler>();
-				handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Path, SkiaShapeViewHandler>();
-				handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polygon, SkiaShapeViewHandler>();
-				handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polyline, SkiaShapeViewHandler>();
-				handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Rectangle, SkiaShapeViewHandler>();
-				handlers.AddHandler<Microsoft.Maui.Controls.Shapes.RoundRectangle, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Ellipse, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Line, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Path, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polygon, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polyline, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Rectangle, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.RoundRectangle, SkiaShapeViewHandler>();
 				});
 				*/
 			}

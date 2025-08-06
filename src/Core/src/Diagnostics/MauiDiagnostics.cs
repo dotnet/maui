@@ -1,101 +1,47 @@
-using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Hosting;
+using System.Linq;
 
 namespace Microsoft.Maui.Diagnostics;
 
 internal class MauiDiagnostics
 {
-    public MauiDiagnostics(IMeterFactory? meterFactory = null)
-    {
-        ActivitySource = new ActivitySource("Microsoft.Maui.Diagnostics", "1.0.0");
+	const string DiagnosticsNamespace = "Microsoft.Maui.Diagnostics";
+	const string DiagnosticsVersion = "1.0.0";
 
-        Meters = meterFactory?.Create("Microsoft.Maui.Diagnostics", "1.0.0");
+	readonly IDiagnosticTagger[] _taggers;
 
-        MeasureCounter = Meters?.CreateCounter<int>("maui.layout.measure_count", "{times}", "The number of times a measure happened.");
-        ArrangeCounter = Meters?.CreateCounter<int>("maui.layout.arrange_count", "{times}", "The number of times an arrange happened.");
-
-        MeasureHistogram = Meters?.CreateHistogram<int>("maui.layout.measure_duration", "ns");
-        ArrangeHistogram = Meters?.CreateHistogram<int>("maui.layout.arrange_duration", "ns");
-    }
-
-	public ActivitySource ActivitySource { get; }
-	public Meter? Meters { get; }
-	public Counter<int>? MeasureCounter { get; }
-	public Counter<int>? ArrangeCounter { get; }
-	public Histogram<int>? MeasureHistogram { get; }
-	public Histogram<int>? ArrangeHistogram { get; }
-}
-
-internal static class MauiDiagnosticsExtensions
-{
-	public static MauiAppBuilder ConfigureMauiDiagnostics(this MauiAppBuilder builder)
+	public MauiDiagnostics(IEnumerable<IDiagnosticTagger> taggers, IMeterFactory? meterFactory = null)
 	{
-        if (RuntimeFeature.IsMeterSupported)
-        {
-            builder.Services.AddSingleton(serviceProvider => new MauiDiagnostics(serviceProvider.GetService<IMeterFactory>()));
-        }
+		_taggers = taggers.ToArray();
 
-		return builder;
+		ActivitySource = new ActivitySource(DiagnosticsNamespace, DiagnosticsVersion);
+
+		Meters = meterFactory?.Create(DiagnosticsNamespace, DiagnosticsVersion);
+
+		MeasureCounter = Meters?.CreateCounter<int>("maui.layout.measure_count", "{times}", "The number of times a measure happened.");
+		ArrangeCounter = Meters?.CreateCounter<int>("maui.layout.arrange_count", "{times}", "The number of times an arrange happened.");
+
+		MeasureHistogram = Meters?.CreateHistogram<int>("maui.layout.measure_duration", "ns");
+		ArrangeHistogram = Meters?.CreateHistogram<int>("maui.layout.arrange_duration", "ns");
 	}
 
-	static MauiDiagnostics? GetMauiDiagnostics(this IView view)
+
+	internal ActivitySource ActivitySource { get; }
+
+	internal Meter? Meters { get; }
+
+	internal Counter<int>? MeasureCounter { get; }
+	internal Counter<int>? ArrangeCounter { get; }
+	internal Histogram<int>? MeasureHistogram { get; }
+	internal Histogram<int>? ArrangeHistogram { get; }
+
+	internal void AddTags(object source, ref TagList tagList)
 	{
-        if (!RuntimeFeature.IsMeterSupported)
-            return null;
-
-		return view.Handler?.MauiContext?.Services.GetService<MauiDiagnostics>();
-	}
-
-	public static Activity? StartActivity(this IView view, string name)
-	{
-        if (!RuntimeFeature.IsMeterSupported)
-            return null;
-
-		var elementName = view.GetType().Name;
-
-		var activity = view.GetMauiDiagnostics()?.ActivitySource.StartActivity($"{name} {elementName}");
-
-		activity?.SetTag("element.type", view.GetType().FullName);
-
-		return activity;
-	}
-
-	public static void RecordMeasure(this IView view, TimeSpan? duration)
-	{
-        if (!RuntimeFeature.IsMeterSupported)
-            return;
-
-		var diag = view.GetMauiDiagnostics();
-		diag?.MeasureCounter?.Add(1);
-
-        if (duration is not null)
-        {
-#if NET9_0_OR_GREATER
-            diag?.MeasureHistogram?.Record((int)duration.Value.TotalNanoseconds);
-#else
-            diag?.MeasureHistogram?.Record((int)(duration.Value.TotalMilliseconds * 1_000_000));
-#endif
-        }
-	}
-
-	public static void RecordArrange(this IView view, TimeSpan? duration)
-	{
-        if (!RuntimeFeature.IsMeterSupported)
-            return;
-
-		var diag = view.GetMauiDiagnostics();
-		diag?.ArrangeCounter?.Add(1);
-
-        if (duration is not null)
-        {
-#if NET9_0_OR_GREATER
-            diag?.ArrangeHistogram?.Record((int)duration.Value.TotalNanoseconds);
-#else
-            diag?.ArrangeHistogram?.Record((int)(duration.Value.TotalMilliseconds * 1_000_000));
-#endif
-        }
+		foreach (var tagger in _taggers)
+		{
+			tagger.AddTags(source, ref tagList);
+		}
 	}
 }
