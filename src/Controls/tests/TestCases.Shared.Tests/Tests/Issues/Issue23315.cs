@@ -12,8 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public void WebViewCanLoadFileFromSubdirectory()
 		{
-			App.WaitForElement("DescriptionLabel");
-			Thread.Sleep(1000); // Allow time for the UI to settle before taking a screenshot
+			App.WaitForElement("DescriptionLabel", timeout: TimeSpan.FromSeconds(3));
 			VerifyScreenshot();
 		}
 	}
