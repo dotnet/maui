@@ -63,13 +63,6 @@ parameters:
   type: boolean
   default: false
 
-- name: VM_IMAGE_HOST
-  type: object
-  default:
-    name: NetCore-Public
-    image: 1es-windows-2022
-    os: windows
-
 - name: androidPool
   type: object
   default:
@@ -104,15 +97,13 @@ parameters:
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
 
+  # Run on dnceng-public (Helix)
   - ${{ if eq(variables['Build.DefinitionName'], 'maui-pr-devicetests') }}:
 
+    # Use Helix for iOS / Android and MacCatalyst Device Tests
     - template: /eng/pipelines/arcade/stage-device-tests.yml@self
       parameters:
-        pool: ${{ parameters.VM_IMAGE_HOST }}
-        androidPool: ${{ parameters.androidPool }}
-        iosPool: ${{ parameters.iosPool }}
-        catalystPool: ${{ parameters.catalystPool }}
-        windowsPool: ${{ parameters.windowsPool }}
+        pool: ${{ parameters.iosPool }}
         runAsPublic: true
         prepareSteps:
         - template: /eng/pipelines/common/provision.yml@self
