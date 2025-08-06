@@ -17,14 +17,14 @@ public class Issue29559 : _IssuesUITest
 	{
 		App.WaitForElement("ShowKeyboardButton");
 		App.Click("ShowKeyboardButton");
-		bool IskeyboardVisible = App.IsKeyboardShown();
-		Assert.That(IskeyboardVisible, Is.True);
+		App.WaitForKeyboardToShow(timeout: TimeSpan.FromSeconds(1));
+		Assert.That(App.IsKeyboardShown(), Is.True);
 
 		App.WaitForElement("HideKeyboardButton");
 		App.Click("HideKeyboardButton");
 
-		IskeyboardVisible = App.IsKeyboardShown();
-		Assert.That(IskeyboardVisible, Is.False);
+		App.WaitForKeyboardToHide(timeout: TimeSpan.FromSeconds(1));
+		Assert.That(App.IsKeyboardShown(), Is.False);
 	}
 }
 #endif
