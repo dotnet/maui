@@ -1,4 +1,5 @@
 #nullable enable
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnInterceptTouchEvent(Android.Views.MotionEvent e) -> bool
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
