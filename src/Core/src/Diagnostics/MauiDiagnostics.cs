@@ -72,7 +72,13 @@ internal static class MauiDiagnosticsExtensions
 		diag?.MeasureCounter?.Add(1);
 
         if (duration is not null)
-		    diag?.MeasureHistogram?.Record((int)duration.Value.TotalNanoseconds);
+        {
+#if NET9_0_OR_GREATER
+            diag?.MeasureHistogram?.Record((int)duration.Value.TotalNanoseconds);
+#else
+            diag?.MeasureHistogram?.Record((int)(duration.Value.TotalMilliseconds * 1_000_000));
+#endif
+        }
 	}
 
 	public static void RecordArrange(this IView view, TimeSpan? duration)
@@ -82,8 +88,14 @@ internal static class MauiDiagnosticsExtensions
 
 		var diag = view.GetMauiDiagnostics();
 		diag?.ArrangeCounter?.Add(1);
-        
-		if (duration is not null)
+
+        if (duration is not null)
+        {
+#if NET9_0_OR_GREATER
             diag?.ArrangeHistogram?.Record((int)duration.Value.TotalNanoseconds);
+#else
+            diag?.ArrangeHistogram?.Record((int)(duration.Value.TotalMilliseconds * 1_000_000));
+#endif
+        }
 	}
 }
