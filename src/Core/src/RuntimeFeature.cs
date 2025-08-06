@@ -107,11 +107,10 @@ namespace Microsoft.Maui
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition($"System.Diagnostics.Metrics.Meter.IsSupported")]
 #endif
-		public static bool IsMeterSupported => AppContext.TryGetSwitch($"System.Diagnostics.Metrics.Meter.IsSupported", out bool isEnabled)
-				? isEnabled
-				: IsMeterSupportedByDefault;
+		internal static bool IsMeterSupported { get; } = InitializeIsMeterSupported();
 
-
+        private static bool InitializeIsMeterSupported() =>
+            AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out bool isSupported) ? isSupported : IsMeterSupportedByDefault;
 
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(EnableDiagnostics)}")]
