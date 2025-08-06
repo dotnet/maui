@@ -40,8 +40,7 @@ public class RefreshViewFeatureTests : UITest
 		App.WaitForElement("ScrollViewContentButton");
 		App.Tap("ScrollViewContentButton");
 		App.WaitForElement("RefreshView");
-		var rect = App.WaitForElement("RefreshView").GetRect();
-		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
+		App.ScrollUp("RefreshView");
 		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.Not.EqualTo("None"));
 	}
 
@@ -57,8 +56,7 @@ public class RefreshViewFeatureTests : UITest
 		App.WaitForElement("CollectionViewContentButton");
 		App.Tap("CollectionViewContentButton");
 		App.WaitForElement("RefreshView");
-		var rect = App.WaitForElement("RefreshView").GetRect();
-		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 300);
+		App.ScrollUp("RefreshView");
 		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.Not.EqualTo("None"));
 	}
 
@@ -73,8 +71,7 @@ public class RefreshViewFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("RefreshView");
-		var rect = App.WaitForElement("RefreshView").GetRect();
-		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
+		App.ScrollUp("RefreshView");
 		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.Not.EqualTo("None"));
 	}
 
@@ -89,8 +86,7 @@ public class RefreshViewFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("RefreshView");
-		var rect = App.WaitForElement("RefreshView").GetRect();
-		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
+		App.ScrollUp("RefreshView");
 		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.EqualTo("None"));
 	}
 
@@ -104,8 +100,11 @@ public class RefreshViewFeatureTests : UITest
 		App.Tap("RefreshColorBlueRadio");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		var rect = App.WaitForElement("RefreshView").GetRect();
-		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
+		App.WaitForElement("RefreshView");
+		App.WaitForElement("CollectionViewContentButton");
+		App.Tap("CollectionViewContentButton");
+		App.WaitForElement("RefreshView");
+		App.ScrollUp("RefreshView");
 		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.Not.EqualTo("None"));
 	}
 
@@ -119,8 +118,8 @@ public class RefreshViewFeatureTests : UITest
 		App.Tap("FlowDirectionRTL");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		var rect = App.WaitForElement("RefreshView").GetRect();
-		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() + 200);
+		App.WaitForElement("RefreshView");
+		App.ScrollUp("RefreshView");
 		Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.Not.EqualTo("None"));
 	}
 #endif
