@@ -2077,6 +2077,7 @@
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.SetUpNewElement(Microsoft.Maui.Controls.CarouselView newElement) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.TearDownOldElement(Microsoft.Maui.Controls.CarouselView oldElement) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.RecyclerViewScrollListener<TItemsView, TItemsViewSource>.OnScrolled(AndroidX.RecyclerView.Widget.RecyclerView recyclerView, int dx, int dy) -> void
+~override Microsoft.Maui.Controls.Handlers.Items.RecyclerViewScrollListener<TItemsView, TItemsViewSource>.OnScrollStateChanged(AndroidX.RecyclerView.Widget.RecyclerView recyclerView, int newState) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.ReorderableItemsViewHandler<TItemsView>.CreateAdapter() -> Microsoft.Maui.Controls.Handlers.Items.ReorderableItemsViewAdapter<TItemsView, Microsoft.Maui.Controls.Handlers.Items.IGroupableItemsViewSource>
 ~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewAdapter<TItemsView, TItemsSource>.OnBindViewHolder(AndroidX.RecyclerView.Widget.RecyclerView.ViewHolder holder, int position) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewAdapter<TItemsView, TItemsSource>.OnViewRecycled(Java.Lang.Object holder) -> void
