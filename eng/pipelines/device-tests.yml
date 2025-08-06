@@ -66,7 +66,7 @@ parameters:
 - name: androidPool
   type: object
   default:
-    name: MAUI-DNCENG
+    name: $(1ESPTPool)
     vmImage: $(androidTestsVmImage)
     demands:
     - ImageOverride -equals 1ESPT-Ubuntu22.04
@@ -74,20 +74,30 @@ parameters:
 - name: iosPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: macOS-15
+    name: $(iosDeviceTestsVmPool)
+    vmImage: $(iosDeviceTestsVmImage)
+    demands:
+    - macOS.Name -equals Sequoia
 
 - name: catalystPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: macOS-15
+    name: $(iosDeviceTestsVmPool)
+    vmImage: $(iosDeviceTestsVmImage)
+    demands:
+    - macOS.Name -equals Sequoia
 
 - name: windowsPool
   type: object
   default:
     name: Azure Pipelines
     vmImage: windows-2022
+
+- name: macOSPool
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: macOS-15
 
 - name: targetFrameworkVersions
   type: object
@@ -103,7 +113,7 @@ stages:
     # Use Helix for iOS / Android and MacCatalyst Device Tests
     - template: /eng/pipelines/arcade/stage-device-tests.yml@self
       parameters:
-        pool: ${{ parameters.iosPool }}
+        pool: ${{ parameters.macOSPool }}
         runAsPublic: true
         prepareSteps:
         - template: /eng/pipelines/common/provision.yml@self
