@@ -43,6 +43,10 @@ namespace Microsoft.Maui.Handlers
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
+			// Invoke the WebViewInitializing event to allow custom configuration of the web view
+			var initializingArgs = new WebViewInitializationStartedEventArgs(config);
+			VirtualView?.WebViewInitializationStarted(initializingArgs);
+
 			var webview = new MauiHybridWebView(this, RectangleF.Empty, config)
 			{
 				BackgroundColor = UIColor.Clear,
@@ -60,6 +64,10 @@ namespace Microsoft.Maui.Handlers
 					webview.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
 				}
 			}
+
+			// Invoke the WebViewInitialized event to signal that the web view has been initialized
+			var initializedArgs = new WebViewInitializationCompletedEventArgs(webview, config);
+			VirtualView?.WebViewInitializationCompleted(initializedArgs);
 
 			return webview;
 		}

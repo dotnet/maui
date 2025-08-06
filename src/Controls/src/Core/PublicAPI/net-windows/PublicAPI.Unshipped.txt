@@ -62,6 +62,8 @@ Microsoft.Maui.Controls.DatePickerOpenedEventArgs.DatePickerOpenedEventArgs() ->
 Microsoft.Maui.Controls.FlexLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.HybridWebView.WebResourceRequested -> System.EventHandler<Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs!>?
+Microsoft.Maui.Controls.HybridWebView.WebViewInitialized -> System.EventHandler<Microsoft.Maui.Controls.WebViewInitializedEventArgs!>?
+Microsoft.Maui.Controls.HybridWebView.WebViewInitializing -> System.EventHandler<Microsoft.Maui.Controls.WebViewInitializingEventArgs!>?
 Microsoft.Maui.Controls.ICornerElement
 Microsoft.Maui.Controls.ICornerElement.CornerRadius.get -> Microsoft.Maui.CornerRadius
 Microsoft.Maui.Controls.IExtendedTypeConverter.ConvertFromInvariantString(string! value, System.IServiceProvider! serviceProvider) -> object?
@@ -127,6 +129,22 @@ Microsoft.Maui.Controls.PickerClosedEventArgs.PickerClosedEventArgs() -> void
 Microsoft.Maui.Controls.PickerOpenedEventArgs
 Microsoft.Maui.Controls.PickerOpenedEventArgs.PickerOpenedEventArgs() -> void
 Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.Popover = 5 -> Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle
+Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs
+Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs.Sender.get -> Microsoft.Web.WebView2.Core.CoreWebView2!
+Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs.Settings.get -> Microsoft.Web.WebView2.Core.CoreWebView2Settings!
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs.BrowserExecutableFolder.get -> string?
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs.BrowserExecutableFolder.set -> void
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs.EnvironmentOptions.get -> Microsoft.Web.WebView2.Core.CoreWebView2EnvironmentOptions?
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs.EnvironmentOptions.set -> void
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs.IsInPrivateModeEnabled.get -> bool
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs.IsInPrivateModeEnabled.set -> void
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs.ProfileName.get -> string?
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs.ProfileName.set -> void
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs.ScriptLocale.get -> string?
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs.ScriptLocale.set -> void
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs.UserDataFolder.get -> string?
+Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs.UserDataFolder.set -> void
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Request.get -> Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequest!
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.RequestEventArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs!
@@ -177,6 +195,12 @@ Microsoft.Maui.Controls.TimePickerClosedEventArgs
 Microsoft.Maui.Controls.TimePickerClosedEventArgs.TimePickerClosedEventArgs() -> void
 Microsoft.Maui.Controls.TimePickerOpenedEventArgs
 Microsoft.Maui.Controls.TimePickerOpenedEventArgs.TimePickerOpenedEventArgs() -> void
+Microsoft.Maui.Controls.WebViewInitializedEventArgs
+Microsoft.Maui.Controls.WebViewInitializedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs?
+Microsoft.Maui.Controls.WebViewInitializedEventArgs.WebViewInitializedEventArgs(Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs! platformArgs) -> void
+Microsoft.Maui.Controls.WebViewInitializingEventArgs
+Microsoft.Maui.Controls.WebViewInitializingEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs?
+Microsoft.Maui.Controls.WebViewInitializingEventArgs.WebViewInitializingEventArgs(Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs! platformArgs) -> void
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Handled.get -> bool
 Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs.Handled.set -> void

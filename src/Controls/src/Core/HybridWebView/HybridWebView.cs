@@ -67,6 +67,32 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<HybridWebViewRawMessageReceivedEventArgs>? RawMessageReceived;
 
 		/// <inheritdoc/>
+		void IInitializationAwareWebView.WebViewInitializationStarted(WebViewInitializationStartedEventArgs args)
+		{
+			var platformArgs = new PlatformWebViewInitializingEventArgs(args);
+			var e = new WebViewInitializingEventArgs(platformArgs);
+			WebViewInitializing?.Invoke(this, e);
+		}
+
+		/// <summary>
+		/// Raised when the web view is initializing. This event allows the application to perform additional configuration.
+		/// </summary>
+		public event EventHandler<WebViewInitializingEventArgs>? WebViewInitializing;
+
+		/// <inheritdoc/>
+		void IInitializationAwareWebView.WebViewInitializationCompleted(WebViewInitializationCompletedEventArgs args)
+		{
+			var platformArgs = new PlatformWebViewInitializedEventArgs(args);
+			var e = new WebViewInitializedEventArgs(platformArgs);
+			WebViewInitialized?.Invoke(this, e);
+		}
+
+		/// <summary>
+		/// Raised when the web view has been initialized.
+		/// </summary>
+		public event EventHandler<WebViewInitializedEventArgs>? WebViewInitialized;
+
+		/// <inheritdoc/>
 		bool IWebRequestInterceptingWebView.WebResourceRequested(WebResourceRequestedEventArgs args)
 		{
 			var platformArgs = new PlatformWebViewWebResourceRequestedEventArgs(args);
