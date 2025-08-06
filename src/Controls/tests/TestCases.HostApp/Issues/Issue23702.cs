@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-
 namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 23702, "CollectionView with GridItemsLayout (Span=1) doesn't adapt to window width reduction on Windows platform", PlatformAffected.WinRT)]
 public class Issue23702 : ContentPage
@@ -39,14 +37,7 @@ public class Issue23702 : ContentPage
 		{
 			AutomationId = "TestCollectionView",
 			BackgroundColor = Colors.LightBlue,
-			ItemsSource = new ObservableCollection<Issue23702Item>
-			{
-				new Issue23702Item { Name = "Item 1" },
-				new Issue23702Item { Name = "Item 2" },
-				new Issue23702Item { Name = "Item 3" },
-				new Issue23702Item { Name = "Item 4" },
-				new Issue23702Item { Name = "Item 5" }
-			},
+			ItemsSource = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" },
 			ItemsLayout = new GridItemsLayout(1, ItemsLayoutOrientation.Vertical),
 			ItemTemplate = new DataTemplate(() =>
 			{
@@ -64,7 +55,7 @@ public class Issue23702 : ContentPage
 					HorizontalOptions = LayoutOptions.FillAndExpand,
 					VerticalOptions = LayoutOptions.CenterAndExpand
 				};
-				label.SetBinding(Label.TextProperty, "Name");
+				label.SetBinding(Label.TextProperty, ".");
 				
 				var border = new Border
 				{
@@ -102,9 +93,4 @@ public class Issue23702 : ContentPage
 			Children = { titleLabel, labelContainer, setWidthButton, collectionView }
 		};
 	}
-}
-
-public class Issue23702Item
-{
-	public string Name { get; set; } = string.Empty;
 }

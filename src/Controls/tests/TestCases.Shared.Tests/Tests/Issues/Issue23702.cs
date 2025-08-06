@@ -10,7 +10,7 @@ public class Issue23702 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "CollectionView with GridItemsLayout (Span=1) doesn't adapt to window width reduction on Windows";
+	public override string Issue => "CollectionView with GridItemsLayout (Span=1) doesn't adapt to window width reduction on Windows platform";
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
