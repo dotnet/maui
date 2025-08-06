@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Maps.Platform
 		{
 			_handlerRef = new WeakReference<IMapHandler>(handler);
 			OverlayRenderer = GetViewForOverlayDelegate;
+			GetViewForAnnotation = GetMapViewForAnnotation;
 		}
 
 		internal IMapHandler? Handler
@@ -71,7 +72,7 @@ namespace Microsoft.Maui.Maps.Platform
 		}
 
 #pragma warning disable CS0108 // Member hides inherited member; missing new keyword
-		MKAnnotationView GetViewForAnnotation(MKMapView mapView, IMKAnnotation annotation)
+		MKAnnotationView GetMapViewForAnnotation(MKMapView mapView, IMKAnnotation annotation)
 #pragma warning restore CS0108 // Member hides inherited member; missing new keyword
 		{
 			MKAnnotationView? mapPin;
