@@ -20,27 +20,8 @@ parameters:
 - name: runAsPublic
   type: boolean
   default: true
-- name: androidPool
+- name: pool
   type: object
-- name: iosPool
-  type: object
-- name: catalystPool
-  type: object
-- name: windowsPool
-  type: object
-  default: 'dotnet'
-- name: iosVersions
-  type: object
-  default: [ 'latest' ]
-- name: iosDeviceVersions
-  type: object
-  default: [ '15' ]
-- name: androidApiLevels
-  type: object
-  default: [ 33 ]
-- name: catalystVersions
-  type: object
-  default: [ 'latest' ]
 - name: helixProject
   type: string
   default: 'eng/helix_xharness.proj'
@@ -68,7 +49,7 @@ stages:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
-      pool: ${{ parameters.iosPool }}
+      pool: ${{ parameters.pool }}
       enableMicrobuild: true
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: true
@@ -118,8 +99,8 @@ stages:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
-      pool: ${{ parameters.iosPool }}
-      enableMicrobuild: true
+      pool: ${{ parameters.pool }}
+      enableMicrobuild: false
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: true
       enableTelemetry: true
@@ -128,7 +109,7 @@ stages:
       sourceIndexParams: ${{ parameters.sourceIndexParams }}
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
-      enablePublishTestResults: true
+      enablePublishTestResults: false
       workspace:
         clean: all
       jobs:
