@@ -162,10 +162,10 @@
     <Windows2TargetFrameworkVersion>10.0.20348.0</Windows2TargetFrameworkVersion>
     <TizenTargetFrameworkVersion>7.0</TizenTargetFrameworkVersion>
     <!-- Previous .NET -->
-    <IosPreviousTargetFrameworkVersion>18.0</IosPreviousTargetFrameworkVersion>
-    <TvosPreviousTargetFrameworkVersion>18.0</TvosPreviousTargetFrameworkVersion>
-    <MacCatalystPreviousTargetFrameworkVersion>18.0</MacCatalystPreviousTargetFrameworkVersion>
-    <MacosPreviousTargetFrameworkVersion>15.0</MacosPreviousTargetFrameworkVersion>
+    <IosPreviousTargetFrameworkVersion>26.0</IosPreviousTargetFrameworkVersion>
+    <TvosPreviousTargetFrameworkVersion>26.0</TvosPreviousTargetFrameworkVersion>
+    <MacCatalystPreviousTargetFrameworkVersion>26.0</MacCatalystPreviousTargetFrameworkVersion>
+    <MacosPreviousTargetFrameworkVersion>26.0</MacosPreviousTargetFrameworkVersion>
     <AndroidPreviousTargetFrameworkVersion>35.0</AndroidPreviousTargetFrameworkVersion>
     <WindowsPreviousTargetFrameworkVersion>10.0.19041.0</WindowsPreviousTargetFrameworkVersion>
     <Windows2PreviousTargetFrameworkVersion>10.0.20348.0</Windows2PreviousTargetFrameworkVersion>
