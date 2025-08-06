@@ -787,7 +787,7 @@ public class MapFeatureTests : UITest
 	}
 
 	[Test]
-	public void Map_Pins_WitItemTemplateSelector_WithVisibleRegion()
+	public void Map_Pins_WithItemTemplateSelector_WithVisibleRegion()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
