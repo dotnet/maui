@@ -48,9 +48,7 @@ namespace Microsoft.Maui.Controls
 			{ typeof(ImageSource), new ImageSourceConverter() },
 #if NET6_0_OR_GREATER
 			{ typeof(DateTime), new DateTimeTypeConverter() },
-			{ typeof(DateTime?), new DateTimeTypeConverter() },
-			{ typeof(TimeSpan), new TimeSpanTypeConverter() },
-			{ typeof(TimeSpan?), new TimeSpanTypeConverter() }
+			{ typeof(TimeSpan), new TimeSpanTypeConverter() }
 #endif
 		};
 
@@ -230,12 +228,15 @@ namespace Microsoft.Maui.Controls
 				value = Convert.ChangeType(value, returnType);
 				return true;
 			}
-			if (KnownTypeConverters.TryGetValue(returnType, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
+
+			Type targetType = Nullable.GetUnderlyingType(returnType) ?? returnType;
+
+			if (KnownTypeConverters.TryGetValue(targetType, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
 			{
 				value = typeConverterTo.ConvertFrom(value);
 				return true;
 			}
-			if (KnownTypeConverters.TryGetValue(returnType, out typeConverterTo) && typeConverterTo.CanConvertFrom(typeof(string)))
+			if (KnownTypeConverters.TryGetValue(targetType, out typeConverterTo) && typeConverterTo.CanConvertFrom(typeof(string)))
 			{
 				value = typeConverterTo.ConvertFromInvariantString(value.ToString());
 				return true;
