@@ -70,6 +70,11 @@ namespace Microsoft.Maui.Platform
 
         public bool RespondsToSafeArea()
         {
+            if (!OperatingSystem.IsAndroidVersionAtLeast(36))
+            {
+                return false; // Safe area handling only supported on Android 12 (API 31) and above
+            }
+
             var crossPlatformLayout = _getCrossPlatformLayout();
 
             // Early exit: If this view doesn't implement safe area interfaces, skip entirely
