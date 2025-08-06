@@ -7,7 +7,7 @@
     <ContentPage.BindingContext>
         <local:Issue20438ViewModel/>
     </ContentPage.BindingContext>
-    <StackLayout>
+    <StackLayout x:DataType="local:Issue20438ViewModel">
         <DatePicker x:Name="datePicker"
                     Date="{Binding SelectedDate}"/>
         <TimePicker x:Name="timePicker"
