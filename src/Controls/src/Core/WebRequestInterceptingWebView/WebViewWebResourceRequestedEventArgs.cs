@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls;
 /// <summary>
 /// Event arguments for the <see cref="HybridWebView.WebResourceRequested"/> event.
 /// </summary>
-public class WebViewWebResourceRequestedEventArgs
+public class WebViewWebResourceRequestedEventArgs : EventArgs
 {
 	IReadOnlyDictionary<string, string>? _headers;
 	IReadOnlyDictionary<string, string>? _queryParams;
