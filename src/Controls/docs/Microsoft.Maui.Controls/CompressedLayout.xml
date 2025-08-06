@@ -13,7 +13,8 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>Contains attached properties for omitting redundant renderers.</summary>
+    <summary>Contains attached properties for omitting redundant renderers. This API is obsolete and does not provide meaningful functionality.</summary>
+    <remarks>This API is obsolete and may be removed in a future release. Please remove usage of this API.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetHeadlessOffset">
