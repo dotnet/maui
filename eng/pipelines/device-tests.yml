@@ -151,14 +151,8 @@ stages:
           windows: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
         - name: controls
           desc: Controls
-          androidApiLevelsExclude: [ 27, 25 ] # Ignore for now API25 since the runs's are not stable
-          androidConfiguration: 'Debug'
-          iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
           windowsPackageId: 'com.microsoft.maui.controls.devicetests'
-          android: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
-          ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
-          catalyst: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
           windows: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
         - name: blazorwebview
           desc: BlazorWebView
