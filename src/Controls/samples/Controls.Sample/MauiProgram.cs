@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using System.Runtime.CompilerServices;
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
@@ -69,6 +71,33 @@ namespace Maui.Controls.Sample
 #endif
 			}
 
+			
+			appBuilder.Services.AddMetrics();
+			ActivitySource.AddActivityListener(new ActivityListener
+			{
+				ShouldListenTo = source => true,
+				Sample = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
+				ActivityStarted = activity => Console.WriteLine("Started: {0,-15} {1,-60}", activity.OperationName, activity.Id),
+				ActivityStopped = activity => Console.WriteLine("Stopped: {0,-15} {1,-60} {2,-15}", activity.OperationName, activity.Id, activity.Duration)
+			});
+
+			MeterListener meterListener = new();
+			meterListener.InstrumentPublished = (instrument, listener) =>
+			{
+				if (instrument.Meter.Name is "Microsoft.Maui.Diagnostics")
+				{
+					listener.EnableMeasurementEvents(instrument);
+				}
+			};
+
+			meterListener.SetMeasurementEventCallback<int>((Instrument instrument, int measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state) =>
+			{
+				Console.WriteLine($"{instrument.Name} recorded measurement {measurement}");
+			});
+			// Start the meterListener, enabling InstrumentPublished callbacks.
+			meterListener.Start();
+
+
 			if (UseMauiGraphicsSkia)
 			{
 				/*
@@ -76,13 +105,13 @@ namespace Maui.Controls.Sample
 				{
 					handlers.AddHandler<GraphicsView, SkiaGraphicsViewHandler>();
 					handlers.AddHandler<BoxView, SkiaShapeViewHandler>();
-					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Ellipse, SkiaShapeViewHandler>();
-					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Line, SkiaShapeViewHandler>();
-					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Path, SkiaShapeViewHandler>();
-					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polygon, SkiaShapeViewHandler>();
-					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polyline, SkiaShapeViewHandler>();
-					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Rectangle, SkiaShapeViewHandler>();
-					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.RoundRectangle, SkiaShapeViewHandler>();
+				handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Ellipse, SkiaShapeViewHandler>();
+				handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Line, SkiaShapeViewHandler>();
+				handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Path, SkiaShapeViewHandler>();
+				handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polygon, SkiaShapeViewHandler>();
+				handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polyline, SkiaShapeViewHandler>();
+				handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Rectangle, SkiaShapeViewHandler>();
+				handlers.AddHandler<Microsoft.Maui.Controls.Shapes.RoundRectangle, SkiaShapeViewHandler>();
 				});
 				*/
 			}
