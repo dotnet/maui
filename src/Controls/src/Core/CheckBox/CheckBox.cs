@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls
 
 					checkBox.Handler?.UpdateValue(nameof(ICheckBox.Foreground));
 					checkBox.CheckedChanged?.Invoke(bindable, new CheckedChangedEventArgs((bool)newValue));
-					if (checkBox.Command is not null && checkBox.Command.CanExecute(checkBox.CommandParameter))
+					if (checkBox.Command?.CanExecute(checkBox.CommandParameter) == true)
 					{
 						checkBox.Command.Execute(checkBox.CommandParameter);
 					}
@@ -36,16 +36,20 @@ namespace Microsoft.Maui.Controls
 					checkBox.ChangeVisualState();
 				}, defaultBindingMode: BindingMode.TwoWay);
 
+		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(CheckBox), null, propertyChanging: CommandElement.OnCommandChanging, propertyChanged: CommandElement.OnCommandChanged);
 
+		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
+		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(CheckBox), null, propertyChanged: CommandElement.OnCommandParameterChanged);
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="//Member[@MemberName='Command']/Docs/*" />
 		public ICommand Command
 		{
 			get => (ICommand)GetValue(CommandProperty);
 			set => SetValue(CommandProperty, value);
 		}
 
-		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(CheckBox), null, propertyChanged: CommandElement.OnCommandParameterChanged);
-
+		/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="//Member[@MemberName='CommandParameter']/Docs/*" />
 		public object CommandParameter
 		{
 			get => GetValue(CommandParameterProperty);
