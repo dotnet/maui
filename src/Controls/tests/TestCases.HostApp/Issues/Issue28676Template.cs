@@ -64,7 +64,7 @@ namespace Maui.Controls.Sample.Issues
 				};
 
 				var label = new Label();
-				label.Text = "Initial Header";
+				label.Text = "Initial Footer";
 				label.AutomationId = "Issue28676TemplateFooter";
 
 				stack.Children.Add(label);
