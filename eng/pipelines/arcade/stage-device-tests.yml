@@ -20,8 +20,6 @@ parameters:
 - name: runAsPublic
   type: boolean
   default: true
-- name: pool
-  type: object
 - name: helixProject
   type: string
   default: 'eng/helix_xharness.proj'
