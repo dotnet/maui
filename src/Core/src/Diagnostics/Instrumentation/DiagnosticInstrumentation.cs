@@ -2,13 +2,13 @@ namespace Microsoft.Maui.Diagnostics;
 
 internal static class DiagnosticInstrumentation
 {
-	public static MeasureInstrumentation? StartMeasure(IView view) =>
+	public static LayoutMeasureInstrumentation? StartLayoutMeasure(IView view) =>
 		RuntimeFeature.IsMeterSupported
-			? new MeasureInstrumentation(view)
+			? new LayoutMeasureInstrumentation(view)
 			: null;
 
-	public static ArrangeInstrumentation? StartArrange(IView view) =>
+	public static LayoutArrangeInstrumentation? StartLayoutArrange(IView view) =>
 		RuntimeFeature.IsMeterSupported
-			? new ArrangeInstrumentation(view)
+			? new LayoutArrangeInstrumentation(view)
 			: null;
 }

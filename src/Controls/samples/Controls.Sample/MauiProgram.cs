@@ -78,7 +78,7 @@ namespace Maui.Controls.Sample
 
 				ActivitySource.AddActivityListener(new ActivityListener
 				{
-					ShouldListenTo = source => true,
+					ShouldListenTo = source => source.Name is "Microsoft.Maui",
 					Sample = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
 					ActivityStarted = activity => Console.WriteLine("Started: {0,-15} {1,-60} [{2}]", activity.OperationName, activity.Id, GetTags(activity.TagObjects)),
 					ActivityStopped = activity => Console.WriteLine("Stopped: {0,-15} {1,-60} {2,-15} [{3}]", activity.OperationName, activity.Id, activity.Duration, GetTags(activity.TagObjects)),
@@ -87,7 +87,7 @@ namespace Maui.Controls.Sample
 				MeterListener meterListener = new();
 				meterListener.InstrumentPublished = (instrument, listener) =>
 				{
-					if (instrument.Meter.Name is "Microsoft.Maui.Diagnostics")
+					if (instrument.Meter.Name is "Microsoft.Maui")
 					{
 						listener.EnableMeasurementEvents(instrument);
 					}

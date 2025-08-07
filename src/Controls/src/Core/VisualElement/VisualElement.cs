@@ -1893,7 +1893,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Arrange(Rect bounds)
 		{
-			using var _ = DiagnosticInstrumentation.StartArrange(this);
+			using var _ = DiagnosticInstrumentation.StartLayoutArrange(this);
 			return ArrangeOverride(bounds);
 		}
 
@@ -1948,7 +1948,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Measure(double widthConstraint, double heightConstraint)
 		{
-			using var _ = DiagnosticInstrumentation.StartMeasure(this);
+			using var _ = DiagnosticInstrumentation.StartLayoutMeasure(this);
 			DesiredSize = MeasureOverride(widthConstraint, heightConstraint);
 			return DesiredSize;
 		}

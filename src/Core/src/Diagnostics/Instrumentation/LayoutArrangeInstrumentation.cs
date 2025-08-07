@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace Microsoft.Maui.Diagnostics;
 
-readonly struct ArrangeInstrumentation(IView view) : IDiagnosticInstrumentation
+readonly struct LayoutArrangeInstrumentation(IView view) : IDiagnosticInstrumentation
 {
 	readonly Activity? _activity = view.StartActivity("Arrange");
 
