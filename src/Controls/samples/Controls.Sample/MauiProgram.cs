@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages;
