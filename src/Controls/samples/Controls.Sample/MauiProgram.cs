@@ -72,31 +72,35 @@ namespace Maui.Controls.Sample
 #endif
 			}
 
-
-			appBuilder.Services.AddMetrics();
-
-			ActivitySource.AddActivityListener(new ActivityListener
+			// Diagnostics
 			{
-				ShouldListenTo = source => true,
-				Sample = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
-				ActivityStarted = activity => Console.WriteLine("Started: {0,-15} {1,-60} [{2}]", activity.OperationName, activity.Id, string.Join(", ", activity.Tags.Select(t => t.Key))),
-				ActivityStopped = activity => Console.WriteLine("Stopped: {0,-15} {1,-60} {2,-15} [{3}]", activity.OperationName, activity.Id, activity.Duration, string.Join(", ", activity.Tags.Select(t => t.Key))),
-			});
+				appBuilder.Services.AddMetrics();
 
-			MeterListener meterListener = new();
-			meterListener.InstrumentPublished = (instrument, listener) =>
-			{
-				if (instrument.Meter.Name is "Microsoft.Maui.Diagnostics")
+				ActivitySource.AddActivityListener(new ActivityListener
 				{
-					listener.EnableMeasurementEvents(instrument);
-				}
-			};
-			meterListener.SetMeasurementEventCallback<int>((instrument, measurement, tags, state) =>
-			{
-				Console.WriteLine($"{instrument.Name} recorded measurement {measurement} [{string.Join(", ", tags.ToArray().Select(t => t.Key))}]");
-			});
-			meterListener.Start();
+					ShouldListenTo = source => true,
+					Sample = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
+					ActivityStarted = activity => Console.WriteLine("Started: {0,-15} {1,-60} [{2}]", activity.OperationName, activity.Id, GetTags(activity.TagObjects)),
+					ActivityStopped = activity => Console.WriteLine("Stopped: {0,-15} {1,-60} {2,-15} [{3}]", activity.OperationName, activity.Id, activity.Duration, GetTags(activity.TagObjects)),
+				});
 
+				MeterListener meterListener = new();
+				meterListener.InstrumentPublished = (instrument, listener) =>
+				{
+					if (instrument.Meter.Name is "Microsoft.Maui.Diagnostics")
+					{
+						listener.EnableMeasurementEvents(instrument);
+					}
+				};
+				meterListener.SetMeasurementEventCallback<int>((instrument, measurement, tags, state) =>
+				{
+					Console.WriteLine($"{instrument.Name} recorded measurement {measurement} [{GetTags(tags.ToArray())}]");
+				});
+				meterListener.Start();
+
+				static string GetTags(IEnumerable<KeyValuePair<string, object?>> tags) =>
+					 string.Join(", ", tags.Where(t => t.Value is not null).Select(t => t.Key));
+			}
 
 			if (UseMauiGraphicsSkia)
 			{

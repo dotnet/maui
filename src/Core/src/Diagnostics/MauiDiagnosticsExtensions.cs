@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,8 +15,13 @@ internal static class MauiDiagnosticsExtensions
 			return builder;
 		}
 
-		builder.Services.AddSingleton(services => new MauiDiagnostics(services.GetServices<IDiagnosticTagger>(), services.GetService<IMeterFactory>()));
 		builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IDiagnosticTagger, ViewDiagnosticTagger>(_ => new ViewDiagnosticTagger()));
+		builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IDiagnosticMetrics, LayoutDiagnosticMetrics>(_ => new LayoutDiagnosticMetrics()));
+
+		builder.Services.AddSingleton(services => new MauiDiagnostics(
+			services.GetServices<IDiagnosticMetrics>(),
+			services.GetServices<IDiagnosticTagger>(),
+			services.GetService<IMeterFactory>()));
 
 		return builder;
 	}
@@ -29,7 +33,7 @@ internal static class MauiDiagnosticsExtensions
 			return null;
 		}
 
-		return view.Handler?.MauiContext?.Services.GetService<MauiDiagnostics>();
+		return view.Handler?.GetService<MauiDiagnostics>();
 	}
 
 	public static Activity? StartActivity(this IView view, string name)
@@ -47,8 +51,7 @@ internal static class MauiDiagnosticsExtensions
 
 		var elementTypeName = view.GetType().Name;
 
-		var tagList = new TagList();
-		diag.AddTags(view, ref tagList);
+		diag.GetTags(view, out var tagList);
 
 		var activity = diag.ActivitySource.StartActivity(
 			ActivityKind.Internal,
@@ -58,7 +61,7 @@ internal static class MauiDiagnosticsExtensions
 		return activity;
 	}
 
-	public static void RecordMeasure(this IView view, TimeSpan? duration)
+	public static void StopDiagnostics(this IView view, Activity? activity, IDiagnosticInstrumentation? instrumentation = null)
 	{
 		if (!RuntimeFeature.IsMeterSupported)
 		{
@@ -71,46 +74,14 @@ internal static class MauiDiagnosticsExtensions
 			return;
 		}
 
-		var tagList = new TagList();
-		diag.AddTags(view, ref tagList);
+		activity?.Stop();
 
-		diag.MeasureCounter?.Add(1, tagList);
-
-		if (duration is not null)
+		if (instrumentation is not null)
 		{
-#if NET9_0_OR_GREATER
-			diag.MeasureHistogram?.Record((int)duration.Value.TotalNanoseconds, tagList);
-#else
-			diag.MeasureHistogram?.Record((int)(duration.Value.TotalMilliseconds * 1_000_000), tagList);
-#endif
-		}
-	}
-
-	public static void RecordArrange(this IView view, TimeSpan? duration)
-	{
-		if (!RuntimeFeature.IsMeterSupported)
-		{
-			return;
+			diag.GetTags(view, out var tagList);
+			instrumentation.Record(diag, in tagList);
 		}
 
-		var diag = view.GetMauiDiagnostics();
-		if (diag is null)
-		{
-			return;
-		}
-
-		var tagList = new TagList();
-		diag.AddTags(view, ref tagList);
-
-		diag.ArrangeCounter?.Add(1, tagList);
-
-		if (duration is not null)
-		{
-#if NET9_0_OR_GREATER
-			diag.ArrangeHistogram?.Record((int)duration.Value.TotalNanoseconds, tagList);
-#else
-			diag.ArrangeHistogram?.Record((int)(duration.Value.TotalMilliseconds * 1_000_000), tagList);
-#endif
-		}
+		activity?.Dispose();
 	}
 }
