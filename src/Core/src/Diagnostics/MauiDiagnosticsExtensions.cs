@@ -36,7 +36,7 @@ internal static class MauiDiagnosticsExtensions
 		return view.Handler?.GetService<MauiDiagnostics>();
 	}
 
-	public static Activity? StartActivity(this IView view, string name)
+	internal static Activity? StartActivity(this IView view, string name)
 	{
 		if (!RuntimeFeature.IsMeterSupported)
 		{
@@ -61,7 +61,7 @@ internal static class MauiDiagnosticsExtensions
 		return activity;
 	}
 
-	public static void StopDiagnostics(this IView view, Activity? activity, IDiagnosticInstrumentation? instrumentation = null)
+	internal static void StopDiagnostics(this IView view, Activity? activity, IDiagnosticInstrumentation? instrumentation = null)
 	{
 		if (!RuntimeFeature.IsMeterSupported)
 		{
@@ -79,7 +79,7 @@ internal static class MauiDiagnosticsExtensions
 		if (instrumentation is not null)
 		{
 			diag.GetTags(view, out var tagList);
-			instrumentation.Record(diag, in tagList);
+			instrumentation.Stopped(diag, in tagList);
 		}
 
 		activity?.Dispose();

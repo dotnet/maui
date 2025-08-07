@@ -9,6 +9,6 @@ readonly struct ArrangeInstrumentation(IView view) : IDiagnosticInstrumentation
 	public void Dispose() =>
 		view.StopDiagnostics(_activity, this);
 
-	public void Record(MauiDiagnostics diag, in TagList tagList) =>
+	public void Stopped(MauiDiagnostics diag, in TagList tagList) =>
 		diag.GetMetrics<LayoutDiagnosticMetrics>()?.RecordArrange(_activity?.Duration, in tagList);
 }
