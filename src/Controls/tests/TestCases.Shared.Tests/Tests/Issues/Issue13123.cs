@@ -1,3 +1,5 @@
+// Test fails on Windows because the Maps control is not implemented on this platform.
+// Test fails on Android because a valid API key is required to render the map.
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
@@ -45,7 +47,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #elif MACCATALYST
             var centerX = rect.X + rect.Width / 2 + 20;
             var infoWindowY = rect.Y + rect.Height / 2;
-             App.TapCoordinates(centerX, infoWindowY);
+            App.TapCoordinates(centerX, infoWindowY);
 #endif
         }
 
