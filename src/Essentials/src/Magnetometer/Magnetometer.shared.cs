@@ -8,28 +8,28 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// <summary>
 	/// Detect device's orentation relative to Earth's magnetic field in microteslas (μ).
 	/// </summary>
-	public interface IMagnetometer
+	public interface IMagnetometer : ISensor
 	{
 		/// <summary>
 		/// Gets a value indicating whether reading the magnetometer is supported on this device.
 		/// </summary>
-		bool IsSupported { get; }
+		new bool IsSupported { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the magnetometer is actively being monitored.
 		/// </summary>
-		bool IsMonitoring { get; }
+		new bool IsMonitoring { get; }
 
 		/// <summary>
 		/// Start monitoring for changes to the magnetometer.
 		/// </summary>
 		/// <param name="sensorSpeed">The speed to listen for changes.</param>
-		void Start(SensorSpeed sensorSpeed);
+		new void Start(SensorSpeed sensorSpeed);
 
 		/// <summary>
 		/// Stop monitoring for changes to the magnetometer.
 		/// </summary>
-		void Stop();
+		new void Stop();
 
 		/// <summary>
 		/// Occurs when the magnetometer reading changes.
@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			$"{nameof(MagneticField.Z)}: {MagneticField.Z}";
 	}
 
-	partial class MagnetometerImplementation : IMagnetometer, ISensor, IDeviceCapabilities
+	partial class MagnetometerImplementation : IMagnetometer
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 

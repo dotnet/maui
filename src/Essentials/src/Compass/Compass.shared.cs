@@ -7,23 +7,23 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// <summary>
 	/// Monitor changes to the orientation of the user's device.
 	/// </summary>
-	public interface ICompass
+	public interface ICompass : ISensor
 	{
 		/// <summary>
 		/// Gets a value indicating whether reading the compass is supported on this device.
 		/// </summary>
-		bool IsSupported { get; }
+		new bool IsSupported { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the compass is actively being monitored.
 		/// </summary>
-		bool IsMonitoring { get; }
+		new bool IsMonitoring { get; }
 
 		/// <summary>
 		/// Start monitoring for changes to the compass.
 		/// </summary>
 		/// <param name="sensorSpeed">The speed to monitor for changes.</param>
-		void Start(SensorSpeed sensorSpeed);
+		new void Start(SensorSpeed sensorSpeed);
 
 		/// <summary>
 		/// Start monitoring for changes to the compass.
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Stop monitoring for changes to the compass.
 		/// </summary>
-		void Stop();
+		new void Stop();
 
 		/// <summary>
 		/// Occurs when compass reading changes.
@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			$"{nameof(HeadingMagneticNorth)}: {HeadingMagneticNorth}";
 	}
 
-	partial class CompassImplementation : ICompass, ISensor, IDeviceCapabilities
+	partial class CompassImplementation : ICompass
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 
