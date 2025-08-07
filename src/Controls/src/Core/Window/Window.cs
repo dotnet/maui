@@ -14,9 +14,11 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Page))]
 	public partial class Window : NavigableElement, IWindow, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
 	{
+		static readonly BindablePropertyKey IsActivatedPropertyKey = 
+			BindableProperty.CreateReadOnly(nameof(IsActivated), typeof(bool), typeof(Window), false, propertyChanged: OnIsActivatedPropertyChanged);
+
 		/// <summary>Bindable property for <see cref="IsActivated"/>.</summary>
-		public static readonly BindableProperty IsActivatedProperty = BindableProperty.Create(
-			nameof(IsActivated), typeof(bool), typeof(Window), propertyChanged: OnIsActivatedPropertyChanged);
+		public static readonly BindableProperty IsActivatedProperty = IsActivatedPropertyKey.BindableProperty;
 
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
@@ -123,7 +125,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsActivated
 		{
 			get => (bool)GetValue(IsActivatedProperty);
-			set => SetValue(IsActivatedProperty, value);
+			private set => SetValue(IsActivatedProperty, value);
 		}
 
 		string? ITitledElement.Title => Title ?? (Page as Shell)?.Title;
