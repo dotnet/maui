@@ -1299,19 +1299,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override void ViewDidLoad()
 			{
 				base.ViewDidLoad();
-				var parentPages = Child.GetParentPages();
-				var flyoutPageWithToolbarItems = parentPages.OfType<FlyoutPage>()
-					.FirstOrDefault(fp => fp.Flyout != null && fp.Flyout.ToolbarItems.Count > 0);
 
+				var parentPages = Child.GetParentPages();
+				var flyoutPageWithToolbarItems = FindFlyoutPageWithToolbarItems(parentPages);
 				if (flyoutPageWithToolbarItems != null)
 				{
 					_tracker.Target = flyoutPageWithToolbarItems.Flyout;
-					_tracker.AdditionalTargets = Child.GetParentPages().Append(Child);
+					_tracker.AdditionalTargets = parentPages.Append(Child);
 				}
 				else
 				{
 					_tracker.Target = Child;
-					_tracker.AdditionalTargets = GetAdditionalTargets();
+					_tracker.AdditionalTargets = parentPages;
 				}
 
 				UpdateToolbarItems();
@@ -1586,23 +1585,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			IEnumerable<Page> GetAdditionalTargets()
+			FlyoutPage FindFlyoutPageWithToolbarItems(IEnumerable<Page> parentPages)
 			{
-				var parentPages = Child.GetParentPages();
-				var result = new List<Page>();
 				foreach (var page in parentPages)
 				{
-					result.Add(page);
-					if (page is FlyoutPage flyoutPage)
+					if (page is FlyoutPage flyoutPage && flyoutPage.Flyout?.ToolbarItems?.Count > 0)
 					{
-						if (flyoutPage.Flyout != null && flyoutPage.Flyout.ToolbarItems.Count > 0)
-						{
-							result.Add(flyoutPage.Flyout);
-						}
+						return flyoutPage;
 					}
 				}
-
-				return result;
+				return null;
 			}
 
 			void UpdateIconColor()
