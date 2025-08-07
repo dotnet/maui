@@ -11,6 +11,7 @@
         <DotNetCliPackageType>sdk</DotNetCliPackageType>
         <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
         <FailOnTestFailure>true</FailOnTestFailure>
+        <TargetFrameworkToTest>$(_MauiDotNetTfm)</TargetFrameworkToTest>
     </PropertyGroup>
 
     <!-- Local build outside of Azure Pipeline -->
@@ -90,7 +91,7 @@
 
         <!-- Add the discovered items to the appropriate Helix test collection -->
         <ItemGroup Condition="'$(TargetOS)' == 'ios'">
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/net9.0-ios/', '*.app', System.IO.SearchOption.AllDirectories))" >
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))" >
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
@@ -99,7 +100,7 @@
         </ItemGroup>
 
         <ItemGroup Condition="'$(TargetOS)' == 'maccatalyst'">
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/net9.0-maccatalyst/', '*.app', System.IO.SearchOption.AllDirectories))" >
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-maccatalyst/', '*.app', System.IO.SearchOption.AllDirectories))" >
                 <TestTarget>maccatalyst</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
@@ -108,7 +109,7 @@
         </ItemGroup>
 
         <ItemGroup Condition="'$(TargetOS)' == 'android'">
-            <_apks Include="%(_MAUIScenarioSearch.PayloadDirectory)/Release/net9.0-android/**/*Signed.apk" />
+            <_apks Include="%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-android/**/*Signed.apk" />
             <XHarnessApkToTest Include="@(_apks)">
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
