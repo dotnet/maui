@@ -1,5 +1,3 @@
-#nullable enable
-
 namespace Microsoft.Maui
 {
     /// <summary>
