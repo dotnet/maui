@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsActivated
 		{
 			get => (bool)GetValue(IsActivatedProperty);
-			private set => SetValue(IsActivatedProperty, value);
+			private set => SetValue(IsActivatedPropertyKey, value);
 		}
 
 		string? ITitledElement.Title => Title ?? (Page as Shell)?.Title;
