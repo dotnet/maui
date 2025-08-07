@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Diagnostics;
 
 readonly struct LayoutMeasureInstrumentation(IView view) : IDiagnosticInstrumentation
 {
-	readonly Activity? _activity = view.StartActivity("Measure");
+	readonly Activity? _activity = view.StartDiagnosticActivity("Measure");
 
 	public void Dispose() =>
 		view.StopDiagnostics(_activity, this);

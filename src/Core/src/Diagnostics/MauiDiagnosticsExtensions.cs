@@ -36,7 +36,7 @@ internal static class MauiDiagnosticsExtensions
 		return view.Handler?.GetService<MauiDiagnostics>();
 	}
 
-	internal static Activity? StartActivity(this IView view, string name)
+	internal static Activity? StartDiagnosticActivity(this IView view, string name)
 	{
 		if (!RuntimeFeature.IsMeterSupported)
 		{

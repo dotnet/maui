@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Diagnostics;
 
 readonly struct LayoutArrangeInstrumentation(IView view) : IDiagnosticInstrumentation
 {
-	readonly Activity? _activity = view.StartActivity("Arrange");
+	readonly Activity? _activity = view.StartDiagnosticActivity("Arrange");
 
 	public void Dispose() =>
 		view.StopDiagnostics(_activity, this);
