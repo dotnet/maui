@@ -43,11 +43,19 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 
 # Advanced Scenarios
 
-### Compile using a local `bin\dotnet` via `dotnet-local.*`
+### Compile using a local `.dotnet\dotnet` via `build.*` scripts on the root folder 
 
-This method will use the .NET and workload versions that are specific to the branch you are on. There may be occasions when your global installation of .NET is not compatible with a particular branch. In such cases, this method will create a local folder containing all the .NET versions specific to that branch.
+This method uses the arcade build infraestructure. For more information you can look [here](https://github.com/dotnet/arcade/blob/main/Documentation/ArcadeSdk.md#build-scripts-and-extensibility-points)
 
-Use `dotnet-local.cmd` on Windows or `dotnet-local.sh` on Unix to ensure that `PATH` is set consistently.
+```
+./build.sh -restore -pack
+``` 
+or 
+
+```
+./build.cmd -restore -pack
+```
+
 
 #### Cake
 

@@ -104,7 +104,7 @@ namespace Maui.Controls.Sample.Controls
 		{
 			base.OnApplyTemplate();
 
-			_icon = (GetTemplateChild(ElementIcon) as View)!;
+			_icon = (View)GetTemplateChild(ElementIcon);
 			_icon.WidthRequest = Width;
 		}
 	}

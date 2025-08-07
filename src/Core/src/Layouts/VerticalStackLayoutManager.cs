@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Layouts
 
 			double stackHeight = padding.Top + bounds.Y;
 			double left = padding.Left + bounds.X;
-			double width = bounds.Width - padding.HorizontalThickness;
+			double width = Math.Max(0, bounds.Width - padding.HorizontalThickness);
 
 			for (int n = 0; n < Stack.Count; n++)
 			{
