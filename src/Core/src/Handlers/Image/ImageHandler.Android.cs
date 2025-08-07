@@ -76,14 +76,13 @@ namespace Microsoft.Maui.Handlers
 
 		public override void PlatformArrange(Graphics.Rect frame)
 		{
-			if (PlatformView.GetScaleType() == ImageView.ScaleType.CenterCrop)
+			if (PlatformInterop.IsImageViewCenterCrop(PlatformView))
 			{
 				// If the image is center cropped (AspectFill), then the size of the image likely exceeds
 				// the view size in some dimension. So we need to clip to the view's bounds.
 
-				var (left, top, right, bottom) = PlatformView.Context!.ToPixels(frame);
-				var clipRect = new Android.Graphics.Rect(0, 0, right - left, bottom - top);
-				PlatformView.ClipBounds = clipRect;
+				var (left, top, right, bottom) = PlatformView.ToPixels(frame);
+				PlatformInterop.SetClipBounds(PlatformView, 0, 0, right - left, bottom - top);
 			}
 			else
 			{
