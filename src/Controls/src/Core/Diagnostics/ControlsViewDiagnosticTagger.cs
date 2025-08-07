@@ -3,8 +3,12 @@ using Microsoft.Maui.Diagnostics;
 
 namespace Microsoft.Maui.Controls.Diagnostics;
 
+/// <summary>
+/// A diagnostic tagger for Controls' Element and VisualElement instances.
+/// </summary>
 internal class ControlsViewDiagnosticTagger : IDiagnosticTagger
 {
+	/// <inheritdoc/>
 	public void AddTags(object? source, ref TagList tagList)
 	{
 		if (source is Element element)

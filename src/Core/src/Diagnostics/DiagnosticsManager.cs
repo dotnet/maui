@@ -5,7 +5,7 @@ using System.Diagnostics.Metrics;
 
 namespace Microsoft.Maui.Diagnostics;
 
-internal class MauiDiagnostics
+internal class DiagnosticsManager : IDiagnosticsManager
 {
 	const string DiagnosticsNamespace = "Microsoft.Maui";
 	const string DiagnosticsVersion = "1.0.0";
@@ -14,7 +14,7 @@ internal class MauiDiagnostics
 	readonly IDiagnosticMetrics[] _metrics;
 	readonly Dictionary<Type, IDiagnosticMetrics> _initializedMetrics = new();
 
-	public MauiDiagnostics(IEnumerable<IDiagnosticMetrics> metrics, IEnumerable<IDiagnosticTagger> taggers, IMeterFactory? meterFactory = null)
+	public DiagnosticsManager(IEnumerable<IDiagnosticMetrics> metrics, IEnumerable<IDiagnosticTagger> taggers, IMeterFactory? meterFactory = null)
 	{
 		_taggers = [.. taggers];
 		_metrics = [.. metrics];
@@ -33,12 +33,14 @@ internal class MauiDiagnostics
 		}
 	}
 
-	internal ActivitySource ActivitySource { get; }
+	public ActivitySource ActivitySource { get; }
 
-	internal Meter? Meter { get; }
+	public Meter? Meter { get; }
 
-	internal void GetTags(object source, out TagList tagList)
+	public void GetTags(object source, out TagList tagList)
 	{
+		// Note: TagList is a struct and must always be passed around by reference
+		// to avoid modifying a copy instead of the original.
 		tagList = new TagList();
 
 		foreach (var tagger in _taggers)
@@ -47,7 +49,7 @@ internal class MauiDiagnostics
 		}
 	}
 
-	internal T? GetMetrics<T>()
+	public T? GetMetrics<T>()
 		where T : IDiagnosticMetrics
 	{
 		if (!_initializedMetrics.TryGetValue(typeof(T), out var metrics))

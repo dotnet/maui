@@ -22,7 +22,7 @@ internal interface IDiagnosticInstrumentation : IDisposable
 	/// This method is called when the instrumentation is stopped, allowing for any final
 	/// metrics to be recorded or cleanup to be performed.
 	/// </remarks>
-	/// <param name="diag"></param>
-	/// <param name="tagList"></param>
-	void Stopped(MauiDiagnostics diag, in TagList tagList);
+	/// <param name="diagnostics">The <see cref="IDiagnosticsManager"/> instance.</param>
+	/// <param name="tagList">The tags associated with the instrumentation.</param>
+	void Stopped(IDiagnosticsManager diagnostics, in TagList tagList);
 }

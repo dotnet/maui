@@ -6,7 +6,7 @@ using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Diagnostics;
 
-internal static class MauiDiagnosticsExtensions
+internal static class DiagnosticsManagerExtensions
 {
 	public static MauiAppBuilder ConfigureMauiDiagnostics(this MauiAppBuilder builder)
 	{
@@ -18,7 +18,7 @@ internal static class MauiDiagnosticsExtensions
 		builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IDiagnosticTagger, ViewDiagnosticTagger>(_ => new ViewDiagnosticTagger()));
 		builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IDiagnosticMetrics, LayoutDiagnosticMetrics>(_ => new LayoutDiagnosticMetrics()));
 
-		builder.Services.AddSingleton(services => new MauiDiagnostics(
+		builder.Services.AddSingleton<IDiagnosticsManager>(services => new DiagnosticsManager(
 			services.GetServices<IDiagnosticMetrics>(),
 			services.GetServices<IDiagnosticTagger>(),
 			services.GetService<IMeterFactory>()));
@@ -26,14 +26,14 @@ internal static class MauiDiagnosticsExtensions
 		return builder;
 	}
 
-	internal static MauiDiagnostics? GetMauiDiagnostics(this IView view)
+	internal static IDiagnosticsManager? GetMauiDiagnostics(this IView view)
 	{
 		if (!RuntimeFeature.IsMeterSupported)
 		{
 			return null;
 		}
 
-		return view.Handler?.GetService<MauiDiagnostics>();
+		return view.Handler?.MauiContext?.Services?.GetService<IDiagnosticsManager>();
 	}
 
 	internal static Activity? StartDiagnosticActivity(this IView view, string name)
