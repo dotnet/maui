@@ -1301,7 +1301,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				base.ViewDidLoad();
 
 				_tracker.Target = Child;
-				_tracker.AdditionalTargets = GetIOSAdditionalTargets(Child);
+				_tracker.AdditionalTargets = GetAdditionalTargets();
 
 				UpdateToolbarItems();
 			}
@@ -1575,9 +1575,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			IEnumerable<Page> GetIOSAdditionalTargets(Page child)
+			IEnumerable<Page> GetAdditionalTargets()
 			{
-				var parentPages = child.GetParentPages();
+				var parentPages = Child.GetParentPages();
 				var result = new List<Page>();
 				foreach (var page in parentPages)
 				{
