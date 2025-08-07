@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(IncludeCurrentTfms)' == 'true'">$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IncludeCurrentTfms)' != 'true'"></TargetFrameworks>
+    <TargetFrameworks>$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <TargetFrameworks Condition="'$(IncludePreviousTfms)' == 'true'">$(TargetFrameworks);$(_MauiPreviousDotNetTfm);$(MauiPreviousPlatforms)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <DefineConstants>$(DefineConstants);WEBVIEW2_MAUI</DefineConstants>
