@@ -1,5 +1,3 @@
-
-#nullable enable
 using System;
 
 namespace Microsoft.Maui.Layouts
