@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
+             x:Class="Maui.Controls.Sample.Issues.Issue13123"
+             Title="Issue 13123">
+
+       <Grid RowDefinitions="Auto,*,Auto">
+
+              <!-- Status Labels -->
+              <StackLayout Grid.Row="0"
+                           Padding="10"
+                           BackgroundColor="LightGray">
+                     <Label Text="iOS Maps Pin InfoWindowClicked Event Test"
+                            FontSize="16"
+                            FontAttributes="Bold"/>
+                     <Label x:Name="StatusLabel"
+                            Text="Status: Ready - Tap pin marker, then tap info window"
+                            AutomationId="StatusLabel"
+                            FontSize="14"/>
+                     <Label x:Name="MarkerClickedLabel"
+                            Text="Marker Clicked: No"
+                            AutomationId="MarkerClickedLabel"/>
+                     <Label x:Name="InfoWindowClickedLabel"
+                            Text="InfoWindow Clicked: No"
+                            AutomationId="InfoWindowClickedLabel"
+                            FontSize="12"
+                            TextColor="Green"/>
+                     <Label x:Name="TestResultLabel"
+                            Text="Test Result: Pending"
+                            AutomationId="TestResultLabel"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            TextColor="Orange"/>
+              </StackLayout>
+
+              <!-- Map with explicit size for better testing -->
+              <maps:Map x:Name="TestMap"
+                        Grid.Row="1"
+                        AutomationId="Map"
+                        MapType="Street"
+                        HeightRequest="400"/>
+
+       </Grid>
+
+</ContentPage>
