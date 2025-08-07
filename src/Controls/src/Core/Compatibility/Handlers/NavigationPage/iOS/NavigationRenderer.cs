@@ -1299,9 +1299,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override void ViewDidLoad()
 			{
 				base.ViewDidLoad();
+				var parentPages = Child.GetParentPages();
+				var flyoutPageWithToolbarItems = parentPages.OfType<FlyoutPage>()
+					.FirstOrDefault(fp => fp.Flyout != null && fp.Flyout.ToolbarItems.Count > 0);
 
-				_tracker.Target = Child;
-				_tracker.AdditionalTargets = GetAdditionalTargets();
+				if (flyoutPageWithToolbarItems != null)
+				{
+					_tracker.Target = flyoutPageWithToolbarItems.Flyout;
+					_tracker.AdditionalTargets = Child.GetParentPages().Append(Child);
+				}
+				else
+				{
+					_tracker.Target = Child;
+					_tracker.AdditionalTargets = GetAdditionalTargets();
+				}
 
 				UpdateToolbarItems();
 			}
