@@ -49,8 +49,13 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
 				return;
+			
+			if (!graphicsView.IsEnabled)
+				return;
+			
 			if (!IsFirstResponder)
 				BecomeFirstResponder();
+			
 			var viewPoints = this.GetPointsInView(evt);
 			graphicsView.StartInteraction(viewPoints);
 			_pressedContained = true;
@@ -60,6 +65,10 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
 				return;
+
+			if (!graphicsView.IsEnabled)
+				return;
+			
 			var viewPoints = this.GetPointsInView(evt);
 			_pressedContained = _rect.ContainsAny(viewPoints);
 			graphicsView.DragInteraction(viewPoints);
@@ -69,6 +78,10 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
 				return;
+
+			if (!graphicsView.IsEnabled)
+				return;
+			
 			graphicsView.EndInteraction(this.GetPointsInView(evt), _pressedContained);
 		}
 
@@ -76,6 +89,10 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
 				return;
+
+			if (!graphicsView.IsEnabled)
+				return;
+			
 			_pressedContained = false;
 			graphicsView.CancelInteraction();
 		}
