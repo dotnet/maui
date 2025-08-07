@@ -26,7 +26,7 @@ internal static class MauiDiagnosticsExtensions
 		return builder;
 	}
 
-	static MauiDiagnostics? GetMauiDiagnostics(this IView view)
+	internal static MauiDiagnostics? GetMauiDiagnostics(this IView view)
 	{
 		if (!RuntimeFeature.IsMeterSupported)
 		{
