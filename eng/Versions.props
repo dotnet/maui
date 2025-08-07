@@ -78,7 +78,7 @@
     <MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>9.0.8</MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>
     <MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>9.0.8</MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>
     <MicrosoftAspNetCoreComponentsWebViewPackageVersion>9.0.8</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
-    <MicrosoftAspNetCoreMetadataPackageVersion>9.0.5</MicrosoftAspNetCoreMetadataPackageVersion>
+    <MicrosoftAspNetCoreMetadataPackageVersion>9.0.8</MicrosoftAspNetCoreMetadataPackageVersion>
     <MicrosoftJSInteropPackageVersion>9.0.8</MicrosoftJSInteropPackageVersion>
     <!-- Everything else (previous edition) -->
     <MicrosoftAspNetCorePackageVersion>8.0.19</MicrosoftAspNetCorePackageVersion>
