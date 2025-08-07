@@ -49,8 +49,9 @@ namespace Microsoft.Maui.Handlers
 			var pickerView = new UIPickerView(frame);
 			pickerView.Model = new PickerSource(this);
 			pickerView?.ReloadAllComponents();
-
-			var pickerController = UIAlertController.Create(VirtualView.Title, "", UIAlertControllerStyle.ActionSheet);
+			// The UIPickerView is displayed as a subview of the UIAlertController when an empty string is provided as the title, instead of using the VirtualView title. 
+			// This behavior deviates from the expected native macOS behavior.
+			var pickerController = UIAlertController.Create("", "", UIAlertControllerStyle.ActionSheet);
 
 			// needs translation
 			pickerController.AddAction(UIAlertAction.Create("Done",
