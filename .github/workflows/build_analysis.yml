@@ -134,20 +134,84 @@ jobs:
           echo "path=$LOG_PATH" >> "$GITHUB_OUTPUT"
           echo "Selected log: $LOG_PATH"
 
+      - name: Reduce log for AI (focus errors)
+        if: ${{ github.event_name == 'check_run' && github.event.check_run.conclusion != 'success' }}
+        id: reducelog
+        shell: bash
+        run: |
+          set -euo pipefail
+          IN="${{ steps.picklog.outputs.path }}"
+          OUT="logs/reduced-for-ai.log"
+          mkdir -p logs
+          # If very small already, just link it
+          size=$(wc -c < "$IN" | tr -d ' ')
+          if [ "${size:-0}" -lt 50000 ]; then
+            cp "$IN" "$OUT"
+            echo "path=$OUT" >> "$GITHUB_OUTPUT"
+            echo "Log is small; using as-is at $OUT"
+            exit 0
+          fi
+
+          # Build combined regex from patterns file (one per line)
+          PATTERNS_FILE=".github/patterns/build-failure-patterns.txt"
+          if [ ! -f "$PATTERNS_FILE" ]; then
+            echo "Patterns file not found at $PATTERNS_FILE" >&2
+            # Fallback to a minimal default
+            COMBINED='Build FAILED|MSBUILD : error|^##\[error\]|##vso\[task\.logissue type=error'
+          else
+            # Join non-empty, non-comment lines with |
+            COMBINED=$(grep -vE '^\s*(#|$)' "$PATTERNS_FILE" | awk 'BEGIN{ORS="|"} {gsub(/\r/,"",$0); printf "%s", $0}' | sed 's/|$//')
+            if [ -z "${COMBINED}" ]; then
+              COMBINED='Build FAILED|MSBUILD : error|^##\[error\]|##vso\[task\.logissue type=error'
+            fi
+          fi
+
+          # Collect line numbers around likely error markers
+          tmpidx="$(mktemp)" || tmpidx="/tmp/reduce.$$"
+          # Use patterns from the patterns file
+          grep -nEi "${COMBINED}" "$IN" | cut -d: -f1 > "$tmpidx" || true
+          # Build a set of line ranges +/- 30 lines
+          tmpadr="$(mktemp)" || tmpadr="/tmp/ranges.$$"
+          while IFS= read -r ln; do
+            [ -z "$ln" ] && continue
+            start=$(( ln-30 )); [ $start -lt 1 ] && start=1
+            stop=$(( ln+30 ))
+            echo "$start,$stop" >> "$tmpadr"
+          done < "$tmpidx"
+          # Always include the tail of the file (last 400 lines)
+          total_lines=$(wc -l < "$IN" | tr -d ' ')
+          if [ "${total_lines:-0}" -gt 0 ]; then
+            tail_start=$(( total_lines-400 )); [ $tail_start -lt 1 ] && tail_start=1
+            echo "$tail_start,$total_lines" >> "$tmpadr"
+          fi
+          # Merge overlapping ranges
+          awk -F, 'BEGIN{OFS=","} {s=$1; e=$2; if (NR==1){ps=s; pe=e; next} if (s<=pe+1){ if (e>pe) pe=e } else { print ps,pe; ps=s; pe=e } } END{ if (NR>0) print ps,pe }' <(sort -n -t, -k1,1 -k2,2 "$tmpadr") > "$tmpadr.merged"
+          # Extract lines
+          : > "$OUT"
+          while IFS=, read -r s e; do
+            echo "================ Range ${s}-${e} ================" >> "$OUT"
+            sed -n "${s},${e}p" "$IN" >> "$OUT"
+            echo >> "$OUT"
+          done < "$tmpadr.merged"
+          # Deduplicate consecutive duplicate lines to reduce noise
+          awk 'NR==1{print; prev=$0; next} {if ($0!=prev) print; prev=$0}' "$OUT" > "$OUT.tmp" && mv "$OUT.tmp" "$OUT"
+          echo "path=$OUT" >> "$GITHUB_OUTPUT"
+          echo "Reduced log written to $OUT"
+
       - name: Sanitize log for prompt
         if: ${{ github.event_name == 'check_run' && github.event.check_run.conclusion != 'success' }}
         id: sanitizelog
         shell: bash
         run: |
           set -euo pipefail
-          IN="${{ steps.picklog.outputs.path }}"
+          IN="${{ steps.reducelog.outputs.path }}"
           mkdir -p logs
           RAW_OUT="logs/sanitized-for-prompt.log"
           # Remove CR, ANSI escapes, and non-printable characters except TAB/NEWLINE
           perl -pe 's/\r//g; s/\x1B\[[0-?]*[ -\/]*[@-~]//g; s/[^[:print:]\t\n]//g' "$IN" > "$RAW_OUT"
           # Cap to 100k bytes to keep prompt size reasonable
           OUT="logs/sanitized-for-prompt.head"
-          head -c 100000 "$RAW_OUT" > "$OUT" || true
+          head -c 60000 "$RAW_OUT" > "$OUT" || true
           echo "path=$OUT" >> "$GITHUB_OUTPUT"
           echo "Sanitized log written to $OUT"
 
@@ -171,9 +235,9 @@ jobs:
         uses: actions/ai-inference@v1
         with:
           token: ${{ github.token }}
-          model: openai/gpt-4o-mini
+          model: openai/gpt-5
           prompt-file: .github/prompts/build-analysis.prompt.yml
-          max-tokens: 800
+          # max-tokens: 800
           input: |
             name: ${{ github.event.check_run.name }}
             url: ${{ github.event.check_run.details_url }}

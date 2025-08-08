@@ -1,0 +1,24 @@
+^##\[error\]
+##vso\[task\.logissue type=error
+\bBuild FAILED\b
+Build FAILED\.
+\bFAILURE: Build failed with an exception\.
+MSBUILD : error
+ error CS[0-9]+:
+ error [A-Z]{2}[0-9]+:
+\bexception\b
+\btraceback\b
+\bsegmentation fault\b
+\babort\b
+\bpanic\b
+\bcrash\b
+\btimeout\b
+\btimed out\b
+npm ERR!
+yarn ERR!
+process exited with code
+The command .* exited with code
+^FAIL:
+^ERROR:
+^Test Run Failed\.
+\[xUnit\].*Failed:
