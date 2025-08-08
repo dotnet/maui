@@ -25,9 +25,9 @@ parameters:
       ios: /optional/path/to/ios.csproj
       catalyst: /optional/path/to/catalyst.csproj
   platforms:
-    - android
-    - ios
-    - catalyst
+    # - android
+    # - ios
+    # - catalyst
     - windows
 
 stages:
