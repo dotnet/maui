@@ -164,8 +164,32 @@ jobs:
           file_input: |
             log_indented: ${{ steps.indentlog.outputs.path }}
 
-      - name: Post AI analysis comment
+      - name: Find PR for commit
         if: ${{ github.event_name == 'check_run' && github.event.check_run.conclusion != 'success' }}
+        id: findpr
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          OWNER="${GITHUB_REPOSITORY%%/*}"; REPO="${GITHUB_REPOSITORY##*/}"
+          SHA="${{ github.event.check_run.head_sha }}"
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y jq
+          fi
+          prs=$(curl -sS -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$OWNER/$REPO/commits/$SHA/pulls")
+          prnum=$(echo "$prs" | jq -r '.[0].number // empty')
+          if [ -n "$prnum" ]; then
+            echo "pr=$prnum" >> "$GITHUB_OUTPUT"
+            echo "Found PR #$prnum for commit $SHA"
+          else
+            echo "No PR found for commit $SHA"
+          fi
+
+      - name: Post AI analysis PR comment
+        if: ${{ github.event_name == 'check_run' && github.event.check_run.conclusion != 'success' && steps.findpr.outputs.pr != '' }}
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -177,9 +201,10 @@ jobs:
           NAME="${{ github.event.check_run.name }}"
           DETAILS_URL="${{ github.event.check_run.details_url }}"
           ANALYSIS='${{ steps.inference.outputs.response }}'
+          PRNUM='${{ steps.findpr.outputs.pr }}'
 
           if [ -z "$ANALYSIS" ]; then
-            echo "No AI response; skipping comment."
+            echo "No AI response; skipping PR comment."
             exit 0
           fi
 
@@ -205,8 +230,17 @@ jobs:
 
           OWNER="${GITHUB_REPOSITORY%%/*}"; REPO="${GITHUB_REPOSITORY##*/}"
           BODY_JSON=$(jq -n --rawfile body analysis_comment.md '{body:$body}')
-          curl -sS -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Accept: application/vnd.github+json" -X POST -d "$BODY_JSON" "https://api.github.com/repos/$OWNER/$REPO/commits/$SHA/comments" >/dev/null
-          echo "Posted AI analysis comment to commit $SHA"
+          curl -sS -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Accept: application/vnd.github+json" -X POST -d "$BODY_JSON" "https://api.github.com/repos/$OWNER/$REPO/issues/$PRNUM/comments" >/dev/null
+          echo "Posted AI analysis comment to PR #$PRNUM"
+
+      - name: Log AI analysis (no PR)
+        if: ${{ github.event_name == 'check_run' && github.event.check_run.conclusion != 'success' && steps.findpr.outputs.pr == '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ANALYSIS='${{ steps.inference.outputs.response }}'
+          echo "AI analysis (no PR found):"
+          echo "$ANALYSIS"
 
       - name: Upload check result logs artifact
         if: always()
