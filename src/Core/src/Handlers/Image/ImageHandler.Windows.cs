@@ -44,6 +44,8 @@ namespace Microsoft.Maui.Handlers
 
 			UpdateValue(nameof(IView.Height));
 			UpdateValue(nameof(IView.Width));
+			UpdateValue(nameof(IView.HorizontalLayoutAlignment));
+			UpdateValue(nameof(IView.VerticalLayoutAlignment));
 		}
 
 		/// <inheritdoc/>
@@ -137,6 +139,42 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="image">The associated <see cref="Image"/> instance.</param>
 		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
 			handler.SourceLoader.UpdateImageSourceAsync();
+
+		/// <summary>
+		/// Maps the abstract <see cref="IView.HorizontalLayoutAlignment"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="image">The associated <see cref="Image"/> instance.</param>
+		internal static void MapHorizontalLayoutAlignment(IImageHandler handler, IImage image)
+		{
+			// Apply alignment to container if it exists, otherwise to the platform view
+			if (handler.ContainerView is FrameworkElement container)
+			{
+				container.UpdateHorizontalLayoutAlignment(image);
+			}
+			else
+			{
+				handler.PlatformView?.UpdateHorizontalLayoutAlignment(image);
+			}
+		}
+
+		/// <summary>
+		/// Maps the abstract <see cref="IView.VerticalLayoutAlignment"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="image">The associated <see cref="Image"/> instance.</param>
+		internal static void MapVerticalLayoutAlignment(IImageHandler handler, IImage image)
+		{
+			// Apply alignment to container if it exists, otherwise to the platform view
+			if (handler.ContainerView is FrameworkElement container)
+			{
+				container.UpdateVerticalLayoutAlignment(image);
+			}
+			else
+			{
+				handler.PlatformView?.UpdateVerticalLayoutAlignment(image);
+			}
+		}
 
 		void OnImageOpened(object sender, RoutedEventArgs e)
 		{
