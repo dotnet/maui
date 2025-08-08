@@ -1,0 +1,59 @@
+messages:
+  - role: system
+    content: |
+      You are an expert CI triage assistant. Given a build's context and logs, identify the primary failure reason and decide if requeue is worthwhile.
+      Return only JSON in the exact schema; do not include extra commentary.
+  - role: user
+    content: |-
+      Context:
+        name: {{name}}
+        url: {{url}}
+        conclusion: {{conclusion}}
+
+      Logs (may be truncated):
+      ---
+      {{log}}
+      ---
+
+      Task:
+        - Summarize the root cause in one sentence
+        - Classify the category
+        - Decide if we should requeue (transient) or not (deterministic)
+        - Provide brief bullet notes with evidence
+
+responseFormat: json_schema
+jsonSchema: |-
+  {
+    "name": "build_triage_decision",
+    "strict": true,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "shortSummary": {"type": "string"},
+        "category": {
+          "type": "string",
+          "enum": [
+            "infrastructure",
+            "timeout",
+            "flaky-test",
+            "compilation",
+            "unit-test",
+            "dependency",
+            "quota",
+            "network",
+            "unknown"
+          ]
+        },
+        "shouldRequeue": {"type": "boolean"},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "notes": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1,
+          "maxItems": 8
+        }
+      },
+      "required": ["shortSummary", "category", "shouldRequeue", "confidence", "notes"],
+      "additionalProperties": false
+    }
+  }

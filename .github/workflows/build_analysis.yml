@@ -10,6 +10,10 @@ jobs:
   analyze-build:
     name: Analyze Build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      models: read
   
     steps:
       - name: Checkout repository
@@ -84,10 +88,10 @@ jobs:
       - name: Fetch Azure DevOps logs (if linked)
         if: ${{ github.event_name == 'check_run' }}
         shell: bash
-        env:
-          AZURE_DEVOPS_TOKEN: ${{ secrets.AZURE_DEVOPS_TOKEN }}
         run: |
           set -euo pipefail
+          # Export secret (may be empty if not configured)
+          export AZURE_DEVOPS_TOKEN="${{ secrets.AZURE_DEVOPS_TOKEN }}"
           RID="${{ github.event.check_run.id }}"
           JSON_PATH="logs/check-run-${RID}.json"
           if [ -f "$JSON_PATH" ]; then
@@ -101,6 +105,94 @@ jobs:
           else
             echo "Check run JSON not found at $JSON_PATH; cannot derive ADO link."
           fi
+
+      - name: Select log file to analyze
+        if: ${{ github.event_name == 'check_run' && github.event.check_run.conclusion != 'success' }}
+        id: picklog
+        shell: bash
+        run: |
+          set -euo pipefail
+          RID="${{ github.event.check_run.id }}"
+          LOG_PATH=""
+          if compgen -G "logs/azure-devops/*/combined.log" > /dev/null; then
+            LOG_PATH=$(ls -1t logs/azure-devops/*/combined.log | head -n1)
+          elif [ -f "logs/check-run-${RID}.log" ]; then
+            LOG_PATH="logs/check-run-${RID}.log"
+          elif [ -f "logs/check-run-${RID}.json" ]; then
+            if ! command -v jq >/dev/null 2>&1; then
+              sudo apt-get update -y
+              sudo apt-get install -y jq
+            fi
+            jq -r '"Summary:\n" + (.output.summary // "") + "\n\nOutput:\n" + (.output.text // "")' "logs/check-run-${RID}.json" > "logs/synth-${RID}.log" || true
+            if [ -s "logs/synth-${RID}.log" ]; then LOG_PATH="logs/synth-${RID}.log"; fi
+          fi
+          if [ -z "$LOG_PATH" ]; then
+            mkdir -p logs
+            : > logs/empty.log
+            LOG_PATH="logs/empty.log"
+          fi
+          echo "path=$LOG_PATH" >> "$GITHUB_OUTPUT"
+          echo "Selected log: $LOG_PATH"
+
+      - name: AI analyze failure (GitHub Models)
+        if: ${{ github.event_name == 'check_run' && github.event.check_run.conclusion != 'success' }}
+        id: inference
+        uses: actions/ai-inference@v1
+        with:
+          token: ${{ github.token }}
+          model: openai/gpt-4o-mini
+          prompt-file: .github/prompts/build-analysis.prompt.yml
+          max-tokens: 800
+          input: |
+            name: ${{ github.event.check_run.name }}
+            url: ${{ github.event.check_run.details_url }}
+            conclusion: ${{ github.event.check_run.conclusion }}
+          file_input: |
+            log: ${{ steps.picklog.outputs.path }}
+
+      - name: Post AI analysis comment
+        if: ${{ github.event_name == 'check_run' && github.event.check_run.conclusion != 'success' }}
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          RID="${{ github.event.check_run.id }}"
+          SHA="${{ github.event.check_run.head_sha }}"
+          NAME="${{ github.event.check_run.name }}"
+          DETAILS_URL="${{ github.event.check_run.details_url }}"
+          ANALYSIS='${{ steps.inference.outputs.response }}'
+
+          if [ -z "$ANALYSIS" ]; then
+            echo "No AI response; skipping comment."
+            exit 0
+          fi
+
+          SHOULD=$(echo "$ANALYSIS" | jq -r '.shouldRequeue' 2>/dev/null || echo "")
+          SHORT=$(echo "$ANALYSIS" | jq -r '.shortSummary' 2>/dev/null || echo "")
+          DECISION=""; if [ "$SHOULD" = "true" ]; then DECISION="YES"; elif [ "$SHOULD" = "false" ]; then DECISION="NO"; fi
+          {
+            echo "# 🤖 Build analysis for check \`$NAME\` (ID $RID)"
+            echo
+            echo "- Details: [$DETAILS_URL]($DETAILS_URL)"
+            echo "- Commit: \`$SHA\`"
+            if [ -n "$DECISION" ]; then echo "- Should requeue: **$DECISION**"; fi
+            if [ -n "$SHORT" ] && [ "$SHORT" != "null" ]; then echo "- Why: $SHORT"; fi
+            echo
+            echo "<details><summary>AI decision</summary>"
+            echo
+            echo '```json'
+            echo "$ANALYSIS"
+            echo '```'
+            echo
+            echo "</details>"
+          } > analysis_comment.md
+
+          OWNER="${GITHUB_REPOSITORY%%/*}"; REPO="${GITHUB_REPOSITORY##*/}"
+          BODY_JSON=$(jq -n --rawfile body analysis_comment.md '{body:$body}')
+          curl -sS -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Accept: application/vnd.github+json" -X POST -d "$BODY_JSON" "https://api.github.com/repos/$OWNER/$REPO/commits/$SHA/comments" >/dev/null
+          echo "Posted AI analysis comment to commit $SHA"
 
       - name: Upload check result logs artifact
         if: always()
