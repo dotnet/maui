@@ -759,6 +759,12 @@ void RunMSBuildWithDotNet(
        // .SetVerbosity(Verbosity.Diagnostic)
         ;
 
+    var loggerArg = GetMSBuildForwardingLoggerPath();
+    if (loggerArg != null)
+    {
+        msbuildSettings.WithArgumentCustomization(args => args.Append(loggerArg));
+    }
+
     if (warningsAsError)
     {
         msbuildSettings.TreatAllWarningsAs(MSBuildTreatAllWarningsAs.Error);
@@ -847,6 +853,12 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
         //    Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
             ArgumentCustomization = args => 
             { 
+                var loggerArg = GetMSBuildForwardingLoggerPath();
+                if (loggerArg != null)
+                {
+                    args.Append(loggerArg);
+                }
+
                 args.Append($"-bl:{binlog}");
                 if(maxCpuCount > 0)
                 {
@@ -947,4 +959,26 @@ void ProcessTFMSwitches()
         if (FileExists("Directory.Build.Override.props"))
             DeleteFile("Directory.Build.Override.props");
     }
+}
+
+string GetMSBuildForwardingLoggerPath()
+{
+    if (!IsCIBuild())
+        return null;
+
+    // Download and extract MSBuild logger
+    var loggerUrl = "https://vstsagenttools.blob.core.windows.net/tools/msbuildlogger/3/msbuildlogger.zip";
+    var loggerDir = MakeAbsolute(Directory("./artifacts/msbuildlogger"));
+    EnsureDirectoryExists(loggerDir);
+    var loggerZip = loggerDir.CombineWithFilePath("msbuildlogger.zip");
+
+    if (!FileExists(loggerZip))
+    {
+        DownloadFile(loggerUrl, loggerZip.FullPath);
+        Unzip(loggerZip.FullPath, loggerDir.FullPath);
+    }
+
+    var loggerArg = $"-dl:CentralLogger,\"{loggerDir}/Microsoft.TeamFoundation.DistributedTask.MSBuild.Logger.dll\"*ForwardingLogger,\"{loggerDir}/Microsoft.TeamFoundation.DistributedTask.MSBuild.Logger.dll\"";
+
+    return loggerArg;
 }
