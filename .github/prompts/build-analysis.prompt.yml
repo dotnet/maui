@@ -12,7 +12,7 @@ messages:
 
       Logs (may be truncated):
       ---
-      {{log}}
+  {{log_indented}}
       ---
 
       Task:

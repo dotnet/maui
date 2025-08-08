@@ -134,6 +134,20 @@ jobs:
           echo "path=$LOG_PATH" >> "$GITHUB_OUTPUT"
           echo "Selected log: $LOG_PATH"
 
+      - name: Indent log for prompt YAML
+        if: ${{ github.event_name == 'check_run' && github.event.check_run.conclusion != 'success' }}
+        id: indentlog
+        shell: bash
+        run: |
+          set -euo pipefail
+          IN="${{ steps.picklog.outputs.path }}"
+          OUT="logs/indented-for-prompt.log"
+          mkdir -p logs
+          # Prefix each line with six spaces to safely embed in YAML block scalar
+          sed 's/^/      /' "$IN" > "$OUT"
+          echo "path=$OUT" >> "$GITHUB_OUTPUT"
+          echo "Indented log written to $OUT"
+
       - name: AI analyze failure (GitHub Models)
         if: ${{ github.event_name == 'check_run' && github.event.check_run.conclusion != 'success' }}
         id: inference
@@ -148,7 +162,7 @@ jobs:
             url: ${{ github.event.check_run.details_url }}
             conclusion: ${{ github.event.check_run.conclusion }}
           file_input: |
-            log: ${{ steps.picklog.outputs.path }}
+            log_indented: ${{ steps.indentlog.outputs.path }}
 
       - name: Post AI analysis comment
         if: ${{ github.event_name == 'check_run' && github.event.check_run.conclusion != 'success' }}
