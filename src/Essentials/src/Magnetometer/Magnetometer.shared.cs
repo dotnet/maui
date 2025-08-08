@@ -6,7 +6,7 @@ using Microsoft.Maui.ApplicationModel;
 namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <summary>
-	/// Detect device's orentation relative to Earth's magnetic field in microteslas (μ).
+	/// Detect device's orentation relative to Earth's magnetic field in microteslas (�).
 	/// </summary>
 	public interface IMagnetometer : ISensor
 	{
@@ -253,7 +253,6 @@ namespace Microsoft.Maui.Devices.Sensors
 			else
 				ReadingChanged?.Invoke(this, args);
 		}
-
 		#region Explicit Interface Implementations
 
 		// Explicit implementation of ISensor members delegating to public members
@@ -261,7 +260,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		void ISensor.Start(SensorSpeed sensorSpeed) => Start(sensorSpeed);
 		void ISensor.Stop() => Stop();
 
-		// Explicit implementation of IDeviceCapabilities members delegating to public members  
+		// Explicit implementation of IDeviceCapabilities members delegating to public members
 		bool IDeviceCapabilities.IsSupported => IsSupported;
 
 		#endregion

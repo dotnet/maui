@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		new bool IsSupported { get; }
 
 		/// <summary>
-		/// Gets a value indicating whether the compass is actively being monitored.
+		/// Gets if compass is actively being monitored.
 		/// </summary>
 		new bool IsMonitoring { get; }
 
@@ -314,7 +314,6 @@ namespace Microsoft.Maui.Devices.Sensors
 			else
 				ReadingChanged?.Invoke(null, args);
 		}
-
 		#region Explicit Interface Implementations
 
 		// Explicit implementation of ISensor members delegating to public members
@@ -322,7 +321,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		void ISensor.Start(SensorSpeed sensorSpeed) => Start(sensorSpeed);
 		void ISensor.Stop() => Stop();
 
-		// Explicit implementation of IDeviceCapabilities members delegating to public members  
+		// Explicit implementation of IDeviceCapabilities members delegating to public members
 		bool IDeviceCapabilities.IsSupported => IsSupported;
 
 		#endregion

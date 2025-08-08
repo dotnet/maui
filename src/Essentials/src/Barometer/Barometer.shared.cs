@@ -26,14 +26,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		new void Start(SensorSpeed sensorSpeed);
 
 		/// <summary>
-		/// Stop monitoring for changes to the barometer.
-		/// </summary>
-		new void Stop();
-
-		/// <summary>
 		/// Occurs when the barometer reading changes.
 		/// </summary>
 		event EventHandler<BarometerChangedEventArgs>? ReadingChanged;
+
+		/// <summary>
+		/// Stop monitoring for changes to the barometer.
+		/// </summary>
+		new void Stop();
 	}
 
 	/// <summary>
@@ -239,7 +239,6 @@ namespace Microsoft.Maui.Devices.Sensors
 				throw;
 			}
 		}
-
 		#region Explicit Interface Implementations
 
 		// Explicit implementation of ISensor members delegating to public members
@@ -247,7 +246,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		void ISensor.Start(SensorSpeed sensorSpeed) => Start(sensorSpeed);
 		void ISensor.Stop() => Stop();
 
-		// Explicit implementation of IDeviceCapabilities members delegating to public members  
+		// Explicit implementation of IDeviceCapabilities members delegating to public members
 		bool IDeviceCapabilities.IsSupported => IsSupported;
 
 		#endregion

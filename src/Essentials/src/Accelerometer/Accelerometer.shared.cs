@@ -11,6 +11,16 @@ namespace Microsoft.Maui.Devices.Sensors
 	public interface IAccelerometer : ISensor
 	{
 		/// <summary>
+		/// Occurs when the sensor reading changes.
+		/// </summary>
+		event EventHandler<AccelerometerChangedEventArgs>? ReadingChanged;
+
+		/// <summary>
+		/// Occurs when the accelerometer detects that the device has been shaken.
+		/// </summary>
+		event EventHandler? ShakeDetected;
+
+		/// <summary>
 		/// Gets a value indicating whether reading the accelerometer is supported on this device.
 		/// </summary>
 		new bool IsSupported { get; }
@@ -23,6 +33,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Start monitoring for changes to accelerometer.
 		/// </summary>
+		/// <remarks>
+		/// Will throw <see cref="FeatureNotSupportedException"/> if <see cref="IsSupported"/> is <see langword="false"/>.
+		/// Will throw <see cref="InvalidOperationException"/> if <see cref="IsMonitoring"/> is <see langword="true"/>.</remarks>
 		/// <param name="sensorSpeed">Speed to monitor the sensor.</param>
 		new void Start(SensorSpeed sensorSpeed);
 
@@ -30,16 +43,6 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Stop monitoring for changes to accelerometer.
 		/// </summary>
 		new void Stop();
-
-		/// <summary>
-		/// Occurs when the sensor reading changes.
-		/// </summary>
-		event EventHandler<AccelerometerChangedEventArgs>? ReadingChanged;
-
-		/// <summary>
-		/// Occurs when the accelerometer detects that the device has been shaken.
-		/// </summary>
-		event EventHandler? ShakeDetected;
 	}
 
 	/// <summary>
@@ -305,7 +308,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		void ISensor.Start(SensorSpeed sensorSpeed) => Start(sensorSpeed);
 		void ISensor.Stop() => Stop();
 
-		// Explicit implementation of IDeviceCapabilities members delegating to public members  
+		// Explicit implementation of IDeviceCapabilities members delegating to public members
 		bool IDeviceCapabilities.IsSupported => IsSupported;
 
 		#endregion
