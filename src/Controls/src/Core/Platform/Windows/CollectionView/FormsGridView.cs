@@ -123,6 +123,10 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_wrapGrid.ItemWidth = Math.Floor(_wrapGrid.ActualWidth / Span);
 				}
+				else
+				{
+					_wrapGrid.ClearValue(ItemsWrapGrid.ItemWidthProperty);
+				}
 			}
 		}
 
