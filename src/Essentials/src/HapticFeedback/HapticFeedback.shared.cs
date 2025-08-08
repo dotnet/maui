@@ -5,18 +5,25 @@ namespace Microsoft.Maui.Devices
 	/// <summary>
 	/// The HapticFeedback API lets you control haptic feedback on the device.
 	/// </summary>
-	public interface IHapticFeedback
+	public interface IHapticFeedback : IDeviceCapability
 	{
+		// backwards compat with these interfaces
 		/// <summary>
 		/// Gets a value indicating whether haptic feedback is supported on this device.
 		/// </summary>
-		bool IsSupported { get; }
+		new bool IsSupported { get; }
 
 		/// <summary>
 		/// Perform a type of haptic feedback on the device.
 		/// </summary>
 		/// <param name="type">The haptic feedback type to perform.</param>
 		void Perform(HapticFeedbackType type);
+
+		// new C# explicit implementations in the interface
+#if !NETSTANDARD
+		/// <inheritdoc/>
+		bool IDeviceCapability.IsSupported => IsSupported;
+#endif
 	}
 
 	/// <summary>

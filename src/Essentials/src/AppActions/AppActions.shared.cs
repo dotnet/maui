@@ -11,12 +11,13 @@ namespace Microsoft.Maui.ApplicationModel
 	/// <summary>
 	/// The AppActions API lets you create and respond to app shortcuts from the app icon.
 	/// </summary>
-	public interface IAppActions
+	public interface IAppActions : Microsoft.Maui.Devices.IDeviceCapability
 	{
+		// backwards compat with these interfaces
 		/// <summary>
 		/// Gets if app actions are supported on this device.
 		/// </summary>
-		bool IsSupported { get; }
+		new bool IsSupported { get; }
 
 		/// <summary>
 		/// Retrieves all the currently available <see cref="AppAction"/> instances.
@@ -35,6 +36,12 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Event triggered when an app action is activated.
 		/// </summary>
 		event EventHandler<AppActionEventArgs>? AppActionActivated;
+
+		// new C# explicit implementations in the interface
+#if !NETSTANDARD
+		/// <inheritdoc/>
+		bool Microsoft.Maui.Devices.IDeviceCapability.IsSupported => IsSupported;
+#endif
 	}
 
 	/// <summary>
