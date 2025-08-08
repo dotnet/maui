@@ -26,16 +26,16 @@ namespace Microsoft.Maui.Devices.Sensors
 		new void Start(SensorSpeed sensorSpeed);
 
 		/// <summary>
-		/// Stop monitoring for changes to the compass.
-		/// </summary>
-		new void Stop();
-
-		/// <summary>
 		/// Start monitoring for changes to the compass.
 		/// </summary>
 		/// <param name="sensorSpeed">The speed to monitor for changes.</param>
 		/// <param name="applyLowPassFilter">Whether or not to apply a moving average filter (only used on Android).</param>
 		void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter);
+
+		/// <summary>
+		/// Stop monitoring for changes to the compass.
+		/// </summary>
+		new void Stop();
 
 		/// <summary>
 		/// Occurs when compass reading changes.

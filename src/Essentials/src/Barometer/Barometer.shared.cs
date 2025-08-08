@@ -26,14 +26,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		new void Start(SensorSpeed sensorSpeed);
 
 		/// <summary>
-		/// Stop monitoring for changes to the barometer.
-		/// </summary>
-		new void Stop();
-
-		/// <summary>
 		/// Occurs when the barometer reading changes.
 		/// </summary>
 		event EventHandler<BarometerChangedEventArgs>? ReadingChanged;
+
+		/// <summary>
+		/// Stop monitoring for changes to the barometer.
+		/// </summary>
+		new void Stop();
 
 #if !NETSTANDARD
 		/// <inheritdoc/>
