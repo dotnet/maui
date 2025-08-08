@@ -134,13 +134,30 @@ jobs:
           echo "path=$LOG_PATH" >> "$GITHUB_OUTPUT"
           echo "Selected log: $LOG_PATH"
 
+      - name: Sanitize log for prompt
+        if: ${{ github.event_name == 'check_run' && github.event.check_run.conclusion != 'success' }}
+        id: sanitizelog
+        shell: bash
+        run: |
+          set -euo pipefail
+          IN="${{ steps.picklog.outputs.path }}"
+          mkdir -p logs
+          RAW_OUT="logs/sanitized-for-prompt.log"
+          # Remove CR, ANSI escapes, and non-printable characters except TAB/NEWLINE
+          perl -pe 's/\r//g; s/\x1B\[[0-?]*[ -\/]*[@-~]//g; s/[^[:print:]\t\n]//g' "$IN" > "$RAW_OUT"
+          # Cap to 100k bytes to keep prompt size reasonable
+          OUT="logs/sanitized-for-prompt.head"
+          head -c 100000 "$RAW_OUT" > "$OUT" || true
+          echo "path=$OUT" >> "$GITHUB_OUTPUT"
+          echo "Sanitized log written to $OUT"
+
       - name: Indent log for prompt YAML
         if: ${{ github.event_name == 'check_run' && github.event.check_run.conclusion != 'success' }}
         id: indentlog
         shell: bash
         run: |
           set -euo pipefail
-          IN="${{ steps.picklog.outputs.path }}"
+          IN="${{ steps.sanitizelog.outputs.path }}"
           OUT="logs/indented-for-prompt.log"
           mkdir -p logs
           # Prefix each line with six spaces to safely embed in YAML block scalar
