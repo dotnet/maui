@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// </summary>
 	public interface ICompass : ISensor
 	{
-		// backwards compat with these interfaces
 		/// <summary>
 		/// Gets a value indicating whether reading the compass is supported on this device.
 		/// </summary>
@@ -43,7 +42,6 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		event EventHandler<CompassChangedEventArgs> ReadingChanged;
 
-		// new C# explicit implementations in the interface
 #if !NETSTANDARD
 		/// <inheritdoc/>
 		bool IDeviceCapability.IsSupported => IsSupported;

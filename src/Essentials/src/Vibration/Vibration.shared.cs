@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Devices
 	/// </summary>
 	public interface IVibration : Microsoft.Maui.Devices.IDeviceCapability
 	{
-		// backwards compat with these interfaces
 		/// <summary>
 		/// Gets a value indicating whether vibration is supported on this device.
 		/// </summary>
@@ -32,7 +31,6 @@ namespace Microsoft.Maui.Devices
 		/// </summary>
 		void Cancel();
 
-		// new C# explicit implementations in the interface
 #if !NETSTANDARD
 		/// <inheritdoc/>
 		bool IDeviceCapability.IsSupported => IsSupported;

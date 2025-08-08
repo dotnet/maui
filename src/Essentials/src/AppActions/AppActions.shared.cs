@@ -13,7 +13,6 @@ namespace Microsoft.Maui.ApplicationModel
 	/// </summary>
 	public interface IAppActions : Microsoft.Maui.Devices.IDeviceCapability
 	{
-		// backwards compat with these interfaces
 		/// <summary>
 		/// Gets if app actions are supported on this device.
 		/// </summary>
@@ -37,7 +36,6 @@ namespace Microsoft.Maui.ApplicationModel
 		/// </summary>
 		event EventHandler<AppActionEventArgs>? AppActionActivated;
 
-		// new C# explicit implementations in the interface
 #if !NETSTANDARD
 		/// <inheritdoc/>
 		bool Microsoft.Maui.Devices.IDeviceCapability.IsSupported => IsSupported;

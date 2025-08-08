@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// </summary>
 	public interface IMagnetometer : ISensor
 	{
-		// backwards compat with these interfaces
 		/// <summary>
 		/// Gets a value indicating whether reading the magnetometer is supported on this device.
 		/// </summary>
@@ -37,7 +36,6 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		event EventHandler<MagnetometerChangedEventArgs> ReadingChanged;
 
-		// new C# explicit implementations in the interface
 #if !NETSTANDARD
 		/// <inheritdoc/>
 		bool IDeviceCapability.IsSupported => IsSupported;

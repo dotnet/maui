@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// </summary>
 	public interface IGyroscope : ISensor
 	{
-		// backwards compat with these interfaces
 		/// <summary>
 		/// Gets a value indicating whether reading the gyroscope is supported on this device.
 		/// </summary>
@@ -37,7 +36,6 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		event EventHandler<GyroscopeChangedEventArgs> ReadingChanged;
 
-		// new C# explicit implementations in the interface
 #if !NETSTANDARD
 		/// <inheritdoc/>
 		bool IDeviceCapability.IsSupported => IsSupported;

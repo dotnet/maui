@@ -8,7 +8,6 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 	/// </summary>
 	public interface IPhoneDialer : Microsoft.Maui.Devices.IDeviceCapability
 	{
-		// backwards compat with these interfaces
 		/// <summary>
 		/// Gets a value indicating whether using the phone dialer is supported on this device.
 		/// </summary>
@@ -26,7 +25,6 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		/// <param name="number">Phone number to initialize the dialer with.</param>
 		void Open(string number);
 
-		// new C# explicit implementations in the interface
 #if !NETSTANDARD
 		/// <inheritdoc/>
 		bool Microsoft.Maui.Devices.IDeviceCapability.IsSupported => IsSupported;
