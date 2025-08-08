@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Platform
 			var frameChanged = _lastArrangeWidth != widthConstraint || _lastArrangeHeight != heightConstraint;
 
 			// If the frame changed, we need to arrange (and potentially measure) the content again
-			if (frameChanged)
+			if (frameChanged && CrossPlatformLayout is { } crossPlatformLayout)
 			{
 				_lastArrangeWidth = widthConstraint;
 				_lastArrangeHeight = heightConstraint;
