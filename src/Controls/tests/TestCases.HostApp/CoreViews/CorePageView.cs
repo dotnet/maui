@@ -54,6 +54,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new CarouselViewCoreGalleryPage(), "CarouselView Gallery"),
 			new GalleryPageFactory(() => new CheckBoxCoreGalleryPage(), "CheckBox Gallery"),
 			new GalleryPageFactory(() => new CollectionViewCoreGalleryPage(), "CollectionView Gallery"),
+			new GalleryPageFactory(() => new DatePickerControlPage(), "Date Picker Feature Matrix"),
 			new GalleryPageFactory(() => new DatePickerCoreGalleryPage(), "Date Picker Gallery"),
 			new GalleryPageFactory(() => new EditorCoreGalleryPage(), "Editor Gallery"),
 			new GalleryPageFactory(() => new EntryCoreGalleryPage(), "Entry Gallery"),
@@ -74,6 +75,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new RadioButtonCoreGalleryPage(), "RadioButton Gallery"),
 			new GalleryPageFactory(() => new ScrollViewCoreGalleryPage(), "ScrollView Gallery"),
 			new GalleryPageFactory(() => new ShadowFeaturePage(), "Shadow Feature Matrix"),
+			new GalleryPageFactory(() => new SearchBarControlPage(), "Search Bar Feature Matrix"),
 			new GalleryPageFactory(() => new SearchBarCoreGalleryPage(), "Search Bar Gallery"),
 			new GalleryPageFactory(() => new SliderCoreGalleryPage(), "Slider Gallery"),
 			new GalleryPageFactory(() => new StepperControlPage(), "Stepper Feature Matrix"),
@@ -81,6 +83,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new SwitchControlPage(), "Switch Feature Matrix"),
 			new GalleryPageFactory(() => new SwitchCoreGalleryPage(), "Switch Gallery"),
 			new GalleryPageFactory(() => new SwipeViewCoreGalleryPage(), "SwipeView Gallery"),
+			new GalleryPageFactory(() => new TimePickerControlPage(), "Time Picker Feature Matrix"),
 			new GalleryPageFactory(() => new TimePickerCoreGalleryPage(), "Time Picker Gallery"),
 			new GalleryPageFactory(() => new WebViewCoreGalleryPage(), "WebView Gallery"),
 			new GalleryPageFactory(() => new SliderControlPage(), "Slider Feature Matrix"),
@@ -92,6 +95,10 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new ImageControlPage(), "Image Feature Matrix"),
 			new GalleryPageFactory(() => new ImageButtonControlPage(), "ImageButton Feature Matrix"),
 			new GalleryPageFactory(() => new BoxViewControlPage(), "BoxView Feature Matrix"),
+			new GalleryPageFactory(() => new HybridWebViewControlPage(), "HybridWebView Feature Matrix"),
+			new GalleryPageFactory(() => new ScrollViewControlPage(), "ScrollView Feature Matrix"),
+			new GalleryPageFactory(() => new GraphicsViewControlPage(), "GraphicsView Feature Matrix"),
+			new GalleryPageFactory(() => new EditorControlPage(), "Editor Feature Matrix"),
 		};
 
 		public CorePageView(Page rootPage)

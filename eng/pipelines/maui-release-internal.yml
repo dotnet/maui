@@ -130,7 +130,7 @@ extends:
                   exit 1
                 }
                 Write-Host "Getting drop for Bar ID: $barId"
-                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --verbose
+                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --include-released  --skip-existing  --continue-on-error --verbose
                 Write-Host "List downloaded artifacts"
                 Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
                 $manifestPack = Get-ChildItem -Path "$(Build.StagingDirectory)\nupkgs\shipping\packages\" -Filter "*.Manifest-*.nupkg" | Select-Object -First 1
@@ -195,6 +195,7 @@ extends:
 
           - task: AzureCLI@2
             displayName: Get build for commit
+            continueOnError: true
             inputs:
               azureSubscription: "Darc: Maestro Production"
               scriptType: pscore
@@ -212,7 +213,7 @@ extends:
                   exit 1
                 }
                 Write-Host "Getting drop for Bar ID: $barId"
-                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --verbose  
+                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --include-released  --skip-existing  --continue-on-error --verbose  
 
           - pwsh: Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
             displayName: list downloaded artifacts
@@ -262,6 +263,7 @@ extends:
 
           - task: AzureCLI@2
             displayName: Get build for commit
+            continueOnError: true
             inputs:
               azureSubscription: "Darc: Maestro Production"
               scriptType: pscore
@@ -279,7 +281,7 @@ extends:
                   exit 1
                 }
                 Write-Host "Getting drop for Bar ID: $barId"
-                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --verbose  
+                & $darc gather-drop --ci --id $barId --asset-filter "^Microsoft.*Manifest" -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --include-released  --skip-existing  --continue-on-error --verbose  
 
           - pwsh: Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
             displayName: list downloaded artifacts

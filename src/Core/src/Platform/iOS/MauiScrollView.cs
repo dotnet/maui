@@ -56,15 +56,29 @@ namespace Microsoft.Maui.Platform
 				// For Right-To-Left (RTL) layouts, we need to adjust the content arrangement and offset
 				// to ensure the content is correctly aligned and scrolled. This involves a second layout
 				// arrangement with an adjusted starting point and recalculating the content offset.
-				if (_previousEffectiveUserInterfaceLayoutDirection is not null && _previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection)
+				if (_previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection)
 				{
+					// In mac platform, Scrollbar is not updated based on FlowDirection, so resetting the scroll indicators
+					// It's a native limitation; to maintain platform consistency, a hack fix is applied to show the Scrollbar based on the FlowDirection.
+					if (OperatingSystem.IsMacCatalyst() && _previousEffectiveUserInterfaceLayoutDirection is not null)
+					{
+						bool showsVertical = ShowsVerticalScrollIndicator;
+						bool showsHorizontal = ShowsHorizontalScrollIndicator;
+
+						ShowsVerticalScrollIndicator = false;
+						ShowsHorizontalScrollIndicator = false;
+
+						ShowsVerticalScrollIndicator = showsVertical;
+						ShowsHorizontalScrollIndicator = showsHorizontal;
+					}
+
 					if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 					{
 						var horizontalOffset = contentSize.Width - crossPlatformBounds.Width;
 						crossPlatformLayout.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), crossPlatformBounds));
 						ContentOffset = new CGPoint(horizontalOffset, 0);
 					}
-					else
+					else if(_previousEffectiveUserInterfaceLayoutDirection is not null)
 					{
 						ContentOffset = new CGPoint(0, ContentOffset.Y);
 					}
