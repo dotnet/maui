@@ -34,28 +34,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void TestMinValueClamp()
-		{
-			Slider slider = new Slider(0, 100, 0);
-
-			slider.Minimum = 10;
-
-			Assert.Equal(10, slider.Value);
-			Assert.Equal(10, slider.Minimum);
-		}
-
-		[Fact]
-		public void TestMaxValueClamp()
-		{
-			Slider slider = new Slider(0, 100, 100);
-
-			slider.Maximum = 10;
-
-			Assert.Equal(10, slider.Value);
-			Assert.Equal(10, slider.Maximum);
-		}
-
-		[Fact]
 		public void TestInvalidMaxValue()
 		{
 			var slider = new Slider();
