@@ -17,7 +17,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIScrollView CreatePlatformView()
 		{
-			return new MauiScrollView();
+			return new MauiScrollView
+			{
+				// Set the VirtualView reference
+				VirtualView = VirtualView
+			};
 		}
 
 		protected override void ConnectHandler(UIScrollView platformView)
@@ -82,7 +86,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
-
+			
+			platformView.UpdateOrientation(scrollView);
 			platformView.UpdateIsEnabled(scrollView);
 			platformView.InvalidateMeasure(scrollView);
 		}
