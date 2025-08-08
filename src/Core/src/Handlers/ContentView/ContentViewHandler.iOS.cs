@@ -44,6 +44,10 @@ namespace Microsoft.Maui.Handlers
 				{
 					platformView.UpdateFlowDirection(view);
 				}
+
+				// we need to trigger an invalidation of ancestor measures after the view has been added
+				// so that it can walk up the hierarchy
+				platformView.InvalidateAncestorsMeasures();
 			}
 		}
 
