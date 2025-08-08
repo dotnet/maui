@@ -279,10 +279,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Raised when the children of this page, and thus potentially the layout, have changed.
 		/// </summary>
-		[Obsolete("Use SizeChanged.")]
-#pragma warning disable CS0067 // Type or member is obsolete
+		[Obsolete("Use SizeChanged.", true)]
+#pragma warning disable CS0067 // The event is never used
 		public event EventHandler LayoutChanged;
-#pragma warning disable CS0067 // Type or member is obsolete
+#pragma warning restore CS0067 // The event is never used
 
 		/// <summary>
 		/// Raised when this page is visually appearing on screen.
@@ -562,9 +562,9 @@ namespace Microsoft.Maui.Controls
 
 			if (Handler is null)
 			{
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 				UpdateChildrenLayout();
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete
 			}
 		}
 

@@ -1,3 +1,5 @@
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
+
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
@@ -124,3 +126,5 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 	}
 }
+
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete

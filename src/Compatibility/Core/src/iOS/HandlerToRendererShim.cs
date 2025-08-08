@@ -1,3 +1,5 @@
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
+
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
@@ -81,3 +83,5 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 }
+
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete
