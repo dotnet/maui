@@ -70,7 +70,10 @@ public class EntryFeatureTests : UITest
 	{
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		App.DismissKeyboard();
+#if ANDROID || IOS
+		if (App.WaitForKeyboardToShow())
+			App.DismissKeyboard();
+#endif
 		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
 	}
 
