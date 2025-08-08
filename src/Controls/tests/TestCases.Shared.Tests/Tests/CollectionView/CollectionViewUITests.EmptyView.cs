@@ -10,6 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		protected override bool ResetAfterEachTest => true;
 
+		public override string GalleryPageName => CollectionViewGallery;
+
 		public CollectionViewEmptyViewTests(TestDevice device)
 			: base(device)
 		{
