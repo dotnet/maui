@@ -930,7 +930,7 @@ namespace Microsoft.Maui.Controls
 		internal LayoutConstraint ComputedConstraint
 		{
 			get { return _computedConstraint; }
-			set
+			private set
 			{
 				if (_computedConstraint == value)
 					return;
@@ -941,6 +941,12 @@ namespace Microsoft.Maui.Controls
 				if (oldConstraint != newConstraint)
 					OnConstraintChanged(oldConstraint, newConstraint);
 			}
+		}
+
+		// Internal method for infrastructure components to set computed constraint directly
+		internal void SetComputedConstraint(LayoutConstraint constraint)
+		{
+			ComputedConstraint = constraint;
 		}
 
 		internal LayoutConstraint Constraint => ComputedConstraint | SelfConstraint;
@@ -1280,7 +1286,7 @@ namespace Microsoft.Maui.Controls
 
 			if (child is View view)
 			{
-				ComputeConstraintForView(view);
+				view.SetComputedConstraint(ComputeConstraintForView(view));
 			}
 		}
 
@@ -1295,7 +1301,7 @@ namespace Microsoft.Maui.Controls
 
 			if (child is View view)
 			{
-				view.ComputedConstraint = LayoutConstraint.None;
+				view.SetComputedConstraint(LayoutConstraint.None);
 			}
 		}
 
@@ -1349,12 +1355,12 @@ namespace Microsoft.Maui.Controls
 			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
 			{
 				if (LogicalChildrenInternal[i] is View child)
-					ComputeConstraintForView(child);
+					child.SetComputedConstraint(ComputeConstraintForView(child));
 			}
 		}
 
 		// TODO: .NET10 this should be made public so whoever implements a custom layout can leverage this
-		internal virtual void ComputeConstraintForView(View view) => view.ComputedConstraint = LayoutConstraint.None;
+		internal virtual LayoutConstraint ComputeConstraintForView(View view) => LayoutConstraint.None;
 
 		/// <summary>
 		/// Occurs when a focus change is requested.
@@ -1392,7 +1398,7 @@ namespace Microsoft.Maui.Controls
 				case InvalidationTrigger.VerticalOptionsChanged:
 					if (this is View thisView && Parent is VisualElement visualParent)
 					{
-						visualParent.ComputeConstraintForView(thisView);
+						thisView.SetComputedConstraint(visualParent.ComputeConstraintForView(thisView));
 					}
 
 					// TODO ezhart Once we get InvalidateArrange sorted, HorizontalOptionsChanged and 

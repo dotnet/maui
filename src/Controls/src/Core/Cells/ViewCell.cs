@@ -24,14 +24,14 @@ namespace Microsoft.Maui.Controls
 				if (_view != null)
 				{
 					RemoveLogicalChild(_view);
-					_view.ComputedConstraint = LayoutConstraint.None;
+					_view.SetComputedConstraint(LayoutConstraint.None);
 				}
 
 				_view = value;
 
 				if (_view != null)
 				{
-					_view.ComputedConstraint = LayoutConstraint.Fixed;
+					_view.SetComputedConstraint(LayoutConstraint.Fixed);
 					AddLogicalChild(_view);
 				}
 

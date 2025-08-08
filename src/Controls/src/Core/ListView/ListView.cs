@@ -446,7 +446,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.SetupContent(content, index);
 			if (content is ViewCell viewCell && viewCell.View != null && HasUnevenRows)
-				viewCell.View.ComputedConstraint = LayoutConstraint.None;
+				viewCell.View.SetComputedConstraint(LayoutConstraint.None);
 
 			if (content != null)
 			{
