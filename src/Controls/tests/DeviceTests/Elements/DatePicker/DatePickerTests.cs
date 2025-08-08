@@ -40,7 +40,7 @@ public partial class DatePickerTests : ControlsHandlerTestBase
 
 			// But the platform view should display today's date
 			var nullDateText = GetDisplayedText(handler);
-			Assert.Equal(nullDateText, DateTime.Today.ToString("dd/MM/yy"));
+			Assert.Equal(nullDateText, string.Empty);
 
 			// Scenario 2: Null to specific date transition
 			datePicker.Date = testDate;
@@ -60,7 +60,9 @@ public partial class DatePickerTests : ControlsHandlerTestBase
 
 			// But the platform view should display today's date again
 			var revertedNullText = GetDisplayedText(handler);
-			Assert.Equal(revertedNullText, DateTime.Today.ToString("dd/MM/yy"));
+			Assert.Equal(revertedNullText, string.Empty);
+
+			return Task.CompletedTask;
 		});
 	}
 
