@@ -8,8 +8,33 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// <summary>
 	/// Accelerometer data of the acceleration of the device in three-dimensional space.
 	/// </summary>
-	public interface IAccelerometer
+	public interface IAccelerometer : ISensor
 	{
+		// backwards compat with these interfaces
+		/// <summary>
+		/// Gets a value indicating whether reading the accelerometer is supported on this device.
+		/// </summary>
+		new bool IsSupported { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether the accelerometer is being monitored.
+		/// </summary>
+		new bool IsMonitoring { get; }
+
+		/// <summary>
+		/// Start monitoring for changes to accelerometer.
+		/// </summary>
+		/// <remarks>
+		/// Will throw <see cref="FeatureNotSupportedException"/> if <see cref="IsSupported"/> is <see langword="false"/>.
+		/// Will throw <see cref="InvalidOperationException"/> if <see cref="IsMonitoring"/> is <see langword="true"/>.</remarks>
+		/// <param name="sensorSpeed">Speed to monitor the sensor.</param>
+		new void Start(SensorSpeed sensorSpeed);
+
+		/// <summary>
+		/// Stop monitoring for changes to accelerometer.
+		/// </summary>
+		new void Stop();
+
 		/// <summary>
 		/// Occurs when the sensor reading changes.
 		/// </summary>
@@ -20,29 +45,17 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		event EventHandler? ShakeDetected;
 
-		/// <summary>
-		/// Gets a value indicating whether reading the accelerometer is supported on this device.
-		/// </summary>
-		bool IsSupported { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether the accelerometer is being monitored.
-		/// </summary>
-		bool IsMonitoring { get; }
-
-		/// <summary>
-		/// Start monitoring for changes to accelerometer.
-		/// </summary>
-		/// <remarks>
-		/// Will throw <see cref="FeatureNotSupportedException"/> if <see cref="IsSupported"/> is <see langword="false"/>.
-		/// Will throw <see cref="InvalidOperationException"/> if <see cref="IsMonitoring"/> is <see langword="true"/>.</remarks>
-		/// <param name="sensorSpeed">Speed to monitor the sensor.</param>
-		void Start(SensorSpeed sensorSpeed);
-
-		/// <summary>
-		/// Stop monitoring for changes to accelerometer.
-		/// </summary>
-		void Stop();
+		// new C# explicit implementations in the interface
+#if !NETSTANDARD
+		/// <inheritdoc/>
+		bool IDeviceCapability.IsSupported => IsSupported;
+		/// <inheritdoc/>
+		bool ISensor.IsMonitoring => IsMonitoring;
+		/// <inheritdoc/>
+		void ISensor.Start(SensorSpeed sensorSpeed) => Start(sensorSpeed);
+		/// <inheritdoc/>
+		void ISensor.Stop() => Stop();
+#endif
 	}
 
 	/// <summary>

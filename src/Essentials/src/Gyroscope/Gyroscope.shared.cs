@@ -8,33 +8,46 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// <summary>
 	/// The Gyroscope API lets you monitor the device's gyroscope sensor which is the rotation around the device's three primary axes.
 	/// </summary>
-	public interface IGyroscope
+	public interface IGyroscope : ISensor
 	{
+		// backwards compat with these interfaces
 		/// <summary>
 		/// Gets a value indicating whether reading the gyroscope is supported on this device.
 		/// </summary>
-		bool IsSupported { get; }
+		new bool IsSupported { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the gyroscope is actively being monitored.
 		/// </summary>
-		bool IsMonitoring { get; }
+		new bool IsMonitoring { get; }
 
 		/// <summary>
 		/// Start monitoring for changes to the gyroscope.
 		/// </summary>
 		/// <param name="sensorSpeed">The speed to listen for changes.</param>
-		void Start(SensorSpeed sensorSpeed);
+		new void Start(SensorSpeed sensorSpeed);
 
 		/// <summary>
 		/// Stop monitoring for changes to the gyroscope.
 		/// </summary>
-		void Stop();
+		new void Stop();
 
 		/// <summary>
 		/// Occurs when the gyroscope reading changes.
 		/// </summary>
 		event EventHandler<GyroscopeChangedEventArgs> ReadingChanged;
+
+		// new C# explicit implementations in the interface
+#if !NETSTANDARD
+		/// <inheritdoc/>
+		bool IDeviceCapability.IsSupported => IsSupported;
+		/// <inheritdoc/>
+		bool ISensor.IsMonitoring => IsMonitoring;
+		/// <inheritdoc/>
+		void ISensor.Start(SensorSpeed sensorSpeed) => Start(sensorSpeed);
+		/// <inheritdoc/>
+		void ISensor.Stop() => Stop();
+#endif
 	}
 
 	/// <summary>
