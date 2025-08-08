@@ -1,0 +1,16 @@
+name: "Build Analysis"
+
+on:
+  check_run:
+    types: [completed]
+  check_suite:
+    types: [completed]
+
+jobs:
+  analyze-build:
+    name: Analyze Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
