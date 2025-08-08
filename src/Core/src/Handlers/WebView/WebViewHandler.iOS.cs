@@ -514,8 +514,8 @@ namespace Microsoft.Maui.Handlers
 
 				// // If there's a subdirectory, use the overload that accepts a subdirectory parameter else fallback to the original method if subdirectory method fails or if no subdirectory
 				NSUrl? nsUrl = string.IsNullOrEmpty(directory)
-					? NSBundle.MainBundle.GetUrlForResource(file, ext, directory)
-					: NSBundle.MainBundle.GetUrlForResource(file, ext);
+					? NSBundle.MainBundle.GetUrlForResource(file, ext)
+					: NSBundle.MainBundle.GetUrlForResource(file, ext, directory);
 
 				if (nsUrl is null)
 				{
