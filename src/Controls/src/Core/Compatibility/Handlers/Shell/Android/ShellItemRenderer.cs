@@ -13,6 +13,7 @@ using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -141,6 +142,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
+			// Apply background color from appearance, fallback to default if unavailable
+			if (_bottomView.Background is ColorDrawable background && appearance is IShellAppearanceElement appearanceElement)
+			{
+				background.Color = appearanceElement.EffectiveTabBarBackgroundColor?.ToPlatform() ?? ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
+			}
 			_appearanceSet = true;
 			_appearanceTracker.SetAppearance(_bottomView, appearance);
 		}
