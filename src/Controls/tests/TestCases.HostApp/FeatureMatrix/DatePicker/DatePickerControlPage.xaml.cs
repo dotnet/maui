@@ -85,7 +85,7 @@ public partial class DatePickerMainControlPage : ContentPage
 		DatePickerLayout.Children.Add(datePickerControl);
 	}
 
-	private void DisplayCultureSpecificDate(DateTime date, CultureInfo culture)
+	private void DisplayCultureSpecificDate(DateTime? date, CultureInfo culture)
 	{
 		if (culture != null)
 		{
@@ -98,12 +98,12 @@ public partial class DatePickerMainControlPage : ContentPage
 			CultureInfo.DefaultThreadCurrentUICulture = culture;
 		}
 
-		CultureFormatLabel.Text = $"Culture: {culture.Name}, Date: {date.ToString(culture)}";
+		CultureFormatLabel.Text = $"Culture: {culture.Name}, Date: {date?.ToString(culture)}";
 	}
 
 	public void OnDateSelected(object sender, DateChangedEventArgs e)
 	{
-		if (e.OldDate.Date != DateTime.Now.Date && e.NewDate != e.OldDate)
+		if (e.OldDate?.Date != DateTime.Now.Date && e.NewDate != e.OldDate)
 		{
 			OldDateSelectedLabel.Text = e.OldDate.ToString();
 			NewDateSelectedLabel.Text = e.NewDate.ToString();

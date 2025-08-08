@@ -84,7 +84,7 @@ public partial class TimePickerControlMainPage : ContentPage
 		TimePickerGrid.Children.Add(timePicker);
 	}
 
-	private void DisplayCultureSpecificTime(TimeSpan time, CultureInfo culture)
+	private void DisplayCultureSpecificTime(TimeSpan? time, CultureInfo culture)
 	{
 		if (culture != null)
 		{
@@ -94,15 +94,15 @@ public partial class TimePickerControlMainPage : ContentPage
 			CultureInfo.DefaultThreadCurrentCulture = culture;
 			CultureInfo.DefaultThreadCurrentUICulture = culture;
 		}
-		CultureFormatLabel.Text = $"Culture: {culture?.Name}, Time: {DateTime.Today.Add(time).ToString("t", culture)}";
+		CultureFormatLabel.Text = $"Culture: {culture?.Name}, Time: {DateTime.Today.Add(time ?? TimeSpan.Zero).ToString("t", culture)}";
 	}
 
 	private void TimePicker_TimeSelected(object sender, TimeChangedEventArgs e)
 	{
 		if (e.NewTime != e.OldTime)
 		{
-			NewTimeSelectedLabel.Text = e.NewTime.ToString();
-			OldTimeSelectedLabel.Text = e.OldTime.ToString();
+			NewTimeSelectedLabel.Text = e.NewTime?.ToString();
+			OldTimeSelectedLabel.Text = e.OldTime?.ToString();
 		}
 	}
 }
