@@ -186,10 +186,14 @@ namespace Microsoft.Maui.Platform
 			{
 				var file = Path.GetFileNameWithoutExtension(url);
 				var ext = Path.GetExtension(url);
+				var directory = Path.GetDirectoryName(url);
 
-				var nsUrl = NSBundle.MainBundle.GetUrlForResource(file, ext);
+				// If there's a subdirectory, use the overload that accepts a subdirectory parameter else fallback to the original method if subdirectory method fails or if no subdirectory
+				NSUrl? nsUrl = string.IsNullOrEmpty(directory)
+					? NSBundle.MainBundle.GetUrlForResource(file, ext)
+					: NSBundle.MainBundle.GetUrlForResource(file, ext, directory);
 
-				if (nsUrl == null)
+				if (nsUrl is null)
 				{
 					return false;
 				}
