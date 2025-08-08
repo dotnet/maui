@@ -25,6 +25,7 @@ namespace Microsoft.Maui
 		const bool IsHybridWebViewSupportedByDefault = true;
 		const bool SupportNamescopesByDefault = true;
 		const bool EnableDiagnosticsByDefault = false;
+		const bool IsMeterSupportedByDefault = true;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER
@@ -101,6 +102,15 @@ namespace Microsoft.Maui
 			internal set => AppContext.SetSwitch($"{FeatureSwitchPrefix}.{nameof(AreNamescopesSupported)}", value);
 
 		}
+
+		// https://github.com/dotnet/runtime/blob/8c7de742a77ed3919a3f3fe8c4475fce689f5e83/src/libraries/System.Private.CoreLib/src/System/Diagnostics/Tracing/EventSource.cs#L291-L295
+#if NET9_0_OR_GREATER
+		[FeatureSwitchDefinition($"System.Diagnostics.Metrics.Meter.IsSupported")]
+#endif
+		internal static bool IsMeterSupported { get; } = InitializeIsMeterSupported();
+
+		private static bool InitializeIsMeterSupported() =>
+			AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out bool isSupported) ? isSupported : IsMeterSupportedByDefault;
 
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(EnableDiagnostics)}")]

@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
@@ -1893,6 +1893,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Arrange(Rect bounds)
 		{
+			using var _ = DiagnosticInstrumentation.StartLayoutArrange(this);
 			return ArrangeOverride(bounds);
 		}
 
@@ -1947,6 +1948,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Measure(double widthConstraint, double heightConstraint)
 		{
+			using var _ = DiagnosticInstrumentation.StartLayoutMeasure(this);
 			DesiredSize = MeasureOverride(widthConstraint, heightConstraint);
 			return DesiredSize;
 		}
