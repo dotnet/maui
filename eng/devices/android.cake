@@ -6,6 +6,8 @@ const int DefaultApiLevel = 30;
 
 const int EmulatorStartProcessTimeoutSeconds = 1 * 60;
 const int EmulatorBootTimeoutSeconds = 2 * 60;
+const int EmulatorKillTimeoutSeconds = 1 * 60;
+const int AdbCommandTimeoutSeconds = 30;
 
 Information("Local Dotnet: {0}", localDotnet);
 
@@ -473,8 +475,51 @@ void CleanUpVirtualDevice(AndroidEmulatorProcess emulatorProcess, AndroidAvdMana
 
 	// kill the process if it has not already exited
 	Information("emulatorProcess.Kill()");
-	try { emulatorProcess.Kill(); }
-	catch { }
+	try 
+	{ 
+		// Wrap Kill() operation with timeout to prevent indefinite hanging
+		var killTask = System.Threading.Tasks.Task.Run(() => emulatorProcess.Kill());
+		if (killTask.Wait(TimeSpan.FromSeconds(EmulatorKillTimeoutSeconds)))
+		{
+			Information("Emulator process kill signal sent successfully.");
+			
+			// Now wait for the process to actually exit
+			var waitTask = System.Threading.Tasks.Task.Run(() => emulatorProcess.WaitForExit());
+			if (waitTask.Wait(TimeSpan.FromSeconds(EmulatorKillTimeoutSeconds)))
+			{
+				Information("Emulator process killed successfully.");
+			}
+			else
+			{
+				Warning("Emulator process did not exit within {0} seconds after kill signal.", EmulatorKillTimeoutSeconds);
+			}
+		}
+		else
+		{
+			Warning("Emulator process kill operation timed out after {0} seconds. Attempting to restart ADB server...", EmulatorKillTimeoutSeconds);
+			
+			try
+			{
+				Information("Stopping ADB server...");
+				AdbKillServer(adbSettings);
+				System.Threading.Thread.Sleep(2000);
+				
+				Information("Starting ADB server...");
+				AdbStartServer(adbSettings);
+				System.Threading.Thread.Sleep(2000);
+				
+				Information("ADB server restart completed successfully.");
+			}
+			catch (Exception adbEx)
+			{
+				Error("Failed to restart ADB server after emulator kill timeout: {0}", adbEx.Message);
+			}
+		}
+	}
+	catch (Exception ex) 
+	{ 
+		Warning("Failed to kill emulator process: {0}", ex.Message);
+	}
 
 	if (deviceCreate)
 	{
@@ -617,6 +662,44 @@ void GetDevices(string version, string toolPath)
 	DotNetTool("tool", settings);
 }
 
+IEnumerable<string> SafeAdbShell(string command, AdbToolSettings settings, int timeoutSeconds = AdbCommandTimeoutSeconds)
+{
+	try
+	{
+		var shellTask = System.Threading.Tasks.Task.Run(() => AdbShell(command, settings));
+		if (shellTask.Wait(TimeSpan.FromSeconds(timeoutSeconds)))
+		{
+			return shellTask.Result;
+		}
+		else
+		{
+			Warning("ADB shell command '{0}' timed out after {1} seconds", command, timeoutSeconds);
+			return new string[0]; // Return empty array on timeout
+		}
+	}
+	catch (Exception ex)
+	{
+		Warning("ADB shell command '{0}' failed: {1}", command, ex.Message);
+		return new string[0]; // Return empty array on error
+	}
+}
+
+void SafeAdbLogcat(AdbLogcatOptions options, int timeoutSeconds = AdbCommandTimeoutSeconds)
+{
+	try
+	{
+		var logcatTask = System.Threading.Tasks.Task.Run(() => AdbLogcat(options));
+		if (!logcatTask.Wait(TimeSpan.FromSeconds(timeoutSeconds)))
+		{
+			Warning("ADB logcat operation timed out after {0} seconds", timeoutSeconds);
+		}
+	}
+	catch (Exception ex)
+	{
+		Warning("ADB logcat operation failed: {0}", ex.Message);
+	}
+}
+
 void PrepareDevice(bool waitForBoot)
 {
 	var settings = new AdbToolSettings { SdkRoot = androidSdkRoot };
@@ -632,7 +715,7 @@ void PrepareDevice(bool waitForBoot)
         // Wait for the emulator to finish booting
         var waited = 0;
         var total = EmulatorBootTimeoutSeconds;
-        while (AdbShell("getprop sys.boot_completed", settings).FirstOrDefault() != "1")
+        while (SafeAdbShell("getprop sys.boot_completed", settings).FirstOrDefault() != "1")
 		{
 		    System.Threading.Thread.Sleep(1000);
 
@@ -642,10 +725,40 @@ void PrepareDevice(bool waitForBoot)
                 throw new Exception("The emulator did not finish booting in time.");
             }
 
-            if (waited % 60 == 0 && IsCIBuild())
+            // At 90 seconds, restart ADB server to recover from authorization issues
+            if (waited == 90 && IsCIBuild())
+            {
+                Information("Emulator boot taking longer than expected (90/{0} seconds). Restarting ADB server...", total);
+                try
+                {
+                    Information("Stopping ADB server...");
+                    AdbKillServer(settings);
+                    System.Threading.Thread.Sleep(2000);
+                    
+                    Information("Starting ADB server...");
+                    AdbStartServer(settings);
+                    System.Threading.Thread.Sleep(2000);
+                    
+                    Information("ADB server restart completed. Continuing to wait for emulator boot...");
+                }
+                catch (Exception ex)
+                {
+                    Warning("Failed to restart ADB server during boot wait: {0}", ex.Message);
+                    // Continue without throwing - this is a recovery attempt
+                }
+            }
+            else if (waited % 60 == 0 && IsCIBuild())
             {
                 // Ensure ADB keys are configured
-                EnsureAdbKeys(settings);
+                try
+                {
+                    EnsureAdbKeys(settings);
+                }
+                catch (Exception ex)
+                {
+                    Warning("Failed to ensure ADB keys during boot wait: {0}", ex.Message);
+                    // Continue without throwing - this is a recovery attempt
+                }
             }
 		}
 
@@ -656,22 +769,38 @@ void PrepareDevice(bool waitForBoot)
 	{
 		Information("Setting Logcat properties...");
 
-		AdbLogcat(new AdbLogcatOptions() { Clear = true });
-		
-		AdbShell("logcat -G 16M", settings);
-		
-		Information("Finished setting Logcat properties.");
+		try
+		{
+			SafeAdbLogcat(new AdbLogcatOptions() { Clear = true });
+			
+			SafeAdbShell("logcat -G 16M", settings);
+			
+			Information("Finished setting Logcat properties.");
+		}
+		catch (Exception ex)
+		{
+			Warning("Failed to set Logcat properties: {0}", ex.Message);
+			// Continue without throwing - logcat setup is not critical for device function
+		}
 	}
 
 	Information("Setting the ADB properties...");
 
-	var lines = AdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", settings);
-	Information("{0}", string.Join("\n", lines));
+	try
+	{
+		var lines = SafeAdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", settings);
+		Information("{0}", string.Join("\n", lines));
 
-	lines = AdbShell("getprop debug.mono.log", settings);
-	Information("{0}", string.Join("\n", lines));
+		lines = SafeAdbShell("getprop debug.mono.log", settings);
+		Information("{0}", string.Join("\n", lines));
 
-	Information("Finished setting ADB properties.");
+		Information("Finished setting ADB properties.");
+	}
+	catch (Exception ex)
+	{
+		Warning("Failed to set ADB properties: {0}", ex.Message);
+		// Continue without throwing - property setup failure should not stop the process
+	}
 }
 
 void EnsureAdbKeys(AdbToolSettings settings)

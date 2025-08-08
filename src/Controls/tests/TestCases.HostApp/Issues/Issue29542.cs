@@ -92,6 +92,8 @@ public class Issue29542 : ContentPage
 			HorizontalOptions = LayoutOptions.Start
 		};
 
+		label.SetBinding(AutomationIdProperty, new Binding(".", stringFormat: "Label_{0}"));
+
 		var image = new Image
 		{
 			Aspect = Aspect.AspectFit,
