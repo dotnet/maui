@@ -58,7 +58,27 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				// This update is happening while inputting text into the EditText, so we want to avoid 
 				// resettting the cursor position and selection
-				editText.SetTextKeepState(newText);
+
+				// However, SetTextKeepState can crash with EmojiCompat when the text length changes significantly
+				// (e.g., when StringFormat is applied: "1" becomes "1.00")
+				// See: https://issuetracker.google.com/issues/263760661
+				try
+				{
+					editText.SetTextKeepState(newText);
+				}
+				catch (Java.Lang.IllegalArgumentException)
+				{
+					// Fallback to regular setText with manual cursor positioning to avoid EmojiCompat crash
+					var cursorPosition = editText.SelectionStart;
+					editText.Text = newText;
+
+					// Restore cursor position as safely as possible
+					var newCursorPosition = System.Math.Min(cursorPosition, newText?.Length ?? 0);
+					if (newCursorPosition <= editText.Text?.Length)
+					{
+						editText.SetSelection(newCursorPosition);
+					}
+				}
 			}
 		}
 	}
