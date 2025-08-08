@@ -45,7 +45,6 @@ public class Unreported005RelativeToViewHorizontal : Unreported005RelativeToView
 	protected override double DetermineStart(VisualElement view) => view.X;
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Unreported005 : ContentPage
 {
 	public Unreported005() => InitializeComponent();

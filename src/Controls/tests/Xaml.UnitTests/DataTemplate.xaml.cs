@@ -4,7 +4,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class DataTemplate : ContentPage
 	{
 		public DataTemplate()
@@ -13,7 +12,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 		[TestFixture]
-		public class Tests
+		class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);

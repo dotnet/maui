@@ -11,7 +11,6 @@ using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class CompiledTypeConverter : ContentPage
 {
 	public static readonly BindableProperty RectangleBPProperty =
@@ -71,7 +70,7 @@ public partial class CompiledTypeConverter : ContentPage
 	public CompiledTypeConverter() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void CompiledTypeConverterAreInvoked([Values] XamlInflator xamlInflator)

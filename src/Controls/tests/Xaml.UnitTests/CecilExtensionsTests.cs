@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			// "IsCompiledDefault",
 			"X2006Namespace",
 			"X2009Primitives",
-			"Validation.MissingXClass",
+			"Validation.MissingXClass.rtxc",
 		};
 
 		[Test, TestCaseSource(nameof(IsXamlTrueSource))]

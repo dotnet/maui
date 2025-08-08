@@ -1,27 +1,19 @@
 using Microsoft.CodeAnalysis;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-class ProjectItem
+record ProjectItem
 {
-	public ProjectItem(AdditionalText additionalText, string? targetPath, string? relativePath, string? manifestResourceName, string kind, string? targetFramework)
-	{
-		AdditionalText = additionalText;
-		TargetPath = targetPath ?? additionalText.Path;
-		RelativePath = relativePath;
-		ManifestResourceName = manifestResourceName;
-		Kind = kind;
-		TargetFramework = targetFramework;
-	}
-
-	public AdditionalText AdditionalText { get; }
-	public string? TargetPath { get; }
-	public string? RelativePath { get; }
-	public string? ManifestResourceName { get; }
-	public string Kind { get; }
-	public string? TargetFramework { get; }
+	public required AdditionalText AdditionalText { get; init; }
+	private string? _targetPath;
+	public string? TargetPath { get => _targetPath ?? AdditionalText.Path; init => _targetPath = value; }
+	public string? RelativePath { get; init; }
+	public string? ManifestResourceName { get; init; }
+	public required string Kind { get; init; }
+	public string? TargetFramework { get; init; }
+	public required XamlInflator Inflator { get; init; } 
 
 	//bypass attribute check. used for testing
-	public bool ForceSourceGen { get; internal set; }
 	public string Configuration { get; internal set; } = "Debug";
 }

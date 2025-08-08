@@ -7,13 +7,12 @@ using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class FontSize : ContentPage
 {
 	public FontSize() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void FontSizeExtensionsAreReplaced([Values] XamlInflator inflator)

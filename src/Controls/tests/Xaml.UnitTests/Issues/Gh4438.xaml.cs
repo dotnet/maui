@@ -18,7 +18,6 @@ public class Gh4438VMBase<T> : Collection<string>
 	public virtual T SelectedItem { get; set; }
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh4438 : ContentPage
 {
 	public Gh4438() => InitializeComponent();

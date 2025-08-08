@@ -5,7 +5,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Issue2152 : ContentPage
 {
 	public Issue2152() => InitializeComponent();
@@ -14,7 +13,7 @@ public partial class Issue2152 : ContentPage
 	public void OnButtonClicked(object sender, EventArgs e) => clickcount++;
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);

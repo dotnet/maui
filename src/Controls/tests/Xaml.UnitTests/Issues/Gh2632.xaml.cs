@@ -18,7 +18,6 @@ public class Gh2632Base : ContentPage
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh2632 : Gh2632Base
 {
 	public Gh2632() => InitializeComponent();

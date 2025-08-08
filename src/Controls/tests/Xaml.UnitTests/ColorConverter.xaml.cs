@@ -8,14 +8,13 @@ public class ColorConverterVM
 	public string ButtonBackground => "#fc87ad";
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class ColorConverter : ContentPage
 {
 
 	public ColorConverter() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void StringsAreValidAsColor([Values] XamlInflator inflator)

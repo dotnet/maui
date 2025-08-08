@@ -150,7 +150,6 @@ public class SetValue_ReverseConverter : IValueConverter
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class SetValue : ContentPage
 {
 	public SetValue()
@@ -165,7 +164,7 @@ public partial class SetValue : ContentPage
 	}
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);

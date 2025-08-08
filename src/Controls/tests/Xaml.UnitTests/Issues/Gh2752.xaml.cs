@@ -9,7 +9,6 @@ public class Gh2752VM
 	public string Baz { get; set; }
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh2752 : ContentPage
 {
 	public static readonly BindableProperty MyProperty =

@@ -5,12 +5,11 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class VisualStateManagerTests : ContentPage
 {
 	public VisualStateManagerTests() => InitializeComponent();
 
-	public class Tests
+	class Tests
 	{
 		[SetUp] public void SetUp() => Application.Current = new MockApplication();
 

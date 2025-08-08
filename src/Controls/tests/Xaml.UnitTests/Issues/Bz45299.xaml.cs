@@ -151,7 +151,6 @@ public class Bz45299UISizeTypeConverter : TypeConverter
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Bz45299 : ContentPage
 {
 	public Bz45299() => InitializeComponent();

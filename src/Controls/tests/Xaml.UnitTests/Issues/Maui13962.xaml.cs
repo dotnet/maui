@@ -16,10 +16,8 @@ public class Maui13962CustomCheckBox : CheckBox
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui13962 : ContentView
 {
-
 	public Maui13962() => InitializeComponent();
 
 	class Test

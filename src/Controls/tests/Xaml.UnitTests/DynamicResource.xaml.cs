@@ -2,7 +2,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class DynamicResource : ContentPage
 {
 	public DynamicResource()
@@ -11,7 +10,7 @@ public partial class DynamicResource : ContentPage
 	}
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void TestDynamicResources([Values] XamlInflator inflator)
