@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateTabBarItem(page);
 			}
 		}
-		
+
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
 			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
