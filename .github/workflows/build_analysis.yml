@@ -10,12 +10,84 @@ jobs:
   analyze-build:
     name: Analyze Build
     runs-on: ubuntu-latest
-
+  
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       
+      - name: Print GitHub Context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: |
+          echo "GitHub Context: $GITHUB_CONTEXT"
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
+
+      - name: Fetch check results
+        if: ${{ github.event_name == 'check_run' || github.event_name == 'check_suite' }}
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          # Ensure jq for nicer log extraction
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y jq
+          fi
+          chmod +x eng/scripts/get-check-results.sh
+          if [ "${{ github.event_name }}" = "check_run" ]; then
+            eng/scripts/get-check-results.sh --check-run-id "${{ github.event.check_run.id }}"
+            RID="${{ github.event.check_run.id }}"
+            if [ -f "logs/check-run-${RID}.log" ]; then
+              echo "================ Check Run ${RID} Output ================"
+              sed -n '1,2000p' "logs/check-run-${RID}.log"
+            elif [ -f "logs/check-run-${RID}.json" ]; then
+              echo "================ Check Run ${RID} (Parsed from JSON) ================"
+              if command -v jq >/dev/null 2>&1; then
+                jq -r '"Summary:\n" + (.output.summary // "") + "\n\nOutput:\n" + (.output.text // "")' "logs/check-run-${RID}.json"
+              else
+                head -c 50000 "logs/check-run-${RID}.json" | cat
+              fi
+            else
+              echo "No logs found for check run ${RID}"
+            fi
+          else
+            eng/scripts/get-check-results.sh --check-suite-id "${{ github.event.check_suite.id }}"
+            SID="${{ github.event.check_suite.id }}"
+            echo "================ Check Suite ${SID} Outputs ================"
+            count=0
+            for f in logs/check-run-*.log; do
+              if [ -f "$f" ]; then
+                echo "------------- $(basename "$f") -------------"
+                sed -n '1,2000p' "$f"
+                echo
+                count=$((count+1))
+              fi
+            done
+            if [ "$count" -eq 0 ]; then
+              echo "No per-run .log files found. Suite listing:"
+              if [ -f "logs/check-suite-${SID}.json" ] && command -v jq >/dev/null 2>&1; then
+                jq -r '.check_runs[] | "\(.id) - \(.name): status=\(.status), conclusion=\(.conclusion)"' "logs/check-suite-${SID}.json"
+              elif [ -f "logs/check-suite-${SID}.json" ]; then
+                head -c 50000 "logs/check-suite-${SID}.json" | cat
+              else
+                echo "No suite JSON found at logs/check-suite-${SID}.json"
+              fi
+            fi
+          fi
+
+      - name: Upload check result logs artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: check-results-${{ github.run_id }}
+          path: |
+            logs/**
+          if-no-files-found: ignore
+          retention-days: 7
+      

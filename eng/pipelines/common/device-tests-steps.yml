@@ -65,18 +65,18 @@ steps:
 ##################################################
 
 # Install a local .NET SDK
-- script: dotnet cake --target=dotnet --configuration="Release" --verbosity=diagnostic
-  displayName: 'Install .NET'
-  condition: and(succeeded(), ne('${{ parameters.skipDotNet }}', 'true'))
-  retryCountOnTaskFailure: 3
-  env:
-    DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-    PRIVATE_BUILD: $(PrivateBuild)
+# - script: dotnet cake --target=dotnet --configuration="Release" --verbosity=diagnostic
+#   displayName: 'Install .NET'
+#   condition: and(succeeded(), ne('${{ parameters.skipDotNet }}', 'true'))
+#   retryCountOnTaskFailure: 3
+#   env:
+#     DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+#     PRIVATE_BUILD: $(PrivateBuild)
 
-# Add the .NET SDK to the PATH
-- pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
-  displayName: 'Add .NET to PATH'
-  condition: and(succeeded(), ne('${{ parameters.skipDotNet }}', 'true'))
+# # Add the .NET SDK to the PATH
+# - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+#   displayName: 'Add .NET to PATH'
+#   condition: and(succeeded(), ne('${{ parameters.skipDotNet }}', 'true'))
 
 ##################################################
 #                 Prepare Build                  #
@@ -107,10 +107,10 @@ steps:
         PRIVATE_BUILD: $(PrivateBuild)
 
   # Run the build for .NET MAUI on this machine
-  - ${{ else }}:
+  # - ${{ else }}:
 
-    - script: dotnet cake --target=dotnet-buildtasks --configuration="Release"
-      displayName: 'Build the MSBuild Tasks'
+    # - script: dotnet cake --target=dotnet-buildtasks --configuration="Release"
+    #   displayName: 'Build the MSBuild Tasks'
 
 ##################################################
 #                  Prepare Run                   #
@@ -129,19 +129,19 @@ steps:
 ##################################################
 
 # First run the build if this is a build-only or build-and-test job
-- script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target="buildOnly" --project="${{ parameters.path }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ iif(eq(parameters.device, ''), '', format('--device="{0}"', parameters.device)) }} ${{ iif(eq(parameters.apiversion, ''), '', format('--apiversion="{0}"', parameters.apiversion)) }} --create="${{ ne(parameters.buildType, 'buildOnly') }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" --verbosity=diagnostic ${{ parameters.cakeArgs }}
-  displayName: Execute Build
-  workingDirectory: ${{ parameters.checkoutDirectory }}
-  condition: and(succeeded(), ne('${{ parameters.buildType }}', 'testOnly'))
-  retryCountOnTaskFailure: 1
+# - script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target="buildOnly" --project="${{ parameters.path }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ iif(eq(parameters.device, ''), '', format('--device="{0}"', parameters.device)) }} ${{ iif(eq(parameters.apiversion, ''), '', format('--apiversion="{0}"', parameters.apiversion)) }} --create="${{ ne(parameters.buildType, 'buildOnly') }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" --verbosity=diagnostic ${{ parameters.cakeArgs }}
+#   displayName: Execute Build
+#   workingDirectory: ${{ parameters.checkoutDirectory }}
+#   condition: and(succeeded(), ne('${{ parameters.buildType }}', 'testOnly'))
+#   retryCountOnTaskFailure: 1
 
 # Then run the tests if this is a test-only or build-and-test job
-- script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target="testOnly" --project="${{ parameters.path }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ iif(eq(parameters.device, ''), '', format('--device="{0}"', parameters.device)) }} ${{ iif(eq(parameters.apiversion, ''), '', format('--apiversion="{0}"', parameters.apiversion)) }} --create="${{ ne(parameters.buildType, 'buildOnly') }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" --verbosity=diagnostic ${{ parameters.cakeArgs }}
-  displayName: Execute Test Run
-  workingDirectory: ${{ parameters.checkoutDirectory }}
-  condition: and(succeeded(), ne('${{ parameters.buildType }}', 'buildOnly'))
-  ${{ if or(eq(parameters.buildType, 'windows'), eq(parameters.platform, 'android'), eq(parameters.platform, 'ios')) }}:
-    retryCountOnTaskFailure: 1
+# - script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target="testOnly" --project="${{ parameters.path }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ iif(eq(parameters.device, ''), '', format('--device="{0}"', parameters.device)) }} ${{ iif(eq(parameters.apiversion, ''), '', format('--apiversion="{0}"', parameters.apiversion)) }} --create="${{ ne(parameters.buildType, 'buildOnly') }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" --verbosity=diagnostic ${{ parameters.cakeArgs }}
+#   displayName: Execute Test Run
+#   workingDirectory: ${{ parameters.checkoutDirectory }}
+#   condition: and(succeeded(), ne('${{ parameters.buildType }}', 'buildOnly'))
+#   ${{ if or(eq(parameters.buildType, 'windows'), eq(parameters.platform, 'android'), eq(parameters.platform, 'ios')) }}:
+#     retryCountOnTaskFailure: 1
 
 ##################################################
 #                    Publish                     #

@@ -88,8 +88,10 @@ parameters:
   - name: windowsPool
     type: object
     default:
-      name: $(windowsTestsVmPool)
-      vmImage: $(windowsTestsVmImage)
+      name: $(1ESPTPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - ImageOverride -equals 1ESPT-Windows2022
 
   - name: targetFrameworkVersions
     type: object
@@ -118,14 +120,14 @@ stages:
         androidApiLevels: [ 33, 30, 29, 28, 27, 26, 25, 24, 23 ]
         iosVersions: [ 'simulator-18.0']
         catalystVersions: [ 'latest' ]
-        windowsVersions: ['packaged', 'unpackaged']
+        windowsVersions: ['packaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
         skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
       ${{ else }}:
         androidApiLevels: [ 33, 23 ]
         iosVersions: [ 'simulator-18.0' ]
         catalystVersions: [ 'latest' ]
-        windowsVersions: ['packaged', 'unpackaged']
+        windowsVersions: ['packaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
         skipProvisioning: ${{ not(parameters.UseProvisionator) }}
       projects:
