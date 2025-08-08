@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issues15151"
+             Title="Issues15151 - PathF.Bounds">
+    <ScrollView>
+        <VerticalStackLayout Spacing="10" Padding="20">
+            <Label Text="PathF.Bounds - Testing accurate bounding box calculation" FontSize="Subtitle" />
+            <Label Text="Below are examples showing paths with their bounding boxes. Blue is the tight bounds (fixed method), red is old flattening method." 
+                   FontSize="Small" />
+
+            <Label Text="Simple Rectangle" FontSize="Medium" />
+            <GraphicsView x:Name="RectangleView" HeightRequest="220" WidthRequest="400" />
+            <Label x:Name="RectangleTightBounds" AutomationId="RectangleTightBounds" FontSize="Small" />
+            <Label x:Name="RectangleFlattenedBounds" AutomationId="RectangleFlattenedBounds" FontSize="Small" />
+
+            <Label Text="Cubic Bezier with Control Points Far Outside Curve" FontSize="Medium" Margin="0,20,0,0" />
+            <GraphicsView x:Name="BezierView" HeightRequest="300" WidthRequest="400" />
+            <Label x:Name="BezierTightBounds" AutomationId="BezierTightBounds" FontSize="Small" />
+            <Label x:Name="BezierFlattenedBounds" AutomationId="BezierFlattenedBounds" FontSize="Small" />
+
+            <Label Text="Oval with Control Points" FontSize="Medium" Margin="0,20,0,0" />
+            <GraphicsView x:Name="OvalView" HeightRequest="250" WidthRequest="400" />
+            <Label x:Name="OvalTightBounds" AutomationId="OvalTightBounds" FontSize="Small" />
+            <Label x:Name="OvalFlattenedBounds" AutomationId="OvalFlattenedBounds" FontSize="Small" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
