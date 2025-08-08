@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 						if (expander != null)
 						{
 							// we have multiple expanders, make sure previous expanders are reset to not be fixed because they no logner are
-							ComputeConstraintForView(child, false);
+							child.ComputedConstraint = ComputeConstraintForView(child, false);
 						}
 						expander = child;
 					}
