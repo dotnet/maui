@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 using Xunit;
 
 namespace Tests
@@ -18,5 +20,34 @@ namespace Tests
 		[Fact]
 		public void AppActions_IsSupported() =>
 			Assert.Throws<NotImplementedInReferenceAssemblyException>(() => AppActions.IsSupported);
+
+		[Fact]
+		public void BaseInterfacesWork_IDeviceCapability()
+		{
+			var stub = new StubAppActions();
+			IDeviceCapability deviceCapability = stub;
+			IAppActions appActions = stub;
+
+			stub.IsSupported = true;
+
+			Assert.True(appActions.IsSupported);
+			Assert.True(deviceCapability.IsSupported);
+
+			stub.IsSupported = false;
+
+			Assert.False(appActions.IsSupported);
+			Assert.False(deviceCapability.IsSupported);
+		}
+
+		class StubAppActions : IAppActions
+		{
+			public bool IsSupported { get; set; }
+
+			public event EventHandler<AppActionEventArgs> AppActionActivated;
+
+			public Task<IEnumerable<AppAction>> GetAsync() => throw new NotImplementedException();
+
+			public Task SetAsync(IEnumerable<AppAction> actions) => throw new NotImplementedException();
+		}
 	}
 }

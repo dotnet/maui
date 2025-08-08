@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Devices.Sensors;
 using Xunit;
 
@@ -109,5 +110,56 @@ namespace Tests
 
 		static long Nanoseconds(DateTime time) =>
 				(time.Ticks / TimeSpan.TicksPerMillisecond) * 1_000_000;
+
+		[Fact]
+		public void BaseInterfacesWork_IDeviceCapability()
+		{
+			var stub = new StubAccelerometer();
+			IDeviceCapability deviceCapability = stub;
+			IAccelerometer accelerometer = stub;
+
+			stub.IsSupported = true;
+
+			Assert.True(accelerometer.IsSupported);
+			Assert.True(deviceCapability.IsSupported);
+
+			stub.IsSupported = false;
+
+			Assert.False(accelerometer.IsSupported);
+			Assert.False(deviceCapability.IsSupported);
+		}
+
+		[Fact]
+		public void BaseInterfacesWork_ISensor()
+		{
+			var stub = new StubAccelerometer();
+			ISensor sensor = stub;
+			IAccelerometer accelerometer = stub;
+
+			stub.Start(SensorSpeed.Default);
+
+			Assert.True(sensor.IsMonitoring);
+			Assert.True(accelerometer.IsMonitoring);
+
+			stub.Stop();
+
+			Assert.False(sensor.IsMonitoring);
+			Assert.False(accelerometer.IsMonitoring);
+		}
+
+		class StubAccelerometer : IAccelerometer
+		{
+			public bool IsSupported { get; set; }
+
+			public bool IsMonitoring  { get; set; }
+
+			public event EventHandler<AccelerometerChangedEventArgs> ReadingChanged;
+
+			public event EventHandler ShakeDetected;
+
+			public void Start(SensorSpeed sensorSpeed) => IsMonitoring = true;
+	
+			public void Stop() => IsMonitoring = false;
+		}
 	}
 }
