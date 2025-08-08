@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue30337"
+             Title="SafeArea Per-Edge Control">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="10" Padding="20">
+            
+            <Label Text="SafeAreaEdges Per-Edge Control Test"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+            
+            <Label Text="This test validates SafeAreaEdges property functionality on different controls with various SafeAreaRegions values. This test page demonstrates the UI layout for the SafeArea feature."
+                   FontSize="12"
+                   TextColor="Gray"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center" />
+
+            <!-- Test Layout with SafeAreaEdges.All -->
+            <Border BackgroundColor="LightBlue"
+                    Padding="10">
+                <VerticalStackLayout>
+                    <Label Text="Layout: SafeAreaEdges.All"
+                           FontAttributes="Bold" />
+                    <Label Text="This layout would obey all safe area insets" 
+                           FontSize="12" />
+                    <Button Text="Test Layout All"
+                            AutomationId="ButtonLayoutAll"
+                            Clicked="OnLayoutAllClicked" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Test ContentView with SafeAreaEdges.None -->
+            <ContentView BackgroundColor="LightGreen"
+                         Padding="10">
+                <VerticalStackLayout>
+                    <Label Text="ContentView: SafeAreaEdges.None"
+                           FontAttributes="Bold" />
+                    <Label Text="This content view would extend edge-to-edge" 
+                           FontSize="12" />
+                    <Button Text="Test ContentView None"
+                            AutomationId="ButtonContentViewNone"
+                            Clicked="OnContentViewNoneClicked" />
+                </VerticalStackLayout>
+            </ContentView>
+
+            <!-- Test Border with mixed edges -->
+            <Border BackgroundColor="LightCoral"
+                    Padding="10">
+                <VerticalStackLayout>
+                    <Label Text="Border: Mixed Edges (All,None,All,None)"
+                           FontAttributes="Bold" />
+                    <Label Text="Left=All, Top=None, Right=All, Bottom=None" 
+                           FontSize="12" />
+                    <Button Text="Test Border Mixed"
+                            AutomationId="ButtonBorderMixed"
+                            Clicked="OnBorderMixedClicked" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Test Grid with Container region -->
+            <Grid BackgroundColor="LightYellow"
+                  Padding="10">
+                <VerticalStackLayout>
+                    <Label Text="Grid: SafeAreaEdges.Container"
+                           FontAttributes="Bold" />
+                    <Label Text="Container region - flows under keyboard but stays out of bars/notch" 
+                           FontSize="12" />
+                    <Button Text="Test Grid Container"
+                            AutomationId="ButtonGridContainer"
+                            Clicked="OnGridContainerClicked" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- Test ScrollView with SoftInput region -->
+            <ScrollView BackgroundColor="LightPink"
+                        HeightRequest="100">
+                <VerticalStackLayout Padding="10">
+                    <Label Text="ScrollView: SafeAreaEdges.SoftInput"
+                           FontAttributes="Bold" />
+                    <Label Text="SoftInput region - always pads to avoid keyboard" 
+                           FontSize="12" />
+                    <Button Text="Test ScrollView SoftInput"
+                            AutomationId="ButtonScrollViewSoftInput"
+                            Clicked="OnScrollViewSoftInputClicked" />
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- Dynamic property change test -->
+            <VerticalStackLayout BackgroundColor="Lavender"
+                                 Padding="10"
+                                 x:Name="DynamicLayout">
+                <Label Text="Dynamic Property Change Test"
+                       FontAttributes="Bold" />
+                <Label x:Name="DynamicLabel"
+                       Text="Current: SafeAreaEdges.Default"
+                       FontSize="12" />
+                <HorizontalStackLayout Spacing="5">
+                    <Button Text="None"
+                            AutomationId="ButtonSetNone"
+                            Clicked="OnSetNoneClicked" />
+                    <Button Text="All"
+                            AutomationId="ButtonSetAll"
+                            Clicked="OnSetAllClicked" />
+                    <Button Text="Container"
+                            AutomationId="ButtonSetContainer"
+                            Clicked="OnSetContainerClicked" />
+                    <Button Text="SoftInput"
+                            AutomationId="ButtonSetSoftInput"
+                            Clicked="OnSetSoftInputClicked" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <!-- Status display -->
+            <Border BackgroundColor="WhiteSmoke"
+                    Padding="10"
+                    Stroke="Gray"
+                    StrokeThickness="1">
+                <VerticalStackLayout>
+                    <Label Text="Test Status"
+                           FontAttributes="Bold" />
+                    <Label x:Name="StatusLabel"
+                           Text="Ready to test SafeAreaEdges functionality"
+                           AutomationId="StatusLabel"
+                           FontSize="12" />
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
