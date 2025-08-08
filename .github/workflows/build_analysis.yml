@@ -81,6 +81,27 @@ jobs:
             fi
           fi
 
+      - name: Fetch Azure DevOps logs (if linked)
+        if: ${{ github.event_name == 'check_run' }}
+        shell: bash
+        env:
+          AZURE_DEVOPS_TOKEN: ${{ secrets.AZURE_DEVOPS_TOKEN }}
+        run: |
+          set -euo pipefail
+          RID="${{ github.event.check_run.id }}"
+          JSON_PATH="logs/check-run-${RID}.json"
+          if [ -f "$JSON_PATH" ]; then
+            chmod +x eng/scripts/get-azure-devops-logs.sh || true
+            if [ -n "${AZURE_DEVOPS_TOKEN:-}" ]; then
+              echo "Attempting to fetch Azure DevOps logs from $JSON_PATH"
+              eng/scripts/get-azure-devops-logs.sh --check-run-json "$JSON_PATH" --output-dir logs || echo "Skipping ADO logs (no link or fetch failed)"
+            else
+              echo "AZURE_DEVOPS_TOKEN not set; skipping Azure DevOps logs fetch."
+            fi
+          else
+            echo "Check run JSON not found at $JSON_PATH; cannot derive ADO link."
+          fi
+
       - name: Upload check result logs artifact
         if: always()
         uses: actions/upload-artifact@v4

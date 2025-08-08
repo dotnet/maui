@@ -18,6 +18,9 @@
 # - For a check suite, saves:
 #     logs/check-suite-<id>.json (list of runs)
 #     logs/check-run-<id>.{json,log} for each run (when jq is available)
+#
+# To download full Azure DevOps logs for a run that links to Azure Pipelines,
+# use: eng/scripts/get-azure-devops-logs.sh --details-url <url> [--output-dir logs]
 set -euo pipefail
 
 usage() {
@@ -104,6 +107,7 @@ if command -v jq >/dev/null 2>&1; then
   have_jq=1
 fi
 
+
 api_get() {
   local url="$1"
   curl -sS "${HEADERS[@]}" "$url"
@@ -144,6 +148,7 @@ save_check_run() {
   else
     echo "jq not found; saved raw JSON to $json_path"
   fi
+
 }
 
 if [[ -n "$CHECK_RUN_ID" ]]; then
@@ -157,12 +162,13 @@ list_path="$OUTPUT_DIR/check-suite-$CHECK_SUITE_ID.json"
 echo "$suite_list_json" > "$list_path"
 
 if [[ $have_jq -eq 1 ]]; then
-  mapfile -t run_ids < <(jq -r '.check_runs[].id' <<<"$suite_list_json")
-  echo "Found ${#run_ids[@]} check runs in suite $CHECK_SUITE_ID"
-
-  for rid in "${run_ids[@]}"; do
+  ids=$(jq -r '.check_runs[].id' <<<"$suite_list_json")
+  count=0
+  for rid in $ids; do
+    count=$((count+1))
     save_check_run "$rid"
   done
+  echo "Found ${count} check runs in suite $CHECK_SUITE_ID"
 else
   echo "jq not found; saved suite run list to $list_path. Install jq to expand runs."
 fi
