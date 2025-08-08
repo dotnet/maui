@@ -45,7 +45,11 @@ namespace Microsoft.Maui.Controls
 			{ typeof(Uri), new UriTypeConverter() },
 			{ typeof(Easing), new Maui.Converters.EasingTypeConverter() },
 			{ typeof(Maui.Graphics.Color), new ColorTypeConverter() },
-			{ typeof(ImageSource), new ImageSourceConverter() }
+			{ typeof(ImageSource), new ImageSourceConverter() },
+#if NET6_0_OR_GREATER
+			{ typeof(DateTime), new DateTimeTypeConverter() },
+			{ typeof(TimeSpan), new TimeSpanTypeConverter() }
+#endif
 		};
 
 		internal static readonly Dictionary<Type, IValueConverter> KnownIValueConverters = new Dictionary<Type, IValueConverter>
@@ -224,7 +228,15 @@ namespace Microsoft.Maui.Controls
 				value = Convert.ChangeType(value, returnType);
 				return true;
 			}
-			if (KnownTypeConverters.TryGetValue(returnType, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
+
+			Type targetType = Nullable.GetUnderlyingType(returnType) ?? returnType;
+
+			if (KnownTypeConverters.TryGetValue(targetType, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
+			{
+				value = typeConverterTo.ConvertFrom(value);
+				return true;
+			}
+			if (KnownTypeConverters.TryGetValue(targetType, out typeConverterTo) && typeConverterTo.CanConvertFrom(typeof(string)))
 			{
 				value = typeConverterTo.ConvertFromInvariantString(value.ToString());
 				return true;
