@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
-			// TODO: Fix handler._layout.ItemsUpdatingScrollMode = itemsView.ItemsUpdatingScrollMode;
+			handler.UpdateLayout();
 		}
 
 		//TODO: this is being called 2 times on startup, one from OnCreatePlatformView and otehr from the mapper for the layout
