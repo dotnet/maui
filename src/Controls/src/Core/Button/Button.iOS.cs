@@ -38,7 +38,25 @@ namespace Microsoft.Maui.Controls
 			{
 				return Size.Zero;
 			}
+#if MACCATALYST		
+			// For buttons with UIButtonConfiguration, use native sizing
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is not null)
+			{
+				platformButton.LayoutIfNeeded();
+				
+				// Calculates the optimal size the button should occupy based on its current configuration.
+				// This includes text, icons, spacing, and intrinsic content size.
+				var nativeSize = platformButton.SizeThatFits(new CGSize(widthConstraint, heightConstraint));
 
+				if (nativeSize.Width > 0 && nativeSize.Height > 0 && 
+				    !double.IsInfinity(nativeSize.Width) && !double.IsInfinity(nativeSize.Height))
+				{
+					// Round up to the nearest whole number to avoid clipping.
+					return new Size((int)Math.Ceiling(nativeSize.Width), (int)Math.Ceiling(nativeSize.Height));
+				}
+			}
+#endif
+			
 			var layout = button.ContentLayout;
 			var spacing = (nfloat)layout.Spacing;
 			var borderWidth = button.BorderWidth < 0 ? 0 : button.BorderWidth;
