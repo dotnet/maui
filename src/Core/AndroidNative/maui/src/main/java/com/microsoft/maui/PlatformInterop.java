@@ -689,4 +689,19 @@ public class PlatformInterop {
         }
         return null;
     }
+
+    /*
+     * Checks if the ScaleType of the ImageView is CENTER_CROP.
+     * Avoids returning an object to C#.
+     */
+    public static boolean isImageViewCenterCrop(@NonNull ImageView imageView) {
+        return imageView.getScaleType() == ImageView.ScaleType.CENTER_CROP;
+    }
+
+    /*
+     * Sets View.ClipBounds without creating a Rect object in C#
+     */
+    public static void setClipBounds(@NonNull View view, int left, int top, int right, int bottom) {
+        view.setClipBounds(new Rect(left, top, right, bottom));
+    }
 }
