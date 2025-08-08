@@ -357,7 +357,7 @@ namespace Microsoft.Maui.Controls
 			UpdateRowColumnBindingContexts();
 		}
 
-		protected override void ComputeConstraintForView(View view)
+		internal override LayoutConstraint ComputeConstraintForView(View view)
 		{
 			var result = LayoutConstraint.None;
 
@@ -371,7 +371,7 @@ namespace Microsoft.Maui.Controls
 				result |= LayoutConstraint.HorizontallyFixed;
 			}
 
-			view.ComputedConstraint = result;
+			return result;
 		}
 
 		bool ViewHasFixedHeightDefinition(BindableObject view)
