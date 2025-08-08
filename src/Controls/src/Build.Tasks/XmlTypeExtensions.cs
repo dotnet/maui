@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public static TypeReference GetTypeReference(XamlCache cache, string namespaceURI, string typename, ModuleDefinition module, IXmlLineInfo xmlInfo, bool expandToExtension = true)
 		{
-			return new XmlType(namespaceURI, typename, null).GetTypeReference(cache, module, xmlInfo);
+			return new XmlType(namespaceURI, typename, null).GetTypeReference(cache, module, xmlInfo, expandToExtension: expandToExtension);
 		}
 
 		public static bool TryGetTypeReference(this XmlType xmlType, XamlCache cache, ModuleDefinition module, IXmlLineInfo xmlInfo, bool expandToExtension, out TypeReference typeReference)
