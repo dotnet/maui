@@ -2265,7 +2265,12 @@ namespace Microsoft.Maui.Controls
 		void SendLoaded() => SendLoaded(true);
 		void SendLoaded(bool updateWiring)
 		{
-			if (_isLoadedFired)
+			SendLoaded(updateWiring, false);
+		}
+
+		void SendLoaded(bool updateWiring, bool force)
+		{
+			if (!force && _isLoadedFired)
 				return;
 
 			_isLoadedFired = true;
@@ -2293,6 +2298,15 @@ namespace Microsoft.Maui.Controls
 			// loaded is still correctly being watched for.
 			if (updateWiring)
 				UpdatePlatformUnloadedLoadedWiring(Window);
+		}
+
+		// Internal method to force the Loaded event to fire again.
+		// This is used by platform-specific navigation code when a page becomes visible
+		// again but the normal platform lifecycle events don't fire (e.g., Android fragment reuse).
+		internal void ForceLoadedEvent()
+		{
+			// Force the loaded event to fire even if it has already fired before
+			SendLoaded(false, true);
 		}
 
 		static void OnWindowChanged(BindableObject bindable, object? oldValue, object? newValue)
