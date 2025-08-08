@@ -658,6 +658,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_searchView.View.LayoutParameters = new LP(LP.MatchParent, LP.MatchParent);
 					_searchView.SearchConfirmed += OnSearchConfirmed;
 				}
+				// If the existing _searchView is present but its SearchHandler doesn't match the current page SearchHandler,
+				// update it to ensure the correct handler is used for search operations.
+				else if (_searchView.SearchHandler != SearchHandler)
+				{
+					_searchView.SearchHandler = SearchHandler;
+					_searchView.LoadView();
+				}
 
 				if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Collapsible)
 				{
