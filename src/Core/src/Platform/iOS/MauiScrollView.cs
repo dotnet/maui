@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Platform
 						crossPlatformLayout.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), crossPlatformBounds));
 						ContentOffset = new CGPoint(horizontalOffset, 0);
 					}
-					else if(_previousEffectiveUserInterfaceLayoutDirection is not null)
+					else if (_previousEffectiveUserInterfaceLayoutDirection is not null)
 					{
 						ContentOffset = new CGPoint(0, ContentOffset.Y);
 					}
