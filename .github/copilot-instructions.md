@@ -14,7 +14,8 @@ This document provides specific guidance for GitHub Copilot when working on the 
 - **C#** and **XAML** for application development
 - **Cake build system** for compilation and packaging
 - **MSBuild** with custom build tasks
-- **xUnit** for testing
+- **xUnit** and **NUnit** for testing (xUnit for unit tests, NUnit for UI tests)
+- **Appium WebDriver** for UI test automation
 
 ## Development Environment Setup
 
@@ -112,9 +113,9 @@ dotnet cake --target=dotnet-pack
 
 #### UI Testing Guidelines
 
-When adding UI tests to validate visual behavior and user interactions, follow this two-part pattern:
-
 **CRITICAL: UITests require code in TWO separate projects that must BOTH be implemented:**
+
+When adding UI tests to validate visual behavior and user interactions, follow this two-part pattern:
 
 1. **HostApp UI Test Page** (`src/Controls/tests/TestCases.HostApp/Issues/`)
    - Create the actual UI page that demonstrates the feature or reproduces the issue
@@ -149,10 +150,82 @@ public class IssueXXXXX : _IssuesUITest
 }
 ```
 
+**Running UI Tests for Specific Issues:**
+
+To run a specific UI test (like Issue11311) on Android:
+
+1. **Deploy the TestCases.HostApp** to Android first:
+   ```bash
+   # Build and deploy the host app to Android emulator/device
+   # Use local dotnet if available, otherwise use global dotnet
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   # OR if local dotnet is not available:
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   ```
+
+1. **Deploy the TestCases.HostApp** to iOS first (defaults to iOS 18.5 iPhone Xs):
+   ```bash
+   # Build and deploy the host app to iOS simulator
+   # Use local dotnet if available, otherwise use global dotnet
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios -t:Install -p:_DeviceName=":v2:udid=$(xcrun simctl list devices | grep -A 20 'iOS 18.5' | grep 'iPhone Xs' | sed -n 's/.*(\([^)]*\)).*/\1/p')"
+   # OR if local dotnet is not available:
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios -t:Install -p:_DeviceName=":v2:udid=$(xcrun simctl list devices | grep -A 20 'iOS 18.5' | grep 'iPhone Xs' | sed -n 's/.*(\([^)]*\)).*/\1/p')"
+   ```
+
+2. **Run the specific test**:
+   ```bash
+   # Run specific test by name
+   dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+   
+   # Or run all tests for a category
+   dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "Category=CollectionView"
+   ```
+
+**UI Testing Prerequisites:**
+- Android emulator running (API level 29+) or physical device connected
+- iOS simulator running (defaults to iOS 18.5 iPhone Xs) for iOS testing
+- TestCases.HostApp deployed to the target device
+- Tests are located in platform-specific test projects:
+  - `TestCases.Android.Tests` - Android UI tests
+  - `TestCases.iOS.Tests` - iOS UI tests  
+  - `TestCases.Mac.Tests` - macOS UI tests
+  - `TestCases.WinUI.Tests` - Windows UI tests
+
 **Before committing UI tests:**
 - Compile both the HostApp project and TestCases.Shared.Tests project to ensure no build errors
 - Verify AutomationId references match between XAML and test code
 - Ensure tests follow the established naming and inheritance patterns
+- Test should pass consistently on the target platform
+
+#### UI Testing Troubleshooting
+
+**Android App Crashes on Launch:**
+
+If you encounter navigation fragment errors or resource ID issues when launching the Android HostApp, such as:
+```
+java.lang.IllegalArgumentException: No view found for id 0x7f0800f8 (com.microsoft.maui.uitests:id/inward) for fragment NavigationRootManager_ElementBasedFragment
+```
+
+**Solution:** Build with `--no-incremental` to force a clean build and regenerate Android resource IDs:
+
+```bash
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run --no-incremental
+```
+
+**Debugging Steps:**
+1. **Monitor logcat** for crash details:
+   ```bash
+   adb logcat -c  # Clear logcat buffer
+   adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)" &
+   ```
+
+2. **Try clean build** if incremental builds fail:
+   ```bash
+   dotnet clean src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   ```
+
+3. **Check Android emulator** is running and accessible via `adb devices`
 
 ### Code Formatting
 
@@ -167,6 +240,34 @@ This command:
 - Excludes the Templates/src directory from formatting
 - Excludes the CA1822 diagnostic (member can be marked as static)
 - Uses `--no-restore` for faster execution when dependencies are already restored
+
+### Coding Standards
+
+**CRITICAL: Always follow these coding standards for consistency and quality:**
+
+#### Code Style Guidelines
+- **Code Formatting**: Always run `dotnet format Microsoft.Maui.sln` before committing changes to maintain consistent code style across the codebase
+- **String Literals**: Always use `""` instead of `string.Empty` for empty string initialization
+- **Primary Constructors**: Use C# primary constructors for dependency injection where appropriate (C# 12+ feature)
+- **Minimal Diffs**: Keep code changes as small as possible - avoid whitespace-only modifications to reduce review overhead. Always make the smallest possible diff - change only the specific lines needed to fix the issue, never modify unrelated files or make formatting-only changes
+- **Property Change Notifications**: Use `BindableObject.OnPropertyChanged()` for MAUI pages/views - BindableObject already implements `INotifyPropertyChanged`
+- **Collections Performance**: Use `HashSet<T>` instead of `List<T>` for membership testing and duplicate prevention - convert to `List<T>` only when needed for serialization
+
+#### Performance and Efficiency Guidelines
+- **JSON Serialization**: Use System.Text.Json source generators for better performance - see [Microsoft docs](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/source-generation)
+- **File I/O Efficiency**: Use `File.OpenRead()` and `File.Create()` instead of manually creating `FileStream` objects for better readability and performance
+- **Stream-based JSON**: Always use `JsonSerializer.DeserializeAsync()` and `JsonSerializer.SerializeAsync()` with file streams - never load entire file content into memory as strings
+- **XAML Compiled Bindings**: Always use compiled bindings with `x:DataType` to improve runtime performance and enable compile-time binding validation - see [Microsoft docs](https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/data-binding/compiled-bindings?view=net-maui-9.0)
+
+#### Error Handling and Logging
+- **Error Logging**: Use `ILogger` for proper error logging in real applications - log warnings for recoverable errors and errors for critical failures
+- **Async/Await**: Proper async patterns for API calls and file I/O operations
+- **Error Handling**: Try-catch with fallback data for offline scenarios and graceful file I/O error handling
+
+#### Quality Assurance
+- **Warnings as Errors**: Project configured to treat all warnings as errors via `Directory.Build.props` to ensure code quality
+- **Dependency Injection**: HttpClient and services registered in MauiProgram with ILogger support
+- **Gesture Recognition**: Use proper gesture recognizers like PanGestureRecognizer for touch interactions
 
 ### Local Development with Branch-Specific .NET
 
@@ -265,11 +366,15 @@ Always put that at the top, without the block quotes. Without it, the users will
 
 ## Additional Resources
 
-- [Development Guide](.github/DEVELOPMENT.md)
-- [Development Tips](docs/DevelopmentTips.md)
-- [Contributing Guidelines](.github/CONTRIBUTING.md)
 - [Testing Wiki](https://github.com/dotnet/maui/wiki/Testing)
+- [UI Testing Guide](docs/UITesting.md)
 - [.NET MAUI Documentation](https://docs.microsoft.com/dotnet/maui)
+- [.NET Core Installation](https://learn.microsoft.com/en-us/dotnet/core/install/linux)
+- [.NET MAUI First App Tutorial](https://learn.microsoft.com/en-us/dotnet/maui/get-started/first-app?view=net-maui-9.0&tabs=vswin&pivots=devices-android)
+- [Appium Documentation](http://appium.io/docs/)
+- [Appium .NET Quickstart](http://appium.io/docs/en/latest/quickstart/test-dotnet/)
+- [Android Testing Best Practices](https://developer.android.com/training/testing)
+- [GitHub Copilot Customization Guide](https://docs.github.com/en/copilot/customizing-copilot/customizing-the-development-environment-for-copilot-coding-agent)
 
 ---
 
