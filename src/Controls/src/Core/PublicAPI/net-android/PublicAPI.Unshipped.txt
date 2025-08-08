@@ -1,4 +1,5 @@
 #nullable enable
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
 ~Microsoft.Maui.Controls.Element.transientNamescope -> Microsoft.Maui.Controls.Internals.INameScope
 Microsoft.Maui.Controls.FlexLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void
