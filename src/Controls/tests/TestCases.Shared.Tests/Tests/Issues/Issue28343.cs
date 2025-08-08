@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 	[Category(UITestCategories.RefreshView)]
 	public class Issue28343 : _IssuesUITest
 	{
@@ -24,10 +23,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ScrollUp("CollectionView");
 			App.WaitForElement("RefreshNotTriggered");
 			VerifyScreenshot("Issue28343_ProgressSpinnerDisabled");
-
 		}
 
-#if TEST_FAILS_ON_ANDROID // https://github.com/dotnet/maui/issues/28361
 		[Test]
 		public void ProgressSpinnerRemainsDisabledAfterSwappingContent()
 		{
@@ -39,7 +36,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("RefreshNotTriggered");
 			VerifyScreenshot("Issue28343_ProgressSpinnerDisabled");
 		}
-#endif
 
 		[Test]
 		public void ProgressSpinnerWorksWhenReEnabled()
@@ -49,5 +45,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("RefreshTriggered");
 		}
 	}
-#endif
 }
