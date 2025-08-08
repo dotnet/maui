@@ -6,12 +6,13 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 	/// <summary>
 	/// The PhoneDialer API enables an application to open a phone number in the dialer.
 	/// </summary>
-	public interface IPhoneDialer
+	public interface IPhoneDialer : Microsoft.Maui.Devices.IDeviceCapability
 	{
+		// backwards compat with these interfaces
 		/// <summary>
 		/// Gets a value indicating whether using the phone dialer is supported on this device.
 		/// </summary>
-		bool IsSupported { get; }
+		new bool IsSupported { get; }
 
 		/// <summary>
 		/// Open the phone dialer to a specific phone number.
@@ -24,6 +25,12 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		/// <exception cref="FeatureNotSupportedException">Thrown if making phone calls is not supported on the device.</exception>
 		/// <param name="number">Phone number to initialize the dialer with.</param>
 		void Open(string number);
+
+		// new C# explicit implementations in the interface
+#if !NETSTANDARD
+		/// <inheritdoc/>
+		bool Microsoft.Maui.Devices.IDeviceCapability.IsSupported => IsSupported;
+#endif
 	}
 
 	/// <summary>
