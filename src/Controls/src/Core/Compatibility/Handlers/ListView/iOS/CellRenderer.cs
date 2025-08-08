@@ -48,8 +48,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public virtual UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 #pragma warning restore CS0618 // Type or member is obsolete
 		{
-			Performance.Start(out string reference);
-
 			var tvc = reusableCell as CellTableViewCell ?? new CellTableViewCell(UITableViewCellStyle.Default, item.GetType().FullName);
 
 			tvc.Cell = item;
@@ -68,7 +66,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			SetAccessibility(tvc, item);
 
-			Performance.Stop(reference);
 			return tvc;
 		}
 

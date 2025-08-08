@@ -7,6 +7,7 @@ using System.Threading;
 namespace Microsoft.Maui.Controls.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Obsolete("This type is obsolete and will be removed in a future version.", true)]
 	public interface IPerformanceProvider
 	{
 		void Stop(string reference, string tag, string path, string member);
@@ -16,6 +17,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Performance.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Performance']/Docs/*" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Obsolete("This type is obsolete and will be removed in a future version.", true)]
 	public class Performance
 	{
 		static long Reference;
