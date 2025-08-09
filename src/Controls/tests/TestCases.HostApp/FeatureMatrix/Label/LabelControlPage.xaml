@@ -30,6 +30,10 @@
         TextType="{Binding TextType}"
         VerticalTextAlignment="{Binding VerticalTextAlignment}"
         BackgroundColor="LightGray"
-        AutomationId="MainLabel"/>
+        AutomationId="MainLabel">
+        <Label.GestureRecognizers>
+          <TapGestureRecognizer Tapped="MainLabel_Tapped"/>
+        </Label.GestureRecognizers>
+      </Label>
     </VerticalStackLayout>
 </ContentPage>
