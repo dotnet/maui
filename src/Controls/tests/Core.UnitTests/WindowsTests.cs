@@ -835,5 +835,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Same(window, actual);
 			Assert.Empty(table);
 		}
+
+		[Fact]
+		public void BindingIsActivatedProperty()
+		{
+			var app = new TestApp();
+			var page = new ContentPage();
+			var window = app.CreateWindow();
+			window.Page = page;
+
+			var vm = new ViewModel();
+			window.BindingContext = vm;
+			window.SetBinding(Window.IsActivatedProperty, nameof(vm.IsWindowActive));
+
+			(window as IWindow).Activated();
+
+			Assert.True(vm.IsWindowActive);
+
+			(window as IWindow).Deactivated();
+
+			Assert.False(vm.IsWindowActive);
+		}
+	}
+
+	class ViewModel
+	{
+		public bool IsWindowActive
+		{
+			get; set;
+		}
 	}
 }
