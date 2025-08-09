@@ -534,7 +534,7 @@ namespace Microsoft.Maui.DeviceTests
 						},
 						new ShellContent()
 						{
-							Route = "Item2", 
+							Route = "Item2",
 							Content = new ContentPage { Title = "Page 2" }
 						},
 					}
@@ -555,12 +555,12 @@ namespace Microsoft.Maui.DeviceTests
 				await OnNavigatedToAsync(shell.CurrentPage);
 
 				// Test null context scenario
-				var exception = Record.Exception(() => 
+				var exception = Record.Exception(() =>
 				{
 					// Create fragment with null context - this should not throw
 					Page page = new ContentPage();
 					var fragment = new ShellContentFragment((IShellContext)null, page);
-			
+
 					// Dispose the fragment which calls Destroy internally
 					// This validates the null-conditional operators in Destroy method
 					fragment.Dispose();

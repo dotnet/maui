@@ -170,9 +170,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_destroyed)
 				return;
-			
+
 			_destroyed = true;
-			
+
 			// If the user taps very quickly on back button multiple times to pop a page,
 			// the app enters background state in the middle of the animation causing the fragment to be destroyed without completing the animation.
 			// That'll cause `IAnimationListener.onAnimationEnd` to not be called, so we need to call it manually if something is still subscribed to the event
