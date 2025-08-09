@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                          x:Class="Maui.Controls.Sample.Issues.Issue28201MainPage"
+                          xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues">
+  <NavigationPage.TitleView>
+    <Label>Test</Label>
+  </NavigationPage.TitleView>
+  <ScrollView>
+    <VerticalStackLayout
+      Padding="30,0"
+      Spacing="25">
+      <Button x:Name="PushBtn"
+              Text="Push"
+              Clicked="OnPushClicked"
+              AutomationId="pushButton"
+              HorizontalOptions="Fill"/>
+      <Button x:Name="PopToRootBtn"
+              Text="Pop To Root"
+              AutomationId="popButton"
+              Clicked="OnPopToRootClicked"
+              HorizontalOptions="Fill"/>
+      <Button x:Name="CheckStatusButton"
+              Text="Check Status"
+              AutomationId="checkStatusButton"
+              Clicked="OnCheckStatusClicked"
+              HorizontalOptions="Fill"/>
+
+      <Label x:Name="StatusLabel"
+             Text="Page created"
+             AutomationId="label"
+             HorizontalOptions="Fill"/>
+    </VerticalStackLayout>
+  </ScrollView>
+
+</controls:TestContentPage>
