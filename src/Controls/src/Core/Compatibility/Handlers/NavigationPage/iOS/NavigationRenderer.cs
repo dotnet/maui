@@ -1698,7 +1698,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				NavigationRenderer n;
 				if (_navigation.TryGetTarget(out n))
+				{
 					n.UpdateToolBarVisible();
+					// If the bar text color is set, we need to ensure that the right bar button items are rendered with the correct color
+					// This is because the default rendering mode for images in UIBarButtonItems is always AlwaysOriginal
+					// and we want to ensure they use the correct tint color
+					if (n.NavPage?.BarTextColor is not null)
+					{
+						foreach (var item in NavigationItem.RightBarButtonItems)
+						{
+							item.Image = item.Image?.ImageWithRenderingMode(UIImageRenderingMode.Automatic);
+						}
+					}
+				}
 			}
 
 			void UpdateLargeTitles()
