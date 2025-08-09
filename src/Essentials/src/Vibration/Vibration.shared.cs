@@ -7,12 +7,12 @@ namespace Microsoft.Maui.Devices
 	/// <summary>
 	/// The Vibration API provides an easy way to make the device vibrate.
 	/// </summary>
-	public interface IVibration
+	public interface IVibration : Microsoft.Maui.Devices.IDeviceCapability
 	{
 		/// <summary>
 		/// Gets a value indicating whether vibration is supported on this device.
 		/// </summary>
-		bool IsSupported { get; }
+		new bool IsSupported { get; }
 
 		/// <summary>
 		/// Vibrates the device for 500ms.
@@ -30,6 +30,11 @@ namespace Microsoft.Maui.Devices
 		/// Cancel any current vibrations.
 		/// </summary>
 		void Cancel();
+
+#if !NETSTANDARD
+		/// <inheritdoc/>
+		bool IDeviceCapability.IsSupported => IsSupported;
+#endif
 	}
 
 	/// <summary>

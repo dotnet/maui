@@ -7,23 +7,23 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// <summary>
 	/// Monitor changes to the orientation of the user's device.
 	/// </summary>
-	public interface ICompass
+	public interface ICompass : ISensor
 	{
 		/// <summary>
 		/// Gets a value indicating whether reading the compass is supported on this device.
 		/// </summary>
-		bool IsSupported { get; }
+		new bool IsSupported { get; }
 
 		/// <summary>
 		/// Gets if compass is actively being monitored.
 		/// </summary>
-		bool IsMonitoring { get; }
+		new bool IsMonitoring { get; }
 
 		/// <summary>
 		/// Start monitoring for changes to the compass.
 		/// </summary>
 		/// <param name="sensorSpeed">The speed to monitor for changes.</param>
-		void Start(SensorSpeed sensorSpeed);
+		new void Start(SensorSpeed sensorSpeed);
 
 		/// <summary>
 		/// Start monitoring for changes to the compass.
@@ -35,12 +35,23 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Stop monitoring for changes to the compass.
 		/// </summary>
-		void Stop();
+		new void Stop();
 
 		/// <summary>
 		/// Occurs when compass reading changes.
 		/// </summary>
 		event EventHandler<CompassChangedEventArgs> ReadingChanged;
+
+#if !NETSTANDARD
+		/// <inheritdoc/>
+		bool IDeviceCapability.IsSupported => IsSupported;
+		/// <inheritdoc/>
+		bool ISensor.IsMonitoring => IsMonitoring;
+		/// <inheritdoc/>
+		void ISensor.Start(SensorSpeed sensorSpeed) => Start(sensorSpeed);
+		/// <inheritdoc/>
+		void ISensor.Stop() => Stop();
+#endif
 	}
 
 	/// <summary>
