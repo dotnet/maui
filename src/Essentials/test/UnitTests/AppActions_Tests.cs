@@ -43,7 +43,9 @@ namespace Tests
 		{
 			public bool IsSupported { get; set; }
 
+#pragma warning disable CS0067 // The event is never used
 			public event EventHandler<AppActionEventArgs> AppActionActivated;
+#pragma warning restore CS0067 // The event is never used
 
 			public Task<IEnumerable<AppAction>> GetAsync() => throw new NotImplementedException();
 

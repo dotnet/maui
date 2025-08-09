@@ -153,9 +153,13 @@ namespace Tests
 
 			public bool IsMonitoring  { get; set; }
 
+#pragma warning disable CS0067 // The event is never used
 			public event EventHandler<AccelerometerChangedEventArgs> ReadingChanged;
+#pragma warning restore CS0067 // The event is never used
 
+#pragma warning disable CS0067 // The event is never used
 			public event EventHandler ShakeDetected;
+#pragma warning restore CS0067 // The event is never used
 
 			public void Start(SensorSpeed sensorSpeed) => IsMonitoring = true;
 	
