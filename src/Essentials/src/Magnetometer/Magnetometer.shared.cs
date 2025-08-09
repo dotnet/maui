@@ -6,7 +6,7 @@ using Microsoft.Maui.ApplicationModel;
 namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <summary>
-	/// Detect device's orentation relative to Earth's magnetic field in microteslas (�).
+	/// Detect device's orientation relative to Earth's magnetic field in microteslas (�).
 	/// </summary>
 	public interface IMagnetometer : ISensor
 	{
