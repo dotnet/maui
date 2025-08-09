@@ -506,12 +506,12 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			// Create a minimal project for property evaluation testing only
 			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
-			
+
 			// Add PropertyGroup with test properties
 			var propertyGroup = NewElement("PropertyGroup");
 			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
 			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
-			
+
 			// Test scenario 1: Custom CodesignEntitlements should be preserved
 			propertyGroup.Add(NewElement("CodesignEntitlements").WithValue("Custom\\Entitlements.plist"));
 			propertyGroup.Add(NewElement("iOSProjectFolder").WithValue("Platforms\\iOS\\"));
@@ -537,13 +537,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			
+
 			// Build the test target to see property evaluation
 			var log = Build(projectFile, target: "TestCodesignEntitlements", verbosity: "normal");
-			
+
 			// Verify the custom CodesignEntitlements property is preserved
-			Assert.IsTrue(log.Contains("CodesignEntitlements = Custom/Entitlements.plist", StringComparison.Ordinal) || 
-			              log.Contains("CodesignEntitlements = Custom\\Entitlements.plist", StringComparison.Ordinal), 
+			Assert.IsTrue(log.Contains("CodesignEntitlements = Custom/Entitlements.plist", StringComparison.Ordinal) ||
+						  log.Contains("CodesignEntitlements = Custom\\Entitlements.plist", StringComparison.Ordinal),
 				"Custom CodesignEntitlements property should be preserved and not overridden by default Entitlements.plist");
 		}
 
@@ -555,7 +555,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			// Create a minimal project for property evaluation testing only
 			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
-			
+
 			// Add PropertyGroup with test properties - NO CodesignEntitlements set
 			var propertyGroup = NewElement("PropertyGroup");
 			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
@@ -591,13 +591,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			
+
 			// Build the test target to see property evaluation - enable the test condition
 			var log = Build(projectFile, target: "TestCodesignEntitlements", verbosity: "normal", additionalArgs: "-p:TFMTestiOSCondition=true");
-			
+
 			// Verify the default CodesignEntitlements property is used
-			Assert.IsTrue(log.Contains("CodesignEntitlements = Platforms/iOS/Entitlements.plist", StringComparison.Ordinal) || 
-			              log.Contains("CodesignEntitlements = Platforms\\iOS\\Entitlements.plist", StringComparison.Ordinal), 
+			Assert.IsTrue(log.Contains("CodesignEntitlements = Platforms/iOS/Entitlements.plist", StringComparison.Ordinal) ||
+						  log.Contains("CodesignEntitlements = Platforms\\iOS\\Entitlements.plist", StringComparison.Ordinal),
 				"Default Entitlements.plist should be used when no custom CodesignEntitlements is set");
 		}
 	}
