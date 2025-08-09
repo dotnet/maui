@@ -73,20 +73,20 @@ public partial class Issue28986 : ContentPage
 	private string GetSafeAreaEdgesDescription(SafeAreaEdges edges)
 	{
 		// Check for common patterns
-		if (edges.Left == SafeAreaRegions.None && edges.Top == SafeAreaRegions.None && 
-		    edges.Right == SafeAreaRegions.None && edges.Bottom == SafeAreaRegions.None)
+		if (edges.Left == SafeAreaRegions.None && edges.Top == SafeAreaRegions.None &&
+			edges.Right == SafeAreaRegions.None && edges.Bottom == SafeAreaRegions.None)
 		{
 			return "None (Edge-to-edge)";
 		}
-		
-		if (edges.Left == SafeAreaRegions.All && edges.Top == SafeAreaRegions.All && 
-		    edges.Right == SafeAreaRegions.All && edges.Bottom == SafeAreaRegions.All)
+
+		if (edges.Left == SafeAreaRegions.All && edges.Top == SafeAreaRegions.All &&
+			edges.Right == SafeAreaRegions.All && edges.Bottom == SafeAreaRegions.All)
 		{
 			return "All (Full safe area)";
 		}
-		
-		if (edges.Left == SafeAreaRegions.Container && edges.Top == SafeAreaRegions.Container && 
-		    edges.Right == SafeAreaRegions.Container && edges.Bottom == SafeAreaRegions.Container)
+
+		if (edges.Left == SafeAreaRegions.Container && edges.Top == SafeAreaRegions.Container &&
+			edges.Right == SafeAreaRegions.Container && edges.Bottom == SafeAreaRegions.Container)
 		{
 			return "Container (Respect notches/bars)";
 		}

@@ -100,7 +100,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-
+		[RequiresUnreferencedCode("Calls Maui.Controls.Sample.Pages.TitleBarPage.TitleBarPage()")]
 		async void PushNewTitleBarPage_Clicked(object sender, EventArgs e)
 		{
 			await Navigation.PushAsync(new TitleBarPage());
