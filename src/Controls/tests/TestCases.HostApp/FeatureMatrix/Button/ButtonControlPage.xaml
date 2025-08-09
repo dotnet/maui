@@ -55,12 +55,17 @@
               </Button>
 
               <Label Grid.Row="1"
-                     Text="Clicked Event: "/>
+                     Text="Clicked Event: "
+                     AutomationId="MainLabel">
+                <Label.GestureRecognizers>
+                  <TapGestureRecognizer Tapped="MainLabel_Tapped"/>
+                </Label.GestureRecognizers>
+              </Label>
               <Label Grid.Row="1"
                      Grid.Column="1"
                      x:Name="ClickedEventLabel"
                      AutomationId="ClickedEventLabel"/>
-
+              
               <Label Grid.Row="2"
                      Text="Pressed Event: "/>
               <Label Grid.Row="2"
