@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		readonly static UITableViewCell[] EmptyUITableViewCellArray = Array.Empty<UITableViewCell>();
 
+		ShellAppearance _shellAppearance;
+
 		#region IShellItemRenderer
 
 		public ShellItem ShellItem
@@ -82,7 +84,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					MoreNavigationController.WeakDelegate = this;
 				}
 
-				UpdateMoreCellsEnabled();
+				UpdateMoreCells();
 			}
 		}
 
@@ -96,7 +98,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ShellItem.SetValueFromRenderer(ShellItem.CurrentItemProperty, renderer.ShellSection);
 				CurrentRenderer = renderer;
 			}
-			UpdateMoreCellsEnabled();
+			UpdateMoreCells();
 		}
 
 		public override void ViewDidLayoutSubviews()
@@ -262,6 +264,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateShellAppearance(ShellAppearance appearance)
 		{
+			_shellAppearance = appearance;
 			if (appearance == null)
 			{
 				_appearanceTracker.ResetAppearance(this);
@@ -307,13 +310,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			// Make sure we are at the right item
 			GoTo(ShellItem.CurrentItem);
-			UpdateMoreCellsEnabled();
+			UpdateMoreCells();
 		}
 
-		void UpdateMoreCellsEnabled()
+		void UpdateMoreCells()
 		{
 			var moreNavigationCells = GetMoreNavigationCells();
 			var viewControllersLength = ViewControllers.Length;
+#pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
+			foreach (var cell in moreNavigationCells)
+			{
+				cell.TextLabel.TextColor = _shellAppearance?.TabBarTitleColor?.ToPlatform() ?? _shellAppearance?.TabBarUnselectedColor?.ToPlatform();
+			}
+
 			// now that they are applied we can set the enabled state of the TabBar items
 			for (int i = 4; i < viewControllersLength; i++)
 			{
@@ -325,7 +334,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var renderer = RendererForViewController(ViewControllers[i]);
 				var cell = moreNavigationCells[i - 4];
 
-#pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 				if (!renderer.ShellSection.IsEnabled)
 				{
 					cell.UserInteractionEnabled = false;
