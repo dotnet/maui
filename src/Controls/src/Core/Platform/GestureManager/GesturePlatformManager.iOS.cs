@@ -589,6 +589,12 @@ namespace Microsoft.Maui.Controls.Platform
 				(PlatformView.AccessibilityTraits & UIAccessibilityTrait.Button) != UIAccessibilityTrait.Button)
 			{
 				PlatformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
+
+				if (PlatformView is WrapperView wrapperView && wrapperView.Subviews.Length > 0)
+				{
+					wrapperView.Subviews[0].AccessibilityTraits = wrapperView.AccessibilityTraits;
+				}
+
 				_addedFlags |= UIAccessibilityTrait.Button;
 				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13)
 #if TVOS
@@ -781,6 +787,11 @@ namespace Microsoft.Maui.Controls.Platform
 			if (PlatformView != null)
 			{
 				PlatformView.AccessibilityTraits &= ~_addedFlags;
+
+				if (PlatformView is WrapperView wrapperView && wrapperView.Subviews.Length > 0)
+				{
+					wrapperView.Subviews[0].AccessibilityTraits = wrapperView.AccessibilityTraits;
+				}
 
 				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 				{
