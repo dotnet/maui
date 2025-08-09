@@ -11,6 +11,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
@@ -25,7 +26,6 @@ using WBinding = Microsoft.UI.Xaml.Data.Binding;
 using WListView = Microsoft.UI.Xaml.Controls.ListView;
 using WRect = Windows.Foundation.Rect;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
-using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

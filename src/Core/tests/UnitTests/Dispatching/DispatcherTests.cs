@@ -276,7 +276,7 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 			dispatcher.IsDispatchRequired.Returns(true);
 
 			int executionCount = 0;
-			Func<Task> testFunc = async () => 
+			Func<Task> testFunc = async () =>
 			{
 				await Task.Delay(1);
 				executionCount++;
@@ -301,7 +301,7 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 			dispatcher.IsDispatchRequired.Returns(false);
 
 			int executionCount = 0;
-			Func<Task> testFunc = async () => 
+			Func<Task> testFunc = async () =>
 			{
 				await Task.Delay(1);
 				executionCount++;
