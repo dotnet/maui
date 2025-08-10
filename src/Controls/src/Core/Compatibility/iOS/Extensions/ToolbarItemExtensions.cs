@@ -18,21 +18,30 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return ToUIBarButtonItem(item, false, false);
 		}
 
+		internal static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName = false, bool forcePrimary = false, Color itemColor = null)
+		{
+			if (item.Order == ToolbarItemOrder.Secondary && !forcePrimary)
+				return new SecondaryToolbarItem(item);
+			return new PrimaryToolbarItem(item, forceName, itemColor);
+		}
+
 		public static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName = false, bool forcePrimary = false)
 		{
 			if (item.Order == ToolbarItemOrder.Secondary && !forcePrimary)
 				return new SecondaryToolbarItem(item);
-			return new PrimaryToolbarItem(item, forceName);
+			return new PrimaryToolbarItem(item, forceName, null);
 		}
 
 		sealed class PrimaryToolbarItem : UIBarButtonItem
 		{
 			readonly bool _forceName;
+			readonly Color _itemColor;
 			readonly WeakReference<ToolbarItem> _item;
 
-			public PrimaryToolbarItem(ToolbarItem item, bool forceName)
+			public PrimaryToolbarItem(ToolbarItem item, bool forceName, Color itemColor)
 			{
 				_forceName = forceName;
+				_itemColor = itemColor;
 				_item = new(item);
 
 				if (item.IconImageSource != null && !item.IconImageSource.IsEmpty && !forceName)
@@ -112,7 +121,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					}
 					item.IconImageSource.LoadImage(mauiContext, result =>
 					{
-						Image = item.IconImageSource is not FontImageSource
+						Image = item.IconImageSource is not FontImageSource && _itemColor is null
 							? result?.Value.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal)
 							: result?.Value;
 						Style = UIBarButtonItemStyle.Plain;

@@ -1684,33 +1684,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				List<UIBarButtonItem> primaries = null;
 				List<UIBarButtonItem> secondaries = null;
 				var toolbarItems = _tracker.ToolbarItems;
+				Color toolbarItemColor = null;
+
+				if (_navigation.TryGetTarget(out NavigationRenderer mavigationRenderer))
+				{
+					toolbarItemColor = mavigationRenderer.NavPage?.BarTextColor;
+				}
+
 				foreach (var item in toolbarItems)
 				{
 					if (item.Order == ToolbarItemOrder.Secondary)
 						(secondaries = secondaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(true));
 					else
-						(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem());
+						(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(false, false, toolbarItemColor));
 				}
 
 				primaries?.Reverse();
 				NavigationItem.SetRightBarButtonItems(primaries == null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
 				ToolbarItems = secondaries == null ? Array.Empty<UIBarButtonItem>() : secondaries.ToArray();
 
-				NavigationRenderer n;
-				if (_navigation.TryGetTarget(out n))
-				{
-					n.UpdateToolBarVisible();
-					// If the bar text color is set, we need to ensure that the right bar button items are rendered with the correct color
-					// This is because the default rendering mode for images in UIBarButtonItems is always AlwaysOriginal
-					// and we want to ensure they use the correct tint color
-					if (n.NavPage?.BarTextColor is not null)
-					{
-						foreach (var item in NavigationItem.RightBarButtonItems)
-						{
-							item.Image = item.Image?.ImageWithRenderingMode(UIImageRenderingMode.Automatic);
-						}
-					}
-				}
+				if (mavigationRenderer is not null)
+					mavigationRenderer.UpdateToolBarVisible();
 			}
 
 			void UpdateLargeTitles()
