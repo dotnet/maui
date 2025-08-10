@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue28716">
+    <Grid RowDefinitions="Auto,100,100,100">
+        <Button Text="Add Item"
+                Command="{Binding AddItemCommand}"
+                AutomationId="AddItemButton"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"/>
+        <CollectionView
+            ItemsUpdatingScrollMode="KeepLastItemInView"
+            ItemsSource="{Binding Items}"
+            Grid.Row="1">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Horizontal"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding . ,StringFormat='{0}cv1'}"/>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <CollectionView
+            ItemsUpdatingScrollMode="KeepLastItemInView"
+            FlowDirection="RightToLeft"
+            ItemsSource="{Binding Items}"
+            Grid.Row="2">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Horizontal"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding . ,StringFormat='{0}cv2'}"/>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <CollectionView
+            ItemsUpdatingScrollMode="KeepLastItemInView"
+            ItemsSource="{Binding Items}"
+            Grid.Row="3">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding . ,StringFormat='{0}cv3'}"/>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>
