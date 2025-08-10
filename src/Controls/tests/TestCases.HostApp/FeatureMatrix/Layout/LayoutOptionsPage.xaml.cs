@@ -4,7 +4,6 @@ public partial class LayoutOptionsPage : ContentPage
 {
 	private readonly LayoutViewModel _viewModel;
 
-
 	public LayoutOptionsPage(LayoutViewModel viewModel)
 	{
 		InitializeComponent();
@@ -72,8 +71,8 @@ public partial class LayoutOptionsPage : ContentPage
 			case "No Width":
 				_viewModel.WidthRequest = -1;
 				break;
-			case "300":
-				_viewModel.WidthRequest = 300;
+			case "350":
+				_viewModel.WidthRequest = 350;
 				break;
 		}
 	}
@@ -90,6 +89,22 @@ public partial class LayoutOptionsPage : ContentPage
 				break;
 			case "300":
 				_viewModel.HeightRequest = 300;
+				break;
+		}
+	}
+
+	private void OnOrientationClicked(object sender, EventArgs e)
+	{
+		if (sender is not Button button)
+			return;
+
+		switch (button.Text)
+		{
+			case "Vertical":
+				_viewModel.Orientation = ScrollOrientation.Vertical;
+				break;
+			case "Horizontal":
+				_viewModel.Orientation = ScrollOrientation.Horizontal;
 				break;
 		}
 	}

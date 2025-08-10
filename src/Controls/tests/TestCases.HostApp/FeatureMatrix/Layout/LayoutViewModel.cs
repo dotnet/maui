@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample;
 
@@ -8,6 +10,20 @@ public class LayoutViewModel : INotifyPropertyChanged
     private LayoutOptions _verticalOptions = LayoutOptions.Fill;
     private double _widthRequest = -1;
     private double _heightRequest = -1;
+    private ScrollOrientation _orientation = ScrollOrientation.Vertical;
+
+    public ScrollOrientation Orientation
+    {
+        get => _orientation;
+        set
+        {
+            if (_orientation != value)
+            {
+                _orientation = value;
+                OnPropertyChanged(nameof(Orientation));
+            }
+        }
+    }
 
     public LayoutOptions HorizontalOptions
     {
@@ -61,9 +77,8 @@ public class LayoutViewModel : INotifyPropertyChanged
         }
     }
 
-
     public event PropertyChangedEventHandler PropertyChanged;
 
-    void OnPropertyChanged(string propertyName)
-        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+   protected void OnPropertyChanged([CallerMemberName] string propertyName = "") =>
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }

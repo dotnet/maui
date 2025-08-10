@@ -25,11 +25,10 @@ public partial class LayoutMainPage : ContentPage
         BindingContext = _viewModel;
         InitializeContent();
     }
-
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        InitializeContent(); // reinitialize every time page appears
+        InitializeContent(); 
     }
 
     private void InitializeContent()
@@ -54,232 +53,75 @@ public partial class LayoutMainPage : ContentPage
 
     private void OnScrollViewWithStackLayoutClicked(object sender, EventArgs e)
     {
-        var layout = new VerticalStackLayout
+        Layout layout;
+
+        if (_viewModel.Orientation == ScrollOrientation.Horizontal)
         {
-            HorizontalOptions = _viewModel.HorizontalOptions,
-            VerticalOptions = _viewModel.VerticalOptions,
-            BackgroundColor = Colors.LightGray,
-            Children =
-        {
-            new Label { Text = "ScrollView contains direct Layout" },
-            new Button { Text = "Click Me" }
+            layout = new HorizontalStackLayout
+            {
+                HorizontalOptions = _viewModel.HorizontalOptions,
+                VerticalOptions = _viewModel.VerticalOptions,
+                BackgroundColor = Colors.LightGray,
+                Spacing = 10,
+                Children =
+            {
+                new Label { Text = "StackLayout", VerticalOptions = LayoutOptions.Center  },
+                new Button { Text = "Button1", VerticalOptions = LayoutOptions.Center },
+                new Button { Text = "Button2", VerticalOptions = LayoutOptions.Center }
+            }
+            };
         }
-        };
+        else
+        {
+            layout = new VerticalStackLayout
+            {
+                HorizontalOptions = _viewModel.HorizontalOptions,
+                VerticalOptions = _viewModel.VerticalOptions,
+                BackgroundColor = Colors.LightGray,
+                Spacing = 10,
+                Children =
+            {
+                new Label { Text = "StackLayout", HorizontalOptions = LayoutOptions.Center },
+                new Button { Text = "Button1", HorizontalOptions = LayoutOptions.Center  },
+                new Button { Text = "Button2", HorizontalOptions = LayoutOptions.Center }
+            }
+            };
+        }
 
         MyScrollView.Content = layout;
-    }
-    private void OnContentViewWithStackLayoutClicked(object sender, EventArgs e)
-    {
-        var innerLayout = new VerticalStackLayout
-        {
-            HorizontalOptions = _viewModel.HorizontalOptions,
-            VerticalOptions = _viewModel.VerticalOptions,
-            BackgroundColor = Colors.LightBlue,
-            Spacing = 10,
-            Children =
-        {
-            new Label { Text = "Layout inside ContentView", FontSize = 18, FontAttributes = FontAttributes.Bold }
-        }
-        };
-
-        for (int i = 1; i <= 5; i++)
-        {
-            innerLayout.Children.Add(new Button { Text = $"Add Item {i}" });
-        }
-
-        MyScrollView.Content = new ContentView { Content = innerLayout };
-    }
-
-    private void OnGridWithStackLayoutClicked(object sender, EventArgs e)
-    {
-        var stack = new VerticalStackLayout
-        {
-            HorizontalOptions = _viewModel.HorizontalOptions,
-            VerticalOptions = _viewModel.VerticalOptions,
-            BackgroundColor = Colors.Beige,
-            Spacing = 10,
-            Children =
-        {
-            new Label { Text = "Layout inside Grid", FontSize = 18, FontAttributes = FontAttributes.Bold }
-        }
-        };
-
-        for (int i = 1; i <= 5; i++)
-        {
-            stack.Children.Add(new Button { Text = $"Vegetable {i}" });
-        }
-
-        var grid = new Grid();
-        grid.Add(stack);
-
-        MyScrollView.Content = grid;
-    }
-    private void OnNestedStackLayoutsClicked(object sender, EventArgs e)
-    {
-        var innerStack = new VerticalStackLayout
-        {
-            Spacing = 10,
-            BackgroundColor = Colors.LightPink,
-        };
-
-        innerStack.Children.Add(new Label
-        {
-            Text = "Inner Stack",
-            FontSize = 16,
-            FontAttributes = FontAttributes.Bold
-        });
-
-        for (int i = 1; i <= 2; i++)
-        {
-            innerStack.Children.Add(new Button { Text = $"Fruit {i}" });
-        }
-
-        for (int i = 1; i <= 2; i++)
-        {
-            innerStack.Children.Add(new Button { Text = $"Vegetable {i}" });
-        }
-
-        var parentLayout = new VerticalStackLayout
-        {
-            HorizontalOptions = _viewModel.HorizontalOptions,
-            VerticalOptions = _viewModel.VerticalOptions,
-            Spacing = 10,
-            BackgroundColor = Colors.LightGray,
-            Children =
-        {
-            innerStack
-        }
-        };
-
-        var contentView = new ContentView
-        {
-            Content = parentLayout,
-        };
-
-        MyScrollView.Content = contentView;
-    }
-
-
-    private void OnHorizontalStackLayoutClicked(object sender, EventArgs e)
-    {
-        var horizontalLayout = new HorizontalStackLayout
-        {
-            HorizontalOptions = _viewModel.HorizontalOptions,
-            VerticalOptions = _viewModel.VerticalOptions,
-            BackgroundColor = Colors.MistyRose,
-            Spacing = 10,
-            Children =
-        {
-            new Label { Text = "Layout", FontSize = 16, FontAttributes = FontAttributes.Bold }
-        }
-        };
-
-        for (int i = 1; i <= 2; i++)
-        {
-            horizontalLayout.Children.Add(new Button { Text = $"Item {i}" });
-        }
-
-        MyScrollView.Content = horizontalLayout;
     }
 
     private void OnGridWithChildrenClicked(object sender, EventArgs e)
     {
         var grid = new Grid
         {
-            Padding = 10,
+            Padding = 15,
             BackgroundColor = Colors.LightGray,
             HorizontalOptions = _viewModel.HorizontalOptions,
-            VerticalOptions = _viewModel.VerticalOptions
+            VerticalOptions = _viewModel.VerticalOptions,
+            RowSpacing = 10,
+            ColumnSpacing = 10
         };
-
-
+       
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 
-
-        int buttonCount = 3;
-        for (int i = 0; i < buttonCount; i++)
-        {
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-            grid.Add(new Button
-            {
-                Text = $"Button {i + 1}"
-            }, 0, i);
-        }
-
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        
+        var button1 = new Button { Text = "Button 1", BackgroundColor = Colors.Orange, TextColor = Colors.White };
+        var button2 = new Button { Text = "Button 2", BackgroundColor = Colors.Blue, TextColor = Colors.White };
+        var button3 = new Button { Text = "Button 3", BackgroundColor = Colors.Green, TextColor = Colors.White };
+        var button4 = new Button { Text = "Button 4", BackgroundColor = Colors.Red, TextColor = Colors.White };
+        var button5 = new Button { Text = "Button 5", BackgroundColor = Colors.Purple, TextColor = Colors.White };
+        var button6 = new Button { Text = "Button 6", BackgroundColor = Colors.Brown, TextColor = Colors.White };
+        grid.Add(button1, 0, 0);  
+        grid.Add(button2, 1, 0);  
+        grid.Add(button3, 2, 0);  
+        grid.Add(button4, 0, 1);  
+        grid.Add(button5, 1, 1);  
+        grid.Add(button6, 2, 1);  
         MyScrollView.Content = grid;
-    }
-
-    private void OnGridWithContentViewClicked(object sender, EventArgs e)
-    {
-        int columns = 3;
-        int rows = 3;
-
-        var grid = new Grid()
-        {
-            BackgroundColor = Colors.LightGray,
-            HorizontalOptions = _viewModel.HorizontalOptions,
-            VerticalOptions = _viewModel.VerticalOptions,
-        };
-
-        for (int row = 3; row < rows; row++)
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-        for (int col = 0; col < columns; col++)
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
-
-        for (int row = 0; row < rows; row++)
-        {
-            for (int col = 0; col < columns; col++)
-            {
-                int index = row * columns + col + 1;
-                var cell = new Label
-                {
-                    Text = $"Item {index}",
-                    FontSize = 16,
-                    Padding = new Thickness(8),
-                    HorizontalOptions = LayoutOptions.Center,
-
-                };
-                grid.Add(cell, col, row);
-            }
-        }
-
-        var contentView = new ContentView
-        {
-            Content = grid,
-        };
-
-        MyScrollView.Content = contentView;
-    }
-
-    private void OnScrollViewWithAbsoluteLayoutClicked(object sender, EventArgs e)
-    {
-        var absoluteLayout = new AbsoluteLayout
-        {
-            HorizontalOptions = _viewModel.HorizontalOptions,
-            VerticalOptions = _viewModel.VerticalOptions,
-            BackgroundColor = Colors.LightGray,
-        };
-
-        var box = new BoxView
-        {
-            Color = Colors.Teal,
-            WidthRequest = 120,
-            HeightRequest = 120
-        };
-
-
-        absoluteLayout.SizeChanged += (s, args) =>
-        {
-            double x = (absoluteLayout.Width - box.WidthRequest) / 2;
-            double y = (absoluteLayout.Height - box.HeightRequest) / 2;
-
-            AbsoluteLayout.SetLayoutBounds(box, new Rect(x, y, box.WidthRequest, box.HeightRequest));
-        };
-
-        absoluteLayout.Children.Add(box);
-
-        MyScrollView.Content = absoluteLayout;
     }
 }
