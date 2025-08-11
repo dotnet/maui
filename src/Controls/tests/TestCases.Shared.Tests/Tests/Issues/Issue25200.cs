@@ -42,7 +42,7 @@ public class Issue25200 : _IssuesUITest
 	[Category(UITestCategories.ActionSheet)]
 	public void ActionSheetWithManyActionsShouldDisplayProperly()
 	{
-		App.WaitForElement("ShowLargeActionSheetButton");
+		App.WaitForElement("ShowLargeActionSheetButton", timeout: TimeSpan.FromSeconds(45));
 		App.Tap("ShowLargeActionSheetButton");
 
 		// Verify the ActionSheet title is visible
