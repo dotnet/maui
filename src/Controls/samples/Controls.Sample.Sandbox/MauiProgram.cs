@@ -8,7 +8,7 @@ public static class MauiProgram
 #if __ANDROID__ || __IOS__
 			.UseMauiMaps()
 #endif
-			.UseMauiApp<App>()
+			.UseMauiApp<MauiMultiWindow.App>()
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
