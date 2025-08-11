@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateIndicatorSize()
 		{
-			if (IndicatorSize == 0 || IndicatorSize == DefaultIndicatorSize)
+			if (IndicatorSize == 0)
 				return;
 
 			float scale = (float)IndicatorSize / DefaultIndicatorSize;
