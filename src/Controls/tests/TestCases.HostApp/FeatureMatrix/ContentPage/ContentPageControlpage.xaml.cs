@@ -1,0 +1,166 @@
+namespace Maui.Controls.Sample;
+
+public class ContentPageControlPage : NavigationPage
+{
+	private ContentPageViewModel _viewModel;
+
+	public ContentPageControlPage()
+	{
+		_viewModel = new ContentPageViewModel();
+		PushAsync(new ContentPageControlMainPage(_viewModel));
+	}
+}
+
+public partial class ContentPageControlMainPage : ContentPage
+{
+	private ContentPageViewModel _viewModel;
+
+	public ContentPageControlMainPage(ContentPageViewModel viewModel)
+	{
+		InitializeComponent();
+		_viewModel = viewModel;
+		BindingContext = _viewModel;
+	}
+	private void TogglePadding_Clicked(object sender, EventArgs e)
+	{
+		// Toggle between different padding values
+		_viewModel.Padding = _viewModel.Padding.Equals(new Thickness(10))
+			? new Thickness(30, 20, 30, 20)
+			: new Thickness(10);
+	}
+
+	private void SetIcon_Clicked(object sender, EventArgs e)
+	{
+		// Set an icon for the page (using a system icon or emoji)
+		_viewModel.IconImageSource = "dotnet_bot.png"; // You can use any available icon
+	}
+
+	private void SetGradientBackground_Clicked(object sender, EventArgs e)
+	{
+		// Set a gradient background
+		_viewModel.BackgroundImageSource = new LinearGradientBrush
+		{
+			StartPoint = new Point(0, 0),
+			EndPoint = new Point(1, 1),
+			GradientStops = new GradientStopCollection
+			{
+				new GradientStop { Color = Colors.LightBlue, Offset = 0.0f },
+				new GradientStop { Color = Colors.LightPink, Offset = 1.0f }
+			}
+		};
+	}
+
+	private async void ChangeContent_Clicked(object sender, EventArgs e)
+	{
+		// Create a new ContentPage and navigate to it
+		var newContentPage = new ContentPage
+		{
+			Title = "New Content Page",
+			BackgroundColor = Colors.LightYellow,
+			Content = new VerticalStackLayout
+			{
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.Center,
+				Spacing = 20,
+				Children =
+				{
+					new Label
+					{
+						Text = "New ContentPage Created!",
+						FontSize = 24,
+						FontAttributes = FontAttributes.Bold,
+						TextColor = Colors.DarkBlue,
+						HorizontalOptions = LayoutOptions.Center
+					},
+					new Label
+					{
+						Text = "This demonstrates a new ContentPage instance with Reset functionality.",
+						FontSize = 16,
+						TextColor = Colors.Gray,
+						HorizontalOptions = LayoutOptions.Center,
+						Margin = new Thickness(20, 0)
+					},
+					new Label
+					{
+						Text = "Use 'Go Back' to return manually, or 'Reset' to reset properties and return automatically.",
+						FontSize = 14,
+						TextColor = Colors.DarkGray,
+						HorizontalOptions = LayoutOptions.Center,
+						FontAttributes = FontAttributes.Italic,
+						Margin = new Thickness(20, 0)
+					},
+					new Button
+					{
+						Text = "Go Back",
+						BackgroundColor = Colors.Gray,
+						TextColor = Colors.White,
+						FontAttributes = FontAttributes.Bold,
+						FontSize = 14,
+						Margin = new Thickness(0, 10, 0, 0),
+						Command = new Command(async () => await Navigation.PopAsync())
+					},
+					new Button
+					{
+						Text = "Reset",
+						BackgroundColor = Colors.DodgerBlue,
+						TextColor = Colors.White,
+						FontAttributes = FontAttributes.Bold,
+						FontSize = 16,
+						AutomationId = "ResetButton",
+						Margin = new Thickness(0, 20, 0, 0),
+						Command = new Command(async () => {						
+							// Reset the original page's ViewModel properties
+							_viewModel.ResetAllProperties();
+							
+							// Navigate back to the original page
+							await Navigation.PopAsync();
+						})
+					}
+				}
+			}
+		};
+
+		// Navigate to the new ContentPage
+		await Navigation.PushAsync(newContentPage);
+	}
+
+	private void ResetContent()
+	{
+		// Reset to original content
+		_viewModel.Content = new VerticalStackLayout
+		{
+			Children =
+			{
+				new Label
+				{
+					Text = "Welcome to ContentPage Feature Matrix!",
+					VerticalOptions = LayoutOptions.Center,
+					HorizontalOptions = LayoutOptions.Center,
+					FontSize = 18,
+					Margin = new Thickness(0, 20)
+				},
+				new Label
+				{
+					Text = "This demonstrates ContentPage properties with data binding.",
+					VerticalOptions = LayoutOptions.Center,
+					HorizontalOptions = LayoutOptions.Center,
+					FontSize = 14
+				}
+			}
+		};
+	}
+
+	private void ResetAll_Clicked(object sender, EventArgs e)
+	{
+		// Reset all properties to their initial state
+		_viewModel.ResetAllProperties();
+	}
+
+	private void ToggleFlowDirection_Clicked(object sender, EventArgs e)
+	{
+		// Toggle between LTR and RTL flow directions
+		_viewModel.FlowDirection = _viewModel.FlowDirection == FlowDirection.LeftToRight
+			? FlowDirection.RightToLeft
+			: FlowDirection.LeftToRight;
+	}
+}
