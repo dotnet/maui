@@ -251,7 +251,7 @@ void HandleTestResults(string resultsDir, bool testsFailed, bool needsNameFix, s
         // We don't want these to upload
         MoveFile($"{failurePath}/testresults{suffix}.xml", $"{failurePath}/Results{suffix}.xml");
     }
-    FailRunOnOnlyInconclusiveTests($"{resultsDir}/testtesults{suffix}.xml");
+    FailRunOnOnlyInconclusiveTests($"{resultsDir}/testresults{suffix}.xml");
 }
 
 DirectoryPath DetermineBinlogDirectory(string projectPath, string binlogArg)
