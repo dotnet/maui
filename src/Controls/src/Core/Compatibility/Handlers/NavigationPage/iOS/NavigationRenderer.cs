@@ -1686,9 +1686,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var toolbarItems = _tracker.ToolbarItems;
 				Color toolbarItemColor = null;
 
-				if (_navigation.TryGetTarget(out NavigationRenderer mavigationRenderer))
+				if (_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
 				{
-					toolbarItemColor = mavigationRenderer.NavPage?.BarTextColor;
+					toolbarItemColor = navigationRenderer.NavPage?.BarTextColor;
 				}
 
 				foreach (var item in toolbarItems)
@@ -1703,8 +1703,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				NavigationItem.SetRightBarButtonItems(primaries == null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
 				ToolbarItems = secondaries == null ? Array.Empty<UIBarButtonItem>() : secondaries.ToArray();
 
-				if (mavigationRenderer is not null)
-					mavigationRenderer.UpdateToolBarVisible();
+				if (navigationRenderer is not null)
+					navigationRenderer.UpdateToolBarVisible();
 			}
 
 			void UpdateLargeTitles()
