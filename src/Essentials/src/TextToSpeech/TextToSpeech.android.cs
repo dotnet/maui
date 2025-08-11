@@ -200,7 +200,8 @@ namespace Microsoft.Maui.Media
 			await Initialize();
 
 			try
-			{	// Attempt to use the new API to get the voices and their locales, a.Name is the voice's identifier
+			{	
+				// Attempt to use the new API to get the voices and their locales, a.Name is the voice's identifier
 				return tts.Voices.Select(a => new Locale( a.Locale.Language, a.Locale.Country, a.Locale.DisplayName, a.Name));
 			}
 			catch (Exception ex)
