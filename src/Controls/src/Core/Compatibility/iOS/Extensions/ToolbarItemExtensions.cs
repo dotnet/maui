@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return ToUIBarButtonItem(item, false, false);
 		}
 
-		internal static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName = false, bool forcePrimary = false, Color itemColor = null)
+		internal static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName, Color itemColor, bool forcePrimary = false)
 		{
 			if (item.Order == ToolbarItemOrder.Secondary && !forcePrimary)
 				return new SecondaryToolbarItem(item);
@@ -27,9 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName = false, bool forcePrimary = false)
 		{
-			if (item.Order == ToolbarItemOrder.Secondary && !forcePrimary)
-				return new SecondaryToolbarItem(item);
-			return new PrimaryToolbarItem(item, forceName, null);
+			return ToUIBarButtonItem(item, forceName, null, forcePrimary);
 		}
 
 		sealed class PrimaryToolbarItem : UIBarButtonItem

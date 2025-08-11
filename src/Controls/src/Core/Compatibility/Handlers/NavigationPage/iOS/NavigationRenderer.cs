@@ -1696,7 +1696,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (item.Order == ToolbarItemOrder.Secondary)
 						(secondaries = secondaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(true));
 					else
-						(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(false, false, toolbarItemColor));
+						(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(false, toolbarItemColor, false));
 				}
 
 				primaries?.Reverse();
