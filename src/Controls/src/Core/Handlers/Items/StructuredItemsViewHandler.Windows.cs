@@ -243,7 +243,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var v = layout?.VerticalItemSpacing ?? 0;
 			var margin = WinUIHelpers.CreateThickness(h, v, h, v);
 
-			var style = new WStyle(typeof(GridViewItem));
+			var defaultStyle = GetDefaultStyle("DefaultGridViewItemStyle");
+			var style = new WStyle(typeof(GridViewItem))
+			{
+				BasedOn = defaultStyle
+			};
 
 			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
 			style.Setters.Add(new WSetter(Control.PaddingProperty, WinUIHelpers.CreateThickness(0)));
@@ -252,13 +256,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return style;
 		}
 
-		static WStyle CreateListViewItemContainerStyle()
+		static WStyle GetDefaultStyle(string resourceKey)
 		{
-			var defaultStyle = Microsoft.UI.Xaml.Application.Current.Resources["DefaultListViewItemStyle"] as WStyle;
-			return new WStyle(typeof(ListViewItem))
-			{
-				BasedOn = defaultStyle,
-			};
+			return Microsoft.UI.Xaml.Application.Current.Resources[resourceKey] as WStyle;
 		}
 
 		static WStyle GetVerticalItemContainerStyle(LinearItemsLayout layout)
@@ -266,7 +266,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var v = layout?.ItemSpacing ?? 0;
 			var margin = WinUIHelpers.CreateThickness(0, v, 0, v);
 
-			var style = CreateListViewItemContainerStyle();
+			var defaultStyle = GetDefaultStyle("DefaultListViewItemStyle");
+			var style = new WStyle(typeof(ListViewItem))
+			{
+				BasedOn = defaultStyle
+			};
 
 			style.Setters.Add(new WSetter(FrameworkElement.MinHeightProperty, 0));
 			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
@@ -281,7 +285,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var h = layout?.ItemSpacing ?? 0;
 			var padding = WinUIHelpers.CreateThickness(h, 0, h, 0);
 
-			var style = CreateListViewItemContainerStyle();
+			var defaultStyle = GetDefaultStyle("DefaultListViewItemStyle");
+			var style = new WStyle(typeof(ListViewItem))
+			{
+				BasedOn = defaultStyle
+			};
 
 			style.Setters.Add(new WSetter(FrameworkElement.MinWidthProperty, 0));
 			style.Setters.Add(new WSetter(Control.PaddingProperty, padding));
