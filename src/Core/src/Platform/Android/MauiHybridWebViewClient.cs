@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Platform
 				return null;
 			}
 		}
-		
+
 		private protected static IDictionary<string, string> GetHeaders(string contentType) =>
 			new Dictionary<string, string> {
 				{ "Content-Type", contentType },
