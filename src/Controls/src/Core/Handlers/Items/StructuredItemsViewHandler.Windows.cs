@@ -252,12 +252,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return style;
 		}
 
+		static WStyle CreateListViewItemContainerStyle()
+		{
+			var defaultStyle = Microsoft.UI.Xaml.Application.Current.Resources["DefaultListViewItemStyle"] as WStyle;
+			return new WStyle(typeof(ListViewItem))
+			{
+				BasedOn = defaultStyle,
+			};
+		}
+
 		static WStyle GetVerticalItemContainerStyle(LinearItemsLayout layout)
 		{
 			var v = layout?.ItemSpacing ?? 0;
 			var margin = WinUIHelpers.CreateThickness(0, v, 0, v);
 
-			var style = new WStyle(typeof(ListViewItem));
+			var style = CreateListViewItemContainerStyle();
 
 			style.Setters.Add(new WSetter(FrameworkElement.MinHeightProperty, 0));
 			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
@@ -272,7 +281,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var h = layout?.ItemSpacing ?? 0;
 			var padding = WinUIHelpers.CreateThickness(h, 0, h, 0);
 
-			var style = new WStyle(typeof(ListViewItem));
+			var style = CreateListViewItemContainerStyle();
 
 			style.Setters.Add(new WSetter(FrameworkElement.MinWidthProperty, 0));
 			style.Setters.Add(new WSetter(Control.PaddingProperty, padding));
