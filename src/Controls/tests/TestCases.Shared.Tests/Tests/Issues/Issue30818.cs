@@ -23,12 +23,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// Wait for the page to load and toolbar item to be present
 			App.Tap("SetRedButton");
-            VerifyScreenshot("ToolbarItemColorWithCustomBarTextColorShouldWork_Red");
+			VerifyScreenshot("ToolbarItemColorWithCustomBarTextColorShouldWork_Red");
 			
 			// Set the BarTextColor to red
-            App.WaitForElement("SetGreenButton");
+			App.WaitForElement("SetGreenButton");
 			App.Tap("SetGreenButton");
-            VerifyScreenshot("ToolbarItemColorWithCustomBarTextColorShouldWork_Green");
+			VerifyScreenshot("ToolbarItemColorWithCustomBarTextColorShouldWork_Green");
 
 
 			App.Tap("SetResetButton");
