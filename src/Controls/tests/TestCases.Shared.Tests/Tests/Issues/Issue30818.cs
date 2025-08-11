@@ -31,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
             VerifyScreenshot("ToolbarItemColorWithCustomBarTextColorShouldWork_Green");
 
 
-			App.Tap("ResetButton");
+			App.Tap("SetResetButton");
 			VerifyScreenshot();
 		}
 	}
