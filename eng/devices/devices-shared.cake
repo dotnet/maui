@@ -214,19 +214,19 @@ void HandleTestResults(string resultsDir, bool testsFailed, bool needsNameFix, s
         if (FileExists(resultsFile))
         {
             Information($"Test results found on {resultsDir}");
-            MoveFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath($"TestResults{suffix}.xml"));
+            MoveFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath($"testresults{suffix}.xml"));
             var logFiles = GetFiles($"{resultsDir}/*.log");
 
             foreach (var logFile in logFiles)
             {
-                if (logFile.GetFilename().ToString().StartsWith("TestResults"))
+                if (logFile.GetFilename().ToString().StartsWith("testresults"))
                 {
                     // These are log files that have already been renamed
                     continue;
                 }
 
                 Information($"Log file found: {logFile.GetFilename().ToString()}");
-                MoveFile(logFile, resultsFile.GetDirectory().CombineWithFilePath($"TestResults{suffix}-{logFile.GetFilename()}"));
+                MoveFile(logFile, resultsFile.GetDirectory().CombineWithFilePath($"testresults{suffix}-{logFile.GetFilename()}"));
             }
         }
     }
@@ -249,9 +249,9 @@ void HandleTestResults(string resultsDir, bool testsFailed, bool needsNameFix, s
         CopyFiles($"{resultsDir}/{searchQuery}", failurePath);
 
         // We don't want these to upload
-        MoveFile($"{failurePath}/TestResults{suffix}.xml", $"{failurePath}/Results{suffix}.xml");
+        MoveFile($"{failurePath}/testresults{suffix}.xml", $"{failurePath}/Results{suffix}.xml");
     }
-    FailRunOnOnlyInconclusiveTests($"{resultsDir}/TestResults{suffix}.xml");
+    FailRunOnOnlyInconclusiveTests($"{resultsDir}/testtesults{suffix}.xml");
 }
 
 DirectoryPath DetermineBinlogDirectory(string projectPath, string binlogArg)
