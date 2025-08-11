@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using System;
 using AndroidX.RecyclerView.Widget;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -77,74 +78,116 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual (int First, int Center, int Last) GetVisibleItemsIndex(RecyclerView recyclerView)
 		{
-			var firstVisibleItemIndex = -1;
-			var lastVisibleItemIndex = -1;
-			var centerItemIndex = -1;
+			int first = -1, last = -1, center = -1;
 
-			if (recyclerView.GetLayoutManager() is LinearLayoutManager linearLayoutManager)
+			if (recyclerView.GetLayoutManager() is LinearLayoutManager lm)
 			{
-				firstVisibleItemIndex = linearLayoutManager.FindFirstVisibleItemPosition();
-				lastVisibleItemIndex = linearLayoutManager.FindLastVisibleItemPosition();
-				centerItemIndex = recyclerView.CalculateCenterItemIndex(firstVisibleItemIndex, linearLayoutManager, _getCenteredItemOnXAndY);
+				first = lm.FindFirstVisibleItemPosition();
+				last = lm.FindLastVisibleItemPosition();
+				center = recyclerView.CalculateCenterItemIndex(first, lm, _getCenteredItemOnXAndY);
 			}
 
-			bool hasHeader = ItemsViewAdapter.ItemsSource.HasHeader;
-			bool hasFooter = ItemsViewAdapter.ItemsSource.HasFooter;
-			int itemsCount = ItemsViewAdapter.ItemCount;
+			var adapter = ItemsViewAdapter;
+			var itemsSource = adapter.ItemsSource;
+			int count = adapter.ItemCount;
+			bool hasHeader = itemsSource.HasHeader;
+			bool hasFooter = itemsSource.HasFooter;
 
-			if (!hasHeader && !hasFooter)
+			if (itemsSource is IGroupableItemsViewSource groupable)
 			{
-				return (firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
+				return (
+				 AdjustGroupIndex(groupable, first, hasHeader, hasFooter, count, true),
+				 AdjustGroupIndex(groupable, center, hasHeader, hasFooter, count, true),
+				 AdjustGroupIndex(groupable, last, hasHeader, hasFooter, count, false)
+				);
 			}
 
-			if (firstVisibleItemIndex == 0 && lastVisibleItemIndex == itemsCount - 1)
+			// Non-grouped items adjustment
+			if (hasHeader)
 			{
-				lastVisibleItemIndex -= hasHeader && hasFooter ? 2 : 1;
+				first--;
+				last--;
+				center--;
 			}
-			else
+
+			if (hasFooter && last == count - 1)
 			{
-				if (hasHeader && !hasFooter)
+				last--;
+			}
+
+			first = Math.Max(0, first);
+			last = Math.Max(0, last);
+
+			return (first, center, last);
+		}
+
+		static int AdjustGroupIndex(IGroupableItemsViewSource source, int pos, bool hasHeader, bool hasFooter, int count, bool isStart)
+		{
+			if (pos < 0)
+			{
+				return 0;
+			}
+
+			int idx = pos - (hasHeader && pos > 0 ? 1 : 0);
+
+			int dataIdx = 0, curr = hasHeader ? 1 : 0;
+			while (curr <= pos && curr < count)
+			{
+				if (hasFooter && curr == count - 1)
 				{
-					lastVisibleItemIndex -= 1;
-					firstVisibleItemIndex -= 1;
+					break;
 				}
-				else if (!hasHeader && hasFooter)
+
+				bool isHeader = source.IsGroupHeader(curr), isFooter = source.IsGroupFooter(curr);
+				if (!isHeader && !isFooter)
 				{
-					if (lastVisibleItemIndex == itemsCount - 1)
+					if (curr == pos)
 					{
-						lastVisibleItemIndex -= 1;
+						return dataIdx;
 					}
+
+					dataIdx++;
 				}
-				else if (hasHeader && hasFooter)
+				else if (curr == pos)
 				{
-					if (firstVisibleItemIndex == 0)
-					{
-						lastVisibleItemIndex -= 1;
-					}
-					else if (lastVisibleItemIndex != itemsCount - 1)
-					{
-						firstVisibleItemIndex -= 1;
-						lastVisibleItemIndex -= 1;
-					}
-					else
-					{
-						firstVisibleItemIndex -= 1;
-						lastVisibleItemIndex -= 2;
-					}
+					return isStart
+					 ? FindNextDataIndex(source, curr, hasHeader, hasFooter, count, dataIdx)
+					 : FindPrevDataIndex(source, curr, hasHeader, dataIdx);
+				}
+				curr++;
+			}
+			return Math.Max(0, dataIdx - 1);
+		}
+
+		static int FindNextDataIndex(IGroupableItemsViewSource source, int start, bool hasHeader, bool hasFooter, int count, int dataIdx)
+		{
+			for (int i = start + 1; i < count; i++)
+			{
+				if (hasFooter && i == count - 1)
+				{
+					break;
+				}
+
+				if (!source.IsGroupHeader(i) && !source.IsGroupFooter(i))
+				{
+					return dataIdx;
 				}
 			}
+			return Math.Max(0, dataIdx - 1);
+		}
 
-			if (firstVisibleItemIndex < 0)
+		static int FindPrevDataIndex(IGroupableItemsViewSource source, int start, bool hasHeader, int dataIdx)
+		{
+			int lastValid = -1;
+			int curr = hasHeader ? 1 : 0;
+			for (; curr < start; curr++)
 			{
-				firstVisibleItemIndex = 0;
+				if (!source.IsGroupHeader(curr) && !source.IsGroupFooter(curr))
+				{
+					lastValid = dataIdx++;
+				}
 			}
-
-			if (lastVisibleItemIndex < 0)
-			{
-				lastVisibleItemIndex = 0;
-			}
-
-			return (firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
+			return Math.Max(0, lastValid);
 		}
 
 		protected override void Dispose(bool disposing)
