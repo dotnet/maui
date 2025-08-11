@@ -64,6 +64,15 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateGoForward(webView);
 		}
 
+		internal static void MapFlowDirection(IWebViewHandler handler, IWebView webView)
+		{
+			var scrollView = handler.PlatformView?.ScrollView;
+			if (scrollView == null)
+				return;
+				
+			scrollView.UpdateFlowDirectionForScrollView(webView);
+		}
+
 		public static async void MapReload(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			var platformHandler = handler as WebViewHandler;
