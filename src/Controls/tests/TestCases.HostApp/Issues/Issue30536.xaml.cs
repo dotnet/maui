@@ -89,7 +89,15 @@ public partial class Issue30536 : ContentPage
         var timeSinceLastEvent = timestamp - _lastLogTime;
         _lastLogTime = timestamp;
         
-        LogEvent($"PointerEntered at {timestamp:HH:mm:ss.fff} (Δ{timeSinceLastEvent.TotalMilliseconds:F0}ms)");
+        var logMessage = $"PointerEntered at {timestamp:HH:mm:ss.fff} (Δ{timeSinceLastEvent.TotalMilliseconds:F0}ms)";
+        
+        // Highlight potentially problematic rapid events
+        if (timeSinceLastEvent.TotalMilliseconds < 100)
+        {
+            logMessage += " ⚠️ RAPID";
+        }
+        
+        LogEvent(logMessage);
     }
 
     private void OnPointerExited(object sender, PointerEventArgs e)
@@ -98,7 +106,15 @@ public partial class Issue30536 : ContentPage
         var timeSinceLastEvent = timestamp - _lastLogTime;
         _lastLogTime = timestamp;
         
-        LogEvent($"PointerExited at {timestamp:HH:mm:ss.fff} (Δ{timeSinceLastEvent.TotalMilliseconds:F0}ms)");
+        var logMessage = $"PointerExited at {timestamp:HH:mm:ss.fff} (Δ{timeSinceLastEvent.TotalMilliseconds:F0}ms)";
+        
+        // Highlight potentially problematic rapid events  
+        if (timeSinceLastEvent.TotalMilliseconds < 100)
+        {
+            logMessage += " ⚠️ RAPID";
+        }
+        
+        LogEvent(logMessage);
     }
 
     private void OnPointerMoved(object sender, PointerEventArgs e)
@@ -125,7 +141,7 @@ public partial class Issue30536 : ContentPage
             _eventLog.RemoveAt(_eventLog.Count - 1);
         }
         
-        // Update the label with all events
+        // Update the label with all events, highlighting rapid events
         var logBuilder = new StringBuilder("Event Log (most recent first):\n");
         foreach (var eventLog in _eventLog)
         {
@@ -134,12 +150,38 @@ public partial class Issue30536 : ContentPage
         
         EventLogLabel.Text = logBuilder.ToString();
         EventCountLabel.Text = _eventCount.ToString();
+        
+        // Update event count color to highlight high frequency events
+        if (_eventCount > 20)
+        {
+            EventCountLabel.TextColor = Colors.Red;
+        }
+        else if (_eventCount > 10)
+        {
+            EventCountLabel.TextColor = Colors.Orange;
+        }
+        else
+        {
+            EventCountLabel.TextColor = Colors.Black;
+        }
     }
 
     private void UpdateWindowCount()
     {
         var windowCount = Application.Current?.Windows?.Count ?? 1;
         WindowCountLabel.Text = windowCount.ToString();
+        
+        // Update status label to help with testing
+        if (windowCount > 1)
+        {
+            StatusLabel.Text = "Multi-window mode - test pointer gestures now!";
+            StatusLabel.TextColor = Colors.Red;
+        }
+        else
+        {
+            StatusLabel.Text = "Single window mode - issue unlikely";
+            StatusLabel.TextColor = Colors.Green;
+        }
     }
 
     protected override void OnAppearing()

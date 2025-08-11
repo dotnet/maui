@@ -5,6 +5,22 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+/// <summary>
+/// UI tests for Issue #30536 - PointerGestureRecognizer behaves incorrectly when multiple windows are open
+/// 
+/// This issue occurs on Windows when multiple windows are open, causing PointerEntered and PointerExited
+/// events to fire incorrectly due to interference from background/minimized windows.
+/// 
+/// The fix (PR #30537) adds:
+/// - Debouncing logic for PointerEntered events in multi-window scenarios
+/// - Window validation to ensure events come from the correct window
+/// - Filtering of spurious events from background windows
+/// 
+/// Testing approach:
+/// - Automated tests validate basic UI functionality and setup
+/// - Manual testing is required for the complex pointer interaction scenarios
+/// - The test page provides comprehensive logging to help diagnose issues
+/// </summary>
 public class Issue30536 : _IssuesUITest
 {
     public override string Issue => "[Windows] PointerGestureRecognizer behaves incorrectly when multiple windows are open";
@@ -126,7 +142,7 @@ public class Issue30536 : _IssuesUITest
         
         // Open second window
         App.Tap("OpenWindowButton");
-        System.Threading.Thread.Sleep(1000);
+        System.Threading.Thread.Sleep(1500);
         
         // Verify multi-window setup
         var windowCount = App.FindElement("WindowCountLabel").GetText();
@@ -136,20 +152,31 @@ public class Issue30536 : _IssuesUITest
         var eventLog = App.FindElement("EventLogLabel").GetText();
         Assert.That(eventLog, Does.Contain("Second window opened"), "Should log window creation");
         
-        // The test is now ready for manual verification:
-        // 1. Minimize the second window that was opened
-        // 2. Return to the main window
-        // 3. Move mouse in and out of the blue test area
-        // 4. Verify that PointerEntered/PointerExited events don't fire rapidly or incorrectly
-        // 5. With the fix from PR #30537, events should behave normally
-        // 6. Without the fix, events would fire rapidly even when the mouse hasn't moved
+        // The test is now ready for manual verification of the fix from PR #30537:
         
-        TestContext.WriteLine("Multi-window pointer gesture test setup complete.");
-        TestContext.WriteLine("Manual testing steps:");
-        TestContext.WriteLine("1. Minimize any second windows");
-        TestContext.WriteLine("2. Move mouse in and out of the blue test area");  
-        TestContext.WriteLine("3. Verify PointerEntered/PointerExited events fire normally");
-        TestContext.WriteLine("4. Events should not fire rapidly when mouse is stationary");
+        TestContext.WriteLine("=== MANUAL TEST INSTRUCTIONS ===");
+        TestContext.WriteLine("");
+        TestContext.WriteLine("SETUP:");
+        TestContext.WriteLine("1. The test has opened a second window - you should see Window Count: 2");
+        TestContext.WriteLine("2. Minimize the second window that was opened by the test");
+        TestContext.WriteLine("3. Return focus to this main test window");
+        TestContext.WriteLine("");
+        TestContext.WriteLine("REPRODUCE ISSUE (without PR #30537 fix):");
+        TestContext.WriteLine("4. Move your mouse slowly in and out of the blue test area");
+        TestContext.WriteLine("5. WITHOUT the fix: PointerEntered/PointerExited events fire rapidly");
+        TestContext.WriteLine("   even when the mouse is stationary inside or outside the area");
+        TestContext.WriteLine("6. You'll see rapid event log entries with very small delta times (< 50ms)");
+        TestContext.WriteLine("");
+        TestContext.WriteLine("VERIFY FIX (with PR #30537):");
+        TestContext.WriteLine("7. WITH the fix: Events fire normally only when mouse actually crosses boundaries");
+        TestContext.WriteLine("8. Event log should show reasonable delta times between events");
+        TestContext.WriteLine("9. No spurious events when mouse is stationary");
+        TestContext.WriteLine("");
+        TestContext.WriteLine("SUCCESS CRITERIA:");
+        TestContext.WriteLine("- PointerEntered fires once when mouse enters the blue area");
+        TestContext.WriteLine("- PointerExited fires once when mouse leaves the blue area");
+        TestContext.WriteLine("- No rapid-fire events when mouse is stationary");
+        TestContext.WriteLine("- Delta times between events are reasonable (>100ms for normal mouse movement)");
     }
 }
 #endif

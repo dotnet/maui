@@ -33,6 +33,11 @@
             <Label x:Name="EventCountLabel" 
                    Text="0" 
                    AutomationId="EventCountLabel" />
+            <Label x:Name="StatusLabel"
+                   Text="Single window mode - issue unlikely"
+                   TextColor="Green"
+                   FontAttributes="Bold"
+                   AutomationId="StatusLabel" />
         </StackLayout>
         
         <!-- Main test area with pointer gesture -->
@@ -54,6 +59,18 @@
                 
                 <Label Text="Move your mouse in and out of this area. The events below should fire appropriately." 
                        Margin="0,10" 
+                       HorizontalTextAlignment="Center" />
+
+                <Label Text="Expected behavior: PointerEntered fires once when entering, PointerExited fires once when exiting." 
+                       Margin="0,5" 
+                       FontSize="12"
+                       TextColor="DarkGreen"
+                       HorizontalTextAlignment="Center" />
+
+                <Label Text="Bug behavior: Rapid firing of events even when mouse is stationary (multi-window only)." 
+                       Margin="0,5" 
+                       FontSize="12"
+                       TextColor="DarkRed"
                        HorizontalTextAlignment="Center" />
                 
                 <!-- Event log display -->
