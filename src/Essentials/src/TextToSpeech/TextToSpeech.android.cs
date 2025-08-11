@@ -144,8 +144,10 @@ namespace Microsoft.Maui.Media
 			if (!string.IsNullOrEmpty(options?.Locale?.Id) && tts?.Voices is not null)
 			{
 				var voice = tts.Voices.FirstOrDefault(v => v.Name == options.Locale.Id);
-				if (voice != null)
+				if (voice is not null)
+				{				
 					tts.SetVoice(voice);
+				}
 			}
 
 			if (options?.Pitch.HasValue ?? false)
