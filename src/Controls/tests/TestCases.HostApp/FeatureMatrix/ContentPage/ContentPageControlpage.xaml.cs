@@ -21,6 +21,7 @@ public partial class ContentPageControlMainPage : ContentPage
 		_viewModel = viewModel;
 		BindingContext = _viewModel;
 	}
+
 	private void TogglePadding_Clicked(object sender, EventArgs e)
 	{
 		// Toggle between different padding values
@@ -122,32 +123,6 @@ public partial class ContentPageControlMainPage : ContentPage
 
 		// Navigate to the new ContentPage
 		await Navigation.PushAsync(newContentPage);
-	}
-
-	private void ResetContent()
-	{
-		// Reset to original content
-		_viewModel.Content = new VerticalStackLayout
-		{
-			Children =
-			{
-				new Label
-				{
-					Text = "Welcome to ContentPage Feature Matrix!",
-					VerticalOptions = LayoutOptions.Center,
-					HorizontalOptions = LayoutOptions.Center,
-					FontSize = 18,
-					Margin = new Thickness(0, 20)
-				},
-				new Label
-				{
-					Text = "This demonstrates ContentPage properties with data binding.",
-					VerticalOptions = LayoutOptions.Center,
-					HorizontalOptions = LayoutOptions.Center,
-					FontSize = 14
-				}
-			}
-		};
 	}
 
 	private void ResetAll_Clicked(object sender, EventArgs e)

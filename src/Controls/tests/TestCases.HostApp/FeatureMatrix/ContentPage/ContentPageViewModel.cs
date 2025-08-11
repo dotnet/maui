@@ -155,7 +155,7 @@ public class ContentPageViewModel : INotifyPropertyChanged
 		HideSoftInputOnTapped = true;
 		IsBusy = false;
 		Padding = new Thickness(10);
-		
+
 		// Create a sample content view
 		Content = CreateInitialContent();
 
@@ -176,16 +176,16 @@ public class ContentPageViewModel : INotifyPropertyChanged
 		{
 			Children =
 			{
-				new Label 
-				{ 
+				new Label
+				{
 					Text = "Welcome to ContentPage Feature Matrix!",
 					VerticalOptions = LayoutOptions.Center,
 					HorizontalOptions = LayoutOptions.Center,
 					FontSize = 18,
 					Margin = new Thickness(0, 20)
 				},
-				new Label 
-				{ 
+				new Label
+				{
 					Text = "This demonstrates ContentPage properties with data binding.",
 					VerticalOptions = LayoutOptions.Center,
 					HorizontalOptions = LayoutOptions.Center,
@@ -197,8 +197,8 @@ public class ContentPageViewModel : INotifyPropertyChanged
 
 	private void TogglePadding()
 	{
-		Padding = Padding.Equals(new Thickness(10)) 
-			? new Thickness(30, 20, 30, 20) 
+		Padding = Padding.Equals(new Thickness(10))
+			? new Thickness(30, 20, 30, 20)
 			: new Thickness(10);
 	}
 
@@ -227,8 +227,8 @@ public class ContentPageViewModel : INotifyPropertyChanged
 		{
 			Children =
 			{
-				new Label 
-				{ 
+				new Label
+				{
 					Text = "Content has been dynamically changed!",
 					VerticalOptions = LayoutOptions.Center,
 					HorizontalOptions = LayoutOptions.Center,
@@ -257,8 +257,8 @@ public class ContentPageViewModel : INotifyPropertyChanged
 	}
 	private void ToggleFlowDirection()
 	{
-		FlowDirection = FlowDirection == FlowDirection.LeftToRight 
-			? FlowDirection.RightToLeft 
+		FlowDirection = FlowDirection == FlowDirection.LeftToRight
+			? FlowDirection.RightToLeft
 			: FlowDirection.LeftToRight;
 	}
 
@@ -274,7 +274,7 @@ public class ContentPageViewModel : INotifyPropertyChanged
 		Content = CreateInitialContent();
 		IsVisible = true;
 		FlowDirection = FlowDirection.LeftToRight;
-		
+
 	}
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
