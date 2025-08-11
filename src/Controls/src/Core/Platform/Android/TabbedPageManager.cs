@@ -890,7 +890,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
 					icon.Mutate();
 					icon.SetState(_stateSet);
-					_tabLayout.TabIconTint = colors;
+
+					// The FontImageSource has its own color, so we don't need to apply the tint list.
+					if (page.IconImageSource is not FontImageSource)
+					{
+						_tabLayout.TabIconTint = colors;
+					}
 					ADrawableCompat.SetTintList(icon, colors);
 				}
 			}
