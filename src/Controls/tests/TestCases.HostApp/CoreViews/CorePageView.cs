@@ -99,7 +99,6 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new ScrollViewControlPage(), "ScrollView Feature Matrix"),
 			new GalleryPageFactory(() => new GraphicsViewControlPage(), "GraphicsView Feature Matrix"),
 			new GalleryPageFactory(() => new EditorControlPage(), "Editor Feature Matrix"),
-			new GalleryPageFactory(() => new LayoutControlPage(), "Layout Feature Matrix"),
 			new GalleryPageFactory(() => new LayoutControlPage(), "ScrollView With LayoutOptions Feature Matrix"),
 		};
 
