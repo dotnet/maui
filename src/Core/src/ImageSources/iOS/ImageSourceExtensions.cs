@@ -59,8 +59,8 @@ namespace Microsoft.Maui
 
 		internal static UIImage? GetPlatformImage(this IFileImageSource imageSource)
 		{
-			var filename = imageSource.File;
-			return UIImage.FromBundle(filename) ?? UIImage.FromFile(filename);
+			var fileName = Path.GetFileNameWithoutExtension(imageSource.File);
+			return UIImage.FromBundle(fileName) ?? UIImage.FromFile(fileName);
 		}
 
 		internal static CGImageSource? GetPlatformImageSource(this IFileImageSource imageSource, out int scale)

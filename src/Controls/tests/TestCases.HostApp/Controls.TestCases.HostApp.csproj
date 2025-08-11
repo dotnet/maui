@@ -74,6 +74,13 @@
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
+   <ItemGroup>
+	  <MauiImage Include="Resources\Images\subfolder\dotnet_bot_red.png">
+	    <Resize>True</Resize>
+	    <BaseSize>300,185</BaseSize>
+	  </MauiImage>
+	</ItemGroup>
+
   <ItemGroup>
     <Compile Include="..\CustomAttributes\*.cs" />
     <Using Include="Microsoft.Maui.Controls.CustomAttributes" />
