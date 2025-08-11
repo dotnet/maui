@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (collectionView is null)
 				return default;
 
-			var indexPathsForVisibleItems = collectionView.IndexPathsForVisibleItems.OrderBy(x => x.Row).ToList();
+			var indexPathsForVisibleItems = collectionView.IndexPathsForVisibleItems.OrderBy(x => x.Section).ThenBy(x => x.Row).ToList();
 
 			var visibleItems = indexPathsForVisibleItems.Count > 0;
 			NSIndexPath firstVisibleItemIndex = null, centerItemIndex = null, lastVisibleItemIndex = null;
