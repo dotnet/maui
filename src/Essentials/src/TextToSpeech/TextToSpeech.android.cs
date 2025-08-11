@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Media
 				SetDefaultLanguage();
 			}
 			// Set the voice if specified, otherwise use the voice that based on the selected/default language
-			if (!string.IsNullOrEmpty(options?.Locale?.Id) && tts?.Voices != null)
+			if (!string.IsNullOrEmpty(options?.Locale?.Id) && tts?.Voices is not null)
 			{
 				var voice = tts.Voices.FirstOrDefault(v => v.Name == options.Locale.Id);
 				if (voice != null)
