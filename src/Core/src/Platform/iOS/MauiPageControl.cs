@@ -68,6 +68,7 @@ namespace Microsoft.Maui.Platform
 
 			float scale = (float)IndicatorSize / DefaultIndicatorSize;
 			var newTransform = CGAffineTransform.MakeScale(scale, scale);
+
 			Transform = newTransform;
 		}
 
