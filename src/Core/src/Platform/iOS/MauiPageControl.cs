@@ -120,7 +120,20 @@ namespace Microsoft.Maui.Platform
 			{
 				foreach (var uiPageControlIndicatorContentView in uiPageControlContentView.Subviews)
 				{
-					SetIndicatorShape(uiPageControlIndicatorContentView, IsSquare);
+					if (view is UIImageView imageview)
+					{
+						if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+							imageview.Image = UIImage.GetSystemImage("squareshape.fill");
+						var frame = imageview.Frame;
+						//the square shape is not the same size as the circle so we might need to correct the frame
+						imageview.Frame = new CGRect(frame.X - 6, frame.Y, frame.Width, frame.Height);
+					}
+					else
+					{
+						var imageConfig = UIImageSymbolConfiguration.Create(pointSize: (nfloat)DefaultIndicatorSize, weight: UIImageSymbolWeight.Regular);
+						var squareImage = UIImage.GetSystemImage("squareshape.fill", imageConfig);
+						PreferredIndicatorImage = squareImage;
+					}
 				}
 			}
 		}
