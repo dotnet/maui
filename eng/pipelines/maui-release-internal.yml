@@ -56,10 +56,10 @@ parameters:
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
+
 - group: DotNetBuilds storage account read tokens
 - group: AzureDevOps-Artifact-Feeds-Pats
-- group: DotNet-Maui-Release
-#- group: .NET Core Nuget API Keys
+- group: maui-nuget-release # maui-nuget-release provides: pat--nuget--xamarinc--push--wildcard
 
 resources:
   repositories:
