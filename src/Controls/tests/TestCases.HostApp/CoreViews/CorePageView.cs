@@ -172,6 +172,25 @@ namespace Maui.Controls.Sample
 			return Task.FromResult(false);
 		}
 
+		/// <summary>
+		/// Attempts to retrieve a gallery page by title.
+		/// </summary>
+		/// <param name="pageTitle">The title of the gallery page to find.</param>
+		/// <returns>The Page instance if found; otherwise, null.</returns>
+		/// <remarks>
+		/// This method searches for a matching gallery page by title (case-insensitive).
+		/// If a match is found, it invokes the associated Realize factory to create the page.
+		/// </remarks>
+		public Page TryToGetGalleryPage(string pageTitle)
+		{
+			if (_titleToPage.TryGetValue(pageTitle.ToLowerInvariant(), out GalleryPageFactory pageFactory))
+			{
+				return pageFactory.Realize();
+			}
+
+			return null;
+		}
+
 		public async Task<bool> NavigateToTest(string pageTitle)
 		{
 			var testCaseScreen = new TestCases.TestCaseScreen();

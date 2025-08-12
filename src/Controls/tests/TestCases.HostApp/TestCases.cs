@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Linq;
 
 namespace Maui.Controls.Sample
 {
@@ -106,6 +107,7 @@ namespace Maui.Controls.Sample
 				public string Description { get; set; }
 				public bool IsInternetRequired { get; set; }
 				public Action Action { get; set; }
+				public Func<Page> PageFactory { get; set; }
 
 				public bool Matches(string filter)
 				{
@@ -175,7 +177,9 @@ namespace Maui.Controls.Sample
 						 Name = attribute.DisplayName,
 						 Description = attribute.Description,
 						 IsInternetRequired = attribute.IsInternetRequired,
-						 Action = ActivatePageAndNavigate(attribute, type)
+						 Action = ActivatePageAndNavigate(attribute, type),
+						 // PageFactory is used to retrieve the instance of the page.
+						 PageFactory = () => ActivatePage(type)
 					 }).ToList();
 #endif
 
@@ -218,6 +222,23 @@ namespace Maui.Controls.Sample
 				return true;
 			}
 
+
+			/// <summary>
+			/// Attempts to retrieve a test page by name or description.
+			/// </summary>
+			/// <param name="name">The name or description of the test page to find.</param>
+			/// <returns>The Page instance if found; otherwise, null.</returns>
+			/// <remarks>
+			/// This method first searches for a matching issue by name (case-insensitive),
+			/// then by description if no match is found by name. If a match is found,
+			/// it invokes the associated PageFactory to create the page.
+			/// </remarks>
+			public Page TryToGetTestPage(string name)
+			{
+				var issue = _issues.SingleOrDefault(x => string.Equals(x.Description, name, StringComparison.OrdinalIgnoreCase));
+				return issue?.PageFactory?.Invoke();
+			}
+			
 			public void FilterIssues(string filter = null)
 			{
 				filter = filter?.Trim();

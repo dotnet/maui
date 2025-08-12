@@ -5,7 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class CollectionView_ItemsSourceFeatureTests : UITest
+public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 {
 	public const string ItemsSourceFeatureMatrix = "CollectionView Feature Matrix";
 	public const string Options = "Options";
@@ -24,15 +24,11 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 	public const string MultipleModePreselection = "MultipleModePreselection";
 	public const string SingleModePreselection = "SingleModePreselection";
 
+	public override string GalleryPageName => ItemsSourceFeatureMatrix;
+
 	public CollectionView_ItemsSourceFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ItemsSourceFeatureMatrix);
 	}
 
 	[Test, Order(1)]

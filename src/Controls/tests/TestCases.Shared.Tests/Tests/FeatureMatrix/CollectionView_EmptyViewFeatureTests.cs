@@ -7,20 +7,16 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class CollectionView_EmptyViewFeatureTests : UITest
+public class CollectionView_EmptyViewFeatureTests : _GalleryUITest
+{
+	public const string CollectionViewFeatureMatrix = "CollectionView Feature Matrix";
+
+	public override string GalleryPageName => CollectionViewFeatureMatrix;
+
+	public CollectionView_EmptyViewFeatureTests(TestDevice device)
+		: base(device)
 	{
-		public const string CollectionViewFeatureMatrix = "CollectionView Feature Matrix";
-
-		public CollectionView_EmptyViewFeatureTests(TestDevice device)
-			: base(device)
-		{
-		}
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery(CollectionViewFeatureMatrix);
-		}
+	}
 
 
 		[Test, Order(1)]
@@ -1271,7 +1267,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Header(String)");
 			App.WaitForElement("CollectionView Footer(String)");
 		}
-        
+		
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewString_WithHeaderFooterString_WhenHorizontalList()
@@ -1523,7 +1519,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Header(String)");
 			App.WaitForElement("CollectionView Footer(String)");
 		}
-        
+		
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplate_WithHeaderFooterString_WhenHorizontalList()
@@ -1607,7 +1603,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Header(String)");
 			App.WaitForElement("CollectionView Footer(String)");
 		}
-        
+		
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplate_WithHeaderFooterString_WhenHorizontalList()
@@ -1691,7 +1687,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Header(Grid View)");
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
-        
+		
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewString_WithHeaderFooterView_WhenHorizontalList()
@@ -1943,7 +1939,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Header(Grid View)");
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
-        
+		
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplate_WithHeaderFooterView_WhenHorizontalList()
@@ -2027,7 +2023,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Header(Grid View)");
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
-        
+		
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomSizeEmptyViewTemplate_WithHeaderFooterView_WhenHorizontalList()
