@@ -7,6 +7,7 @@
         xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
         xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
         x:Class="MauiApp._1.Pages.Controls.ProjectCardView"
+        SemanticProperties.Description="{Binding AccessibilityDescription}"
         Style="{StaticResource CardStyle}"
         x:DataType="models:Project">
     <shimmer:SfShimmer
@@ -45,7 +46,7 @@
                     Size="{StaticResource IconSize}"/>
                     </Image.Source>
                 </Image>
-                <Label Text="{Binding Name}" TextColor="{StaticResource Gray400}" FontSize="14" TextTransform="Uppercase"/>
+                <Label Text="{Binding Name}" TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" FontSize="14" TextTransform="Uppercase"/>
                 <Label Text="{Binding Description}" LineBreakMode="WordWrap"/>
                 <HorizontalStackLayout Spacing="15" BindableLayout.ItemsSource="{Binding Tags}">
                     <BindableLayout.ItemTemplate>

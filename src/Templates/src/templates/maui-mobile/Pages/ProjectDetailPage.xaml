@@ -60,7 +60,8 @@
             Command="{Binding DeleteCommand}"
             Order="Primary"
             Priority="0"
-            IconImageSource="{StaticResource IconDelete}" />
+            IconImageSource="{StaticResource IconDelete}"
+            SemanticProperties.Description="Delete" />
     </ContentPage.ToolbarItems>
 
     <Grid>
@@ -69,21 +70,34 @@
                 <sf:SfTextInputLayout 
                     Hint="Name" >
                     <Entry
-                        Text="{Binding Name}" />
+                        Text="{Binding Name}" SemanticProperties.Description="Name" />
                 </sf:SfTextInputLayout>
 
                 <sf:SfTextInputLayout 
                     Hint="Description">
                     <Entry
-                        Text="{Binding Description}" />
+                        Text="{Binding Description}" SemanticProperties.Description="Description" />
                 </sf:SfTextInputLayout>
 
-                <sf:SfTextInputLayout 
-                    Hint="Category">
-                    <Picker 
-                        ItemsSource="{Binding Categories}"
-                        SelectedItem="{Binding Category}"
-                        SelectedIndex="{Binding CategoryIndex}" />
+               <sf:SfTextInputLayout
+                    Hint="Category"
+                    SemanticProperties.Description="ComboBox to Select Category"
+                    SemanticProperties.Hint="State Collapsed">
+                    <Picker SemanticProperties.Hint="Select the category for the project"
+                            ItemsSource="{Binding Categories}"
+                            SelectedItem="{Binding Category}"
+                            SelectedIndex="{Binding CategoryIndex}"
+                            SemanticProperties.Description="Category State Expanded"/>
+                </sf:SfTextInputLayout>
+
+                <Label 
+                    Text="Icon" 
+                    Style="{StaticResource Title2}"/>
+                <CollectionView 
+                    HeightRequest="44" Margin="0,0,0,15"
+                    SelectionMode="Single"
+
+                    SelectedItem="{Binding Icon}"
                 </sf:SfTextInputLayout>
 
                 <Label 
@@ -94,10 +108,15 @@
                     SelectionMode="Single"
                     
                     SelectedItem="{Binding Icon}"
+                    SelectionChangedCommand="{Binding IconSelectedCommand}"
+                    SelectionChangedCommandParameter="{Binding Icon}"
                     ItemsSource="{Binding Icons}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="models:IconData">
-                            <Grid RowDefinitions="Auto,4" RowSpacing="{StaticResource size60}">
+                            <Grid RowDefinitions="Auto,4" RowSpacing="{StaticResource size60}"
+                                 SemanticProperties.Description="{Binding Description}"
+                                 SemanticProperties.Hint="Icon representing the type of task . Tap to select"
+                                 InputTransparent="True">
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualState x:Name="Normal">
@@ -123,10 +142,13 @@
                                     FontSize="24" 
                                     VerticalOptions="Center"
                                     HorizontalOptions="Center"
-                                    SemanticProperties.Description="{Binding Description}"
-                                    SemanticProperties.Hint="Icon representing the type of task . Tap to select"
                                     TextColor="{AppThemeBinding Light={StaticResource DarkOnLightBackground},Dark={StaticResource LightOnDarkBackground}}"/>
                                 <BoxView x:Name="SelectedIndicator" Color="{StaticResource Primary}" HeightRequest="4" HorizontalOptions="Fill" Grid.Row="1"/>
+
+                                <!-- This TapGestureRecognizer ensures that the grid is treated as a button for accessibility purposes on iOS -->
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer />
+                                </Grid.GestureRecognizers>
                             </Grid>                            
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
@@ -166,6 +188,7 @@
                         WidthRequest="44"
                         IsVisible="{Binding HasCompletedTasks}"
                         Command="{Binding CleanTasksCommand}"
+                        SemanticProperties.Description="Clean up"
                         />
                 </Grid>
                 <VerticalStackLayout 
@@ -180,7 +203,8 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <controls:AddButton Command="{Binding AddTaskCommand}" />
+        <controls:AddButton Command="{Binding AddTaskCommand}" 
+                            SemanticProperties.Description="Add task" />
     </Grid>
     
 </ContentPage>
