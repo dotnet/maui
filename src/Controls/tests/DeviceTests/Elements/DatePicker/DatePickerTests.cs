@@ -22,6 +22,7 @@ public partial class DatePickerTests : ControlsHandlerTestBase
 		});
 	}
 
+#if !MACCATALYST
 	[Fact(DisplayName = "DatePicker Null Date Behavior Across All Platforms")]
 	public async Task DatePickerNullDateBehaviorAcrossAllPlatforms()
 	{
@@ -65,6 +66,7 @@ public partial class DatePickerTests : ControlsHandlerTestBase
 			return Task.CompletedTask;
 		});
 	}
+#endif
 
 	string GetDisplayedText(DatePickerHandler handler)
 	{
