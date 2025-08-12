@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SearchBarExtensions
 	{
+		// Dictionary to store references to event handlers to avoid garbage collection
+		private static readonly System.Collections.Concurrent.ConcurrentDictionary<IntPtr, EventHandler> _editingStartedHandlers = new();
 		internal static UITextField? GetSearchTextField(this UISearchBar searchBar)
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(13))
@@ -154,9 +156,15 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			if (searchBar.IsTextPredictionEnabled)
+			{
 				textField.AutocorrectionType = UITextAutocorrectionType.Yes;
+				DetachTextFieldEditingEvents(textField);
+			}
 			else
+			{
 				textField.AutocorrectionType = UITextAutocorrectionType.No;
+				AttachTextFieldEditingEvents(textField, searchBar.IsTextPredictionEnabled);
+			}
 		}
 
 		public static void UpdateIsSpellCheckEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField = null)
@@ -185,6 +193,34 @@ namespace Microsoft.Maui.Platform
 			}
 
 			uiSearchBar.ReloadInputViews();
+		}
+
+		internal static void AttachTextFieldEditingEvents(UITextField textField, bool isTextPredictionEnabled)
+		{
+			DetachTextFieldEditingEvents(textField);
+
+			if (!isTextPredictionEnabled)
+			{
+				EventHandler handler = (sender, e) =>
+				{
+					textField.AutocorrectionType = UITextAutocorrectionType.No;
+					textField.SpellCheckingType = UITextSpellCheckingType.No;
+					textField.ReloadInputViews();
+				};
+
+				if (_editingStartedHandlers.TryAdd(textField.Handle, handler))
+				{
+					textField.EditingDidBegin += handler;
+				}
+			}
+		}
+
+		internal static void DetachTextFieldEditingEvents(UITextField textField)
+		{
+			if (_editingStartedHandlers.TryRemove(textField.Handle, out var handler))
+			{
+				textField.EditingDidBegin -= handler;
+			}
 		}
 	}
 }
