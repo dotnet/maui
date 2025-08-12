@@ -50,14 +50,11 @@ namespace Microsoft.Maui.Platform
 			var time = timePicker.Time;
 			var format = timePicker.Format;
 			
-			// Determine if format contains AM/PM designator
-			bool hasAmPmFormat = format != null && format.Contains('t', StringComparison.Ordinal);
-			
 			// Determine which culture to use for consistent formatting
 			CultureInfo formattingCulture;
 			if (format != null)
 			{
-				if (hasAmPmFormat || format.Contains('h', StringComparison.Ordinal))
+				if (format.Contains('t', StringComparison.Ordinal) || format.Contains('h', StringComparison.Ordinal))
 				{
 					// For 12-hour format or any format with AM/PM, use US locale
 					formattingCulture = new CultureInfo("en-US");
