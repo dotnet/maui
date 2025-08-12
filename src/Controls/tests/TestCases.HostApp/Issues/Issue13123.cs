@@ -9,36 +9,20 @@ namespace Maui.Controls.Sample.Issues
 	public partial class Issue13123 : ContentPage
 	{
 		Pin _testPin;
-		Label StatusLabel;
-		Label MarkerClickedLabel;
-		Label InfoWindowClickedLabel;
-		Label TestResultLabel;
-		Map TestMap;
+		Label _markerClickedLabel;
+		Label _testResultLabel;
+		Map _testMap;
 
 		public Issue13123()
 		{
-			StatusLabel = new Label
-			{
-				Text = "Status: Ready - Tap pin marker, then tap info window",
-				FontSize = 14,
-				AutomationId = "StatusLabel"
-			};
 
-			MarkerClickedLabel = new Label
+			_markerClickedLabel = new Label
 			{
 				Text = "Marker Clicked: No",
 				AutomationId = "MarkerClickedLabel"
 			};
 
-			InfoWindowClickedLabel = new Label
-			{
-				Text = "InfoWindow Clicked: No",
-				FontSize = 12,
-				TextColor = Colors.Green,
-				AutomationId = "InfoWindowClickedLabel"
-			};
-
-			TestResultLabel = new Label
+			_testResultLabel = new Label
 			{
 				Text = "Test Result: Pending",
 				FontSize = 14,
@@ -60,13 +44,11 @@ namespace Maui.Controls.Sample.Issues
 				Children =
 			{
 				titleLabel,
-				StatusLabel,
-				MarkerClickedLabel,
-				InfoWindowClickedLabel,
-				TestResultLabel
+				_markerClickedLabel,
+				_testResultLabel
 			}
 			};
-			TestMap = new Map
+			_testMap = new Map
 			{
 				MapType = MapType.Street,
 				HeightRequest = 400,
@@ -83,7 +65,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 
 			mainGrid.Add(statusStack, 0, 0);
-			mainGrid.Add(TestMap, 0, 1);
+			mainGrid.Add(_testMap, 0, 1);
 			this.Content = mainGrid;
 			SetupMap();
 		}
@@ -99,21 +81,18 @@ namespace Maui.Controls.Sample.Issues
 			};
 			_testPin.MarkerClicked += (s, e) =>
 			{
-				MarkerClickedLabel.Text = "Marker Clicked: Yes";
+				_markerClickedLabel.Text = "Marker Clicked: Yes";
 			};
 			_testPin.AutomationId = "Test Pin";
 			_testPin.InfoWindowClicked += OnInfoWindowClicked;
-			TestMap.Pins.Add(_testPin);
+			_testMap.Pins.Add(_testPin);
 			var mapSpan = MapSpan.FromCenterAndRadius(_testPin.Location, Distance.FromKilometers(10));
-			TestMap.MoveToRegion(mapSpan);
+			_testMap.MoveToRegion(mapSpan);
 		}
 
 		private void OnInfoWindowClicked(object sender, PinClickedEventArgs e)
 		{
-			InfoWindowClickedLabel.Text = "InfoWindow Clicked: Yes";
-			StatusLabel.Text = "Status: SUCCESS - InfoWindowClicked event fired!";
-			TestResultLabel.Text = "Test Result: PASSED";
-			TestResultLabel.TextColor = Colors.Green;
+			_testResultLabel.Text = "Test Result: PASSED";
 			e.HideInfoWindow = true;
 		}
 	}
