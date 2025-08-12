@@ -249,7 +249,7 @@ void HandleTestResults(string resultsDir, bool testsFailed, bool needsNameFix, s
         CopyFiles($"{resultsDir}/{searchQuery}", failurePath);
 
         // We don't want these to upload
-        MoveFile($"{failurePath}/testresults{suffix}.xml", $"{failurePath}/Results{suffix}.xml");
+        MoveFile($"{failurePath}/testResults{suffix}.xml", $"{failurePath}/Results{suffix}.xml");
     }
     FailRunOnOnlyInconclusiveTests($"{resultsDir}/testResults{suffix}.xml");
 }
