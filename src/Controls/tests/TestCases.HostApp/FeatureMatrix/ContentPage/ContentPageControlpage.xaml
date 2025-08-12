@@ -14,7 +14,7 @@
              FlowDirection="{Binding FlowDirection}">
        <ContentPage.ToolbarItems>
               <ToolbarItem
-                     Text="Reset"
+                     Text="ResetButton"
                      Clicked="ResetAll_Clicked"
                      AutomationId="ResetButton"/>
        </ContentPage.ToolbarItems>
@@ -220,13 +220,11 @@
                      <VerticalStackLayout Grid.Row="11"
                                    Grid.Column="1"
                                    Spacing="5">
-                            <Entry Placeholder="Type here to test keyboard behavior..."
+                            <Entry Text="{Binding KeyboardTestText}"
+                                   Placeholder="Type here to test keyboard behavior..."
                                    AutomationId="TestEntry"
                                    FontSize="12"/>
                      </VerticalStackLayout>
-
-                     <!-- Reset Button -->
-                     <!-- Remove the Reset button from here, as it will be moved to the ToolbarItems -->
               </Grid>
        </ScrollView>
 </ContentPage>

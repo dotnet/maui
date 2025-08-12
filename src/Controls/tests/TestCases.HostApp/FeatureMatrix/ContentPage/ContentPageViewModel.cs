@@ -103,6 +103,23 @@ public class ContentPageViewModel : INotifyPropertyChanged
 	}
 	private bool _isVisible = true;
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
+	private string _keyboardTestText = string.Empty;
+
+	/// <summary>
+	/// Test text for keyboard behavior testing
+	/// </summary>
+	public string KeyboardTestText
+	{
+		get => _keyboardTestText;
+		set
+		{
+			if (_keyboardTestText != value)
+			{
+				_keyboardTestText = value;
+				OnPropertyChanged();
+			}
+		}
+	}
 
 	/// <summary>
 	/// Controls whether the page is visible
@@ -274,7 +291,7 @@ public class ContentPageViewModel : INotifyPropertyChanged
 		Content = CreateInitialContent();
 		IsVisible = true;
 		FlowDirection = FlowDirection.LeftToRight;
-
+		KeyboardTestText = string.Empty;
 	}
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

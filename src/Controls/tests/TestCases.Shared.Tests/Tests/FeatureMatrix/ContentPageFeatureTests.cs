@@ -2,13 +2,12 @@ using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-
 namespace Microsoft.Maui.TestCases.Tests
 {
 	[Category(UITestCategories.Page)]
 	public class ContentPageFeatureTests : UITest
 	{
-		public const string ContentPageFeatureMatrix = "Content Page Feature Matrix";
+		public const string ContentPageFeatureMatrix = "ContentPage Feature Matrix";
 
 		public ContentPageFeatureTests(TestDevice device)
 			: base(device)
@@ -22,25 +21,22 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		public void RTL_FlowDirection_WithIsBusy()
+		public void ContentPage_Content()
 		{
-			App.WaitForElement("Resetbutton");
-			App.Tap("Resetbutton");
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
 
-			App.WaitForElement("FlowDirectionButton");
-			App.Tap("FlowDirectionButton");
-
-			App.WaitForElement("IsBusyCheckBox");
-			App.Tap("IsBusyCheckBox");
+			App.WaitForElement("ContentButton");
+			App.Tap("ContentButton");
 
 			VerifyScreenshot();
 		}
 
 		[Test]
-		public void IsVisible_WithTitle()
+		public void ContentPage_IsVisible_WithTitle()
 		{
-			App.WaitForElement("Resetbutton");
-			App.Tap("Resetbutton");
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
 
 			App.WaitForElement("VisibilityCheckBox");
 			App.Tap("VisibilityCheckBox");
@@ -49,25 +45,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		public void IsVisible_WithIsBusy()
+		public void ContentPage_IsVisible_WithoutTitle()
 		{
-			App.WaitForElement("Resetbutton");
-			App.Tap("Resetbutton");
-
-			App.WaitForElement("VisibilityCheckBox");
-			App.Tap("VisibilityCheckBox");
-
-			App.WaitForElement("IsBusyCheckBox");
-			App.Tap("IsBusyCheckBox");
-
-			VerifyScreenshot();
-		}
-
-		[Test]
-		public void IsVisible_WithoutTitle()
-		{
-			App.WaitForElement("Resetbutton");
-			App.Tap("Resetbutton");
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
 
 			App.WaitForElement("TitleEntry");
 			App.ClearText("TitleEntry");
@@ -79,10 +60,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		public void Padding_WithBackgroundColor()
+		public void ContentPage_Padding_WithBackgroundColor()
 		{
-			App.WaitForElement("Resetbutton");
-			App.Tap("Resetbutton");
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
 
 			App.WaitForElement("PaddingButton");
 			App.Tap("PaddingButton");
@@ -94,10 +75,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		public void Title_WithBackgroundColor()
+		public void ContentPage_Title_WithBackgroundColor()
 		{
-			App.WaitForElement("Resetbutton");
-			App.Tap("Resetbutton");
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
 
 			App.WaitForElement("TitleEntry");
 			App.ClearText("TitleEntry");
@@ -110,26 +91,29 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		public void Title_With_IsBusy()
+		public void ContentPage_Title_WithBackgroundColorAnPadding()
 		{
-			App.WaitForElement("Resetbutton");
-			App.Tap("Resetbutton");
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
 
 			App.WaitForElement("TitleEntry");
 			App.ClearText("TitleEntry");
 			App.EnterText("TitleEntry", "New Title");
 
-			App.WaitForElement("IsBusyCheckBox");
-			App.Tap("IsBusyCheckBox");
+			App.WaitForElement("BackgroundButton");
+			App.Tap("BackgroundButton");
+
+			App.WaitForElement("PaddingButton");
+			App.Tap("PaddingButton");
 
 			VerifyScreenshot();
 		}
 
 		[Test]
-		public void Background_With_RTL()
+		public void ContentPage_Background_WithRTL()
 		{
-			App.WaitForElement("Resetbutton");
-			App.Tap("Resetbutton");
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
 
 			App.WaitForElement("BackgroundButton");
 			App.Tap("BackgroundButton");
@@ -141,10 +125,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		public void Padding_With_RTL()
+		public void ContentPage_Padding_WithRTL()
 		{
-			App.WaitForElement("Resetbutton");
-			App.Tap("Resetbutton");
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
 
 			App.WaitForElement("PaddingButton");
 			App.Tap("PaddingButton");
@@ -156,25 +140,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		public void Padding_With_IsBusy()
+		public void ContentPage_Padding_WithTitle()
 		{
-			App.WaitForElement("Resetbutton");
-			App.Tap("Resetbutton");
-
-			App.WaitForElement("PaddingButton");
-			App.Tap("PaddingButton");
-
-			App.WaitForElement("IsBusyCheckBox");
-			App.Tap("IsBusyCheckBox");
-
-			VerifyScreenshot();
-		}
-
-		[Test]
-		public void Padding_With_Title()
-		{
-			App.WaitForElement("Resetbutton");
-			App.Tap("Resetbutton");
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
 
 			App.WaitForElement("PaddingButton");
 			App.Tap("PaddingButton");
@@ -185,22 +154,25 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			VerifyScreenshot();
 		}
+
 #if ANDROID || IOS
 		[Test]
-		public void HideSoftinput_With_RTL()
+		public void ContentPage_HideSoftinput_WithRTLAndPadding()
 		{
-			App.WaitForElement("Resetbutton");
-			App.Tap("Resetbutton");
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
 
 			App.WaitForElement("FlowDirectionButton");
 			App.Tap("FlowDirectionButton");
+
+			App.WaitForElement("PaddingButton");
+			App.Tap("PaddingButton");
 
 			App.WaitForElement("HideSoftInputCheckBox");
 			App.Tap("HideSoftInputCheckBox");
 
 			App.WaitForElement("TestEntry");
-			App.ClearText("TestEntry");
-			App.EnterText("TestEntry", "New Text");
+			App.Tap("TestEntry");
 
 			App.WaitForElement("HideSoftInputLabel");
 			App.Tap("HideSoftInputLabel");
@@ -209,10 +181,13 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		public void HideSoftinput_With_Padding()
+		public void ContentPage_HideSoftinput_WithPaddingAndBackground()
 		{
-			App.WaitForElement("Resetbutton");
-			App.Tap("Resetbutton");
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
+			App.WaitForElement("BackgroundButton");
+			App.Tap("BackgroundButton");
 
 			App.WaitForElement("PaddingButton");
 			App.Tap("PaddingButton");
@@ -221,8 +196,32 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HideSoftInputCheckBox");
 
 			App.WaitForElement("TestEntry");
-			App.ClearText("TestEntry");
-			App.EnterText("TestEntry", "New Text");
+			App.Tap("TestEntry");
+
+			App.WaitForElement("HideSoftInputLabel");
+			App.Tap("HideSoftInputLabel");
+
+			VerifyScreenshot();
+		}
+
+		[Test]
+		public void ContentPage_Title_WithPaddingAndHideSoftInput()
+		{
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
+			App.WaitForElement("TitleEntry");
+			App.ClearText("TitleEntry");
+			App.EnterText("TitleEntry", "New Title");
+
+			App.WaitForElement("PaddingButton");
+			App.Tap("PaddingButton");
+
+			App.WaitForElement("HideSoftInputCheckBox");
+			App.Tap("HideSoftInputCheckBox");
+
+			App.WaitForElement("TestEntry");
+			App.Tap("TestEntry");
 
 			App.WaitForElement("HideSoftInputLabel");
 			App.Tap("HideSoftInputLabel");

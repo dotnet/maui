@@ -33,7 +33,7 @@ public partial class ContentPageControlMainPage : ContentPage
 	private void SetIcon_Clicked(object sender, EventArgs e)
 	{
 		// Set an icon for the page (using a system icon or emoji)
-		_viewModel.IconImageSource = "dotnet_bot.png"; // You can use any available icon
+		_viewModel.IconImageSource = ImageSource.FromFile("dotnet_bot.png"); // You can use any available icon
 	}
 
 	private void SetGradientBackground_Clicked(object sender, EventArgs e)
