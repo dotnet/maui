@@ -33,6 +33,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			DragCoordinatesAndRestore(androidApp, fromX, fromY, toX, toY);
 
+			// wait for the scroll bounce to stop
+			await Task.Delay(200);
+
 			VerifyScreenshot();
 		}
 
