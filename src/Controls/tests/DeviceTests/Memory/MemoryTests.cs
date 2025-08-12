@@ -432,7 +432,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(ViewCell))]
 #pragma warning restore CS0618 // Type or member is obsolete
-	public async Task CellsDoNotLeak(Type type)
+	public async Task CellsDoNotLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 
@@ -487,6 +487,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	}
 
 	[Fact("BindableLayout Does Not Leak")]
+	[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Test uses simple string-based bindings; safety not critical for test environment.")]
 	public async Task BindableLayoutDoesNotLeak()
 	{
 		SetupBuilder();
