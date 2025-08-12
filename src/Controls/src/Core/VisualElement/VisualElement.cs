@@ -1351,7 +1351,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal virtual LayoutConstraint ComputeConstraintForView(View view) => LayoutConstraint.None;
+		protected virtual LayoutConstraint ComputeConstraintForView(View view) => LayoutConstraint.None;
 
 		/// <summary>
 		/// Occurs when a focus change is requested.

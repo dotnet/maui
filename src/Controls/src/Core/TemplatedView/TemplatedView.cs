@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls
 
 		Element IControlTemplated.TemplateRoot { get; set; }
 
-		internal override LayoutConstraint ComputeConstraintForView(View view)
+		protected override LayoutConstraint ComputeConstraintForView(View view)
 		{
 			bool isFixedHorizontally = (Constraint & LayoutConstraint.HorizontallyFixed) != 0;
 			bool isFixedVertically = (Constraint & LayoutConstraint.VerticallyFixed) != 0;

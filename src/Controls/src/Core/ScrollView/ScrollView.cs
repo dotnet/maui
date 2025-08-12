@@ -335,7 +335,7 @@ namespace Microsoft.Maui.Controls
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => false;
 
-		internal override LayoutConstraint ComputeConstraintForView(View view)
+		protected override LayoutConstraint ComputeConstraintForView(View view)
 		{
 			switch (Orientation)
 			{

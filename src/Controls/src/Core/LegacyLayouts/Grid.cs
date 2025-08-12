@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			view.PropertyChanged -= OnItemPropertyChanged;
 		}
 
-		internal override LayoutConstraint ComputeConstraintForView(View view)
+		protected override LayoutConstraint ComputeConstraintForView(View view)
 		{
 			LayoutOptions vOptions = view.VerticalOptions;
 			LayoutOptions hOptions = view.HorizontalOptions;

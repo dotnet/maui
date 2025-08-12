@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return new SizeRequest(bestFitSize, minimum);
 		}
 
-		internal override LayoutConstraint ComputeConstraintForView(View view)
+		protected override LayoutConstraint ComputeConstraintForView(View view)
 		{
 			AbsoluteLayoutFlags layoutFlags = GetLayoutFlags(view);
 
