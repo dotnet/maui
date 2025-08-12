@@ -19,7 +19,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         [Category(UITestCategories.Maps)]
         public void InfoWindowClickedEventShouldFire()
         {
-            App.WaitForElement("StatusLabel");
             App.WaitForElement("Map");
             TapMapPin();
             App.WaitForElement("Marker Clicked: Yes");
