@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Controls.Platform
 				e.Handled = false;
 				return;
 			}
-			
+
 			if (View is null || sender is not AView platformView)
 			{
 				e.Handled = false;
