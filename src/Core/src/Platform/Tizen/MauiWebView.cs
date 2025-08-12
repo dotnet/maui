@@ -1,4 +1,5 @@
-﻿using NWebView = Tizen.NUI.BaseComponents.WebView;
+﻿using System;
+using NWebView = Tizen.NUI.BaseComponents.WebView;
 
 namespace Microsoft.Maui.Platform
 {
@@ -26,6 +27,23 @@ namespace Microsoft.Maui.Platform
 		void IWebViewDelegate.LoadUrl(string? url)
 		{
 			LoadUrl(url);
+		}
+
+		bool IWebViewDelegate.LoadFile(string? url)
+		{
+			if (string.IsNullOrEmpty(url))
+				return false;
+
+			try
+			{
+				// For Tizen, attempt to load the file as a URL
+				LoadUrl(url);
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
 		}
 	}
 }

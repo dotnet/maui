@@ -55,5 +55,32 @@ namespace Microsoft.Maui.Handlers
 		IWebView IWebViewHandler.VirtualView => VirtualView;
 
 		PlatformView IWebViewHandler.PlatformView => PlatformView;
+
+		/// <summary>
+		/// Creates a URI for cookie operations, with URL length truncation and validation.
+		/// This method is shared across all platform implementations.
+		/// </summary>
+		/// <param name="url">The URL to convert to a URI</param>
+		/// <returns>A valid Uri for cookie operations, or null if invalid</returns>
+		protected static System.Uri? CreateUriForCookies(string? url)
+		{
+			if (url == null)
+				return null;
+
+			System.Uri? uri;
+
+			if (url.Length > 2000)
+				url = url.Substring(0, 2000);
+
+			if (System.Uri.TryCreate(url, System.UriKind.Absolute, out uri))
+			{
+				if (string.IsNullOrWhiteSpace(uri.Host))
+					return null;
+
+				return uri;
+			}
+
+			return null;
+		}
 	}
 }

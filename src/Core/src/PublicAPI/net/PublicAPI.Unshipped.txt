@@ -1,5 +1,4 @@
-#nullable enable
-virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
+﻿#nullable enable
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
 Microsoft.Maui.Handlers.LayoutHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IView! View) -> void
@@ -12,6 +11,7 @@ Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.Deconstruct(out int Index
 Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.MenuFlyoutSubItemHandlerUpdate(Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.OpenWindowRequest.Deconstruct(out Microsoft.Maui.IPersistedState? State) -> void
 Microsoft.Maui.Handlers.OpenWindowRequest.OpenWindowRequest(Microsoft.Maui.Handlers.OpenWindowRequest! original) -> void
+Microsoft.Maui.IWebViewDelegate.LoadFile(string? url) -> bool
 Microsoft.Maui.ScrollToRequest.Deconstruct(out double HorizontalOffset, out double VerticalOffset, out bool Instant) -> void
 Microsoft.Maui.ScrollToRequest.ScrollToRequest(Microsoft.Maui.ScrollToRequest! original) -> void
 Microsoft.Maui.SwipeViewCloseRequest.Deconstruct(out bool Animated) -> void
@@ -72,6 +72,7 @@ static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.operator !=(Micros
 static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.operator ==(Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate? left, Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate? right) -> bool
 static Microsoft.Maui.Handlers.OpenWindowRequest.operator !=(Microsoft.Maui.Handlers.OpenWindowRequest? left, Microsoft.Maui.Handlers.OpenWindowRequest? right) -> bool
 static Microsoft.Maui.Handlers.OpenWindowRequest.operator ==(Microsoft.Maui.Handlers.OpenWindowRequest? left, Microsoft.Maui.Handlers.OpenWindowRequest? right) -> bool
+static Microsoft.Maui.Handlers.WebViewHandler.CreateUriForCookies(string? url) -> System.Uri?
 static Microsoft.Maui.ScrollToRequest.operator !=(Microsoft.Maui.ScrollToRequest? left, Microsoft.Maui.ScrollToRequest? right) -> bool
 static Microsoft.Maui.ScrollToRequest.operator ==(Microsoft.Maui.ScrollToRequest? left, Microsoft.Maui.ScrollToRequest? right) -> bool
 static Microsoft.Maui.SwipeViewCloseRequest.operator !=(Microsoft.Maui.SwipeViewCloseRequest? left, Microsoft.Maui.SwipeViewCloseRequest? right) -> bool
@@ -84,6 +85,7 @@ static Microsoft.Maui.SwipeViewSwipeEnded.operator !=(Microsoft.Maui.SwipeViewSw
 static Microsoft.Maui.SwipeViewSwipeEnded.operator ==(Microsoft.Maui.SwipeViewSwipeEnded? left, Microsoft.Maui.SwipeViewSwipeEnded? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator !=(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator ==(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
+virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.<Clone>$() -> Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Equals(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? other) -> bool
