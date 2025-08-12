@@ -219,7 +219,7 @@ extends:
             displayName: list downloaded artifacts
 
           - powershell: >-
-              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "*Manifest*.nupkg;${{ parameters.nugetExcludeFilters }} -NuGetOrgApiKey2 "$(pat--nuget--xamarinc--push--wildcard-1)" -NuGetOrgApiKey3 "$(pat--nuget--xamarinc--push--wildcard-2)" 
+              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "*Manifest*.nupkg;${{ parameters.nugetExcludeFilters }}" -NuGetOrgApiKey2 "$(pat--nuget--xamarinc--push--wildcard-1)" -NuGetOrgApiKey3 "$(pat--nuget--xamarinc--push--wildcard-2)" 
             displayName: Push workload packs to NuGet.org
             env:
               PUSH_PACKAGES: ${{ parameters.pushPackages }}
