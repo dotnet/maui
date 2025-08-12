@@ -70,28 +70,6 @@ internal static class WindowInsetsExtensions
 		);
 	}
 
-	public static SafeAreaPadding ToSafeAreaInsetsWithKeyboard(this WindowInsetsCompat insets, Context? context)
-	{
-		if (context == null)
-			return SafeAreaPadding.Empty;
-
-		// Get base safe area insets
-		var safeArea = insets.ToSafeAreaInsets(context);
-
-		// Get keyboard insets if available (API 30+)
-		var keyboard = insets.GetInsets(WindowInsetsCompat.Type.Ime());
-
-		// For keyboard, we only care about the bottom inset and take the maximum
-		// Convert from pixels to device-independent units
-		var density = context.GetDisplayDensity();
-		return new(
-			safeArea.Left,
-			safeArea.Right,
-			safeArea.Top,
-			Math.Max(safeArea.Bottom, (keyboard?.Bottom ?? 0) / density)
-		);
-	}
-
 	public static SafeAreaPadding GetKeyboardInsets(this WindowInsetsCompat insets, Context? context)
 	{
 		if (context == null)
@@ -103,6 +81,10 @@ internal static class WindowInsetsExtensions
 		// Return only keyboard insets (typically only bottom)
 		// Convert from pixels to device-independent units
 		var density = context.GetDisplayDensity();
-		return new(0, 0, 0, (keyboard?.Bottom ?? 0) / density);
+		var keyboardHeight = (keyboard?.Bottom ?? 0) / density;
+
+		// The keyboard inset should represent the distance from the bottom of the screen
+		// to the top of the keyboard. This is the correct value to use for bottom padding.
+		return new(0, 0, 0, keyboardHeight);
 	}
 }
