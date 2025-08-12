@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		/// <param name="url">The URL to convert to a URI</param>
 		/// <returns>A valid Uri for cookie operations, or null if invalid</returns>
-		protected static System.Uri? CreateUriForCookies(string? url)
+		internal static System.Uri? CreateUriForCookies(string? url)
 		{
 			if (url == null)
 				return null;
