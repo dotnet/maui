@@ -73,7 +73,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact("Parsed XAML can use x:Double")]
-		[RequiresUnreferencedCode()]
 		public void x_Double_Parsed()
 		{
 			var page = new ContentPage();

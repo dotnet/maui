@@ -62,33 +62,14 @@ namespace Microsoft.Maui.Controls
 					: previousDetail;
 
 				// Send NavigatingFrom event to the previous detail (if any)
-
-<<<<<<< TODO: Unmerged change from project 'Controls.Core(netstandard2.0)', Before:
 				if (previousDetail is not null)
 				{
 					previousDetail.SendNavigatingFrom(new NavigatingFromEventArgs(destinationPage,
 						NavigationType.Replace));
 				}
-=======
-				previousDetail?.SendNavigatingFrom(new NavigatingFromEventArgs(destinationPage,
-						NavigationType.Replace));
->>>>>>> After
-				previousDetail?.SendNavigatingFrom(new NavigatingFromEventArgs(destinationPage,
-						NavigationType.Replace));
 
 				// Update the detail property
 				OnPropertyChanging();
-
-<<<<<<< TODO: Unmerged change from project 'Controls.Core(netstandard2.0)', Before:
-				if (previousDetail is not null)
-				{
-					previousDetail.SendNavigatedFrom(
-						new NavigatedFromEventArgs(destinationPage, NavigationType.Replace));
-				}
-=======
-				previousDetail?.SendNavigatedFrom(
-						new NavigatedFromEventArgs(destinationPage, NavigationType.Replace));
->>>>>>> After
 				if (_detail is not null)
 					InternalChildren.Remove(_detail);
 				_detail = value;
@@ -103,8 +84,11 @@ namespace Microsoft.Maui.Controls
 				}
 
 				// Send NavigatedFrom and NavigatedTo events
-				previousDetail?.SendNavigatedFrom(
+				if (previousDetail is not null)
+				{
+					previousDetail.SendNavigatedFrom(
 						new NavigatedFromEventArgs(destinationPage, NavigationType.Replace));
+				}
 
 				_detail.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace));
 			}

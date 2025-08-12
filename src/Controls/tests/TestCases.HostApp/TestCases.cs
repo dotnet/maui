@@ -329,7 +329,6 @@ namespace Maui.Controls.Sample
 			bool IsExempt(string name) => _exemptNames.Contains(name);
 		}
 
-		[RequiresUnreferencedCode()]
 		public static NavigationPage GetTestCases()
 		{
 			TestCaseScreen testCaseScreen = null;
