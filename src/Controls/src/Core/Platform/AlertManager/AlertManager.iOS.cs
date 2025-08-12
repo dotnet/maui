@@ -136,13 +136,6 @@ namespace Microsoft.Maui.Controls.Platform
 					uiTextField.Text = arguments.InitialValue;
 					uiTextField.ShouldChangeCharacters = (field, range, replacementString) => arguments.MaxLength <= -1 || field.Text.Length + replacementString.Length - range.Length <= arguments.MaxLength;
 					uiTextField.ApplyKeyboard(arguments.Keyboard);
-					uiTextField.ShouldReturn = _ =>
-					{
-						arguments.SetResult(alert.TextFields[0].Text);
-						alert.DismissViewController(true, null);
-
-						return false;
-					};
 				});
 
 				var oldFrame = alert.View.Frame;

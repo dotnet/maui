@@ -6,12 +6,10 @@ using Android.App;
 using Android.Content;
 using Android.Text;
 using Android.Views;
-using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls.Internals;
 using static Android.Views.ViewGroup;
-using static Android.Widget.TextView;
 using AButton = Android.Widget.Button;
 using AppCompatActivity = AndroidX.AppCompat.App.AppCompatActivity;
 using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
@@ -277,10 +275,8 @@ namespace Microsoft.Maui.Controls.Platform
 				if (arguments.Keyboard == Keyboard.Numeric)
 					editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
 
-				editText.EditorAction += OnEditorAction;
-
 				if (arguments.MaxLength > -1)
-					editText.SetFilters([new InputFilterLengthFilter(arguments.MaxLength)]);
+					editText.SetFilters(new IInputFilter[] { new InputFilterLengthFilter(arguments.MaxLength) });
 
 				frameLayout.AddView(editText);
 				alertDialog.SetView(frameLayout);
@@ -292,21 +288,6 @@ namespace Microsoft.Maui.Controls.Platform
 				alertDialog.Window.SetSoftInputMode(SoftInput.StateVisible);
 				alertDialog.Show();
 				editText.RequestFocus();
-
-				void OnEditorAction(object sender, EditorActionEventArgs e)
-				{
-					if (sender is not AppCompatEditText editText)
-					{
-						return;
-					}
-
-					editText.EditorAction -= OnEditorAction;
-
-					if (e.ActionId == ImeAction.Done)
-					{
-						alertDialog.GetButton((int)DialogButtonType.Positive)?.PerformClick();
-					}
-				}
 			}
 
 			void UpdateProgressBarVisibility(bool isBusy)
