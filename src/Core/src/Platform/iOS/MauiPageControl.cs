@@ -121,6 +121,12 @@ namespace Microsoft.Maui.Platform
 						//the square shape is not the same size as the circle so we might need to correct the frame
 						imageview.Frame = new CGRect(frame.X - 6, frame.Y, frame.Width, frame.Height);
 					}
+					else
+					{
+						var imageConfig = UIImageSymbolConfiguration.Create(pointSize: (nfloat)DefaultIndicatorSize, weight: UIImageSymbolWeight.Regular);
+						var squareImage = UIImage.GetSystemImage("squareshape.fill", imageConfig);
+						PreferredIndicatorImage = squareImage;
+					}
 				}
 			}
 		}
