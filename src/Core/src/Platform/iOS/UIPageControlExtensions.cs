@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateIndicatorSize(this MauiPageControl pageControl, IIndicatorView indicatorView)
 		{
 			pageControl.IndicatorSize = indicatorView.IndicatorSize;
-			pageControl.LayoutSubviews();
+			pageControl.InvalidateMeasure();
 		}
 
 		public static void UpdateHideSingle(this UIPageControl pageControl, IIndicatorView indicatorView)
