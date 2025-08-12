@@ -1305,7 +1305,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (flyoutPageWithToolbarItems != null)
 				{
 					_tracker.Target = flyoutPageWithToolbarItems.Flyout;
-					_tracker.AdditionalTargets = parentPages.Append(Child);
+					var additionalTargets = new List<Page>(parentPages);
+					additionalTargets.Add(Child);
+					_tracker.AdditionalTargets = additionalTargets;
 				}
 				else
 				{
