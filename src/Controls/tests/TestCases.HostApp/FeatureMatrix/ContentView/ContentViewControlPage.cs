@@ -37,12 +37,14 @@ namespace Maui.Controls.Sample
             {
                 Content = "First Page",
                 GroupName = "PageType",
-                IsChecked = true
+                IsChecked = true,
+                AutomationId = "FirstPageRadioButton"
             };
             _secondPageRadioButton = new RadioButton
             {
                 Content = "Second Page",
-                GroupName = "PageType"
+                GroupName = "PageType",
+                AutomationId = "SecondPageRadioButton"
             };
             _firstPageRadioButton.CheckedChanged += OnCustomPageRadioCheckedChanged;
             _secondPageRadioButton.CheckedChanged += OnCustomPageRadioCheckedChanged;
@@ -50,13 +52,15 @@ namespace Maui.Controls.Sample
             _controlTemplateYesRadioButton = new RadioButton
             {
                 Content = "Yes",
-                GroupName = "TemplateType"
+                GroupName = "TemplateType",
+                AutomationId = "ControlTemplateYesRadioButton"
             };
             _controlTemplateNoRadioButton = new RadioButton
             {
                 Content = "No",
                 GroupName = "TemplateType",
-                IsChecked = true
+                IsChecked = true,
+                AutomationId = "ControlTemplateNoRadioButton"
             };
             _controlTemplateYesRadioButton.CheckedChanged += OnControlTemplateRadioCheckedChanged;
             _controlTemplateNoRadioButton.CheckedChanged += OnControlTemplateRadioCheckedChanged;
