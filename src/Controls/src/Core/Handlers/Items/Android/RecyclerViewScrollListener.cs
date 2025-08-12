@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			bool hasHeader = itemsSource.HasHeader;
 			bool hasFooter = itemsSource.HasFooter;
 
-			if (itemsSource is IGroupableItemsViewSource groupable)
+			if (itemsSource is IGroupableItemsViewSource groupable && itemsSource is not UngroupedItemsSource)
 			{
 				return (
 				 AdjustGroupIndex(groupable, first, hasHeader, hasFooter, count, true),
@@ -128,9 +128,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return 0;
 			}
 
-			int idx = pos - (hasHeader && pos > 0 ? 1 : 0);
+			// Adjust for header if present
+			pos = pos - (hasHeader && pos > 0 ? 1 : 0);
 
-			int dataIdx = 0, curr = hasHeader ? 1 : 0;
+			int dataIdx = hasHeader ? 1 : 0, curr = hasHeader ? 1 : 0;
+
+			// Iterate through items until we reach the target position
 			while (curr <= pos && curr < count)
 			{
 				if (hasFooter && curr == count - 1)
@@ -139,6 +142,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 
 				bool isHeader = source.IsGroupHeader(curr), isFooter = source.IsGroupFooter(curr);
+
+				// If current item is a normal data item (not header/footer)
 				if (!isHeader && !isFooter)
 				{
 					if (curr == pos)
@@ -148,45 +153,60 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 					dataIdx++;
 				}
+				// If position is a group header/footer, find the nearest data item
 				else if (curr == pos)
 				{
 					return isStart
-					 ? FindNextDataIndex(source, curr, hasHeader, hasFooter, count, dataIdx)
-					 : FindPrevDataIndex(source, curr, hasHeader, dataIdx);
+					 ? FindNextDataIndex(source, curr, hasFooter, count, dataIdx)
+					 : FindPrevDataIndex(source, curr, hasHeader);
 				}
 				curr++;
 			}
+
+			// If we reach here, pos was beyond the last item
+			// Return the last valid data index (or 0 if empty)
 			return Math.Max(0, dataIdx - 1);
 		}
 
-		static int FindNextDataIndex(IGroupableItemsViewSource source, int start, bool hasHeader, bool hasFooter, int count, int dataIdx)
+		static int FindNextDataIndex(IGroupableItemsViewSource source, int start, bool hasFooter, int count, int dataIdx)
 		{
 			for (int i = start + 1; i < count; i++)
 			{
+				// Skip footer item if present
 				if (hasFooter && i == count - 1)
 				{
 					break;
 				}
 
+				// If we find a regular item (not a group header or footer),
+				// return the current data index without incrementing
 				if (!source.IsGroupHeader(i) && !source.IsGroupFooter(i))
 				{
 					return dataIdx;
 				}
 			}
+
+			// If no valid data item found ahead, return the previous data index
+			// (or 0 if no valid items exist)
 			return Math.Max(0, dataIdx - 1);
 		}
 
-		static int FindPrevDataIndex(IGroupableItemsViewSource source, int start, bool hasHeader, int dataIdx)
+		static int FindPrevDataIndex(IGroupableItemsViewSource source, int start, bool hasHeader)
 		{
 			int lastValid = -1;
 			int curr = hasHeader ? 1 : 0;
+
 			for (; curr < start; curr++)
 			{
+				// Increment counter only for data items (not headers/footers)
+				// to get accurate position for last visible item index
 				if (!source.IsGroupHeader(curr) && !source.IsGroupFooter(curr))
 				{
-					lastValid = dataIdx++;
+					lastValid++;
 				}
 			}
+
+			// Return the last valid data item found (or 0 if none)
 			return Math.Max(0, lastValid);
 		}
 
