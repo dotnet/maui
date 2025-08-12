@@ -622,7 +622,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var pointerId = e.Pointer?.PointerId ?? uint.MaxValue;
 			var now = DateTime.UtcNow;
-			
+
 			// Periodic cleanup when dictionary gets large - this should never happen since each
 			// PointerEntered should have a matching PointerExited that cleans up the entry,
 			// but we include this as a safety measure to prevent unbounded memory growth.
@@ -634,21 +634,21 @@ namespace Microsoft.Maui.Controls.Platform
 				foreach (var key in keysToRemove)
 					_lastPointerEnteredTime.Remove(key);
 			}
-			
+
 			// Multi-window bug workaround: There's a specific bug where PointerEntered events
 			// fire unexpectedly when multiple windows are open. We work around this by 
 			// debouncing - if the same pointer had an Enter event recently and we have multiple
 			// windows open, we ignore the duplicate event. Only applies in multi-window scenarios
 			// to avoid performance overhead in normal single-window usage.
-			if (_lastPointerEnteredTime.TryGetValue(pointerId, out var lastTime) && 
+			if (_lastPointerEnteredTime.TryGetValue(pointerId, out var lastTime) &&
 				(now - lastTime).TotalMilliseconds < POINTER_DEBOUNCE_MS && HasMultipleWindows())
 			{
 				return;
 			}
-			
+
 			// Track this pointer's entry time for future debounce checks
 			_lastPointerEnteredTime[pointerId] = now;
-			
+
 			HandlePgrPointerEvent(e, (view, recognizer)
 						=> recognizer.SendPointerEntered(view, (relativeTo)
 							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
@@ -656,7 +656,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPgrPointerExited(object sender, PointerRoutedEventArgs e)
 		{
-			
+
 			// Clean up debounce tracking when pointer exits, but only for relevant events.
 			// This is part of the multi-window bug workaround. We only clean up tracking
 			// for events that are relevant to our current element's window to avoid clearing
@@ -666,7 +666,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var pointerId = e.Pointer?.PointerId ?? uint.MaxValue;
 				_lastPointerEnteredTime.Remove(pointerId);
 			}
-			
+
 			HandlePgrPointerEvent(e, (view, recognizer)
 						=> recognizer.SendPointerExited(view, (relativeTo)
 							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
@@ -732,7 +732,7 @@ namespace Microsoft.Maui.Controls.Platform
 		/// PointerEntered events fire unexpectedly in multi-window scenarios.
 		/// </summary>
 		/// <returns>True if multiple windows are open, false otherwise</returns>
-		bool HasMultipleWindows() => 
+		bool HasMultipleWindows() =>
 			Application.Current?.Windows?.Count > 1;
 
 		bool IsPointerEventRelevantToCurrentElement(PointerRoutedEventArgs e)
