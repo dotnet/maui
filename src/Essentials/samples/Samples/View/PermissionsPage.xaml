@@ -14,10 +14,36 @@
         <viewmodels:PermissionsViewModel x:Name="viewModel" />
     </views:BasePage.BindingContext>
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
         <Label Text="Request various permissions." FontAttributes="Bold" Margin="12" />
 
-        <ListView HasUnevenRows="True" ItemsSource="{Binding PermissionItems}" Grid.Row="1">
+        <!-- Location Permissions Consistency Test Section -->
+        <StackLayout Grid.Row="1" Margin="12" Spacing="8" BackgroundColor="LightYellow">
+            <Label Text="Location Permissions Consistency Test" FontAttributes="Bold" FontSize="16" />
+            <Label Text="Test CheckStatusAsync vs RequestAsync consistency for partial location permissions" FontSize="12" TextColor="Gray" />
+            
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*">
+                <!-- LocationWhenInUse Test -->
+                <StackLayout Grid.Row="0" Grid.Column="0" Margin="5">
+                    <Label Text="LocationWhenInUse" FontAttributes="Bold" />
+                    <Label x:Name="LocationWhenInUseCheckLabel" Text="Check: Unknown" />
+                    <Label x:Name="LocationWhenInUseRequestLabel" Text="Request: Unknown" />
+                    <Button Text="Test Consistency" x:Name="TestLocationWhenInUseButton" Clicked="TestLocationWhenInUse_Clicked" />
+                </StackLayout>
+                
+                <!-- LocationAlways Test -->
+                <StackLayout Grid.Row="0" Grid.Column="1" Margin="5">
+                    <Label Text="LocationAlways" FontAttributes="Bold" />
+                    <Label x:Name="LocationAlwaysCheckLabel" Text="Check: Unknown" />
+                    <Label x:Name="LocationAlwaysRequestLabel" Text="Request: Unknown" />
+                    <Button Text="Test Consistency" x:Name="TestLocationAlwaysButton" Clicked="TestLocationAlways_Clicked" />
+                </StackLayout>
+            </Grid>
+            
+            <Label x:Name="ConsistencyResultLabel" Text="Consistency: Not tested" FontAttributes="Bold" HorizontalOptions="Center" />
+        </StackLayout>
+
+        <ListView HasUnevenRows="True" ItemsSource="{Binding PermissionItems}" Grid.Row="2">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
