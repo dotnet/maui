@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.LayoutOptionsPage"
+             Title="LayoutOptionsPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Apply"
+                     Clicked="ApplyButton_Clicked"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid Padding="10"
+          RowSpacing="10"
+          ColumnSpacing="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Horizontal Options Label -->
+        <Label Grid.Row="0"
+               Grid.ColumnSpan="2"
+               Text="HorizontalOptions:"
+               FontAttributes="Bold"/>
+
+        <!-- Horizontal Options Buttons -->
+        <Button Grid.Row="1"
+                Grid.Column="0"
+                Text="Fill"
+                Clicked="OnHorizontalOptionClicked"
+                AutomationId="HorizontalFill"/>
+        <Button Grid.Row="1"
+                Grid.Column="1"
+                Text="Start"
+                Clicked="OnHorizontalOptionClicked"
+                AutomationId="HorizontalStart"/>
+
+        <Button Grid.Row="2"
+                Grid.Column="0"
+                Text="Center"
+                Clicked="OnHorizontalOptionClicked"
+                AutomationId="HorizontalCenter"/>
+        <Button Grid.Row="2"
+                Grid.Column="1"
+                Text="End"
+                Clicked="OnHorizontalOptionClicked"
+                AutomationId="HorizontalEnd"/>
+
+        <!-- Vertical Options Label -->
+        <Label Grid.Row="3"
+               Grid.ColumnSpan="2"
+               Text="VerticalOptions:"
+               FontAttributes="Bold"/>
+
+        <!-- Vertical Options Buttons -->
+        <Button Grid.Row="4"
+                Grid.Column="0"
+                Text="Fill"
+                Clicked="OnVerticalOptionClicked"
+                AutomationId="VerticalFill"/>
+        <Button Grid.Row="4"
+                Grid.Column="1"
+                Text="Start"
+                Clicked="OnVerticalOptionClicked"
+                AutomationId="VerticalStart"/>
+
+        <Button Grid.Row="5"
+                Grid.Column="0"
+                Text="Center"
+                Clicked="OnVerticalOptionClicked"
+                AutomationId="VerticalCenter"/>
+        <Button Grid.Row="5"
+                Grid.Column="1"
+                Text="End"
+                Clicked="OnVerticalOptionClicked"
+                AutomationId="VerticalEnd"/>
+
+        <!-- WidthRequest Label -->
+        <Label Grid.Row="6"
+               Grid.ColumnSpan="2"
+               Text="WidthRequest:"
+               FontAttributes="Bold"/>
+
+        <!-- WidthRequest Buttons -->
+        <Button Grid.Row="7"
+                Grid.Column="0"
+                Text="No Width"
+                Clicked="OnWidthRequestClicked"
+                AutomationId="WidthNone"/>
+        <Button Grid.Row="7"
+                Grid.Column="1"
+                Text="350"
+                Clicked="OnWidthRequestClicked"
+                AutomationId="Width350"/>
+
+        <!-- HeightRequest Label -->
+        <Label Grid.Row="8"
+               Grid.ColumnSpan="2"
+               Text="HeightRequest:"
+               FontAttributes="Bold"/>
+
+        <!-- HeightRequest Buttons -->
+        <Button Grid.Row="9"
+                Grid.Column="0"
+                Text="No Height"
+                Clicked="OnHeightRequestClicked"
+                AutomationId="HeightNone"/>
+        <Button Grid.Row="9"
+                Grid.Column="1"
+                Text="300"
+                Clicked="OnHeightRequestClicked"
+                AutomationId="Height300"/>
+
+        <!-- Orientation Label -->
+        <Label Grid.Row="10"
+               Grid.ColumnSpan="2"
+               Text="Orientation:"
+               FontAttributes="Bold"/>
+
+        <!-- Orientation Buttons -->
+        <Button Grid.Row="11"
+                Grid.Column="0"
+                Text="Vertical"
+                Clicked="OnOrientationClicked"
+                AutomationId="OrientationVertical"/>
+        <Button Grid.Row="11"
+                Grid.Column="1"
+                Text="Horizontal"
+                Clicked="OnOrientationClicked"
+                AutomationId="OrientationHorizontal"/>
+    </Grid>
+</ContentPage>

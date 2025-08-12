@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.LayoutMainPage"
+             x:DataType="local:LayoutViewModel"
+             Title="LayoutPage">
+        <ContentPage.ToolbarItems>
+                <ToolbarItem Text="Options"
+                             Clicked="NavigateToOptionsPage_Clicked"
+                             AutomationId="Options"/>
+        </ContentPage.ToolbarItems>
+        <Grid RowDefinitions="*,Auto"
+              ColumnDefinitions="*,*"
+              Padding="0,10"
+              RowSpacing="10"
+              ColumnSpacing="3">
+
+                <ScrollView Grid.Row="0"
+                            Grid.ColumnSpan="2"
+                            x:Name="MyScrollView"
+                            HeightRequest="{Binding HeightRequest}"
+                            WidthRequest="{Binding WidthRequest}"
+                            Orientation="{Binding Orientation}"
+                            HorizontalScrollBarVisibility="Never"
+                            VerticalScrollBarVisibility="Never"
+                            BackgroundColor="Lavender"/>
+                <Button Text="StackLayout"
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Clicked="OnScrollViewWithStackLayoutClicked"
+                        AutomationId="StackLayoutButton"
+                        WidthRequest="200"/>
+                <Button Text="Grid"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Clicked="OnGridWithChildrenClicked"
+                        AutomationId="GridButton"
+                        WidthRequest="200"/>
+        </Grid>
+</ContentPage>

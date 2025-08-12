@@ -93,6 +93,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new ImageButtonControlPage(), "ImageButton Feature Matrix"),
 			new GalleryPageFactory(() => new BoxViewControlPage(), "BoxView Feature Matrix"),
 			new GalleryPageFactory(() => new ToolbarFeaturePage(), "Toolbar Feature Matrix"),
+			new GalleryPageFactory(() => new LayoutControlPage(), "ScrollView With LayoutOptions Feature Matrix"),
 		};
 
 		public CorePageView(Page rootPage)
