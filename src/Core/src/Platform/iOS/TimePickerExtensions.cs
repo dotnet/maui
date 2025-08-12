@@ -86,10 +86,28 @@ public static class TimePickerExtensions
 				// For 12-hour format or any format with AM/PM, use US locale
 				formattingCulture = new CultureInfo("en-US");
 			}
-			else if (format.Contains('H', StringComparison.Ordinal))
+
+			var time = timePicker.Time;
+			var format = timePicker.Format;
+			
+			// Determine which culture to use for consistent formatting
+			CultureInfo formattingCulture;
+			if (format != null)
 			{
-				// For 24-hour format without AM/PM, use German locale
-				formattingCulture = new CultureInfo("de-DE");
+				if (format.Contains('t', StringComparison.Ordinal) || format.Contains('h', StringComparison.Ordinal))
+				{
+					// For 12-hour format or any format with AM/PM, use US locale
+					formattingCulture = new CultureInfo("en-US");
+				}
+				else if (format.Contains('H', StringComparison.Ordinal))
+				{
+					// For 24-hour format without AM/PM, use German locale
+					formattingCulture = new CultureInfo("de-DE");
+				}
+				else
+				{
+					formattingCulture = cultureInfo;
+				}
 			}
 			else
 			{
