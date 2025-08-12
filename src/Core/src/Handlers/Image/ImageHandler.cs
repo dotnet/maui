@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS
 			[nameof(IImage.Height)] = MapHeight,
 			[nameof(IImage.Width)] = MapWidth,
+			[nameof(IView.HorizontalLayoutAlignment)] = MapHorizontalLayoutAlignment,
+			[nameof(IView.VerticalLayoutAlignment)] = MapVerticalLayoutAlignment,
 #endif
 			[nameof(IImage.Aspect)] = MapAspect,
 			[nameof(IImage.IsAnimationPlaying)] = MapIsAnimationPlaying,
