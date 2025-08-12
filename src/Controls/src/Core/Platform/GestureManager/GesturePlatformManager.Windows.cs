@@ -506,8 +506,6 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			_isPinching = true;
-
 			if (e.OriginalSource is UIElement container)
 			{
 				global::Windows.Foundation.Point translationPoint = container.TransformToVisual(Container).TransformPoint(e.Position);
@@ -538,6 +536,8 @@ namespace Microsoft.Maui.Controls.Platform
 			SwipeComplete(true);
 			PinchComplete(true);
 			PanComplete(true);
+
+			_fingers.Clear();
 		}
 
 		void OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
@@ -559,28 +559,28 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			_isPinching = true;
 			_wasPinchGestureStartedSent = false;
 			_wasPanGestureStartedSent = false;
 		}
 
 		void OnPointerCanceled(object sender, PointerRoutedEventArgs e)
 		{
-			_fingers.Remove(e.Pointer.PointerId);
-
 			SwipeComplete(false);
 			PinchComplete(false);
 			PanComplete(false);
+
+			_fingers.Clear();
 		}
 
 		void OnPointerExited(object sender, PointerRoutedEventArgs e)
 		{
+			SwipeComplete(true);
+
 			if (!_isPanning)
 			{
 				_fingers.Remove(e.Pointer.PointerId);
 			}
-
-			SwipeComplete(true);
-			PinchComplete(true);
 		}
 
 		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -594,11 +594,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
-			_fingers.Remove(e.Pointer.PointerId);
-
 			SwipeComplete(true);
-			PinchComplete(true);
 			PanComplete(true);
+
+			_fingers.Remove(e.Pointer.PointerId);
 		}
 
 		void OnPgrPointerEntered(object sender, PointerRoutedEventArgs e)
