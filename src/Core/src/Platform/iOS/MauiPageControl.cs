@@ -63,16 +63,12 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateIndicatorSize()
 		{
-			if (IndicatorSize == 0)
+			if (IndicatorSize == 0 || IndicatorSize == DefaultIndicatorSize)
 				return;
 
 			float scale = (float)IndicatorSize / DefaultIndicatorSize;
 			var newTransform = CGAffineTransform.MakeScale(scale, scale);
-
-			foreach (var subview in Subviews)
-			{
-				subview.Transform = newTransform;
-			}
+			Transform = newTransform;
 		}
 
 		public void UpdatePosition()
