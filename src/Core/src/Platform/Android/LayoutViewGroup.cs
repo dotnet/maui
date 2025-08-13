@@ -59,8 +59,52 @@ namespace Microsoft.Maui.Platform
 			{
 				_safeAreaInvalidated = true;
 				RequestLayout();
-				return insets;
+				return ConsumeInsets(insets);
 			});
+		}
+
+		WindowInsetsCompat ConsumeInsets(WindowInsetsCompat insets)
+		{
+			if (!RespondsToSafeArea())
+				return insets;
+
+			// Get the types of insets that we handle based on SafeAreaRegions
+			var systemBarsToConsume = WindowInsetsCompat.Type.SystemBars();
+			var displayCutoutToConsume = WindowInsetsCompat.Type.DisplayCutout();
+			var imeToConsume = WindowInsetsCompat.Type.Ime();
+
+			// Check which edges we're handling and should consume insets for
+			var leftRegion = GetSafeAreaRegionForEdge(0);
+			var topRegion = GetSafeAreaRegionForEdge(1);
+			var rightRegion = GetSafeAreaRegionForEdge(2);
+			var bottomRegion = GetSafeAreaRegionForEdge(3);
+
+			// Only consume insets for edges that are NOT None (i.e., where we apply safe area)
+			var shouldConsumeSystemBars = leftRegion != SafeAreaRegions.None || topRegion != SafeAreaRegions.None ||
+										  rightRegion != SafeAreaRegions.None || bottomRegion != SafeAreaRegions.None;
+
+			var shouldConsumeCutout = shouldConsumeSystemBars; // Cutouts typically go with system bars
+
+			// Only consume IME insets if bottom edge has SoftInput region
+			var shouldConsumeIme = SafeAreaEdges.IsSoftInput(bottomRegion);
+
+			// Build the inset types to consume
+			var typesToConsume = 0;
+			if (shouldConsumeSystemBars)
+				typesToConsume |= systemBarsToConsume;
+			if (shouldConsumeCutout)
+				typesToConsume |= displayCutoutToConsume;
+			if (shouldConsumeIme)
+				typesToConsume |= imeToConsume;
+
+			// If we don't consume any insets, return original insets
+			if (typesToConsume == 0)
+				return insets;
+
+			// Consume the insets we handle and return the remaining insets
+			return new WindowInsetsCompat.Builder(insets)
+				.SetInsets(typesToConsume, AndroidX.Core.Graphics.Insets.None)
+				.Build();
 		}
 
 		public bool ClipsToBounds { get; set; }
