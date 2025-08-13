@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		public void ContentPage_Content()
+		public void ContentPage_zContent()
 		{
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
