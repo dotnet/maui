@@ -1596,13 +1596,44 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
-			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			PropagateSendNavigatedTo();
 			_previousPage = null;
 
 			if (CurrentPage != null)
 				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
 
 			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+		}
+
+		void PropagateSendNavigatedTo()
+		{
+			if (CurrentPage is null)
+			{
+				return;
+			}
+
+			// On Windows, the Loaded event has already fired (IsLoaded=true), so SendNavigatedTo runs immediately without altering the flow.
+			if (CurrentPage.IsLoaded)
+			{
+				CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			}
+			else
+			{
+				void OnCurrentPageLoaded(object sender, EventArgs e)
+				{
+					if (sender is Page page)
+					{
+						page.Loaded -= OnCurrentPageLoaded;
+						page.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+
+						// Restore flyout behavior observers after deferred NavigatedTo timing
+						// Android requires this call to maintain flyout functionality
+						CurrentContent?.EvaluateDisconnect();
+					}
+				}
+				
+				CurrentPage.Loaded += OnCurrentPageLoaded;
+			}
 		}
 
 		internal PropertyChangedEventHandler CurrentPagePropertyChanged;
