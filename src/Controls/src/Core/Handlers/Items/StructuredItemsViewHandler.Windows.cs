@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		View _currentFooter;
 		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
 		PropertyChangedEventHandler _layoutPropertyChanged;
+		const string ListViewItemStyleKey = "DefaultListViewItemStyle";
+		const string GridViewItemStyleKey = "DefaultGridViewItemStyle";
 
 		~StructuredItemsViewHandler() => _layoutPropertyChangedProxy?.Unsubscribe();
 
@@ -243,7 +245,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var v = layout?.VerticalItemSpacing ?? 0;
 			var margin = WinUIHelpers.CreateThickness(h, v, h, v);
 
-			var defaultStyle = GetDefaultStyle("DefaultGridViewItemStyle");
+			var defaultStyle = GetDefaultStyle(GridViewItemStyleKey);
 			var style = new WStyle(typeof(GridViewItem))
 			{
 				BasedOn = defaultStyle
@@ -266,7 +268,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var v = layout?.ItemSpacing ?? 0;
 			var margin = WinUIHelpers.CreateThickness(0, v, 0, v);
 
-			var defaultStyle = GetDefaultStyle("DefaultListViewItemStyle");
+			var defaultStyle = GetDefaultStyle(ListViewItemStyleKey);
 			var style = new WStyle(typeof(ListViewItem))
 			{
 				BasedOn = defaultStyle
@@ -285,7 +287,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var h = layout?.ItemSpacing ?? 0;
 			var padding = WinUIHelpers.CreateThickness(h, 0, h, 0);
 
-			var defaultStyle = GetDefaultStyle("DefaultListViewItemStyle");
+			var defaultStyle = GetDefaultStyle(ListViewItemStyleKey);
 			var style = new WStyle(typeof(ListViewItem))
 			{
 				BasedOn = defaultStyle
