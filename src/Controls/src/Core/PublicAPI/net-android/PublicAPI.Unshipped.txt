@@ -30,6 +30,10 @@ Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.get -> Microsoft.Maui.SafeArea
 Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.set -> void
 Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.get -> bool
 Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.set -> void
+Microsoft.Maui.Controls.Platform.MauiViewPager
+Microsoft.Maui.Controls.Platform.MauiViewPager.EnableGesture.get -> bool
+Microsoft.Maui.Controls.Platform.MauiViewPager.EnableGesture.set -> void
+Microsoft.Maui.Controls.Platform.MauiViewPager.MauiViewPager(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 ~Microsoft.Maui.Controls.ContentPresenter.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~Microsoft.Maui.Controls.ContentPresenter.LowerChild(Microsoft.Maui.Controls.View view) -> void
 Microsoft.Maui.Controls.ContentPresenter.Padding.get -> Microsoft.Maui.Thickness
@@ -155,6 +159,8 @@ Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Response.se
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs.Sender.get -> Android.Webkit.WebView!
 Microsoft.Maui.Controls.ScrollView.CascadeInputTransparent.get -> bool
 Microsoft.Maui.Controls.ScrollView.CascadeInputTransparent.set -> void
+~Microsoft.Maui.Controls.Platform.MauiViewPager.MauiViewPager(Android.Content.Context context) -> void
+~Microsoft.Maui.Controls.Platform.MauiViewPager.MauiViewPager(Android.Content.Context context, Android.Util.IAttributeSet attrs) -> void
 ~Microsoft.Maui.Controls.ScrollView.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~Microsoft.Maui.Controls.ScrollView.LowerChild(Microsoft.Maui.Controls.View view) -> void
 Microsoft.Maui.Controls.ScrollView.Padding.get -> Microsoft.Maui.Thickness
@@ -327,6 +333,8 @@ override Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter.CanConvert
 override Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+~override Microsoft.Maui.Controls.Platform.MauiViewPager.OnInterceptTouchEvent(Android.Views.MotionEvent ev) -> bool
+~override Microsoft.Maui.Controls.Platform.MauiViewPager.OnTouchEvent(Android.Views.MotionEvent e) -> bool
 ~override Microsoft.Maui.Controls.ScrollView.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 override Microsoft.Maui.Controls.ScrollView.InvalidateLayout() -> void
 override Microsoft.Maui.Controls.ScrollView.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest

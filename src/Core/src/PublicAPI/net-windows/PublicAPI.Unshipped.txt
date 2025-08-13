@@ -52,6 +52,8 @@ Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Mau
 Microsoft.Maui.IWindow.IsMaximizable.get -> bool
 Microsoft.Maui.IWindow.IsMinimizable.get -> bool
 Microsoft.Maui.Platform.CalendarDatePickerExtensions
+Microsoft.Maui.Platform.MauiSlider
+Microsoft.Maui.Platform.MauiSlider.MauiSlider() -> void
 Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.SafeAreaEdges.Bottom.get -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaEdges.Equals(Microsoft.Maui.SafeAreaEdges other) -> bool
@@ -160,6 +162,7 @@ override Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.ToString() -> st
 override Microsoft.Maui.Handlers.OpenWindowRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.Handlers.OpenWindowRequest.GetHashCode() -> int
 override Microsoft.Maui.Handlers.OpenWindowRequest.ToString() -> string!
+override Microsoft.Maui.Platform.MauiSlider.OnApplyTemplate() -> void
 override Microsoft.Maui.SafeAreaEdges.Equals(object? obj) -> bool
 override Microsoft.Maui.SafeAreaEdges.GetHashCode() -> int
 override Microsoft.Maui.SafeAreaEdges.ToString() -> string!
@@ -289,3 +292,6 @@ virtual Microsoft.Maui.SwipeViewSwipeStarted.<Clone>$() -> Microsoft.Maui.SwipeV
 virtual Microsoft.Maui.SwipeViewSwipeStarted.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.SwipeViewSwipeStarted.Equals(Microsoft.Maui.SwipeViewSwipeStarted? other) -> bool
 virtual Microsoft.Maui.SwipeViewSwipeStarted.PrintMembers(System.Text.StringBuilder! builder) -> bool
+~Microsoft.Maui.Platform.MauiSlider.ThumbImageSource.get -> Microsoft.UI.Xaml.Media.ImageSource
+~Microsoft.Maui.Platform.MauiSlider.ThumbImageSource.set -> void
+~static readonly Microsoft.Maui.Platform.MauiSlider.ThumbImageSourceProperty -> Microsoft.UI.Xaml.DependencyProperty
