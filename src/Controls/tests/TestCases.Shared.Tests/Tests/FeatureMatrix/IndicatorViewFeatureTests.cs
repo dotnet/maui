@@ -84,7 +84,7 @@ public class IndicatorViewFeatureTests : UITest
 		Assert.That(App.FindElement(CountLabel).GetText(), Is.EqualTo("Count: 5"));
 	}
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/29312
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29312, https://github.com/dotnet/maui/issues/15443
 	[Test, Order(4)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifyIndicatorView_Position()
