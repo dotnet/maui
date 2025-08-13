@@ -546,11 +546,11 @@ namespace Microsoft.Maui.Controls
 			AlertManager.Unsubscribe();
 			Application?.RemoveWindow(this);
 			
-			// Dispose the window-scoped service scope
-			if (Handler?.MauiContext is MauiContext mauiContext)
-				mauiContext.DisposeWindowScope();
-			
+			var mauiContext = Handler?.MauiContext as MauiContext;
 			Handler?.DisconnectHandler();
+
+			// Dispose the window-scoped service scope
+			mauiContext?.DisposeWindowScope();
 		}
 
 		void IWindow.Resumed()
