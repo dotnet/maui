@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		DataTemplate _defaultTemplate;
 
 		// If data templates were horses, this is a donkey
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "String path binding used for dynamic DisplayMemberName; acceptable degradation when trimmed.")]
 		DataTemplate DefaultTemplate
 		{
 			get
