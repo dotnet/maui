@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -38,4 +37,3 @@ public class Issue28945 : _IssuesUITest
 		Assert.That(unfocusText, Is.EqualTo(UnfocusSuccessMessage));
 	}
 }
-#endif
