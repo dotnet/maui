@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -649,6 +650,74 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(fired);
 		}
 
+		[Fact]
+		public void CreateWindowKeepIsActivatedIsFalse()
+		{
+			var app = new TestApp();
+
+			var window = app.CreateWindow();
+
+			Assert.False(window.IsActivated);
+		}
+
+		[Fact]
+		public void ActivateWindowWillSetIsActiveToTrue()
+		{
+			var app = new TestApp();
+
+			var window = app.CreateWindow();
+
+			(window as IWindow).Activated();
+
+			Assert.True(window.IsActivated);
+		}
+
+		[Fact]
+		public void ActivateWindowAndDeactivateWillSetIsActiveToFalse()
+		{
+			var app = new TestApp();
+
+			var window = app.CreateWindow();
+
+			(window as IWindow).Activated();
+
+			Assert.True(window.IsActivated);
+
+			(window as IWindow).Deactivated();
+
+			Assert.False(window.IsActivated);
+		}
+
+		[Fact]
+		public async Task ActivateWindowSendAppearingOnPage()
+		{
+			var app = new TestApp();
+
+			var window = app.CreateWindow();
+
+			var page = new ContentPage();
+
+			window.Page = page;
+
+			page.SendDisappearing();
+
+			var tcs = new TaskCompletionSource<bool>();
+
+			using var cts = new CancellationTokenSource();
+			using var _ = cts.Token.Register(() => tcs.SetResult(false));
+
+			page.Appearing += (_, __) =>
+			{
+				tcs.SetResult(true);
+			};
+
+			cts.CancelAfter(TimeSpan.FromSeconds(5));
+
+			(window as IWindow).Activated();
+
+			Assert.True(await tcs.Task);
+		}
+
 		[Theory]
 		[InlineData(double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN)]
 		[InlineData(-1, -1, -1, -1, -1, -1, double.NaN, double.NaN)]
@@ -765,6 +834,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}));
 			Assert.Same(window, actual);
 			Assert.Empty(table);
+		}
+
+		[Fact]
+		public void BindingIsActivatedProperty()
+		{
+			var app = new TestApp();
+			var page = new ContentPage();
+			var window = app.CreateWindow();
+			window.Page = page;
+
+			var vm = new ViewModel();
+			window.BindingContext = vm;
+			window.SetBinding(Window.IsActivatedProperty, nameof(vm.IsWindowActive));
+
+			(window as IWindow).Activated();
+
+			Assert.True(vm.IsWindowActive);
+
+			(window as IWindow).Deactivated();
+
+			Assert.False(vm.IsWindowActive);
+		}
+	}
+
+	class ViewModel
+	{
+		public bool IsWindowActive
+		{
+			get; set;
 		}
 	}
 }
