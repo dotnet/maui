@@ -1,11 +1,15 @@
-﻿namespace MauiApp._1;
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace MauiApp._1;
 
 public partial class App : Application
 {
+	public IServiceProvider ServiceProvider { get; private set; }
+
 	public App()
 	{
 		InitializeComponent();
-	var serviceCollection = new ServiceCollection();
+		var serviceCollection = new ServiceCollection();
 		ConfigureServices(serviceCollection);
 		ServiceProvider = serviceCollection.BuildServiceProvider();
 	}
