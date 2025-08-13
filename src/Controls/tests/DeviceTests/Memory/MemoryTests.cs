@@ -29,6 +29,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	public class CarouselView2 : CarouselView { }
 
 
+	[RequiresUnreferencedCode("Test setup uses HybridWebView which requires unreferenced code")]
 	void SetupBuilder()
 	{
 		EnsureHandlerCreated(builder =>
@@ -104,6 +105,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	//https://github.com/dotnet/maui/issues/27411
 #endif
 	[InlineData(typeof(TabbedPage))]
+	[RequiresUnreferencedCode("Test uses HybridWebView which requires unreferenced code")]
 	public async Task PagesDoNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
@@ -201,6 +203,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	//[InlineData(typeof(CollectionView2))] - Fails, Check https://github.com/dotnet/maui/issues/29619
 	[InlineData(typeof(CarouselView2))]
 #endif
+	[RequiresUnreferencedCode("Test uses HybridWebView which requires unreferenced code")]
 	public async Task HandlerDoesNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
@@ -303,7 +306,8 @@ public class MemoryTests : ControlsHandlerTestBase
 #if IOS || MACCATALYST
 	//[InlineData(typeof(CollectionView2))] Fails, Check https://github.com/dotnet/maui/issues/29619
 #endif
-	public async Task CollectionViewHeaderFooterDoesntLeak(Type type)
+	[RequiresUnreferencedCode("Test uses HybridWebView which requires unreferenced code")]
+	public async Task CollectionViewHeaderFooterDoesntLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 
@@ -374,7 +378,8 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(PointerGestureRecognizer))]
 	[InlineData(typeof(SwipeGestureRecognizer))]
 	[InlineData(typeof(TapGestureRecognizer))]
-	public async Task GestureDoesNotLeak(Type type)
+	[RequiresUnreferencedCode("Test uses HybridWebView which requires unreferenced code")]
+	public async Task GestureDoesNotLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 
@@ -432,6 +437,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(ViewCell))]
 #pragma warning restore CS0618 // Type or member is obsolete
+	[RequiresUnreferencedCode("Test uses HybridWebView which requires unreferenced code")]
 	public async Task CellsDoNotLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
@@ -487,7 +493,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	}
 
 	[Fact("BindableLayout Does Not Leak")]
-	[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Test uses simple string-based bindings; safety not critical for test environment.")]
+	[RequiresUnreferencedCode("Test uses HybridWebView which requires unreferenced code")]
 	public async Task BindableLayoutDoesNotLeak()
 	{
 		SetupBuilder();
@@ -550,6 +556,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	}
 
 	[Fact("Window Does Not Leak")]
+	[RequiresUnreferencedCode("Test uses HybridWebView which requires unreferenced code")]
 	public async Task WindowDoesNotLeak()
 	{
 		SetupBuilder();
@@ -583,6 +590,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		, Skip = "Fails with 'MauiContext should have been set on parent.'"
 #endif
 	)]
+	[RequiresUnreferencedCode("Test uses HybridWebView which requires unreferenced code")]
 	public async Task VisualDiagnosticsOverlayDoesNotLeak()
 	{
 		SetupBuilder();
@@ -628,6 +636,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #endif
 
 	[Fact]
+	[RequiresUnreferencedCode("Test uses HybridWebView which requires unreferenced code")]
 	public async Task TweenersWillNotLeakDuringInfiniteAnimation()
 	{
 		SetupBuilder();

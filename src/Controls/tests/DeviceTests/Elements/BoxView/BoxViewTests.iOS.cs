@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -36,6 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "ShapeView Parts Keep Around")]
+		[UnconditionalSuppressMessage("Trimming", "IL2075:DynamicallyAccessedMemberTypes", Justification = "Test code using reflection for verification")]
 		public async Task ShapeViewPartsKeepAround()
 		{
 			var boxView = new BoxView()

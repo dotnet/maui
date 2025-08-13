@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -291,7 +292,7 @@ namespace Microsoft.Maui.DeviceTests
 		/// This is more complicated as we have different logic depending on the view being focused or not.
 		/// When we attach to the UI, there is only a single control so sometimes it cannot unfocus.
 		/// </summary>
-		public async Task AttachAndRunFocusAffectedControl<TType, THandler>(TType control, Action<THandler> action)
+		public async Task AttachAndRunFocusAffectedControl<TType, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(TType control, Action<THandler> action)
 			where TType : IView, new()
 			where THandler : class, IPlatformViewHandler, IElementHandler, new()
 		{
@@ -308,7 +309,7 @@ namespace Microsoft.Maui.DeviceTests
 		/// This is more complicated as we have different logic depending on the view being focused or not.
 		/// When we attach to the UI, there is only a single control so sometimes it cannot unfocus.
 		/// </summary>
-		public async Task AttachAndRunFocusAffectedControl<TType, THandler>(TType control, Func<THandler, Task> action)
+		public async Task AttachAndRunFocusAffectedControl<TType, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(TType control, Func<THandler, Task> action)
 			where TType : IView, new()
 			where THandler : class, IPlatformViewHandler, IElementHandler, new()
 		{
@@ -354,6 +355,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
+		[UnconditionalSuppressMessage("Trimming", "IL2075:DynamicallyAccessedMemberTypes", Justification = "Test code using reflection for property validation")]
 		async protected Task ValidatePropertyUpdatesValue<TValue, THandler>(
 			IView view,
 			string property,
@@ -380,6 +382,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyUpdatesAfterInitValue(handler, property, GetPlatformValue, expectedSetValue, expectedUnsetValue);
 		}
 
+		[UnconditionalSuppressMessage("Trimming", "IL2075:DynamicallyAccessedMemberTypes", Justification = "Test code using reflection for property validation")]
 		async protected Task ValidatePropertyUpdatesAfterInitValue<TValue, THandler>(
 			THandler handler,
 			string property,
@@ -608,7 +611,7 @@ namespace Microsoft.Maui.DeviceTests
 						?.Toolbar;
 		}
 
-		protected Task ValidateHasColor<THandler>(IView view, Color color, Action action = null) =>
+		protected Task ValidateHasColor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] THandler>(IView view, Color color, Action action = null) =>
 			ValidateHasColor(view, color, typeof(THandler), action);
 
 		protected static void MockAccessibilityExpectations(View view)

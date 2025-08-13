@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -50,6 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 			Skip = "Fails on Mac Catalyst, fixme"
 #endif
 			)]
+			[UnconditionalSuppressMessage("Trimming", "IL2062:DynamicallyAccessedMemberTypes", Justification = "Test code using reflection for control creation")]
 			public async Task ValidateIsImportantForAccessibility()
 			{
 				EnsureHandlerCreated(builder =>
