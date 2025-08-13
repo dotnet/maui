@@ -72,14 +72,8 @@
     <EmbeddedResource Include="Resources\Fonts\Dokdo-Regular.ttf" />
     <EmbeddedResource Include="Resources\Images\royals.png" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    <MauiImage Include="Resources\Images\subfolder\dotnet_bot_red.png" Resize="True" BaseSize="300,185"/>
   </ItemGroup>
-
-   <ItemGroup>
-	  <MauiImage Include="Resources\Images\subfolder\dotnet_bot_red.png">
-	    <Resize>True</Resize>
-	    <BaseSize>300,185</BaseSize>
-	  </MauiImage>
-	</ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\CustomAttributes\*.cs" />
