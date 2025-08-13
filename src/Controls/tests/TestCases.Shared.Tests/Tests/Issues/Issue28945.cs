@@ -1,3 +1,4 @@
+//#if MACCATALYST // Test only for Mac Catalyst
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,9 +20,23 @@ public class Issue28945 : _IssuesUITest
 	public override string Issue => "Add Focus propagation to MauiView";
 
 	[Test]
-	[Category(UITestCategories.ViewBaseTests)]
+	[Category(UITestCategories.Layout)]
 	public void MauiViewShouldPropagateFocus()
 	{
+		App.WaitForElement("Issue28945_ContentView");
+		if (App is not AppiumApp app)
+		{
+			return;
+		}
+
+		// https://developer.apple.com/documentation/xctest/xcuikeyboardkey?language=objc
+		string[] keys = ["XCUIKeyboardKeyTab"]; // Tab Key
+
+		app.Driver.ExecuteScript("macos: keys", new Dictionary<string, object>
+		{
+			{ "keys", keys },
+		});
+
 		App.WaitForElement(toggleFocusButtonId);
 		App.Tap(toggleFocusButtonId);
 
@@ -37,3 +52,4 @@ public class Issue28945 : _IssuesUITest
 		Assert.That(unfocusText, Is.EqualTo(UnfocusSuccessMessage));
 	}
 }
+//#endif
