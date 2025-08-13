@@ -171,7 +171,7 @@ public class Bugzilla31333 : TestContentPage
 		return new StackLayout() { Children = { button, listView } };
 	}
 
-	StackLayout CreateTableViewTestSection<T>(string automationId) where T : View, IHaveControlFocusedProperty
+	StackLayout CreateTableViewTestSection<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] T>(string automationId) where T : View, IHaveControlFocusedProperty
 	{
 		var name = typeof(T).Name;
 		name = name.Replace("Extended", "", StringComparison.InvariantCultureIgnoreCase);

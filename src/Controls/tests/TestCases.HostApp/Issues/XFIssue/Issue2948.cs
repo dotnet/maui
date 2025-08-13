@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -198,6 +200,7 @@ public class Issue2948 : TestFlyoutPage
 
 		public string IconSource { get; set; }
 
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		public Type TargetType { get; set; }
 	}
 }

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -44,6 +45,7 @@ public class Bugzilla40955 : TestFlyoutPage
 	{
 		public string IconSource { get; set; }
 
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		public Type TargetType { get; set; }
 
 		public string Title { get; set; }
