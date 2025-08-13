@@ -51,80 +51,51 @@ public partial class ContentPageControlMainPage : ContentPage
 		};
 	}
 
-	private async void ChangeContent_Clicked(object sender, EventArgs e)
+	private void ChangeContent_Clicked(object sender, EventArgs e)
 	{
-		// Create a new ContentPage and navigate to it
-		var newContentPage = new ContentPage
+		var currentContent = this.Content;
+		this.Content = new VerticalStackLayout
 		{
-			Title = "New Content Page",
-			BackgroundColor = Colors.LightYellow,
-			Content = new VerticalStackLayout
-			{
-				VerticalOptions = LayoutOptions.Center,
-				HorizontalOptions = LayoutOptions.Center,
-				Spacing = 20,
-				Children =
-				{
-					new Label
-					{
-						Text = "New ContentPage Created!",
-						FontSize = 24,
-						FontAttributes = FontAttributes.Bold,
-						TextColor = Colors.DarkBlue,
-						HorizontalOptions = LayoutOptions.Center
-					},
-					new Label
-					{
-						Text = "This demonstrates a new ContentPage instance with Reset functionality.",
-						FontSize = 16,
-						TextColor = Colors.Gray,
-						HorizontalOptions = LayoutOptions.Center,
-						Margin = new Thickness(20, 0)
-					},
-					new Label
-					{
-						Text = "Use 'Go Back' to return manually, or 'Reset' to reset properties and return automatically.",
-						FontSize = 14,
-						TextColor = Colors.DarkGray,
-						HorizontalOptions = LayoutOptions.Center,
-						FontAttributes = FontAttributes.Italic,
-						Margin = new Thickness(20, 0)
-					},
-					new Button
-					{
-						Text = "Go Back",
-						BackgroundColor = Colors.Gray,
-						TextColor = Colors.White,
-						FontAttributes = FontAttributes.Bold,
-						FontSize = 14,
-						Margin = new Thickness(0, 10, 0, 0),
-						Command = new Command(async () => await Navigation.PopAsync())
-					},
-					new Button
-					{
-						Text = "Reset",
-						BackgroundColor = Colors.DodgerBlue,
-						TextColor = Colors.White,
-						FontAttributes = FontAttributes.Bold,
-						FontSize = 16,
-						AutomationId = "ResetButton",
-						Margin = new Thickness(0, 20, 0, 0),
-						Command = new Command(async () => {						
-							// Reset the original page's ViewModel properties
-							_viewModel.ResetAllProperties();
-							
-							// Navigate back to the original page
-							await Navigation.PopAsync();
-						})
-					}
-				}
-			}
-		};
-
-		// Navigate to the new ContentPage
-		await Navigation.PushAsync(newContentPage);
+			VerticalOptions = LayoutOptions.Center,
+			HorizontalOptions = LayoutOptions.Center,
+			Spacing = 20,
+			Children =
+	{
+	 new Label
+	 {
+	  Text = "New Content",
+	  FontSize = 24,
+	  FontAttributes = FontAttributes.Bold,
+	  AutomationId = "NewContentLabel",
+	  TextColor = Colors.DarkBlue,
+	  HorizontalOptions = LayoutOptions.Center
+	 },
+	 new Label
+	 {
+	  Text = "This demonstrates a Content property changed in runtime",
+	  FontSize = 16,
+	  TextColor = Colors.Gray,
+	  HorizontalOptions = LayoutOptions.Center,
+	  Margin = new Thickness(20, 0)
+	 },
+	 new Button
+	 {
+	  Text = "ResetContent",
+	  BackgroundColor = Colors.DodgerBlue,
+	  TextColor = Colors.White,
+	  FontAttributes = FontAttributes.Bold,
+	  FontSize = 16,
+	  AutomationId = "ResetContentButton",
+	  Margin = new Thickness(0, 20, 0, 0),
+	  Command = new Command(() => {      
+       // Reset the original page's ViewModel properties
+       _viewModel.ResetAllProperties();
+	   this.Content = currentContent;
+	  })
+	 }
 	}
-
+		};
+	}
 	private void ResetAll_Clicked(object sender, EventArgs e)
 	{
 		// Reset all properties to their initial state

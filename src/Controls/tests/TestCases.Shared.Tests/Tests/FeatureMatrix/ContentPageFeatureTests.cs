@@ -30,6 +30,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("ContentButton");
 
 			VerifyScreenshot();
+
+			App.WaitForElement("ResetContentButton");
+			App.Tap("ResetContentButton");
 		}
 
 		[Test]
@@ -51,6 +54,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("ResetButton");
 
 			App.WaitForElement("TitleEntry");
+			App.Tap("TitleEntry");
 			App.ClearText("TitleEntry");
 
 			App.WaitForElement("VisibilityCheckBox");
@@ -162,6 +166,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
 
+			App.WaitForElement("IsBusyLabel");
+			App.Tap("IsBusyLabel");
+
 			App.WaitForElement("FlowDirectionButton");
 			App.Tap("FlowDirectionButton");
 
@@ -174,8 +181,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("TestEntry");
 			App.Tap("TestEntry");
 
-			App.WaitForElement("HideSoftInputLabel");
-			App.Tap("HideSoftInputLabel");
+			App.WaitForElement("KeyboardTestLabel");
+			App.Tap("KeyboardTestLabel");
 
 			VerifyScreenshot();
 		}
@@ -198,8 +205,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("TestEntry");
 			App.Tap("TestEntry");
 
-			App.WaitForElement("HideSoftInputLabel");
-			App.Tap("HideSoftInputLabel");
+			App.WaitForElement("KeyboardTestLabel");
+			App.Tap("KeyboardTestLabel");
 
 			VerifyScreenshot();
 		}
@@ -223,8 +230,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("TestEntry");
 			App.Tap("TestEntry");
 
-			App.WaitForElement("HideSoftInputLabel");
-			App.Tap("HideSoftInputLabel");
+			App.WaitForElement("KeyboardTestLabel");
+			App.Tap("KeyboardTestLabel");
 
 			VerifyScreenshot();
 		}
