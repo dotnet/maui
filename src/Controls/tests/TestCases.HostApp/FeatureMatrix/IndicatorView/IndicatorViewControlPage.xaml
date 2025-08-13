@@ -22,7 +22,6 @@
                              Grid.ColumnSpan="2"
                              ItemsSource="{Binding CarouselItems}"
                              Position="{Binding Position, Mode=TwoWay}"
-                             CurrentItem="{Binding CurrentItem}"
                              Loop="False"
                              HorizontalScrollBarVisibility="Never"
                              IndicatorView="{x:Reference customIndicator}">

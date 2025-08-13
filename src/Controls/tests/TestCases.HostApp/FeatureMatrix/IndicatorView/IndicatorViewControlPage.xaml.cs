@@ -45,7 +45,6 @@ public partial class IndicatorViewControlMainPage : ContentPage
         BindingContext = _viewModel;
         _viewModel.Position = 0;
         _viewModel.CurrentItem = _viewModel.CarouselItems.FirstOrDefault();
-
         await Navigation.PushAsync(new IndicatorViewOptionsPage(_viewModel));
     }
 

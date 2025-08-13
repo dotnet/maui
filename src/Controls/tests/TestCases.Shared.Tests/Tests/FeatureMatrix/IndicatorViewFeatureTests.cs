@@ -54,7 +54,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(IndicatorColorGreenButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -68,7 +67,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(SelectedIndicatorColorPurpleButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -95,8 +93,7 @@ public class IndicatorViewFeatureTests : UITest
 		Assert.That(App.FindElement(PositionLabel).GetText(), Is.EqualTo("Position: 0"));
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(PositionStepper);
-		App.IncreaseStepper(PositionStepper);
+		IncreasePositionStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		Assert.That(App.FindElement(PositionLabel).GetText(), Is.EqualTo("Position: 1"));
@@ -110,11 +107,9 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(SelectedIndicatorColorOrangeButton);
 		App.Tap(SelectedIndicatorColorOrangeButton);
-		App.WaitForElement(PositionStepper);
-		App.IncreaseStepper(PositionStepper);
+		IncreasePositionStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -126,11 +121,9 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(SelectedIndicatorColorPurpleButton);
 		App.Tap(SelectedIndicatorColorPurpleButton);
-		App.WaitForElement(PositionStepper);
-		App.IncreaseStepper(PositionStepper);
+		IncreasePositionStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -142,11 +135,9 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(IndicatorShapeSquareRadioButton);
 		App.Tap(IndicatorShapeSquareRadioButton);
-		App.WaitForElement(PositionStepper);
-		App.IncreaseStepper(PositionStepper);
+		IncreasePositionStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 #endif
@@ -158,11 +149,9 @@ public class IndicatorViewFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(IndicatorSizeStepper);
-		App.IncreaseStepper(IndicatorSizeStepper);
+		IncreaseIndicatorSizeStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 #endif
@@ -178,7 +167,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(IndicatorShapeSquareRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -194,7 +182,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(IndicatorShapeSquareRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -210,7 +197,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(IndicatorShapeSquareRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -220,13 +206,11 @@ public class IndicatorViewFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(IndicatorSizeStepper);
-		App.IncreaseStepper(IndicatorSizeStepper);
+		IncreaseIndicatorSizeStepper();
 		App.WaitForElement(IndicatorShapeSquareRadioButton);
 		App.Tap(IndicatorShapeSquareRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -242,7 +226,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(FlowDirectionRightToLeftRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -263,7 +246,6 @@ public class IndicatorViewFeatureTests : UITest
 			App.WaitForElement(RemoveItemButton);
 			App.Tap(RemoveItemButton);
 		}
-		App.WaitForNoElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -275,11 +257,9 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(IndicatorShapeSquareRadioButton);
 		App.Tap(IndicatorShapeSquareRadioButton);
-		App.WaitForElement(MaximumVisibleStepper);
-		App.DecreaseStepper(MaximumVisibleStepper);
+		DecreaseMaximumVisibleStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29812
@@ -295,7 +275,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(ShadowTrueRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 #endif
@@ -316,7 +295,6 @@ public class IndicatorViewFeatureTests : UITest
 			App.WaitForElement(RemoveItemButton);
 			App.Tap(RemoveItemButton);
 		}
-		App.WaitForNoElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -326,11 +304,9 @@ public class IndicatorViewFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(MaximumVisibleStepper);
-		App.DecreaseStepper(MaximumVisibleStepper);
+		DecreaseMaximumVisibleStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -344,7 +320,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(FlowDirectionRightToLeftRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -358,7 +333,7 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(IsVisibleFalseRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForNoElement("IndicatorViewControl");
+		VerifyScreenshot();
 	}
 
 #if TEST_FAILS_ON_WINDOWS // https://github.com/dotnet/maui/issues/29812
@@ -372,7 +347,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(ShadowTrueRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 #endif
@@ -389,7 +363,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(AddItemButton);
 		App.Tap(AddItemButton);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -401,11 +374,9 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(IndicatorColorBrownButton);
 		App.Tap(IndicatorColorBrownButton);
-		App.WaitForElement(IndicatorSizeStepper);
-		App.IncreaseStepper(IndicatorSizeStepper);
+		IncreaseIndicatorSizeStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -417,11 +388,9 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(SelectedIndicatorColorOrangeButton);
 		App.Tap(SelectedIndicatorColorOrangeButton);
-		App.WaitForElement(IndicatorSizeStepper);
-		App.IncreaseStepper(IndicatorSizeStepper);
+		IncreaseIndicatorSizeStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -437,7 +406,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(FlowDirectionRightToLeftRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -453,7 +421,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(FlowDirectionRightToLeftRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -465,8 +432,7 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(HideSingleTrueRadioButton);
 		App.Tap(HideSingleTrueRadioButton);
-		App.WaitForElement(IndicatorSizeStepper);
-		App.IncreaseStepper(IndicatorSizeStepper);
+		IncreaseIndicatorSizeStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		for (int i = 0; i < 4; i++)
@@ -474,7 +440,6 @@ public class IndicatorViewFeatureTests : UITest
 			App.WaitForElement(RemoveItemButton);
 			App.Tap(RemoveItemButton);
 		}
-		App.WaitForNoElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -485,13 +450,11 @@ public class IndicatorViewFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(IndicatorSizeStepper);
-		App.IncreaseStepper(IndicatorSizeStepper);
+		IncreaseIndicatorSizeStepper();
 		App.WaitForElement(ShadowTrueRadioButton);
 		App.Tap(ShadowTrueRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 #endif
@@ -502,13 +465,11 @@ public class IndicatorViewFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(IndicatorSizeStepper);
-		App.IncreaseStepper(IndicatorSizeStepper);
+		IncreaseIndicatorSizeStepper();
 		App.WaitForElement(FlowDirectionRightToLeftRadioButton);
 		App.Tap(FlowDirectionRightToLeftRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -518,13 +479,10 @@ public class IndicatorViewFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(IndicatorSizeStepper);
-		App.IncreaseStepper(IndicatorSizeStepper);
-		App.WaitForElement(MaximumVisibleStepper);
-		App.DecreaseStepper(MaximumVisibleStepper);
+		IncreaseIndicatorSizeStepper();
+		DecreaseMaximumVisibleStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -540,7 +498,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(IndicatorColorGreenButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -559,7 +516,6 @@ public class IndicatorViewFeatureTests : UITest
 			App.WaitForElement(RemoveItemButton);
 			App.Tap(RemoveItemButton);
 		}
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -580,7 +536,6 @@ public class IndicatorViewFeatureTests : UITest
 			App.WaitForElement(RemoveItemButton);
 			App.Tap(RemoveItemButton);
 		}
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -598,7 +553,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(IconTemplateButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -614,7 +568,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(FlowDirectionRightToLeftRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -626,11 +579,9 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(IconTemplateButton);
 		App.Tap(IconTemplateButton);
-		App.WaitForElement(MaximumVisibleStepper);
-		App.DecreaseStepper(MaximumVisibleStepper);
+		DecreaseMaximumVisibleStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -646,7 +597,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(ShadowTrueRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -662,7 +612,7 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(IsVisibleFalseRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForNoElement("IndicatorViewControl");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(39)]
@@ -677,7 +627,6 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(SelectedIndicatorColorOrangeButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 
@@ -693,8 +642,38 @@ public class IndicatorViewFeatureTests : UITest
 		App.Tap(IndicatorColorGreenButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("IndicatorViewControl");
 		VerifyScreenshot();
 	}
 #endif
+
+	public void IncreasePositionStepper()
+	{
+#if WINDOWS
+		App.IncreaseStepper(PositionStepper);
+#else
+		App.WaitForElement(PositionStepper);
+		App.IncreaseStepper(PositionStepper);
+#endif
+	}
+
+	public void DecreaseMaximumVisibleStepper()
+	{
+#if WINDOWS
+		App.DecreaseStepper(MaximumVisibleStepper);
+#else
+		App.WaitForElement(MaximumVisibleStepper);
+		App.DecreaseStepper(MaximumVisibleStepper);
+#endif
+	}
+
+	public void IncreaseIndicatorSizeStepper()
+	{
+#if WINDOWS
+		App.IncreaseStepper(IndicatorSizeStepper);
+#else
+		App.WaitForElement(IndicatorSizeStepper);
+		App.IncreaseStepper(IndicatorSizeStepper);
+#endif
+	}
+
 }
