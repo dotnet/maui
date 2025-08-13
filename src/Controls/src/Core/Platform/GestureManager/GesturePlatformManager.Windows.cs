@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Input;
 using Windows.Storage.Streams;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -667,9 +668,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPgrPointerPressed(object sender, PointerRoutedEventArgs e)
 		{
-			HandlePgrPointerEvent(e, (view, recognizer)
-						=> recognizer.SendPointerPressed(view, (relativeTo)
-							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+			var view = Element as View;
+			if (view != null)
+			{
+				var pointerGestures = ElementGestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
+				var pressedButton = GetPressedButton(sender, e);
+				foreach (var recognizer in pointerGestures)
+				{
+					if (!CheckButtonMask(recognizer, pressedButton))
+						continue;
+					recognizer.SendPointerPressed(view, (relativeTo) => GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e), pressedButton);
+				}
+			}
 
 			if ((_subscriptionFlags & SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed) != 0)
 			{
@@ -679,9 +689,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPgrPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
-			HandlePgrPointerEvent(e, (view, recognizer)
-						=> recognizer.SendPointerReleased(view, (relativeTo)
-							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+			var view = Element as View;
+			if (view != null)
+			{
+				var pointerGestures = ElementGestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
+				var releasedButton = GetPressedButton(sender, e);
+				foreach (var recognizer in pointerGestures)
+				{
+					if (!CheckButtonMask(recognizer, releasedButton))
+						continue;
+					recognizer.SendPointerReleased(view, (relativeTo) => GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e), releasedButton);
+				}
+			}
 
 			if ((_subscriptionFlags & SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed) != 0)
 			{
@@ -743,6 +762,53 @@ namespace Microsoft.Maui.Controls.Platform
 				Application.Current?.FindMauiContext()?.CreateLogger<GesturePlatformManager>()?.LogError(ex, "An error occurred while validating pointer event relevance.");
 				return false;
 			}
+		}
+
+		ButtonsMask GetPressedButton(object? sender, PointerRoutedEventArgs e)
+		{
+			// Touch/Pen don't have right button semantics; treat as Primary
+			if (e.Pointer?.PointerDeviceType != PointerDeviceType.Mouse)
+				return ButtonsMask.Primary;
+
+			var reference = sender as UIElement ?? _container ?? _control ?? _container?.XamlRoot?.Content as UIElement;
+			if (reference is null)
+				return ButtonsMask.Primary;
+
+			var point = e.GetCurrentPoint(reference);
+			var props = point?.Properties;
+			if (props is null)
+				return ButtonsMask.Primary;
+
+			switch (props.PointerUpdateKind)
+			{
+				case PointerUpdateKind.RightButtonPressed:
+				case PointerUpdateKind.RightButtonReleased:
+					return ButtonsMask.Secondary;
+				case PointerUpdateKind.LeftButtonPressed:
+				case PointerUpdateKind.LeftButtonReleased:
+					return ButtonsMask.Primary;
+				// Middle/other map to Primary by convention
+				case PointerUpdateKind.MiddleButtonPressed:
+				case PointerUpdateKind.MiddleButtonReleased:
+				case PointerUpdateKind.Other:
+				default:
+					break;
+			}
+
+			if (props.IsRightButtonPressed)
+				return ButtonsMask.Secondary;
+
+			return ButtonsMask.Primary;
+		}
+
+		bool CheckButtonMask(PointerGestureRecognizer recognizer, ButtonsMask currentButton)
+		{
+			if (currentButton == ButtonsMask.Secondary)
+			{
+				return (recognizer.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary;
+			}
+
+			return (recognizer.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary;
 		}
 
 		Point? GetPosition(IElement? relativeTo, RoutedEventArgs e)

@@ -60,6 +60,10 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static readonly BindableProperty PointerReleasedCommandParameterProperty = BindableProperty.Create(nameof(PointerReleasedCommandParameter), typeof(object), typeof(PointerGestureRecognizer), null);
 
+		/// <summary>
+		/// Bindable property for <see cref="Buttons"/>.
+		/// </summary>
+		public static readonly BindableProperty ButtonsProperty = BindableProperty.Create(nameof(Buttons), typeof(ButtonsMask), typeof(PointerGestureRecognizer), ButtonsMask.Primary);
 
 		/// <summary>
 		/// Initializes a new instance of PointerGestureRecognizer.
@@ -184,68 +188,77 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
+		/// Gets or sets the mouse buttons that should trigger the pointer events. This is a bindable property.
+		/// </summary>
+		public ButtonsMask Buttons
+		{
+			get { return (ButtonsMask)GetValue(ButtonsProperty); }
+			set { SetValue(ButtonsProperty, value); }
+		}
+
+		/// <summary>
 		/// For internal use by the .NET MAUI platform.
 		/// </summary>
-		internal void SendPointerEntered(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null)
+		internal void SendPointerEntered(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
 		{
 			ICommand cmd = PointerEnteredCommand;
 			if (cmd?.CanExecute(PointerEnteredCommandParameter) == true)
 				cmd.Execute(PointerEnteredCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerEntered;
-			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));
+			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs, button));
 		}
 
 		/// <summary>
 		/// For internal use by the .NET MAUI platform.
 		/// </summary>
-		internal void SendPointerExited(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null)
+		internal void SendPointerExited(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
 		{
 			ICommand cmd = PointerExitedCommand;
 			if (cmd?.CanExecute(PointerExitedCommandParameter) == true)
 				cmd.Execute(PointerExitedCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerExited;
-			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));
+			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs, button));
 		}
 
 		/// <summary>
 		/// For internal use by the .NET MAUI platform.
 		/// </summary>
-		internal void SendPointerMoved(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null)
+		internal void SendPointerMoved(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
 		{
 			ICommand cmd = PointerMovedCommand;
 			if (cmd?.CanExecute(PointerMovedCommandParameter) == true)
 				cmd.Execute(PointerMovedCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerMoved;
-			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));
+			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs, button));
 		}
 
 		/// <summary>
 		/// For internal use by the .NET MAUI platform.
 		/// </summary>
-		internal void SendPointerPressed(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null)
+		internal void SendPointerPressed(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
 		{
 			ICommand cmd = PointerPressedCommand;
 			if (cmd?.CanExecute(PointerPressedCommandParameter) == true)
 				cmd.Execute(PointerPressedCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerPressed;
-			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));
+			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs, button));
 		}
 
 		/// <summary>
 		/// For internal use by the .NET MAUI platform.
 		/// </summary>
-		internal void SendPointerReleased(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null)
+		internal void SendPointerReleased(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
 		{
 			ICommand cmd = PointerReleasedCommand;
 			if (cmd?.CanExecute(PointerReleasedCommandParameter) == true)
 				cmd.Execute(PointerReleasedCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerReleased;
-			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));
+			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs, button));
 		}
 
 		internal static void SetupForPointerOverVSM(

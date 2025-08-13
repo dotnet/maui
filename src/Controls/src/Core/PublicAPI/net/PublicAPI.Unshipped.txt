@@ -456,3 +456,7 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 ~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.VisualElement.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.PointerGestureRecognizer.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
+Microsoft.Maui.Controls.PointerGestureRecognizer.Buttons.set -> void
+Microsoft.Maui.Controls.PointerEventArgs.Button.get -> Microsoft.Maui.Controls.ButtonsMask

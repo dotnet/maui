@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var childTapGestureRecognizer = childGestureRecognizer.GestureRecognizer as TapGestureRecognizer;
 				foreach (var item in recognizers)
-					if (item == childTapGestureRecognizer && view != null)
+				if (item == childTapGestureRecognizer && view != null)
 						childTapGestureRecognizer.SendTapped(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakPlatformRecognizer, weakEventTracker));
 			}
 		}
@@ -414,6 +414,20 @@ namespace Microsoft.Maui.Controls.Platform
 					weakEventTracker.Target is GesturePlatformManager eventTracker &&
 					eventTracker._handler?.VirtualView is View view)
 				{
+					// TODO Should be enabled only for pointer click? properly test on device
+
+					// Determine which button to report. On Mac Catalyst if the recognizer is configured
+					// for secondary only we label events as Secondary. iOS doesn't reliably expose
+					// secondary mouse button information to UIGestureRecognizer, so outside of
+					// Mac Catalyst we'll always report Primary.
+					ButtonsMask button = ButtonsMask.Primary;
+					if (OperatingSystem.IsMacCatalyst() &&
+						(pointerGestureRecognizer.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary &&
+						(pointerGestureRecognizer.Buttons & ButtonsMask.Primary) != ButtonsMask.Primary)
+					{
+						button = ButtonsMask.Secondary;
+					}
+
 					var originPoint = pointerGesture.LocationInView(eventTracker?.PlatformView);
 					var platformPointerArgs = new PlatformPointerEventArgs(pointerGesture.View, pointerGesture);
 
@@ -422,24 +436,24 @@ namespace Microsoft.Maui.Controls.Platform
 						case UIGestureRecognizerState.Began:
 							exited = false;
 							if (pointerGesture is UIHoverGestureRecognizer)
-								pointerGestureRecognizer.SendPointerEntered(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+								pointerGestureRecognizer.SendPointerEntered(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs, button);
 							else
-								pointerGestureRecognizer.SendPointerPressed(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+								pointerGestureRecognizer.SendPointerPressed(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs, button);
 							break;
 						case UIGestureRecognizerState.Changed:
 							if (exited)
 								break;
 
 							if (pointerGesture is UIHoverGestureRecognizer)
-								pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+								pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs, button);
 							else
 							{
 								var bounds = eventTracker?.PlatformView?.Bounds;
 								if (bounds is not null && bounds.Value.Contains(originPoint))
-									pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+									pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs, button);
 								else
 								{
-									pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+									pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs, button);
 									exited = true;
 									pointerGesture.State = UIGestureRecognizerState.Ended;
 									break;
@@ -453,9 +467,9 @@ namespace Microsoft.Maui.Controls.Platform
 								break;
 
 							if (pointerGesture is UIHoverGestureRecognizer)
-								pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+								pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs, button);
 							else
-								pointerGestureRecognizer.SendPointerReleased(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+								pointerGestureRecognizer.SendPointerReleased(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs, button);
 							break;
 					}
 				}
@@ -469,7 +483,7 @@ namespace Microsoft.Maui.Controls.Platform
 			};
 			return result;
 		}
-
+		
 		UITapGestureRecognizer? CreateTapRecognizer(
 			WeakReference weakEventTracker,
 			WeakReference weakRecognizer)
