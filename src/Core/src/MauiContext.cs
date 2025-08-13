@@ -62,6 +62,7 @@ namespace Microsoft.Maui
 		internal void DisposeWindowScope()
 		{
 			_windowScope?.Dispose();
+			_windowScope = null;
 		}
 
 		class WrappedServiceProvider : IServiceProvider
