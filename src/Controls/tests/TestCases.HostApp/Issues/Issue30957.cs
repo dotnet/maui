@@ -5,10 +5,10 @@ namespace Maui.Controls.Sample.Issues
     [Issue(IssueTracker.Github, 30957, "FlexLayout Wrap Misalignment with Dynamically-Sized Buttons in .NET MAUI", PlatformAffected.All)]
     public class Issue30957 : ContentPage
     {
-        private FlexLayout _testFlexLayout;
-        private Label _statusLabel;
-        private Button _toggleButton1, _toggleButton2, _toggleButton3;
-        private bool _isToggled = false;
+        FlexLayout _testFlexLayout;
+        Label _statusLabel;
+        Button _toggleButton1, _toggleButton2, _toggleButton3;
+        bool _isToggled = false;
 
         public Issue30957()
         {
@@ -100,7 +100,7 @@ namespace Maui.Controls.Sample.Issues
             Content = stackLayout;
         }
 
-        private void OnToggleFontClicked(object sender, EventArgs e)
+        void OnToggleFontClicked(object sender, EventArgs e)
         {
             _isToggled = !_isToggled;
 

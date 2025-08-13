@@ -18,9 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         {
 
             App.WaitForElement("Issue30957ToggleButton");
-            App.WaitForElement("Issue30957Button1");
-            App.WaitForElement("Issue30957Button2");
-            App.WaitForElement("Issue30957Button3");
 
             var button1Initial = App.WaitForElement("Issue30957Button1").GetRect();
             var button2Initial = App.WaitForElement("Issue30957Button2").GetRect();
