@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue25728"
+             Title="Issue25728">
+    <StackLayout Padding="20" Spacing="20">
+        <Label Text="Entry bound to float with StringFormat F2" 
+               FontSize="16" 
+               FontAttributes="Bold"/>
+        
+        <Label Text="This test reproduces the EmojiCompat crash when typing in an Entry bound to a float value with fractional formatting."/>
+        
+        <Label Text="Current Float Value:" />
+        <Label Text="{Binding FloatValue, StringFormat='{}{0:F2}'}" 
+               FontSize="18" 
+               TextColor="Blue"/>
+        
+        <Label Text="Entry with StringFormat F2:" />
+        <Entry x:Name="TestEntry"
+               Text="{Binding FloatValue, StringFormat='{}{0:F2}'}"
+               TextChanged="OnEntryTextChanged"
+               AutomationId="TestEntry"
+               Placeholder="Type a number here"/>
+        
+        <Label Text="Instructions:" 
+               FontSize="14" 
+               FontAttributes="Bold"/>
+        <Label Text="1. Clear the entry field completely" 
+               FontSize="12"/>
+        <Label Text="2. Type a number (e.g., 1, 3.5, 42)" 
+               FontSize="12"/>
+        <Label Text="3. The app should not crash (this was the bug)" 
+               FontSize="12"/>
+        
+        <Button Text="Set to 3.14159"
+                Clicked="OnTestButtonClicked"
+                AutomationId="TestButton"/>
+        
+        <Label Text="If the app doesn't crash when typing, the fix is working!" 
+               FontSize="12" 
+               TextColor="Green"/>
+    </StackLayout>
+</ContentPage>
