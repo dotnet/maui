@@ -97,11 +97,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateText(button);
 
-			if (!handler.IsConnectingHandler())
-			{
-				// Any text update requires that we update any attributed string formatting
-				MapFormatting(handler, button);
-			}
+			// Any text update requires that we update any attributed string formatting
+			MapFormatting(handler, button);
 		}
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
