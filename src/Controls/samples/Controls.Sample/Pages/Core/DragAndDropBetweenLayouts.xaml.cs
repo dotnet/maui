@@ -36,7 +36,7 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDragStarting(object sender, DragStartingEventArgs e)
 		{
-			var boxView = (View)(sender as Element)!.Parent;
+			var boxView = (View)((Element)sender)!.Parent;
 			DragStartingTitle.IsVisible = true;
 			DragStartingPositionLabel.Text = $"- Self X:{(int)e.GetPosition(boxView)!.Value.X}, Y:{(int)e.GetPosition(boxView)!.Value.Y}";
 			DragStartingScreenPositionLabel.Text = $"- Screen X:{(int)e.GetPosition(null)!.Value.X}, Y:{(int)e.GetPosition(null)!.Value.Y}";
@@ -54,7 +54,7 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDropCompleted(object sender, DropCompletedEventArgs e)
 		{
-			var sl = (sender as Element)!.Parent as StackLayout;
+			var sl = ((Element)sender).Parent as StackLayout;
 
 			if (sl == SLAllColors)
 				SLRainbow.Background = SolidColorBrush.White;
@@ -65,7 +65,7 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDragOver(object sender, DragEventArgs e)
 		{
-			var sl = (StackLayout)(sender as Element)!.Parent;
+			var sl = (StackLayout)((Element)sender).Parent;
 
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
@@ -86,7 +86,7 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDragLeave(object sender, DragEventArgs e)
 		{
-			var sl = (StackLayout)(sender as Element)!.Parent;
+			var sl = (StackLayout)((Element)sender).Parent;
 
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
@@ -107,7 +107,7 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDrop(object sender, DropEventArgs e)
 		{
-			var sl = (sender as Element)!.Parent as StackLayout;
+			var sl = ((Element)sender).Parent as StackLayout;
 
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
@@ -122,7 +122,7 @@ namespace Maui.Controls.Sample.Pages
 			DropScreenPositionLabel.Text = $"- Screen: X:{(int)e.GetPosition(null)!.Value.X}, Y:{(int)e.GetPosition(null)!.Value.Y}";
 			DropRelativePositionLabel.Text = $"- This label: X:{(int)e.GetPosition(DropRelativePositionLabel)!.Value.X}, Y:{(int)e.GetPosition(DropRelativePositionLabel)!.Value.Y}";
 
-			var color = (e.Data.Properties["Color"] as SolidColorBrush)!;
+			var color = (SolidColorBrush)e.Data.Properties["Color"];
 
 			if (AllColors.Contains(color))
 			{
