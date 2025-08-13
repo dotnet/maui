@@ -118,6 +118,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (collectionView is null)
 				return default;
 
+			// Sort visible item index paths by section and then by row for consistent order in both grouped and ungrouped sources
 			var indexPathsForVisibleItems = collectionView.IndexPathsForVisibleItems.OrderBy(x => x.Section).ThenBy(x => x.Row).ToList();
 
 			var visibleItems = indexPathsForVisibleItems.Count > 0;
