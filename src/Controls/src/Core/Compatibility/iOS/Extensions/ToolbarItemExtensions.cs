@@ -112,9 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					}
 					item.IconImageSource.LoadImage(mauiContext, result =>
 					{
-						Image = item.IconImageSource is not FontImageSource
-							? result?.Value.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal)
-							: result?.Value;
+						Image = result?.Value;
 						Style = UIBarButtonItemStyle.Plain;
 					});
 				}
