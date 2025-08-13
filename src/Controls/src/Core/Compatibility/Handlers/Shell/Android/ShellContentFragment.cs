@@ -6,8 +6,10 @@ using Android.Views;
 using Android.Views.Animations;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
+using Microsoft.Maui.Platform;
 using AndroidAnimation = Android.Views.Animations.Animation;
 using AnimationSet = Android.Views.Animations.AnimationSet;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
@@ -142,6 +144,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var appBar = _root.FindViewById<AppBarLayout>(Resource.Id.shellcontent_appbar);
 			appBar.AddView(_toolbar);
+			
+			// Apply safe area insets to AppBarLayout to prevent content from going behind cutouts/notch
+			SetupAppBarSafeAreaHandling(appBar);
 			_viewhandler = _page.ToHandler(shellContentMauiContext);
 
 			_shellPageContainer = new ShellPageContainer(Context, _viewhandler);
@@ -163,6 +168,83 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				layoutParams.Behavior = new AppBarLayout.ScrollingViewBehavior();
 
 			return _root;
+		}
+
+		void SetupAppBarSafeAreaHandling(AppBarLayout appBar)
+		{
+			if (appBar == null || Context == null)
+				return;
+
+			// Ensure edge-to-edge configuration for proper cutout detection
+			EnsureEdgeToEdgeConfiguration();
+
+			// Set up WindowInsets listener for the AppBarLayout
+			ViewCompat.SetOnApplyWindowInsetsListener(appBar, (view, insets) =>
+			{
+				ApplySafeAreaToAppBar(appBar, insets);
+				// Don't consume insets here - let them propagate to child views
+				return insets;
+			});
+
+			// Initial application if insets are already available
+			var rootView = appBar.RootView;
+			if (rootView != null)
+			{
+				var windowInsets = ViewCompat.GetRootWindowInsets(rootView);
+				if (windowInsets != null)
+				{
+					ApplySafeAreaToAppBar(appBar, windowInsets);
+				}
+			}
+		}
+
+		void EnsureEdgeToEdgeConfiguration()
+		{
+			try
+			{
+				var activity = Context.GetActivity();
+				if (activity?.Window != null && OperatingSystem.IsAndroidVersionAtLeast(30))
+				{
+					// For API 30+, ensure edge-to-edge configuration for proper cutout detection
+					AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
+				}
+			}
+			catch (Exception ex)
+			{
+				// Log but don't crash if we can't configure the window
+				System.Diagnostics.Debug.WriteLine($"SafeArea: Failed to configure edge-to-edge mode: {ex.Message}");
+			}
+		}
+
+		void ApplySafeAreaToAppBar(AppBarLayout appBar, WindowInsetsCompat insets)
+		{
+			if (appBar == null || Context == null)
+				return;
+
+			try
+			{
+				// Get safe area insets including display cutouts
+				var safeArea = insets.ToSafeAreaInsets(Context);
+				
+				// Apply top safe area inset as padding to push content down from notch/cutout
+				// Convert to pixels for Android view padding
+				var topPaddingPx = (int)(safeArea.Top * Context.GetDisplayDensity());
+				
+				// Apply padding to the AppBarLayout to avoid cutout areas
+				// Preserve existing left/right/bottom padding if any
+				appBar.SetPadding(
+					appBar.PaddingLeft,
+					topPaddingPx,
+					appBar.PaddingRight,
+					appBar.PaddingBottom
+				);
+
+				System.Diagnostics.Debug.WriteLine($"SafeArea: Applied AppBar top padding: {topPaddingPx}px (from {safeArea.Top} dip)");
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"SafeArea: Failed to apply safe area to AppBar: {ex.Message}");
+			}
 		}
 
 		void Destroy()
