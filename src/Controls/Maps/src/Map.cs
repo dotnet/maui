@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Maps;
 
+[assembly:Experimental ("XCODE_26_0_PREVIEW")]
 namespace Microsoft.Maui.Controls.Maps
 {
 	/// <summary>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using AddressBook;
 using AVFoundation;
@@ -8,6 +9,7 @@ using CoreBluetooth;
 using MediaPlayer;
 using Speech;
 
+[assembly:Experimental ("XCODE_26_0_PREVIEW")]
 namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions

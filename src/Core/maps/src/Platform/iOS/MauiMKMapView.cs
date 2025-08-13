@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CoreLocation;
 using MapKit;
@@ -7,6 +8,7 @@ using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
+[assembly:Experimental ("XCODE_26_0_PREVIEW")]
 
 namespace Microsoft.Maui.Maps.Platform
 {

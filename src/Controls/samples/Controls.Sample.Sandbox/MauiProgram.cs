@@ -1,7 +1,11 @@
 ﻿namespace Maui.Controls.Sample;
 
+using System.Diagnostics.CodeAnalysis;
+
+
 public static class MauiProgram
 {
+	[assembly:Experimental ("XCODE_26_0_PREVIEW")]
 	public static MauiApp CreateMauiApp() =>
 		MauiApp
 			.CreateBuilder()

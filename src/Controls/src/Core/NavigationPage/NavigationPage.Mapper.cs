@@ -1,7 +1,9 @@
 ﻿#nullable disable
 using System;
 using Microsoft.Maui.Controls.Compatibility;
+using System.Diagnostics.CodeAnalysis;
 
+[assembly:Experimental ("XCODE_26_0_PREVIEW")]
 namespace Microsoft.Maui.Controls
 {
 	public partial class NavigationPage

@@ -7,6 +7,7 @@ using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
+[assembly:Experimental ("XCODE_26_0_PREVIEW")]
 namespace Microsoft.Maui.Platform
 {
 	public class MauiSwipeView : ContentView

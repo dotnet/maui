@@ -2,4 +2,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+
+
+    <Grid>
+        <ScrollView
+            x:Name="MyScrollView" Orientation="Neither">
+            <ContentView>
+                <Image Source="dotnet_bot.png" WidthRequest="1000" HeightRequest="1000"></Image>
+            </ContentView>
+        </ScrollView>
+    </Grid>
+
+
 </ContentPage>

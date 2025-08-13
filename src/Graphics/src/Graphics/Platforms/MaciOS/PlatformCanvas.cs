@@ -10,9 +10,14 @@ using Foundation;
 using ObjCRuntime;
 using System;
 using System.Numerics;
+using System.Diagnostics.CodeAnalysis;
+
+
+[assembly:Experimental ("XCODE_26_0_PREVIEW")]
 
 namespace Microsoft.Maui.Graphics.Platform
 {
+	[Experimental("XCODE_26_0_PREVIEW")]
 	public partial class PlatformCanvas : AbstractCanvas<PlatformCanvasState>
 	{
 		private static readonly nfloat[] EmptyNFloatArray = Array.Empty<nfloat>();

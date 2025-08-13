@@ -13,6 +13,8 @@ using Microsoft.Maui.Controls.Xaml.Internals;
 
 using static System.String;
 
+[assembly:Experimental ("XCODE_26_0_PREVIEW")]
+
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
