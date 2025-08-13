@@ -132,7 +132,10 @@ public class Issue30536 : ContentPage
 		{
 			// Get window handle directly from MAUI's platform view
 			var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(win);
-			ShowWindow(hwnd, SW_MINIMIZE);
+			if (hwnd != IntPtr.Zero)
+			{
+				ShowWindow(hwnd, SW_MINIMIZE);
+			}
 		}
 #endif
 	}
