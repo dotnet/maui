@@ -1,4 +1,8 @@
-﻿namespace Maui.Controls.Sample.Issues;
+﻿#if WINDOWS
+using System.Runtime.InteropServices;
+#endif
+
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 30536, "[Windows] PointerGestureRecognizer behaves incorrectly when multiple windows are open", PlatformAffected.UWP)]
 public class Issue30536 : ContentPage
@@ -67,7 +71,7 @@ public class Issue30536 : ContentPage
 			WidthRequest = 500,
 			HeightRequest = 500,
 			BackgroundColor = Colors.Red,
-			Content=new Button
+			Content = new Button
 			{
 				Text = "Tap Me",
 				AutomationId = "BorderButton"
@@ -96,16 +100,39 @@ public class Issue30536 : ContentPage
 		secondWindow = new Window(new ContentPage());
 		Application.Current.OpenWindow(secondWindow);
 		await Task.Delay(500); // Allow the new window to open
-		Application.Current.ActivateWindow(this.Window);
+		MinimizeWindow(secondWindow);
 	}
 
+#if WINDOWS
+	// Windows API declarations
+	[DllImport("user32.dll")]
+	private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+ 
+	[DllImport("user32.dll")]
+	private static extern IntPtr GetActiveWindow();
+ 
+	// ShowWindow constants
+	private const int SW_MINIMIZE = 6;
+#endif
+
+	private void MinimizeWindow(Window window)
+	{
+#if WINDOWS
+		// Get the current window handle
+		IntPtr hWnd = GetActiveWindow();
+		if (hWnd != IntPtr.Zero)
+		{
+			// Minimize the window
+			ShowWindow(hWnd, SW_MINIMIZE);
+		}
+#endif
+	}
 	private void OnPointerGestureRecognizer_PointerEntered(object sender, PointerEventArgs e)
 	{
 		theBorder.BackgroundColor = Colors.Lime;
 		enterCount++;
 		pointerEnterCountLabel.Text = $"Pointer Enter Count: {enterCount}";
 	}
-
 	private void OnPointerGestureRecognizer_PointerExited(object sender, PointerEventArgs e)
 	{
 		theBorder.BackgroundColor = Colors.Red;
