@@ -928,7 +928,7 @@ namespace Microsoft.Maui.Controls
 		internal LayoutConstraint ComputedConstraint
 		{
 			get { return _computedConstraint; }
-			private set
+			set
 			{
 				if (_computedConstraint == value)
 					return;
