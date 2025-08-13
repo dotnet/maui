@@ -8,9 +8,9 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>831d23e56149cd59c40fc00c7feb7c5334bd19c4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.99">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.100">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>2fc44ebd5cce106286e7be7b495f3cf71734a7e6</Sha>
+      <Sha>629a84a34bc288c2e62ce2352a233deda98b497a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_18.4" Version="18.4.9287">
       <Uri>https://github.com/dotnet/macios</Uri>
