@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample;
 
@@ -122,21 +121,5 @@ public partial class EntryControlMainPage : ContentPage
 		{
 			vm.UnfocusedText = eventInfo;
 		}
-	}
-
-	void MainLabel_Tapped(object sender, TappedEventArgs e)
-	{
-		// Recreate the page to verify initial mappers
-		ToolbarItems.Clear();
-		Content = new ContentView();
-		INameScope scope = this;
-		scope.UnregisterName("EntryControl");
-		scope.UnregisterName("TextChangedLabel");
-		scope.UnregisterName("SelectionLengthEntry");
-		scope.UnregisterName("CursorPositionEntry");
-		scope.UnregisterName("CompletedLabel");
-		scope.UnregisterName("FocusedLabel");
-		scope.UnregisterName("UnfocusedLabel");
-		InitializeComponent();
 	}
 }

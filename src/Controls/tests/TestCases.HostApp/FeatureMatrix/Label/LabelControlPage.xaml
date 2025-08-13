@@ -5,35 +5,31 @@
              Title="LabelControlPage">
   <ContentPage.ToolbarItems>
     <ToolbarItem Text="Options"
-                 Clicked="NavigateToOptionsPage_Clicked"
-                 AutomationId="Options"/>
+        Clicked="NavigateToOptionsPage_Clicked"
+        AutomationId="Options"/>
   </ContentPage.ToolbarItems>
 
-  <VerticalStackLayout>
-    <Label
-      HeightRequest="600"
-      Text="{Binding Text , Mode=TwoWay}"
-      CharacterSpacing="{Binding CharacterSpacing}"
-      FontAttributes="{Binding FontAttributes}"
-      FontAutoScalingEnabled="{Binding FontAutoScalingEnabled}"
-      FontFamily="{Binding FontFamily}"
-      FontSize="{Binding FontSize}"
-      FormattedText="{Binding FormattedText}"
-      HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
-      LineBreakMode="{Binding LineBreakMode}"
-      LineHeight="{Binding LineHeight}"
-      MaxLines="{Binding MaxLines}"
-      Padding="{Binding Padding}"
-      TextColor="{Binding TextColor}"
-      TextDecorations="{Binding TextDecorations}"
-      TextTransform="{Binding TextTransform}"
-      TextType="{Binding TextType}"
-      VerticalTextAlignment="{Binding VerticalTextAlignment}"
-      BackgroundColor="LightGray"
-      AutomationId="MainLabel">
-      <Label.GestureRecognizers>
-        <TapGestureRecognizer Tapped="MainLabel_Tapped"/>
-      </Label.GestureRecognizers>
-    </Label>
-  </VerticalStackLayout>
+    <VerticalStackLayout>
+      <Label
+        HeightRequest="600"
+        Text="{Binding Text , Mode=TwoWay}"
+        CharacterSpacing="{Binding CharacterSpacing}"
+        FontAttributes="{Binding FontAttributes}"
+        FontAutoScalingEnabled="{Binding FontAutoScalingEnabled}"
+        FontFamily="{Binding FontFamily}"
+        FontSize="{Binding FontSize}"
+        FormattedText="{Binding FormattedText}"
+        HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
+        LineBreakMode="{Binding LineBreakMode}"
+        LineHeight="{Binding LineHeight}"
+        MaxLines="{Binding MaxLines}"
+        Padding="{Binding Padding}"
+        TextColor="{Binding TextColor}"
+        TextDecorations="{Binding TextDecorations}"
+        TextTransform="{Binding TextTransform}"
+        TextType="{Binding TextType}"
+        VerticalTextAlignment="{Binding VerticalTextAlignment}"
+        BackgroundColor="LightGray"
+        AutomationId="MainLabel"/>
+    </VerticalStackLayout>
 </ContentPage>
