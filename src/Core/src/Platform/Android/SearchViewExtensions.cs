@@ -126,13 +126,9 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			if (searchBar.IsTextPredictionEnabled)
-			{
 				editText.InputType |= InputTypes.TextFlagAutoCorrect;
-			}
 			else
-			{
 				editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
-			}
 		}
 
 		public static void UpdateIsSpellCheckEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
