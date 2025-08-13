@@ -127,22 +127,11 @@ namespace Microsoft.Maui.Platform
 
 			if (searchBar.IsTextPredictionEnabled)
 			{
-				// Enable text prediction
 				editText.InputType |= InputTypes.TextFlagAutoCorrect;
-				// Remove no-suggestions flag if present
-				editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
-				// Remove text visible password flag if present
-				editText.InputType &= ~InputTypes.TextVariationVisiblePassword;
 			}
 			else
 			{
-				// Disable text prediction
-				// 1. Remove auto-correct flag
 				editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
-				// 2. Add no-suggestions flag
-				editText.InputType |= InputTypes.TextFlagNoSuggestions;
-				// 3. Add TextVisiblePassword for better compatibility (especially on Samsung devices)
-				editText.InputType |= InputTypes.TextVariationVisiblePassword;
 			}
 		}
 
