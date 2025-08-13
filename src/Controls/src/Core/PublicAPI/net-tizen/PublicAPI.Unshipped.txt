@@ -10,10 +10,14 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangingDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue) -> void
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangingDelegate<TPropertyType>.Invoke(Microsoft.Maui.Controls.BindableObject bindable, TPropertyType oldValue, TPropertyType newValue) -> void
 ~virtual Microsoft.Maui.Controls.BindableProperty.CoerceValueDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object value) -> object
-~virtual Microsoft.Maui.Controls.BindableProperty.CoerceValueDelegate<TPropertyType>.Invoke(Microsoft.Maui.Controls.BindableObject bindable, TPropertyType value) -> TPropertyType
+~virtual Microsoft.Maui.Controls.BindableProperty.CoerceValueDelegate<TPropertyType>.Invoke(Microsoft.Maui.Controls.BindableProperty bindable, TPropertyType value) -> TPropertyType
 ~virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable) -> object
 ~virtual Microsoft.Maui.Controls.BindableProperty.ValidateValueDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object value) -> bool
 ~virtual Microsoft.Maui.Controls.BindableProperty.ValidateValueDelegate<TPropertyType>.Invoke(Microsoft.Maui.Controls.BindableObject bindable, TPropertyType value) -> bool
 ~virtual Microsoft.Maui.Controls.CollectionSynchronizationCallback.Invoke(System.Collections.IEnumerable collection, object context, System.Action accessMethod, bool writeAccess) -> void
 ~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.PointerGestureRecognizer.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
+Microsoft.Maui.Controls.PointerGestureRecognizer.Buttons.set -> void
+Microsoft.Maui.Controls.PointerEventArgs.Button.get -> Microsoft.Maui.Controls.ButtonsMask

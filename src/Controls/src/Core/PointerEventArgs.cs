@@ -17,16 +17,27 @@ namespace Microsoft.Maui.Controls
 		public PlatformPointerEventArgs? PlatformArgs { get; private set; }
 
 		/// <summary>
+		/// Gets the mouse button that triggered this pointer event.
+		/// </summary>
+		/// <remarks>
+		/// This property indicates which specific mouse button was pressed or released.
+		/// For pointer events that don't involve button presses (like hover), this will be the primary button.
+		/// </remarks>
+		public ButtonsMask Button { get; private set; }
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="PointerEventArgs"/> class.
 		/// </summary>
 		public PointerEventArgs()
 		{
+			Button = ButtonsMask.Primary;
 		}
 
-		internal PointerEventArgs(Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? args = null)
+		internal PointerEventArgs(Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? args = null, ButtonsMask button = ButtonsMask.Primary)
 		{
 			_getPosition = getPosition;
 			PlatformArgs = args;
+			Button = button;
 		}
 
 		/// <summary>
