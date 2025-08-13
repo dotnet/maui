@@ -21,7 +21,7 @@ internal static partial class ImageProcessor
 
 			// Create a decoder from the input stream
 			var decoder = await BitmapDecoder.CreateAsync(randomAccessStream);
-			
+
 			// Check if rotation is needed
 			var orientation = await GetImageOrientation(decoder);
 			if (orientation == BitmapRotation.None)
@@ -80,8 +80,8 @@ internal static partial class ImageProcessor
 			// Try to get the EXIF orientation
 			var properties = decoder.BitmapProperties;
 			var orientationProperty = await properties.GetPropertiesAsync(new[] { "System.Photo.Orientation" });
-			
-			if (orientationProperty.TryGetValue("System.Photo.Orientation", out var orientationValue) && 
+
+			if (orientationProperty.TryGetValue("System.Photo.Orientation", out var orientationValue) &&
 				orientationValue.Value is ushort orientation)
 			{
 				return orientation switch
@@ -118,7 +118,7 @@ internal static partial class ImageProcessor
 
 			// Get all properties
 			var properties = await decoder.BitmapProperties.GetPropertiesAsync(Array.Empty<string>());
-			
+
 			// Serialize properties to a simple format
 			var metadataList = new List<string>();
 			foreach (var prop in properties)
