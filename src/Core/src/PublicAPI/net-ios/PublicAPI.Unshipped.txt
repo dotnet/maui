@@ -172,9 +172,9 @@ override Microsoft.Maui.Handlers.OpenWindowRequest.ToString() -> string!
 override Microsoft.Maui.Handlers.ScrollViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Platform.MauiScrollView.AdjustedContentInsetDidChange() -> void
 override Microsoft.Maui.Platform.MauiScrollView.SafeAreaInsetsDidChange() -> void
-override Microsoft.Maui.Platform.MauiView.BecomeFirstResponder() -> bool
 override Microsoft.Maui.Platform.MauiView.CanBecomeFirstResponder.get -> bool
-override Microsoft.Maui.Platform.MauiView.ResignFirstResponder() -> bool
+override Microsoft.Maui.Platform.MauiView.CanBecomeFocused.get -> bool
+override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
 override Microsoft.Maui.SafeAreaEdges.Equals(object? obj) -> bool
 override Microsoft.Maui.SafeAreaEdges.GetHashCode() -> int
 override Microsoft.Maui.SafeAreaEdges.ToString() -> string!
