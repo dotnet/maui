@@ -46,7 +46,7 @@
                         SelectedItem="{Binding Project}"
                         SelectedIndex="{Binding SelectedProjectIndex}"
                         SemanticProperties.Description="Project State Expanded"
-                        SemanticProperties.Hint="Which project this task belongs to"/> />
+                        SemanticProperties.Hint="Which project this task belongs to"/>
                 </sf:SfTextInputLayout>
 
                 <Button 

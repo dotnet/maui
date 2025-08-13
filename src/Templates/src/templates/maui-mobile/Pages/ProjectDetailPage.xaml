@@ -96,16 +96,6 @@
                 <CollectionView 
                     HeightRequest="44" Margin="0,0,0,15"
                     SelectionMode="Single"
-
-                    SelectedItem="{Binding Icon}"
-                </sf:SfTextInputLayout>
-
-                <Label 
-                    Text="Icon" 
-                    Style="{StaticResource Title2}"/>
-                <CollectionView 
-                    HeightRequest="44" Margin="0,0,0,15"
-                    SelectionMode="Single"
                     
                     SelectedItem="{Binding Icon}"
                     SelectionChangedCommand="{Binding IconSelectedCommand}"
