@@ -46,6 +46,8 @@ public class LabelFeatureTests : UITest
 	public const string LineBreakModeNoWrap = "LineBreakModeNoWrap";
 	public const string MainLabel = "MainLabel";
 
+	public const string SimpleFormattedText = "SimpleFormattedText";
+
 
 	public LabelFeatureTests(TestDevice device)
 		: base(device)
@@ -62,7 +64,6 @@ public class LabelFeatureTests : UITest
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFormattedText()
 	{
-		App.WaitForElement("This is a Basic Label");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(FormattedText);
@@ -81,6 +82,8 @@ public class LabelFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
+		App.WaitForElement(SimpleFormattedText);
+		App.Tap(SimpleFormattedText);
 		App.WaitForElement(HorizontalTextStart);
 		App.Tap(HorizontalTextStart);
 		App.WaitForElement(VerticalTextStart);
@@ -99,6 +102,8 @@ public class LabelFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
+		App.WaitForElement(SimpleFormattedText);
+		App.Tap(SimpleFormattedText);
 		App.WaitForElement(HorizontalTextCenter);
 		App.Tap(HorizontalTextCenter);
 		App.WaitForElement(VerticalTextCenter);
@@ -117,6 +122,8 @@ public class LabelFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
+		App.WaitForElement(SimpleFormattedText);
+		App.Tap(SimpleFormattedText);
 		App.WaitForElement(HorizontalTextEnd);
 		App.Tap(HorizontalTextEnd);
 		App.WaitForElement(VerticalTextEnd);
@@ -1277,7 +1284,7 @@ public class LabelFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/24298 , https://github.com/dotnet/maui/issues/29673, https://github.com/dotnet/maui/issues/29674
-    [Test, Order(61)]
+	[Test, Order(61)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndLineBreakModeTailTruncation()
 	{
