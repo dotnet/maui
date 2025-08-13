@@ -56,13 +56,33 @@ internal static class WindowInsetsExtensions
 		// Get display cutout insets if available (API 28+)
 		var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
 		
-		// Combine insets, taking the maximum for each edge
+		// For safe area calculation, we need to ensure content avoids both system bars and display cutouts
+		// Take the maximum of each edge to ensure we avoid both types of obstructions
 		// Convert from pixels to device-independent units
+		var density = context.GetDisplayDensity();
+		
+		// Check if we have valid display cutout insets and ensure they're properly applied
+		// Sometimes display cutout insets might be 0 if the window isn't configured properly
+		var effectiveLeft = Math.Max(systemBars.Left, displayCutout.Left);
+		var effectiveRight = Math.Max(systemBars.Right, displayCutout.Right);
+		var effectiveTop = Math.Max(systemBars.Top, displayCutout.Top);
+		var effectiveBottom = Math.Max(systemBars.Bottom, displayCutout.Bottom);
+		
+		// For debugging: Log if we have display cutout insets
+		if (displayCutout.Top > 0 || displayCutout.Bottom > 0 || displayCutout.Left > 0 || displayCutout.Right > 0)
+		{
+			System.Diagnostics.Debug.WriteLine($"SafeArea: Display cutout found - L={displayCutout.Left}, T={displayCutout.Top}, R={displayCutout.Right}, B={displayCutout.Bottom}");
+		}
+		else
+		{
+			System.Diagnostics.Debug.WriteLine("SafeArea: No display cutout insets detected");
+		}
+		
 		return new(
-			Math.Max(systemBars.Left, displayCutout.Left) / context.GetDisplayDensity(),
-			Math.Max(systemBars.Right, displayCutout.Right) / context.GetDisplayDensity(),
-			Math.Max(systemBars.Top, displayCutout.Top) / context.GetDisplayDensity(),
-			Math.Max(systemBars.Bottom, displayCutout.Bottom) / context.GetDisplayDensity()
+			effectiveLeft / density,
+			effectiveRight / density,
+			effectiveTop / density,
+			effectiveBottom / density
 		);
 	}
 
@@ -92,5 +112,21 @@ internal static class WindowInsetsExtensions
 		// Return only keyboard insets (typically only bottom)
 		// Convert from pixels to device-independent units
 		return new(0, 0, 0, keyboard.Bottom / context.GetDisplayDensity());
+	}
+
+	/// <summary>
+	/// Debug method to get detailed insets information for troubleshooting display cutout issues
+	/// </summary>
+	public static string GetInsetsDebugInfo(this WindowInsetsCompat insets, Context context)
+	{
+		var density = context.GetDisplayDensity();
+		var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+		var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+		var keyboard = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+		
+		return $"SystemBars: L={systemBars.Left}, T={systemBars.Top}, R={systemBars.Right}, B={systemBars.Bottom} | " +
+		       $"DisplayCutout: L={displayCutout.Left}, T={displayCutout.Top}, R={displayCutout.Right}, B={displayCutout.Bottom} | " +
+		       $"IME: L={keyboard.Left}, T={keyboard.Top}, R={keyboard.Right}, B={keyboard.Bottom} | " +
+		       $"Density: {density}";
 	}
 }

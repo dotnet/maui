@@ -55,12 +55,34 @@ namespace Microsoft.Maui.Platform
 
 		void SetupWindowInsetsHandling()
 		{
+			// Ensure the window is configured for edge-to-edge and display cutout handling
+			EnsureEdgeToEdgeConfiguration();
+			
 			ViewCompat.SetOnApplyWindowInsetsListener(this, (view, insets) =>
 			{
 				_safeAreaInvalidated = true;
 				RequestLayout();
 				return ConsumeInsets(insets);
 			});
+		}
+
+		void EnsureEdgeToEdgeConfiguration()
+		{
+			// Try to ensure the window is configured for proper edge-to-edge and display cutout handling
+			try
+			{
+				var activity = _context.GetActivity();
+				if (activity?.Window != null && OperatingSystem.IsAndroidVersionAtLeast(30))
+				{
+					// For API 30+, ensure edge-to-edge configuration
+					AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
+				}
+			}
+			catch (Exception ex)
+			{
+				// Log but don't crash if we can't configure the window
+				System.Diagnostics.Debug.WriteLine($"SafeArea: Failed to configure edge-to-edge mode: {ex.Message}");
+			}
 		}
 
 		WindowInsetsCompat ConsumeInsets(WindowInsetsCompat insets)
@@ -193,8 +215,13 @@ namespace Microsoft.Maui.Platform
 			if (windowInsets == null)
 				return SafeAreaPadding.Empty;
 
+			// Debug output to help troubleshoot display cutout issues
+			System.Diagnostics.Debug.WriteLine($"SafeArea Debug (Layout): {windowInsets.GetInsetsDebugInfo(_context)}");
+
 			var baseSafeArea = windowInsets.ToSafeAreaInsets(_context);
 			var keyboardInsets = windowInsets.GetKeyboardInsets(_context);
+
+			System.Diagnostics.Debug.WriteLine($"SafeArea Calculated (Layout): L={baseSafeArea.Left}, T={baseSafeArea.Top}, R={baseSafeArea.Right}, B={baseSafeArea.Bottom}");
 
 			// Apply safe area selectively per edge based on SafeAreaRegions
 			if (CrossPlatformLayout is ISafeAreaView2)
@@ -204,7 +231,9 @@ namespace Microsoft.Maui.Platform
 				var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2), baseSafeArea.Right, keyboardInsets.Right);
 				var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3), baseSafeArea.Bottom, keyboardInsets.Bottom);
 
-				return new SafeAreaPadding(left, right, top, bottom);
+				var result = new SafeAreaPadding(left, right, top, bottom);
+				System.Diagnostics.Debug.WriteLine($"SafeArea Applied (Layout): L={result.Left}, T={result.Top}, R={result.Right}, B={result.Bottom}");
+				return result;
 			}
 
 			// Legacy ISafeAreaView handling
