@@ -80,7 +80,3 @@ variables:
     - group: Publish-Build-Assets
     - group: DotNet-HelixApi-Access
     - group: SDL_Settings
-
-- ${{ if eq(variables['Build.DefinitionName'], 'dotnet-maui-release') }}:
-  # maui-nuget-release provides: pat--nuget--xamarinc--push--wildcard
-  - group: maui-nuget-release

@@ -16,7 +16,7 @@ public class EntryFeatureTests : UITest
 #elif WINDOWS
 	private const int CropBottomValue = 400;
 #else
-	private const int CropBottomValue = 360;		
+	private const int CropBottomValue = 360;
 #endif
 
 	public EntryFeatureTests(TestDevice device)
@@ -88,7 +88,11 @@ public class EntryFeatureTests : UITest
 	public void VerifyClearButtonVisiblityWhenTextPresentOrEmpty()
 	{
 		Exception? exception = null;
-		App.WaitForElement("Entry Control");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
 		VerifyScreenshotWithKeyboardHandlingOrSetException(ref exception, "ClearButtonVisiblityButton_TextPresent");
 		App.WaitForElement("TestEntry");
@@ -799,11 +803,11 @@ public class EntryFeatureTests : UITest
 		App.Tap("Options");
 		App.WaitForElement("PlaceholderColorRed");
 		App.Tap("PlaceholderColorRed");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
-		App.ClearText("TestEntry");
-		App.DismissKeyboard();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -906,6 +910,7 @@ public class EntryFeatureTests : UITest
 		App.Tap("PasswordTrue");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
