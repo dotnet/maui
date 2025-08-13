@@ -9,6 +9,7 @@ public class Issue30536 : ContentPage
 {
 	Button newWindowButton;
 	Button closeNewWindowButton;
+	Button minimizeSecondWindowButton;
 	Label pointerEnterCountLabel;
 	Label pointerExitCountLabel;
 	Border theBorder;
@@ -50,6 +51,19 @@ public class Issue30536 : ContentPage
 			}
 		};
 
+		minimizeSecondWindowButton = new Button
+		{
+			Text = "Minimize Second Window",
+			AutomationId = "MinimizeSecondWindowButton"
+		};
+		minimizeSecondWindowButton.Clicked += (sender, e) =>
+		{
+			if (secondWindow != null)
+			{
+				MinimizeWindow(secondWindow);
+			}
+		};
+
 		// Create pointer enter count label
 		pointerEnterCountLabel = new Label
 		{
@@ -85,6 +99,7 @@ public class Issue30536 : ContentPage
 		theBorder.GestureRecognizers.Add(pointerGestureRecognizer);
 
 		// Add all elements to the stack layout
+		stackLayout.Children.Add(minimizeSecondWindowButton);
 		stackLayout.Children.Add(newWindowButton);
 		stackLayout.Children.Add(closeNewWindowButton);
 		stackLayout.Children.Add(pointerEnterCountLabel);
@@ -95,35 +110,29 @@ public class Issue30536 : ContentPage
 		Content = stackLayout;
 	}
 
-	private async void OnNewWindowButton_Clicked(object sender, EventArgs e)
-	{
-		secondWindow = new Window(new ContentPage());
-		Application.Current.OpenWindow(secondWindow);
-		await Task.Delay(500); // Allow the new window to open
-		MinimizeWindow(secondWindow);
-	}
-
 #if WINDOWS
 	// Windows API declarations
 	[DllImport("user32.dll")]
 	private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
  
-	[DllImport("user32.dll")]
-	private static extern IntPtr GetActiveWindow();
- 
 	// ShowWindow constants
 	private const int SW_MINIMIZE = 6;
 #endif
 
+	private void OnNewWindowButton_Clicked(object sender, EventArgs e)
+	{
+		secondWindow = new Window(new ContentPage());
+		Application.Current.OpenWindow(secondWindow);
+	}
+
 	private void MinimizeWindow(Window window)
 	{
 #if WINDOWS
-		// Get the current window handle
-		IntPtr hWnd = GetActiveWindow();
-		if (hWnd != IntPtr.Zero)
+		if (window.Handler?.PlatformView is Microsoft.UI.Xaml.Window win)
 		{
-			// Minimize the window
-			ShowWindow(hWnd, SW_MINIMIZE);
+			// Get window handle directly from MAUI's platform view
+			var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(win);
+			ShowWindow(hwnd, SW_MINIMIZE);
 		}
 #endif
 	}
