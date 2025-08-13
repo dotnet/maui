@@ -1,4 +1,3 @@
-using System.Data;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
