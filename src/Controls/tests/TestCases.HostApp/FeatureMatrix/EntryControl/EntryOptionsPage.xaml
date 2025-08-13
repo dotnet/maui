@@ -45,7 +45,6 @@
                                     Clicked="HorizontalAlignmentButton_Clicked"/>
                             <Button Text="End"
                                     AutomationId="HEnd"
-                                    FontSize="10"
                                     Clicked="HorizontalAlignmentButton_Clicked"/>
                      </HorizontalStackLayout>
                      <!-- Vertical Alignment -->
