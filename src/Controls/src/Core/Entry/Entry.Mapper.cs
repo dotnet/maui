@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.iOSSpecific.Entry.AdjustsFontSizeToFitWidthProperty.PropertyName, MapAdjustsFontSizeToFitWidth);
 #endif
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(nameof(Text), MapText);
-			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(nameof(TextTransform), MapTextTransform);
+			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(nameof(TextTransform), MapText);
 
 #if IOS || ANDROID
 			EntryHandler.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
@@ -27,17 +27,6 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 			EntryHandler.CommandMapper.PrependToMapping(nameof(IEntry.Focus), InputView.MapFocus);
 #endif
-		}
-
-		static void MapTextTransform(IEntryHandler handler, Entry label)
-		{
-			if (label.IsConnectingHandler())
-			{
-				// If we're connecting the handler, we don't want to map the text multiple times.
-				return;
-			}
-
-			MapText(handler, label);
 		}
 	}
 }

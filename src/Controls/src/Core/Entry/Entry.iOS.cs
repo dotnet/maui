@@ -16,14 +16,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(IEntryHandler handler, Entry entry)
 		{
 			Platform.TextExtensions.UpdateText(handler.PlatformView, entry);
-
-			if (!handler.IsConnectingHandler())
-			{
-				// If we're not connecting the handler, we need to update the text formatting
-				// This is because the text may have changed, and we need to ensure that
-				// any attributed string formatting is applied correctly.
-				EntryHandler.MapFormatting(handler, entry);
-			}
+			EntryHandler.MapFormatting(handler, entry);
 		}
 
 		public static void MapCursorColor(EntryHandler handler, Entry entry) =>
