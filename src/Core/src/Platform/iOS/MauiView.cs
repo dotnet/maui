@@ -736,28 +736,6 @@ namespace Microsoft.Maui.Platform
 		public override bool CanBecomeFirstResponder => true;
 
 		/// <summary>
-		/// Called when the focus environment updates. This method propagates native iOS focus
-		/// changes to the cross-platform layer by updating the IsFocused property of the
-		/// associated IView when this MauiView gains or loses focus.
-		/// </summary>
-		/// <param name="context">Information about the focus update</param>
-		/// <param name="coordinator">Coordinator for focus animations</param>
-		public override void DidUpdateFocus(UIFocusUpdateContext context, UIFocusAnimationCoordinator coordinator)
-		{
-			base.DidUpdateFocus(context, coordinator);
-
-			var wasFocused = _isFocused;
-			var isFocused = context.NextFocusedView == this;
-
-			// Only update if focus state actually changed to avoid unnecessary work
-			if (wasFocused != isFocused)
-			{
-				_isFocused = isFocused;
-				UpdateCrossPlatformFocusState(isFocused);
-			}
-		}
-
-		/// <summary>
 		/// Updates the cross-platform layer's focus state
 		/// </summary>
 		/// <param name="isFocused">The new focus state</param>
