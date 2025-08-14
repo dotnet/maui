@@ -61,5 +61,36 @@ namespace Microsoft.Maui.Platform
 				nativeScrollView.ScrollEnabled = scrollView.IsEnabled;
 			}
 		}
+		
+		public static void UpdateOrientation(this UIScrollView nativeScrollView, IScrollView scrollView)
+		{
+			switch (scrollView.Orientation)
+			{
+				case ScrollOrientation.Horizontal:
+					nativeScrollView.AlwaysBounceHorizontal = true;
+					nativeScrollView.AlwaysBounceVertical = false;
+					nativeScrollView.ShowsHorizontalScrollIndicator = true;
+					nativeScrollView.ShowsVerticalScrollIndicator = false;
+					break;
+				case ScrollOrientation.Vertical:
+					nativeScrollView.AlwaysBounceHorizontal = false;
+					nativeScrollView.AlwaysBounceVertical = true;
+					nativeScrollView.ShowsHorizontalScrollIndicator = false;
+					nativeScrollView.ShowsVerticalScrollIndicator = true;
+					break;
+				case ScrollOrientation.Both:
+					nativeScrollView.AlwaysBounceHorizontal = true;
+					nativeScrollView.AlwaysBounceVertical = true;
+					nativeScrollView.ShowsHorizontalScrollIndicator = true;
+					nativeScrollView.ShowsVerticalScrollIndicator = true;
+					break;
+				case ScrollOrientation.Neither:
+					nativeScrollView.AlwaysBounceHorizontal = false;
+					nativeScrollView.AlwaysBounceVertical = false;
+					nativeScrollView.ShowsHorizontalScrollIndicator = false;
+					nativeScrollView.ShowsVerticalScrollIndicator = false;
+					break;
+			}
+		}
 	}
 }
