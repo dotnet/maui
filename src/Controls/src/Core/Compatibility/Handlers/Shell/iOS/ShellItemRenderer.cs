@@ -459,6 +459,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(18) || OperatingSystem.IsIOSVersionAtLeast(18))
 			{
+				if (TabBarHidden == !ShellItemController.ShowTabs)
+				{
+					return;
+				}
+	   
 				TabBarHidden = !ShellItemController.ShowTabs;
 			}
 			else
