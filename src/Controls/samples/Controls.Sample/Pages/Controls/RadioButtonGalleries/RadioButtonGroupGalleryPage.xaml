@@ -154,4 +154,32 @@
             </StackLayout>
         </ScrollView>
     </ContentPage>
+
+  <ContentPage
+    Title="Null Selection Test">
+    <ScrollView>
+      <StackLayout x:Name="NullSelectionTestContainer" Padding="10" RadioButtonGroup.GroupName="A" RadioButtonGroup.SelectedValue="{Binding SelectedItem}">
+        <Label Text="Test grouped radio buttons with ability to clear selections"
+               Margin="0, 0, 0, 10"/>
+        <Label Text="StackLayout" />
+        
+        <RadioButton Content="RadioButton, Value='1'" Value="1" />
+        <RadioButton Content="RadioButton, Value='2'" Value="2" />
+        <RadioButton Content="RadioButton, Value='3'" Value="3" />
+
+        <Button Text="Clear Selection" Command="{Binding ClearSelectionCommand}" Margin="0, 10" />
+        <Label>
+          <Label.FormattedText>
+            <FormattedString>
+              <Span Text="Selected Value: " />
+              <Span Text="{Binding SelectedItem, TargetNullValue='(null)'}" />
+            </FormattedString>
+          </Label.FormattedText>
+        </Label>
+      </StackLayout>
+ 
+    </ScrollView>
+
+  </ContentPage>
+
 </TabbedPage>
