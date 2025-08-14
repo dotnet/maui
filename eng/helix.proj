@@ -2,18 +2,17 @@
   <PropertyGroup>
     <HelixType>test/product/</HelixType>
     <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
+    <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
     <HelixTargetQueues>Windows.10.Amd64.Open;OSX.15.ARM64.Open</HelixTargetQueues>
     <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
-
     <IncludeDotNetCli>true</IncludeDotNetCli>
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
-
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <FailOnTestFailure>true</FailOnTestFailure>
   </PropertyGroup>
 
+  <!-- Local build outside of Azure Pipeline -->
   <PropertyGroup Condition="'$(SYSTEM_ACCESSTOKEN)' == ''">
-    <!-- Local build outside of Azure Pipeline -->
     <HelixTargetQueues Condition="'$(HelixTargetQueues)' == ''">
       Windows.10.Amd64.Open;OSX.1200.Amd64.Open;OSX.1200.ARM64.Open;Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-20.04-helix-sqlserver-amd64</HelixTargetQueues>
     <EnableAzurePipelinesReporter>false</EnableAzurePipelinesReporter>
@@ -22,10 +21,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <XUnitProject Include="$(RepoRoot)/src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj" />
-    <XUnitProject Include="$(RepoRoot)/src/Controls/tests/BindingSourceGen.UnitTests/Controls.BindingSourceGen.UnitTests.csproj" />
-    <XUnitProject Include="$(RepoRoot)/src/Core/tests/UnitTests/Core.UnitTests.csproj" />
-    <XUnitProject Include="$(RepoRoot)/src/Essentials/test/UnitTests/Essentials.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Controls/tests/BindingSourceGen.UnitTests/Controls.BindingSourceGen.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Core/tests/UnitTests/Core.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Essentials/test/UnitTests/Essentials.UnitTests.csproj" />
     <!-- <XUnitProject Include="$(RepoRoot)/src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj" /> -->
 
   </ItemGroup>

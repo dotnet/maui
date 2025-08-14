@@ -29,15 +29,6 @@
     <!--<WindowsPackageType>None</WindowsPackageType>-->
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!--
-      Uncomment the below to enabled unpackaged apps and change the
-      value of the "commandName" in the Properties\launchSettings.json
-      from "MsixPackage" to "Project".
-    -->
-    <!--<WindowsPackageType>None</WindowsPackageType>-->
-  </PropertyGroup>
-
   <ItemGroup>
     <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
     <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
