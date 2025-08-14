@@ -17,6 +17,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
 public partial class BlazorWebViewTests
 {
 	[Fact]
+	[RequiresUnreferencedCode("Tests use JSON serialization")]
 	public Task RequestsCanBeInterceptedAndCustomDataReturned() =>
 		RunTest(async (blazorWebView, handler) =>
 		{
@@ -50,6 +51,7 @@ public partial class BlazorWebViewTests
 		});
 
 	[Fact]
+	[RequiresUnreferencedCode("Tests use JSON serialization")]
 	public Task RequestsCanBeInterceptedAndAsyncCustomDataReturned() =>
 		RunTest(async (blazorWebView, handler) =>
 		{
@@ -102,6 +104,7 @@ public partial class BlazorWebViewTests
 #if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
 	[InlineData("https://echo.free.beeceptor.com/sample-request")]
 #endif
+	[RequiresUnreferencedCode("Tests use JSON serialization")]
 	public Task RequestsCanBeInterceptedAndCustomDataReturnedForDifferentHosts(string uriBase) =>
 		RunTest(async (blazorWebView, handler) =>
 		{
