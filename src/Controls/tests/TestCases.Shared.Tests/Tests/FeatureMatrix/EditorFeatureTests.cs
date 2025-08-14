@@ -67,20 +67,22 @@ public class EditorFeatureTests : UITest
 #endif
 
 	[Test, Order(1)]
-	public void VerifyEditorFocusedEvent()
+	public async Task VerifyEditorFocusedEvent()
 	{
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
+		await Task.Delay(100);
 		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
 	}
 
 	[Test, Order(3)]
-	public void VerifyEditorUnfocusedEvent()
+	public async Task VerifyEditorUnfocusedEvent()
 	{
 		App.WaitForElement("TestEditor");
 		App.WaitForElement("SelectionLengthEntry");
 		App.Tap("SelectionLengthEntry");
+		await Task.Delay(100);
 		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Event Triggered"));
 	}
