@@ -195,6 +195,8 @@ internal static partial class ImageProcessor
 			// Extract common EXIF tags
 			var tags = new string[]
 			{
+#pragma warning disable CA1416 // Ignore the warning since some of these are only available on later versions of Android, but they are constants so it is safe to use them
+#pragma warning disable CA1422
 				ExifInterface.TagArtist,
 				ExifInterface.TagCopyright,
 				ExifInterface.TagDatetime,
@@ -212,6 +214,8 @@ internal static partial class ImageProcessor
 				ExifInterface.TagWhiteBalance,
 				ExifInterface.TagFlash,
 				ExifInterface.TagFocalLength
+#pragma warning restore CA1422
+#pragma warning restore CA1416
 			};
 
 			foreach (var tag in tags)
