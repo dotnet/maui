@@ -48,7 +48,8 @@ public class Issue28945 : TestContentPage
 			Padding = new Thickness(30),
 			Content = new Label
 			{
-				Text = "Tap Me",
+				Text = "This is a focusable contentview, click the button to toggle focus",
+				AutomationId = "Issue28945_ContentView",
 				TextColor = Colors.White,
 				VerticalOptions = LayoutOptions.Center,
 				HorizontalOptions = LayoutOptions.Center
