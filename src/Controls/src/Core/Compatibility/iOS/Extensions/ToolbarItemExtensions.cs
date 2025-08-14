@@ -60,9 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		static UIImage ScaleImageToSystemDefaults(ImageSource imageSource, UIImage uIImage)
 		{
-			var icon = imageSource is not FontImageSource
-						? uIImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal)
-						: uIImage;
+			var icon = uIImage;
 
 			var originalImageSize = icon?.Size ?? CGSize.Empty;
 
