@@ -167,7 +167,7 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 		}
 	}
 
-	
+
 	public class ComputationResult
 	{
 		public decimal result { get; set; }

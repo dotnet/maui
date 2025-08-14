@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Page))]
 	public partial class Window : NavigableElement, IWindow, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
 	{
-		static readonly BindablePropertyKey IsActivatedPropertyKey = 
+		static readonly BindablePropertyKey IsActivatedPropertyKey =
 			BindableProperty.CreateReadOnly(nameof(IsActivated), typeof(bool), typeof(Window), false, propertyChanged: OnIsActivatedPropertyChanged);
 
 		/// <summary>Bindable property for <see cref="IsActivated"/>.</summary>
