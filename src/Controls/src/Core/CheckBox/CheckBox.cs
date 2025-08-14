@@ -36,20 +36,24 @@ namespace Microsoft.Maui.Controls
 					checkBox.ChangeVisualState();
 				}, defaultBindingMode: BindingMode.TwoWay);
 
-		/// <summary>Bindable property for <see cref="Command"/>.</summary>
+		/// <summary>Bindable property for the <see cref="Command"/> property.</summary>
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(CheckBox), null, propertyChanging: CommandElement.OnCommandChanging, propertyChanged: CommandElement.OnCommandChanged);
 
-		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
+		/// <summary>Bindable property for the <see cref="CommandParameter"/> property.</summary>
 		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(CheckBox), null, propertyChanged: CommandElement.OnCommandParameterChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="//Member[@MemberName='Command']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the command that is executed when the CheckBox is checked or unchecked. This is a bindable property.
+		/// </summary>
 		public ICommand Command
 		{
 			get => (ICommand)GetValue(CommandProperty);
 			set => SetValue(CommandProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="//Member[@MemberName='CommandParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter to pass to the <see cref="Command"/> when it is executed. This is a bindable property.
+		/// </summary>
 		public object CommandParameter
 		{
 			get => GetValue(CommandParameterProperty);
