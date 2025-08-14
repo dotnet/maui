@@ -99,15 +99,15 @@ public class Issue28051 : TestContentPage, INotifyPropertyChanged
 #if ANDROID
 public class LongPressBehavior : PlatformBehavior<Element, Android.Views.View>
 {
-    protected override void OnAttachedTo(Element bindable, Android.Views.View platformView)
-    {
-        BindingContext = bindable.BindingContext;
-    }
- 
-    protected override void OnDetachedFrom(Element bindable, Android.Views.View platformView)
-    {
-        BindingContext = null;
-    }
+	protected override void OnAttachedTo(Element bindable, Android.Views.View platformView)
+	{
+		BindingContext = bindable.BindingContext;
+	}
+
+	protected override void OnDetachedFrom(Element bindable, Android.Views.View platformView)
+	{
+		BindingContext = null;
+	}
 }
 #elif IOS || MACCATALYST
 public class LongPressBehavior : PlatformBehavior<Element, UIKit.UIView>

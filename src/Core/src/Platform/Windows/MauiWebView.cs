@@ -101,6 +101,24 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		bool IWebViewDelegate.LoadFile(string? url)
+		{
+			if (string.IsNullOrEmpty(url))
+				return false;
+
+			try
+			{
+				// For Windows, load files using the local scheme
+				var fileUri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
+				LoadUrl(fileUri.AbsoluteUri);
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		}
+
 		void SetupPlatformEvents()
 		{
 			NavigationStarting += (sender, args) =>

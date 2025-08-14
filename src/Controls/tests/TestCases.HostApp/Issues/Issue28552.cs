@@ -12,10 +12,10 @@ public class Issue28552 : ContentPage
 			Command = new Command(() =>
 			{
 #if ANDROID
-					Android.Views.Window window = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity.Window;
+				Android.Views.Window window = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity.Window;
 #pragma warning disable CA1422
-					window.SetNavigationBarColor(Android.Graphics.Color.Purple);
-					window.SetStatusBarColor(Android.Graphics.Color.Green);
+				window.SetNavigationBarColor(Android.Graphics.Color.Purple);
+				window.SetStatusBarColor(Android.Graphics.Color.Green);
 #endif
 				Window!.Page!.Navigation.PushModalAsync(new ContentPage
 				{
