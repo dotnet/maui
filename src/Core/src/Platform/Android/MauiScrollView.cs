@@ -8,10 +8,11 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.Widget;
+using AndroidX.Core.View;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiScrollView : NestedScrollView, IScrollBarView, NestedScrollView.IOnScrollChangeListener
+	public class MauiScrollView : NestedScrollView, IScrollBarView, NestedScrollView.IOnScrollChangeListener, ICrossPlatformLayoutBacking
 	{
 		View? _content;
 
@@ -21,6 +22,7 @@ namespace Microsoft.Maui.Platform
 		ScrollBarVisibility _defaultHorizontalScrollVisibility;
 		ScrollBarVisibility _defaultVerticalScrollVisibility;
 		ScrollBarVisibility _horizontalScrollVisibility;
+		readonly SafeAreaHandler _safeAreaHandler;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
@@ -28,20 +30,48 @@ namespace Microsoft.Maui.Platform
 		internal bool ShouldSkipOnTouch;
 		internal int HorizontalScrollOffset => _hScrollView?.ScrollX ?? 0;
 
+		internal ICrossPlatformLayout? CrossPlatformLayout => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout;
+		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
+
+		/// <summary>
+		/// Gets or sets the cross-platform layout that manages the content of this scroll view.
+		/// The layout is responsible for measuring and arranging the scroll view's content.
+		/// </summary>
+		ICrossPlatformLayout? ICrossPlatformLayoutBacking.CrossPlatformLayout
+		{
+			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
+			set => _crossPlatformLayoutReference = value == null ? null : new WeakReference<ICrossPlatformLayout>(value);
+		}
+
 		public MauiScrollView(Context context) : base(context)
 		{
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public MauiScrollView(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public MauiScrollView(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		protected MauiScrollView(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
+			var context = Context;
+			ArgumentNullException.ThrowIfNull(context);
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
+		}
+
+		void SetupWindowInsetsHandling()
+		{
+			ViewCompat.SetOnApplyWindowInsetsListener(this, _safeAreaHandler.GetWindowInsetsListener());
 		}
 
 		public void SetHorizontalScrollBarVisibility(ScrollBarVisibility scrollBarVisibility)
@@ -220,6 +250,33 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
+
+			// Apply safe area adjustments via padding if needed
+			if (_safeAreaHandler.RespondsToSafeArea())
+			{
+				var context = Context;
+				if (context != null)
+				{
+					var destination = context.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
+
+					var adjustedDestination = _safeAreaHandler.AdjustForSafeArea(destination);
+
+					// Calculate safe area insets
+					var leftInset = (int)context.ToPixels(adjustedDestination.Left - destination.Left);
+					var topInset = (int)context.ToPixels(adjustedDestination.Top - destination.Top);
+					var rightInset = (int)context.ToPixels(destination.Right - adjustedDestination.Right);
+					var bottomInset = (int)context.ToPixels(destination.Bottom - adjustedDestination.Bottom);
+
+					// Apply as padding to create the safe area effect
+					SetPadding(leftInset, topInset, rightInset, bottomInset);
+				}
+			}
+			else
+			{
+				// Reset padding if not responding to safe area
+				SetPadding(0, 0, 0, 0);
+			}
+
 			base.OnLayout(changed, left, top, right, bottom);
 
 			if (_hScrollView?.Parent == this && _content is not null)
