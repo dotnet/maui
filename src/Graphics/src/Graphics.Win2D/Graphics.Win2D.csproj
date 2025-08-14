@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(WindowsMauiPlatforms)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IncludePreviousTfmsGraphics)' == 'true'">$(TargetFrameworks);$(WindowsMauiPreviousPlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludePreviousTfms)' == 'true'">$(TargetFrameworks);$(WindowsMauiPreviousPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</RootNamespace>
     <AssemblyName>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</AssemblyName>
     <IsTrimmable>false</IsTrimmable>

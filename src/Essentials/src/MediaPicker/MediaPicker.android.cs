@@ -426,7 +426,9 @@ namespace Microsoft.Maui.Media
 				// Set a maximum when 2 or more. When the limit is 1 we only allow a single one and 0 should allow unlimited.
 				if (options.SelectionLimit >= 2)
 				{
+#pragma warning disable CA1416 // MediaStore.ExtraPickImagesMax is only supported on Android 33.0+
 					intent.PutExtra(MediaStore.ExtraPickImagesMax, options.SelectionLimit);
+#pragma warning restore CA1416
 				}
 			}
 
