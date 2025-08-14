@@ -25,12 +25,18 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 			platformView.ScrollChange += ScrollChange;
+
+			// Set the ICrossPlatformLayout reference for SafeAreaHandler
+			((ICrossPlatformLayoutBacking)platformView).CrossPlatformLayout = this;
 		}
 
 		protected override void DisconnectHandler(MauiScrollView platformView)
 		{
 			base.DisconnectHandler(platformView);
 			platformView.ScrollChange -= ScrollChange;
+
+			// Clear the ICrossPlatformLayout reference
+			((ICrossPlatformLayoutBacking)platformView).CrossPlatformLayout = null;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
