@@ -88,6 +88,7 @@ public class AOTTemplateTest : BaseTemplateTests
 		extendedBuildProps.Add("IlcTreatWarningsAsErrors=false");
 		extendedBuildProps.Add("TrimmerSingleWarn=false");
 		extendedBuildProps.Add("_RequireCodeSigning=false"); // This is required to build the iOS app without a signing key
+		extendedBuildProps.Add("VerifyReferenceAotCompatibility=true"); // Verify that all input assemblies are marked as IsAotCompatible (https://github.com/dotnet/runtime/pull/118180)
 		return extendedBuildProps;
 	}
 }
