@@ -487,17 +487,19 @@ namespace Microsoft.Maui.Platform
 
 				if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 				{
-					var horizontalOffset = contentSize.Width - contentSize.Width;
-					if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+					var horizontalOffset = contentSize.Width - bounds.Width;
+					
+					if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 					{
-						CrossPlatformArrange(new Rect(new Point(-horizontalOffset, bounds.Y), contentSize));
+						CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), bounds.Size.ToSize()));
 					}
 					else
 					{
-						CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), contentSize));
+						CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), bounds.Size.ToSize()));
 					}
-
+					
 					ContentOffset = new CGPoint(horizontalOffset, 0);
+
 				}
 				else if(_previousEffectiveUserInterfaceLayoutDirection is not null)
 				{
