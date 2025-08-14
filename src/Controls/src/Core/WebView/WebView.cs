@@ -299,7 +299,8 @@ namespace Microsoft.Maui.Controls
 				return js;
 
 			//get every quote in the string along with all the backslashes preceding it
-			var singleQuotes = Regex.Matches(js, @"(\\*?)'");
+			//var singleQuotes = Regex.Matches(js, @"(\\*?)'");
+			var singleQuotes = RegexHelper.AllQuotesWithPrecedingBackslashsRegex.Matches(js);
 
 			var uniqueMatches = new List<string>();
 
@@ -392,5 +393,33 @@ namespace Microsoft.Maui.Controls
 			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Source), Source);
 			return $"{base.GetDebuggerDisplay()}, {debugText}";
 		}
+
+
+		internal partial class RegexHelper
+		{
+			/*
+				when used: 
+
+				The GeneratedRegexAttribute is malformed 
+			static readonly string pattern = @"(\\*?)'";
+			*/
+
+#if NET7_0_OR_GREATER
+			// get every quote in the string along with all the backslashes preceding it
+			[GeneratedRegex (@"(\\*?)'", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+			public static partial Regex AllQuotesWithPrecedingBackslashsRegex
+				{
+				get;
+			}
+#else
+			public static readonly Regex AllQuotesWithPrecedingBackslashsRegex =
+											new (
+												// get every quote in the string along with all the backslashes preceding it
+												@"(\\*?)'",
+												RegexOptions.Compiled,
+												TimeSpan.FromMilliseconds(1000) 		// against malicious input
+												);		
+#endif											
+		}    
 	}
 }
