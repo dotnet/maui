@@ -47,23 +47,59 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
         _isKeyboardShowing = isKeyboardShowing;
     }
 
-    internal bool RespondsToSafeArea()
+    static ISafeAreaView2? GetSafeAreaView2(object? layout)
     {
-        if (!OperatingSystem.IsAndroidVersionAtLeast(36))
+        if (layout is ISafeAreaView2 sav2)
         {
-            return false;
+            return sav2;
         }
 
-        var layout = _getCrossPlatformLayout();
-        if (layout is not ISafeAreaView2 safeAreaLayout)
+        if (layout is IElementHandler handler && handler.VirtualView is ISafeAreaView2 virtualSav2)
         {
+            return virtualSav2;
+        }
+
+        return null;
+    }
+
+    static ISafeAreaView? GetSafeAreaView(object? layout)
+    {
+        if (layout is ISafeAreaView sav)
+        {
+            return sav;
+        }
+
+        if (layout is IElementHandler handler && handler.VirtualView is ISafeAreaView virtualSav)
+        {
+            return virtualSav;
+        }
+
+        return null;
+    }
+
+    internal bool RespondsToSafeArea()
+    {
+        // Removed high API level gate so that safe area handling (system bars, cutouts, IME)
+        // can function on currently supported Android versions.
+        var layout = _getCrossPlatformLayout();
+
+        var safeAreaLayout = GetSafeAreaView2(layout);
+        if (safeAreaLayout is null)
+        {
+            // Fallback: check for legacy ISafeAreaView
+            var legacySafeAreaView = GetSafeAreaView(layout);
+            if (legacySafeAreaView is not null)
+            {
+                return !legacySafeAreaView.IgnoreSafeArea && !HasSafeAreaHandlingParent();
+            }
             return false;
         }
 
         // Fast check for any edge needing safe area
         for (int edge = 0; edge < 4; edge++)
         {
-            if (safeAreaLayout.GetSafeAreaRegionsForEdge(edge) != SafeAreaRegions.None)
+            var region = safeAreaLayout.GetSafeAreaRegionsForEdge(edge);
+            if (region != SafeAreaRegions.None)
             {
                 goto CheckParent;
             }
@@ -110,12 +146,12 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
         while (parent != null && depth++ < maxDepth)
         {
             if (parent is ICrossPlatformLayoutBacking backing &&
-                backing.CrossPlatformLayout is ISafeAreaView2 parentLayout)
+                GetSafeAreaView2(backing.CrossPlatformLayout) is ISafeAreaView2 parentLayout)
             {
                 for (int edge = 0; edge < 4; edge++)
                 {
                     var region = parentLayout.GetSafeAreaRegionsForEdge(edge);
-                    if (region != SafeAreaRegions.None && region != SafeAreaRegions.Default)
+                    if (region != SafeAreaRegions.None)
                     {
                         return true;
                     }
@@ -129,7 +165,8 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
     SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
     {
         var layout = _getCrossPlatformLayout();
-        if (layout is ISafeAreaView2 safeAreaPage)
+        var safeAreaPage = GetSafeAreaView2(layout);
+        if (safeAreaPage is not null)
         {
             return safeAreaPage.GetSafeAreaRegionsForEdge(edge);
         }
@@ -188,8 +225,7 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
 
         var baseSafeArea = windowInsets.ToSafeAreaInsets(_context);
         var layout = _getCrossPlatformLayout();
-
-        if (layout is ISafeAreaView2)
+        if (GetSafeAreaView2(layout) is ISafeAreaView2 safeAreaLayout)
         {
             return new SafeAreaPadding(
                 GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0), baseSafeArea.Left, 0),
@@ -199,7 +235,8 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
             );
         }
 
-        if (layout is ISafeAreaView sav && sav.IgnoreSafeArea)
+        var sav = GetSafeAreaView(layout);
+        if (sav is not null && sav.IgnoreSafeArea)
         {
             return SafeAreaPadding.Empty;
         }
@@ -248,6 +285,40 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
 
             _handler.InvalidateParentHierarchyCache();
             _requestLayout();
+
+            // Consume insets if this view responds to safe area to prevent propagation to children
+            if (insets != null && _handler.RespondsToSafeArea())
+            {
+                var layout = _handler._getCrossPlatformLayout();
+                if (GetSafeAreaView2(layout) is ISafeAreaView2 safeAreaLayout)
+                {
+                    // Check which edges we're handling and consume those insets
+                    var systemBarsInsets = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+                    var displayCutoutInsets = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+                    var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+
+                    var leftRegion = safeAreaLayout.GetSafeAreaRegionsForEdge(0);
+                    var topRegion = safeAreaLayout.GetSafeAreaRegionsForEdge(1);
+                    var rightRegion = safeAreaLayout.GetSafeAreaRegionsForEdge(2);
+                    var bottomRegion = safeAreaLayout.GetSafeAreaRegionsForEdge(3);
+
+                    // Calculate which insets to consume based on SafeAreaRegions
+                    var consumeLeft = (leftRegion != SafeAreaRegions.None) ?
+                        (systemBarsInsets?.Left ?? 0) + (displayCutoutInsets?.Left ?? 0) : 0;
+                    var consumeTop = (topRegion != SafeAreaRegions.None) ?
+                        (systemBarsInsets?.Top ?? 0) + (displayCutoutInsets?.Top ?? 0) : 0;
+                    var consumeRight = (rightRegion != SafeAreaRegions.None) ?
+                        (systemBarsInsets?.Right ?? 0) + (displayCutoutInsets?.Right ?? 0) : 0;
+                    var consumeBottom = (bottomRegion != SafeAreaRegions.None) ?
+                        (systemBarsInsets?.Bottom ?? 0) + (displayCutoutInsets?.Bottom ?? 0) +
+                        (SafeAreaEdges.IsSoftInput(bottomRegion) ? (imeInsets?.Bottom ?? 0) : 0) : 0;                    // Create new insets with consumed values subtracted
+                    var consumedInsets = AndroidX.Core.Graphics.Insets.Of(consumeLeft, consumeTop, consumeRight, consumeBottom);
+
+                    // Use Inset method to consume the insets
+                    return insets.Inset(consumedInsets);
+                }
+            }
+
             return insets;
         }
     }
