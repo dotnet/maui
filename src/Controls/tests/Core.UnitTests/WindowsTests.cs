@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -856,13 +857,94 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.False(vm.IsWindowActive);
 		}
-	}
 
-	class ViewModel
-	{
-		public bool IsWindowActive
+		[Fact]
+		public void WindowServiceScopeIsDisposedOnDestroying()
 		{
-			get; set;
+			var serviceCollection = new ServiceCollection();
+			serviceCollection.AddTransient<TestScopedService>();
+			var serviceProvider = serviceCollection.BuildServiceProvider();
+
+			var scope = serviceProvider.CreateScope();
+			var mauiContext = new MauiContext(scope.ServiceProvider);
+			mauiContext.SetWindowScope(scope);
+
+			var window = new TestWindow(new ContentPage());
+			var handler = new WindowHandlerStub();
+			handler.SetMauiContext(mauiContext);
+			window.Handler = handler;
+
+			// Verify the scope service works before disposal
+			var service = mauiContext.Services.GetService<TestScopedService>();
+			Assert.NotNull(service);
+
+			// Destroy the window - this should dispose the scope
+			((IWindow)window).Destroying();
+
+			// After disposal, the scope should be disposed
+			// We can't directly test if scope is disposed, but we can test that trying to use it throws
+			Assert.Throws<ObjectDisposedException>(() => scope.ServiceProvider.GetService<TestScopedService>());
+		}
+
+		class ViewModel
+		{
+			public bool IsWindowActive
+			{
+				get;
+				set;
+			}
+		}
+
+		[Fact]
+		public void WindowServiceScopeHandlesNullScope()
+		{
+			// Test that destroying a window without a scope doesn't throw
+			var mauiContext = new MockMauiContext();
+			var window = new TestWindow(new ContentPage());
+			var handler = new WindowHandlerStub();
+			handler.SetMauiContext(mauiContext);
+			window.Handler = handler;
+
+			// This should not throw even though there's no scope to dispose
+			((IWindow)window).Destroying();
+		}
+
+		[Fact]
+		public void WindowServiceScopeWorksWithWindowCreationFlow()
+		{
+			// Test the full flow as it would happen in real usage
+			var serviceCollection = new ServiceCollection();
+			serviceCollection.AddScoped<TestScopedService>();
+			var rootServiceProvider = serviceCollection.BuildServiceProvider();
+
+			var appContext = new MauiContext(rootServiceProvider);
+			
+			// Simulate the window creation flow
+			var windowContext = appContext.MakeWindowScope(new object(), out var scope);
+			
+			// Verify we can get scoped services
+			var service1 = windowContext.Services.GetRequiredService<TestScopedService>();
+			var service2 = windowContext.Services.GetRequiredService<TestScopedService>();
+			
+			// Should be the same instance since it's scoped
+			Assert.Same(service1, service2);
+			
+			// Create window and set up handler
+			var window = new TestWindow(new ContentPage());
+			var handler = new WindowHandlerStub();
+			handler.SetMauiContext(windowContext);
+			window.Handler = handler;
+
+			// Destroy the window
+			((IWindow)window).Destroying();
+
+			// Scope should be disposed
+			Assert.Throws<ObjectDisposedException>(() => scope.ServiceProvider.GetService<TestScopedService>());
+		}
+
+		private class TestScopedService
+		{
+			public string TestProperty { get; set; } = "test";
 		}
 	}
 }
