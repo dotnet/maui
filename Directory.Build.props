@@ -169,6 +169,12 @@
     <WindowsTargetFrameworkVersion>10.0.19041.0</WindowsTargetFrameworkVersion>
     <Windows2TargetFrameworkVersion>10.0.20348.0</Windows2TargetFrameworkVersion>
     <TizenTargetFrameworkVersion>7.0</TizenTargetFrameworkVersion>
+    <!-- Default versions from the Previous SDKs (update when there is a new TFM version) -->
+    <IosPreviousTargetFrameworkVersionSdkDefault>18.0</IosPreviousTargetFrameworkVersionSdkDefault>
+    <TvosPreviousTargetFrameworkVersionSdkDefault>18.0</TvosPreviousTargetFrameworkVersionSdkDefault>
+    <MacCatalystPreviousTargetFrameworkVersionSdkDefault>18.0</MacCatalystPreviousTargetFrameworkVersionSdkDefault>
+    <MacosPreviousTargetFrameworkVersionSdkDefault>15.0</MacosPreviousTargetFrameworkVersionSdkDefault>
+    <AndroidPreviousTargetFrameworkVersionSdkDefault>35.0</AndroidPreviousTargetFrameworkVersionSdkDefault>
     <!-- Previous .NET -->
     <IosPreviousTargetFrameworkVersion>26.0</IosPreviousTargetFrameworkVersion>
     <TvosPreviousTargetFrameworkVersion>26.0</TvosPreviousTargetFrameworkVersion>
@@ -212,9 +218,12 @@
     <MauiSamplePlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiSamplePlatforms)</MauiSamplePlatforms>
     <MauiSamplePreviousPlatforms Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-tizen;$(MauiSamplePreviousPlatforms)</MauiSamplePreviousPlatforms>
     <MauiSamplePreviousPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPreviousPlatforms);$(MauiSamplePreviousPlatforms)</MauiSamplePreviousPlatforms>
-    <MauiSamplePreviousPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-android;$(MauiSamplePreviousPlatforms)</MauiSamplePreviousPlatforms>
-    <MauiSamplePreviousPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-maccatalyst;$(MauiSamplePreviousPlatforms)</MauiSamplePreviousPlatforms>
-    <MauiSamplePreviousPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-ios;$(MauiSamplePreviousPlatforms)</MauiSamplePreviousPlatforms>
+    <MauiSamplePreviousPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true' and '$(AndroidPreviousTargetFrameworkVersion)' == '$(AndroidPreviousTargetFrameworkVersionSdkDefault)'">net$(_MauiPreviousDotNetVersion)-android;$(MauiSamplePreviousPlatforms)</MauiSamplePreviousPlatforms>
+    <MauiSamplePreviousPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true' and '$(AndroidPreviousTargetFrameworkVersion)' != '$(AndroidPreviousTargetFrameworkVersionSdkDefault)'">net$(_MauiPreviousDotNetVersion)-android$(AndroidPreviousTargetFrameworkVersion);$(MauiSamplePreviousPlatforms)</MauiSamplePreviousPlatforms>
+    <MauiSamplePreviousPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true' and '$(MacCatalystPreviousTargetFrameworkVersion)' == '$(MacCatalystPreviousTargetFrameworkVersionSdkDefault)'">net$(_MauiPreviousDotNetVersion)-maccatalyst;$(MauiSamplePreviousPlatforms)</MauiSamplePreviousPlatforms>
+    <MauiSamplePreviousPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true' and '$(MacCatalystPreviousTargetFrameworkVersion)' != '$(MacCatalystPreviousTargetFrameworkVersionSdkDefault)'">net$(_MauiPreviousDotNetVersion)-maccatalyst$(MacCatalystPreviousTargetFrameworkVersion);$(MauiSamplePreviousPlatforms)</MauiSamplePreviousPlatforms>
+    <MauiSamplePreviousPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true' and '$(IosPreviousTargetFrameworkVersion)' == '$(IosPreviousTargetFrameworkVersionSdkDefault)'">net$(_MauiPreviousDotNetVersion)-ios;$(MauiSamplePreviousPlatforms)</MauiSamplePreviousPlatforms>
+    <MauiSamplePreviousPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true' and '$(IosPreviousTargetFrameworkVersion)' != '$(IosPreviousTargetFrameworkVersionSdkDefault)'">net$(_MauiPreviousDotNetVersion)-ios$(IosPreviousTargetFrameworkVersion);$(MauiSamplePreviousPlatforms)</MauiSamplePreviousPlatforms>
 
     <!-- App: Device Tests TFMs (no Tizen yet) -->
     <MauiDeviceTestsPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
