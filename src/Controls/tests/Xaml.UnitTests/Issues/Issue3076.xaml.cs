@@ -2,7 +2,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public class Issue3076Button : Button
 {
 	public static readonly BindableProperty VerticalContentAlignmentProperty =
@@ -15,13 +14,12 @@ public class Issue3076Button : Button
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Issue3076 : ContentPage
 {
 	public Issue3076() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void CanUseBindableObjectDefinedInThisAssembly([Values] XamlInflator inflator)

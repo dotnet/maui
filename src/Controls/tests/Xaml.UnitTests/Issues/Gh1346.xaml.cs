@@ -6,7 +6,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh1346 : ContentPage
 {
 	public static string DefaultText = "Gh1346DefaultText";

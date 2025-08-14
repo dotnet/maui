@@ -6,13 +6,12 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class ConstraintExpression : ContentPage
 {
 	public ConstraintExpression() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void ConstantConstraint([Values] XamlInflator inflator)

@@ -3,14 +3,13 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Issue2489 : ContentPage
 {
 	public Issue2489() => InitializeComponent();
 
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void DataTriggerTargetType([Values] XamlInflator inflator)

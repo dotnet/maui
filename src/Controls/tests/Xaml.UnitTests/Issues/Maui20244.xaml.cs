@@ -10,7 +10,6 @@ using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui20244 : ContentPage
 {
 	public Maui20244() => InitializeComponent();

@@ -4,13 +4,12 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class BuiltInConversions : ContentPage
 {
 	public BuiltInConversions() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[SetUp] public void Setup() => Application.Current = new MockApplication();
 		[TearDown] public void TearDown() => Application.Current = null;

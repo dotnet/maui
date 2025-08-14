@@ -18,7 +18,6 @@ public class Gh4227VM : IGh4227Level1
 	public string Level1 => "level1";
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh4227 : ContentPage
 {
 	public Gh4227() => InitializeComponent();

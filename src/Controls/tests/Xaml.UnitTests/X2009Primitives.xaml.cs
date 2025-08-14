@@ -3,12 +3,11 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class X2009Primitives : ContentPage
 {
 	public X2009Primitives() => InitializeComponent();
 
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void SupportsXString([Values] XamlInflator inflator)

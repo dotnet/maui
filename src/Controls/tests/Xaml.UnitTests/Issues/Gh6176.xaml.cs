@@ -13,7 +13,6 @@ public class Gh6176Base<TVM> : ContentPage where TVM : class
 	protected void ShowMenu(object sender, EventArgs e) { }
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh6176
 {
 	public Gh6176() => InitializeComponent();

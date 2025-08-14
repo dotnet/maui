@@ -6,6 +6,11 @@
 		<SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
 		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>
 		<EnableDefaultCssItems Condition="'$(EnableDefaultCssItems)'==''">True</EnableDefaultCssItems>
+    <!-- default MauiXaml inflators  -->
+    <_MauiXamlInflator Condition="' $(MauiXamlInflator)' != '' ">$(MauiXamlInflator)</_MauiXamlInflator>
+    <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' And '$(Configuration)' == 'Debug' ">Runtime</_MauiXamlInflator>
+    <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' And '$(Configuration)' != 'Debug' ">XamlC</_MauiXamlInflator>
+    
 		<!-- The WINUI check for this only runs when there is an empty string so I just convert false to an empty string to fall in line with our other properties -->
 		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'==''">true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
 		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'=='false'"></SkipMicrosoftUIXamlCheckTargetPlatformVersion>
@@ -73,11 +78,34 @@
 			Condition="'$(_XFTargetsImported)' == 'true'"/>
 	</Target>
 
+  <Target Name="_MauiXamlComputeInflator">
+  	<ItemGroup>
+      <!-- Assign the default inflator to MauiXaml that don't have any -->
+      <!-- there's a roslyn bug that stops parsing value at the first semicolon. replace them all https://github.com/dotnet/roslyn/issues/43970 -->
+      <MauiXaml Inflator="$([MSBuild]::ValueOrDefault('%(MauiXaml.Inflator)','$(_MauiXamlInflator)').Replace(';', ','))"/>
+
+	    <_MauiXaml_SG Remove="@(_MauiXaml_SG)" />
+	    <_MauiXaml_RT Remove="@(_MauiXaml_RT)" />
+	    <_MauiXaml_XC Remove="@(_MauiXaml_XC)" />
+	    <_MauiXaml_SG Include="@(MauiXaml)" Condition="$([System.String]::new('%(MauiXaml.Inflator)').Contains('SourceGen', StringComparison.OrdinalIgnoreCase))" />
+	    <_MauiXaml_RT Include="@(MauiXaml)" Condition="$([System.String]::new('%(MauiXaml.Inflator)').Contains('Runtime', StringComparison.OrdinalIgnoreCase))" />
+	    <_MauiXaml_XC Include="@(MauiXaml)" Condition="$([System.String]::new('%(MauiXaml.Inflator)').Contains('XamlC', StringComparison.OrdinalIgnoreCase))" />
+      <_MauiXaml_AsEmbeddedResource Include="@(_MauiXaml_RT)" />
+      <_MauiXaml_AsEmbeddedResource Include="@(_MauiXaml_XC)" KeepDuplicates="false" />      
+	</ItemGroup>
+  </Target>
 
   <!-- Inject MauiXaml and MauiCss as AdditionalFiles for partial type generation-->
+  <PropertyGroup>
+    <_MauiInjectXamlCssAdditionalFilesDependsOn>
+      _MauiXamlComputeInflator;
+      $(CreateManifestResourceNamesDependsOn);
+    </_MauiInjectXamlCssAdditionalFilesDependsOn>
+  </PropertyGroup>
+    
   <Target Name="_MauiInjectXamlCssAdditionalFiles"
           BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun"
-          DependsOnTargets="$(CreateManifestResourceNamesDependsOn)">
+          DependsOnTargets="$(_MauiInjectXamlCssAdditionalFilesDependsOn)">
     <ItemGroup>
       <_MauiXamlWithResourceNames Remove="@(_MauiXamlWithResourceNames)" />
       <_MauiXamlWithTargetPath Remove="@(_MauiXamlWithTargetPath)" />
@@ -113,6 +141,7 @@
             TargetPath="%(_MauiXamlWithResourceNames.TargetPath)"
             RelativePath="$([MSBuild]::MakeRelative($(MSBuildProjectDirectory), %(_MauiXamlWithResourceNames.TargetPath)))"
             ItemSpec="%(_MauiXamlWithResourceNames.OriginalItemSpec)"
+            Inflator="%(_MauiXamlWithResourceNames.Inflator)"
             GenKind="Xaml"/>
       <AdditionalFiles Condition="%(_MauiCssWithResourceNames.TargetPath) != ''"
             Include="@(_MauiCssWithResourceNames)"
@@ -129,14 +158,19 @@
   </Target>
 
 
-  <!-- re-add MauiXaml and MauiCss as EmbeddedResources -->
+  <!-- re-add MauiXaml and MauiCss as EmbeddedResources for runtime inflation and XamlC -->
   <PropertyGroup>
     <PrepareResourcesDependsOn>
       _MauiAddXamlEmbeddedResources;
       $(PrepareResourcesDependsOn);
     </PrepareResourcesDependsOn>
+    <_MauiAddXamlEmbeddedResourcesDependsOn>
+      _MauiXamlComputeInflator
+    </_MauiAddXamlEmbeddedResourcesDependsOn>
   </PropertyGroup>
-  <Target Name="_MauiAddXamlEmbeddedResources">
+
+  <Target Name="_MauiAddXamlEmbeddedResources"
+          DependsOnTargets="$(_MauiAddXamlEmbeddedResourcesDependsOn)">
     <ItemGroup>
       <EmbeddedResource Include="@(MauiXaml)" />
       <EmbeddedResource Include="@(MauiCss)" />

@@ -5,7 +5,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui11857 : ContentPage
 {
 	public Maui11857() => InitializeComponent();

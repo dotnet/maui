@@ -7,7 +7,6 @@ public class Gh5242VM
 	public int? Value { get; set; }
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh5242 : ContentPage
 {
 	public static readonly BindableProperty NullableIntProperty = BindableProperty.Create(nameof(NullableInt), typeof(int?), typeof(Gh5242), defaultValue: -1);

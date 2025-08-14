@@ -3,7 +3,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh1554
 {
 	public Gh1554() => InitializeComponent();

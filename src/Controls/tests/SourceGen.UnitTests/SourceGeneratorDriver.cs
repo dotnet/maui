@@ -151,6 +151,7 @@ public static class SourceGeneratorDriver
 					"build_metadata.additionalfiles.TargetPath" => _additionalFile.TargetPath,
 					"build_metadata.additionalfiles.ManifestResourceName" => _additionalFile.ManifestResourceName,
 					"build_metadata.additionalfiles.RelativePath" => _additionalFile.RelativePath,
+					"build_metadata.additionalfiles.Inflator" => "SourceGen",
 					"build_property.targetframework" => _additionalFile.TargetFramework,
 					_ => null
 				};

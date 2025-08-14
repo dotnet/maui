@@ -6,13 +6,13 @@ public class Issue2742BasePage : ContentPage
 {
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
+
 public partial class Issue2742 : Issue2742BasePage
 {
 	public Issue2742() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void ToolBarItemsOnContentPageInheritors([Values] XamlInflator inflator)

@@ -4,7 +4,6 @@ using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class PlatformSpecific : FlyoutPage
 {
 	public PlatformSpecific() => InitializeComponent();

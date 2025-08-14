@@ -8,7 +8,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui13474
 {
 	public Maui13474() => InitializeComponent();

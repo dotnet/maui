@@ -12,7 +12,6 @@ public class Gh4348VM : ObservableCollection<string>
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh4348 : ContentPage
 {
 	public Gh4348() => InitializeComponent();

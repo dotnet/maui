@@ -31,13 +31,12 @@ public enum MockEnum : long
 	Third,
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class XStatic : ContentPage
 {
 	public XStatic() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		//{x:Static Member=prefix:typeName.staticMemberName}
 		//{x:Static prefix:typeName.staticMemberName}

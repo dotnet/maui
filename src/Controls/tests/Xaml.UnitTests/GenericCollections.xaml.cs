@@ -22,13 +22,12 @@ public class GenericCollection : ObservableCollection<object>
 {
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class GenericCollections : ContentPage
 {
 	public GenericCollections() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void SupportsCrookedGenericScenarios([Values] XamlInflator inflator)

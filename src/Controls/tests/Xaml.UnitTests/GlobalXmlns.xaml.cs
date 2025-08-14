@@ -7,25 +7,28 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class GlobalXmlns
 {
 	public GlobalXmlns() => InitializeComponent();
 
-	[SetUp]
-	public void Setup()
+	[TestFixture]
+	class Tests
 	{
-		Application.SetCurrentApplication(new MockApplication());
-		DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-	}
+		[SetUp]
+		public void Setup()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
 
-	[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-	[Test]
-	public void WorksWithoutXDeclaration([Values] XamlInflator inflator)
-	{
-		var page = new GlobalXmlns(inflator);
-		Assert.That(page.label, Is.Not.Null);
-		Assert.That(page.label.Text, Is.EqualTo("No xmlns:x declaration, but x: usage anyway"));
+		[Test]
+		public void WorksWithoutXDeclaration([Values] XamlInflator inflator)
+		{
+			var page = new GlobalXmlns(inflator);
+			Assert.That(page.label, Is.Not.Null);
+			Assert.That(page.label.Text, Is.EqualTo("No xmlns:x declaration, but x: usage anyway"));
+		}
 	}
 }

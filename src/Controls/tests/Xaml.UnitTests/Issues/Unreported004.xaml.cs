@@ -2,7 +2,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Unreported004 : ContentPage
 {
 	public Unreported004() => InitializeComponent();

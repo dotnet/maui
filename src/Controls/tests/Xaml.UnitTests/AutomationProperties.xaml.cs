@@ -1,18 +1,13 @@
-using System;
-using System.Reflection;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Xaml;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-[XamlProcessing(XamlInflator.Default, true)]
-public partial class AutomationProperties : ContentPage
+partial class AutomationProperties : ContentPage
 {
 	public AutomationProperties() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[SetUp] public void Setup() => Application.Current = new MockApplication();
 		[TearDown] public void TearDown() => Application.Current = null;

@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public IList<ContentView> Views { get; set; }
 	}
 
-	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class Bz36422 : ContentPage
 	{
 		public Bz36422()

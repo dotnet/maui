@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public class XamlInflatorRuntimeTestsHelpers
 {
-	public static void TestInflator(Type type, XamlInflator inflator, bool generateinflatorswitch = false)
+	internal static void TestInflator(Type type, XamlInflator inflator, bool generateinflatorswitch)
 	{
 		if (!generateinflatorswitch)
 			Assert.IsNull(type.GetMethod("InitializeComponentSourceGen", BindingFlags.Instance | BindingFlags.NonPublic), $"{type.Name} should not have InitializeComponentSourceGen method");
@@ -14,11 +14,20 @@ public class XamlInflatorRuntimeTestsHelpers
 
 		//check that there is an InitializeComponent method that takes an argument of type XamlInflator
 		if (generateinflatorswitch)
-			Assert.IsNotNull(type.GetConstructor([typeof(XamlInflator)]), $"{type.Name} should have InitializeComponent method with XamlInflator argument");
+			Assert.IsNotNull(type.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, [typeof(XamlInflator)]), $"{type.Name} should have InitializeComponent method with XamlInflator argument");
 
-		Assert.IsNotNull(type.GetMethod("InitializeComponent", BindingFlags.Instance | BindingFlags.NonPublic), $"{type.Name} should have InitializeComponent method");
+		string initComp = "InitializeComponent";
 
-		var body = type.GetMethod("InitializeComponent", BindingFlags.Instance | BindingFlags.NonPublic).GetMethodBody();
+		Assert.IsNotNull(type.GetMethod(initComp, BindingFlags.Instance | BindingFlags.NonPublic), $"{type.Name} should have InitializeComponent method");
+
+		if ((inflator & XamlInflator.Runtime) == XamlInflator.Runtime)
+			initComp = "InitializeComponentRuntime";
+		else if ((inflator & XamlInflator.XamlC) == XamlInflator.XamlC)
+			initComp = "InitializeComponentXamlC";
+		else if ((inflator & XamlInflator.SourceGen) == XamlInflator.SourceGen)
+			initComp = "InitializeComponentSourceGen";
+
+		var body = type.GetMethod(initComp, BindingFlags.Instance | BindingFlags.NonPublic).GetMethodBody();
 
 		//quite bad heuristics. this should use Cecil, and check for known calls, like LoadFromXaml, etc
 		var instructions = body.GetILAsByteArray();
@@ -39,30 +48,34 @@ public class XamlInflatorRuntimeTestsHelpers
 
 		if (generateinflatorswitch)
 		{
-			var runtime = type.GetMethod("InitializeComponentRuntime", BindingFlags.Instance | BindingFlags.NonPublic);
-			Assert.IsNotNull(runtime, $"{type.Name} should have InitializeComponentRuntime method");
+			if ((inflator & XamlInflator.Runtime) == XamlInflator.Runtime)
+			{
+				var runtime = type.GetMethod("InitializeComponentRuntime", BindingFlags.Instance | BindingFlags.NonPublic);
+				Assert.IsNotNull(runtime, $"{type.Name} should have InitializeComponentRuntime method");
 #if DEBUG
-			Assert.AreEqual(36, runtime.GetMethodBody().GetILAsByteArray().Length, "Method body should be 36 bytes long");
+				Assert.AreEqual(36, runtime.GetMethodBody().GetILAsByteArray().Length, "Method body should be 36 bytes long");
 #else
 			Assert.AreEqual(35, runtime.GetMethodBody().GetILAsByteArray().Length, "Method body should be 35 bytes long");
 #endif
+			}
 
-			var xamlc = type.GetMethod("InitializeComponentXamlC", BindingFlags.Instance | BindingFlags.NonPublic);
-			Assert.IsNotNull(xamlc, $"{type.Name} should have InitializeComponentXamlC method");
-			Assert.AreEqual(190, xamlc.GetMethodBody().GetILAsByteArray().Length, "Method body should be 190 bytes long");
+			if ((inflator & XamlInflator.XamlC) == XamlInflator.XamlC)
+			{
+				var xamlc = type.GetMethod("InitializeComponentXamlC", BindingFlags.Instance | BindingFlags.NonPublic);
+				Assert.IsNotNull(xamlc, $"{type.Name} should have InitializeComponentXamlC method");
+				Assert.AreEqual(190, xamlc.GetMethodBody().GetILAsByteArray().Length, "Method body should be 190 bytes long");
+			}
 
-			var sourcegen = type.GetMethod("InitializeComponentSourceGen", BindingFlags.Instance | BindingFlags.NonPublic);
-			Assert.IsNotNull(sourcegen, $"{type.Name} should have InitializeComponentSourceGen method");
+			if ((inflator & XamlInflator.SourceGen) == XamlInflator.SourceGen)
+			{
+				var sourcegen = type.GetMethod("InitializeComponentSourceGen", BindingFlags.Instance | BindingFlags.NonPublic);
+				Assert.IsNotNull(sourcegen, $"{type.Name} should have InitializeComponentSourceGen method");
 #if DEBUG
-			Assert.AreEqual(267, sourcegen.GetMethodBody().GetILAsByteArray().Length, "Method body should be 267 bytes long");
+				Assert.AreEqual(267, sourcegen.GetMethodBody().GetILAsByteArray().Length, "Method body should be 267 bytes long");
 #else
-			Assert.AreEqual(254, sourcegen.GetMethodBody().GetILAsByteArray().Length, "Method body should be 254 bytes long");
+				Assert.AreEqual(254, sourcegen.GetMethodBody().GetILAsByteArray().Length, "Method body should be 254 bytes long");
 #endif
-#if DEBUG
-			Assert.AreEqual(8, instructions.Length, "Method body should be 8 bytes long");
-#else
-			Assert.AreEqual(7, instructions.Length, "Method body should be 7 bytes long");
-#endif
+			}
 
 		}
 	}

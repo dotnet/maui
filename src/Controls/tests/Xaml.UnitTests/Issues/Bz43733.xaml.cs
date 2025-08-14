@@ -14,7 +14,6 @@ public class Bz43733Rd : ResourceDictionary
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Bz43733 : ContentPage
 {
 	public Bz43733()

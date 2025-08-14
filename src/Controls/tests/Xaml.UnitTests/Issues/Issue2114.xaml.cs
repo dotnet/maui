@@ -2,13 +2,12 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Issue2114 : Application
 {
 	public Issue2114() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[SetUp] public void SetUp() => Application.Current = null;
 

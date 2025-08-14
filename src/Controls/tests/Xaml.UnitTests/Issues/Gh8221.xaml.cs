@@ -10,7 +10,6 @@ public class Gh8221VM
 	public Dictionary<string, string> Data { get; set; } = new Dictionary<string, string> { { "EntryOne", "One" }, { "EntryTwo", "Two" } };
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh8221 : ContentPage
 {
 	public Gh8221() => InitializeComponent();
