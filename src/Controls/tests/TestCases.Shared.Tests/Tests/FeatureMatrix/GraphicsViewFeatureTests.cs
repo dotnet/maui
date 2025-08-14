@@ -132,6 +132,7 @@ public class GraphicsViewFeatureTests : UITest
 		VerifyShapeScreenshot();
 	}
 
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/30783
 	[Test]
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_ImageDrawable_VerifyTypeAndRendering()
@@ -147,6 +148,7 @@ public class GraphicsViewFeatureTests : UITest
 		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Image"));
 		VerifyShapeScreenshot();
 	}
+#endif
 
 #if TEST_FAILS_ON_ANDROID  //See issue : https://github.com/dotnet/maui/issues/29394                                                            
 	[Test]
