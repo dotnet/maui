@@ -19,7 +19,7 @@ public class DatePickerFeatureTests : UITest
 		App.NavigateToGallery(DatePickerFeatureMatrix);
 	}
 
-#if TEST_FAILS_ON_WINDOWS //Issue Link: https://github.com/dotnet/maui/issues/30736
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS //Issue Link: https://github.com/dotnet/maui/issues/30736, https://github.com/dotnet/maui/issues/31167
 	[Test, Order(1)]
 	[Category(UITestCategories.DatePicker)]
 	public void DatePicker_InitialState_VerifyVisualState()
@@ -88,7 +88,7 @@ public class DatePickerFeatureTests : UITest
 	}
 #endif
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/30066
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS // Issue Links - https://github.com/dotnet/maui/issues/30066, https://github.com/dotnet/maui/issues/31167
 	[Test, Order(4)]
 	[Category(UITestCategories.DatePicker)]
 	public void DatePicker_SetCharacterSpacingAndDate_VerifyVisualState()
@@ -145,7 +145,7 @@ public class DatePickerFeatureTests : UITest
 	}
 #endif
 
-#if TEST_FAILS_ON_CATALYST // Issue Links -https://github.com/dotnet/maui/issues/20904
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Links -https://github.com/dotnet/maui/issues/20904, https://github.com/dotnet/maui/issues/31167
 	[Test, Order(7)]
 	[Category(UITestCategories.DatePicker)]
 	public void DatePicker_SetDateAndTextColor_VerifyVisualState()
@@ -177,7 +177,7 @@ public class DatePickerFeatureTests : UITest
 	}
 #endif
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/31167
 	[Test, Order(9)]
 	[Category(UITestCategories.DatePicker)]
 	public void DatePicker_SetFontAttributesAndFontFamily_VerifyVisualState()
@@ -193,9 +193,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
 		VerifyScreenshot();
 	}
-#endif
-
-#if TEST_FAILS_ON_CATALYST
+ 
 	[Test, Order(10)]
 	[Category(UITestCategories.DatePicker)]
 	public void DatePicker_SetFontAttributesAndFontSize_VerifyVisualState()
@@ -204,6 +202,23 @@ public class DatePickerFeatureTests : UITest
 		App.Tap("Options");
 		App.WaitForElement("FontAttributesItalicButton");
 		App.Tap("FontAttributesItalicButton");
+		App.WaitForElement("FontSizeEntry");
+		App.ClearText("FontSizeEntry");
+		App.EnterText("FontSizeEntry", "20");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
+		VerifyScreenshot();
+	}
+	
+	[Test, Order(12)]
+	[Category(UITestCategories.DatePicker)]
+	public void DatePicker_SetFontFamilyAndFontSize_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontFamilyDokdoButton");
+		App.Tap("FontFamilyDokdoButton");
 		App.WaitForElement("FontSizeEntry");
 		App.ClearText("FontSizeEntry");
 		App.EnterText("FontSizeEntry", "20");
@@ -228,25 +243,6 @@ public class DatePickerFeatureTests : UITest
 		App.EnterText("FormatEntry", "D");
 		App.WaitForElement("SetFormatButton");
 		App.Tap("SetFormatButton");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-		VerifyScreenshot();
-	}
-#endif
-
-#if TEST_FAILS_ON_CATALYST
-	[Test, Order(12)]
-	[Category(UITestCategories.DatePicker)]
-	public void DatePicker_SetFontFamilyAndFontSize_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontFamilyDokdoButton");
-		App.Tap("FontFamilyDokdoButton");
-		App.WaitForElement("FontSizeEntry");
-		App.ClearText("FontSizeEntry");
-		App.EnterText("FontSizeEntry", "20");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
@@ -299,6 +295,7 @@ public class DatePickerFeatureTests : UITest
 	}
 #endif
 
+#if TEST_FAILS_ON_IOS //Issue Link: https://github.com/dotnet/maui/issues/31167
 	[Test, Order(15)]
 	[Category(UITestCategories.DatePicker)]
 	public void DatePicker_SetDateAndIsEnabled_VerifyVisualState()
@@ -314,6 +311,7 @@ public class DatePickerFeatureTests : UITest
 		App.Tap("DatePickerControl");
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test, Order(16)]
 	[Category(UITestCategories.DatePicker)]
@@ -329,7 +327,7 @@ public class DatePickerFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/29812
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS// Issue Links - https://github.com/dotnet/maui/issues/29812, https://github.com/dotnet/maui/issues/31167
 	[Test, Order(17)]
 	[Category(UITestCategories.DatePicker)]
 	public void DatePicker_SetDateAndShadowOpacity_VerifyVisualState()
