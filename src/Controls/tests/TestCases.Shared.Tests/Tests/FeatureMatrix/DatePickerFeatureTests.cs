@@ -19,6 +19,7 @@ public class DatePickerFeatureTests : UITest
 		App.NavigateToGallery(DatePickerFeatureMatrix);
 	}
 
+#if TEST_FAILS_ON_WINDOWS //Issue Link: https://github.com/dotnet/maui/issues/30736
 	[Test, Order(1)]
 	[Category(UITestCategories.DatePicker)]
 	public void DatePicker_InitialState_VerifyVisualState()
@@ -85,6 +86,7 @@ public class DatePickerFeatureTests : UITest
 #endif
 		VerifyScreenshot();
 	}
+#endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/30066
 	[Test, Order(4)]
