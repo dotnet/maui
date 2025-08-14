@@ -1,4 +1,4 @@
-//#if MACCATALYST // Test only for Mac Catalyst
+#if MACCATALYST // Focus propagated for IOS and mac only.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -52,4 +52,4 @@ public class Issue28945 : _IssuesUITest
 		Assert.That(unfocusText, Is.EqualTo(UnfocusSuccessMessage));
 	}
 }
-//#endif
+#endif
