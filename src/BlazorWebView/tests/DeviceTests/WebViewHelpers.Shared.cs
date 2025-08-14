@@ -1,6 +1,14 @@
 ﻿#nullable enable
 using System;
-using System.Diagnostics.CodeAnalysis;
+using	/// <summary>
+	/// Executes an async JavaScript function body and waits for the result to be stored in controlDiv.
+	/// This method handles all the boilerplate for script injection and Promise avoidance.
+	/// </summary>
+	/// <param name="webView">The WKWebView instance</param>
+	/// <param name="asyncFunctionBody">The body of the async function (without function wrapper)</param>
+	/// <returns>The result stored in controlDiv after the async operation completes</returns>
+	[RequiresUnreferencedCode("Calls TryDeserialize which uses System.Text.Json.JsonSerializer.Deserialize")]
+	public static async Task<T?> ExecuteAsyncScriptAndWaitForResult<T>(PlatformWebView webView, string asyncFunctionBody)Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading.Tasks;
 #if ANDROID
