@@ -111,9 +111,13 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(RemainingItemsThresholdProperty, value);
 		}
 
-		internal static readonly BindableProperty InternalItemsLayoutProperty =
-			BindableProperty.Create(nameof(ItemsLayout), typeof(IItemsLayout), typeof(ItemsView),
-				LinearItemsLayout.Vertical, propertyChanged: OnInternalItemsLayoutPropertyChanged);
+		internal static readonly BindableProperty InternalItemsLayoutProperty = BindableProperty.Create(
+			nameof(ItemsLayout),
+			typeof(IItemsLayout),
+			typeof(ItemsView),
+			null,
+			propertyChanged: OnInternalItemsLayoutPropertyChanged,
+			defaultValueCreator: (bindable) => new LinearItemsLayout(ItemsLayoutOrientation.Vertical));
 
 		static void OnInternalItemsLayoutPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
