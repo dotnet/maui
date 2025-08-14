@@ -433,12 +433,17 @@ namespace Microsoft.Maui.Controls
 
 		void HandleRadioButtonGroupValueChanged(Element layout, RadioButtonGroupValueChanged args)
 		{
-			if (IsChecked || string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || !object.Equals(Value, args.Value) || !MatchesScope(args))
+			if (string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || !MatchesScope(args))
 			{
 				return;
 			}
 
-			SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
+			var isValueMatching = object.Equals(Value, args.Value);
+
+			if (IsChecked != isValueMatching)
+			{
+				SetValue(IsCheckedProperty, isValueMatching, specificity: SetterSpecificity.FromHandler);
+			}
 		}
 
 		static View BuildDefaultTemplate()

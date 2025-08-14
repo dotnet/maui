@@ -137,13 +137,11 @@ namespace Microsoft.Maui.Controls
 		{
 			_selectedValue = radioButtonValue;
 
-			if (radioButtonValue != null)
-			{
 #pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 				MessagingCenter.Send<Element, RadioButtonGroupValueChanged>(_layout, RadioButtonGroup.GroupValueChangedMessage,
 					new RadioButtonGroupValueChanged(_groupName, RadioButtonGroup.GetVisualRoot(_layout), radioButtonValue));
 #pragma warning restore CS0618 // Type or member is obsolete
-			}
+
 		}
 
 		void SetGroupName(string groupName)
