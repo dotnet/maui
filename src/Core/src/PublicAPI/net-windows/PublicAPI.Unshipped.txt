@@ -54,6 +54,8 @@ Microsoft.Maui.IWindow.IsMinimizable.get -> bool
 Microsoft.Maui.Platform.CalendarDatePickerExtensions
 Microsoft.Maui.Platform.MauiSlider
 Microsoft.Maui.Platform.MauiSlider.MauiSlider() -> void
+~Microsoft.Maui.Platform.MauiSlider.ThumbImageSource.get -> Microsoft.UI.Xaml.Media.ImageSource
+~Microsoft.Maui.Platform.MauiSlider.ThumbImageSource.set -> void
 Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.SafeAreaEdges.Bottom.get -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaEdges.Equals(Microsoft.Maui.SafeAreaEdges other) -> bool
@@ -232,6 +234,7 @@ static Microsoft.Maui.SwipeViewSwipeEnded.operator !=(Microsoft.Maui.SwipeViewSw
 static Microsoft.Maui.SwipeViewSwipeEnded.operator ==(Microsoft.Maui.SwipeViewSwipeEnded? left, Microsoft.Maui.SwipeViewSwipeEnded? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator !=(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator ==(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
+~static readonly Microsoft.Maui.Platform.MauiSlider.ThumbImageSourceProperty -> Microsoft.UI.Xaml.DependencyProperty
 virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.<Clone>$() -> Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.EqualityContract.get -> System.Type!
@@ -292,6 +295,3 @@ virtual Microsoft.Maui.SwipeViewSwipeStarted.<Clone>$() -> Microsoft.Maui.SwipeV
 virtual Microsoft.Maui.SwipeViewSwipeStarted.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.SwipeViewSwipeStarted.Equals(Microsoft.Maui.SwipeViewSwipeStarted? other) -> bool
 virtual Microsoft.Maui.SwipeViewSwipeStarted.PrintMembers(System.Text.StringBuilder! builder) -> bool
-~Microsoft.Maui.Platform.MauiSlider.ThumbImageSource.get -> Microsoft.UI.Xaml.Media.ImageSource
-~Microsoft.Maui.Platform.MauiSlider.ThumbImageSource.set -> void
-~static readonly Microsoft.Maui.Platform.MauiSlider.ThumbImageSourceProperty -> Microsoft.UI.Xaml.DependencyProperty
