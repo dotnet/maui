@@ -166,6 +166,7 @@ public partial class BlazorWebViewTests
 #if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
 	[InlineData("https://echo.free.beeceptor.com/sample-request")]
 #endif
+	[RequiresUnreferencedCode("Tests use JSON serialization")]
 	public Task RequestsCanBeInterceptedAndHeadersAddedForDifferentHosts(string uriBase) =>
 		RunTest(async (blazorWebView, handler) =>
 		{
@@ -299,6 +300,7 @@ public partial class BlazorWebViewTests
 #if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
 	[InlineData("https://echo.free.beeceptor.com/sample-request")]
 #endif
+	[RequiresUnreferencedCode("Tests use JSON serialization")]
 	public Task RequestsCanBeInterceptedAndCancelledForDifferentHosts(string uriBase) =>
 		RunTest(async (blazorWebView, handler) =>
 		{
@@ -342,6 +344,7 @@ public partial class BlazorWebViewTests
 #if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
 	[InlineData("https://echo.free.beeceptor.com/sample-request")]
 #endif
+	[RequiresUnreferencedCode("Tests use JSON serialization")]
 	public Task RequestsCanBeInterceptedAndCaseInsensitiveHeadersRead(string uriBase) =>
 		RunTest(async (blazorWebView, handler) =>
 		{
