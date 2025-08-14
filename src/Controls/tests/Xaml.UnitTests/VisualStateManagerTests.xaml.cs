@@ -198,6 +198,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.That(label1.Text, Is.EqualTo("Blue"));
 
 			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void CustomVisualStatesAreProperlyDerived(bool useCompiledXaml)
+			{
+				var layout = new VisualStateManagerTests(useCompiledXaml);
+
+				var button = layout.Button2;
+
+				//Button in the 'Normal' state
+				Assert.AreEqual(button.TextColor, Colors.White);
+
+				VisualStateManager.GoToState(button, "Custom");
+
+				//Button in the 'Custom' state
+				Assert.AreEqual(button.TextColor, Colors.Red);
+			}
 		}
 	}
 }
