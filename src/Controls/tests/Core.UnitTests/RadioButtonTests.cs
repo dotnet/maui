@@ -236,5 +236,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal("updated", layout.GetValue(RadioButtonGroup.SelectedValueProperty));
 		}
+
+		[Fact]
+		public void RadioButtonIsCheckedClearedWhenGroupSelectedValueIsNull()
+		{
+			var layout = new Grid();
+			layout.SetValue(RadioButtonGroup.GroupNameProperty, "foo");
+
+			var radioButton1 = new RadioButton() { Value = 1, IsChecked = true };
+			var radioButton2 = new RadioButton() { Value = 2 };
+			var radioButton3 = new RadioButton() { Value = 3 };
+
+			layout.Children.Add(radioButton1);
+			layout.Children.Add(radioButton2);
+			layout.Children.Add(radioButton3);
+
+			Assert.Equal(1, layout.GetValue(RadioButtonGroup.SelectedValueProperty));
+
+			layout.SetValue(RadioButtonGroup.SelectedValueProperty, null);
+
+			Assert.False(radioButton1.IsChecked);
+		}
 	}
 }
