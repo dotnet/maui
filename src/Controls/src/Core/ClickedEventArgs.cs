@@ -3,20 +3,22 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ClickedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.ClickedEventArgs']/Docs/*" />
+	/// <summary>Event arguments for a click event.</summary>
 	public class ClickedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ClickedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="Microsoft.Maui.Controls.ClickedEventArgs"/> with the specified values.</summary>
+		/// <param name="buttons">The button or buttons that were pressed.</param>
+		/// <param name="commandParameter">The command parameter.</param>
 		public ClickedEventArgs(ButtonsMask buttons, object commandParameter)
 		{
 			Buttons = buttons;
 			Parameter = commandParameter;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ClickedEventArgs.xml" path="//Member[@MemberName='Buttons']/Docs/*" />
+		/// <summary>Gets the button or buttons that were pressed.</summary>
 		public ButtonsMask Buttons { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ClickedEventArgs.xml" path="//Member[@MemberName='Parameter']/Docs/*" />
+		/// <summary>Gets the command parameter.</summary>
 		public object Parameter { get; private set; }
 	}
 }

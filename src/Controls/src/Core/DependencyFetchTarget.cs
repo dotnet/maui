@@ -1,11 +1,11 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/DependencyFetchTarget.xml" path="Type[@FullName='Microsoft.Maui.Controls.DependencyFetchTarget']/Docs/*" />
+	/// <summary>Enumeration specifying whether <see cref="M:Microsoft.Maui.Controls.DependencyService.Get`{T}(Microsoft.Maui.Controls.DependencyFetchTarget)"/> should return a reference to a global or new instance.</summary>
 	public enum DependencyFetchTarget
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyFetchTarget.xml" path="//Member[@MemberName='GlobalInstance']/Docs/*" />
+		/// <summary>Return a global instance.</summary>
 		GlobalInstance,
-		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyFetchTarget.xml" path="//Member[@MemberName='NewInstance']/Docs/*" />
+		/// <summary>Return a new instance.</summary>
 		NewInstance
 	}
 }
