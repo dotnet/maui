@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -174,6 +175,7 @@ namespace Microsoft.Maui.DeviceTests
 Skip = "Fails: https://github.com/dotnet/maui/issues/17664"
 #endif
 )]
+		[RequiresUnreferencedCode("Test uses string-based bindings which are not trim-safe")]
 		public async Task CollectionScrollToUngroupedWorks()
 		{
 			SetupBuilder();
@@ -233,6 +235,7 @@ Skip = "Fails: https://github.com/dotnet/maui/issues/17664"
 Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 #endif
 )]
+		[RequiresUnreferencedCode("Test uses string-based bindings which are not trim-safe")]
 		public async Task CollectionScrollToGroupWorks()
 		{
 			SetupBuilder();
@@ -500,6 +503,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 		Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/18517"
 #endif
 		)]
+		[RequiresUnreferencedCode("Test uses string-based bindings which are not trim-safe")]
 		public async Task CollectionViewItemsWithFixedWidthAndDifferentHeight()
 		{
 			// This tests a CollectionView that has items that have different heights based on https://github.com/dotnet/maui/issues/16234
@@ -541,6 +545,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 		}
 
 		[Fact(DisplayName = "SwipeView in CollectionView does not crash")]
+		[RequiresUnreferencedCode("Test uses string-based bindings which are not trim-safe")]
 		public async Task SwipeViewInCollectionViewDoesNotCrash()
 		{
 			SetupBuilder();
@@ -671,6 +676,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 
 
 		[Fact]
+		[RequiresUnreferencedCode("Test uses string-based bindings which are not trim-safe")]
 		public async Task SettingSelectedItemAfterModifyingCollectionDoesntCrash()
 		{
 			SetupBuilder();

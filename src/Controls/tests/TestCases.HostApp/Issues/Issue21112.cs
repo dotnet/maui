@@ -97,6 +97,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public ICommand NavigateCommand { get; set; }
 
+		[UnconditionalSuppressMessage("Trimming", "IL2111:DynamicallyAccessedMembersAttribute", Justification = "Command parameter usage in test code")]
 		public Issue21112ViewModel()
 		{
 			NavigateCommand = new Command<Type>(async ([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type pageType) =>

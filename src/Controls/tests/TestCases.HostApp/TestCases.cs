@@ -9,10 +9,15 @@ namespace Maui.Controls.Sample
 		{
 			public static Dictionary<string, Action> PageToAction = new Dictionary<string, Action>(StringComparer.OrdinalIgnoreCase);
 
+			[UnconditionalSuppressMessage("Trimming", "IL2112:DynamicallyAccessedMemberTypes", Justification = "TestCaseScreen uses reflection for test case discovery")]
 			bool _filterBugzilla;
+			[UnconditionalSuppressMessage("Trimming", "IL2112:DynamicallyAccessedMemberTypes", Justification = "TestCaseScreen uses reflection for test case discovery")]
 			bool _filterNone;
+			[UnconditionalSuppressMessage("Trimming", "IL2112:DynamicallyAccessedMemberTypes", Justification = "TestCaseScreen uses reflection for test case discovery")]
 			bool _filterGitHub;
+			[UnconditionalSuppressMessage("Trimming", "IL2112:DynamicallyAccessedMemberTypes", Justification = "TestCaseScreen uses reflection for test case discovery")]
 			bool _filterManual;
+			[UnconditionalSuppressMessage("Trimming", "IL2112:DynamicallyAccessedMemberTypes", Justification = "TestCaseScreen uses reflection for test case discovery")]
 			string _filter;
 
 			void CheckInternetAndLoadPage(Type type)
@@ -136,6 +141,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 
+			[UnconditionalSuppressMessage("Trimming", "IL2112:DynamicallyAccessedMemberTypes", Justification = "TestCaseScreen uses reflection for test case discovery")]
 			readonly List<IssueModel> _issues;
 
 			void VerifyNoDuplicates()
@@ -322,6 +328,7 @@ namespace Maui.Controls.Sample
 				ItemsSource = issues;
 			}
 
+			[UnconditionalSuppressMessage("Trimming", "IL2112:DynamicallyAccessedMemberTypes", Justification = "TestCaseScreen uses reflection for test case discovery")]
 			HashSet<string> _exemptNames = new HashSet<string> { };
 
 			// Legacy reasons, do not add to this list
