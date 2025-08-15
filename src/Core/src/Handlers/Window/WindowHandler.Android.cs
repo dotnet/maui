@@ -1,8 +1,10 @@
 using System;
 using Android.App;
 using Android.Views;
+using AndroidX.Core.View;
 using AndroidX.Window.Layout;
 using Google.Android.Material.AppBar;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -25,6 +27,7 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var rootView = CreateRootViewFromContent(handler, window);
+			ViewCompat.SetOnApplyWindowInsetsListener(rootView, new WindowsListener());
 			handler.PlatformView.SetContentView(rootView);
 		}
 
@@ -101,6 +104,69 @@ namespace Microsoft.Maui.Handlers
 		{
 			var frame = activity.GetWindowFrame();
 			VirtualView.FrameChanged(frame);
+		}
+
+		// Temporary workaround:
+		// Android 15 / API 36 removed the prior opt‑out path for edge‑to‑edge
+		// (legacy "edge to edge ignore" + decor fitting). This placeholder exists
+		// so we can keep apps from regressing (content accidentally covered by
+		// system bars) until a proper, unified edge‑to‑edge + system bar inset
+		// configuration API is implemented in MAUI.
+		//
+		// NOTE:
+		// - Keep this minimal.
+		// - Will be replaced by the planned comprehensive window insets solution.
+		// - Do not extend; add new logic to the forthcoming implementation instead.
+		internal class WindowsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
+		{
+			WeakReference<AppBarLayout>? appBarRef;
+
+			public WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
+			{
+				if (insets == null || v == null)
+					return insets;
+
+				var appBarLayout = GetAppBarLayout(v);
+				var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+				var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+
+				var leftInset = Math.Max(systemBars?.Left ?? 0, displayCutout?.Left ?? 0);
+				var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
+				var rightInset = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
+				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
+
+				// Apply top inset only to AppBarLayout to allow content behind it
+				appBarLayout?.SetPadding(0, topInset, 0, 0);
+				
+				// Apply side and bottom insets to root view, but not top
+				v.SetPadding(leftInset, 0, rightInset, bottomInset);
+
+				return WindowInsetsCompat.Consumed;
+			}
+
+			AppBarLayout? GetAppBarLayout(AView rootView)
+			{
+				// Try to get from weak reference first
+				if (appBarRef?.TryGetTarget(out var cachedAppBar) == true)
+					return cachedAppBar;
+
+				// Find AppBarLayout by ID first (most efficient)
+				var appBarLayout = rootView.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
+				
+				// Fallback to tree traversal if not found by ID
+				if (appBarLayout == null && rootView is ViewGroup viewGroup)
+				{
+					appBarLayout = viewGroup.GetFirstChildOfType<AppBarLayout>();
+				}
+
+				// Cache the result
+				if (appBarLayout != null)
+				{
+					appBarRef = new WeakReference<AppBarLayout>(appBarLayout);
+				}
+
+				return appBarLayout;
+			}
 		}
 	}
 }
