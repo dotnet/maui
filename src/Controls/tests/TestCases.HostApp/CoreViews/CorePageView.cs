@@ -1,4 +1,5 @@
-﻿using Controls.Sample.UITests;
+﻿using System.Diagnostics.CodeAnalysis;
+using Controls.Sample.UITests;
 using Maui.Controls.Sample.CollectionViewGalleries;
 using Maui.Controls.Sample.Issues;
 
@@ -167,6 +168,7 @@ namespace Maui.Controls.Sample
 			return Task.FromResult(false);
 		}
 
+		[RequiresUnreferencedCode("Calls Maui.Controls.Sample.TestCases.TestCaseScreen.TestCaseScreen()")]
 		public async Task<bool> NavigateToTest(string pageTitle)
 		{
 			var testCaseScreen = new TestCases.TestCaseScreen();
