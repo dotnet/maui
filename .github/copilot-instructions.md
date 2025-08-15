@@ -88,6 +88,29 @@ For .NET installation on Linux, follow the official Microsoft documentation:
 
 ## Development Workflow
 
+### Pre-Commit Validation Requirements
+
+**MANDATORY: All platform-specific changes must be validated before committing.**
+
+For Android platform code changes:
+1. **Compile Android TFM**: Always test `net10.0-android36.0` and similar Android target frameworks
+2. **Verify Android references**: Ensure `using Android.*` statements compile correctly
+3. **Test platform APIs**: Confirm Android-specific extension methods work as expected
+
+Example validation commands:
+```bash
+# Core Android TFM validation
+dotnet build src/Core/src/Core.csproj --framework net10.0-android36.0
+
+# Controls Android TFM validation  
+dotnet build src/Controls/src/Core/Controls.Core.csproj --framework net10.0-android36.0
+
+# Full BuildTasks validation
+dotnet build ./Microsoft.Maui.BuildTasks.slnf
+```
+
+**Do not skip Android TFM compilation testing** - Android workloads are available and functional in this environment.
+
 ### Building
 
 #### Using Cake (Recommended)
@@ -98,6 +121,29 @@ dotnet cake
 # Pack NuGet packages
 dotnet cake --target=dotnet-pack
 ```
+
+#### Android Target Framework Validation
+
+**CRITICAL: Always validate Android TFM builds before committing changes.**
+
+The Android workloads are properly installed and available in this environment. When making code changes that affect Android platform code, always verify that Android target frameworks compile successfully:
+
+```bash
+# Verify Android TFM compilation for specific projects
+dotnet build src/Core/src/Core.csproj --framework net10.0-android36.0
+dotnet build src/Controls/src/Core/Controls.Core.csproj --framework net10.0-android36.0
+
+# Build BuildTasks to ensure foundational compilation works
+dotnet build ./Microsoft.Maui.BuildTasks.slnf
+```
+
+**Required Android TFM Build Verification:**
+- Test Android-specific target frameworks (e.g., `net10.0-android36.0`) when modifying Android platform code
+- Verify that `using Android.*` statements compile correctly 
+- Ensure Android-specific extension methods and APIs are properly referenced
+- Confirm that Android workload dependencies are resolved
+
+**Do not commit Android platform changes without verifying Android TFM compilation success.**
 
 ### Testing and Debugging
 
@@ -183,6 +229,23 @@ For compatibility with specific branches:
 - Requires Android SDK and OpenJDK 17
 - Install missing Android SDKs via [Android SDK Manager](https://learn.microsoft.com/xamarin/android/get-started/installation/android-sdk)
 - Android SDK Manager available via: `android` command (after dotnet tool restore)
+
+#### Android TFM Build Requirements
+**Android workloads are installed and functional.** When working on Android platform code:
+
+- **Always test Android TFM compilation** before committing changes
+- **Verify Android-specific target frameworks** like `net10.0-android36.0` compile successfully
+- **Test Android platform references** including `using Android.*` namespaces
+- **Validate Android extension methods** and platform-specific APIs work correctly
+
+Build verification commands:
+```bash
+# Test Android TFM for Core components
+dotnet build src/Core/src/Core.csproj --framework net10.0-android36.0
+
+# Test Android TFM for Controls
+dotnet build src/Controls/src/Core/Controls.Core.csproj --framework net10.0-android36.0
+```
 
 ### iOS (requires macOS)
 - Requires current stable Xcode installation from [App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12) or [Apple Developer portal](https://developer.apple.com/download/more/?name=Xcode)
