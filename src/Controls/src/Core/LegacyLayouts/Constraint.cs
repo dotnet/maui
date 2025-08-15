@@ -5,6 +5,8 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using Microsoft.Maui.Controls.Internals;
 
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
+
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[System.ComponentModel.TypeConverter(typeof(ConstraintTypeConverter))]
@@ -57,3 +59,5 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 	}
 }
+
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete

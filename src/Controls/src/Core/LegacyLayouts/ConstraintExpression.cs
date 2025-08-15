@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
+
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[RequireService([typeof(IReferenceProvider), typeof(IProvideValueTarget)])]
@@ -68,3 +70,5 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 	}
 }
+
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete

@@ -1,4 +1,5 @@
 #nullable disable
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
@@ -199,3 +200,4 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 }
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete

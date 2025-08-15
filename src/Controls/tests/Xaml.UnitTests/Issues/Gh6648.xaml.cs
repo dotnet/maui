@@ -1,3 +1,4 @@
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -19,3 +20,4 @@ public partial class Gh6648 : ContentPage
 		}
 	}
 }
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete

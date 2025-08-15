@@ -9,7 +9,7 @@ namespace Maui.Controls.Sample.Issues
 	public class Issue2653 : TestContentPage
 	{
 		BoxView bv = null;
-		Microsoft.Maui.Controls.Compatibility.Grid layout = null;
+		Grid layout = null;
 		const string ButtonText = "Insert Box View";
 		const string MoveUp = "Move Box View Up";
 		const string MoveDown = "Move Box View Down";
@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample.Issues
 		protected override void Init()
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
-			layout = new Microsoft.Maui.Controls.Compatibility.Grid { BackgroundColor = Colors.Red, VerticalOptions = LayoutOptions.FillAndExpand, HorizontalOptions = LayoutOptions.FillAndExpand };
+			layout = new Grid { BackgroundColor = Colors.Red, VerticalOptions = LayoutOptions.FillAndExpand, HorizontalOptions = LayoutOptions.FillAndExpand };
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			layout.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Star });
@@ -69,12 +69,12 @@ namespace Maui.Controls.Sample.Issues
 					new Button(){ Text = MoveUp, AutomationId = MoveUp, Command = new Command(() =>
 					{
 						AddBoxView();
-						layout.RaiseChild(bv);
+						bv.ZIndex = 1;
 					}),  HeightRequest = 45},
 					new Button(){ Text = MoveDown, AutomationId = MoveDown, Command = new Command(() =>
 					{
 						AddBoxView();
-						layout.LowerChild(bv);
+						bv.ZIndex = -1;
 					}),  HeightRequest = 45},
 					layout,
 					new Button()

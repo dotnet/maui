@@ -1,4 +1,5 @@
 ﻿#nullable disable
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -46,3 +47,4 @@ namespace Microsoft.Maui.Controls
 			MapContentLayout((IButtonHandler)handler, button);
 	}
 }
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete

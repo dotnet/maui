@@ -1,3 +1,4 @@
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
@@ -30,3 +31,4 @@ public partial class InlineCSS : ContentPage
 		}
 	}
 }
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete
