@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Graphics
 		private readonly Stack<float> _scaleYStack = new Stack<float>();
 		private float _scaleX = 1f;
 		private float _scaleY = 1f;
+		private float _initialScaleX = 1f;
+		private float _initialScaleY = 1f;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ScalingCanvas"/> class.
@@ -27,6 +29,12 @@ namespace Microsoft.Maui.Graphics
 		{
 			_canvas = wrapped;
 			_blurrableCanvas = _canvas as IBlurrableCanvas;
+		}
+
+		internal ScalingCanvas(ICanvas wrapped, float scale) : this(wrapped)
+		{
+			_initialScaleX = scale;
+			_initialScaleY = scale;
 		}
 
 		/// <inheritdoc/>
@@ -271,8 +279,8 @@ namespace Microsoft.Maui.Graphics
 			_canvas.ResetState();
 			_scaleXStack.Clear();
 			_scaleYStack.Clear();
-			_scaleX = 1;
-			_scaleY = 1;
+			_scaleX = _initialScaleX;
+			_scaleY = _initialScaleY;
 		}
 
 		public bool RestoreState()
@@ -285,8 +293,8 @@ namespace Microsoft.Maui.Graphics
 			}
 			else
 			{
-				_scaleX = 1;
-				_scaleY = 1;
+				_scaleX = _initialScaleX;
+				_scaleY = _initialScaleY;
 			}
 
 			return restored;
