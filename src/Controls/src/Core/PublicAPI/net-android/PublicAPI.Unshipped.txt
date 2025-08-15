@@ -336,8 +336,6 @@ override Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter.CanConvert
 override Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
 ~override Microsoft.Maui.Controls.ScrollView.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
-~override Microsoft.Maui.Controls.Platform.MauiViewPager.OnInterceptTouchEvent(Android.Views.MotionEvent ev) -> bool
-~override Microsoft.Maui.Controls.Platform.MauiViewPager.OnTouchEvent(Android.Views.MotionEvent e) -> bool
 override Microsoft.Maui.Controls.ScrollView.InvalidateLayout() -> void
 override Microsoft.Maui.Controls.ScrollView.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest
 override Microsoft.Maui.Controls.ScrollView.OnChildMeasureInvalidated() -> void
