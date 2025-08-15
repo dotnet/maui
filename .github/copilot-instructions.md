@@ -112,47 +112,14 @@ dotnet cake --target=dotnet-pack
 
 #### UI Testing Guidelines
 
-When adding UI tests to validate visual behavior and user interactions, follow this two-part pattern:
+For comprehensive UI testing guidelines and patterns, see the dedicated instructions file:
+`.github/instructions/ui-testing.instructions.md`
 
-**CRITICAL: UITests require code in TWO separate projects that must BOTH be implemented:**
-
-1. **HostApp UI Test Page** (`src/Controls/tests/TestCases.HostApp/Issues/`)
-   - Create the actual UI page that demonstrates the feature or reproduces the issue
-   - Use XAML with proper `AutomationId` attributes on interactive controls for test automation
-   - Follow naming convention: `IssueXXXXX.xaml` and `IssueXXXXX.xaml.cs`
-   - Ensure the UI provides clear visual feedback for the behavior being tested
-
-2. **NUnit Test Implementation** (`src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/`)
-   - Create corresponding Appium-based NUnit tests that inherit from `_IssuesUITest`
-   - Use the `AutomationId` values to locate and interact with UI elements
-   - Follow naming convention: `IssueXXXXX.cs` (matches the HostApp file)
-   - Include appropriate `[Category(UITestCategories.XYZ)]` attributes
-   - Test should validate expected behavior through UI interactions and assertions
-
-**UI Test Pattern Example:**
-```csharp
-// In TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs
-public class IssueXXXXX : _IssuesUITest
-{
-    public override string Issue => "Description of the issue being tested";
-    
-    public IssueXXXXX(TestDevice device) : base(device) { }
-    
-    [Test]
-    [Category(UITestCategories.Layout)] // or appropriate category
-    public void TestMethodName()
-    {
-        App.WaitForElement("AutomationId");
-        App.Tap("AutomationId");
-        // Add assertions to verify expected behavior
-    }
-}
-```
-
-**Before committing UI tests:**
-- Compile both the HostApp project and TestCases.Shared.Tests project to ensure no build errors
-- Verify AutomationId references match between XAML and test code
-- Ensure tests follow the established naming and inheritance patterns
+This includes:
+- Two-part testing pattern (HostApp + NUnit tests)
+- UI test code examples and patterns
+- AutomationId requirements and naming conventions
+- Complete API reference and best practices
 
 ### Code Formatting
 
