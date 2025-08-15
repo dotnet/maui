@@ -25,7 +25,6 @@ using WBinding = Microsoft.UI.Xaml.Data.Binding;
 using WListView = Microsoft.UI.Xaml.Controls.ListView;
 using WRect = Windows.Foundation.Rect;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
-using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

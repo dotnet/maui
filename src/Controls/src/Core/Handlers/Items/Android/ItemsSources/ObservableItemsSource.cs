@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
-using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
