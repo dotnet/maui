@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			base.OnRemoved(view);
 		}
 
-		[Obsolete("Use MeasureOverride instead", true)]
+		[Obsolete("Use MeasureOverride instead")]
 #pragma warning disable CS0672 // Member overrides obsolete member
 #pragma warning disable CS0618 // Type or member is obsolete
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)

@@ -432,7 +432,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		bool _measuring;
-		[Obsolete("Use MeasureOverride instead", true)]
+		[Obsolete("Use MeasureOverride instead")]
 #pragma warning disable CS0672 // Member overrides obsolete member
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
