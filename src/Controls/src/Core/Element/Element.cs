@@ -333,30 +333,39 @@ namespace Microsoft.Maui.Controls
 		}
 
 		WeakReference<Element> _realParent;
+		Element TryGetRealParent(bool logWarningIfParentHasBeenCollected = true)
+		{
+			var realParent = _realParent;
+			if (realParent is null)
+			{
+				return null;
+			}
+			if (realParent.TryGetTarget(out var parent))
+			{
+				return parent;
+			}
+			else
+			{
+				// Clear the weak reference since the target has been garbage collected
+				// This prevents repeated checks and warnings on subsequent accesses
+				_realParent = null;
+				if (logWarningIfParentHasBeenCollected)
+				{
+					Application.Current?
+										.FindMauiContext()?
+										.CreateLogger<Element>()?
+										.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+				}
+			}
+
+			return null;
+		}
+
 		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element RealParent
 		{
-			get
-			{
-				if (_realParent is null)
-				{
-					return null;
-				}
-				if (_realParent.TryGetTarget(out var parent))
-				{
-					return parent;
-				}
-				else
-				{
-					Application.Current?
-						.FindMauiContext()?
-						.CreateLogger<Element>()?
-						.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
-				}
-
-				return null;
-			}
+			get => TryGetRealParent();
 			private set
 			{
 				if (value is null)
@@ -386,7 +395,7 @@ namespace Microsoft.Maui.Controls
 
 		void SetParent(Element value)
 		{
-			Element realParent = RealParent;
+			Element realParent = TryGetRealParent(false);
 
 			if (realParent == value)
 			{
