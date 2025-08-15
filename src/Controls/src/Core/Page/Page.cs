@@ -279,7 +279,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Raised when the children of this page, and thus potentially the layout, have changed.
 		/// </summary>
-		[Obsolete("Use SizeChanged.", true)]
+		[Obsolete("Use SizeChanged.")]
 #pragma warning disable CS0067 // The event is never used
 		public event EventHandler LayoutChanged;
 #pragma warning restore CS0067 // The event is never used

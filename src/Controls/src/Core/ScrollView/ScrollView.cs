@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='LayoutAreaOverride']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		[Obsolete("This API doesn't do anything", true)]
+		[Obsolete("This API doesn't do anything")]
 		public Rect LayoutAreaOverride
 		{
 			get => _layoutAreaOverride;
@@ -638,7 +638,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		[Obsolete("Use IVisualTreeElement.GetVisualChildren() instead.", true)]
+		[Obsolete("Use IVisualTreeElement.GetVisualChildren() instead.")]
 		public new IReadOnlyList<Element> Children => base.Children;
 	}
 }
