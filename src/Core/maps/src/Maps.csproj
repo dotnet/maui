@@ -32,7 +32,7 @@
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
-    <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="$(XamarinGooglePlayServicesMaps)" />
+    <PackageReference Include="Xamarin.GooglePlayServices.Maps" />
     <PackageReference Include="Xamarin.AndroidX.Transition" />
   </ItemGroup>
 
