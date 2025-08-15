@@ -145,11 +145,19 @@ namespace Microsoft.Maui.Graphics.Platform
 			width = 0;
 			height = 0;
 
-			// Look into the byte array and get the size of the image
-			for (int i = 0; i <= 3; i++)
+			// PNG format: 8-byte signature, then chunks
+			// IHDR chunk starts at byte 8 with: 4-byte length, 4-byte "IHDR", then 4-byte width, 4-byte height
+			if (_bytes.Length >= 24)
 			{
-				width = _bytes[i] | width << 8;
-				height = _bytes[i + 4] | height << 8;
+				// Check if this is a valid PNG with IHDR chunk
+				if (_bytes[8] == 0x00 && _bytes[9] == 0x00 && _bytes[10] == 0x00 && _bytes[11] == 0x0D && // IHDR length = 13
+					_bytes[12] == 0x49 && _bytes[13] == 0x48 && _bytes[14] == 0x44 && _bytes[15] == 0x52) // "IHDR"
+				{
+					// Width is at bytes 16-19 (big-endian)
+					width = (_bytes[16] << 24) | (_bytes[17] << 16) | (_bytes[18] << 8) | _bytes[19];
+					// Height is at bytes 20-23 (big-endian)
+					height = (_bytes[20] << 24) | (_bytes[21] << 16) | (_bytes[22] << 8) | _bytes[23];
+				}
 			}
 		}
 
