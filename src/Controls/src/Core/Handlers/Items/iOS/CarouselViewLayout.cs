@@ -8,13 +8,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	public class CarouselViewLayout : ItemsViewLayout
 	{
 		readonly WeakReference<CarouselView> _carouselView;
-		readonly ItemsLayout _itemsLayout;
+		readonly WeakReference<ItemsLayout> _itemsLayout;
+		ItemsLayout ItemsLayout
+		{
+			get
+			{
+				_itemsLayout.TryGetTarget(out var itemsLayout);
+				return itemsLayout;
+			}
+			set
+			{
+				_itemsLayout.SetTarget(value);
+			}
+		}
 		CGPoint? _pendingOffset;
 
 		public CarouselViewLayout(ItemsLayout itemsLayout, CarouselView carouselView) : base(itemsLayout)
 		{
 			_carouselView = new(carouselView);
-			_itemsLayout = itemsLayout;
+			_itemsLayout = new(itemsLayout);
 		}
 
 		public override void ConstrainTo(CGSize size)
@@ -38,7 +50,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
-			if (_itemsLayout is LinearItemsLayout linearItemsLayout)
+			if (ItemsLayout is LinearItemsLayout linearItemsLayout)
 				return (nfloat)linearItemsLayout.ItemSpacing;
 
 			return base.GetMinimumInteritemSpacingForSection(collectionView, layout, section);
@@ -46,14 +58,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
+			var baseInsets = base.GetInsetForSection(collectionView, layout, section);
+			
 			if (!_carouselView.TryGetTarget(out var carouselView))
-				return default;
+				return baseInsets;
 
-			var insets = base.GetInsetForSection(collectionView, layout, section);
-			var left = insets.Left + (float)carouselView.PeekAreaInsets.Left;
-			var right = insets.Right + (float)carouselView.PeekAreaInsets.Right;
-			var top = insets.Top + (float)carouselView.PeekAreaInsets.Top;
-			var bottom = insets.Bottom + (float)carouselView.PeekAreaInsets.Bottom;
+			var left = baseInsets.Left + (float)carouselView.PeekAreaInsets.Left;
+			var right = baseInsets.Right + (float)carouselView.PeekAreaInsets.Right;
+			var top = baseInsets.Top + (float)carouselView.PeekAreaInsets.Top;
+			var bottom = baseInsets.Bottom + (float)carouselView.PeekAreaInsets.Bottom;
 
 			return new UIEdgeInsets(top, left, bottom, right);
 		}
