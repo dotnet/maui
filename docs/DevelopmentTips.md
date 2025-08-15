@@ -37,6 +37,24 @@ dotnet cake --target=VS --workloads=global --android --ios
 
 *Note* you will have to `git clean -xdf` your project if you change or add platforms. 
 
+#### Build Configuration Variables
+`.NET MAUI` supports several MSBuild variables to control which target frameworks are included in builds:
+
+- `IncludeCurrentTfms` (default: `true`) - Controls whether current .NET target framework monikers are included in the build
+- `IncludePreviousTfms` (default: `false`) - Controls whether previous .NET target framework monikers are included in the build
+- `IncludePreviousTfmsEssentials` (default: `false`) - Controls previous TFMs for Essentials projects
+- `IncludePreviousTfmsGraphics` (default: `false`) - Controls previous TFMs for Graphics projects
+
+These can be used in CI scenarios to selectively build only certain target frameworks:
+
+```bash
+# Build only netstandard targets, excluding current platform TFMs
+dotnet build -p:IncludeCurrentTfms=false
+
+# Build current and previous TFMs
+dotnet build -p:IncludePreviousTfms=true
+``` 
+
 ### Blazor Hybrid
 
 To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://github.com/dotnet/maui/wiki/Blazor-Desktop) wiki topic.
