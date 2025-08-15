@@ -71,7 +71,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.Controller as CarouselViewController)?.UpdateLoop();
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
-			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			var size = this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
+
+			// Clamp size to constraints to prevent exceeding them on Mac Catalyst
+			if (!double.IsInfinity(widthConstraint) && size.Width > widthConstraint)
+			{
+				size.Width = widthConstraint;
+			}
+
+			if (!double.IsInfinity(heightConstraint) && size.Height > heightConstraint)
+			{
+				size.Height = heightConstraint;
+			}
+
+			return size;
+		}
 	}
 }
