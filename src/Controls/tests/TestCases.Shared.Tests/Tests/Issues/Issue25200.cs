@@ -38,6 +38,8 @@ public class Issue25200 : _IssuesUITest
 		App.Tap("Cancel");
 	}
 
+	// Skip this test on macOS, after 6 elements the native behavior is to display elements horizontally - https://github.com/dotnet/maui/issues/29085
+#if !MACCATALYST
 	[Test]
 	[Category(UITestCategories.ActionSheet)]
 	public void ActionSheetWithManyActionsShouldDisplayProperly()
@@ -63,6 +65,7 @@ public class Issue25200 : _IssuesUITest
 		// Dismiss the ActionSheet
 		App.Tap("Cancel");
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.ActionSheet)]
