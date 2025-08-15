@@ -128,6 +128,14 @@ Microsoft.Maui.Controls.PickerClosedEventArgs
 Microsoft.Maui.Controls.PickerClosedEventArgs.PickerClosedEventArgs() -> void
 Microsoft.Maui.Controls.PickerOpenedEventArgs
 Microsoft.Maui.Controls.PickerOpenedEventArgs.PickerOpenedEventArgs() -> void
+Microsoft.Maui.Controls.Platform.ItemTemplateContext
+~Microsoft.Maui.Controls.Platform.ItemTemplateContext.Container.get -> Microsoft.Maui.Controls.BindableObject
+~Microsoft.Maui.Controls.Platform.ItemTemplateContext.FormsDataTemplate.get -> Microsoft.Maui.Controls.DataTemplate
+~Microsoft.Maui.Controls.Platform.ItemTemplateContext.Item.get -> object
+Microsoft.Maui.Controls.Platform.ItemTemplateContext.ItemHeight.get -> double
+Microsoft.Maui.Controls.Platform.ItemTemplateContext.ItemSpacing.get -> Microsoft.Maui.Thickness
+Microsoft.Maui.Controls.Platform.ItemTemplateContext.ItemWidth.get -> double
+~Microsoft.Maui.Controls.Platform.ItemTemplateContext.MauiContext.get -> Microsoft.Maui.IMauiContext
 Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.Popover = 5 -> Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle
 Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs
 Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs.Sender.get -> Microsoft.Web.WebView2.Core.CoreWebView2!
