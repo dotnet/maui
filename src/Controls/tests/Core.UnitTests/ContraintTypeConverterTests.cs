@@ -1,3 +1,4 @@
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 using Microsoft.Maui.Controls.Compatibility;
 using Xunit;
 
@@ -17,3 +18,4 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 }
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete
