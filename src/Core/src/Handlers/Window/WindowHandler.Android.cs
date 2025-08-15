@@ -1,6 +1,7 @@
 using System;
 using Android.App;
 using Android.Views;
+using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using AndroidX.Window.Layout;
 using Google.Android.Material.AppBar;
@@ -119,14 +120,12 @@ namespace Microsoft.Maui.Handlers
 		// - Do not extend; add new logic to the forthcoming implementation instead.
 		internal class WindowsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
 		{
-			WeakReference<AppBarLayout>? appBarRef;
-
 			public WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
 			{
 				if (insets == null || v == null)
 					return insets;
 
-				var appBarLayout = GetAppBarLayout(v);
+				var appBarLayout = v.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
 				var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 				var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
 
@@ -141,31 +140,26 @@ namespace Microsoft.Maui.Handlers
 				// Apply side and bottom insets to root view, but not top
 				v.SetPadding(leftInset, 0, rightInset, bottomInset);
 
-				return WindowInsetsCompat.Consumed;
-			}
+				// Create new insets with only top consumed
+				var newSystemBars = Insets.Of(
+					systemBars?.Left ?? 0,
+					systemBars?.Top ?? 0,
+					systemBars?.Right ?? 0,
+					0
+				) ?? Insets.None;
 
-			AppBarLayout? GetAppBarLayout(AView rootView)
-			{
-				// Try to get from weak reference first
-				if (appBarRef?.TryGetTarget(out var cachedAppBar) == true)
-					return cachedAppBar;
-
-				// Find AppBarLayout by ID first (most efficient)
-				var appBarLayout = rootView.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
+				// Create new insets with only top consumed
+				var newDisplayCutout = Insets.Of(
+					displayCutout?.Left ?? 0,
+					displayCutout?.Top ?? 0,
+					displayCutout?.Right ?? 0,
+					0
+				) ?? Insets.None;
 				
-				// Fallback to tree traversal if not found by ID
-				if (appBarLayout == null && rootView is ViewGroup viewGroup)
-				{
-					appBarLayout = viewGroup.GetFirstChildOfType<AppBarLayout>();
-				}
-
-				// Cache the result
-				if (appBarLayout != null)
-				{
-					appBarRef = new WeakReference<AppBarLayout>(appBarLayout);
-				}
-
-				return appBarLayout;
+				return new WindowInsetsCompat.Builder(insets)
+					?.SetInsets(WindowInsetsCompat.Type.SystemBars(), newSystemBars)
+					?.SetInsets(WindowInsetsCompat.Type.DisplayCutout(), newDisplayCutout)
+					?.Build() ?? insets;
 			}
 		}
 	}
