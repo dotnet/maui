@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.RefreshView)]
-		public void RefreshIconDisappearsWhenUserCancelsRefreshByScrollingBackUp()
+		public async Task RefreshIconDisappearsWhenUserCancelsRefreshByScrollingBackUp()
 		{
 			if (App is not AppiumAndroidApp androidApp)
 				throw new InvalidOperationException($"Invalid App Type For this Test: {App} Expected AppiumAndroidApp.");
@@ -32,6 +32,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			int toY = rect2.CenterY();
 
 			DragCoordinatesAndRestore(androidApp, fromX, fromY, toX, toY);
+
+			// wait for the scroll bounce to stop
+			await Task.Delay(200);
 
 			VerifyScreenshot();
 		}
