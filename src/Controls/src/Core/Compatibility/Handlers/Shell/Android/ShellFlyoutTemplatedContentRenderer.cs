@@ -91,11 +91,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (insets == null || v == null)
 					return insets;
 
-				var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+				// The flyout overlaps the status bar so we don't really care about insetting it
 				var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
-				var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
 
-				v.SetPadding(0, topInset, 0, 0);
+				v.SetPadding(0, displayCutout?.Top ?? 0, 0, 0);
 
 				return WindowInsetsCompat.Consumed;
 			}
