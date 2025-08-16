@@ -22,11 +22,11 @@ namespace Microsoft.Maui.Controls.Internals
 		static long Reference;
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public static IPerformanceProvider Provider { get; private set; }
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		/// <param name="instance">Internal parameter for platform use.</param>
 		public static void SetProvider(IPerformanceProvider instance)
 		{
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		/// <param name="reference">Internal parameter for platform use.</param>
 		/// <param name="tag">Internal parameter for platform use.</param>
 		/// <param name="path">Internal parameter for platform use.</param>
