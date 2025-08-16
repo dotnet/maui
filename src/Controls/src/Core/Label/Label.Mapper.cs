@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapLineHeight(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
-			if (!IsPlainText(label))
+			if (label.HasFormattedTextSpans)
 				return;
 
 			baseMethod?.Invoke(handler, label);
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapTextDecorations(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
-			if (!IsPlainText(label))
+			if (label.HasFormattedTextSpans)
 				return;
 
 			baseMethod?.Invoke(handler, label);
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapCharacterSpacing(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
-			if (!IsPlainText(label))
+			if (label.HasFormattedTextSpans)
 				return;
 
 			baseMethod?.Invoke(handler, label);
