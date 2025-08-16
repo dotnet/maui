@@ -32,16 +32,6 @@ namespace Microsoft.Maui.Platform
 		{
 			var selectedIndex = newSelectedIndex ?? picker.SelectedIndex;
 
-			if (selectedIndex != -1)
-			{
-				platformPicker.Text = picker.GetItem(selectedIndex);
-			}
-			else
-			{
-				platformPicker.Text = null;
-				platformPicker.UpdatePickerTitle(picker);
-			}
-
 			var pickerView = platformPicker.UIPickerView;
 			pickerView?.ReloadAllComponents();
 
