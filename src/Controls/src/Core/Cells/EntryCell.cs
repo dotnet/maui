@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler Completed;
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendCompleted()
 			=> Completed?.Invoke(this, EventArgs.Empty);

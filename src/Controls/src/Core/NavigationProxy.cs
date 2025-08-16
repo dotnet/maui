@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Internals
 		Lazy<List<Page>> _pushStack = new Lazy<List<Page>>(() => new List<Page>());
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public INavigation Inner
 		{
 			get { return _inner; }
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		/// <param name="page">Internal parameter for platform use.</param>
 		/// <param name="before">Internal parameter for platform use.</param>
 		public void InsertPageBefore(Page page, Page before)
@@ -78,14 +78,14 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public IReadOnlyList<Page> ModalStack
 		{
 			get { return GetModalStack(); }
 		}
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public IReadOnlyList<Page> NavigationStack
 		{
 			get { return GetNavigationStack(); }
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		/// <param name="page">Internal parameter for platform use.</param>
 		public void RemovePage(Page page)
 		{
