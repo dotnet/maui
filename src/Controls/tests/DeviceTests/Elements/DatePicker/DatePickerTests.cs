@@ -98,6 +98,7 @@ public partial class DatePickerTests : ControlsHandlerTestBase
 
 		return string.Empty;
 	}
+
 	[Fact(DisplayName = "DateSelected Event Fires When Platform View Date Changes")]
 	public async Task DateSelectedEventFiresWhenPlatformViewDateChanges()
 	{
