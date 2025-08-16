@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Internals
 	public abstract class ExpressionSearch
 	{
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public static IExpressionSearch Default { get; set; }
 	}
 }
