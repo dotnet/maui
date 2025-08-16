@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			_scale = Resources.DisplayMetrics.Density;
 			_canvas = new PlatformCanvas(context);
-			_scalingCanvas = new ScalingCanvas(_canvas);
+			_scalingCanvas = new ScalingCanvas(_canvas, _scale);
 			Drawable = drawable;
 		}
 
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			_scale = Resources.DisplayMetrics.Density;
 			_canvas = new PlatformCanvas(context);
-			_scalingCanvas = new ScalingCanvas(_canvas);
+			_scalingCanvas = new ScalingCanvas(_canvas, _scale);
 			Drawable = drawable;
 		}
 

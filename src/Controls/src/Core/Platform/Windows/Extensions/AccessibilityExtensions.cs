@@ -25,10 +25,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_defaultAutomationPropertiesName = currentValue = (string)Control.GetValue(NativeAutomationProperties.NameProperty);
 			}
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			var elemValue = (string)Element.GetValue(AutomationProperties.NameProperty);
-#pragma warning restore CS0618 // Type or member is obsolete
-
+			var elemValue = (string)Element.GetValue(SemanticProperties.DescriptionProperty);
 			string newValue = !string.IsNullOrWhiteSpace(elemValue) ? elemValue : _defaultAutomationPropertiesName;
 
 			if (currentValue is null || currentValue != newValue)
@@ -88,10 +85,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_defaultAutomationPropertiesHelpText = currentValue = (string)Control.GetValue(NativeAutomationProperties.HelpTextProperty);
 			}
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			var elemValue = (string)Element.GetValue(AutomationProperties.HelpTextProperty);
-#pragma warning restore CS0618 // Type or member is obsolete
-
+			var elemValue = (string)Element.GetValue(SemanticProperties.HintProperty);
 			string newValue = !string.IsNullOrWhiteSpace(elemValue) ? elemValue : _defaultAutomationPropertiesHelpText;
 
 			if (currentValue is null || newValue != currentValue)
@@ -123,9 +117,8 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_defaultAutomationPropertiesLabeledBy = currentValue = (UIElement)Control.GetValue(NativeAutomationProperties.LabeledByProperty);
 			}
-#pragma warning disable CS0618 // Type or member is obsolete
-			var elemValue = (VisualElement)Element.GetValue(AutomationProperties.LabeledByProperty);
-#pragma warning restore CS0618 // Type or member is obsolete
+
+			var elemValue = (VisualElement)Element.GetValue(SemanticProperties.DescriptionProperty);
 			FrameworkElement? nativeElement = null;
 
 			if (mauiContext != null)
@@ -137,9 +130,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (currentValue is null || newValue != currentValue)
 			{
-#pragma warning disable CS0618 // Type or member is obsolete
-				Control.SetValue(AutomationProperties.LabeledByProperty, newValue);
-#pragma warning restore CS0618 // Type or member is obsolete
+				Control.SetValue(SemanticProperties.DescriptionProperty, newValue);
 			}
 
 			return _defaultAutomationPropertiesLabeledBy;
@@ -161,22 +152,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static string ConcatenateNameAndHint(Element Element)
 		{
-			string separator;
+			var name = (string)Element.GetValue(SemanticProperties.DescriptionProperty);
+			var hint = (string)Element.GetValue(SemanticProperties.HintProperty);
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			var name = (string)Element.GetValue(AutomationProperties.NameProperty);
-
-			var hint = (string)Element.GetValue(AutomationProperties.HelpTextProperty);
-#pragma warning restore CS0618 // Type or member is obsolete
-
-			if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(hint))
-			{
-				separator = "";
-			}
-			else
-			{
-				separator = ". ";
-			}
+			string separator = string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(hint) ? "" : ". ";
 
 			return string.Join(separator, name, hint);
 
