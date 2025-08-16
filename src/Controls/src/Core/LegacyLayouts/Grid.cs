@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				var child = sender as View;
 				if (child != null)
 				{
-					ComputeConstrainsForChildren();
+					child.ComputedConstraint = ComputeConstraintForView(child);
 				}
 
 				InvalidateLayout();
