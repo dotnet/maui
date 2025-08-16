@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls
 			Content = null;
 		}
 
-		protected override void ComputeConstraintForView(View view)
+		protected override LayoutConstraint ComputeConstraintForView(View view)
 		{
 			bool isFixedHorizontally = (Constraint & LayoutConstraint.HorizontallyFixed) != 0;
 			bool isFixedVertically = (Constraint & LayoutConstraint.VerticallyFixed) != 0;
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls
 				result |= LayoutConstraint.HorizontallyFixed;
 			}
 
-			view.ComputedConstraint = result;
+			return result;
 		}
 
 		internal override void SetChildInheritedBindingContext(Element child, object context)
