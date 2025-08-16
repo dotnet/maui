@@ -25,7 +25,7 @@
             Spacing="{StaticResource LayoutSpacing}">
             <BindableLayout.ItemTemplate>
                 <DataTemplate x:DataType="models:Project">
-                    <Border>
+                    <Border SemanticProperties.Description="{Binding Name, StringFormat='{0} Project'}">
                         <VerticalStackLayout Padding="10">
                             <Label Text="{Binding Name}" FontSize="24" />
                             <Label Text="{Binding Description}" />
@@ -40,6 +40,7 @@
       </ScrollView>
 
         <controls:AddButton 
-            Command="{Binding AddProjectCommand}" />
+            Command="{Binding AddProjectCommand}"
+            SemanticProperties.Description="Add project" />
     </Grid>
 </ContentPage>

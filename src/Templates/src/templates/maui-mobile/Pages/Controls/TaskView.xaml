@@ -51,7 +51,7 @@
                     <Label Grid.Column="1"
                         Text="{Binding Title}"
                         VerticalOptions="Center"
-                        LineBreakMode="TailTruncation"
+                        LineBreakMode="WordWrap"
                         AutomationProperties.IsInAccessibleTree="False" />
                 </Grid>
             </shimmer:SfShimmer.Content>
