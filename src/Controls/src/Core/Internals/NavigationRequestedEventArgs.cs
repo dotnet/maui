@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Internals
 		public Task<bool> Task { get; set; }
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public NavigationRequestType RequestType { get; set; } = NavigationRequestType.Unknown;
 	}
 }

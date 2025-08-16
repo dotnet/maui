@@ -308,11 +308,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public ListViewCachingStrategy CachingStrategy { get; private set; }
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool RefreshAllowed
 		{
@@ -328,7 +328,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element FooterElement
 		{
@@ -336,7 +336,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element HeaderElement
 		{
@@ -344,14 +344,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		/// <param name="cell">Internal parameter for platform use.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendCellAppearing(Cell cell)
 			=> ItemAppearing?.Invoke(this, new ItemVisibilityEventArgs(cell.BindingContext, TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		/// <param name="cell">Internal parameter for platform use.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendCellDisappearing(Cell cell)
@@ -363,7 +363,7 @@ namespace Microsoft.Maui.Controls
 			=> Scrolled?.Invoke(this, args);
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendRefreshing()
 		{
@@ -490,7 +490,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		/// <param name="item">Internal parameter for platform use.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Cell CreateDefaultCell(object item)
@@ -499,7 +499,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		/// <param name="cell">Internal parameter for platform use.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public string GetDisplayTextFromGroup(object cell)

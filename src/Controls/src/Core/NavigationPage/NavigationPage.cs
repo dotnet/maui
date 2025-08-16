@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls
 		internal Task CurrentNavigationTask { get; set; }
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		/// <param name="depth">The depth parameter.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Page Peek(int depth)
