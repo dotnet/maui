@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:TestContentPage
+    x:Class="Maui.Controls.Sample.Issues.Issue31190"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+    Title="SafeArea SoftInput Keyboard Auto Scroll Issue">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Main content area -->
+        <StackLayout 
+            Grid.Row="0" 
+            Padding="20" 
+            Spacing="20"
+            BackgroundColor="LightBlue">
+            
+            <Label 
+                Text="SafeArea SoftInput Test"
+                FontSize="18"
+                FontAttributes="Bold" />
+            
+            <Label 
+                Text="This tests the SafeArea with SoftInput keyboard auto scroll issue. When an Entry is inside a view with SafeArea configured for keyboard handling, it should not create double insets."
+                TextColor="DarkBlue" />
+            
+            <Label 
+                x:Name="StatusLabel"
+                AutomationId="StatusLabel"
+                Text="Tap entry below to test keyboard behavior"
+                TextColor="DarkGreen" />
+                
+        </StackLayout>
+
+        <!-- Entry at bottom to trigger keyboard -->
+        <Entry 
+            Grid.Row="1"
+            x:Name="TestEntry"
+            AutomationId="TestEntry"
+            Placeholder="Focus me to show keyboard"
+            BackgroundColor="White"
+            Margin="20"
+            HeightRequest="50" />
+
+    </Grid>
+</local:TestContentPage>
