@@ -711,6 +711,14 @@ public static class KeyboardAutoManagerScroll
 
 			if (ContainerView.Frame.X != rootViewOrigin.X || ContainerView.Frame.Y != rootViewOrigin.Y)
 			{
+				// Check if SafeArea is handling keyboard adjustments and there's no scrollview
+				// If so, skip the container view movement to prevent double insets
+				if (LastScrollView is null && IsSafeAreaHandlingKeyboard())
+				{
+					// SafeArea is already handling the keyboard adjustment, no need to move container view
+					return;
+				}
+
 				ShouldIgnoreSafeAreaAdjustment = true;
 				var rect = ContainerView.Frame;
 				rect.X = rootViewOrigin.X;
@@ -980,5 +988,31 @@ public static class KeyboardAutoManagerScroll
 		{
 			return null;
 		}
+	}
+
+	/// <summary>
+	/// Checks if SafeArea is actively handling keyboard adjustments
+	/// </summary>
+	/// <returns>True if SafeArea is handling keyboard adjustments, false otherwise</returns>
+	static bool IsSafeAreaHandlingKeyboard()
+	{
+		if (ContainerView is null || View is null)
+			return false;
+
+		// Look for MauiView instances that implement ISafeAreaView and are not ignoring safe area
+		var mauiView = ContainerView.FindResponder<MauiView>() ?? View.FindResponder<MauiView>();
+		if (mauiView?.View is ISafeAreaView safeAreaView && !safeAreaView.IgnoreSafeArea)
+		{
+			// Check if there are actual safe area insets that would indicate active safe area handling
+			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
+			{
+				var safeAreaInsets = mauiView.SafeAreaInsets;
+				// If the safe area has bottom insets that could be keyboard-related, 
+				// SafeArea is likely handling the keyboard adjustment
+				return safeAreaInsets.Bottom > 0;
+			}
+		}
+
+		return false;
 	}
 }
