@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/DependencyResolver.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.DependencyResolver']/Docs/*" />
+	/// <summary>Contains static methods that add functions to use for resolving dependencies.</summary>
 	public static class DependencyResolver
 	{
 		static Type _defaultVisualType = typeof(VisualMarker.DefaultVisual);

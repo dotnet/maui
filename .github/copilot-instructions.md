@@ -110,6 +110,64 @@ dotnet cake --target=dotnet-pack
   - `src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj`
   - `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
 
+#### UI Testing Guidelines
+
+When adding UI tests to validate visual behavior and user interactions, follow this two-part pattern:
+
+**CRITICAL: UITests require code in TWO separate projects that must BOTH be implemented:**
+
+1. **HostApp UI Test Page** (`src/Controls/tests/TestCases.HostApp/Issues/`)
+   - Create the actual UI page that demonstrates the feature or reproduces the issue
+   - Use XAML with proper `AutomationId` attributes on interactive controls for test automation
+   - Follow naming convention: `IssueXXXXX.xaml` and `IssueXXXXX.xaml.cs`
+   - Ensure the UI provides clear visual feedback for the behavior being tested
+
+2. **NUnit Test Implementation** (`src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/`)
+   - Create corresponding Appium-based NUnit tests that inherit from `_IssuesUITest`
+   - Use the `AutomationId` values to locate and interact with UI elements
+   - Follow naming convention: `IssueXXXXX.cs` (matches the HostApp file)
+   - Include appropriate `[Category(UITestCategories.XYZ)]` attributes
+   - Test should validate expected behavior through UI interactions and assertions
+
+**UI Test Pattern Example:**
+```csharp
+// In TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs
+public class IssueXXXXX : _IssuesUITest
+{
+    public override string Issue => "Description of the issue being tested";
+    
+    public IssueXXXXX(TestDevice device) : base(device) { }
+    
+    [Test]
+    [Category(UITestCategories.Layout)] // or appropriate category
+    public void TestMethodName()
+    {
+        App.WaitForElement("AutomationId");
+        App.Tap("AutomationId");
+        // Add assertions to verify expected behavior
+    }
+}
+```
+
+**Before committing UI tests:**
+- Compile both the HostApp project and TestCases.Shared.Tests project to ensure no build errors
+- Verify AutomationId references match between XAML and test code
+- Ensure tests follow the established naming and inheritance patterns
+
+### Code Formatting
+
+Before committing any changes, format the codebase using the following command to ensure consistent code style:
+
+```bash
+dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
+```
+
+This command:
+- Formats all code files according to the repository's `.editorconfig` settings
+- Excludes the Templates/src directory from formatting
+- Excludes the CA1822 diagnostic (member can be marked as static)
+- Uses `--no-restore` for faster execution when dependencies are already restored
+
 ### Local Development with Branch-Specific .NET
 
 For compatibility with specific branches:
@@ -138,6 +196,27 @@ For compatibility with specific branches:
 
 ## Contribution Guidelines
 
+### Handling Existing PRs for Assigned Issues
+
+**🚨 CRITICAL REQUIREMENT: Always develop your own solution first, then compare with existing PRs.**
+
+When working on an issue:
+
+1. **FIRST: Develop your own solution** - Come up with your own implementation approach without looking at existing PRs. Analyze the issue, understand the requirements, and design your solution independently
+2. **THEN: Search for existing PRs** - After you have developed your solution approach, search for open PRs that address the same issue using GitHub search or issue links
+3. **Compare solutions thoroughly** - Examine the existing PR's proposed changes, implementation approach, and any discussion in comments. Compare this to your own solution
+4. **Evaluate and choose the best approach** - Decide which solution (yours or the existing PR's) better addresses the issue and follows best practices
+5. **Always document your decision** - In your PR description, always include a summary comparing your solution to any other open PRs for the issue you are working on, and explain why you chose your approach over the alternatives
+6. **Report on why you didn't choose other solutions** - Always make sure to explain the specific reasons why you didn't go with other existing solutions, including any concerns or issues you identified
+7. **It's OK to abandon existing PRs** - If you're not confident enough in the existing PR's approach, it's completely acceptable to abandon it and implement your own solution
+8. **Pull existing changes when you prefer them** - If you determine the existing solution is better than your approach, pull those changes into your PR as the foundation for your work, then find areas to improve and add tests
+9. **Identify improvement opportunities** - Whether you use your solution or an existing one, look for areas where you can enhance it, such as:
+   - Adding comprehensive test coverage
+   - Improving code quality, performance, or maintainability
+   - Enhancing error handling or edge case coverage
+   - Better documentation or code comments
+   - More robust implementation patterns
+
 ### Files to Never Commit
 - **Never** check in changes to `cgmanifest.json` files
 - **Never** check in changes to `templatestrings.json` files
@@ -149,6 +228,17 @@ Since coding agents function as both CI and pair programmers, they need to handl
 - **Always reset changes to `cgmanifest.json` files** - These are generated during CI builds and should not be committed by coding agents
 - **Always reset changes to `templatestrings.json` files** - These localization files are auto-generated and should not be committed by coding agents
 
+### PublicAPI.Unshipped.txt File Management
+When working with public API changes, proper handling of PublicAPI.Unshipped.txt files is critical:
+
+- **Never turn off analyzers or set no warn** to fix PublicAPI.Unshipped.txt file issues
+- **Always work to fix the PublicAPI.Unshipped.txt files properly** by adding the correct API entries
+- **Use `dotnet format analyzers`** if having trouble fixing PublicAPI.Unshipped.txt file issues
+- **Revert and re-add approach when files are incorrect:**
+  1. First, revert all changes to PublicAPI.Unshipped.txt files to their original state
+  2. Then, make only the necessary additions required for your new public APIs
+  3. This ensures clean, minimal changes that accurately reflect the new APIs being introduced
+
 ### Branching
 - `main` - For bug fixes without API changes
 - `net10.0` - For new features and API changes
@@ -159,6 +249,19 @@ Since coding agents function as both CI and pair programmers, they need to handl
 - Update XML documentation for public APIs
 - Follow existing code documentation patterns
 - Update relevant docs in `docs/` folder when needed
+
+### Opening PRs
+
+All PRs are required to have this at the top of the description:
+
+```
+<!-- Please let the below note in for people that find this PR -->
+> [!NOTE]
+> Are you waiting for the changes in this PR to be merged?
+> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
+```
+
+Always put that at the top, without the block quotes. Without it, the users will NOT be able to try the PR and your work will have been in vain!
 
 ## Additional Resources
 

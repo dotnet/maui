@@ -1,6 +1,13 @@
 name: "Copilot Setup Steps"
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
 
 jobs:
   copilot-setup-steps:
@@ -28,6 +35,7 @@ jobs:
           echo "$GITHUB_WORKSPACE/.dotnet" >> "$GITHUB_PATH"
           echo "DOTNET_ROOT=$GITHUB_WORKSPACE/.dotnet" >> "$GITHUB_ENV"
           echo "DOTNET_INSTALL_DIR=$GITHUB_WORKSPACE/.dotnet" >> "$GITHUB_ENV"
+          echo "DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT=true" >> "$GITHUB_ENV"
 
       - name: Ensure we are using the correct .NET
         shell: pwsh

@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			await TestHelpers.Collect();
 
-			Assert.False(reference.IsAlive, "Grid should not be alive!");
+			Assert.False(await reference.WaitForCollect(), "Grid should not be alive!");
 
 			// Ensure that the ColumnDefinition isn't collected during the test
 			GC.KeepAlive(columnDefinition);
@@ -223,11 +223,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 				reference = new(grid);
 			}
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 
-			Assert.False(reference.IsAlive, "Grid should not be alive!");
+			Assert.False(await reference.WaitForCollect(), "Grid should not be alive!");
 		}
 	}
 }

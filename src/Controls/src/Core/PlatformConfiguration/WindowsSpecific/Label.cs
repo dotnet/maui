@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
 	using FormsElement = Maui.Controls.Label;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Label.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Label']/Docs/*" />
+	/// <summary>Provides access to reading order detection on the Windows platform.</summary>
 	public static class Label
 	{
 		/// <summary>Bindable property for attached property <c>DetectReadingOrderFromContent</c>.</summary>
