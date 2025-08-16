@@ -33,6 +33,22 @@ namespace Microsoft.Maui.Platform
 			return (bool)(_respondsToSafeArea = RespondsToSelector(new Selector("safeAreaInsets")));
 		}
 
+		internal nfloat? CalculateKeyboardIntersection(CGRect bounds)
+		{
+			var window = Window;
+			if (window == null)
+				return null;
+
+			// Convert this view's bounds to window coordinates
+			var viewFrameInWindow = ConvertRectToView(bounds, null);
+			
+			// Calculate the intersection between the keyboard frame and this view's frame
+			var intersection = CGRect.Intersect(KeyboardAutoManagerScroll.KeyboardFrame, viewFrameInWindow);
+			
+			// Return the height of the intersection, or 0 if no intersection
+			return intersection == CGRect.Empty ? 0 : intersection.Height;
+		}
+
 		protected CGRect AdjustForSafeArea(CGRect bounds)
 		{
 			if (KeyboardAutoManagerScroll.ShouldIgnoreSafeAreaAdjustment)
@@ -46,7 +62,31 @@ namespace Microsoft.Maui.Platform
 			}
 
 #pragma warning disable CA1416 // TODO 'UIView.SafeAreaInsets' is only supported on: 'ios' 11.0 and later, 'maccatalyst' 11.0 and later, 'tvos' 11.0 and later.
-			return SafeAreaInsets.InsetRect(bounds);
+			var safeAreaInsets = SafeAreaInsets;
+
+			// Check if keyboard is showing and we need to adjust for partial overlap
+			if (KeyboardAutoManagerScroll.IsKeyboardShowing && !KeyboardAutoManagerScroll.KeyboardFrame.IsEmpty)
+			{
+				// Calculate the actual intersection between the keyboard and this view
+				var keyboardIntersection = CalculateKeyboardIntersection(bounds);
+				if (keyboardIntersection.HasValue)
+				{
+					// Use the larger of the existing safe area bottom inset or the keyboard intersection
+					// This ensures we don't reduce existing safe area protection
+					var adjustedBottomInset = Math.Max(safeAreaInsets.Bottom, keyboardIntersection.Value);
+					
+					// Create adjusted safe area insets that only account for the actual overlap
+					var adjustedInsets = new UIEdgeInsets(
+						safeAreaInsets.Top,
+						safeAreaInsets.Left, 
+						adjustedBottomInset,
+						safeAreaInsets.Right);
+					
+					return adjustedInsets.InsetRect(bounds);
+				}
+			}
+
+			return safeAreaInsets.InsetRect(bounds);
 #pragma warning restore CA1416
 		}
 
