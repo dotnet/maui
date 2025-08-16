@@ -57,6 +57,12 @@ namespace Microsoft.Maui.Platform
 
 			_borderPath?.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
 
+			if (_borderStroke is not null && Content is not null)
+			{
+				actual.Width -= _borderStroke.StrokeThickness * 2;
+				actual.Height -= _borderStroke.StrokeThickness * 2;
+			}
+
 			var size = new global::Windows.Foundation.Size(Math.Max(0, actual.Width), Math.Max(0, actual.Height));
 
 			// We need to update the clip since the content's position might have changed
