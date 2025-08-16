@@ -59,6 +59,7 @@ namespace Maui.Controls.Sample.Issues
 			refreshView.IsRefreshing = false;
 		}
 
+		[RequiresUnreferencedCode("Calls Maui.Controls.Sample.Issues.Issue23868.SimulateHttpRequest()")]
 		private async void OnUpdateDataClicked(object sender, EventArgs e)
 		{
 			await SimulateHttpRequest();
