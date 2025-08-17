@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateText(this UILabel platformLabel, Label label)
 		{
 			var text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
-			
+
 			switch (label.TextType)
 			{
 				case TextType.Html:
