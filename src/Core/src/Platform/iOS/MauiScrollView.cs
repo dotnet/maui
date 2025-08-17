@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Platform
 			{
 				return safeAreaPage.GetSafeAreaRegionsForEdge(edge);
 			}
-			
+
 			return SafeAreaRegions.None; // Default: edge-to-edge content
 		}
 
@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Platform
 				// All edges have the same value, use built-in iOS behavior
 				// Cache the region value to avoid redundant comparisons
 				var region = leftRegion;
-				
+
 				ContentInsetAdjustmentBehavior = region switch
 				{
 					SafeAreaRegions.Default => UIScrollViewContentInsetAdjustmentBehavior.Automatic, // Default behavior
@@ -488,7 +488,7 @@ namespace Microsoft.Maui.Platform
 				if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 				{
 					var horizontalOffset = contentSize.Width - bounds.Width;
-					
+
 					if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 					{
 						CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), bounds.Size.ToSize()));
@@ -497,11 +497,11 @@ namespace Microsoft.Maui.Platform
 					{
 						CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), bounds.Size.ToSize()));
 					}
-					
+
 					ContentOffset = new CGPoint(horizontalOffset, 0);
 
 				}
-				else if(_previousEffectiveUserInterfaceLayoutDirection is not null)
+				else if (_previousEffectiveUserInterfaceLayoutDirection is not null)
 				{
 					ContentOffset = new CGPoint(0, ContentOffset.Y);
 				}
@@ -548,7 +548,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		/// <param name="size">The available size constraints.</param>
 		/// <returns>The size that fits within the constraints.</returns>
-		
+
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			if (CrossPlatformLayout is null)

@@ -85,30 +85,30 @@ namespace Microsoft.Maui.Media
 				if (photo)
 				{
 					captureResult = await CapturePhotoAsync(captureIntent);
-							// Apply rotation if needed for photos
-				if (captureResult is not null && ImageProcessor.IsRotationNeeded(options))
-				{
-					using var inputStream = File.OpenRead(captureResult);
-					var fileName = System.IO.Path.GetFileName(captureResult);
-					using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-						
+					// Apply rotation if needed for photos
+					if (captureResult is not null && ImageProcessor.IsRotationNeeded(options))
+					{
+						using var inputStream = File.OpenRead(captureResult);
+						var fileName = System.IO.Path.GetFileName(captureResult);
+						using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
+
 						var rotatedPath = System.IO.Path.Combine(
 							System.IO.Path.GetDirectoryName(captureResult),
 							System.IO.Path.GetFileNameWithoutExtension(captureResult) + "_rotated" + System.IO.Path.GetExtension(captureResult));
-							
+
 						using var outputStream = File.Create(rotatedPath);
 						rotatedStream.Position = 0;
 						await rotatedStream.CopyToAsync(outputStream);
-						
+
 						// Use the rotated image and delete the original
-						try 
-						{ 
+						try
+						{
 							File.Delete(captureResult);
 						}
 						catch { }
 						captureResult = rotatedPath;
 					}
-					
+
 					// Apply compression/resizing if needed for photos
 					if (captureResult is not null && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 					{
@@ -165,15 +165,15 @@ namespace Microsoft.Maui.Media
 							using var inputStream = File.OpenRead(path);
 							var fileName = System.IO.Path.GetFileName(path);
 							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-							
+
 							var rotatedPath = System.IO.Path.Combine(
 								System.IO.Path.GetDirectoryName(path),
 								System.IO.Path.GetFileNameWithoutExtension(path) + "_rotated" + System.IO.Path.GetExtension(path));
-								
+
 							using var outputStream = File.Create(rotatedPath);
 							rotatedStream.Position = 0;
 							await rotatedStream.CopyToAsync(outputStream);
-							
+
 							// Use the rotated image
 							path = rotatedPath;
 						}
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Media
 							path = await CompressImageIfNeeded(path, options);
 						}
 					}
-					
+
 					return new FileResult(path);
 				}
 
@@ -219,15 +219,15 @@ namespace Microsoft.Maui.Media
 					using var inputStream = File.OpenRead(path);
 					var fileName = System.IO.Path.GetFileName(path);
 					using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-					
+
 					var rotatedPath = System.IO.Path.Combine(
 						System.IO.Path.GetDirectoryName(path),
 						System.IO.Path.GetFileNameWithoutExtension(path) + "_rotated" + System.IO.Path.GetExtension(path));
-						
+
 					using var outputStream = File.Create(rotatedPath);
 					rotatedStream.Position = 0;
 					await rotatedStream.CopyToAsync(outputStream);
-					
+
 					// Use the rotated image
 					path = rotatedPath;
 				}
@@ -280,7 +280,7 @@ namespace Microsoft.Maui.Media
 				if (!uri?.Equals(AndroidUri.Empty) ?? false)
 				{
 					var path = FileSystemUtils.EnsurePhysicalPath(uri);
-					
+
 					if (photo)
 					{
 						// Apply rotation if needed
@@ -289,15 +289,15 @@ namespace Microsoft.Maui.Media
 							using var inputStream = File.OpenRead(path);
 							var fileName = System.IO.Path.GetFileName(path);
 							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-							
+
 							var rotatedPath = System.IO.Path.Combine(
 								System.IO.Path.GetDirectoryName(path),
 								System.IO.Path.GetFileNameWithoutExtension(path) + "_rotated" + System.IO.Path.GetExtension(path));
-								
+
 							using var outputStream = File.Create(rotatedPath);
 							rotatedStream.Position = 0;
 							await rotatedStream.CopyToAsync(outputStream);
-							
+
 							// Use the rotated image
 							path = rotatedPath;
 						}
@@ -480,22 +480,22 @@ namespace Microsoft.Maui.Media
 					foreach (var path in tempResultList)
 					{
 						string processedPath = path;
-						
+
 						// Apply rotation if needed
 						if (ImageProcessor.IsRotationNeeded(options))
 						{
 							using var inputStream = File.OpenRead(processedPath);
 							var fileName = System.IO.Path.GetFileName(processedPath);
 							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-							
+
 							var rotatedPath = System.IO.Path.Combine(
 								System.IO.Path.GetDirectoryName(processedPath),
 								System.IO.Path.GetFileNameWithoutExtension(processedPath) + "_rotated" + System.IO.Path.GetExtension(processedPath));
-								
+
 							using var outputStream = File.Create(rotatedPath);
 							rotatedStream.Position = 0;
 							await rotatedStream.CopyToAsync(outputStream);
-							
+
 							// Use the rotated image
 							processedPath = rotatedPath;
 						}
@@ -505,7 +505,7 @@ namespace Microsoft.Maui.Media
 						{
 							processedPath = await CompressImageIfNeeded(processedPath, options);
 						}
-						
+
 						resultList.Add(new FileResult(processedPath));
 					}
 				}

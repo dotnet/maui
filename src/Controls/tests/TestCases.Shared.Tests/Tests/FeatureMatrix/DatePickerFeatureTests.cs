@@ -193,7 +193,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
 		VerifyScreenshot();
 	}
- 
+
 	[Test, Order(10)]
 	[Category(UITestCategories.DatePicker)]
 	public void DatePicker_SetFontAttributesAndFontSize_VerifyVisualState()
@@ -210,7 +210,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
 		VerifyScreenshot();
 	}
-	
+
 	[Test, Order(12)]
 	[Category(UITestCategories.DatePicker)]
 	public void DatePicker_SetFontFamilyAndFontSize_VerifyVisualState()

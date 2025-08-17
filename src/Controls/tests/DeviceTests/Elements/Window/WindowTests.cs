@@ -264,12 +264,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window1, (h) =>
 			{
-				app.OpenWindow(window1);	
+				app.OpenWindow(window1);
 				Assert.True(window1.IsActivated);
 				Assert.False(window2.IsActivated);
 			});
 
-			
+
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window2, (h) =>
 			{
 				app.OpenWindow(window2);
@@ -280,7 +280,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			app.CloseWindow(window2);
 			app.CloseWindow(window1);
-			
+
 			Assert.False(window1.IsActivated);
 			Assert.False(window2.IsActivated);
 		}
