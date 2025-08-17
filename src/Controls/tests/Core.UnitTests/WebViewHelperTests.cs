@@ -1,5 +1,5 @@
-using Xunit;
 using Microsoft.Maui.Handlers;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests;
 
