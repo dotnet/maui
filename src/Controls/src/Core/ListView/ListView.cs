@@ -446,6 +446,8 @@ namespace Microsoft.Maui.Controls
 		protected override void SetupContent(Cell content, int index)
 		{
 			base.SetupContent(content, index);
+			if (content is ViewCell viewCell && viewCell.View != null && HasUnevenRows)
+				viewCell.View.ComputedConstraint = LayoutConstraint.None;
 
 			if (content != null)
 			{
