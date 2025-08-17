@@ -424,6 +424,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 		[Obsolete("Use ArrangeOverride", true)]
 		protected abstract void LayoutChildren(double x, double y, double width, double height);
 
+		// Internal version for legacy layout system internal usage
+		internal virtual void LayoutChildrenInternal(double x, double y, double width, double height)
+		{
+			// Default implementation for derived classes that need internal access
+			// This will be overridden by specific layout implementations
+		}
+
 		internal override void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
 		{
 			SetNeedsLayout();

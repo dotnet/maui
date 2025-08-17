@@ -76,6 +76,35 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 #pragma warning restore CS0672 // Member overrides obsolete member
 
+		// Internal version for legacy layout system internal usage
+		internal override void LayoutChildrenInternal(double x, double y, double width, double height)
+		{
+			if (!HasVisibleChildren())
+			{
+				return;
+			}
+
+			LayoutInformation layoutInformationCopy = _layoutInformation;
+			if (width == layoutInformationCopy.Constraint.Width && height == layoutInformationCopy.Constraint.Height)
+			{
+				StackOrientation orientation = Orientation;
+
+				AlignOffAxis(layoutInformationCopy, orientation, width, height);
+				ProcessExpanders(layoutInformationCopy, orientation, x, y, width, height);
+			}
+			else
+			{
+				CalculateLayout(layoutInformationCopy, x, y, width, height, true);
+			}
+
+			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
+			{
+				var child = (View)LogicalChildrenInternal[i];
+				if (child.IsVisible && layoutInformationCopy.Plots != null)
+					LayoutChildIntoBoundingRegion(child, layoutInformationCopy.Plots[i], layoutInformationCopy.Requests[i]);
+			}
+		}
+
 #pragma warning disable CS0672 // Member overrides obsolete member
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 #pragma warning restore CS0672 // Member overrides obsolete member
