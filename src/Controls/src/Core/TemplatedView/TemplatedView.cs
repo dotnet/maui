@@ -39,7 +39,9 @@ namespace Microsoft.Maui.Controls
 				// All of our types that inherit from TemplatedView overrides LayoutChildren and replaces
 				// this behavior
 				if (child != null)
+#pragma warning disable CS0619 // Type or member is obsolete
 					LayoutChildIntoBoundingRegion(child, new Rect(x, y, width, height));
+#pragma warning restore CS0619 // Type or member is obsolete
 			}
 		}
 

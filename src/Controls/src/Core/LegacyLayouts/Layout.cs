@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <summary>
 		/// Occurs at the end of a layout cycle if any of the child element's <see cref="VisualElement.Bounds" /> have changed.
 		/// </summary>
-		[Obsolete("Use SizeChanged.")]
+		[Obsolete("Use SizeChanged.", true)]
 		public event EventHandler LayoutChanged;
 
 		/// <summary>The children contained in this layout.</summary>
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// Forces a layout cycle on the element and all of its descendants.
 		/// </summary>
 		/// <remarks>Calling this method frequently can have negative impacts on performance.</remarks>
-		[Obsolete("Call InvalidateMeasure instead depending on your scenario.")]
+		[Obsolete("Call InvalidateMeasure instead depending on your scenario.", true)]
 		public void ForceLayout() => SizeAllocated(Width, Height);
 
 		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.ToList().AsReadOnly();
@@ -219,7 +219,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <param name="region">The bounding region in which the child should be positioned.</param>
 		/// <remarks>This method is called in the layout cycle after the general regions for each child have been calculated.
 		/// This method will handle positioning the element relative to the bounding region given if the bounding region given is larger than the child's desired size.</remarks>
-		[Obsolete("Use the Arrange method on child instead.")]
+		[Obsolete("Use the Arrange method on child instead.", true)]
 		public static void LayoutChildIntoBoundingRegion(VisualElement child, Rect region)
 		{
 			bool isRightToLeft = false;
@@ -287,7 +287,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <param name="view">The view to lower in the visual stack.</param>
 		/// <remarks>Children are internally stored in visual stack order.
 		/// This means that raising or lowering a child also changes the order in which the children are enumerated.</remarks>
-		[Obsolete("Use the ZIndex Property instead")]
+		[Obsolete("Use the ZIndex Property instead", true)]
 		public void LowerChild(View view)
 		{
 			if (!InternalChildren.Contains(view) || InternalChildren.First() == view)
@@ -305,7 +305,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <param name="view">The view to raise in the visual stack.</param>
 		/// <remarks>Children are internally stored in visual stack order.
 		/// This means that raising or lowering a child also changes the order in which the children are enumerated.</remarks>
-		[Obsolete("Use the ZIndex Property instead")]
+		[Obsolete("Use the ZIndex Property instead", true)]
 		public void RaiseChild(View view)
 		{
 			if (!InternalChildren.Contains(view) || InternalChildren.Last() == view)
@@ -321,7 +321,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// Invalidates the current layout.
 		/// </summary>
 		/// <remarks>Calling this method will invalidate the measure and triggers a new layout cycle.</remarks>
-		[Obsolete("Use InvalidateMeasure depending on your scenario")]
+		[Obsolete("Use InvalidateMeasure depending on your scenario", true)]
 		protected virtual void InvalidateLayout()
 		{
 			SetNeedsLayout();
@@ -347,7 +347,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <remarks>Implementors wishing to change the default behavior of a Layout should override this method.
 		/// It is suggested to still call the base method and modify its calculated results.</remarks>
 
-		[Obsolete("Use ArrangeOverride")]
+		[Obsolete("Use ArrangeOverride", true)]
 		protected abstract void LayoutChildren(double x, double y, double width, double height);
 
 		internal override void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
@@ -380,7 +380,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// Invoked whenever a child of the layout has emitted <see cref="VisualElement.MeasureInvalidated" />.
 		/// Implement this method to add class handling for this event.
 		/// </summary>
-		[Obsolete("Subscribe to the MeasureInvalidated Event on the Children.")]
+		[Obsolete("Subscribe to the MeasureInvalidated Event on the Children.", true)]
 		protected virtual void OnChildMeasureInvalidated()
 		{
 		}
@@ -411,7 +411,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// </summary>
 		/// <param name="child">The child for which to specify whether or not to track invalidation.</param>
 		/// <returns><see langword="true" /> if <paramref name="child" /> should call <see cref="VisualElement.InvalidateMeasure" />, otherwise <see langword="false"/>.</returns>
-		[Obsolete("If you want to influence invalidation override InvalidateMeasureOverride")]
+		[Obsolete("If you want to influence invalidation override InvalidateMeasureOverride", true)]
 		protected virtual bool ShouldInvalidateOnChildAdded(View child) => true;
 
 		/// <summary>
@@ -420,14 +420,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// </summary>
 		/// <param name="child">The child for which to specify whether or not to track invalidation.</param>
 		/// <returns><see langword="true" /> if <paramref name="child" /> should call <see cref="VisualElement.InvalidateMeasure" />, otherwise <see langword="false"/>.</returns>
-		[Obsolete("If you want to influence invalidation override InvalidateMeasureOverride")]
+		[Obsolete("If you want to influence invalidation override InvalidateMeasureOverride", true)]
 		protected virtual bool ShouldInvalidateOnChildRemoved(View child) => true;
 
 		/// <summary>
 		/// Instructs the layout to relayout all of its children.
 		/// </summary>
 		/// <remarks>This method starts a new layout cycle for the layout. Invoking this method frequently can negatively impact performance.</remarks>
-		[Obsolete("Use InvalidateMeasure depending on your scenario")]
+		[Obsolete("Use InvalidateMeasure depending on your scenario", true)]
 		protected void UpdateChildrenLayout()
 		{
 			_hasDoneLayout = true;
