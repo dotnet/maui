@@ -158,11 +158,6 @@ static Microsoft.Maui.SwipeViewSwipeEnded.operator !=(Microsoft.Maui.SwipeViewSw
 static Microsoft.Maui.SwipeViewSwipeEnded.operator ==(Microsoft.Maui.SwipeViewSwipeEnded? left, Microsoft.Maui.SwipeViewSwipeEnded? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator !=(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator ==(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
-static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequired(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Action! action) -> void
-static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Action! action) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<System.Threading.Tasks.Task!>! action) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync<T>(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<T>! func) -> System.Threading.Tasks.Task<T>!
-static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync<T>(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<System.Threading.Tasks.Task<T>!>! funcTask) -> System.Threading.Tasks.Task<T>!
 virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.<Clone>$() -> Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.EqualityContract.get -> System.Type!

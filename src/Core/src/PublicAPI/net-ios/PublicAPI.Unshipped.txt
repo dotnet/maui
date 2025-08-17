@@ -36,6 +36,9 @@ Microsoft.Maui.IDatePicker.IsOpen.set -> void
 Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
+Microsoft.Maui.IInitializationAwareWebView
+Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationCompleted(Microsoft.Maui.WebViewInitializationCompletedEventArgs! args) -> void
+Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationStarted(Microsoft.Maui.WebViewInitializationStartedEventArgs! args) -> void
 Microsoft.Maui.IPicker.IsOpen.get -> bool
 Microsoft.Maui.IPicker.IsOpen.set -> void
 Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
@@ -87,6 +90,11 @@ Microsoft.Maui.SwipeViewSwipeStarted.SwipeViewSwipeStarted(Microsoft.Maui.SwipeV
 Microsoft.Maui.WebResourceRequestedEventArgs
 Microsoft.Maui.WebResourceRequestedEventArgs.Sender.get -> WebKit.WKWebView!
 Microsoft.Maui.WebResourceRequestedEventArgs.UrlSchemeTask.get -> WebKit.IWKUrlSchemeTask!
+Microsoft.Maui.WebViewInitializationCompletedEventArgs
+Microsoft.Maui.WebViewInitializationCompletedEventArgs.Configuration.get -> WebKit.WKWebViewConfiguration!
+Microsoft.Maui.WebViewInitializationCompletedEventArgs.Sender.get -> WebKit.WKWebView!
+Microsoft.Maui.WebViewInitializationStartedEventArgs
+Microsoft.Maui.WebViewInitializationStartedEventArgs.Configuration.get -> WebKit.WKWebViewConfiguration!
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
@@ -173,11 +181,6 @@ override Microsoft.Maui.SwipeViewSwipeStarted.Equals(object? obj) -> bool
 override Microsoft.Maui.SwipeViewSwipeStarted.GetHashCode() -> int
 override Microsoft.Maui.SwipeViewSwipeStarted.ToString() -> string!
 *REMOVED*readonly Microsoft.Maui.PropertyMapper._mapper -> System.Collections.Generic.Dictionary<string!, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>!>!
-static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequired(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Action! action) -> void
-static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Action! action) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<System.Threading.Tasks.Task!>! action) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync<T>(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<System.Threading.Tasks.Task<T>!>! funcTask) -> System.Threading.Tasks.Task<T>!
-static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync<T>(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<T>! func) -> System.Threading.Tasks.Task<T>!
 static Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.operator !=(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? left, Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? right) -> bool
 static Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.operator ==(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? left, Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? right) -> bool
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapBackground(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void

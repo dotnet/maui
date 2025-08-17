@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebView Autoplay Test</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 2em;
+        }
+
+        video, audio {
+            display: block;
+            margin: 2em 0;
+        }
+
+        .status {
+            color: green;
+            font-weight: bold;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+    <script src="_framework/hybridwebview.js"></script>
+</head>
+<body>
+    <h1>WebView Autoplay Test</h1>
+    <p>This page tries to autoplay a video and an audio element. If you see/hear them playing automatically, autoplay is enabled!</p>
+
+    <video id="testVideo" width="320" height="176" controls playsinline autoplay>
+        <source src="../assets/mov_bbb.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <p id="videoStatus" class="status"></p>
+
+    <audio id="testAudio" controls autoplay>
+        <source src="../assets/horse.mp3" type="audio/mpeg">
+        Your browser does not support the audio tag.
+    </audio>
+    <p id="audioStatus" class="status"></p>
+
+    <script>
+        // Check if video/audio started playing automatically
+        const video = document.getElementById('testVideo');
+        const audio = document.getElementById('testAudio');
+
+        function checkMediaAutoplay(media, statusElem, type) {
+            let played = false;
+            media.addEventListener('play', function () {
+                played = true;
+                statusElem.textContent = type + ' autoplayed!';
+                statusElem.className = 'status';
+                window.HybridWebView.SendRawMessage(statusElem.textContent)
+            });
+            setTimeout(function () {
+                if (!played) {
+                    statusElem.textContent = type + ' did not autoplay.';
+                    statusElem.className = 'error';
+                    window.HybridWebView.SendRawMessage(statusElem.textContent)
+                }
+            }, 2000);
+        }
+
+        checkMediaAutoplay(video, document.getElementById('videoStatus'), 'Video');
+        checkMediaAutoplay(audio, document.getElementById('audioStatus'), 'Audio');
+    </script>
+</body>
+</html>

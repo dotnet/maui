@@ -36,6 +36,9 @@ Microsoft.Maui.IDatePicker.IsOpen.set -> void
 Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
+Microsoft.Maui.IInitializationAwareWebView
+Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationCompleted(Microsoft.Maui.WebViewInitializationCompletedEventArgs! args) -> void
+Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationStarted(Microsoft.Maui.WebViewInitializationStartedEventArgs! args) -> void
 Microsoft.Maui.IPicker.IsOpen.get -> bool
 Microsoft.Maui.IPicker.IsOpen.set -> void
 Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
@@ -49,6 +52,10 @@ Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Mau
 Microsoft.Maui.IWindow.IsMaximizable.get -> bool
 Microsoft.Maui.IWindow.IsMinimizable.get -> bool
 Microsoft.Maui.Platform.CalendarDatePickerExtensions
+Microsoft.Maui.Platform.MauiSlider
+Microsoft.Maui.Platform.MauiSlider.MauiSlider() -> void
+~Microsoft.Maui.Platform.MauiSlider.ThumbImageSource.get -> Microsoft.UI.Xaml.Media.ImageSource
+~Microsoft.Maui.Platform.MauiSlider.ThumbImageSource.set -> void
 Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.SafeAreaEdges.Bottom.get -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaEdges.Equals(Microsoft.Maui.SafeAreaEdges other) -> bool
@@ -80,6 +87,22 @@ Microsoft.Maui.SwipeViewSwipeStarted.SwipeViewSwipeStarted(Microsoft.Maui.SwipeV
 Microsoft.Maui.WebResourceRequestedEventArgs
 Microsoft.Maui.WebResourceRequestedEventArgs.RequestEventArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs!
 Microsoft.Maui.WebResourceRequestedEventArgs.Sender.get -> Microsoft.Web.WebView2.Core.CoreWebView2!
+Microsoft.Maui.WebViewInitializationCompletedEventArgs
+Microsoft.Maui.WebViewInitializationCompletedEventArgs.Sender.get -> Microsoft.Web.WebView2.Core.CoreWebView2!
+Microsoft.Maui.WebViewInitializationCompletedEventArgs.Settings.get -> Microsoft.Web.WebView2.Core.CoreWebView2Settings!
+Microsoft.Maui.WebViewInitializationStartedEventArgs
+Microsoft.Maui.WebViewInitializationStartedEventArgs.BrowserExecutableFolder.get -> string?
+Microsoft.Maui.WebViewInitializationStartedEventArgs.BrowserExecutableFolder.set -> void
+Microsoft.Maui.WebViewInitializationStartedEventArgs.EnvironmentOptions.get -> Microsoft.Web.WebView2.Core.CoreWebView2EnvironmentOptions?
+Microsoft.Maui.WebViewInitializationStartedEventArgs.EnvironmentOptions.set -> void
+Microsoft.Maui.WebViewInitializationStartedEventArgs.IsInPrivateModeEnabled.get -> bool
+Microsoft.Maui.WebViewInitializationStartedEventArgs.IsInPrivateModeEnabled.set -> void
+Microsoft.Maui.WebViewInitializationStartedEventArgs.ProfileName.get -> string?
+Microsoft.Maui.WebViewInitializationStartedEventArgs.ProfileName.set -> void
+Microsoft.Maui.WebViewInitializationStartedEventArgs.ScriptLocale.get -> string?
+Microsoft.Maui.WebViewInitializationStartedEventArgs.ScriptLocale.set -> void
+Microsoft.Maui.WebViewInitializationStartedEventArgs.UserDataFolder.get -> string?
+Microsoft.Maui.WebViewInitializationStartedEventArgs.UserDataFolder.set -> void
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
@@ -141,6 +164,7 @@ override Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.ToString() -> st
 override Microsoft.Maui.Handlers.OpenWindowRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.Handlers.OpenWindowRequest.GetHashCode() -> int
 override Microsoft.Maui.Handlers.OpenWindowRequest.ToString() -> string!
+override Microsoft.Maui.Platform.MauiSlider.OnApplyTemplate() -> void
 override Microsoft.Maui.SafeAreaEdges.Equals(object? obj) -> bool
 override Microsoft.Maui.SafeAreaEdges.GetHashCode() -> int
 override Microsoft.Maui.SafeAreaEdges.ToString() -> string!
@@ -163,11 +187,6 @@ override Microsoft.Maui.SwipeViewSwipeStarted.Equals(object? obj) -> bool
 override Microsoft.Maui.SwipeViewSwipeStarted.GetHashCode() -> int
 override Microsoft.Maui.SwipeViewSwipeStarted.ToString() -> string!
 *REMOVED*readonly Microsoft.Maui.PropertyMapper._mapper -> System.Collections.Generic.Dictionary<string!, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>!>!
-static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequired(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Action! action) -> void
-static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Action! action) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<System.Threading.Tasks.Task!>! action) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync<T>(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<System.Threading.Tasks.Task<T>!>! funcTask) -> System.Threading.Tasks.Task<T>!
-static Microsoft.Maui.Dispatching.DispatcherExtensions.DispatchIfRequiredAsync<T>(this Microsoft.Maui.Dispatching.IDispatcher! dispatcher, System.Func<T>! func) -> System.Threading.Tasks.Task<T>!
 static Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.operator !=(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? left, Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? right) -> bool
 static Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.operator ==(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? left, Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? right) -> bool
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapBackground(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void
@@ -210,6 +229,7 @@ static Microsoft.Maui.SwipeViewSwipeEnded.operator !=(Microsoft.Maui.SwipeViewSw
 static Microsoft.Maui.SwipeViewSwipeEnded.operator ==(Microsoft.Maui.SwipeViewSwipeEnded? left, Microsoft.Maui.SwipeViewSwipeEnded? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator !=(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator ==(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
+~static readonly Microsoft.Maui.Platform.MauiSlider.ThumbImageSourceProperty -> Microsoft.UI.Xaml.DependencyProperty
 virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.<Clone>$() -> Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.EqualityContract.get -> System.Type!
