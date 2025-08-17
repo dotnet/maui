@@ -158,7 +158,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		Thickness IPaddingElement.PaddingDefaultValueCreator() => default(Thickness);
 
-		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue) => InvalidateLayout();
+		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
+		{
+#pragma warning disable CS0619 // Type or member is obsolete
+			InvalidateLayout();
+#pragma warning restore CS0619 // Type or member is obsolete
+		}
 
 		static void IsClippedToBoundsPropertyChanged(BindableObject bindableObject, object oldValue, object newValue)
 		{
@@ -328,7 +333,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			if (!_hasDoneLayout)
 			{
+#pragma warning disable CS0619 // Type or member is obsolete
 				ForceLayout();
+#pragma warning restore CS0619 // Type or member is obsolete
 			}
 		}
 
@@ -402,7 +409,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		protected override void OnSizeAllocated(double width, double height)
 		{
 			base.OnSizeAllocated(width, height);
+#pragma warning disable CS0619 // Type or member is obsolete
 			UpdateChildrenLayout();
+#pragma warning restore CS0619 // Type or member is obsolete
 		}
 
 		/// <summary>
@@ -553,7 +562,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				if (_lastLayoutSize != new Size(Width, Height))
 				{
+#pragma warning disable CS0619 // Type or member is obsolete
 					UpdateChildrenLayout();
+#pragma warning restore CS0619 // Type or member is obsolete
 				}
 			}
 		}
@@ -620,7 +631,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			OnChildAdded(view);
 			if (ShouldInvalidateOnChildAdded(view))
 			{
+#pragma warning disable CS0619 // Type or member is obsolete
 				InvalidateLayout();
+#pragma warning restore CS0619 // Type or member is obsolete
 			}
 		}
 
@@ -629,7 +642,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			OnChildRemoved(view, oldIndex);
 			if (ShouldInvalidateOnChildRemoved(view))
 			{
+#pragma warning disable CS0619 // Type or member is obsolete
 				InvalidateLayout();
+#pragma warning restore CS0619 // Type or member is obsolete
 			}
 		}
 
@@ -674,7 +689,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return bounds.Size;
 			}
 
+#pragma warning disable CS0619 // Type or member is obsolete
 			UpdateChildrenLayout();
+#pragma warning restore CS0619 // Type or member is obsolete
 
 			return Frame.Size;
 		}
@@ -690,7 +707,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <inheritdoc cref="ICrossPlatformLayout.CrossPlatformArrange(Rect)" />
 		public Size CrossPlatformArrange(Rect bounds)
 		{
+#pragma warning disable CS0619 // Type or member is obsolete
 			UpdateChildrenLayout();
+#pragma warning restore CS0619 // Type or member is obsolete
 
 			return Frame.Size;
 		}

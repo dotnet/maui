@@ -12,11 +12,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		/// <summary>Bindable property for <see cref="Orientation"/>.</summary>
 		public static readonly BindableProperty OrientationProperty = BindableProperty.Create(nameof(Orientation), typeof(StackOrientation), typeof(StackLayout), StackOrientation.Vertical,
-			propertyChanged: (bindable, oldvalue, newvalue) => ((StackLayout)bindable).InvalidateLayout());
+			propertyChanged: OnOrientationPropertyChanged);
 
 		/// <summary>Bindable property for <see cref="Spacing"/>.</summary>
 		public static readonly BindableProperty SpacingProperty = BindableProperty.Create(nameof(Spacing), typeof(double), typeof(StackLayout), 6d,
-			propertyChanged: (bindable, oldvalue, newvalue) => ((StackLayout)bindable).InvalidateLayout());
+			propertyChanged: OnSpacingPropertyChanged);
 
 		LayoutInformation _layoutInformation = new LayoutInformation();
 		readonly Lazy<PlatformConfigurationRegistry<StackLayout>> _platformConfigurationRegistry;
@@ -71,7 +71,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				var child = (View)LogicalChildrenInternal[i];
 				if (child.IsVisible && layoutInformationCopy.Plots != null)
+#pragma warning disable CS0619 // Type or member is obsolete
 					LayoutChildIntoBoundingRegion(child, layoutInformationCopy.Plots[i], layoutInformationCopy.Requests[i]);
+#pragma warning restore CS0619 // Type or member is obsolete
 			}
 		}
 #pragma warning restore CS0672 // Member overrides obsolete member
@@ -485,6 +487,20 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public Size MinimumSize;
 			public Rect[] Plots;
 			public SizeRequest[] Requests;
+		}
+
+		static void OnOrientationPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
+		{
+#pragma warning disable CS0619 // Type or member is obsolete
+			((StackLayout)bindable).InvalidateLayout();
+#pragma warning restore CS0619 // Type or member is obsolete
+		}
+
+		static void OnSpacingPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
+		{
+#pragma warning disable CS0619 // Type or member is obsolete
+			((StackLayout)bindable).InvalidateLayout();
+#pragma warning restore CS0619 // Type or member is obsolete
 		}
 	}
 }

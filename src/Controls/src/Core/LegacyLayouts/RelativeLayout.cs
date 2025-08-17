@@ -113,9 +113,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			_childrenInSolveOrder = null; // New constraints may have impact on solve order
 
-#pragma warning disable CS0618, CS0619 // Type or member is obsolete
-			InvalidateLayout();
-#pragma warning restore CS0618, CS0619 // Type or member is obsolete
+			InvalidateMeasure();
 		}
 
 		public static BoundsConstraint GetBoundsConstraint(BindableObject bindable)
@@ -173,9 +171,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			foreach (View child in ChildrenInSolveOrder)
 			{
-#pragma warning disable CS0618, CS0619 // Type or member is obsolete
-				LayoutChildIntoBoundingRegion(child, SolveView(child));
-#pragma warning restore CS0618, CS0619 // Type or member is obsolete
+				child.Arrange(SolveView(child));
 			}
 		}
 #pragma warning restore CS0672 // Member overrides obsolete member

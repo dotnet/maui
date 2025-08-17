@@ -75,7 +75,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				rect.X += x;
 				rect.Y += y;
 
+#pragma warning disable CS0619 // Type or member is obsolete
 				LayoutChildIntoBoundingRegion(child, rect);
+#pragma warning restore CS0619 // Type or member is obsolete
 			}
 		}
 
@@ -154,7 +156,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (e.PropertyName == LayoutFlagsProperty.PropertyName || e.PropertyName == LayoutBoundsProperty.PropertyName)
 			{
 				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+#pragma warning disable CS0619 // Type or member is obsolete
 				UpdateChildrenLayout();
+#pragma warning restore CS0619 // Type or member is obsolete
 			}
 		}
 
