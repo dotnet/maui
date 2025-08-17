@@ -71,9 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				var child = (View)LogicalChildrenInternal[i];
 				if (child.IsVisible && layoutInformationCopy.Plots != null)
-#pragma warning disable CS0619 // Type or member is obsolete
 					LayoutChildIntoBoundingRegion(child, layoutInformationCopy.Plots[i], layoutInformationCopy.Requests[i]);
-#pragma warning restore CS0619 // Type or member is obsolete
 			}
 		}
 #pragma warning restore CS0672 // Member overrides obsolete member
@@ -491,16 +489,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		static void OnOrientationPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
-#pragma warning disable CS0619 // Type or member is obsolete
-			((StackLayout)bindable).InvalidateLayout();
-#pragma warning restore CS0619 // Type or member is obsolete
+			((StackLayout)bindable).InvalidateLayoutInternal();
 		}
 
 		static void OnSpacingPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
-#pragma warning disable CS0619 // Type or member is obsolete
-			((StackLayout)bindable).InvalidateLayout();
-#pragma warning restore CS0619 // Type or member is obsolete
+			((StackLayout)bindable).InvalidateLayoutInternal();
 		}
 	}
 }

@@ -160,9 +160,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
 		{
-#pragma warning disable CS0619 // Type or member is obsolete
-			InvalidateLayout();
-#pragma warning restore CS0619 // Type or member is obsolete
+			InvalidateLayoutInternal();
 		}
 
 		static void IsClippedToBoundsPropertyChanged(BindableObject bindableObject, object oldValue, object newValue)
@@ -194,7 +192,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// </summary>
 		/// <remarks>Calling this method frequently can have negative impacts on performance.</remarks>
 		[Obsolete("Call InvalidateMeasure instead depending on your scenario.", true)]
-		public void ForceLayout() => SizeAllocated(Width, Height);
+		public void ForceLayout() => ForceLayoutInternal();
+
+		// Internal version for legacy layout system internal usage
+		internal void ForceLayoutInternal() => SizeAllocated(Width, Height);
 
 		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.ToList().AsReadOnly();
 
@@ -226,6 +227,68 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// This method will handle positioning the element relative to the bounding region given if the bounding region given is larger than the child's desired size.</remarks>
 		[Obsolete("Use the Arrange method on child instead.", true)]
 		public static void LayoutChildIntoBoundingRegion(VisualElement child, Rect region)
+		{
+			bool isRightToLeft = false;
+			if (child.Parent is IFlowDirectionController parent &&
+				(isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer &&
+				parent.EffectiveFlowDirection.IsRightToLeft()) &&
+				(parent.Width - region.Right) != region.X)
+			{
+				region = new Rect(parent.Width - region.Right, region.Y, region.Width, region.Height);
+			}
+
+			if (child is IView fe && fe.Handler != null)
+			{
+				// The new arrange methods will take care of all the alignment and margins and such
+				fe.Arrange(region);
+				return;
+			}
+
+			if (!(child is View view))
+			{
+				child.Layout(region);
+				return;
+			}
+
+			LayoutOptions horizontalOptions = view.HorizontalOptions;
+			if (horizontalOptions.Alignment != LayoutAlignment.Fill)
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				SizeRequest request = child.Measure(region.Width, region.Height, MeasureFlags.IncludeMargins);
+#pragma warning restore CS0618 // Type or member is obsolete
+				double diff = Math.Max(0, region.Width - request.Request.Width);
+				double horizontalAlign = horizontalOptions.Alignment.ToDouble();
+				if (isRightToLeft)
+				{
+					horizontalAlign = 1 - horizontalAlign;
+				}
+
+				region.X += (int)(diff * horizontalAlign);
+				region.Width -= diff;
+			}
+
+			LayoutOptions verticalOptions = view.VerticalOptions;
+			if (verticalOptions.Alignment != LayoutAlignment.Fill)
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				SizeRequest request = child.Measure(region.Width, region.Height, MeasureFlags.IncludeMargins);
+#pragma warning restore CS0618 // Type or member is obsolete
+				double diff = Math.Max(0, region.Height - request.Request.Height);
+				region.Y += (int)(diff * verticalOptions.Alignment.ToDouble());
+				region.Height -= diff;
+			}
+
+			Thickness margin = view.Margin;
+			region.X += margin.Left;
+			region.Width -= margin.HorizontalThickness;
+			region.Y += margin.Top;
+			region.Height -= margin.VerticalThickness;
+
+			child.Layout(region);
+		}
+
+		// Internal version for legacy layout system internal usage
+		internal static void LayoutChildIntoBoundingRegionInternal(VisualElement child, Rect region)
 		{
 			bool isRightToLeft = false;
 			if (child.Parent is IFlowDirectionController parent &&
@@ -329,13 +392,17 @@ namespace Microsoft.Maui.Controls.Compatibility
 		[Obsolete("Use InvalidateMeasure depending on your scenario", true)]
 		protected virtual void InvalidateLayout()
 		{
+			InvalidateLayoutInternal();
+		}
+
+		// Internal version for legacy layout system internal usage
+		internal virtual void InvalidateLayoutInternal()
+		{
 			SetNeedsLayout();
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			if (!_hasDoneLayout)
 			{
-#pragma warning disable CS0619 // Type or member is obsolete
-				ForceLayout();
-#pragma warning restore CS0619 // Type or member is obsolete
+				ForceLayoutInternal();
 			}
 		}
 
@@ -409,9 +476,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		protected override void OnSizeAllocated(double width, double height)
 		{
 			base.OnSizeAllocated(width, height);
-#pragma warning disable CS0619 // Type or member is obsolete
-			UpdateChildrenLayout();
-#pragma warning restore CS0619 // Type or member is obsolete
+			UpdateChildrenLayoutInternal();
 		}
 
 		/// <summary>
@@ -438,6 +503,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <remarks>This method starts a new layout cycle for the layout. Invoking this method frequently can negatively impact performance.</remarks>
 		[Obsolete("Use InvalidateMeasure depending on your scenario", true)]
 		protected void UpdateChildrenLayout()
+		{
+			UpdateChildrenLayoutInternal();
+		}
+
+		// Internal version for legacy layout system internal usage  
+		internal void UpdateChildrenLayoutInternal()
 		{
 			_hasDoneLayout = true;
 
@@ -562,9 +633,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				if (_lastLayoutSize != new Size(Width, Height))
 				{
-#pragma warning disable CS0619 // Type or member is obsolete
-					UpdateChildrenLayout();
-#pragma warning restore CS0619 // Type or member is obsolete
+					UpdateChildrenLayoutInternal();
 				}
 			}
 		}
@@ -631,9 +700,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			OnChildAdded(view);
 			if (ShouldInvalidateOnChildAdded(view))
 			{
-#pragma warning disable CS0619 // Type or member is obsolete
-				InvalidateLayout();
-#pragma warning restore CS0619 // Type or member is obsolete
+				InvalidateLayoutInternal();
 			}
 		}
 
@@ -642,9 +709,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			OnChildRemoved(view, oldIndex);
 			if (ShouldInvalidateOnChildRemoved(view))
 			{
-#pragma warning disable CS0619 // Type or member is obsolete
-				InvalidateLayout();
-#pragma warning restore CS0619 // Type or member is obsolete
+				InvalidateLayoutInternal();
 			}
 		}
 
@@ -689,9 +754,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return bounds.Size;
 			}
 
-#pragma warning disable CS0619 // Type or member is obsolete
-			UpdateChildrenLayout();
-#pragma warning restore CS0619 // Type or member is obsolete
+			UpdateChildrenLayoutInternal();
 
 			return Frame.Size;
 		}
@@ -707,9 +770,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <inheritdoc cref="ICrossPlatformLayout.CrossPlatformArrange(Rect)" />
 		public Size CrossPlatformArrange(Rect bounds)
 		{
-#pragma warning disable CS0619 // Type or member is obsolete
-			UpdateChildrenLayout();
-#pragma warning restore CS0619 // Type or member is obsolete
+			UpdateChildrenLayoutInternal();
 
 			return Frame.Size;
 		}

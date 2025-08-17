@@ -193,9 +193,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (flexLayout._root == null)
 				return;
 			flexLayout._root.Direction = (Flex.Direction)(FlexDirection)newValue;
-#pragma warning disable CS0619 // Type or member is obsolete
-			flexLayout.InvalidateLayout();
-#pragma warning restore CS0619 // Type or member is obsolete
+			flexLayout.InvalidateLayoutInternal();
 		}
 
 		static void OnJustifyContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -204,9 +202,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (flexLayout._root == null)
 				return;
 			flexLayout._root.JustifyContent = (Flex.Justify)(FlexJustify)newValue;
-#pragma warning disable CS0619 // Type or member is obsolete
-			flexLayout.InvalidateLayout();
-#pragma warning restore CS0619 // Type or member is obsolete
+			flexLayout.InvalidateLayoutInternal();
 		}
 
 		static void OnAlignContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -248,9 +244,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (flexLayout._root == null)
 				return;
 			flexLayout._root.Wrap = (Flex.Wrap)(FlexWrap)newValue;
-#pragma warning disable CS0619 // Type or member is obsolete
-			flexLayout.InvalidateLayout();
-#pragma warning restore CS0619 // Type or member is obsolete
+			flexLayout.InvalidateLayoutInternal();
 		}
 
 		Flex.Item _root;

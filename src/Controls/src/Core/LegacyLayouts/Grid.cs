@@ -248,9 +248,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			ComputeConstrainsForChildren();
 			UpdateInheritedBindingContexts();
-#pragma warning disable CS0619 // Type or member is obsolete
-			InvalidateLayout();
-#pragma warning restore CS0619 // Type or member is obsolete
+			InvalidateLayoutInternal();
 		}
 
 		void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -264,9 +262,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					ComputeConstraintForView(child);
 				}
 
-#pragma warning disable CS0619 // Type or member is obsolete
-				InvalidateLayout();
-#pragma warning restore CS0619 // Type or member is obsolete
+				InvalidateLayoutInternal();
 			}
 		}
 
