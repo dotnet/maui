@@ -94,6 +94,15 @@ namespace Microsoft.Maui.Platform
 			var deviceIndependentWidth = widthMeasureSpec.ToDouble(_context);
 			var deviceIndependentHeight = heightMeasureSpec.ToDouble(_context);
 
+			// Apply safe area adjustments to the available measure space if this view responds to safe area
+			var measureConstraints = new Graphics.Rect(0, 0, deviceIndependentWidth, deviceIndependentHeight);
+			if (_safeAreaHandler.RespondsToSafeArea())
+			{
+				measureConstraints = _safeAreaHandler.AdjustForSafeArea(measureConstraints);
+				deviceIndependentWidth = measureConstraints.Width;
+				deviceIndependentHeight = measureConstraints.Height;
+			}
+
 			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
 			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
 
@@ -101,8 +110,8 @@ namespace Microsoft.Maui.Platform
 
 			// If the measure spec was exact, we should return the explicit size value, even if the content
 			// measure came out to a different size
-			var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width;
-			var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height;
+			var width = widthMode == MeasureSpecMode.Exactly ? widthMeasureSpec.ToDouble(_context) : measure.Width;
+			var height = heightMode == MeasureSpecMode.Exactly ? heightMeasureSpec.ToDouble(_context) : measure.Height;
 
 			var platformWidth = _context.ToPixels(width);
 			var platformHeight = _context.ToPixels(height);
