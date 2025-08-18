@@ -8,7 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	{
 		public Issue31139(TestDevice device) : base(device) { }
 
-		public override string Issue => "Issue31139";
+		public override string Issue => "Binding updates from background thread should marshal to UI thread";
 
 		[Test]
 		[Category(UITestCategories.Dispatcher)]

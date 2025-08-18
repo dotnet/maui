@@ -5,7 +5,7 @@ using System.Net.Sockets;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 31139, "Binding updates from background thread should marshal to UI thread (Windows)", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 31139, "Binding updates from background thread should marshal to UI thread", PlatformAffected.All)]
 public partial class Issue31139 : ContentPage
 {
 	public Issue31139()
