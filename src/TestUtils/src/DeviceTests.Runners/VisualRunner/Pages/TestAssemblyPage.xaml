@@ -33,7 +33,7 @@
                             ItemsSource="{Binding TestCases}"
                             SelectionMode="Single"
                             SelectionChangedCommand="{Binding NavigateToResultCommand}"
-                            SelectionChangedCommandParameter="{Binding SelectedItem, Source={Reference testsList}, x:DataType=CollectionView}">>
+                            SelectionChangedCommandParameter="{Binding SelectedItem, Source={Reference testsList}, x:DataType=CollectionView}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="local:TestCaseViewModel">
                         <StackLayout Padding="20,10" Spacing="5">
