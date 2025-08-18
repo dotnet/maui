@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var contentFrame = ContentView.Frame;
 				var view = ViewCell.View;
 
-				Layout.LayoutChildIntoBoundingRegion(view, contentFrame.ToRectangle());
+				Layout.LayoutChildIntoBoundingRegionInternal(view, contentFrame.ToRectangle());
 
 				if (_rendererRef == null)
 					return;

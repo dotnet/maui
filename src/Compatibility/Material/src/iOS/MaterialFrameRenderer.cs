@@ -299,7 +299,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.iOS
 
 		void IVisualElementRenderer.SetElementSize(Size size)
 		{
-			Layout.LayoutChildIntoBoundingRegion(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
+			Layout.LayoutChildIntoBoundingRegionInternal(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
 		}
 	}
 }

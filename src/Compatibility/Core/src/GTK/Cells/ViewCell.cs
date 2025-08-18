@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK.Cells
 									? Cell.RenderHeight
 									: GetHeightMeasure(viewCell, allocation);
 
-				Layout.LayoutChildIntoBoundingRegion(view, new Rectangle(0, 0, width, height));
+				Layout.LayoutChildIntoBoundingRegionInternal(view, new Rectangle(0, 0, width, height));
 
 				if (_rendererRef == null)
 					return;

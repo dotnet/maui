@@ -268,7 +268,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK.Renderers
 				return;
 
 			var request = footerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-			Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
+			Layout.LayoutChildIntoBoundingRegionInternal(footerView, new Rectangle(0, 0, width, request.Request.Height));
 		}
 
 		private void UpdateFooter()
@@ -328,7 +328,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK.Renderers
 				return;
 
 			var request = footerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-			Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
+			Layout.LayoutChildIntoBoundingRegionInternal(footerView, new Rectangle(0, 0, width, request.Request.Height));
 		}
 
 		private void UpdateRowHeight()

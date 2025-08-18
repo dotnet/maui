@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 
 		public void SetElementSize(Size size)
 		{
-			Layout.LayoutChildIntoBoundingRegion(Element,
+			Layout.LayoutChildIntoBoundingRegionInternal(Element,
 				new Rectangle(Element.X, Element.Y, size.Width, size.Height));
 		}
 
