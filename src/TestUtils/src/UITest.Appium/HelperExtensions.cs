@@ -826,7 +826,7 @@ namespace UITest.Appium
 				{
 					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}");
 
-					return false;
+					throw new TimeoutException($"Timed out waiting for text '{text}' to be present in element with automation id '{automationId}'.");
 				}
 
 				Task.Delay(retryFrequency.Milliseconds).Wait();
