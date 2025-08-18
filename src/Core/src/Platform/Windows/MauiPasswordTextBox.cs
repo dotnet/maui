@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 {
 	// TODO: Replace this all with a real PasswordBox and not do this
 	//       as we lose many default password box features.
-	public class MauiPasswordTextBox : TextBox
+	public partial class MauiPasswordTextBox : TextBox
 	{
 		const char ObfuscationCharacter = '●';
 
