@@ -562,30 +562,25 @@ internal static class LayoutFactory2
 		{
 			get
 			{
-				// Check if the collection has no items
 				if (CollectionView != null)
 				{
 					var numberOfSections = CollectionView.NumberOfSections();
-					bool hasItems = false;
-					
 					for (nint section = 0; section < numberOfSections; section++)
 					{
 						if (CollectionView.NumberOfItemsInSection(section) > 0)
 						{
-							hasItems = true;
-							break;
+							return base.CollectionViewContentSize;
 						}
 					}
-					
-					if (!hasItems)
-					{
-						return CGSize.Empty;
-					}
+
+					// No items found
+					return CGSize.Empty;
 				}
-				
+
 				return base.CollectionViewContentSize;
 			}
 		}
+
 
 		CGPoint ScrollSingle(SnapPointsAlignment alignment, CGPoint proposedContentOffset, CGPoint scrollingVelocity)
 		{
