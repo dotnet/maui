@@ -24,6 +24,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 		string? _resultsPath;
 		readonly int _loopCount;
 		TestLogger _logger;
+		List<string> _categoriesToSkip;
 
 		public ControlsHeadlessTestRunner(HeadlessRunnerOptions runnerOptions, TestOptions options)
 		{
@@ -33,6 +34,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			_categoriesFilePath = Path.Combine(Path.GetDirectoryName(_resultsPath) ?? string.Empty, CategoriesFileName);
 			_loopCount = LoopCount ?? 0;
 			_logger = new();
+			_categoriesToSkip = new List<string>();
 		}
 
 		protected override bool LogExcludedTests => true;
@@ -59,21 +61,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 		{
 			var testRunner = base.GetTestRunner(logWriter);
 
-			var allCategories = File.ReadAllLines(_categoriesFilePath);
-			var categoriesToRun = allCategories.Skip(_loopCount).Take(1).ToArray();
-
-			List<string> categoriesToSkip = new();
-
-			foreach (var test in allCategories.Except(categoriesToRun))
-			{
-				categoriesToSkip.Add($"Category={test}");
-			}
-
-			var currentCategory = categoriesToRun[0];
-			var resultPath = _resultsPath?.Split(".xml") ?? new[] { "" };
-			_resultsPath = $"{resultPath[0]}_{currentCategory}.xml";
-
-			testRunner.SkipCategories(categoriesToSkip);
+			testRunner.SkipCategories(_categoriesToSkip);
 
 			return testRunner;
 		}
@@ -93,6 +81,18 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 					TerminateWithSuccess();
 					return null;
 				}
+
+				var allCategories = File.ReadAllLines(_categoriesFilePath);
+				var categoriesToRun = allCategories.Skip(_loopCount).Take(1).ToArray();
+
+				foreach (var test in allCategories.Except(categoriesToRun))
+				{
+					_categoriesToSkip.Add($"Category={test}");
+				}
+
+				var currentCategory = categoriesToRun[0];
+				var resultPath = _resultsPath?.Split(".xml") ?? new[] { "" };
+				_resultsPath = $"{resultPath[0]}_{currentCategory}.xml";
 
 				await RunAsync();
 			}
