@@ -1278,7 +1278,7 @@ namespace Microsoft.Maui.Controls
 
 			if (child is View view)
 			{
-				ComputeConstraintForView(view);
+				view.ComputedConstraint = ComputeConstraintForView(view);
 			}
 		}
 
@@ -1347,11 +1347,11 @@ namespace Microsoft.Maui.Controls
 			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
 			{
 				if (LogicalChildrenInternal[i] is View child)
-					ComputeConstraintForView(child);
+					child.ComputedConstraint = ComputeConstraintForView(child);
 			}
 		}
 
-		protected virtual void ComputeConstraintForView(View view) => view.ComputedConstraint = LayoutConstraint.None;
+		protected virtual LayoutConstraint ComputeConstraintForView(View view) => LayoutConstraint.None;
 
 		/// <summary>
 		/// Occurs when a focus change is requested.
@@ -1389,7 +1389,7 @@ namespace Microsoft.Maui.Controls
 				case InvalidationTrigger.VerticalOptionsChanged:
 					if (this is View thisView && Parent is VisualElement visualParent)
 					{
-						visualParent.ComputeConstraintForView(thisView);
+						thisView.ComputedConstraint = visualParent.ComputeConstraintForView(thisView);
 					}
 
 					// TODO ezhart Once we get InvalidateArrange sorted, HorizontalOptionsChanged and 

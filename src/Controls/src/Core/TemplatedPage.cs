@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 
 		Element IControlTemplated.TemplateRoot { get; set; }
 
-		protected override void ComputeConstraintForView(View view)
+		protected override LayoutConstraint ComputeConstraintForView(View view)
 		{
 			LayoutOptions vOptions = view.VerticalOptions;
 			LayoutOptions hOptions = view.HorizontalOptions;
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls
 			if (hOptions.Alignment == LayoutAlignment.Fill)
 				result |= LayoutConstraint.HorizontallyFixed;
 
-			view.ComputedConstraint = result;
+			return result;
 		}
 
 		internal override void SetChildInheritedBindingContext(Element child, object context)
