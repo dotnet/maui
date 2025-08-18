@@ -44,6 +44,7 @@
     <MicrosoftExtensionsConfigurationJsonVersion>10.0.0-rc.1.25416.112</MicrosoftExtensionsConfigurationJsonVersion>
     <MicrosoftExtensionsDependencyInjectionVersion>10.0.0-rc.1.25416.112</MicrosoftExtensionsDependencyInjectionVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.0-rc.1.25416.112</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsDiagnosticsVersion>10.0.0-rc.1.25416.112</MicrosoftExtensionsDiagnosticsVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsVersion>10.0.0-rc.1.25416.112</MicrosoftExtensionsFileProvidersAbstractionsVersion>
     <MicrosoftExtensionsLoggingAbstractionsVersion>10.0.0-rc.1.25416.112</MicrosoftExtensionsLoggingAbstractionsVersion>
     <MicrosoftExtensionsLoggingVersion>10.0.0-rc.1.25416.112</MicrosoftExtensionsLoggingVersion>
