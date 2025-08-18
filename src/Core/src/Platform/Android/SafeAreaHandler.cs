@@ -95,35 +95,30 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
             return false;
         }
 
-        // Fast check for any edge needing safe area
+        // Check if this view needs to handle safe area on any edge
+        // considering per-edge parent blocking
+        bool respondsToAnyEdge = false;
+
         for (int edge = 0; edge < 4; edge++)
         {
             var region = safeAreaLayout.GetSafeAreaRegionsForEdge(edge);
             if (region != SafeAreaRegions.None)
             {
-                goto CheckParent;
+                // Check if a parent is handling safe area for this specific edge
+                if (!CheckSafeAreaHandlingParentInHierarchyForEdge(edge))
+                {
+                    respondsToAnyEdge = true;
+                    break; // At least one edge can be handled
+                }
             }
         }
 
-        return false;
-
-    CheckParent:
-        if (HasSafeAreaHandlingParent())
+        if (respondsToAnyEdge)
         {
-            return false;
+            _safeAreaInvalidated = true;
         }
 
-        // Confirm at least one edge requires handling
-        for (int edge = 0; edge < 4; edge++)
-        {
-            if (safeAreaLayout.GetSafeAreaRegionsForEdge(edge) != SafeAreaRegions.None)
-            {
-                _safeAreaInvalidated = true;
-                return true;
-            }
-        }
-
-        return false;
+        return respondsToAnyEdge;
     }
 
     internal bool HasSafeAreaHandlingParent()
@@ -148,16 +143,57 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
             if (parent is ICrossPlatformLayoutBacking backing &&
                 GetSafeAreaView2(backing.CrossPlatformLayout) is ISafeAreaView2 parentLayout)
             {
+                // Check if the parent has any non-None safe area regions
+                // But allow children to handle their own safe area when parent is None for all edges
+                bool hasAnyNonNoneEdge = false;
                 for (int edge = 0; edge < 4; edge++)
                 {
                     var region = parentLayout.GetSafeAreaRegionsForEdge(edge);
                     if (region != SafeAreaRegions.None)
                     {
-                        return true;
+                        hasAnyNonNoneEdge = true;
+                        break;
                     }
+                }
+
+                // Only return true if parent has at least one non-None edge
+                // This preserves the original logic but allows better debugging
+                if (hasAnyNonNoneEdge)
+                {
+                    return true;
                 }
             }
             parent = parent is View pv ? pv.Parent : null;
+        }
+        return false;
+    }
+
+    bool CheckSafeAreaHandlingParentInHierarchyForEdge(int edge)
+    {
+        var parent = _owner.Parent;
+        int depth = 0, maxDepth = 15;
+
+        while (parent != null && depth++ < maxDepth)
+        {
+            if (parent is ICrossPlatformLayoutBacking backing &&
+                GetSafeAreaView2(backing.CrossPlatformLayout) is ISafeAreaView2 parentLayout)
+            {
+                var parentRegion = parentLayout.GetSafeAreaRegionsForEdge(edge);
+
+                // If parent has None for this edge, it allows children to handle their own safe area
+                if (parentRegion == SafeAreaRegions.None)
+                {
+                    parent = parent is View parentView ? parentView.Parent : null;
+                    continue;
+                }
+
+                // If parent has any non-None region for this edge, it's handling safe area
+                if (parentRegion != SafeAreaRegions.None)
+                {
+                    return true;
+                }
+            }
+            parent = parent is View parentView2 ? parentView2.Parent : null;
         }
         return false;
     }
@@ -203,6 +239,17 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
         return original;
     }
 
+    double GetSafeAreaForEdgeWithParentCheck(SafeAreaRegions region, double original, int edge)
+    {
+        // If a parent is handling safe area for this edge, don't apply safe area here
+        if (CheckSafeAreaHandlingParentInHierarchyForEdge(edge))
+        {
+            return 0;
+        }
+
+        return GetSafeAreaForEdge(region, original, edge);
+    }
+
     internal Rect AdjustForSafeArea(Rect bounds)
     {
         ValidateSafeArea();
@@ -228,10 +275,10 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
         if (GetSafeAreaView2(layout) is ISafeAreaView2 safeAreaLayout)
         {
             return new SafeAreaPadding(
-                GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0), baseSafeArea.Left, 0),
-                GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2), baseSafeArea.Right, 2),
-                GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1), baseSafeArea.Top, 1),
-                GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3), baseSafeArea.Bottom, 3)
+                GetSafeAreaForEdgeWithParentCheck(GetSafeAreaRegionForEdge(0), baseSafeArea.Left, 0),
+                GetSafeAreaForEdgeWithParentCheck(GetSafeAreaRegionForEdge(2), baseSafeArea.Right, 2),
+                GetSafeAreaForEdgeWithParentCheck(GetSafeAreaRegionForEdge(1), baseSafeArea.Top, 1),
+                GetSafeAreaForEdgeWithParentCheck(GetSafeAreaRegionForEdge(3), baseSafeArea.Bottom, 3)
             );
         }
 
