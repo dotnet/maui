@@ -207,8 +207,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Id = AView.GenerateViewId(),
 			};
 
-			_frameLayout.SetFitsSystemWindows(true);
-
 			_flyoutView.AttachFlyout(this, _frameLayout);
 
 			((IShellController)shell).AddAppearanceObserver(this, shell);
