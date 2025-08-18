@@ -106,6 +106,9 @@ namespace Microsoft.Maui.DeviceTests
 		double GetNativeLineHeight(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).LineHeight;
 
+		double GetNativeCharacterSpacing(LabelHandler labelHandler) =>
+			GetPlatformLabel(labelHandler).CharacterSpacing;
+
 		[Fact]
 		public async Task LineHeightSetsLineStackingStrategyToBlockLineHeight()
 		{
