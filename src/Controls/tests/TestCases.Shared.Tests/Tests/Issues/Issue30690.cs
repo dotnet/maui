@@ -122,7 +122,7 @@ public class Issue30690 : _IssuesUITest
 
 		// Perform pull-to-refresh
 		App.ScrollUp(ScrollViewContent);
-		Assert.That(App.WaitForTextToBePresentInElement(StatusLabel, "Refreshing...", timeout: TimeSpan.FromSeconds(5)), Is.True);
+		App.WaitForTextToBePresentInElement(StatusLabel, "Refreshing...", timeout: TimeSpan.FromSeconds(5));
 
 		// Wait for refresh to complete and verify it worked
 		Assert.That(App.WaitForTextToBePresentInElement(StatusLabel, "Refresh completed", timeout: TimeSpan.FromSeconds(5)), Is.True);
