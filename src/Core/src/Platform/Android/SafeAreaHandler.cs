@@ -222,11 +222,6 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
             return 0;
         }
 
-        if (region == SafeAreaRegions.Default || region == SafeAreaRegions.All || SafeAreaEdges.IsContainer(region))
-        {
-            return original;
-        }
-
         if (SafeAreaEdges.IsSoftInput(region))
         {
             if (_isKeyboardShowing && edge == 3)
@@ -236,6 +231,12 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
 
             return original;
         }
+
+        if (region == SafeAreaRegions.Default || region == SafeAreaRegions.All || SafeAreaEdges.IsContainer(region))
+        {
+            return original;
+        }
+
         return original;
     }
 
