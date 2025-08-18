@@ -105,6 +105,10 @@
         Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsVersion)"
     />
     <PackageReference
+        Update="Microsoft.Extensions.Diagnostics"
+        Version="$(MicrosoftExtensionsDiagnosticsVersion)"
+    />
+    <PackageReference
         Update="Microsoft.Extensions.FileProviders.Abstractions"
         Version="$(MicrosoftExtensionsFileProvidersAbstractionsVersion)"
     />

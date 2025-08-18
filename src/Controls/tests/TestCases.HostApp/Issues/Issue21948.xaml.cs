@@ -24,7 +24,9 @@ namespace Maui.Controls.Sample.Issues
 #if IOS || MACCATALYST
 		async void OpenNewWindow()
 		{
+#pragma warning disable CA1422 // UIWindows are obsolete in iOS 26+, but this test is specifically for them
 			var uIWindow = new UIWindow();
+#pragma warning restore CA1422
 			var keyWindow = (this.Window.Handler.PlatformView as UIWindow);
 			if (keyWindow?.WindowLevel == UIWindowLevel.Normal)
 				keyWindow.WindowLevel = -1;
