@@ -414,17 +414,18 @@ namespace Microsoft.Maui.Controls.Platform
 					weakEventTracker.Target is GesturePlatformManager eventTracker &&
 					eventTracker._handler?.VirtualView is View view)
 				{
-					// TODO Should be enabled only for pointer click? properly test on device
-
-					// Determine which button to report. On Mac Catalyst if the recognizer is configured
-					// for secondary only we label events as Secondary. iOS doesn't reliably expose
-					// secondary mouse button information to UIGestureRecognizer, so outside of
-					// Mac Catalyst we'll always report Primary.
 					ButtonsMask button = ButtonsMask.Primary;
-					if (OperatingSystem.IsMacCatalyst() &&
+					
+					// Try to get actual button information from the CustomPressGestureRecognizer
+					if (pointerGesture is CustomPressGestureRecognizer customPress)
+					{
+						button = customPress.DetectedButton;
+					}
+					else if (OperatingSystem.IsMacCatalyst() &&
 						(pointerGestureRecognizer.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary &&
 						(pointerGestureRecognizer.Buttons & ButtonsMask.Primary) != ButtonsMask.Primary)
 					{
+						// Fallback for Mac Catalyst when not using CustomPressGestureRecognizer
 						button = ButtonsMask.Secondary;
 					}
 
@@ -481,9 +482,21 @@ namespace Microsoft.Maui.Controls.Platform
 				new CustomPressGestureRecognizer((gesture) => action.Invoke(gesture)) { ShouldRecognizeSimultaneously = (g, o) => true }
 
 			};
+
+			// For Mac Catalyst, add context menu interaction to detect right-clicks for PointerGestureRecognizer
+			// since right-click events don't come through the normal Presses* events
+			if (OperatingSystem.IsMacCatalyst() && 
+				weakRecognizer.Target is PointerGestureRecognizer pgr &&
+				(pgr.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
+			{
+				var fakeInteraction = new FakeRightClickPointerInteraction(pgr, this);
+				_interactions.Add(fakeInteraction);
+				PlatformView?.AddInteraction(fakeInteraction);
+			}
+
 			return result;
 		}
-		
+
 		UITapGestureRecognizer? CreateTapRecognizer(
 			WeakReference weakEventTracker,
 			WeakReference weakRecognizer)
@@ -902,6 +915,65 @@ namespace Microsoft.Maui.Controls.Platform
 					if (TapGestureRecognizer?.NumberOfTapsRequired == 1)
 						ProcessRecognizerHandlerTap(_gestureManager, _recognizer, location, 1);
 
+					return null;
+				}
+			}
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.0.0")]
+		[UnsupportedOSPlatform("tvos")]
+		internal class FakeRightClickPointerInteraction : UIContextMenuInteraction
+		{
+			// Store a reference to the platform delegate so that it is not garbage collected
+			FakeRightClickPointerDelegate? _dontCollectMePlease;
+
+			public FakeRightClickPointerInteraction(PointerGestureRecognizer pointerGestureRecognizer, GesturePlatformManager gestureManager)
+				: base(new FakeRightClickPointerDelegate(pointerGestureRecognizer, gestureManager))
+			{
+				_dontCollectMePlease = Delegate as FakeRightClickPointerDelegate;
+			}
+
+			public PointerGestureRecognizer? PointerGestureRecognizer => _dontCollectMePlease?.PointerGestureRecognizer;
+
+			class FakeRightClickPointerDelegate : UIContextMenuInteractionDelegate
+			{
+				WeakReference _recognizer;
+				WeakReference _gestureManager;
+
+				public PointerGestureRecognizer? PointerGestureRecognizer => _recognizer.Target as PointerGestureRecognizer;
+				public FakeRightClickPointerDelegate(PointerGestureRecognizer pointerGestureRecognizer, GesturePlatformManager gestureManager)
+				{
+					_recognizer = new WeakReference(pointerGestureRecognizer);
+					_gestureManager = new WeakReference(gestureManager);
+				}
+
+				public override UIContextMenuConfiguration? GetConfigurationForMenu(UIContextMenuInteraction interaction, CGPoint location)
+				{
+					// This method is called when a right-click occurs on Mac Catalyst
+					// We simulate a right-click pointer press event
+					if (_gestureManager.Target is GesturePlatformManager eventTracker &&
+						_recognizer.Target is PointerGestureRecognizer pointerGestureRecognizer &&
+						eventTracker._handler?.VirtualView is View view)
+					{
+						// Check if this recognizer should respond to secondary button
+						if ((pointerGestureRecognizer.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
+						{
+							pointerGestureRecognizer.SendPointerPressed(view, 
+								(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(eventTracker)), 
+								null,
+								ButtonsMask.Secondary);
+								
+							// Immediately send pointer released event since context menu is a single click action
+							pointerGestureRecognizer.SendPointerReleased(view, 
+								(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(eventTracker)), 
+								null,
+								ButtonsMask.Secondary);
+						}
+					}
+					
+					// Return null to prevent actual context menu from appearing
+					// We only want to detect the right-click, not show a menu
 					return null;
 				}
 			}
