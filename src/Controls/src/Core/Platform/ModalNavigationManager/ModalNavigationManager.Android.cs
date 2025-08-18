@@ -398,6 +398,76 @@ namespace Microsoft.Maui.Controls.Platform
 					this.OnBackPressedDispatcher.AddCallback(new CallBack(true, this));
 				}
 
+				public override bool OnKeyDown(Keycode keyCode, KeyEvent? e)
+				{
+					if (Context.GetActivity() is not global::Android.App.Activity activity)
+						return e is not null ? base.OnKeyDown(keyCode, e) : false;
+
+					var handled = false;
+					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyDown>(del =>
+					{
+						handled = del(activity, keyCode, e) || handled;
+					});
+
+					return handled || (e is not null && base.OnKeyDown(keyCode, e));
+				}
+
+				public override bool OnKeyLongPress(Keycode keyCode, KeyEvent? e)
+				{
+					if (Context.GetActivity() is not global::Android.App.Activity activity)
+						return e is not null ? base.OnKeyLongPress(keyCode, e) : false;
+
+					var handled = false;
+					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyLongPress>(del =>
+					{
+						handled = del(activity, keyCode, e) || handled;
+					});
+
+					return handled || (e is not null && base.OnKeyLongPress(keyCode, e));
+				}
+
+				public override bool OnKeyMultiple(Keycode keyCode, int repeatCount, KeyEvent? e)
+				{
+					if (Context.GetActivity() is not global::Android.App.Activity activity)
+						return e is not null ? base.OnKeyMultiple(keyCode, repeatCount, e) : false;
+
+					var handled = false;
+					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyMultiple>(del =>
+					{
+						handled = del(activity, keyCode, repeatCount, e) || handled;
+					});
+
+					return handled || (e is not null && base.OnKeyMultiple(keyCode, repeatCount, e));
+				}
+
+				public override bool OnKeyShortcut(Keycode keyCode, KeyEvent? e)
+				{
+					if (Context.GetActivity() is not global::Android.App.Activity activity)
+						return e is not null ? base.OnKeyShortcut(keyCode, e) : false;
+
+					var handled = false;
+					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyShortcut>(del =>
+					{
+						handled = del(activity, keyCode, e) || handled;
+					});
+
+					return handled || (e is not null && base.OnKeyShortcut(keyCode, e));
+				}
+
+				public override bool OnKeyUp(Keycode keyCode, KeyEvent? e)
+				{
+					if (Context.GetActivity() is not global::Android.App.Activity activity)
+						return e is not null ? base.OnKeyUp(keyCode, e) : false;
+
+					var handled = false;
+					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyUp>(del =>
+					{
+						handled = del(activity, keyCode, e) || handled;
+					});
+
+					return handled || (e is not null && base.OnKeyUp(keyCode, e));
+				}
+
 				sealed class CallBack : OnBackPressedCallback
 				{
 					WeakReference<CustomComponentDialog> _customComponentDialog;
