@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Storage;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Xunit;
@@ -101,5 +102,47 @@ namespace Microsoft.Maui.DeviceTests
 
 		UI.Xaml.TextAlignment GetNativeHorizontalTextAlignment(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).TextAlignment;
+
+		double GetNativeLineHeight(LabelHandler labelHandler) =>
+			GetPlatformLabel(labelHandler).LineHeight;
+
+		[Fact]
+		public async Task LineHeightSetsLineStackingStrategyToBlockLineHeight()
+		{
+			var label = new LabelStub
+			{
+				Text = "Test text with line height",
+				LineHeight = 0.8 // LineHeight less than 1
+			};
+
+			var (lineHeight, lineStackingStrategy) = await GetValueAsync(label, handler =>
+			{
+				var platformLabel = GetPlatformLabel(handler);
+				return (platformLabel.LineHeight, platformLabel.LineStackingStrategy);
+			});
+
+			// When LineHeight is set, LineStackingStrategy should be BlockLineHeight
+			Assert.Equal(LineStackingStrategy.BlockLineHeight, lineStackingStrategy);
+			Assert.True(lineHeight > 0, "LineHeight should be greater than 0 when set");
+		}
+
+		[Fact]
+		public async Task NoLineHeightDefaultLineStackingStrategy()
+		{
+			var label = new LabelStub
+			{
+				Text = "Test text without line height"
+				// LineHeight not set (default is -1)
+			};
+
+			var lineStackingStrategy = await GetValueAsync(label, handler =>
+			{
+				var platformLabel = GetPlatformLabel(handler);
+				return platformLabel.LineStackingStrategy;
+			});
+
+			// When LineHeight is not set, LineStackingStrategy should remain default (MaxHeight)
+			Assert.Equal(LineStackingStrategy.MaxHeight, lineStackingStrategy);
+		}
 	}
 }
