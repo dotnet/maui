@@ -213,7 +213,6 @@ namespace Microsoft.Maui.Controls
 				datePicker.Closed?.Invoke(datePicker, DatePickerClosedEventArgs.Empty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
 		/// <param name="source">The source parameter.</param>
 		/// <param name="textTransform">The textTransform parameter.</param>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)

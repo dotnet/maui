@@ -16,6 +16,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>An <see cref="Microsoft.Maui.Controls.ItemsView{T}"/> that displays a collection of data as a vertical list.</summary>
+	[Obsolete("ListView is deprecated. Please use CollectionView instead.")]
 	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement
 	{
 		// The ListViewRenderer has some odd behavior with LogicalChildren
@@ -431,8 +432,10 @@ namespace Microsoft.Maui.Controls
 
 		protected override Cell CreateDefault(object item)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			TextCell textCell = new TextCell();
 			textCell.SetBinding(TextCell.TextProperty, static (object cell) => cell, BindingMode.OneWay, _toStringValueConverter);
+#pragma warning restore CS0618 // Type or member is obsolete
 			return textCell;
 		}
 
@@ -463,8 +466,10 @@ namespace Microsoft.Maui.Controls
 		protected override void SetupContent(Cell content, int index)
 		{
 			base.SetupContent(content, index);
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (content is ViewCell viewCell && viewCell.View != null && HasUnevenRows)
 				viewCell.View.ComputedConstraint = LayoutConstraint.None;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (content != null)
 			{
