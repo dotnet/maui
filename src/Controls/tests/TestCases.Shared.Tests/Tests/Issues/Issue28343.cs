@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_CATALYST // App.ScrollUp does nothing: https://github.com/dotnet/maui/issues/31216
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -46,3 +47,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

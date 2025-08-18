@@ -113,6 +113,7 @@ public class Issue30690 : _IssuesUITest
 #endif
 	}
 
+#if TEST_FAILS_ON_CATALYST // App.ScrollUp does nothing: https://github.com/dotnet/maui/issues/31216
 	[Test]
 	public void PullToRefreshWorksWhenEnabled()
 	{
@@ -120,11 +121,11 @@ public class Issue30690 : _IssuesUITest
 		App.WaitForElement(ScrollViewContent);
 
 		// Perform pull-to-refresh
-		PullToRefresh();
-		App.WaitForTextToBePresentInElement(StatusLabel, "Refreshing...", timeout: TimeSpan.FromSeconds(5));
+		App.ScrollUp(ScrollViewContent);
+		Assert.That(App.WaitForTextToBePresentInElement(StatusLabel, "Refreshing...", timeout: TimeSpan.FromSeconds(5)), Is.True);
 
 		// Wait for refresh to complete and verify it worked
-		App.WaitForTextToBePresentInElement(StatusLabel, "Refresh completed", timeout: TimeSpan.FromSeconds(5));
+		Assert.That(App.WaitForTextToBePresentInElement(StatusLabel, "Refresh completed", timeout: TimeSpan.FromSeconds(5)), Is.True);
 	}
 
 	[Test]
@@ -135,7 +136,7 @@ public class Issue30690 : _IssuesUITest
 		App.Tap(ToggleIsRefreshEnabledButton);
 
 		// Perform pull-to-refresh
-		PullToRefresh();
+		App.ScrollUp(ScrollViewContent);
 
 		// Wait for refresh to complete and verify it failed
 		Assert.That(GetStatusText(), Contains.Substring("IsRefreshEnabled: False"));
@@ -149,15 +150,14 @@ public class Issue30690 : _IssuesUITest
 		App.Tap(ToggleIsEnabledButton);
 
 		// Perform pull-to-refresh
-		PullToRefresh();
+		App.ScrollUp(ScrollViewContent);
 
 		// Wait for refresh to complete and verify it failed
 		Assert.That(GetStatusText(), Contains.Substring("IsEnabled: False"));
 	}
+#endif
 
 	string GetStatusText() =>
 		App.FindElement(StatusLabel).GetText() ?? "";
 
-	void PullToRefresh() =>
-		App.ScrollUp(ScrollViewContent);
 }
