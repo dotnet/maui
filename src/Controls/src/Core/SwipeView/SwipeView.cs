@@ -128,6 +128,12 @@ namespace Microsoft.Maui.Controls
 			SetInheritedBindingContext(RightItems, BindingContext);
 			SetInheritedBindingContext(TopItems, BindingContext);
 			SetInheritedBindingContext(BottomItems, BindingContext);
+
+			// Fix for iOS: Close SwipeView when BindingContext changes to prevent stale open state
+			if (_isOpen)
+			{
+				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(false));
+			}
 		}
 
 		static void OnSwipeItemsChanged(BindableObject bindable, object oldValue, object newValue)
