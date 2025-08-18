@@ -147,6 +147,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5744e2cba00d7b0a11a410ade60a2923cb88287f</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Diagnostics" Version="10.0.0-rc.1.25413.112">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>5744e2cba00d7b0a11a410ade60a2923cb88287f</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.0-rc.1.25413.112">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5744e2cba00d7b0a11a410ade60a2923cb88287f</Sha>
