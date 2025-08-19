@@ -544,7 +544,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			if (added)
 				layoutChildren = true;
 
-			base.LayoutChildren(x, y, width, height);
+			base.LayoutChildrenInternal(x, y, width, height);
 		}
 
 		protected override void OnAdded(View view)
