@@ -1,5 +1,4 @@
-﻿using Maui.Controls.Sample.ViewModels;
-using Microsoft.Maui.Controls.Xaml;
+﻿using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Pages.RadioButtonGalleries
 {
