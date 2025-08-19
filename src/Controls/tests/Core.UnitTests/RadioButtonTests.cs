@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void RadioButtonIsCheckedClearedWhenGroupSelectedValueIsNull()
+		public void GroupNullSelectionClearsAnySelection()
 		{
 			var layout = new Grid();
 			layout.SetValue(RadioButtonGroup.GroupNameProperty, "foo");
