@@ -5,7 +5,7 @@ using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="Type[@FullName='Microsoft.Maui.Controls.ClickGestureRecognizer']/Docs/*" />
+	/// <summary>Recognizer for click gestures.</summary>
 	[Obsolete("The ClickGestureRecognizer is deprecated; please use TapGestureRecognizer or PointerGestureRecognizer instead.")]
 	public sealed class ClickGestureRecognizer : GestureRecognizer
 	{
@@ -21,33 +21,36 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Buttons"/>.</summary>
 		public static readonly BindableProperty ButtonsProperty = BindableProperty.Create(nameof(Buttons), typeof(ButtonsMask), typeof(ClickGestureRecognizer), ButtonsMask.Primary);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="Microsoft.Maui.Controls.ClickGestureRecognizer"/> with default values.</summary>
 		public ClickGestureRecognizer()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="//Member[@MemberName='Command']/Docs/*" />
+		/// <summary>Gets or sets the command to run.</summary>
+		/// <remarks>The command may be null.</remarks>
 		public ICommand Command
 		{
 			get { return (ICommand)GetValue(CommandProperty); }
 			set { SetValue(CommandProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="//Member[@MemberName='CommandParameter']/Docs/*" />
+		/// <summary>Gets or sets the command parameter.</summary>
+		/// <remarks>The command parameter may be null.</remarks>
 		public object CommandParameter
 		{
 			get { return GetValue(CommandParameterProperty); }
 			set { SetValue(CommandParameterProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="//Member[@MemberName='NumberOfClicksRequired']/Docs/*" />
+		/// <summary>The number of clicks required to activate the recognizer. This is a bindable property.</summary>
 		public int NumberOfClicksRequired
 		{
 			get { return (int)GetValue(NumberOfClicksRequiredProperty); }
 			set { SetValue(NumberOfClicksRequiredProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="//Member[@MemberName='Buttons']/Docs/*" />
+		/// <summary>Gets or sets flag values that indicate which button or buttons were clicked.</summary>
+		/// <remarks>On a mouse used in the right hand, the left button is typically the primary button. It is the button typically under the index finger. For a mouse used in the left hand, the right button is typically the primary button.</remarks>
 		public ButtonsMask Buttons
 		{
 			get { return (ButtonsMask)GetValue(ButtonsProperty); }
@@ -56,7 +59,10 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler Clicked;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="//Member[@MemberName='SendClicked']/Docs/*" />
+		/// <summary>Runs the command for the click, if present, and invokes the click event handler when appropriate.</summary>
+		/// <param name="sender">The object that is sending the click event.</param>
+		/// <param name="buttons">The buttons that were involved in the click event.</param>
+		/// <remarks>Both the command and the event are run, if present.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendClicked(View sender, ButtonsMask buttons)
 		{
