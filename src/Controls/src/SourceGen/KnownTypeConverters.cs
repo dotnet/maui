@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml;
 using static LocationHelpers;
+using static GeneratorHelpers;
 
 static class KnownTypeConverters
 {
@@ -221,7 +222,7 @@ static class KnownTypeConverters
 				&& double.TryParse(xywh[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double w)
 				&& double.TryParse(xywh[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double h))
 			{
-				return $"new global::Microsoft.Maui.Graphics.Rect({SymbolDisplay.FormatPrimitive(x, false, false)}, {SymbolDisplay.FormatPrimitive(y, false, false)}, {SymbolDisplay.FormatPrimitive(w, false, false)}, {SymbolDisplay.FormatPrimitive(h, false, false)})";
+				return $"new global::Microsoft.Maui.Graphics.Rect({FormatInvariant(x)}, {FormatInvariant(y)}, {FormatInvariant(w)}, {FormatInvariant(h)})";
 			}
 		}
 
@@ -273,7 +274,7 @@ static class KnownTypeConverters
 			if (xy.Length == 2 && double.TryParse(xy[0], NumberStyles.Number, CultureInfo.InvariantCulture, out var x)
 				&& double.TryParse(xy[1], NumberStyles.Number, CultureInfo.InvariantCulture, out var y))
 			{
-				return $"new global::Microsoft.Maui.Graphics.Point({SymbolDisplay.FormatPrimitive(x, false, false)}, {SymbolDisplay.FormatPrimitive(y, false, false)})";
+				return $"new global::Microsoft.Maui.Graphics.Point({FormatInvariant(x)}, {FormatInvariant(y)})";
 			}
 		}
 
@@ -298,21 +299,21 @@ static class KnownTypeConverters
 					case 2:
 						if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double h)
 							&& double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double v))
-							return $"new global::Microsoft.Maui.Thickness({SymbolDisplay.FormatPrimitive(h, false, false)}, {SymbolDisplay.FormatPrimitive(v, false, false)})";
+							return $"new global::Microsoft.Maui.Thickness({FormatInvariant(h)}, {FormatInvariant(v)})";
 						break;
 					case 4:
 						if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double l)
 							&& double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double t)
 							&& double.TryParse(thickness[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double r)
 							&& double.TryParse(thickness[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double b))
-							return $"new global::Microsoft.Maui.Thickness({SymbolDisplay.FormatPrimitive(l, false, false)}, {SymbolDisplay.FormatPrimitive(t, false, false)}, {SymbolDisplay.FormatPrimitive(r, false, false)}, {SymbolDisplay.FormatPrimitive(b, false, false)})";
+							return $"new global::Microsoft.Maui.Thickness({FormatInvariant(l)}, {FormatInvariant(t)}, {FormatInvariant(r)}, {FormatInvariant(b)})";
 						break;
 				}
 			}
 			else
 			{ //single uniform thickness
 				if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
-					return $"new global::Microsoft.Maui.Thickness({SymbolDisplay.FormatPrimitive(l, false, false)})";
+					return $"new global::Microsoft.Maui.Thickness({FormatInvariant(l)})";
 			}
 		}
 
@@ -337,17 +338,17 @@ static class KnownTypeConverters
 					&& double.TryParse(cornerRadius[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double tr)
 					&& double.TryParse(cornerRadius[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double bl)
 					&& double.TryParse(cornerRadius[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double br))
-					return $"new global::Microsoft.Maui.CornerRadius({SymbolDisplay.FormatPrimitive(tl, false, false)}, {SymbolDisplay.FormatPrimitive(tr, false, false)}, {SymbolDisplay.FormatPrimitive(bl, false, false)}, {SymbolDisplay.FormatPrimitive(br, false, false)})";
+					return $"new global::Microsoft.Maui.CornerRadius({FormatInvariant(tl)}, {FormatInvariant(tr)}, {FormatInvariant(bl)}, {FormatInvariant(br)})";
 
 				if (cornerRadius.Length > 1
 					&& cornerRadius.Length < 4
 					&& double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
-					return $"new global::Microsoft.Maui.CornerRadius({SymbolDisplay.FormatPrimitive(l, false, false)})";
+					return $"new global::Microsoft.Maui.CornerRadius({FormatInvariant(l)})";
 			}
 			else
 			{ //single uniform CornerRadius
 				if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
-					return $"new global::Microsoft.Maui.CornerRadius({SymbolDisplay.FormatPrimitive(l, false, false)})";
+					return $"new global::Microsoft.Maui.CornerRadius({FormatInvariant(l)})";
 			}
 		}
 
@@ -413,10 +414,10 @@ static class KnownTypeConverters
 
 			if (value.EndsWith("%", StringComparison.OrdinalIgnoreCase)
 				&& float.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
-				return $"new global::Microsoft.Maui.Layouts.FlexBasis({SymbolDisplay.FormatPrimitive(relflex / 100, false, false)}, true)";
+				return $"new global::Microsoft.Maui.Layouts.FlexBasis({FormatInvariant(relflex / 100)}, true)";
 
 			if (float.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out float flex))
-				return $"new global::Microsoft.Maui.Layouts.FlexBasis({SymbolDisplay.FormatPrimitive(flex, false, false)}, false)";
+				return $"new global::Microsoft.Maui.Layouts.FlexBasis({FormatInvariant(flex)}, false)";
 		}
 
 		context.ReportDiagnostic(Diagnostic.Create(Descriptors.FlexBasisConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
@@ -431,7 +432,7 @@ static class KnownTypeConverters
 		{
 			value = value.Trim();
 			if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double size))
-				return $"{SymbolDisplay.FormatPrimitive(size, true, false)}D";
+				return $"{FormatInvariantWithQuotes(size)}D";
 
 
 			var namedSizeSymbol = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.NamedSize")!;
@@ -490,7 +491,7 @@ static class KnownTypeConverters
 			{
 				if (double.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out double val))
 				{
-					return $"new global::Microsoft.Maui.GridLength({SymbolDisplay.FormatPrimitive(val, false, false)}, global::Microsoft.Maui.GridUnitType.Star)";
+					return $"new global::Microsoft.Maui.GridLength({FormatInvariant(val)}, global::Microsoft.Maui.GridUnitType.Star)";
 				}
 			}
 			else if (value.Equals("Auto", StringComparison.OrdinalIgnoreCase))
@@ -499,7 +500,7 @@ static class KnownTypeConverters
 			}
 			else if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double val))
 			{
-				return $"new global::Microsoft.Maui.GridLength({SymbolDisplay.FormatPrimitive(val, false, false)}, global::Microsoft.Maui.GridUnitType.Absolute)";
+				return $"new global::Microsoft.Maui.GridLength({FormatInvariant(val)}, global::Microsoft.Maui.GridUnitType.Absolute)";
 			}
 		}
 
@@ -606,7 +607,7 @@ static class KnownTypeConverters
 					}
 					else
 					{
-						pointCollection.Add(ConvertPoint($"{SymbolDisplay.FormatPrimitive(x, false, false)},{SymbolDisplay.FormatPrimitive(number, false, false)}", node, toType, context));
+						pointCollection.Add(ConvertPoint($"{FormatInvariant(x)},{FormatInvariant(number)}", node, toType, context));
 						hasX = false;
 					}
 				}
@@ -678,14 +679,14 @@ static class KnownTypeConverters
 				if (coordinates.Length == 2 && double.TryParse(coordinates[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double x1)
 					&& double.TryParse(coordinates[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double y1))
 				{
-					return $"new global::Microsoft.Maui.Controls.Shapes.Line {{ X1 = {SymbolDisplay.FormatPrimitive(x1, false, false)}, Y1 = {SymbolDisplay.FormatPrimitive(y1, false, false)} }}";
+					return $"new global::Microsoft.Maui.Controls.Shapes.Line {{ X1 = {FormatInvariant(x1)}, Y1 = {FormatInvariant(y1)} }}";
 				}
 				else if (coordinates.Length == 4 && double.TryParse(coordinates[0], NumberStyles.Number, CultureInfo.InvariantCulture, out x1)
 					&& double.TryParse(coordinates[1], NumberStyles.Number, CultureInfo.InvariantCulture, out y1)
 					&& double.TryParse(coordinates[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double x2)
 					&& double.TryParse(coordinates[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double y2))
 				{
-					return $"new global::Microsoft.Maui.Controls.Shapes.Line {{ X1 = {SymbolDisplay.FormatPrimitive(x1, false, false)}, Y1 = {SymbolDisplay.FormatPrimitive(y1, false, false)}, X2 = {SymbolDisplay.FormatPrimitive(x2, false, false)}, Y2 = {SymbolDisplay.FormatPrimitive(y2, false, false)} }}";
+					return $"new global::Microsoft.Maui.Controls.Shapes.Line {{ X1 = {FormatInvariant(x1)}, Y1 = {FormatInvariant(y1)}, X2 = {FormatInvariant(x2)}, Y2 = {FormatInvariant(y2)} }}";
 				}
 			}
 
@@ -822,7 +823,7 @@ static class KnownTypeConverters
 			value = value.Trim();
 
 			if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var size))
-				return $"global::Microsoft.Maui.Controls.Compatibility.Constraint.Constant({SymbolDisplay.FormatPrimitive(size, false, false)})";
+				return $"global::Microsoft.Maui.Controls.Compatibility.Constraint.Constant({FormatInvariant(size)})";
 		}
 
 #pragma warning disable RS0030 // Do not use banned APIs
