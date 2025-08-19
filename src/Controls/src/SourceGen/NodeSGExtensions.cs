@@ -625,14 +625,17 @@ static class NodeSGExtensions
 		else
 			target = (IElementNode)target.Parent;
 
-		string? typeName = null;
+		XmlType? typeName = null;
 		//4. target is now a Setter in a Style, or a VE
 		if (IsOfAnyType(target.XmlType, "Setter"))
-			typeName = ((target?.Parent as IElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+		{
+			var targetType = ((target?.Parent as IElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+			typeName = TypeArgumentsParser.ParseSingle(targetType, parent.NamespaceResolver, lineInfo);
+		}
 		else
-			typeName = target.XmlType.Name;
+			typeName = target.XmlType;
 
-		return XmlTypeExtensions.GetTypeSymbol(typeName!, context.ReportDiagnostic, context.Compilation, context.XmlnsCache, parent);
+		return typeName!.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache);
 	}
 
 	public static bool RepresentsType(this INode node, string namespaceUri, string name)
