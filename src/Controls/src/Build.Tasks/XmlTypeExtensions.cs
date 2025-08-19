@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public static bool TryGetTypeReference(this XmlType xmlType, XamlCache cache, ModuleDefinition module, IXmlLineInfo xmlInfo, bool expandToExtension, out TypeReference typeReference)
 		{
-			IList<XmlnsDefinitionAttribute> xmlnsDefinitions = cache.GetXmlsDefinitions(module, GatherXmlnsDefinitionAttributes);
+			IList<XmlnsDefinitionAttribute> xmlnsDefinitions = cache.GetXmlnsDefinitions(module, GatherXmlnsDefinitionAttributes);
 
 			var typeArguments = xmlType.TypeArguments;
 
