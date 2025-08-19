@@ -20,6 +20,32 @@
     <UseMaterial3>false</UseMaterial3>
   </PropertyGroup>
 
+  <!-- Add trimming configuration for the sample app -->
+  <PropertyGroup>
+    <!-- This is a sample app, so we're using partial trimming mode for better compatibility -->
+    <PublishTrimmed>false</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <!-- Add warnings to NoWarn for trimming issues in this sample app -->
+    <NoWarn>$(NoWarn);IL2026;IL2091;IL2072;IL2112;IL2046;IL2114;IL2111;IL2097</NoWarn>
+    <!-- Reference the trimming configuration file -->
+    <RootAllApplicationAssemblies>false</RootAllApplicationAssemblies>
+    <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
+    <IlcOptimizationPreference>Size</IlcOptimizationPreference>
+    <IlcTrimMetadata>true</IlcTrimMetadata>
+    <!-- Add specific Blazor-related suppressions -->
+    <BlazorWebViewEnableSourceGeneratorForListOfComponents>false</BlazorWebViewEnableSourceGeneratorForListOfComponents>
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <TrimmerRootAssembly Include="Maui.Controls.Sample" />
+    <TrimmerRootAssembly Include="Microsoft.AspNetCore.Components.WebView.Maui" />
+    <TrimmerRootAssembly Include="MauiRazorClassLibrarySample" />
+    <TrimmerRootDescriptor Include="$(MSBuildThisFileDirectory)Properties\rd.xml" />
+  </ItemGroup>
+
   <PropertyGroup>
     <ApplicationTitle>.NET MAUI</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.sample</ApplicationId>
@@ -45,7 +71,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
-    <NoWarn>$(NoWarn);IL2067;IL2026</NoWarn>
+    <NoWarn>$(NoWarn);IL2067;IL2026;IL2111</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
