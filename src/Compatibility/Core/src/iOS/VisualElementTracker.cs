@@ -376,8 +376,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		[PortHandler("Partially ported")]
 		void UpdateNativeControl()
 		{
-			Performance.Start(out string reference);
-
 			if (_disposed)
 				return;
 
@@ -399,7 +397,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			UpdateClip();
 
 			NativeControlUpdated?.Invoke(this, EventArgs.Empty);
-			Performance.Stop(reference);
 		}
 
 		void UpdateClip()
