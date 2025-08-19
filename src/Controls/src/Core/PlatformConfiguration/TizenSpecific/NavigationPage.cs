@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
 	using FormsElement = Maui.Controls.NavigationPage;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.NavigationPage']/Docs/*" />
+	/// <summary>Provides access to the bread crumb bar for navigation pages on the Tizen platform.</summary>
 	public static class NavigationPage
 	{
 		#region HasBreadCrumbsBar
@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		public static readonly BindableProperty HasBreadCrumbsBarProperty
 			= BindableProperty.CreateAttached("HasBreadCrumbsBar", typeof(bool), typeof(FormsElement), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/NavigationPage.xml" path="//Member[@MemberName='GetHasBreadCrumbsBar']/Docs/*" />
+		/// <summary>Returns a Boolean value that tells whether the navigation page has a bread crumb bar.</summary>
+		/// <param name="element">The navigation page on the Tizen platform whose font weight icon to get.</param>
+		/// <returns><see langword="true"/> if the navigation page has a bread crumb bar. Otherwise, <see langword="false"/>.</returns>
 		public static bool GetHasBreadCrumbsBar(BindableObject element)
 		{
 			return (bool)element.GetValue(HasBreadCrumbsBarProperty);
@@ -23,7 +25,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			element.SetValue(HasBreadCrumbsBarProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/NavigationPage.xml" path="//Member[@MemberName='HasBreadCrumbsBar']/Docs/*" />
+		/// <summary>Returns a Boolean value that tells whether the navigation page has a bread crumb bar.</summary>
+		/// <param name="config">The platform configuration for the navigation page on the Tizen platform whose font weight icon to get.</param>
+		/// <returns><see langword="true"/> if the navigation page has a bread crumb bar. Otherwise, <see langword="false"/>.</returns>
 		public static bool HasBreadCrumbsBar(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetHasBreadCrumbsBar(config.Element);

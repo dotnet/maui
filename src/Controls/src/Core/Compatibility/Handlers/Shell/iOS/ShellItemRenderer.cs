@@ -444,7 +444,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					return;
 				}
-	   
+
 				TabBarHidden = !ShellItemController.ShowTabs;
 			}
 			else

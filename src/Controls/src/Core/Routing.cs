@@ -152,10 +152,11 @@ namespace Microsoft.Maui.Controls
 			return s_routeKeys = keys;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='GetOrCreateContent']/Docs/*" />
-#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+		/// <summary>Gets or creates content for the specified route using dependency injection services.</summary>
+		/// <param name="route">The route string to get or create content for.</param>
+		/// <param name="services">Optional service provider for dependency injection when creating new content instances.</param>
+		/// <returns>The Element associated with the route, or null if not found and cannot be created.</returns>
 		public static Element GetOrCreateContent(string route, IServiceProvider services = null)
-#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			Element result = null;
 

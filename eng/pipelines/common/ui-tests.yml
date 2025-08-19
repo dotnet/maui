@@ -8,7 +8,7 @@ parameters:
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
-  timeoutInMinutes: 120
+  timeoutInMinutes: 180
   skipProvisioning: true
   agentPoolAccessToken: ''
   categoryGroupsToTest:

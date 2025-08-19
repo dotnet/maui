@@ -34,7 +34,7 @@ using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.AnimationExtensions']/Docs/*" />
+	/// <summary>Extension methods for <see cref="Microsoft.Maui.Controls.IAnimatable"/> objects.</summary>
 	public static class AnimationExtensions
 	{
 		// We use a ConcurrentDictionary because Tweener relies on being able to remove
@@ -111,7 +111,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='AbortAnimation']/Docs/*" />
+		/// <summary>Stops the animation.</summary>
+		/// <param name="self">The object on which this method will be run.</param>
+		/// <param name="handle">An animation key that must be unique among its sibling and parent animations for the duration of the animation.</param>
 		public static bool AbortAnimation(this IAnimatable self, string handle)
 		{
 			var key = new AnimatableKey(self, handle);
@@ -186,10 +188,15 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='AnimateKinetic']/Docs/*" />
-#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+		/// <summary>Sets the specified parameters and starts the kinetic animation.</summary>
+		/// <param name="self">The object on which this method will be run.</param>
+		/// <param name="name">An animation key that should be unique among its sibling and parent animations for the duration of the animation.</param>
+		/// <param name="callback">An action that is called with successive animation values.</param>
+		/// <param name="velocity">The amount that the animation progresses in each animation step. For example, a velocity of <c>1</c> progresses at the default speed.</param>
+		/// <param name="drag">The amount that the progression speed is reduced per frame. Can be negative.</param>
+		/// <param name="finished">An action to call when the animation is finished.</param>
+		/// <param name="animationManager">The animation manager to use for this animation. If null, the default animation manager for the target object will be used.</param>
 		public static void AnimateKinetic(this IAnimatable self, string name, Func<double, double, bool> callback, double velocity, double drag, Action finished = null, IAnimationManager animationManager = null)
-#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			animationManager ??= self.GetAnimationManager();
 
@@ -197,21 +204,29 @@ namespace Microsoft.Maui.Controls
 			DoAction(self, animate);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='AnimationIsRunning']/Docs/*" />
+		/// <summary>Returns a Boolean value that indicates whether or not the animation that is specified by <paramref name="handle"/> is running.</summary>
+		/// <param name="self">The object on which this method will be run.</param>
+		/// <param name="handle">An animation key that must be unique among its sibling and parent animations for the duration of the animation.</param>
 		public static bool AnimationIsRunning(this IAnimatable self, string handle)
 		{
 			var key = new AnimatableKey(self, handle);
 			return s_animations.ContainsKey(key);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Interpolate']/Docs/*" />
+		/// <summary>Returns a function that performs a linear interpolation between <paramref name="start"/> and <paramref name="end"/>.</summary>
+		/// <param name="start">The fraction into the current animation at which to start the animation.</param>
+		/// <param name="end">The fraction into the current animation at which to stop the animation.</param>
+		/// <param name="reverseVal">The inverse scale factor to use if <paramref name="reverse"/> is <see langword="true"/>.</param>
+		/// <param name="reverse">Whether to use the inverse scale factor in <paramref name="reverseVal"/> to deinterpolate.</param>
+		/// <returns>A function that performs a linear interpolation between <paramref name="start"/> and <paramref name="end"/>. Application developers can pass values between 0.0f and 1.0f to this function in order to receive a value that is offset from <paramref name="start"/> or <paramref name="end"/>, depending on the value of <paramref name="reverse"/>, by the passed value times the distance between <paramref name="start"/> and <paramref name="end"/>.</returns>
+		/// <remarks>If <paramref name="reverse"/> is <see langword="true"/>, then the interpolation happens between <paramref name="start"/> and <paramref name="reverseVal"/>.</remarks>
 		public static Func<double, double> Interpolate(double start, double end = 1.0f, double reverseVal = 0.0f, bool reverse = false)
 		{
 			double target = reverse ? reverseVal : end;
 			return x => start + (target - start) * x;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Batch']/Docs/*" />
+		/// <param name="self">The object instance.</param>
 		public static IDisposable Batch(this IAnimatable self) => new BatchObject(self);
 
 		static void AbortAnimation(AnimatableKey key)
