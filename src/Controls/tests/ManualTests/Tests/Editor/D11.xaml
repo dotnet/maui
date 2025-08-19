@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.D11"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="D11">
+    <ScrollView>
+        <VerticalStackLayout>
+            <Label Text="1. The test fails if the text in the editor below is not bold." />
+            <Editor FontAttributes="Bold"
+                    IsReadOnly="True"
+                    Text="testing" />
+
+            <Label Text="2. The test fails if the text in the editor below is not italic." />
+            <Editor FontAttributes="Italic"
+                    IsReadOnly="True"
+                    Text="testing" />
+
+            <Label Text="3. The test fails if the text in the editor below is not bold AND italic." />
+            <Editor FontAttributes="Italic,Bold"
+                    IsReadOnly="True"
+                    Text="testing" />
+
+            <Label Text="4. The test fails if the text in the editor below is not cursive." />
+            <Editor FontFamily="Lobster"
+                    IsReadOnly="True"
+                    Text="testing" />
+
+            <Label Text="5. The test fails if the text in the editor below is not blue." />
+            <Editor IsReadOnly="True"
+                    Text="testing"
+                    TextColor="Blue" />
+
+            <Label Text="6. Play with the value of the slider below and observe as the size of the text changes." />
+            <Label Text="7. The tests fails if the size of the font does not change. It's expected for the size of the editor to increase as well." />
+            <Slider x:Name="Slider"
+                    Maximum="64"
+                    Minimum="12"
+                    Value="12" />
+            <Editor AutoSize="TextChanges"
+                    BindingContext="{x:Reference Slider}"
+                    FontSize="{Binding Value}"
+                    IsReadOnly="True"
+                    Text="testing" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
