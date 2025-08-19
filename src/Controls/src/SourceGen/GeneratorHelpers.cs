@@ -420,4 +420,31 @@ static class GeneratorHelpers
 		}
 		return null;
 	}
+
+	/// <summary>
+	/// Formats a numeric value as a culture-independent C# literal for source generation.
+	/// Uses SymbolDisplay.FormatPrimitive to ensure proper handling of special values like NaN and Infinity.
+	/// </summary>
+	public static string FormatInvariant(double value)
+	{
+		return SymbolDisplay.FormatPrimitive(value, false, false);
+	}
+
+	/// <summary>
+	/// Formats a numeric value as a culture-independent C# literal for source generation.
+	/// Uses SymbolDisplay.FormatPrimitive to ensure proper handling of special values like NaN and Infinity.
+	/// </summary>
+	public static string FormatInvariant(float value)
+	{
+		return SymbolDisplay.FormatPrimitive(value, false, false);
+	}
+
+	/// <summary>
+	/// Formats a numeric value as a culture-independent C# literal with quote strings enabled.
+	/// Uses SymbolDisplay.FormatPrimitive to ensure proper handling of special values like NaN and Infinity.
+	/// </summary>
+	public static string FormatInvariantWithQuotes(double value)
+	{
+		return SymbolDisplay.FormatPrimitive(value, true, false);
+	}
 }
