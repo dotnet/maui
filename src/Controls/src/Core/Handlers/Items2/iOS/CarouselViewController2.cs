@@ -38,6 +38,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			UICollectionViewCell cell;
 
+			// In iOS 15 and 16, when the ItemsSource of the CarouselView is updated from another page
+			// via the ViewModel (or similar), GetCell is called immediately—while _carouselViewLoopManager
+			// is still null. As a result, an invalid index get from the GetAdjustedIndexPathForItemSource method in the base.GetCell , So unexpected items shown.
+			// 
+			// However, in iOS 17 and 18, GetCell is only called after navigating back to the page containing
+			// the CarouselView. By that time, CarouselViewLoopManager has been properly initialized during
+			// the window attachment, so the proper valid index get from GetAdjustedIndexPathForItemSource method in the base.GetCell
+
+			// Initialize the loop manager if needed to ensure proper index calculations
+			// This is critical for scenarios where GetCell is called before normal initialization
+			// such as when navigating back to a page after updating the ItemsSource
+			if (ItemsView?.Loop == true && _carouselViewLoopManager is null)
+			{
+				InitializeCarouselViewLoopManager();
+			}
+
 			cell = base.GetCell(collectionView, indexPath);
 
 			var element = (cell as TemplatedCell2)?.PlatformHandler?.VirtualView as VisualElement;
