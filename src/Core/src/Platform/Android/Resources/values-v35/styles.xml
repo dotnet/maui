@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<resources>
-  <style name="Maui.MainTheme" parent="Maui.MainTheme.Base">
-    <!-- Opt out of Edge to Edge for Android 35+ -->
-    <item name="android:windowOptOutEdgeToEdgeEnforcement">?attr/maui_edgetoedge_optout</item>
-  </style>
-</resources>
