@@ -41,6 +41,7 @@ Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationCompleted(Micros
 Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationStarted(Microsoft.Maui.WebViewInitializationStartedEventArgs! args) -> void
 Microsoft.Maui.IPicker.IsOpen.get -> bool
 Microsoft.Maui.IPicker.IsOpen.set -> void
+Microsoft.Maui.IRefreshView.IsRefreshEnabled.get -> bool
 Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
 Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.ITimePicker.IsOpen.get -> bool
@@ -53,6 +54,7 @@ Microsoft.Maui.IWindow.IsMaximizable.get -> bool
 Microsoft.Maui.IWindow.IsMinimizable.get -> bool
 Microsoft.Maui.Platform.IAutoSizableCALayer
 Microsoft.Maui.Platform.IAutoSizableCALayer.AutoSizeToSuperLayer() -> void
+Microsoft.Maui.Platform.MauiRefreshView.UpdateIsRefreshEnabled(bool isRefreshEnabled) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiTimePicker.UpdateTime(System.TimeSpan time) -> void
 Microsoft.Maui.Platform.MauiTimePicker.UpdateTime(System.TimeSpan? time) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKit.WKWebView! webView, WebKit.WKNavigationAction! navigationAction, System.Action<WebKit.WKNavigationActionPolicy>! decisionHandler) -> void
