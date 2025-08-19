@@ -13,6 +13,7 @@ using Microsoft.Maui.LifecycleEvents;
 using AAnimation = Android.Views.Animations.Animation;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
+using AndroidX.Core.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -310,6 +311,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var rootView = _navigationRootManager?.RootView ??
 					throw new InvalidOperationException("Root view not initialized");
+				
+				ViewCompat.SetOnApplyWindowInsetsListener(rootView, new WindowHandler.WindowsListener());
 
 				if (IsAnimated)
 				{
