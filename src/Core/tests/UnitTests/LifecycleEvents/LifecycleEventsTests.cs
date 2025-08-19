@@ -174,7 +174,7 @@ namespace Microsoft.Maui.UnitTests.LifecycleEvents
 				{
 					builder.AddAndroid(android =>
 					{
-						android.OnKeyDown((context, keyCode, keyEvent) =>
+						android.OnKeyDown((activity, keyCode, keyEvent) =>
 						{
 							eventFired = true;
 							receivedKeyCode = keyCode;
@@ -211,7 +211,7 @@ namespace Microsoft.Maui.UnitTests.LifecycleEvents
 				{
 					builder.AddAndroid(android =>
 					{
-						android.OnKeyUp((context, keyCode, keyEvent) =>
+						android.OnKeyUp((activity, keyCode, keyEvent) =>
 						{
 							eventFired = true;
 							return keyCode == Keycode.VolumeDown; // Handle only volume down
@@ -256,7 +256,7 @@ namespace Microsoft.Maui.UnitTests.LifecycleEvents
 				{
 					builder.AddAndroid(android =>
 					{
-						android.OnKeyLongPress((context, keyCode, keyEvent) =>
+						android.OnKeyLongPress((activity, keyCode, keyEvent) =>
 						{
 							eventFired = true;
 							return true; // Handle the event
@@ -288,7 +288,7 @@ namespace Microsoft.Maui.UnitTests.LifecycleEvents
 				{
 					builder.AddAndroid(android =>
 					{
-						android.OnKeyMultiple((context, keyCode, repeatCount, keyEvent) =>
+						android.OnKeyMultiple((activity, keyCode, repeatCount, keyEvent) =>
 						{
 							eventFired = true;
 							receivedRepeatCount = repeatCount;
@@ -321,7 +321,7 @@ namespace Microsoft.Maui.UnitTests.LifecycleEvents
 				{
 					builder.AddAndroid(android =>
 					{
-						android.OnKeyShortcut((context, keyCode, keyEvent) =>
+						android.OnKeyShortcut((activity, keyCode, keyEvent) =>
 						{
 							eventFired = true;
 							return true;
@@ -354,12 +354,12 @@ namespace Microsoft.Maui.UnitTests.LifecycleEvents
 				{
 					builder.AddAndroid(android =>
 					{
-						android.OnKeyDown((context, keyCode, keyEvent) =>
+						android.OnKeyDown((activity, keyCode, keyEvent) =>
 						{
 							event1Fired = true;
 							return false; // Don't handle
 						});
-						android.OnKeyDown((context, keyCode, keyEvent) =>
+						android.OnKeyDown((activity, keyCode, keyEvent) =>
 						{
 							event2Fired = true;
 							return true; // Handle the event
