@@ -44,6 +44,7 @@
     <MicrosoftExtensionsConfigurationJsonVersion>10.0.0-rc.1.25413.112</MicrosoftExtensionsConfigurationJsonVersion>
     <MicrosoftExtensionsDependencyInjectionVersion>10.0.0-rc.1.25413.112</MicrosoftExtensionsDependencyInjectionVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.0-rc.1.25413.112</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsDiagnosticsVersion>10.0.0-rc.1.25413.112</MicrosoftExtensionsDiagnosticsVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsVersion>10.0.0-rc.1.25413.112</MicrosoftExtensionsFileProvidersAbstractionsVersion>
     <MicrosoftExtensionsLoggingAbstractionsVersion>10.0.0-rc.1.25413.112</MicrosoftExtensionsLoggingAbstractionsVersion>
     <MicrosoftExtensionsLoggingVersion>10.0.0-rc.1.25413.112</MicrosoftExtensionsLoggingVersion>
@@ -65,6 +66,11 @@
     <MicrosoftmacOSSdknet90_155PackageVersion>15.5.9216</MicrosoftmacOSSdknet90_155PackageVersion>
     <MicrosoftiOSSdknet90_185PackageVersion>18.5.9216</MicrosoftiOSSdknet90_185PackageVersion>
     <MicrosofttvOSSdknet90_185PackageVersion>18.5.9216</MicrosofttvOSSdknet90_185PackageVersion>
+    <!-- This is a subscription of the .NET 9/Xcode 26.0 versions of our packages -->
+    <MicrosoftMacCatalystSdknet90_260PackageVersion>26.0.9253-xcode26.0</MicrosoftMacCatalystSdknet90_260PackageVersion>
+    <MicrosoftmacOSSdknet90_260PackageVersion>26.0.9253-xcode26.0</MicrosoftmacOSSdknet90_260PackageVersion>
+    <MicrosoftiOSSdknet90_260PackageVersion>26.0.9253-xcode26.0</MicrosoftiOSSdknet90_260PackageVersion>
+    <MicrosofttvOSSdknet90_260PackageVersion>26.0.9253-xcode26.0</MicrosofttvOSSdknet90_260PackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
     <!-- wasdk -->
