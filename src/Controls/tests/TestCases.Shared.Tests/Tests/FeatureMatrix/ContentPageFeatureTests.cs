@@ -95,7 +95,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		public void ContentPage_Title_WithBackgroundColorAnPadding()
+		public void ContentPage_Title_WithBackgroundColorAndPadding()
 		{
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
