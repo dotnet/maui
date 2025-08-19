@@ -9,8 +9,6 @@ namespace Maui.Controls.Sample.Pages.RadioButtonGalleries
 		public RadioButtonGroupGalleryPage()
 		{
 			InitializeComponent();
-
-			NullSelectionTestContainer.BindingContext = new RadioButtonNullSelectionViewModel();
 		}
 	}
 }
