@@ -188,7 +188,7 @@ public class CheckBoxFeatureTests : UITest
 		App.WaitForNoElement("Command Executed");
 	}
 
-	[Test]
+	[Test, Order(11)]
 	[Category(UITestCategories.CheckBox)]
 	public void CheckBox_VerifyBothEventAndCommandExecuted()
 	{
