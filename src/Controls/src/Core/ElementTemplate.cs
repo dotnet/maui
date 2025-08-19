@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ElementTemplate.xml" path="Type[@FullName='Microsoft.Maui.Controls.ElementTemplate']/Docs/*" />
+	/// <summary>Base class for <see cref="Microsoft.Maui.Controls.DataTemplate"/> and <see cref="Microsoft.Maui.Controls.ControlTemplate"/> classes.</summary>
 	public class ElementTemplate : IElementDefinition
 	{
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls
 			_changeHandlers.Remove(onchanged);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ElementTemplate.xml" path="//Member[@MemberName='CreateContent']/Docs/*" />
+		/// <summary>Used by the XAML infrastructure to load data templates and set up the content of the resulting UI.</summary>
 		public object CreateContent()
 		{
 			if (LoadTemplate == null)
