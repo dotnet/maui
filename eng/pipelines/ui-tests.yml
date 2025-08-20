@@ -52,11 +52,6 @@ parameters:
     type: boolean
     default: false
 
-  - name: provisionatorChannel
-    displayName: 'Provisionator channel'
-    type: string
-    default: 'latest'
-
   - name: BuildEverything
     type: boolean
     default: false
@@ -114,32 +109,6 @@ parameters:
       name: Azure Pipelines
       vmImage: macOS-14
 
-  - name: androidCompatibilityPool
-    type: object
-    default:
-      name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals x64
-
-  - name: iosCompatibilityPool
-    type: object
-    default:
-      name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals x64
-
-resources:
-  repositories:
-    - repository: yaml-templates
-      type: github
-      name: xamarin/yaml-templates
-      endpoint: xamarin
-      ref: refs/heads/main
-
 stages:
 
   - template: common/ui-tests.yml
@@ -150,18 +119,14 @@ stages:
       windowsPool: ${{ parameters.windowsPool }}
       windowsBuildPool: ${{ parameters.windowsBuildPool }}
       macosPool: ${{ parameters.macosPool }}
-      androidCompatibilityPool: ${{ parameters.androidCompatibilityPool }}
-      iosCompatibilityPool: ${{ parameters.iosCompatibilityPool }}
       agentPoolAccessToken: $(AgentPoolAccessToken)
       RunNativeAOT: ${{ parameters.RunNativeAOT }}
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.0' ]
-        provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ else }}:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.0' ]
-        provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if parameters.CompatibilityTests }}:
         runCompatibilityTests: true
       ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
