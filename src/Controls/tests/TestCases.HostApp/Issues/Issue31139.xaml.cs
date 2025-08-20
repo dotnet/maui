@@ -1,7 +1,5 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
-using System.Net.Sockets;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -37,6 +35,7 @@ public class Issue31139ViewModel : INotifyPropertyChanged
 					else
 					{
 						Status = "Success";
+						break;
 					}
 				}
 				catch (Exception ex)
