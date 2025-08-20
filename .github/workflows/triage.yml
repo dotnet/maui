@@ -42,6 +42,9 @@ jobs:
       TRIAGE_AI_MODEL: openai/gpt-4o-mini # slightly cheaper model
     steps:
 
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Get Issue or PR Number
         id: get-number
         shell: pwsh
