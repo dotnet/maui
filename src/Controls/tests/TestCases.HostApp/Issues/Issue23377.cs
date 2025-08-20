@@ -7,7 +7,7 @@ public class Issue23377 : TestContentPage
 {
 	public List<string> Items { get; set; }
 	private Button button;
-	private CollectionView collectionView;
+	private CollectionView2 collectionView;
 
 	protected override void Init()
 	{
@@ -29,7 +29,7 @@ public class Issue23377 : TestContentPage
 
 		button.Clicked += Button_Clicked;
 
-		collectionView = new CollectionView
+		collectionView = new CollectionView2
 		{
 			ItemsSource = Items,
 			Margin = new Thickness(5),
