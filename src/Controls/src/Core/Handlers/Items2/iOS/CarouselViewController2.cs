@@ -195,10 +195,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		bool IsValidIndexPath(NSIndexPath indexPath)
 		{
-			if (indexPath.Row < 0 || indexPath.Row >= CollectionView.NumberOfItemsInSection(indexPath.Section))
-				return false;
-
-			return true;
+			return !(indexPath.Row < 0 || indexPath.Row >= CollectionView.NumberOfItemsInSection(indexPath.Section));
 		}
 
 		// [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
