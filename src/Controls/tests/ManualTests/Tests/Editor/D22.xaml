@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.D22"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="D22">
+    <VerticalStackLayout Padding="20">
+        <Label Text="1. Enter the text 'qweqw hi hi' in the editor below." />
+        <Label Text="2. The test fails if there is no red underline under the string 'qweqw' to indicate a spelling error." />
+        <Label Text="3. Uncheck the 'IsSpellCheckEnabled' checkbox to disable spellcheck." />
+        <Label Text="4. The test fails if the red underline under the string 'qweqw' is still visible." />
+        <Label Text="5. Check the 'IsSpellCheckEnabled' checkbox to enable spellcheck." />
+        <Label Text="6. The test fails if there is no red underline under the string 'qweqw' to indicate a spelling error." />
+
+        <HorizontalStackLayout>
+            <CheckBox x:Name="Checkbox"
+                      IsChecked="True" />
+            <Label Text="IsSpellCheckEnabled"
+                   VerticalTextAlignment="Center" />
+        </HorizontalStackLayout>
+
+        <Editor BindingContext="{x:Reference Checkbox}"
+                IsSpellCheckEnabled="{Binding IsChecked}"
+                Text="" />
+    </VerticalStackLayout>
+</ContentPage>
