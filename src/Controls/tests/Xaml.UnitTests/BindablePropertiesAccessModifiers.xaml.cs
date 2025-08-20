@@ -34,15 +34,13 @@ public class BindablePropertiesAccessModifiersVM
 	public string Bar => "Bar";
 }
 
-
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class BindablePropertiesAccessModifiers : ContentPage
 {
 
 	public BindablePropertiesAccessModifiers() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[SetUp] public void Setup() => Application.Current = new MockApplication();
 		[TearDown] public void TearDown() => Application.Current = null;

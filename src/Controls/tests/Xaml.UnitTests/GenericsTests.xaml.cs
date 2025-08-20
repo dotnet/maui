@@ -4,7 +4,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class GenericsTests : ContentPage
 {
 	public List<string> P { get; set; }
@@ -12,7 +11,7 @@ public partial class GenericsTests : ContentPage
 	public GenericsTests() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void NoGenericsOnXaml2006()

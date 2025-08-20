@@ -10,7 +10,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui26369 : ContentPage
 {
 	public static readonly BindableProperty NullableGridLengthProperty =

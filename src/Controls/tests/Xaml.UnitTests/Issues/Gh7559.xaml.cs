@@ -4,7 +4,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh7559 : ContentPage
 {
 	public Gh7559() => InitializeComponent();

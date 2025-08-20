@@ -42,7 +42,6 @@ public class Bz48554Slider : View
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Bz48554 : ContentPage
 {
 	public Bz48554()

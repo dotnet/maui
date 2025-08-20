@@ -4,7 +4,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui6944 : ContentPage
 {
 	public Maui6944() => InitializeComponent();
@@ -43,5 +42,4 @@ public class Maui6944Layout : Maui6944Base
 		get => (View)GetValue(ChildContentProperty);
 		set => SetValue(ChildContentProperty, value);
 	}
-
 }

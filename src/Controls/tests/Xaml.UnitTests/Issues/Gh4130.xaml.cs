@@ -12,7 +12,6 @@ public class Gh4130Control : ContentView
 	public void FireEvent() => TextChanged?.Invoke(this, new TextChangedEventArgs(null, null));
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh4130 : ContentPage
 {
 	public Gh4130()

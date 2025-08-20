@@ -5,13 +5,12 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class OnPlatformOptimization : ContentPage
 {
 	public OnPlatformOptimization() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void OnPlatformExtensionsAreSimplified([Values("net7.0-ios", "net7.0-android")] string targetFramework)

@@ -10,7 +10,6 @@ public class Maui19535CustomThemeDictionary : ResourceDictionary
 {
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui19535 : Maui19535CustomThemeDictionary
 {
 	public Maui19535() => InitializeComponent();
