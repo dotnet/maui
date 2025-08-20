@@ -76,8 +76,8 @@ stages:
                 runtimeVariant: "CoreCLR"
                 skipProvisioning: ${{ parameters.skipProvisioning }}
   
-  # NativeAOT UI tests build stage - only run on DevDiv builds or when RunNativeAOT parameter is explicitly set
-  - ${{ if or(ne(parameters.RunNativeAOT, 'False'), and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+  # NativeAOT UI tests build stage - only run when RunNativeAOT parameter is explicitly set
+  - ${{ if eq(parameters.RunNativeAOT, true) }}:
     - stage: build_ui_tests_nativeaot
       displayName: Build UITests NativeAOT Sample App
       dependsOn: []
@@ -305,8 +305,8 @@ stages:
                       testConfigurationArgs: "CollectionView2"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
 
-  # NativeAOT iOS UI tests stage - only run on DevDiv builds or when RunNativeAOT parameter is explicitly set
-  - ${{ if or(ne(parameters.RunNativeAOT, 'False'), and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+  # NativeAOT iOS UI tests stage - only run when RunNativeAOT parameter is explicitly set
+  - ${{ if eq(parameters.RunNativeAOT, true) }}:
     - stage: ios_ui_tests_nativeaot
       displayName: iOS UITests NativeAOT
       dependsOn: build_ui_tests_nativeaot
