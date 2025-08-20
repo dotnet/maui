@@ -72,7 +72,8 @@
             "Resources/Fonts/FluentUI.cs",
             "Services/**",
             "Resources/Styles/AppStyles.xaml",
-            "Utilities/**"
+            "Utilities/**",
+            "Platforms/iOS/SemanticScreenReaderAsyncImplementation.cs"
           ]
         },
         {
