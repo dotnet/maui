@@ -85,7 +85,7 @@ public partial class IndicatorViewOptionsPage : ContentPage
     {
         if (sender is RadioButton radioButton && e.Value)
         {
-            _viewModel.FlowDirection = radioButton.Content.ToString() == "LeftToRight"
+            _viewModel.FlowDirection = radioButton.Content.ToString() == "LTR"
                 ? FlowDirection.LeftToRight
                 : FlowDirection.RightToLeft;
         }
