@@ -17,7 +17,6 @@ public class Issue29529 : _IssuesUITest
 	public void Issue29529VerifyPreviousPositionOnInsert()
 	{
 		App.WaitForElement("carouselview");
-		App.Tap("ScrollToButton");
 		App.Tap("InsertButton");
 		var text = App.FindElement("positionLabel").GetText();
 		Assert.That(text, Is.EqualTo("Current Position: 0, Previous Position: 3"));
