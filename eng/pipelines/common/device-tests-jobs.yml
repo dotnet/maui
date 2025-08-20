@@ -4,7 +4,6 @@ parameters:
   versions: []
   provisionatorChannel: 'latest'
   skipProvisioning: true
-  agentPoolAccessToken: ''
   artifactName: 'nuget'
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
@@ -41,7 +40,6 @@ jobs:
         targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
         packageid: ${{ parameters.project.packageid }}
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-        agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
         artifactName: ${{ parameters.artifactName }}
         artifactItemPattern: ${{ parameters.artifactItemPattern }}
         checkoutDirectory: ${{ parameters.checkoutDirectory }}
@@ -95,7 +93,6 @@ jobs:
           targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
           packageid: ${{ parameters.project.packageid }}
           provisionatorChannel: ${{ parameters.provisionatorChannel }}
-          agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
           artifactName: ${{ parameters.artifactName }}
           artifactItemPattern: ${{ parameters.artifactItemPattern }}
           checkoutDirectory: ${{ parameters.checkoutDirectory }}
