@@ -6,11 +6,16 @@ public static class AnnouncementHelper
 	public static async Task Announce(string recipeName)
 	{
 #if IOS
-        var _semanticScreenReader = App.ServiceProvider?.GetService<IAsyncAnnouncement>();
-        if (_semanticScreenReader is not null)
-        {
-            await _semanticScreenReader.AnnounceAsync(recipeName);
-        }
+		var serviceProvider = IPlatformApplication.Current?.Services;
+		var _semanticScreenReader = serviceProvider?.GetService<IAsyncAnnouncement>();
+		if (_semanticScreenReader is not null)
+		{
+			await _semanticScreenReader.AnnounceAsync(recipeName);
+		}
+		else
+		{
+			SemanticScreenReader.Announce(recipeName);
+		}
 #else
 		SemanticScreenReader.Announce(recipeName);
 #endif
