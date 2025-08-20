@@ -1,7 +1,5 @@
 using Foundation;
 using UIKit;
-using System.Threading.Tasks;
-using MauiApp1.Services;
 
 [assembly: Dependency(typeof(MauiApp1.SemanticScreenReaderAsyncImplementation))]
 namespace MauiApp1;
