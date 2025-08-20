@@ -292,9 +292,3 @@ Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider
 Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider.BindingDataType.get -> string!
 ~Microsoft.Maui.Controls.Binding.DataType.get -> System.Type
 ~Microsoft.Maui.Controls.Binding.DataType.set -> void
-=======
-static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty!
-Microsoft.Maui.Controls.PointerGestureRecognizer.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
-Microsoft.Maui.Controls.PointerGestureRecognizer.Buttons.set -> void
-Microsoft.Maui.Controls.PointerEventArgs.Button.get -> Microsoft.Maui.Controls.ButtonsMask
->>>>>>> d1b8c7627f (Add initial support for Buttons PointerGestureRecognizer desktop)

@@ -1,9 +1,0 @@
-diff a/src/Controls/src/Core/PublicAPI/net-android/PublicAPI.Unshipped.txt b/src/Controls/src/Core/PublicAPI/net-android/PublicAPI.Unshipped.txt	(rejected hunks)
-@@ -1,4 +1,7 @@
- #nullable enable
-+Microsoft.Maui.Controls.PointerGestureRecognizer.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
-+Microsoft.Maui.Controls.PointerGestureRecognizer.Buttons.set -> void
-+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty!
- override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void
- override Microsoft.Maui.Controls.ScrollView.OnSizeAllocated(double width, double height) -> void
- override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, double height) -> void
