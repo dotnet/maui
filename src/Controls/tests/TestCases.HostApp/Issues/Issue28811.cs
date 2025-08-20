@@ -25,6 +25,7 @@ public class Issue28811 : ContentPage
 
 		protected override bool OnBackButtonPressed()
 		{
+			Navigation.PopModalAsync();
 			return false;
 		}
 	}
