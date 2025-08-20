@@ -38,8 +38,6 @@ jobs:
       github.event_name == 'pull_request' ||
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/triage'))
-    env:
-      TRIAGE_AI_MODEL: openai/gpt-4o-mini # slightly cheaper model
     steps:
 
       - name: Checkout repository
@@ -59,7 +57,7 @@ jobs:
 
       - name: Determine PLATFORM label for the issue
         id: triage-overlap
-        uses: mattleibow/triage-assistant/apply-labels@v0
+        uses: mattleibow/triage-assistant/apply-labels@dev/debugging
         with:
           issue: ${{ steps.get-number.outputs.number }}
           label-prefix: 'platform/'
@@ -67,7 +65,7 @@ jobs:
 
       - name: Determine AREA label for the issue
         id: triage-area
-        uses: mattleibow/triage-assistant/apply-labels@v0
+        uses: mattleibow/triage-assistant/apply-labels@dev/debugging
         with:
           issue: ${{ steps.get-number.outputs.number }}
           label-prefix: 'area-'
@@ -75,14 +73,14 @@ jobs:
 
       - name: Determine REGRESSION label for the issue
         id: triage-regression
-        uses: mattleibow/triage-assistant/apply-labels@v0
+        uses: mattleibow/triage-assistant/apply-labels@dev/debugging
         with:
           issue: ${{ steps.get-number.outputs.number }}
           label: 'potential-regression'
           template: 'regression'
 
       - name: Apply Labels and Comment
-        uses: mattleibow/triage-assistant/apply-labels@v0
+        uses: mattleibow/triage-assistant/apply-labels@dev/debugging
         with:
           issue: ${{ steps.get-number.outputs.number }}
           apply-labels: true
