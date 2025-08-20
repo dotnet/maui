@@ -81,6 +81,14 @@ public class MyRecipesPage : ContentPage
 				vMyRecipesListView.ScrollTo(_viewModel.Items.Count - 1, position: ScrollToPosition.MakeVisible);
 			}
 		};
+		var button2 = new Button();
+		button2.Text ="Add new Recipe";
+		button2.AutomationId = "AddNewRecipeButton";
+		button2.Clicked += async (sender, e) =>
+		{
+			await Shell.Current.GoToAsync(nameof(NewRecipePage));
+		};
+		stackLayout.Children.Add(button2);
 		_label = new Label
 		{
 			AutomationId = "CarouselViewCountLabel",
@@ -270,17 +278,26 @@ public class MyRecipesViewModel : BaseViewModel
 }
 	public class NewRecipePage : ContentPage
 	{
+		NewRecipeViewModel _viewModel;
 		public NewRecipePage()
 		{
 			Title = "New Recipe";
+			_viewModel = new NewRecipeViewModel();
+			BindingContext = _viewModel;
 			Content = new StackLayout
-			{
-				Children =
+		{
+			Children =
 				{
-					new Label { Text = "Create a new recipe here." }
+					new Label { Text = "Create a new recipe here." },
+					new Button
+					{
+						Text = "Add Recipe",
+						AutomationId = "AddRecipeButton",
+						Command = _viewModel.SaveCommand,
+					}
 				}
-			};
-		}
+		};
+	}
 }
 
 	public class BaseViewModel : INotifyPropertyChanged
@@ -408,6 +425,36 @@ public class MyRecipesViewModel : BaseViewModel
             LoadItemId(_itemId);
         }
     }
+public class NewRecipeViewModel : BaseViewModel
+{
+	string _recipeName;
+	public NewRecipeViewModel()
+	{
+		SaveCommand = new Command(OnSave);
+		PropertyChanged +=
+			(_, __) => SaveCommand.ChangeCanExecute();
+	}
+	public string RecipeName
+	{
+		get => _recipeName;
+		set => SetProperty(ref _recipeName, value);
+	}
+
+	public Command SaveCommand { get; }
+
+	private async void OnSave()
+	{
+		Item NewRecipe = new Item()
+		{
+			Id = 5.ToString(),
+			RecipeName = "Beef Tacos",
+		};
+		await DataStore.AddItemAsync(NewRecipe);
+
+		// This will pop the current page off the navigation stack
+		await Shell.Current.GoToAsync("..");
+	}
+}
 
 [QueryProperty(nameof(Id), nameof(Id))]
 public class EditRecipeViewModel : BaseViewModel
@@ -488,11 +535,6 @@ public class EditRecipeViewModel : BaseViewModel
 					Id = "4", 
 					RecipeName = "Caesar Salad",
 				},
-				new Item 
-				{ 
-					Id = "5", 
-					RecipeName = "Beef Tacos",
-				}
 			};
 		}
 

@@ -20,12 +20,14 @@ public class Issue16020 : _IssuesUITest
         App.WaitForElement("My Recipes");
         App.Tap("My Recipes");
         App.WaitForElement("MyCarouselView");
-        
-        // Check initial count should be 5 items
         App.WaitForElement("CarouselViewCountLabel");
+        App.Tap("AddNewRecipeButton");
+        App.WaitForElement("AddRecipeButton");
+        App.Tap("AddRecipeButton");
+        App.WaitForElement("MyCarouselView");
+        // Check initial count should be 5 items
         var initialCountText = App.WaitForElement("CarouselViewCountLabel").GetText();
         Assert.That(initialCountText, Is.EqualTo("Items Count: 5"), "Initial count should be 5 items");
-        
         App.Tap("GoToLastIndexButton");
         App.WaitForElement("Beef Tacos");
         App.Tap("Beef Tacos");
