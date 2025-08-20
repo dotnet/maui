@@ -11,7 +11,7 @@ parameters:
   timeoutInMinutes: 180
   skipProvisioning: true
   agentPoolAccessToken: ''
-  RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
+  RunNativeAOT: False # Parameter to control whether NativeAOT UI tests should run
   categoryGroupsToTest:
     # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
     # we might want to improve this somehow depending on how much the categories change over time
@@ -61,7 +61,7 @@ stages:
                 skipProvisioning: ${{ parameters.skipProvisioning }}
   
   # NativeAOT UI tests build stage - only run on DevDiv builds or when RunNativeAOT parameter is explicitly set
-  - ${{ if or(parameters.RunNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+  - ${{ if or(ne(parameters.RunNativeAOT, 'False'), and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
     - stage: build_ui_tests_nativeaot
       displayName: Build UITests Sample App NativeAOT
       dependsOn: []
