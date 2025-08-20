@@ -6,7 +6,6 @@ parameters:
   app: '' #path to app to test
   version: '' #the iOS version'
   provisionatorChannel: 'latest'
-  agentPoolAccessToken: ''
   configuration: "Release"
   runtimeVariant: "Mono"
   testFilter: ''
@@ -183,7 +182,7 @@ steps:
     displayName: 'Enable Notification Center'
     continueOnError: true
     timeoutInMinutes: 60
-    
+
   - ${{ if eq(parameters.platform, 'android')}}:
     - task: PowerShell@2
       inputs:
