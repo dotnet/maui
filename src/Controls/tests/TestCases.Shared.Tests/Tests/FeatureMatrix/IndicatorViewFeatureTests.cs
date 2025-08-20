@@ -648,32 +648,29 @@ public class IndicatorViewFeatureTests : UITest
 
 	public void IncreasePositionStepper()
 	{
-#if WINDOWS
-		App.IncreaseStepper(PositionStepper);
-#else
-		App.WaitForElement(PositionStepper);
-		App.IncreaseStepper(PositionStepper);
-#endif
+		ChangeStepper(PositionStepper, true);
 	}
-
 	public void DecreaseMaximumVisibleStepper()
 	{
-#if WINDOWS
-		App.DecreaseStepper(MaximumVisibleStepper);
-#else
-		App.WaitForElement(MaximumVisibleStepper);
-		App.DecreaseStepper(MaximumVisibleStepper);
-#endif
+		ChangeStepper(MaximumVisibleStepper, false);
 	}
-
 	public void IncreaseIndicatorSizeStepper()
 	{
+		ChangeStepper(IndicatorSizeStepper, true);
+	}
+	private void ChangeStepper(string stepperAutomationId, bool increase)
+	{
 #if WINDOWS
-		App.IncreaseStepper(IndicatorSizeStepper);
+		if (increase)
+			App.IncreaseStepper(stepperAutomationId);
+		else
+			App.DecreaseStepper(stepperAutomationId);
 #else
-		App.WaitForElement(IndicatorSizeStepper);
-		App.IncreaseStepper(IndicatorSizeStepper);
+		App.WaitForElement(stepperAutomationId);
+		if (increase)
+			App.IncreaseStepper(stepperAutomationId);
+		else
+			App.DecreaseStepper(stepperAutomationId);
 #endif
 	}
-
 }
