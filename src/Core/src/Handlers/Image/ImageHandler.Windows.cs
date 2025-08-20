@@ -60,13 +60,18 @@ namespace Microsoft.Maui.Handlers
 		/// <inheritdoc/>
 		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
+			// AspectFit + non-Fill alignment: cap Max* to intrinsic bitmap so alignment (Center/Start/End) works.
+			// Only set once when Max* still Infinity and we have decoded size; else mirror VirtualView Maximum*.
+			// Without this the Image measures to available space and alignment appears ignored.
 			if (VirtualView.Aspect == Aspect.AspectFit
 				&& VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill
 				&& VirtualView.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill)
 			{
+				// First (and only) chance to lock to intrinsic size.
 				if (PlatformView.MaxWidth == double.PositiveInfinity
 					&& PlatformView.MaxHeight == double.PositiveInfinity)
 				{
+					// Clamp to decoded pixel size if available.
 					var imageSize = GetImageSize();
 
 					if (imageSize.Width != 0 && imageSize.Height != 0)
@@ -78,6 +83,7 @@ namespace Microsoft.Maui.Handlers
 			}
 			else
 			{
+				// Other scenarios: honor user Maximum* values.
 				if (VirtualView.MaximumHeight != PlatformView.MaxHeight
 					|| VirtualView.MaximumWidth != PlatformView.MaxWidth)
 				{
