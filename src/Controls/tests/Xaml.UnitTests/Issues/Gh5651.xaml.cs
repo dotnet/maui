@@ -18,7 +18,6 @@ public interface IBaseViewModel5651<T>
 	T SelectedItem { get; set; }
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh5651 : ContentPage
 {
 	public Gh5651() => InitializeComponent();

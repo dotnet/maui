@@ -6,7 +6,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui24384 : ContentPage
 {
 	public static System.Collections.Immutable.ImmutableArray<string> StaticLetters => ["A", "B", "C"];

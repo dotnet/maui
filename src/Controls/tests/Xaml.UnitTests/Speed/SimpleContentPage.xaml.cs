@@ -15,7 +15,7 @@ public class SimpleContentPageCode : ContentPage
 		};
 	}
 }
-[XamlProcessing(XamlInflator.Default, true)]
+
 public partial class SimpleContentPage : ContentPage
 {
 	public SimpleContentPage() => InitializeComponent();

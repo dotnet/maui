@@ -172,7 +172,6 @@ public class Gh3539NamedColor : IEquatable<Gh3539NamedColor>, IComparable<Gh3539
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh3539 : ContentPage
 {
 	public Gh3539() => InitializeComponent();

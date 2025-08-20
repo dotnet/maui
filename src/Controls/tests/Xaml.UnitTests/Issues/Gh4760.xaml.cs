@@ -20,7 +20,6 @@ public class Gh4760MultiplyExtension : Gh4760Base<double>
 	public override double ProvideValue() => Base * By;
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh4760 : ContentPage
 {
 	public Gh4760() => InitializeComponent();

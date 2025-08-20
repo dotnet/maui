@@ -381,11 +381,15 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(AddFile(@"Pages\MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
+			var assembly = IOPath.Combine(intermediateDirectory, "test.dll");
+			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
+
+			if (File.Exists(xamlCStamp))
+				System.IO.File.Delete(xamlCStamp);
+			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
 
 			Build(projectFile, "Compile", additionalArgs: "-p:DesignTimeBuild=True -p:BuildingInsideVisualStudio=True -p:SkipCompilerExecution=True -p:ProvideCommandLineArgs=True");
 
-			var assembly = IOPath.Combine(intermediateDirectory, "test.dll");
-			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
 
 			//The assembly should not be compiled
 			//AssertDoesNotExist(assembly);

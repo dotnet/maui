@@ -3,12 +3,11 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class TypeConverterTests : ContentPage
 {
 	public TypeConverterTests() => InitializeComponent();
 
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void UriAreConverted([Values] XamlInflator inflator)

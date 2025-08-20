@@ -11,7 +11,6 @@ public class MyButton : Button
 
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui31186 : ContentPage
 {
 	public Maui31186()

@@ -15,7 +15,6 @@ public class Bz45179_0 : ContentView
 	}
 
 }
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Bz45179 : ContentPage
 {
 	public Bz45179()

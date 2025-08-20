@@ -48,13 +48,12 @@ public class SPMarkup3 : MarkupExtensionBase { }
 public class SPMarkup4 : MarkupExtensionBase { }
 
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class ServiceProviderTests : ContentPage
 {
 	public ServiceProviderTests() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);

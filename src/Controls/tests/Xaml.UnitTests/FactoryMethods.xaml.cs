@@ -36,13 +36,12 @@ public class MockFactory
 	};
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class FactoryMethods : ContentPage
 {
 	public FactoryMethods() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void TestDefaultCtor([Values] XamlInflator inflator)

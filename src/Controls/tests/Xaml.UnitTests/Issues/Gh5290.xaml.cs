@@ -8,7 +8,6 @@ public class Gh5290VM
 	public TimeSpan? Time { get; set; }
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh5290 : ContentPage
 {
 	public static readonly BindableProperty NullableTimeProperty =

@@ -9,7 +9,6 @@ public class Gh4446Item
 	public string Description { get; set; }
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh4446 : ContentPage
 {
 	public Gh4446() => InitializeComponent();
