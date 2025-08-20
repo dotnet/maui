@@ -7,7 +7,8 @@
 
     <VerticalStackLayout>
         <Label Margin="0, 10, 0, 0"
-                Text="{Binding Status}"/>
+                Text="{Binding Status}"
+                AutomationId="StatusLabel"/>
     </VerticalStackLayout>
 
 </ContentPage>

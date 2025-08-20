@@ -14,7 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Dispatcher)]
 		public void BindableUpdatesFromBackgroundThreadDoNotCrashAndPropagate()
 		{
-			App.WaitForElement("Success", timeout: TimeSpan.FromSeconds(3));
+			App.WaitForElement("StatusLabel");
+			Assert.That(App.WaitForTextToBePresentInElement(automationId: "StatusLabel", text: "Success", timeout: TimeSpan.FromSeconds(3)), Is.True);
 		}
 	}
 }
