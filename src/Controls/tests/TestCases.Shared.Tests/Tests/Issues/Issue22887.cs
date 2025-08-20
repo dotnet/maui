@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS // Windows issue report - https://github.com/dotnet/maui/issues/31256
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,3 +23,4 @@ public class Issue22887 : _IssuesUITest
 
 	}
 }
+#endif
