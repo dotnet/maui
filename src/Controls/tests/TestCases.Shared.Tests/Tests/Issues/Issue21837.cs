@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/21837
+
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -27,3 +29,4 @@ public class Issue21837 : _IssuesUITest
 		Assert.That(resultText, Is.EqualTo($"Number of recognized taps: {numberOfTappableLabels}"));
 	}
 }
+#endif
