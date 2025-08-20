@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (graphicsView.Background is not null)
 			{
+				handler.PlatformView?.UpdateBackground(graphicsView);
 				handler.PlatformView?.Invalidate();
 			}
 		}
