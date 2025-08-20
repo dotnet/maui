@@ -11,7 +11,7 @@ parameters:
   timeoutInMinutes: 180
   skipProvisioning: true
   agentPoolAccessToken: ''
-  RunNativeAOT: False # Parameter to control whether NativeAOT UI tests should run
+  RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
   categoryGroupsToTest:
     # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
     # we might want to improve this somehow depending on how much the categories change over time
