@@ -432,7 +432,7 @@ static class KnownTypeConverters
 		{
 			value = value.Trim();
 			if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double size))
-				return $"{FormatInvariantWithQuotes(size)}D";
+				return $"{FormatInvariant(size, quoted: true)}D";
 
 
 			var namedSizeSymbol = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.NamedSize")!;
