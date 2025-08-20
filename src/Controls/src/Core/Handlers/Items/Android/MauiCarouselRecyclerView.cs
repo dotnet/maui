@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _initialized;
 		bool _isVisible;
 		bool _disposed;
+		bool _isInternalPositionUpdate;
 
 		List<View> _oldViews;
 		CarouselViewOnGlobalLayoutListener _carouselViewLayoutListener;
@@ -221,6 +222,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!(ItemsViewAdapter.ItemsSource is IItemsViewSource observableItemsSource))
 				return;
 
+			// Set flag to disable animation during collection changes
+			_isInternalPositionUpdate = true;
+
 			var carouselPosition = Carousel.Position;
 			var currentItemPosition = observableItemsSource.GetPosition(Carousel.CurrentItem);
 			var count = observableItemsSource.Count;
@@ -308,6 +312,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						}
 
 						UpdateVisualStates();
+
+						// Reset flag after collection operations complete
+						_isInternalPositionUpdate = false;
 					});
 		}
 
@@ -507,7 +514,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_gotoPosition == -1 && currentItemPosition != carouselPosition)
 			{
 				_gotoPosition = currentItemPosition;
-				ItemsView.ScrollTo(currentItemPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: Carousel.AnimateCurrentItemChanges);
+				// Disable animation during collection changes to prevent cascading scroll events
+				var animate = Carousel.AnimateCurrentItemChanges && !_isInternalPositionUpdate;
+				ItemsView.ScrollTo(currentItemPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: animate);
 			}
 
 			_gotoPosition = -1;
@@ -548,7 +557,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				_gotoPosition = carouselPosition;
 
-				ItemsView.ScrollTo(carouselPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: Carousel.AnimatePositionChanges);
+				// Disable animation during collection changes to prevent cascading scroll events
+				var animate = Carousel.AnimatePositionChanges && !_isInternalPositionUpdate;
+				ItemsView.ScrollTo(carouselPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: animate);
 			}
 			SetCurrentItem(carouselPosition);
 		}
