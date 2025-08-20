@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CarouselView)]
 		public void VerifyCarouselViewItemsRenderAfterBinding()
 		{
-			App.WaitForElement("carouselView", timeout: TimeSpan.FromSeconds(4));
+			App.WaitForElement("carouselView");
 			var text  = App.WaitForElement("1").GetText();
 			Assert.That(text, Is.EqualTo("1"), "The first item in the Carouselview should be `1` after binding.");
 		}

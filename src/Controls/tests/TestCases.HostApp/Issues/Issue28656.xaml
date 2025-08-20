@@ -2,15 +2,16 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue28656"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
              Title="Issue28656">
   <Grid RowDefinitions="Auto,*,*">
         <Button
             Command="{Binding ChangeLayoutCommand}"
             AutomationId="ChangeLayoutButton"
             Text="Change layout type"/>
-        <CollectionView Grid.Row="1"
+        <local:CollectionView2 Grid.Row="1"
                         ItemsSource="{Binding Items}">
-            <CollectionView.Triggers>
+            <local:CollectionView2.Triggers>
                 <DataTrigger
                     Binding="{Binding IsGridLayout}"
                     TargetType="CollectionView"
@@ -32,8 +33,8 @@
                         </Setter.Value>
                     </Setter>
                 </DataTrigger>
-            </CollectionView.Triggers>
-            <CollectionView.ItemTemplate>
+            </local:CollectionView2.Triggers>
+            <local:CollectionView2.ItemTemplate>
                 <DataTemplate x:DataType="{x:Null}">
                     <Grid>
                         <Grid
@@ -50,12 +51,12 @@
                     </Grid>
 
                 </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-        <CollectionView Grid.Row="2"
+            </local:CollectionView2.ItemTemplate>
+        </local:CollectionView2>
+        <local:CollectionView2 Grid.Row="2"
                         ItemsLayout="{Binding ItemsLayout}"
                         ItemsSource="{Binding Items}">
-            <CollectionView.ItemTemplate>
+            <local:CollectionView2.ItemTemplate>
                 <DataTemplate x:DataType="{x:Null}">
                     <Grid>
                         <Grid
@@ -71,7 +72,7 @@
                         </Grid>
                     </Grid>
                 </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+            </local:CollectionView2.ItemTemplate>
+        </local:CollectionView2>
     </Grid>
 </ContentPage>
