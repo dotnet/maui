@@ -53,6 +53,11 @@ Microsoft.Maui.ITimePicker.IsOpen.set -> void
 Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
 Microsoft.Maui.IWebRequestInterceptingWebView
 Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
+Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyDown
+Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyLongPress
+Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyMultiple
+Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyShortcut
+Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyUp
 Microsoft.Maui.Platform.MauiHorizontalScrollView
 Microsoft.Maui.Platform.MauiHorizontalScrollView.MauiHorizontalScrollView(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
 Microsoft.Maui.Platform.MauiHorizontalScrollView.MauiHorizontalScrollView(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
@@ -191,6 +196,11 @@ override Microsoft.Maui.Handlers.OpenWindowRequest.GetHashCode() -> int
 override Microsoft.Maui.Handlers.OpenWindowRequest.ToString() -> string!
 override Microsoft.Maui.Handlers.RefreshViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.TimePickerHandler.ConnectHandler(Microsoft.Maui.Platform.MauiTimePicker! platformView) -> void
+override Microsoft.Maui.MauiAppCompatActivity.OnKeyDown(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
+override Microsoft.Maui.MauiAppCompatActivity.OnKeyLongPress(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
+override Microsoft.Maui.MauiAppCompatActivity.OnKeyMultiple(Android.Views.Keycode keyCode, int repeatCount, Android.Views.KeyEvent? e) -> bool
+override Microsoft.Maui.MauiAppCompatActivity.OnKeyShortcut(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
+override Microsoft.Maui.MauiAppCompatActivity.OnKeyUp(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiDatePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
 override Microsoft.Maui.Platform.MauiHorizontalScrollView.Draw(Android.Graphics.Canvas? canvas) -> void
 override Microsoft.Maui.Platform.MauiHorizontalScrollView.HorizontalScrollBarEnabled.get -> bool
@@ -246,6 +256,11 @@ static Microsoft.Maui.Handlers.OpenWindowRequest.operator ==(Microsoft.Maui.Hand
 static Microsoft.Maui.Handlers.RefreshViewHandler.MapIsEnabled(Microsoft.Maui.Handlers.IRefreshViewHandler! handler, Microsoft.Maui.IRefreshView! refreshView) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureEnvironmentVariables(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
+static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnKeyDown(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyDown! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnKeyLongPress(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyLongPress! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnKeyMultiple(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyMultiple! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnKeyShortcut(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyShortcut! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnKeyUp(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyUp! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
 static Microsoft.Maui.Platform.ButtonExtensions.UpdateRippleColor(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.Graphics.Color? rippleColor) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.GetCursorPosition(this Android.Widget.EditText! editText, int cursorOffset = 0) -> int
 static Microsoft.Maui.Platform.EditTextExtensions.GetSelectedTextLength(this Android.Widget.EditText! editText) -> int
@@ -309,6 +324,11 @@ virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnBackPressed.Invoke(And
 virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnConfigurationChanged.Invoke(Android.App.Activity! activity, Android.Content.Res.Configuration! newConfig) -> void
 virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnCreate.Invoke(Android.App.Activity! activity, Android.OS.Bundle? savedInstanceState) -> void
 virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnDestroy.Invoke(Android.App.Activity! activity) -> void
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyDown.Invoke(object! context, Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyLongPress.Invoke(object! context, Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyMultiple.Invoke(object! context, Android.Views.Keycode keyCode, int repeatCount, Android.Views.KeyEvent? e) -> bool
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyShortcut.Invoke(object! context, Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
+virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyUp.Invoke(object! context, Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
 virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnNewIntent.Invoke(Android.App.Activity! activity, Android.Content.Intent? intent) -> void
 virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnPause.Invoke(Android.App.Activity! activity) -> void
 virtual Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnPostCreate.Invoke(Android.App.Activity! activity, Android.OS.Bundle? savedInstanceState) -> void
