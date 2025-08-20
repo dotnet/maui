@@ -37,10 +37,12 @@ namespace Microsoft.Maui.Controls.XamlC
 				return true;
 			return false;
 		}
+
 		public FieldReference GetBindablePropertyFieldReference(string value, ILContext context, ModuleDefinition module, BaseNode node)
 		{
 			FieldReference bpRef = null;
-			string typeName = null, propertyName = null;
+			XmlType typeName = null;
+			string propertyName = null;
 
 			var parts = value.Split('.');
 			if (parts.Length == 1)
@@ -54,7 +56,7 @@ namespace Microsoft.Maui.Controls.XamlC
 					}
 					else if (IsOfAnyType(parent.XmlType, nameof(VisualState)))
 					{
-						typeName = FindTypeNameForVisualState(parent, node);
+						typeName = FindTypeNameForVisualState(parent, node, context);
 					}
 				}
 				else if (IsOfAnyType((node.Parent as ElementNode)?.XmlType, nameof(Trigger)))
@@ -65,7 +67,8 @@ namespace Microsoft.Maui.Controls.XamlC
 			}
 			else if (parts.Length == 2)
 			{
-				typeName = parts[0];
+				var targetType = parts[0];
+				typeName = TypeArgumentsParser.ParseSingle(targetType, node.NamespaceResolver, (IXmlLineInfo)node);
 				propertyName = parts[1];
 			}
 			else
@@ -74,7 +77,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (typeName == null || propertyName == null)
 				throw new BuildException(Conversion, node, null, value, typeof(BindableProperty));
 
-			var typeRef = XmlTypeExtensions.GetTypeReference(context.Cache, typeName, module, node);
+			var typeRef = typeName.GetTypeReference(context.Cache, module, node);
 			if (typeRef == null)
 				throw new BuildException(TypeResolution, node, null, typeName);
 
@@ -83,11 +86,14 @@ namespace Microsoft.Maui.Controls.XamlC
 				throw new BuildException(PropertyResolution, node, null, propertyName, typeRef.Name);
 			return bpRef;
 
-			static string GetTargetTypeName(INode node)
-				=> ((node as ElementNode).Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+			static XmlType GetTargetTypeName(INode node)
+			{
+				var targetType = ((node as ElementNode).Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+				return TypeArgumentsParser.ParseSingle(targetType, node.NamespaceResolver, (IXmlLineInfo)node);
+			}
 		}
 
-		static string FindTypeNameForVisualState(IElementNode parent, IXmlLineInfo lineInfo)
+		static XmlType FindTypeNameForVisualState(IElementNode parent, IXmlLineInfo lineInfo, ILContext context)
 		{
 			//1. parent is VisualState, don't check that
 
@@ -105,9 +111,12 @@ namespace Microsoft.Maui.Controls.XamlC
 
 			//4. target is now a Setter in a Style, or a VE
 			if (IsOfAnyType(target.XmlType, nameof(Setter)))
-				return ((target?.Parent as IElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+			{
+				var targetType = ((target?.Parent as IElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+				return TypeArgumentsParser.ParseSingle(targetType, parent.NamespaceResolver, lineInfo);
+			}
 			else
-				return target.XmlType.Name;
+				return target.XmlType;
 		}
 
 		public static FieldReference GetBindablePropertyFieldReference(XamlCache cache, TypeReference typeRef, string propertyName, ModuleDefinition module)
