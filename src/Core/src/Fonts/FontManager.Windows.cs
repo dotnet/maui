@@ -162,6 +162,13 @@ namespace Microsoft.Maui
 			if (fontFile == null)
 				return null;
 
+			// Under Native AOT, observed crashes when invoking Win2D CanvasFontSet -> GetPropertyValues
+			// This lookup is an optimization; returning null should just cause callers to use the
+			// PostScript name already embedded in the file path.
+#if USE_NATIVE_AOT
+			return null;
+#endif
+
 			try
 			{
 				var fontUri = new Uri(fontFile, UriKind.RelativeOrAbsolute);
