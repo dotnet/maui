@@ -420,4 +420,19 @@ static class GeneratorHelpers
 		}
 		return null;
 	}
+
+	/// <summary>
+	/// Formats a value as a culture-independent C# literal for source generation.
+	/// Uses SymbolDisplay.FormatPrimitive to ensure proper handling of special values like NaN and Infinity
+	/// but also numeric types and makes sure they are formatted correctly.
+	/// </summary>
+	/// <param name="value">The value to format</param>
+	/// <param name="quoted">Whether to include quotes around the formatted value</param>
+	/// <returns>A culture-independent string representation suitable for source generation</returns>
+	public static string FormatInvariant(object value, bool quoted = false)
+	{
+		return SymbolDisplay.FormatPrimitive(value, quoteStrings: quoted, useHexadecimalNumbers: false);
+	}
+
+
 }
