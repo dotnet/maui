@@ -4,13 +4,13 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/ViewCell.xml" path="Type[@FullName='Microsoft.Maui.Controls.ViewCell']/Docs/*" />
+	/// <summary>A <see cref="Microsoft.Maui.Controls.Cell"/> containing a developer-defined <see cref="Microsoft.Maui.Controls.View"/>.</summary>
 	[ContentProperty("View")]
 	public class ViewCell : Cell
 	{
 		View _view;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ViewCell.xml" path="//Member[@MemberName='View']/Docs/*" />
+		/// <summary>Gets or sets the View representing the content of the ViewCell.</summary>
 		public View View
 		{
 			get { return _view; }

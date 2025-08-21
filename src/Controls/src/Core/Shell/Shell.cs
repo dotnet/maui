@@ -1016,18 +1016,21 @@ namespace Microsoft.Maui.Controls
 			return _navigationManager.GoToAsync(state, animate, false);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs/*" />
-#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+		/// <summary>Asynchronously navigates to the specified state with optional parameters.</summary>
+		/// <param name="state">The shell navigation state to navigate to.</param>
+		/// <param name="parameters">Optional parameters to pass to the destination page.</param>
+		/// <returns>A task that represents the asynchronous navigation operation.</returns>
 		public Task GoToAsync(ShellNavigationState state, IDictionary<string, object> parameters)
-#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(parameters));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs/*" />
-#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+		/// <summary>Asynchronously navigates to the specified state with animation control and optional parameters.</summary>
+		/// <param name="state">The shell navigation state to navigate to.</param>
+		/// <param name="animate">Whether to animate the navigation transition.</param>
+		/// <param name="parameters">Optional parameters to pass to the destination page.</param>
+		/// <returns>A task that represents the asynchronous navigation operation.</returns>
 		public Task GoToAsync(ShellNavigationState state, bool animate, IDictionary<string, object> parameters)
-#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
 		}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.D3"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="D3">
+    <VerticalStackLayout>
+        <Label Text="1. Input characters in the editor until it won't accept more input." />
+        <Label Text="2. The test fails if the maximum number of characters is more or less than 5 characters." />
+        <Editor MaxLength="5"
+                Text="" />
+    </VerticalStackLayout>
+</ContentPage>

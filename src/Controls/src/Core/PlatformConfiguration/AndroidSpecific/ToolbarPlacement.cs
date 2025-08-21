@@ -1,13 +1,13 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ToolbarPlacement.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ToolbarPlacement']/Docs/*" />
+	/// <summary>Enumerates toolbar positions.</summary>
 	public enum ToolbarPlacement
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ToolbarPlacement.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>Indicates that the toolbar is placed at the default location on the screen.</summary>
 		Default,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ToolbarPlacement.xml" path="//Member[@MemberName='Top']/Docs/*" />
+		/// <summary>Indicates that the toolbar is placed at the top of the screen.</summary>
 		Top,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ToolbarPlacement.xml" path="//Member[@MemberName='Bottom']/Docs/*" />
+		/// <summary>Indicates that the toolbar is placed at the bottom of the screen.</summary>
 		Bottom
 	}
 }

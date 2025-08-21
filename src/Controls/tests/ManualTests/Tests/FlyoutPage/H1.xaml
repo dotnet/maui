@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<FlyoutPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.H1"
+            xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+            ios:FlyoutPage.ApplyShadow="true"
+            Title="H1">
+    <FlyoutPage.Flyout>
+        <ContentPage 
+            Title="Flyout">
+            <Label Text="Flyout Content" />
+        </ContentPage>
+    </FlyoutPage.Flyout>
+    <FlyoutPage.Detail>
+        <NavigationPage>
+            <x:Arguments>
+                <ContentPage>
+                    <StackLayout>
+                        <Label Text="1. Tap the menu button to reveal the flyout detail page." />
+                        <Label Text="2. Verify that this Details Page has a shadow applied to it and it's applied with a smooth animation." />
+                        <Button Text="Return To Tests" x:Name="btn" />
+                    </StackLayout>
+                </ContentPage>
+            </x:Arguments>
+        </NavigationPage>
+    </FlyoutPage.Detail>
+</FlyoutPage>

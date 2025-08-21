@@ -56,10 +56,10 @@ parameters:
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
+
 - group: DotNetBuilds storage account read tokens
 - group: AzureDevOps-Artifact-Feeds-Pats
-- group: DotNet-Maui-Release
-#- group: .NET Core Nuget API Keys
+- group: maui-nuget-release # maui-nuget-release provides: pat--nuget--xamarinc--push--wildcard
 
 resources:
   repositories:
@@ -219,7 +219,7 @@ extends:
             displayName: list downloaded artifacts
 
           - powershell: >-
-              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "*Manifest*.nupkg;${{ parameters.nugetExcludeFilters }}"
+              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "*Manifest*.nupkg;${{ parameters.nugetExcludeFilters }}" -NuGetOrgApiKey2 "$(pat--nuget--xamarinc--push--wildcard-1)" -NuGetOrgApiKey3 "$(pat--nuget--xamarinc--push--wildcard-2)" 
             displayName: Push workload packs to NuGet.org
             env:
               PUSH_PACKAGES: ${{ parameters.pushPackages }}
