@@ -12,49 +12,64 @@
         Margin="0, 12"
         Style="{StaticResource CardStyle}">
     <shimmer:SfShimmer
+        AutomationProperties.IsInAccessibleTree="False"
         BackgroundColor="Transparent"
         VerticalOptions="Fill"
-        IsActive ="{Binding IsBusy}">
+        x:DataType="pageModels:MainPageModel"
+        IsActive="{Binding IsBusy}">
         <shimmer:SfShimmer.CustomView>
             <Grid>
-                <BoxView 
+                <BoxView
                     CornerRadius="12"
                     VerticalOptions="Fill"
                     Style="{StaticResource ShimmerCustomViewStyle}"/>
             </Grid>
         </shimmer:SfShimmer.CustomView>
         <shimmer:SfShimmer.Content>
-            <chart:SfCircularChart x:Name="Chart" SemanticProperties.Description="Task Categories Chart">
+            <chart:SfCircularChart x:Name="Chart"
+                                   SemanticProperties.Description="Task Categories Chart">
+                <chart:SfCircularChart.Resources>
+                    <converter:DataLabelValueConverter x:Key="valueConverter"/>
+                </chart:SfCircularChart.Resources>
                 <chart:DoughnutSeries
+                    x:DataType="pageModels:MainPageModel"
                     ItemsSource="{Binding TodoCategoryData}"
                     PaletteBrushes="{Binding TodoCategoryColors}"
                     XBindingPath="Title"
-                    YBindingPath="Count" 
+                    YBindingPath="Count"
                     ShowDataLabels="True"
                     EnableTooltip="False"
                     x:Name="doughnutSeries"
                     Radius="{OnIdiom 0.6, Phone=0.5}"
-                    InnerRadius="0.7" >
+                    InnerRadius="0.7">
                     <chart:DoughnutSeries.LabelTemplate>
-                        <DataTemplate x:DataType="models:CategoryChartData">
-                            <HorizontalStackLayout>
-                                <Label Text="{Binding Title}" TextColor="{AppThemeBinding
+                        <DataTemplate>
+                            <HorizontalStackLayout x:DataType="chart:ChartDataLabel">
+                                <Label Text="{Binding Item, Converter={StaticResource valueConverter}, ConverterParameter='Title'}"
+                                       TextColor="{AppThemeBinding
                                     Light={StaticResource DarkOnLightBackground},
-                                    Dark={StaticResource LightOnDarkBackground}}" FontSize="{OnIdiom 18, Phone=14}"/>
-                                <Label Text=" : " TextColor="{AppThemeBinding
+                                    Dark={StaticResource LightOnDarkBackground}}"
+                                       FontSize="{OnIdiom 18, Phone=14}"/>
+                                <Label Text=": "
+                                       TextColor="{AppThemeBinding
                                     Light={StaticResource DarkOnLightBackground},
-                                    Dark={StaticResource LightOnDarkBackground}}" FontSize="{OnIdiom 18, Phone=14}"/>
-                                <Label Text="{Binding Count}" TextColor="{AppThemeBinding
+                                    Dark={StaticResource LightOnDarkBackground}}"
+                                       FontSize="{OnIdiom 18, Phone=14}"/>
+                                <Label Text="{Binding Item, Converter={StaticResource valueConverter}, ConverterParameter='Count'}"
+                                       TextColor="{AppThemeBinding
                                     Light={StaticResource DarkOnLightBackground},
-                                    Dark={StaticResource LightOnDarkBackground}}" FontSize="{OnIdiom 18, Phone=14}"/>
+                                    Dark={StaticResource LightOnDarkBackground}}"
+                                       FontSize="{OnIdiom 18, Phone=14}"/>
                             </HorizontalStackLayout>
                         </DataTemplate>
                     </chart:DoughnutSeries.LabelTemplate>
 
                     <chart:DoughnutSeries.DataLabelSettings>
-                        <chart:CircularDataLabelSettings LabelPosition="Outside" SmartLabelAlignment="Shift">
+                        <chart:CircularDataLabelSettings LabelPosition="Outside"
+                                                         SmartLabelAlignment="Shift">
                             <chart:CircularDataLabelSettings.ConnectorLineSettings>
-                                <chart:ConnectorLineStyle ConnectorType="Line" StrokeWidth="3" ></chart:ConnectorLineStyle>
+                                <chart:ConnectorLineStyle ConnectorType="Line"
+                                                          StrokeWidth="3"></chart:ConnectorLineStyle>
                             </chart:CircularDataLabelSettings.ConnectorLineSettings>
                         </chart:CircularDataLabelSettings>
                     </chart:DoughnutSeries.DataLabelSettings>
