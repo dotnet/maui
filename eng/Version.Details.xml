@@ -13,9 +13,9 @@
       <Sha>65f8687d48162972904cecd168b422e02f174ca2</Sha>
     </Dependency>
     <!-- Previous .NET Android version(s) -->
-    <Dependency Name="Microsoft.NET.Sdk.Android.Manifest-9.0.100" Version="35.0.92" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.NET.Sdk.Android.Manifest-9.0.100" Version="35.0.101" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>be1cab92326783479054e72990da08008e5be819</Sha>
+      <Sha>a618557d1fa38074e0256317fb17c1baee245a79</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk.net10.0_18.5" Version="18.5.10727-net10-rc.1">
       <Uri>https://github.com/dotnet/macios</Uri>
