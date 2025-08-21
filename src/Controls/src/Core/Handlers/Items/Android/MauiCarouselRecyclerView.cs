@@ -514,9 +514,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_gotoPosition == -1 && currentItemPosition != carouselPosition)
 			{
 				_gotoPosition = currentItemPosition;
-				// Disable animation during collection changes to prevent cascading scroll events
-				var animate = Carousel.AnimateCurrentItemChanges && !_isInternalPositionUpdate;
-				ItemsView.ScrollTo(currentItemPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: animate);
+				ScrollToPosition(currentItemPosition, Carousel.AnimateCurrentItemChanges);
 			}
 
 			_gotoPosition = -1;
@@ -556,12 +554,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_gotoPosition == -1 && !Carousel.IsDragging && !Carousel.IsScrolling && centerPosition != carouselPosition)
 			{
 				_gotoPosition = carouselPosition;
-
-				// Disable animation during collection changes to prevent cascading scroll events
-				var animate = Carousel.AnimatePositionChanges && !_isInternalPositionUpdate;
-				ItemsView.ScrollTo(carouselPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: animate);
+				ScrollToPosition(carouselPosition, Carousel.AnimatePositionChanges);
 			}
 			SetCurrentItem(carouselPosition);
+		}
+
+		void ScrollToPosition(int position, bool shouldAnimate)
+		{
+			// Disable animation during collection changes to prevent cascading scroll events
+			var animate = shouldAnimate && !_isInternalPositionUpdate;
+			ItemsView.ScrollTo(position, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: animate);
 		}
 
 		void AddLayoutListener()
