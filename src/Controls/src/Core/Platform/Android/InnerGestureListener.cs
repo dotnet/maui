@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 		float _lastX;
 		float _lastY;
 		bool _disposed;
+		bool _singleTapFiredInSequence;
 
 		Func<float, float, bool> _swipeDelegate;
 		Func<bool> _swipeCompletedDelegate;
@@ -79,6 +80,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (HasDoubleTapHandler())
 			{
+				// Reset the flag since this is completing a double tap sequence
+				_singleTapFiredInSequence = false;
+				
+				// Fire only the double tap handler here Single tap was already
+				// fired earlier in OnSingleTapUp for better timing
 				return _tapDelegate(2, e);
 			}
 
@@ -151,8 +157,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (HasDoubleTapHandler())
 			{
-				// Because we have a handler for double-tap, we need to wait for
-				// OnSingleTapConfirmed (to verify it's really just a single tap) before running the delegate
+				// Fire single tap immediately for the first tap, even when we
+				// have double tap handlers (mimics Windows timing)
+				if (HasSingleTapHandler())
+				{
+					_tapDelegate(1, e);
+					_singleTapFiredInSequence = true; // Track that we fired single tap
+				}
+				
+				// Still return false to continue waiting for potential double tap
 				return false;
 			}
 
@@ -178,8 +191,15 @@ namespace Microsoft.Maui.Controls.Platform
 				return false;
 			}
 
+			// Check if we already fired the single tap in OnSingleTapUp during a potential double tap sequence
+			if (_singleTapFiredInSequence)
+			{
+				_singleTapFiredInSequence = false; // Reset the flag
+				return false; // Don't fire again
+			}
+
 			// Since there was a double-tap handler, we had to wait for OnSingleTapConfirmed;
-			// Now that we're sure it's a single tap, we can run the delegate
+			// This is called only for confirmed single taps (not part of double tap sequences)
 			return _tapDelegate(1, e);
 		}
 
