@@ -59,6 +59,8 @@ namespace Microsoft.Maui
 
 		internal static UIImage? GetPlatformImage(this IFileImageSource imageSource)
 		{
+			// Extract filename without path/extension to handle cases where imageSource.File contains subdirectories.
+			// UIImage.FromBundle() expects just the base filename, while the full path would cause bundle lookup to fail.
 			var fileName = Path.GetFileNameWithoutExtension(imageSource.File);
 			return UIImage.FromBundle(fileName) ?? UIImage.FromFile(fileName);
 		}
