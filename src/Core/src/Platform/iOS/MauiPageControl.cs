@@ -57,10 +57,8 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			UpdateIndicatorSize();
-			if (_indicatorView?.TryGetTarget(out var indicatorView) == true && (indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride == null)
-			{
-				UpdateIndicatorShape();
-			}
+
+			UpdateIndicatorShape();
 		}
 
 		public void UpdateIndicatorSize()
@@ -118,23 +116,21 @@ namespace Microsoft.Maui.Platform
 			var uiPageControlContentView = Subviews[0];
 			if (uiPageControlContentView.Subviews.Length > 0)
 			{
-				foreach (var uiPageControlIndicatorContentView in uiPageControlContentView.Subviews)
-				{
-					if (view is UIImageView imageview)
-					{
-						if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-							imageview.Image = UIImage.GetSystemImage("squareshape.fill");
-						var frame = imageview.Frame;
-						//the square shape is not the same size as the circle so we might need to correct the frame
-						imageview.Frame = new CGRect(frame.X - 6, frame.Y, frame.Width, frame.Height);
-					}
-					else
-					{
-						var imageConfig = UIImageSymbolConfiguration.Create(pointSize: (nfloat)DefaultIndicatorSize, weight: UIImageSymbolWeight.Regular);
-						var squareImage = UIImage.GetSystemImage("squareshape.fill", imageConfig);
-						PreferredIndicatorImage = squareImage;
-					}
-				}
+				SetIndicatorShape(uiPageControlContentView, IsSquare);
+			}
+		}
+
+		// Recursively find UIImageView and set its image
+		static void SetIndicatorShape(UIView view, bool isSquare)
+		{
+			if (view is UIImageView imageView)
+			{
+				imageView.Image = UIImage.GetSystemImage(isSquare ? "squareshape.fill" : "circle.fill");
+			}
+
+			foreach (var child in view.Subviews)
+			{
+				SetIndicatorShape(child, isSquare);
 			}
 		}
 
