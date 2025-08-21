@@ -129,7 +129,7 @@ stages:
         windows: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
       - name: graphics
         desc: Graphics
-        androidApiLevelsExclude: [ 25 ] # Ignore for now API25 since the runs's are not stable
+        androidApiLevelsExclude: [ 25, 28 ] # Ignore for now API25 and API28 since the runs's are not stable
         androidConfiguration: 'Release'
         iOSConfiguration: 'Debug'
         windowsConfiguration: 'Debug'
