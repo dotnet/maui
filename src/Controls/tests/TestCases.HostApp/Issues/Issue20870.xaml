@@ -6,7 +6,7 @@
              Title="Issue20870">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="100"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -14,30 +14,30 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <FlexLayout Grid.Row="0" JustifyContent="SpaceEvenly">
-            <Button x:Name="ButtonSingleTap" AutomationId="ButtonSingleTap" Text="SingleTap" FontSize="20" TextColor="Red">
+        <FlexLayout Grid.Row="0" Direction="Row" Wrap="Wrap" JustifyContent="SpaceAround" AlignItems="Center" Margin="10">
+            <Button x:Name="ButtonSingleTap" AutomationId="ButtonSingleTap" Text="SingleTap" FontSize="16" TextColor="Red" Margin="5" MinimumWidthRequest="140" HeightRequest="50">
                 <Button.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnTap"/>
                 </Button.GestureRecognizers>
             </Button>
-            <Button x:Name="ButtonDoubleTap" AutomationId="ButtonDoubleTap" Text="DoubleTap" FontSize="20" TextColor="Green">
+            <Button x:Name="ButtonDoubleTap" AutomationId="ButtonDoubleTap" Text="DoubleTap" FontSize="16" TextColor="Green" Margin="5" MinimumWidthRequest="140" HeightRequest="50">
                 <Button.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnDoubleTap" NumberOfTapsRequired="2"/>
                 </Button.GestureRecognizers>
             </Button>
-            <Button x:Name="ButtonSingleAndDoubleTap" AutomationId="ButtonSingleAndDoubleTap" Text="SingleAndDoubleTap" FontSize="20" TextColor="Blue">
+            <Button x:Name="ButtonSingleAndDoubleTap" AutomationId="ButtonSingleAndDoubleTap" Text="Single+Double" FontSize="16" TextColor="Blue" Margin="5" MinimumWidthRequest="140" HeightRequest="50">
                 <Button.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnTap"/>
                     <TapGestureRecognizer Tapped="OnDoubleTap" NumberOfTapsRequired="2"/>
                 </Button.GestureRecognizers>
             </Button>
-            <Button x:Name="ButtonDoubleAndSingleTap" AutomationId="ButtonDoubleAndSingleTap" Text="DoubleAndSingleTap" FontSize="20" TextColor="Purple">
+            <Button x:Name="ButtonDoubleAndSingleTap" AutomationId="ButtonDoubleAndSingleTap" Text="Double+Single" FontSize="16" TextColor="Purple" Margin="5" MinimumWidthRequest="140" HeightRequest="50">
                 <Button.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnDoubleTap" NumberOfTapsRequired="2"/>
                     <TapGestureRecognizer Tapped="OnTap"/>
                 </Button.GestureRecognizers>
             </Button>
-            <Button x:Name="Clear" AutomationId="Clear" Text="Clear" FontSize="20" Clicked="Clear_Clicked"/>
+            <Button x:Name="Clear" AutomationId="Clear" Text="Clear" FontSize="16" Clicked="Clear_Clicked" Margin="5" MinimumWidthRequest="100" HeightRequest="50"/>
 
         </FlexLayout>
 
