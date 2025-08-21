@@ -269,6 +269,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (removingAnyPrevious)
 			{
+				_isInternalPositionUpdate = false;
 				return;
 			}
 
@@ -514,7 +515,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_gotoPosition == -1 && currentItemPosition != carouselPosition)
 			{
 				_gotoPosition = currentItemPosition;
-				ScrollToPosition(currentItemPosition, Carousel.AnimateCurrentItemChanges);
+				ScrollToItemPosition(currentItemPosition, Carousel.AnimateCurrentItemChanges);
 			}
 
 			_gotoPosition = -1;
@@ -554,12 +555,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_gotoPosition == -1 && !Carousel.IsDragging && !Carousel.IsScrolling && centerPosition != carouselPosition)
 			{
 				_gotoPosition = carouselPosition;
-				ScrollToPosition(carouselPosition, Carousel.AnimatePositionChanges);
+				ScrollToItemPosition(carouselPosition, Carousel.AnimatePositionChanges);
 			}
 			SetCurrentItem(carouselPosition);
 		}
 
-		void ScrollToPosition(int position, bool shouldAnimate)
+		void ScrollToItemPosition(int position, bool shouldAnimate)
 		{
 			// Disable animation during collection changes to prevent cascading scroll events
 			var animate = shouldAnimate && !_isInternalPositionUpdate;
