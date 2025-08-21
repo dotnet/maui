@@ -11,13 +11,13 @@
         Style="{StaticResource CardStyle}">
     <shimmer:SfShimmer
         BackgroundColor="Transparent"
-        VerticalOptions="FillAndExpand"
+        VerticalOptions="Fill"
         IsActive ="{Binding IsBusy}">
         <shimmer:SfShimmer.CustomView>
             <Grid>
                 <BoxView 
                     CornerRadius="12"
-                    VerticalOptions="FillAndExpand"
+                    VerticalOptions="Fill"
                     Style="{StaticResource ShimmerCustomViewStyle}"/>
             </Grid>
         </shimmer:SfShimmer.CustomView>

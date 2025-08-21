@@ -12,7 +12,7 @@
         x:DataType="models:Project">
     <shimmer:SfShimmer
         BackgroundColor="Transparent"
-        VerticalOptions="FillAndExpand"
+        VerticalOptions="Fill"
         IsActive="{Binding IsBusy, Source={RelativeSource AncestorType={x:Type pageModels:MainPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}">
         <shimmer:SfShimmer.CustomView>
             <VerticalStackLayout Spacing="15">

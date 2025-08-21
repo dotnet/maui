@@ -16,7 +16,7 @@
         HighlightBackground="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}">
         <shimmer:SfShimmer
             BackgroundColor="Transparent"
-            VerticalOptions="FillAndExpand"               
+            VerticalOptions="Fill"               
             IsActive="{Binding IsBusy, Source={RelativeSource AncestorType={x:Type pageModels:IProjectTaskPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}">
             <shimmer:SfShimmer.CustomView>
                 <Grid 
