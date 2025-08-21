@@ -11,23 +11,23 @@ public class Issue16020 : Shell
 {
 	public Issue16020()
 	{
-		DependencyService.Register<IDataStore<Item>, MockDataStore>();
-		Routing.RegisterRoute(nameof(RecipeDetailPage), typeof(RecipeDetailPage));
-		Routing.RegisterRoute(nameof(EditRecipePage), typeof(EditRecipePage));
-		Routing.RegisterRoute(nameof(NewRecipePage), typeof(NewRecipePage));
+		DependencyService.Register<Issue16020IDataStore<Issue16020Item>, Issue16020MockDataStore>();
+		Routing.RegisterRoute(nameof(Issue16020RecipeDetailPage), typeof(Issue16020RecipeDetailPage));
+		Routing.RegisterRoute(nameof(Issue16020EditRecipePage), typeof(Issue16020EditRecipePage));
+		Routing.RegisterRoute(nameof(Issue16020NewRecipePage), typeof(Issue16020NewRecipePage));
 
 		var tabBar = new TabBar();
 		var searchTab = new ShellContent
 		{
 			Title = "Recipe Search",
 			Route = "StartingPage",
-			ContentTemplate = new DataTemplate(typeof(StartingPage))
+			ContentTemplate = new DataTemplate(typeof(Issue16020StartingPage))
 		};
 		var recipesTab = new ShellContent
 		{
 			Title = "My Recipes",
 			Route = "MyRecipesPage",
-			ContentTemplate = new DataTemplate(typeof(MyRecipesPage))
+			ContentTemplate = new DataTemplate(typeof(Issue16020MyRecipesPage))
 		};
 		tabBar.Items.Add(searchTab);
 		tabBar.Items.Add(recipesTab);
@@ -35,9 +35,9 @@ public class Issue16020 : Shell
 	}
 }
 
-public class StartingPage : ContentPage
+public class Issue16020StartingPage : ContentPage
 {
-	public StartingPage()
+	public Issue16020StartingPage()
 	{
 		Title = "Recipe Search";
 		Content = new StackLayout
@@ -50,13 +50,13 @@ public class StartingPage : ContentPage
 	}
 }
 
-public class MyRecipesPage : ContentPage
+public class Issue16020MyRecipesPage : ContentPage
 {
-	MyRecipesViewModel _viewModel;
+	Issue16020MyRecipesViewModel _viewModel;
 	CarouselView vMyRecipesListView;
 	Label _label;
 
-	public MyRecipesPage()
+	public Issue16020MyRecipesPage()
 	{
 		var stackLayout = new StackLayout
 		{
@@ -86,7 +86,7 @@ public class MyRecipesPage : ContentPage
 		button2.AutomationId = "AddNewRecipeButton";
 		button2.Clicked += async (sender, e) =>
 		{
-			await Shell.Current.GoToAsync(nameof(NewRecipePage));
+			await Shell.Current.GoToAsync(nameof(Issue16020NewRecipePage));
 		};
 		stackLayout.Children.Add(button2);
 		_label = new Label
@@ -96,7 +96,7 @@ public class MyRecipesPage : ContentPage
 			HorizontalOptions = LayoutOptions.Center,
 			Margin = new Thickness(0, 10, 0, 10)
 		};
-		_viewModel = new MyRecipesViewModel();
+		_viewModel = new Issue16020MyRecipesViewModel();
 		BindingContext = _viewModel;
 
 		vMyRecipesListView = new CarouselView2
@@ -149,9 +149,9 @@ public class MyRecipesPage : ContentPage
 	}
 	async void MyRecipesPage_Tapped(object sender, EventArgs e)
 	{
-		if (sender is Grid grid && grid.BindingContext is Item item)
+		if (sender is Grid grid && grid.BindingContext is Issue16020Item item)
 		{
-			await Shell.Current.GoToAsync($"{nameof(RecipeDetailPage)}?{nameof(RecipeDetailViewModel.ItemId)}={item.Id}");
+			await Shell.Current.GoToAsync($"{nameof(Issue16020RecipeDetailPage)}?{nameof(Issue16020RecipeDetailViewModel.ItemId)}={item.Id}");
 		}
 	}
 
@@ -167,11 +167,11 @@ public class MyRecipesPage : ContentPage
 		base.OnDisappearing();
 	}
 }
-public partial class RecipeDetailPage : ContentPage
+public partial class Issue16020RecipeDetailPage : ContentPage
 {
-	public RecipeDetailPage()
+	public Issue16020RecipeDetailPage()
 	{
-		var viewModel = new RecipeDetailViewModel();
+		var viewModel = new Issue16020RecipeDetailViewModel();
 		BindingContext = viewModel;
 
 		var stackLayout = new StackLayout
@@ -197,17 +197,17 @@ public partial class RecipeDetailPage : ContentPage
 		};
 		var recipeNameLabel = stackLayout.Children.OfType<Label>().FirstOrDefault(l => l.AutomationId == "RecipeNameLabel");
 
-		recipeNameLabel?.SetBinding(Label.TextProperty, nameof(RecipeDetailViewModel.RecipeName));
+		recipeNameLabel?.SetBinding(Label.TextProperty, nameof(Issue16020RecipeDetailViewModel.RecipeName));
 
 		Content = stackLayout;
 	}
 }
 
-public class EditRecipePage : ContentPage
+public class Issue16020EditRecipePage : ContentPage
 {
-	public EditRecipePage()
+	public Issue16020EditRecipePage()
 	{
-		var viewModel = new EditRecipeViewModel();
+		var viewModel = new Issue16020EditRecipeViewModel();
 		BindingContext = viewModel;
 
 		var stackLayout = new StackLayout
@@ -229,23 +229,23 @@ public class EditRecipePage : ContentPage
 		var recipeRatingLabel = stackLayout.Children.OfType<Label>().FirstOrDefault(l => l.AutomationId == "RecipeRatingLabel");
 		var deleteButton = stackLayout.Children.OfType<Button>().FirstOrDefault(b => b.AutomationId == "DeleteRecipeButton");
 
-		recipeNameLabel?.SetBinding(Label.TextProperty, nameof(EditRecipeViewModel.RecipeName));
-		deleteButton?.SetBinding(Button.CommandProperty, nameof(EditRecipeViewModel.DeleteCommand));
+		recipeNameLabel?.SetBinding(Label.TextProperty, nameof(Issue16020EditRecipeViewModel.RecipeName));
+		deleteButton?.SetBinding(Button.CommandProperty, nameof(Issue16020EditRecipeViewModel.DeleteCommand));
 
 		Content = stackLayout;
 	}
 }
 
-public class MyRecipesViewModel : BaseViewModel
+public class Issue16020MyRecipesViewModel : Issue16020BaseViewModel
 {
-	public ObservableCollection<Item> Items { get; }
+	public ObservableCollection<Issue16020Item> Items { get; }
 	public Command NewRecipeCommand { get; }
-	public Command<Item> ItemTapped { get; }
-	public MyRecipesViewModel()
+	public Command<Issue16020Item> ItemTapped { get; }
+	public Issue16020MyRecipesViewModel()
 	{
 		Title = "Recipes";
-		Items = new ObservableCollection<Item>();
-		ItemTapped = new Command<Item>(OnItemSelected);
+		Items = new ObservableCollection<Issue16020Item>();
+		ItemTapped = new Command<Issue16020Item>(OnItemSelected);
 		NewRecipeCommand = new Command(OnNewRecipe);
 	}
 
@@ -261,13 +261,13 @@ public class MyRecipesViewModel : BaseViewModel
 
 	private async void OnNewRecipe(object obj)
 	{
-		await Shell.Current.GoToAsync(nameof(NewRecipePage));
+		await Shell.Current.GoToAsync(nameof(Issue16020NewRecipePage));
 	}
-	async void OnItemSelected(Item item)
+	async void OnItemSelected(Issue16020Item item)
 	{
 		if (item == null)
 			return;
-		await Shell.Current.GoToAsync($"{nameof(RecipeDetailPage)}?{nameof(RecipeDetailViewModel.ItemId)}={item.Id}");
+		await Shell.Current.GoToAsync($"{nameof(Issue16020RecipeDetailPage)}?{nameof(Issue16020RecipeDetailViewModel.ItemId)}={item.Id}");
 	}
 
 	public void OnAppearing()
@@ -276,13 +276,13 @@ public class MyRecipesViewModel : BaseViewModel
 	}
 
 }
-	public class NewRecipePage : ContentPage
+	public class Issue16020NewRecipePage : ContentPage
 	{
-		NewRecipeViewModel _viewModel;
-		public NewRecipePage()
+		Issue16020NewRecipeViewModel _viewModel;
+		public Issue16020NewRecipePage()
 		{
 			Title = "New Recipe";
-			_viewModel = new NewRecipeViewModel();
+			_viewModel = new Issue16020NewRecipeViewModel();
 			BindingContext = _viewModel;
 			Content = new StackLayout
 		{
@@ -300,9 +300,9 @@ public class MyRecipesViewModel : BaseViewModel
 	}
 }
 
-	public class BaseViewModel : INotifyPropertyChanged
+	public class Issue16020BaseViewModel : INotifyPropertyChanged
     {
-        public IDataStore<Item> DataStore => DependencyService.Get<IDataStore<Item>>();
+        public Issue16020IDataStore<Issue16020Item> DataStore => DependencyService.Get<Issue16020IDataStore<Issue16020Item>>();
 
         bool isBusy = false;
         public bool IsBusy
@@ -341,13 +341,13 @@ public class MyRecipesViewModel : BaseViewModel
         }
     }
 
-	public class Item
+	public class Issue16020Item
     {
         public string Id { get; set; }
         public string RecipeName { get; set; }
     }
 
-	public interface IDataStore<T>
+	public interface Issue16020IDataStore<T>
     {
         Task<bool> AddItemAsync(T item);
         Task<bool> UpdateItemAsync(T item);
@@ -357,16 +357,13 @@ public class MyRecipesViewModel : BaseViewModel
     }
 	
 	[QueryProperty(nameof(ItemId), nameof(ItemId))]
-	public class RecipeDetailViewModel : BaseViewModel
+	public class Issue16020RecipeDetailViewModel : Issue16020BaseViewModel
     {
         public Command EditRecipeCommand { get; }
         string _itemId;
         string _recipeName;
 		public string Id { get; set; }
-
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-		public RecipeDetailViewModel()
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+		public Issue16020RecipeDetailViewModel()
 		{
             EditRecipeCommand = new Command(OnEditRecipe);
         }
@@ -412,8 +409,8 @@ public class MyRecipesViewModel : BaseViewModel
 
         private async void OnEditRecipe(object obj)
         {
-            var editPage = new EditRecipePage();
-            var editViewModel = (EditRecipeViewModel)editPage.BindingContext;
+            var editPage = new Issue16020EditRecipePage();
+            var editViewModel = (Issue16020EditRecipeViewModel)editPage.BindingContext;
             editViewModel.Id = _itemId;
             
             await Shell.Current.Navigation.PushModalAsync(editPage);
@@ -425,10 +422,10 @@ public class MyRecipesViewModel : BaseViewModel
             LoadItemId(_itemId);
         }
     }
-public class NewRecipeViewModel : BaseViewModel
+public class Issue16020NewRecipeViewModel : Issue16020BaseViewModel
 {
 	string _recipeName;
-	public NewRecipeViewModel()
+	public Issue16020NewRecipeViewModel()
 	{
 		SaveCommand = new Command(OnSave);
 		PropertyChanged +=
@@ -444,7 +441,7 @@ public class NewRecipeViewModel : BaseViewModel
 
 	private async void OnSave()
 	{
-		Item NewRecipe = new Item()
+		Issue16020Item NewRecipe = new Issue16020Item()
 		{
 			Id = 5.ToString(),
 			RecipeName = "Beef Tacos",
@@ -457,11 +454,11 @@ public class NewRecipeViewModel : BaseViewModel
 }
 
 [QueryProperty(nameof(Id), nameof(Id))]
-public class EditRecipeViewModel : BaseViewModel
+public class Issue16020EditRecipeViewModel : Issue16020BaseViewModel
 {
 	string _id;
 	string _recipeName;
-	public EditRecipeViewModel()
+	public Issue16020EditRecipeViewModel()
 	{
 		DeleteCommand = new Command(OnDelete);
 	}
@@ -505,32 +502,32 @@ public class EditRecipeViewModel : BaseViewModel
 		await Shell.Current.GoToAsync("../..");
 	}
 }
-	public class MockDataStore : IDataStore<Item>
+	public class Issue16020MockDataStore : Issue16020IDataStore<Issue16020Item>
 	{
-		readonly List<Item> items;
+		readonly List<Issue16020Item> items;
 
-		public MockDataStore()
+		public Issue16020MockDataStore()
 		{
-			items = new List<Item>()
+			items = new List<Issue16020Item>()
 			{
-				new Item 
+				new Issue16020Item
 				{ 
 					Id = "1", 
 					RecipeName = "Spaghetti Carbonara",
 				},
-				new Item 
+				new Issue16020Item
 				{ 
 					Id = "2", 
 					RecipeName = "Chicken Tikka Masala",
 					
 				},
-				new Item 
+				new Issue16020Item
 				{ 
 					Id = "3", 
 					RecipeName = "Chocolate Chip Cookies",
 					
 				},
-				new Item 
+				new Issue16020Item
 				{ 
 					Id = "4", 
 					RecipeName = "Caesar Salad",
@@ -538,15 +535,15 @@ public class EditRecipeViewModel : BaseViewModel
 			};
 		}
 
-		public async Task<bool> AddItemAsync(Item item)
+		public async Task<bool> AddItemAsync(Issue16020Item item)
 		{
 			items.Add(item);
 			return await Task.FromResult(true);
 		}
 
-		public async Task<bool> UpdateItemAsync(Item item)
+		public async Task<bool> UpdateItemAsync(Issue16020Item item)
 		{
-			var oldItem = items.Where((Item arg) => arg.Id == item.Id).FirstOrDefault();
+			var oldItem = items.Where((Issue16020Item arg) => arg.Id == item.Id).FirstOrDefault();
 			if (oldItem != null)
 			{
 				items.Remove(oldItem);
@@ -557,7 +554,7 @@ public class EditRecipeViewModel : BaseViewModel
 
 		public async Task<bool> DeleteItemAsync(string id)
 		{
-			var oldItem = items.Where((Item arg) => arg.Id == id).FirstOrDefault();
+			var oldItem = items.Where((Issue16020Item arg) => arg.Id == id).FirstOrDefault();
 			if (oldItem != null)
 			{
 				items.Remove(oldItem);
@@ -566,13 +563,13 @@ public class EditRecipeViewModel : BaseViewModel
 			return await Task.FromResult(false);
 		}
 
-		public async Task<Item> GetItemAsync(string id)
+		public async Task<Issue16020Item> GetItemAsync(string id)
 		{
 			var item = items.FirstOrDefault(s => s.Id == id);
 			return await Task.FromResult(item);
 		}
 
-		public async Task<IEnumerable<Item>> GetItemsAsync(bool forceRefresh = false)
+		public async Task<IEnumerable<Issue16020Item>> GetItemsAsync(bool forceRefresh = false)
 		{
 			return await Task.FromResult(items);
 		}
