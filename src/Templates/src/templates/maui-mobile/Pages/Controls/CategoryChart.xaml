@@ -5,7 +5,9 @@
         xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls" 
         xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
         xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
+        xmlns:models="clr-namespace:MauiApp._1.Models"
         x:Class="MauiApp._1.Pages.Controls.CategoryChart"
+        x:DataType="pageModels:MainPageModel"
         HeightRequest="{OnIdiom 300, Phone=200}"
         Margin="0, 12"
         Style="{StaticResource CardStyle}">
@@ -34,15 +36,15 @@
                     Radius="{OnIdiom 0.6, Phone=0.5}"
                     InnerRadius="0.7" >
                     <chart:DoughnutSeries.LabelTemplate>
-                        <DataTemplate >
+                        <DataTemplate x:DataType="models:CategoryChartData">
                             <HorizontalStackLayout>
-                                <Label Text="{Binding Item.Title}" TextColor="{AppThemeBinding
+                                <Label Text="{Binding Title}" TextColor="{AppThemeBinding
                                     Light={StaticResource DarkOnLightBackground},
                                     Dark={StaticResource LightOnDarkBackground}}" FontSize="{OnIdiom 18, Phone=14}"/>
                                 <Label Text=" : " TextColor="{AppThemeBinding
                                     Light={StaticResource DarkOnLightBackground},
                                     Dark={StaticResource LightOnDarkBackground}}" FontSize="{OnIdiom 18, Phone=14}"/>
-                                <Label Text="{Binding Item.Count}" TextColor="{AppThemeBinding
+                                <Label Text="{Binding Count}" TextColor="{AppThemeBinding
                                     Light={StaticResource DarkOnLightBackground},
                                     Dark={StaticResource LightOnDarkBackground}}" FontSize="{OnIdiom 18, Phone=14}"/>
                             </HorizontalStackLayout>
