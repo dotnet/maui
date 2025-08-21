@@ -85,7 +85,6 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void Draw(CGRect dirtyRect)
 		{
-			System.Diagnostics.Debug.WriteLine($"dirtyrect => [{dirtyRect}]");
 			base.Draw(dirtyRect);
 
 			if (_drawable == null)
