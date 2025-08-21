@@ -10,6 +10,7 @@ parameters:
   provisionatorChannel: 'latest'
   timeoutInMinutes: 180
   skipProvisioning: true
+  BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
   RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
   categoryGroupsToTest:
     # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
@@ -75,8 +76,8 @@ stages:
                 runtimeVariant: "CoreCLR"
                 skipProvisioning: ${{ parameters.skipProvisioning }}
   
-  # NativeAOT UI tests build stage - only run when RunNativeAOT parameter is explicitly set
-  - ${{ if eq(parameters.RunNativeAOT, true) }}:
+  # NativeAOT UI tests build stage - only run when BuildNativeAOT parameter is true
+  - ${{ if eq(parameters.BuildNativeAOT, true) }}:
     - stage: build_ui_tests_nativeaot
       displayName: Build UITests NativeAOT Sample App
       dependsOn: []
@@ -300,8 +301,8 @@ stages:
                       testConfigurationArgs: "CollectionView2"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
 
-  # NativeAOT iOS UI tests stage - only run when RunNativeAOT parameter is explicitly set
-  - ${{ if eq(parameters.RunNativeAOT, true) }}:
+  # NativeAOT iOS UI tests stage - only run when both BuildNativeAOT and RunNativeAOT parameters are true
+  - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
     - stage: ios_ui_tests_nativeaot
       displayName: iOS UITests NativeAOT
       dependsOn: build_ui_tests_nativeaot

@@ -56,6 +56,11 @@ parameters:
     type: boolean
     default: false
 
+  - name: BuildNativeAOT
+    displayName: 'Build NativeAOT artifacts'
+    type: boolean
+    default: false
+
   - name: RunNativeAOT
     displayName: 'Run NativeAOT UI Tests'
     type: boolean
@@ -115,6 +120,8 @@ stages:
       windowsPool: ${{ parameters.windowsPool }}
       windowsBuildPool: ${{ parameters.windowsBuildPool }}
       macosPool: ${{ parameters.macosPool }}
+      # BuildNativeAOT is false by default, but true in devdiv environment
+      BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
       RunNativeAOT: ${{ parameters.RunNativeAOT }}
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30 ]
