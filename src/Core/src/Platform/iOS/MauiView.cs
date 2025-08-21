@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Platform
 		// True if the view is an ISafeAreaView, does not ignore safe area, and is not inside a UIScrollView;
 		// otherwise, false. Null means not yet determined.
 		bool? _scrollViewDescendant;
-		
+
 		// Keyboard tracking
 		CGRect _keyboardFrame = CGRect.Empty;
 		bool _isKeyboardShowing;
@@ -126,13 +126,13 @@ namespace Microsoft.Maui.Platform
 			{
 				return safeAreaPage.GetSafeAreaRegionsForEdge(edge);
 			}
-			
+
 			// Fallback to legacy ISafeAreaView behavior
 			if (View is ISafeAreaView sav)
 			{
 				return sav.IgnoreSafeArea ? SafeAreaRegions.None : SafeAreaRegions.Container;
 			}
-			
+
 			return SafeAreaRegions.None;
 		}
 
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Platform
 			// Edge-to-edge content - no safe area padding
 			if (safeAreaRegion == SafeAreaRegions.None)
 				return 0;
-			
+
 			// All other regions respect safe area in some form
 			// This includes:
 			// - Default: Platform default behavior
@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Platform
 			{
 				KeyboardAutoManagerScroll.ShouldScrollAgain = true;
 			}
-			
+
 			ValidateSafeArea();
 			return _safeArea.InsetRect(bounds);
 		}
@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Platform
 				NSNotificationCenter.DefaultCenter.RemoveObserver(showObserver);
 				_keyboardWillShowObserver = null;
 			}
-			
+
 			if (_keyboardWillHideObserver?.TryGetTarget(out var hideObserver) == true)
 			{
 				NSNotificationCenter.DefaultCenter.RemoveObserver(hideObserver);
@@ -267,7 +267,7 @@ namespace Microsoft.Maui.Platform
 			}
 			return null;
 		}
-		
+
 		SafeAreaPadding GetAdjustedSafeAreaInsets()
 		{
 			var baseSafeArea = SafeAreaInsets.ToSafeAreaInsets();
@@ -292,26 +292,46 @@ namespace Microsoft.Maui.Platform
 				{
 					// Get the keyboard frame and calculate its intersection with the current window
 					var window = this.Window;
-					
+
 					if (window != null && !_keyboardFrame.IsEmpty)
 					{
 						var windowFrame = window.Frame;
 						var keyboardIntersection = CGRect.Intersect(_keyboardFrame, windowFrame);
-						
+
 						// If keyboard is visible and intersects with window
 						if (!keyboardIntersection.IsEmpty)
 						{
-							// Calculate keyboard height in the window's coordinate system
-							var keyboardHeight = keyboardIntersection.Height;
-							
 							// For SafeAreaRegions.SoftInput: Always pad so content doesn't go under the keyboard
-							
+
 							// Bottom edge is most commonly affected by keyboard
 							var bottomEdgeRegion = safeAreaPage.GetSafeAreaRegionsForEdge(3); // 3 = bottom edge
 							if (SafeAreaEdges.IsSoftInput(bottomEdgeRegion))
 							{
 								// Use the larger of the current bottom safe area or the keyboard height
-								var adjustedBottom = Math.Max(baseSafeArea.Bottom, keyboardHeight);
+								// Get the input control's bottom Y in window coordinates
+								var inputBottomY = 0.0;
+								if (Window != null)
+								{
+									var viewFrameInWindow = this.Superview?.ConvertRectToView(this.Frame, Window) ?? this.Frame;
+									inputBottomY = viewFrameInWindow.Y + viewFrameInWindow.Height;
+								}
+								var keyboardTopY = _keyboardFrame.Y;
+								var overlap = inputBottomY > keyboardTopY ? (inputBottomY - keyboardTopY) : 0.0;
+
+								// Prevent multiple nested SoftInput paddings by only applying if parent hasn't already applied it
+								var parentAppliedSoftInput = false;
+								var parent = this.Superview;
+								while (parent != null)
+								{
+									if (parent is MauiView parentMauiView && parentMauiView._safeArea.Bottom >= overlap && overlap > 0)
+									{
+										parentAppliedSoftInput = true;
+										break;
+									}
+									parent = parent.Superview;
+								}
+
+								var adjustedBottom = (!parentAppliedSoftInput && overlap > 0) ? overlap : baseSafeArea.Bottom;
 								baseSafeArea = new SafeAreaPadding(baseSafeArea.Left, baseSafeArea.Right, baseSafeArea.Top, adjustedBottom);
 							}
 						}
