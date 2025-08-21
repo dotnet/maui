@@ -6,7 +6,6 @@ parameters:
   app: '' #path to app to test
   version: '' #the iOS version'
   provisionatorChannel: 'latest'
-  agentPoolAccessToken: ''
   skipProvisioning: true
   configuration: "Release"
   testFilter: ''
