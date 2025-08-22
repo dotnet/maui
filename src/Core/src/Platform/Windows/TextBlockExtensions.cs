@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Resolvers;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using WThickness = Microsoft.UI.Xaml.Thickness;
@@ -70,6 +71,7 @@ namespace Microsoft.Maui.Platform
 			if (label.LineHeight >= 0)
 			{
 				platformControl.LineHeight = label.LineHeight * platformControl.FontSize;
+				platformControl.LineStackingStrategy = LineStackingStrategy.BlockLineHeight;
 			}
 		}
 
