@@ -40,5 +40,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			UpdateMainDisplayInfo(info);
 		}
+	public void SetMainDisplayRotation(DisplayRotation rotation)
+	{
+		var info = new DisplayInfo(
+			_mainDisplayInfo.Width,
+			_mainDisplayInfo.Height,
+			_mainDisplayInfo.Density,
+			_mainDisplayInfo.Orientation,
+			rotation);
+
+		UpdateMainDisplayInfo(info);
+	}
 	}
 }

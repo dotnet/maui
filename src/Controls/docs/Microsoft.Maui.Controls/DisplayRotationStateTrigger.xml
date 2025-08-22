@@ -1,0 +1,163 @@
+<Type Name="DisplayRotationStateTrigger" FullName="Microsoft.Maui.Controls.DisplayRotationStateTrigger">
+  <TypeSignature Language="C#" Value="public sealed class DisplayRotationStateTrigger : Microsoft.Maui.Controls.StateTriggerBase" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit DisplayRotationStateTrigger extends Microsoft.Maui.Controls.StateTriggerBase" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.DisplayRotationStateTrigger" />
+  <TypeSignature Language="VB.NET" Value="Public NotInheritable Class DisplayRotationStateTrigger&#xA;Inherits StateTriggerBase" />
+  <TypeSignature Language="C++ CLI" Value="public ref class DisplayRotationStateTrigger sealed : Microsoft::Maui::Controls::StateTriggerBase" />
+  <TypeSignature Language="F#" Value="type DisplayRotationStateTrigger = class&#xA;    inherit StateTriggerBase" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Microsoft.Maui.Controls.StateTriggerBase</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>
+      Trigger that activates when the device display rotation matches the specified <see cref="P:Microsoft.Maui.Controls.DisplayRotationStateTrigger.Rotation" />.
+    </summary>
+    <remarks>
+      <para>
+        The <see cref="T:Microsoft.Maui.Controls.DisplayRotationStateTrigger" /> enables developers to create visual states that are triggered based on the device's display rotation.
+        Unlike <see cref="T:Microsoft.Maui.Controls.OrientationStateTrigger" /> which only differentiates between portrait and landscape orientations,
+        this trigger provides granular control over specific rotation angles (0°, 90°, 180°, 270°).
+      </para>
+      <para>
+        This trigger is particularly useful for applications that need to respond to specific device orientations,
+        such as games that have different layouts for each rotation state or apps that need to handle upside-down orientations differently.
+      </para>
+    </remarks>
+    <example>
+      <para>
+        The following example shows how to use <see cref="T:Microsoft.Maui.Controls.DisplayRotationStateTrigger" /> to change the background color based on device rotation:
+      </para>
+      <code lang="XAML"><![CDATA[
+<ContentPage.Resources>
+    <Style TargetType="ContentPage">
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup>
+                    <VisualState Name="Rotation0">
+                        <VisualState.StateTriggers>
+                            <controls:DisplayRotationStateTrigger Rotation="Rotation0" />
+                        </VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="Red" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState Name="Rotation90">
+                        <VisualState.StateTriggers>
+                            <controls:DisplayRotationStateTrigger Rotation="Rotation90" />
+                        </VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="Green" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState Name="Rotation180">
+                        <VisualState.StateTriggers>
+                            <controls:DisplayRotationStateTrigger Rotation="Rotation180" />
+                        </VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="Blue" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState Name="Rotation270">
+                        <VisualState.StateTriggers>
+                            <controls:DisplayRotationStateTrigger Rotation="Rotation270" />
+                        </VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="Yellow" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+</ContentPage.Resources>
+]]></code>
+    </example>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public DisplayRotationStateTrigger ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.DisplayRotationStateTrigger.#ctor" />
+      <MemberSignature Language="VB.NET" Value="Public Sub New ()" />
+      <MemberSignature Language="C++ CLI" Value="public:&#xA; DisplayRotationStateTrigger();" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>
+          Initializes a new instance of the <see cref="T:Microsoft.Maui.Controls.DisplayRotationStateTrigger" /> class.
+        </summary>
+        <remarks>
+          The trigger will immediately evaluate its state based on the current device display rotation.
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Rotation">
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Devices.DisplayRotation Rotation { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Devices.DisplayRotation Rotation" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.DisplayRotationStateTrigger.Rotation" />
+      <MemberSignature Language="VB.NET" Value="Public Property Rotation As DisplayRotation" />
+      <MemberSignature Language="C++ CLI" Value="public:&#xA; property Microsoft::Maui::Devices::DisplayRotation Rotation { Microsoft::Maui::Devices::DisplayRotation get(); void set(Microsoft::Maui::Devices::DisplayRotation value); };" />
+      <MemberSignature Language="F#" Value="member this.Rotation : Microsoft.Maui.Devices.DisplayRotation with get, set" Usage="Microsoft.Maui.Controls.DisplayRotationStateTrigger.Rotation" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Devices.DisplayRotation</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>
+          Gets or sets the display rotation that will activate this trigger.
+        </summary>
+        <value>
+          The <see cref="T:Microsoft.Maui.Devices.DisplayRotation" /> value that will activate this trigger when the device display matches it.
+        </value>
+        <remarks>
+          <para>
+            The trigger will be active when the device's current display rotation matches this property value.
+            Possible values are:
+          </para>
+          <list type="bullet">
+            <item><description><see cref="F:Microsoft.Maui.Devices.DisplayRotation.Rotation0" /> - Device is in its natural position (0 degrees)</description></item>
+            <item><description><see cref="F:Microsoft.Maui.Devices.DisplayRotation.Rotation90" /> - Device is rotated 90 degrees</description></item>
+            <item><description><see cref="F:Microsoft.Maui.Devices.DisplayRotation.Rotation180" /> - Device is rotated 180 degrees (upside down)</description></item>
+            <item><description><see cref="F:Microsoft.Maui.Devices.DisplayRotation.Rotation270" /> - Device is rotated 270 degrees</description></item>
+            <item><description><see cref="F:Microsoft.Maui.Devices.DisplayRotation.Unknown" /> - Device rotation is unknown</description></item>
+          </list>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RotationProperty">
+      <MemberSignature Language="C#" Value="public static readonly Microsoft.Maui.Controls.BindableProperty RotationProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Microsoft.Maui.Controls.BindableProperty RotationProperty" />
+      <MemberSignature Language="DocId" Value="F:Microsoft.Maui.Controls.DisplayRotationStateTrigger.RotationProperty" />
+      <MemberSignature Language="VB.NET" Value="Public Shared ReadOnly RotationProperty As BindableProperty " />
+      <MemberSignature Language="C++ CLI" Value="public: static initonly Microsoft::Maui::Controls::BindableProperty ^ RotationProperty;" />
+      <MemberSignature Language="F#" Value=" staticval mutable RotationProperty : Microsoft.Maui.Controls.BindableProperty" Usage="Microsoft.Maui.Controls.DisplayRotationStateTrigger.RotationProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>
+          Identifies the <see cref="P:Microsoft.Maui.Controls.DisplayRotationStateTrigger.Rotation" /> bindable property.
+        </summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
