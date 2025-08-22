@@ -13,9 +13,9 @@
       <Sha>f2346125138c29a94bffcf29e84d3c6f9a46b36b</Sha>
     </Dependency>
     <!-- Previous .NET Android version(s) -->
-    <Dependency Name="Microsoft.NET.Sdk.Android.Manifest-9.0.100" Version="35.0.92" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.NET.Sdk.Android.Manifest-9.0.100" Version="35.0.101" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>be1cab92326783479054e72990da08008e5be819</Sha>
+      <Sha>a618557d1fa38074e0256317fb17c1baee245a79</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk.net10.0_18.5" Version="18.5.10727-net10-rc.1">
       <Uri>https://github.com/dotnet/macios</Uri>
@@ -35,21 +35,21 @@
     </Dependency>
     <!-- Previous .NET iOS version(s) -->
     <!-- This is a subscription of the .NET 9 latest stable versions of our packages -->
-    <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_18.5" Version="18.5.9216" CoherentParentDependency="Microsoft.MacCatalyst.Sdk.net10.0_18.5">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_18.5" Version="18.5.9219" CoherentParentDependency="Microsoft.MacCatalyst.Sdk.net10.0_18.5">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>af20d0b615668b2e13d0ffe81ba7ec4f89a398c9</Sha>
+      <Sha>60f5c7b1b6e359df6fefe197b5736a29a6be1001</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk.net9.0_15.5" Version="15.5.9216" CoherentParentDependency="Microsoft.macOS.Sdk.net10.0_15.5">
+    <Dependency Name="Microsoft.macOS.Sdk.net9.0_15.5" Version="15.5.9219" CoherentParentDependency="Microsoft.macOS.Sdk.net10.0_15.5">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>af20d0b615668b2e13d0ffe81ba7ec4f89a398c9</Sha>
+      <Sha>60f5c7b1b6e359df6fefe197b5736a29a6be1001</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk.net9.0_18.5" Version="18.5.9216" CoherentParentDependency="Microsoft.iOS.Sdk.net10.0_18.5">
+    <Dependency Name="Microsoft.iOS.Sdk.net9.0_18.5" Version="18.5.9219" CoherentParentDependency="Microsoft.iOS.Sdk.net10.0_18.5">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>af20d0b615668b2e13d0ffe81ba7ec4f89a398c9</Sha>
+      <Sha>60f5c7b1b6e359df6fefe197b5736a29a6be1001</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk.net9.0_18.5" Version="18.5.9216" CoherentParentDependency="Microsoft.tvOS.Sdk.net10.0_18.5">
+    <Dependency Name="Microsoft.tvOS.Sdk.net9.0_18.5" Version="18.5.9219" CoherentParentDependency="Microsoft.tvOS.Sdk.net10.0_18.5">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>af20d0b615668b2e13d0ffe81ba7ec4f89a398c9</Sha>
+      <Sha>60f5c7b1b6e359df6fefe197b5736a29a6be1001</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
@@ -158,17 +158,17 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>d5539bb825f9d1376b6002463dd26f9e8c5a570f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="10.0.0-prerelease.25375.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="10.0.0-prerelease.25412.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>dfe773f0763677ba3044e9913813e9a581009924</Sha>
+      <Sha>fe850ca677efa9ed62009b929f55ff59d5e24c0e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="10.0.0-prerelease.25375.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="10.0.0-prerelease.25412.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>dfe773f0763677ba3044e9913813e9a581009924</Sha>
+      <Sha>fe850ca677efa9ed62009b929f55ff59d5e24c0e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="10.0.0-prerelease.25375.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="10.0.0-prerelease.25412.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>dfe773f0763677ba3044e9913813e9a581009924</Sha>
+      <Sha>fe850ca677efa9ed62009b929f55ff59d5e24c0e</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
