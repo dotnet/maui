@@ -220,7 +220,7 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 
 		label.IsPlatformEnabled = true;
 
-		// Initially should have red background (current Portrait != trigger Landscape)
+		// Initially should have red background (current Rotation0 != trigger Rotation90)
 		Assert.Equal(redBrush, label.Background);
 
 		// Simulate device orientation change to landscape
