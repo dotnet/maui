@@ -4,31 +4,27 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests;
 
-public class DisplayRotationStateTriggerTests : BaseTestFixture
+public class OrientationStateTriggerTests : BaseTestFixture
 {
 	[Fact]
 	public void ConstructionCanHappen()
 	{
-		var trigger = new DisplayRotationStateTrigger();
+		var trigger = new OrientationStateTrigger();
 
 		Assert.NotNull(trigger);
 	}
 
 	[Theory]
-	[InlineData(DisplayRotation.Rotation0, DisplayRotation.Rotation0, true)]
-	[InlineData(DisplayRotation.Rotation0, DisplayRotation.Rotation90, false)]
-	[InlineData(DisplayRotation.Rotation90, DisplayRotation.Rotation90, true)]
-	[InlineData(DisplayRotation.Rotation90, DisplayRotation.Rotation180, false)]
-	[InlineData(DisplayRotation.Rotation180, DisplayRotation.Rotation180, true)]
-	[InlineData(DisplayRotation.Rotation180, DisplayRotation.Rotation270, false)]
-	[InlineData(DisplayRotation.Rotation270, DisplayRotation.Rotation270, true)]
-	[InlineData(DisplayRotation.Rotation270, DisplayRotation.Rotation0, false)]
-	[InlineData(DisplayRotation.Unknown, DisplayRotation.Unknown, true)]
-	[InlineData(DisplayRotation.Unknown, DisplayRotation.Rotation0, false)]
-	public void CorrectStateIsAppliedWhenAttached(DisplayRotation triggerRotation, DisplayRotation currentRotation, bool isApplied)
+	[InlineData(DisplayOrientation.Portrait, DisplayOrientation.Portrait, true)]
+	[InlineData(DisplayOrientation.Portrait, DisplayOrientation.Landscape, false)]
+	[InlineData(DisplayOrientation.Landscape, DisplayOrientation.Landscape, true)]
+	[InlineData(DisplayOrientation.Landscape, DisplayOrientation.Portrait, false)]
+	[InlineData(DisplayOrientation.Unknown, DisplayOrientation.Unknown, true)]
+	[InlineData(DisplayOrientation.Unknown, DisplayOrientation.Portrait, false)]
+	public void CorrectStateIsAppliedWhenAttached(DisplayOrientation triggerOrientation, DisplayOrientation currentOrientation, bool isApplied)
 	{
 		DeviceDisplay.SetCurrent(new MockDeviceDisplay(
-			new(100, 200, 2, DisplayOrientation.Portrait, currentRotation)));
+			new(100, 200, 2, currentOrientation, DisplayRotation.Rotation0)));
 
 		var redBrush = new SolidColorBrush(Colors.Red);
 		var greenBrush = new SolidColorBrush(Colors.Green);
@@ -43,8 +39,8 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 				{
 					new VisualState
 					{
-						Name = "RotationState",
-						StateTriggers = { new DisplayRotationStateTrigger { Rotation = triggerRotation } },
+						Name = "OrientationState",
+						StateTriggers = { new OrientationStateTrigger { Orientation = triggerOrientation } },
 						Setters = { new Setter { Property = Label.BackgroundProperty, Value = greenBrush } }
 					}
 				}
@@ -56,19 +52,18 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 		Assert.Equal(label.Background, isApplied ? greenBrush : redBrush);
 	}
 
-
 	[Fact]
-	public void RotationPropertyChangeTriggersStateUpdate()
+	public void OrientationPropertyChangeTriggersStateUpdate()
 	{
 		DeviceDisplay.SetCurrent(new MockDeviceDisplay(
-			new(100, 200, 2, DisplayOrientation.Portrait, DisplayRotation.Rotation90)));
+			new(100, 200, 2, DisplayOrientation.Landscape, DisplayRotation.Rotation0)));
 
 		var redBrush = new SolidColorBrush(Colors.Red);
 		var greenBrush = new SolidColorBrush(Colors.Green);
 
 		var label = new Label { Background = redBrush };
 
-		var trigger = new DisplayRotationStateTrigger { Rotation = DisplayRotation.Rotation0 };
+		var trigger = new OrientationStateTrigger { Orientation = DisplayOrientation.Portrait };
 
 		VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList
 		{
@@ -78,7 +73,7 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 				{
 					new VisualState
 					{
-						Name = "RotationState",
+						Name = "OrientationState",
 						StateTriggers = { trigger },
 						Setters = { new Setter { Property = Label.BackgroundProperty, Value = greenBrush } }
 					}
@@ -88,11 +83,11 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 
 		label.IsPlatformEnabled = true;
 
-		// Initially should have red background (current Rotation90 != trigger Rotation0)
+		// Initially should have red background (current Landscape != trigger Portrait)
 		Assert.Equal(redBrush, label.Background);
 
-		// Change trigger's rotation to match current device rotation
-		trigger.Rotation = DisplayRotation.Rotation90;
+		// Change trigger's orientation to match current device orientation
+		trigger.Orientation = DisplayOrientation.Landscape;
 
 		// Now should have green background
 		Assert.Equal(greenBrush, label.Background);
@@ -102,11 +97,11 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 	public void TriggerDeactivatesWhenDetached()
 	{
 		DeviceDisplay.SetCurrent(new MockDeviceDisplay(
-			new(100, 200, 2, DisplayOrientation.Portrait, DisplayRotation.Rotation90)));
+			new(100, 200, 2, DisplayOrientation.Portrait, DisplayRotation.Rotation0)));
 
 		var greenBrush = new SolidColorBrush(Colors.Green);
 		var label = new Label();
-		var trigger = new DisplayRotationStateTrigger { Rotation = DisplayRotation.Rotation0 };
+		var trigger = new OrientationStateTrigger { Orientation = DisplayOrientation.Portrait };
 
 		VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList
 		{
@@ -116,7 +111,7 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 				{
 					new VisualState
 					{
-						Name = "RotationState",
+						Name = "OrientationState",
 						StateTriggers = { trigger },
 						Setters = { new Setter { Property = Label.BackgroundProperty, Value = greenBrush } }
 					}
@@ -130,7 +125,7 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 		};
 
 		Assert.False(trigger.IsAttached);
-
+		
 		_ = new Window
 		{
 			Page = page
@@ -144,15 +139,14 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 	}
 
 	[Fact]
-	public void MultipleTriggersWithDifferentRotations()
+	public void MultipleTriggersWithDifferentOrientations()
 	{
 		DeviceDisplay.SetCurrent(new MockDeviceDisplay(
-			new(100, 200, 2, DisplayOrientation.Portrait, DisplayRotation.Rotation180)));
+			new(100, 200, 2, DisplayOrientation.Landscape, DisplayRotation.Rotation0)));
 
 		var redBrush = new SolidColorBrush(Colors.Red);
 		var greenBrush = new SolidColorBrush(Colors.Green);
 		var blueBrush = new SolidColorBrush(Colors.Blue);
-		var yellowBrush = new SolidColorBrush(Colors.Yellow);
 
 		var label = new Label { Background = redBrush };
 
@@ -164,21 +158,15 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 				{
 					new VisualState
 					{
-						Name = "Rotation0State",
-						StateTriggers = { new DisplayRotationStateTrigger { Rotation = DisplayRotation.Rotation0 } },
+						Name = "PortraitState",
+						StateTriggers = { new OrientationStateTrigger { Orientation = DisplayOrientation.Portrait } },
 						Setters = { new Setter { Property = Label.BackgroundProperty, Value = greenBrush } }
 					},
 					new VisualState
 					{
-						Name = "Rotation90State",
-						StateTriggers = { new DisplayRotationStateTrigger { Rotation = DisplayRotation.Rotation90 } },
+						Name = "LandscapeState",
+						StateTriggers = { new OrientationStateTrigger { Orientation = DisplayOrientation.Landscape } },
 						Setters = { new Setter { Property = Label.BackgroundProperty, Value = blueBrush } }
-					},
-					new VisualState
-					{
-						Name = "Rotation180State",
-						StateTriggers = { new DisplayRotationStateTrigger { Rotation = DisplayRotation.Rotation180 } },
-						Setters = { new Setter { Property = Label.BackgroundProperty, Value = yellowBrush } }
 					}
 				}
 			}
@@ -186,12 +174,12 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 
 		label.IsPlatformEnabled = true;
 
-		// Should activate Rotation180State (yellow background)
-		Assert.Equal(yellowBrush, label.Background);
+		// Should activate LandscapeState (blue background)
+		Assert.Equal(blueBrush, label.Background);
 	}
 
 	[Fact]
-	public void DeviceRotationChangeTriggersStateUpdate()
+	public void DeviceOrientationChangeTriggersStateUpdate()
 	{
 		var mockDeviceDisplay = new MockDeviceDisplay(
 			new(100, 200, 2, DisplayOrientation.Portrait, DisplayRotation.Rotation0));
@@ -210,8 +198,8 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 				{
 					new VisualState
 					{
-						Name = "Rotation90State",
-						StateTriggers = { new DisplayRotationStateTrigger { Rotation = DisplayRotation.Rotation90 } },
+						Name = "LandscapeState",
+						StateTriggers = { new OrientationStateTrigger { Orientation = DisplayOrientation.Landscape } },
 						Setters = { new Setter { Property = Label.BackgroundProperty, Value = greenBrush } }
 					}
 				}
