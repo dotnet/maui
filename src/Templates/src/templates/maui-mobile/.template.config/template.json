@@ -74,7 +74,6 @@
             "Services/**",
             "Resources/Styles/AppStyles.xaml",
             "Utilities/**",
-            "Platforms/iOS/SemanticScreenReaderAsyncImplementation.cs"
           ]
         },
         {
