@@ -115,7 +115,11 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view is UIImageView imageView)
 			{
-				imageView.Image = UIImage.GetSystemImage(isSquare ? "squareshape.fill" : "circle.fill");
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+				{
+					imageView.Image = UIImage.GetSystemImage(isSquare ? "squareshape.fill" : "circle.fill");
+					return;
+				}
 			}
 
 			foreach (var child in view.Subviews)
