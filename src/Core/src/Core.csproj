@@ -29,6 +29,12 @@
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
   <ItemGroup>
+    <Compile Remove="ConfigurationSourceGen\**" />
+    <EmbeddedResource Remove="ConfigurationSourceGen\**" />
+    <None Remove="ConfigurationSourceGen\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MemoryAnalyzers" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
