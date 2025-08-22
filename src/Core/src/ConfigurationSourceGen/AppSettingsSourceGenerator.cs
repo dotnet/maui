@@ -14,7 +14,7 @@ public class AppSettingsSourceGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // Get additional files (like appsettings.json)
+        // Get additional files (like appsettings.json) and combine them
         var appSettingsProvider = context.AdditionalTextsProvider
             .Where(static file => Path.GetFileName(file.Path).Equals("appsettings.json", StringComparison.OrdinalIgnoreCase))
             .Select(static (file, cancellationToken) => 
@@ -22,21 +22,34 @@ public class AppSettingsSourceGenerator : IIncrementalGenerator
                 var content = file.GetText(cancellationToken)?.ToString();
                 return content;
             })
-            .Where(static content => !string.IsNullOrEmpty(content));
+            .Where(static content => !string.IsNullOrEmpty(content))
+            .Collect(); // Collect all appsettings.json files into a single value
 
-        // Generate source when we have appsettings.json
-        context.RegisterSourceOutput(appSettingsProvider, static (context, content) =>
+        // Generate source when we have any appsettings.json files
+        context.RegisterSourceOutput(appSettingsProvider, static (context, contents) =>
         {
             try
             {
-                if (string.IsNullOrEmpty(content))
+                if (contents.IsEmpty)
                     return;
 
-                // Parse JSON and generate configuration dictionary
-                var configurationEntries = ParseJsonToConfigurationEntries(content!);
+                // Combine all appsettings files into one configuration
+                var allConfigurationEntries = new Dictionary<string, string>();
+                
+                foreach (var content in contents)
+                {
+                    if (!string.IsNullOrEmpty(content))
+                    {
+                        var entries = ParseJsonToConfigurationEntries(content!);
+                        foreach (var entry in entries)
+                        {
+                            allConfigurationEntries[entry.Key] = entry.Value; // Later files override earlier ones
+                        }
+                    }
+                }
 
                 // Generate the extension method source code
-                var sourceCode = GenerateExtensionMethod(configurationEntries);
+                var sourceCode = GenerateExtensionMethod(allConfigurationEntries);
 
                 // Add the generated source to the compilation
                 context.AddSource("LocalAppSettingsExtensions.g.cs", SourceText.From(sourceCode, Encoding.UTF8));
