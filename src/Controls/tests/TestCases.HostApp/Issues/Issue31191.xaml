@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue31191"
+             Title="SafeArea Keyboard Overlap Test">
+    <ScrollView x:Name="MainScrollView">
+        <VerticalStackLayout Padding="20" Spacing="20">
+            
+            <!-- Instructions -->
+            <Label Text="SafeArea Keyboard Overlap Test"
+                   FontSize="18"
+                   FontAttributes="Bold" />
+            <Label Text="This test verifies that SafeArea only adjusts for the actual keyboard overlap, not the full keyboard height."
+                   AutomationId="InstructionsLabel" />
+            
+            <!-- Top content that should not be affected by keyboard -->
+            <Border BackgroundColor="LightBlue"
+                    Padding="10"
+                    AutomationId="TopContent">
+                <Label Text="Top Content - This should not move when keyboard appears"
+                       TextColor="DarkBlue" />
+            </Border>
+            
+            <!-- Spacer to push content toward middle -->
+            <BoxView HeightRequest="200" IsVisible="False" />
+            
+            <!-- Middle content that might be partially covered -->
+            <Border BackgroundColor="LightGreen"
+                    Padding="20"
+                    AutomationId="MiddleContent">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Middle Content - May be partially covered"
+                           TextColor="DarkGreen"
+                           AutomationId="MiddleContentLabel" />
+                    <Button Text="Test Button"
+                            AutomationId="TestButton"
+                            Clicked="OnTestButtonClicked" />
+                </VerticalStackLayout>
+            </Border>
+            
+            <!-- Entry to trigger keyboard -->
+            <Entry Placeholder="Tap here to show keyboard"
+                   AutomationId="KeyboardEntry"
+                   Focused="OnEntryFocused"
+                   Unfocused="OnEntryUnfocused" />
+            
+            <!-- Bottom content that will be covered by keyboard -->
+            <Border BackgroundColor="LightCoral"
+                    Padding="20"
+                    AutomationId="BottomContent">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Bottom Content - Will be covered by keyboard"
+                           TextColor="DarkRed"
+                           AutomationId="BottomContentLabel" />
+                    <Label Text="Safe Area Bottom Inset: Not Set"
+                           AutomationId="SafeAreaLabel"
+                           x:Name="SafeAreaLabel" />
+                </VerticalStackLayout>
+            </Border>
+            
+            <!-- Additional spacing to ensure content can scroll -->
+            <BoxView HeightRequest="100" IsVisible="False" />
+            
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
