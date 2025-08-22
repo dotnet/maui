@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Issues.Issue24520">
+
+   <VerticalStackLayout>
+    <Label BackgroundColor="Green" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+    <Label BackgroundColor="Red" LineHeight="0.8" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+    <Label BackgroundColor="Green" LineHeight="0.2" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+    <Label BackgroundColor="Red" LineHeight="0.4" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+    <Label BackgroundColor="Green" LineHeight="1.0" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+    <Label BackgroundColor="Red" LineHeight="1.2" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+    <Label BackgroundColor="Green" LineHeight="1.4" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+    <Label BackgroundColor="Red" LineHeight="1.6" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+    <Label BackgroundColor="Green" LineHeight="2.0" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+    <Label BackgroundColor="Red" LineHeight="4.6" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+  </VerticalStackLayout>
+  
+</ContentPage>
