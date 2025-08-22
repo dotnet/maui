@@ -275,7 +275,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	}
 
 	[RelayCommand]
-	private async Task IconSelected(IconData icon)
+	private void IconSelected(IconData icon)
 	{
 		SemanticScreenReader.Announce($"{icon.Description} selected");
 	}
