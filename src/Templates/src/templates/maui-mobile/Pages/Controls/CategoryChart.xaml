@@ -6,6 +6,7 @@
         xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
         xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
         xmlns:models="clr-namespace:MauiApp._1.Models"
+        xmlns:converter="clr-namespace:MauiApp._1.Converter"
         x:Class="MauiApp._1.Pages.Controls.CategoryChart"
         x:DataType="pageModels:MainPageModel"
         HeightRequest="{OnIdiom 300, Phone=200}"
