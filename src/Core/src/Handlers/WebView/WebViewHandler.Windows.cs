@@ -285,27 +285,6 @@ namespace Microsoft.Maui.Handlers
 			return PlatformView.CoreWebView2.CookieManager.GetCookiesAsync(url).AsTask();
 		}
 
-		static Uri? CreateUriForCookies(string url)
-		{
-			if (url is null)
-				return null;
-
-			Uri? uri;
-
-			if (url.Length > 2000)
-				url = url.Substring(0, 2000);
-
-			if (Uri.TryCreate(url, UriKind.Absolute, out uri))
-			{
-				if (string.IsNullOrWhiteSpace(uri.Host))
-					return null;
-
-				return uri;
-			}
-
-			return null;
-		}
-
 		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)

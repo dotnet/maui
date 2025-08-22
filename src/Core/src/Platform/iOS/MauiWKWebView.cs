@@ -180,8 +180,11 @@ namespace Microsoft.Maui.Platform
 			return config;
 		}
 
-		bool LoadFile(string url)
+		public bool LoadFile(string? url)
 		{
+			if (string.IsNullOrEmpty(url))
+				return false;
+
 			try
 			{
 				var file = Path.GetFileNameWithoutExtension(url);

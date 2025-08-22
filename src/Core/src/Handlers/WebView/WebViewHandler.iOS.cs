@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Handlers
 				// someone is passing in a local bundled file page. If we can find a better way
 				// to detect that scenario, we should use it; until then, we'll fall back to 
 				// local file loading here and see if that works:
-				if (!LoadFile(url))
+				if (PlatformView is IWebViewDelegate webViewDelegate && !webViewDelegate.LoadFile(url))
 				{
 					MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning($"Unable to Load Url {url}");
 				}
@@ -481,53 +481,6 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			return cookieBuilder.ToString();
-		}
-
-		static Uri? CreateUriForCookies(string url)
-		{
-			if (url == null)
-				return null;
-
-			Uri? uri;
-
-			if (url.Length > 2000)
-				url = url.Substring(0, 2000);
-
-			if (Uri.TryCreate(url, UriKind.Absolute, out uri))
-			{
-				if (string.IsNullOrWhiteSpace(uri.Host))
-					return null;
-
-				return uri;
-			}
-
-			return null;
-		}
-
-		bool LoadFile(string url)
-		{
-			try
-			{
-				var file = Path.GetFileNameWithoutExtension(url);
-				var ext = Path.GetExtension(url);
-
-				var nsUrl = NSBundle.MainBundle.GetUrlForResource(file, ext);
-
-				if (nsUrl == null)
-				{
-					return false;
-				}
-
-				PlatformView?.LoadFileUrl(nsUrl, nsUrl);
-
-				return true;
-			}
-			catch (Exception)
-			{
-				MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning("Could not load {url} as local file", url);
-			}
-
-			return false;
 		}
 
 		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg)

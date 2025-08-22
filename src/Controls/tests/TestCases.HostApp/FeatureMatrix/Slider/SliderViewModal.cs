@@ -12,10 +12,10 @@ namespace Maui.Controls.Sample
 		private double _maximum = 1;
 		private double _value = 0;
 #if ANDROID  // // Set all color properties to null for Windows as default values, and define platform-specific colors for Android, iOS, and Mac Catalyst.
-                private Color _thumbColor = Color.FromRgba(1,122,255,255);
-		private Color _minTrackColor = Color.FromRgba(1,122,255,255) ;
-		private Color _maxTrackColor = Color.FromRgba(227,227,229,255);
-		private Color _backgroundColor = Colors.Transparent ;
+		private Color _thumbColor = Color.FromRgba(1, 122, 255, 255);
+		private Color _minTrackColor = Color.FromRgba(1, 122, 255, 255);
+		private Color _maxTrackColor = Color.FromRgba(227, 227, 229, 255);
+		private Color _backgroundColor = Colors.Transparent;
 #elif IOS || MACCATALYST
 		private Color _thumbColor = Color.FromRgba(255, 255, 255, 255);
 		private Color _minTrackColor = Color.FromRgba(1, 122, 255, 255);

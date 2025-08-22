@@ -41,5 +41,23 @@ namespace Microsoft.Maui.Platform
 				LoadUrl(url ?? string.Empty);
 			}
 		}
+
+		bool IWebViewDelegate.LoadFile(string? url)
+		{
+			if (string.IsNullOrEmpty(url))
+				return false;
+
+			try
+			{
+				// For Android, load files from assets folder
+				var fileUrl = url.StartsWith("file://", StringComparison.OrdinalIgnoreCase) ? url : AssetBaseUrl + url;
+				((IWebViewDelegate)this).LoadUrl(fileUrl);
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		}
 	}
 }

@@ -309,26 +309,5 @@ namespace Microsoft.Maui.Handlers
 
 			return existingCookies.GetCookies(uri);
 		}
-
-		static Uri? CreateUriForCookies(string url)
-		{
-			if (url == null)
-				return null;
-
-			Uri? uri;
-
-			if (url.Length > 2000)
-				url = url.Substring(0, 2000);
-
-			if (Uri.TryCreate(url, UriKind.Absolute, out uri))
-			{
-				if (string.IsNullOrWhiteSpace(uri.Host))
-					return null;
-
-				return uri;
-			}
-
-			return null;
-		}
 	}
 }
