@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='Value']/Docs/*" />
 		public object Value
 		{
-			get => GetValue(ValueProperty);
+			get => GetValue(ValueProperty) ?? this;
 			set => SetValue(ValueProperty, value);
 		}
 
