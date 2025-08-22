@@ -12,22 +12,20 @@
                 BackgroundColor="Black"
                 TextColor="White"
                 Text="Tap the Button. If the item selected in the CarouselView is Item 4, the test has passed."/>
-            <!-- This functionality failed in CarouselView2. Reference: https://github.com/dotnet/maui/issues/29309 -->     
-            <!-- TODO: Replace CarouselView1 with CarouselView once the issues mentioned in the GitHub issue are resolved. -->  
-            <local:CarouselView1
+            <CarouselView
                 x:Name="carousel"
                 IsSwipeEnabled="True"
                 Position="3"
                 IsVisible="False">
-                <local:CarouselView1.ItemTemplate>
+                <CarouselView.ItemTemplate>
                     <DataTemplate>
                         <Label
                             Text="{Binding}"
                             FontSize="Large"
                             HorizontalOptions="CenterAndExpand"/>
                     </DataTemplate>
-                </local:CarouselView1.ItemTemplate>
-                <local:CarouselView1.ItemsSource>
+                </CarouselView.ItemTemplate>
+                <CarouselView.ItemsSource>
                     <x:Array Type="{x:Type x:String}">
                         <x:String>Item 1</x:String>
                         <x:String>Item 2</x:String>
@@ -35,8 +33,8 @@
                         <x:String>Item 4</x:String>
                         <x:String>Item 5</x:String>
                     </x:Array>
-                </local:CarouselView1.ItemsSource>
-            </local:CarouselView1>
+                </CarouselView.ItemsSource>
+            </CarouselView>
             <Button
                 AutomationId="AppearButton"
                 Text="Appear"
