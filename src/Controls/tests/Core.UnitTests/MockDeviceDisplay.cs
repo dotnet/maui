@@ -6,8 +6,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	internal class MockDeviceDisplay : IDeviceDisplay
 	{
-		DisplayInfo _mainDisplayInfo = new(
-			100, 200, 2, DisplayOrientation.Portrait, DisplayRotation.Rotation0);
+		DisplayInfo _mainDisplayInfo = new(100, 200, 2, DisplayOrientation.Portrait, DisplayRotation.Rotation0);
+
+		public MockDeviceDisplay()
+		{
+		}
+
+		public MockDeviceDisplay(DisplayInfo initialInfo)
+		{
+			_mainDisplayInfo = initialInfo;
+		}
 
 		public bool KeepScreenOn { get; set; }
 
@@ -40,16 +48,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			UpdateMainDisplayInfo(info);
 		}
-	public void SetMainDisplayRotation(DisplayRotation rotation)
-	{
-		var info = new DisplayInfo(
-			_mainDisplayInfo.Width,
-			_mainDisplayInfo.Height,
-			_mainDisplayInfo.Density,
-			_mainDisplayInfo.Orientation,
-			rotation);
 
-		UpdateMainDisplayInfo(info);
-	}
+		public void SetMainDisplayRotation(DisplayRotation rotation)
+		{
+			var info = new DisplayInfo(
+				_mainDisplayInfo.Width,
+				_mainDisplayInfo.Height,
+				_mainDisplayInfo.Density,
+				_mainDisplayInfo.Orientation,
+				rotation);
+
+			UpdateMainDisplayInfo(info);
+		}
 	}
 }
