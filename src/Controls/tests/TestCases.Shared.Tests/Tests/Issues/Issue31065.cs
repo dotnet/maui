@@ -16,6 +16,7 @@ public class Issue31065 : _IssuesUITest
 	public void UpdateIndicatorViewSquareShape()
 	{
 		App.WaitForElement("ChangeIndicatorShapeButton");
+		App.Tap("ChangeIndicatorShapeButton");
 		VerifyScreenshot("IndicatorViewSquareShape");
 	}
 
@@ -23,6 +24,7 @@ public class Issue31065 : _IssuesUITest
 	[Category(UITestCategories.IndicatorView)]
 	public void UpdateIndicatorViewCircleShape()
 	{
+		App.WaitForElement("ChangeIndicatorShapeButton");
 		App.Tap("ChangeIndicatorShapeButton");
 		VerifyScreenshot("IndicatorViewCircleShape");
 	}
