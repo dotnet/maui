@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -98,7 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			base.OnChildMeasureInvalidated(child, trigger);
 		}
 
-		protected override LayoutConstraint ComputeConstraintForView(View view)
+		protected override SizeConstraint ComputeConstraintForView(View view)
 		{
 			return ComputeConstraintForView(view, false);
 		}
@@ -362,42 +363,42 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		LayoutConstraint ComputeConstraintForView(View view, bool isOnlyExpander)
+		SizeConstraint ComputeConstraintForView(View view, bool isOnlyExpander)
 		{
 			if (Orientation == StackOrientation.Horizontal)
 			{
-				if ((Constraint & LayoutConstraint.VerticallyFixed) != 0 && view.VerticalOptions.Alignment == LayoutAlignment.Fill)
+				if ((Constraint & SizeConstraint.VerticallyFixed) != 0 && view.VerticalOptions.Alignment == LayoutAlignment.Fill)
 				{
-					if (isOnlyExpander && view.HorizontalOptions.Alignment == LayoutAlignment.Fill && Constraint == LayoutConstraint.Fixed)
+					if (isOnlyExpander && view.HorizontalOptions.Alignment == LayoutAlignment.Fill && Constraint == SizeConstraint.Fixed)
 					{
-						return LayoutConstraint.Fixed;
+						return SizeConstraint.Fixed;
 					}
 					else
 					{
-						return LayoutConstraint.VerticallyFixed;
+						return SizeConstraint.VerticallyFixed;
 					}
 				}
 				else
 				{
-					return LayoutConstraint.None;
+					return SizeConstraint.None;
 				}
 			}
 			else
 			{
-				if ((Constraint & LayoutConstraint.HorizontallyFixed) != 0 && view.HorizontalOptions.Alignment == LayoutAlignment.Fill)
+				if ((Constraint & SizeConstraint.HorizontallyFixed) != 0 && view.HorizontalOptions.Alignment == LayoutAlignment.Fill)
 				{
-					if (isOnlyExpander && view.VerticalOptions.Alignment == LayoutAlignment.Fill && Constraint == LayoutConstraint.Fixed)
+					if (isOnlyExpander && view.VerticalOptions.Alignment == LayoutAlignment.Fill && Constraint == SizeConstraint.Fixed)
 					{
-						return LayoutConstraint.Fixed;
+						return SizeConstraint.Fixed;
 					}
 					else
 					{
-						return LayoutConstraint.HorizontallyFixed;
+						return SizeConstraint.HorizontallyFixed;
 					}
 				}
 				else
 				{
-					return LayoutConstraint.None;
+					return SizeConstraint.None;
 				}
 			}
 		}
