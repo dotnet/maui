@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "TextTransform Property Does Not Apply at Runtime When TextType='Html'";
+		public override string Issue => "TextTransform Property Does Not Apply at Runtime When TextType is equal to Html";
 
 		[Test]
 		[Category(UITestCategories.Label)]
