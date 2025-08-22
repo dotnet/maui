@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.ManualTests.Tests.TitleBar.J1"
+             xmlns:local="clr-namespace:Microsoft.Maui.ManualTests.Tests.TitleBar"
+             Title="J1">
+    <ScrollView>
+        <VerticalStackLayout>
+            <Label Text="1. Click button 'Push Modal Page'." />
+            <Label Text="2. Confirm that the App TitleBar is displayed normally and without overlap when using the MAUI 9.0.12 and later." />
+            <Label Text="3. Click button 'Pop Modal Page' to leave this page." />
+            <Grid Margin="12" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                <Label Grid.Row="0" Text="{x:Static local:J1.ModalStackCountText1}"></Label>
+                <!--<Button Grid.Row="1" Clicked="PushClicked" Text="Push Page" />-->
+                <Button Grid.Row="2" Clicked="PushModalClicked" Text="Push Modal Page" />
+                <!--<Button Grid.Row="3" Clicked="PushNavigationModalClicked" Text="Push Modal Navigation Page" />
+                <Button Grid.Row="4" Clicked="PushFlyoutPageClicked" Text="Push Modal Flyout Page" />-->
+                <Button Grid.Row="5" x:Name="PopModal" Clicked="PopModalClicked" Text="Pop Modal Page" />
+            </Grid>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

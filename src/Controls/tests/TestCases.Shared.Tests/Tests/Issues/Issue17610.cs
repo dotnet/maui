@@ -33,10 +33,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			DragCoordinatesAndRestore(androidApp, fromX, fromY, toX, toY);
 
-			// wait for the scroll bounce to stop
-			await Task.Delay(200);
-
-			VerifyScreenshot();
+			App.WaitForElement("RefreshStatusLabel");
+			Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.EqualTo("RefreshView Not Triggered"));
 		}
 
 		void DragCoordinatesAndRestore(AppiumAndroidApp androidApp, int fromX, int fromY, int toX, int toY)
