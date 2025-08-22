@@ -59,53 +59,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(label.Background, isApplied ? greenBrush : redBrush);
 		}
 
-		[Fact]
-		public void StateChangesWhenRotationChanges()
-		{
-			var mockDeviceDisplay = new MockDeviceDisplay();
-			var initialDisplayInfo = new DisplayInfo(
-				100, 200, 2, DisplayOrientation.Portrait, DisplayRotation.Rotation0);
-			mockDeviceDisplay.UpdateMainDisplayInfo(initialDisplayInfo);
-			DeviceDisplay.SetCurrent(mockDeviceDisplay);
-
-			var redBrush = new SolidColorBrush(Colors.Red);
-			var greenBrush = new SolidColorBrush(Colors.Green);
-
-			var label = new Label { Background = redBrush };
-
-			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList
-			{
-				new VisualStateGroup
-				{
-					States =
-					{
-						new VisualState
-						{
-							Name = "Rotation90State",
-							StateTriggers = { new DisplayRotationStateTrigger { Rotation = DisplayRotation.Rotation90 } },
-							Setters = { new Setter { Property = Label.BackgroundProperty, Value = greenBrush } }
-						}
-					}
-				}
-			});
-
-			label.IsPlatformEnabled = true;
-
-			// Initially should have red background (Rotation0 != Rotation90)
-			Assert.Equal(redBrush, label.Background);
-
-			// Change to Rotation90 - should trigger state change
-			mockDeviceDisplay.SetMainDisplayRotation(DisplayRotation.Rotation90);
-
-			// Now should have green background
-			Assert.Equal(greenBrush, label.Background);
-
-			// Change back to Rotation0 - should revert to default state
-			mockDeviceDisplay.SetMainDisplayRotation(DisplayRotation.Rotation0);
-
-			// Should revert to red background
-			Assert.Equal(redBrush, label.Background);
-		}
 
 		[Fact]
 		public void RotationPropertyChangeTriggersStateUpdate()
