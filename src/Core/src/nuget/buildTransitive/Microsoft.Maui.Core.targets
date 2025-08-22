@@ -10,4 +10,9 @@
     <AfterMicrosoftNETSdkTargets>$(AfterMicrosoftNETSdkTargets);$(MSBuildThisFileDirectory)Microsoft.Maui.Core.After.targets</AfterMicrosoftNETSdkTargets>
   </PropertyGroup>
 
+  <!-- Enable Configuration Source Generator -->
+  <ItemGroup Condition=" '$(DisableMauiAnalyzers)' != 'true' ">
+    <Analyzer Include="$(MSBuildThisFileDirectory)Microsoft.Maui.Core.ConfigurationSourceGen.dll" IsImplicitlyDefined="true" />
+  </ItemGroup>
+
 </Project>

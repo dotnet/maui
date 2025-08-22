@@ -35,6 +35,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference
+      Include="ConfigurationSourceGen\Core.ConfigurationSourceGen.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MemoryAnalyzers" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -75,6 +82,7 @@
     <None Remove="nuget\**" />
     <None Include="nuget\**" Exclude="nuget\**\*.in.*;nuget\**\net-windows\*" PackagePath="" Pack="true" />
     <None Include="nuget\buildTransitive\net-windows\**" PackagePath="buildTransitive\net$(_MauiMinimumSupportedDotNetTfm)-windows$(MinimumWindowsTargetFrameworkVersion)" Pack="true" />
+    <None Include="$(_MauiBuildTasksLocation)Microsoft.Maui.Core.ConfigurationSourceGen.dll" PackagePath="buildTransitive" Pack="true" />
   </ItemGroup>
 
   <!-- TypeScript compilation -->
