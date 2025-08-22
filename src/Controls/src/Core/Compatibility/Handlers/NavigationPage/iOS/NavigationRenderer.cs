@@ -1339,6 +1339,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				_tracker.Target = Child;
 				_tracker.AdditionalTargets = Child.GetParentPages();
+				_tracker.CollectionChanged += TrackerOnCollectionChanged;
 
 				UpdateToolbarItems();
 			}
@@ -1360,20 +1361,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override void WillMoveToParentViewController(UIViewController parent)
 			{
 				base.WillMoveToParentViewController(parent);
-
-				if (_tracker is null)
-				{
-					return;
-				}
-
-				if (parent is null)
-				{
-					_tracker.CollectionChanged -= TrackerOnCollectionChanged;
-				}
-				else
-				{
-					_tracker.CollectionChanged += TrackerOnCollectionChanged;
-				}
 			}
 
 			internal void Disconnect(bool dispose)
