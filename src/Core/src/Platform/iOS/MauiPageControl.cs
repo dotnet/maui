@@ -54,8 +54,10 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			UpdateIndicatorSize();
-
-			UpdateIndicatorShape();
+			if (_indicatorView?.TryGetTarget(out var indicatorView) == true && (indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride == null)
+			{
+				UpdateIndicatorShape();
+			}
 		}
 
 		public void UpdateIndicatorSize()
