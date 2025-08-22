@@ -6,7 +6,6 @@ parameters:
   cakeArgs: '' # additional cake args
   deviceTestConfiguration: '' # Indicates the configuration to use for Android. We're slowly enabling this for all projects
   provisionatorChannel: 'latest'
-  agentPoolAccessToken: ''
   artifactName: 'nuget'
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
