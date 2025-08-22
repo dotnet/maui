@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='Value']/Docs/*" />
 		public object Value
 		{
-			get => GetValue(ValueProperty) ?? this;
+			get => GetValue(ValueProperty) ?? this;	// Weird behaviour occurs if all values are the same (i.e. all null). This ensures a default unique value when not assigned.
 			set => SetValue(ValueProperty, value);
 		}
 
