@@ -11,20 +11,18 @@ public class Issue31065 : _IssuesUITest
 	public Issue31065(TestDevice device) : base(device)
 	{ }
 
-	[Test]
+	[Test, Order(0)]
 	[Category(UITestCategories.IndicatorView)]
 	public void UpdateIndicatorViewSquareShape()
 	{
 		App.WaitForElement("ChangeIndicatorShapeButton");
-		App.Tap("ChangeIndicatorShapeButton");
 		VerifyScreenshot("IndicatorViewSquareShape");
 	}
 
-	[Test]
+	[Test, Order(1)]
 	[Category(UITestCategories.IndicatorView)]
 	public void UpdateIndicatorViewCircleShape()
 	{
-		App.WaitForElement("ChangeIndicatorShapeButton");
 		App.Tap("ChangeIndicatorShapeButton");
 		VerifyScreenshot("IndicatorViewCircleShape");
 	}
