@@ -60,6 +60,7 @@
         {
           "condition": "(!IncludeSampleContent)",
           "exclude": [
+            "Converter/**",
             "Data/**",
             "GlobalUsings.cs",
             "Messages/**",
