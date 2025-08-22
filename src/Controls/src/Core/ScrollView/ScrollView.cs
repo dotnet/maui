@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Controls
 {
@@ -335,28 +336,28 @@ namespace Microsoft.Maui.Controls
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => false;
 
-		protected override LayoutConstraint ComputeConstraintForView(View view)
+		protected override SizeConstraint ComputeConstraintForView(View view)
 		{
 			switch (Orientation)
 			{
 				case ScrollOrientation.Horizontal:
 					LayoutOptions vOptions = view.VerticalOptions;
-					if (vOptions.Alignment == LayoutAlignment.Fill && (Constraint & LayoutConstraint.VerticallyFixed) != 0)
+					if (vOptions.Alignment == LayoutAlignment.Fill && (Constraint & SizeConstraint.VerticallyFixed) != 0)
 					{
-						return LayoutConstraint.VerticallyFixed;
+						return SizeConstraint.VerticallyFixed;
 					}
 					break;
 				case ScrollOrientation.Vertical:
 					LayoutOptions hOptions = view.HorizontalOptions;
-					if (hOptions.Alignment == LayoutAlignment.Fill && (Constraint & LayoutConstraint.HorizontallyFixed) != 0)
+					if (hOptions.Alignment == LayoutAlignment.Fill && (Constraint & SizeConstraint.HorizontallyFixed) != 0)
 					{
-						return LayoutConstraint.HorizontallyFixed;
+						return SizeConstraint.HorizontallyFixed;
 					}
 					break;
 				case ScrollOrientation.Both:
-					return LayoutConstraint.None;
+					return SizeConstraint.None;
 			}
-			return LayoutConstraint.None;
+			return SizeConstraint.None;
 		}
 
 		bool CheckElementBelongsToScrollViewer(Element element)

@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
 using Rect = Microsoft.Maui.Graphics.Rect;
 
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement, IConstrainedView
+	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement
 	{
 		/// <summary>Bindable property for <see cref="NavigableElement.Navigation"/>.</summary>
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
@@ -501,7 +502,7 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		int _batched;
-		LayoutConstraint _computedConstraint;
+		SizeConstraint _computedConstraint;
 
 		bool _isInPlatformLayout;
 
@@ -517,7 +518,8 @@ namespace Microsoft.Maui.Controls
 
 		double _mockY = -1;
 
-		LayoutConstraint _selfConstraint;
+		SizeConstraint _selfConstraint;
+		SizeConstraint _constraint;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="VisualElement"/> class.
@@ -925,7 +927,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool Batched => _batched > 0;
 
-		internal LayoutConstraint ComputedConstraint
+		internal SizeConstraint ComputedConstraint
 		{
 			get { return _computedConstraint; }
 			set
@@ -933,17 +935,28 @@ namespace Microsoft.Maui.Controls
 				if (_computedConstraint == value)
 					return;
 
-				LayoutConstraint oldConstraint = Constraint;
 				_computedConstraint = value;
-				LayoutConstraint newConstraint = Constraint;
-				if (oldConstraint != newConstraint)
-					OnConstraintChanged(oldConstraint, newConstraint);
+				RecomputeConstraint();
 			}
 		}
 
-		internal LayoutConstraint Constraint => ComputedConstraint | SelfConstraint;
+		void RecomputeConstraint()
+		{
+			var constraint = ComputedConstraint | SelfConstraint;
+			if (constraint != _constraint)
+			{
+				var oldConstraint = _constraint;
+				_constraint = constraint;
+				// Map to handler
+				Handler?.Invoke(nameof(IView.SizeConstraint));
+				// Then recompute on nested children
+				OnConstraintChanged(oldConstraint, constraint);
+			}
+		}
 
-		bool IConstrainedView.HasFixedConstraints => Constraint == LayoutConstraint.Fixed;
+		internal SizeConstraint Constraint => _constraint;
+
+		SizeConstraint IView.SizeConstraint => _constraint;
 
 		/// <summary>
 		/// Gets a value that indicates that layout for this element is disabled.
@@ -1020,7 +1033,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal LayoutConstraint SelfConstraint
+		internal SizeConstraint SelfConstraint
 		{
 			get { return _selfConstraint; }
 			set
@@ -1028,13 +1041,9 @@ namespace Microsoft.Maui.Controls
 				if (_selfConstraint == value)
 					return;
 
-				LayoutConstraint oldConstraint = Constraint;
 				_selfConstraint = value;
-				LayoutConstraint newConstraint = Constraint;
-				if (oldConstraint != newConstraint)
-				{
-					OnConstraintChanged(oldConstraint, newConstraint);
-				}
+
+				RecomputeConstraint();
 			}
 		}
 
@@ -1293,7 +1302,7 @@ namespace Microsoft.Maui.Controls
 
 			if (child is View view)
 			{
-				view.ComputedConstraint = LayoutConstraint.None;
+				view.ComputedConstraint = SizeConstraint.None;
 			}
 		}
 
@@ -1351,7 +1360,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		protected virtual LayoutConstraint ComputeConstraintForView(View view) => LayoutConstraint.None;
+		protected virtual SizeConstraint ComputeConstraintForView(View view) => SizeConstraint.None;
 
 		/// <summary>
 		/// Occurs when a focus change is requested.
@@ -1485,7 +1494,7 @@ namespace Microsoft.Maui.Controls
 			return _mockX != -1 || _mockY != -1 || _mockWidth != -1 || _mockHeight != -1;
 		}
 
-		internal virtual void OnConstraintChanged(LayoutConstraint oldConstraint, LayoutConstraint newConstraint) => ComputeConstrainsForChildren();
+		void OnConstraintChanged(SizeConstraint oldConstraint, SizeConstraint newConstraint) => ComputeConstrainsForChildren();
 
 		internal virtual void OnIsPlatformEnabledChanged()
 		{
@@ -1691,15 +1700,15 @@ namespace Microsoft.Maui.Controls
 
 		static void OnRequestChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
-			var constraint = LayoutConstraint.None;
+			var constraint = SizeConstraint.None;
 			var element = (VisualElement)bindable;
 			if (element.WidthRequest >= 0)
 			{
-				constraint |= LayoutConstraint.HorizontallyFixed;
+				constraint |= SizeConstraint.HorizontallyFixed;
 			}
 			if (element.HeightRequest >= 0)
 			{
-				constraint |= LayoutConstraint.VerticallyFixed;
+				constraint |= SizeConstraint.VerticallyFixed;
 			}
 
 			element.SelfConstraint = constraint;

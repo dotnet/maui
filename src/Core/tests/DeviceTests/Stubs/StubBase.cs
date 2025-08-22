@@ -23,6 +23,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Visibility Visibility { get; set; } = Visibility.Visible;
 
+		SizeConstraint IView.SizeConstraint => SizeConstraint.None;
+
 		public double Opacity { get; set; } = 1.0d;
 
 		public Paint Background { get; set; }

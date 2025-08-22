@@ -3,6 +3,7 @@ Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter
 Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.SafeAreaEdgesTypeConverter() -> void
 Microsoft.Maui.FontManager.GetFontFamily(string? fontFamily) -> string!
 *REMOVED*Microsoft.Maui.FontManager.GetFontFamily(string? fontFamliy) -> string!
+Microsoft.Maui.IView.SizeConstraint.get -> Microsoft.Maui.Primitives.SizeConstraint
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
 Microsoft.Maui.Handlers.DataFlowDirection
@@ -131,6 +132,11 @@ override Microsoft.Maui.SwipeViewSwipeEnded.ToString() -> string!
 override Microsoft.Maui.SwipeViewSwipeStarted.Equals(object? obj) -> bool
 override Microsoft.Maui.SwipeViewSwipeStarted.GetHashCode() -> int
 override Microsoft.Maui.SwipeViewSwipeStarted.ToString() -> string!
+Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.Fixed = Microsoft.Maui.Primitives.SizeConstraint.HorizontallyFixed | Microsoft.Maui.Primitives.SizeConstraint.VerticallyFixed -> Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.None = 0 -> Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.VerticallyFixed = 2 -> Microsoft.Maui.Primitives.SizeConstraint
 *REMOVED*readonly Microsoft.Maui.PropertyMapper._mapper -> System.Collections.Generic.Dictionary<string!, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>!>!
 static Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.operator !=(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? left, Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? right) -> bool
 static Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.operator ==(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? left, Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? right) -> bool

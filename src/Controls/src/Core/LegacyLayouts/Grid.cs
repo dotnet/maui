@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Primitives;
 
 
 namespace Microsoft.Maui.Controls.Compatibility
@@ -171,12 +172,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			view.PropertyChanged -= OnItemPropertyChanged;
 		}
 
-		protected override LayoutConstraint ComputeConstraintForView(View view)
+		protected override SizeConstraint ComputeConstraintForView(View view)
 		{
 			LayoutOptions vOptions = view.VerticalOptions;
 			LayoutOptions hOptions = view.HorizontalOptions;
 
-			var result = LayoutConstraint.None;
+			var result = SizeConstraint.None;
 
 			// grab a snapshot of this grid's structure for computing the constraints
 			var structure = new GridStructure(this);
@@ -197,7 +198,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 						canFix = false;
 						break;
 					}
-					if ((Constraint & LayoutConstraint.VerticallyFixed) == 0 && height.IsStar)
+					if ((Constraint & SizeConstraint.VerticallyFixed) == 0 && height.IsStar)
 					{
 						canFix = false;
 						break;
@@ -205,7 +206,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 
 				if (canFix)
-					result |= LayoutConstraint.VerticallyFixed;
+					result |= SizeConstraint.VerticallyFixed;
 			}
 
 			if (hOptions.Alignment == LayoutAlignment.Fill)
@@ -224,7 +225,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 						canFix = false;
 						break;
 					}
-					if ((Constraint & LayoutConstraint.HorizontallyFixed) == 0 && width.IsStar)
+					if ((Constraint & SizeConstraint.HorizontallyFixed) == 0 && width.IsStar)
 					{
 						canFix = false;
 						break;
@@ -232,7 +233,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 
 				if (canFix)
-					result |= LayoutConstraint.HorizontallyFixed;
+					result |= SizeConstraint.HorizontallyFixed;
 			}
 
 			return result;

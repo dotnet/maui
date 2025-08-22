@@ -41,6 +41,10 @@ namespace Microsoft.Maui.Handlers
 				["_InitializeBatchedProperties"] = MapInitializeBatchedProperties,
 #endif
 
+#if IOS || MACCATALYST || ANDROID
+				[nameof(IView.SizeConstraint)] = MapSizeConstraint,
+#endif
+
 				[nameof(IView.AutomationId)] = MapAutomationId,
 				[nameof(IView.Clip)] = MapClip,
 				[nameof(IView.Shadow)] = MapShadow,
@@ -241,6 +245,18 @@ namespace Microsoft.Maui.Handlers
 		{
 			((PlatformView?)handler.PlatformView)?.UpdateHeight(view);
 		}
+
+#if IOS || MACCATALYST || ANDROID
+		/// <summary>
+		/// Maps the abstract <see cref="IView.SizeConstraint"/> property to a platform-specific flag.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="view">The associated <see cref="IView"/> instance.</param>
+		static void MapSizeConstraint(IViewHandler handler, IView view)
+		{
+			((PlatformView?)handler.PlatformView)?.UpdateSizeConstraint(view.SizeConstraint);
+		}
+#endif
 
 		/// <summary>
 		/// Maps the abstract <see cref="IView.MinimumHeight"/> property to the platform-specific implementations.

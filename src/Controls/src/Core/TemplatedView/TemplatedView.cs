@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Controls
 {
@@ -88,20 +89,20 @@ namespace Microsoft.Maui.Controls
 
 		Element IControlTemplated.TemplateRoot { get; set; }
 
-		protected override LayoutConstraint ComputeConstraintForView(View view)
+		protected override SizeConstraint ComputeConstraintForView(View view)
 		{
-			bool isFixedHorizontally = (Constraint & LayoutConstraint.HorizontallyFixed) != 0;
-			bool isFixedVertically = (Constraint & LayoutConstraint.VerticallyFixed) != 0;
+			bool isFixedHorizontally = (Constraint & SizeConstraint.HorizontallyFixed) != 0;
+			bool isFixedVertically = (Constraint & SizeConstraint.VerticallyFixed) != 0;
 
-			var result = LayoutConstraint.None;
+			var result = SizeConstraint.None;
 			if (isFixedVertically && view.VerticalOptions.Alignment == LayoutAlignment.Fill)
 			{
-				result |= LayoutConstraint.VerticallyFixed;
+				result |= SizeConstraint.VerticallyFixed;
 			}
 
 			if (isFixedHorizontally && view.HorizontalOptions.Alignment == LayoutAlignment.Fill)
 			{
-				result |= LayoutConstraint.HorizontallyFixed;
+				result |= SizeConstraint.HorizontallyFixed;
 			}
 
 			return result;

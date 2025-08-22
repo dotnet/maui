@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Controls
 {
@@ -26,14 +27,14 @@ namespace Microsoft.Maui.Controls
 				if (_view != null)
 				{
 					RemoveLogicalChild(_view);
-					_view.ComputedConstraint = LayoutConstraint.None;
+					_view.ComputedConstraint = SizeConstraint.None;
 				}
 
 				_view = value;
 
 				if (_view != null)
 				{
-					_view.ComputedConstraint = LayoutConstraint.Fixed;
+					_view.ComputedConstraint = SizeConstraint.Fixed;
 					AddLogicalChild(_view);
 				}
 

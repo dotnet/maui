@@ -12,6 +12,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Controls
 {
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Controls
 	/// <remarks><see cref = "Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="Page"/> class are most prominently used as the top level UI element in .NET MAUI applications. In addition to their role as the main pages of applications, <see cref="Page"/> objects and their descendants can be used with navigation classes, such as <see cref="NavigationPage"/> or <see cref="FlyoutPage"/>, among others, to provide rich user experiences that conform to the expected behaviors on each platform.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView2, IView, ITitledElement, IToolbarElement, ISafeAreaView, IConstrainedView
+	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView2, IView, ITitledElement, IToolbarElement, ISafeAreaView
 #if IOS
 	,IiOSPageSpecifics
 #endif
@@ -76,6 +77,8 @@ namespace Microsoft.Maui.Controls
 		internal View TitleView;
 
 		List<Action> _pendingActions = new List<Action>();
+
+		SizeConstraint IView.SizeConstraint => SizeConstraint.Fixed;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Page"/> class.
@@ -212,8 +215,6 @@ namespace Microsoft.Maui.Controls
 #pragma warning disable CS0618 // Type or member is obsolete
 		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
 #pragma warning restore CS0618 // Type or member is obsolete
-
-		bool IConstrainedView.HasFixedConstraints => true;
 
 #if IOS
 		/// <inheritdoc/>
