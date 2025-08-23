@@ -259,13 +259,13 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 			{
 				await _tagRepository.SaveItemAsync(tag, _project.ID);
 				AllTags = new(AllTags);
-				await AnnouncementHelper.Announce($"{tag.Title} selected");
+				SemanticScreenReader.Announce($"{tag.Title} selected");
 			}
 			else
 			{
 				await _tagRepository.DeleteItemAsync(tag, _project.ID);
 				AllTags = new(AllTags);
-				await AnnouncementHelper.Announce($"{tag.Title} unselected");
+				SemanticScreenReader.Announce($"{tag.Title} unselected");
 			}
 		}
 		else
@@ -275,9 +275,9 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	}
 
 	[RelayCommand]
-	private async Task IconSelected(IconData icon)
+	private void IconSelected(IconData icon)
 	{
-		await AnnouncementHelper.Announce($"{icon.Description} selected");
+		SemanticScreenReader.Announce($"{icon.Description} selected");
 	}
 
 	[RelayCommand]
