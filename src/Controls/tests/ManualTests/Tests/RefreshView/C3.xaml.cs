@@ -12,6 +12,6 @@ public partial class C3 : ContentPage
 	public C3()
 	{
 		InitializeComponent();
-        BindingContext = new MonkeysViewModel();
-    }
+		BindingContext = new MonkeysViewModel();
+	}
 }

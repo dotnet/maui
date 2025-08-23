@@ -23,7 +23,7 @@ namespace PoolMathApp
 		public static readonly string Location = "\uf1e5";
 
 		public static readonly string AlertThin = "\ue81C";
-		
+
 		public static readonly string Plus = "\uf273";
 
 		public static readonly string Bookmark = "\uF29F";

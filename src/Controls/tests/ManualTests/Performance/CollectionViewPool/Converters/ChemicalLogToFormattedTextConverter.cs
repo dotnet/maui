@@ -48,28 +48,28 @@ namespace PoolMathApp.Xaml
 
 						//if (chemType is not null)
 						//{
-							//var unitType = ChemicalTypes.UnitsOfMeasurement.FirstOrDefault(um => um.Value == chemLog.Unit && um.State == chemType.State) ?? ChemicalTypes.UnitsOfMeasurement.First(); ;
-							var chemColor = "PrimaryTextColor";
+						//var unitType = ChemicalTypes.UnitsOfMeasurement.FirstOrDefault(um => um.Value == chemLog.Unit && um.State == chemType.State) ?? ChemicalTypes.UnitsOfMeasurement.First(); ;
+						var chemColor = "PrimaryTextColor";
 
-							var bleachPercent = string.Empty;
-							if ((chemicalType == ChemicalAdditionType.Bleach || chemicalType == ChemicalAdditionType.Polyquat)
-								&& chemLog.Percent.HasValue)
-								bleachPercent = " • " + chemLog.Percent.Value.ToString("0.##") + "%";
+						var bleachPercent = string.Empty;
+						if ((chemicalType == ChemicalAdditionType.Bleach || chemicalType == ChemicalAdditionType.Polyquat)
+							&& chemLog.Percent.HasValue)
+							bleachPercent = " • " + chemLog.Percent.Value.ToString("0.##") + "%";
 
-							var amt = "?";
-							if (chemLog?.Amount.HasValue ?? false)
-								amt = chemLog.Amount.Value.ToString();
+						var amt = "?";
+						if (chemLog?.Amount.HasValue ?? false)
+							amt = chemLog.Amount.Value.ToString();
 
-							ft = new FormattedText(
-								defaultFontWeight: Models.FontWeight.Lighter,
-								spans: new[] {
+						ft = new FormattedText(
+							defaultFontWeight: Models.FontWeight.Lighter,
+							spans: new[] {
 							new TextSpan(amt + " " + ("oz"), fontWeight: Models.FontWeight.Stronger, colorKey: "PrimaryTextColor"),
 							new TextSpan(" of "),
 							new TextSpan("Some Chemical", colorKey: chemColor)
-								});
+							});
 
-							if (!string.IsNullOrEmpty(bleachPercent))
-								ft.Add(bleachPercent, colorKey: chemColor, fontWeight: Models.FontWeight.Strong);
+						if (!string.IsNullOrEmpty(bleachPercent))
+							ft.Add(bleachPercent, colorKey: chemColor, fontWeight: Models.FontWeight.Strong);
 						//}
 					}
 				}
