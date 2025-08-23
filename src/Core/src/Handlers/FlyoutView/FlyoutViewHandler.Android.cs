@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Handlers
 				flyoutView.RemoveFromParent();
 				// Clear layout parameters to prevent casting issues
 				flyoutView.LayoutParameters = null;
-				
+
 				var layoutParameters =
 					new LinearLayoutCompat.LayoutParams(
 						(int)FlyoutWidth,
