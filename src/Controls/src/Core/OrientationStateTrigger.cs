@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Orientation"/>.</summary>
 		public static readonly BindableProperty OrientationProperty =
-			BindableProperty.Create(nameof(Orientation), typeof(DisplayOrientation), typeof(OrientationStateTrigger), null,
+			BindableProperty.Create(nameof(Orientation), typeof(DisplayOrientation), typeof(OrientationStateTrigger), DisplayOrientation.Unknown,
 				propertyChanged: OnOrientationChanged);
 
 		static void OnOrientationChanged(BindableObject bindable, object oldvalue, object newvalue)
@@ -56,8 +56,9 @@ namespace Microsoft.Maui.Controls
 			var currentOrientation = DeviceDisplay.MainDisplayInfo.Orientation;
 			if (Orientation.IsLandscape())
 				SetActive(currentOrientation.IsLandscape());
-			else
+			else if (Orientation.IsPortrait())
 				SetActive(currentOrientation.IsPortrait());
+			else SetActive(false);
 		}
 	}
 }

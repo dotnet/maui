@@ -17,10 +17,13 @@ public class OrientationStateTriggerTests : BaseTestFixture
 	[Theory]
 	[InlineData(DisplayOrientation.Portrait, DisplayOrientation.Portrait, true)]
 	[InlineData(DisplayOrientation.Portrait, DisplayOrientation.Landscape, false)]
+	[InlineData(DisplayOrientation.Portrait, DisplayOrientation.Unknown, false)]
 	[InlineData(DisplayOrientation.Landscape, DisplayOrientation.Landscape, true)]
 	[InlineData(DisplayOrientation.Landscape, DisplayOrientation.Portrait, false)]
-	[InlineData(DisplayOrientation.Unknown, DisplayOrientation.Unknown, true)]
+	[InlineData(DisplayOrientation.Landscape, DisplayOrientation.Unknown, false)]
+	[InlineData(DisplayOrientation.Unknown, DisplayOrientation.Unknown, false)]
 	[InlineData(DisplayOrientation.Unknown, DisplayOrientation.Portrait, false)]
+	[InlineData(DisplayOrientation.Unknown, DisplayOrientation.Landscape, false)]
 	public void CorrectStateIsAppliedWhenAttached(DisplayOrientation triggerOrientation, DisplayOrientation currentOrientation, bool isApplied)
 	{
 		DeviceDisplay.SetCurrent(new MockDeviceDisplay(
@@ -46,8 +49,6 @@ public class OrientationStateTriggerTests : BaseTestFixture
 				}
 			}
 		});
-
-		label.IsPlatformEnabled = true;
 
 		Assert.Equal(label.Background, isApplied ? greenBrush : redBrush);
 	}
@@ -80,8 +81,6 @@ public class OrientationStateTriggerTests : BaseTestFixture
 				}
 			}
 		});
-
-		label.IsPlatformEnabled = true;
 
 		// Initially should have red background (current Landscape != trigger Portrait)
 		Assert.Equal(redBrush, label.Background);
@@ -119,21 +118,13 @@ public class OrientationStateTriggerTests : BaseTestFixture
 			}
 		});
 
-		var page = new ContentPage
-		{
-			Content = label,
-		};
-
 		Assert.False(trigger.IsAttached);
-		
-		_ = new Window
-		{
-			Page = page
-		};
+
+		var window = new Window(new ContentPage() { Content = label });
 
 		Assert.True(trigger.IsAttached);
 
-		page.Content = new Label();
+		window.Page = new ContentPage();
 
 		Assert.False(trigger.IsAttached);
 	}
@@ -172,8 +163,6 @@ public class OrientationStateTriggerTests : BaseTestFixture
 			}
 		});
 
-		label.IsPlatformEnabled = true;
-
 		// Should activate LandscapeState (blue background)
 		Assert.Equal(blueBrush, label.Background);
 	}
@@ -206,16 +195,17 @@ public class OrientationStateTriggerTests : BaseTestFixture
 			}
 		});
 
-		label.IsPlatformEnabled = true;
+		var window = new Window(new ContentPage() { Content = label });
 
 		// Initially should have red background (current Portrait != trigger Landscape)
 		Assert.Equal(redBrush, label.Background);
 
 		// Simulate device orientation change to landscape
-		mockDeviceDisplay.UpdateMainDisplayInfo(new(
-			200, 100, 2, DisplayOrientation.Landscape, DisplayRotation.Rotation90));
+		mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Landscape);
 
 		// Now should have green background
 		Assert.Equal(greenBrush, label.Background);
+
+		window.Page = new ContentPage();
 	}
 }
