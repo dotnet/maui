@@ -4,6 +4,7 @@ using Android.Graphics;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
+using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 
@@ -13,10 +14,13 @@ namespace Microsoft.Maui.Platform
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;
+		readonly SafeAreaHandler _safeAreaHandler;
 
 		public ContentViewGroup(Context context) : base(context)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -24,21 +28,34 @@ namespace Microsoft.Maui.Platform
 			var context = Context;
 			ArgumentNullException.ThrowIfNull(context);
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
+		}
+
+		void SetupWindowInsetsHandling()
+		{
+			ViewCompat.SetOnApplyWindowInsetsListener(this, _safeAreaHandler.GetWindowInsetsListener());
 		}
 
 		public ICrossPlatformLayout? CrossPlatformLayout
@@ -67,6 +84,15 @@ namespace Microsoft.Maui.Platform
 			var deviceIndependentWidth = widthMeasureSpec.ToDouble(_context);
 			var deviceIndependentHeight = heightMeasureSpec.ToDouble(_context);
 
+			// Apply safe area adjustments to the available measure space if this view responds to safe area
+			var measureConstraints = new Graphics.Rect(0, 0, deviceIndependentWidth, deviceIndependentHeight);
+			if (_safeAreaHandler.RespondsToSafeArea())
+			{
+				measureConstraints = _safeAreaHandler.AdjustForSafeArea(measureConstraints);
+				deviceIndependentWidth = measureConstraints.Width;
+				deviceIndependentHeight = measureConstraints.Height;
+			}
+
 			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
 			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
 
@@ -74,8 +100,8 @@ namespace Microsoft.Maui.Platform
 
 			// If the measure spec was exact, we should return the explicit size value, even if the content
 			// measure came out to a different size
-			var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width;
-			var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height;
+			var width = widthMode == MeasureSpecMode.Exactly ? widthMeasureSpec.ToDouble(_context) : measure.Width;
+			var height = heightMode == MeasureSpecMode.Exactly ? heightMeasureSpec.ToDouble(_context) : measure.Height;
 
 			var platformWidth = _context.ToPixels(width);
 			var platformHeight = _context.ToPixels(height);
@@ -95,6 +121,12 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var destination = _context.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
+
+			// Apply safe area adjustments if needed
+			if (_safeAreaHandler.RespondsToSafeArea())
+			{
+				destination = _safeAreaHandler.AdjustForSafeArea(destination);
+			}
 
 			CrossPlatformArrange(destination);
 		}
