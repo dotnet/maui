@@ -477,13 +477,6 @@ public class TabbedPageManager
 			child.IgnoresContainerArea = child is NavigationPage;
 	}
 
-	void UpdateOffscreenPageLimit()
-	{
-#pragma warning disable CS0618 // Type or member is obsolete
-		_viewPager.OffscreenPageLimit = Element.OnThisPlatform().OffscreenPageLimit();
-#pragma warning restore CS0618 // Type or member is obsolete
-	}
-
 	internal void UpdateSwipePaging()
 	{
 		_viewPager.UserInputEnabled = Element.OnThisPlatform().IsSwipePagingEnabled();
