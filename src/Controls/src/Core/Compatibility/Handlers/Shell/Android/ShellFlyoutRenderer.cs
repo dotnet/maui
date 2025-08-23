@@ -404,6 +404,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+		{
+			base.OnLayout(changed, left, top, right, bottom);
+
+			var destination = Context.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
+			Shell.Frame = destination;
+		}
+
 		internal void Disconnect()
 		{
 			ShellController?.RemoveAppearanceObserver(this);

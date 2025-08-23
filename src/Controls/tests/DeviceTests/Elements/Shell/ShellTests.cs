@@ -20,6 +20,8 @@ using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+using Microsoft.Maui.Graphics;
+
 #endif
 
 #if IOS || MACCATALYST
@@ -1136,6 +1138,32 @@ namespace Microsoft.Maui.DeviceTests
 				shell.Items.Clear();
 				shell.CurrentItem = new ShellContent { Content = page };
 				Assert.Equal(count, appearanceObservers.Count); // Count doesn't increase
+			});
+		}
+
+		[Fact]
+		public async Task SettingFrameDoesTriggerInvalidatedMeasure()
+		{
+			SetupBuilder();
+
+			int measureInvalidatedCount = 0;
+
+			var page = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ShellContent { Content = page };
+			});
+
+			shell.MeasureInvalidated += (s, e) =>
+			{
+				measureInvalidatedCount++;
+			};
+
+			shell.Frame = new Rect(0, 0, 100, 100);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, _ =>
+			{
+				Assert.Equal(1, measureInvalidatedCount);
 			});
 		}
 
