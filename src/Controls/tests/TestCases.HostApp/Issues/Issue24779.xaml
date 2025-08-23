@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<FlyoutPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            x:Class="Maui.Controls.Sample.Issues.Issue24779">
+  <FlyoutPage.Flyout>
+    <ContentPage Title="The FlyOut">
+      <Label Text="This is the flyout" />
+    </ContentPage>
+  </FlyoutPage.Flyout>
+  <FlyoutPage.Detail>
+    <NavigationPage>
+      <x:Arguments>
+        <ContentPage Title="The Detail">
+          <VerticalStackLayout>
+            <Label Text="Rotate device multiple times to test for crashes. Content below should help trigger the issue." />
+            <Button Text="Open the Flyout" AutomationId="OpenFlyout" Clicked="OpenFlyout_Clicked" />
+            <!-- Add many labels to trigger the issue as mentioned in the report -->
+            <Label Text="Label 1" />
+            <Label Text="Label 2" />
+            <Label Text="Label 3" />
+            <Label Text="Label 4" />
+            <Label Text="Label 5" />
+            <Label Text="Label 6" />
+            <Label Text="Label 7" />
+            <Label Text="Label 8" />
+            <Label Text="Label 9" />
+            <Label Text="Label 10" />
+            <Label Text="Label 11" />
+            <Label Text="Label 12" />
+            <Label Text="Label 13" />
+            <Label Text="Label 14" />
+            <Label Text="Label 15" />
+            <Label Text="Label 16" />
+            <Label Text="Label 17" />
+            <Label Text="Label 18" />
+            <Label Text="Label 19" />
+            <Label Text="Label 20" />
+            <Label Text="Label 21" />
+            <Label Text="Label 22" />
+            <Label Text="Label 23" />
+            <Label Text="Label 24" />
+            <Label Text="Label 25" />
+            <Label Text="Label 26" />
+            <Label Text="Label 27" />
+            <Label Text="Label 28" />
+            <Label Text="Label 29" />
+            <Label Text="Label 30" />
+            <Label Text="Label 31" />
+            <Label Text="Label 32" />
+            <Label Text="Label 33" />
+            <Label Text="Label 34" />
+            <Label Text="Label 35" />
+            <Label Text="Label 36" />
+            <Label Text="Label 37" />
+            <Label Text="Label 38" />
+            <Label Text="Label 39" />
+            <Label Text="Label 40" />
+            <Label Text="Label 41" />
+            <Label Text="Label 42" />
+            <Label Text="Label 43" />
+            <Label Text="Label 44" />
+            <Label Text="Label 45" />
+            <Label Text="Label 46" />
+            <Label Text="Label 47" />
+            <Label Text="Label 48" />
+            <Label Text="Label 49" />
+            <Label Text="Label 50" />
+          </VerticalStackLayout>
+        </ContentPage>
+      </x:Arguments>
+    </NavigationPage>
+  </FlyoutPage.Detail>
+</FlyoutPage>

@@ -170,6 +170,8 @@ namespace Microsoft.Maui.Handlers
 			if (_navigationRoot.Parent != _sideBySideView)
 			{
 				_navigationRoot.RemoveFromParent();
+				// Clear layout parameters to prevent casting issues
+				_navigationRoot.LayoutParameters = null;
 
 				var layoutParameters =
 					new LinearLayoutCompat.LayoutParams(
@@ -187,6 +189,9 @@ namespace Microsoft.Maui.Handlers
 				// This makes sure it's visible
 				flyoutView.Visibility = ViewStates.Visible;
 				flyoutView.RemoveFromParent();
+				// Clear layout parameters to prevent casting issues
+				flyoutView.LayoutParameters = null;
+				
 				var layoutParameters =
 					new LinearLayoutCompat.LayoutParams(
 						(int)FlyoutWidth,
@@ -217,6 +222,8 @@ namespace Microsoft.Maui.Handlers
 			if (_navigationRoot.Parent != PlatformView)
 			{
 				_navigationRoot.RemoveFromParent();
+				// Clear layout parameters to prevent casting issues
+				_navigationRoot.LayoutParameters = null;
 
 				var layoutParameters =
 					new LinearLayoutCompat.LayoutParams(
@@ -231,6 +238,8 @@ namespace Microsoft.Maui.Handlers
 			if (flyoutView.Parent != PlatformView)
 			{
 				flyoutView.RemoveFromParent();
+				// Clear layout parameters to prevent casting issues
+				flyoutView.LayoutParameters = null;
 
 				var layoutParameters =
 					new DrawerLayout.LayoutParams(
