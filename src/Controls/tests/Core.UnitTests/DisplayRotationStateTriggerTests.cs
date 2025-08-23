@@ -17,6 +17,7 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 	[Theory]
 	[InlineData(DisplayRotation.Rotation0, DisplayRotation.Rotation0, true)]
 	[InlineData(DisplayRotation.Rotation0, DisplayRotation.Rotation90, false)]
+	[InlineData(DisplayRotation.Rotation0, DisplayRotation.Unknown, false)]
 	[InlineData(DisplayRotation.Rotation90, DisplayRotation.Rotation90, true)]
 	[InlineData(DisplayRotation.Rotation90, DisplayRotation.Rotation180, false)]
 	[InlineData(DisplayRotation.Rotation180, DisplayRotation.Rotation180, true)]
@@ -51,8 +52,6 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 			}
 		});
 
-		label.IsPlatformEnabled = true;
-
 		Assert.Equal(label.Background, isApplied ? greenBrush : redBrush);
 	}
 
@@ -85,8 +84,6 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 				}
 			}
 		});
-
-		label.IsPlatformEnabled = true;
 
 		// Initially should have red background (current Rotation90 != trigger Rotation0)
 		Assert.Equal(redBrush, label.Background);
@@ -124,21 +121,13 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 			}
 		});
 
-		var page = new ContentPage
-		{
-			Content = label,
-		};
-
 		Assert.False(trigger.IsAttached);
 
-		_ = new Window
-		{
-			Page = page
-		};
+		var window = new Window(new ContentPage() { Content = label });
 
 		Assert.True(trigger.IsAttached);
 
-		page.Content = new Label();
+		window.Page = new ContentPage();
 
 		Assert.False(trigger.IsAttached);
 	}
@@ -184,8 +173,6 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 			}
 		});
 
-		label.IsPlatformEnabled = true;
-
 		// Should activate Rotation180State (yellow background)
 		Assert.Equal(yellowBrush, label.Background);
 	}
@@ -218,16 +205,17 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 			}
 		});
 
-		label.IsPlatformEnabled = true;
+		var window = new Window(new ContentPage() { Content = label });
 
 		// Initially should have red background (current Rotation0 != trigger Rotation90)
 		Assert.Equal(redBrush, label.Background);
 
 		// Simulate device orientation change to landscape
-		mockDeviceDisplay.UpdateMainDisplayInfo(new(
-			200, 100, 2, DisplayOrientation.Landscape, DisplayRotation.Rotation90));
+		mockDeviceDisplay.SetMainDisplayRotation(DisplayRotation.Rotation90);
 
 		// Now should have green background
 		Assert.Equal(greenBrush, label.Background);
+
+		window.Page = new ContentPage();
 	}
 }
