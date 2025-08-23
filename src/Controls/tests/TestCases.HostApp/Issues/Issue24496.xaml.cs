@@ -13,10 +13,7 @@ namespace Maui.Controls.Sample.Issues
 #if IOS
 			var entry = (Entry)sender;
 			var field = entry.Handler?.PlatformView as UIKit.UITextField;
-			if (field is not null)
-			{
-				field.TintColor = UIKit.UIColor.Clear;
-			}
+			field?.TintColor = UIKit.UIColor.Clear;
 #endif
 		}
 	}

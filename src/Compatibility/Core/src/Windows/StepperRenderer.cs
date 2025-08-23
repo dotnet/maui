@@ -49,14 +49,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected override void UpdateBackgroundColor()
 		{
-			if (Control != null)
-				Control.ButtonBackgroundColor = Element.BackgroundColor;
+			Control?.ButtonBackgroundColor = Element.BackgroundColor;
 		}
 
 		protected override void UpdateBackground()
 		{
-			if (Control != null)
-				Control.ButtonBackground = Element.Background;
+			Control?.ButtonBackground = Element.Background;
 		}
 
 		protected override bool PreventGestureBubbling { get; set; } = true;

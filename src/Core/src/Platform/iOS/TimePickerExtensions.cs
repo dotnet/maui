@@ -30,10 +30,7 @@ public static class TimePickerExtensions
 
 	public static void UpdateTime(this UIDatePicker picker, ITimePicker timePicker)
 	{
-		if (picker is not null)
-		{
-			picker.Date = new DateTime(1, 1, 1).Add(timePicker?.Time ?? TimeSpan.Zero).ToNSDate();
-		}
+		picker?.Date = new DateTime(1, 1, 1).Add(timePicker?.Time ?? TimeSpan.Zero).ToNSDate();
 	}
 
 	public static void UpdateTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker, UIDatePicker? picker)
@@ -46,10 +43,7 @@ public static class TimePickerExtensions
 		{
 			NSLocale locale = new NSLocale(cultureInfo.TwoLetterISOLanguageName);
 
-			if (picker is not null)
-			{
-				picker.Locale = locale;
-			}
+			picker?.Locale = locale;
 		}
 
 		var time = timePicker.Time;
@@ -64,20 +58,14 @@ public static class TimePickerExtensions
 				var ci = new CultureInfo("de-DE");
 				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
 
-				if (picker is not null)
-				{
-					picker.Locale = locale;
-				}
+				picker?.Locale = locale;
 			}
 			else if (format.Contains('h', StringComparison.Ordinal))
 			{
 				var ci = new CultureInfo("en-US");
 				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
 
-				if (picker is not null)
-				{
-					picker.Locale = locale;
-				}
+				picker?.Locale = locale;
 			}
 		}
 

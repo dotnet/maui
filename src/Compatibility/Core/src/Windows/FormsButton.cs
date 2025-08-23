@@ -70,8 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (BackgroundColor == null)
 				BackgroundColor = Background;
 
-			if (_contentPresenter != null)
-				_contentPresenter.Background = BackgroundColor;
+			_contentPresenter?.Background = BackgroundColor;
 			Background = new UI.Xaml.Media.SolidColorBrush(UI.Colors.Transparent);
 		}
 
@@ -79,24 +78,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var radius = BorderRadius == -1 ? 0 : BorderRadius;
 			var cornerRadius = WinUIHelpers.CreateCornerRadius(radius);
-			if (_contentPresenter != null)
-				_contentPresenter.CornerRadius = cornerRadius;
+			_contentPresenter?.CornerRadius = cornerRadius;
 
-			if (_rootGrid != null)
-				_rootGrid.CornerRadius = cornerRadius;
+			_rootGrid?.CornerRadius = cornerRadius;
 		}
 
 		public void UpdateCharacterSpacing(int characterSpacing)
 		{
 			CharacterSpacing = characterSpacing;
 
-			if (_contentPresenter != null)
-				_contentPresenter.CharacterSpacing = CharacterSpacing;
+			_contentPresenter?.CharacterSpacing = CharacterSpacing;
 
 			var textBlock = GetTextBlock(Content);
 
-			if (textBlock != null)
-				textBlock.CharacterSpacing = CharacterSpacing;
+			textBlock?.CharacterSpacing = CharacterSpacing;
 
 		}
 

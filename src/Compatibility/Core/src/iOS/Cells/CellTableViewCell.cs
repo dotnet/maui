@@ -86,8 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				contextCell.Update(tableView, cell, nativeCell);
 				var viewTableCell = contextCell.ContentCell as ViewCellRenderer.ViewTableCell;
-				if (viewTableCell != null)
-					viewTableCell.SupressSeparator = tableView.SeparatorStyle == UITableViewCellSeparatorStyle.None;
+				viewTableCell?.SupressSeparator = tableView.SeparatorStyle == UITableViewCellSeparatorStyle.None;
 				nativeCell = contextCell;
 			}
 

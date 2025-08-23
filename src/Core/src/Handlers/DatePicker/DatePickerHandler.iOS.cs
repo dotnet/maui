@@ -98,8 +98,7 @@ namespace Microsoft.Maui.Handlers
 				if (datePickerHandler.UpdateImmediately)  // Platform Specific
 					datePickerHandler.SetVirtualViewDate();
 
-				if (datePickerHandler.VirtualView != null)
-					datePickerHandler.VirtualView.IsFocused = true;
+				datePickerHandler.VirtualView?.IsFocused = true;
 			}
 		}
 

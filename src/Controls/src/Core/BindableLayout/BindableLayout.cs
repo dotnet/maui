@@ -118,10 +118,7 @@ namespace Microsoft.Maui.Controls
 
 		static void OnControllerChanged(BindableObject b, BindableLayoutController oldC, BindableLayoutController newC)
 		{
-			if (oldC != null)
-			{
-				oldC.ItemsSource = null;
-			}
+			oldC?.ItemsSource = null;
 
 			if (newC == null)
 			{

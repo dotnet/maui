@@ -47,16 +47,14 @@ namespace Microsoft.Maui.Controls.Platform
 					_paneRoot.Height = double.NaN;
 					_paneRoot.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Stretch;
 
-					if (_HCPaneBorder != null)
-						_HCPaneBorder.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+					_HCPaneBorder?.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 				}
 				else
 				{
 					_paneRoot.Height = _height;
 					_paneRoot.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top;
 
-					if (_HCPaneBorder != null)
-						_HCPaneBorder.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+					_HCPaneBorder?.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
 				}
 			}
 		}

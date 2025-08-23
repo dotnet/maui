@@ -57,11 +57,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			// as the background would be applied to the renderer's FrameworkElement
 			Color backgroundColor = Element.BackgroundColor;
 
-			if (Control != null)
-			{
-				Control.Background = backgroundColor.IsDefault() ?
+			Control?.Background = backgroundColor.IsDefault() ?
 					new Microsoft.UI.Xaml.Media.SolidColorBrush((global::Windows.UI.Color)Resources["SystemAltHighColor"]) : backgroundColor.ToPlatform();
-			}
 		}
 
 		protected override void UpdateBackground()

@@ -155,13 +155,10 @@ namespace Microsoft.Maui.Media
 				PickerRef.ModalPresentationStyle = UIModalPresentationStyle.PageSheet;
 			}
 
-			if (PickerRef.PresentationController is not null)
-			{
-				PickerRef.PresentationController.Delegate = new PhotoPickerPresentationControllerDelegate
+			PickerRef.PresentationController?.Delegate = new PhotoPickerPresentationControllerDelegate
 				{
 					Handler = () => tcs.TrySetResult(null)
 				};
-			}
 
 			await vc.PresentViewControllerAsync(PickerRef, true);
 
@@ -236,13 +233,10 @@ namespace Microsoft.Maui.Media
 				PickerRef.ModalPresentationStyle = UIModalPresentationStyle.PageSheet;
 			}
 
-			if (PickerRef.PresentationController is not null)
-			{
-				PickerRef.PresentationController.Delegate = new PhotoPickerPresentationControllerDelegate
+			PickerRef.PresentationController?.Delegate = new PhotoPickerPresentationControllerDelegate
 				{
 					Handler = () => tcs.TrySetResult(null)
 				};
-			}
 
 			await vc.PresentViewControllerAsync(PickerRef, true);
 
@@ -279,17 +273,17 @@ namespace Microsoft.Maui.Media
 					{
 						using var originalStream = await result.OpenReadAsync();
 						using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, result.FileName);
-						
+
 						// Create a temp file for the rotated image
 						var tempFileName = $"{Guid.NewGuid()}{Path.GetExtension(result.FileName)}";
 						var tempFilePath = Path.Combine(Path.GetTempPath(), tempFileName);
-						
+
 						using (var fileStream = File.Create(tempFilePath))
 						{
 							rotatedStream.Position = 0;
 							await rotatedStream.CopyToAsync(fileStream);
 						}
-						
+
 						rotatedResults.Add(new FileResult(tempFilePath, result.FileName));
 					}
 					catch
@@ -356,7 +350,7 @@ namespace Microsoft.Maui.Media
 					if (!assetUrl.Scheme.Equals("assets-library", StringComparison.OrdinalIgnoreCase))
 					{
 						var docResult = new UIDocumentFileResult(assetUrl);
-						
+
 						// Apply rotation if needed and this is a photo
 						if (ImageProcessor.IsRotationNeeded(options) && IsImageFile(docResult.FileName))
 						{
@@ -371,7 +365,7 @@ namespace Microsoft.Maui.Media
 								// If rotation fails, continue with the original file
 							}
 						}
-						
+
 						return docResult;
 					}
 
@@ -402,7 +396,7 @@ namespace Microsoft.Maui.Media
 					{
 						img = img.NormalizeOrientation();
 					}
-					
+
 					return new CompressedUIImageFileResult(img, null, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100);
 				}
 			}
@@ -414,7 +408,7 @@ namespace Microsoft.Maui.Media
 
 			string originalFilename = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault()?.OriginalFilename;
 			var assetResult = new PHAssetFileResult(assetUrl, phAsset, originalFilename);
-			
+
 			// Apply rotation if needed and this is a photo
 			if (ImageProcessor.IsRotationNeeded(options) && IsImageFile(assetResult.FileName))
 			{
@@ -429,41 +423,41 @@ namespace Microsoft.Maui.Media
 					// If rotation fails, continue with the original file
 				}
 			}
-			
+
 			return assetResult;
 		}
-		
+
 		// Helper method to check if a file is an image based on extension
 		static bool IsImageFile(string fileName)
 		{
 			if (string.IsNullOrEmpty(fileName))
 				return false;
-				
+
 			var ext = Path.GetExtension(fileName)?.ToLowerInvariant();
 			return ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".heic" || ext == ".heif";
 		}
-		
+
 		// Helper method to rotate an image file
 		static async Task<FileResult> RotateImageFile(FileResult original)
 		{
 			if (original == null)
 				return null;
-				
+
 			try
 			{
 				using var originalStream = await original.OpenReadAsync();
 				using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, original.FileName);
-				
+
 				// Create a temp file for the rotated image
 				var tempFileName = $"{Guid.NewGuid()}{Path.GetExtension(original.FileName)}";
 				var tempFilePath = Path.Combine(Path.GetTempPath(), tempFileName);
-				
+
 				using (var fileStream = File.Create(tempFilePath))
 				{
 					rotatedStream.Position = 0;
 					await rotatedStream.CopyToAsync(fileStream);
 				}
-				
+
 				return new FileResult(tempFilePath, original.FileName);
 			}
 			catch (Exception ex)
@@ -472,7 +466,7 @@ namespace Microsoft.Maui.Media
 				return original;
 			}
 		}
-		
+
 		class PhotoPickerDelegate : UIImagePickerControllerDelegate
 		{
 			public Action<NSDictionary> CompletedHandler { get; set; }

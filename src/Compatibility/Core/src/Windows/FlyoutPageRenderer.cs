@@ -88,8 +88,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			set
 			{
-				if (Control != null)
-					Control.DetailTitle = value;
+				Control?.DetailTitle = value;
 			}
 		}
 
@@ -114,8 +113,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			set
 			{
-				if (Control != null)
-					Control.DetailTitleIcon = value;
+				Control?.DetailTitleIcon = value;
 			}
 		}
 
@@ -124,8 +122,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			get => Control?.DetailTitleView;
 			set
 			{
-				if (Control != null)
-					Control.DetailTitleView = value;
+				Control?.DetailTitleView = value;
 			}
 		}
 

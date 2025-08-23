@@ -132,8 +132,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var windowsSwipeItems = GetWindowsSwipeItems(swipeItems, swipeView, swipeControl);
 
-			if (windowsSwipeItems != null)
-				windowsSwipeItems.Mode = swipeItems.Mode.ToPlatform();
+			windowsSwipeItems?.Mode = swipeItems.Mode.ToPlatform();
 		}
 
 		static void UpdateSwipeBehaviorOnInvoked(ISwipeItems swipeItems, ISwipeView swipeView, WSwipeControl swipeControl)

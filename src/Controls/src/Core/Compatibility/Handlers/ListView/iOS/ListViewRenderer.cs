@@ -1507,8 +1507,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var contextCell = cell as ContextActionsCell;
 				cell.BackgroundColor = color;
-				if (contextCell != null)
-					contextCell.ContentCell.BackgroundColor = color;
+				contextCell?.ContentCell.BackgroundColor = color;
 			}
 
 			int TemplateIdForPath(NSIndexPath indexPath)
@@ -1825,8 +1824,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void UpdateRefreshControlColor(UIColor color)
 		{
-			if (RefreshControl != null)
-				RefreshControl.TintColor = color;
+			RefreshControl?.TintColor = color;
 		}
 
 		protected override void Dispose(bool disposing)

@@ -1,7 +1,7 @@
 using System.Globalization;
-using NUnit.Framework;
-using Microsoft.CodeAnalysis;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests
 {
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests
 	</Grid>
 </ContentPage>";
 
-				var code = @"using System;
+			var code = @"using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
@@ -72,18 +72,18 @@ public partial class TestPage : ContentPage
 	}
 }";
 
-				var (result, generated) = RunGenerator(xaml, code);
-				
-				// Should not have any diagnostics/errors
-				Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), 
-					$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
+			var (result, generated) = RunGenerator(xaml, code);
 
-				// The generated code should contain a properly formatted GridLength with period as decimal separator
-				// regardless of the current culture
-				Assert.IsNotNull(generated, "Generated code should not be null");
+			// Should not have any diagnostics/errors
+			Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error),
+				$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
+
+			// The generated code should contain a properly formatted GridLength with period as decimal separator
+			// regardless of the current culture
+			Assert.IsNotNull(generated, "Generated code should not be null");
 			// Extract the numeric value from the input (e.g., "2.5*" -> "2.5")
 			var numericPart = gridLengthValue.Substring(0, gridLengthValue.Length - 1);
-			
+
 			// The generated code should use period as decimal separator (culture-invariant)
 			// and should contain the GridLength constructor with Star unit type
 			Assert.That(generated, Does.Contain($"new global::Microsoft.Maui.GridLength({numericPart}, global::Microsoft.Maui.GridUnitType.Star)"),
@@ -113,7 +113,7 @@ public partial class TestPage : ContentPage
 	</Grid>
 </ContentPage>";
 
-				var code = @"using System;
+			var code = @"using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
@@ -128,16 +128,16 @@ public partial class TestPage : ContentPage
 	}
 }";
 
-				var (result, generated) = RunGenerator(xaml, code);
-				
-				Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), 
-					$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
+			var (result, generated) = RunGenerator(xaml, code);
 
-				Assert.IsNotNull(generated, "Generated code should not be null");
-				
-				// The generated code should use period as decimal separator and Absolute unit type
-				Assert.That(generated, Does.Contain($"new global::Microsoft.Maui.GridLength({gridLengthValue}, global::Microsoft.Maui.GridUnitType.Absolute)"),
-					$"Generated code should contain culture-invariant GridLength with absolute value {gridLengthValue}. Generated code: {generated}");
+			Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error),
+				$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
+
+			Assert.IsNotNull(generated, "Generated code should not be null");
+
+			// The generated code should use period as decimal separator and Absolute unit type
+			Assert.That(generated, Does.Contain($"new global::Microsoft.Maui.GridLength({gridLengthValue}, global::Microsoft.Maui.GridUnitType.Absolute)"),
+				$"Generated code should contain culture-invariant GridLength with absolute value {gridLengthValue}. Generated code: {generated}");
 		}
 
 		[TestCase("en-US")]
@@ -183,18 +183,18 @@ public partial class TestPage : ContentPage
 	}
 }";
 
-				var (result, generated) = RunGenerator(xaml, code);
-				
-				Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), 
-					$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
+			var (result, generated) = RunGenerator(xaml, code);
 
-				Assert.IsNotNull(generated, "Generated code should not be null");
-				
-				// Check for special values that should be culture-independent
-				Assert.That(generated, Does.Contain("global::Microsoft.Maui.GridLength.Star"),
-					"Generated code should contain GridLength.Star for '*' values");
-				Assert.That(generated, Does.Contain("global::Microsoft.Maui.GridLength.Auto"),
-					"Generated code should contain GridLength.Auto for 'Auto' values");
+			Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error),
+				$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
+
+			Assert.IsNotNull(generated, "Generated code should not be null");
+
+			// Check for special values that should be culture-independent
+			Assert.That(generated, Does.Contain("global::Microsoft.Maui.GridLength.Star"),
+				"Generated code should contain GridLength.Star for '*' values");
+			Assert.That(generated, Does.Contain("global::Microsoft.Maui.GridLength.Auto"),
+				"Generated code should contain GridLength.Auto for 'Auto' values");
 		}
 
 		[Test]
@@ -232,12 +232,12 @@ public partial class TestPage : ContentPage
 				""";
 
 			var (result, generated) = RunGenerator(xaml, code);
-			
-			Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), 
+
+			Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error),
 				$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
 
 			Assert.IsNotNull(generated, "Generated code should not be null");
-			
+
 			// Should generate GridLength.Star for "*" value
 			Assert.That(generated, Does.Contain("global::Microsoft.Maui.GridLength.Star"),
 				"Generated code should contain GridLength.Star for '*' value");
@@ -278,12 +278,12 @@ public partial class TestPage : ContentPage
 				""";
 
 			var (result, generated) = RunGenerator(xaml, code);
-			
-			Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), 
+
+			Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error),
 				$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
 
 			Assert.IsNotNull(generated, "Generated code should not be null");
-			
+
 			// Should generate GridLength.Auto for "Auto" value
 			Assert.That(generated, Does.Contain("global::Microsoft.Maui.GridLength.Auto"),
 				"Generated code should contain GridLength.Auto for 'Auto' value");

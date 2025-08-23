@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="config">The config parameter.</param>
 #pragma warning disable CS0618 // Type or member is obsolete
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
-				public static bool RowAnimationsEnabled(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		public static bool RowAnimationsEnabled(this IPlatformElementConfiguration<iOS, FormsElement> config)
 #pragma warning restore CS0618 // Type or member is obsolete
 		{
 			return GetRowAnimationsEnabled(config.Element);

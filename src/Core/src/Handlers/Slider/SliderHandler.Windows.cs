@@ -108,8 +108,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPlatformValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
 		{
-			if (VirtualView != null)
-				VirtualView.Value = e.NewValue;
+			VirtualView?.Value = e.NewValue;
 		}
 
 		void OnPointerPressed(object? sender, PointerRoutedEventArgs e)

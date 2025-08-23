@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsRefreshEnabled"/>.</summary>
 		public static readonly BindableProperty IsRefreshEnabledProperty =
-			BindableProperty.Create(nameof(IsRefreshEnabled), typeof(bool), typeof(RefreshView), true, 
+			BindableProperty.Create(nameof(IsRefreshEnabled), typeof(bool), typeof(RefreshView), true,
 				propertyChanged: OnIsRefreshEnabledPropertyChanged, coerceValue: CoerceIsRefreshEnabledProperty);
 
 		bool _isRefreshEnabledExplicit = (bool)IsRefreshEnabledProperty.DefaultValue;
@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Controls
 		object ICommandElement.CommandParameter => CommandParameter;
 
 		protected override bool IsEnabledCore => base.IsEnabledCore;
-		
+
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e)
 		{
 			if (IsRefreshing)

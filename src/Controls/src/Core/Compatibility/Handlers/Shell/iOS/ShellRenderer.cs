@@ -139,8 +139,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			if (_currentShellItemRenderer != null)
-				_currentShellItemRenderer.ViewController.View.Frame = View.Bounds;
+			_currentShellItemRenderer?.ViewController.View.Frame = View.Bounds;
 		}
 
 		public override void ViewDidLoad()

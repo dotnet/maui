@@ -121,8 +121,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			// If the Forms VisualStateManager is in play or the user wants to disable the Forms legacy
 			// color stuff, then the underlying textbox should just use the Forms VSM states
-			if (_queryTextBox != null)
-				_queryTextBox.UseFormsVsm = Element.HasVisualStateGroups()
+			_queryTextBox?.UseFormsVsm = Element.HasVisualStateGroups()
 								|| !Element.OnThisPlatform().GetIsLegacyColorModeEnabled();
 		}
 

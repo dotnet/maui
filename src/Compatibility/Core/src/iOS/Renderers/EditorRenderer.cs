@@ -304,8 +304,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			TextView.Editable = Element.IsEnabled;
 			TextView.UserInteractionEnabled = Element.IsEnabled;
 
-			if (TextView.InputAccessoryView != null)
-				TextView.InputAccessoryView.Hidden = !Element.IsEnabled;
+			TextView.InputAccessoryView?.Hidden = !Element.IsEnabled;
 		}
 
 		[PortHandler]

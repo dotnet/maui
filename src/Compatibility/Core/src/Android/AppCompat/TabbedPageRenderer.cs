@@ -552,17 +552,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 		void ScrollToCurrentPage()
 		{
-			if (Platform != null)
-			{
-				Platform.NavAnimationInProgress = true;
-			}
+			Platform?.NavAnimationInProgress = true;
 
 			_viewPager.SetCurrentItem(Element.Children.IndexOf(Element.CurrentPage), Element.OnThisPlatform().IsSmoothScrollEnabled());
 
-			if (Platform != null)
-			{
-				Platform.NavAnimationInProgress = false;
-			}
+			Platform?.NavAnimationInProgress = false;
 		}
 
 		void UpdateIgnoreContainerAreas()

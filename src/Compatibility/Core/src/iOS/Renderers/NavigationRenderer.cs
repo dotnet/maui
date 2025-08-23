@@ -1674,8 +1674,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				double height = Math.Min(toolbarHeight, Bounds.Height);
 
-				if (_icon != null)
-					_icon.Frame = new RectangleF(0, 0, IconWidth, Math.Min(toolbarHeight, IconHeight));
+				_icon?.Frame = new RectangleF(0, 0, IconWidth, Math.Min(toolbarHeight, IconHeight));
 
 				if (_child?.Element != null)
 				{

@@ -31,11 +31,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			// Call the original RequestFocus implementation for the View
 			bool result = baseRequestFocus();
 
-			if (cfl != null)
-			{
-				// Toggle descendantfocusability back to whatever it was
-				cfl.DescendantFocusability = previousFocusability;
-			}
+			// Toggle descendantfocusability back to whatever it was
+			cfl?.DescendantFocusability = previousFocusability;
 
 			return result;
 		}

@@ -175,10 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateToolbarDynamicOverflowEnabled()
 		{
-			if (_commandBar != null)
-			{
-				_commandBar.IsDynamicOverflowEnabled = ToolbarDynamicOverflowEnabled;
-			}
+			_commandBar?.IsDynamicOverflowEnabled = ToolbarDynamicOverflowEnabled;
 		}
 	}
 }
