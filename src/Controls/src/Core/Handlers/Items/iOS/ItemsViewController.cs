@@ -864,8 +864,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateTemplatedCell(templatedCell, indexPath);
 
 			// Keep this cell around, we can transfer the contents to the actual cell when the UICollectionView creates it
-			if (_measurementCells != null)
-				_measurementCells[ItemsSource[indexPath]] = templatedCell;
+			_measurementCells?[ItemsSource[indexPath]] = templatedCell;
 
 			return templatedCell;
 		}

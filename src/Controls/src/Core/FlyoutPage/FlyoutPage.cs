@@ -62,14 +62,33 @@ namespace Microsoft.Maui.Controls
 					: previousDetail;
 
 				// Send NavigatingFrom event to the previous detail (if any)
+
+<<<<<<< TODO: Unmerged change from project 'Controls.Core(netstandard2.0)', Before:
 				if (previousDetail is not null)
 				{
 					previousDetail.SendNavigatingFrom(new NavigatingFromEventArgs(destinationPage,
 						NavigationType.Replace));
 				}
+=======
+				previousDetail?.SendNavigatingFrom(new NavigatingFromEventArgs(destinationPage,
+						NavigationType.Replace));
+>>>>>>> After
+				previousDetail?.SendNavigatingFrom(new NavigatingFromEventArgs(destinationPage,
+						NavigationType.Replace));
 
 				// Update the detail property
 				OnPropertyChanging();
+
+<<<<<<< TODO: Unmerged change from project 'Controls.Core(netstandard2.0)', Before:
+				if (previousDetail is not null)
+				{
+					previousDetail.SendNavigatedFrom(
+						new NavigatedFromEventArgs(destinationPage, NavigationType.Replace));
+				}
+=======
+				previousDetail?.SendNavigatedFrom(
+						new NavigatedFromEventArgs(destinationPage, NavigationType.Replace));
+>>>>>>> After
 				if (_detail is not null)
 					InternalChildren.Remove(_detail);
 				_detail = value;
@@ -84,11 +103,8 @@ namespace Microsoft.Maui.Controls
 				}
 
 				// Send NavigatedFrom and NavigatedTo events
-				if (previousDetail is not null)
-				{
-					previousDetail.SendNavigatedFrom(
+				previousDetail?.SendNavigatedFrom(
 						new NavigatedFromEventArgs(destinationPage, NavigationType.Replace));
-				}
 
 				_detail.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace));
 			}
@@ -128,7 +144,7 @@ namespace Microsoft.Maui.Controls
 
 				// TODO MAUI refine this to fire earlier
 				var previousFlyout = _flyout;
-				
+
 				// TODO MAUI refine this to fire earlier
 				previousFlyout?.SendNavigatingFrom(new NavigatingFromEventArgs(value, NavigationType.Replace));
 
@@ -144,7 +160,7 @@ namespace Microsoft.Maui.Controls
 					previousFlyout?.SendDisappearing();
 					_flyout?.SendAppearing();
 				}
-				
+
 				previousFlyout?.SendNavigatedFrom(new NavigatedFromEventArgs(_flyout, NavigationType.Replace));
 				_flyout?.SendNavigatedTo(new NavigatedToEventArgs(previousFlyout, NavigationType.Replace));
 			}

@@ -12,7 +12,7 @@ record ProjectItem
 	public string? ManifestResourceName { get; init; }
 	public required string Kind { get; init; }
 	public string? TargetFramework { get; init; }
-	public required XamlInflator Inflator { get; init; } 
+	public required XamlInflator Inflator { get; init; }
 
 	//bypass attribute check. used for testing
 	public string Configuration { get; internal set; } = "Debug";

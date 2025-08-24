@@ -12,8 +12,8 @@ namespace Microsoft.Maui.Controls.SourceGen;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml;
-using static LocationHelpers;
 using static GeneratorHelpers;
+using static LocationHelpers;
 
 static class KnownTypeConverters
 {
