@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -18,6 +19,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		#region IShellContentRenderer
 
 		public bool IsInMoreTab { get; set; }
+
+		private ShellAppearance _shellAppearance;
 
 		public ShellSection ShellSection
 		{
@@ -44,10 +47,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
+			_shellAppearance = appearance;
+
 			if (appearance == null)
 				_appearanceTracker.ResetAppearance(this);
 			else
 				_appearanceTracker.SetAppearance(this, appearance);
+
+			UpdateTabBarItem();
 		}
 
 		#endregion IAppearanceObserver
@@ -535,7 +542,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			ShellSection.Icon.LoadImage(ShellSection.FindMauiContext(), icon =>
 			{
-				TabBarItem = new UITabBarItem(ShellSection.Title, icon?.Value, null);
+				if (IsInMoreTab && _shellAppearance?.TabBarUnselectedColor is Graphics.Color tabBarUnselectedColor)
+				{
+					var uIImage = icon?.Value.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal).ApplyTintColor(tabBarUnselectedColor.ToPlatform());
+					TabBarItem = new UITabBarItem(ShellSection.Title, uIImage, null);
+				}
+				else
+				{
+					TabBarItem = new UITabBarItem(ShellSection.Title, icon?.Value, null);
+				}
 				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
 			});
 		}
