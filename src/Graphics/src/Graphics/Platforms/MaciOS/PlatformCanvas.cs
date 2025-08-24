@@ -891,8 +891,21 @@ namespace Microsoft.Maui.Graphics.Platform
 		protected override void PlatformDrawPath(PathF path)
 		{
 			var platformPath = GetPlatformPath(path);
-			_context.AddPath(platformPath);
-			_context.DrawPath(CGPathDrawingMode.Stroke);
+
+			if (_gradient != null)
+			{
+				FillWithGradient(() =>
+				{
+					_context.AddPath(platformPath);
+					_context.ReplacePathWithStrokedPath();
+					return true;
+				});
+			}
+			else
+			{
+				_context.AddPath(platformPath);
+				_context.DrawPath(CGPathDrawingMode.Stroke);
+			}
 		}
 
 		public override void ClipPath(PathF path, WindingMode windingMode = WindingMode.NonZero)
