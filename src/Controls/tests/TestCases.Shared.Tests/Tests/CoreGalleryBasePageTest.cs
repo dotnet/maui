@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public abstract class CoreGalleryBasePageTest : UITest
+	public abstract class CoreGalleryBasePageTest : _GalleryUITest
 	{
 		public CoreGalleryBasePageTest(TestDevice device) : base(device) { }
 
@@ -16,7 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests
 				try
 				{
 					base.FixtureSetup();
+#if MACCATALYST
 					NavigateToGallery();
+#endif
 					break;
 				}
 				catch (Exception e)

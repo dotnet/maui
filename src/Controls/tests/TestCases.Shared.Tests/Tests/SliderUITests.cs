@@ -9,6 +9,8 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		public const string SliderGallery = "Slider Gallery";
 
+		public override string GalleryPageName => SliderGallery;
+
 		public SliderUITests(TestDevice device)
 			: base(device)
 		{

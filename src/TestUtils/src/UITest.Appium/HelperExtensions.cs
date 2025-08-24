@@ -1510,6 +1510,21 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Executes an existing application on the device with additional parameters.
+		/// If the application is already running then it will be brought to the foreground.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="parameters">Additional parameters to send with the launch command.</param>
+		public static void LaunchApp(this IApp app, string parameters, bool isResetAfterEachTest = false)
+		{
+			app.CommandExecutor.Execute("launchApp", new Dictionary<string, object>
+			{
+				{ "testName", parameters },
+				{ "isResetAfterEachTest", isResetAfterEachTest }
+			});
+		}
+
+		/// <summary>
 		/// Send the currently running app for this session to the background.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>

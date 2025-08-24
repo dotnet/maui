@@ -6,7 +6,9 @@ namespace Microsoft.Maui.TestCases.Tests
 {
 	public abstract class CollectionViewUITests : CoreGalleryBasePageTest
 	{
-		const string CollectionViewGallery = "CollectionView Gallery";
+		public const string CollectionViewGallery = "CollectionView Gallery";
+
+		public override string GalleryPageName => CollectionViewGallery;
 
 		public CollectionViewUITests(TestDevice device)
 			: base(device)
