@@ -231,10 +231,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				CleanUpCollectionViewSource();
 			}
 
-			if (ListViewBase != null)
-			{
-				ListViewBase.ItemsSource = null;
-			}
+			ListViewBase?.ItemsSource = null;
 
 			if (_scrollViewer != null)
 			{
@@ -409,11 +406,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (_scrollViewer != null)
 				_scrollViewer.ViewChanged -= OnScrollViewChanged;
 
-			if (ListViewBase != null)
-			{
-				ListViewBase.ItemsSource = null;
-				ListViewBase = null;
-			}
+			ListViewBase?.ItemsSource = null;
+			ListViewBase = null;
 
 			ListViewBase = SelectListViewBase();
 			ListViewBase.IsSynchronizedWithCurrentItem = false;

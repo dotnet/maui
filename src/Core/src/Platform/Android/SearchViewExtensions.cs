@@ -174,10 +174,7 @@ namespace Microsoft.Maui.Platform
 			if (editText == null)
 				return;
 
-			if (editText != null)
-			{
-				editText.Enabled = searchBar.IsEnabled;
-			}
+			editText?.Enabled = searchBar.IsEnabled;
 		}
 
 		public static void UpdateKeyboard(this SearchView searchView, ISearchBar searchBar)

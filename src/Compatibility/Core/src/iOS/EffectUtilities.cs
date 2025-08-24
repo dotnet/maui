@@ -16,8 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				controller.EffectControlProvider = null;
 
 			controller = newElement;
-			if (controller != null)
-				controller.EffectControlProvider = self;
+			controller?.EffectControlProvider = self;
 		}
 	}
 }

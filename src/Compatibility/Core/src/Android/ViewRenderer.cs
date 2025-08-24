@@ -340,8 +340,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void UpdateIsEnabled()
 		{
-			if (Control != null)
-				Control.Enabled = Element.IsEnabled;
+			Control?.Enabled = Element.IsEnabled;
 		}
 
 		void UpdateFlowDirection()
