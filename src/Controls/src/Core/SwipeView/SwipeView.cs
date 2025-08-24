@@ -230,6 +230,7 @@ namespace Microsoft.Maui.Controls
 		double _previousScrollX;
 		double _previousScrollY;
 		View? _scrollParent;
+		Element? _templateParent;
 		SwipeDirection? _swipeDirection;
 
 		ISwipeItems ISwipeView.LeftItems => new HandlerSwipeItems(LeftItems);
@@ -285,32 +286,44 @@ namespace Microsoft.Maui.Controls
 
 		private protected override void OnParentChangedCore()
 		{
-			if (_scrollParent != null)
-			{
-				if (_scrollParent is ScrollView scrollView)
-				{
-					scrollView.Scrolled -= OnParentScrolled;
-				}
-
-				if (_scrollParent is ListView listView)
-				{
-					listView.Scrolled -= OnParentScrolled;
-					return;
-				}
-
-				if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
-				{
-					collectionView.Scrolled -= OnParentScrolled;
-				}
-
-				_scrollParent = null;
-			}
-
 			base.OnParentChangedCore();
 
-			if (_scrollParent == null)
+			if (_templateParent != null)
 			{
-				_scrollParent = this.FindParentOfType<ScrollView>();
+				_templateParent.ParentChanged -= OnTemplateParentChanged;
+				UnsubscribeFromParentScrolledEvents();
+			}
+
+			if (_templateParent == null)
+			{
+				_templateParent = this.FindParentWith(x => x.Parent == null, false);
+				if (_templateParent != null)
+					_templateParent.ParentChanged += OnTemplateParentChanged;
+			}
+		}
+
+		void UnsubscribeFromParentScrolledEvents()
+		{
+			if (_scrollParent is ScrollView scrollView)
+			{
+				scrollView.Scrolled -= OnParentScrolled;
+			}
+			else if (_scrollParent is ListView listView)
+			{
+				listView.Scrolled -= OnParentScrolled;
+			}
+			else if (_scrollParent is CollectionView collectionView)
+			{
+				collectionView.Scrolled -= OnParentScrolled;
+			}
+			_scrollParent = null;
+		}
+
+		void OnTemplateParentChanged(object? sender, EventArgs e)
+		{
+			if (_templateParent != null)
+			{
+				_scrollParent = _templateParent.FindParentOfType<ScrollView>();
 
 				if (_scrollParent is ScrollView scrollView)
 				{
@@ -318,7 +331,7 @@ namespace Microsoft.Maui.Controls
 					return;
 				}
 
-				_scrollParent = this.FindParentOfType<ListView>();
+				_scrollParent = _templateParent.FindParentOfType<ListView>();
 
 				if (_scrollParent is ListView listView)
 				{
@@ -326,12 +339,14 @@ namespace Microsoft.Maui.Controls
 					return;
 				}
 
-				_scrollParent = this.FindParentOfType<Microsoft.Maui.Controls.CollectionView>();
+				_scrollParent = _templateParent.FindParentOfType<Microsoft.Maui.Controls.CollectionView>();
 
 				if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
 				{
 					collectionView.Scrolled += OnParentScrolled;
 				}
+
+				_templateParent.ParentChanged -= OnTemplateParentChanged;
 			}
 		}
 
@@ -346,8 +361,8 @@ namespace Microsoft.Maui.Controls
 
 		void OnParentScrolled(object? sender, ScrolledEventArgs e)
 		{
-			var horizontalDelta = e.ScrollX - _previousScrollX;
-			var verticalDelta = e.ScrollY - _previousScrollY;
+			var horizontalDelta = Math.Abs(e.ScrollX - _previousScrollX);
+			var verticalDelta = Math.Abs(e.ScrollY - _previousScrollY);
 
 			if (horizontalDelta > SwipeMinimumDelta || verticalDelta > SwipeMinimumDelta)
 				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(true));
@@ -358,7 +373,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnParentScrolled(object? sender, ItemsViewScrolledEventArgs e)
 		{
-			if (e.HorizontalDelta > SwipeMinimumDelta || e.VerticalDelta > SwipeMinimumDelta)
+			if (Math.Abs(e.HorizontalDelta) > SwipeMinimumDelta || Math.Abs(e.VerticalDelta) > SwipeMinimumDelta)
 				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(true));
 		}
 
