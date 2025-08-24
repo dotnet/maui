@@ -27,6 +27,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public nfloat ConstrainedDimension { get; set; }
 
+		internal double AutoMeasuredHeight = -1;
+		internal double AutoMeasuredWidth = -1;
+
 		public Func<UICollectionViewCell> GetPrototype
 		{
 			get => _getPrototype is not null && _getPrototype.TryGetTarget(out var func) ? func : null;
@@ -259,6 +262,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Constrain and measure the prototype cell
 			prototype.ConstrainTo(ConstrainedDimension);
 			var measure = prototype.Measure();
+
+			AutoMeasuredHeight = Math.Max(AutoMeasuredHeight, prototype.IntrinsicCellSize.Height);
+			AutoMeasuredWidth = Math.Max(AutoMeasuredWidth, prototype.IntrinsicCellSize.Width);
 
 			if (ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
 			{
@@ -628,10 +634,56 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (CollectionView == null || GetPrototypeForIndexPath == null)
 				return existingMeasurement;
 
-			//Since this issue only seems to be reproducible on Horizontal scrolling, we only check for that
 			if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 			{
 				return FindEstimatedSizeUsingWidth(existingMeasurement);
+			}
+			else if (ScrollDirection == UICollectionViewScrollDirection.Vertical)
+			{
+				return FindEstimatedSizeUsingHeight(existingMeasurement);
+			}
+
+			return existingMeasurement;
+		}
+
+		CGSize FindEstimatedSizeUsingHeight(CGSize existingMeasurement)
+		{
+			if (CollectionView.NumberOfSections() == 0)
+			{
+				return existingMeasurement;
+			}
+
+			// TODO: Handle grouping
+			var group = 0;
+			var collectionViewHeight = CollectionView.Bounds.Height;
+			var numberOfItemsInGroup = CollectionView.NumberOfItemsInSection(group);
+			var numberOfCellsToCheck = Math.Min((int)(collectionViewHeight / existingMeasurement.Height) + 1, numberOfItemsInGroup);
+
+			// Iterate through the cells and find the one with a wider Height
+			for (int i = 1; i < numberOfCellsToCheck; i++)
+			{
+				var indexPath = NSIndexPath.Create(group, i);
+				if (GetPrototypeForIndexPath(indexPath) is ItemsViewCell cellAtIndex)
+				{
+					if (cellAtIndex is TemplatedCell)
+					{
+						cellAtIndex.ConstrainTo(new CGSize(double.PositiveInfinity, ConstrainedDimension));
+						cellAtIndex.Measure();
+						AutoMeasuredHeight = Math.Max(AutoMeasuredHeight, cellAtIndex.IntrinsicCellSize.Height);
+						AutoMeasuredWidth = Math.Max(AutoMeasuredWidth, cellAtIndex.IntrinsicCellSize.Width);
+					}
+
+					cellAtIndex.ConstrainTo(ConstrainedDimension);
+					var measureCellAtIndex = cellAtIndex.Measure();
+					// Check if the cell has a wider Height
+					if (measureCellAtIndex.Height > existingMeasurement.Height)
+					{
+						existingMeasurement = measureCellAtIndex;
+					}
+
+					// TODO: Cache this cell size
+
+				}
 			}
 
 			return existingMeasurement;
@@ -639,6 +691,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		CGSize FindEstimatedSizeUsingWidth(CGSize existingMeasurement)
 		{
+			if (CollectionView.NumberOfSections() == 0)
+			{
+				return existingMeasurement;
+			}
+
 			// TODO: Handle grouping
 			var group = 0;
 			var collectionViewWidth = CollectionView.Bounds.Width;
@@ -653,6 +710,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var indexPath = NSIndexPath.Create(group, i);
 				if (GetPrototypeForIndexPath(indexPath) is ItemsViewCell cellAtIndex)
 				{
+					if (cellAtIndex is TemplatedCell)
+					{
+						cellAtIndex.ConstrainTo(new CGSize(ConstrainedDimension, double.PositiveInfinity));
+						cellAtIndex.Measure();
+						AutoMeasuredHeight = Math.Max(AutoMeasuredHeight, cellAtIndex.IntrinsicCellSize.Height);
+						AutoMeasuredWidth = Math.Max(AutoMeasuredWidth, cellAtIndex.IntrinsicCellSize.Width);
+					}
+
 					cellAtIndex.ConstrainTo(ConstrainedDimension);
 					var measureCellAtIndex = cellAtIndex.Measure();
 
