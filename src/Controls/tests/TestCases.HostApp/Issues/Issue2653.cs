@@ -69,12 +69,12 @@ namespace Maui.Controls.Sample.Issues
 					new Button(){ Text = MoveUp, AutomationId = MoveUp, Command = new Command(() =>
 					{
 						AddBoxView();
-						layout.RaiseChild(bv);
+						bv.ZIndex = 1; // Use ZIndex instead of RaiseChild
 					}),  HeightRequest = 45},
 					new Button(){ Text = MoveDown, AutomationId = MoveDown, Command = new Command(() =>
 					{
 						AddBoxView();
-						layout.LowerChild(bv);
+						bv.ZIndex = -1; // Use ZIndex instead of LowerChild
 					}),  HeightRequest = 45},
 					layout,
 					new Button()

@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				var request = headerView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 				height = request.Request.Height;
 				var bounds = new Rectangle(0, 0, width, height);
-				Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(headerView, bounds);
+				Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegionInternal(headerView, bounds);
 				headerRenderer.NativeView.Frame = bounds.ToRectangleF();
 				AddSubview(headerRenderer.NativeView);
 

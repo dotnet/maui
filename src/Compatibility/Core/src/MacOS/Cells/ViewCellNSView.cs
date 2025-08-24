@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var contentFrame = Frame;
 			var view = ViewCell.View;
 
-			Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(view, contentFrame.ToRectangle());
+			Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegionInternal(view, contentFrame.ToRectangle());
 
 			if (_rendererRef == null)
 				return;

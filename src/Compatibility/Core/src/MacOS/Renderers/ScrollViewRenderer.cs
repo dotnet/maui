@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		public void SetElementSize(Size size)
 		{
-			Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(Element,
+			Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegionInternal(Element,
 				new Rectangle(Element.X, Element.Y, size.Width, size.Height));
 		}
 

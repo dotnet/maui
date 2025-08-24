@@ -12,11 +12,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		/// <summary>Bindable property for <see cref="Orientation"/>.</summary>
 		public static readonly BindableProperty OrientationProperty = BindableProperty.Create(nameof(Orientation), typeof(StackOrientation), typeof(StackLayout), StackOrientation.Vertical,
-			propertyChanged: (bindable, oldvalue, newvalue) => ((StackLayout)bindable).InvalidateLayout());
+			propertyChanged: OnOrientationPropertyChanged);
 
 		/// <summary>Bindable property for <see cref="Spacing"/>.</summary>
 		public static readonly BindableProperty SpacingProperty = BindableProperty.Create(nameof(Spacing), typeof(double), typeof(StackLayout), 6d,
-			propertyChanged: (bindable, oldvalue, newvalue) => ((StackLayout)bindable).InvalidateLayout());
+			propertyChanged: OnSpacingPropertyChanged);
 
 		LayoutInformation _layoutInformation = new LayoutInformation();
 		readonly Lazy<PlatformConfigurationRegistry<StackLayout>> _platformConfigurationRegistry;
@@ -75,6 +75,35 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 #pragma warning restore CS0672 // Member overrides obsolete member
+
+		// Internal version for legacy layout system internal usage
+		internal override void LayoutChildrenInternal(double x, double y, double width, double height)
+		{
+			if (!HasVisibleChildren())
+			{
+				return;
+			}
+
+			LayoutInformation layoutInformationCopy = _layoutInformation;
+			if (width == layoutInformationCopy.Constraint.Width && height == layoutInformationCopy.Constraint.Height)
+			{
+				StackOrientation orientation = Orientation;
+
+				AlignOffAxis(layoutInformationCopy, orientation, width, height);
+				ProcessExpanders(layoutInformationCopy, orientation, x, y, width, height);
+			}
+			else
+			{
+				CalculateLayout(layoutInformationCopy, x, y, width, height, true);
+			}
+
+			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
+			{
+				var child = (View)LogicalChildrenInternal[i];
+				if (child.IsVisible && layoutInformationCopy.Plots != null)
+					LayoutChildIntoBoundingRegion(child, layoutInformationCopy.Plots[i], layoutInformationCopy.Requests[i]);
+			}
+		}
 
 #pragma warning disable CS0672 // Member overrides obsolete member
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
@@ -485,6 +514,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public Size MinimumSize;
 			public Rect[] Plots;
 			public SizeRequest[] Requests;
+		}
+
+		static void OnOrientationPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
+		{
+			((StackLayout)bindable).InvalidateLayoutInternal();
+		}
+
+		static void OnSpacingPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
+		{
+			((StackLayout)bindable).InvalidateLayoutInternal();
 		}
 	}
 }

@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					h += RowSpacing + structure.Rows[r + i].ActualHeight;
 
 				// in the future we can might maybe optimize by passing the already calculated size request
-				LayoutChildIntoBoundingRegion(child, new Rect(posx, posy, w, h));
+				LayoutChildIntoBoundingRegionInternal(child, new Rect(posx, posy, w, h));
 			}
 		}
 

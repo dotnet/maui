@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 						}
 					}
 
-					layout.ForceLayout();
+					layout.ForceLayoutInternal();
 				}
 			}
 		}

@@ -199,7 +199,7 @@ namespace Maui.Controls.Sample.Issues
 						rootPage.Content = rootGrid;
 						rootGrid.Parent = rootPage;
 
-						rootGrid.RaiseChild(popupStack);
+						popupStack.ZIndex = 1; // Use ZIndex instead of RaiseChild
 					}
 					else
 					{
@@ -207,11 +207,11 @@ namespace Maui.Controls.Sample.Issues
 						popupStack.Layout(new Rect(x, y, popupStack.WidthRequest, height));
 						rootGrid.Children.Add(popupStack);
 						popupStack.Parent = rootGrid;
-						rootGrid.RaiseChild(popupStack);
+						popupStack.ZIndex = 1; // Use ZIndex instead of RaiseChild
 					}
 				}
 
-				base.LayoutChildren(x, y, width, height);
+				base.LayoutChildrenInternal(x, y, width, height);
 			}
 
 			private async void ImageButtonCommandAsync()

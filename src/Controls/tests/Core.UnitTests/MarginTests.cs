@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Verify that the margin change invalidated the layout, and simulate a native layout change
 			AssertInvalidated(handler);
-			parent.ForceLayout();
+			parent.ForceLayoutInternal();
 
 			Assert.Equal(new Rect(10, 20, 100, 50), child1.Bounds);
 			Assert.Equal(new Rect(5, 120, 980, 50), child2.Bounds);

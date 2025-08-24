@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls
 				// All of our types that inherit from TemplatedView overrides LayoutChildren and replaces
 				// this behavior
 				if (child != null)
-					LayoutChildIntoBoundingRegion(child, new Rect(x, y, width, height));
+					LayoutChildIntoBoundingRegionInternal(child, new Rect(x, y, width, height));
 			}
 		}
 

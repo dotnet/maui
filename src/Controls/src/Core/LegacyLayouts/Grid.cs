@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			ComputeConstrainsForChildren();
 			UpdateInheritedBindingContexts();
-			InvalidateLayout();
+			InvalidateLayoutInternal();
 		}
 
 		void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -262,7 +262,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					ComputeConstraintForView(child);
 				}
 
-				InvalidateLayout();
+				InvalidateLayoutInternal();
 			}
 		}
 

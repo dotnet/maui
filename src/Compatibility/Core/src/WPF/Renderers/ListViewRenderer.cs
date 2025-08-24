@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 				var headerView = (VisualElement)header;
 				SizeRequest request = headerView.Measure(4096, 4096);
 
-				Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, e.NewSize.Width, request.Request.Height));
+				Layout.LayoutChildIntoBoundingRegionInternal(headerView, new Rectangle(0, 0, e.NewSize.Width, request.Request.Height));
 			}
 
 			if (_footerRenderer is object)
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 				var footerView = (VisualElement)footer;
 				SizeRequest request = footerView.Measure(4096, 4096);
 
-				Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, e.NewSize.Width, request.Request.Height));
+				Layout.LayoutChildIntoBoundingRegionInternal(footerView, new Rectangle(0, 0, e.NewSize.Width, request.Request.Height));
 			}
 		}
 

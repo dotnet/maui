@@ -442,12 +442,12 @@ namespace Microsoft.Maui.Controls
 					continue;
 
 				var page = child as Page;
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 				if (page != null && page.IgnoresContainerArea)
 					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
 				else
 					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, area);
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete
 			}
 		}
 
@@ -555,9 +555,9 @@ namespace Microsoft.Maui.Controls
 
 			if (Handler is null)
 			{
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618, CS0619 // Type or member is obsolete
 				UpdateChildrenLayout();
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618, CS0619 // Type or member is obsolete
 			}
 		}
 

@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		public void SetElementSize(Size size)
 		{
-			Layout.LayoutChildIntoBoundingRegion(Element, new Rect(Element.X, Element.Y, size.Width, size.Height));
+			Layout.LayoutChildIntoBoundingRegionInternal(Element, new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public virtual NativeViewController ViewController => null;

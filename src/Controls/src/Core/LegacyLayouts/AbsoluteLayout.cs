@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				rect.X += x;
 				rect.Y += y;
 
-				LayoutChildIntoBoundingRegion(child, rect);
+				LayoutChildIntoBoundingRegionInternal(child, rect);
 			}
 		}
 
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (e.PropertyName == LayoutFlagsProperty.PropertyName || e.PropertyName == LayoutBoundsProperty.PropertyName)
 			{
 				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-				UpdateChildrenLayout();
+				UpdateChildrenLayoutInternal();
 			}
 		}
 

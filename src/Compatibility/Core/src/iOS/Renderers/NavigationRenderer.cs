@@ -1684,7 +1684,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					Rect layoutBounds = new Rect(IconWidth, 0, Bounds.Width - IconWidth, height);
 					if (_child.Element.Bounds != layoutBounds)
-						Layout.LayoutChildIntoBoundingRegion(_child.Element, layoutBounds);
+						Layout.LayoutChildIntoBoundingRegionInternal(_child.Element, layoutBounds);
 				}
 				else if (_icon != null && Superview != null)
 				{
