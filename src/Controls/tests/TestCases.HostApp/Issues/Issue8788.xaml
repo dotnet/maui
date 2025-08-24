@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        x:Class="Maui.Controls.Sample.Issues.Issue8788"
+        xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+        Shell.FlyoutBehavior="Locked"
+        Shell.FlyoutWidth="200">
+
+  <MenuItem x:Name="MenuItem" Text="Click to hide Tab1" Clicked="MenuItem_Clicked" AutomationId="FirstButton" />
+
+  <TabBar>
+    <Tab x:Name="Tab1" AutomationId="Tab1" Title="Tab 1">
+      <ShellContent Title="Tab 1" ContentTemplate="{DataTemplate local:MainTabPage}" Route="MainPage" />
+    </Tab>
+
+    <Tab x:Name="Tab2" AutomationId="Tab2" Title="Tab 2" IsVisible="false">
+      <ShellContent Title="Tab 2" ContentTemplate="{DataTemplate local:SecondTabPage}" Route="Tab2Page" />
+    </Tab>
+
+    <Tab x:Name="Tab3" Title="Tab 3" AutomationId="Tab3" IsVisible="false">
+      <ShellContent Title="Tab 3"  ContentTemplate="{DataTemplate local:ThirdTabPage}" Route="Tab3Page" />
+    </Tab>
+  </TabBar>
+  
+</Shell>
