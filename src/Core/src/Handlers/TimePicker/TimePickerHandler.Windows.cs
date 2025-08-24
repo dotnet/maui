@@ -40,6 +40,16 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdateFont(timePicker, fontManager);
 		}
 
+		// Make it public in .NET 10.
+		internal static void MapFlowDirection(ITimePickerHandler handler, ITimePicker timePicker)
+		{
+			if (handler.PlatformView is not null)
+			{
+				handler.PlatformView.UpdateFlowDirection(timePicker);
+				handler.PlatformView.UpdateTextAlignment(timePicker);
+			}
+		}
+
 		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView.UpdateTextColor(timePicker);
