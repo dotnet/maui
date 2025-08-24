@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.D20"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="D20">
+    <VerticalStackLayout Padding="20">
+        <Label Text="1. Click or tap on editor 1 to focus it." />
+        <Label Text="2. Press tab to navigate focus to editor 2." />
+        <Label Text="3. The test fails if the editor cursor is not at the beginning of the text (before the 2)." />
+        <Editor Text="1" />
+        <Editor Text="2" />
+    </VerticalStackLayout>
+</ContentPage>
