@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Handlers
 			return new PlatformTouchGraphicsView();
 		}
 
+		public override bool NeedsContainer => VirtualView?.Background is not null || base.NeedsContainer;
+
 		private protected override void OnConnectHandler(FrameworkElement platformView)
 		{
 			base.OnConnectHandler(platformView);
@@ -30,6 +32,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (graphicsView.Background is not null)
 			{
+				handler.UpdateValue(nameof(IViewHandler.ContainerView));
+				handler.ToPlatform().UpdateBackground(graphicsView);
 				handler.PlatformView?.Invalidate();
 			}
 		}

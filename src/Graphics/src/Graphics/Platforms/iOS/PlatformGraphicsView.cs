@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		private CGColorSpace _colorSpace;
 		private IDrawable _drawable;
 		private CGRect _lastBounds;
+		static nfloat _screenScale = UIScreen.MainScreen?.Scale ?? 1;
 
 		public PlatformGraphicsView(CGRect frame, IDrawable drawable = null, IGraphicsRenderer renderer = null) : base(frame)
 		{
@@ -112,10 +113,10 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			set
 			{
-				var newBounds = value;
+				var newBounds = PixelAlign(value);
 				if (_lastBounds.Width != newBounds.Width || _lastBounds.Height != newBounds.Height)
 				{
-					base.Bounds = value;
+					base.Bounds = newBounds;
 
 					if (Renderer is IGraphicsRenderer renderer)
 					{
@@ -136,6 +137,30 @@ namespace Microsoft.Maui.Graphics.Platform
 				var py = Frame.Y;
 				return new CGSize(px, py);
 			}
+		}
+
+		static CGRect PixelAlign(CGRect rect)
+		{
+			// Align the rect to device pixels to avoid CoreAnimation subtle antialias hairlines
+			// when fractional sizes are used (e.g., 100.5). We expand to cover full area.
+			if (rect.IsEmpty || _screenScale <= 0)
+			{
+				return rect;
+			}
+
+			var scale = _screenScale;
+			var x = Math.Floor(rect.X * scale) / scale;
+			var y = Math.Floor(rect.Y * scale) / scale;
+			var maxX = Math.Ceiling((rect.X + rect.Width) * scale) / scale;
+			var maxY = Math.Ceiling((rect.Y + rect.Height) * scale) / scale;
+			var w = maxX - x;
+			var h = maxY - y;
+			if (w <= 0 || h <= 0)
+			{
+				return rect;
+			}
+
+			return new CGRect(x, y, w, h);
 		}
 	}
 }
