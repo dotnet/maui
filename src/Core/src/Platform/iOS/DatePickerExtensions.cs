@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Platform
 
 				if (format.Equals("D", StringComparison.Ordinal) == true)
 				{
-					dateFormatter.DateStyle = NSDateFormatterStyle.Long;
+					dateFormatter.DateStyle = NSDateFormatterStyle.Full;
 					var strDate = dateFormatter.StringFor(picker.Date);
 					platformDatePicker.Text = strDate;
 				}
