@@ -8,8 +8,8 @@ using PoolMathApp.Models;
 
 namespace PoolMathApp.Helpers
 {
-    static class FormattedTextExtensions
-    {
+	static class FormattedTextExtensions
+	{
 		public static FormattedString ToFormattedString(this FormattedText text)
 		{
 			var fs = new FormattedString();
