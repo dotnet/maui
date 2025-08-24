@@ -151,8 +151,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					{
 						_pixelSize = null;
 					}
-
-					_pixelSize = null;
 				}
 			}
 
