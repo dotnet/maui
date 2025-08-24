@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.RefreshView)]
-		public async Task RefreshIconDisappearsWhenUserCancelsRefreshByScrollingBackUp()
+		public void RefreshIconDisappearsWhenUserCancelsRefreshByScrollingBackUp()
 		{
 			if (App is not AppiumAndroidApp androidApp)
 				throw new InvalidOperationException($"Invalid App Type For this Test: {App} Expected AppiumAndroidApp.");
