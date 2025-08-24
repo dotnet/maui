@@ -1,6 +1,6 @@
-using Microsoft.Maui.ManualTests.Categories;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Maui.ManualTests.Categories;
 
 namespace Microsoft.Maui.ManualTests.Tests.Commands;
 
