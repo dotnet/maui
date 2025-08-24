@@ -642,29 +642,44 @@ namespace Microsoft.Maui.Graphics.Skia
 			_canvas.ClipRect(rect, SKClipOperation.Difference);
 		}
 
+		private SKPath GetPath(PathF path, SKPathFillType fillType = SKPathFillType.Winding)
+		{
+			var skPath = path.PlatformPath as SKPath;
+
+			if (skPath is null)
+			{
+				skPath = path.AsSkiaPath();
+				path.PlatformPath = skPath;
+			}
+
+			skPath.FillType = fillType;
+
+			return skPath;
+		}
+
 		protected override void PlatformDrawPath(
 			PathF path)
 		{
-			var platformPath = path.AsSkiaPath();
+			var platformPath = GetPath(path);
 			_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
-			platformPath.Dispose();
 		}
 
 		public override void ClipPath(PathF path,
 			WindingMode windingMode = WindingMode.NonZero)
 		{
-			var platformPath = path.AsSkiaPath();
-			platformPath.FillType = windingMode == WindingMode.NonZero ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
+			var fillType = windingMode == WindingMode.NonZero ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
+			var platformPath = GetPath(path, fillType);
+
 			_canvas.ClipPath(platformPath);
 		}
 
 		public override void FillPath(PathF path,
 			WindingMode windingMode)
 		{
-			var platformPath = path.AsSkiaPath();
-			platformPath.FillType = windingMode == WindingMode.NonZero ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
+			var fillType = windingMode == WindingMode.NonZero ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
+			var platformPath = GetPath(path, fillType);
+
 			_canvas.DrawPath(platformPath, CurrentState.FillPaintWithAlpha);
-			platformPath.Dispose();
 		}
 
 		public override void DrawString(
