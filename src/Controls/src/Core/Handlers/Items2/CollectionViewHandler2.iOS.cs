@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using Foundation;
 using Microsoft.Maui.Handlers;
@@ -203,20 +204,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (itemsLayout is not null)
 			{
-				itemsLayout.PropertyChanged += (sender, args) =>
-				{
-					if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
-						args.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
-						args.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
-						args.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) ||
-						args.PropertyName == nameof(GridItemsLayout.Span) ||
-						args.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
-
-					{
-						UpdateLayout();
-					}
-				};
+				itemsLayout.PropertyChanged -= ItemsLayoutPropertyChanged;
+				itemsLayout.PropertyChanged += ItemsLayoutPropertyChanged;
 			}
+		}
+
+		void ItemsLayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
+				e.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
+				e.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
+				e.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) ||
+				e.PropertyName == nameof(GridItemsLayout.Span) ||
+				e.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
+
+			{
+				UpdateLayout();
+			}
+		}
+
+		protected override void DisconnectHandler(UIView platformView)
+		{
+			ItemsView.ItemsLayout.PropertyChanged -= ItemsLayoutPropertyChanged;
+			base.DisconnectHandler(platformView);
 		}
 	}
 }
