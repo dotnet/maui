@@ -2,7 +2,9 @@ using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting.Internal;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests
@@ -184,6 +186,112 @@ namespace Microsoft.Maui.UnitTests
 			handlerStub2.SetVirtualView(new Maui.Controls.Button());
 
 			Assert.True(handlerStub2.PlatformView is object);
+		}
+
+		[Fact]
+		public void OnCreateContainerAllowsCustomWrapperView()
+		{
+			var customWrapperView = new CustomWrapperView();
+			var handlerStub = new ContainerHandlerStub(() => customWrapperView);
+			var button = new Maui.Controls.Button();
+			
+			handlerStub.SetVirtualView(button);
+
+			// Force container setup by setting HasContainer to true
+			handlerStub.HasContainer = true;
+
+			Assert.Equal(customWrapperView, handlerStub.ContainerView);
+			Assert.True(handlerStub.OnCreateContainerWasCalled);
+		}
+
+		[Fact]
+		public void OnCreateContainerFallsBackToDefaultWhenReturningNull()
+		{
+			var handlerStub = new NullContainerHandlerStub();
+			var button = new Maui.Controls.Button();
+			
+			handlerStub.SetVirtualView(button);
+
+			// Force container setup by setting HasContainer to true
+			handlerStub.HasContainer = true;
+
+			Assert.NotNull(handlerStub.ContainerView);
+			Assert.True(handlerStub.OnCreateContainerWasCalled);
+		}
+
+		public class NullContainerHandlerStub : ViewHandler<Maui.Controls.Button, object>
+		{
+			public bool OnCreateContainerWasCalled { get; private set; }
+
+			public NullContainerHandlerStub() : base(new PropertyMapper<IView>())
+			{
+			}
+
+			protected override object CreatePlatformView()
+			{
+				return new object();
+			}
+
+			public override WrapperView OnCreateContainer()
+			{
+				OnCreateContainerWasCalled = true;
+				return null; // This will fall back to default
+			}
+
+			// Stub implementations for SetupContainer and RemoveContainer since they are abstract
+			protected override void SetupContainer()
+			{
+				if (PlatformView == null || ContainerView != null)
+					return;
+
+				ContainerView = OnCreateContainer() ?? new WrapperView();
+			}
+
+			protected override void RemoveContainer()
+			{
+				ContainerView = null;
+			}
+		}
+
+		public class CustomWrapperView : WrapperView
+		{
+			public bool IsCustom => true;
+		}
+
+		public class ContainerHandlerStub : ViewHandler<Maui.Controls.Button, object>
+		{
+			private readonly Func<WrapperView> _containerFactory;
+			public bool OnCreateContainerWasCalled { get; private set; }
+
+			public ContainerHandlerStub(Func<WrapperView> containerFactory) : base(new PropertyMapper<IView>())
+			{
+				_containerFactory = containerFactory;
+			}
+
+			protected override object CreatePlatformView()
+			{
+				return new object();
+			}
+
+			public override WrapperView OnCreateContainer()
+			{
+				OnCreateContainerWasCalled = true;
+				return _containerFactory();
+			}
+
+			// Stub implementations for SetupContainer and RemoveContainer since they are abstract
+			protected override void SetupContainer()
+			{
+				if (PlatformView == null || ContainerView != null)
+					return;
+
+				ContainerView = OnCreateContainer() ?? new WrapperView();
+			}
+
+			protected override void RemoveContainer()
+			{
+				ContainerView = null;
+			}
 		}
 	}
 }
