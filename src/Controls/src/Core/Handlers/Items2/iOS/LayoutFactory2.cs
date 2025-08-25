@@ -462,6 +462,30 @@ internal static class LayoutFactory2
 					Configuration.ScrollDirection);
 		}
 
+		public override CGSize CollectionViewContentSize
+		{
+			get
+			{
+				if (CollectionView != null)
+				{
+					var numberOfSections = CollectionView.NumberOfSections();
+					for (nint section = 0; section < numberOfSections; section++)
+					{
+						if (CollectionView.NumberOfItemsInSection(section) > 0)
+						{
+							return base.CollectionViewContentSize;
+						}
+					}
+
+					// No items found
+					return CGSize.Empty;
+				}
+
+				return base.CollectionViewContentSize;
+			}
+		}
+
+
 		CGPoint ScrollSingle(SnapPointsAlignment alignment, CGPoint proposedContentOffset, CGPoint scrollingVelocity)
 		{
 			// Get the viewport of the UICollectionView at the current content offset
