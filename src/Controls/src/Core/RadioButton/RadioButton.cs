@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='Value']/Docs/*" />
 		public object Value
 		{
-			get => GetValue(ValueProperty);
+			get => GetValue(ValueProperty) ?? this;	// Weird behaviour occurs if all values are the same (i.e. all null). This ensures a default unique value when not assigned.
 			set => SetValue(ValueProperty, value);
 		}
 
@@ -433,12 +433,17 @@ namespace Microsoft.Maui.Controls
 
 		void HandleRadioButtonGroupValueChanged(Element layout, RadioButtonGroupValueChanged args)
 		{
-			if (IsChecked || string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || !object.Equals(Value, args.Value) || !MatchesScope(args))
+			if (string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || !MatchesScope(args))
 			{
 				return;
 			}
 
-			SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
+			var isValueMatching = object.Equals(Value, args.Value);
+
+			if (IsChecked != isValueMatching)
+			{
+				SetValue(IsCheckedProperty, isValueMatching, specificity: SetterSpecificity.FromHandler);
+			}
 		}
 
 		static View BuildDefaultTemplate()
