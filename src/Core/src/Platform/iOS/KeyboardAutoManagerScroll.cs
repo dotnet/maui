@@ -329,9 +329,12 @@ public static class KeyboardAutoManagerScroll
 	// main method to calculate and animate the scrolling
 	internal static void AdjustPosition()
 	{
+		// If UITextField/UITextView is not in a UIScrollView, we can ignore keyboard auto-scrolling.
+		// If the user sets SafeAreaEdges.SoftInput for the layout, and it will be handled by the layout.
 		if (ContainerView is null
 			|| (View is not UITextField && View is not UITextView)
-			|| !View.IsDescendantOfView(ContainerView))
+			|| !View.IsDescendantOfView(ContainerView)
+			|| View.GetParentOfType<UIScrollView>() is null)
 		{
 			IsKeyboardAutoScrollHandling = false;
 			return;
