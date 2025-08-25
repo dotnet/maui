@@ -45,6 +45,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (PlatformView is not null)
 				PlatformView.Loaded -= OnNavigationViewLoaded;
 
+			// Now that the NavigationView is fully loaded assign the MenuItemsSource if it
+			// hasn't been set yet. This avoids a crash observed when assigning during
+			// ConnectHandler on Native AOT builds.
+			if (PlatformView is NavigationView nv && nv.MenuItemsSource == null)
+				nv.MenuItemsSource = _mainLevelTabs;
+
 			UpdateSearchHandler();
 			MapMenuItems();
 		}
@@ -60,7 +66,13 @@ namespace Microsoft.Maui.Controls.Handlers
 				mauiNavView.IsSettingsVisible = false;
 				mauiNavView.IsPaneToggleButtonVisible = false;
 				mauiNavView.MenuItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["TabBarNavigationViewMenuItem"];
-				mauiNavView.MenuItemsSource = _mainLevelTabs;
+				// Delay assigning MenuItemsSource until the control is Loaded. Under some conditions
+				// setting MenuItemsSource during handler connection
+				// can trigger an internal WinUI failure while the template is still being applied.
+				if (platformView.IsLoaded)
+				{
+					mauiNavView.MenuItemsSource = _mainLevelTabs;
+				}
 
 				platformView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
 				platformView.SetApplicationResource("NavigationViewHeaderMargin", null);
@@ -152,6 +164,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		void OnShellNavigated(object? sender, ShellNavigatedEventArgs e)
 		{
 			UpdateSearchHandler();
+			MapMenuItems();
 		}
 
 		private void OnItemsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
