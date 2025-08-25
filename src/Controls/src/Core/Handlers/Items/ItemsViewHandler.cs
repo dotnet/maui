@@ -18,6 +18,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		}
 
+		//TODO Make this public in .NET10
+		internal ItemsViewHandler(PropertyMapper mapper = null, CommandMapper commandMapper = null) : base(mapper ?? ItemsViewMapper,commandMapper)
+		{
+
+		}
+
 		public static PropertyMapper<TItemsView, ItemsViewHandler<TItemsView>> ItemsViewMapper = new(ViewMapper)
 		{
 			[Controls.ItemsView.ItemsSourceProperty.PropertyName] = MapItemsSource,

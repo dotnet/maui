@@ -71,6 +71,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.Controller as CarouselViewController)?.UpdateLoop();
 		}
 
+		//TODO Make this public in .NET10
+		internal static void MapItemsLayoutPropertyChanged(CarouselViewHandler handler, CarouselView view, object args)
+		{
+
+		}
+
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 	}
