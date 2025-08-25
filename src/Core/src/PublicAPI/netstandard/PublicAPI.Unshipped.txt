@@ -48,8 +48,14 @@ Microsoft.Maui.ITimePicker.IsOpen.get -> bool
 Microsoft.Maui.ITimePicker.IsOpen.set -> void
 *REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
 Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
+Microsoft.Maui.IView.SizeConstraint.get -> Microsoft.Maui.Primitives.SizeConstraint
 Microsoft.Maui.IWebRequestInterceptingWebView
 Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
+Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.Fixed = Microsoft.Maui.Primitives.SizeConstraint.HorizontallyFixed | Microsoft.Maui.Primitives.SizeConstraint.VerticallyFixed -> Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.None = 0 -> Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.VerticallyFixed = 2 -> Microsoft.Maui.Primitives.SizeConstraint
 Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.SafeAreaEdges.Bottom.get -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaEdges.Equals(Microsoft.Maui.SafeAreaEdges other) -> bool

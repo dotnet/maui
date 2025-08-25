@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <item name="maui_custom_view_target_running_callbacks_tag" type="id"/>
+  <item name="maui_view_size_constraint_tag" type="id"/>
 </resources>

@@ -51,6 +51,7 @@ Microsoft.Maui.ITimePicker.IsOpen.get -> bool
 Microsoft.Maui.ITimePicker.IsOpen.set -> void
 *REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
 Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
+Microsoft.Maui.IView.SizeConstraint.get -> Microsoft.Maui.Primitives.SizeConstraint
 Microsoft.Maui.IWebRequestInterceptingWebView
 Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
 Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyDown
@@ -83,6 +84,11 @@ Microsoft.Maui.Platform.StackNavigationManager.NavHost.get -> AndroidX.Navigatio
 Microsoft.Maui.Platform.StackNavigationManager.SetNavigationViewFragmentType(System.Type! type) -> void
 Microsoft.Maui.Platform.StackNavigationManager.ToolbarElement.get -> Microsoft.Maui.IToolbarElement?
 *REMOVED*Microsoft.Maui.PlatformWrapperView.SetHasShadow(bool hasShadow) -> void
+Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.Fixed = Microsoft.Maui.Primitives.SizeConstraint.HorizontallyFixed | Microsoft.Maui.Primitives.SizeConstraint.VerticallyFixed -> Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.None = 0 -> Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.VerticallyFixed = 2 -> Microsoft.Maui.Primitives.SizeConstraint
 Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.SafeAreaEdges.Bottom.get -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaEdges.Equals(Microsoft.Maui.SafeAreaEdges other) -> bool
