@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		bool ITextInput.IsTextPredictionEnabled => true;
+		bool ITextInput.IsTextPredictionEnabled => IsTextPredictionEnabled;
 
 		void ISearchBar.SearchButtonPressed()
 		{
