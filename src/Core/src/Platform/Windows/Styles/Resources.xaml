@@ -20,4 +20,7 @@
         <Setter Property="MaxWidth" Value="300"/>
     </Style>
 
+    <Style TargetType="TextBlock">
+        <Setter Property="LineStackingStrategy" Value="BlockLineHeight"/>
+    </Style>
 </ResourceDictionary>
