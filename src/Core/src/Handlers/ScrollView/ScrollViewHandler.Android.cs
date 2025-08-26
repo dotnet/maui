@@ -230,7 +230,8 @@ namespace Microsoft.Maui.Handlers
 				CrossPlatformLayout = crossPlatformLayout,
 				Tag = InsetPanelTag
 			};
-
+			
+			paddingShim.SetClipChildren(false);
 			handler.PlatformView.RemoveAllViews();
 			paddingShim.AddView(nativeContent);
 			handler.PlatformView.SetContent(paddingShim);
