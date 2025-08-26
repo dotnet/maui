@@ -3,6 +3,7 @@ using Android.App;
 using Android.Views;
 using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
+using AndroidX.Fragment.App;
 using AndroidX.Window.Layout;
 using Google.Android.Material.AppBar;
 using AView = Android.Views.View;
@@ -120,42 +121,99 @@ namespace Microsoft.Maui.Handlers
 		// - Do not extend; add new logic to the forthcoming implementation instead.
 		internal class WindowsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
 		{
-			public WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
-			{
-				if (insets == null || v == null)
-					return insets;
+			int? _originalHeight;
 
-				var appBarLayout = v.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
+			public WindowInsetsCompat? OnApplyWindowInsets(AView? rootView, WindowInsetsCompat? insets)
+			{
+				if (insets == null || rootView == null)
+				{
+					return insets;
+				}
+
+				var appbarInsets = insets.GetInsets(WindowInsetsCompat.Type.SystemBars() | WindowInsetsCompat.Type.DisplayCutout());
+
+				if (appbarInsets is null)
+				{
+					return insets;
+				}
+
+				var appBarLayout = rootView.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
+				var navigationLayout = rootView.FindViewById<FragmentContainerView>(Resource.Id.navigationlayout_content);
+
+				var toolbar = appBarLayout?.GetChildAt(0) as MaterialToolbar;
 				var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 				var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
 
-				var leftInset = Math.Max(systemBars?.Left ?? 0, displayCutout?.Left ?? 0);
-				var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
-				var rightInset = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
-				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
+				// For toolbar content padding, we need to avoid both system bars and display cutouts
+				var contentPaddingLeft = Math.Max(systemBars?.Left ?? 0, displayCutout?.Left ?? 0);
+				var contentPaddingRight = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
 
-				// Apply top inset only to AppBarLayout to allow content behind it
-				appBarLayout?.SetPadding(0, topInset, 0, 0);
-				
-				// Apply side and bottom insets to root view, but not top
-				v.SetPadding(leftInset, 0, rightInset, bottomInset);
+				if (appBarLayout is not null && toolbar is not null)
+				{
+					// Store the original height on first call, then always calculate from that base
+					var currentHeight = toolbar.LayoutParameters?.Height ?? 0;
+					if (!_originalHeight.HasValue)
+					{
+						_originalHeight = currentHeight;
+					}
 
-				// Create new insets with only top consumed
+					// Always calculate new height from the original height to prevent accumulation
+					var newHeight = _originalHeight.Value + appbarInsets.Top;
+
+					// Update the layout parameters to extend into status bar area
+					if (toolbar.LayoutParameters != null)
+					{
+						toolbar.LayoutParameters.Height = newHeight;
+						toolbar.RequestLayout();
+					}
+
+					// Apply left/right margins to AppBarLayout only for system bars, not display cutouts
+					// This allows the background to extend behind cutouts while avoiding system bars
+					if (appBarLayout.LayoutParameters is ViewGroup.MarginLayoutParams appBarLayoutParams && systemBars != null)
+					{
+						appBarLayoutParams.LeftMargin = systemBars.Left;
+						appBarLayoutParams.RightMargin = systemBars.Right;
+						appBarLayout.LayoutParameters = appBarLayoutParams;
+					}
+
+
+
+					var contentPaddingTop = appbarInsets.Top;
+					// Apply padding to toolbar content to avoid both system bars and display cutouts
+					toolbar.SetPadding(contentPaddingLeft, contentPaddingTop, contentPaddingRight, 0);
+
+					// Clear AppBarLayout padding to allow toolbar to extend fully
+					appBarLayout.SetPadding(0, 0, 0, 0);
+				}
+
+				// REMOVE MARGINS FROM NAVIGATION LAYOUT - Let it extend edge-to-edge
+				if (navigationLayout?.LayoutParameters is ViewGroup.MarginLayoutParams navigationLayoutParams)
+				{
+					navigationLayoutParams.LeftMargin = 0;
+					navigationLayoutParams.RightMargin = 0;
+					navigationLayout.LayoutParameters = navigationLayoutParams;
+				}
+
+				// Apply only bottom insets to root view
+				rootView.SetPadding(0, 0, 0, appbarInsets.Bottom);
+
+				// Create new insets that preserve side insets for the navigation content
+				// Only consume top insets since we handled them in the toolbar
 				var newSystemBars = Insets.Of(
 					systemBars?.Left ?? 0,
-					systemBars?.Top ?? 0,
+					0, // Top consumed by toolbar
 					systemBars?.Right ?? 0,
-					0
+					systemBars?.Bottom ?? 0
 				) ?? Insets.None;
 
-				// Create new insets with only top consumed
 				var newDisplayCutout = Insets.Of(
 					displayCutout?.Left ?? 0,
-					displayCutout?.Top ?? 0,
+					0, // Top consumed by toolbar
 					displayCutout?.Right ?? 0,
-					0
+					displayCutout?.Bottom ?? 0
 				) ?? Insets.None;
-				
+
+				// Return insets that the navigation content can use to respect side/bottom insets
 				return new WindowInsetsCompat.Builder(insets)
 					?.SetInsets(WindowInsetsCompat.Type.SystemBars(), newSystemBars)
 					?.SetInsets(WindowInsetsCompat.Type.DisplayCutout(), newDisplayCutout)

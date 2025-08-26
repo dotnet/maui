@@ -4,6 +4,7 @@ using Android.Graphics;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
+using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 
@@ -13,10 +14,11 @@ namespace Microsoft.Maui.Platform
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;
-
+		internal AndroidX.Core.Graphics.Insets? _currentInsets;
 		public ContentViewGroup(Context context) : base(context)
 		{
 			_context = context;
+			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -56,6 +58,20 @@ namespace Microsoft.Maui.Platform
 			return CrossPlatformLayout?.CrossPlatformArrange(bounds) ?? Graphics.Size.Zero;
 		}
 
+		void SetupWindowInsetsHandling()
+		{
+			ViewCompat.SetOnApplyWindowInsetsListener(this, new ContentWindowsListener());
+		}
+
+		internal void SetWindowInsets(AndroidX.Core.Graphics.Insets? insets)
+		{
+			if (_currentInsets != insets)
+			{
+				_currentInsets = insets;
+				RequestLayout(); // Trigger a layout pass when insets change
+			}
+		}
+
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			if (CrossPlatformLayout is null)
@@ -70,10 +86,26 @@ namespace Microsoft.Maui.Platform
 			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
 			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
 
-			var measure = CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
+			// Always adjust measurement constraints for content when we have insets
+			var measureWidth = deviceIndependentWidth;
+			var measureHeight = deviceIndependentHeight;
 
-			// If the measure spec was exact, we should return the explicit size value, even if the content
-			// measure came out to a different size
+			if (_currentInsets != null)
+			{
+				var leftInsetDp = _context.FromPixels(_currentInsets.Left);
+				var topInsetDp = _context.FromPixels(_currentInsets.Top);
+				var rightInsetDp = _context.FromPixels(_currentInsets.Right);
+				var bottomInsetDp = _context.FromPixels(_currentInsets.Bottom);
+
+				// Always reduce available space by insets for content measurement
+				measureWidth = Math.Max(0, deviceIndependentWidth - leftInsetDp - rightInsetDp);
+				measureHeight = Math.Max(0, deviceIndependentHeight - topInsetDp - bottomInsetDp);
+			}
+
+			var measure = CrossPlatformMeasure(measureWidth, measureHeight);
+
+			// For the container size, always use original constraints in Exactly mode
+			// In other modes, use the content size (which respects insets through arrangement)
 			var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width;
 			var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height;
 
@@ -94,9 +126,33 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			// Start with the full bounds of the container (edge-to-edge)
 			var destination = _context.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
 
-			CrossPlatformArrange(destination);
+			// If we have insets, adjust the content area to respect them
+			if (_currentInsets != null)
+			{
+				var leftInsetDp = _context.FromPixels(_currentInsets.Left);
+				var topInsetDp = _context.FromPixels(_currentInsets.Top);
+				var rightInsetDp = _context.FromPixels(_currentInsets.Right);
+				var bottomInsetDp = _context.FromPixels(_currentInsets.Bottom);
+
+				// Create a new rect that is inset by the safe area amounts
+				var safeDestination = new Graphics.Rect(
+					destination.X + leftInsetDp,
+					destination.Y + topInsetDp,
+					destination.Width - leftInsetDp - rightInsetDp,
+					destination.Height - topInsetDp - bottomInsetDp
+				);
+
+				// Arrange the content in the safe area
+				CrossPlatformArrange(safeDestination);
+			}
+			else
+			{
+				// No insets, use full bounds
+				CrossPlatformArrange(destination);
+			}
 		}
 
 		internal IBorderStroke? Clip
@@ -142,6 +198,44 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
+		}
+	}
+
+	internal class ContentWindowsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
+	{
+		public WindowInsetsCompat? OnApplyWindowInsets(View? v, WindowInsetsCompat? insets)
+		{
+			if (insets is null || v is null || v is not ContentViewGroup contentViewGroup)
+			{
+				return insets;
+			}
+
+			var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+			var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+
+			if (systemBars is null && displayCutout is null)
+			{
+				contentViewGroup.SetWindowInsets(null);
+				return insets;
+			}
+
+			// Calculate the maximum insets from system bars and display cutouts
+			var leftInset = Math.Max(systemBars?.Left ?? 0, displayCutout?.Left ?? 0);
+			var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
+			var rightInset = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
+			var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
+
+			// Store the insets for use in layout arrangement
+			var combinedInsets = AndroidX.Core.Graphics.Insets.Of(
+				leftInset, topInset, rightInset, bottomInset);
+
+			contentViewGroup.SetWindowInsets(combinedInsets);
+
+			// Clear any padding since we're handling insets through layout arrangement
+			v.SetPadding(0, 0, 0, 0);
+
+			// Consume the insets since we've handled them
+			return WindowInsetsCompat.Consumed;
 		}
 	}
 }
