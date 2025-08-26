@@ -16,8 +16,8 @@ public class Issue18933 : _IssuesUITest
 	[Category(UITestCategories.ViewBaseTests)]
 	public void VerifyBackgroundColorCleared()
 	{
-		App.WaitForElement("Issue18933Btn");
-		App.Tap("Issue18933Btn");
+		App.WaitForElement("clearBgBtn");
+		App.Tap("clearBgBtn");
 		VerifyScreenshot();
 	}
 }
