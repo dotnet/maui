@@ -305,6 +305,37 @@ public static class KeyboardAutoManagerScroll
 	// all the fields are updated before calling AdjustPostition()
 	internal static async Task AdjustPositionDebounce()
 	{
+
+		bool hasExternalScrollViewParent = false;
+
+		// Traverse up the view hierarchy and only allow auto-scroll if there is an external UIScrollView
+		// For UITextView, we need to check if it's contained within a UIScrollView and not just its own internal scroll view
+		// For other views, we just need to check if they are contained within a UIScrollView
+		if (View is UITextView uITextView)
+		{
+			UIView? currentView = uITextView.Superview;
+			while (currentView is not null)
+			{
+				// Skip the inbuilt UIScrollView of UITextView itself
+				if (currentView is UIScrollView && !(currentView == uITextView))
+				{
+					hasExternalScrollViewParent = true;
+					break;
+				}
+				currentView = currentView.Superview;
+			}
+		}
+		else if (View.GetParentOfType<UIScrollView>() is not null)
+		{
+			hasExternalScrollViewParent = true;
+		}
+
+		if (!hasExternalScrollViewParent)
+		{
+			IsKeyboardAutoScrollHandling = false;
+			return;
+		}
+
 		if (IsKeyboardShowing)
 		{
 			// Universal 30ms delay for all input controls to ensure proper timing coordination
@@ -329,12 +360,9 @@ public static class KeyboardAutoManagerScroll
 	// main method to calculate and animate the scrolling
 	internal static void AdjustPosition()
 	{
-		// If UITextField/UITextView is not in a UIScrollView, we can ignore keyboard auto-scrolling.
-		// If the user sets SafeAreaEdges.SoftInput for the layout, and it will be handled by the layout.
 		if (ContainerView is null
 			|| (View is not UITextField && View is not UITextView)
-			|| !View.IsDescendantOfView(ContainerView)
-			|| View.GetParentOfType<UIScrollView>() is null)
+			|| !View.IsDescendantOfView(ContainerView))
 		{
 			IsKeyboardAutoScrollHandling = false;
 			return;
