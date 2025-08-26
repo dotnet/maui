@@ -3,28 +3,41 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 18933, "ContentView Background Color Not Cleared When Set to Null", PlatformAffected.Android | PlatformAffected.iOS)]
 public class Issue18933 : ContentPage
 {
-	ContentView contentViewWithBackgroundColor;
+	ContentView contentView;
+	ContentView contentViewWithBackground;
 
 	public Issue18933()
 	{
 		Label contentLabel = new Label
 		{
-			Text = "ContentView - Test background removal",
+			Text = "ContentView - Test BackgroundColor removal",
 			Padding = 20
 		};
 
-		contentViewWithBackgroundColor = new ContentView
+		Label backgroundContentLabel = new Label
+		{
+			Text = "ContentView - Test Background removal",
+			Padding = 20
+		};
+
+		contentView = new ContentView
 		{
 			BackgroundColor = Colors.Purple,
 			Content = contentLabel
 		};
 
-		Button contentButton = new Button
+		contentViewWithBackground = new ContentView
 		{
-			AutomationId = "Issue18933Btn",
-			Text = "Set ContentView BackgroundColor to Null"
+			Background = Colors.Purple,
+			Content = backgroundContentLabel
 		};
-		contentButton.Clicked += Button_Clicked;
+
+		Button clearBackgroundBtn = new Button
+		{
+			AutomationId = "clearBgBtn",
+			Text = "Set ContentView Background to Null"
+		};
+		clearBackgroundBtn.Clicked += Button_Clicked;
 
 		VerticalStackLayout mainLayout = new VerticalStackLayout
 		{
@@ -32,16 +45,18 @@ public class Issue18933 : ContentPage
 			Padding = 20,
 			Children =
 			{
-				contentViewWithBackgroundColor,
-				contentButton,
+				contentView,
+				contentViewWithBackground,
+				clearBackgroundBtn,
 			}
 		};
 
 		Content = mainLayout;
 	}
-		
-    private void Button_Clicked(object sender, EventArgs e)
+
+	private void Button_Clicked(object sender, EventArgs e)
 	{
-		contentViewWithBackgroundColor.BackgroundColor = null;
+		contentView.BackgroundColor = null;
+		contentViewWithBackground.Background = null;
 	}
 }
