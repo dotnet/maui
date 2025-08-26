@@ -8,7 +8,9 @@ namespace Microsoft.Maui.Platform;
 
 /// <summary>
 /// Optimized safe area handling for ContentViewGroup and LayoutViewGroup.
-/// Caches hierarchy checks and minimizes repeated calculations.
+/// Uses the CONSUME approach: when a parent handles safe area insets for specific edges,
+/// it consumes those insets to prevent them from propagating to children.
+/// This eliminates the need for complex parent hierarchy checks.
 /// </summary>
 internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformLayout?> getCrossPlatformLayout)
 {
@@ -18,23 +20,21 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
 
     SafeAreaPadding _safeArea = SafeAreaPadding.Empty;
     bool _safeAreaInvalidated = true;
-
+    WindowInsetsCompat? _lastReceivedInsets;
     SafeAreaPadding _keyboardInsets = SafeAreaPadding.Empty;
     bool _isKeyboardShowing;
-
-    bool? _hasSafeAreaHandlingParent;
-    bool _parentHierarchyChanged = true;
-
+    // Cached values for performance
+    ICrossPlatformLayout? _cachedLayout;
+    ISafeAreaView2? _cachedSafeAreaView2;
+    ISafeAreaView? _cachedSafeAreaView;
+    bool _layoutCacheValid;
     internal IOnApplyWindowInsetsListener GetWindowInsetsListener() =>
         new WindowInsetsListener(this, () => _owner.RequestLayout());
-
-    void InvalidateParentHierarchyCache()
+    void InvalidateSafeArea()
     {
-        _parentHierarchyChanged = true;
-        _hasSafeAreaHandlingParent = null;
+        _safeAreaInvalidated = true;
+        _layoutCacheValid = false;
     }
-
-    void InvalidateSafeArea() => _safeAreaInvalidated = true;
 
     void UpdateKeyboardState(SafeAreaPadding keyboardInsets, bool isKeyboardShowing)
     {
@@ -42,177 +42,67 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
         {
             _safeAreaInvalidated = true;
         }
-
         _keyboardInsets = keyboardInsets;
         _isKeyboardShowing = isKeyboardShowing;
     }
 
-    static ISafeAreaView2? GetSafeAreaView2(object? layout)
+    void EnsureCachedLayout()
     {
-        if (layout is ISafeAreaView2 sav2)
+        if (_layoutCacheValid)
         {
-            return sav2;
+            return;
         }
 
-        if (layout is IElementHandler handler && handler.VirtualView is ISafeAreaView2 virtualSav2)
-        {
-            return virtualSav2;
-        }
-
-        return null;
+        _cachedLayout = _getCrossPlatformLayout();
+        _cachedSafeAreaView2 = GetSafeAreaView2(_cachedLayout);
+        _cachedSafeAreaView = _cachedSafeAreaView2 == null ? GetSafeAreaView(_cachedLayout) : null;
+        _layoutCacheValid = true;
     }
 
-    static ISafeAreaView? GetSafeAreaView(object? layout)
-    {
-        if (layout is ISafeAreaView sav)
+    static ISafeAreaView2? GetSafeAreaView2(object? layout) =>
+        layout switch
         {
-            return sav;
-        }
+            ISafeAreaView2 sav2 => sav2,
+            IElementHandler { VirtualView: ISafeAreaView2 virtualSav2 } => virtualSav2,
+            _ => null
+        };
 
-        if (layout is IElementHandler handler && handler.VirtualView is ISafeAreaView virtualSav)
+    static ISafeAreaView? GetSafeAreaView(object? layout) =>
+        layout switch
         {
-            return virtualSav;
-        }
-
-        return null;
-    }
+            ISafeAreaView sav => sav,
+            IElementHandler { VirtualView: ISafeAreaView virtualSav } => virtualSav,
+            _ => null
+        };
 
     internal bool RespondsToSafeArea()
     {
-        // Removed high API level gate so that safe area handling (system bars, cutouts, IME)
-        // can function on currently supported Android versions.
-        var layout = _getCrossPlatformLayout();
-
-        var safeAreaLayout = GetSafeAreaView2(layout);
-        if (safeAreaLayout is null)
+        EnsureCachedLayout();
+        if (_cachedSafeAreaView2 is not null)
         {
-            // Fallback: check for legacy ISafeAreaView
-            var legacySafeAreaView = GetSafeAreaView(layout);
-            if (legacySafeAreaView is not null)
+            // Check if any edge has non-None regions (optimized loop)
+            for (int edge = 0; edge < 4; edge++)
             {
-                return !legacySafeAreaView.IgnoreSafeArea && !HasSafeAreaHandlingParent();
+                if (_cachedSafeAreaView2.GetSafeAreaRegionsForEdge(edge) != SafeAreaRegions.None)
+                {
+                    _safeAreaInvalidated = true;
+                    return true;
+                }
             }
             return false;
         }
-
-        // Check if this view needs to handle safe area on any edge
-        // considering per-edge parent blocking
-        bool respondsToAnyEdge = false;
-
-        for (int edge = 0; edge < 4; edge++)
+        if (_cachedSafeAreaView is not null)
         {
-            var region = safeAreaLayout.GetSafeAreaRegionsForEdge(edge);
-            if (region != SafeAreaRegions.None)
-            {
-                // Check if a parent is handling safe area for this specific edge
-                if (!CheckSafeAreaHandlingParentInHierarchyForEdge(edge))
-                {
-                    respondsToAnyEdge = true;
-                    break; // At least one edge can be handled
-                }
-            }
-        }
-
-        if (respondsToAnyEdge)
-        {
-            _safeAreaInvalidated = true;
-        }
-
-        return respondsToAnyEdge;
-    }
-
-    internal bool HasSafeAreaHandlingParent()
-    {
-        if (!_parentHierarchyChanged && _hasSafeAreaHandlingParent.HasValue)
-        {
-            return _hasSafeAreaHandlingParent.Value;
-        }
-
-        _hasSafeAreaHandlingParent = CheckSafeAreaHandlingParentInHierarchy();
-        _parentHierarchyChanged = false;
-        return _hasSafeAreaHandlingParent.Value;
-    }
-
-    bool CheckSafeAreaHandlingParentInHierarchy()
-    {
-        var parent = _owner.Parent;
-        int depth = 0, maxDepth = 15;
-
-        while (parent != null && depth++ < maxDepth)
-        {
-            if (parent is ICrossPlatformLayoutBacking backing &&
-                GetSafeAreaView2(backing.CrossPlatformLayout) is ISafeAreaView2 parentLayout)
-            {
-                // Check if the parent has any non-None safe area regions
-                // But allow children to handle their own safe area when parent is None for all edges
-                bool hasAnyNonNoneEdge = false;
-                for (int edge = 0; edge < 4; edge++)
-                {
-                    var region = parentLayout.GetSafeAreaRegionsForEdge(edge);
-                    if (region != SafeAreaRegions.None)
-                    {
-                        hasAnyNonNoneEdge = true;
-                        break;
-                    }
-                }
-
-                // Only return true if parent has at least one non-None edge
-                // This preserves the original logic but allows better debugging
-                if (hasAnyNonNoneEdge)
-                {
-                    return true;
-                }
-            }
-            parent = parent is View pv ? pv.Parent : null;
-        }
-        return false;
-    }
-
-    bool CheckSafeAreaHandlingParentInHierarchyForEdge(int edge)
-    {
-        var parent = _owner.Parent;
-        int depth = 0, maxDepth = 15;
-
-        while (parent != null && depth++ < maxDepth)
-        {
-            if (parent is ICrossPlatformLayoutBacking backing &&
-                GetSafeAreaView2(backing.CrossPlatformLayout) is ISafeAreaView2 parentLayout)
-            {
-                var parentRegion = parentLayout.GetSafeAreaRegionsForEdge(edge);
-
-                // If parent has None for this edge, it allows children to handle their own safe area
-                if (parentRegion == SafeAreaRegions.None)
-                {
-                    parent = parent is View parentView ? parentView.Parent : null;
-                    continue;
-                }
-
-                // If parent has any non-None region for this edge, it's handling safe area
-                if (parentRegion != SafeAreaRegions.None)
-                {
-                    return true;
-                }
-            }
-            parent = parent is View parentView2 ? parentView2.Parent : null;
+            return !_cachedSafeAreaView.IgnoreSafeArea;
         }
         return false;
     }
 
     SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
     {
-        var layout = _getCrossPlatformLayout();
-        var safeAreaPage = GetSafeAreaView2(layout);
-        if (safeAreaPage is not null)
-        {
-            return safeAreaPage.GetSafeAreaRegionsForEdge(edge);
-        }
-
-        if (layout is ISafeAreaView sav)
-        {
-            return sav.IgnoreSafeArea ? SafeAreaRegions.None : SafeAreaRegions.Container;
-        }
-
-        return SafeAreaRegions.None;
+        EnsureCachedLayout();
+        return _cachedSafeAreaView2?.GetSafeAreaRegionsForEdge(edge)
+            ?? (_cachedSafeAreaView?.IgnoreSafeArea == false ? SafeAreaRegions.Container : SafeAreaRegions.None);
     }
 
     double GetSafeAreaForEdge(SafeAreaRegions region, double original, int edge)
@@ -222,33 +112,11 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
             return 0;
         }
 
-        if (SafeAreaEdges.IsSoftInput(region))
+        if (SafeAreaEdges.IsSoftInput(region) && _isKeyboardShowing && edge == 3)
         {
-            if (_isKeyboardShowing && edge == 3)
-            {
-                return _keyboardInsets.Bottom;
-            }
-
-            return original;
+            return _keyboardInsets.Bottom;
         }
-
-        if (region == SafeAreaRegions.Default || region == SafeAreaRegions.All || SafeAreaEdges.IsContainer(region))
-        {
-            return original;
-        }
-
         return original;
-    }
-
-    double GetSafeAreaForEdgeWithParentCheck(SafeAreaRegions region, double original, int edge)
-    {
-        // If a parent is handling safe area for this edge, don't apply safe area here
-        if (CheckSafeAreaHandlingParentInHierarchyForEdge(edge))
-        {
-            return 0;
-        }
-
-        return GetSafeAreaForEdge(region, original, edge);
     }
 
     internal Rect AdjustForSafeArea(Rect bounds)
@@ -259,52 +127,35 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
 
     SafeAreaPadding GetAdjustedSafeAreaInsets()
     {
-        var rootView = _owner.RootView;
-        if (rootView == null)
-        {
+        // Use the insets that were actually received by this view's OnApplyWindowInsets
+        // If no insets were received, or they were consumed by a parent, return empty
+        if (_lastReceivedInsets is null)
             return SafeAreaPadding.Empty;
-        }
-
-        var windowInsets = ViewCompat.GetRootWindowInsets(rootView);
-        if (windowInsets == null)
-        {
-            return SafeAreaPadding.Empty;
-        }
-
-        var baseSafeArea = windowInsets.ToSafeAreaInsets(_context);
-        var layout = _getCrossPlatformLayout();
-        if (GetSafeAreaView2(layout) is ISafeAreaView2 safeAreaLayout)
+        var baseSafeArea = _lastReceivedInsets.ToSafeAreaInsets(_context);
+        EnsureCachedLayout();
+        if (_cachedSafeAreaView2 is not null)
         {
             return new SafeAreaPadding(
-                GetSafeAreaForEdgeWithParentCheck(GetSafeAreaRegionForEdge(0), baseSafeArea.Left, 0),
-                GetSafeAreaForEdgeWithParentCheck(GetSafeAreaRegionForEdge(2), baseSafeArea.Right, 2),
-                GetSafeAreaForEdgeWithParentCheck(GetSafeAreaRegionForEdge(1), baseSafeArea.Top, 1),
-                GetSafeAreaForEdgeWithParentCheck(GetSafeAreaRegionForEdge(3), baseSafeArea.Bottom, 3)
+                GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0), baseSafeArea.Left, 0),
+                GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2), baseSafeArea.Right, 2),
+                GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1), baseSafeArea.Top, 1),
+                GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3), baseSafeArea.Bottom, 3)
             );
         }
-
-        var sav = GetSafeAreaView(layout);
-        if (sav is not null && sav.IgnoreSafeArea)
-        {
-            return SafeAreaPadding.Empty;
-        }
-
-        return baseSafeArea;
+        return _cachedSafeAreaView?.IgnoreSafeArea == true ? SafeAreaPadding.Empty : baseSafeArea;
     }
 
     bool ValidateSafeArea()
     {
         if (!_safeAreaInvalidated)
-        {
             return true;
-        }
-
         _safeAreaInvalidated = false;
         var oldSafeArea = _safeArea;
         _safeArea = GetAdjustedSafeAreaInsets();
         return oldSafeArea == _safeArea;
     }
 
+#nullable disable
     /// <summary>
     /// WindowInsets listener for ContentViewGroup and LayoutViewGroup.
     /// </summary>
@@ -312,62 +163,86 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
     {
         readonly SafeAreaHandler _handler = handler ?? throw new ArgumentNullException(nameof(handler));
         readonly Action _requestLayout = requestLayout ?? throw new ArgumentNullException(nameof(requestLayout));
-
-        public WindowInsetsCompat? OnApplyWindowInsets(View? v, WindowInsetsCompat? insets)
+        public WindowInsetsCompat OnApplyWindowInsets(View v, WindowInsetsCompat insets)
         {
             _handler.InvalidateSafeArea();
-
-            if (insets != null)
+            // Store the insets that this specific view received
+            _handler._lastReceivedInsets = insets;
+            if (insets is not null)
             {
                 var keyboardInsets = insets.GetKeyboardInsets(_handler._context);
-                var wasKeyboardShowing = _handler._isKeyboardShowing;
                 var isKeyboardShowing = !keyboardInsets.IsEmpty;
-
+                var wasKeyboardShowing = _handler._isKeyboardShowing;
                 _handler.UpdateKeyboardState(keyboardInsets, isKeyboardShowing);
-
                 if (wasKeyboardShowing != isKeyboardShowing)
                 {
                     _requestLayout();
                 }
             }
 
-            _handler.InvalidateParentHierarchyCache();
             _requestLayout();
-
-            // Consume insets if this view responds to safe area to prevent propagation to children
-            if (insets != null && _handler.RespondsToSafeArea())
+            // Early return for null insets
+            if (insets is null)
             {
-                var layout = _handler._getCrossPlatformLayout();
-                if (GetSafeAreaView2(layout) is ISafeAreaView2 safeAreaLayout)
-                {
-                    // Check which edges we're handling and consume those insets
-                    var systemBarsInsets = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
-                    var displayCutoutInsets = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
-                    var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
-
-                    var leftRegion = safeAreaLayout.GetSafeAreaRegionsForEdge(0);
-                    var topRegion = safeAreaLayout.GetSafeAreaRegionsForEdge(1);
-                    var rightRegion = safeAreaLayout.GetSafeAreaRegionsForEdge(2);
-                    var bottomRegion = safeAreaLayout.GetSafeAreaRegionsForEdge(3);
-
-                    // Calculate which insets to consume based on SafeAreaRegions
-                    var consumeLeft = (leftRegion != SafeAreaRegions.None) ?
-                        (systemBarsInsets?.Left ?? 0) + (displayCutoutInsets?.Left ?? 0) : 0;
-                    var consumeTop = (topRegion != SafeAreaRegions.None) ?
-                        (systemBarsInsets?.Top ?? 0) + (displayCutoutInsets?.Top ?? 0) : 0;
-                    var consumeRight = (rightRegion != SafeAreaRegions.None) ?
-                        (systemBarsInsets?.Right ?? 0) + (displayCutoutInsets?.Right ?? 0) : 0;
-                    var consumeBottom = (bottomRegion != SafeAreaRegions.None) ?
-                        (systemBarsInsets?.Bottom ?? 0) + (displayCutoutInsets?.Bottom ?? 0) +
-                        (SafeAreaEdges.IsSoftInput(bottomRegion) ? (imeInsets?.Bottom ?? 0) : 0) : 0;                    // Create new insets with consumed values subtracted
-                    var consumedInsets = AndroidX.Core.Graphics.Insets.Of(consumeLeft, consumeTop, consumeRight, consumeBottom);
-
-                    // Use Inset method to consume the insets
-                    return insets.Inset(consumedInsets);
-                }
+                return insets;
             }
 
-            return insets;
+            // Early return if not responding to safe area
+            if (!_handler.RespondsToSafeArea())
+            {
+                return insets;
+            }
+
+            _handler.EnsureCachedLayout();
+            // Handle ISafeAreaView2 with optimized inset consumption
+            if (_handler._cachedSafeAreaView2 is ISafeAreaView2 safeAreaLayout)
+            {
+                var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+                var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+                var ime = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+                // Get regions once and reuse
+                var regions = new SafeAreaRegions[4];
+                for (int i = 0; i < 4; i++)
+                {
+                    regions[i] = safeAreaLayout.GetSafeAreaRegionsForEdge(i);
+                }
+                // Create new insets based on consumed edges
+                var newSystemBars = CreateConsumedInsets(systemBars, regions) ?? AndroidX.Core.Graphics.Insets.None;
+                var newDisplayCutout = CreateConsumedInsets(displayCutout, regions) ?? AndroidX.Core.Graphics.Insets.None;
+                // Handle IME separately for bottom edge
+                var newIme = AndroidX.Core.Graphics.Insets.Of(
+                    ime?.Left ?? 0,
+                    ime?.Top ?? 0,
+                    ime?.Right ?? 0,
+                    SafeAreaEdges.IsSoftInput(regions[3]) ? 0 : (ime?.Bottom ?? 0)
+                );
+                return new WindowInsetsCompat.Builder(insets)
+                    .SetInsets(WindowInsetsCompat.Type.SystemBars(), newSystemBars)
+                    .SetInsets(WindowInsetsCompat.Type.DisplayCutout(), newDisplayCutout)
+                    .SetInsets(WindowInsetsCompat.Type.Ime(), newIme)
+                    .Build();
+            }
+
+            // For other cases, consume all insets
+            return new WindowInsetsCompat.Builder(insets)
+                .SetInsets(WindowInsetsCompat.Type.SystemBars(), AndroidX.Core.Graphics.Insets.None)
+                .SetInsets(WindowInsetsCompat.Type.DisplayCutout(), AndroidX.Core.Graphics.Insets.None)
+                .SetInsets(WindowInsetsCompat.Type.Ime(), AndroidX.Core.Graphics.Insets.None)
+                .Build();
+        }
+
+        static AndroidX.Core.Graphics.Insets CreateConsumedInsets(AndroidX.Core.Graphics.Insets original, SafeAreaRegions[] regions)
+        {
+            if (original is null)
+            {
+                return AndroidX.Core.Graphics.Insets.None;
+            }
+            return AndroidX.Core.Graphics.Insets.Of(
+                regions[0] != SafeAreaRegions.None ? 0 : original.Left,   // Left
+                regions[1] != SafeAreaRegions.None ? 0 : original.Top,    // Top
+                regions[2] != SafeAreaRegions.None ? 0 : original.Right,  // Right
+                regions[3] != SafeAreaRegions.None ? 0 : original.Bottom  // Bottom
+            );
         }
     }
 }
