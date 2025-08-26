@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var entryCell = (EntryCell)Cell;
 
 			entryCell
-				.SetValue(EntryCell.TextProperty, text, specificity: SetterSpecificity.FromHandler);
+				.SetValue(EntryCell.TextProperty, text, specificity: SetterSpecificity.FromUnknown);
 		}
 
 		void UpdateHeight()

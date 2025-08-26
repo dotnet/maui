@@ -28,7 +28,7 @@ internal static class BindablePropertyDiagnostics
 			return new ValueSource(BaseValueSource.Style);
 		if (specificity == SetterSpecificity.Trigger)
 			return new ValueSource(BaseValueSource.StyleTrigger);
-		if (specificity == SetterSpecificity.FromHandler)
+		if (specificity == SetterSpecificity.FromHandler || specificity == SetterSpecificity.FromUnknown)
 			return new ValueSource(BaseValueSource.Unknown, isCurrent: true);
 
 		if (specificity.IsVsm)
