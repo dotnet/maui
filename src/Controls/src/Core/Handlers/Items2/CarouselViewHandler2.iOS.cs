@@ -109,5 +109,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			(handler.Controller as CarouselViewController2)?.UpdateLoop();
 		}
+
 	}
 }
