@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Platform
 			string? newText = null;
 			string? newContentDescription = null;
 
+			info.Focusable = semantics?.IsHeading ?? false;
+
 			if (!string.IsNullOrEmpty(desc))
 			{
 				// Edit Text fields won't read anything for the content description
