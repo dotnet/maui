@@ -35,7 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.BoxView)]
+		[Category(UITestCategories.SafeAreaEdges)] // Modified the category temporarily to ensure the the pipeline properly create pixel 9 emulator and generate images, once testing done, will revert this changes.
 		public void BoxView_CornerRadiusWithColor()
 		{
 			App.WaitForElement("ResetButton");

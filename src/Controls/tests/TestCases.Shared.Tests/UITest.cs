@@ -303,8 +303,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 				int cropFromTop = _testDevice switch
 				{
-					//Need to add proper top value after dicussing with PO.
-					TestDevice.Android => environmentName == "android-notch-36" ? 0 : 60,
+					TestDevice.Android => environmentName == "android-notch-36" ? 95 : 60,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
@@ -323,7 +322,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
-					TestDevice.Android => 125,
+					TestDevice.Android => environmentName == "android-notch-36" ? 40 : 125,
 					TestDevice.iOS => 40,
 					_ => 0,
 				};
