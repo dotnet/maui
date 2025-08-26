@@ -532,16 +532,16 @@ namespace Microsoft.Maui.Layouts.Flex
 						basis *= (layout.vertical ? height : width);
 					child.Frame[layout.frame_size_i] = basis - child.MarginThickness(layout.vertical);
 				}
+
+				float flex_tolerance = layout.flex_dim;
 #if WINDOWS
 				// Windows requires tolerance for floating-point precision issues in flex wrapping
-                const float wrap_tolerance = 0.1f;
-#else
-				const float wrap_tolerance = 0.00f;
+				flex_tolerance += 0.1f;
 #endif
 				float child_size = child.Frame[layout.frame_size_i];
 				if (layout.wrap)
 				{
-					if (layout.flex_dim + wrap_tolerance < child_size)
+					if (flex_tolerance < child_size)
 					{
 						// Not enough space for this child on this line, layout the
 						// remaining items and move it to a new line.
