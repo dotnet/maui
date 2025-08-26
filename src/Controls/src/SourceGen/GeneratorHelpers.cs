@@ -55,11 +55,8 @@ static class GeneratorHelpers
 		fileOptions.TryGetValue("build_property.targetframework", out var targetFramework);
 		fileOptions.TryGetValue("build_property.Configuration", out var configuration);
 
-		fileOptions.TryGetValue("build_metadata.additionalfiles.Inflator", out var inflator);
-
-
 		var xamlinflator = 0;
-		if (!string.IsNullOrEmpty(inflator))
+		if (fileOptions.TryGetValue("build_metadata.additionalfiles.Inflator", out var inflator) &&  !string.IsNullOrEmpty(inflator))
 		{
 			var parts = inflator!.Split(',');
 			for (int i = 0; i < parts.Length; i++)
@@ -71,6 +68,11 @@ static class GeneratorHelpers
 			}
 		}
 
+		var enableLineInfo = true;
+		if (fileOptions.TryGetValue("build_metadata.additionalfiles.LineInfo", out var lineInfo) && string.Compare(lineInfo, "disable", StringComparison.OrdinalIgnoreCase) == 0)
+			enableLineInfo = false;
+		
+
 		return new ProjectItem
 		{
 			AdditionalText = additionalText,
@@ -79,6 +81,7 @@ static class GeneratorHelpers
 			ManifestResourceName = manifestResourceName,
 			Kind = kind,
 			Inflator = (XamlInflator)xamlinflator,
+			EnableLineInfo = enableLineInfo,
 			TargetFramework = targetFramework,
 			Configuration = configuration!,
 		};

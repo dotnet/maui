@@ -16,4 +16,5 @@ record ProjectItem
 
 	//bypass attribute check. used for testing
 	public string Configuration { get; internal set; } = "Debug";
+	public bool EnableLineInfo { get; internal set; } = true;
 }

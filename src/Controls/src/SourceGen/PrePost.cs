@@ -16,7 +16,18 @@ class PrePost : IDisposable
 	/// <param name="fileName"></param>
 	/// <returns></returns>
 	public static PrePost NewLineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, string? fileName)
-		=> new(() => LineInfo(codeWriter, iXmlLineInfo, fileName), () => LineDefault(codeWriter, iXmlLineInfo));
+	{
+		static void LineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, string? fileName)
+			=> codeWriter.WriteLineNoTabs($"#line {(iXmlLineInfo.LineNumber != -1 ? iXmlLineInfo.LineNumber : 1)} \"{fileName}\"");
+
+		static void LineDefault(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo)
+			=> codeWriter.WriteLineNoTabs("#line default");
+
+		return new(() => LineInfo(codeWriter, iXmlLineInfo, fileName), () => LineDefault(codeWriter, iXmlLineInfo));
+	}
+
+	public static PrePost NoBlock() =>
+			new(() => { }, () => { });
 
 	public static PrePost NewConditional(IndentedTextWriter codeWriter, string condition, Action? orElse = null)
 	{
@@ -33,6 +44,7 @@ class PrePost : IDisposable
 
 	public static PrePost NewDisableWarning(IndentedTextWriter codeWriter, string warning)
 		=> new(() => codeWriter.WriteLineNoTabs($"#pragma warning disable {warning}"), () => codeWriter.WriteLineNoTabs($"#pragma warning restore {warning}"));
+		
 	readonly Action post;
 	PrePost(Action pre, Action post)
 	{
@@ -66,12 +78,4 @@ class PrePost : IDisposable
 				else
 					codeWriter.WriteLine(end);
 			});
-
-	[Conditional("_SOURCEGEN_LINEINFO_ENABLE")]
-	static void LineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, string? fileName)
-		=> codeWriter.WriteLineNoTabs($"#line {(iXmlLineInfo.LineNumber != -1 ? iXmlLineInfo.LineNumber : 1)} \"{fileName}\"");
-
-	[Conditional("_SOURCEGEN_LINEINFO_ENABLE")]
-	static void LineDefault(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo)
-		=> codeWriter.WriteLineNoTabs("#line default");
 }
