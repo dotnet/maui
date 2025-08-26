@@ -2,6 +2,7 @@ parameters:
   platform: '' # [ android, ios, windows, catalyst ]
   path: '' # path to csproj
   device: '' # the xharness device to use
+  deviceType: '' # the android device skin/type to use (e.g. pixel_9, Nexus 5X)
   cakeArgs: '' # additional cake args
   app: '' #path to app to test
   version: '' #the iOS version'
@@ -155,6 +156,8 @@ steps:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
+    ${{ if ne(parameters.deviceType, '') }}:
+      ANDROID_TEST_SKIN: ${{ parameters.deviceType }}
 
 - bash: |
     cat ${BASH_SOURCE[0]}
