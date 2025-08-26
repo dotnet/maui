@@ -134,10 +134,12 @@ namespace Microsoft.Maui.Controls
 			// When new cells are recreated, the swipe state is reset. 
 			// When cells are reused (iOS), the open state is maintained.
 			// Fix for iOS: Close SwipeView when BindingContext changes to prevent stale open state
+#if IOS || MACCATALYST
 			if (_isOpen)
 			{
 				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(false));
 			}
+#endif
 		}
 
 		static void OnSwipeItemsChanged(BindableObject bindable, object oldValue, object newValue)
