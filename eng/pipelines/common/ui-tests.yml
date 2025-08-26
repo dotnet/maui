@@ -28,6 +28,7 @@ parameters:
     - 'Navigation'
     - 'Page,Performance,Picker,ProgressBar'
     - 'RadioButton,RefreshView'
+    - 'SafeAreaEdges'
     - 'ScrollView,SearchBar,Shape,Slider,SoftInput,Stepper,Switch,SwipeView'
     - 'Shell'
     - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem'
