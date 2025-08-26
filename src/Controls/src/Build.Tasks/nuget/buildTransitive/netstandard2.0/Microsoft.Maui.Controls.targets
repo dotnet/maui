@@ -87,9 +87,9 @@
 	    <_MauiXaml_SG Remove="@(_MauiXaml_SG)" />
 	    <_MauiXaml_RT Remove="@(_MauiXaml_RT)" />
 	    <_MauiXaml_XC Remove="@(_MauiXaml_XC)" />
-	    <_MauiXaml_SG Include="@(MauiXaml)" Condition="$([System.String]::new('%(MauiXaml.Inflator)').Contains('SourceGen', StringComparison.OrdinalIgnoreCase))" />
-	    <_MauiXaml_RT Include="@(MauiXaml)" Condition="$([System.String]::new('%(MauiXaml.Inflator)').Contains('Runtime', StringComparison.OrdinalIgnoreCase))" />
-	    <_MauiXaml_XC Include="@(MauiXaml)" Condition="$([System.String]::new('%(MauiXaml.Inflator)').Contains('XamlC', StringComparison.OrdinalIgnoreCase))" />
+	    <_MauiXaml_SG Include="@(MauiXaml)" Condition="$([System.String]::new('%(MauiXaml.Inflator)').ToLowerInvariant().Contains('sourcegen'))" />
+	    <_MauiXaml_RT Include="@(MauiXaml)" Condition="$([System.String]::new('%(MauiXaml.Inflator)').ToLowerInvariant().Contains('runtime'))" />
+	    <_MauiXaml_XC Include="@(MauiXaml)" Condition="$([System.String]::new('%(MauiXaml.Inflator)').ToLowerInvariant().Contains('xamlc'))" />
       <_MauiXaml_AsEmbeddedResource Include="@(_MauiXaml_RT)" />
       <_MauiXaml_AsEmbeddedResource Include="@(_MauiXaml_XC)" KeepDuplicates="false" />      
 	</ItemGroup>
