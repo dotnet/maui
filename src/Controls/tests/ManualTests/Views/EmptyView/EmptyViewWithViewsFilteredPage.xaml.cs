@@ -2,12 +2,12 @@
 
 namespace Microsoft.Maui.ManualTests.Views
 {
-    public partial class EmptyViewWithViewsFilteredPage : ContentPage
-    {
-        public EmptyViewWithViewsFilteredPage()
-        {
-            InitializeComponent();
-            BindingContext = new MonkeysViewModel();
-        }
-    }
+	public partial class EmptyViewWithViewsFilteredPage : ContentPage
+	{
+		public EmptyViewWithViewsFilteredPage()
+		{
+			InitializeComponent();
+			BindingContext = new MonkeysViewModel();
+		}
+	}
 }

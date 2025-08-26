@@ -5,10 +5,10 @@ namespace PoolMathApp.Models
 {
 	public class FormattedText
 	{
-        public FormattedText()
-        : this(Array.Empty<TextSpan>())
-        {
-        }
+		public FormattedText()
+		: this(Array.Empty<TextSpan>())
+		{
+		}
 
 		public FormattedText(
 			string defaultColor = null,
@@ -22,8 +22,8 @@ namespace PoolMathApp.Models
 			FontWeight? defaultFontWeight = null,
 			params TextSpan[] spans)
 		{
-			DefaultColor= defaultColor;
-			DefaultColorKey= defaultColorKey;
+			DefaultColor = defaultColor;
+			DefaultColorKey = defaultColorKey;
 			DefaultFontFamily = defaultFontFamily;
 			DefaultFontSize = defaultFontSize;
 			DefaultNamedFontSize = defaultNamedFontSize;

@@ -1,13 +1,13 @@
-namespace Microsoft.Maui.ManualTests.Views 
+namespace Microsoft.Maui.ManualTests.Views
 {
-    public partial class HeaderFooterNullPage : ContentPage
-    {
-        public HeaderFooterNullPage()
-        {
-            InitializeComponent();
-            BindingContext = null;
-        }
-    }
+	public partial class HeaderFooterNullPage : ContentPage
+	{
+		public HeaderFooterNullPage()
+		{
+			InitializeComponent();
+			BindingContext = null;
+		}
+	}
 }
 
-    
+

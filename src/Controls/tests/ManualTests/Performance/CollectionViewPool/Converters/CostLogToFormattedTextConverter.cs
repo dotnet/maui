@@ -4,8 +4,8 @@ using System.Globalization;
 using System.Linq;
 using PoolMath;
 using PoolMath.Data;
-using PoolMathApp.Models;
 using PoolMathApp.Helpers;
+using PoolMathApp.Models;
 
 namespace PoolMathApp.Xaml
 {
