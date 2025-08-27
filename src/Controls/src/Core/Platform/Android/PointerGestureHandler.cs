@@ -9,6 +9,9 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal class PointerGestureHandler : Java.Lang.Object, AView.IOnHoverListener
 	{
+		// Tracks the last button pressed so we can use it for subsequent Move/Up/Cancel
+		ButtonsMask? _activeButton;
+
 		internal PointerGestureHandler(Func<View> getView, Func<AView> getControl)
 		{
 			GetView = getView;
@@ -69,34 +72,44 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (gesture is PointerGestureRecognizer pgr)
 				{
-					var pressedButton = GetPressedButton(e);
-					
-					// Check if this gesture should respond to the current button
-					if (!CheckButtonMask(pgr, pressedButton))
-						continue;
+					// Determine the button for this action. For Move/Up/Cancel prefer the active button, if any.
+					ButtonsMask current = GetPressedButton(e);
+					ButtonsMask effectiveButton = current;
 
 					switch (e.Action)
 					{
 						case MotionEventActions.Down:
-							pgr.SendPointerPressed(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs, pressedButton);
+							// Primary button goes through Down/Up
+							_activeButton = current;
+							effectiveButton = current;
+							if (!CheckButtonMask(pgr, effectiveButton))
+								continue;
+							pgr.SendPointerPressed(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs, effectiveButton);
 							break;
 						case MotionEventActions.Move:
-							pgr.SendPointerMoved(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs, pressedButton);
+							// Keep reporting the button that initiated the press if one is active
+							effectiveButton = _activeButton ?? current;
+							if (!CheckButtonMask(pgr, effectiveButton))
+								continue;
+							pgr.SendPointerMoved(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs, effectiveButton);
 							break;
 						case MotionEventActions.Up:
-							pgr.SendPointerReleased(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs, pressedButton);
+							// ACTION_UP does not carry ActionButton. Use the active one if available.
+							effectiveButton = _activeButton ?? current;
+							if (!CheckButtonMask(pgr, effectiveButton))
+								continue;
+							pgr.SendPointerReleased(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs, effectiveButton);
+							// Clear active button after release
+							_activeButton = null;
 							break;
 						case MotionEventActions.Cancel:
-							pgr.SendPointerExited(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs, pressedButton);
+							// Treat cancel similar to release for active button, then exit
+							effectiveButton = _activeButton ?? current;
+							if (!CheckButtonMask(pgr, effectiveButton))
+								continue;
+							pgr.SendPointerExited(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs, effectiveButton);
+							_activeButton = null;
 							break;
-					}
-
-					// Handle button press/release events on API 23+ ONLY for actual button events
-					if (OperatingSystem.IsAndroidVersionAtLeast(23))
-					{
-#pragma warning disable CA1416 // Validate platform compatibility
-						HandleButtonEvents(e, pgr, view, platformPointerArgs, pressedButton);
-#pragma warning restore CA1416 // Validate platform compatibility
 					}
 				}
 			}
@@ -104,26 +117,28 @@ namespace Microsoft.Maui.Controls.Platform
 			return false;
 		}
 
-		[SupportedOSPlatform("android23.0")]
-		void HandleButtonEvents(MotionEvent e, PointerGestureRecognizer pgr, View view, PlatformPointerEventArgs platformPointerArgs, ButtonsMask pressedButton)
-		{
-			// Only handle explicit button press/release events, not regular touch events
-			// This prevents duplicate events when a regular touch is also processed above
-			switch (e.Action)
-			{
-				case MotionEventActions.ButtonPress:
-					pgr.SendPointerPressed(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs, pressedButton);
-					break;
-				case MotionEventActions.ButtonRelease:
-					pgr.SendPointerReleased(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs, pressedButton);
-					break;
-				// Do not handle Down/Up/Move/Cancel here as they are already handled above
-			}
-		}
-
 		ButtonsMask GetPressedButton(MotionEvent motionEvent)
 		{
-			var buttonState = motionEvent?.ButtonState ?? MotionEventButtonState.Primary;
+			if (motionEvent == null)
+				return ButtonsMask.Primary;
+
+			var action = motionEvent.Action;
+
+			// For explicit button change events (mouse/pen), use ActionButton to determine which button changed
+			if (OperatingSystem.IsAndroidVersionAtLeast(23) &&
+				(action == MotionEventActions.ButtonPress || action == MotionEventActions.ButtonRelease))
+			{
+#pragma warning disable CA1416 // Validate platform compatibility
+				var actionButton = motionEvent.ActionButton; // Which button changed for this event
+				if ((actionButton & MotionEventButtonState.Secondary) == MotionEventButtonState.Secondary)
+					return ButtonsMask.Secondary;
+				if ((actionButton & MotionEventButtonState.Primary) == MotionEventButtonState.Primary)
+					return ButtonsMask.Primary;
+#pragma warning restore CA1416 // Validate platform compatibility
+			}
+
+			// Otherwise, infer from current ButtonState (covers Move/Down/Up and API < 23)
+			var buttonState = motionEvent.ButtonState;
 
 			// Check for secondary button (right mouse button)
 			if ((buttonState & MotionEventButtonState.Secondary) == MotionEventButtonState.Secondary)
