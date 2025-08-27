@@ -21,11 +21,7 @@ public partial class Maui4509 : ContentPage
 		}
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void OnPlatformAsCollectionElementiOS([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
 		public void OnPlatformAsCollectionElementiOS([Values] XamlInflator inflator)
-#endif
 		{
 			DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
 			var page = new Maui4509(inflator);
@@ -33,11 +29,7 @@ public partial class Maui4509 : ContentPage
 		}
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void OnPlatformAsCollectionElementAndroid([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
 		public void OnPlatformAsCollectionElementAndroid([Values] XamlInflator inflator)
-#endif
 		{
 			DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.Android));
 			var page = new Maui4509(inflator);
