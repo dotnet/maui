@@ -17,7 +17,8 @@ internal static class DiagnosticsManagerExtensions
 
 		builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IDiagnosticTagger, ViewDiagnosticTagger>(_ => new ViewDiagnosticTagger()));
 		builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IDiagnosticMetrics, LayoutDiagnosticMetrics>(_ => new LayoutDiagnosticMetrics()));
-
+		builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IDiagnosticMetrics, ScrollingDiagnosticMetrics>(_ => new ScrollingDiagnosticMetrics()));
+		
 		builder.Services.AddSingleton<IDiagnosticsManager>(services => new DiagnosticsManager(
 			services.GetServices<IDiagnosticMetrics>(),
 			services.GetServices<IDiagnosticTagger>(),
