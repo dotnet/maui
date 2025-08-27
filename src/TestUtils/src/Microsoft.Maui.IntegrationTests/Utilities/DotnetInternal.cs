@@ -13,6 +13,9 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			var buildArgs = $"\"{projectFile}\" -c {config}";
 
+			// TODO: Disable Xcode version checks so we can test Xcode 26
+			buildArgs += " -p:ValidateXcodeVersion=false";
+
 			if (!string.IsNullOrEmpty(target))
 				buildArgs += $" -t:{target}";
 
