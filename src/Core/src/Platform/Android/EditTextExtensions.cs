@@ -8,6 +8,7 @@ using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Graphics;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
@@ -47,13 +48,19 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				// Fallback to system default color
-				var typedValue = new TypedValue();
-				if (OperatingSystem.IsAndroidVersionAtLeast(23) &&
-					editText.Context?.Theme is Resources.Theme theme &&
-					theme.ResolveAttribute(Android.Resource.Attribute.TextColorPrimary, typedValue, true) &&
-					editText.Resources?.GetColor(typedValue.ResourceId, theme) is Android.Graphics.Color color)
+				if (OperatingSystem.IsAndroidVersionAtLeast(23) && editText.Context?.Theme is Resources.Theme theme)
 				{
-					editText.SetTextColor(color);
+					using var ta = theme.ObtainStyledAttributes([Android.Resource.Attribute.TextColorPrimary]);
+					var cs = ta.GetColorStateList(0);
+
+					if (cs is not null)
+					{
+						int[] DisabledState = [-Android.Resource.Attribute.StateEnabled];
+						int[] EnabledState = [Android.Resource.Attribute.StateEnabled];
+						var state = editText.Enabled ? EnabledState : DisabledState;
+						var color = new Android.Graphics.Color(cs.GetColorForState(state, Colors.Black.ToPlatform()));
+						editText.SetTextColor(color);
+					}
 				}
 			}
 		}
