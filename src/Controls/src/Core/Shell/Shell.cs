@@ -1013,6 +1013,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs/*" />
 		public Task GoToAsync(ShellNavigationState state, bool animate)
 		{
+			IsAnimateOnNavigation = animate;
 			return _navigationManager.GoToAsync(state, animate, false);
 		}
 
@@ -1032,6 +1033,7 @@ namespace Microsoft.Maui.Controls
 		/// <returns>A task that represents the asynchronous navigation operation.</returns>
 		public Task GoToAsync(ShellNavigationState state, bool animate, IDictionary<string, object> parameters)
 		{
+			IsAnimateOnNavigation = animate;
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
 		}
 
@@ -1055,6 +1057,7 @@ namespace Microsoft.Maui.Controls
 		/// <returns></returns>
 		public Task GoToAsync(ShellNavigationState state, bool animate, ShellNavigationQueryParameters shellNavigationQueryParameters)
 		{
+			IsAnimateOnNavigation = animate;
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(shellNavigationQueryParameters));
 		}
 
@@ -1156,6 +1159,7 @@ namespace Microsoft.Maui.Controls
 		ShellNavigationManager _navigationManager;
 		ShellFlyoutItemsManager _flyoutManager;
 		Page _previousPage;
+		internal bool IsAnimateOnNavigation = true;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Shell()
