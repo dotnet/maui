@@ -17,9 +17,6 @@ public class Issue31124 : _IssuesUITest
 	[Category(UITestCategories.DatePicker)]
 	public void DatePickerShouldMaintainTodaysDateWhenSetToNull()
 	{
-		// Get today's date for comparison
-		var todaysDate = DateTime.Today.ToString("M/d/yyyy");
-
 		// Find the initial date label text, should show today's date
 		var initialDateLabel = App.WaitForElement("DateLabel").GetText();
 		Assert.That(ContainsValidDate(initialDateLabel), Is.True, 
