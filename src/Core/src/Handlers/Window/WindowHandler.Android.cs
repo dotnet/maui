@@ -139,6 +139,7 @@ namespace Microsoft.Maui.Handlers
 
 				var appBarLayout = rootView.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
 				var navigationLayout = rootView.FindViewById<FragmentContainerView>(Resource.Id.navigationlayout_content);
+				bool hasNavigationBar = appBarLayout?.Visibility == ViewStates.Visible && appBarLayout.LayoutParameters?.Height > 0;
 
 				var toolbar = appBarLayout?.GetChildAt(0) as MaterialToolbar;
 				var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
@@ -148,10 +149,10 @@ namespace Microsoft.Maui.Handlers
 				var contentPaddingLeft = Math.Max(systemBars?.Left ?? 0, displayCutout?.Left ?? 0);
 				var contentPaddingRight = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
 
-				if (appBarLayout is not null && toolbar is not null)
+				if (appBarLayout is not null)
 				{
 					// Store the original height on first call, then always calculate from that base
-					var currentHeight = toolbar.LayoutParameters?.Height ?? 0;
+					var currentHeight = toolbar?.LayoutParameters?.Height ?? 0;
 					if (!_originalHeight.HasValue)
 					{
 						_originalHeight = currentHeight;
@@ -161,7 +162,7 @@ namespace Microsoft.Maui.Handlers
 					var newHeight = _originalHeight.Value + appbarInsets.Top;
 
 					// Update the layout parameters to extend into status bar area
-					if (toolbar.LayoutParameters != null)
+					if (toolbar?.LayoutParameters != null)
 					{
 						toolbar.LayoutParameters.Height = newHeight;
 						toolbar.RequestLayout();
@@ -176,14 +177,21 @@ namespace Microsoft.Maui.Handlers
 						appBarLayout.LayoutParameters = appBarLayoutParams;
 					}
 
-
-
 					var contentPaddingTop = appbarInsets.Top;
 					// Apply padding to toolbar content to avoid both system bars and display cutouts
-					toolbar.SetPadding(contentPaddingLeft, contentPaddingTop, contentPaddingRight, 0);
+					toolbar?.SetPadding(contentPaddingLeft, contentPaddingTop, contentPaddingRight, 0);
 
 					// Clear AppBarLayout padding to allow toolbar to extend fully
 					appBarLayout.SetPadding(0, 0, 0, 0);
+				}
+				else if (appBarLayout is not null && !hasNavigationBar)
+				{
+					// Set AppBarLayout height to 0 when HasNavigationBar is false
+					if (appBarLayout.LayoutParameters != null)
+					{
+						appBarLayout.LayoutParameters.Height = 0;
+						appBarLayout.RequestLayout();
+					}
 				}
 
 				// REMOVE MARGINS FROM NAVIGATION LAYOUT - Let it extend edge-to-edge
