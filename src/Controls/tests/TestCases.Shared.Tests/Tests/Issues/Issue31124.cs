@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -21,20 +22,36 @@ public class Issue31124 : _IssuesUITest
 
 		// Find the initial date label text, should show today's date
 		var initialDateLabel = App.WaitForElement("DateLabel").GetText();
-		Assert.That(initialDateLabel, Does.Contain(todaysDate), 
+		Assert.That(ContainsValidDate(initialDateLabel), Is.True, 
 			"DatePicker should initially show today's date");
 
 		// Click the button to set date to null
 		App.WaitForElement("SetNullButton").Click();
 
-		// Verify the date is still today's date after setting to null
+		// Verify the date is empty after setting to null
 		var dateAfterNull = App.WaitForElement("DateLabel").GetText();
-		Assert.That(dateAfterNull, Does.Contain(todaysDate), 
-			"DatePicker should still show today's date after being set to null");
+		Assert.That(ContainsValidDate(dateAfterNull), Is.False,
+			"DatePicker should be empty after being set to null");
+	}
+	
+	static bool IsValidDate(string? input)
+	{
+		return !string.IsNullOrWhiteSpace(input) && DateTime.TryParse(input, out _);
+	}
 
-		// Also verify the DatePicker itself shows the expected date
-		// This might vary by platform, so we'll check if it's not empty
-		var datePickerElement = App.WaitForElement("TestDatePicker");
-		Assert.That(datePickerElement, Is.Not.Empty);
+	static bool ContainsValidDate(string? labelText)
+	{
+		if (string.IsNullOrWhiteSpace(labelText))
+			return false;
+    
+		// Extract the date part after "Current Date: "
+		var prefix = "Current Date: ";
+		if (labelText.StartsWith(prefix))
+		{
+			var datePart = labelText.Substring(prefix.Length);
+			return IsValidDate(datePart);
+		}
+    
+		return false;
 	}
 }

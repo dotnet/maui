@@ -47,13 +47,13 @@ public class Issue31124 : ContentPage
 			Spacing = 20,
 			Children =
 			{
-				new Label { Text = "Test: Setting DatePicker.Date to null should keep today's date visible" },
+				new Label { Text = "Test: Setting DatePicker.Date to null should remove today's date" },
 				_datePicker,
 				_setNullButton,
 				_dateLabel,
 				new Label 
 				{ 
-					Text = "Expected: After clicking button, date should remain as today's date",
+					Text = "Expected: After clicking button, date should be null",
 					FontSize = 12,
 					TextColor = Colors.Gray
 				}
@@ -63,8 +63,8 @@ public class Issue31124 : ContentPage
 
 	void Button_Clicked(object sender, EventArgs e)
 	{
-		// Set datePicker.Date to null (which becomes default(DateTime))
-		_datePicker.Date = default(DateTime);
+		// Set datePicker.Date to null
+		_datePicker.Date = null;
 			
 		// Update the label to show the current date
 		_dateLabel.Text = $"Current Date: {_datePicker.Date:d}";
