@@ -31,11 +31,8 @@ public class Issue25200 : _IssuesUITest
 		// Verify Cancel button is visible
 		App.WaitForElement("Cancel");
 
-		// Take screenshot to validate proper sizing
-		VerifyScreenshot();
-
-		// Dismiss the ActionSheet - different methods for different platforms
-		DismissActionSheet();
+		// Take screenshot to validate proper sizing and dismiss the ActionSheet
+		VerifyScreenshotAndDismiss();
 	}
 
 	// Skip this test on macOS, after 6 elements the native behavior is to display elements horizontally - https://github.com/dotnet/maui/issues/29085
@@ -63,11 +60,8 @@ public class Issue25200 : _IssuesUITest
 		App.WaitForElement("Cancel");
 		App.WaitForElement("Confirm");
 
-		// Take screenshot to validate proper sizing
-		VerifyScreenshot();
-
-		// Dismiss the ActionSheet
-		DismissActionSheet();
+		// Take screenshot to validate proper sizing and dismiss the ActionSheet
+		VerifyScreenshotAndDismiss();
 	}
 #endif
 
@@ -78,9 +72,13 @@ public class Issue25200 : _IssuesUITest
 		App.WaitForElement("ShowLongTitleActionSheetButton");
 		App.Tap("ShowLongTitleActionSheetButton");
 
+#if IOS || MACCATALYST
+		// Use XPath for long title to avoid identifier length limitation
+		App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeStaticText[@label='This is a very long title that should wrap properly to multiple lines instead of being truncated or causing horizontal overflow issues like it might on Windows']"));
+#else
 		// Verify the ActionSheet with long title is visible and wraps properly
 		App.WaitForElement("This is a very long title that should wrap properly to multiple lines instead of being truncated or causing horizontal overflow issues like it might on Windows");
-		
+#endif
 		// Verify options are visible including long options
 		App.WaitForElement("First Option");
 		App.WaitForElement("Second Option - this is a very long option text that should also wrap properly to multiple lines just like it does on Android platform to ensure cross-platform consistency");
@@ -90,29 +88,22 @@ public class Issue25200 : _IssuesUITest
 		// Verify Cancel button is visible
 		App.WaitForElement("Cancel");
 
-		// Take screenshot to validate proper text wrapping and sizing
-		VerifyScreenshot();
-
-		// Dismiss the ActionSheet
-		DismissActionSheet();
+		// Take screenshot to validate proper sizing and dismiss the ActionSheet
+		VerifyScreenshotAndDismiss();
 	}
 
-	/// <summary>
-	/// Dismisses the ActionSheet using platform-appropriate method
-	/// </summary>
-	private void DismissActionSheet()
+	// If one test fails, don't block the others with previous ActionSheet still open
+	private void VerifyScreenshotAndDismiss()
 	{
-#if IOS || MACCATALYST
-		// On iOS and macOS, ActionSheets are dismissed by tapping outside the sheet area
-		// Get coordinates of an area outside the ActionSheet (use the instruction label area)
-		var instructionLabel = App.WaitForElement("InstructionLabel");
-		var instructionRect = instructionLabel.GetRect();
-		
-		// Tap at the instruction label coordinates to dismiss the ActionSheet
-		App.TapCoordinates(instructionRect.CenterX(), instructionRect.CenterY());
-#else
-		// On other platforms, tap the Cancel button directly
-		App.Tap("Cancel");
-#endif
+		try
+		{
+			VerifyScreenshot();
+			App.TapDisplayAlertButton("Cancel", 1);
+		}
+		catch (Exception)
+		{
+			App.TapDisplayAlertButton("Cancel", 1);
+			throw;
+		}
 	}
 }
