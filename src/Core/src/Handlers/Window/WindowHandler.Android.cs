@@ -139,9 +139,10 @@ namespace Microsoft.Maui.Handlers
 
 				var appBarLayout = rootView.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
 				var navigationLayout = rootView.FindViewById<FragmentContainerView>(Resource.Id.navigationlayout_content);
-				bool hasNavigationBar = appBarLayout?.Visibility == ViewStates.Visible && appBarLayout.LayoutParameters?.Height > 0;
 
 				var toolbar = appBarLayout?.GetChildAt(0) as MaterialToolbar;
+				bool hasNavigationBar = appBarLayout?.Visibility == ViewStates.Visible && toolbar?.LayoutParameters?.Height > 0;
+
 				var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 				var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
 
@@ -149,7 +150,7 @@ namespace Microsoft.Maui.Handlers
 				var contentPaddingLeft = Math.Max(systemBars?.Left ?? 0, displayCutout?.Left ?? 0);
 				var contentPaddingRight = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
 
-				if (appBarLayout is not null)
+				if (appBarLayout is not null && hasNavigationBar)
 				{
 					// Store the original height on first call, then always calculate from that base
 					var currentHeight = toolbar?.LayoutParameters?.Height ?? 0;
@@ -184,13 +185,13 @@ namespace Microsoft.Maui.Handlers
 					// Clear AppBarLayout padding to allow toolbar to extend fully
 					appBarLayout.SetPadding(0, 0, 0, 0);
 				}
-				else if (appBarLayout is not null && !hasNavigationBar)
+				else if (toolbar is not null && !hasNavigationBar)
 				{
 					// Set AppBarLayout height to 0 when HasNavigationBar is false
-					if (appBarLayout.LayoutParameters != null)
+					if (toolbar.LayoutParameters != null)
 					{
-						appBarLayout.LayoutParameters.Height = 0;
-						appBarLayout.RequestLayout();
+						toolbar.LayoutParameters.Height = 0;
+						toolbar.RequestLayout();
 					}
 				}
 
@@ -211,14 +212,14 @@ namespace Microsoft.Maui.Handlers
 					systemBars?.Left ?? 0,
 					0, // Top consumed by toolbar
 					systemBars?.Right ?? 0,
-					systemBars?.Bottom ?? 0
+					0 // Top consumed by rootview
 				) ?? Insets.None;
 
 				var newDisplayCutout = Insets.Of(
 					displayCutout?.Left ?? 0,
 					0, // Top consumed by toolbar
 					displayCutout?.Right ?? 0,
-					displayCutout?.Bottom ?? 0
+					0 // Top consumed by rootview
 				) ?? Insets.None;
 
 				// Return insets that the navigation content can use to respect side/bottom insets
