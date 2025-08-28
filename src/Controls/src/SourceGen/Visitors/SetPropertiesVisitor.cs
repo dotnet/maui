@@ -618,8 +618,13 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		if (receiverType is not null && !propertyType!.Equals(receiverType, SymbolEqualityComparer.Default))
 			parentObj = $"(({receiverType.ToFQDisplayString()}){parentObj})";
 
+		//look for intermediate implicit casts
+		string cast = string.Empty;
+		if (HasDoubleImplicitConversion(context.Variables[valueNode].Type, itemType, context, out var conv))
+			cast = "(" + conv!.ReturnType.ToFQDisplayString() + ")";
+
 		using (PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.FilePath))
-			writer.WriteLine($"{parentObj}.Add(({itemType.ToFQDisplayString()}){context.Variables[valueNode].Name});");
+			writer.WriteLine($"{parentObj}.Add(({itemType.ToFQDisplayString()}){cast}{context.Variables[valueNode].Name});");
 	}
 
 	static void AddToResourceDictionary(IndentedTextWriter writer, LocalVariable parentVar, IElementNode node, SourceGenContext context)
