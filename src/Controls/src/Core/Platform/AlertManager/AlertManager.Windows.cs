@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Platform
 					VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Auto
 				};
 
-				 if (PlatformView?.Content is Microsoft.UI.Xaml.FrameworkElement windowContent)
+				 if (PlatformView.Content is FrameworkElement windowContent)
 				 {
 				     alertDialog.RequestedTheme = windowContent.RequestedTheme;
 				 }
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls.Platform
 					DefaultButton = ContentDialogButton.Primary
 				};
 
-				 if (PlatformView?.Content is Microsoft.UI.Xaml.FrameworkElement windowContent)
+				 if (PlatformView.Content is FrameworkElement windowContent)
 				 {
 				     promptDialog.RequestedTheme = windowContent.RequestedTheme;
 				 }
