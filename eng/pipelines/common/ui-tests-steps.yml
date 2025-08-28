@@ -2,7 +2,7 @@ parameters:
   platform: '' # [ android, ios, windows, catalyst ]
   path: '' # path to csproj
   device: '' # the xharness device to use
-  deviceType: '' # the android device skin/type to use (e.g. pixel_9, Nexus 5X)
+  deviceType: '' # the android device skin/type to use (e.g. Pixel 9, Nexus 5X)
   cakeArgs: '' # additional cake args
   app: '' #path to app to test
   version: '' #the iOS version'
