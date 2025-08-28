@@ -10,6 +10,7 @@ readonly struct ScrollingInstrumentation : IDiagnosticInstrumentation
 {
     readonly IView _view;
     readonly Activity? _activity;
+    readonly long _startTime;
     readonly string _scrollType;
     readonly double _initialHorizontalOffset;
     readonly double _initialVerticalOffset;
@@ -28,6 +29,7 @@ readonly struct ScrollingInstrumentation : IDiagnosticInstrumentation
         _initialHorizontalOffset = horizontalOffset;
         _initialVerticalOffset = verticalOffset;
         _activity = view.StartDiagnosticActivity($"Scroll.{scrollType}");
+        _startTime = Stopwatch.GetTimestamp();
     }
 
     /// <summary>
@@ -55,13 +57,21 @@ readonly struct ScrollingInstrumentation : IDiagnosticInstrumentation
             var extendedTagList = BuildExtendedTagList(tagList);
             var totalDistance = CalculateScrollDistance();
 
-            // Record the scroll operation with velocity calculation
-            metrics.RecordScroll(_activity?.Duration, totalDistance, in extendedTagList);
+            // Calculate duration
+            TimeSpan? duration = _activity?.Duration;
+            if (duration is null)
+            {
+	            var elapsedTicks = Stopwatch.GetTimestamp() - _startTime;
+	            duration = new TimeSpan((long)(elapsedTicks * TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency));
+            }
+
+            // Record the scroll operation
+            metrics.RecordScroll(duration, in extendedTagList);
 
             // Check for potential jank (operations taking longer than 16ms for 60fps)
-            if (_activity?.Duration.TotalMilliseconds > 16)
+            if (duration?.TotalMilliseconds > 16)
             {
-                metrics.RecordJank(in extendedTagList);
+	            metrics.RecordJank(in extendedTagList);
             }
         }
         catch
@@ -141,40 +151,35 @@ readonly struct ScrollingInstrumentation : IDiagnosticInstrumentation
         {
 	        return "CollectionView";
         }
-
-        if (typeName.Contains("ListView", StringComparison.OrdinalIgnoreCase))
-        {
-	        return "ListView";
-        }
 #endif
         return typeName;
     }
 
     static string GetScrollDirection(double horizontalDistance, double verticalDistance, ScrollOrientation orientation)
     {
-        // Use a small threshold to avoid noise from minimal movements
-        const double minMovementThreshold = 1.0;
-        
-        if (horizontalDistance > verticalDistance && horizontalDistance > minMovementThreshold)
-        {
-            return "Horizontal";
-        }
-        else if (verticalDistance > horizontalDistance && verticalDistance > minMovementThreshold)
-        {
-            return "Vertical";
-        }
-        else if (horizontalDistance > minMovementThreshold && verticalDistance > minMovementThreshold)
-        {
-            return "Both";
-        }
-        
-        // Fallback to orientation if no significant movement detected
-        return orientation switch
-        {
-            ScrollOrientation.Horizontal => "Horizontal",
-            ScrollOrientation.Vertical => "Vertical",
-            ScrollOrientation.Both => "Both",
-            _ => "Unknown"
-        };
+	    // Use a small threshold to avoid noise from minimal movements
+	    const double minMovementThreshold = 1.0;
+
+	    if (horizontalDistance > verticalDistance && horizontalDistance > minMovementThreshold)
+	    {
+		    return "Horizontal";
+	    }
+	    else if (verticalDistance > horizontalDistance && verticalDistance > minMovementThreshold)
+	    {
+		    return "Vertical";
+	    }
+	    else if (horizontalDistance > minMovementThreshold && verticalDistance > minMovementThreshold)
+	    {
+		    return "Both";
+	    }
+
+	    // Fallback to orientation if no significant movement detected
+	    return orientation switch
+	    {
+		    ScrollOrientation.Horizontal => "Horizontal",
+		    ScrollOrientation.Vertical => "Vertical",
+		    ScrollOrientation.Both => "Both",
+		    _ => "Unknown"
+	    };
     }
 }
