@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml;
@@ -482,6 +483,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void HandleScroll(ScrollViewer scrollViewer)
 		{
+			// Start scroll instrumentation for user gesture
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(Element, "UserGesture",
+				_previousHorizontalOffset, _previousVerticalOffset);
+			
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
 			{
 				HorizontalOffset = scrollViewer.HorizontalOffset,

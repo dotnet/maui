@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using AndroidX.RecyclerView.Widget;
+using Microsoft.Maui.Diagnostics;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -34,6 +35,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnScrolled(recyclerView, dx, dy);
 
+			// Start scroll instrumentation for user gesture
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(_itemsView, "UserGesture",
+				recyclerView.FromPixels(_horizontalOffset),
+				recyclerView.FromPixels(_verticalOffset));
+			
 			// TODO: These offsets will be incorrect upon row size or count change.
 			// They are currently provided in place of LayoutManager's default offset calculation
 			// because it does not report accurate values in the presence of uneven rows.

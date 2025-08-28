@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Diagnostics;
 using ObjCRuntime;
 using UIKit;
 
@@ -52,6 +53,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 
 			var itemsView = viewController.ItemsView;
+			
+			// Start scroll instrumentation for user gesture
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(itemsView, "UserGesture",
+				PreviousHorizontalOffset, PreviousVerticalOffset);
+			
 			var source = viewController.ItemsSource;
 			itemsView.SendScrolled(itemsViewScrolledEventArgs);
 
