@@ -1,6 +1,6 @@
 namespace Controls.TestCases.HostApp.Issues;
 
-[Issue(IssueTracker.Github, 31064, "Indicator view size doesnt update dynamically", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, "31064", "Indicator view size should update dynamically", PlatformAffected.iOS)]
 
 public class Issue31064 : ContentPage
 {

@@ -10,7 +10,7 @@ public class Issue31064 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "Indicator view size doesnt update dynamically";
+	public override string Issue => "Indicator view size should update dynamically";
 
 	[Test]
 	[Category(UITestCategories.IndicatorView)]
