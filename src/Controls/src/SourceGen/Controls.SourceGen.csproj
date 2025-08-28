@@ -8,14 +8,7 @@
     <NoWarn>$(NoWarn);NU5128;</NoWarn>
     <IsRoslynComponent>true</IsRoslynComponent>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-    <!-- 
-      _SOURCEGEN_* constants:
-      They should be all turned on, disabling them makes it easier to read the generated code while debugging the generator.
-      - _SOURCEGEN_LINEINFO_ENABLE: Augment the code with #line directives.
-      - _SOURCEGEN_SOURCEINFO_ENABLE: write calls to RegisterSourceInfo (between conditions) for Instrumentation purposes
-    -->
-    <DefineConstants>$(DefineConstants);__SOURCEGEN__;_SOURCEGEN_LINEINFO_ENABLE;_SOURCEGEN_SOURCEINFO_ENABLE</DefineConstants>
-    <!-- <DefineConstants>$(DefineConstants);__SOURCEGEN__</DefineConstants> -->
+    <DefineConstants>$(DefineConstants);__SOURCEGEN__</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>

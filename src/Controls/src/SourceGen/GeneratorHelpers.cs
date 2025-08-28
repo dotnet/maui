@@ -45,15 +45,21 @@ static class GeneratorHelpers
 		var (additionalText, optionsProvider) = tuple;
 		var fileOptions = optionsProvider.GetOptions(additionalText);
 		if (!fileOptions.TryGetValue("build_metadata.additionalfiles.GenKind", out string? kind) || kind is null)
-		{
 			return null;
-		}
 
 		fileOptions.TryGetValue("build_metadata.additionalfiles.TargetPath", out var targetPath);
 		fileOptions.TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out var manifestResourceName);
 		fileOptions.TryGetValue("build_metadata.additionalfiles.RelativePath", out var relativePath);
 		fileOptions.TryGetValue("build_property.targetframework", out var targetFramework);
 		fileOptions.TryGetValue("build_property.Configuration", out var configuration);
+
+		bool enableDiagnostics = false;
+		if (fileOptions.TryGetValue("build_property.MauiXamlEnableDiagnostics", out var enDiag) && string.Compare(enDiag, "true", StringComparison.OrdinalIgnoreCase) == 0)
+			enableDiagnostics = true;
+		if (fileOptions.TryGetValue("build_property.additionalfiles.EnableDiagnostics", out var enDiag1) && string.Compare(enDiag1, "true", StringComparison.OrdinalIgnoreCase) == 0)
+			enableDiagnostics = true;
+		if (fileOptions.TryGetValue("build_property.additionalfiles.EnableDiagnostics", out var enDiag2) && string.Compare(enDiag2, "false", StringComparison.OrdinalIgnoreCase) == 0)
+			enableDiagnostics = false;
 
 		var xamlinflator = 0;
 		if (fileOptions.TryGetValue("build_metadata.additionalfiles.Inflator", out var inflator) &&  !string.IsNullOrEmpty(inflator))
@@ -82,6 +88,7 @@ static class GeneratorHelpers
 			Kind = kind,
 			Inflator = (XamlInflator)xamlinflator,
 			EnableLineInfo = enableLineInfo,
+			EnableDiagnostics = enableDiagnostics,
 			TargetFramework = targetFramework,
 			Configuration = configuration!,
 		};

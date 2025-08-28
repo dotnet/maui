@@ -100,7 +100,8 @@ static class InitializeComponentCodeWriter
 				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType)
 				{
 					FilePath = xamlItem.ProjectItem.RelativePath,
-					EnableLineInfo = xamlItem.ProjectItem.EnableLineInfo
+					EnableLineInfo = xamlItem.ProjectItem.EnableLineInfo,
+					EnableDiagnostics = xamlItem.ProjectItem.EnableDiagnostics,
 				};
 				using (newblock())
 				{
