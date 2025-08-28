@@ -131,7 +131,12 @@ readonly struct ScrollingInstrumentation : IDiagnosticInstrumentation
         {
 	        return "ScrollView";
         }
-
+        
+        if (typeName.Contains("CarouselView", StringComparison.OrdinalIgnoreCase))
+        {
+	        return "CarouselView";
+        }
+        
         if (typeName.Contains("CollectionView", StringComparison.OrdinalIgnoreCase))
         {
 	        return "CollectionView";
