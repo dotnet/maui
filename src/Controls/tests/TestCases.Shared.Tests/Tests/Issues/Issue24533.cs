@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS		//On Windows, the RefreshCommand is executed multiple times, which causes the app to crash.
+﻿#if TEST_FAILS_ON_WINDOWS		//For more info : https://github.com/dotnet/maui/issues/31375
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
