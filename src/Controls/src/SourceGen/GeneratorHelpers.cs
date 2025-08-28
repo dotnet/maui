@@ -52,7 +52,7 @@ static class GeneratorHelpers
 		fileOptions.TryGetValue("build_property.Configuration", out var configuration);
 
 		bool enableDiagnostics = false;
-		if (fileOptions.TryGetValue("build_property.MauiXamlEnableDiagnostics", out var enDiag) && string.Compare(enDiag, "true", StringComparison.OrdinalIgnoreCase) == 0)
+		if (fileOptions.TryGetValue("build_property.EnableMauiXamlDiagnostics", out var enDiag) && string.Compare(enDiag, "true", StringComparison.OrdinalIgnoreCase) == 0)
 			enableDiagnostics = true;
 		if (fileOptions.TryGetValue("build_property.additionalfiles.EnableDiagnostics", out enDiag) && string.Compare(enDiag, "true", StringComparison.OrdinalIgnoreCase) == 0)
 			enableDiagnostics = true;
