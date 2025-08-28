@@ -20,8 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("PasteToEntryButton");
 			App.Click("PasteToEntryButton");
 			App.Click("PasteToEditorButton");
-			var entryText = App.FindElement("Entry").GetText;
-			var editorText = App.FindElement("Editor").GetText;
+			var entryText = App.FindElement("Entry").GetText();
+			var editorText = App.FindElement("Editor").GetText();
 
 			Assert.That(entryText, Is.EqualTo("Hello"));
 			Assert.That(editorText, Is.EqualTo("Hello"));
