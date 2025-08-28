@@ -1,6 +1,6 @@
 # MAUI Manual Tests
 
-This wiki explains the different ways to compile the Microsoft.Maui.ManualTests project, which is designed to work with multiple compilation modes depending on your development scenario. It also covers testing procedures, including using nightly builds, bug handling, and reporting.
+This document explains the different ways to compile the Microsoft.Maui.ManualTests project, which is designed to work with multiple compilation modes depending on your development scenario. It also covers testing procedures, including using nightly builds, bug handling, and reporting.
 
 ## Overview
 
