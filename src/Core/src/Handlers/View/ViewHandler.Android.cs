@@ -47,51 +47,111 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTranslationX(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler())
+			{
+				// Mapped through _InitializeBatchedProperties
+				return;
+			}
+
 			handler.ToPlatform().UpdateTranslationX(view);
 		}
 
 		public static void MapTranslationY(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler())
+			{
+				// Mapped through _InitializeBatchedProperties
+				return;
+			}
+
 			handler.ToPlatform().UpdateTranslationY(view);
 		}
 
 		public static void MapScale(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler())
+			{
+				// Mapped through _InitializeBatchedProperties
+				return;
+			}
+
 			handler.ToPlatform().UpdateScale(view);
 		}
 
 		public static void MapScaleX(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler())
+			{
+				// Mapped through _InitializeBatchedProperties
+				return;
+			}
+
 			handler.ToPlatform().UpdateScaleX(view);
 		}
 
 		public static void MapScaleY(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler())
+			{
+				// Mapped through _InitializeBatchedProperties
+				return;
+			}
+
 			handler.ToPlatform().UpdateScaleY(view);
 		}
 
 		public static void MapRotation(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler())
+			{
+				// Mapped through _InitializeBatchedProperties
+				return;
+			}
+
 			handler.ToPlatform().UpdateRotation(view);
 		}
 
 		public static void MapRotationX(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler())
+			{
+				// Mapped through _InitializeBatchedProperties
+				return;
+			}
+
 			handler.ToPlatform().UpdateRotationX(view);
 		}
 
 		public static void MapRotationY(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler())
+			{
+				// Mapped through _InitializeBatchedProperties
+				return;
+			}
+
 			handler.ToPlatform().UpdateRotationY(view);
 		}
 
 		public static void MapAnchorX(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler())
+			{
+				// Mapped through _InitializeBatchedProperties
+				return;
+			}
+
 			handler.ToPlatform().UpdateAnchorX(view);
 		}
 
 		public static void MapAnchorY(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler())
+			{
+				// Mapped through _InitializeBatchedProperties
+				return;
+			}
+
 			handler.ToPlatform().UpdateAnchorY(view);
 		}
 

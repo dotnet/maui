@@ -1,12 +1,12 @@
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/CollapseStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.CollapseStyle']/Docs/*" />
+	/// <summary>Enumerates collapse styles for master-detail pages.</summary>
 	public enum CollapseStyle
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/CollapseStyle.xml" path="//Member[@MemberName='Full']/Docs/*" />
+		/// <summary>Indicates that panes should fully collapse.</summary>
 		Full,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/CollapseStyle.xml" path="//Member[@MemberName='Partial']/Docs/*" />
+		/// <summary>Indicates that panes should partially collapse.</summary>
 		Partial
 	}
 }

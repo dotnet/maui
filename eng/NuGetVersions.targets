@@ -264,6 +264,10 @@
         Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)"
     />
     <PackageReference
+        Update="Mono.ApiTools.MSBuildTasks"
+        Version="$(MonoApiToolsMSBuildTasksPackageVersion)"
+    />
+    <PackageReference
         Update="Tizen.UIExtensions.NUI"
         Version="$(TizenUIExtensionsVersion)"
     />

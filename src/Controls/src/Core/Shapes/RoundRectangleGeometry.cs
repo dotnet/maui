@@ -5,16 +5,24 @@ using Rect = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.RoundRectangleGeometry']/Docs/*" />
+	/// <summary>
+	/// Represents a geometry that describes a rounded rectangle.
+	/// </summary>
 	public class RoundRectangleGeometry : GeometryGroup
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="RoundRectangleGeometry"/> class.
+		/// </summary>
 		public RoundRectangleGeometry()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="RoundRectangleGeometry"/> class with the specified corner radius and rectangle.
+		/// </summary>
+		/// <param name="cornerRadius">The corner radius for the rounded rectangle.</param>
+		/// <param name="rect">The rectangle that defines the bounds of the geometry.</param>
 		public RoundRectangleGeometry(CornerRadius cornerRadius, Rect rect)
 		{
 			CornerRadius = cornerRadius;
@@ -31,7 +39,10 @@ namespace Microsoft.Maui.Controls.Shapes
 			(bindable as RoundRectangleGeometry)?.UpdateGeometry();
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="//Member[@MemberName='Rect']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the rectangle that defines the bounds of the geometry.
+		/// </summary>
+		/// <value>A <see cref="Rect"/> that defines the bounds of the geometry.</value>
 		public Rect Rect
 		{
 			set { SetValue(RectProperty, value); }
@@ -48,7 +59,11 @@ namespace Microsoft.Maui.Controls.Shapes
 			(bindable as RoundRectangleGeometry)?.UpdateGeometry();
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="//Member[@MemberName='CornerRadius']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the corner radius for the round rectangle geometry.
+		/// </summary>
+		/// <value>A <see cref="CornerRadius"/> value that specifies the radius for each corner of the round rectangle geometry.</value>
+		/// <remarks>When specifying corner radii, the order of values is top left, top right, bottom left, and bottom right.</remarks>
 		public CornerRadius CornerRadius
 		{
 			set { SetValue(CornerRadiusProperty, value); }

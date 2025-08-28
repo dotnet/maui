@@ -3,7 +3,7 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="Type[@FullName='Microsoft.Maui.Controls.AutomationProperties']/Docs/*" />
+	/// <summary>Contains both abbreviated and detailed UI information that is supplied to accessibility services.</summary>
 	public class AutomationProperties
 	{
 		/// <summary>Bindable property for <c>HelpText</c>.</summary>
@@ -24,7 +24,8 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("Use SemanticProperties.Description instead. See the conceptual docs about accessibility for more information.")]
 		public static readonly BindableProperty NameProperty = BindableProperty.Create("Name", typeof(string), typeof(AutomationProperties), default(string));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='GetHelpText']/Docs/*" />
+		/// <summary>Returns the help text, if any, for the bindable object.</summary>
+		/// <param name="bindable">The bindable object whose help text to get.</param>
 		public static string GetHelpText(BindableObject bindable)
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -32,7 +33,9 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='GetIsInAccessibleTree']/Docs/*" />
+		/// <summary>Gets a nullable Boolean value that tells whether the bindable object is available to the accessibility system.</summary>
+		/// <param name="bindable">The bindable object whose status to check.</param>
+		/// <returns><see langword="true"/> if <paramref name="bindable"/> is available to the accessibility system. <see langword="false"/> or <see langword="null"/> if it is not.</returns>
 		public static bool? GetIsInAccessibleTree(BindableObject bindable)
 		{
 			return (bool?)bindable.GetValue(IsInAccessibleTreeProperty);
@@ -43,7 +46,9 @@ namespace Microsoft.Maui.Controls
 			return (bool?)bindable.GetValue(ExcludedWithChildrenProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='GetLabeledBy']/Docs/*" />
+		/// <summary>Returns the element that labels <paramref name="bindable"/>, if <paramref name="bindable"/> does not label itself and if another element describes it in the UI.</summary>
+		/// <param name="bindable">The object whose label to find.</param>
+		/// <returns>The element that labels <paramref name="bindable"/>, if present.</returns>
 		[System.ComponentModel.TypeConverter(typeof(ReferenceTypeConverter))]
 		public static VisualElement GetLabeledBy(BindableObject bindable)
 		{
@@ -52,7 +57,9 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='GetName']/Docs/*" />
+		/// <summary>Returns the short, developer-specified, introductory name of the element, such as "Progress Indicator" or "Button".</summary>
+		/// <param name="bindable">The object whose name to get.</param>
+		/// <returns>The short, introdctory name of the element.</returns>
 		public static string GetName(BindableObject bindable)
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -60,7 +67,9 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='SetHelpText']/Docs/*" />
+		/// <summary>Sets the help text for <paramref name="bindable"/>.</summary>
+		/// <param name="bindable">The object whose help text to set.</param>
+		/// <param name="value">The new help text value.</param>
 		public static void SetHelpText(BindableObject bindable, string value)
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -68,7 +77,9 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='SetIsInAccessibleTree']/Docs/*" />
+		/// <summary>Sets a Boolean value that tells whether the bindable object is available to the accessibility system.</summary>
+		/// <param name="bindable">The object ot add or remove from the accessibility system.</param>
+		/// <param name="value"><see langword="true"/> to make <paramref name="bindable"/> visible to the accessibility system. <see langword="false"/> to remove it from the system.</param>
 		public static void SetIsInAccessibleTree(BindableObject bindable, bool? value)
 		{
 			bindable.SetValue(IsInAccessibleTreeProperty, value);
@@ -79,7 +90,9 @@ namespace Microsoft.Maui.Controls
 			bindable.SetValue(ExcludedWithChildrenProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='SetLabeledBy']/Docs/*" />
+		/// <summary>Sets another element, such as a <see cref="Microsoft.Maui.Controls.Label"/> as the label for <paramref name="bindable"/>.</summary>
+		/// <param name="bindable">The object whose label to set.</param>
+		/// <param name="value">The visual element that will name <paramref name="bindable"/>, or <see langword="null"/> to make <paramref name="bindable"/> its own label.</param>
 		public static void SetLabeledBy(BindableObject bindable, VisualElement value)
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -87,7 +100,9 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='SetName']/Docs/*" />
+		/// <summary>Sets the short, developer-specified, introductory name of the element, such as "Progress Indicator" or "Button".</summary>
+		/// <param name="bindable">The object whose name to set.</param>
+		/// <param name="value">The new name.</param>
 		public static void SetName(BindableObject bindable, string value)
 		{
 #pragma warning disable CS0618 // Type or member is obsolete

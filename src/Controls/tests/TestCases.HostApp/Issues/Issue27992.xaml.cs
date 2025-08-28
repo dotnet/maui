@@ -1,4 +1,4 @@
-namespace Controls.TestCases.HostApp.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 27992, "Entry Completed Event Triggered Twice", PlatformAffected.Android)]
 public partial class Issue27992 : ContentPage

@@ -73,10 +73,8 @@ namespace Microsoft.Maui.Platform
 				platformLabel.AttributedText = modAttrText;
 		}
 
-		internal static void UpdateTextHtml(this UILabel platformLabel, ILabel label)
+		internal static void UpdateTextHtml(this UILabel platformLabel, string text)
 		{
-			string text = label.Text ?? string.Empty;
-
 			var attr = new NSAttributedStringDocumentAttributes
 			{
 				DocumentType = NSDocumentType.HTML,
@@ -88,6 +86,14 @@ namespace Microsoft.Maui.Platform
 			};
 
 			NSError nsError = new();
+
+			// NOTE: Sometimes this will crash with some sort of consistency error.
+			// https://github.com/dotnet/maui/issues/25946
+			// The caller should ensure that this extension is dispatched. We cannot
+			// do it here as we need to re-apply the formatting and we cannot call
+			// into Controls from Core.
+			// This is observed with CarouselView 1 but not with 2, so hopefully this
+			// will be just disappear once we switch.
 #pragma warning disable CS8601
 			platformLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
 #pragma warning restore CS8601

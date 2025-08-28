@@ -5,10 +5,13 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="Type[@FullName='Microsoft.Maui.Controls.Grid']/Docs/*" />
+	/// <summary>A layout that arranges views in rows and columns.</summary>
 	[ContentProperty(nameof(Children))]
 	public class Grid : Layout, IGridLayout
 	{
+		static readonly ColumnDefinitionCollection DefaultColumnDefinitions = new(new ColumnDefinition { Width = GridLength.Star });
+		static readonly RowDefinitionCollection DefaultRowDefinitions = new(new RowDefinition { Height = GridLength.Star });
+
 		readonly Dictionary<IView, GridInfo> _viewInfo = new();
 
 		/// <summary>Bindable property for <see cref="ColumnDefinitions"/>.</summary>
@@ -116,7 +119,7 @@ namespace Microsoft.Maui.Controls
 		IReadOnlyList<IGridRowDefinition> IGridLayout.RowDefinitions => _rowDefs ??= new(RowDefinitions);
 		IReadOnlyList<IGridColumnDefinition> IGridLayout.ColumnDefinitions => _colDefs ??= new(ColumnDefinitions);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='ColumnDefinitions']/Docs/*" />
+		/// <summary>Provides the interface for the bound property that gets or sets the ordered collection of <see cref="Microsoft.Maui.Controls.ColumnDefinition"/> objects that control the layout of columns in the <see cref="Microsoft.Maui.Controls.Grid"/>.</summary>
 		[System.ComponentModel.TypeConverter(typeof(ColumnDefinitionCollectionTypeConverter))]
 		public ColumnDefinitionCollection ColumnDefinitions
 		{
@@ -124,7 +127,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ColumnDefinitionsProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='RowDefinitions']/Docs/*" />
+		/// <summary>Provides the interface for the bound property that gets or sets the collection of RowDefinition objects that control the heights of each row.</summary>
+		/// <remarks>RowDefinitions is an ordered set of</remarks>
 		[System.ComponentModel.TypeConverter(typeof(RowDefinitionCollectionTypeConverter))]
 		public RowDefinitionCollection RowDefinitions
 		{
@@ -132,14 +136,14 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(RowDefinitionsProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='RowSpacing']/Docs/*" />
+		/// <summary>Gets or sets the amount of space between rows in the Grid. This is a bindable property.</summary>
 		public double RowSpacing
 		{
 			get { return (double)GetValue(RowSpacingProperty); }
 			set { SetValue(RowSpacingProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='ColumnSpacing']/Docs/*" />
+		/// <summary>Gets or sets the amount of space between columns in the Grid. This is a bindable property.</summary>
 		public double ColumnSpacing
 		{
 			get { return (double)GetValue(ColumnSpacingProperty); }
@@ -352,6 +356,83 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnBindingContextChanged();
 			UpdateRowColumnBindingContexts();
+		}
+
+		internal override void ComputeConstraintForView(View view)
+		{
+			var result = LayoutConstraint.None;
+
+			if (view.VerticalOptions.Alignment == LayoutAlignment.Fill && ViewHasFixedHeightDefinition(view))
+			{
+				result |= LayoutConstraint.VerticallyFixed;
+			}
+
+			if (view.HorizontalOptions.Alignment == LayoutAlignment.Fill && ViewHasFixedWidthDefinition(view))
+			{
+				result |= LayoutConstraint.HorizontallyFixed;
+			}
+
+			view.ComputedConstraint = result;
+		}
+
+		bool ViewHasFixedHeightDefinition(BindableObject view)
+		{
+			var gridHasFixedHeight = (Constraint & LayoutConstraint.VerticallyFixed) != 0;
+
+			var row = GetRow(view);
+			var rowSpan = GetRowSpan(view);
+			var rowDefinitions = RowDefinitions;
+			if (rowDefinitions?.Count is not > 0)
+			{
+				rowDefinitions = DefaultRowDefinitions;
+			}
+
+			for (int i = row; i < row + rowSpan && i < rowDefinitions.Count; i++)
+			{
+				GridLength height = rowDefinitions[i].Height;
+
+				if (height.IsAuto)
+				{
+					return false;
+				}
+
+				if (!gridHasFixedHeight && height.IsStar)
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		bool ViewHasFixedWidthDefinition(BindableObject view)
+		{
+			var gridHasFixedWidth = (Constraint & LayoutConstraint.HorizontallyFixed) != 0;
+
+			var col = GetColumn(view);
+			var colSpan = GetColumnSpan(view);
+			var columnDefinitions = ColumnDefinitions;
+			if (columnDefinitions?.Count is not > 0)
+			{
+				columnDefinitions = DefaultColumnDefinitions;
+			}
+
+			for (int i = col; i < col + colSpan && i < columnDefinitions.Count; i++)
+			{
+				GridLength width = columnDefinitions[i].Width;
+
+				if (width.IsAuto)
+				{
+					return false;
+				}
+
+				if (!gridHasFixedWidth && width.IsStar)
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		void UpdateRowColumnBindingContexts()

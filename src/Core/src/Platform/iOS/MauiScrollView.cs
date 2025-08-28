@@ -14,6 +14,8 @@ namespace Microsoft.Maui.Platform
 		double _lastArrangeHeight;
 		double _lastArrangeWidth;
 
+		UIUserInterfaceLayoutDirection? _previousEffectiveUserInterfaceLayoutDirection;
+
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
 		ICrossPlatformLayout? ICrossPlatformLayoutBacking.CrossPlatformLayout
@@ -50,6 +52,41 @@ namespace Microsoft.Maui.Platform
 				var crossPlatformBounds = AdjustedContentInset.InsetRect(bounds).Size.ToSize();
 				var crossPlatformContentSize = crossPlatformLayout.CrossPlatformArrange(new Rect(new Point(), crossPlatformBounds));
 				var contentSize = crossPlatformContentSize.ToCGSize();
+
+				// For Right-To-Left (RTL) layouts, we need to adjust the content arrangement and offset
+				// to ensure the content is correctly aligned and scrolled. This involves a second layout
+				// arrangement with an adjusted starting point and recalculating the content offset.
+				if (_previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection)
+				{
+					// In mac platform, Scrollbar is not updated based on FlowDirection, so resetting the scroll indicators
+					// It's a native limitation; to maintain platform consistency, a hack fix is applied to show the Scrollbar based on the FlowDirection.
+					if (OperatingSystem.IsMacCatalyst() && _previousEffectiveUserInterfaceLayoutDirection is not null)
+					{
+						bool showsVertical = ShowsVerticalScrollIndicator;
+						bool showsHorizontal = ShowsHorizontalScrollIndicator;
+
+						ShowsVerticalScrollIndicator = false;
+						ShowsHorizontalScrollIndicator = false;
+
+						ShowsVerticalScrollIndicator = showsVertical;
+						ShowsHorizontalScrollIndicator = showsHorizontal;
+					}
+
+					if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+					{
+						var horizontalOffset = contentSize.Width - crossPlatformBounds.Width;
+						crossPlatformLayout.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), crossPlatformBounds));
+						ContentOffset = new CGPoint(horizontalOffset, 0);
+					}
+					else if (_previousEffectiveUserInterfaceLayoutDirection is not null)
+					{
+						ContentOffset = new CGPoint(0, ContentOffset.Y);
+					}
+				}
+
+				// When switching between LTR and RTL, we need to re-arrange and offset content exactly once
+				// to avoid cumulative shifts or incorrect offsets on subsequent layouts.
+				_previousEffectiveUserInterfaceLayoutDirection = EffectiveUserInterfaceLayoutDirection;
 
 				// When the content size changes, we need to adjust the scrollable area size so that the content can fit in it.
 				if (ContentSize != contentSize)
