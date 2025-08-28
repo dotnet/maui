@@ -139,15 +139,18 @@ namespace Microsoft.Maui.Platform
 				{
 					if (searchBar.CancelButtonColor is not null)
 						drawable.SetColorFilter(searchBar.CancelButtonColor, FilterMode.SrcIn);
-					else
+					else if (OperatingSystem.IsAndroidVersionAtLeast(23) && image.Context?.Theme is Theme theme)
 					{
-						var typedValue = new TypedValue();
-						if (OperatingSystem.IsAndroidVersionAtLeast(23) &&
-							image.Context?.Theme is Theme theme &&
-							theme.ResolveAttribute(Android.Resource.Attribute.TextColorPrimary, typedValue, true) &&
-							image.Resources?.GetColor(typedValue.ResourceId, theme) is Color imageColor)
+						using var ta = theme.ObtainStyledAttributes([Android.Resource.Attribute.TextColorPrimary]);
+						var cs = ta.GetColorStateList(0);
+
+						if (cs is not null)
 						{
-							drawable.SetColorFilter(imageColor, FilterMode.SrcIn);
+							int[] DisabledState = [-Android.Resource.Attribute.StateEnabled];
+							int[] EnabledState = [Android.Resource.Attribute.StateEnabled];
+							var state = image.Enabled ? EnabledState : DisabledState;
+							var color = new Color(cs.GetColorForState(state, Color.Black));
+							drawable.SetColorFilter(color, FilterMode.SrcIn);
 						}
 					}
 				}
