@@ -397,6 +397,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			if (goToPosition >= ItemsSource.ItemCount)
+			{
+				goToPosition = Math.Max(0, ItemsSource.ItemCount - 1);
+			}
+			
 			if (goToPosition != carouselPosition || forceScroll)
 			{
 				UICollectionViewScrollPosition uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
