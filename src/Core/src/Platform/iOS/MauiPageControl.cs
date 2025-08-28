@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var uiPageControlContentView = Subviews[0];
-			if (uiPageControlContentView.Subviews.Length > 0)
+			if (uiPageControlContentView.Subviews.Length > 1)
 			{
 				foreach (var uiPageControlIndicatorContentView in uiPageControlContentView.Subviews)
 				{
