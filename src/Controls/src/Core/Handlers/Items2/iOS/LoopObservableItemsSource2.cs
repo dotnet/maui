@@ -22,20 +22,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override NSIndexPath[] CreateIndexesFrom(int startIndex, int count)
 		{
-			if (!Loop)
-			{
-				return base.CreateIndexesFrom(startIndex, count);
-			}
 			if (ItemCount == 0)
 			{
 				count += 2;
 				startIndex = 0;
-				return IndexPathHelpers.GenerateIndexPathRange(_section, startIndex, count);
 			}
-			// Adjust startIndex by +1 to force iOS UICollectionView cache invalidation during navigation scenarios
-			// where ItemsSource updates don't trigger GetCell calls. The loop manager AdjustedIndex method in GetCell will correct
-			// these offset indices back to proper data source positions.
-			return IndexPathHelpers.GenerateIndexPathRange(_section, startIndex + 1, count);
+			return IndexPathHelpers.GenerateIndexPathRange(_section, startIndex, count);
 		}
 
 		private protected override bool ShouldReload(NotifyCollectionChangedEventArgs args)
