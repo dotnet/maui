@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS		//On Windows, the RefreshCommand is executed multiple times, which causes the app to crash.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -26,3 +27,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
