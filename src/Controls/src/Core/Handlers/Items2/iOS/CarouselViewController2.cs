@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _isRotating = false;
 		bool _isUpdating = false;
 		int _section = 0;
+		bool _wasDetachedFromWindow = false;
 		CarouselViewLoopManager _carouselViewLoopManager;
 
 		// We need to keep track of the old views to update the visual states
@@ -37,22 +38,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
 		{
 			UICollectionViewCell cell;
-
-			// In iOS 15 and 16, when the ItemsSource of the CarouselView is updated from another page
-			// via the ViewModel (or similar), GetCell is called immediately—while _carouselViewLoopManager
-			// is still null. As a result, an invalid index get from the GetAdjustedIndexPathForItemSource method in the base.GetCell , So unexpected items shown.
-			// 
-			// However, in iOS 17 and 18, GetCell is only called after navigating back to the page containing
-			// the CarouselView. By that time, CarouselViewLoopManager has been properly initialized during
-			// the window attachment, so the proper valid index get from GetAdjustedIndexPathForItemSource method in the base.GetCell
-
-			// Initialize the loop manager if needed to ensure proper index calculations
-			// This is critical for scenarios where GetCell is called before normal initialization
-			// such as when navigating back to a page after updating the ItemsSource
-			if (ItemsView?.Loop == true && _carouselViewLoopManager is null)
-			{
-				InitializeCarouselViewLoopManager();
-			}
 
 			cell = base.GetCell(collectionView, indexPath);
 
@@ -175,12 +160,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			base.AttachingToWindow();
 			Setup(ItemsView);
+			// Refresh the current visible item to catch any ItemsSource changes that occurred on other pages
+			// This ensures that updates made on other pages are reflected when navigating back
+			if (_wasDetachedFromWindow)
+			{
+				RefreshVisibleItems();
+			}
+			_wasDetachedFromWindow = false;
 			// if we navigate back on NavigationController LayoutSubviews might not fire.
 			await UpdateInitialPosition();
 		}
 
+		void RefreshVisibleItems()
+		{
+			if (ItemsView is not CarouselView || CollectionView is null || ItemsSource?.ItemCount == 0)
+			{
+				return;
+			}
+			//Get current visible item index paths to ensure proper refresh of carousel items
+			var indexPaths = CollectionView.IndexPathsForVisibleItems;
+			if (indexPaths?.Length > 0)
+			{
+				CollectionView.ReloadItems(indexPaths);
+			}
+		}
+
 		private protected override void DetachingFromWindow()
 		{
+			_wasDetachedFromWindow = true;
 			base.DetachingFromWindow();
 			TearDown(ItemsView);
 		}
