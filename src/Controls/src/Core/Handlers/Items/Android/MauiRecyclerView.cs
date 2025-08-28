@@ -524,6 +524,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		public override bool OnTouchEvent(MotionEvent e)
+		{
+			// If ItemsView is disabled, don't handle touch events
+			if (ItemsView?.IsEnabled == false)
+			{
+				return false;
+			}
+
+			return base.OnTouchEvent(e);
+		}
+
+		public override bool OnInterceptTouchEvent(MotionEvent e)
+		{
+			// If ItemsView is disabled, intercept all touch events to prevent interactions
+			if (ItemsView?.IsEnabled == false)
+			{
+				return true;
+			}
+
+			return base.OnInterceptTouchEvent(e);
+		}
+
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			base.OnLayout(changed, l, t, r, b);
