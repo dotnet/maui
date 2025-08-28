@@ -210,16 +210,16 @@ namespace Microsoft.Maui.Handlers
 				// Only consume top insets since we handled them in the toolbar
 				var newSystemBars = Insets.Of(
 					systemBars?.Left ?? 0,
-					0, // Top consumed by toolbar
+					!hasNavigationBar ? displayCutout?.Top ?? 0 : 0, // Top consumed by toolbar
 					systemBars?.Right ?? 0,
-					0 // Top consumed by rootview
+					0 // Bottom consumed by rootview
 				) ?? Insets.None;
 
 				var newDisplayCutout = Insets.Of(
 					displayCutout?.Left ?? 0,
-					0, // Top consumed by toolbar
+					!hasNavigationBar ? displayCutout?.Top ?? 0 : 0, // Top consumed by toolbar
 					displayCutout?.Right ?? 0,
-					0 // Top consumed by rootview
+					0 // Bottom consumed by rootview
 				) ?? Insets.None;
 
 				// Return insets that the navigation content can use to respect side/bottom insets
