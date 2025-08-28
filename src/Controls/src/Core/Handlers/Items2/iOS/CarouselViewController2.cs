@@ -76,7 +76,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public override async void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			UpdateScrollingConstraints();
 			await UpdateInitialPosition();
 		}
 
@@ -157,7 +156,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_isUpdating = false;
 		}
 
-		void UpdateScrollingConstraints()
+		internal void UpdateScrollingConstraints()
 		{
 			CollectionView.AlwaysBounceVertical = !IsHorizontal;
 			CollectionView.AlwaysBounceHorizontal = IsHorizontal;
