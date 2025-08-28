@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.Maui.Platform.IPlatformMeasureInvalidationController
 Microsoft.Maui.Platform.IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow() -> void
 Microsoft.Maui.Platform.IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating = false) -> bool
 virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
