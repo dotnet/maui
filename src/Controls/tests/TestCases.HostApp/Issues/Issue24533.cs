@@ -6,68 +6,105 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 24533, "[iOS] RefreshView causes CollectionView scroll position to reset", PlatformAffected.iOS)]
 public class Issue24533 : ContentPage
 {
-	public ObservableCollection<string> Items { get; set; } = new();
-	public bool IsLoading { get; set; }
-	public ICommand RefreshCommand { get; set; }
+	ObservableCollection<string> _items;
+	public ObservableCollection<string> Items
+	{
+		get => _items;
+		set
+		{
+			_items = value;
+			OnPropertyChanged(nameof(Items));
+		}
+	}
 
-	int count = 0;
+	bool _isLoading;
+	public bool IsLoading
+	{
+		get => _isLoading;
+		set
+		{
+			_isLoading = value;
+			OnPropertyChanged(nameof(IsLoading));
+		}
+	}
+
+	ICommand _refreshCommand;
+	public ICommand RefreshCommand
+	{
+		get => _refreshCommand;
+		set
+		{
+			_refreshCommand = value;
+			OnPropertyChanged(nameof(RefreshCommand));
+		}
+	}
+
+		int count;
 
 	public Issue24533()
 	{
-		// Initialize the RefreshCommand
-		RefreshCommand = new Command(OnRefresh);
+		// Initialize properties
+		RefreshCommand = new Command(AddItems);
+		Items = new ObservableCollection<string>();
 
-		// Create UI controls entirely in C#
-		var loadMoreButton = new Button
-		{
-			Text = "Load More"
-		};
-		loadMoreButton.Clicked += OnLoadMoreClicked;
-
+		// Create CollectionView
 		var collectionView = new CollectionView
 		{
-			ItemsSource = Items,
+			SelectionMode = SelectionMode.Single,
 			ItemTemplate = new DataTemplate(() =>
 			{
-				var label = new Label { Padding = 10 };
+				var stack = new VerticalStackLayout();
+				var label = new Label();
 				label.SetBinding(Label.TextProperty, ".");
-				return label;
+				stack.Children.Add(label);
+				return stack;
 			}),
-			Footer = loadMoreButton
+
+			
 		};
 
+		var footerStack = new VerticalStackLayout();
+				var btn = new Button { Text = "Load More", AutomationId="Footer" };
+				btn.Clicked += Button_Clicked;
+				footerStack.Children.Add(btn);
+			collectionView.Footer =	 btn;
+			
+
+		// Bind ItemsSource
+		collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(Items));
+
+		// Create RefreshView
 		var refreshView = new RefreshView
 		{
-			Command = RefreshCommand
+			Margin = 16
 		};
 		refreshView.SetBinding(RefreshView.IsRefreshingProperty, nameof(IsLoading));
+		refreshView.SetBinding(RefreshView.CommandProperty, nameof(RefreshCommand));
 		refreshView.Content = collectionView;
 
 		Content = refreshView;
 
-		// Set the binding context and load initial data
+		// Set BindingContext to itself (so bindings work)
 		BindingContext = this;
-		LoadItems();
+
+		// Load initial items
+		AddItems();
 	}
 
-	void OnRefresh()
-	{
-		LoadItems();
-	}
+		void Button_Clicked(object sender, EventArgs e)
+		{
+			IsLoading = true;
+		}
 
-	void LoadItems()
-	{
-		for (int i = 0; i < 20; i++)
-			Items.Add($"Item {count + i}");
-		count += 20;
+		void AddItems()
+		{
+			// To simulate the reset behavior: Reassign Items collection like XAML scenario
+			foreach (int value in Enumerable.Range(count, 25))
+			{
+				Items.Add(value.ToString());
+			}
+			count += 20;
 
-		IsLoading = false;
-		OnPropertyChanged(nameof(IsLoading));
-	}
-
-	void OnLoadMoreClicked(object sender, EventArgs e)
-	{
-		LoadItems();
-	}
-}
-
+			IsLoading = false;
+        }
+    }
