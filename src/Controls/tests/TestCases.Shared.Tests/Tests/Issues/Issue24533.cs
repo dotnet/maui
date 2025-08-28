@@ -22,6 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("Footer");
 			App.ScrollTo("Footer");
 			App.Tap("Footer");
+			VerifyScreenshot();
 		}
 	}
 }
