@@ -133,6 +133,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory]
+		[InlineData(100.0, 50.0, double.NaN, 100.0, 50.0)]
+		[InlineData(75.0, 25.0, double.PositiveInfinity, 75.0, 25.0)]
+		[InlineData(200.0, 150.0, double.NegativeInfinity, 200.0, 150.0)]
+		public void TransformSwipeCoordinatesWithRotation_InvalidRotation_ReturnsOriginalCoordinates(
+			double inputX, double inputY, double rotation, double expectedX, double expectedY)
+		{
+			var result = Internals.SwipeGestureExtensions.TransformSwipeCoordinatesWithRotation(inputX, inputY, rotation);
+
+			Assert.Equal(expectedX, result.x, 1);
+			Assert.Equal(expectedY, result.y, 1);
+		}
+
+		[Theory]
 		[InlineData(SwipeDirection.Up, 90.0, SwipeDirection.Right)]
 		[InlineData(SwipeDirection.Right, 90.0, SwipeDirection.Down)]
 		[InlineData(SwipeDirection.Down, 90.0, SwipeDirection.Left)]
@@ -151,6 +164,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(SwipeDirection.Down, 180.0, SwipeDirection.Up)]
 		[InlineData(SwipeDirection.Left, 180.0, SwipeDirection.Right)]
 		public void TransformSwipeDirectionForRotation_180Degree_ReturnsCorrectDirection(
+			SwipeDirection direction, double rotation, SwipeDirection expected)
+		{
+			var result = Internals.SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, rotation);
+
+			Assert.Equal(expected, result);
+		}
+
+		[Theory]
+		[InlineData(SwipeDirection.Up, double.NaN, SwipeDirection.Up)]
+		[InlineData(SwipeDirection.Right, double.PositiveInfinity, SwipeDirection.Right)]
+		[InlineData(SwipeDirection.Down, double.NegativeInfinity, SwipeDirection.Down)]
+		public void TransformSwipeDirectionForRotation_InvalidRotation_ReturnsOriginalDirection(
 			SwipeDirection direction, double rotation, SwipeDirection expected)
 		{
 			var result = Internals.SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, rotation);
