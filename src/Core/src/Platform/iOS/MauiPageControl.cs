@@ -9,7 +9,8 @@ namespace Microsoft.Maui.Platform
 	public class MauiPageControl : UIPageControl, IUIViewLifeCycleEvents
 	{
 		const int DefaultIndicatorSize = 6;
-
+		const string SquareSymbol = "squareshape.fill";
+		const string CircleSymbol = "circle.fill";
 		WeakReference<IIndicatorView>? _indicatorView;
 		bool _updatingPosition;
 
@@ -106,9 +107,11 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var uiPageControlContentView = Subviews[0];
-			if (uiPageControlContentView.Subviews.Length > 0)
+			if (uiPageControlContentView.Subviews.Length > 1)
 			{
-				SetIndicatorShape(uiPageControlContentView, IsSquare);
+				// Retrieve the UIPageControl indicator content view from the first index of the content view
+				var uiPageControlIndicatorContentView = uiPageControlContentView.Subviews[1];
+				SetIndicatorShape(uiPageControlIndicatorContentView, IsSquare);
 			}
 		}
 
@@ -119,9 +122,14 @@ namespace Microsoft.Maui.Platform
 			{
 				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				{
-					imageView.Image = UIImage.GetSystemImage(isSquare ? "squareshape.fill" : "circle.fill");
+					imageView.Image = UIImage.GetSystemImage(isSquare ? SquareSymbol : CircleSymbol);
 					return;
 				}
+			}
+
+			if (view.Subviews is null || view.Subviews.Length == 0)
+			{
+				return;
 			}
 
 			foreach (var child in view.Subviews)
