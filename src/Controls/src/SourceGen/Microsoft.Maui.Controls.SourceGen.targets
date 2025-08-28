@@ -14,8 +14,6 @@
     <ItemGroup Condition="'$(XmlnsDefinitionItems)' != ''">
       <CompilerVisibleProperty Include="XmlnsDefinitionItems" />
     </ItemGroup>
-    <Message Text="XmlnsDefinitionItems: $(XmlnsDefinitionItems)" Importance="high" Condition="'@(XmlnsDefinition)' != ''" />
-    <Message Text="XmlnsDefinition items found: @(XmlnsDefinition)" Importance="high" Condition="'@(XmlnsDefinition)' != ''" />
   </Target>
 
 </Project>
