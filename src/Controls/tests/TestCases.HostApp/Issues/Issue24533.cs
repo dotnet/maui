@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -46,7 +47,7 @@ public class Issue24533 : ContentPage
 		// Initialize properties
 		RefreshCommand = new Command(AddItems);
 		Items = new ObservableCollection<string>();
-
+		this.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>().SetUseSafeArea(true);
 		// Create CollectionView
 		var collectionView = new CollectionView
 		{
@@ -63,11 +64,9 @@ public class Issue24533 : ContentPage
 			
 		};
 
-		var footerStack = new VerticalStackLayout();
-				var btn = new Button { Text = "Load More", AutomationId="Footer" };
-				btn.Clicked += Button_Clicked;
-				footerStack.Children.Add(btn);
-			collectionView.Footer =	 btn;
+		var btn = new Button { Text = "Load More", AutomationId="Footer" };
+		btn.Clicked += Button_Clicked;
+		collectionView.Footer =	 btn;
 			
 
 		// Bind ItemsSource
