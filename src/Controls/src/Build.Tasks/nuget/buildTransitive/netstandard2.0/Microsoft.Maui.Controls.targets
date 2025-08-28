@@ -2,6 +2,8 @@
 
 	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.XamlCTask" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Build.Tasks.dll" />
 
+	<Import Project="Microsoft.Maui.Controls.SourceGen.targets" />
+
 	<PropertyGroup>
 		<SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
 		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>
@@ -15,6 +17,7 @@
 	<ItemGroup>
 		<AvailableItemName Include="MauiXaml" />
 		<AvailableItemName Include="MauiCss" />
+		<AvailableItemName Include="XmlnsDefinition" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(DisableMauiAnalyzers)' != 'true' ">

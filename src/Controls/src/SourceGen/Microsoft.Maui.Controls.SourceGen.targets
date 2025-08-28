@@ -1,10 +1,21 @@
 <Project>
 
+  <!-- Add the XmlnsDefinition item name to AvailableItemNames -->
+  <ItemGroup>
+    <AvailableItemName Include="XmlnsDefinition" />
+  </ItemGroup>
+
   <!-- Target to convert XmlnsDefinition items to properties for source generator consumption -->
-  <Target Name="_PrepareXmlnsDefinitionItems" BeforeTargets="CoreCompile">
+  <Target Name="_PrepareXmlnsDefinitionItems" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
     <PropertyGroup>
+      <!-- Transform XmlnsDefinition items to namespace|assemblyName format, separated by semicolons -->
       <XmlnsDefinitionItems>@(XmlnsDefinition -> '%(Identity)|%(AssemblyName)', ';')</XmlnsDefinitionItems>
     </PropertyGroup>
+    <ItemGroup Condition="'$(XmlnsDefinitionItems)' != ''">
+      <CompilerVisibleProperty Include="XmlnsDefinitionItems" />
+    </ItemGroup>
+    <Message Text="XmlnsDefinitionItems: $(XmlnsDefinitionItems)" Importance="high" Condition="'@(XmlnsDefinition)' != ''" />
+    <Message Text="XmlnsDefinition items found: @(XmlnsDefinition)" Importance="high" Condition="'@(XmlnsDefinition)' != ''" />
   </Target>
 
 </Project>
