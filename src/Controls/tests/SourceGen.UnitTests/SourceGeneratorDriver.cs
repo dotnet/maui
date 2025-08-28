@@ -20,6 +20,10 @@ public static class SourceGeneratorDriver
 
 	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, params AdditionalFile[] additionalFiles)
 		where T : IIncrementalGenerator, new()
+		=> RunGenerator<T>(compilation, globalOptions: null, additionalFiles);
+
+	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, System.Collections.Generic.Dictionary<string, string>? globalOptions, params AdditionalFile[] additionalFiles)
+		where T : IIncrementalGenerator, new()
 	{
 		ISourceGenerator generator = new T().AsSourceGenerator();
 
@@ -30,7 +34,7 @@ public static class SourceGeneratorDriver
 
 		GeneratorDriver driver = CSharpGeneratorDriver.Create([generator], driverOptions: options)
 			.AddAdditionalTexts(additionalFiles.Select(f => f.Text).ToImmutableArray())
-			.WithUpdatedAnalyzerConfigOptions(new CustomAnalyzerConfigOptionsProvider(additionalFiles));
+			.WithUpdatedAnalyzerConfigOptions(new CustomAnalyzerConfigOptionsProvider(additionalFiles, globalOptions));
 
 		driver = driver.RunGenerators(compilation);
 
@@ -51,7 +55,7 @@ public static class SourceGeneratorDriver
 
 		GeneratorDriver driver = CSharpGeneratorDriver.Create([generator], driverOptions: options)
 			.AddAdditionalTexts(additionalFiles.Select(f => f.Text).ToImmutableArray())
-			.WithUpdatedAnalyzerConfigOptions(new CustomAnalyzerConfigOptionsProvider(additionalFiles));
+			.WithUpdatedAnalyzerConfigOptions(new CustomAnalyzerConfigOptionsProvider(additionalFiles, null));
 
 		driver = driver.RunGenerators(compilation);
 		GeneratorDriverRunResult runResult1 = driver.GetRunResult();
@@ -95,13 +99,15 @@ public static class SourceGeneratorDriver
 	private class CustomAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
 	{
 		private readonly IImmutableDictionary<string, AdditionalFile> _additionalFiles;
+		private readonly AnalyzerConfigOptions _globalOptions;
 
-		public CustomAnalyzerConfigOptionsProvider(AdditionalFile[] additionalFiles)
+		public CustomAnalyzerConfigOptionsProvider(AdditionalFile[] additionalFiles, System.Collections.Generic.Dictionary<string, string>? globalOptions = null)
 		{
 			_additionalFiles = additionalFiles.ToImmutableDictionary(f => f.Text.Path, f => f);
+			_globalOptions = new CustomGlobalAnalyzerConfigOptions(globalOptions ?? new System.Collections.Generic.Dictionary<string, string>());
 		}
 
-		public override AnalyzerConfigOptions GlobalOptions => throw new System.NotImplementedException();
+		public override AnalyzerConfigOptions GlobalOptions => _globalOptions;
 
 		public override AnalyzerConfigOptions GetOptions(SyntaxTree tree)
 		{
@@ -146,6 +152,21 @@ public static class SourceGeneratorDriver
 
 				return value is not null;
 			}
+		}
+	}
+
+	private class CustomGlobalAnalyzerConfigOptions : AnalyzerConfigOptions
+	{
+		private readonly System.Collections.Generic.Dictionary<string, string> _globalOptions;
+
+		public CustomGlobalAnalyzerConfigOptions(System.Collections.Generic.Dictionary<string, string> globalOptions)
+		{
+			_globalOptions = globalOptions;
+		}
+
+		public override bool TryGetValue(string key, [NotNullWhen(true)] out string? value)
+		{
+			return _globalOptions.TryGetValue(key, out value);
 		}
 	}
 

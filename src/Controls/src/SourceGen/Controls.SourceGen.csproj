@@ -62,6 +62,7 @@
     <ItemGroup>
       <_CopyItems Include="$(TargetDir)*.dll" Exclude="$(TargetDir)System.*.dll" />
       <_CopyItems Include="$(TargetDir)*.pdb" Exclude="$(TargetDir)System.*.pdb" />
+      <_CopyItems Include="Microsoft.Maui.Controls.SourceGen.targets" />
     </ItemGroup>
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)" ContinueOnError="true" Retries="0" />
   </Target>

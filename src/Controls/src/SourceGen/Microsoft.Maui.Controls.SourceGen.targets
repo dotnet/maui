@@ -1,0 +1,10 @@
+<Project>
+
+  <!-- Target to convert XmlnsDefinition items to properties for source generator consumption -->
+  <Target Name="_PrepareXmlnsDefinitionItems" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <XmlnsDefinitionItems>@(XmlnsDefinition -> '%(Identity)|%(AssemblyName)', ';')</XmlnsDefinitionItems>
+    </PropertyGroup>
+  </Target>
+
+</Project>

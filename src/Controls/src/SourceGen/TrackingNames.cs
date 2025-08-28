@@ -10,6 +10,7 @@ public class TrackingNames
 	public const string ReferenceCompilationProvider = nameof(ReferenceCompilationProvider);
 	public const string ReferenceTypeCacheProvider = nameof(ReferenceTypeCacheProvider);
 	public const string XmlnsDefinitionsProvider = nameof(XmlnsDefinitionsProvider);
+	public const string XmlnsDefinitions = nameof(XmlnsDefinitions);
 	public const string XamlProjectItemProvider = nameof(XamlProjectItemProvider);
 	public const string XamlSourceProvider = nameof(XamlSourceProvider);
 }
