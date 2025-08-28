@@ -1,4 +1,5 @@
 ﻿using Android.Views;
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Layouts.LayoutExtensions;
 
@@ -90,7 +91,12 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
-
+			
+			// Start scroll instrumentation for user gesture
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(VirtualView, "UserGesture", 
+				platformView.Context.FromPixels(e.OldScrollX), 
+				platformView.Context.FromPixels(e.OldScrollY));
+			
 			int scrollX = e.ScrollX;
 			int scrollY = e.ScrollY;
 
@@ -155,7 +161,11 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
-
+			
+			// Start scroll instrumentation for programmatic scroll
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(scrollView as IView ?? handler.VirtualView, "Programmatic", 
+				scrollView.HorizontalOffset, scrollView.VerticalOffset);
+			
 			var horizontalOffsetDevice = (int)context.ToPixels(request.HorizontalOffset);
 			var verticalOffsetDevice = (int)context.ToPixels(request.VerticalOffset);
 

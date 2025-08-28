@@ -1,5 +1,6 @@
 ﻿using System;
 using CoreGraphics;
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Primitives;
@@ -98,8 +99,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
+				// Start scroll instrumentation for programmatic scroll
+				using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(scrollView, "Programmatic",
+					scrollView.HorizontalOffset, scrollView.VerticalOffset);
+				
 				var uiScrollView = handler.PlatformView;
-
+				
 				if (uiScrollView.ContentSize == CGSize.Empty && handler is ScrollViewHandler scrollViewHandler)
 				{
 					// If the ContentSize of the UIScrollView has not yet been defined,
@@ -237,7 +242,11 @@ namespace Microsoft.Maui.Handlers
 				{
 					return;
 				}
-
+				
+				// Start scroll instrumentation for user gesture
+				using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(VirtualView, "UserGesture",
+					VirtualView.HorizontalOffset, VirtualView.VerticalOffset);
+				
 				VirtualView.HorizontalOffset = platformView.ContentOffset.X;
 				VirtualView.VerticalOffset = platformView.ContentOffset.Y;
 			}
