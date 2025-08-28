@@ -36,52 +36,25 @@ namespace Microsoft.Maui.Platform
 					editText.SetHintTextColor(c);
 				}
 			}
-			else
+			else if (TryGetDefaultStateColor(searchView, Android.Resource.Attribute.TextColorHint, out var color))
 			{
-				if (OperatingSystem.IsAndroidVersionAtLeast(23) &&
-					searchView.Context?.Theme is Theme theme)
-				{
-					using var ta = theme.ObtainStyledAttributes([Android.Resource.Attribute.TextColorPrimary]);
-					var cs = ta.GetColorStateList(0);
+				editText.SetHintTextColor(color);
 
-					if (cs is not null)
-					{
-						int[] DisabledState = [-Android.Resource.Attribute.StateEnabled];
-						int[] EnabledState = [Android.Resource.Attribute.StateEnabled];
-						var state = searchView.Enabled ? EnabledState : DisabledState;
-						var color = new Color(cs.GetColorForState(state, Color.Black));
-
-						editText.SetTextColor(color);
-
-						var searchMagIconImage = searchView.FindViewById<ImageView>(Resource.Id.search_mag_icon);
-						searchMagIconImage?.Drawable?.SetTint(color);
-					}
-				}
+				var searchMagIconImage = searchView.FindViewById<ImageView>(Resource.Id.search_mag_icon);
+				searchMagIconImage?.Drawable?.SetTint(color);
 			}
 		}
 
 		internal static void UpdateTextColor(this SearchView searchView, ITextStyle entry)
 		{
-			if (OperatingSystem.IsAndroidVersionAtLeast(23) &&
-				searchView.GetFirstChildOfType<EditText>() is EditText editText &&
-				editText.Context?.Theme is Theme theme)
+			if (TryGetDefaultStateColor(searchView, Android.Resource.Attribute.TextColorPrimary, out var color) &&
+				searchView.GetFirstChildOfType<EditText>() is EditText editText)
 			{
-				using var ta = theme.ObtainStyledAttributes([Android.Resource.Attribute.TextColorPrimary]);
-				var cs = ta.GetColorStateList(0);
+				if (entry.TextColor is null)
+					editText.SetTextColor(color);
 
-				if (cs is not null)
-				{
-					int[] DisabledState = [-Android.Resource.Attribute.StateEnabled];
-					int[] EnabledState = [Android.Resource.Attribute.StateEnabled];
-					var state = searchView.Enabled ? EnabledState : DisabledState;
-					var color = new Color(cs.GetColorForState(state, Color.Black));
-
-					if (entry.TextColor is null)
-						editText.SetTextColor(color);
-
-					var searchMagIconImage = searchView.FindViewById<ImageView>(Resource.Id.search_mag_icon);
-					searchMagIconImage?.Drawable?.SetTint(color);
-				}
+				var searchMagIconImage = searchView.FindViewById<ImageView>(Resource.Id.search_mag_icon);
+				searchMagIconImage?.Drawable?.SetTint(color);
 			}
 		}
 
@@ -158,20 +131,8 @@ namespace Microsoft.Maui.Platform
 				{
 					if (searchBar.CancelButtonColor is not null)
 						drawable.SetColorFilter(searchBar.CancelButtonColor, FilterMode.SrcIn);
-					else if (OperatingSystem.IsAndroidVersionAtLeast(23) && image.Context?.Theme is Theme theme)
-					{
-						using var ta = theme.ObtainStyledAttributes([Android.Resource.Attribute.TextColorPrimary]);
-						var cs = ta.GetColorStateList(0);
-
-						if (cs is not null)
-						{
-							int[] DisabledState = [-Android.Resource.Attribute.StateEnabled];
-							int[] EnabledState = [Android.Resource.Attribute.StateEnabled];
-							var state = image.Enabled ? EnabledState : DisabledState;
-							var color = new Color(cs.GetColorForState(state, Color.Black));
-							drawable.SetColorFilter(color, FilterMode.SrcIn);
-						}
-					}
+					else if (TryGetDefaultStateColor(searchView,Android.Resource.Attribute.TextColorPrimary, out var color))
+						drawable.SetColorFilter(color, FilterMode.SrcIn);
 				}
 			}
 		}
@@ -228,6 +189,29 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			editText.SetInputType(searchBar);
+		}
+
+		static bool TryGetDefaultStateColor(SearchView searchView, int attribute, out Color color)
+		{
+			color = default;
+
+			if (!OperatingSystem.IsAndroidVersionAtLeast(23))
+				return false;
+
+			if (searchView.Context?.Theme is not Theme theme)
+				return false;
+
+			int[] s_disabledState = [-Android.Resource.Attribute.StateEnabled];
+			int[] s_enabledState = [Android.Resource.Attribute.StateEnabled];
+
+			using var ta = theme.ObtainStyledAttributes([attribute]);
+			var cs = ta.GetColorStateList(0);
+			if (cs is null)
+				return false;
+
+			var state = searchView.Enabled ? s_enabledState : s_disabledState;
+			color = new Color(cs.GetColorForState(state, Color.Black));
+			return true;
 		}
 	}
 }
