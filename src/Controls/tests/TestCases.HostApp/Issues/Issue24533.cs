@@ -90,20 +90,20 @@ public class Issue24533 : ContentPage
 		AddItems();
 	}
 
-		void Button_Clicked(object sender, EventArgs e)
+	void Button_Clicked(object sender, EventArgs e)
+	{
+		IsLoading = true;
+	}
+
+	void AddItems()
+	{
+		// To simulate the reset behavior: Reassign Items collection like XAML scenario
+		foreach (int value in Enumerable.Range(count, 25))
 		{
-			IsLoading = true;
+			Items.Add(value.ToString());
 		}
+		count += 20;
 
-		void AddItems()
-		{
-			// To simulate the reset behavior: Reassign Items collection like XAML scenario
-			foreach (int value in Enumerable.Range(count, 25))
-			{
-				Items.Add(value.ToString());
-			}
-			count += 20;
-
-			IsLoading = false;
-        }
-    }
+		IsLoading = false;
+	}
+}
