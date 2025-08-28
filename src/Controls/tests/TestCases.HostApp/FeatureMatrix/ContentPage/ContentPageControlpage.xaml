@@ -121,8 +121,9 @@
                      FontAttributes="Bold"
                      FontSize="16"
                      VerticalOptions="Center"/>
-              <Entry Grid.Row="4"
+              <local:UITestEntry Grid.Row="4"
                      Grid.Column="1"
+                     IsCursorVisible="False"
                      Text="{Binding Title}"
                      Placeholder="Enter page title"
                      AutomationId="TitleEntry"
@@ -139,7 +140,8 @@
               <VerticalStackLayout Grid.Row="5"
                                    Grid.Column="1"
                                    Spacing="5">
-                     <Entry Text="{Binding KeyboardTestText}"
+                     <local:UITestEntry Text="{Binding KeyboardTestText}"
+                            IsCursorVisible="False"
                             Placeholder="Type here to test keyboard behavior..."
                             AutomationId="TestEntry"
                             FontSize="12"/>

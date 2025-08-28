@@ -26,6 +26,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
 
+			App.WaitForElement("KeyboardTestLabel");
+			App.Tap("KeyboardTestLabel");
+
 			App.WaitForElement("ContentButton");
 			App.Tap("ContentButton");
 
