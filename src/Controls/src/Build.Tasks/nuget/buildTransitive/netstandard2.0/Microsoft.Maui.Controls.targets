@@ -10,9 +10,11 @@
     <_MauiXamlInflator Condition="' $(MauiXamlInflator)' != '' ">$(MauiXamlInflator)</_MauiXamlInflator>
     <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' And '$(Configuration)' == 'Debug' ">Runtime</_MauiXamlInflator>
     <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' And '$(Configuration)' != 'Debug' ">XamlC</_MauiXamlInflator>
-    
+
     <MauiXamlEnableDiagnostics Condition=" '$(MauiXamlEnableDiagnostics)' == '' ">$(EnableDiagnostics)</MauiXamlEnableDiagnostics>
     <MauiXamlEnableDiagnostics Condition=" '$(MauiXamlEnableDiagnostics)' == '' And '$(Configuration)' == 'Debug' ">true</MauiXamlEnableDiagnostics>
+
+    <MauiXamlNoWarn Condition=" '$(MauiXamlNoWarn)' != '' ">$(MauiXamlNoWarn.Replace(';', ','))</MauiXamlNoWarn>
     
 		<!-- The WINUI check for this only runs when there is an empty string so I just convert false to an empty string to fall in line with our other properties -->
 		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'==''">true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
@@ -86,6 +88,7 @@
       <!-- Assign the default inflator to MauiXaml that don't have any -->
       <!-- there's a roslyn bug that stops parsing value at the first semicolon. replace them all https://github.com/dotnet/roslyn/issues/43970 -->
       <MauiXaml Inflator="$([MSBuild]::ValueOrDefault('%(MauiXaml.Inflator)','$(_MauiXamlInflator)').Replace(';', ','))"/>
+      <MauiXaml NoWarn="$([MSBuild]::ValueOrDefault('%(MauiXaml.NoWarn)','').Replace(';', ','))"/>
 
 	    <_MauiXaml_SG Remove="@(_MauiXaml_SG)" />
 	    <_MauiXaml_RT Remove="@(_MauiXaml_RT)" />

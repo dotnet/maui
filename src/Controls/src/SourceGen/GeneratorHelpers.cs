@@ -80,6 +80,12 @@ static class GeneratorHelpers
 		if (fileOptions.TryGetValue("build_metadata.additionalfiles.LineInfo", out lineInfo) && string.Compare(lineInfo, "disable", StringComparison.OrdinalIgnoreCase) == 0)
 			enableLineInfo = false;
 
+		string noWarn = "";
+		if (fileOptions.TryGetValue("build_property.MauiXamlNoWarn", out var noWarnValue))
+			noWarn = noWarnValue;
+		if (fileOptions.TryGetValue("build_metadata.additionalfiles.NoWarn", out noWarnValue))
+			noWarn = noWarnValue;
+
 		return new ProjectItem
 		{
 			AdditionalText = additionalText,
@@ -90,6 +96,7 @@ static class GeneratorHelpers
 			Inflator = (XamlInflator)xamlinflator,
 			EnableLineInfo = enableLineInfo,
 			EnableDiagnostics = enableDiagnostics,
+			NoWarn = noWarn,
 			TargetFramework = targetFramework,
 			Configuration = configuration!,
 		};
@@ -153,10 +160,7 @@ static class GeneratorHelpers
 					continue;
 				}
 
-				var rootnode = new SGRootNode(new XmlType(reader.NamespaceURI, reader.Name, XamlParser.GetTypeArguments(reader)), /*typeReference, */(IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition)
-				{
-					DisableWarnings = warningDisableList,
-				};
+				var rootnode = new SGRootNode(new XmlType(reader.NamespaceURI, reader.Name, XamlParser.GetTypeArguments(reader)), /*typeReference, */(IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition);
 				XamlParser.ParseXaml(rootnode, reader);
 
 				return rootnode;

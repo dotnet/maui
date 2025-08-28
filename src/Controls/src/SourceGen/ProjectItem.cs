@@ -18,4 +18,5 @@ record ProjectItem
 	public string Configuration { get; internal set; } = "Debug";
 	public bool EnableLineInfo { get; internal set; } = true;
 	public bool EnableDiagnostics { get; internal set; } = false;
+	public string NoWarn { get; internal set; } = "";
 }
