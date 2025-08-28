@@ -175,6 +175,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal NSIndexPath GetScrollToIndexPath(int position)
 		{
+			var itemCount = ItemsSource.ItemCount;
+			
+			// Ensure the requested position is within bounds.
+			if (position >= itemCount)
+			{
+				System.Diagnostics.Debug.WriteLine($"Invalid scroll position {position} for collection with {itemCount} items");
+				position = Math.Max(0, itemCount - 1); // Default to last item (or 0 if empty).
+			}
+			
 			if (ItemsView?.Loop == true && _carouselViewLoopManager != null)
 			{
 				return _carouselViewLoopManager.GetCorrectedIndexPathFromIndex(position);
@@ -395,11 +404,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (ItemsSource is null || ItemsSource.ItemCount == 0)
 			{
 				return;
-			}
-
-			if (goToPosition >= ItemsSource.ItemCount)
-			{
-				goToPosition = Math.Max(0, ItemsSource.ItemCount - 1);
 			}
 			
 			if (goToPosition != carouselPosition || forceScroll)
