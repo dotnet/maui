@@ -56,9 +56,9 @@ static class GeneratorHelpers
 		bool enableDiagnostics = false;
 		if (fileOptions.TryGetValue("build_property.MauiXamlEnableDiagnostics", out var enDiag) && string.Compare(enDiag, "true", StringComparison.OrdinalIgnoreCase) == 0)
 			enableDiagnostics = true;
-		if (fileOptions.TryGetValue("build_property.additionalfiles.EnableDiagnostics", out var enDiag1) && string.Compare(enDiag1, "true", StringComparison.OrdinalIgnoreCase) == 0)
+		if (fileOptions.TryGetValue("build_property.additionalfiles.EnableDiagnostics", out enDiag) && string.Compare(enDiag, "true", StringComparison.OrdinalIgnoreCase) == 0)
 			enableDiagnostics = true;
-		if (fileOptions.TryGetValue("build_property.additionalfiles.EnableDiagnostics", out var enDiag2) && string.Compare(enDiag2, "false", StringComparison.OrdinalIgnoreCase) == 0)
+		if (fileOptions.TryGetValue("build_property.additionalfiles.EnableDiagnostics", out enDiag) && string.Compare(enDiag, "false", StringComparison.OrdinalIgnoreCase) == 0)
 			enableDiagnostics = false;
 
 		var xamlinflator = 0;
@@ -75,9 +75,12 @@ static class GeneratorHelpers
 		}
 
 		var enableLineInfo = true;
-		if (fileOptions.TryGetValue("build_metadata.additionalfiles.LineInfo", out var lineInfo) && string.Compare(lineInfo, "disable", StringComparison.OrdinalIgnoreCase) == 0)
+		if (fileOptions.TryGetValue("build_property.MauiXamlLineInfo", out var lineInfo) && string.Compare(lineInfo, "disable", StringComparison.OrdinalIgnoreCase) == 0)
 			enableLineInfo = false;
-		
+		if (fileOptions.TryGetValue("build_metadata.additionalfiles.LineInfo", out lineInfo) && string.Compare(lineInfo, "enable", StringComparison.OrdinalIgnoreCase) == 0)
+			enableLineInfo = true;
+		if (fileOptions.TryGetValue("build_metadata.additionalfiles.LineInfo", out lineInfo) && string.Compare(lineInfo, "disable", StringComparison.OrdinalIgnoreCase) == 0)
+			enableLineInfo = false;
 
 		return new ProjectItem
 		{
