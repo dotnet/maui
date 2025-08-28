@@ -153,6 +153,9 @@ public static class SourceGeneratorDriver
 					"build_metadata.additionalfiles.RelativePath" => _additionalFile.RelativePath,
 					"build_metadata.additionalfiles.Inflator" => "SourceGen",
 					"build_property.targetframework" => _additionalFile.TargetFramework,
+					"build_property.MauiXamlEnableDiagnostics" => "true",
+					"build_property.MauiXamlLineInfo" => "enable",
+					
 					_ => null
 				};
 

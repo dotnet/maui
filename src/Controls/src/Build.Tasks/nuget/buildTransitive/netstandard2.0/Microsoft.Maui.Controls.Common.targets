@@ -29,7 +29,5 @@
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="EnableDiagnostics" />
     <CompilerVisibleProperty Include="MauiXamlLineInfo" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="LineInfo" />
-    <CompilerVisibleProperty Include="MauiXamlNullable" />
-		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Nullable" />
 	</ItemGroup>
 </Project>

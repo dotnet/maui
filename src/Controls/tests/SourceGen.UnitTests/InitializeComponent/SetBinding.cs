@@ -47,9 +47,7 @@ public partial class TestPage : ContentPage
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-#if _MAUIXAML_SG_NULLABLE_ENABLE
 #nullable enable
-#endif
 
 namespace Test;
 
@@ -59,13 +57,9 @@ public partial class TestPage
 	private partial void InitializeComponent()
 	{
 		var bindingExtension = new global::Microsoft.Maui.Controls.Xaml.BindingExtension();
-#if _MAUIXAML_SG_SOURCEINFO
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingExtension!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), -1, -1);
-#endif
 		var __root = this;
-#if _MAUIXAML_SG_SOURCEINFO
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
-#endif
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
@@ -76,10 +70,8 @@ public partial class TestPage
 		bindingExtension.Path = "Title";
 #line default
 		var bindingBase = new global::Microsoft.Maui.Controls.Binding(bindingExtension.Path, bindingExtension.Mode, bindingExtension.Converter, bindingExtension.ConverterParameter, bindingExtension.StringFormat, bindingExtension.Source) { UpdateSourceEventName = bindingExtension.UpdateSourceEventName, FallbackValue = bindingExtension.FallbackValue, TargetNullValue = bindingExtension.TargetNullValue };
-#if _MAUIXAML_SG_SOURCEINFO
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(bindingBase!) == null)
 			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingBase!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), -1, -1);
-#endif
 		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingBase);
 	}
 }

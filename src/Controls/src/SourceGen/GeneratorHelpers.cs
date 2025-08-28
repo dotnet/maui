@@ -27,9 +27,7 @@ static class GeneratorHelpers
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-#if _MAUIXAML_SG_NULLABLE_ENABLE
 #nullable enable
-#endif
 ";
 
 	public static string EscapeIdentifier(string identifier)
