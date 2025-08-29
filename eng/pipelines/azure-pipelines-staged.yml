@@ -1,0 +1,374 @@
+# Staged Azure Pipelines for .NET MAUI
+# This pipeline acts as an orchestrator that reuses existing pipeline templates
+# with proper staging and dependencies:
+# Stage 1: Core Build & Unit Tests - Fast feedback on compilation and unit tests
+# Stage 2: Device Tests - Platform-specific functionality validation (depends on Stage 1)
+# Stage 3: UI Tests - End-to-end UI validation (depends on Stage 2)
+
+trigger:
+  branches:
+    include:
+    - main
+    - net10.0
+    - release/*
+  tags:
+    include:
+    - '*'
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - THIRD-PARTY-NOTICES.TXT
+
+pr:
+  branches:
+    include:
+    - main
+    - net10.0
+    - release/*
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - THIRD-PARTY-NOTICES.TXT
+
+variables:
+- template: /eng/common/templates/variables/pool-providers.yml@self
+- template: /eng/pipelines/common/variables.yml@self
+- template: /eng/pipelines/arcade/variables.yml@self
+- group: DotNetBuilds storage account read tokens
+- group: AzureDevOps-Artifact-Feeds-Pats
+- name: AgentPoolAccessToken
+  value: $(botdeploy--azdo--token--register--xamarin-public--untrusted)
+
+parameters:
+- name: VM_IMAGE_HOST
+  type: object
+  default:
+    name: NetCore1ESPool-Internal
+    image: 1es-windows-2022
+    os: windows
+
+# Inherit all parameters from device-tests.yml
+- name: UseProvisionator
+  type: boolean
+  default: false
+
+- name: BuildEverything
+  type: boolean
+  default: false
+
+# Inherit all parameters from ui-tests.yml  
+- name: BuildNativeAOT
+  displayName: 'Build NativeAOT artifacts'
+  type: boolean
+  default: false
+
+- name: RunNativeAOT
+  displayName: 'Run NativeAOT UI Tests'
+  type: boolean
+  default: false
+
+# Pool parameters from both device-tests.yml and ui-tests.yml
+- name: androidPool
+  type: object
+  default:
+    name: $(androidTestsVmPool)
+    vmImage: $(androidTestsVmImage)
+    demands:
+    - macOS.Name -equals Sequoia
+    - macOS.Architecture -equals x64
+
+- name: androidPoolLinux
+  type: object
+  default:
+    name: $(1ESPTPool)
+    vmImage: $(androidTestsVmImage)
+    demands:
+    - ImageOverride -equals 1ESPT-Ubuntu22.04
+
+- name: iosPool
+  type: object
+  default:
+    name: $(iosDeviceTestsVmPool)
+    vmImage: $(iosDeviceTestsVmImage)
+    demands:
+    - macOS.Name -equals Sequoia
+
+- name: catalystPool
+  type: object
+  default:
+    name: $(iosDeviceTestsVmPool)
+    vmImage: $(iosDeviceTestsVmImage)
+    demands:
+    - macOS.Name -equals Sequoia
+
+- name: windowsPool
+  type: object
+  default:
+    name: $(windowsTestsVmPool)
+    vmImage: $(windowsTestsVmImage)
+
+- name: windowsBuildPool
+  type: object
+  default:
+    name: $(windowsVmPool)
+    vmImage: $(windowsVmImage)
+
+- name: macosPool
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: macOS-14
+
+- name: targetFrameworkVersions
+  type: object
+  default:
+  - tfm: net9.0
+
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+extends:
+  ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+    template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  ${{ else }}:
+    template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool: ${{ parameters.VM_IMAGE_HOST }}
+    sdl:
+      binskim:
+        scanOutputDirectoryOnly: true
+      codeql:
+        runSourceLanguagesInSourceAnalysis: true
+      policheck:
+        enabled: true
+      spotBugs:
+        enabled: false
+        justification: 'Failing with "Could not successfully find the java tool launcher"'
+      sourceRepositoriesToScan:
+        exclude:
+        - repository: yaml-templates
+      suppression:
+        suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
+    stages:
+
+    # =============================================================================
+    # STAGE 1: Core Build & Unit Tests
+    # Reuses existing azure-pipelines-internal.yml logic
+    # =============================================================================
+    - template: /eng/pipelines/arcade/stage-pack.yml@self
+      parameters:
+        pool: ${{ parameters.VM_IMAGE_HOST }}
+        enableSourceIndex: false
+        runAsPublic: false
+        sourceIndexParams:
+          sourceIndexBuildCommand: build.cmd -restore -build -ci /bl:$(Build.Arcade.LogsPath)sourceIndexBuild.binlog /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
+          binlogPath: $(Build.Arcade.LogsPath)sourceIndexBuild.binlog
+        prepareSteps:
+        - template: /eng/pipelines/common/provision.yml@self
+          parameters:
+            checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+            skipJdk: false
+            skipAndroidCommonSdks: false
+            skipAndroidPlatformApis: false
+            onlyAndroidPlatformDefaultApis: true
+            skipAndroidEmulatorImages: true
+            skipAndroidCreateAvds: true
+            skipProvisioning: true
+            skipXcode: true
+
+    # Run Unit Tests as part of Stage 1 (always, not just PRs)
+    - template: /eng/pipelines/arcade/stage-unit-tests.yml@self
+      parameters:
+        jobMatrix:
+        - name: win_unit_tests
+          displayName: Windows Unit Tests
+          pool: ${{ parameters.VM_IMAGE_HOST }}
+          timeout: 120
+          testOS: Windows
+        - name: mac_unit_tests
+          displayName: macOS Unit Tests
+          pool:
+            name: Azure Pipelines
+            vmImage: $(HostedMacImage)
+            os: macOS
+          timeout: 120
+          testOS: macOS
+
+    # API Scan as part of Stage 1
+    - template: /eng/pipelines/arcade/stage-api-scan.yml@self
+      parameters:
+        pool: ${{ parameters.VM_IMAGE_HOST }}
+        dependsOnStage: UnitTests
+
+    # =============================================================================
+    # STAGE 2: Device Tests  
+    # Reuses existing device-tests.yml logic with dependency on Stage 1
+    # =============================================================================
+    - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
+      - template: common/device-tests-staged.yml
+        parameters:
+          androidPool: ${{ parameters.androidPool }}
+          iosPool: ${{ parameters.iosPool }}
+          catalystPool: ${{ parameters.catalystPool }}
+          windowsPool: ${{ parameters.windowsPool }}
+          targetFrameworkVersion: ${{ targetFrameworkVersion }}
+          # Add external dependency on ApiScan stage
+          externalDependencies:
+          - ApiScan
+          ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+            androidApiLevels: [ 33, 30, 29, 28, 27, 26, 25, 24, 23 ]
+            iosVersions: [ 'simulator-18.0' ]
+            catalystVersions: [ 'latest' ]
+            windowsVersions: [ 'packaged', 'unpackaged' ]
+            provisionatorChannel: latest
+            skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
+          ${{ else }}:
+            androidApiLevels: [ 33, 23 ]
+            iosVersions: [ 'simulator-18.0' ]
+            catalystVersions: [ 'latest' ]
+            windowsVersions: [ 'packaged', 'unpackaged' ]
+            provisionatorChannel: latest
+            skipProvisioning: ${{ not(parameters.UseProvisionator) }}
+          projects:
+          - name: essentials
+            desc: Essentials
+            androidApiLevelsExclude: [ 25, 27 ] # Ignore for now API25 since the runs's are not stable
+            androidConfiguration: 'Release'
+            iOSConfiguration: 'Debug'
+            windowsConfiguration: 'Debug'
+            windowsPackageId: 'com.microsoft.maui.essentials.devicetests'
+            android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+            ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+            catalyst: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+            windows: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+          - name: graphics
+            desc: Graphics
+            androidApiLevelsExclude: [ 25, 28 ] # Ignore for now API25 and API28 since the runs's are not stable
+            androidConfiguration: 'Release'
+            iOSConfiguration: 'Debug'
+            windowsConfiguration: 'Debug'
+            windowsPackageId: 'com.microsoft.maui.graphics.devicetests'
+            android: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+            ios: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+            catalyst: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+            windows: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+          - name: core
+            desc: Core
+            androidApiLevelsExclude: [ 25 ] # Ignore for now API25 since the runs's are not stable
+            androidConfiguration: 'Release'
+            iOSConfiguration: 'Debug'
+            windowsConfiguration: 'Debug'
+            windowsPackageId: 'com.microsoft.maui.core.devicetests'
+            android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+            ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+            catalyst: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+            windows: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+          - name: controls
+            desc: Controls
+            androidApiLevelsExclude: [ 27, 25 ] # Ignore for now API25 since the runs's are not stable
+            androidConfiguration: 'Debug'
+            iOSConfiguration: 'Debug'
+            windowsConfiguration: 'Debug'
+            windowsPackageId: 'com.microsoft.maui.controls.devicetests'
+            android: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
+            ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
+            catalyst: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
+            windows: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
+          - name: blazorwebview
+            desc: BlazorWebView
+            androidApiLevelsExclude: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome
+            androidConfiguration: 'Release'
+            iOSConfiguration: 'Debug'
+            windowsConfiguration: 'Debug'
+            windowsPackageId: 'Microsoft.Maui.MauiBlazorWebView.DeviceTests'
+            android: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
+            ios: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
+            catalyst: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
+            windows: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
+
+    # =============================================================================
+    # STAGE 3: UI Tests
+    # Reuses existing ui-tests.yml logic with dependency on Stage 2
+    # =============================================================================
+    - template: common/ui-tests-staged.yml
+      parameters:
+        androidPool: ${{ parameters.androidPool }}
+        androidLinuxPool: ${{ parameters.androidPoolLinux }}
+        iosPool: ${{ parameters.iosPool }}
+        windowsPool: ${{ parameters.windowsPool }}
+        windowsBuildPool: ${{ parameters.windowsBuildPool }}
+        macosPool: ${{ parameters.macosPool }}
+        # Add external dependencies on all device test stages
+        externalDependencies:
+        - android_device_tests_net9_0
+        - ios_device_tests_net9_0
+        - catalyst_device_tests_net9_0
+        - windows_device_tests_net9_0
+        # BuildNativeAOT is false by default, but true in devdiv environment
+        BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
+        RunNativeAOT: ${{ parameters.RunNativeAOT }}
+        ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+          androidApiLevels: [ 30 ]
+          iosVersions: [ '18.0' ]
+        ${{ else }}:
+          androidApiLevels: [ 30 ]
+          iosVersions: [ '18.0' ]
+        ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
+          skipProvisioning: false
+        ${{ else }}:  
+          skipProvisioning: true
+        projects:
+          - name: controls
+            desc: Controls
+            androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+            android: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj
+            app: $(Pipeline.Workspace)/Controls.TestCases.HostApp/
+            iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
+            ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
+            winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
+            mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
+
+    # Publish and validation steps. Only run in official builds and after all tests complete
+    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+      - template: /eng/common/templates-official/post-build/post-build.yml@self
+        parameters:
+          dependsOn:
+          - android_ui_tests
+          - ios_ui_tests_mono
+          - winui_ui_tests
+          - mac_ui_tests
+          publishingInfraVersion: 3
+          enableSymbolValidation: true
+          enableSigningValidation: false
+          # Disable for now as we test the new signing process
+          enableSourceLinkValidation: false
+          validateDependsOn:
+          - android_ui_tests
+          - ios_ui_tests_mono
+          - winui_ui_tests
+          - mac_ui_tests
+          publishDependsOn:
+          - Validate
+          # This is to enable SDL runs part of Post-Build Validation Stage
+          SDLValidationParameters:
+            enable: false
