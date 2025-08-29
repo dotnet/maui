@@ -84,8 +84,8 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Gets or sets the value used when the binding cannot produce a source value (e.g. path not found, conversion failure).</summary>
 		/// <value>The fallback value used instead of the target property's default value when source resolution fails entirely.</value>
 		/// <remarks>
-		/// <para><c>FallbackValue</c> is applied when the binding engine fails to obtain a value (missing source, unresolved path, or formatting/conversion error).
-		/// It is not used when the source resolves to <see langword="null" />; in that case <see cref="TargetNullValue" /> is applied if set.</para>
+		/// <para><c>FallbackValue</c> is applied when the binding engine fails to obtain a value (e.g., missing source, unresolved path, or type conversion failure within the binding engine itself).
+		/// It is not used for errors that occur inside value converters; such errors may be handled by the converter or use different fallback mechanisms. If the source resolves to <see langword="null" />, <see cref="TargetNullValue" /> is applied if set.</para>
 		/// <para>Together with <see cref="TargetNullValue" /> this allows differentiating between a legitimate <see langword="null" /> value and an unresolved binding.</para>
 		/// </remarks>
 		public object FallbackValue
