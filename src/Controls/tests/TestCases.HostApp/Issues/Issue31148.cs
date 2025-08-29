@@ -108,7 +108,7 @@ public class Issue31148ViewModel : INotifyPropertyChanged
 
     public Issue31148ViewModel()
     {
-        _source = new ObservableCollection<string>(["Test1", "Test2", "Test3"]);
+        _source = new ObservableCollection<string> { "Test1", "Test2", "Test3" };
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
