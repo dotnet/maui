@@ -1,3 +1,4 @@
+using System;
 using CoreGraphics;
 using UIKit;
 
@@ -7,22 +8,20 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		public static UIImage ScaleImage(this UIImage target, float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
-			float originalWidth = (float)target.Size.Width;
-			float originalHeight = (float)target.Size.Height;
-
-			float scale = originalWidth / maxWidth;
-
-			float targetWidth = originalWidth / scale;
-			float targetHeight = originalHeight / scale;
-
-			if (targetHeight > maxHeight)
+			if (target.Size.Width > maxWidth || target.Size.Height > maxHeight)
 			{
-				scale = targetHeight / maxHeight;
-				targetHeight = targetHeight / scale;
-				targetWidth = targetWidth / scale;
+				float factorX = maxWidth / (float)target.Size.Width;
+				float factorY = maxHeight / (float)target.Size.Height;
+
+				float factor = Math.Min(factorX, factorY);
+
+				float targetWidth = factor * (float)target.Size.Width;
+				float targetHeight = factor * (float)target.Size.Height;
+
+				return ScaleImage(target, new CGSize(targetWidth, targetHeight), disposeOriginal);
 			}
 
-			return ScaleImage(target, new CGSize(targetWidth, targetHeight), disposeOriginal);
+			return target;
 		}
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
