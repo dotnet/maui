@@ -278,6 +278,7 @@ public class FlyoutPageFeatureTests : UITest
 	}
 #endif
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/20088
 	[Test, Order(15)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_Detail()
@@ -302,9 +303,10 @@ public class FlyoutPageFeatureTests : UITest
 		App.WaitForElement("BackToOriginalFlyoutButton1");
 		App.Tap("BackToOriginalFlyoutButton1");
 	}
+#endif 
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Android Issue Link: https://github.com/dotnet/maui/issues/22116 , https://github.com/dotnet/maui/issues/15211
-// Windows Issue Link: https://github.com/dotnet/maui/issues/15211#issuecomment-1562587775 , https://github.com/dotnet/maui/issues/31390
+	// Windows Issue Link: https://github.com/dotnet/maui/issues/15211#issuecomment-1562587775 , https://github.com/dotnet/maui/issues/31390
 	[Test, Order(17)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_DetailPageIconImageSource()
