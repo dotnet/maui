@@ -6,7 +6,7 @@ public partial class XamlInflatorSourceGen : ContentPage
 {
 	public XamlInflatorSourceGen() => InitializeComponent();
 
-	[Test] public void TestRuntimeInflator() => XamlInflatorRuntimeTestsHelpers.TestInflator(typeof(XamlInflatorSourceGen), XamlInflator.SourceGen, true);
+	[Test] public void TestSourceGenInflator() => XamlInflatorTestsHelpers.TestInflator(typeof(XamlInflatorSourceGen), XamlInflator.SourceGen, true);
 
 	[Test]
 	public void TestInflation()
