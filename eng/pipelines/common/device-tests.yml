@@ -17,6 +17,8 @@ parameters:
   targetFrameworkVersion:
     tfm: ''
     dependsOn: ''
+  # New parameter for stage dependencies
+  stageDependencies: []
   projects:
   - name: name
     desc: Human Description
@@ -34,11 +36,13 @@ stages:
 - ${{ each platform in parameters.platforms }}:
   - stage: ${{ platform }}_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
     displayName: ${{ parameters.targetFrameworkVersion.tfm }} ${{ platform }}
-    ${{ if eq(parameters.targetFrameworkVersion.dependsOn, '') }}:
+    ${{ if and(eq(parameters.targetFrameworkVersion.dependsOn, ''), eq(length(parameters.stageDependencies), 0)) }}:
       dependsOn: []
-    ${{ else }}:
+    ${{ elseif ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
       dependsOn:
       - ${{ platform }}_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
+    ${{ elseif gt(length(parameters.stageDependencies), 0) }}:
+      dependsOn: ${{ parameters.stageDependencies }}
     jobs:
 
     - ${{ if eq(platform, 'android') }}:

@@ -225,15 +225,15 @@ extends:
     # Reuses existing device-tests.yml logic with dependency on Stage 1
     # =============================================================================
     - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
-      - template: common/device-tests-staged.yml
+      - template: common/device-tests.yml
         parameters:
           androidPool: ${{ parameters.androidPool }}
           iosPool: ${{ parameters.iosPool }}
           catalystPool: ${{ parameters.catalystPool }}
           windowsPool: ${{ parameters.windowsPool }}
           targetFrameworkVersion: ${{ targetFrameworkVersion }}
-          # Add external dependency on ApiScan stage
-          externalDependencies:
+          # Add dependency on ApiScan stage
+          stageDependencies:
           - ApiScan
           ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
             androidApiLevels: [ 33, 30, 29, 28, 27, 26, 25, 24, 23 ]
@@ -310,7 +310,7 @@ extends:
     # STAGE 3: UI Tests
     # Reuses existing ui-tests.yml logic with dependency on Stage 2
     # =============================================================================
-    - template: common/ui-tests-staged.yml
+    - template: common/ui-tests.yml
       parameters:
         androidPool: ${{ parameters.androidPool }}
         androidLinuxPool: ${{ parameters.androidPoolLinux }}
@@ -318,8 +318,8 @@ extends:
         windowsPool: ${{ parameters.windowsPool }}
         windowsBuildPool: ${{ parameters.windowsBuildPool }}
         macosPool: ${{ parameters.macosPool }}
-        # Add external dependencies on all device test stages
-        externalDependencies:
+        # Add dependency on all device test stages
+        stageDependencies:
         - android_device_tests_net9_0
         - ios_device_tests_net9_0
         - catalyst_device_tests_net9_0

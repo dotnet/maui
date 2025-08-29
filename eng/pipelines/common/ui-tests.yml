@@ -10,6 +10,7 @@ parameters:
   provisionatorChannel: 'latest'
   timeoutInMinutes: 180
   skipProvisioning: true
+  stageDependencies: []
   BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
   RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
   categoryGroupsToTest:
@@ -46,7 +47,10 @@ parameters:
 stages:
   - stage: build_ui_tests
     displayName: Build UITests Sample App
-    dependsOn: []
+    ${{ if eq(length(parameters.stageDependencies), 0) }}:
+      dependsOn: []
+    ${{ else }}:
+      dependsOn: ${{ parameters.stageDependencies }}
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App
@@ -64,7 +68,10 @@ stages:
   - ${{ if eq(parameters.BuildNativeAOT, true) }}:
     - stage: build_ui_tests_nativeaot
       displayName: Build UITests Sample App NativeAOT
-      dependsOn: []
+      ${{ if eq(length(parameters.stageDependencies), 0) }}:
+        dependsOn: []
+      ${{ else }}:
+        dependsOn: ${{ parameters.stageDependencies }}
       jobs:
         - job: build_ui_tests
           displayName: Build Sample App
@@ -81,7 +88,10 @@ stages:
 
   - stage: build_ui_tests_windows
     displayName: Build UITests Windows Sample App
-    dependsOn: []
+    ${{ if eq(length(parameters.stageDependencies), 0) }}:
+      dependsOn: []
+    ${{ else }}:
+      dependsOn: ${{ parameters.stageDependencies }}
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App (Windows)

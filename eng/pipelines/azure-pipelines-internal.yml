@@ -1,24 +1,26 @@
-trigger:
-  branches:
-    include:
-    - main
-    - net10.0
-    - release/*
-  tags:
-    include:
-    - '*'
-  paths:
-    include:
-    - '*'
-    exclude:
-    - .github/*
-    - docs/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - THIRD-PARTY-NOTICES.TXT
+trigger: none
+# Original triggers disabled for staged pipeline
+# trigger:
+#   branches:
+#     include:
+#     - main
+#     - net10.0
+#     - release/*
+#   tags:
+#     include:
+#     - '*'
+#   paths:
+#     include:
+#     - '*'
+#     exclude:
+#     - .github/*
+#     - docs/*
+#     - CODE-OF-CONDUCT.md
+#     - CONTRIBUTING.md
+#     - LICENSE.TXT
+#     - PATENTS.TXT
+#     - README.md
+#     - THIRD-PARTY-NOTICES.TXT
 
 schedules:
 - cron: "0 5 * * *"
