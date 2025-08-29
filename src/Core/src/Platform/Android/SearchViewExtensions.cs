@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Platform
 				{
 					if (searchBar.CancelButtonColor is not null)
 						drawable.SetColorFilter(searchBar.CancelButtonColor, FilterMode.SrcIn);
-					else if (TryGetDefaultStateColor(searchView,Android.Resource.Attribute.TextColorPrimary, out var color))
+					else if (TryGetDefaultStateColor(searchView, Android.Resource.Attribute.TextColorPrimary, out var color))
 						drawable.SetColorFilter(color, FilterMode.SrcIn);
 				}
 			}
