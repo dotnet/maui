@@ -46,8 +46,18 @@ jobs:
         distribution: 'microsoft'
         java-version: '17'
 
+    - name: Setup Android SDK (Linux only)
+      if: matrix.os == 'ubuntu-latest'
+      uses: android-actions/setup-android@v3
+
     - name: Install dotnet tools
       run: dotnet tool restore
+
+    - name: Install MAUI workload
+      run: dotnet workload install maui
+
+    - name: Build build tasks (required first)
+      run: dotnet build ./Microsoft.Maui.BuildTasks.slnf
 
     - name: Restore dependencies
       run: dotnet restore Microsoft.Maui.sln

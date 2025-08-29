@@ -43,6 +43,9 @@ jobs:
     - name: Install dotnet tools
       run: dotnet tool restore
 
+    - name: Install MAUI workload
+      run: dotnet workload install maui
+
     - name: Build build tasks
       run: dotnet build ./Microsoft.Maui.BuildTasks.slnf
 
@@ -91,6 +94,9 @@ jobs:
     - name: Install dotnet tools
       run: dotnet tool restore
 
+    - name: Install MAUI workload
+      run: dotnet workload install maui
+
     - name: Build build tasks
       run: dotnet build ./Microsoft.Maui.BuildTasks.slnf
 
@@ -121,6 +127,9 @@ jobs:
 
     - name: Install dotnet tools
       run: dotnet tool restore
+
+    - name: Install MAUI workload
+      run: dotnet workload install maui
 
     - name: Build build tasks
       run: dotnet build ./Microsoft.Maui.BuildTasks.slnf
@@ -153,6 +162,9 @@ jobs:
 
     - name: Install dotnet tools
       run: dotnet tool restore
+
+    - name: Install MAUI workload
+      run: dotnet workload install maui
 
     - name: Build device tests
       run: |

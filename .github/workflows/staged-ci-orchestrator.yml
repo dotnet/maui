@@ -59,9 +59,15 @@ jobs:
     - name: Install dotnet tools
       run: dotnet tool restore
 
+    - name: Install MAUI workload
+      run: dotnet workload install maui
+
     - name: Build and test
       id: build-test
       run: |
+        echo "Building build tasks first..."
+        dotnet build ./Microsoft.Maui.BuildTasks.slnf
+        
         echo "Building .NET MAUI solution..."
         dotnet build Microsoft.Maui.sln --configuration Release
         
