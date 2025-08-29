@@ -5,7 +5,6 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 31361, "CarouselView content is scrolling vertically", PlatformAffected.iOS)]
 public class Issue31361 : ContentPage
 {
-	bool isBounce;
 	public Issue31361()
 	{
 		var verticalStackLayout = new VerticalStackLayout();
@@ -45,19 +44,14 @@ public class Issue31361 : ContentPage
 		var contentLabel = new Label
 		{
 			AutomationId = "contentLabel",
-			Text = "Test Content",
+			Text = "The content is not scrollable",
 			HorizontalOptions = LayoutOptions.Center,
 			Padding = new Thickness(20),
 		};
 
 		carouselView.Scrolled += (s, e) =>
 		{
-			isBounce = e.VerticalDelta == 0;
-			if (isBounce)
-			{
-				contentLabel.Text = "The content is not scrollable";
-			}
-			else
+			if (e.VerticalDelta < 0)
 			{
 				contentLabel.Text = "The content is scrollable";
 			}
