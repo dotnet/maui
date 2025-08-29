@@ -329,7 +329,12 @@ namespace Microsoft.Maui.Graphics
 			Invalidate();
 		}
 
-		/// <inheritdoc cref="MoveTo(PointF)"/>
+		/// <summary>
+		/// Starts a new sub-path at the specified coordinates.
+		/// </summary>
+		/// <param name="x">X coordinate of the starting point.</param>
+		/// <param name="y">Y coordinate of the starting point.</param>
+		/// <returns>The current path for chaining.</returns>
 		public PathF MoveTo(float x, float y)
 		{
 			return MoveTo(new PointF(x, y));
@@ -380,7 +385,12 @@ namespace Microsoft.Maui.Graphics
 			Invalidate();
 		}
 
-		/// <inheritdoc cref="LineTo(PointF)"/>
+		/// <summary>
+		/// Adds a straight line segment to the specified coordinates.
+		/// </summary>
+		/// <param name="x">The x-coordinate of the end point.</param>
+		/// <param name="y">The y-coordinate of the end point.</param>
+		/// <returns>The current path.</returns>
 		public PathF LineTo(float x, float y)
 		{
 			return LineTo(new PointF(x, y));
@@ -439,7 +449,17 @@ namespace Microsoft.Maui.Graphics
 			return this;
 		}
 
-		/// <inheritdoc cref="AddArc(PointF, PointF, float, float, bool)"/>
+		/// <summary>
+		/// Adds an elliptical arc segment using coordinate values instead of points.
+		/// </summary>
+		/// <param name="x1">The X coordinate of the top-left corner of the bounding rectangle of the ellipse.</param>
+		/// <param name="y1">The Y coordinate of the top-left corner of the bounding rectangle of the ellipse.</param>
+		/// <param name="x2">The X coordinate of the bottom-right corner of the bounding rectangle of the ellipse.</param>
+		/// <param name="y2">The Y coordinate of the bottom-right corner of the bounding rectangle of the ellipse.</param>
+		/// <param name="startAngle">Starting angle of the arc in degrees. 0° points to the right (along the positive X axis). Angles increase counter-clockwise.</param>
+		/// <param name="endAngle">Ending angle of the arc in degrees, measured with the same convention as <paramref name="startAngle"/>.</param>
+		/// <param name="clockwise">If <c>true</c>, the arc is drawn in the clockwise direction from <paramref name="startAngle"/> to <paramref name="endAngle"/>; otherwise it is drawn counter-clockwise (the positive angle direction).</param>
+		/// <returns>The current path for chaining.</returns>
 		public PathF AddArc(float x1, float y1, float x2, float y2, float startAngle, float endAngle, bool clockwise)
 		{
 			return AddArc(new PointF(x1, y1), new PointF(x2, y2), startAngle, endAngle, clockwise);
@@ -481,7 +501,14 @@ namespace Microsoft.Maui.Graphics
 			return this;
 		}
 
-		/// <inheritdoc cref="QuadTo(PointF, PointF)"/>
+		/// <summary>
+		/// Adds a quadratic Bézier curve segment using coordinate values.
+		/// </summary>
+		/// <param name="cx">X-coordinate of the control point.</param>
+		/// <param name="cy">Y-coordinate of the control point.</param>
+		/// <param name="x">X-coordinate of the end point.</param>
+		/// <param name="y">Y-coordinate of the end point.</param>
+		/// <returns>The current path.</returns>
 		public PathF QuadTo(float cx, float cy, float x, float y)
 		{
 			return QuadTo(new PointF(cx, cy), new PointF(x, y));
@@ -532,7 +559,16 @@ namespace Microsoft.Maui.Graphics
 			return this;
 		}
 
-		/// <inheritdoc cref="CurveTo(PointF, PointF, PointF)"/>
+		/// <summary>
+		/// Adds a cubic Bézier curve segment using coordinate values.
+		/// </summary>
+		/// <param name="c1X">X-coordinate of the first control point.</param>
+		/// <param name="c1Y">Y-coordinate of the first control point.</param>
+		/// <param name="c2X">X-coordinate of the second control point.</param>
+		/// <param name="c2Y">Y-coordinate of the second control point.</param>
+		/// <param name="x">X-coordinate of the end point.</param>
+		/// <param name="y">Y-coordinate of the end point.</param>
+		/// <returns>The current path.</returns>
 		public PathF CurveTo(float c1X, float c1Y, float c2X, float c2Y, float x, float y)
 		{
 			return CurveTo(new PointF(c1X, c1Y), new PointF(c2X, c2Y), new PointF(x, y));
@@ -1253,7 +1289,10 @@ namespace Microsoft.Maui.Graphics
 			return new PathF(points, arcSizes, arcClockwise, operations, _subPathCount);
 		}
 
-		/// <inheritdoc cref="AppendEllipse(float, float, float, float)"/>
+		/// <summary>
+		/// Appends an approximated ellipse path inside the specified rectangle.
+		/// </summary>
+		/// <param name="rect">The bounding rectangle for the ellipse.</param>
 		public void AppendEllipse(RectF rect)
 		{
 			AppendEllipse(rect.X, rect.Y, rect.Width, rect.Height);
@@ -1285,7 +1324,11 @@ namespace Microsoft.Maui.Graphics
 			Close();
 		}
 
-		/// <inheritdoc cref="AppendCircle(float, float, float)"/>
+		/// <summary>
+		/// Appends an approximated circle path centered at the specified point.
+		/// </summary>
+		/// <param name="center">Center point.</param>
+		/// <param name="r">Radius.</param>
 		public void AppendCircle(PointF center, float r)
 		{
 			AppendCircle(center.X, center.Y, r);
@@ -1316,7 +1359,11 @@ namespace Microsoft.Maui.Graphics
 			Close();
 		}
 
-		/// <inheritdoc cref="AppendRectangle(float, float, float, float, bool)"/>
+		/// <summary>
+		/// Appends a rectangle path using the specified rectangle bounds.
+		/// </summary>
+		/// <param name="rect">The rectangle bounds.</param>
+		/// <param name="includeLast">Include a final duplicate line to the first point before closing.</param>
 		public void AppendRectangle(RectF rect, bool includeLast = false)
 		{
 			AppendRectangle(rect.X, rect.Y, rect.Width, rect.Height, includeLast);
@@ -1350,7 +1397,12 @@ namespace Microsoft.Maui.Graphics
 			Close();
 		}
 
-		/// <inheritdoc cref="AppendRoundedRectangle(float, float, float, float, float, bool)"/>
+		/// <summary>
+		/// Appends a rounded rectangle using the specified rectangle bounds and uniform corner radius.
+		/// </summary>
+		/// <param name="rect">The rectangle bounds.</param>
+		/// <param name="cornerRadius">Corner radius (clamped to half width/height).</param>
+		/// <param name="includeLast">Include a duplicate final line before closing.</param>
 		public void AppendRoundedRectangle(RectF rect, float cornerRadius, bool includeLast = false)
 		{
 			AppendRoundedRectangle(rect.X, rect.Y, rect.Width, rect.Height, cornerRadius, includeLast);
@@ -1394,7 +1446,15 @@ namespace Microsoft.Maui.Graphics
 			Close();
 		}
 
-		/// <inheritdoc cref="AppendRoundedRectangle(float, float, float, float, float, float, float, float, bool)"/>
+		/// <summary>
+		/// Appends a rounded rectangle using the specified rectangle bounds and individual corner radii.
+		/// </summary>
+		/// <param name="rect">Bounding rectangle.</param>
+		/// <param name="topLeftCornerRadius">Top-left corner radius.</param>
+		/// <param name="topRightCornerRadius">Top-right corner radius.</param>
+		/// <param name="bottomLeftCornerRadius">Bottom-left corner radius.</param>
+		/// <param name="bottomRightCornerRadius">Bottom-right corner radius.</param>
+		/// <param name="includeLast">Include a duplicate final line before closing.</param>
 		public void AppendRoundedRectangle(RectF rect, float topLeftCornerRadius, float topRightCornerRadius, float bottomLeftCornerRadius, float bottomRightCornerRadius, bool includeLast = false)
 		{
 			AppendRoundedRectangle(rect.X, rect.Y, rect.Width, rect.Height, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius, includeLast);
