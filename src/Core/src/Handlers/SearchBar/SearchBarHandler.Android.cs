@@ -4,8 +4,8 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using static AndroidX.AppCompat.Widget.SearchView;
-using SearchView = AndroidX.AppCompat.Widget.SearchView;
 using AView = Android.Views.View;
+using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.Handlers
 {

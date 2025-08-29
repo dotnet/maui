@@ -32,11 +32,11 @@ namespace Microsoft.Maui.ApplicationModel
 
 			// read the values
 			launched = extras?.GetBoolean(launchedExtra, false) ?? false;
-            
-			if(OperatingSystem.IsAndroidVersionAtLeast(33))
-			actualIntent = extras?.GetParcelable(actualIntentExtra,Java.Lang.Class.FromType(typeof(Intent))) as Intent;
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(33))
+				actualIntent = extras?.GetParcelable(actualIntentExtra, Java.Lang.Class.FromType(typeof(Intent))) as Intent;
 			else
-			actualIntent = extras?.GetParcelable(actualIntentExtra) as Intent;
+				actualIntent = extras?.GetParcelable(actualIntentExtra) as Intent;
 
 			guid = extras?.GetString(guidExtra);
 			requestCode = extras?.GetInt(requestCodeExtra, -1) ?? -1;
