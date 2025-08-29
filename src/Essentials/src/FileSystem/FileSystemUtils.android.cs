@@ -255,9 +255,9 @@ namespace Microsoft.Maui.Storage
 			if (!string.IsNullOrEmpty(value) && int.TryParse(value, out var flagsInt))
 			{
 				var flags = (DocumentContractFlags)flagsInt;
-				
-				if(OperatingSystem.IsAndroidVersionAtLeast(24))
-				return flags.HasFlag(DocumentContractFlags.VirtualDocument);
+
+				if (OperatingSystem.IsAndroidVersionAtLeast(24))
+					return flags.HasFlag(DocumentContractFlags.VirtualDocument);
 
 			}
 
