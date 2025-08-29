@@ -13,9 +13,6 @@ public class ContentViewControlPage : NavigationPage
 }
 public class ContentViewControlMainPage : ContentPage
 {
-    private ContentViewFirstCustomPage _firstCustomView;
-    private ContentViewSecondCustomPage _secondCustomView;
-    private View _currentCustomView;
     private ContentView _dynamicContentHost;
     private ContentViewViewModel _viewModel;
 
@@ -25,34 +22,17 @@ public class ContentViewControlMainPage : ContentPage
         _viewModel = viewModel;
         BindingContext = viewModel;
 
-        _firstCustomView = new ContentViewFirstCustomPage
-        {
-            CardTitle = "ContenView",
-            CardDescription = "Use ContentViewPage as the content, binding all card properties to the ViewModel",
-            IconImageSource = "dotnet_bot.png",
-            IconBackgroundColor = Colors.LightGray,
-            BorderColor = Colors.Pink,
-            CardColor = Colors.SkyBlue
-        };
 
-        _secondCustomView = new ContentViewSecondCustomPage
-        {
-            SecondCustomViewTitle = "Second Custom Title",
-            SecondCustomViewDescription = "This is the description for the second custom view.",
-            SecondCustomViewText = "This is the SECOND custom view",
-            FrameBackgroundColor = Colors.LightGray
-        };
+        this.SetBinding(ContentPage.HeightRequestProperty, nameof(ContentViewViewModel.HeightRequest));
+        this.SetBinding(ContentPage.WidthRequestProperty, nameof(ContentViewViewModel.WidthRequest));
+        this.SetBinding(ContentPage.BackgroundColorProperty, nameof(ContentViewViewModel.BackgroundColor));
+        this.SetBinding(ContentPage.IsEnabledProperty, nameof(ContentViewViewModel.IsEnabled));
+        this.SetBinding(ContentPage.IsVisibleProperty, nameof(ContentViewViewModel.IsVisible));
+        this.SetBinding(ContentPage.FlowDirectionProperty, nameof(ContentViewViewModel.FlowDirection));
+        this.SetBinding(ContentPage.ShadowProperty, nameof(ContentViewViewModel.HasShadow));
 
-        this.HeightRequest = _viewModel.HeightRequest;
-        this.WidthRequest = _viewModel.WidthRequest;
-        this.BackgroundColor = _viewModel.BackgroundColor;
-        this.IsEnabled = _viewModel.IsEnabled;
-        this.IsVisible = _viewModel.IsVisible;
-
-        // Keep _dynamicContentHost for swapping child content
         _dynamicContentHost = new ContentView();
 
-        // Start with default content
         UpdateContentViews();
 
         var mainLayout = new VerticalStackLayout
@@ -72,16 +52,16 @@ public class ContentViewControlMainPage : ContentPage
             Text = "Options",
             Command = new Command(async () =>
             {
-                // reset properties instead of creating a new VM
                 _viewModel.HeightRequest = -1;
                 _viewModel.WidthRequest = -1;
                 _viewModel.BackgroundColor = Colors.LightGray;
                 _viewModel.IsEnabled = true;
                 _viewModel.IsVisible = true;
+                _viewModel.FlowDirection = FlowDirection.LeftToRight;
+                _viewModel.HasShadow = false;
                 _viewModel.DefaultLabelText = "This is Default Page";
                 _viewModel.ContentLabel = "Default";
 
-                _currentCustomView = null;
 
                 UpdateContentViews();
                 await Navigation.PushAsync(new ContentViewOptionsPage(_viewModel));
@@ -91,32 +71,57 @@ public class ContentViewControlMainPage : ContentPage
 
         viewModel.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(ContentViewViewModel.ContentLabel))
+            if (e.PropertyName == nameof(ContentViewViewModel.ContentLabel)
+                || e.PropertyName == nameof(ContentViewViewModel.ControlTemplateKeyFirst)
+                || e.PropertyName == nameof(ContentViewViewModel.ControlTemplateKeySecond))
             {
-                if (viewModel.ContentLabel == "FirstCustomPage")
-                    _currentCustomView = _firstCustomView;
-                else if (viewModel.ContentLabel == "SecondCustomPage")
-                    _currentCustomView = _secondCustomView;
                 UpdateContentViews();
             }
         };
     }
     private void UpdateContentViews()
     {
-        if (_currentCustomView == null)
+        if (_viewModel.ContentLabel == "FirstCustomPage")
         {
-            // Default Page content: label and button, only bind label text
+            var firstView = new ContentViewFirstCustomPage
+            {
+                CardTitle = "ContenView",
+                CardDescription = "Use ContentViewPage as the content, binding all card properties to the ViewModel",
+                IconImageSource = "dotnet_bot.png",
+                IconBackgroundColor = Colors.LightGray,
+                BorderColor = Colors.Pink,
+                CardColor = Colors.SkyBlue
+            };
+            firstView.BindingContext = _viewModel;
+            if (!string.IsNullOrEmpty(_viewModel.ControlTemplateKeyFirst) && firstView.Resources.ContainsKey(_viewModel.ControlTemplateKeyFirst))
+                firstView.ControlTemplate = (ControlTemplate)firstView.Resources[_viewModel.ControlTemplateKeyFirst];
+            _dynamicContentHost.Content = firstView;
+        }
+        else if (_viewModel.ContentLabel == "SecondCustomPage")
+        {
+            var secondView = new ContentViewSecondCustomPage
+            {
+                SecondCustomViewTitle = "Second Custom Title",
+                SecondCustomViewDescription = "This is the description for the second custom view.",
+                SecondCustomViewText = "This is the SECOND custom view",
+                FrameBackgroundColor = Colors.LightGray
+            };
+            secondView.BindingContext = _viewModel;
+            if (!string.IsNullOrEmpty(_viewModel.ControlTemplateKeySecond) && secondView.Resources.ContainsKey(_viewModel.ControlTemplateKeySecond))
+                secondView.ControlTemplate = (ControlTemplate)secondView.Resources[_viewModel.ControlTemplateKeySecond];
+            _dynamicContentHost.Content = secondView;
+        }
+        else
+        {
             var defaultLabel = new Label
             {
-                FontSize = 18,
-                HorizontalOptions = LayoutOptions.Center
+                FontSize = 18
             };
             defaultLabel.SetBinding(Label.TextProperty, nameof(ContentViewViewModel.DefaultLabelText));
             var button = new Button
             {
                 Text = "Change Text",
-                AutomationId = "DefaultButton",
-                HorizontalOptions = LayoutOptions.Center
+                AutomationId = "DefaultButton"
             };
             button.Clicked += (s, e) =>
             {
@@ -126,14 +131,11 @@ public class ContentViewControlMainPage : ContentPage
             {
                 Spacing = 12,
                 Padding = new Thickness(20),
+                BackgroundColor = Colors.LightYellow,
                 Children = { defaultLabel, button }
             };
             stack.BindingContext = _viewModel;
             _dynamicContentHost.Content = stack;
-            return;
         }
-        // Custom page handling: set the custom view directly
-        _currentCustomView.BindingContext = _viewModel;
-        _dynamicContentHost.Content = _currentCustomView;
     }
 }

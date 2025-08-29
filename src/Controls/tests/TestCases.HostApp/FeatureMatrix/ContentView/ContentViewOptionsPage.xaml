@@ -2,49 +2,119 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:DataType="local:ContentViewViewModel"
              x:Class="Maui.Controls.Sample.ContentViewOptionsPage"
              Title="ContentViewOptionsPage">
-    <VerticalStackLayout Spacing="12" Padding="20">
-        <Label Text="Select Custom View:" FontAttributes="Bold" FontSize="16" />
+    <VerticalStackLayout Spacing="12"
+                         Padding="20">
+        <Label Text="Select Custom View:"
+               FontAttributes="Bold"
+               FontSize="16"/>
         <HorizontalStackLayout>
-            <RadioButton x:Name="FirstPageRadioButton" Content="First Custom View"  CheckedChanged="OnCustomPageRadioCheckedChanged" />
-            <RadioButton x:Name="SecondPageRadioButton" Content="Second Custom View" CheckedChanged="OnCustomPageRadioCheckedChanged" />
+            <RadioButton x:Name="DefaultPageRadioButton"
+                         IsChecked="True"
+                         Content="Default"
+                         CheckedChanged="OnCustomPageRadioCheckedChanged"/>
+            <RadioButton x:Name="FirstPageRadioButton"
+                         Content="First Custom"
+                         CheckedChanged="OnCustomPageRadioCheckedChanged"/>
+            <RadioButton x:Name="SecondPageRadioButton"
+                         Content="Second Custom"
+                         CheckedChanged="OnCustomPageRadioCheckedChanged"/>
         </HorizontalStackLayout>
 
-        <Label Text="Use Control Template?" FontAttributes="Bold" FontSize="16" />
+        <Label Text="Use Control Template?"
+               FontAttributes="Bold"
+               FontSize="16"/>
         <HorizontalStackLayout>
-            <RadioButton x:Name="ControlTemplateYesRadioButton" Content="Yes" IsChecked="False" CheckedChanged="OnControlTemplateRadioCheckedChanged" />
-            <RadioButton x:Name="ControlTemplateNoRadioButton"  Content="No" IsChecked="True" CheckedChanged="OnControlTemplateRadioCheckedChanged" />
+            <RadioButton x:Name="ControlTemplateYesRadioButton"
+                         Content="Yes"
+                         IsChecked="False"
+                         CheckedChanged="OnControlTemplateRadioCheckedChanged"/>
+            <RadioButton x:Name="ControlTemplateNoRadioButton"
+                         Content="No"
+                         IsChecked="True"
+                         CheckedChanged="OnControlTemplateRadioCheckedChanged"/>
         </HorizontalStackLayout>
-    <!-- HeightRequest RadioButtons -->
-        <Label Text="Height" />
+        <!-- HeightRequest RadioButtons -->
+        <Label Text="Height"/>
         <HorizontalStackLayout>
-            <RadioButton x:Name="Height150RadioButton" Content="150" />
-            <RadioButton x:Name="Height300RadioButton" Content="300" />
-        </HorizontalStackLayout>
-
-        <Label Text="Width" />
-        <HorizontalStackLayout>
-            <RadioButton x:Name="Width200RadioButton" Content="200" />
-            <RadioButton x:Name="Width400RadioButton" Content="400" />
-        </HorizontalStackLayout>
-
-        <Label Text="Background Color" />
-        <HorizontalStackLayout>
-            <RadioButton x:Name="BgLightGreenRadioButton" Content="LightGreen" />
-            <RadioButton x:Name="BgSkyBlueRadioButton" Content="SkyBlue" />
-        </HorizontalStackLayout>
-
-        <Label Text="IsEnabled" />
-        <HorizontalStackLayout>
-            <RadioButton x:Name="EnabledTrueRadioButton" IsChecked="True" Content="True" />
-            <RadioButton x:Name="EnabledFalseRadioButton" Content="False" />
+            <RadioButton x:Name="Height50RadioButton"
+                         Content="50"
+                         CheckedChanged="OnHeightRadioCheckedChanged"/>
+            <RadioButton x:Name="Height300RadioButton"
+                         Content="300"
+                         CheckedChanged="OnHeightRadioCheckedChanged"/>
         </HorizontalStackLayout>
 
-        <Label Text="IsVisible" />
+        <Label Text="Width"/>
         <HorizontalStackLayout>
-            <RadioButton x:Name="VisibleTrueRadioButton" IsChecked="True" Content="True"/>
-            <RadioButton x:Name="VisibleFalseRadioButton" Content="False" />
+            <RadioButton x:Name="Width50RadioButton"
+                         Content="50"
+                         CheckedChanged="OnWidthRadioCheckedChanged"/>
+            <RadioButton x:Name="Width400RadioButton"
+                         Content="400"
+                         CheckedChanged="OnWidthRadioCheckedChanged"/>
+        </HorizontalStackLayout>
+
+        <Label Text="Background Color"/>
+        <HorizontalStackLayout>
+            <RadioButton x:Name="BgLightGreenRadioButton"
+                         Content="LightGreen"
+                         CheckedChanged="OnBgColorRadioCheckedChanged"/>
+            <RadioButton x:Name="BgSkyBlueRadioButton"
+                         Content="Blue"
+                         CheckedChanged="OnBgColorRadioCheckedChanged"/>
+        </HorizontalStackLayout>
+
+        <Label Text="IsEnabled"/>
+        <HorizontalStackLayout>
+            <RadioButton x:Name="EnabledTrueRadioButton"
+                         IsChecked="True"
+                         Content="True"
+                         CheckedChanged="OnEnabledRadioCheckedChanged"/>
+            <RadioButton x:Name="EnabledFalseRadioButton"
+                         Content="False"
+                         CheckedChanged="OnEnabledRadioCheckedChanged"/>
+        </HorizontalStackLayout>
+
+        <Label Text="IsVisible"/>
+        <HorizontalStackLayout>
+            <RadioButton x:Name="VisibleTrueRadioButton"
+                         IsChecked="True"
+                         Content="True"
+                         CheckedChanged="OnVisibleRadioCheckedChanged"/>
+            <RadioButton x:Name="VisibleFalseRadioButton"
+                         Content="False"
+                         CheckedChanged="OnVisibleRadioCheckedChanged"/>
+        </HorizontalStackLayout>
+
+        <Label Text="Flow Direction:"
+               FontSize="10"/>
+        <HorizontalStackLayout Spacing="1">
+            <RadioButton x:Name="FlowDirectionLeftToRight"
+                         Content="LTR"
+                         GroupName="FlowDirection"
+                         IsChecked="True"
+                         FontSize="10"
+                         VerticalOptions="Center"
+                         AutomationId="FlowDirectionLeftToRight"
+                         CheckedChanged="FlowDirection_CheckedChanged"/>
+            <RadioButton x:Name="FlowDirectionRightToLeft"
+                         Content="RTL"
+                         GroupName="FlowDirection"
+                         FontSize="10"
+                         VerticalOptions="Center"
+                         AutomationId="FlowDirectionRightToLeft"
+                         CheckedChanged="FlowDirection_CheckedChanged"/>
+        </HorizontalStackLayout>
+        <!-- Shadow -->
+        <HorizontalStackLayout Spacing="10">
+            <CheckBox IsChecked="{Binding HasShadow}"
+                    AutomationId="ShadowCheckBox"/>
+            <Label Text="Has Shadow"
+                    VerticalOptions="Center"/>
         </HorizontalStackLayout>
     </VerticalStackLayout>
+
 </ContentPage>

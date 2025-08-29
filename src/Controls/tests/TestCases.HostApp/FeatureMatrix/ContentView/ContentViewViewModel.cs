@@ -4,6 +4,18 @@ namespace Maui.Controls.Sample;
 public class ContentViewViewModel : INotifyPropertyChanged
 {
 	private string _defaultLabelText = "This is Default Page";
+	private bool _useControlTemplate;
+	private string _contentLabel = "Default";
+	private int _heightRequest = -1;
+	private int _widthRequest = -1;
+	private Color _backgroundColor = Colors.LightGray;
+	private bool _isEnabled = true;
+	private bool _isVisible = true;
+	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
+	private bool _hasShadow = false;
+	private Shadow _contentViewShadow = null;
+	private string _controlTemplateKeyFirst = "DefaultFirstTemplate";
+	private string _controlTemplateKeySecond = "DefaultSecondTemplate";
 	public string DefaultLabelText
 	{
 		get => _defaultLabelText;
@@ -16,13 +28,32 @@ public class ContentViewViewModel : INotifyPropertyChanged
 			}
 		}
 	}
-	private bool _useControlTemplate;
-	private string _contentLabel = "FirstCustomPage";
-	private int _heightRequest = -1;
-	private int _widthRequest = -1;
-	private Color _backgroundColor = Colors.LightGray;
-	private bool _isEnabled = true;
-	private bool _isVisible = true;
+
+	public string ControlTemplateKeyFirst
+	{
+		get => _controlTemplateKeyFirst;
+		set
+		{
+			if (_controlTemplateKeyFirst != value)
+			{
+				_controlTemplateKeyFirst = value;
+				OnPropertyChanged(nameof(ControlTemplateKeyFirst));
+			}
+		}
+	}
+
+	public string ControlTemplateKeySecond
+	{
+		get => _controlTemplateKeySecond;
+		set
+		{
+			if (_controlTemplateKeySecond != value)
+			{
+				_controlTemplateKeySecond = value;
+				OnPropertyChanged(nameof(ControlTemplateKeySecond));
+			}
+		}
+	}
 
 	public bool IsVisible
 	{
@@ -105,6 +136,53 @@ public class ContentViewViewModel : INotifyPropertyChanged
 			{
 				_contentLabel = value;
 				OnPropertyChanged(nameof(ContentLabel));
+			}
+		}
+	}
+
+	public FlowDirection FlowDirection
+	{
+		get => _flowDirection;
+		set
+		{
+			if (_flowDirection != value)
+			{
+				_flowDirection = value;
+				OnPropertyChanged(nameof(FlowDirection));
+			}
+		}
+	}
+	public bool HasShadow
+	{
+		get => _hasShadow;
+		set
+		{
+			if (_hasShadow != value)
+			{
+				_hasShadow = value;
+				ContentViewShadow = value
+					? new Shadow
+					{
+						Radius = 10,
+						Opacity = 1.0f,
+						Brush = Colors.Black.AsPaint(),
+						Offset = new Point(5, 5)
+					}
+					: null;
+				OnPropertyChanged(nameof(HasShadow));
+			}
+		}
+	}
+
+	public Shadow ContentViewShadow
+	{
+		get => _contentViewShadow;
+		set
+		{
+			if (_contentViewShadow != value)
+			{
+				_contentViewShadow = value;
+				OnPropertyChanged(nameof(ContentViewShadow));
 			}
 		}
 	}
