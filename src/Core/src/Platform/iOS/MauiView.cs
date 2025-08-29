@@ -723,10 +723,6 @@ namespace Microsoft.Maui.Platform
 			UpdateKeyboardSubscription();
 		}
 
-		public override bool CanBecomeFirstResponder => true;
-
-		public override bool CanBecomeFocused => true;
-
 		/// <summary>
 		/// Called when the focus environment updates. This method propagates native iOS focus
 		/// changes to the cross-platform layer by updating the IsFocused property of the

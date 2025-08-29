@@ -19,13 +19,6 @@ public class Issue28945 : TestContentPage
 
 	VerticalStackLayout CreateContent()
 	{
-		var button = new Button
-		{
-			Text = "Tap to Focus/Unfocus",
-			AutomationId = "TglFocusButton",
-		};
-
-		button.Clicked += Button_Clicked;
 		var verticalStackLayout = new VerticalStackLayout
 		{
 			Spacing = 30,
@@ -33,7 +26,6 @@ public class Issue28945 : TestContentPage
 			{
 				CreateContentView(),
 				CreateLabel(),
-				button
 			}
 		};
 
@@ -96,4 +88,46 @@ public class Issue28945 : TestContentPage
 
 public class Issue28945_ContentView : ContentView
 {
+
+}
+
+#if IOS || MACCATALYST
+public class Issue28945_ContentViewPlatform : Microsoft.Maui.Platform.ContentView
+{
+	public Issue28945_ContentViewPlatform()
+	{
+		UserInteractionEnabled = true;
+	}
+
+	public override bool CanBecomeFocused => true;
+	public override bool CanBecomeFirstResponder => true;
+}
+
+public class Issue28945_ContentViewPlatformHandler : Microsoft.Maui.Handlers.ContentViewHandler
+{
+	public Issue28945_ContentViewPlatformHandler()
+	{
+	}
+
+	protected override Microsoft.Maui.Platform.ContentView CreatePlatformView()
+	{
+		return new Issue28945_ContentViewPlatform();
+	}
+
+}
+#endif
+
+public static class Issue28945Extensions
+{
+	public static MauiAppBuilder Issue28945AddMappers(this MauiAppBuilder builder)
+	{
+		builder.ConfigureMauiHandlers(handlers =>
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler<Issue28945_ContentView, Issue28945_ContentViewPlatformHandler>();
+#endif
+		});
+
+		return builder;
+	}
 }
