@@ -210,7 +210,7 @@ stages:
                   path: ${{ project.android }}
                   app: ${{ project.app }}
                   device: android-emulator-64_36
-                  deviceType: "Pixel 9"
+                  deviceType: "pixel_7"
                   provisionatorChannel: ${{ parameters.provisionatorChannel }}
                   agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                   testFilter: "SafeAreaEdges"

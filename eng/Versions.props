@@ -194,8 +194,8 @@
     <AndroidSdkApiLevels Include="34" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
     <AndroidSdkApiLevels Include="35" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" IsDefault="True" />
     <AndroidSdkApiLevels Include="36" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" IsDefault="True" />
-    <!-- Dedicated Pixel 9 configuration for SafeAreaEdges tests -->
-    <AndroidSdkApiLevels Include="36" SystemImageType="google_apis_playstore" DeviceType="Pixel 9" />
+    <!-- Dedicated Pixel 7 configuration for SafeAreaEdges tests -->
+    <AndroidSdkApiLevels Include="36" SystemImageType="google_apis_playstore" DeviceType="pixel_7" />
   </ItemGroup>
   <PropertyGroup>
     <!-- arcade -->
