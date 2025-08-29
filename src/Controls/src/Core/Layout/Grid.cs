@@ -72,9 +72,7 @@ namespace Microsoft.Maui.Controls
 			return (int)bindable.GetValue(ColumnProperty);
 		}
 
-		/// <summary>Gets the column span of the <paramref name="bindable" /> child element.</summary>
-		/// <param name="bindable">An element that belongs to the Grid layout.</param>
-		/// <returns>The column span value of the given element.</returns>
+		/// <returns>The number of columns spanned by the element; defaults to 1.</returns>
 		public static int GetColumnSpan(BindableObject bindable)
 		{
 			return (int)bindable.GetValue(ColumnSpanProperty);
@@ -144,11 +142,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Provides the interface for the bound property that gets or sets the collection of RowDefinition objects that control the heights of each row.</summary>
-		/// <remarks>
-		/// RowDefinitions is an ordered set of <see cref="RowDefinition" /> objects that determine the height of each row. Each successive
-		/// <see cref="RowDefinition" /> controls the height of the next row. If the collection is empty, or if there are more rows than
-		/// definitions, then rows without an explicit definition behave as if they had a <see cref="RowDefinition" /> whose
-		/// <see cref="RowDefinition.Height" /> is set to <see cref="GridLength.Star" />.
+		/// <see cref="RowDefinition.Height" /> is set to <see cref="Microsoft.Maui.GridLength.Star" />.
 		/// </remarks>
 		[System.ComponentModel.TypeConverter(typeof(RowDefinitionCollectionTypeConverter))]
 		public RowDefinitionCollection RowDefinitions
