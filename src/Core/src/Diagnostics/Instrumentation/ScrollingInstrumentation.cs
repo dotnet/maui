@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Diagnostics;
 
@@ -22,14 +23,15 @@ readonly struct ScrollingInstrumentation : IDiagnosticInstrumentation
     /// <param name="scrollType">The type of scroll operation (e.g., "UserGesture", "Programmatic").</param>
     /// <param name="horizontalOffset">The initial horizontal scroll offset.</param>
     /// <param name="verticalOffset">The initial vertical scroll offset.</param>
-    public ScrollingInstrumentation(IView view, string scrollType, double horizontalOffset = 0, double verticalOffset = 0)
+    public ScrollingInstrumentation(IView view, string scrollType, double horizontalOffset = 0,
+	    double verticalOffset = 0)
     {
-        _view = view;
-        _scrollType = scrollType;
-        _initialHorizontalOffset = horizontalOffset;
-        _initialVerticalOffset = verticalOffset;
-        _activity = view.StartDiagnosticActivity($"Scroll.{scrollType}");
-        _startTime = Stopwatch.GetTimestamp();
+	    _view = view;
+	    _scrollType = string.IsNullOrEmpty(scrollType) ? "Unknown" : scrollType;
+	    _initialHorizontalOffset = horizontalOffset;
+	    _initialVerticalOffset = verticalOffset;
+	    _activity = view.StartDiagnosticActivity($"Scroll.{scrollType}");
+	    _startTime = Stopwatch.GetTimestamp();
     }
 
     /// <summary>
@@ -53,9 +55,8 @@ readonly struct ScrollingInstrumentation : IDiagnosticInstrumentation
 
         try
         {
-            // Build extended tag list more efficiently
+            // Create extended tag list
             var extendedTagList = BuildExtendedTagList(tagList);
-            var totalDistance = CalculateScrollDistance();
 
             // Calculate duration
             TimeSpan? duration = _activity?.Duration;
@@ -68,9 +69,13 @@ readonly struct ScrollingInstrumentation : IDiagnosticInstrumentation
             // Record the scroll operation
             metrics.RecordScroll(duration, in extendedTagList);
 
-            // Check for potential jank (operations taking longer than 16ms for 60fps)
-            if (duration?.TotalMilliseconds > 16)
+            // Check for potential jank
+            double jankThreshold = 1000.0 / DeviceDisplay.MainDisplayInfo.RefreshRate; // 16.67ms for 60Hz, 8.33ms for 120Hz
+            
+            if (duration?.TotalMilliseconds > jankThreshold)
             {
+	            int droppedFrames = (int)Math.Floor(duration.Value.TotalMilliseconds / jankThreshold);
+	            extendedTagList.Add("scroll.droppedFrames", droppedFrames);
 	            metrics.RecordJank(in extendedTagList);
             }
         }
@@ -92,6 +97,10 @@ readonly struct ScrollingInstrumentation : IDiagnosticInstrumentation
             extendedTagList.Add(tag.Key, tag.Value);
         }
 
+        // Add device-specific tags
+        extendedTagList.Add("device.platform", DeviceInfo.Platform.ToString());
+        extendedTagList.Add("device.model", DeviceInfo.Model);
+        
         // Add scroll-specific tags
         extendedTagList.Add("scroll.type", _scrollType);
         extendedTagList.Add("control.type", GetControlType(_view));
@@ -112,17 +121,7 @@ readonly struct ScrollingInstrumentation : IDiagnosticInstrumentation
 
         return extendedTagList;
     }
-
-    double CalculateScrollDistance()
-    {
-        if (_view is IScrollView scrollView)
-        {
-            var (_, _, totalDistance) = CalculateScrollDistances(scrollView);
-            return totalDistance;
-        }
-        return 0;
-    }
-
+	
     (double horizontal, double vertical, double total) CalculateScrollDistances(IScrollView scrollView)
     {
         var horizontalDistance = Math.Abs(scrollView.HorizontalOffset - _initialHorizontalOffset);
