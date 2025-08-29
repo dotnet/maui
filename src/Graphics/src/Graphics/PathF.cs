@@ -8,6 +8,17 @@ namespace Microsoft.Maui.Graphics
 	/// <summary>
 	/// Represents a geometric path consisting of lines, curves, and shapes using single-precision floating-point coordinates.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// A path is composed of one or more sub-paths, each beginning with a Move operation and consisting of connected
+	/// line segments, curves, and arcs. For fill operations to work reliably, paths should typically be closed using
+	/// the <see cref="Close()"/> method or by explicitly connecting the end point back to the starting point.
+	/// </para>
+	/// <para>
+	/// When creating paths for filling, ensure proper path construction to avoid exceptions during rendering.
+	/// Paths that start with <see cref="LineTo(PointF)"/> operations will automatically create an initial MoveTo operation.
+	/// </para>
+	/// </remarks>
 	public class PathF : IDisposable
 	{
 		private const float K_RATIO = 0.551784777779014f; // ideal ratio of cubic Bezier points for a quarter circle
@@ -358,6 +369,11 @@ namespace Microsoft.Maui.Graphics
 		/// <summary>
 		/// Closes the current sub-path by appending a close segment if it is not already closed.
 		/// </summary>
+		/// <remarks>
+		/// Closing a path is typically required for fill operations to work correctly. Attempting to fill
+		/// an unclosed path may result in undefined behavior or exceptions in some graphics implementations.
+		/// A closed path ensures that the shape is properly defined for filling operations.
+		/// </remarks>
 		public void Close()
 		{
 			if (!Closed)
@@ -401,6 +417,11 @@ namespace Microsoft.Maui.Graphics
 		/// </summary>
 		/// <param name="point">The end point.</param>
 		/// <returns>The current path.</returns>
+		/// <remarks>
+		/// If this is the first operation on an empty path, it will automatically create an initial MoveTo operation
+		/// to the specified point. For paths intended to be filled, ensure the path forms a closed shape by calling
+		/// <see cref="Close()"/> or explicitly connecting back to the starting point.
+		/// </remarks>
 		public PathF LineTo(PointF point)
 		{
 			if (_points.Count == 0)
