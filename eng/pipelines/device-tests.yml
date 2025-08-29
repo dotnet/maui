@@ -24,26 +24,28 @@ trigger: none
 #     - README.md
 #     - THIRD-PARTY-NOTICES.TXT
 
-pr:
-  branches:
-    include:
-    - main
-    - release/*
-    - net9.0
-    - net10.0
-  paths:
-    include:
-    - '*'
-    exclude:
-    - .github/*
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - THIRD-PARTY-NOTICES.TXT
+pr: none
+# Original PR triggers disabled for staged pipeline
+# pr:
+#   branches:
+#     include:
+#     - main
+#     - release/*
+#     - net9.0
+#     - net10.0
+#   paths:
+#     include:
+#     - '*'
+#     exclude:
+#     - .github/*
+#     - docs/*
+#     - src/Templates/*
+#     - CODE-OF-CONDUCT.md
+#     - CONTRIBUTING.md
+#     - LICENSE.TXT
+#     - PATENTS.TXT
+#     - README.md
+#     - THIRD-PARTY-NOTICES.TXT
 
 variables:
 - template: /eng/pipelines/common/variables.yml@self

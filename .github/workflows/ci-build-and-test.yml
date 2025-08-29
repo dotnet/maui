@@ -1,0 +1,123 @@
+name: CI - Build and Test
+
+on:
+  push:
+    branches: [ main, net10.0, release/*, staged-pipelines ]
+  pull_request:
+    branches: [ main, net10.0, release/* ]
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-and-test:
+    name: Build and Unit Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            name: Linux
+          - os: windows-latest  
+            name: Windows
+          - os: macos-latest
+            name: macOS
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - name: Setup Java (for Android builds)
+      if: matrix.os != 'macos-latest'  # Skip Java on macOS for now to keep it simple
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'microsoft'
+        java-version: '17'
+
+    - name: Install dotnet tools
+      run: dotnet tool restore
+
+    - name: Restore dependencies
+      run: dotnet restore Microsoft.Maui.sln
+
+    - name: Build solution
+      run: dotnet build Microsoft.Maui.sln --no-restore --configuration Release
+
+    - name: Run Core Unit Tests
+      run: dotnet test src/Core/tests/UnitTests/Core.UnitTests.csproj --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage"
+
+    - name: Run Essentials Unit Tests  
+      run: dotnet test src/Essentials/test/UnitTests/Essentials.UnitTests.csproj --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage"
+
+    - name: Run Controls Core Unit Tests
+      run: dotnet test src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage"
+
+    - name: Run Controls XAML Unit Tests  
+      run: dotnet test src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage"
+
+    - name: Run Compatibility Unit Tests
+      run: dotnet test src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage"
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ matrix.name }}
+        path: |
+          **/*.trx
+          **/coverage.cobertura.xml
+        retention-days: 30
+
+  format-check:
+    name: Code Format Check
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - name: Restore dependencies
+      run: dotnet restore Microsoft.Maui.sln
+
+    - name: Check code formatting
+      run: dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822 --verify-no-changes --verbosity diagnostic
+
+  summary:
+    name: Build Summary
+    runs-on: ubuntu-latest
+    needs: [build-and-test, format-check]
+    if: always()
+    steps:
+    - name: Build Summary
+      run: |
+        echo "## Build and Test Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Linux Build & Test | ${{ needs.build-and-test.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Windows Build & Test | ${{ needs.build-and-test.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY  
+        echo "| macOS Build & Test | ${{ needs.build-and-test.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Code Format Check | ${{ needs.format-check.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ "${{ needs.build-and-test.result }}" == "success" && "${{ needs.format-check.result }}" == "success" ]]; then
+          echo "🎉 All checks passed! The codebase builds successfully and unit tests are passing." >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Some checks failed. Please review the job details above." >> $GITHUB_STEP_SUMMARY
+        fi

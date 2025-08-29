@@ -1,0 +1,202 @@
+name: CI - Extended Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_device_tests:
+        description: 'Run device tests after build'
+        required: false
+        default: false
+        type: boolean
+      run_android_build:
+        description: 'Include Android platform build'
+        required: false  
+        default: true
+        type: boolean
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-core:
+    name: Core Build and Unit Tests
+    runs-on: ubuntu-latest
+    outputs:
+      success: ${{ steps.build.outcome == 'success' }}
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - name: Install dotnet tools
+      run: dotnet tool restore
+
+    - name: Build build tasks
+      run: dotnet build ./Microsoft.Maui.BuildTasks.slnf
+
+    - name: Build and test core
+      id: build
+      run: |
+        echo "Building core solution..."
+        dotnet build Microsoft.Maui.sln --configuration Release
+        
+        echo "Running unit tests..."
+        dotnet test src/Core/tests/UnitTests/Core.UnitTests.csproj --configuration Release --logger trx
+        dotnet test src/Essentials/test/UnitTests/Essentials.UnitTests.csproj --configuration Release --logger trx
+        dotnet test src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj --configuration Release --logger trx
+        dotnet test src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj --configuration Release --logger trx
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: |
+          artifacts/
+          **/*.trx
+        retention-days: 30
+
+  build-android:
+    name: Android Build
+    runs-on: ubuntu-latest
+    needs: build-core
+    if: needs.build-core.outputs.success == 'true' && (github.event.inputs.run_android_build == 'true' || github.event_name == 'schedule')
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'microsoft'
+        java-version: '17'
+
+    - name: Install dotnet tools
+      run: dotnet tool restore
+
+    - name: Build build tasks
+      run: dotnet build ./Microsoft.Maui.BuildTasks.slnf
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-artifacts
+
+    - name: Build Android sample
+      run: |
+        echo "Building Android sample to verify platform integration..."
+        dotnet build src/Controls/samples/Maui.Controls.Sample/Maui.Controls.Sample.csproj -f net9.0-android --configuration Release
+
+  build-ios:
+    name: iOS Build (macOS)
+    runs-on: macos-latest
+    needs: build-core
+    if: needs.build-core.outputs.success == 'true' && github.event_name == 'schedule'
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - name: Install dotnet tools
+      run: dotnet tool restore
+
+    - name: Build build tasks
+      run: dotnet build ./Microsoft.Maui.BuildTasks.slnf
+
+    - name: Build iOS sample
+      run: |
+        echo "Building iOS sample to verify platform integration..."
+        dotnet build src/Controls/samples/Maui.Controls.Sample/Maui.Controls.Sample.csproj -f net9.0-ios --configuration Release
+
+  device-tests:
+    name: Device Tests (if requested)
+    runs-on: ubuntu-latest
+    needs: [build-core, build-android]
+    if: needs.build-core.outputs.success == 'true' && github.event.inputs.run_device_tests == 'true'
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'microsoft'
+        java-version: '17'
+
+    - name: Install dotnet tools
+      run: dotnet tool restore
+
+    - name: Build device tests
+      run: |
+        echo "Building device tests (Android only in public runners)..."
+        dotnet build src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj -f net9.0-android --configuration Release
+        dotnet build src/Core/tests/DeviceTests/Core.DeviceTests.csproj -f net9.0-android --configuration Release
+
+    - name: Note about device tests
+      run: |
+        echo "Device tests built successfully!" 
+        echo "Note: Actual device testing requires physical devices or emulators with additional setup."
+        echo "This workflow validates that device test projects compile correctly."
+
+  summary:
+    name: Summary
+    runs-on: ubuntu-latest
+    needs: [build-core, build-android, build-ios, device-tests]
+    if: always()
+    
+    steps:
+    - name: Build Summary
+      run: |
+        echo "## Extended Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Stage | Status | Notes |" >> $GITHUB_STEP_SUMMARY
+        echo "|-------|--------|-------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Core Build & Unit Tests | ${{ needs.build-core.result == 'success' && '✅ Passed' || '❌ Failed' }} | Basic .NET MAUI build and unit tests |" >> $GITHUB_STEP_SUMMARY
+        echo "| Android Build | ${{ needs.build-android.result == 'success' && '✅ Passed' || needs.build-android.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} | Android platform validation |" >> $GITHUB_STEP_SUMMARY
+        echo "| iOS Build | ${{ needs.build-ios.result == 'success' && '✅ Passed' || needs.build-ios.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} | iOS platform validation (macOS only) |" >> $GITHUB_STEP_SUMMARY
+        echo "| Device Tests | ${{ needs.device-tests.result == 'success' && '✅ Passed' || needs.device-tests.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} | Device test compilation check |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ "${{ needs.build-core.result }}" == "success" ]]; then
+          echo "🎉 **Core build successful!** The .NET MAUI codebase compiles and unit tests pass." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Core functionality validated" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ needs.build-android.result }}" == "success" ]]; then
+            echo "- ✅ Android platform integration confirmed" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [[ "${{ needs.build-ios.result }}" == "success" ]]; then
+            echo "- ✅ iOS platform integration confirmed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- 🔄 Ready for more comprehensive testing in Azure DevOps pipelines" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Core build failed.** Please fix compilation issues before proceeding." >> $GITHUB_STEP_SUMMARY
+        fi
