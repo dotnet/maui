@@ -8,7 +8,7 @@ namespace Microsoft.Maui;
 /// <remarks>
 /// This interface provides access to platform-specific services and the main application instance.
 /// Each platform (Android, iOS, Windows, etc.) provides its own implementation of this interface.
-/// Use <see cref="Current"/> to access the current platform application instance.
+/// Use <see cref="IPlatformApplication.Current"/> to access the current platform application instance.
 /// </remarks>
 public interface IPlatformApplication
 {

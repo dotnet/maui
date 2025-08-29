@@ -142,6 +142,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Provides the interface for the bound property that gets or sets the collection of RowDefinition objects that control the heights of each row.</summary>
+		/// <remarks>
 		/// <see cref="RowDefinition.Height" /> is set to <see cref="Microsoft.Maui.GridLength.Star" />.
 		/// </remarks>
 		[System.ComponentModel.TypeConverter(typeof(RowDefinitionCollectionTypeConverter))]
