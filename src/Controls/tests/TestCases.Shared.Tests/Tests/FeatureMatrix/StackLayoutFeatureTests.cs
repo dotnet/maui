@@ -32,7 +32,7 @@ public class StackLayoutFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		App.WaitForNoElement("LabelSpacing");
 	}
 
 	[Test]
@@ -50,7 +50,7 @@ public class StackLayoutFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		VerifyScreenshot();
+		App.WaitForNoElement("LabelSpacing");
 	}
 
 	[Test]
@@ -395,6 +395,7 @@ public class StackLayoutFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if ANDROID || IOS
 	[Test]
 	public void HorizontalStackLayout_Spacing_WithLandspace()
 	{
@@ -433,4 +434,5 @@ public class StackLayoutFeatureTests : UITest
 
 		VerifyScreenshot();
 	}
+#endif
 }

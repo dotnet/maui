@@ -19,6 +19,7 @@
                      <Label Text="Space between child views"
                             FontAttributes="Bold"
                             FontSize="14"
+                            AutomationId="LabelSpacing"
                             Margin="0,10,0,0"/>
                      <HorizontalStackLayout
                             FlowDirection="{Binding FlowDirection}"
