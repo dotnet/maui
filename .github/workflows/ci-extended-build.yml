@@ -43,16 +43,13 @@ jobs:
     - name: Install dotnet tools
       run: dotnet tool restore
 
-    - name: Install MAUI workload
-      run: dotnet workload install maui
-
-    - name: Build build tasks
+    - name: Build build tasks (Linux - core only)
       run: dotnet build ./Microsoft.Maui.BuildTasks.slnf
 
     - name: Build and test core
       id: build
       run: |
-        echo "Building core solution..."
+        echo "Building core solution (Linux - no platform workloads)..."
         dotnet build Microsoft.Maui.sln --configuration Release
         
         echo "Running unit tests..."
@@ -94,8 +91,8 @@ jobs:
     - name: Install dotnet tools
       run: dotnet tool restore
 
-    - name: Install MAUI workload
-      run: dotnet workload install maui
+    - name: Install MAUI Android workload
+      run: dotnet workload install android
 
     - name: Build build tasks
       run: dotnet build ./Microsoft.Maui.BuildTasks.slnf
@@ -128,8 +125,8 @@ jobs:
     - name: Install dotnet tools
       run: dotnet tool restore
 
-    - name: Install MAUI workload
-      run: dotnet workload install maui
+    - name: Install MAUI iOS workload
+      run: dotnet workload install ios maccatalyst
 
     - name: Build build tasks
       run: dotnet build ./Microsoft.Maui.BuildTasks.slnf
@@ -163,8 +160,8 @@ jobs:
     - name: Install dotnet tools
       run: dotnet tool restore
 
-    - name: Install MAUI workload
-      run: dotnet workload install maui
+    - name: Install MAUI Android workload
+      run: dotnet workload install android
 
     - name: Build device tests
       run: |

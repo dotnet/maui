@@ -59,8 +59,8 @@ jobs:
     - name: Install dotnet tools
       run: dotnet tool restore
 
-    - name: Install MAUI workload
-      run: dotnet workload install maui
+    - name: Install Android workload only (Linux)
+      run: dotnet workload install android
 
     - name: Build and test
       id: build-test

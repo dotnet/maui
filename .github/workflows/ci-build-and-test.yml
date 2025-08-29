@@ -40,20 +40,17 @@ jobs:
         global-json-file: global.json
 
     - name: Setup Java (for Android builds)
-      if: matrix.os != 'macos-latest'  # Skip Java on macOS for now to keep it simple
+      if: matrix.os != 'ubuntu-latest'  # Only install Java on Windows/macOS where we build Android
       uses: actions/setup-java@v4
       with:
         distribution: 'microsoft'
         java-version: '17'
 
-    - name: Setup Android SDK (Linux only)
-      if: matrix.os == 'ubuntu-latest'
-      uses: android-actions/setup-android@v3
-
     - name: Install dotnet tools
       run: dotnet tool restore
 
-    - name: Install MAUI workload
+    - name: Install MAUI workload (Windows/macOS only)
+      if: matrix.os != 'ubuntu-latest'
       run: dotnet workload install maui
 
     - name: Build build tasks (required first)
@@ -79,6 +76,10 @@ jobs:
 
     - name: Run Compatibility Unit Tests
       run: dotnet test src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage"
+
+    - name: Test Android build (Windows/macOS only)
+      if: matrix.os != 'ubuntu-latest'
+      run: dotnet build src/Controls/samples/Maui.Controls.Sample/Maui.Controls.Sample.csproj -f net9.0-android --configuration Release
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
