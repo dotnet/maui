@@ -1,181 +1,139 @@
 using Microsoft.Maui.Controls;
 
-namespace Maui.Controls.Sample
+namespace Maui.Controls.Sample;
+
+public class ContentViewControlPage : NavigationPage
 {
-    public class ContentViewControlPage : ContentPage
+    public ContentViewControlPage()
     {
-        private ContentViewFirstCustomPage _firstCustomView;
-        private ContentViewSecondCustomPage _secondCustomView;
-        RadioButton _firstPageRadioButton;
-        RadioButton _secondPageRadioButton;
-        RadioButton _controlTemplateYesRadioButton;
-        RadioButton _controlTemplateNoRadioButton;
-        View _currentCustomView;
-        ContentView _dynamicContentHost;
+        var vm = new ContentViewViewModel();
+        var mainPage = new ContentViewControlMainPage(vm);
+        PushAsync(mainPage);
+    }
+}
+public class ContentViewControlMainPage : ContentPage
+{
+    private ContentViewFirstCustomPage _firstCustomView;
+    private ContentViewSecondCustomPage _secondCustomView;
+    private View _currentCustomView;
+    private ContentView _dynamicContentHost;
+    private ContentViewViewModel _viewModel;
 
-        public ContentViewControlPage()
+
+    public ContentViewControlMainPage(ContentViewViewModel viewModel)
+    {
+        _viewModel = viewModel;
+        BindingContext = viewModel;
+
+        _firstCustomView = new ContentViewFirstCustomPage
         {
-            _firstCustomView = new ContentViewFirstCustomPage
-            {
-                CardTitle = "ContenView",
-                CardDescription = "Use ContentViewPage as the content, binding all card properties to the ViewModel",
-                IconImageSource = "dotnet_bot.png",
-                IconBackgroundColor = Colors.LightGray,
-                BorderColor = Colors.Pink,
-                CardColor = Colors.SkyBlue
-            };
+            CardTitle = "ContenView",
+            CardDescription = "Use ContentViewPage as the content, binding all card properties to the ViewModel",
+            IconImageSource = "dotnet_bot.png",
+            IconBackgroundColor = Colors.LightGray,
+            BorderColor = Colors.Pink,
+            CardColor = Colors.SkyBlue
+        };
 
-            _secondCustomView = new ContentViewSecondCustomPage
-            {
-                SecondCustomViewTitle = "Second Custom Title",
-                SecondCustomViewDescription = "This is the description for the second custom view.",
-                SecondCustomViewText = "This is the SECOND custom view",
-                FrameBackgroundColor = Colors.LightGray
-            };
+        _secondCustomView = new ContentViewSecondCustomPage
+        {
+            SecondCustomViewTitle = "Second Custom Title",
+            SecondCustomViewDescription = "This is the description for the second custom view.",
+            SecondCustomViewText = "This is the SECOND custom view",
+            FrameBackgroundColor = Colors.LightGray
+        };
 
-            _firstPageRadioButton = new RadioButton
-            {
-                Content = "First Page",
-                GroupName = "PageType",
-                IsChecked = true,
-                AutomationId = "FirstPageRadioButton"
-            };
-            _secondPageRadioButton = new RadioButton
-            {
-                Content = "Second Page",
-                GroupName = "PageType",
-                AutomationId = "SecondPageRadioButton"
-            };
-            _firstPageRadioButton.CheckedChanged += OnCustomPageRadioCheckedChanged;
-            _secondPageRadioButton.CheckedChanged += OnCustomPageRadioCheckedChanged;
+        this.HeightRequest = _viewModel.HeightRequest;
+        this.WidthRequest = _viewModel.WidthRequest;
+        this.BackgroundColor = _viewModel.BackgroundColor;
+        this.IsEnabled = _viewModel.IsEnabled;
+        this.IsVisible = _viewModel.IsVisible;
 
-            _controlTemplateYesRadioButton = new RadioButton
-            {
-                Content = "Yes",
-                GroupName = "TemplateType",
-                AutomationId = "ControlTemplateYesRadioButton"
-            };
-            _controlTemplateNoRadioButton = new RadioButton
-            {
-                Content = "No",
-                GroupName = "TemplateType",
-                IsChecked = true,
-                AutomationId = "ControlTemplateNoRadioButton"
-            };
-            _controlTemplateYesRadioButton.CheckedChanged += OnControlTemplateRadioCheckedChanged;
-            _controlTemplateNoRadioButton.CheckedChanged += OnControlTemplateRadioCheckedChanged;
+        // Keep _dynamicContentHost for swapping child content
+        _dynamicContentHost = new ContentView();
 
-            _dynamicContentHost = new ContentView();
+        // Start with default content
+        UpdateContentViews();
 
-            var boxSpacer = new BoxView { HeightRequest = 150, Opacity = 0 };
-            var customPagesLabel = new Label { Text = "Custom Pages", FontAttributes = FontAttributes.Bold, FontSize = 16 };
-            var customPagesRadioLayout = new HorizontalStackLayout
-            {
-                Children = { _firstPageRadioButton, _secondPageRadioButton }
-            };
-            var controlTemplateLabel = new Label { Text = "Control Template", FontAttributes = FontAttributes.Bold, FontSize = 16 };
-            var controlTemplateRadioLayout = new HorizontalStackLayout
-            {
-                Children = { _controlTemplateYesRadioButton, _controlTemplateNoRadioButton }
-            };
-
-            var mainLayout = new VerticalStackLayout
-            {
-                Spacing = 2,
-                Padding = new Thickness(5),
-                Children =
-                {
-                    _dynamicContentHost,
-                    boxSpacer,
-                    customPagesLabel,
-                    customPagesRadioLayout,
-                    controlTemplateLabel,
-                    controlTemplateRadioLayout
-                }
-            };
-
-            Content = mainLayout;
-
-            _firstPageRadioButton.IsChecked = true;
-            _currentCustomView = _firstCustomView;
-            UpdateContentViews();
+        var mainLayout = new VerticalStackLayout
+        {
+            Spacing = 2,
+            Padding = new Thickness(5),
+            Children =
+        {
+            _dynamicContentHost,
         }
+        };
 
-        private void OnCustomPageRadioCheckedChanged(object sender, CheckedChangedEventArgs e)
+        Content = mainLayout;
+
+        ToolbarItems.Add(new ToolbarItem
         {
-            if (_firstPageRadioButton.IsChecked)
+            Text = "Options",
+            Command = new Command(async () =>
             {
-                _currentCustomView = _firstCustomView;
+                // reset properties instead of creating a new VM
+                _viewModel.HeightRequest = -1;
+                _viewModel.WidthRequest = -1;
+                _viewModel.BackgroundColor = Colors.LightGray;
+                _viewModel.IsEnabled = true;
+                _viewModel.IsVisible = true;
+                _viewModel.DefaultLabelText = "This is Default Page";
+                _viewModel.ContentLabel = "Default";
+
+                _currentCustomView = null;
+
+                UpdateContentViews();
+                await Navigation.PushAsync(new ContentViewOptionsPage(_viewModel));
+            })
+        });
+
+
+        viewModel.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(ContentViewViewModel.ContentLabel))
+            {
+                if (viewModel.ContentLabel == "FirstCustomPage")
+                    _currentCustomView = _firstCustomView;
+                else if (viewModel.ContentLabel == "SecondCustomPage")
+                    _currentCustomView = _secondCustomView;
+                UpdateContentViews();
             }
-            else if (_secondPageRadioButton.IsChecked)
-            {
-                _currentCustomView = _secondCustomView;
-            }
-            UpdateContentViews();
-        }
-
-        private void OnControlTemplateRadioCheckedChanged(object sender, CheckedChangedEventArgs e)
+        };
+    }
+    private void UpdateContentViews()
+    {
+        if (_currentCustomView == null)
         {
-            UpdateContentViews();
-        }
-
-        private void UpdateContentViews()
-        {
-            var titleLabel = new Label
+            // Default Page content: label and button, only bind label text
+            var defaultLabel = new Label
             {
-                Text = _currentCustomView is ContentViewFirstCustomPage
-                    ? "First Custom View"
-                    : "Second Custom View",
-                FontAttributes = FontAttributes.Bold,
                 FontSize = 18,
                 HorizontalOptions = LayoutOptions.Center
             };
-
-            var contentCopy = CreateNewContentView(_currentCustomView);
-
-            if (contentCopy is ContentViewFirstCustomPage firstCopy)
+            defaultLabel.SetBinding(Label.TextProperty, nameof(ContentViewViewModel.DefaultLabelText));
+            var button = new Button
             {
-                firstCopy.ControlTemplate = _controlTemplateYesRadioButton.IsChecked
-                    ? (ControlTemplate)firstCopy.Resources["AlternateCardTemplate"]
-                    : (ControlTemplate)firstCopy.Resources["DefaultFirstTemplate"];
-            }
-            else if (contentCopy is ContentViewSecondCustomPage secondCopy)
+                Text = "Change Text",
+                AutomationId = "DefaultButton",
+                HorizontalOptions = LayoutOptions.Center
+            };
+            button.Clicked += (s, e) =>
             {
-                secondCopy.ControlTemplate = _controlTemplateYesRadioButton.IsChecked
-                    ? (ControlTemplate)secondCopy.Resources["AlternateSecondTemplate"]
-                    : (ControlTemplate)secondCopy.Resources["DefaultSecondTemplate"];
-            }
-
-            var stack = new VerticalStackLayout();
-            stack.Children.Add(titleLabel);
-            stack.Children.Add(contentCopy);
-
+                _viewModel.DefaultLabelText = "Text Changed after Button Click!";
+            };
+            var stack = new StackLayout
+            {
+                Spacing = 12,
+                Padding = new Thickness(20),
+                Children = { defaultLabel, button }
+            };
+            stack.BindingContext = _viewModel;
             _dynamicContentHost.Content = stack;
+            return;
         }
-
-        private View CreateNewContentView(View view)
-        {
-            if (view is ContentViewFirstCustomPage)
-                return new ContentViewFirstCustomPage
-                {
-                    CardTitle = _firstCustomView.CardTitle,
-                    CardDescription = _firstCustomView.CardDescription,
-                    IconImageSource = _firstCustomView.IconImageSource,
-                    IconBackgroundColor = _firstCustomView.IconBackgroundColor,
-                    BorderColor = _firstCustomView.BorderColor,
-                    CardColor = _firstCustomView.CardColor
-                };
-
-            if (view is ContentViewSecondCustomPage)
-                return new ContentViewSecondCustomPage
-                {
-                    SecondCustomViewTitle = _secondCustomView.SecondCustomViewTitle,
-                    SecondCustomViewDescription = _secondCustomView.SecondCustomViewDescription,
-                    SecondCustomViewText = _secondCustomView.SecondCustomViewText,
-                    FrameBackgroundColor = _secondCustomView.FrameBackgroundColor
-                };
-
-            return view;
-        }
+        // Custom page handling: set the custom view directly
+        _currentCustomView.BindingContext = _viewModel;
+        _dynamicContentHost.Content = _currentCustomView;
     }
 }

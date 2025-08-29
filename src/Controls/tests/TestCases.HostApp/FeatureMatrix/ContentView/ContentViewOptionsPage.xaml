@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.ContentViewOptionsPage"
+             Title="ContentViewOptionsPage">
+    <VerticalStackLayout Spacing="12" Padding="20">
+        <Label Text="Select Custom View:" FontAttributes="Bold" FontSize="16" />
+        <HorizontalStackLayout>
+            <RadioButton x:Name="FirstPageRadioButton" Content="First Custom View"  CheckedChanged="OnCustomPageRadioCheckedChanged" />
+            <RadioButton x:Name="SecondPageRadioButton" Content="Second Custom View" CheckedChanged="OnCustomPageRadioCheckedChanged" />
+        </HorizontalStackLayout>
+
+        <Label Text="Use Control Template?" FontAttributes="Bold" FontSize="16" />
+        <HorizontalStackLayout>
+            <RadioButton x:Name="ControlTemplateYesRadioButton" Content="Yes" IsChecked="False" CheckedChanged="OnControlTemplateRadioCheckedChanged" />
+            <RadioButton x:Name="ControlTemplateNoRadioButton"  Content="No" IsChecked="True" CheckedChanged="OnControlTemplateRadioCheckedChanged" />
+        </HorizontalStackLayout>
+    <!-- HeightRequest RadioButtons -->
+        <Label Text="Height" />
+        <HorizontalStackLayout>
+            <RadioButton x:Name="Height150RadioButton" Content="150" />
+            <RadioButton x:Name="Height300RadioButton" Content="300" />
+        </HorizontalStackLayout>
+
+        <Label Text="Width" />
+        <HorizontalStackLayout>
+            <RadioButton x:Name="Width200RadioButton" Content="200" />
+            <RadioButton x:Name="Width400RadioButton" Content="400" />
+        </HorizontalStackLayout>
+
+        <Label Text="Background Color" />
+        <HorizontalStackLayout>
+            <RadioButton x:Name="BgLightGreenRadioButton" Content="LightGreen" />
+            <RadioButton x:Name="BgSkyBlueRadioButton" Content="SkyBlue" />
+        </HorizontalStackLayout>
+
+        <Label Text="IsEnabled" />
+        <HorizontalStackLayout>
+            <RadioButton x:Name="EnabledTrueRadioButton" IsChecked="True" Content="True" />
+            <RadioButton x:Name="EnabledFalseRadioButton" Content="False" />
+        </HorizontalStackLayout>
+
+        <Label Text="IsVisible" />
+        <HorizontalStackLayout>
+            <RadioButton x:Name="VisibleTrueRadioButton" IsChecked="True" Content="True"/>
+            <RadioButton x:Name="VisibleFalseRadioButton" Content="False" />
+        </HorizontalStackLayout>
+    </VerticalStackLayout>
+</ContentPage>
