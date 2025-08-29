@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void RefreshVisibleItems()
 		{
-			if (ItemsView is not CarouselView || CollectionView is null || ItemsSource?.ItemCount == 0)
+			if (CollectionView is null || ItemsSource?.ItemCount == 0)
 			{
 				return;
 			}
