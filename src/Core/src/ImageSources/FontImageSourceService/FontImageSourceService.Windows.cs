@@ -87,7 +87,7 @@ namespace Microsoft.Maui
 			using (var ds = canvasImageSource.CreateDrawingSession(UI.Colors.Transparent))
 			{
 				var x = (canvasWidth / 2d + (layout.LayoutBounds.Left + layout.DefaultFontSize / 2)); 
-                var y = (canvasHeight / 2d + (layout.LayoutBounds.Top + layout.DefaultFontSize / 2));
+				var y = (canvasHeight / 2d + (layout.LayoutBounds.Top + layout.DefaultFontSize / 2));
 
 				ds.DrawTextLayout(layout, (float)x, (float)y, color);
 			}
