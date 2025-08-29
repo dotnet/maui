@@ -227,6 +227,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnScrollToRequested(object? sender, ScrollToRequestEventArgs e)
 		{
+			// Start scroll instrumentation for programmatic scrolling
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(ItemsView, "Programmatic", 
+				ScrollX, ScrollY);
+			
 			if (e.Mode == ScrollToMode.Position)
 			{
 				ScrollTo(GetIndex(e), (TScrollToPosition)e.ScrollToPosition, e.IsAnimated);

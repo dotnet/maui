@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Foundation;
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
@@ -99,6 +100,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
+			// Start scroll instrumentation for programmatic scrolling
+			var currentOffset = Controller.CollectionView.ContentOffset;
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(VirtualView, "Programmatic", 
+				currentOffset.X, currentOffset.Y);
+			
 			using (var indexPath = DetermineIndex(args))
 			{
 				if (!IsIndexPathValid(indexPath))

@@ -616,7 +616,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Item wasn't found in the list, so there's nothing to scroll to
 				return;
 			}
-
+			
+			// Start scroll instrumentation for programmatic scrolling
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(Element, "Programmatic", 
+				_previousHorizontalOffset, _previousVerticalOffset);
+			
 			if (args.IsAnimated)
 			{
 				await ScrollHelpers.AnimateToItemAsync(list, item, args.ScrollToPosition);

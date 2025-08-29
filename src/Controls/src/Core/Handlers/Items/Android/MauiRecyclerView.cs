@@ -8,6 +8,7 @@ using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
 using AViewCompat = AndroidX.Core.View.ViewCompat;
@@ -387,6 +388,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsView == null)
 				return;
+			
+			// Start scroll instrumentation for programmatic scrolling
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(ItemsView, "Programmatic",
+				ComputeHorizontalScrollOffset(), ComputeVerticalScrollOffset());
 
 			var position = DetermineTargetPosition(args);
 
