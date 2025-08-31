@@ -49,7 +49,9 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 		if (node.XmlType.IsOfAnyType("OnPlatformExtension"))
 		{
 			if (   node.Properties.TryGetValue(new XmlName("", Target), out INode targetNode)
-				|| node.Properties.TryGetValue(new XmlName("", "Default"), out targetNode))
+				|| node.Properties.TryGetValue(new XmlName(null, Target), out targetNode)
+				|| node.Properties.TryGetValue(new XmlName("", "Default"), out targetNode)
+				|| node.Properties.TryGetValue(new XmlName(null, "Default"), out targetNode))
 			{
 				if (!node.TryGetPropertyName(parentNode, out XmlName name))
 					return;
