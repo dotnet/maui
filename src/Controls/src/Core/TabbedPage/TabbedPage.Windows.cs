@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -9,7 +10,6 @@ using WApp = Microsoft.UI.Xaml.Application;
 using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
 using WFrame = Microsoft.UI.Xaml.Controls.Frame;
 using WPage = Microsoft.UI.Xaml.Controls.Page;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
