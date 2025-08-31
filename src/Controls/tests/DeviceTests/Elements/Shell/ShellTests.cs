@@ -12,15 +12,14 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
-
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
-using Microsoft.Maui.Graphics;
 
 #endif
 
