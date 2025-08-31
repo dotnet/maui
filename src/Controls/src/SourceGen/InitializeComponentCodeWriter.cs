@@ -91,6 +91,7 @@ static class InitializeComponentCodeWriter
 					FilePath = xamlItem.ProjectItem.RelativePath,
 					EnableLineInfo = xamlItem.ProjectItem.EnableLineInfo,
 					EnableDiagnostics = xamlItem.ProjectItem.EnableDiagnostics,
+					TargetPlatform = xamlItem.ProjectItem.TargetFramework ?? "",
 				};
 				using (newblock())
 				{
@@ -123,6 +124,8 @@ static class InitializeComponentCodeWriter
 		if (useDesignProperties)
 			rootnode.Accept(new RemoveDuplicateDesignNodes(), null);
 		rootnode.Accept(new SimplifyTypeExtensionVisitor(), null);
+		if (!string.IsNullOrEmpty(visitorContext.TargetPlatform))
+			rootnode.Accept(new SimplifyOnPlatformVisitor(visitorContext.TargetPlatform), null);
 		rootnode.Accept(new CreateValuesVisitor(visitorContext), null);
 		rootnode.Accept(new SetNamescopesAndRegisterNamesVisitor(visitorContext), null); //set namescopes for {x:Reference} and FindByName
 		rootnode.Accept(new SetFieldsForXNamesVisitor(visitorContext), null);
