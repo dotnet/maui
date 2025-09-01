@@ -18,11 +18,6 @@ public partial class Maui31308
 {
 	public Maui31308() => InitializeComponent();
 
-	public Maui31308(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
 	[TestFixture]
 	class Test
 	{
