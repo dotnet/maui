@@ -117,6 +117,7 @@ public class AOTTemplateTest : BaseTemplateTests
 		var extendedBuildProps = new List<string>(BuildProps)
 		{
 			"PublishAot=true",
+			"PublishAotUsingRuntimePack=true",
 			"_IsPublishing=true",
 			"IlcTreatWarningsAsErrors=false",
 			"TrimmerSingleWarn=false",
