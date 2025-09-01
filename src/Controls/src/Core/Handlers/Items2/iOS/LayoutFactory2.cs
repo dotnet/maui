@@ -93,7 +93,7 @@ internal static class LayoutFactory2
 		//create global header and footer
 		layoutConfiguration.BoundarySupplementaryItems = CreateSupplementaryItems(null, layoutHeaderFooterInfo, scrollDirection, groupWidth, groupHeight);
 
-		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, (sectionIndex, environment) =>
+		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, layoutHeaderFooterInfo, (sectionIndex, environment) =>
 		{
 			// Each item has a size
 			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
@@ -151,7 +151,7 @@ internal static class LayoutFactory2
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
 
-		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, (sectionIndex, environment) =>
+		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, headerFooterInfo, (sectionIndex, environment) =>
 		{
 			// Each item has a size
 			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
@@ -450,11 +450,15 @@ internal static class LayoutFactory2
 	{
 		LayoutSnapInfo _snapInfo;
 		ItemsUpdatingScrollMode _itemsUpdatingScrollMode;
+		LayoutGroupingInfo? _groupingInfo;
+		LayoutHeaderFooterInfo? _headerFooterInfo;
 
 		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsUpdatingScrollMode itemsUpdatingScrollMode) : base(sectionProvider, configuration)
 		{
 			_snapInfo = snapInfo;
 			_itemsUpdatingScrollMode = itemsUpdatingScrollMode;
+			_groupingInfo = groupingInfo;
+			_headerFooterInfo = headerFooterInfo;
 		}
 
 		public override void FinalizeCollectionViewUpdates()
@@ -499,7 +503,7 @@ internal static class LayoutFactory2
 				}
 			}
 		}
-
+		
 		public override CGPoint TargetContentOffset(CGPoint proposedContentOffset, CGPoint scrollingVelocity)
 		{
 			var snapPointsType = _snapInfo.SnapType;
@@ -573,14 +577,23 @@ internal static class LayoutFactory2
 						}
 					}
 
-					// No items found
+					// No items found, but check if we have headers or footers that should still be shown
+					bool hasGlobalHeaders = _headerFooterInfo?.HasHeader == true || _headerFooterInfo?.HasFooter == true;
+					bool hasGroupHeaders = _groupingInfo?.HasHeader == true || _groupingInfo?.HasFooter == true;
+
+					if (hasGlobalHeaders || hasGroupHeaders)
+					{
+						// Return the base content size to allow headers/footers to be displayed
+						return base.CollectionViewContentSize;
+					}
+
+					// No items and no headers/footers found
 					return CGSize.Empty;
 				}
 
 				return base.CollectionViewContentSize;
 			}
 		}
-
 
 		CGPoint ScrollSingle(SnapPointsAlignment alignment, CGPoint proposedContentOffset, CGPoint scrollingVelocity)
 		{
