@@ -518,12 +518,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						return;
 					}
 
-					InitialPositionSet = true;
-
 					if (ItemsSource is null || ItemsSource.ItemCount == 0)
 					{
 						return;
 					}
+
+					InitialPositionSet = true;
 
 					int position = carousel.Position;
 					var currentItem = carousel.CurrentItem;
