@@ -13,8 +13,7 @@ public class Issue30888 : TestFlyoutPage
 
 		flyoutPage.ToolbarItems.Add(new ToolbarItem
 		{
-			Text = "Flyout",
-			IconImageSource = "dotnet_bot.png",
+			Text = "Send",
 		});
 
 		flyoutPage.Content = new Grid
