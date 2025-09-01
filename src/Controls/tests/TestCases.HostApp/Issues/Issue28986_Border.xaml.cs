@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 28986, "Test SafeArea Border for per-edge safe area control", PlatformAffected.All, issueTestNumber: 1)]
+[Issue(IssueTracker.Github, 28986, "Test SafeArea Border for per-edge safe area control", PlatformAffected.Android | PlatformAffected.iOS, issueTestNumber: 1)]
 public partial class Issue28986_Border : ContentPage
 {
 	public Issue28986_Border()
