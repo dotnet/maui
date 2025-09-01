@@ -29,7 +29,8 @@ public class Issue31339 : _IssuesUITest
 		// Verify we can interact with the CarouselView after the update
 		// The CarouselView should be visible and functional, not crashed
 		var carouselView = App.FindElement("TestCarouselView");
-		Assert.IsNotNull(carouselView, "CarouselView should be available after ItemsSource update");
+		Assert.That(carouselView, Is.Not.Null,
+			"CarouselView should be available after ItemsSource update");
 	}
 
 	[Test]
@@ -48,6 +49,7 @@ public class Issue31339 : _IssuesUITest
 
 		// Verify the CarouselView is still functional after multiple updates
 		var carouselView = App.FindElement("TestCarouselView");
-		Assert.IsNotNull(carouselView, "CarouselView should remain available after multiple updates");
+		Assert.That(carouselView, Is.Not.Null,
+			"CarouselView should remain available after multiple updates");
 	}
 }
