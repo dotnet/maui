@@ -1,0 +1,62 @@
+using System.Collections.Generic;
+using System.Globalization;
+using System.Xml;
+using Microsoft.CodeAnalysis;
+using Microsoft.Maui.Controls.Xaml;
+using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
+
+namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
+
+internal class PointCollectionConverter : BaseTypeConverter
+{
+	public override IEnumerable<string> SupportedTypes => new[] { "PointCollection", "Microsoft.Maui.Controls.PointCollection" };
+
+	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	{
+		var xmlLineInfo = (IXmlLineInfo)node;
+		if (!string.IsNullOrEmpty(value))
+		{
+			string[] points = value.Split([' ', ',']);
+			var pointCollection = new List<string>();
+			var pointConverter = new PointConverter();
+			double x = 0;
+			bool hasX = false;
+
+			foreach (string point in points)
+			{
+				if (string.IsNullOrWhiteSpace(point))
+					continue;
+
+				if (double.TryParse(point, NumberStyles.Number, CultureInfo.InvariantCulture, out double number))
+				{
+					if (!hasX)
+					{
+						x = number;
+						hasX = true;
+					}
+					else
+					{
+						pointCollection.Add(pointConverter.Convert($"{FormatInvariant(x)},{FormatInvariant(number)}", node, toType, context));
+						hasX = false;
+					}
+				}
+				else
+				{
+					ReportConversionFailed(context, xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+					return "default";
+				}
+			}
+
+			if (hasX)
+			{
+				ReportConversionFailed(context, xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+				return "default";
+			}
+
+			return $"new global::Microsoft.Maui.Controls.PointCollection(new[] {{ {string.Join(", ", pointCollection)} }})";
+		}
+
+		ReportConversionFailed(context, xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+		return "default";
+	}
+}
