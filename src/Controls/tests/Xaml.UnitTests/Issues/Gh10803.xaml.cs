@@ -4,6 +4,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+#if DEBUG
 public partial class Gh10803 : ContentPage
 {
 	public Gh10803() => InitializeComponent();
@@ -55,3 +56,4 @@ public partial class Gh10803 : ContentPage
 		}
 	}
 }
+#endif

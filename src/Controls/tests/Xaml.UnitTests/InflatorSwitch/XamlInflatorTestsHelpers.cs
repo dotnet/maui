@@ -3,7 +3,7 @@ using System.Reflection;
 using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-public class XamlInflatorRuntimeTestsHelpers
+public class XamlInflatorTestsHelpers
 {
 	internal static void TestInflator(Type type, XamlInflator inflator, bool generateinflatorswitch)
 	{
@@ -41,7 +41,7 @@ public class XamlInflatorRuntimeTestsHelpers
 #if DEBUG
 			Assert.AreEqual(267, instructions.Length, "Method body should be 267 bytes long");
 #else
-			Assert.AreEqual(254, instructions.Length, "Method body should be 266 bytes long");
+			Assert.AreEqual(196, instructions.Length, "Method body should be 196 bytes long");
 #endif
 		if ((inflator & XamlInflator.XamlC) == XamlInflator.XamlC)
 			Assert.AreEqual(190, instructions.Length, "Method body should be 190 bytes long");
@@ -73,7 +73,7 @@ public class XamlInflatorRuntimeTestsHelpers
 #if DEBUG
 				Assert.AreEqual(267, sourcegen.GetMethodBody().GetILAsByteArray().Length, "Method body should be 267 bytes long");
 #else
-				Assert.AreEqual(254, sourcegen.GetMethodBody().GetILAsByteArray().Length, "Method body should be 254 bytes long");
+				Assert.AreEqual(196, sourcegen.GetMethodBody().GetILAsByteArray().Length, "Method body should be 196 bytes long");
 #endif
 			}
 

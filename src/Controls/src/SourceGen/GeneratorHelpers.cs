@@ -26,11 +26,7 @@ static class GeneratorHelpers
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 // </auto-generated>
-//------------------------------------------------------------------------------
-#if _MAUIXAML_SG_NULLABLE_ENABLE
-#nullable enable
-#endif
-";
+//------------------------------------------------------------------------------";
 
 	public static string EscapeIdentifier(string identifier)
 	{
@@ -45,9 +41,7 @@ static class GeneratorHelpers
 		var (additionalText, optionsProvider) = tuple;
 		var fileOptions = optionsProvider.GetOptions(additionalText);
 		if (!fileOptions.TryGetValue("build_metadata.additionalfiles.GenKind", out string? kind) || kind is null)
-		{
 			return null;
-		}
 
 		fileOptions.TryGetValue("build_metadata.additionalfiles.TargetPath", out var targetPath);
 		fileOptions.TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out var manifestResourceName);
@@ -55,11 +49,16 @@ static class GeneratorHelpers
 		fileOptions.TryGetValue("build_property.targetframework", out var targetFramework);
 		fileOptions.TryGetValue("build_property.Configuration", out var configuration);
 
-		fileOptions.TryGetValue("build_metadata.additionalfiles.Inflator", out var inflator);
-
+		bool enableDiagnostics = false;
+		if (fileOptions.TryGetValue("build_property.EnableMauiXamlDiagnostics", out var enDiag) && string.Compare(enDiag, "true", StringComparison.OrdinalIgnoreCase) == 0)
+			enableDiagnostics = true;
+		if (fileOptions.TryGetValue("build_property.additionalfiles.EnableDiagnostics", out enDiag) && string.Compare(enDiag, "true", StringComparison.OrdinalIgnoreCase) == 0)
+			enableDiagnostics = true;
+		if (fileOptions.TryGetValue("build_property.additionalfiles.EnableDiagnostics", out enDiag) && string.Compare(enDiag, "false", StringComparison.OrdinalIgnoreCase) == 0)
+			enableDiagnostics = false;
 
 		var xamlinflator = 0;
-		if (!string.IsNullOrEmpty(inflator))
+		if (fileOptions.TryGetValue("build_metadata.additionalfiles.Inflator", out var inflator) &&  !string.IsNullOrEmpty(inflator))
 		{
 			var parts = inflator!.Split(',');
 			for (int i = 0; i < parts.Length; i++)
@@ -71,6 +70,20 @@ static class GeneratorHelpers
 			}
 		}
 
+		var enableLineInfo = true;
+		if (fileOptions.TryGetValue("build_property.MauiXamlLineInfo", out var lineInfo) && string.Compare(lineInfo, "disable", StringComparison.OrdinalIgnoreCase) == 0)
+			enableLineInfo = false;
+		if (fileOptions.TryGetValue("build_metadata.additionalfiles.LineInfo", out lineInfo) && string.Compare(lineInfo, "enable", StringComparison.OrdinalIgnoreCase) == 0)
+			enableLineInfo = true;
+		if (fileOptions.TryGetValue("build_metadata.additionalfiles.LineInfo", out lineInfo) && string.Compare(lineInfo, "disable", StringComparison.OrdinalIgnoreCase) == 0)
+			enableLineInfo = false;
+
+		string noWarn = "";
+		if (fileOptions.TryGetValue("build_property.MauiXamlNoWarn", out var noWarnValue))
+			noWarn = noWarnValue;
+		if (fileOptions.TryGetValue("build_metadata.additionalfiles.NoWarn", out noWarnValue))
+			noWarn = noWarnValue;
+
 		return new ProjectItem
 		{
 			AdditionalText = additionalText,
@@ -79,6 +92,9 @@ static class GeneratorHelpers
 			ManifestResourceName = manifestResourceName,
 			Kind = kind,
 			Inflator = (XamlInflator)xamlinflator,
+			EnableLineInfo = enableLineInfo,
+			EnableDiagnostics = enableDiagnostics,
+			NoWarn = noWarn,
 			TargetFramework = targetFramework,
 			Configuration = configuration!,
 		};
@@ -142,10 +158,7 @@ static class GeneratorHelpers
 					continue;
 				}
 
-				var rootnode = new SGRootNode(new XmlType(reader.NamespaceURI, reader.Name, XamlParser.GetTypeArguments(reader)), /*typeReference, */(IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition)
-				{
-					DisableWarnings = warningDisableList,
-				};
+				var rootnode = new SGRootNode(new XmlType(reader.NamespaceURI, reader.Name, XamlParser.GetTypeArguments(reader)), /*typeReference, */(IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition);
 				XamlParser.ParseXaml(rootnode, reader);
 
 				return rootnode;

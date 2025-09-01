@@ -207,9 +207,7 @@ static class CodeBehindCodeWriter
 
 			if (empty)
 			{
-				sb.AppendLine("#if _MAUIXAML_SG_NULLABLE_ENABLE");
 				sb.AppendLine("#nullable enable");
-				sb.AppendLine("#endif");
 			}
 
 			sb.AppendLine();

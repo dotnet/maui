@@ -106,7 +106,13 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			Writer.WriteLine($"{variable.Name}.LoadTemplate = () =>");
 			using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
 			{
-				var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null) { FilePath = context.FilePath, ParentContext = context };
+				var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null)
+				{
+					FilePath = context.FilePath,
+					ParentContext = context,
+					EnableLineInfo = context.EnableLineInfo,
+					EnableDiagnostics = context.EnableDiagnostics,
+				};
 
 				//inflate the template
 				node.Accept(new CreateValuesVisitor(templateContext), null);
@@ -487,14 +493,14 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 		if (node is ValueNode valueNode)
 		{
-			using (PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.FilePath))
+			using (context.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.FilePath) : PrePost.NoBlock())
 			{
 				var valueString = valueNode.ConvertTo(property, context, parentVar);
 				writer.WriteLine($"{parentVar.Name}.{EscapeIdentifier(localName)} = {valueString};");
 			}
 		}
 		else if (node is ElementNode elementNode)
-			using (PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.FilePath))
+			using (context.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.FilePath) : PrePost.NoBlock())
 				writer.WriteLine($"{parentVar.Name}.{EscapeIdentifier(localName)} = ({property.Type.ToFQDisplayString()}){(HasDoubleImplicitConversion(context.Variables[elementNode].Type, property.Type, context, out var conv) ? "(" + conv!.ReturnType.ToFQDisplayString() + ")" : string.Empty)}{context.Variables[elementNode].Name};");
 	}
 
@@ -623,7 +629,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		if (HasDoubleImplicitConversion(context.Variables[valueNode].Type, itemType, context, out var conv))
 			cast = "(" + conv!.ReturnType.ToFQDisplayString() + ")";
 
-		using (PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.FilePath))
+		using (context.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.FilePath) : PrePost.NoBlock())
 			writer.WriteLine($"{parentObj}.Add(({itemType.ToFQDisplayString()}){cast}{context.Variables[valueNode].Name});");
 	}
 

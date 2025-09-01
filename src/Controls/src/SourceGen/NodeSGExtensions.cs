@@ -527,28 +527,28 @@ static class NodeSGExtensions
 		return true;
 	}
 
-	[Conditional("_SOURCEGEN_SOURCEINFO_ENABLE")]
 	public static void RegisterSourceInfo(this INode node, SourceGenContext context, IndentedTextWriter writer, bool update = true)
 	{
+		if (!context.EnableDiagnostics)
+			return;
+
 		if (!context.Variables.TryGetValue(node, out var variable))
 			return;
 
 		var assembly = context.Compilation.Assembly.Name;
 		var filePath = context.FilePath;
 		var lineInfo = node as IXmlLineInfo;
-		using (PrePost.NewConditional(writer, "_MAUIXAML_SG_SOURCEINFO"))
+
+		if (!update)
 		{
-			if (!update)
-			{
-				writer.WriteLine($"if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo({variable.Name}!) == null)");
-				writer.Indent++;
-			}
-			// on other inflators, we do not replace path separator, so keep the bug for compat
-			// filePath = new UriBuilder() { Path = filePath }.Path; // ensure the file use the right separator
-			writer.WriteLine($"global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo({variable.Name}!, new global::System.Uri(@\"{filePath};assembly={assembly}\", global::System.UriKind.Relative), {lineInfo?.LineNumber ?? -1}, {lineInfo?.LinePosition ?? -1});");
-			if (!update)
-				writer.Indent--;
+			writer.WriteLine($"if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo({variable.Name}!) == null)");
+			writer.Indent++;
 		}
+		// on other inflators, we do not replace path separator, so keep the bug for compat
+		// filePath = new UriBuilder() { Path = filePath }.Path; // ensure the file use the right separator
+		writer.WriteLine($"global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo({variable.Name}!, new global::System.Uri(@\"{filePath};assembly={assembly}\", global::System.UriKind.Relative), {lineInfo?.LineNumber ?? -1}, {lineInfo?.LinePosition ?? -1});");
+		if (!update)
+			writer.Indent--;
 	}
 
 	static bool IsOfAnyType(XmlType xmlType, params string[] types)
