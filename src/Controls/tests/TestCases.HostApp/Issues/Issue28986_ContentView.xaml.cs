@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 28986, "Test SafeArea ContentView for per-edge safe area control", PlatformAffected.All, issueTestNumber: 3)]
+[Issue(IssueTracker.Github, 28986, "Test SafeArea ContentView for per-edge safe area control", PlatformAffected.Android | PlatformAffected.iOS, issueTestNumber: 3)]
 public partial class Issue28986_ContentView : ContentPage
 {
 	public Issue28986_ContentView()
