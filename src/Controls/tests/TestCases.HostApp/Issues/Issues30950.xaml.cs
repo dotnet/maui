@@ -44,7 +44,7 @@ namespace Maui.Controls.Sample.Issues
 
 		void LoadMessages()
 		{
-			for (int i = 0; i < 10; i++)
+			for (int i = 0; i < 100; i++)
 			{
 				Messages!.Add(new Issue16094SwipeMessage
 				{
