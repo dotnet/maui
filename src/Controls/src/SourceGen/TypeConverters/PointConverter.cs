@@ -1,0 +1,31 @@
+using System.Collections.Generic;
+using System.Globalization;
+using System.Xml;
+using Microsoft.CodeAnalysis;
+using Microsoft.Maui.Controls.Xaml;
+using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
+
+namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
+
+internal class PointConverter : BaseTypeConverter
+{
+	public override IEnumerable<string> SupportedTypes => new[] { "Point", "Microsoft.Maui.Graphics.Point" };
+
+	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	{
+		var xmlLineInfo = (IXmlLineInfo)node;
+		// IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
+		if (!string.IsNullOrEmpty(value))
+		{
+			string[] xy = value.Split([',']);
+			if (xy.Length == 2 && double.TryParse(xy[0], NumberStyles.Number, CultureInfo.InvariantCulture, out var x)
+				&& double.TryParse(xy[1], NumberStyles.Number, CultureInfo.InvariantCulture, out var y))
+			{
+				return $"new global::Microsoft.Maui.Graphics.Point({FormatInvariant(x)}, {FormatInvariant(y)})";
+			}
+		}
+
+		ReportConversionFailed(context, xmlLineInfo, value, Descriptors.PointConversionFailed);
+		return "default";
+	}
+}
