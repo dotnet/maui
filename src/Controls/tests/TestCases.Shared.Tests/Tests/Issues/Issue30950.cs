@@ -34,9 +34,6 @@ public class Issue30950 : _IssuesUITest
 		App.SwipeLeftToRight("Item 2");
 		App.Tap("Delete");
 
-		// Dismiss the alert
-		App.Tap("OK");
-
 		// Verify that item1 and item3 are still showing their swipe actions
 		// This tests the fix, before the fix, these would have collapsed
 		try
@@ -57,16 +54,13 @@ public class Issue30950 : _IssuesUITest
 	{
 		// Swipe right on first item to show favourite action
 		App.WaitForElement("Item 1");
-		App.SwipeRightToLeft("Item 1");
+		App.SwipeLeftToRight("Item 1");
 
 		// Tap the favourite button
 		App.Tap("Favourite");
 
 		// Verify alert is shown
 		App.WaitForElement("Issue30950Alert");
-
-		// Dismiss the alert
-		App.Tap("OK");
 	}
 
 	[Test]
@@ -76,19 +70,17 @@ public class Issue30950 : _IssuesUITest
 	{
 		// Count initial items
 		var initialItems = App.FindElements("Item 1").Count > 0 ? 10 : 0; // We know there are 10 items initially
-
+		
+		Assert.That(
+			initialItems,
+			Is.EqualTo(10));
+		
 		// Swipe left on first item to show delete action
 		App.WaitForElement("Item 1");
-		App.SwipeLeftToRight("Item 1");
-
-		// Tap the delete button
-		App.Tap("Delete");
-
-		// Dismiss the alert
-		App.Tap("OK");
-
+		App.SwipeRightToLeft("Item 1");
+		
 		// Verify item was removed, Item 1 should no longer exist
-		Assert.Throws<InvalidOperationException>(() => App.WaitForElement("Item 1", timeout: TimeSpan.FromSeconds(2)));
+		Assert.Throws<TimeoutException>(() => App.WaitForElement("Item 1", timeout: TimeSpan.FromSeconds(2)));
 	}
 
 	[Test]

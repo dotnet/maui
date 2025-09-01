@@ -61,12 +61,9 @@ namespace Maui.Controls.Sample.Issues
 
 		void OnDelete(Issue16094SwipeMessage message)
 		{
-			if (message != null && Messages != null)
+			if (message is not null && Messages is not null)
 			{
 				Messages.Remove(message);
-				
-				Application.Current?.MainPage?.DisplayAlert("Issue30950Alert",
-					$"Deleted: {message?.Title}. Other expanded swipe items should remain open.", "OK");
 			}
 		}
 	}
