@@ -36,71 +36,16 @@ static class GeneratorHelpers
 			: $"@{identifier}";
 	}
 
-	public static ProjectItem? ComputeProjectItem((AdditionalText, AnalyzerConfigOptionsProvider) tuple, CancellationToken cancellationToken)
+	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken)
 	{
-		var (additionalText, optionsProvider) = tuple;
-		var fileOptions = optionsProvider.GetOptions(additionalText);
-		if (!fileOptions.TryGetValue("build_metadata.additionalfiles.GenKind", out string? kind) || kind is null)
+		if (cancellationToken.IsCancellationRequested)
 			return null;
 
-		fileOptions.TryGetValue("build_metadata.additionalfiles.TargetPath", out var targetPath);
-		fileOptions.TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out var manifestResourceName);
-		fileOptions.TryGetValue("build_metadata.additionalfiles.RelativePath", out var relativePath);
-		fileOptions.TryGetValue("build_property.targetframework", out var targetFramework);
-		fileOptions.TryGetValue("build_property.Configuration", out var configuration);
-
-		bool enableDiagnostics = false;
-		if (fileOptions.TryGetValue("build_property.EnableMauiXamlDiagnostics", out var enDiag) && string.Compare(enDiag, "true", StringComparison.OrdinalIgnoreCase) == 0)
-			enableDiagnostics = true;
-		if (fileOptions.TryGetValue("build_property.additionalfiles.EnableDiagnostics", out enDiag) && string.Compare(enDiag, "true", StringComparison.OrdinalIgnoreCase) == 0)
-			enableDiagnostics = true;
-		if (fileOptions.TryGetValue("build_property.additionalfiles.EnableDiagnostics", out enDiag) && string.Compare(enDiag, "false", StringComparison.OrdinalIgnoreCase) == 0)
-			enableDiagnostics = false;
-
-		var xamlinflator = 0;
-		if (fileOptions.TryGetValue("build_metadata.additionalfiles.Inflator", out var inflator) &&  !string.IsNullOrEmpty(inflator))
-		{
-			var parts = inflator!.Split(',');
-			for (int i = 0; i < parts.Length; i++)
-			{
-				var trimmed = parts[i].Trim();
-				if (!Enum.TryParse<XamlInflator>(trimmed, true, out var xinfl))
-					throw new InvalidOperationException($"Invalid inflator '{trimmed}' for {additionalText.Path}.");
-				xamlinflator |= (int)xinfl;
-			}
-		}
-
-		var enableLineInfo = true;
-		if (fileOptions.TryGetValue("build_property.MauiXamlLineInfo", out var lineInfo) && string.Compare(lineInfo, "disable", StringComparison.OrdinalIgnoreCase) == 0)
-			enableLineInfo = false;
-		if (fileOptions.TryGetValue("build_metadata.additionalfiles.LineInfo", out lineInfo) && string.Compare(lineInfo, "enable", StringComparison.OrdinalIgnoreCase) == 0)
-			enableLineInfo = true;
-		if (fileOptions.TryGetValue("build_metadata.additionalfiles.LineInfo", out lineInfo) && string.Compare(lineInfo, "disable", StringComparison.OrdinalIgnoreCase) == 0)
-			enableLineInfo = false;
-
-		string noWarn = "";
-		if (fileOptions.TryGetValue("build_property.MauiXamlNoWarn", out var noWarnValue))
-			noWarn = noWarnValue;
-		if (fileOptions.TryGetValue("build_metadata.additionalfiles.NoWarn", out noWarnValue))
-			noWarn = noWarnValue;
-
-		return new ProjectItem
-		{
-			AdditionalText = additionalText,
-			TargetPath = targetPath,
-			RelativePath = relativePath,
-			ManifestResourceName = manifestResourceName,
-			Kind = kind,
-			Inflator = (XamlInflator)xamlinflator,
-			EnableLineInfo = enableLineInfo,
-			EnableDiagnostics = enableDiagnostics,
-			NoWarn = noWarn,
-			TargetFramework = targetFramework,
-			Configuration = configuration!,
-		};
+		var projectItem = new ProjectItem(tuple.additionalText, tuple.optionsProvider.GetOptions(tuple.additionalText));
+		return projectItem.Kind == "None" ? null : projectItem;
 	}
 
-	public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyCaches) itemAdnCaches, CancellationToken cancellationToken)
+    public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyCaches) itemAdnCaches, CancellationToken cancellationToken)
 	{
 		var (projectItem, assemblyCaches) = itemAdnCaches;
 		var text = projectItem?.AdditionalText.GetText(cancellationToken);

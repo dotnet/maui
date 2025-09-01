@@ -221,7 +221,7 @@ static class NodeSGExtensions
 			if (!context.Compilation.HasImplicitConversion(returntype, toType))
 				//this could be left to the compiler to figure, but I've yet to find a way to test the compiler...
 				//FIXME: better error message
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, LocationCreate(context.FilePath!, (IXmlLineInfo)valueNode, valueString), $"Cannot convert {returntype} to {toType}"));
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, valueString), $"Cannot convert {returntype} to {toType}"));
 			return converterAndReturnType.Item1.Invoke(valueString, valueNode, toType, context, parentVar);
 		}
 
@@ -235,7 +235,7 @@ static class NodeSGExtensions
 	{
 #pragma warning disable RS0030 // Do not use banned APIs
 		void reportDiagnostic()
-			=> context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationHelpers.LocationCreate(context.FilePath!, lineInfo, valueString), valueString, toType.ToDisplayString()));
+			=> context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, lineInfo, valueString), valueString, toType.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 
 		if (toType.NullableAnnotation == NullableAnnotation.Annotated
@@ -529,14 +529,14 @@ static class NodeSGExtensions
 
 	public static void RegisterSourceInfo(this INode node, SourceGenContext context, IndentedTextWriter writer, bool update = true)
 	{
-		if (!context.EnableDiagnostics)
+		if (!context.ProjectItem.EnableDiagnostics)
 			return;
 
 		if (!context.Variables.TryGetValue(node, out var variable))
 			return;
 
 		var assembly = context.Compilation.Assembly.Name;
-		var filePath = context.FilePath;
+		var filePath = context.ProjectItem.RelativePath;
 		var lineInfo = node as IXmlLineInfo;
 
 		if (!update)

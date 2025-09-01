@@ -86,13 +86,7 @@ static class InitializeComponentCodeWriter
 				var methodName = genSwitch ? "InitializeComponentSourceGen" : "InitializeComponent";
 				codeWriter.WriteLine($"private partial void {methodName}()");
 				xamlItem.Root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, out var baseType);
-				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType)
-				{
-					FilePath = xamlItem.ProjectItem.RelativePath,
-					EnableLineInfo = xamlItem.ProjectItem.EnableLineInfo,
-					EnableDiagnostics = xamlItem.ProjectItem.EnableDiagnostics,
-					TargetFramework = xamlItem.ProjectItem.TargetFramework ?? "",
-				};
+				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem);
 				using (newblock())
 				{
 					Visit(root, sgcontext);
