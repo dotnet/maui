@@ -80,8 +80,15 @@ namespace Microsoft.Maui.Handlers
 		public static void MapText(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateText(entry);
 
-		public static void MapTextColor(IEntryHandler handler, IEntry entry) =>
+		public static void MapTextColor(IEntryHandler handler, IEntry entry)
+		{
 			handler.PlatformView?.UpdateTextColor(entry);
+			if (handler is EntryHandler platformHandler && platformHandler._clearButtonVisible)
+			{
+				// Update the clear button color to match the text color
+				handler.PlatformView?.UpdateClearButtonColor(entry.TextColor, platformHandler.GetClearButtonDrawable());
+			}
+		}
 
 		public static void MapIsPassword(IEntryHandler handler, IEntry entry)
 		{
@@ -256,10 +263,7 @@ namespace Microsoft.Maui.Handlers
 
 			var drawable = GetClearButtonDrawable();
 
-			if (VirtualView?.TextColor is not null)
-				drawable?.SetColorFilter(VirtualView.TextColor.ToPlatform(), FilterMode.SrcIn);
-			else
-				drawable?.ClearColorFilter();
+			PlatformView.UpdateClearButtonColor(VirtualView.TextColor, drawable);
 
 			if (PlatformView.LayoutDirection == LayoutDirection.Rtl)
 				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);

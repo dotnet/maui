@@ -48,8 +48,14 @@ namespace Microsoft.Maui.Handlers
 			MapFormatting(handler, entry);
 		}
 
-		public static void MapTextColor(IEntryHandler handler, IEntry entry) =>
+		public static void MapTextColor(IEntryHandler handler, IEntry entry)
+		{
 			handler.PlatformView?.UpdateTextColor(entry);
+			if (entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
+			{
+				handler.PlatformView?.UpdateClearButtonColor(entry);
+			}
+		}
 
 		public static void MapIsPassword(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateIsPassword(entry);
