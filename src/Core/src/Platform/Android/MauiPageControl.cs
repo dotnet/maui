@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Platform
 						var position = (int)view.Tag;
 						_indicatorView.Position = position;
 					}
-				}));
+				}, _indicatorView));
 
 				AddView(imageView);
 			}
@@ -189,14 +189,21 @@ namespace Microsoft.Maui.Platform
 		class TEditClickListener : Java.Lang.Object, IOnClickListener
 		{
 			Action<AView?>? _command;
+			IIndicatorView? _indicatorView;
 
-			public TEditClickListener(Action<AView?> command)
+			public TEditClickListener(Action<AView?> command, IIndicatorView? indicatorView)
 			{
 				_command = command;
+				_indicatorView = indicatorView;
 			}
 
 			public void OnClick(AView? v)
 			{
+				if (_indicatorView?.IsEnabled == false)
+				{
+					return;
+				}
+
 				_command?.Invoke(v);
 			}
 			protected override void Dispose(bool disposing)
@@ -204,6 +211,7 @@ namespace Microsoft.Maui.Platform
 				if (disposing)
 				{
 					_command = null;
+					_indicatorView = null;
 				}
 				base.Dispose(disposing);
 			}
