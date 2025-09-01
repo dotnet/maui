@@ -233,7 +233,7 @@ public class FlyoutPageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST// FlyoutLayoutBehavior is not changed in mobile platforms
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST// FlyoutLayoutBehavior is not changed in mobile platforms,  Issue Link: https://github.com/dotnet/maui/issues/16245
 	[Test, Order(12)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_FlyoutLayoutBehavior_Split()
