@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Foundation;
 using UIKit;
 
@@ -94,7 +95,16 @@ public static class DatePickerExtensions
 			}
 			else
 			{
+				// Use a custom date format
 				dateFormatter.DateStyle = NSDateFormatterStyle.Short;
+				var templateFormat = dateFormatter.DateFormat;
+				
+				if (!string.IsNullOrEmpty(templateFormat))
+				{
+					templateFormat = Regex.Replace(templateFormat, @"(?<!y)yy(?!y)", "yyyy");
+					dateFormatter.DateFormat = templateFormat;
+				}
+				
 				var strDate = dateFormatter.StringFor(picker.Date);
 				platformDatePicker.Text = strDate;
 			}
