@@ -2,6 +2,7 @@ using System;
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.View;
+using AndroidX.Core.Widget;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform;
@@ -19,44 +20,24 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
     readonly Func<ICrossPlatformLayout?> _getCrossPlatformLayout = getCrossPlatformLayout ?? throw new ArgumentNullException(nameof(getCrossPlatformLayout));
 
     SafeAreaPadding _safeArea = SafeAreaPadding.Empty;
-    bool _safeAreaInvalidated = true;
     WindowInsetsCompat? _lastReceivedInsets;
     SafeAreaPadding _keyboardInsets = SafeAreaPadding.Empty;
     bool _isKeyboardShowing;
-    // Cached values for performance
-    ICrossPlatformLayout? _cachedLayout;
-    ISafeAreaView2? _cachedSafeAreaView2;
-    ISafeAreaView? _cachedSafeAreaView;
-    bool _layoutCacheValid;
+    bool? _scrollViewDescendant;
+
     internal IOnApplyWindowInsetsListener GetWindowInsetsListener() =>
         new WindowInsetsListener(this, () => _owner.RequestLayout());
-    void InvalidateSafeArea()
-    {
-        _safeAreaInvalidated = true;
-        _layoutCacheValid = false;
-    }
 
     void UpdateKeyboardState(SafeAreaPadding keyboardInsets, bool isKeyboardShowing)
     {
-        if (_isKeyboardShowing != isKeyboardShowing)
-        {
-            _safeAreaInvalidated = true;
-        }
         _keyboardInsets = keyboardInsets;
         _isKeyboardShowing = isKeyboardShowing;
     }
 
-    void EnsureCachedLayout()
+    internal Rect AdjustForSafeArea(Rect bounds)
     {
-        if (_layoutCacheValid)
-        {
-            return;
-        }
-
-        _cachedLayout = _getCrossPlatformLayout();
-        _cachedSafeAreaView2 = GetSafeAreaView2(_cachedLayout);
-        _cachedSafeAreaView = _cachedSafeAreaView2 == null ? GetSafeAreaView(_cachedLayout) : null;
-        _layoutCacheValid = true;
+        ValidateSafeArea();
+        return _safeArea.IsEmpty ? bounds : _safeArea.InsetRectF(bounds);
     }
 
     static ISafeAreaView2? GetSafeAreaView2(object? layout) =>
@@ -77,82 +58,97 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
 
     internal bool RespondsToSafeArea()
     {
-        EnsureCachedLayout();
-        if (_cachedSafeAreaView2 is not null)
+        // Cache the ScrollView descendant check for performance
+        if (!_scrollViewDescendant.HasValue)
         {
-            // Check if any edge has non-None regions (optimized loop)
-            for (int edge = 0; edge < 4; edge++)
-            {
-                if (_cachedSafeAreaView2.GetSafeAreaRegionsForEdge(edge) != SafeAreaRegions.None)
-                {
-                    _safeAreaInvalidated = true;
-                    return true;
-                }
-            }
-            return false;
+            _scrollViewDescendant = _owner.Parent?.GetParentOfType<NestedScrollView>() is not null;
         }
-        if (_cachedSafeAreaView is not null)
-        {
-            return !_cachedSafeAreaView.IgnoreSafeArea;
-        }
-        return false;
+
+        // ScrollView descendants don't respond to safe area
+        return !_scrollViewDescendant.Value;
     }
+
 
     SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
     {
-        EnsureCachedLayout();
-        return _cachedSafeAreaView2?.GetSafeAreaRegionsForEdge(edge)
-            ?? (_cachedSafeAreaView?.IgnoreSafeArea == false ? SafeAreaRegions.Container : SafeAreaRegions.None);
-    }
+        var layout = _getCrossPlatformLayout();
+        var safeAreaView2 = GetSafeAreaView2(layout);
 
-    double GetSafeAreaForEdge(SafeAreaRegions region, double original, int edge)
-    {
-        if (region == SafeAreaRegions.None)
+        if (safeAreaView2 is not null)
         {
-            return 0;
+            return safeAreaView2.GetSafeAreaRegionsForEdge(edge);
         }
 
-        if (SafeAreaEdges.IsSoftInput(region) && _isKeyboardShowing && edge == 3)
-        {
-            return _keyboardInsets.Bottom;
-        }
-        return original;
-    }
-
-    internal Rect AdjustForSafeArea(Rect bounds)
-    {
-        ValidateSafeArea();
-        return _safeArea.IsEmpty ? bounds : _safeArea.InsetRectF(bounds);
+        var safeAreaView = GetSafeAreaView(layout);
+        return safeAreaView?.IgnoreSafeArea == false ? SafeAreaRegions.Container : SafeAreaRegions.None;
     }
 
     SafeAreaPadding GetAdjustedSafeAreaInsets()
     {
-        // Use the insets that were actually received by this view's OnApplyWindowInsets
-        // If no insets were received, or they were consumed by a parent, return empty
         if (_lastReceivedInsets is null)
-            return SafeAreaPadding.Empty;
-        var baseSafeArea = _lastReceivedInsets.ToSafeAreaInsets(_context);
-        EnsureCachedLayout();
-        if (_cachedSafeAreaView2 is not null)
         {
-            return new SafeAreaPadding(
-                GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0), baseSafeArea.Left, 0),
-                GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2), baseSafeArea.Right, 2),
-                GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1), baseSafeArea.Top, 1),
-                GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3), baseSafeArea.Bottom, 3)
-            );
+            return SafeAreaPadding.Empty;
         }
-        return _cachedSafeAreaView?.IgnoreSafeArea == true ? SafeAreaPadding.Empty : baseSafeArea;
+
+        var baseSafeArea = _lastReceivedInsets.ToSafeAreaInsets(_context);
+        var layout = _getCrossPlatformLayout();
+        var safeAreaView2 = GetSafeAreaView2(layout);
+
+        if (safeAreaView2 is not null)
+        {
+            // Apply safe area selectively per edge based on SafeAreaRegions
+            var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0), baseSafeArea.Left, 0);
+            var top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1), baseSafeArea.Top, 1);
+            var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2), baseSafeArea.Right, 2);
+            var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3), baseSafeArea.Bottom, 3);
+
+            return new SafeAreaPadding(left, right, top, bottom);
+        }
+
+        // Fallback: return the base safe area for legacy views
+        return baseSafeArea;
+    }
+
+    double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, int edge)
+    {
+        // Edge-to-edge content - no safe area padding
+        if (safeAreaRegion == SafeAreaRegions.None)
+        {
+            return 0;
+        }
+
+        // Handle SoftInput specifically - only apply keyboard insets for bottom edge when keyboard is showing
+        if (SafeAreaEdges.IsSoftInput(safeAreaRegion) && _isKeyboardShowing && edge == 3)
+        {
+            return _keyboardInsets.Bottom;
+        }
+
+        // All other regions respect safe area in some form
+        // This includes:
+        // - Default: Platform default behavior
+        // - All: Obey all safe area insets  
+        // - Container: Content flows under keyboard but stays out of bars/notch
+        // - Any combination of the above flags
+        return originalSafeArea;
     }
 
     bool ValidateSafeArea()
     {
-        if (!_safeAreaInvalidated)
-            return true;
-        _safeAreaInvalidated = false;
         var oldSafeArea = _safeArea;
         _safeArea = GetAdjustedSafeAreaInsets();
         return oldSafeArea == _safeArea;
+    }
+
+    internal static bool HasAnyRegions(ISafeAreaView2 sav2)
+    {
+        for (int edge = 0; edge < 4; edge++)
+        {
+            if (sav2.GetSafeAreaRegionsForEdge(edge) != SafeAreaRegions.None)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
 #nullable disable
@@ -163,86 +159,58 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
     {
         readonly SafeAreaHandler _handler = handler ?? throw new ArgumentNullException(nameof(handler));
         readonly Action _requestLayout = requestLayout ?? throw new ArgumentNullException(nameof(requestLayout));
+
         public WindowInsetsCompat OnApplyWindowInsets(View v, WindowInsetsCompat insets)
         {
-            _handler.InvalidateSafeArea();
-            // Store the insets that this specific view received
-            _handler._lastReceivedInsets = insets;
-            if (insets is not null)
-            {
-                var keyboardInsets = insets.GetKeyboardInsets(_handler._context);
-                var isKeyboardShowing = !keyboardInsets.IsEmpty;
-                var wasKeyboardShowing = _handler._isKeyboardShowing;
-                _handler.UpdateKeyboardState(keyboardInsets, isKeyboardShowing);
-                if (wasKeyboardShowing != isKeyboardShowing)
-                {
-                    _requestLayout();
-                }
-            }
-
-            _requestLayout();
             // Early return for null insets
             if (insets is null)
             {
                 return insets;
             }
 
-            // Early return if not responding to safe area
+            handler._lastReceivedInsets = insets;
+
+            // Handle keyboard state changes
+            var keyboardInsets = insets.GetKeyboardInsets(_handler._context);
+            var isKeyboardShowing = !keyboardInsets.IsEmpty;
+            var wasKeyboardShowing = _handler._isKeyboardShowing;
+
+            _handler.UpdateKeyboardState(keyboardInsets, isKeyboardShowing);
+
+            // Request layout if keyboard state changed
+            if (wasKeyboardShowing != isKeyboardShowing)
+            {
+                _requestLayout();
+            }
+
+            _requestLayout();
+
+            // Use RespondsToSafeArea to check if this view should handle safe area
             if (!_handler.RespondsToSafeArea())
             {
-                return insets;
+                // For ScrollView descendants, consume all insets to prevent safe area handling
+                // for this view and all its children
+                return ConsumeAllInsets(insets);
             }
 
-            _handler.EnsureCachedLayout();
-            // Handle ISafeAreaView2 with optimized inset consumption
-            if (_handler._cachedSafeAreaView2 is ISafeAreaView2 safeAreaLayout)
+            if (handler._getCrossPlatformLayout() is ISafeAreaView2 sav2 && HasAnyRegions(sav2))
             {
-                var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
-                var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
-                var ime = insets.GetInsets(WindowInsetsCompat.Type.Ime());
-                // Get regions once and reuse
-                var regions = new SafeAreaRegions[4];
-                for (int i = 0; i < 4; i++)
-                {
-                    regions[i] = safeAreaLayout.GetSafeAreaRegionsForEdge(i);
-                }
-                // Create new insets based on consumed edges
-                var newSystemBars = CreateConsumedInsets(systemBars, regions) ?? AndroidX.Core.Graphics.Insets.None;
-                var newDisplayCutout = CreateConsumedInsets(displayCutout, regions) ?? AndroidX.Core.Graphics.Insets.None;
-                // Handle IME separately for bottom edge
-                var newIme = AndroidX.Core.Graphics.Insets.Of(
-                    ime?.Left ?? 0,
-                    ime?.Top ?? 0,
-                    ime?.Right ?? 0,
-                    SafeAreaEdges.IsSoftInput(regions[3]) ? 0 : (ime?.Bottom ?? 0)
-                );
-                return new WindowInsetsCompat.Builder(insets)
-                    .SetInsets(WindowInsetsCompat.Type.SystemBars(), newSystemBars)
-                    .SetInsets(WindowInsetsCompat.Type.DisplayCutout(), newDisplayCutout)
-                    .SetInsets(WindowInsetsCompat.Type.Ime(), newIme)
-                    .Build();
+                // If the layout does not request any safe area regions, consume all insets
+                return ConsumeAllInsets(insets);
             }
 
-            // For other cases, consume all insets
+            // This view is not a ScrollView descendant, pass insets through unchanged
+            return insets;
+        }
+
+        static WindowInsetsCompat ConsumeAllInsets(WindowInsetsCompat insets)
+        {
+            // Consume all insets to prevent safe area handling for ScrollView descendants
             return new WindowInsetsCompat.Builder(insets)
                 .SetInsets(WindowInsetsCompat.Type.SystemBars(), AndroidX.Core.Graphics.Insets.None)
                 .SetInsets(WindowInsetsCompat.Type.DisplayCutout(), AndroidX.Core.Graphics.Insets.None)
                 .SetInsets(WindowInsetsCompat.Type.Ime(), AndroidX.Core.Graphics.Insets.None)
                 .Build();
-        }
-
-        static AndroidX.Core.Graphics.Insets CreateConsumedInsets(AndroidX.Core.Graphics.Insets original, SafeAreaRegions[] regions)
-        {
-            if (original is null)
-            {
-                return AndroidX.Core.Graphics.Insets.None;
-            }
-            return AndroidX.Core.Graphics.Insets.Of(
-                regions[0] != SafeAreaRegions.None ? 0 : original.Left,   // Left
-                regions[1] != SafeAreaRegions.None ? 0 : original.Top,    // Top
-                regions[2] != SafeAreaRegions.None ? 0 : original.Right,  // Right
-                regions[3] != SafeAreaRegions.None ? 0 : original.Bottom  // Bottom
-            );
         }
     }
 }
