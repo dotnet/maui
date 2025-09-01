@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		PropertyChangedEventHandler _layoutPropertyChanged;
 		const string ListViewItemStyleKey = "DefaultListViewItemStyle";
 		const string GridViewItemStyleKey = "DefaultGridViewItemStyle";
+		static WStyle _listViewItemStyle;
+		static WStyle _gridViewItemStyle;
 
 		~StructuredItemsViewHandler() => _layoutPropertyChangedProxy?.Unsubscribe();
 
@@ -84,6 +86,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override ListViewBase SelectListViewBase()
 		{
+			_listViewItemStyle = GetDefaultStyle(ListViewItemStyleKey);
+			_gridViewItemStyle = GetDefaultStyle(GridViewItemStyleKey);
+
 			switch (VirtualView.ItemsLayout)
 			{
 				case GridItemsLayout gridItemsLayout:
@@ -245,11 +250,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var v = layout?.VerticalItemSpacing ?? 0;
 			var margin = WinUIHelpers.CreateThickness(h, v, h, v);
 
-			var defaultStyle = GetDefaultStyle(GridViewItemStyleKey);
-			var style = new WStyle(typeof(GridViewItem))
+			var style = new WStyle(typeof(GridViewItem));
+
+			if (_gridViewItemStyle is not null)
 			{
-				BasedOn = defaultStyle
-			};
+				style.BasedOn = _gridViewItemStyle;
+			}
 
 			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
 			style.Setters.Add(new WSetter(Control.PaddingProperty, WinUIHelpers.CreateThickness(0)));
@@ -268,11 +274,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var v = layout?.ItemSpacing ?? 0;
 			var margin = WinUIHelpers.CreateThickness(0, v, 0, v);
 
-			var defaultStyle = GetDefaultStyle(ListViewItemStyleKey);
-			var style = new WStyle(typeof(ListViewItem))
+			var style = new WStyle(typeof(ListViewItem));
+
+			if (_listViewItemStyle is not null)
 			{
-				BasedOn = defaultStyle
-			};
+				style.BasedOn = _listViewItemStyle;
+			}
 
 			style.Setters.Add(new WSetter(FrameworkElement.MinHeightProperty, 0));
 			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
@@ -287,11 +294,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var h = layout?.ItemSpacing ?? 0;
 			var padding = WinUIHelpers.CreateThickness(h, 0, h, 0);
 
-			var defaultStyle = GetDefaultStyle(ListViewItemStyleKey);
-			var style = new WStyle(typeof(ListViewItem))
+			var style = new WStyle(typeof(ListViewItem));
+
+			if (_listViewItemStyle is not null)
 			{
-				BasedOn = defaultStyle
-			};
+				style.BasedOn = _listViewItemStyle;
+			}
 
 			style.Setters.Add(new WSetter(FrameworkElement.MinWidthProperty, 0));
 			style.Setters.Add(new WSetter(Control.PaddingProperty, padding));
