@@ -6,7 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -17,41 +19,40 @@ public class XmlnsDefinitionSourceGenerator : IIncrementalGenerator
 {
 	public void Initialize(IncrementalGeneratorInitializationContext initContext)
 	{
-		// Read the XmlnsDefinition items data file
-		var xmlnsDefinitionDataProvider = initContext.AdditionalTextsProvider
-			.Where(static file => file.Path.EndsWith(".xmlnsdefinitions", StringComparison.OrdinalIgnoreCase))
-			.Select(static (file, cancellationToken) => ParseXmlnsDefinitionData(file, cancellationToken))
-			.Where(static data => data.Length > 0)
+		// Read XmlnsDefinition items from MSBuild through AnalyzerConfigOptionsProvider
+		var xmlnsDefinitionProvider = initContext.AnalyzerConfigOptionsProvider
+			.Select(static (optionsProvider, cancellationToken) => GetXmlnsDefinitions(optionsProvider, cancellationToken))
 			.WithTrackingName(TrackingNames.XmlnsDefinitionDataProvider);
 
-		// Generate the assembly attributes
-		initContext.RegisterSourceOutput(xmlnsDefinitionDataProvider, GenerateXmlnsDefinitionAttributes);
+		// Generate the assembly attributes only when there are definitions
+		initContext.RegisterSourceOutput(xmlnsDefinitionProvider, GenerateXmlnsDefinitionAttributes);
 	}
 
-	static ImmutableArray<XmlnsDefinitionData> ParseXmlnsDefinitionData(AdditionalText file, CancellationToken cancellationToken)
+	static ImmutableArray<XmlnsDefinitionData> GetXmlnsDefinitions(AnalyzerConfigOptionsProvider optionsProvider, CancellationToken cancellationToken)
 	{
-		var text = file.GetText(cancellationToken);
-		if (text == null)
-			return ImmutableArray<XmlnsDefinitionData>.Empty;
-
-		var lines = text.ToString().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+		var globalOptions = optionsProvider.GlobalOptions;
 		var definitions = ImmutableArray.CreateBuilder<XmlnsDefinitionData>();
 
-		foreach (var line in lines)
+		// Read XmlnsDefinition items encoded as semicolon-separated values in a property
+		// Format: "Namespace1;Namespace2|AssemblyName2;Namespace3"
+		if (globalOptions.TryGetValue("build_property.MauiXmlnsDefinitions", out var xmlnsDefinitionsProperty) && 
+		    !string.IsNullOrEmpty(xmlnsDefinitionsProperty))
 		{
-			var trimmedLine = line.Trim();
-			if (string.IsNullOrEmpty(trimmedLine) || trimmedLine.StartsWith("#"))
-				continue;
-
-			var parts = trimmedLine.Split('|');
-			if (parts.Length >= 1)
+			var entries = xmlnsDefinitionsProperty.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+			
+			foreach (var entry in entries)
 			{
+				var trimmedEntry = entry.Trim();
+				if (string.IsNullOrEmpty(trimmedEntry))
+					continue;
+
+				var parts = trimmedEntry.Split('|');
 				var clrNamespace = parts[0].Trim();
 				var assemblyName = parts.Length > 1 ? parts[1].Trim() : null;
-				
+
 				if (!string.IsNullOrEmpty(clrNamespace))
 				{
-					definitions.Add(new XmlnsDefinitionData(clrNamespace, assemblyName));
+					definitions.Add(new XmlnsDefinitionData(clrNamespace, string.IsNullOrEmpty(assemblyName) ? null : assemblyName));
 				}
 			}
 		}
@@ -70,17 +71,15 @@ public class XmlnsDefinitionSourceGenerator : IIncrementalGenerator
 		sb.AppendLine("using Microsoft.Maui.Controls;");
 		sb.AppendLine();
 
-		const string globalXmlNamespace = "http://schemas.microsoft.com/dotnet/maui/global";
-
 		foreach (var definition in definitions)
 		{
 			if (string.IsNullOrEmpty(definition.AssemblyName))
 			{
-				sb.AppendLine($"[assembly: XmlnsDefinition(\"{globalXmlNamespace}\", \"{definition.ClrNamespace}\")]");
+				sb.AppendLine($"[assembly: XmlnsDefinition(\"{XamlParser.MauiGlobalUri}\", \"{definition.ClrNamespace}\")]");
 			}
 			else
 			{
-				sb.AppendLine($"[assembly: XmlnsDefinition(\"{globalXmlNamespace}\", \"{definition.ClrNamespace}\", AssemblyName = \"{definition.AssemblyName}\")]");
+				sb.AppendLine($"[assembly: XmlnsDefinition(\"{XamlParser.MauiGlobalUri}\", \"{definition.ClrNamespace}\", AssemblyName = \"{definition.AssemblyName}\")]");
 			}
 		}
 

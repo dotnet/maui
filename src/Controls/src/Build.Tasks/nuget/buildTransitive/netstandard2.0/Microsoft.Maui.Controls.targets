@@ -157,33 +157,6 @@
     </ItemGroup>
   </Target>
 
-  <!-- Process XmlnsDefinition items and generate data file for source generator -->
-  <Target Name="_MauiGenerateXmlnsDefinitionData"
-          BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun"
-          Condition="'@(XmlnsDefinition)' != ''">
-    <PropertyGroup>
-      <_XmlnsDefinitionDataFile>$(IntermediateOutputPath)XmlnsDefinitions.xmlnsdefinitions</_XmlnsDefinitionDataFile>
-    </PropertyGroup>
-    
-    <ItemGroup>
-      <_XmlnsDefinitionLines Remove="@(_XmlnsDefinitionLines)" />
-      <_XmlnsDefinitionLines Include="@(XmlnsDefinition)" Condition="'%(XmlnsDefinition.AssemblyName)' == ''">
-        <Text>%(XmlnsDefinition.Identity)</Text>
-      </_XmlnsDefinitionLines>
-      <_XmlnsDefinitionLines Include="@(XmlnsDefinition)" Condition="'%(XmlnsDefinition.AssemblyName)' != ''">
-        <Text>%(XmlnsDefinition.Identity)|%(XmlnsDefinition.AssemblyName)</Text>
-      </_XmlnsDefinitionLines>
-    </ItemGroup>
-
-    <WriteLinesToFile File="$(_XmlnsDefinitionDataFile)" 
-                      Lines="@(_XmlnsDefinitionLines->'%(Text)')" 
-                      Overwrite="true" />
-
-    <ItemGroup>
-      <AdditionalFiles Include="$(_XmlnsDefinitionDataFile)" />
-      <FileWrites Include="$(_XmlnsDefinitionDataFile)" />
-    </ItemGroup>
-  </Target>
 
 
   <!-- re-add MauiXaml and MauiCss as EmbeddedResources for runtime inflation and XamlC -->
@@ -203,6 +176,26 @@
       <EmbeddedResource Include="@(MauiXaml)" />
       <EmbeddedResource Include="@(MauiCss)" />
     </ItemGroup>
+  </Target>
+
+
+  <!-- Process XmlnsDefinition items into a property for the source generator -->
+  <Target Name="_MauiProcessXmlnsDefinitionItems"
+          BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun"
+          Condition="'@(XmlnsDefinition)' != ''">
+    <ItemGroup>
+      <_MauiXmlnsDefinitionEntries Remove="@(_MauiXmlnsDefinitionEntries)" />
+      <_MauiXmlnsDefinitionEntries Include="@(XmlnsDefinition)" Condition="'%(XmlnsDefinition.AssemblyName)' == ''">
+        <Text>%(XmlnsDefinition.Identity)</Text>
+      </_MauiXmlnsDefinitionEntries>
+      <_MauiXmlnsDefinitionEntries Include="@(XmlnsDefinition)" Condition="'%(XmlnsDefinition.AssemblyName)' != ''">
+        <Text>%(XmlnsDefinition.Identity)|%(XmlnsDefinition.AssemblyName)</Text>
+      </_MauiXmlnsDefinitionEntries>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <MauiXmlnsDefinitions>@(_MauiXmlnsDefinitionEntries->'%(Text)', ';')</MauiXmlnsDefinitions>
+    </PropertyGroup>
   </Target>
 
 	<!-- XamlC -->

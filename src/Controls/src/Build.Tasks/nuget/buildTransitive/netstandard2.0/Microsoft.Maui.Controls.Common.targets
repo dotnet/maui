@@ -31,5 +31,6 @@
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="LineInfo" />
     <CompilerVisibleProperty Include="MauiXamlNullable" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Nullable" />
+    <CompilerVisibleProperty Include="MauiXmlnsDefinitions" />
 	</ItemGroup>
 </Project>
