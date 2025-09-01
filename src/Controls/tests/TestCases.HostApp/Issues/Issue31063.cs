@@ -3,8 +3,8 @@
 [Issue(IssueTracker.Github, 31063, "IndicatorView remains interactive even when IsEnabled is False", PlatformAffected.Android)]
 public partial class Issue31063 : ContentPage
 {
-	private CarouselView _carouselView;
-	private IndicatorView _indicatorView;
+	CarouselView _carouselView;
+	IndicatorView _indicatorView;
 
 	public Issue31063()
 	{
