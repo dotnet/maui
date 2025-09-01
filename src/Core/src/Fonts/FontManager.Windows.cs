@@ -167,8 +167,7 @@ namespace Microsoft.Maui
 			// PostScript name already embedded in the file path.
 #if USE_NATIVE_AOT
 			return null;
-#endif
-
+#else
 			try
 			{
 				var fontUri = new Uri(fontFile, UriKind.RelativeOrAbsolute);
@@ -203,6 +202,7 @@ namespace Microsoft.Maui
 
 				return null;
 			}
+#endif
 		}
 	}
 }
