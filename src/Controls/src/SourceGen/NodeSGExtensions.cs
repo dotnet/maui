@@ -28,17 +28,9 @@ static class NodeSGExtensions
 
 	// Direct converter instances for special cases
 	private static readonly EnumConverter _enumConverter = new();
-	private static readonly BindablePropertyConverter _bindablePropertyConverter = new();
 
 	private static string ConvertEnum(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null) =>
 		_enumConverter.Convert(value, node, toType, context, parentVar);
-
-	private static string ConvertBindableProperty(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null) =>
-		_bindablePropertyConverter.Convert(value, node, toType, context, parentVar);
-
-	// Helper function that uses TypeConverter registry
-	private static string ConvertUsingRegistry(string typeName, string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null) =>
-		TypeConverterRegistry.GetConverter(typeName)?.Convert(value, node, toType, context, parentVar) ?? "default";
 
 	static Dictionary<ITypeSymbol, (ConverterDelegate converter, ITypeSymbol returnType)> GetKnownSGTypeConverters(SourceGenContext context)
 		=> context.knownSGTypeConverters ??= new(SymbolEqualityComparer.Default)
