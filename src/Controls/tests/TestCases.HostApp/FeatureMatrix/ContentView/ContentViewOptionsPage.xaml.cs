@@ -8,15 +8,12 @@ public partial class ContentViewOptionsPage : ContentPage
 	{
 		InitializeComponent();
 		_viewModel = viewModel;
+		BindingContext = _viewModel;
+	}
 
-		ToolbarItems.Add(new ToolbarItem
-		{
-			Text = "Apply",
-			Command = new Command(() =>
-			{
-				Navigation.PopAsync();
-			})
-		});
+	private async void ApplyButton_Clicked(object sender, EventArgs e)
+	{
+		await Navigation.PopAsync();
 	}
 
 	private void OnCustomPageRadioCheckedChanged(object sender, CheckedChangedEventArgs e)
@@ -62,14 +59,13 @@ public partial class ContentViewOptionsPage : ContentPage
 			}
 		}
 	}
-
-
+	
 	private void OnHeightRadioCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		if (Height50RadioButton.IsChecked)
-			_viewModel.HeightRequest = 50;
-		else if (Height300RadioButton.IsChecked)
-			_viewModel.HeightRequest = 300;
+		if (Height150RadioButton.IsChecked)
+			_viewModel.HeightRequest = 150;
+		else if (Height600RadioButton.IsChecked)
+			_viewModel.HeightRequest = 600;
 	}
 
 	private void OnWidthRadioCheckedChanged(object sender, CheckedChangedEventArgs e)
@@ -113,6 +109,38 @@ public partial class ContentViewOptionsPage : ContentPage
 		else if (sender == FlowDirectionRightToLeft)
 		{
 			_viewModel.FlowDirection = FlowDirection.RightToLeft;
+		}
+	}
+
+	private void CardTitle_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (NewCardTitleRadioButton.IsChecked)
+		{
+			_viewModel.CardTitle = "Test Content View";
+		}
+	}
+
+	private void IconImageSource_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (IconImageSourceRadioButton.IsChecked)
+		{
+			_viewModel.IconImageSource = "dotnet_bot.png";
+		}
+		else if (NewIconImageSourceRadioButton.IsChecked)
+		{
+			_viewModel.IconImageSource = "seth.png";
+		}
+	}
+
+	private void CardColor_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (CardColorRadioButton.IsChecked)
+		{
+			_viewModel.CardColor = Colors.SkyBlue;
+		}
+		else if (NewCardColorRadioButton.IsChecked)
+		{
+			_viewModel.CardColor = Colors.Red;
 		}
 	}
 }

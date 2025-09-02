@@ -8,7 +8,7 @@
             <ControlTemplate x:Key="DefaultSecondTemplate">
                 <Border BackgroundColor="{TemplateBinding FrameBackgroundColor}" Padding="20" HeightRequest="200">
                     <VerticalStackLayout>
-                        <Label Text="{TemplateBinding SecondCustomViewTitle}" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
+                        <Label Text="{TemplateBinding SecondCustomViewTitle}" FontSize="24" FontAttributes="Bold" />
                         <Label Text="{TemplateBinding SecondCustomViewDescription}" FontSize="16" />
                     </VerticalStackLayout>
                 </Border>
@@ -16,7 +16,7 @@
             <ControlTemplate x:Key="AlternateSecondTemplate">
                 <Border BackgroundColor="LightYellow" Stroke="Orange" StrokeThickness="6" HeightRequest="200">
                     <VerticalStackLayout>
-                        <Label Text="{TemplateBinding SecondCustomViewTitle}" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
+                        <Label Text="{TemplateBinding SecondCustomViewTitle}" FontSize="24" FontAttributes="Bold" />
                         <Label Text="{TemplateBinding SecondCustomViewDescription}" FontSize="16" />
                         <Label Text="Second Control Template Applied" FontSize="14"/>
                     </VerticalStackLayout>

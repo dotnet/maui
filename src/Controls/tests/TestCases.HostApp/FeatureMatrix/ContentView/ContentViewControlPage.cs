@@ -22,15 +22,10 @@ public class ContentViewControlMainPage : ContentPage
         _viewModel = viewModel;
         BindingContext = viewModel;
 
-
-        this.SetBinding(ContentPage.HeightRequestProperty, nameof(ContentViewViewModel.HeightRequest));
-        this.SetBinding(ContentPage.WidthRequestProperty, nameof(ContentViewViewModel.WidthRequest));
         this.SetBinding(ContentPage.BackgroundColorProperty, nameof(ContentViewViewModel.BackgroundColor));
         this.SetBinding(ContentPage.IsEnabledProperty, nameof(ContentViewViewModel.IsEnabled));
         this.SetBinding(ContentPage.IsVisibleProperty, nameof(ContentViewViewModel.IsVisible));
         this.SetBinding(ContentPage.FlowDirectionProperty, nameof(ContentViewViewModel.FlowDirection));
-        this.SetBinding(ContentPage.ShadowProperty, nameof(ContentViewViewModel.HasShadow));
-
         _dynamicContentHost = new ContentView();
 
         UpdateContentViews();
@@ -61,13 +56,16 @@ public class ContentViewControlMainPage : ContentPage
                 _viewModel.HasShadow = false;
                 _viewModel.DefaultLabelText = "This is Default Page";
                 _viewModel.ContentLabel = "Default";
-
+                _viewModel.ControlTemplateKeyFirst = "DefaultFirstTemplate";
+                _viewModel.ControlTemplateKeySecond = "DefaultSecondTemplate";
+                _viewModel.IconImageSource = "dotnet_bot.png";
+                _viewModel.CardTitle = "First ContentView Page";
+                _viewModel.CardColor = Colors.SkyBlue;
 
                 UpdateContentViews();
                 await Navigation.PushAsync(new ContentViewOptionsPage(_viewModel));
             })
         });
-
 
         viewModel.PropertyChanged += (s, e) =>
         {
@@ -85,13 +83,13 @@ public class ContentViewControlMainPage : ContentPage
         {
             var firstView = new ContentViewFirstCustomPage
             {
-                CardTitle = "ContenView",
                 CardDescription = "Use ContentViewPage as the content, binding all card properties to the ViewModel",
-                IconImageSource = "dotnet_bot.png",
                 IconBackgroundColor = Colors.LightGray,
-                BorderColor = Colors.Pink,
-                CardColor = Colors.SkyBlue
+                BorderColor = Colors.Pink
             };
+            firstView.SetBinding(ContentViewFirstCustomPage.CardTitleProperty, nameof(ContentViewViewModel.CardTitle));
+            firstView.SetBinding(ContentViewFirstCustomPage.IconImageSourceProperty, nameof(ContentViewViewModel.IconImageSource));
+            firstView.SetBinding(ContentViewFirstCustomPage.CardColorProperty, nameof(ContentViewViewModel.CardColor));
             firstView.BindingContext = _viewModel;
             if (!string.IsNullOrEmpty(_viewModel.ControlTemplateKeyFirst) && firstView.Resources.ContainsKey(_viewModel.ControlTemplateKeyFirst))
                 firstView.ControlTemplate = (ControlTemplate)firstView.Resources[_viewModel.ControlTemplateKeyFirst];
@@ -121,7 +119,7 @@ public class ContentViewControlMainPage : ContentPage
             var button = new Button
             {
                 Text = "Change Text",
-                AutomationId = "DefaultButton"
+                AutomationId = "TextChangedButton"
             };
             button.Clicked += (s, e) =>
             {
@@ -136,6 +134,9 @@ public class ContentViewControlMainPage : ContentPage
             };
             stack.BindingContext = _viewModel;
             _dynamicContentHost.Content = stack;
+            _dynamicContentHost.SetBinding(ContentView.HeightRequestProperty, nameof(ContentViewViewModel.HeightRequest));
+            _dynamicContentHost.SetBinding(ContentView.WidthRequestProperty, nameof(ContentViewViewModel.WidthRequest));
+            _dynamicContentHost.SetBinding(ContentView.ShadowProperty, nameof(ContentViewViewModel.ContentViewShadow));
         }
     }
 }

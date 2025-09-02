@@ -27,16 +27,24 @@
                                 WidthRequest="100"
                                 HeightRequest="100">
                             <Image Source="{TemplateBinding IconImageSource}"
-                                    Aspect="AspectFill"/>
+                                   Aspect="AspectFill"/>
                         </Border>
                         <Label Grid.Row="0"
-                                Grid.Column="1"
+                               Grid.Column="1"
                                Text="{TemplateBinding CardTitle}"
                                FontAttributes="Bold"
-                                HeightRequest="100"/>
+                               HeightRequest="100"/>
                         <Label Grid.Row="1"
-                                Grid.Column="1"
+                               Grid.Column="1"
                                Text="{TemplateBinding CardDescription}"/>
+                        <HorizontalStackLayout Grid.Row="3"
+                                               Grid.Column="1">
+                            <Button Text="Change Text"
+                                AutomationId="ChangeTextButton"
+                                    Clicked="OnChangeTextButtonClicked"/>
+                            <Label Text="{TemplateBinding NewTextChanged}"
+                                    FontAttributes="Bold"/>
+                        </HorizontalStackLayout>
                     </Grid>
                 </Border>
             </ControlTemplate>
@@ -44,10 +52,11 @@
                 <Border BackgroundColor="LightGreen"
                         Stroke="DarkGreen"
                         StrokeThickness="10"
-                        HeightRequest="200">
+                        HeightRequest="250">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="100"/>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
@@ -62,24 +71,31 @@
                                 WidthRequest="100"
                                 HeightRequest="100">
                             <Image Source="{TemplateBinding IconImageSource}"
-                                    Aspect="AspectFill"/>
+                                   Aspect="AspectFill"/>
                         </Border>
                         <Label Grid.Row="0"
-                                Grid.Column="1"
+                               Grid.Column="1"
                                Text="{TemplateBinding CardTitle}"
                                FontAttributes="Bold"
-                                VerticalOptions="Center"
-                                HeightRequest="100"/>
+                               VerticalOptions="Center"
+                               HeightRequest="100"/>
                         <Label Grid.Row="1"
-                                Grid.Column="1"
+                               Grid.Column="1"
                                Text="{TemplateBinding CardDescription}"
-                                HorizontalOptions="Center"
-                                VerticalOptions="Center"/>
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
                         <Label Grid.Row="2"
-                                Grid.Column="1"
+                               Grid.Column="1"
                                Text="First Control Template Applied"
-                                HorizontalOptions="Center"
-                                VerticalOptions="Center"/>
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
+                        <HorizontalStackLayout Grid.Row="3"
+                                               Grid.Column="1">
+                            <Button Text="Change Text"
+                                    Clicked="OnChangeTextButtonClicked"/>
+                            <Label Text="{TemplateBinding NewTextChanged}"
+                                    FontAttributes="Bold"/>
+                        </HorizontalStackLayout>
                     </Grid>
                 </Border>
             </ControlTemplate>

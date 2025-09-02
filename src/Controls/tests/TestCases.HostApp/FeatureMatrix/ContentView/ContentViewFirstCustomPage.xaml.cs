@@ -22,6 +22,15 @@ public partial class ContentViewFirstCustomPage : ContentView
 	public static readonly BindableProperty CardColorProperty =
 		BindableProperty.Create(nameof(CardColor), typeof(Color), typeof(ContentViewFirstCustomPage), Colors.White);
 
+	public static readonly BindableProperty NewTextChangedProperty =
+		BindableProperty.Create(nameof(NewTextChanged), typeof(string), typeof(ContentViewFirstCustomPage), "Failed");
+
+	public string NewTextChanged
+	{
+		get => (string)GetValue(NewTextChangedProperty);
+		set => SetValue(NewTextChangedProperty, value);
+	}
+
 	public string CardTitle
 	{
 		get => (string)GetValue(CardTitleProperty);
@@ -56,6 +65,11 @@ public partial class ContentViewFirstCustomPage : ContentView
 	{
 		get => (Color)GetValue(CardColorProperty);
 		set => SetValue(CardColorProperty, value);
+	}
+
+	private void OnChangeTextButtonClicked(object sender, EventArgs e)
+	{
+		NewTextChanged = "Success";
 	}
 
 	public ContentViewFirstCustomPage()

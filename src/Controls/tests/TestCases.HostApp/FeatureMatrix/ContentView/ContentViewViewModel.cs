@@ -9,6 +9,9 @@ public class ContentViewViewModel : INotifyPropertyChanged
 	private int _heightRequest = -1;
 	private int _widthRequest = -1;
 	private Color _backgroundColor = Colors.LightGray;
+	private Color _cardColor = Colors.SkyBlue;
+	private string _cardTitle = "First ContentView Page";
+	private ImageSource _iconImageSource = "dotnet_bot.png";
 	private bool _isEnabled = true;
 	private bool _isVisible = true;
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
@@ -88,6 +91,45 @@ public class ContentViewViewModel : INotifyPropertyChanged
 			{
 				_backgroundColor = value;
 				OnPropertyChanged(nameof(BackgroundColor));
+			}
+		}
+	}
+
+	public Color CardColor
+	{
+		get => _cardColor;
+		set
+		{
+			if (_cardColor != value)
+			{
+				_cardColor = value;
+				OnPropertyChanged(nameof(CardColor));
+			}
+		}
+	}
+
+	public ImageSource IconImageSource
+	{
+		get => _iconImageSource;
+		set
+		{
+			if (_iconImageSource != value)
+			{
+				_iconImageSource = value;
+				OnPropertyChanged(nameof(IconImageSource));
+			}
+		}
+	}
+
+	public string CardTitle
+	{
+		get => _cardTitle;
+		set
+		{
+			if (_cardTitle != value)
+			{
+				_cardTitle = value;
+				OnPropertyChanged(nameof(CardTitle));
 			}
 		}
 	}
