@@ -184,6 +184,8 @@ dotnet build -p:UseMaui=true -p:MauiVersion=8.0.0-nightly.8832+sha.feb791fc7-azd
 </PropertyGroup>
 ```
 
+Note: make sure to add the `<UseMaui>true</UseMaui>` tag _before_ the first node that has a condition that checks for this value.
+
 ### What Happens in NuGet Mode
 When `UseMaui` == 'true', the project:
 - Uses `PackageReference` instead of `ProjectReference`
