@@ -62,6 +62,14 @@ namespace Microsoft.Maui.Platform
 			ViewCompat.SetOnApplyWindowInsetsListener(this, _safeAreaHandler.GetWindowInsetsListener());
 		}
 
+		/// <summary>
+		/// Call this method when safe area configuration changes to trigger OnApplyWindowInsets
+		/// before the next measure and arrange cycle.
+		/// </summary>
+		public void InvalidateSafeArea()
+		{
+			_safeAreaHandler.UpdateSafeAreaConfiguration();
+		}
 
 		public bool ClipsToBounds { get; set; }
 

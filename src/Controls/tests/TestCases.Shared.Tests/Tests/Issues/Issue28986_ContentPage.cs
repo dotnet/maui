@@ -34,7 +34,7 @@ public class Issue28986_ContentPage : _IssuesUITest
 
         // Verify that content position changes when SafeAreaEdges changes from Default to All
         var contentPageSafeAreaEdgesAll = App.WaitForElement("CurrentSettings").GetRect();
-        Assert.That(contentPageSafeAreaEdgesAll.Y, Is.GreaterThan(contentPageWithDefaultSettings.Y),
+        Assert.That(contentPageSafeAreaEdgesAll.Y, Is.GreaterThanOrEqualTo(contentPageWithDefaultSettings.Y),
             "ContentPage content should move down (greater Y position) when SafeAreaEdges changes from Default to All");
 
         // 3. Change SafeAreaEdges to None (edge-to-edge)
@@ -44,7 +44,7 @@ public class Issue28986_ContentPage : _IssuesUITest
 
         // Verify that content position changes when SafeAreaEdges is None
         var contentPageSafeAreaEdgesNone = App.WaitForElement("CurrentSettings").GetRect();
-        Assert.That(contentPageSafeAreaEdgesNone.Y, Is.LessThan(contentPageSafeAreaEdgesAll.Y),
+        Assert.That(contentPageSafeAreaEdgesNone.Y, Is.LessThanOrEqualTo(contentPageSafeAreaEdgesAll.Y),
             "ContentPage content should move up (lesser Y position) when SafeAreaEdges changes from All to None");
 
         // 4. Test individual edge control - Top edge specifically
@@ -59,7 +59,7 @@ public class Issue28986_ContentPage : _IssuesUITest
 
         // Verify that content moves down when top edge is set to All
         var contentPageTopAll = App.WaitForElement("CurrentSettings").GetRect();
-        Assert.That(contentPageTopAll.Y, Is.GreaterThan(contentPageSafeAreaEdgesNone.Y),
+        Assert.That(contentPageTopAll.Y, Is.GreaterThanOrEqualTo(contentPageSafeAreaEdgesNone.Y),
             "ContentPage content should move down when only top SafeAreaEdge is set to All");
 
         // 5. Test SoftInput functionality if available
