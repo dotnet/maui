@@ -13,7 +13,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
-			_frameObserverProxy.Connect(VirtualView, platformView);
+			CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() => 
+			{
+				_frameObserverProxy.Connect(VirtualView, platformView);
+			});
 
 			// For newer Mac Catalyst versions, we want to wait until we get effective window dimensions from the platform.
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
