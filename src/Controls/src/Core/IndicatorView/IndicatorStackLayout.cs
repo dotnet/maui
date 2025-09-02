@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using System;
 
 namespace Microsoft.Maui.Controls
 {
@@ -176,19 +177,15 @@ namespace Microsoft.Maui.Controls
 				return null;
 
 			var list = new List<object>();
-			int count = 0;
-
-			// Explicitly enumerate the source collection
-			foreach (var item in _indicatorView.ItemsSource)
+			if (_indicatorView.ItemsSource is IList items)
 			{
-				if (count < _indicatorView.MaximumVisible)
+				int min = Math.Min(items.Count, _indicatorView.MaximumVisible);
+				for (int index = 0; index < min; index++)
 				{
-					list.Add(item);
-					count++;
-				}
-				else
-				{
-					break;
+					if (items[index] is object item)
+					{
+						list.Add(item);
+					}
 				}
 			}
 
