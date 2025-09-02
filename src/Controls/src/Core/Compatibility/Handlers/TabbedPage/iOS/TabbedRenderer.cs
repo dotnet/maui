@@ -94,6 +94,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateBarTextColor();
 			UpdateSelectedTabColors();
 			UpdateBarTranslucent();
+			UpdateFlowDirection();
 			UpdatePageSpecifics();
 		}
 
@@ -223,6 +224,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				SetNeedsStatusBarAppearanceUpdate();
 				SelectedViewController = controller;
 			}
+			else if (e.PropertyName == nameof(TabbedPage.FlowDirection))
+				UpdateFlowDirection();
 			else if (e.PropertyName == TabbedPage.BarBackgroundColorProperty.PropertyName)
 				UpdateBarBackgroundColor();
 			else if (e.PropertyName == TabbedPage.BarBackgroundProperty.PropertyName)
@@ -446,6 +449,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					TabBar.Translucent = _defaultBarTranslucent.GetValueOrDefault();
 					return;
 			}
+		}
+
+		void UpdateFlowDirection()
+		{
+			if (Tabbed == null)
+				return;
+
+			View.UpdateFlowDirection(Tabbed);
 		}
 
 		void UpdateChildrenOrderIndex(UIViewController[] viewControllers)
