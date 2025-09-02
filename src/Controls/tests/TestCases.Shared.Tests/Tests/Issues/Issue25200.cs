@@ -65,6 +65,9 @@ public class Issue25200 : _IssuesUITest
 	}
 #endif
 
+	// Skip this test on macOS: the popup displays correctly, but Appium throws an UnknownErrorException when element text is too long.
+	// A separate workaround would be required for each element. Aside from the title, this doesn't happen on iOS because the text is clipped.
+#if !MACCATALYST
 	[Test]
 	[Category(UITestCategories.ActionSheet)]
 	public void ActionSheetWithLongTitleShouldDisplayProperly()
@@ -72,7 +75,7 @@ public class Issue25200 : _IssuesUITest
 		App.WaitForElement("ShowLongTitleActionSheetButton");
 		App.Tap("ShowLongTitleActionSheetButton");
 
-#if IOS || MACCATALYST
+#if IOS
 		// Use XPath for long title to avoid identifier length limitation
 		App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeStaticText[@label='This is a very long title that should wrap properly to multiple lines instead of being truncated or causing horizontal overflow issues like it might on Windows']"));
 #else
@@ -91,6 +94,7 @@ public class Issue25200 : _IssuesUITest
 		// Take screenshot to validate proper sizing and dismiss the ActionSheet
 		VerifyScreenshotAndDismiss();
 	}
+#endif
 
 	// If one test fails, don't block the others with previous ActionSheet still open
 	private void VerifyScreenshotAndDismiss()
