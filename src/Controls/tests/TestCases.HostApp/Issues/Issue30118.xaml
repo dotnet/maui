@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Issues.Issue30118">
+    <Grid Padding="10"
+          RowDefinitions="Auto,*,Auto">
+        <Button Text="Add"
+                Grid.Row="0"
+                Clicked="Button_Clicked"
+                WidthRequest="120"
+                AutomationId="AddButton"/>
+        <CarouselView Grid.Row="1"
+                      x:Name="carouselView"
+                      HorizontalScrollBarVisibility="Never"
+                      IndicatorView="{x:Reference indicatorView}">
+            <CarouselView.ItemTemplate>
+                <DataTemplate>
+                    <Border>
+                        <Label Text="{Binding .}"
+                               HorizontalTextAlignment="Center"
+                               VerticalOptions="Center"/>
+                    </Border>
+                </DataTemplate>
+            </CarouselView.ItemTemplate>
+        </CarouselView>
+
+        <IndicatorView
+            x:Name="indicatorView"
+            Grid.Row="1"
+            Opacity="0.5"
+            HorizontalOptions="Center"
+            VerticalOptions="End"
+            Margin="0,0,0,20"
+            AutomationId="Indicator"
+            IndicatorColor="LightGray"
+            SelectedIndicatorColor="DarkGray"/>
+    </Grid>
+</ContentPage>
