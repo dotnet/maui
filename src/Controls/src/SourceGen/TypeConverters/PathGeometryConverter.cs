@@ -5,11 +5,11 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class PathGeometryConverter : BaseTypeConverter
+internal class PathGeometryConverter : ISGTypeConverter
 {
-	public override IEnumerable<string> SupportedTypes => new[] { "PathGeometry", "Microsoft.Maui.Controls.Shapes.PathGeometry" };
+	public IEnumerable<string> SupportedTypes => new[] { "PathGeometry", "Microsoft.Maui.Controls.Shapes.PathGeometry" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -20,7 +20,7 @@ internal class PathGeometryConverter : BaseTypeConverter
 			return "new global::Microsoft.Maui.Controls.Shapes.PathGeometry()";
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+		context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);
 		return "default";
 	}
 }

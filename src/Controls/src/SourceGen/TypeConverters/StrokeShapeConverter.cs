@@ -8,7 +8,7 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class StrokeShapeConverter : BaseTypeConverter
+internal class StrokeShapeConverter : ISGTypeConverter
 {
 	private const string Ellipse = nameof(Ellipse);
 	private const string Line = nameof(Line);
@@ -19,9 +19,9 @@ internal class StrokeShapeConverter : BaseTypeConverter
 	private const string RoundRectangle = nameof(RoundRectangle);
 	private static readonly char[] Delimiter = [' '];
 
-	public override IEnumerable<string> SupportedTypes => new[] { "Shape", "Microsoft.Maui.Controls.Shapes.Shape" };
+	public IEnumerable<string> SupportedTypes => new[] { "Shape", "Microsoft.Maui.Controls.Shapes.Shape" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -129,7 +129,7 @@ internal class StrokeShapeConverter : BaseTypeConverter
 			}
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, Descriptors.StrokeShapeConversionFailed);
+		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.StrokeShapeConversionFailed);
 		return "default";
 	}
 }

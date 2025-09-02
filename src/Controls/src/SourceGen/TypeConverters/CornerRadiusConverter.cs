@@ -7,11 +7,11 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class CornerRadiusConverter : BaseTypeConverter
+internal class CornerRadiusConverter : ISGTypeConverter
 {
-	public override IEnumerable<string> SupportedTypes => new[] { "CornerRadius", "Microsoft.Maui.CornerRadius" };
+	public IEnumerable<string> SupportedTypes => new[] { "CornerRadius", "Microsoft.Maui.CornerRadius" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update CornerRadiusDesignTypeConverter.IsValid if making changes here
@@ -41,7 +41,7 @@ internal class CornerRadiusConverter : BaseTypeConverter
 			}
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, Descriptors.CornerRadiusConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.CornerRadiusConversionFailed);
 		return "default";
 	}
 }

@@ -6,11 +6,11 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class FlowDirectionConverter : BaseTypeConverter
+internal class FlowDirectionConverter : ISGTypeConverter
 {
-	public override IEnumerable<string> SupportedTypes => new[] { "FlowDirection", "Microsoft.Maui.FlowDirection" };
+	public IEnumerable<string> SupportedTypes => new[] { "FlowDirection", "Microsoft.Maui.FlowDirection" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrWhiteSpace(value))
@@ -31,7 +31,7 @@ internal class FlowDirectionConverter : BaseTypeConverter
 			return enumConverter.Convert(value, node, toType, context);
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, Descriptors.FlowDirectionConversionFailed);
+		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.FlowDirectionConversionFailed);
 		return "default";
 	}
 }

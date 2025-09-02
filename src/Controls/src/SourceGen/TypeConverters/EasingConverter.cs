@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class EasingConverter : BaseTypeConverter
+internal class EasingConverter : ISGTypeConverter
 {
 	private static readonly HashSet<string> KnownEasingNames = new(StringComparer.OrdinalIgnoreCase)
 	{
@@ -14,9 +14,9 @@ internal class EasingConverter : BaseTypeConverter
 		"BounceOut", "BounceIn", "SpringIn", "SpringOut"
 	};
 
-	public override IEnumerable<string> SupportedTypes => new[] { "Easing", "Microsoft.Maui.Easing" };
+	public IEnumerable<string> SupportedTypes => new[] { "Easing", "Microsoft.Maui.Easing" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		var easingName = value;
@@ -35,7 +35,7 @@ internal class EasingConverter : BaseTypeConverter
 			}
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, Descriptors.EasingConversionFailed);
+		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.EasingConversionFailed);
 		return "default";
 	}
 }

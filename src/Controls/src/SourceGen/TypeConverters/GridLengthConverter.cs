@@ -8,11 +8,11 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class GridLengthConverter : BaseTypeConverter
+internal class GridLengthConverter : ISGTypeConverter
 {
-	public override IEnumerable<string> SupportedTypes => new[] { "GridLength", "Microsoft.Maui.GridLength" };
+	public IEnumerable<string> SupportedTypes => new[] { "GridLength", "Microsoft.Maui.GridLength" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -40,7 +40,7 @@ internal class GridLengthConverter : BaseTypeConverter
 			}
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, Descriptors.GridLengthConversionFailed);
+		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.GridLengthConversionFailed);
 		return "default";
 	}
 }

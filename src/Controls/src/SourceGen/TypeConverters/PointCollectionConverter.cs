@@ -7,11 +7,11 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class PointCollectionConverter : BaseTypeConverter
+internal class PointCollectionConverter : ISGTypeConverter
 {
-	public override IEnumerable<string> SupportedTypes => new[] { "PointCollection", "Microsoft.Maui.Controls.PointCollection" };
+	public IEnumerable<string> SupportedTypes => new[] { "PointCollection", "Microsoft.Maui.Controls.PointCollection" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -42,21 +42,21 @@ internal class PointCollectionConverter : BaseTypeConverter
 				}
 				else
 				{
-					ReportConversionFailed(context, xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+					context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);
 					return "default";
 				}
 			}
 
 			if (hasX)
 			{
-				ReportConversionFailed(context, xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+				context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);
 				return "default";
 			}
 
 			return $"new global::Microsoft.Maui.Controls.PointCollection(new[] {{ {string.Join(", ", pointCollection)} }})";
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+		context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);
 		return "default";
 	}
 }

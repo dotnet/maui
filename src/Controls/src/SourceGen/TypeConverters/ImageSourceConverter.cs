@@ -6,11 +6,11 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class ImageSourceConverter : BaseTypeConverter
+internal class ImageSourceConverter : ISGTypeConverter
 {
-	public override IEnumerable<string> SupportedTypes => new[] { "ImageSource", "Microsoft.Maui.Controls.ImageSource" };
+	public IEnumerable<string> SupportedTypes => new[] { "ImageSource", "Microsoft.Maui.Controls.ImageSource" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update ImageSourceDesignTypeConverter.IsValid if making changes here
@@ -22,7 +22,7 @@ internal class ImageSourceConverter : BaseTypeConverter
 				$"global::Microsoft.Maui.Controls.ImageSource.FromUri(new global::System.Uri(\"{uri}\"))" : $"global::Microsoft.Maui.Controls.ImageSource.FromFile(\"{value}\")";
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+		context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);
 		return "default";
 	}
 }

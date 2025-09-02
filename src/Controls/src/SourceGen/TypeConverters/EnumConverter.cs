@@ -7,11 +7,11 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class EnumConverter : BaseTypeConverter
+internal class EnumConverter : ISGTypeConverter
 {
-	public override IEnumerable<string> SupportedTypes => new[] { "Enum" };
+	public IEnumerable<string> SupportedTypes => new[] { "Enum" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrWhiteSpace(value) && toType is not null && toType.TypeKind == TypeKind.Enum)
@@ -25,7 +25,7 @@ internal class EnumConverter : BaseTypeConverter
 			}
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, value, toType, Descriptors.ConversionFailed);
+		context.ReportConversionFailed( xmlLineInfo, value, value, toType, Descriptors.ConversionFailed);
 		return "default";
 	}
 }

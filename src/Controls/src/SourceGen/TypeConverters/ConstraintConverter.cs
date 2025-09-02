@@ -7,11 +7,11 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class ConstraintConverter : BaseTypeConverter
+internal class ConstraintConverter : ISGTypeConverter
 {
-	public override IEnumerable<string> SupportedTypes => new[] { "Constraint", "Microsoft.Maui.Controls.Compatibility.Constraint" };
+	public IEnumerable<string> SupportedTypes => new[] { "Constraint", "Microsoft.Maui.Controls.Compatibility.Constraint" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update ConstraintDesignTypeConverter.IsValid if making changes here
@@ -23,7 +23,7 @@ internal class ConstraintConverter : BaseTypeConverter
 				return $"global::Microsoft.Maui.Controls.Compatibility.Constraint.Constant({FormatInvariant(size)})";
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+		context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);
 		return "default";
 	}
 }

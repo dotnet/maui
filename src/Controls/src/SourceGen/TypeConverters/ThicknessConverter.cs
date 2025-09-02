@@ -7,11 +7,11 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class ThicknessConverter : BaseTypeConverter
+internal class ThicknessConverter : ISGTypeConverter
 {
-	public override IEnumerable<string> SupportedTypes => new[] { "Thickness", "Microsoft.Maui.Thickness" };
+	public IEnumerable<string> SupportedTypes => new[] { "Thickness", "Microsoft.Maui.Thickness" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update ThicknessTypeDesignConverter.IsValid if making changes here
@@ -45,7 +45,7 @@ internal class ThicknessConverter : BaseTypeConverter
 			}
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, Descriptors.ThicknessConversionFailed);
+		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.ThicknessConversionFailed);
 		return "default";
 	}
 }
