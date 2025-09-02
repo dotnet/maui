@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.DefaultMainThemePage"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             Title="DefaultThemePage">
+
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="AppThemePage"
+                           Clicked="OnNavigateToAppThemePageClicked"
+                           AutomationId="AppThemePage"/>
+       </ContentPage.ToolbarItems>
+
+       <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+             ColumnDefinitions="0.5*, 0.5*"
+             RowSpacing="8.5"
+             ColumnSpacing="10"
+             HorizontalOptions="Center"
+             Margin="5,10,0,0">
+
+              <!-- Button -->
+              <Button Grid.Row="0"
+                      Grid.Column="0"
+                      AutomationId="DefaultLightThemeButton"
+                      Text="Light Theme"
+                      Clicked="OnLightThemeButtonClicked"
+                      HorizontalOptions="Center"/>
+              <Button Grid.Row="0"
+                      Grid.Column="1"
+                      AutomationId="DefaultDarkThemeButton"
+                      Text="Dark Theme"
+                      Clicked="OnDarkThemeButtonClicked"
+                      HorizontalOptions="Center"/>
+
+              <!-- Border -->
+              <HorizontalStackLayout Grid.Row="1"
+                                     Grid.Column="0">
+                     <Label Text="Border: "
+                            VerticalOptions="Center"/>
+                     <Border Stroke="Red"
+                             StrokeThickness="4"
+                             StrokeShape="RoundRectangle"
+                             Background="Green"
+                             Padding="16,8"
+                             HorizontalOptions="Center"/>
+              </HorizontalStackLayout>
+
+              <!-- CheckBox -->
+              <HorizontalStackLayout Grid.Row="1"
+                                     Grid.Column="1">
+                     <Label Text="CheckBox: "
+                            VerticalOptions="Center"/>
+                     <CheckBox AutomationId="CheckBox"
+                               IsChecked="True"/>
+              </HorizontalStackLayout>
+
+              <!-- DatePicker -->
+              <HorizontalStackLayout Grid.Row="2"
+                                     Grid.Column="0">
+                     <Label Text="DatePicker: "
+                            VerticalOptions="Center"/>
+                     <DatePicker AutomationId="DatePicker"
+                                 Date="06/21/2022"/>
+              </HorizontalStackLayout>
+
+              <!-- Entry -->
+              <HorizontalStackLayout Grid.Row="2"
+                                     Grid.Column="1">
+                     <Label Text="Entry: "
+                            VerticalOptions="Center"/>
+                     <local:UITestEntry AutomationId="Entry"
+                                        IsCursorVisible="False"
+                                        IsSpellCheckEnabled="False"
+                                        ClearButtonVisibility="WhileEditing"
+                                        Placeholder="Entry Placeholder"
+                                        Text="Entry Text"
+                                        WidthRequest="100"/>
+              </HorizontalStackLayout>
+
+              <!-- RadioButton -->
+              <HorizontalStackLayout Grid.Row="3"
+                                     Grid.Column="0"
+                                     Grid.ColumnSpan="2">
+                     <Label Text="RadioButton: "
+                            VerticalOptions="Center"/>
+                     <StackLayout>
+                            <RadioButton AutomationId="RadioButton_Cat"
+                                         Content="Cat"/>
+                            <RadioButton AutomationId="RadioButton_Monkey"
+                                         Content="Monkey"
+                                         IsChecked="true"/>
+                     </StackLayout>
+              </HorizontalStackLayout>
+
+              <!-- Editor -->
+              <HorizontalStackLayout Grid.Row="3"
+                                     Grid.Column="1">
+                     <Label Text="Editor: "
+                            VerticalOptions="Center"/>
+                     <local:UITestEditor AutomationId="Editor"
+                                         IsCursorVisible="False"
+                                         IsSpellCheckEnabled="False"
+                                         Placeholder="Editor Placeholder"
+                                         Text="Editor Text"
+                                         WidthRequest="100"
+                                         HeightRequest="50"
+                                         VerticalOptions="Center"/>
+              </HorizontalStackLayout>
+
+              <!-- Image -->
+              <HorizontalStackLayout Grid.Row="4"
+                                     Grid.Column="0">
+                     <Label Text="Image: "
+                            VerticalOptions="Center"/>
+                     <Image Source="dotnet_bot.png"
+                            HeightRequest="50"/>
+              </HorizontalStackLayout>
+
+              <!-- BoxView -->
+              <HorizontalStackLayout Grid.Row="4"
+                                     Grid.Column="1">
+                     <Label Text="BoxView: "
+                            VerticalOptions="Center"/>
+                     <BoxView Color="Blue"
+                              WidthRequest="50"
+                              HeightRequest="50"/>
+              </HorizontalStackLayout>
+
+              <!-- ImageButton -->
+              <HorizontalStackLayout Grid.Row="5"
+                                     Grid.Column="0">
+                     <Label Text="ImageButton: "
+                            VerticalOptions="Center"/>
+                     <ImageButton Source="dotnet_bot.png"
+                                  HeightRequest="50"/>
+              </HorizontalStackLayout>
+
+              <!-- Shapes -->
+              <HorizontalStackLayout Grid.Row="5"
+                                     Grid.Column="1">
+                     <Label Text="Rectangle: "
+                            VerticalOptions="Center"/>
+                     <Rectangle Fill="Red"
+                                WidthRequest="100"
+                                HeightRequest="50"
+                                HorizontalOptions="Start"/>
+              </HorizontalStackLayout>
+
+              <!-- Picker -->
+              <HorizontalStackLayout Grid.Row="6"
+                                     Grid.Column="0"
+                                     Grid.ColumnSpan="2">
+                     <Label Text="Picker: "
+                            VerticalOptions="Center"/>
+                     <Picker AutomationId="Picker"
+                             x:Name="picker"
+                             SelectedIndex="4"
+                             WidthRequest="200">
+                            <Picker.ItemsSource>
+                                   <x:Array Type="{x:Type x:String}">
+                                          <x:String>Baboon</x:String>
+                                          <x:String>Capuchin Monkey</x:String>
+                                          <x:String>Blue Monkey</x:String>
+                                          <x:String>Squirrel Monkey</x:String>
+                                          <x:String>Golden Lion Tamarin</x:String>
+                                          <x:String>Howler Monkey</x:String>
+                                          <x:String>Japanese Macaque</x:String>
+                                   </x:Array>
+                            </Picker.ItemsSource>
+                     </Picker>
+              </HorizontalStackLayout>
+
+              <!-- ProgressBar -->
+              <HorizontalStackLayout Grid.Row="7"
+                                     Grid.Column="0"
+                                     Grid.ColumnSpan="2">
+                     <Label Text="ProgressBar: "
+                            VerticalOptions="Center"/>
+                     <ProgressBar Progress="0.5"
+                                  WidthRequest="300"/>
+              </HorizontalStackLayout>
+
+              <!-- SearchBar -->
+              <VerticalStackLayout Grid.Row="8"
+                                   Grid.Column="0"
+                                   Grid.ColumnSpan="2">
+                     <local:UITestSearchBar AutomationId="SearchBar"
+                                            IsCursorVisible="False"
+                                            IsSpellCheckEnabled="False"
+                                            Placeholder="SearchBar Placeholder"
+                                            Text="SearchBar Control"/>
+              </VerticalStackLayout>
+
+              <!-- Slider -->
+              <HorizontalStackLayout Grid.Row="9"
+                                     Grid.Column="0"
+                                     Grid.ColumnSpan="2">
+                     <Label x:Name="displayLabel"
+                            Text="{Binding x:DataType='Slider', Source={x:Reference slider}, Path=Value, StringFormat='Slider: {0:F0}'}"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"/>
+                     <Slider AutomationId="Slider"
+                             x:Name="slider"
+                             Maximum="360"
+                             Minimum="100"
+                             Value="150"
+                             WidthRequest="300"/>
+              </HorizontalStackLayout>
+
+              <!-- Label -->
+              <HorizontalStackLayout Grid.Row="10"
+                                     Grid.Column="0">
+                     <Label Text="Label: "
+                            VerticalOptions="Center"/>
+                     <Label Text="Label Text"
+                            VerticalOptions="Center"/>
+              </HorizontalStackLayout>
+
+              <!-- Stepper -->
+              <HorizontalStackLayout Grid.Row="10"
+                                     Grid.Column="1">
+                     <Label Text="{Binding x:DataType='Stepper', Source={x:Reference _stepper}, Path=Value, StringFormat='Stepper: {0:F0}'}"
+                            VerticalOptions="Center"/>
+                     <Stepper AutomationId="Stepper"
+                              x:Name="_stepper"
+                              Minimum="100"
+                              Maximum="360"
+                              Increment="30"
+                              WidthRequest="100"/>
+              </HorizontalStackLayout>
+
+              <!-- Switch -->
+              <HorizontalStackLayout Grid.Row="11"
+                                     Grid.Column="0">
+                     <Label Text="Switch: "
+                            VerticalOptions="Center"/>
+                     <Switch AutomationId="Switch"
+                             IsToggled="True"/>
+              </HorizontalStackLayout>
+
+              <!-- TimePicker -->
+              <HorizontalStackLayout Grid.Row="11"
+                                     Grid.Column="1"
+                                     IsVisible="False">
+                     <Label Text="TimePicker: "
+                            VerticalOptions="Center"/>
+                     <TimePicker AutomationId="TimePicker"
+                                 Format="HH:mm tt"
+                                 Time="4:00"/>
+              </HorizontalStackLayout>
+
+              <!-- TitleBar -->
+              <HorizontalStackLayout Grid.Row="12"
+                                     Grid.Column="0"
+                                     Grid.ColumnSpan="2">
+                     <Label Text="TitleBar: "
+                            VerticalOptions="Center"/>
+                     <TitleBar Title="My App"/>
+              </HorizontalStackLayout>
+       </Grid>
+</ContentPage>
