@@ -144,7 +144,6 @@ namespace Microsoft.Maui.Handlers
 			_refreshCompletionDeferral = args.GetDeferral();
 
 			if (VirtualView != null)
-				VirtualView.IsRefreshing = true;
 			{
 				if (!isProgrammaticRefresh)
 					VirtualView.IsRefreshing = true;
