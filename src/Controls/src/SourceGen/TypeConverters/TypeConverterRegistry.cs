@@ -7,11 +7,11 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
 /// <summary>
-/// Registry for type converters that provides lookup and conversion functionality.
+/// Registry for type converters used in source generation.
 /// </summary>
 internal static class TypeConverterRegistry
 {
-	private static readonly Dictionary<string, ITypeConverter> _converters = new(StringComparer.OrdinalIgnoreCase);
+	private static readonly Dictionary<string, ISGTypeConverter> _converters = new(StringComparer.OrdinalIgnoreCase);
 	private static readonly Lazy<bool> _initialized = new(RegisterDefaults);
 
 	static TypeConverterRegistry()
@@ -23,7 +23,7 @@ internal static class TypeConverterRegistry
 	/// <summary>
 	/// Registers a converter for its supported types.
 	/// </summary>
-	public static void Register(ITypeConverter converter)
+	public static void Register(ISGTypeConverter converter)
 	{
 		foreach (var type in converter.SupportedTypes)
 		{
@@ -34,7 +34,7 @@ internal static class TypeConverterRegistry
 	/// <summary>
 	/// Gets a converter for the specified type name.
 	/// </summary>
-	public static ITypeConverter? GetConverter(string typeName) =>
+	public static ISGTypeConverter? GetConverter(string typeName) =>
 		_converters.TryGetValue(typeName, out var converter) ? converter : null;
 
 	/// <summary>

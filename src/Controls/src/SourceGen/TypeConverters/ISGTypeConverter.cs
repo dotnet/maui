@@ -5,9 +5,9 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
 /// <summary>
-/// Interface for type converters that convert XAML string values to C# code generation strings.
+/// Interface for source generator type converters.
 /// </summary>
-internal interface ITypeConverter
+internal interface ISGTypeConverter
 {
 	/// <summary>
 	/// Converts a string value from XAML to the corresponding C# code generation string.
