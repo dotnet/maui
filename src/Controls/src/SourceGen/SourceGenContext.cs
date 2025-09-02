@@ -32,6 +32,7 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public IList<string> LocalMethods { get; } = new List<string>();
 	public bool EnableLineInfo { get; set; }
 	public bool EnableDiagnostics { get; internal set; }
+	public string TargetFramework { get; internal set; } = "";
 
 	public void AddLocalMethod(string code)
 	{

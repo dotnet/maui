@@ -41,50 +41,6 @@ namespace Microsoft.Maui.Controls.Xaml
 		public INameScope NameScope { get; set; }
 	}
 
-	[DebuggerDisplay("{NamespaceUri}:{Name}")]
-	class XmlType
-	{
-		public XmlType(string namespaceUri, string name, IList<XmlType> typeArguments)
-		{
-			NamespaceUri = namespaceUri;
-			Name = name;
-			TypeArguments = typeArguments;
-		}
-
-		public string NamespaceUri { get; }
-		public string Name { get; }
-		public IList<XmlType> TypeArguments { get; }
-
-		public override bool Equals(object obj)
-		{
-			if (obj is not XmlType other)
-			{
-				return false;
-			}
-
-			return
-				NamespaceUri == other.NamespaceUri &&
-				Name == other.Name &&
-				(TypeArguments == null && other.TypeArguments == null ||
-				 TypeArguments != null && other.TypeArguments != null && TypeArguments.SequenceEqual(other.TypeArguments));
-		}
-
-		public override int GetHashCode()
-		{
-			unchecked
-			{
-#if NETSTANDARD2_0
-				int hashCode = NamespaceUri.GetHashCode();
-				hashCode = (hashCode * 397) ^ Name.GetHashCode();
-#else
-				int hashCode = NamespaceUri.GetHashCode(StringComparison.Ordinal);
-				hashCode = (hashCode * 397) ^ Name.GetHashCode(StringComparison.Ordinal);
-#endif
-				return hashCode;
-			}
-		}
-	}
-
 	abstract class BaseNode : IXmlLineInfo, INode
 	{
 		protected BaseNode(IXmlNamespaceResolver namespaceResolver, int linenumber = -1, int lineposition = -1)

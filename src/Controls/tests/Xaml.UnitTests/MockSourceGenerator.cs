@@ -41,13 +41,13 @@ public static class MockSourceGenerator
 	public static GeneratorDriverRunResult RunMauiSourceGenerator(Type xamlType)
 		=> CreateMauiCompilation().RunMauiSourceGenerator(xamlType);
 
-	public static GeneratorDriverRunResult RunMauiSourceGenerator(this Compilation compilation, Type xamlType)
+	public static GeneratorDriverRunResult RunMauiSourceGenerator(this Compilation compilation, Type xamlType, string targetFramework = "")
 	{
 		var resourceId = XamlResourceIdAttribute.GetResourceIdForType(xamlType);
 		var resourcePath = XamlResourceIdAttribute.GetPathForType(xamlType);
 		var resourceStream = typeof(MockSourceGenerator).Assembly.GetManifestResourceStream(resourceId);
 
-		return RunMauiSourceGenerator(compilation, new AdditionalXamlFile(resourcePath, new StreamReader(resourceStream!).ReadToEnd()));
+		return RunMauiSourceGenerator(compilation, new AdditionalXamlFile(resourcePath, new StreamReader(resourceStream!).ReadToEnd(), TargetFramework: targetFramework));
 	}
 
 	static string GetTopDirRecursive(string searchDirectory, int maxSearchDepth = 7)
