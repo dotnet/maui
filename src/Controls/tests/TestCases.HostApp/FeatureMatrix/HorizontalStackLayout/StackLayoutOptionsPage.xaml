@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.StackLayoutOptionsPage"
              x:DataType="local:StackLayoutViewModel"
-             Title="tackLayoutOptionsPage">
+             Title="StackLayoutOptionsPage">
        <ContentPage.ToolbarItems>
               <ToolbarItem Text="Apply"
                            Clicked="ApplyButton_Clicked"

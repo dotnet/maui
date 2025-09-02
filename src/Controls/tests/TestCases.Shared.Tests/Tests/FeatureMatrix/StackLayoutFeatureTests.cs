@@ -397,7 +397,7 @@ public class StackLayoutFeatureTests : UITest
 
 #if ANDROID || IOS
 	[Test]
-	public void HorizontalStackLayout_Spacing_WithLandspace()
+	public void HorizontalStackLayout_Spacing_WithLandscape()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -415,7 +415,7 @@ public class StackLayoutFeatureTests : UITest
 	}
 
 	[Test]
-	public void VerticalStackLayout_Spacing_WithLandspace()
+	public void VerticalStackLayout_Spacing_WithLandscape()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
