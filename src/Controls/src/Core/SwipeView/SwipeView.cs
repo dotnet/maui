@@ -355,7 +355,8 @@ namespace Microsoft.Maui.Controls
 			var horizontalDelta = e.ScrollX - _previousScrollX;
 			var verticalDelta = e.ScrollY - _previousScrollY;
 
-			if (horizontalDelta > SwipeMinimumDelta || verticalDelta > SwipeMinimumDelta)
+			var scrollThreshold = SwipeMinimumDelta * 3;
+			if (Math.Abs(horizontalDelta) > scrollThreshold || Math.Abs(verticalDelta) > scrollThreshold)
 				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(true));
 
 			_previousScrollX = e.ScrollX;
@@ -364,7 +365,10 @@ namespace Microsoft.Maui.Controls
 
 		void OnParentScrolled(object? sender, ItemsViewScrolledEventArgs e)
 		{
-			if (e.HorizontalDelta > SwipeMinimumDelta || e.VerticalDelta > SwipeMinimumDelta)
+			// Only close SwipeView on significant scroll deltas to avoid closing during
+			// small scroll adjustments caused by collection changes (item insertion/deletion)
+			var scrollThreshold = SwipeMinimumDelta * 3;
+			if (Math.Abs(e.HorizontalDelta) > scrollThreshold || Math.Abs(e.VerticalDelta) > scrollThreshold)
 				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(true));
 		}
 
