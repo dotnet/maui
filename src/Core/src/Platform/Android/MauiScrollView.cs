@@ -8,7 +8,6 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.Widget;
-using AndroidX.Core.View;
 
 namespace Microsoft.Maui.Platform
 {
@@ -43,10 +42,7 @@ namespace Microsoft.Maui.Platform
 
 		protected MauiScrollView(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
-			var context = Context;
-			ArgumentNullException.ThrowIfNull(context);
 		}
-
 
 		public void SetHorizontalScrollBarVisibility(ScrollBarVisibility scrollBarVisibility)
 		{
