@@ -453,7 +453,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateFlowDirection()
 		{
-			if (Tabbed == null)
+			if (Tabbed is null)
 				return;
 
 			View.UpdateFlowDirection(Tabbed);
