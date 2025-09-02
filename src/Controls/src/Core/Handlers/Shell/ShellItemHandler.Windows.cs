@@ -98,6 +98,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					autoSuggestBox.SuggestionChosen -= OnSearchBoxSuggestionChosen;
 					autoSuggestBox.GotFocus -= OnSearchBoxGotFocus;
 					autoSuggestBox.LostFocus -= OnSearchBoxLostFocus;
+					autoSuggestBox.Loaded -= AutoSuggestBoxOnLoaded;
 				}
 			}
 
@@ -308,16 +309,24 @@ namespace Microsoft.Maui.Controls.Handlers
 						autoSuggestBox.SuggestionChosen += OnSearchBoxSuggestionChosen;
 						autoSuggestBox.GotFocus += OnSearchBoxGotFocus;
 						autoSuggestBox.LostFocus += OnSearchBoxLostFocus;
+						autoSuggestBox.Loaded += AutoSuggestBoxOnLoaded;
 						mauiNavView.AutoSuggestBox = autoSuggestBox;
 					}
 
-					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
-					autoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
 					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
 					autoSuggestBox.ItemTemplate = _currentSearchHandler.ItemTemplate is null ? null : (UI.Xaml.DataTemplate)WApp.Current.Resources["SearchHandlerItemTemplate"];
-					autoSuggestBox.Text = _currentSearchHandler.Query;
 					autoSuggestBox.UpdateTextOnSelect = false;
-
+					autoSuggestBox.UpdateSearchHandlerText(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerPlaceholder(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerIsEnabled(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerCharacterSpacing(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerTextColor(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerPlaceholderColor(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerCancelButtonColor(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerBackground(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerVerticalTextAlignment(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerHorizontalTextAlignment(_currentSearchHandler);
+					
 					_currentSearchHandler.PropertyChanged += OnCurrentSearchHandlerPropertyChanged;
 
 					autoSuggestBox.Visibility = _currentSearchHandler.SearchBoxVisibility == SearchBoxVisibility.Hidden ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
@@ -343,6 +352,16 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
+		void AutoSuggestBoxOnLoaded(object sender, RoutedEventArgs e)
+		{
+			if (VirtualView is null || _currentSearchHandler is null || PlatformView is not NavigationView mauiNavView)
+			{
+				return;
+			}
+
+			mauiNavView.AutoSuggestBox.UpdateSearchHandlerCancelButtonColor(_currentSearchHandler);
+		}
+
 		void OnSearchBoxGotFocus(object sender, RoutedEventArgs e)
 		{
 			_currentSearchHandler?.SetIsFocused(true);
@@ -359,7 +378,9 @@ namespace Microsoft.Maui.Controls.Handlers
 				return;
 
 			if (args.Reason != Microsoft.UI.Xaml.Controls.AutoSuggestionBoxTextChangeReason.ProgrammaticChange)
+			{
 				_currentSearchHandler.Query = sender.Text;
+			}
 		}
 
 		void OnSearchBoxSuggestionChosen(Microsoft.UI.Xaml.Controls.AutoSuggestBox sender, Microsoft.UI.Xaml.Controls.AutoSuggestBoxSuggestionChosenEventArgs args)
@@ -417,19 +438,42 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (PlatformView is not NavigationView mauiNavView)
 				return;
 
+			var autoSuggestBox = mauiNavView.AutoSuggestBox;
 			switch (e.PropertyName)
 			{
+				case nameof(SearchHandler.Query):
+				case nameof(SearchHandler.TextTransform):
+					autoSuggestBox.UpdateSearchHandlerText(_currentSearchHandler);
+					break;
 				case nameof(SearchHandler.Placeholder):
-					mauiNavView.AutoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
+					autoSuggestBox.UpdateSearchHandlerPlaceholder(_currentSearchHandler);
 					break;
 				case nameof(SearchHandler.IsSearchEnabled):
-					mauiNavView.AutoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
+					autoSuggestBox.UpdateSearchHandlerIsEnabled(_currentSearchHandler);
 					break;
 				case nameof(SearchHandler.ItemsSource):
-					mauiNavView.AutoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
+					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
 					break;
-				case nameof(SearchHandler.Query):
-					mauiNavView.AutoSuggestBox.Text = _currentSearchHandler.Query;
+				case nameof(SearchHandler.TextColor):
+					autoSuggestBox.UpdateSearchHandlerTextColor(_currentSearchHandler);
+					break;
+				case nameof(SearchHandler.PlaceholderColor):
+					autoSuggestBox.UpdateSearchHandlerPlaceholderColor(_currentSearchHandler);
+					break;
+				case nameof(SearchHandler.CancelButtonColor):
+					autoSuggestBox.UpdateSearchHandlerCancelButtonColor(_currentSearchHandler);
+					break;
+				case nameof(SearchHandler.BackgroundColor):
+					autoSuggestBox.UpdateSearchHandlerBackground(_currentSearchHandler);
+					break;
+				case nameof(SearchHandler.CharacterSpacing):
+					autoSuggestBox.UpdateSearchHandlerCharacterSpacing(_currentSearchHandler);
+					break;
+				case nameof(SearchHandler.HorizontalTextAlignment):
+					autoSuggestBox.UpdateSearchHandlerHorizontalTextAlignment(_currentSearchHandler);
+					break;
+				case nameof(SearchHandler.VerticalTextAlignment):
+					autoSuggestBox.UpdateSearchHandlerVerticalTextAlignment(_currentSearchHandler);
 					break;
 			}
 		}
