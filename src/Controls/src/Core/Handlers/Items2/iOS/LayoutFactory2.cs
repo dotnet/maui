@@ -442,7 +442,12 @@ internal static class LayoutFactory2
 					}
 					else
 					{
-						collectionView.ScrollToItem(lastIndexPath, UICollectionViewScrollPosition.Right, true);
+						// Adjust scroll position for RTL layouts
+						var layoutDirection = collectionView.EffectiveUserInterfaceLayoutDirection;
+						var scrollPosition = layoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
+							? UICollectionViewScrollPosition.Left
+							: UICollectionViewScrollPosition.Right;
+						collectionView.ScrollToItem(lastIndexPath, scrollPosition, true);
 					}
 					return;
 				}
