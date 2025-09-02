@@ -140,7 +140,7 @@ public sealed class DisplayRotationStateTrigger : StateTriggerBase
 
 	void UpdateState()
 	{
-		var currentRotation = DeviceDisplay.MainDisplayInfo?.Rotation ?? DisplayRotation.Unknown;
+		var currentRotation = DeviceDisplay.MainDisplayInfo.Rotation;
 		SetActive(currentRotation == Rotation);
 	}
 }
