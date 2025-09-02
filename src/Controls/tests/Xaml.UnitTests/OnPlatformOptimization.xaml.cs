@@ -54,11 +54,7 @@ public partial class OnPlatformOptimization : ContentPage
 		}
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void ValuesAreSet([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
 		public void ValuesAreSet([Values] XamlInflator inflator)
-#endif
 		{
 			var p = new OnPlatformOptimization(inflator);
 			Assert.AreEqual("ringo", p.label0.Text);
