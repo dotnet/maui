@@ -41,9 +41,6 @@ internal readonly record struct SafeAreaPadding(double Left, double Right, doubl
 			bounds.Width - HorizontalThickness,
 			bounds.Height - VerticalThickness);
 	}
-
-	public AInsets ToInsets() =>
-		AInsets.Of((int)Left, (int)Top, (int)Right, (int)Bottom) ?? AInsets.Of(0, 0, 0, 0)!;
 }
 
 internal static class WindowInsetsExtensions
