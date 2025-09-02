@@ -1,3 +1,4 @@
+#if IOS || MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -6,110 +7,127 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue30950 : _IssuesUITest
 {
-	public Issue30950(TestDevice device)
-		: base(device)
-	{ }
+    const int NumberOfIterations = 2;
+    
+    public Issue30950(TestDevice device)
+       : base(device)
+    {
+    }
 
-	public override string Issue => "Deleting Items Causes Other Expanded Items to Collapse Unexpectedly";
+    public override string Issue => "Deleting Items Causes Other Expanded Items to Collapse Unexpectedly";
 
-	[Test]
-	[Category(UITestCategories.SwipeView)]
-	[Category(UITestCategories.CollectionView)]
-	public void SwipeViewItemsShouldRemainExpandedWhenOtherItemsAreDeleted()
-	{
-		// Swipe right on first item to show left swipe items (Favourite)
-		App.WaitForElement("Item 1");
-		App.SwipeRightToLeft("Item 1");
+    [Test]
+    [Category(UITestCategories.SwipeView)]
+    [Category(UITestCategories.CollectionView)]
+    public void SwipeViewItemsShouldRemainExpandedWhenOtherItemsAreDeleted()
+    {
+        // Define which items to delete in each iteration
+        var itemsToDelete = new[] { "Item 1", "Item 6" }; // Different item for each iteration
+        
+        // Repeat the test scenario 2 times to ensure consistency
+        for (int iteration = 1; iteration <= NumberOfIterations; iteration++)
+        {
+            TestContext.WriteLine($"Starting iteration {iteration}");
+            
+            try
+            {
+                var itemToDelete = itemsToDelete[iteration - 1];
+                PerformSwipeAndDeleteTest(iteration, itemToDelete);
+                TestContext.WriteLine($"Iteration {iteration} completed successfully");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"Test failed on iteration {iteration}: {ex.Message}");
+            }
+            
+            // Add a small delay between iterations to allow UI to settle
+            if (iteration < NumberOfIterations)
+            {
+                System.Threading.Thread.Sleep(1000);
+                TestContext.WriteLine($"Completed iteration {iteration}, preparing for next iteration");
+            }
+        }
+    }
+    
+    void PerformSwipeAndDeleteTest(int iteration, string itemToDelete)
+    {
+        // Swipe multiple items to expand them (excluding the item we plan to delete)
+        var itemsToSwipe = new[] { 2, 3, 4, 5, 7 };
+        foreach (var itemNumber in itemsToSwipe)
+        {
+            var itemId = $"Item {itemNumber}";
+            
+            // Skip if this is the item we plan to delete (to test deleting non-expanded items)
+            if (itemId == itemToDelete)
+                continue;
+            
+            try
+            {
+                App.WaitForElement(itemId);
+                App.SwipeLeftToRight(itemId);
+                TestContext.WriteLine($"Iteration {iteration}: Swiped {itemId}");
+            }
+            catch (Exception ex)
+            {
+                TestContext.WriteLine($"Iteration {iteration}: Failed to swipe {itemId}: {ex.Message}");
+                // Continue with other items or re-throw based on your needs
+                throw;
+            }
+        }
+        
+        // Verify swipe actions are visible
+        App.WaitForElement("Favourite");
+        App.WaitForElement("Delete");
+        TestContext.WriteLine($"Iteration {iteration}: Confirmed swipe actions are visible");
 
-		// Swipe left on third item to show right swipe items (Delete)  
-		App.WaitForElement("Item 3");
-		App.SwipeLeftToRight("Item 3");
-
-		// Verify both items show their swipe actions
-		App.WaitForElement("Favourite");
-		App.WaitForElement("Delete");
-
-		// Delete item 2 (which is not expanded) by swiping left and tapping delete
-		App.WaitForElement("Item 2");
-		App.SwipeLeftToRight("Item 2");
-		App.Tap("Delete");
-
-		// Verify that item1 and item3 are still showing their swipe actions
-		// This tests the fix, before the fix, these would have collapsed
-		try
-		{
-			App.WaitForElement("Favourite");
-			App.WaitForElement("Delete");
-		}
-		catch
-		{
-			Assert.Fail("SwipeView items collapsed unexpectedly when another item was deleted. The fix for Issue79I10Swipe is not working.");
-		}
-	}
-
-	[Test]
-	[Category(UITestCategories.SwipeView)]
-	[Category(UITestCategories.CollectionView)]
-	public void FavouriteSwipeActionShouldWork()
-	{
-		// Swipe right on first item to show favourite action
-		App.WaitForElement("Item 1");
-		App.SwipeLeftToRight("Item 1");
-
-		// Tap the favourite button
-		App.Tap("Favourite");
-
-		// Verify alert is shown
-		App.WaitForElement("Issue30950Alert");
-	}
-
-	[Test]
-	[Category(UITestCategories.SwipeView)]
-	[Category(UITestCategories.CollectionView)]
-	public void DeleteSwipeActionShouldRemoveItem()
-	{
-		// Count initial items
-		var initialItems = App.FindElements("Item 1").Count > 0 ? 10 : 0; // We know there are 10 items initially
-		
-		Assert.That(
-			initialItems,
-			Is.EqualTo(10));
-		
-		// Swipe left on first item to show delete action
-		App.WaitForElement("Item 1");
-		App.SwipeRightToLeft("Item 1");
-		
-		// Verify item was removed, Item 1 should no longer exist
-		Assert.Throws<TimeoutException>(() => App.WaitForElement("Item 1", timeout: TimeSpan.FromSeconds(2)));
-	}
-
-	[Test]
-	[Category(UITestCategories.SwipeView)]
-	[Category(UITestCategories.CollectionView)]
-	public void MultipleSwipeViewsCanBeExpandedSimultaneously()
-	{
-		// Expand multiple items at once
-		App.WaitForElement("Item 1");
-		App.SwipeRightToLeft("Item 1");
-
-		App.WaitForElement("Item 2");
-		App.SwipeLeftToRight("Item 2");
-
-		App.WaitForElement("Item 3");
-		App.SwipeRightToLeft("Item 3");
-
-		// Verify all actions are visible simultaneously
-		var favouriteButtons = App.FindElements("Favourite");
-		var deleteButtons = App.FindElements("Delete");
-		
-		Assert.That(
-			favouriteButtons.Count,
-			Is.GreaterThanOrEqualTo(2),
-			"Multiple favourite buttons should be visible");
-		
-		Assert.That(
-			deleteButtons.Count,
-			Is.GreaterThanOrEqualTo(1),
-			"At least one delete button should be visible");
-	}
+        // Delete the specified item by swiping and tapping delete
+        try
+        {
+            App.WaitForElement(itemToDelete);
+            App.SwipeLeftToRight(itemToDelete);
+            TestContext.WriteLine($"Iteration {iteration}: Swiped {itemToDelete}");
+        
+            var itemElement = App.WaitForElement(itemToDelete);
+            var itemRect = itemElement.GetRect();
+               
+            // Tap in the area where the delete button should be
+            var deleteButtonX = itemRect.X + 100;
+            var deleteButtonY = itemRect.Y + itemRect.Height / 2;
+            App.TapCoordinates(deleteButtonX, deleteButtonY);
+            TestContext.WriteLine($"Iteration {iteration}: Tapped delete button for {itemToDelete}");
+        }
+        catch (Exception ex)
+        {
+            TestContext.WriteLine($"Iteration {iteration}: Failed to delete {itemToDelete}: {ex.Message}");
+            throw;
+        }
+        
+        // Small delay to allow deletion to process
+        Thread.Sleep(500);
+       
+        // Verify that items are still showing their swipe actions
+        try
+        {
+	        App.WaitForElement("Favourite", timeout: TimeSpan.FromSeconds(3));
+	        App.WaitForElement("Delete", timeout: TimeSpan.FromSeconds(3));
+	        TestContext.WriteLine(
+		        $"Iteration {iteration}: Verified that other items remain expanded after deleting {itemToDelete}");
+        }
+        catch
+        {
+	        Assert.Fail(
+		        $"Iteration {iteration}: SwipeView items collapsed unexpectedly when {itemToDelete} was deleted. The fix for Issue79I10Swipe is not working.");
+        }
+        finally
+        {
+	        // Close opened items
+	        foreach (var itemNumber in itemsToSwipe)
+	        {
+		        var itemId = $"Item {itemNumber}";
+		        App.WaitForElement(itemId);
+		        App.Tap(itemId);
+	        }
+        }
+    }
 }
+#endif

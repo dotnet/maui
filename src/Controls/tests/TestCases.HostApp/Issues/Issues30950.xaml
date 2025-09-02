@@ -21,18 +21,13 @@
                                 BackgroundColor="Green"
                                 Command="{Binding Source={x:Reference SwipeCollectionView}, Path=BindingContext.FavouriteCommand}"
                                 CommandParameter="{Binding}"/>
-                        </SwipeItems>
-                    </SwipeView.LeftItems>
-                    <SwipeView.RightItems>
-                        <SwipeItems
-                            Mode="Execute">
                             <SwipeItem
                                 Text="Delete"
                                 BackgroundColor="Red"
                                 Command="{Binding Source={x:Reference SwipeCollectionView}, Path=BindingContext.DeleteCommand}"
                                 CommandParameter="{Binding}"/>
                         </SwipeItems>
-                    </SwipeView.RightItems>
+                    </SwipeView.LeftItems>
                     <SwipeView.Content>
                         <Grid
                             BackgroundColor="White"
