@@ -306,7 +306,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-#if TEST_FAILS_ON_ANDROID		//Issue 
+#if TEST_FAILS_ON_ANDROID		//Issue Link: https://github.com/dotnet/maui/issues/31445
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.TitleView)]
