@@ -28,6 +28,24 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
     internal IOnApplyWindowInsetsListener GetWindowInsetsListener() =>
         new WindowInsetsListener(this, () => _owner.RequestLayout());
 
+    /// <summary>
+    /// Forces a re-application of window insets when safe area configuration changes.
+    /// This ensures OnApplyWindowInsets is called before measure and arrange.
+    /// </summary>
+    internal void InvalidateWindowInsets()
+    {
+        if (_lastReceivedInsets is not null)
+        {
+            // Re-apply the last received insets to trigger OnApplyWindowInsets
+            ViewCompat.DispatchApplyWindowInsets(_owner, _lastReceivedInsets);
+        }
+        else
+        {
+            // Request fresh insets from the system
+            ViewCompat.RequestApplyInsets(_owner);
+        }
+    }
+
     void UpdateKeyboardState(SafeAreaPadding keyboardInsets, bool isKeyboardShowing)
     {
         _keyboardInsets = keyboardInsets;
@@ -139,6 +157,27 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
         return oldSafeArea == _safeArea;
     }
 
+    /// <summary>
+    /// Updates safe area configuration and triggers window insets re-application if needed.
+    /// Call this when safe area edge configuration changes.
+    /// </summary>
+    internal void UpdateSafeAreaConfiguration()
+    {
+        // Clear cached ScrollView descendant check
+        _scrollViewDescendant = null;
+
+        // Force re-calculation of safe area
+        var oldSafeArea = _safeArea;
+        _safeArea = GetAdjustedSafeAreaInsets();
+
+        // Always invalidate insets when configuration changes, regardless of whether
+        // the calculated safe area changed. This ensures proper handling of:
+        // - Orientation changes where the same safe area values might apply differently
+        // - Soft input behavior changes that need immediate re-evaluation
+        // - Multiple sequential configuration changes that need consistent behavior
+        InvalidateWindowInsets();
+    }
+
     internal static bool HasAnyRegions(ISafeAreaView2 sav2)
     {
         for (int edge = 0; edge < 4; edge++)
@@ -157,8 +196,8 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
     /// </summary>
     public class WindowInsetsListener(SafeAreaHandler handler, Action requestLayout) : Java.Lang.Object, IOnApplyWindowInsetsListener
     {
-        readonly SafeAreaHandler _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-        readonly Action _requestLayout = requestLayout ?? throw new ArgumentNullException(nameof(requestLayout));
+        readonly WeakReference<SafeAreaHandler> _handlerRef = new(handler ?? throw new ArgumentNullException(nameof(handler)));
+        readonly WeakReference<Action> _requestLayoutRef = new(requestLayout ?? throw new ArgumentNullException(nameof(requestLayout)));
 
         public WindowInsetsCompat OnApplyWindowInsets(View v, WindowInsetsCompat insets)
         {
@@ -168,34 +207,41 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
                 return insets;
             }
 
+            // Get handler and requestLayout from weak references
+            if (!_handlerRef.TryGetTarget(out var handler) || !_requestLayoutRef.TryGetTarget(out var requestLayout))
+            {
+                // Handler or requestLayout has been garbage collected, return insets unchanged
+                return insets;
+            }
+
             handler._lastReceivedInsets = insets;
 
             // Handle keyboard state changes
-            var keyboardInsets = insets.GetKeyboardInsets(_handler._context);
+            var keyboardInsets = insets.GetKeyboardInsets(handler._context);
             var isKeyboardShowing = !keyboardInsets.IsEmpty;
-            var wasKeyboardShowing = _handler._isKeyboardShowing;
+            var wasKeyboardShowing = handler._isKeyboardShowing;
 
-            _handler.UpdateKeyboardState(keyboardInsets, isKeyboardShowing);
+            handler.UpdateKeyboardState(keyboardInsets, isKeyboardShowing);
 
             // Request layout if keyboard state changed
             if (wasKeyboardShowing != isKeyboardShowing)
             {
-                _requestLayout();
+                requestLayout();
             }
 
-            _requestLayout();
+            requestLayout();
+
+            var crossPlatformLayout = handler._getCrossPlatformLayout();
 
             // Use RespondsToSafeArea to check if this view should handle safe area
-            if (!_handler.RespondsToSafeArea())
+            if (!handler.RespondsToSafeArea())
             {
-                // For ScrollView descendants, consume all insets to prevent safe area handling
-                // for this view and all its children
+                // For deeper descendants of ScrollView, consume all insets to prevent double-application
                 return ConsumeAllInsets(insets);
             }
 
             if (handler._getCrossPlatformLayout() is ISafeAreaView2 sav2 && HasAnyRegions(sav2))
             {
-                // If the layout does not request any safe area regions, consume all insets
                 return ConsumeAllInsets(insets);
             }
 
