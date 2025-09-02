@@ -4,18 +4,14 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class SearchBarFeatureTests : UITest
+public class SearchBarFeatureTests : _GalleryUITest
 {
 	public const string SearchBarFeatureMatrix = "Search Bar Feature Matrix";
 
+	override public string GalleryPageName => SearchBarFeatureMatrix;
+
 	public SearchBarFeatureTests(TestDevice testDevice) : base(testDevice)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(SearchBarFeatureMatrix);
 	}
 
 	public void VerifyScreenshotWithPlatformCropping()
