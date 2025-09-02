@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample
@@ -77,6 +79,9 @@ namespace Maui.Controls.Sample
 		private NavigationPageViewModel _viewModel;
 		private int _preNavStackCount;
 		private string _pendingOperation;
+			// Carry context across events
+			private string _pendingDestinationTitle; // predicted destination of current nav op
+			private string _lastPoppedPageTitle;     // page title that was popped (for Pop/PopToRoot)
 
 		public NavigationPageControlMainPage(NavigationPageViewModel viewModel)
 		{
@@ -145,6 +150,47 @@ namespace Maui.Controls.Sample
 			catch (System.Exception ex)
 			{
 				System.Diagnostics.Debug.WriteLine($"Apply button error: {ex.Message}");
+			}
+		}
+
+		// Reset button - Restores default property values and returns to root page
+		private async void ResetButton_Clicked(object sender, EventArgs e)
+		{
+			try
+			{
+				_viewModel.Reset();
+
+				// Pop to root if not already there
+				if (Navigation?.NavigationStack?.Count > 1)
+				{
+					try
+					{
+						await Navigation.PopToRootAsync(false); // no animation for speed in tests
+					}
+					catch (System.Exception ex)
+					{
+						System.Diagnostics.Debug.WriteLine($"Reset PopToRoot error: {ex.Message}");
+					}
+				}
+
+				// Re-sync UI controls to defaults
+				BackButtonTitleEntry.Text = _viewModel.BackButtonTitle ?? string.Empty;
+				HasNavigationBarCheckBox.IsChecked = _viewModel.HasNavigationBar;
+				HasBackButtonCheckBox.IsChecked = _viewModel.HasBackButton;
+
+				// Reapply attached properties to this root page
+				NavigationPage.SetHasNavigationBar(this, _viewModel.HasNavigationBar);
+				NavigationPage.SetHasBackButton(this, _viewModel.HasBackButton);
+				NavigationPage.SetBackButtonTitle(this, _viewModel.BackButtonTitle);
+				NavigationPage.SetIconColor(this, _viewModel.IconColor);
+				NavigationPage.SetTitleIconImageSource(this, _viewModel.TitleIconImageSource);
+				NavigationPage.SetTitleView(this, _viewModel.TitleView);
+
+				UpdateNavigationInfo();
+			}
+			catch (System.Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Reset button error: {ex.Message}");
 			}
 		}
 
@@ -300,6 +346,14 @@ namespace Maui.Controls.Sample
 				_pendingOperation = "Push";
 				var pageNumber = Navigation.NavigationStack.Count + 1;
 				var isLastPage = pageNumber >= 3; // Limit to 3 pages for testing
+
+				// IMPORTANT: BackButtonTitle for the NEXT page is taken from the PREVIOUS page on iOS.
+				// Set it on the current top-of-stack page BEFORE pushing the new page.
+				var currentTop = Navigation?.NavigationStack?.LastOrDefault();
+				if (!string.IsNullOrEmpty(_viewModel.BackButtonTitle) && currentTop != null)
+				{
+					NavigationPage.SetBackButtonTitle(currentTop, _viewModel.BackButtonTitle);
+				}
 				
 				var stackLayout = new StackLayout
 				{
@@ -434,16 +488,18 @@ namespace Maui.Controls.Sample
 				newPage.NavigatedFrom += OnChildPageNavigatedFrom;
 				newPage.NavigatingFrom += OnChildPageNavigatingFrom;
 				
-				// Apply NavigationPage attached properties to the new page
+				// Apply NavigationPage attached properties to the new page (do NOT set BackButtonTitle here)
 				NavigationPage.SetHasNavigationBar(newPage, _viewModel.HasNavigationBar);
 				NavigationPage.SetHasBackButton(newPage, _viewModel.HasBackButton);
-				if (!string.IsNullOrEmpty(_viewModel.BackButtonTitle))
-					NavigationPage.SetBackButtonTitle(newPage, _viewModel.BackButtonTitle);
+				// BackButtonTitle intentionally applied to currentTop above
 				
 				// Always set these properties (including null values to clear them)
 				NavigationPage.SetIconColor(newPage, _viewModel.IconColor);
 				NavigationPage.SetTitleIconImageSource(newPage, _viewModel.TitleIconImageSource);
 				NavigationPage.SetTitleView(newPage, _viewModel.TitleView);
+
+				// Record destination title for this Push before navigating
+				_pendingDestinationTitle = newPage?.Title;
 
 				await Navigation.PushAsync(newPage);
 				UpdateNavigationInfo();
@@ -461,6 +517,12 @@ namespace Maui.Controls.Sample
 			try
 			{
 				_pendingOperation = "Push";
+				// Set BackButtonTitle on the current top-of-stack page BEFORE pushing
+				var currentTop = Navigation?.NavigationStack?.LastOrDefault();
+				if (!string.IsNullOrEmpty(_viewModel.BackButtonTitle) && currentTop != null)
+				{
+					NavigationPage.SetBackButtonTitle(currentTop, _viewModel.BackButtonTitle);
+				}
 				var pageNumber = Navigation.NavigationStack.Count + 1;
 				var stackLayout = new StackLayout
 				{
@@ -531,6 +593,17 @@ namespace Maui.Controls.Sample
 				newPage.NavigatedTo += OnChildPageNavigatedTo;
 				newPage.NavigatedFrom += OnChildPageNavigatedFrom;
 				newPage.NavigatingFrom += OnChildPageNavigatingFrom;
+
+				// Apply NavigationPage attached properties to the new page (mirrors PushPage_Clicked)
+				NavigationPage.SetHasNavigationBar(newPage, _viewModel.HasNavigationBar);
+				NavigationPage.SetHasBackButton(newPage, _viewModel.HasBackButton);
+				// BackButtonTitle is intentionally NOT set on newPage
+				NavigationPage.SetIconColor(newPage, _viewModel.IconColor);
+				NavigationPage.SetTitleIconImageSource(newPage, _viewModel.TitleIconImageSource);
+				NavigationPage.SetTitleView(newPage, _viewModel.TitleView);
+
+				// Record destination title for this Push before navigating
+				_pendingDestinationTitle = newPage?.Title;
 
 				await Navigation.PushAsync(newPage);
 			}
@@ -610,35 +683,58 @@ namespace Maui.Controls.Sample
 		private void OnNavigatedTo(object sender, NavigatedToEventArgs e)
 		{
 			_viewModel.NavigatedToCount += 1;
+			_viewModel.NavigatedToRaised = true;
 			_viewModel.LastNavigationEvent = $"NavigatedTo: {Title}";
+			_viewModel.LastNavigatedToPage = Title;
 			try
 			{
 				var stack = this.Navigation?.NavigationStack;
 				string prevTitle = null;
-				if (stack != null && stack.Count >= 2)
+				// After Pop/PopToRoot the previous page is no longer in the stack; use stored popped title
+				if (_pendingOperation == "Pop" || _pendingOperation == "PopToRoot")
+				{
+					prevTitle = _lastPoppedPageTitle;
+				}
+				else if (stack != null && stack.Count >= 2)
+				{
 					prevTitle = stack[stack.Count - 2]?.Title;
-				_viewModel.LastNavigationParameters = $"PreviousPageTitle={prevTitle ?? "<none>"}, StackCount={stack?.Count ?? 0}";
+				}
+				var toParams = $"PreviousPageTitle={prevTitle ?? "<none>"}, StackCount={stack?.Count ?? 0}";
+				_viewModel.LastNavigatedToParameters = toParams;
+				_viewModel.LastNavigationParameters = toParams;
 			}
 			catch { }
 			UpdateNavigationInfo();
 			_pendingOperation = null;
+			// Clear one-shot context after completion
+			_pendingDestinationTitle = null;
+			_lastPoppedPageTitle = null;
 		}
 
 		private void OnNavigatedFrom(object sender, NavigatedFromEventArgs e)
 		{
 			_viewModel.NavigatedFromCount += 1;
+			_viewModel.NavigatedFromRaised = true;
 			_viewModel.LastNavigationEvent = $"NavigatedFrom: {Title}";
-			_viewModel.LastNavigatedFromEvent = _viewModel.LastNavigationEvent;
+			_viewModel.LastNavigatedFromPage = Title;
 			try
 			{
 				var page = (Page)sender;
 				var nav = page?.Navigation ?? this.Navigation;
 				var stack = nav?.NavigationStack;
-				var afterCount = stack?.Count ?? 0;
-				var dest = (afterCount > 0) ? stack[afterCount - 1] : null;
+				var afterStack = stack;
+				if ((afterStack == null || afterStack.Count == 0) && (_pendingOperation == "Pop" || _pendingOperation == "PopToRoot"))
+				{
+					// Use destination navigation stack when sender's nav is detached
+					afterStack = this.Navigation?.NavigationStack;
+				}
+				var afterCount = afterStack?.Count ?? 0;
+				var dest = (afterCount > 0) ? afterStack[afterCount - 1] : null;
 				bool stillInStack = stack?.Contains(page) == true;
 				string navType = stillInStack ? "Push" : (_pendingOperation ?? "Unknown");
-				_viewModel.LastNavigationParameters = $"DestinationTitle={dest?.Title ?? "<none>"}, Type={navType}, BeforeCount={_preNavStackCount}, AfterCount={afterCount}";
+				var fromParams = $"DestinationTitle={(dest?.Title ?? _pendingDestinationTitle ?? "<none>")}, Type={navType}, BeforeCount={_preNavStackCount}, AfterCount={afterCount}";
+				_viewModel.LastNavigatedFromParameters = fromParams;
+				_viewModel.LastNavigationParameters = fromParams;
 			}
 			catch { }
 			_pendingOperation = null;
@@ -647,12 +743,19 @@ namespace Maui.Controls.Sample
 		private void OnNavigatingFrom(object sender, NavigatingFromEventArgs e)
 		{
 			_viewModel.NavigatingFromCount += 1;
+			_viewModel.NavigatingFromRaised = true;
 			_viewModel.LastNavigationEvent = $"NavigatingFrom: {Title}";
-			_viewModel.LastNavigatingFromEvent = _viewModel.LastNavigationEvent;
+			_viewModel.LastNavigatingFromPage = Title;
 			try
 			{
 				_preNavStackCount = this.Navigation?.NavigationStack?.Count ?? 0;
-				_viewModel.LastNavigationParameters = $"BeforeCount={_preNavStackCount}, Requested={_pendingOperation ?? "<unknown>"}";
+				// Predict destination for Push using the page prepared for navigation
+				string predictedDest = null;
+				if (_pendingOperation == "Push")
+					predictedDest = _pendingDestinationTitle;
+				var preParams = $"BeforeCount={_preNavStackCount}, Requested={_pendingOperation ?? "<unknown>"}, DestinationTitle={predictedDest ?? "<none>"}";
+				_viewModel.LastNavigatingFromParameters = preParams;
+				_viewModel.LastNavigationParameters = preParams;
 			}
 			catch { }
 		}
@@ -663,7 +766,9 @@ namespace Maui.Controls.Sample
 			if (sender is Page p)
 			{
 				_viewModel.NavigatedToCount += 1;
+				_viewModel.NavigatedToRaised = true;
 				_viewModel.LastNavigationEvent = $"NavigatedTo: {p.Title}";
+				_viewModel.LastNavigatedToPage = p.Title;
 				try
 				{
 					var nav = p.Navigation ?? this.Navigation;
@@ -671,7 +776,9 @@ namespace Maui.Controls.Sample
 					string prevTitle = null;
 					if (stack != null && stack.Count >= 2)
 						prevTitle = stack[stack.Count - 2]?.Title;
-					_viewModel.LastNavigationParameters = $"PreviousPageTitle={prevTitle ?? "<none>"}, StackCount={stack?.Count ?? 0}";
+					var toParams = $"PreviousPageTitle={prevTitle ?? "<none>"}, StackCount={stack?.Count ?? 0}";
+					_viewModel.LastNavigatedToParameters = toParams;
+					_viewModel.LastNavigationParameters = toParams;
 				}
 				catch { }
 				UpdateNavigationInfo();
@@ -683,17 +790,27 @@ namespace Maui.Controls.Sample
 			if (sender is Page p)
 			{
 				_viewModel.NavigatedFromCount += 1;
+				_viewModel.NavigatedFromRaised = true;
 				_viewModel.LastNavigationEvent = $"NavigatedFrom: {p.Title}";
-				_viewModel.LastNavigatedFromEvent = _viewModel.LastNavigationEvent;
+				_viewModel.LastNavigatedFromPage = p.Title;
+				_lastPoppedPageTitle = p.Title; // capture for upcoming NavigatedTo
 				try
 				{
 					var nav = p.Navigation ?? this.Navigation;
 					var stack = nav?.NavigationStack;
-					var afterCount = stack?.Count ?? 0;
-					var dest = (afterCount > 0) ? stack[afterCount - 1] : null;
+					var afterStack = stack;
+					if ((afterStack == null || afterStack.Count == 0) && (_pendingOperation == "Pop" || _pendingOperation == "PopToRoot"))
+					{
+						// Use destination navigation stack when sender's nav is detached
+						afterStack = this.Navigation?.NavigationStack;
+					}
+					var afterCount = afterStack?.Count ?? 0;
+					var dest = (afterCount > 0) ? afterStack[afterCount - 1] : null;
 					bool stillInStack = stack?.Contains(p) == true;
 					string navType = stillInStack ? "Push" : (_pendingOperation ?? "Unknown");
-					_viewModel.LastNavigationParameters = $"DestinationTitle={dest?.Title ?? "<none>"}, Type={navType}, BeforeCount={_preNavStackCount}, AfterCount={afterCount}";
+					var fromParams = $"DestinationTitle={(dest?.Title ?? _pendingDestinationTitle ?? "<none>")}, Type={navType}, BeforeCount={_preNavStackCount}, AfterCount={afterCount}";
+					_viewModel.LastNavigatedFromParameters = fromParams;
+					_viewModel.LastNavigationParameters = fromParams;
 				}
 				catch { }
 			}
@@ -704,13 +821,34 @@ namespace Maui.Controls.Sample
 			if (sender is Page p)
 			{
 				_viewModel.NavigatingFromCount += 1;
+				_viewModel.NavigatingFromRaised = true;
 				_viewModel.LastNavigationEvent = $"NavigatingFrom: {p.Title}";
-				_viewModel.LastNavigatingFromEvent = _viewModel.LastNavigationEvent;
+				_viewModel.LastNavigatingFromPage = p.Title;
 				try
 				{
 					var nav = p.Navigation ?? this.Navigation;
 					_preNavStackCount = nav?.NavigationStack?.Count ?? 0;
-					_viewModel.LastNavigationParameters = $"BeforeCount={_preNavStackCount}, Requested={_pendingOperation ?? "<unknown>"}";
+					// Predict destination for Pop/PopToRoot based on current stack
+					string predictedDest = null;
+					if (_pendingOperation == "PopToRoot")
+					{
+						predictedDest = nav?.NavigationStack?.FirstOrDefault()?.Title;
+					}
+					else if (_pendingOperation == "Pop")
+					{
+						var count = nav?.NavigationStack?.Count ?? 0;
+						if (count >= 2)
+							predictedDest = nav.NavigationStack[count - 2]?.Title;
+					}
+					else if (_pendingOperation == "Push")
+					{
+						predictedDest = _pendingDestinationTitle;
+					}
+					_pendingDestinationTitle = predictedDest;
+					_lastPoppedPageTitle = p.Title;
+					var preParams = $"BeforeCount={_preNavStackCount}, Requested={_pendingOperation ?? "<unknown>"}, DestinationTitle={predictedDest ?? "<none>"}";
+					_viewModel.LastNavigatingFromParameters = preParams;
+					_viewModel.LastNavigationParameters = preParams;
 				}
 				catch { }
 			}

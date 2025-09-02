@@ -22,8 +22,17 @@ namespace Maui.Controls.Sample
 		private int _navigatedFromCount;
 		private int _navigatingFromCount;
 		private string _lastNavigationParameters;
-		private string _lastNavigatedFromEvent;
-		private string _lastNavigatingFromEvent;
+		private string _lastNavigatedToParameters;
+		private string _lastNavigatedFromParameters;
+		private string _lastNavigatingFromParameters;
+		// Simplified event status flags
+		private bool _navigatedToRaised;
+		private bool _navigatedFromRaised;
+		private bool _navigatingFromRaised;
+		// Track which page raised each event
+		private string _lastNavigatedToPage;
+		private string _lastNavigatedFromPage;
+		private string _lastNavigatingFromPage;
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
@@ -40,6 +49,51 @@ namespace Maui.Controls.Sample
 			BarBackgroundColor = null;
 			BarTextColor = null;
 #endif
+		}
+
+		/// <summary>
+		/// Reset all bindable test properties and navigation event tracking back to initial defaults.
+		/// This is invoked by the sample "Reset" button so automated UI tests can guarantee a clean state.
+		/// </summary>
+		public void Reset()
+		{
+			// Direct bar properties
+#if ANDROID
+			BarBackgroundColor = Color.FromRgba(33, 150, 243, 255);
+			BarTextColor = Colors.White;
+#elif IOS || MACCATALYST
+			BarBackgroundColor = Color.FromRgba(0, 122, 255, 255);
+			BarTextColor = Colors.White;
+#else
+			BarBackgroundColor = null;
+			BarTextColor = null;
+#endif
+			BarBackground = null;
+
+			// Attached properties / state
+			HasNavigationBar = true;
+			HasBackButton = true;
+			BackButtonTitle = "Back";
+			IconColor = null;
+			TitleIconImageSource = null;
+			TitleView = null;
+			Title = "Sample Page";
+
+			// Navigation event tracking
+			LastNavigationEvent = null;
+			NavigatedToCount = 0;
+			NavigatedFromCount = 0;
+			NavigatingFromCount = 0;
+			LastNavigationParameters = null;
+			LastNavigatedToParameters = null;
+			LastNavigatedFromParameters = null;
+			LastNavigatingFromParameters = null;
+			NavigatedToRaised = false;
+			NavigatedFromRaised = false;
+			NavigatingFromRaised = false;
+			LastNavigatedToPage = null;
+			LastNavigatedFromPage = null;
+			LastNavigatingFromPage = null;
 		}
 
 		public Color BarBackgroundColor
@@ -240,31 +294,132 @@ namespace Maui.Controls.Sample
 			}
 		}
 
-		public string LastNavigatedFromEvent
+		public string LastNavigatedToParameters
 		{
-			get => _lastNavigatedFromEvent;
+			get => _lastNavigatedToParameters;
 			set
 			{
-				if (_lastNavigatedFromEvent != value)
+				if (_lastNavigatedToParameters != value)
 				{
-					_lastNavigatedFromEvent = value;
+					_lastNavigatedToParameters = value;
 					OnPropertyChanged();
 				}
 			}
 		}
 
-		public string LastNavigatingFromEvent
+		public string LastNavigatedFromParameters
 		{
-			get => _lastNavigatingFromEvent;
+			get => _lastNavigatedFromParameters;
 			set
 			{
-				if (_lastNavigatingFromEvent != value)
+				if (_lastNavigatedFromParameters != value)
 				{
-					_lastNavigatingFromEvent = value;
+					_lastNavigatedFromParameters = value;
 					OnPropertyChanged();
 				}
 			}
 		}
+
+		public string LastNavigatingFromParameters
+		{
+			get => _lastNavigatingFromParameters;
+			set
+			{
+				if (_lastNavigatingFromParameters != value)
+				{
+					_lastNavigatingFromParameters = value;
+					OnPropertyChanged();
+				}
+			}
+		}
+
+
+		// Event raised status flags (bind to simple labels)
+		public bool NavigatedToRaised
+		{
+			get => _navigatedToRaised;
+			set
+			{
+				if (_navigatedToRaised != value)
+				{
+					_navigatedToRaised = value;
+					OnPropertyChanged();
+				}
+			}
+		}
+
+		public bool NavigatedFromRaised
+		{
+			get => _navigatedFromRaised;
+			set
+			{
+				if (_navigatedFromRaised != value)
+				{
+					_navigatedFromRaised = value;
+					OnPropertyChanged();
+				}
+			}
+		}
+
+		public bool NavigatingFromRaised
+		{
+			get => _navigatingFromRaised;
+			set
+			{
+				if (_navigatingFromRaised != value)
+				{
+					_navigatingFromRaised = value;
+					OnPropertyChanged();
+				}
+			}
+		}
+
+		// Page names indicating which page raised each event
+		public string LastNavigatedToPage
+		{
+			get => _lastNavigatedToPage;
+			set
+			{
+				if (_lastNavigatedToPage != value)
+				{
+					_lastNavigatedToPage = value;
+					OnPropertyChanged();
+					OnPropertyChanged(nameof(NavigatedToStatusText));
+				}
+			}
+		}
+
+		public string LastNavigatedFromPage
+		{
+			get => _lastNavigatedFromPage;
+			set
+			{
+				if (_lastNavigatedFromPage != value)
+				{
+					_lastNavigatedFromPage = value;
+					OnPropertyChanged();
+					OnPropertyChanged(nameof(NavigatedFromStatusText));
+				}
+			}
+		}
+
+		public string LastNavigatingFromPage
+		{
+			get => _lastNavigatingFromPage;
+			set
+			{
+				if (_lastNavigatingFromPage != value)
+				{
+					_lastNavigatingFromPage = value;
+					OnPropertyChanged();
+					OnPropertyChanged(nameof(NavigatingFromStatusText));
+				}
+			}
+		}
+
+		public string NavigatedToStatusText => _navigatedToRaised && !string.IsNullOrEmpty(_lastNavigatedToPage) ? $"Raised on '{_lastNavigatedToPage}'" : "Not yet";
+		public string NavigatedFromStatusText => _navigatedFromRaised && !string.IsNullOrEmpty(_lastNavigatedFromPage) ? $"Raised on '{_lastNavigatedFromPage}'" : "Not yet";
+		public string NavigatingFromStatusText => _navigatingFromRaised && !string.IsNullOrEmpty(_lastNavigatingFromPage) ? $"Raised on '{_lastNavigatingFromPage}'" : "Not yet";
 
 		public string EventCountsText => $"Counts: To={_navigatedToCount}, From={_navigatedFromCount}, PreFrom={_navigatingFromCount}";
 
