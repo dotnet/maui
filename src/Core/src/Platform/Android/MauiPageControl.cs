@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Platform
 
 				imageView.SetOnClickListener(new TEditClickListener(view =>
 				{
-					if (view?.Tag != null && _indicatorView.IsEnabled)
+					if (_indicatorView.IsEnabled && view?.Tag != null)
 					{
 						var position = (int)view.Tag;
 						_indicatorView.Position = position;
