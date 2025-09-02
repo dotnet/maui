@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using System.Collections;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
-using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
@@ -175,9 +175,24 @@ namespace Microsoft.Maui.Controls
 			if (_indicatorView.ItemsSource == null || _indicatorView.MaximumVisible <= 0)
 				return null;
 
-			// Filter the items based on MaximumVisible
-			var items = _indicatorView.ItemsSource.Cast<object>();
-			return items.Take(_indicatorView.MaximumVisible);
+			var list = new List<object>();
+			int count = 0;
+
+			// Explicitly enumerate the source collection
+			foreach (var item in _indicatorView.ItemsSource)
+			{
+				if (count < _indicatorView.MaximumVisible)
+				{
+					list.Add(item);
+					count++;
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			return list;
 		}
 
 		public void Remove()
