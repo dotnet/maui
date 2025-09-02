@@ -70,6 +70,7 @@ namespace Microsoft.Maui.Handlers
 				CompleteRefresh();
 			else if (_refreshCompletionDeferral == null)
 			{
+				isProgrammaticRefresh = true;
 				PlatformView?.RequestRefresh();
 			}
 		}
