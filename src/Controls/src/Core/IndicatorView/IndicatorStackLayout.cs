@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls
 		
 		IEnumerable? GetFilteredItemsSource()
 		{
-			if (_indicatorView.ItemsSource == null || _indicatorView.MaximumVisible <= 0)
+			if (_indicatorView.ItemsSource is null || _indicatorView.MaximumVisible <= 0)
 				return null;
 
 			var list = new List<object>();
