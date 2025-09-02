@@ -7,9 +7,9 @@ using static Microsoft.Maui.Controls.SourceGen.LocationHelpers;
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
 /// <summary>
-/// Base class for type converters providing common functionality.
+/// Base class for source generator type converters.
 /// </summary>
-internal abstract class BaseTypeConverter : ITypeConverter
+internal abstract class BaseTypeConverter : ISGTypeConverter
 {
 	public abstract string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null);
 	public abstract IEnumerable<string> SupportedTypes { get; }
