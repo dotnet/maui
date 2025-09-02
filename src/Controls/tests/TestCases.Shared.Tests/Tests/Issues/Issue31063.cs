@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS // IndicatorView UI automation not working on Windows
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,3 +22,4 @@ public class Issue31063 : _IssuesUITest
 		App.WaitForElement("Item 1");
 	}
 }
+#endif
