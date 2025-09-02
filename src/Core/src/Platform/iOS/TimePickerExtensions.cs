@@ -37,7 +37,8 @@ namespace Microsoft.Maui.Platform
 		{
 			picker?.UpdateTime(timePicker);
 
-			var cultureInfo = Culture.CurrentCulture;
+			// CultureInfo to prevent AM/PM localization issues in 12-hour format
+			var cultureInfo = CultureInfo.CurrentCulture;
 
 			if (string.IsNullOrEmpty(timePicker.Format))
 			{
@@ -77,7 +78,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextAlignment(this MauiTimePicker textField, ITimePicker timePicker)
 		{
-			// TODO: Update TextAlignment based on the EffectiveFlowDirection property.
+			UISemanticContentAttribute updateValue = textField.SemanticContentAttribute;
+
+			textField.TextAlignment = (updateValue == UISemanticContentAttribute.ForceRightToLeft) ? UITextAlignment.Right : UITextAlignment.Left;
 		}
 	}
 }
