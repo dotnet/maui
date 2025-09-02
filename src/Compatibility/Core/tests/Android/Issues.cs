@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 
 				if (m == 1)
 				{
-					GC.Collect();
+					GC.Collect(2);
 				}
 
 				model.Text = model.Text == text1 ? text2 : text1;
