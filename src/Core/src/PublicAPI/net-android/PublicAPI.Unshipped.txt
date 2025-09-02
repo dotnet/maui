@@ -84,6 +84,8 @@ Microsoft.Maui.Platform.StackNavigationManager.NavGraph.get -> AndroidX.Navigati
 Microsoft.Maui.Platform.StackNavigationManager.NavHost.get -> AndroidX.Navigation.Fragment.NavHostFragment!
 Microsoft.Maui.Platform.StackNavigationManager.SetNavigationViewFragmentType(System.Type! type) -> void
 Microsoft.Maui.Platform.StackNavigationManager.ToolbarElement.get -> Microsoft.Maui.IToolbarElement?
+Microsoft.Maui.Platform.ContentViewGroup.InvalidateSafeArea() -> void
+Microsoft.Maui.Platform.LayoutViewGroup.InvalidateSafeArea() -> void
 *REMOVED*Microsoft.Maui.PlatformWrapperView.SetHasShadow(bool hasShadow) -> void
 Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.SafeAreaEdges.Bottom.get -> Microsoft.Maui.SafeAreaRegions
