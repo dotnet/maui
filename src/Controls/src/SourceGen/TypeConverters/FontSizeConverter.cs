@@ -9,11 +9,11 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class FontSizeConverter : BaseTypeConverter
+internal class FontSizeConverter : ISGTypeConverter
 {
-	public override IEnumerable<string> SupportedTypes => new[] { "FontSize", "double", "System.Double" };
+	public IEnumerable<string> SupportedTypes => new[] { "FontSize", "double", "System.Double" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -33,7 +33,7 @@ internal class FontSizeConverter : BaseTypeConverter
 			}
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+		context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);
 		return "default";
 	}
 }

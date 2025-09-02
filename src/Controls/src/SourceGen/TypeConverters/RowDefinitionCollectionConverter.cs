@@ -5,11 +5,11 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class RowDefinitionCollectionConverter : BaseTypeConverter
+internal class RowDefinitionCollectionConverter : ISGTypeConverter
 {
-	public override IEnumerable<string> SupportedTypes => new[] { "RowDefinitionCollection", "Microsoft.Maui.Controls.RowDefinitionCollection" };
+	public IEnumerable<string> SupportedTypes => new[] { "RowDefinitionCollection", "Microsoft.Maui.Controls.RowDefinitionCollection" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -27,7 +27,7 @@ internal class RowDefinitionCollectionConverter : BaseTypeConverter
 			return $"new global::Microsoft.Maui.Controls.RowDefinitionCollection([{string.Join(", ", rowDefinitions)}])";
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, Descriptors.RowDefinitionCollectionConversionFailed);
+		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.RowDefinitionCollectionConversionFailed);
 		return "default";
 	}
 }

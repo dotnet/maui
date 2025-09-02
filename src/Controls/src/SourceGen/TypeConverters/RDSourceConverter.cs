@@ -8,11 +8,11 @@ using static Microsoft.Maui.Controls.SourceGen.LocationHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class RDSourceConverter : BaseTypeConverter
+internal class RDSourceConverter : ISGTypeConverter
 {
-	public override IEnumerable<string> SupportedTypes => new[] { "ResourceDictionary", "Microsoft.Maui.Controls.ResourceDictionary", "System.Uri" };
+	public IEnumerable<string> SupportedTypes => new[] { "ResourceDictionary", "Microsoft.Maui.Controls.ResourceDictionary", "System.Uri" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		if (parentVar == null) //should never happen
 			throw new ArgumentException("parentVar is null");

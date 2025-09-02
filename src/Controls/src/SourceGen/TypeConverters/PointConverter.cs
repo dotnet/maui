@@ -7,11 +7,11 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class PointConverter : BaseTypeConverter
+internal class PointConverter : ISGTypeConverter
 {
-	public override IEnumerable<string> SupportedTypes => new[] { "Point", "Microsoft.Maui.Graphics.Point" };
+	public IEnumerable<string> SupportedTypes => new[] { "Point", "Microsoft.Maui.Graphics.Point" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
@@ -25,7 +25,7 @@ internal class PointConverter : BaseTypeConverter
 			}
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, Descriptors.PointConversionFailed);
+		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.PointConversionFailed);
 		return "default";
 	}
 }

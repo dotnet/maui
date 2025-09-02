@@ -7,11 +7,11 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class ListStringConverter : BaseTypeConverter
+internal class ListStringConverter : ISGTypeConverter
 {
-	public override IEnumerable<string> SupportedTypes => new[] { "List<string>", "System.Collections.Generic.List<string>", "System.Collections.Generic.IList`1[System.String]", "IList<string>" };
+	public IEnumerable<string> SupportedTypes => new[] { "List<string>", "System.Collections.Generic.List<string>", "System.Collections.Generic.IList`1[System.String]", "IList<string>" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -21,7 +21,7 @@ internal class ListStringConverter : BaseTypeConverter
 			return $"new global::System.Collections.Generic.List<string> {{ {string.Join(", ", value.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(v => $"\"{v.Trim()}\""))} }}";
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, Descriptors.ListStringConversionFailed);
+		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.ListStringConversionFailed);
 		return "default";
 	}
 }

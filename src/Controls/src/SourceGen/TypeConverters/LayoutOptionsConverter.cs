@@ -6,11 +6,11 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class LayoutOptionsConverter : BaseTypeConverter
+internal class LayoutOptionsConverter : ISGTypeConverter
 {
-	public override IEnumerable<string> SupportedTypes => new[] { "LayoutOptions", "Microsoft.Maui.Controls.LayoutOptions" };
+	public IEnumerable<string> SupportedTypes => new[] { "LayoutOptions", "Microsoft.Maui.Controls.LayoutOptions" };
 
-	public override string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -20,7 +20,7 @@ internal class LayoutOptionsConverter : BaseTypeConverter
 			var parts = value.Split(['.']);
 			if (parts.Length > 2 || (parts.Length == 2 && parts[0] != "LayoutOptions"))
 			{
-				ReportConversionFailed(context, xmlLineInfo, value, Descriptors.LayoutOptionsConversionFailed);
+				context.ReportConversionFailed( xmlLineInfo, value, Descriptors.LayoutOptionsConversionFailed);
 				return "default";
 			}
 
@@ -45,7 +45,7 @@ internal class LayoutOptionsConverter : BaseTypeConverter
 			}
 		}
 
-		ReportConversionFailed(context, xmlLineInfo, value, Descriptors.LayoutOptionsConversionFailed);
+		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.LayoutOptionsConversionFailed);
 		return "default";
 	}
 }
