@@ -146,6 +146,7 @@ We will only be testing with the latest nightly build MAUI controls package. Add
 
 - **Windows:** `%AppData%\NuGet\NuGet.config` (e.g., `C:\Users\<username>\AppData\Roaming\NuGet\NuGet.config`)
 - **macOS/Linux:** `~/.nuget/NuGet/NuGet.config`
+
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
