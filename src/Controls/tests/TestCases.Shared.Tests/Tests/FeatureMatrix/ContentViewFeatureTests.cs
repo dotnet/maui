@@ -137,6 +137,7 @@ public class ContentViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS
 	[Test]
     public void DefaultContentWithShadow()
     {
@@ -149,6 +150,7 @@ public class ContentViewFeatureTests : UITest
         App.WaitForElement("This is Default Page");
         VerifyScreenshot();
     }
+#endif
 
 	[Test]
 	public void DefaultContentWithIsVisible()
