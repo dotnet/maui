@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 {
 	public string Configuration
-		=> Options.GetValueOrDefault("build_metadata.additionalfiles.Configuration", "Debug");
+		=> Options.GetValueOrDefault("build_property.Configuration", "Debug");
 
 	public bool EnableLineInfo
 	{
@@ -63,7 +63,7 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 		=> Options.GetValueOrNull("build_metadata.additionalfiles.RelativePath");
 
 	public string? TargetFramework
-		=> Options.GetValueOrNull("build_metadata.additionalfiles.targetFramework");
+		=> Options.GetValueOrNull("build_property.targetFramework");
 
 	public string? TargetPath
 		=> Options.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", AdditionalText.Path);

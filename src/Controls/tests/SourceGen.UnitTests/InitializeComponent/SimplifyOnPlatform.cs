@@ -68,6 +68,13 @@ public partial class TestPage
 		var setter1 = new global::Microsoft.Maui.Controls.Setter();
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 14);
 		var xamlServiceProvider = new global::Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider(this);
+		var iProvideValueTarget = new global::Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider(
+			new object?[] {null},
+			null,
+			null,
+			this);
+		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IReferenceProvider), iProvideValueTarget);
+		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IProvideValueTarget), iProvideValueTarget);
 		var xmlNamespaceResolver = new global::Microsoft.Maui.Controls.Xaml.Internals.XmlNamespaceResolver();
 		xmlNamespaceResolver.Add("__f__", "http://schemas.microsoft.com/dotnet/2021/maui");
 		xmlNamespaceResolver.Add("__g__", "http://schemas.microsoft.com/dotnet/maui/global");
@@ -92,17 +99,17 @@ public partial class TestPage
 #endif
 #line 8 "Test.xaml"
 		var xamlServiceProvider1 = new global::Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider(this);
-		var iProvideValueTarget = new global::Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider(
-			new object[] {setter, style1, __root},
+		var iProvideValueTarget1 = new global::Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider(
+			new object?[] {setter, style1, __root},
 			typeof(global::Microsoft.Maui.Controls.Setter).GetProperty("Property"),
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 			new [] { iNameScope1 },
 #else
 			null,
 #endif
-			false);
-		xamlServiceProvider1.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IReferenceProvider), iProvideValueTarget);
-		xamlServiceProvider1.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IProvideValueTarget), iProvideValueTarget);
+			this);
+		xamlServiceProvider1.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IReferenceProvider), iProvideValueTarget1);
+		xamlServiceProvider1.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IProvideValueTarget), iProvideValueTarget1);
 		var xmlNamespaceResolver1 = new global::Microsoft.Maui.Controls.Xaml.Internals.XmlNamespaceResolver();
 		xmlNamespaceResolver1.Add("__f__", "http://schemas.microsoft.com/dotnet/2021/maui");
 		xmlNamespaceResolver1.Add("__g__", "http://schemas.microsoft.com/dotnet/maui/global");
@@ -122,17 +129,17 @@ public partial class TestPage
 #line default
 #line 9 "Test.xaml"
 		var xamlServiceProvider2 = new global::Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider(this);
-		var iProvideValueTarget1 = new global::Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider(
-			new object[] {setter1, style1, __root},
+		var iProvideValueTarget2 = new global::Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider(
+			new object?[] {setter1, style1, __root},
 			typeof(global::Microsoft.Maui.Controls.Setter).GetProperty("Property"),
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 			new [] { iNameScope2 },
 #else
 			null,
 #endif
-			false);
-		xamlServiceProvider2.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IReferenceProvider), iProvideValueTarget1);
-		xamlServiceProvider2.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IProvideValueTarget), iProvideValueTarget1);
+			this);
+		xamlServiceProvider2.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IReferenceProvider), iProvideValueTarget2);
+		xamlServiceProvider2.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IProvideValueTarget), iProvideValueTarget2);
 		var xmlNamespaceResolver2 = new global::Microsoft.Maui.Controls.Xaml.Internals.XmlNamespaceResolver();
 		xmlNamespaceResolver2.Add("__f__", "http://schemas.microsoft.com/dotnet/2021/maui");
 		xmlNamespaceResolver2.Add("__g__", "http://schemas.microsoft.com/dotnet/maui/global");
