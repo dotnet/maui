@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		bool _isLoaded;
 		Deferral? _refreshCompletionDeferral;
+		bool isProgrammaticRefresh;
 
 		protected override RefreshContainer CreatePlatformView()
 		{
@@ -68,7 +69,9 @@ namespace Microsoft.Maui.Handlers
 			if (!VirtualView?.IsRefreshing ?? false)
 				CompleteRefresh();
 			else if (_refreshCompletionDeferral == null)
+			{
 				PlatformView?.RequestRefresh();
+			}
 		}
 
 		static void UpdateContent(IRefreshViewHandler handler)
@@ -141,6 +144,12 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView != null)
 				VirtualView.IsRefreshing = true;
+			{
+				if (!isProgrammaticRefresh)
+					VirtualView.IsRefreshing = true;
+
+				isProgrammaticRefresh = false;
+			}
 		}
 
 		void CompleteRefresh()
