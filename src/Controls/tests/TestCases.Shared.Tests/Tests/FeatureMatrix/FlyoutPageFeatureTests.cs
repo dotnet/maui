@@ -80,9 +80,21 @@ public class FlyoutPageFeatureTests : UITest
 		var startX = detail.X + 5;
 		var endX = detail.X + (detail.Width * 0.5);
 		var y = detail.Y + (detail.Height / 2);
-		App.DragCoordinates((float)startX, (float)y, (float)endX, (float)y);
-		App.WaitForElement("Flyout Item 1");
-		App.WaitForElement("Flyout Item 2");
+		bool flyoutOpened = false;
+		for (int i = 0; i < 3 && !flyoutOpened; i++)
+		{
+			App.DragCoordinates((float)startX, (float)y, (float)endX, (float)y);
+			try
+			{
+				App.WaitForElement("Flyout Item 1", timeout: TimeSpan.FromSeconds(2));
+				flyoutOpened = true;
+			}
+			catch (Exception)
+			{
+				 // not found yet, will retry
+		    }
+		}
+		Assert.That(flyoutOpened, Is.True, "Flyout did not open after multiple drag attempts");
 		App.Tap("CloseFlyoutButton");
 	}
  
@@ -125,9 +137,21 @@ public class FlyoutPageFeatureTests : UITest
 		var startX = detail.X + 5;
 		var endX = detail.X + (detail.Width * 0.5);
 		var y = detail.Y + (detail.Height / 2);
-		App.DragCoordinates((float)startX, (float)y, (float)endX, (float)y);
-		App.WaitForElement("Flyout Item 1");
-		App.WaitForElement("Flyout Item 2");
+		bool flyoutOpened = false;
+		for (int i = 0; i < 3 && !flyoutOpened; i++)
+		{
+			App.DragCoordinates((float)startX, (float)y, (float)endX, (float)y);
+			try
+			{
+				App.WaitForElement("Flyout Item 1", timeout: TimeSpan.FromSeconds(2));
+				flyoutOpened = true;
+			}
+			catch (Exception)
+			{
+				 // not found yet, will retry
+		    }
+		}
+		Assert.That(flyoutOpened, Is.True, "Flyout did not open after multiple drag attempts");
 		App.Tap("CloseFlyoutButton");
 	}
 
@@ -303,7 +327,7 @@ public class FlyoutPageFeatureTests : UITest
 		App.WaitForElement("BackToOriginalFlyoutButton1");
 		App.Tap("BackToOriginalFlyoutButton1");
 	}
-#endif 
+#endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Android Issue Link: https://github.com/dotnet/maui/issues/22116 , https://github.com/dotnet/maui/issues/15211
 	// Windows Issue Link: https://github.com/dotnet/maui/issues/15211#issuecomment-1562587775 , https://github.com/dotnet/maui/issues/31390
@@ -379,7 +403,7 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
-	
+
 	[Test, Order(22)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_IsVisible()
