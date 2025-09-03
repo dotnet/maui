@@ -95,16 +95,7 @@ public static class DatePickerExtensions
 			}
 			else
 			{
-				// Use a custom date format
-				dateFormatter.DateStyle = NSDateFormatterStyle.Short;
-				var templateFormat = dateFormatter.DateFormat;
-				
-				if (!string.IsNullOrEmpty(templateFormat))
-				{
-					templateFormat = Regex.Replace(templateFormat, @"(?<!y)yy(?!y)", "yyyy");
-					dateFormatter.DateFormat = templateFormat;
-				}
-				
+				dateFormatter.SetLocalizedDateFormatFromTemplate("yMd"); // forces 4-digit year
 				var strDate = dateFormatter.StringFor(picker.Date);
 				platformDatePicker.Text = strDate;
 			}
