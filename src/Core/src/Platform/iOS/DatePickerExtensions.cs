@@ -95,7 +95,7 @@ public static class DatePickerExtensions
 			}
 			else
 			{
-				dateFormatter.SetLocalizedDateFormatFromTemplate("yMd"); // forces 4-digit year
+				dateFormatter.SetLocalizedDateFormatFromTemplate("yMd"); // Forces 4-digit year
 				var strDate = dateFormatter.StringFor(picker.Date);
 				platformDatePicker.Text = strDate;
 			}
