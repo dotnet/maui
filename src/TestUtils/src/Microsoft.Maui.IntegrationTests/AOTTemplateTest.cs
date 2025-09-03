@@ -92,8 +92,8 @@ public class AOTTemplateTest : BaseTemplateTests
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
-		var expectedWarnings = isWindowsFramework && BuildWarningsUtilities.ExpectedNativeAOTWarningsWindows != null
-			? BuildWarningsUtilities.ExpectedNativeAOTWarningsWindows
+		var expectedWarnings = isWindowsFramework && BuildWarningsUtilities.ExpectedNativeAOTWarningsWindows != null 
+			? BuildWarningsUtilities.ExpectedNativeAOTWarningsWindows 
 			: BuildWarningsUtilities.ExpectedNativeAOTWarnings;
 		actualWarnings.AssertWarnings(expectedWarnings);
 	}
