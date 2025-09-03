@@ -153,27 +153,11 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			{
 				Writer.WriteLine($"{parentVar.Name}.Add({Context.Variables[node].Name});");
 			}
-
-			//     Context.IL.Append(SetPropertyValue(Context.Variables[(IElementNode)parentNode], name, node, Context, node));
-			// }
-			// // Collection element, implicit content, or implicit collection element.
-			// else if (parentVar.VariableType.ImplementsInterface(Context.Cache, Module.ImportReference(Context.Cache, ("mscorlib", "System.Collections", "IEnumerable")))
-			//             && parentVar.VariableType.GetMethods(Context.Cache, md => md.Name == "Add" && md.Parameters.Count == 1, Module).Any())
-			// {
-			//     var elementType = parentVar.VariableType;
-			//     var adderTuple = elementType.GetMethods(Context.Cache, md => md.Name == "Add" && md.Parameters.Count == 1, Module).First();
-			//     var adderRef = Module.ImportReference(adderTuple.Item1);
-			//     adderRef = Module.ImportReference(adderRef.ResolveGenericParameters(adderTuple.Item2, Module));
-
-			//     Context.IL.Emit(Ldloc, parentVar);
-			//     Context.IL.Append(vardef.LoadAs(Context.Cache, adderRef.Parameters[0].ParameterType.ResolveGenericParameters(adderRef), Module));
-			//     Context.IL.Emit(Callvirt, adderRef);
-			//     if (adderRef.ReturnType.FullName != "System.Void")
-			//         Context.IL.Emit(Pop);
-			// }
-
-			// else
-			//     throw new BuildException(BuildExceptionCode.ContentPropertyAttributeMissing, node, null, ((IElementNode)parentNode).XmlType.Name);
+			else
+			{
+				var location = LocationCreate(Context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ((IElementNode)parentNode).XmlType.Name);
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, $"Cannot set the content of {((IElementNode)parentNode).XmlType.Name} as it doesn't have a ContentPropertyAttribute"));
+			}
 		}
 		else if (parentNode.IsCollectionItem(node) && parentNode is ListNode parentList)
 		{
