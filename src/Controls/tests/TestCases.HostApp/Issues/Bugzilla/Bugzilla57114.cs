@@ -119,7 +119,7 @@ namespace Maui.Controls.Sample.Issues
 		private void OnTouch(object sender, Android.Views.View.TouchEventArgs e)
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
-            MessagingCenter.Instance.Send(this as object, Bugzilla57114._57114NativeGestureFiredMessage);
+			MessagingCenter.Instance.Send(this as object, Bugzilla57114._57114NativeGestureFiredMessage);
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}

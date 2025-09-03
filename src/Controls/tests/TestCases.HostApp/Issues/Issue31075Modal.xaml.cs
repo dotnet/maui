@@ -16,10 +16,10 @@ namespace Maui.Controls.Sample.Issues
 			try
 			{
 				ResultLabel.Text = "Testing photo capture...";
-				
+
 				// Test the MediaPicker that was previously causing modal dismissal
 				var result = await MediaPicker.CapturePhotoAsync();
-				
+
 				if (result != null)
 				{
 					ResultLabel.Text = "Photo captured successfully!";
@@ -40,10 +40,10 @@ namespace Maui.Controls.Sample.Issues
 			try
 			{
 				ResultLabel.Text = "Testing video capture...";
-				
+
 				// Test the MediaPicker that was previously causing modal dismissal
 				var result = await MediaPicker.CaptureVideoAsync();
-				
+
 				if (result != null)
 				{
 					ResultLabel.Text = "Video captured successfully!";

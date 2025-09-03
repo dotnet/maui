@@ -33,7 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			{
 				// Wait a moment for any permission dialogs
 				System.Threading.Thread.Sleep(2000);
-				
+
 				// Try to dismiss any system dialogs (camera permission, camera UI, etc.)
 				// The exact behavior will depend on the iOS simulator/device state
 				// Since we can't easily test the actual camera in UI tests, 
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// Clean up by closing the modal properly
 			App.Tap("CloseModalButton");
-			
+
 			// Verify we're back to the main page
 			App.WaitForElement("OpenModalButton");
 		}
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// Clean up by closing the modal properly
 			App.Tap("CloseModalButton");
-			
+
 			// Verify we're back to the main page
 			App.WaitForElement("OpenModalButton");
 		}

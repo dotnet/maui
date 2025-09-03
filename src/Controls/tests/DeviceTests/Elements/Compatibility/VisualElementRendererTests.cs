@@ -26,7 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 #if ANDROID
 			public LegacyComponentRenderer(Android.Content.Context context) : base(context)
 			{
-				
+
 			}
 #endif
 		}
