@@ -1,4 +1,3 @@
-#nullable disable
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 
@@ -135,7 +134,7 @@ public sealed class DisplayRotationStateTrigger : StateTriggerBase
 		DeviceDisplay.MainDisplayInfoChanged -= OnInfoPropertyChanged;
 	}
 
-	void OnInfoPropertyChanged(object sender, DisplayInfoChangedEventArgs e) =>
+	void OnInfoPropertyChanged(object? sender, DisplayInfoChangedEventArgs e) =>
 		UpdateState();
 
 	void UpdateState()
