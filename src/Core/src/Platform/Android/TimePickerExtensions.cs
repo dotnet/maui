@@ -1,4 +1,5 @@
-﻿using Android.Content.Res;
+﻿using System;
+using Android.Content.Res;
 
 namespace Microsoft.Maui.Platform
 {
@@ -22,14 +23,23 @@ namespace Microsoft.Maui.Platform
 			mauiTimePicker.Text = time.ToFormattedString(format);
 		}
 
+		// Make it public in Net10
 		internal static void UpdateTextColor(this MauiTimePicker platformTimePicker, ITimePicker timePicker)
 		{
 			var textColor = timePicker.TextColor;
 
-			if (textColor != null)
+			if (textColor is not null && PlatformInterop.CreateEditTextColorStateList(platformTimePicker.TextColors, textColor.ToPlatform()) is ColorStateList c)
 			{
-				if (PlatformInterop.CreateEditTextColorStateList(platformTimePicker.TextColors, textColor.ToPlatform()) is ColorStateList c)
-					platformTimePicker.SetTextColor(c);
+				platformTimePicker.SetTextColor(c);
+			}
+			else if (OperatingSystem.IsAndroidVersionAtLeast(23) && platformTimePicker.Context?.Theme is Resources.Theme theme)
+			{
+				// Restore to default (theme primary text color) instead of passing null
+				using var ta = theme.ObtainStyledAttributes([Android.Resource.Attribute.TextColorPrimary]);
+				if (ta.GetColorStateList(0) is ColorStateList cs)
+				{
+					platformTimePicker.SetTextColor(cs);
+				}
 			}
 		}
 	}
