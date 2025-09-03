@@ -51,7 +51,7 @@ public class Issue31361 : ContentPage
 
 		carouselView.Scrolled += (s, e) =>
 		{
-			if (e.VerticalDelta < 0)
+			if (e.VerticalDelta != 0)
 			{
 				contentLabel.Text = "The content is scrollable";
 			}
