@@ -1,32 +1,23 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+using AbsoluteLayout = Compatibility.AbsoluteLayout;
+
+public partial class Gh11551 : ContentPage
 {
-	using AbsoluteLayout = Microsoft.Maui.Controls.Compatibility.AbsoluteLayout;
+	public Gh11551() => InitializeComponent();
 
-	public partial class Gh11551 : ContentPage
+	[TestFixture]
+	class Tests
 	{
-		public Gh11551() => InitializeComponent();
-		public Gh11551(bool useCompiledXaml)
+		[Test]
+		public void RectBoundsDoesntThrow([Values] XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[Test]
-			public void RectBoundsDoesntThrow([Values(false, true)] bool useCompiledXaml)
-			{
-				var layout = new Gh11551(useCompiledXaml);
-				var bounds = AbsoluteLayout.GetLayoutBounds(layout.label);
-				Assert.That(bounds, Is.EqualTo(new Rect(1, .5, -1, 22)));
-			}
+			var layout = new Gh11551(inflator);
+			var bounds = AbsoluteLayout.GetLayoutBounds(layout.label);
+			Assert.That(bounds, Is.EqualTo(new Rect(1, .5, -1, 22)));
 		}
 	}
 }

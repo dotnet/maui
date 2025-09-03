@@ -12,22 +12,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz28719(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		[TestFixture]
 		class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[TestCase(true)]
-			[TestCase(false)]
-			public void DataTriggerInTemplates(bool useCompiledXaml)
+			[Test]
+			public void DataTriggerInTemplates([Values] XamlInflator inflator)
 			{
-				var layout = new Bz28719(useCompiledXaml);
+				var layout = new Bz28719(inflator);
 				var template = layout.listView.ItemTemplate;
 				Assert.NotNull(template);
 				var cell0 = template.CreateContent() as ViewCell;

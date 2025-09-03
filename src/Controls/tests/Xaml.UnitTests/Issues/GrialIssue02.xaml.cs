@@ -1,65 +1,54 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.Maui.Controls;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class GrialIssue02Converter : IValueConverter
 {
-	public class GrialIssue02Converter : IValueConverter
+	public object FalseValue
 	{
-		public object FalseValue
-		{
-			get;
-			set;
-		}
-
-		public object TrueValue
-		{
-			get;
-			set;
-		}
-
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			if (!(value is bool))
-			{
-				return null;
-			}
-			bool flag = (bool)value;
-			return (!flag) ? FalseValue : TrueValue;
-		}
-
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			throw new NotImplementedException();
-		}
+		get;
+		set;
 	}
 
-	public partial class GrialIssue02 : ContentPage
+	public object TrueValue
 	{
-		public GrialIssue02()
-		{
-			InitializeComponent();
-		}
-		public GrialIssue02(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+		get;
+		set;
+	}
 
-		[TestFixture]
-		class Tests
+	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		if (value is not bool)
 		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void BoxValueTypes(bool useCompiledXaml)
-			{
-				var layout = new GrialIssue02(useCompiledXaml);
-				var res = (GrialIssue02Converter)layout.Resources["converter"];
+			return null;
+		}
+		bool flag = (bool)value;
+		return (!flag) ? FalseValue : TrueValue;
+	}
 
-				Assert.AreEqual(FontAttributes.None, res.TrueValue);
-				Assert.AreEqual(FontAttributes.Bold, res.FalseValue);
-			}
+	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		throw new NotImplementedException();
+	}
+}
+
+public partial class GrialIssue02 : ContentPage
+{
+	public GrialIssue02() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
+	{
+		[Test]
+		public void BoxValueTypes([Values] XamlInflator inflator)
+		{
+			var layout = new GrialIssue02(inflator);
+			var res = (GrialIssue02Converter)layout.Resources["converter"];
+
+			Assert.AreEqual(FontAttributes.None, res.TrueValue);
+			Assert.AreEqual(FontAttributes.Bold, res.FalseValue);
 		}
 	}
 }

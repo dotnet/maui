@@ -14,6 +14,12 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Page))]
 	public partial class Window : NavigableElement, IWindow, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
 	{
+		static readonly BindablePropertyKey IsActivatedPropertyKey = 
+			BindableProperty.CreateReadOnly(nameof(IsActivated), typeof(bool), typeof(Window), false, propertyChanged: OnIsActivatedPropertyChanged);
+
+		/// <summary>Bindable property for <see cref="IsActivated"/>.</summary>
+		public static readonly BindableProperty IsActivatedProperty = IsActivatedPropertyKey.BindableProperty;
+
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
@@ -76,7 +82,6 @@ namespace Microsoft.Maui.Controls
 		List<IVisualTreeElement> _visualChildren;
 		Toolbar? _toolbar;
 		MenuBarTracker _menuBarTracker;
-		bool _isActivated;
 
 		IToolbar? IToolbarElement.Toolbar => Toolbar;
 		internal Toolbar? Toolbar
@@ -115,6 +120,12 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (string?)GetValue(TitleProperty);
 			set => SetValue(TitleProperty, value);
+		}
+
+		public bool IsActivated
+		{
+			get => (bool)GetValue(IsActivatedProperty);
+			private set => SetValue(IsActivatedPropertyKey, value);
 		}
 
 		string? ITitledElement.Title => Title ?? (Page as Shell)?.Title;
@@ -323,24 +334,6 @@ namespace Microsoft.Maui.Controls
 
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
-
-		internal bool IsActivated
-		{
-			get
-			{
-				return _isActivated;
-			}
-			private set
-			{
-				if (_isActivated == value)
-					return;
-
-				_isActivated = value;
-
-				if (value)
-					SendWindowAppearing();
-			}
-		}
 
 		internal bool IsDestroyed { get; private set; }
 		internal bool IsCreated { get; private set; }
@@ -552,7 +545,12 @@ namespace Microsoft.Maui.Controls
 
 			AlertManager.Unsubscribe();
 			Application?.RemoveWindow(this);
+			
+			var mauiContext = Handler?.MauiContext as MauiContext;
 			Handler?.DisconnectHandler();
+
+			// Dispose the window-scoped service scope
+			mauiContext?.DisposeWindowScope();
 		}
 
 		void IWindow.Resumed()
@@ -632,6 +630,15 @@ namespace Microsoft.Maui.Controls
 		{
 			if (oldValue is Page oldPage)
 				oldPage.SendDisappearing();
+		}
+
+		static void OnIsActivatedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var window = (Window)bindable;
+			if ((bool)newValue)
+			{
+				window.SendWindowAppearing();
+			}
 		}
 
 		void OnPageChanged(Page? oldPage, Page? newPage)

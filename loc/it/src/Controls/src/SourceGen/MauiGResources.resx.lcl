@@ -10,11 +10,29 @@
     <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
     <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
       <Disp Icon="Str" Disp="true" LocTbl="false" />
+      <Item ItemId=";AmbiguousTypeMessage" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Multiple names found in the current xml namespace. use a more specific prefix.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sono stati trovati più nomi nello spazio dei nomi XML corrente. Usare un prefisso più specifico.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";AmbiguousTypeTitle" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Ambiguous Type]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Tipo ambiguo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";XamlParsingErrorMessage" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[An error occured while parsing Xaml: {0}.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Si è verificato un errore durante l'analisi di XAML: {0}.]]></Val>
+            <Val><![CDATA[Errore durante l'analisi di XAML: {0}.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -23,7 +41,7 @@
         <Str Cat="Text">
           <Val><![CDATA[XAML parsing failed]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[L'analisi XAML non è riuscita]]></Val>
+            <Val><![CDATA[Analisi XAML non riuscita]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

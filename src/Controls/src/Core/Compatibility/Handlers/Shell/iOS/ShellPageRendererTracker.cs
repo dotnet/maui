@@ -7,6 +7,7 @@ using System.Runtime.Versioning;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics.Platform;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions;
@@ -460,9 +461,31 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UIImage? icon = null;
 
-				if (image != null)
+				if (image is not null)
 				{
 					icon = result?.Value;
+					var originalImageSize = icon?.Size ?? CGSize.Empty;
+
+					// The largest height you can use for navigation bar icons in iOS.
+					// Per Apple's Human Interface Guidelines, the navigation bar height is 44 points,
+					// so using the full height ensures maximum visual clarity and maintains consistency
+					// with iOS design standards. This allows icons to utilize the entire available
+					// vertical space within the navigation bar container.
+					var defaultIconHeight = 44f;
+					var buffer = 0.1;
+					// We only check height because the navigation bar constrains vertical space (44pt height),
+					// but allows horizontal flexibility. Width can vary based on icon design and content,
+					// while height must fit within the fixed navigation bar bounds to avoid clipping.
+					
+					// if the image is bigger than the default available size, resize it
+
+					if (icon is not null && originalImageSize.Height - defaultIconHeight > buffer)
+					{
+						if (image is not FontImageSource fontImageSource || !fontImageSource.IsSet(FontImageSource.SizeProperty))
+						{
+							icon = icon.ResizeImageSource(originalImageSize.Width, defaultIconHeight, originalImageSize);
+						}
+					}
 				}
 				else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
 				{
@@ -925,11 +948,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void DettachSearchController()
 		{
-			if (_searchHandlerAppearanceTracker is not null)
-			{
-				_searchHandlerAppearanceTracker.Dispose();
-				_searchHandlerAppearanceTracker = null;
-			}
+
+			_searchHandlerAppearanceTracker?.Dispose();
+			_searchHandlerAppearanceTracker = null;
 
 			if (NavigationItem is not null)
 			{
@@ -943,11 +964,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
-			if (_searchController is not null)
-			{
-				_searchController.SetSearchResultsUpdater(_ => { });
-				_searchController = null;
-			}
+			_searchController?.SetSearchResultsUpdater(_ => { });
+			_searchController = null;
 		}
 
 		void OnSearchItemSelected(object? sender, object e)

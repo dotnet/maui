@@ -8,11 +8,15 @@ public partial class DatePickerHandler : ViewHandler<IDatePicker, CalendarDatePi
 
 	protected override void ConnectHandler(CalendarDatePicker platformView)
 	{
+		platformView.Opened += Opened;
+		platformView.Closed += Closed;
 		platformView.DateChanged += DateChanged;
 	}
 
 	protected override void DisconnectHandler(CalendarDatePicker platformView)
 	{
+		platformView.Opened -= Opened;
+		platformView.Closed -= Closed;
 		platformView.DateChanged -= DateChanged;
 	}
 
@@ -53,7 +57,12 @@ public partial class DatePickerHandler : ViewHandler<IDatePicker, CalendarDatePi
 		handler.PlatformView.UpdateTextColor(datePicker);
 	}
 
-	private void DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
+	internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
+	{
+		handler.PlatformView?.UpdateIsOpen(datePicker);
+	}
+
+	void DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
 	{
 		if (VirtualView is null)
 		{
@@ -66,10 +75,26 @@ public partial class DatePickerHandler : ViewHandler<IDatePicker, CalendarDatePi
 			return;
 		}
 
-		if (VirtualView.Date is null)
+		if (VirtualView.Date != args.NewDate.Value.DateTime)
 		{
 			VirtualView.Date = args.NewDate.Value.DateTime;
 		}
+	}
+
+	void Opened(object? sender, object e)
+	{
+		if (VirtualView is null)
+			return;
+
+		VirtualView.IsOpen = true;
+	}
+
+	void Closed(object? sender, object e)
+	{
+		if (VirtualView is null)
+			return;
+
+		VirtualView.IsOpen = false;
 	}
 
 	public static partial void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)

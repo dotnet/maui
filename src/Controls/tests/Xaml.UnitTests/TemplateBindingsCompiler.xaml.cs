@@ -1,61 +1,44 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class TemplateBindingsCompiler : ContentPage
 {
-	public partial class TemplateBindingsCompiler : ContentPage
+	public TemplateBindingsCompiler() => InitializeComponent();
+
+	class Tests
 	{
-		public TemplateBindingsCompiler()
-		{
-			InitializeComponent();
-		}
+		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		public TemplateBindingsCompiler(bool useCompiledXaml)
+		[Test]
+		public void Test([Values] XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
+			var page = new TemplateBindingsCompiler(inflator);
+			var label = (Label)page.ContentView.GetTemplateChild("CardTitleLabel");
+			Assert.AreEqual("The title", label?.Text);
 
-		[TestFixture]
-		public class Tests
-		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void Test(bool useCompiledXaml)
+			if (inflator == XamlInflator.XamlC || inflator == XamlInflator.SourceGen)
 			{
-				var page = new TemplateBindingsCompiler(useCompiledXaml);
-				var label = (Label)page.ContentView.GetTemplateChild("CardTitleLabel");
-				Assert.AreEqual("The title", label?.Text);
-
-				if (useCompiledXaml)
-				{
-					var binding = label.GetContext(Label.TextProperty).Bindings.GetValue();
-					Assert.That(binding, Is.TypeOf<TypedBinding<TemplateBindingCompilerTestCardView, string>>());
-				}
+				var binding = label.GetContext(Label.TextProperty).Bindings.GetValue();
+				Assert.That(binding, Is.TypeOf<TypedBinding<TemplateBindingCompilerTestCardView, string>>());
 			}
 		}
 	}
+}
 
-	public class TemplateBindingCompilerTestCardView : ContentView
+public class TemplateBindingCompilerTestCardView : ContentView
+{
+	public static readonly BindableProperty CardTitleProperty =
+		BindableProperty.Create(nameof(CardTitle), typeof(string), typeof(TemplateBindingCompilerTestCardView), string.Empty);
+
+	public string CardTitle
 	{
-		public static readonly BindableProperty CardTitleProperty =
-			BindableProperty.Create(nameof(CardTitle), typeof(string), typeof(TemplateBindingCompilerTestCardView), string.Empty);
-
-		public string CardTitle
-		{
-			get => (string)GetValue(CardTitleProperty);
-			set => SetValue(CardTitleProperty, value);
-		}
+		get => (string)GetValue(CardTitleProperty);
+		set => SetValue(CardTitleProperty, value);
 	}
 }

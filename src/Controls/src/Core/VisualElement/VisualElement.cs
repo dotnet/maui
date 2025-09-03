@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
@@ -1278,7 +1278,7 @@ namespace Microsoft.Maui.Controls
 
 			if (child is View view)
 			{
-				ComputeConstraintForView(view);
+				view.ComputedConstraint = ComputeConstraintForView(view);
 			}
 		}
 
@@ -1347,11 +1347,11 @@ namespace Microsoft.Maui.Controls
 			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
 			{
 				if (LogicalChildrenInternal[i] is View child)
-					ComputeConstraintForView(child);
+					child.ComputedConstraint = ComputeConstraintForView(child);
 			}
 		}
 
-		protected virtual void ComputeConstraintForView(View view) => view.ComputedConstraint = LayoutConstraint.None;
+		protected virtual LayoutConstraint ComputeConstraintForView(View view) => LayoutConstraint.None;
 
 		/// <summary>
 		/// Occurs when a focus change is requested.
@@ -1389,7 +1389,7 @@ namespace Microsoft.Maui.Controls
 				case InvalidationTrigger.VerticalOptionsChanged:
 					if (this is View thisView && Parent is VisualElement visualParent)
 					{
-						visualParent.ComputeConstraintForView(thisView);
+						thisView.ComputedConstraint = visualParent.ComputeConstraintForView(thisView);
 					}
 
 					// TODO ezhart Once we get InvalidateArrange sorted, HorizontalOptionsChanged and 
@@ -1893,6 +1893,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Arrange(Rect bounds)
 		{
+			using var _ = DiagnosticInstrumentation.StartLayoutArrange(this);
 			return ArrangeOverride(bounds);
 		}
 
@@ -1922,7 +1923,7 @@ namespace Microsoft.Maui.Controls
 				Bounds = bounds;
 				return;
 			}
-			
+
 			// This forces any call to Layout to use the newer Arrange passes
 			// This should make it so legacy code that calls Layout will still work, but will use the new Measure and Arrange passes.
 			Arrange(bounds);
@@ -1947,6 +1948,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Measure(double widthConstraint, double heightConstraint)
 		{
+			using var _ = DiagnosticInstrumentation.StartLayoutMeasure(this);
 			DesiredSize = MeasureOverride(widthConstraint, heightConstraint);
 			return DesiredSize;
 		}

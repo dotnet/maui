@@ -68,19 +68,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz29300(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		[TestFixture]
 		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void AccessUserDefinedBindableProperties(bool useCompiledXaml)
+			[Test]
+			public void AccessUserDefinedBindableProperties([Values] XamlInflator inflator)
 			{
-				var layout = new Bz29300(useCompiledXaml);
+				var layout = new Bz29300(inflator);
 				Assert.AreEqual(4, layout.dummy.NumOfRepeat);
 				Assert.AreEqual("Test", layout.dummy.Text);
 			}

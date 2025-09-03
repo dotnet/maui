@@ -1,38 +1,28 @@
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Unreported006 : ContentPage
 {
-	public partial class Unreported006 : ContentPage
+	public Unreported006() => InitializeComponent();
+
+	public Compatibility.Layout<View> GenericProperty
 	{
-		public Unreported006()
-		{
-			InitializeComponent();
-		}
+		get { return (Compatibility.Layout<View>)GetValue(GenericPropertyProperty); }
+		set { SetValue(GenericPropertyProperty, value); }
+	}
 
-		public Unreported006(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public static readonly BindableProperty GenericPropertyProperty =
+		BindableProperty.Create(nameof(GenericProperty), typeof(Controls.Compatibility.Layout<View>), typeof(Unreported006));
 
-		public Controls.Compatibility.Layout<View> GenericProperty
+	class Tests
+	{
+		[Test]
+		public void CanAssignGenericBP([Values] XamlInflator inflator)
 		{
-			get { return (Controls.Compatibility.Layout<View>)GetValue(GenericPropertyProperty); }
-			set { SetValue(GenericPropertyProperty, value); }
-		}
-
-		public static readonly BindableProperty GenericPropertyProperty =
-			BindableProperty.Create(nameof(GenericProperty), typeof(Controls.Compatibility.Layout<View>), typeof(Unreported006));
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true), TestCase(false)]
-			public void CanAssignGenericBP(bool useCompiledXaml)
-			{
-				var page = new Unreported006();
-				Assert.NotNull(page.GenericProperty);
-				Assert.That(page.GenericProperty, Is.TypeOf<Compatibility.StackLayout>());
-			}
+			var page = new Unreported006(inflator);
+			Assert.NotNull(page.GenericProperty);
+			Assert.That(page.GenericProperty, Is.TypeOf<Compatibility.StackLayout>());
 		}
 	}
 }

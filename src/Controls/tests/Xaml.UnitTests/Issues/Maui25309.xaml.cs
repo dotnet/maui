@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
@@ -12,17 +11,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui25309 : ContentPage
 {
-	public Maui25309()
-	{
-		InitializeComponent();
-	}
+	public Maui25309() => InitializeComponent();
 
-	public Maui25309(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		[SetUp]
@@ -33,18 +23,12 @@ public partial class Maui25309 : ContentPage
 		}
 
 		[TearDown]
-		public void TearDown()
-		{
-			AppInfo.SetCurrent(null);
-		}
+		public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void GenericConvertersDoesNotThrowNRE([Values(true, false)] bool useCompiledXaml)
+		public void GenericConvertersDoesNotThrowNRE([Values] XamlInflator inflator)
 		{
-			if (useCompiledXaml)
-				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui25309)));
-
-			var page = new Maui25309(useCompiledXaml) { BindingContext = new { IsValid = true } };
+			var page = new Maui25309(inflator) { BindingContext = new { IsValid = true } };
 			var converter = page.Resources["IsValidConverter"] as Maui25309BoolToObjectConverter;
 			Assert.IsNotNull(converter);
 			Assert.That(page.label.BackgroundColor, Is.EqualTo(Color.Parse("#140F4B")));

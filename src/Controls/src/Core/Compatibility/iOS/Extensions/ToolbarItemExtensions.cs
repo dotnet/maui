@@ -4,6 +4,7 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
@@ -55,6 +56,35 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			return new SecondarySubToolbarItem(item, action);
+		}
+
+		static UIImage ScaleImageToSystemDefaults(ImageSource imageSource, UIImage uIImage)
+		{
+			var icon = uIImage;
+
+			var originalImageSize = icon?.Size ?? CGSize.Empty;
+
+			// The largest height you can use for navigation bar icons in iOS.
+			// Per Apple's Human Interface Guidelines, the navigation bar height is 44 points,
+			// so using the full height ensures maximum visual clarity and maintains consistency
+			// with iOS design standards. This allows icons to utilize the entire available
+			// vertical space within the navigation bar container.
+			var defaultIconHeight = 44f;
+			var buffer = 0.1;
+			// We only check height because the navigation bar constrains vertical space (44pt height),
+			// but allows horizontal flexibility. Width can vary based on icon design and content,
+			// while height must fit within the fixed navigation bar bounds to avoid clipping.
+
+			// if the image is bigger than the default available size, resize it
+			if (icon is not null && originalImageSize.Height - defaultIconHeight > buffer)
+			{
+				if (imageSource is not FontImageSource fontImageSource || !fontImageSource.IsSet(FontImageSource.SizeProperty))
+				{
+					icon = icon.ResizeImageSource(originalImageSize.Width, defaultIconHeight, originalImageSize);
+				}
+			}
+
+			return icon;
 		}
 
 		sealed class PrimaryToolbarItem : UIBarButtonItem
@@ -146,9 +176,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					}
 					item.IconImageSource.LoadImage(mauiContext, result =>
 					{
-						Image = item.IconImageSource is not FontImageSource
-							? result?.Value.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal)
-							: result?.Value;
+						Image = result?.Value;
 						Style = UIBarButtonItemStyle.Plain;
 					});
 				}
@@ -304,11 +332,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			void UpdateIcon(ToolbarItem item)
 			{
-				if (item.IconImageSource != null && !item.IconImageSource.IsEmpty)
+				if (item.IconImageSource is not null && !item.IconImageSource.IsEmpty)
 				{
 					item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
 					{
-						((SecondaryToolbarItemContent)CustomView).Image = result?.Value;
+						((SecondaryToolbarItemContent)CustomView).Image = ScaleImageToSystemDefaults(item.IconImageSource, result?.Value);
 					});
 				}
 				else

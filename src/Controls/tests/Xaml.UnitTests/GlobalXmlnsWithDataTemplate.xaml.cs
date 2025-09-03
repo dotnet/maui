@@ -4,17 +4,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class GlobalXmlnsWithDataTemplate : ContentPage
 {
-	public GlobalXmlnsWithDataTemplate()
-	{
-		InitializeComponent();
-	}
-	public GlobalXmlnsWithDataTemplate(bool useCompiledXaml)
-	{
-	}
+	public GlobalXmlnsWithDataTemplate() => InitializeComponent();
 
-	[Test]
-	public void GlobalXmlnsWithDataTemplateTest([Values] bool useCompiledXaml)
+	[TestFixture]
+	class Tests
 	{
-		var page = new GlobalXmlnsWithDataTemplate(useCompiledXaml);
+		[Test]
+		public void GlobalXmlnsWithDataTemplateTest([Values] XamlInflator inflator)
+		{
+			var page = new GlobalXmlnsWithDataTemplate(inflator);
+		}
 	}
 }

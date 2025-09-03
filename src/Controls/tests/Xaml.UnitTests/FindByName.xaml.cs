@@ -1,39 +1,27 @@
-using Microsoft.Maui.Controls;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class FindByName : ContentPage
 {
-	public partial class FindByName : ContentPage
+	public FindByName() => InitializeComponent();
+
+	[TestFixture]
+	class FindByNameTests
 	{
-		public FindByName()
+		[Test]
+		public void TestRootName([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
+			var page = new FindByName(inflator);
+			Assert.AreSame(page, ((Maui.Controls.Internals.INameScope)page).FindByName("root"));
+			Assert.AreSame(page, page.FindByName<FindByName>("root"));
 		}
 
-		public FindByName(bool useCompiledXaml)
+		[Test]
+		public void TestName([Values] XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class FindByNameTests
-		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void TestRootName(bool useCompiledXaml)
-			{
-				var page = new FindByName(useCompiledXaml);
-				Assert.AreSame(page, ((Maui.Controls.Internals.INameScope)page).FindByName("root"));
-				Assert.AreSame(page, page.FindByName<FindByName>("root"));
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void TestName(bool useCompiledXaml)
-			{
-				var page = new FindByName(useCompiledXaml);
-				Assert.AreSame(page.label0, page.FindByName<Label>("label0"));
-			}
+			var page = new FindByName(inflator);
+			Assert.AreSame(page.label0, page.FindByName<Label>("label0"));
 		}
 	}
 }

@@ -202,11 +202,11 @@
     <comment>0 is the handler name, 1 is the declaring type</comment>
   </data>
   <data name="NamescopeDuplicate" xml:space="preserve">
-    <value>Элемент с именем "{0}" уже существует в этой области видимости имен.</value>
+    <value>Элемент с именем "{0}" уже существует в этой области NameScope.</value>
     <comment>0 is the duplicated key</comment>
   </data>
   <data name="ObsoleteProperty" xml:space="preserve">
-    <value>Свойство, метод задания свойства или BindableProperty "{0}" упразднены.</value>
+    <value>Свойство, метод задания свойства или BindableProperty "{0}" является нерекомендуемым.</value>
   </data>
   <data name="PropertyMissing" xml:space="preserve">
     <value>Отсутствует обязательное свойство "{0}" для "{1}".</value>
@@ -231,13 +231,13 @@
     <value>Перечисления с несколькими значениями не могут использоваться в типах перечисления sbyte.</value>
   </data>
   <data name="StyleSheetNoSourceOrContent" xml:space="preserve">
-    <value>Для таблицы стилей (StyleSheet) необходимо указать источник (Source) или содержимое.</value>
+    <value>Для таблицы стилей (StyleSheet) необходимо указать свойство Source или содержимое.</value>
   </data>
   <data name="StyleSheetSourceNotALiteral" xml:space="preserve">
     <value>Свойство Source не является строковым литералом.</value>
   </data>
   <data name="StyleSheetSourceOrContent" xml:space="preserve">
-    <value>У таблицы стилей не может быть свойство Source и содержимое.</value>
+    <value>У таблицы стилей (StyleSheet) не может быть одновременно свойство Source и содержимое.</value>
   </data>
   <data name="StyleSheetStyleNotALiteral" xml:space="preserve">
     <value>Свойство Style или содержимое (Content) не является строковым литералом.</value>

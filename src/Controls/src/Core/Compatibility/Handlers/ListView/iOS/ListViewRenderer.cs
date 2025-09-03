@@ -176,34 +176,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
 			}
 
-			if (_dataSource != null)
-			{
-				_dataSource.Dispose();
-				_dataSource = null;
-			}
+			_dataSource?.Dispose();
+			_dataSource = null;
 
-			if (_tableViewController != null)
-			{
-				_tableViewController.Dispose();
-				_tableViewController = null;
-			}
+			_tableViewController?.Dispose();
+			_tableViewController = null;
 
-			if (_headerRenderer != null)
-			{
-				_headerRenderer.VirtualView?.DisposeModalAndChildHandlers();
-				_headerRenderer = null;
-			}
-			if (_footerRenderer != null)
-			{
-				_footerRenderer.VirtualView?.DisposeModalAndChildHandlers();
-				_footerRenderer = null;
-			}
+			_headerRenderer?.VirtualView?.DisposeModalAndChildHandlers();
+			_headerRenderer = null;
+			_footerRenderer?.VirtualView?.DisposeModalAndChildHandlers();
+			_footerRenderer = null;
 
-			if (_backgroundUIView != null)
-			{
-				_backgroundUIView.Dispose();
-				_backgroundUIView = null;
-			}
+			_backgroundUIView?.Dispose();
+			_backgroundUIView = null;
 
 			var headerView = ListView?.HeaderElement as VisualElement;
 			if (headerView != null)
@@ -1144,8 +1129,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 				UITableViewCell platformCell;
 
-				Performance.Start(out string reference);
-
 				if (!_list.TryGetTarget(out var list))
 					return null;
 				var cachingStrategy = list.CachingStrategy;
@@ -1196,7 +1179,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var bgColor = tableView.IndexPathForSelectedRow != null && tableView.IndexPathForSelectedRow.Equals(indexPath) ? UIColor.Clear : DefaultBackgroundColor;
 				SetCellBackgroundColor(platformCell, bgColor);
 				PreserveActivityIndicatorState(cell);
-				Performance.Stop(reference);
 
 				if (platformCell is ContextActionsCell contextActionsCell)
 					_contextActionsCells.Add(contextActionsCell);

@@ -1,4 +1,6 @@
 ﻿#nullable enable
+Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter
+Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.SafeAreaEdgesTypeConverter() -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
 Microsoft.Maui.Handlers.DataFlowDirection
@@ -28,18 +30,31 @@ Microsoft.Maui.Hosting.MauiHostEnvironment.EnvironmentName.set -> void
 Microsoft.Maui.Hosting.MauiHostEnvironment.MauiHostEnvironment() -> void
 *REMOVED*Microsoft.Maui.IDatePicker.Date.get -> System.DateTime
 Microsoft.Maui.IDatePicker.Date.get -> System.DateTime?
+Microsoft.Maui.IDatePicker.IsOpen.get -> bool
+Microsoft.Maui.IDatePicker.IsOpen.set -> void
 *REMOVED*Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
+Microsoft.Maui.IInitializationAwareWebView
+Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationCompleted(Microsoft.Maui.WebViewInitializationCompletedEventArgs! args) -> void
+Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationStarted(Microsoft.Maui.WebViewInitializationStartedEventArgs! args) -> void
+Microsoft.Maui.IPicker.IsOpen.get -> bool
+Microsoft.Maui.IPicker.IsOpen.set -> void
+Microsoft.Maui.IRefreshView.IsRefreshEnabled.get -> bool
 Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
 Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.ITimePicker.IsOpen.get -> bool
+Microsoft.Maui.ITimePicker.IsOpen.set -> void
 *REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
 Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
 Microsoft.Maui.IWebRequestInterceptingWebView
 Microsoft.Maui.IWebRequestInterceptingWebView.WebResourceRequested(Microsoft.Maui.WebResourceRequestedEventArgs! args) -> bool
+Microsoft.Maui.IWindow.IsMaximizable.get -> bool
+Microsoft.Maui.IWindow.IsMinimizable.get -> bool
 Microsoft.Maui.Platform.IAutoSizableCALayer
 Microsoft.Maui.Platform.IAutoSizableCALayer.AutoSizeToSuperLayer() -> void
+Microsoft.Maui.Platform.MauiRefreshView.UpdateIsRefreshEnabled(bool isRefreshEnabled) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiTimePicker.UpdateTime(System.TimeSpan time) -> void
 Microsoft.Maui.Platform.MauiTimePicker.UpdateTime(System.TimeSpan? time) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKit.WKWebView! webView, WebKit.WKNavigationAction! navigationAction, System.Action<WebKit.WKNavigationActionPolicy>! decisionHandler) -> void
@@ -48,8 +63,22 @@ Microsoft.Maui.Platform.MauiTimePicker.UpdateTime(System.TimeSpan? time) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
 Microsoft.Maui.Platform.TextInputExtensions
 Microsoft.Maui.Platform.UIApplicationExtensions
-Microsoft.Maui.IWindow.IsMaximizable.get -> bool
-Microsoft.Maui.IWindow.IsMinimizable.get -> bool
+Microsoft.Maui.SafeAreaEdges
+Microsoft.Maui.SafeAreaEdges.Bottom.get -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaEdges.Equals(Microsoft.Maui.SafeAreaEdges other) -> bool
+Microsoft.Maui.SafeAreaEdges.Left.get -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaEdges.Right.get -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaEdges.SafeAreaEdges() -> void
+Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions horizontal, Microsoft.Maui.SafeAreaRegions vertical) -> void
+Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions left, Microsoft.Maui.SafeAreaRegions top, Microsoft.Maui.SafeAreaRegions right, Microsoft.Maui.SafeAreaRegions bottom) -> void
+Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions uniformValue) -> void
+Microsoft.Maui.SafeAreaEdges.Top.get -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaRegions.All = 32768 -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaRegions.Container = 2 -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaRegions.Default = -1 -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaRegions.None = 0 -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaRegions.SoftInput = 1 -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.ScrollToRequest.Deconstruct(out double HorizontalOffset, out double VerticalOffset, out bool Instant) -> void
 Microsoft.Maui.ScrollToRequest.ScrollToRequest(Microsoft.Maui.ScrollToRequest! original) -> void
 Microsoft.Maui.SwipeViewCloseRequest.Deconstruct(out bool Animated) -> void
@@ -65,6 +94,11 @@ Microsoft.Maui.SwipeViewSwipeStarted.SwipeViewSwipeStarted(Microsoft.Maui.SwipeV
 Microsoft.Maui.WebResourceRequestedEventArgs
 Microsoft.Maui.WebResourceRequestedEventArgs.Sender.get -> WebKit.WKWebView!
 Microsoft.Maui.WebResourceRequestedEventArgs.UrlSchemeTask.get -> WebKit.IWKUrlSchemeTask!
+Microsoft.Maui.WebViewInitializationCompletedEventArgs
+Microsoft.Maui.WebViewInitializationCompletedEventArgs.Configuration.get -> WebKit.WKWebViewConfiguration!
+Microsoft.Maui.WebViewInitializationCompletedEventArgs.Sender.get -> WebKit.WKWebView!
+Microsoft.Maui.WebViewInitializationStartedEventArgs
+Microsoft.Maui.WebViewInitializationStartedEventArgs.Configuration.get -> WebKit.WKWebViewConfiguration!
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.EasingTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
@@ -100,6 +134,10 @@ override Microsoft.Maui.Converters.FlexWrapTypeConverter.CanConvertFrom(System.C
 override Microsoft.Maui.Converters.FlexWrapTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.FlexWrapTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Converters.FlexWrapTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value) -> object!
+override Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object!
 override Microsoft.Maui.Converters.ThicknessTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Converters.ThicknessTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.ThicknessTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
@@ -122,6 +160,12 @@ override Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.ToString() -> st
 override Microsoft.Maui.Handlers.OpenWindowRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.Handlers.OpenWindowRequest.GetHashCode() -> int
 override Microsoft.Maui.Handlers.OpenWindowRequest.ToString() -> string!
+override Microsoft.Maui.Handlers.ScrollViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Platform.MauiScrollView.AdjustedContentInsetDidChange() -> void
+override Microsoft.Maui.Platform.MauiScrollView.SafeAreaInsetsDidChange() -> void
+override Microsoft.Maui.SafeAreaEdges.Equals(object? obj) -> bool
+override Microsoft.Maui.SafeAreaEdges.GetHashCode() -> int
+override Microsoft.Maui.SafeAreaEdges.ToString() -> string!
 override Microsoft.Maui.ScrollToRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.ScrollToRequest.GetHashCode() -> int
 override Microsoft.Maui.ScrollToRequest.ToString() -> string!
@@ -165,6 +209,11 @@ static Microsoft.Maui.Platform.TextInputExtensions.GetSelectedTextLength(this UI
 static Microsoft.Maui.Platform.TextInputExtensions.SetTextRange(this UIKit.IUITextInput! platformView, int start, int selectedTextLength) -> void
 static Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(this UIKit.UIApplication! application) -> UIKit.UIWindow?
 static Microsoft.Maui.Platform.UIApplicationExtensions.GetWindow(this UIKit.UIApplication! application) -> Microsoft.Maui.IWindow?
+static Microsoft.Maui.SafeAreaEdges.All.get -> Microsoft.Maui.SafeAreaEdges
+static Microsoft.Maui.SafeAreaEdges.Default.get -> Microsoft.Maui.SafeAreaEdges
+static Microsoft.Maui.SafeAreaEdges.None.get -> Microsoft.Maui.SafeAreaEdges
+static Microsoft.Maui.SafeAreaEdges.operator !=(Microsoft.Maui.SafeAreaEdges left, Microsoft.Maui.SafeAreaEdges right) -> bool
+static Microsoft.Maui.SafeAreaEdges.operator ==(Microsoft.Maui.SafeAreaEdges left, Microsoft.Maui.SafeAreaEdges right) -> bool
 static Microsoft.Maui.ScrollToRequest.operator !=(Microsoft.Maui.ScrollToRequest? left, Microsoft.Maui.ScrollToRequest? right) -> bool
 static Microsoft.Maui.ScrollToRequest.operator ==(Microsoft.Maui.ScrollToRequest? left, Microsoft.Maui.ScrollToRequest? right) -> bool
 static Microsoft.Maui.SwipeViewCloseRequest.operator !=(Microsoft.Maui.SwipeViewCloseRequest? left, Microsoft.Maui.SwipeViewCloseRequest? right) -> bool

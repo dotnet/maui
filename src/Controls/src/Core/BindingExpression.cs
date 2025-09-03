@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Binding is Binding { Source: var source, DataType: Type dataType })
 			{
-				// Do not check type mismatch if this is a binding with Source and compilation of bindings with Source is disale
+				// Do not check type mismatch if this is a binding with Source and compilation of bindings with Source is disabled
 				bool skipTypeMismatchCheck = source is not null && !RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled;
 				if (!skipTypeMismatchCheck)
 				{

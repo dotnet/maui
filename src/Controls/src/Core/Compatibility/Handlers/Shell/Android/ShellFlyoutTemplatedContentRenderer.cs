@@ -10,6 +10,7 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.AppBar;
@@ -72,6 +73,33 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		// Temporary workaround:
+		// Android 15 / API 36 removed the prior opt‑out path for edge‑to‑edge
+		// (legacy "edge to edge ignore" + decor fitting). This placeholder exists
+		// so we can keep apps from regressing (content accidentally covered by
+		// system bars) until a proper, unified edge‑to‑edge + system bar inset
+		// configuration API is implemented in MAUI.
+		//
+		// NOTE:
+		// - Keep this minimal.
+		// - Will be replaced by the planned comprehensive window insets solution.
+		// - Do not extend; add new logic to the forthcoming implementation instead.
+		internal class WindowsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
+		{
+			public WindowInsetsCompat OnApplyWindowInsets(AView v, WindowInsetsCompat insets)
+			{
+				if (insets == null || v == null)
+					return insets;
+
+				// The flyout overlaps the status bar so we don't really care about insetting it
+				var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+
+				v.SetPadding(0, displayCutout?.Top ?? 0, 0, 0);
+
+				return WindowInsetsCompat.Consumed;
+			}
+		}
+		
 		protected virtual void LoadView(IShellContext shellContext)
 		{
 			var context = shellContext.AndroidContext;
@@ -79,6 +107,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var coordinator = (ViewGroup)layoutInflator.Inflate(Controls.Resource.Layout.flyoutcontent, null);
 
 			_appBar = coordinator.FindViewById<AppBarLayout>(Controls.Resource.Id.flyoutcontent_appbar);
+			ViewCompat.SetOnApplyWindowInsetsListener(_appBar, new WindowsListener());
 
 			(_appBar.LayoutParameters as CoordinatorLayout.LayoutParams)
 				.Behavior = new AppBarLayout.Behavior();
@@ -419,9 +448,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// and propagate any margins set
 				if (_contentView?.PlatformView != null)
 				{
-					var dpWidth = _rootView.Context.FromPixels(_contentView.PlatformView.MeasuredWidth);
-					var dpHeight = _rootView.Context.FromPixels(_contentView.PlatformView.MeasuredHeight);
-					_contentView.View.Frame = _contentView.View.ComputeFrame(new Graphics.Rect(0, 0, dpWidth, dpHeight));
+					SetContentViewFrame();
 
 					cl.LeftMargin = (int)_rootView.Context.ToPixels(viewMargin.Left);
 					cl.TopMargin = (int)_rootView.Context.ToPixels(viewMargin.Top);
@@ -432,6 +459,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			return returnValue;
+		}
+
+		void SetContentViewFrame()
+		{
+			var dpWidth = _rootView.Context.FromPixels(_contentView.PlatformView.MeasuredWidth);
+			var dpHeight = _rootView.Context.FromPixels(_contentView.PlatformView.MeasuredHeight);
+			_contentView.View.Frame = _contentView.View.ComputeFrame(new Graphics.Rect(0, 0, dpWidth, dpHeight));
 		}
 
 		void OnFlyoutViewLayoutChanging()
@@ -463,6 +497,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UpdateFooterLayout();
 				UpdateContentPadding();
+			}
+			else if (_contentView?.PlatformView is not null &&
+				((_contentView.PlatformView.MeasuredHeight > 0 && _contentView.View.Frame.Width == 0) ||
+				 (_contentView.PlatformView.MeasuredWidth > 0 && _contentView.View.Frame.Height == 0)))
+			{
+				SetContentViewFrame();
 			}
 		}
 

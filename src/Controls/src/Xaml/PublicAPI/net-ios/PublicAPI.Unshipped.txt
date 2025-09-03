@@ -8,3 +8,6 @@
 *REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.ProvideValue(System.IServiceProvider serviceProvider) -> Microsoft.Maui.Controls.ImageSource
 *REMOVED*Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.get -> double
 *REMOVED*Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.set -> void
+Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider
+~Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider.XamlDataTypeProvider(string dataType) -> void
+~Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.XamlServiceProvider(object rootObject) -> void

@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return new SizeRequest(bestFitSize, minimum);
 		}
 
-		protected override void ComputeConstraintForView(View view)
+		protected override LayoutConstraint ComputeConstraintForView(View view)
 		{
 			AbsoluteLayoutFlags layoutFlags = GetLayoutFlags(view);
 
@@ -117,9 +117,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				if (view.VerticalOptions.Alignment == LayoutAlignment.Fill &&
 					view.HorizontalOptions.Alignment == LayoutAlignment.Fill)
-					view.ComputedConstraint = Constraint;
+					return Constraint;
 
-				return;
+				return LayoutConstraint.None;
 			}
 
 			var result = LayoutConstraint.None;
@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					result |= LayoutConstraint.VerticallyFixed;
 			}
 
-			view.ComputedConstraint = result;
+			return result;
 		}
 
 		void ChildOnPropertyChanged(object sender, PropertyChangedEventArgs e)

@@ -1,29 +1,18 @@
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class McIgnorable : ContentPage
 {
-	public partial class McIgnorable : ContentPage
+	public McIgnorable() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
 	{
-		public McIgnorable()
+		[Test]
+		public void DoesNotThrow([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public McIgnorable(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void DoesNotThrow(bool useCompiledXaml)
-			{
-				var layout = new McIgnorable(useCompiledXaml);
-			}
+			var layout = new McIgnorable(inflator);
 		}
 	}
 }

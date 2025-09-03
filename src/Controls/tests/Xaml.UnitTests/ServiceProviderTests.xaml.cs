@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
-using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -56,21 +52,17 @@ public partial class ServiceProviderTests : ContentPage
 {
 	public ServiceProviderTests() => InitializeComponent();
 
-	public ServiceProviderTests(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 		[Test]
-		public void TestServiceProviders([Values] bool useCompiledXaml)
+		public void TestServiceProviders([Values(XamlInflator.XamlC)] XamlInflator inflator)
 		{
-			var page = new ServiceProviderTests(useCompiledXaml);
+			var page = new ServiceProviderTests(inflator);
+			MockCompiler.Compile(typeof(ServiceProviderTests));
 
 			Assert.AreEqual(null, page.label0.Text);
 			Assert.That(page.label1.Text, Does.Contain("IProvideValueTarget"));

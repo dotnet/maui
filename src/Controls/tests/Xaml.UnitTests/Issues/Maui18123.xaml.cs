@@ -1,15 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
-
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
@@ -26,15 +20,8 @@ public class Maui18123MultiValueConverter : IMultiValueConverter
 
 public partial class Maui18123 : ContentPage
 {
-
 	public Maui18123() => InitializeComponent();
 
-	public Maui18123(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		[SetUp]
@@ -47,12 +34,9 @@ public partial class Maui18123 : ContentPage
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void MultiBindingShouldNotThrow([Values(false, true)] bool useCompiledXaml)
+		public void MultiBindingShouldNotThrow([Values] XamlInflator inflator)
 		{
-			if (useCompiledXaml)
-				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui18123)));
-
-			var page = new Maui18123(useCompiledXaml);
+			var page = new Maui18123(inflator);
 			page.BindingContext = new Maui18123VM();
 			page.editBtn.SendClicked();
 			Assert.That(page.editBtn.Text, Is.EqualTo("SUBMIT"));

@@ -6,14 +6,16 @@
              xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="MauiApp._1.Pages.ProjectListPage"
+             x:Name="ProjectList"
              x:DataType="pageModels:ProjectListPageModel"
              Title="Projects">
 
 
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior
-                EventName="Appearing"                
-                Command="{Binding AppearingCommand}" />
+            EventName="Appearing"
+            BindingContext="{Binding Path=BindingContext, Source={x:Reference ProjectList}, x:DataType=ContentPage}"
+            Command="{Binding AppearingCommand}"/>
     </ContentPage.Behaviors>
     <Grid>
       <ScrollView>
@@ -23,7 +25,7 @@
             Spacing="{StaticResource LayoutSpacing}">
             <BindableLayout.ItemTemplate>
                 <DataTemplate x:DataType="models:Project">
-                    <Border>
+                    <Border SemanticProperties.Description="{Binding Name, StringFormat='{0} Project'}">
                         <VerticalStackLayout Padding="10">
                             <Label Text="{Binding Name}" FontSize="24" />
                             <Label Text="{Binding Description}" />
@@ -38,6 +40,7 @@
       </ScrollView>
 
         <controls:AddButton 
-            Command="{Binding AddProjectCommand}" />
+            Command="{Binding AddProjectCommand}"
+            SemanticProperties.Description="Add project" />
     </Grid>
 </ContentPage>

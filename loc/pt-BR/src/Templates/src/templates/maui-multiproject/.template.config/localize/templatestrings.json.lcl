@@ -23,12 +23,12 @@
         <Str Cat="Text">
           <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI with multiple, separate app projects.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Um projeto para criar um aplicativo .NET MAUI para iOS, Android, Mac Catalyst e WinUI com vários projetos de aplicativos separados.]]></Val>
+            <Val><![CDATA[Um projeto para criar um .NET MAUI para iOS, Android, Mac Catalyst e WinUI com vários projetos de aplicativo separados.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI Multi-Project App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the Android app head project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Incluir o projeto de cabeçalho do aplicativo Android]]></Val>
+            <Val><![CDATA[Incluir o projeto principal do aplicativo Android]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -95,7 +95,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the iOS app head project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Incluir o projeto de cabeçalho do aplicativo iOS]]></Val>
+            <Val><![CDATA[Incluir o projeto principal do aplicativo iOS]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -113,7 +113,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the macOS app head project (using Mac Catalyst)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Incluir o projeto de cabeçalho do aplicativo macOS (usando MacAtor)]]></Val>
+            <Val><![CDATA[Incluir o projeto principal do aplicativo macOS (usando MacAtor)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[macOS using Mac Catalyst]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[macOS usando Mac Também]]></Val>
+            <Val><![CDATA[macOS usando o Mac Catalyst]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -131,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the Windows app head project (using WinUI 3)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Incluir o projeto de cabeçalho de aplicativo do Windows (usando WinUI 3)]]></Val>
+            <Val><![CDATA[Incluir o projeto principal do aplicativo do Windows (usando WinUI 3)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

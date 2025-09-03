@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
@@ -11,17 +9,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Unreported010
 {
-	public Unreported010()
-	{
-		InitializeComponent();
-	}
+	public Unreported010() => InitializeComponent();
 
-	public Unreported010(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		[SetUp]
@@ -34,9 +23,9 @@ public partial class Unreported010
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void LocalDynamicResources([Values(false, true)] bool useCompiledXaml)
+		public void LocalDynamicResources([Values] XamlInflator inflator)
 		{
-			var page = new Unreported010(useCompiledXaml);
+			var page = new Unreported010(inflator);
 			Assert.That(page.button0.BackgroundColor, Is.EqualTo(Colors.Blue));
 			page.Resources["Foo"] = Colors.Red;
 			Assert.That(page.button0.BackgroundColor, Is.EqualTo(Colors.Red));

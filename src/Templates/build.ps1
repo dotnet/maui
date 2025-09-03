@@ -6,7 +6,9 @@ param (
     [Parameter(Mandatory=$false, HelpMessage="Specify the path to the template project to build")]
     [string]$templatesProjectPath = "src\Microsoft.Maui.Templates.csproj",
     [Parameter(Mandatory=$false, HelpMessage="Specify whether to start Visual Studio (Code) after creating the new project with the latest template changes")]
-    [bool]$startVsAfterBuild = $true
+    [bool]$startVsAfterBuild = $true,
+    [Parameter(Mandatory=$false, HelpMessage="Additional arguments to pass to the dotnet new command (e.g., '--sample-content')")]
+    [string]$additionalProjectArgs = ""
 )
 
 # Source the utils script for some common functionalities
@@ -39,7 +41,11 @@ Empty-UserHomeTemplateEngineFolder
 dotnet new install $nupkgPath.FullName
 
 # Create a new dotnet project using the specified project type
-dotnet new $projectType -o ./.tempTemplateOutput/NewProject --force
+if ($additionalProjectArgs) {
+    dotnet new $projectType $additionalProjectArgs -o ./.tempTemplateOutput/NewProject --force
+} else {
+    dotnet new $projectType -o ./.tempTemplateOutput/NewProject --force
+}
 
 if ($startVsAfterBuild -eq $false) {
     exit 0

@@ -4,41 +4,34 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class Bz45179_0 : ContentView
 {
-	public class Bz45179_0 : ContentView
+	public static int creator_count;
+	public Bz45179_0()
 	{
-		public static int creator_count;
-		public Bz45179_0()
-		{
-			creator_count++;
-		}
-
+		creator_count++;
 	}
-	public partial class Bz45179 : ContentPage
+
+}
+public partial class Bz45179 : ContentPage
+{
+	public Bz45179()
 	{
-		public Bz45179()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz45179(bool useCompiledXaml)
+	[TestFixture]
+	class Tests
+	{
+		[Test]
+		public void DTDoNotInstantiateTheirContent([Values] XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void DTDoNotInstantiateTheirContent(bool useCompiledXaml)
-			{
-				Bz45179_0.creator_count = 0;
-				Assume.That(Bz45179_0.creator_count, Is.EqualTo(0));
-				var page = new Bz45179(useCompiledXaml);
-				Assert.That(Bz45179_0.creator_count, Is.EqualTo(0));
-			}
+			Bz45179_0.creator_count = 0;
+			Assume.That(Bz45179_0.creator_count, Is.EqualTo(0));
+			var page = new Bz45179(inflator);
+			Assert.That(Bz45179_0.creator_count, Is.EqualTo(0));
 		}
 	}
 }

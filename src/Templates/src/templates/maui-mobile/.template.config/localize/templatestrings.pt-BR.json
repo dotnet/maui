@@ -1,14 +1,14 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI App",
-  "description": "Um projeto para a criação de um aplicativo .NET MAUI para iOS, Android, Mac Catalyst, WinUI e Tizen",
+  "name": "Aplicativo .NET MAUI",
+  "description": "Um projeto para criar um aplicativo .NET MAUI para iOS, Android, Mac Catalyst e WinUI",
   "postActions/openInEditor/description": "Abre MainPage.xaml no editor.",
   "postActions/restore/description": "Restaurar os pacotes NuGet exigidos por esse projeto.",
   "postActions/restore/manualInstructions/default/text": "Execute 'dotnet restore'",
   "symbols/applicationId/description": "Substitui $(ApplicationId) no projeto",
-  "symbols/Framework/description": "A estrutura de destino do projeto.",
+  "symbols/Framework/description": "A estrutura de destino para o projeto.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "_Incluir conteúdo de amostra",
   "symbols/IncludeSampleContent/description": "Configura se deve adicionar páginas de amostra e funcionalidades para demonstrar padrões básicos de uso.",
-  "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto na criação."
+  "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto que está sendo criado."
 }

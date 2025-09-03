@@ -15,11 +15,6 @@ public partial class Maui25608
 		InitializeComponent();
 	}
 
-	public Maui25608(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
 	[TestFixture]
 	class Test
 	{
@@ -44,13 +39,13 @@ public partial class Maui25608
 		}
 
 		[Test]
-		public void TestValidBindingWithRelativeSource([Values(false, true)] bool useCompiledXaml)
+		public void TestValidBindingWithRelativeSource([Values] XamlInflator inflator)
 		{
 			bool bindingFailureReported = false;
 			_bindingFailureHandler = (sender, args) => bindingFailureReported = true;
 			BindingDiagnostics.BindingFailed += _bindingFailureHandler;
 
-			var page = new Maui25608(useCompiledXaml);
+			var page = new Maui25608(inflator);
 
 			Assert.AreEqual(25, page.Image.HeightRequest);
 			Assert.IsFalse(bindingFailureReported);

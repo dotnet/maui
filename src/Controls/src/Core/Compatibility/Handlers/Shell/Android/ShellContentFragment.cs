@@ -6,6 +6,7 @@ using Android.Views;
 using Android.Views.Animations;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
 using AndroidAnimation = Android.Views.Animations.Animation;
@@ -71,6 +72,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		AToolbar _toolbar;
 		IShellToolbarTracker _toolbarTracker;
 		bool _disposed;
+		bool _destroyed;
 
 		public ShellContentFragment(IShellContext shellContext, ShellContent shellContent)
 		{
@@ -141,6 +143,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbar = (AToolbar)shellToolbar.ToPlatform(shellContentMauiContext);
 
 			var appBar = _root.FindViewById<AppBarLayout>(Resource.Id.shellcontent_appbar);
+
+			ViewCompat.SetOnApplyWindowInsetsListener(appBar, new ShellSectionRenderer.WindowsListener());
+
 			appBar.AddView(_toolbar);
 			_viewhandler = _page.ToHandler(shellContentMauiContext);
 
@@ -167,13 +172,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void Destroy()
 		{
+			if (_destroyed)
+				return;
+
+			_destroyed = true;
+
 			// If the user taps very quickly on back button multiple times to pop a page,
 			// the app enters background state in the middle of the animation causing the fragment to be destroyed without completing the animation.
 			// That'll cause `IAnimationListener.onAnimationEnd` to not be called, so we need to call it manually if something is still subscribed to the event
 			// to avoid the navigation `TaskCompletionSource` to be stuck forever.
 			AnimationFinished?.Invoke(this, EventArgs.Empty);
 
-			((IShellController)_shellContext.Shell).RemoveAppearanceObserver(this);
+			(_shellContext?.Shell as IShellController)?.RemoveAppearanceObserver(this);
 
 			if (_shellContent != null)
 			{

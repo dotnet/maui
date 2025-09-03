@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Maui.Controls.Sample.Issues;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -48,6 +49,7 @@ public class Issue12500 : Shell
 }
 public class Issue12500EventPage : ContentPage
 {
+	[RequiresUnreferencedCode("Issue12500EventPage may require unreferenced code for data binding")]
 	public Issue12500EventPage()
 	{
 		var label = new Label
@@ -68,6 +70,7 @@ public class Issue12500EventPage : ContentPage
 
 public class Issue12500Main : ContentPage
 {
+	[RequiresUnreferencedCode("Issue12500Main may require unreferenced code for data binding")]
 	public Issue12500Main()
 	{
 		var label = new Label

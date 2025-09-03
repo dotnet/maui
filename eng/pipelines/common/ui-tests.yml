@@ -8,7 +8,7 @@ parameters:
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
-  timeoutInMinutes: 120
+  timeoutInMinutes: 180
   skipProvisioning: true
   agentPoolAccessToken: ''
   categoryGroupsToTest:
@@ -58,10 +58,26 @@ stages:
             parameters:
                 runtimeVariant: "Mono"
                 skipProvisioning: ${{ parameters.skipProvisioning }}
+
+  - stage: build_ui_tests_coreclr
+    displayName: Build UITests CoreCLR Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests
+        displayName: Build Sample App
+        pool: ${{ parameters.androidPool }}
+        variables:
+          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+            parameters:
+                runtimeVariant: "CoreCLR"
+                skipProvisioning: ${{ parameters.skipProvisioning }}
   
   - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
     - stage: build_ui_tests_nativeaot
-      displayName: Build UITests Sample App NativeAOT
+      displayName: Build UITests NativeAOT Sample App
       dependsOn: []
       jobs:
         - job: build_ui_tests
@@ -129,6 +145,45 @@ stages:
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+  
+  - stage: android_ui_tests_coreclr
+    displayName: Android UITests CoreClr
+    dependsOn: build_ui_tests_coreclr
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - ${{ each api in parameters.androidApiLevels }}:
+            - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
+              - job: android_ui_tests_${{ project.name }}_${{ api }}
+                strategy:
+                  matrix:
+                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                      ${{ categoryGroup }}:
+                        CATEGORYGROUP: ${{ categoryGroup }}
+                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
+                pool: ${{ parameters.androidLinuxPool }}
+                variables:
+                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: android
+                      version: ${{ api }}
+                      path: ${{ project.android }}
+                      app: ${{ project.app }}
+                      ${{ if eq(api, 27) }}:
+                        device: android-emulator-32_${{ api }}
+                      ${{ if not(eq(api, 27)) }}:
+                        device: android-emulator-64_${{ api }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      testFilter: $(CATEGORYGROUP)
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
+                      runtimeVariant: "CoreCLR"
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono

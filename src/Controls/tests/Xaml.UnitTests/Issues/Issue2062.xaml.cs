@@ -1,31 +1,21 @@
-using Microsoft.Maui.Controls;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Issue2062 : ContentPage
 {
-	public partial class Issue2062 : ContentPage
+	public Issue2062() => InitializeComponent();
+
+
+	[TestFixture]
+	class Tests
 	{
-		public Issue2062()
+		[Test]
+		public void LabelWithoutExplicitPropertyElement([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Issue2062(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void LabelWithoutExplicitPropertyElement(bool useCompiledXaml)
-			{
-				var layout = new Issue2062(useCompiledXaml);
-				Assert.AreEqual("text explicitly set to Label.Text", layout.label1.Text);
-				Assert.AreEqual("text implicitly set to Text property of Label", layout.label2.Text);
-			}
+			var layout = new Issue2062(inflator);
+			Assert.AreEqual("text explicitly set to Label.Text", layout.label1.Text);
+			Assert.AreEqual("text implicitly set to Text property of Label", layout.label2.Text);
 		}
 	}
 }

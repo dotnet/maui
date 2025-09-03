@@ -4,45 +4,38 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class Bz43733Rd : ResourceDictionary
 {
-	public class Bz43733Rd : ResourceDictionary
+	public Bz43733Rd()
 	{
-		public Bz43733Rd()
-		{
-			Add("SharedText", "Foo");
-		}
+		Add("SharedText", "Foo");
+	}
+}
+
+public partial class Bz43733 : ContentPage
+{
+	public Bz43733()
+	{
+		InitializeComponent();
 	}
 
-	public partial class Bz43733 : ContentPage
+	[TestFixture]
+	class Tests
 	{
-		public Bz43733()
+		[Test]
+		public void ThrowOnMissingDictionary([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Bz43733(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void ThrowOnMissingDictionary(bool useCompiledXaml)
+			Application.Current = new MockApplication
 			{
-				Application.Current = new MockApplication
+				Resources = new ResourceDictionary
 				{
-					Resources = new ResourceDictionary
-					{
-						new Bz43733Rd()
-					}
-				};
-				var p = new Bz43733(useCompiledXaml);
-				Assert.AreEqual("Foo", p.label.Text);
-			}
+					new Bz43733Rd()
+				}
+			};
+			var p = new Bz43733(inflator);
+			Assert.AreEqual("Foo", p.label.Text);
 		}
 	}
 }

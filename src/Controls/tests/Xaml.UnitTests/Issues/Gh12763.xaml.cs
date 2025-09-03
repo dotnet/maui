@@ -1,30 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{
-	public partial class Gh12763 : ContentPage
-	{
-		public Gh12763() => InitializeComponent();
-		public Gh12763(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-		[TestFixture]
-		class Tests
+public partial class Gh12763 : ContentPage
+{
+	public Gh12763() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
+	{
+		[Test]
+		public void QuotesInStringFormat([Values] XamlInflator inflator)
 		{
-			[Test]
-			public void QuotesInStringFormat([Values(false, true)] bool useCompiledXaml)
-			{
-				var layout = new Gh12763(useCompiledXaml);
-				Assert.That(layout.label.Text, Is.EqualTo("\"Foo\""));
-			}
+			var layout = new Gh12763(inflator);
+			Assert.That(layout.label.Text, Is.EqualTo("\"Foo\""));
 		}
 	}
 }

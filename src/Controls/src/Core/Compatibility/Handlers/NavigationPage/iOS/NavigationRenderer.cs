@@ -11,6 +11,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
@@ -972,12 +973,32 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 			}
 
-
 			FlyoutPage.Flyout.IconImageSource.LoadImage(FlyoutPage.FindMauiContext(), result =>
 			{
 				var icon = result?.Value;
-				if (icon != null)
+				var originalImageSize = icon?.Size ?? CGSize.Empty;
+
+				// The largest height you can use for navigation bar icons in iOS.
+				// Per Apple's Human Interface Guidelines, the navigation bar height is 44 points,
+				// so using the full height ensures maximum visual clarity and maintains consistency
+				// with iOS design standards. This allows icons to utilize the entire available
+				// vertical space within the navigation bar container.
+				var defaultIconHeight = 44f;
+				var buffer = 0.1;
+				// We only check height because the navigation bar constrains vertical space (44pt height),
+				// but allows horizontal flexibility. Width can vary based on icon design and content,
+				// while height must fit within the fixed navigation bar bounds to avoid clipping.
+				
+				// if the image is bigger than the default available size, resize it
+				if (icon is not null)
 				{
+					if (originalImageSize.Height - defaultIconHeight > buffer)
+					{
+						if (FlyoutPage.Flyout.IconImageSource is not FontImageSource fontImageSource || !fontImageSource.IsSet(FontImageSource.SizeProperty))
+						{
+							icon = icon.ResizeImageSource(originalImageSize.Width, defaultIconHeight, originalImageSize);
+						}
+					}
 					try
 					{
 						containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, OnItemTapped);
@@ -1318,6 +1339,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				_tracker.Target = Child;
 				_tracker.AdditionalTargets = Child.GetParentPages();
+				_tracker.CollectionChanged += TrackerOnCollectionChanged;
 
 				UpdateToolbarItems();
 			}
@@ -1339,20 +1361,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override void WillMoveToParentViewController(UIViewController parent)
 			{
 				base.WillMoveToParentViewController(parent);
-
-				if (_tracker is null)
-				{
-					return;
-				}
-
-				if (parent is null)
-				{
-					_tracker.CollectionChanged -= TrackerOnCollectionChanged;
-				}
-				else
-				{
-					_tracker.CollectionChanged += TrackerOnCollectionChanged;
-				}
 			}
 
 			internal void Disconnect(bool dispose)

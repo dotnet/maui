@@ -10,26 +10,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 public partial class XmlnsAggregattion : ContentPage
 {
 	public XmlnsAggregattion() => InitializeComponent();
-	public XmlnsAggregattion(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
 
 	[TestFixture]
-	class Test
+	class Tests
 	{
 		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void XamlWithAggregatedXmlns([Values] bool useCompiledXaml)
+		public void XamlWithAggregatedXmlns([Values] XamlInflator inflator)
 		{
-			if (useCompiledXaml)
-				MockCompiler.Compile(typeof(XmlnsAggregattion));
-
-			var layout = new XmlnsAggregattion(useCompiledXaml);
+			var layout = new XmlnsAggregattion(inflator);
 			Assert.That(layout.label.Text, Is.EqualTo("Welcome to .NET MAUI!"));
-
 		}
 	}
 }

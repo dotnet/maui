@@ -1,36 +1,25 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class StringLiterals : ContentPage
 {
-	public partial class StringLiterals : ContentPage
+	public StringLiterals()
 	{
-		public StringLiterals()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public StringLiterals(bool useCompiledXaml)
+	[TestFixture]
+	class Tests
+	{
+		[Test]
+		public void EscapedStringsAreTreatedAsLiterals([Values] XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void EscapedStringsAreTreatedAsLiterals(bool useCompiledXaml)
-			{
-				var layout = new StringLiterals(useCompiledXaml);
-				Assert.AreEqual("Foo", layout.label0.Text);
-				Assert.AreEqual("{Foo}", layout.label1.Text);
-				Assert.AreEqual("Foo", layout.label2.Text);
-				Assert.AreEqual("Foo", layout.label3.Text);
-			}
+			var layout = new StringLiterals(inflator);
+			Assert.AreEqual("Foo", layout.label0.Text);
+			Assert.AreEqual("{Foo}", layout.label1.Text);
+			Assert.AreEqual("Foo", layout.label2.Text);
+			Assert.AreEqual("Foo", layout.label3.Text);
 		}
 	}
 }

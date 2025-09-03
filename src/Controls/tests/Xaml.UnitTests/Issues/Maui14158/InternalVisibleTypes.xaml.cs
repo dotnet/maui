@@ -5,27 +5,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests.Maui14158;
 
 public partial class InternalVisibleTypes : ContentPage
 {
-	public InternalVisibleTypes()
-	{
-		InitializeComponent();
-	}
-
-	public InternalVisibleTypes(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
+	public InternalVisibleTypes() => InitializeComponent();
 
 	[TestFixture]
 	class Tests
 	{
-		[TestCase(true)]
-		[TestCase(false)]
-		public void VerifyCorrectTypesUsed(bool useCompiledXaml)
+		[Test]
+		public void VerifyCorrectTypesUsed([Values] XamlInflator inflator)
 		{
-			if (useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
 				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(InternalVisibleTypes)));
 
-			var page = new InternalVisibleTypes(useCompiledXaml);
+			var page = new InternalVisibleTypes(inflator);
 
 			Assert.IsInstanceOf<InternalButVisible>(page.internalButVisible);
 		}

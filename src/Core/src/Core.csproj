@@ -48,7 +48,7 @@
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <AndroidGradleProject Include="../AndroidNative/build.gradle" ModuleName="maui" />
-    <PackageReference Include="Xamarin.Android.Glide" Version="$(_XamarinAndroidGlideVersion)" />
+    <PackageReference Include="Xamarin.Android.Glide" />
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" />

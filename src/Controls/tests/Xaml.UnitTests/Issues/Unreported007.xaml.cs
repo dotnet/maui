@@ -1,45 +1,27 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using NUnit.Framework;
+using Constraint = Microsoft.Maui.Controls.Compatibility.Constraint;
+using RelativeLayout = Microsoft.Maui.Controls.Compatibility.RelativeLayout;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Unreported007 : ContentPage
 {
-	using Constraint = Microsoft.Maui.Controls.Compatibility.Constraint;
-	using RelativeLayout = Microsoft.Maui.Controls.Compatibility.RelativeLayout;
+	public Unreported007() => InitializeComponent();
 
-	public partial class Unreported007 : ContentPage
+	class Tests
 	{
-		public Unreported007()
-		{
-			InitializeComponent();
-		}
-		public Unreported007(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+		[SetUp] public void Setup() => DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
 
-		[TestFixture]
-		class Tests
+		[TearDown] public void TearDown() => DeviceInfo.SetCurrent(null);
+
+		[Test]
+		public void ConstraintsAreEvaluatedWithOnPlatform([Values] XamlInflator inflator)
 		{
-			[SetUp]
-			public void Setup()
-			{
-				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
-			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				DeviceInfo.SetCurrent(null);
-			}
-
-			[TestCase(true), TestCase(false)]
-			public void ConstraintsAreEvaluatedWithOnPlatform(bool useCompiledXaml)
-			{
-				var page = new Unreported007(useCompiledXaml);
-				Assert.That(RelativeLayout.GetXConstraint(page.label), Is.TypeOf<Constraint>());
-				Assert.AreEqual(3, RelativeLayout.GetXConstraint(page.label).Compute(null));
-			}
+			var page = new Unreported007(inflator);
+			Assert.That(RelativeLayout.GetXConstraint(page.label), Is.TypeOf<Constraint>());
+			Assert.AreEqual(3, RelativeLayout.GetXConstraint(page.label).Compute(null));
 		}
 	}
 }

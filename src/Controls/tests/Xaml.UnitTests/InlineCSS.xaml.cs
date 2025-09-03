@@ -1,42 +1,31 @@
-using System;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class InlineCSS : ContentPage
 {
-	public partial class InlineCSS : ContentPage
+	public InlineCSS() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
 	{
-		public InlineCSS()
+		[Test]
+		public void InlineCSSParsed([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
+			var layout = new InlineCSS(inflator);
+			Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Pink));
 		}
 
-		public InlineCSS(bool useCompiledXaml)
+		[Test]
+		public void InitialValue([Values] XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(false), TestCase(true)]
-			public void InlineCSSParsed(bool useCompiledXaml)
-			{
-				var layout = new InlineCSS(useCompiledXaml);
-				Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Pink));
-			}
-
-			[TestCase(false), TestCase(true)]
-			public void InitialValue(bool useCompiledXaml)
-			{
-				var layout = new InlineCSS(useCompiledXaml);
-				Assert.That(layout.BackgroundColor, Is.EqualTo(Colors.Green));
-				Assert.That(layout.stack.BackgroundColor, Is.EqualTo(Colors.Green));
-				Assert.That(layout.button.BackgroundColor, Is.EqualTo(Colors.Green));
-				Assert.That(layout.label.BackgroundColor, Is.EqualTo(VisualElement.BackgroundColorProperty.DefaultValue));
-				Assert.That(layout.label.TextTransform, Is.EqualTo(TextTransform.Uppercase));
-			}
+			var layout = new InlineCSS(inflator);
+			Assert.That(layout.BackgroundColor, Is.EqualTo(Colors.Green));
+			Assert.That(layout.stack.BackgroundColor, Is.EqualTo(Colors.Green));
+			Assert.That(layout.button.BackgroundColor, Is.EqualTo(Colors.Green));
+			Assert.That(layout.label.BackgroundColor, Is.EqualTo(VisualElement.BackgroundColorProperty.DefaultValue));
+			Assert.That(layout.label.TextTransform, Is.EqualTo(TextTransform.Uppercase));
 		}
 	}
 }

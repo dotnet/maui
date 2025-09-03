@@ -5,27 +5,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests.Maui14158;
 
 public partial class PublicTypes : ContentPage
 {
-	public PublicTypes()
-	{
-		InitializeComponent();
-	}
-
-	public PublicTypes(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
+	public PublicTypes() => InitializeComponent();
 
 	[TestFixture]
 	class Tests
 	{
-		[TestCase(true)]
-		[TestCase(false)]
-		public void VerifyCorrectTypesUsed(bool useCompiledXaml)
+		[Test]
+		public void VerifyCorrectTypesUsed([Values] XamlInflator inflator)
 		{
-			if (useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
 				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(PublicTypes)));
 
-			var page = new PublicTypes(useCompiledXaml);
+			var page = new PublicTypes(inflator);
 
 			Assert.IsInstanceOf<PublicInExternal>(page.publicInExternal);
 			Assert.IsInstanceOf<PublicInHidden>(page.publicInHidden);

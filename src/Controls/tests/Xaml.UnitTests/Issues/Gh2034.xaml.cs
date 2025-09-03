@@ -1,33 +1,26 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Gh2034 : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh2034 : ContentPage
+	public Gh2034() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
 	{
-		public Gh2034()
+		[Test]
+		public void Compiles([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Gh2034(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			public void Compiles(bool useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
 			{
-				if (!useCompiledXaml)
-					return;
 				MockCompiler.Compile(typeof(Gh2034));
 				Assert.Pass();
+			}
+			if (inflator == XamlInflator.SourceGen)
+			{
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Gh2034));
+				Assert.That(result.Diagnostics, Is.Empty);
 			}
 		}
 	}

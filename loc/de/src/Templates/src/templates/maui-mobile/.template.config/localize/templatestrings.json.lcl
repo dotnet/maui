@@ -21,12 +21,12 @@
       </Item>
       <Item ItemId=";description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Tizen]]></Val>
+          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ein Projekt zum Erstellen einer .NET MAUI-Anwendung für iOS, Android, Mac Catalyst, WinUI und Tizen]]></Val>
+            <Val><![CDATA[Ein Projekt zum Erstellen einer .NET MAUI-Anwendung für iOS, Android, Mac Und WinUI]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, Tizen, and WinUI]]></Val>
+            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Tizen]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -47,7 +47,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Opens MainPage.xaml in the editor.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Öffnet "MainPage.xaml" im Editor.]]></Val>
+            <Val><![CDATA[Öffnet MainPage.xaml im Editor.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

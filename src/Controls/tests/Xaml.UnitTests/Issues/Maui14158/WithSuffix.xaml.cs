@@ -5,27 +5,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests.Maui14158;
 
 public partial class WithSuffix : ContentPage
 {
-	public WithSuffix()
-	{
-		InitializeComponent();
-	}
-
-	public WithSuffix(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
+	public WithSuffix() => InitializeComponent();
 
 	[TestFixture]
 	class Tests
 	{
-		[TestCase(true)]
-		[TestCase(false)]
-		public void VerifyCorrectTypesUsed(bool useCompiledXaml)
+		[Test]
+		public void VerifyCorrectTypesUsed([Values] XamlInflator inflator)
 		{
-			if (useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
 				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(WithSuffix)));
 
-			var page = new WithSuffix(useCompiledXaml);
+			var page = new WithSuffix(inflator);
 
 			Assert.IsInstanceOf<PublicWithSuffix>(page.publicWithSuffix);
 			Assert.IsInstanceOf<InternalWithSuffix>(page.internalWithSuffix);

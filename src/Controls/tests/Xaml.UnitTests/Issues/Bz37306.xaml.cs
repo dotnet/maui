@@ -1,31 +1,21 @@
-using Microsoft.Maui.Controls;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Bz37306 : ContentPage
 {
-	public partial class Bz37306 : ContentPage
+	public Bz37306() => InitializeComponent();
+
+
+	[TestFixture]
+	class Tests
 	{
-		public Bz37306()
+		[Test]
+		public void xStringInResourcesDictionaries([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Bz37306(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void xStringInResourcesDictionaries(bool useCompiledXaml)
-			{
-				var layout = new Bz37306(useCompiledXaml);
-				Assert.AreEqual("Mobile App", layout.Resources["AppName"]);
-				Assert.AreEqual("Mobile App", layout.Resources["ApplicationName"]);
-			}
+			var layout = new Bz37306(inflator);
+			Assert.AreEqual("Mobile App", layout.Resources["AppName"]);
+			Assert.AreEqual("Mobile App", layout.Resources["ApplicationName"]);
 		}
 	}
 }
