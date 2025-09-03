@@ -29,8 +29,6 @@ public class FlyoutPageViewModel : INotifyPropertyChanged
         }
     }
 
-
-
     public bool IsPresented
     {
         get => _isPresented;
