@@ -165,7 +165,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					if (adderRef.ReturnType.FullName != "System.Void")
 						Context.IL.Emit(Pop);
 				}
-
 				else
 					throw new BuildException(BuildExceptionCode.ContentPropertyAttributeMissing, node, null, ((IElementNode)parentNode).XmlType.Name);
 			}
