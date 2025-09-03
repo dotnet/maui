@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue31351"
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
+             Title="Issue 31351">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Label Grid.Row="0"
+               Text="Custom CollectionView ScrollTo Test"
+               FontSize="18"
+               HorizontalOptions="Center"
+               Margin="10"/>
+
+        <StackLayout Grid.Row="1"
+                     Orientation="Horizontal"
+                     HorizontalOptions="Center"
+                     Spacing="10"
+                     Margin="10">
+            <Button Text="ScrollTo 25"
+                    AutomationId="ScrollToIndex25"
+                    Command="{Binding ScrollToIndex25Command}"/>
+            <Button Text="ScrollTo Item 40"
+                    AutomationId="ScrollToItem40"
+                    Command="{Binding ScrollToItem40Command}"/>
+            <Button Text="ScrollTo End"
+                    AutomationId="ScrollToEnd"
+                    Command="{Binding ScrollToEndCommand}"/>
+        </StackLayout>
+
+        <ns:CustomCollectionView Grid.Row="2"
+                                 x:Name="customCollectionView"
+                                 AutomationId="CustomCollectionView"
+                                 ItemsSource="{Binding Items}"
+                                 BackgroundColor="LightBlue"
+                                 Margin="10">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10"
+                            BackgroundColor="White"
+                            Margin="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0"
+                               Text="{Binding Name}"
+                               VerticalOptions="Center"
+                               FontSize="16"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding Index, StringFormat='#{0}'}"
+                               VerticalOptions="Center"
+                               FontSize="12"
+                               TextColor="Gray"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </ns:CustomCollectionView>
+
+        <Label Grid.Row="2"
+               x:Name="statusLabel"
+               AutomationId="StatusLabel"
+               Text="Ready to test"
+               VerticalOptions="End"
+               HorizontalOptions="Center"
+               BackgroundColor="Yellow"
+               Padding="5"
+               Margin="10"/>
+    </Grid>
+</ContentPage>
