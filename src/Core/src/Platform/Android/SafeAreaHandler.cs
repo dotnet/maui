@@ -34,12 +34,12 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
     /// </summary>
     internal void InvalidateWindowInsets()
     {
-        if (_lastReceivedInsets is not null)
+        /*if (_lastReceivedInsets is not null)
         {
             // Re-apply the last received insets to trigger OnApplyWindowInsets
             ViewCompat.DispatchApplyWindowInsets(_owner, _lastReceivedInsets);
         }
-        else
+        else*/
         {
             // Request fresh insets from the system
             ViewCompat.RequestApplyInsets(_owner);
@@ -164,10 +164,10 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
     internal void UpdateSafeAreaConfiguration()
     {
         // Clear cached ScrollView descendant check
-        _scrollViewDescendant = null;
+       // _scrollViewDescendant = null;
 
         // Force re-calculation of safe area
-        var oldSafeArea = _safeArea;
+       // var oldSafeArea = _safeArea;
         _safeArea = GetAdjustedSafeAreaInsets();
 
         // Always invalidate insets when configuration changes, regardless of whether
@@ -208,7 +208,7 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
             }
 
             // Get handler and requestLayout from weak references
-            if (!_handlerRef.TryGetTarget(out var handler) || !_requestLayoutRef.TryGetTarget(out var requestLayout))
+            if (!_handlerRef.TryGetTarget(out var handler))
             {
                 // Handler or requestLayout has been garbage collected, return insets unchanged
                 return insets;
@@ -253,8 +253,28 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
             // This view is not a ScrollView descendant, pass insets through unchanged
             return insets;*/
 
-            if (viewInsets.Top > 0)
+            // This is just a quick hack to demonstrate the idea
+            // in the real implementation you would check each of these insets against the relative SafeAreaRegions
+            // and just specify which range is consumed or not
+            if (viewInsets.Top > 0 || viewInsets.Bottom > 0 || viewInsets.Left > 0 || viewInsets.Right > 0)
+            {
+
+                // This is also somewhat of a hack, AFAICT you need to reset the padding on all children that were previouslly consuming the insets
+                // There's probably a more efficient way to do this
+                // One approach here could be for us to just make one global SafeAreaHandler that gets applied to every view
+                // and then that handler would have a tracking list of views so it could know where to dispatch and reset.
+                var descendant = v.FindDescendantView<ViewGroup>((view) => view is ICrossPlatformLayoutBacking && view != v);
+                descendant?.DispatchApplyWindowInsets(WindowInsets.Consumed);
+                
+
+                while (descendant != null)
+                {
+                    descendant = descendant.FindDescendantView<ViewGroup>((view) => view is ICrossPlatformLayoutBacking && view != descendant);
+                    descendant?.DispatchApplyWindowInsets(WindowInsets.Consumed);
+                }
+
                 return WindowInsetsCompat.Consumed;
+            }
 
             return insets;
         }

@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static T? GetChildAt<T>(this AView view, int index) where T : AView
 		{
-			if (view is AViewGroup viewGroup && viewGroup.ChildCount < index)
+			if (view is AViewGroup viewGroup && index < viewGroup.ChildCount)
 				return (T?)viewGroup.GetChildAt(index);
 
 			return null;

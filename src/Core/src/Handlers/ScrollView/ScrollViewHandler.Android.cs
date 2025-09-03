@@ -1,4 +1,5 @@
 ﻿using Android.Views;
+using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Layouts.LayoutExtensions;
 
@@ -225,9 +226,23 @@ namespace Microsoft.Maui.Handlers
 				Tag = InsetPanelTag
 			};
 
+			// replace the one that's part of contentviewgroup for now
+			// ScrollView will need its own handling and we don't want logic to get confused for now
+			ViewCompat.SetOnApplyWindowInsetsListener(paddingShim, new WindowsListener());
+
 			handler.PlatformView.RemoveAllViews();
 			paddingShim.AddView(nativeContent);
 			handler.PlatformView.SetContent(paddingShim);
+		}
+
+		internal class WindowsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
+		{
+			public WindowInsetsCompat? OnApplyWindowInsets(View? v, WindowInsetsCompat? insets)
+			{
+				// I need to play with this more but my thinking here is that if there's an inset requested on the scrollview
+				// then we set the padding on the scrollview
+				return insets;
+			}
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
