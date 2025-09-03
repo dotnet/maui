@@ -29,26 +29,24 @@ public class Issue31375 : ContentPage
 		_textLabel = new Label() { AutomationId = "CounterLabel" };
 		_textLabel.Text = count++.ToString();
 
-		var refreshView = new RefreshView
-		{
-			Margin = 16,
-			Content = new VerticalStackLayout
-		{
-			Children = { button, _textLabel }
-		}
-		};
-
-		Content = refreshView;
-
 		// Set BindingContext
 		BindingContext = this;
 
 		// Assign command
 		RefreshCommand = new Command(AddItems);
+		var refreshView = new RefreshView
+		{
+			Margin = 16,
+			Content = _textLabel,
+		};
 		refreshView.SetBinding(RefreshView.IsRefreshingProperty, nameof(IsLoading));
 		refreshView.SetBinding(RefreshView.CommandProperty, nameof(RefreshCommand));
+		Content = new StackLayout
+		{
+			Children = { refreshView, button }
+		};
 	}
-	
+
 	void Button_Clicked(object sender, EventArgs e)
     {
         IsLoading = true;
