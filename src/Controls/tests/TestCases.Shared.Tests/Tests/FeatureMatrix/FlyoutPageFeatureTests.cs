@@ -91,8 +91,8 @@ public class FlyoutPageFeatureTests : UITest
 			}
 			catch (Exception)
 			{
-				 // not found yet, will retry
-		    }
+				// not found yet, will retry
+			}
 		}
 		Assert.That(flyoutOpened, Is.True, "Flyout did not open after multiple drag attempts");
 		App.Tap("CloseFlyoutButton");
