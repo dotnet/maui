@@ -60,39 +60,24 @@ namespace Microsoft.Maui.Handlers
 		/// <inheritdoc/>
 		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			// AspectFit + non-Fill alignment: cap Max* to intrinsic bitmap so alignment (Center/Start/End) works.
-			// Only set once when Max* still Infinity and we have decoded size; else mirror VirtualView Maximum*.
-			// Without this the Image measures to available space and alignment appears ignored.
+			// Compute a possible size without mutating platform properties during measure.
+			var possibleSize = base.GetDesiredSize(widthConstraint, heightConstraint);
+
+			// For AspectFit + non-Fill alignment, don't exceed intrinsic bitmap size so alignment works.
 			if (VirtualView.Aspect == Aspect.AspectFit
 				&& VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill
 				&& VirtualView.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill)
 			{
-				// First (and only) chance to lock to intrinsic size.
-				if (PlatformView.MaxWidth == double.PositiveInfinity
-					&& PlatformView.MaxHeight == double.PositiveInfinity)
+				var imageSize = GetImageSize();
+				if (imageSize.Width > 0 && imageSize.Height > 0)
 				{
-					// Clamp to decoded pixel size if available.
-					var imageSize = GetImageSize();
-
-					if (imageSize.Width != 0 && imageSize.Height != 0)
-					{
-						PlatformView.MaxWidth = imageSize.Width;
-						PlatformView.MaxHeight = imageSize.Height;
-					}
-				}
-			}
-			else
-			{
-				// Other scenarios: honor user Maximum* values.
-				if (VirtualView.MaximumHeight != PlatformView.MaxHeight
-					|| VirtualView.MaximumWidth != PlatformView.MaxWidth)
-				{
-					PlatformView.MaxWidth = VirtualView.MaximumWidth;
-					PlatformView.MaxHeight = VirtualView.MaximumHeight;
+					return new Graphics.Size(
+						Math.Min(possibleSize.Width, imageSize.Width),
+						Math.Min(possibleSize.Height, imageSize.Height));
 				}
 			}
 
-			return base.GetDesiredSize(widthConstraint, heightConstraint);
+			return possibleSize;
 		}
 
 		/// <summary>
@@ -152,6 +137,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 			handler.PlatformView?.UpdateAspect(image);
+			// Aspect changes may affect whether we cap to intrinsic size
+			if (handler is ImageHandler ih)
+				ih.UpdatePlatformMaxConstraints();
 		}
 
 		/// <summary>
@@ -175,15 +163,57 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="image">The associated <see cref="Image"/> instance.</param>
-		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
-			handler.SourceLoader.UpdateImageSourceAsync();
+		public static Task MapSourceAsync(IImageHandler handler, IImage image)
+		{
+			// Reset platform caps so we don't keep stale values between sources
+			if (handler is ImageHandler ih && ih.PlatformView is not null)
+			{
+				ih.PlatformView.MaxWidth = double.PositiveInfinity;
+				ih.PlatformView.MaxHeight = double.PositiveInfinity;
+			}
+
+			return handler.SourceLoader.UpdateImageSourceAsync();
+		}
 
 		void OnImageOpened(object sender, RoutedEventArgs e)
 		{
 			// Because this resolves from a task we should validate that the
 			// handler hasn't been disconnected
 			if (this.IsConnected())
+			{
 				UpdateValue(nameof(IImage.IsAnimationPlaying));
+				// Apply platform constraints when the decoded size is available
+				UpdatePlatformMaxConstraints();
+			}
+		}
+
+		/// <summary>
+		/// Updates platform MaxWidth/MaxHeight based on current aspect/alignment and decoded image size.
+		/// Avoids doing this during GetDesiredSize to prevent side effects across layout passes.
+		/// </summary>
+		private void UpdatePlatformMaxConstraints()
+		{
+			if (PlatformView is null || VirtualView is null)
+				return;
+
+			bool isAspectFitNonFill = VirtualView.Aspect == Aspect.AspectFit
+				&& VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill
+				&& VirtualView.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill;
+
+			if (isAspectFitNonFill)
+			{
+				var sz = GetImageSize();
+				if (sz.Width > 0 && sz.Height > 0)
+				{
+					PlatformView.MaxWidth = sz.Width;
+					PlatformView.MaxHeight = sz.Height;
+					return;
+				}
+			}
+
+			// Otherwise mirror the view's declared maximums
+			PlatformView.MaxWidth = VirtualView.MaximumWidth;
+			PlatformView.MaxHeight = VirtualView.MaximumHeight;
 		}
 
 		private Graphics.Size GetImageSize()
@@ -195,7 +225,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					return new Graphics.Size(bitmap.PixelWidth, bitmap.PixelHeight);
 				}
-				// If not available, set to zero
+				// If not available, return zero
 			}
 			return Graphics.Size.Zero;
 		}
