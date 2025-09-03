@@ -68,9 +68,7 @@ namespace Microsoft.Maui.Handlers
 			if (!VirtualView?.IsRefreshing ?? false)
 				CompleteRefresh();
 			else if (_refreshCompletionDeferral == null)
-			{
 				PlatformView?.RequestRefresh();
-			}
 		}
 
 		static void UpdateContent(IRefreshViewHandler handler)
