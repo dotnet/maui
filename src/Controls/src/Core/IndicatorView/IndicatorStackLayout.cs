@@ -170,26 +170,34 @@ namespace Microsoft.Maui.Controls
 
 			BindableLayout.SetItemTemplate(this, indicatorTemplate);
 		}
-		
+
 		IEnumerable? GetFilteredItemsSource()
 		{
 			if (_indicatorView.ItemsSource is null || _indicatorView.MaximumVisible <= 0)
+			{
 				return null;
+			}
 
-			var list = new List<object>();
 			if (_indicatorView.ItemsSource is IList items)
 			{
-				int min = Math.Min(items.Count, _indicatorView.MaximumVisible);
-				for (int index = 0; index < min; index++)
+				if (items.Count <= _indicatorView.MaximumVisible)
+				{
+					return items;
+				}
+
+				var filteredItems = new List<object>();
+				for (int index = 0; index < _indicatorView.MaximumVisible; index++)
 				{
 					if (items[index] is object item)
 					{
-						list.Add(item);
+						filteredItems.Add(item);
 					}
 				}
+
+				return filteredItems;
 			}
 
-			return list;
+			return _indicatorView.ItemsSource;
 		}
 
 		public void Remove()
