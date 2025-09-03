@@ -227,8 +227,10 @@ namespace Microsoft.Maui.Handlers
 			};
 
 			// replace the one that's part of contentviewgroup for now
-			// ScrollView will need its own handling and we don't want logic to get confused for now
-			ViewCompat.SetOnApplyWindowInsetsListener(paddingShim, new WindowsListener());
+			ViewCompat.SetOnApplyWindowInsetsListener(paddingShim, null);
+
+			// Setting this here on the scrollview and that's where we apply insets
+			ViewCompat.SetOnApplyWindowInsetsListener(handler.PlatformView, new WindowsListener());
 
 			handler.PlatformView.RemoveAllViews();
 			paddingShim.AddView(nativeContent);
@@ -239,9 +241,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			public WindowInsetsCompat? OnApplyWindowInsets(View? v, WindowInsetsCompat? insets)
 			{
-				// I need to play with this more but my thinking here is that if there's an inset requested on the scrollview
-				// then we set the padding on the scrollview
-				return insets;
+				// I'm not sure the best way to apply insets here. Need to test more
+				// 1) if the user has set all safeareaedges to all or container do we just set fitToSystenWindow on scrollview?
+				// 2) do we just apply padding to the scrollview and call that good?
+				// 3) we probably need
+				
+				return WindowInsetsCompat.Consumed;
 			}
 		}
 
