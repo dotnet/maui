@@ -132,7 +132,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				=> c.MatchXArguments(node, Context, out parameters));
 			if (ctor is null)
 #pragma warning disable RS0030 // Do not use banned APIs
-				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.FilePath!, node, type.Name), type.ToDisplayString()));
+				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.ProjectItem.RelativePath!, node, type.Name), type.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 		}
 		//x:FactoryMethod
@@ -145,7 +145,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 					   m.IsStatic
 					&& m.MatchXArguments(node, Context, out parameters));
 			if (factoryMethod is null)
-				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.FilePath!, node, factoryMehodName!), factoryMehodName));
+				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.ProjectItem.RelativePath!, node, factoryMehodName!), factoryMehodName));
 		}
 
 		if (ctor is null && factoryMethod is null)
@@ -206,7 +206,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 					propXmlName = new XmlName("", contentPropertyName);
 				}
 				else if (!node.Properties.TryGetValue(req.Name, out propNode, out propXmlName))
-					Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(Context.FilePath!, node, req.Name), $"Required field '{req.Name}' not found in {type}"));
+					Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(Context.ProjectItem.RelativePath!, node, req.Name), $"Required field '{req.Name}' not found in {type}"));
 
 				string propValue = "null";
 				var pType = req is IPropertySymbol prop ? prop.Type : ((IFieldSymbol)req).Type;

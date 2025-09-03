@@ -18,11 +18,9 @@ public static class SourceGeneratorDriver
 {
 	private static MetadataReference[]? MauiReferences;
 
-	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework);
+	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn);
 
 	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, params AdditionalFile[] additionalFiles)
-		where T : IIncrementalGenerator, new() => RunGenerator<T>(compilation, "", additionalFiles);
-	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, string noWarn, params AdditionalFile[] additionalFiles)
 		where T : IIncrementalGenerator, new()
 	{
 		ISourceGenerator generator = new T().AsSourceGenerator();
@@ -33,8 +31,8 @@ public static class SourceGeneratorDriver
 			trackIncrementalGeneratorSteps: true);
 
 		GeneratorDriver driver = CSharpGeneratorDriver.Create([generator], driverOptions: options)
-			.AddAdditionalTexts(additionalFiles.Select(f => f.Text).ToImmutableArray())
-			.WithUpdatedAnalyzerConfigOptions(new CustomAnalyzerConfigOptionsProvider(additionalFiles, noWarn));
+			.AddAdditionalTexts([.. additionalFiles.Select(f => f.Text)])
+			.WithUpdatedAnalyzerConfigOptions(new CustomAnalyzerConfigOptionsProvider(additionalFiles));
 
 		driver = driver.RunGenerators(compilation);
 
@@ -108,12 +106,10 @@ public static class SourceGeneratorDriver
 	private class CustomAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
 	{
 		private readonly IImmutableDictionary<string, AdditionalFile> _additionalFiles;
-		private readonly string _noWarn;
 
-		public CustomAnalyzerConfigOptionsProvider(AdditionalFile[] additionalFiles, string noWarn = "")
+		public CustomAnalyzerConfigOptionsProvider(AdditionalFile[] additionalFiles)
 		{
 			_additionalFiles = additionalFiles.ToImmutableDictionary(f => f.Text.Path, f => f);
-			_noWarn = noWarn;
 		}
 
 		public override AnalyzerConfigOptions GlobalOptions => throw new System.NotImplementedException();
@@ -126,22 +122,20 @@ public static class SourceGeneratorDriver
 		public override AnalyzerConfigOptions GetOptions(AdditionalText textFile)
 		{
 			return _additionalFiles.TryGetValue(textFile.Path, out var additionalFile)
-				? (AnalyzerConfigOptions)new CustomAnalyzerConfigOptions(additionalFile, _noWarn)
+				? (AnalyzerConfigOptions)new CustomAnalyzerConfigOptions(additionalFile)
 				: CustomAnalyzerConfigOptions.Empty;
 		}
 
 		private class CustomAnalyzerConfigOptions : AnalyzerConfigOptions
 		{
 			readonly AdditionalFile? _additionalFile;
-			readonly string _noWarn;
 
-			public CustomAnalyzerConfigOptions(AdditionalFile? additionalFile, string noWarn)
+			public CustomAnalyzerConfigOptions(AdditionalFile? additionalFile)
 			{
 				_additionalFile = additionalFile;
-				_noWarn = noWarn;
 			}
 
-			public static AnalyzerConfigOptions Empty { get; } = new CustomAnalyzerConfigOptions(null, "");
+			public static AnalyzerConfigOptions Empty { get; } = new CustomAnalyzerConfigOptions(null);
 
 			public override bool TryGetValue(string key, [NotNullWhen(true)] out string? value)
 			{
@@ -158,10 +152,10 @@ public static class SourceGeneratorDriver
 					"build_metadata.additionalfiles.ManifestResourceName" => _additionalFile.ManifestResourceName,
 					"build_metadata.additionalfiles.RelativePath" => _additionalFile.RelativePath,
 					"build_metadata.additionalfiles.Inflator" => "SourceGen",
-					"build_property.targetframework" => _additionalFile.TargetFramework,
+					"build_property.targetFramework" => _additionalFile.TargetFramework,
 					"build_property.EnableMauiXamlDiagnostics" => "true",
 					"build_property.MauiXamlLineInfo" => "enable",
-					"build_property.MauiXamlNoWarn" => _noWarn,
+					"build_property.MauiXamlNoWarn" => _additionalFile.NoWarn,
 
 					_ => null
 				};

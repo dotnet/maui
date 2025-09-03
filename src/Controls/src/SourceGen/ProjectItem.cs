@@ -1,22 +1,70 @@
+using System;
+
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
-
-record ProjectItem
+record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 {
-	public required AdditionalText AdditionalText { get; init; }
-	private string? _targetPath;
-	public string? TargetPath { get => _targetPath ?? AdditionalText.Path; init => _targetPath = value; }
-	public string? RelativePath { get; init; }
-	public string? ManifestResourceName { get; init; }
-	public required string Kind { get; init; }
-	public string? TargetFramework { get; init; }
-	public required XamlInflator Inflator { get; init; } 
+	public string Configuration
+		=> Options.GetValueOrDefault("build_property.Configuration", "Debug");
 
-	//bypass attribute check. used for testing
-	public string Configuration { get; internal set; } = "Debug";
-	public bool EnableLineInfo { get; internal set; } = true;
-	public bool EnableDiagnostics { get; internal set; } = false;
-	public string NoWarn { get; internal set; } = "";
+	public bool EnableLineInfo
+	{
+		get
+		{
+			if (Options.IsEnabled("build_metadata.additionalfiles.LineInfo"))
+				return true;
+			if (Options.IsDisabled("build_metadata.additionalfiles.LineInfo"))
+				return false;
+			return !Options.IsDisabled("build_property.MauiXamlLineInfo");
+		}
+	}
+
+	public bool EnableDiagnostics
+	{
+		get
+		{
+			if (Options.IsTrue("build_metadata.additionalfiles.EnableDiagnostics"))
+				return true;
+			if (Options.IsFalse("build_metadata.additionalfiles.EnableDiagnostics"))
+				return false;
+			return Options.IsTrue("build_property.EnableMauiXamlDiagnostics");
+		}
+	}
+
+	public string Kind
+		=> Options.GetValueOrDefault("build_metadata.additionalfiles.GenKind", "None");
+
+	public XamlInflator Inflator
+	{
+		get
+		{
+			var xamlinflator = 0;			
+			var parts = Options.GetValueOrDefault("build_metadata.additionalfiles.Inflator", "").Split(',');
+			for (int i = 0; i < parts.Length; i++)
+			{
+				var trimmed = parts[i].Trim();
+				if (Enum.TryParse<XamlInflator>(trimmed, true, out var xinfl))
+					xamlinflator |= (int)xinfl;
+			}
+			return (XamlInflator)xamlinflator;
+		}
+	}
+
+	public string? ManifestResourceName
+		=> Options.GetValueOrNull("build_metadata.additionalfiles.ManifestResourceName");
+
+	public string NoWarn
+		=> Options.GetValueOrNull("build_metadata.additionalfiles.NoWarn") ?? Options.GetValueOrNull("build_property.MauiXamlNoWarn") ?? "";
+
+	public string? RelativePath
+		=> Options.GetValueOrNull("build_metadata.additionalfiles.RelativePath");
+
+	public string? TargetFramework
+		=> Options.GetValueOrNull("build_property.targetFramework");
+
+	public string? TargetPath
+		=> Options.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", AdditionalText.Path);
 }

@@ -221,7 +221,7 @@ static class NodeSGExtensions
 			if (!context.Compilation.HasImplicitConversion(returntype, toType))
 				//this could be left to the compiler to figure, but I've yet to find a way to test the compiler...
 				//FIXME: better error message
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, LocationCreate(context.FilePath!, (IXmlLineInfo)valueNode, valueString), $"Cannot convert {returntype} to {toType}"));
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, valueString), $"Cannot convert {returntype} to {toType}"));
 			return converterAndReturnType.Item1.Invoke(valueString, valueNode, toType, context, parentVar);
 		}
 
@@ -235,7 +235,7 @@ static class NodeSGExtensions
 	{
 #pragma warning disable RS0030 // Do not use banned APIs
 		void reportDiagnostic()
-			=> context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationHelpers.LocationCreate(context.FilePath!, lineInfo, valueString), valueString, toType.ToDisplayString()));
+			=> context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, lineInfo, valueString), valueString, toType.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 
 		if (toType.NullableAnnotation == NullableAnnotation.Annotated
@@ -529,14 +529,14 @@ static class NodeSGExtensions
 
 	public static void RegisterSourceInfo(this INode node, SourceGenContext context, IndentedTextWriter writer, bool update = true)
 	{
-		if (!context.EnableDiagnostics)
+		if (!context.ProjectItem.EnableDiagnostics)
 			return;
 
 		if (!context.Variables.TryGetValue(node, out var variable))
 			return;
 
 		var assembly = context.Compilation.Assembly.Name;
-		var filePath = context.FilePath;
+		var filePath = context.ProjectItem.RelativePath;
 		var lineInfo = node as IXmlLineInfo;
 
 		if (!update)
@@ -549,19 +549,6 @@ static class NodeSGExtensions
 		writer.WriteLine($"global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo({variable.Name}!, new global::System.Uri(@\"{filePath};assembly={assembly}\", global::System.UriKind.Relative), {lineInfo?.LineNumber ?? -1}, {lineInfo?.LinePosition ?? -1});");
 		if (!update)
 			writer.Indent--;
-	}
-
-	static bool IsOfAnyType(XmlType xmlType, params string[] types)
-	{
-		if (types == null || types.Length == 0)
-			return false;
-		if (xmlType == null)
-			return false;
-		if (xmlType.NamespaceUri != XamlParser.MauiUri && xmlType.NamespaceUri != XamlParser.MauiGlobalUri)
-			return false;
-		if (types.Contains(xmlType.Name))
-			return true;
-		return false;
 	}
 
 	public static IFieldSymbol GetBindableProperty(this ValueNode node, SourceGenContext context)
@@ -584,14 +571,14 @@ static class NodeSGExtensions
 		{
 			ITypeSymbol? typeSymbol = null;
 			var parent = node.Parent?.Parent as IElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as IElementNode;
-			if (IsOfAnyType((node.Parent as ElementNode)?.XmlType!, "Setter", "PropertyCondition"))
+			if ((node.Parent as ElementNode)!.XmlType!.IsOfAnyType( "Setter", "PropertyCondition"))
 			{
-				if (IsOfAnyType(parent!.XmlType, "Trigger", "DataTrigger", "MultiTrigger", "Style"))
+				if (parent!.XmlType.IsOfAnyType("Trigger", "DataTrigger", "MultiTrigger", "Style"))
 					typeSymbol = GetTargetTypeSymbol(parent, context);
-				else if (IsOfAnyType(parent.XmlType, "VisualState"))
+				else if (parent.XmlType.IsOfAnyType("VisualState"))
 					typeSymbol = FindTypeSymbolForVisualState(parent, context, node);
 			}
-			else if (IsOfAnyType((node.Parent as ElementNode)?.XmlType!, "Trigger"))
+			else if ((node.Parent as ElementNode)!.XmlType!.IsOfAnyType("Trigger"))
 				typeSymbol = GetTargetTypeSymbol(node.Parent!, context);
 
 			var propertyName = parts[0];
@@ -615,19 +602,19 @@ static class NodeSGExtensions
 		//1. parent is VisualState, don't check that
 
 		//2. check that the VS is in a VSG
-		if (!(parent.Parent is IElementNode target) || !IsOfAnyType(target.XmlType, "VisualStateGroup"))
+		if (!(parent.Parent is IElementNode target) || !target.XmlType.IsOfAnyType("VisualStateGroup"))
 			throw new Exception($"Expected VisualStateGroup but found {parent.Parent}");
 
 		//3. if the VSG is in a VSGL, skip that as it could be implicit
-		if (target.Parent is ListNode
-			|| IsOfAnyType((target.Parent as IElementNode)?.XmlType!, "VisualStateGroupList"))
+		if (   target.Parent is ListNode
+			|| (target.Parent as IElementNode)!.XmlType!.IsOfAnyType( "VisualStateGroupList"))
 			target = (IElementNode)target.Parent.Parent;
 		else
 			target = (IElementNode)target.Parent;
 
 		XmlType? typeName = null;
 		//4. target is now a Setter in a Style, or a VE
-		if (IsOfAnyType(target.XmlType, "Setter"))
+		if (target.XmlType.IsOfAnyType("Setter"))
 		{
 			var targetType = ((target?.Parent as IElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
 			typeName = TypeArgumentsParser.ParseSingle(targetType, parent.NamespaceResolver, lineInfo);
@@ -639,7 +626,5 @@ static class NodeSGExtensions
 	}
 
 	public static bool RepresentsType(this INode node, string namespaceUri, string name)
-	{
-		return node is IElementNode elementNode && elementNode.XmlType.RepresentsType(namespaceUri, name);
-	}
+		=> node is IElementNode elementNode && elementNode.XmlType.RepresentsType(namespaceUri, name);
 }
