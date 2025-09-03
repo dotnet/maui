@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.OnScrolled(recyclerView, dx, dy);
 
 			// Start scroll instrumentation for user gesture
-			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(_itemsView, "UserGesture",
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(_itemsView, ScrollType.UserGesture,
 				recyclerView.FromPixels(_horizontalOffset),
 				recyclerView.FromPixels(_verticalOffset));
 			

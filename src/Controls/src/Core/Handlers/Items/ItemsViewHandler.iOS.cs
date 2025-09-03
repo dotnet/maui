@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			// Start scroll instrumentation for programmatic scrolling
 			var currentOffset = Controller.CollectionView.ContentOffset;
-			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(VirtualView, "Programmatic", 
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(VirtualView, ScrollType.Programmatic, 
 				currentOffset.X, currentOffset.Y);
 			
 			using (var indexPath = DetermineIndex(args))

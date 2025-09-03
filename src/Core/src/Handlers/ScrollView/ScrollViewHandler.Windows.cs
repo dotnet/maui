@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Handlers
 			if (args is ScrollToRequest request)
 			{
 				// Start scroll instrumentation for programmatic scroll
-				using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(scrollView as IView ?? handler.VirtualView, "Programmatic", 
+				using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(scrollView as IView ?? handler.VirtualView, ScrollType.Programmatic, 
 					scrollView.HorizontalOffset, scrollView.VerticalOffset);
 				
 				handler.PlatformView.ChangeView(request.HorizontalOffset, request.VerticalOffset, null, request.Instant);
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Handlers
 		void ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
 		{
 			// Start scroll instrumentation for user gesture
-			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(VirtualView, "UserGesture", 
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(VirtualView, ScrollType.UserGesture, 
 				VirtualView.HorizontalOffset, VirtualView.VerticalOffset);
 			
 			VirtualView.VerticalOffset = PlatformView.VerticalOffset;

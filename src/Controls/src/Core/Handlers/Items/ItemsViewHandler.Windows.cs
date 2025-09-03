@@ -484,7 +484,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void HandleScroll(ScrollViewer scrollViewer)
 		{
 			// Start scroll instrumentation for user gesture
-			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(Element, "UserGesture",
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(Element, ScrollType.UserGesture,
 				_previousHorizontalOffset, _previousVerticalOffset);
 			
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
@@ -618,7 +618,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			
 			// Start scroll instrumentation for programmatic scrolling
-			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(Element, "Programmatic", 
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(Element, ScrollType.Programmatic, 
 				_previousHorizontalOffset, _previousVerticalOffset);
 			
 			if (args.IsAnimated)

@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemsView = viewController.ItemsView;
 			
 			// Start scroll instrumentation for user gesture
-			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(itemsView, "UserGesture",
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(itemsView, ScrollType.UserGesture,
 				PreviousHorizontalOffset, PreviousVerticalOffset);
 			
 			var source = viewController.ItemsSource;

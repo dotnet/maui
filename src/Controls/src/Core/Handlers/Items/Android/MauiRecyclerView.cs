@@ -390,7 +390,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			
 			// Start scroll instrumentation for programmatic scrolling
-			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(ItemsView, "Programmatic",
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(ItemsView, ScrollType.Programmatic,
 				ComputeHorizontalScrollOffset(), ComputeVerticalScrollOffset());
 
 			var position = DetermineTargetPosition(args);

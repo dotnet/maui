@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			
 			// Start scroll instrumentation for user gesture
-			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(ItemsView, "UserGesture",
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(ItemsView, ScrollType.UserGesture,
 				(e.HorizontalOffset - e.HorizontalDelta).ToScaledDP(),
 				(e.VerticalOffset - e.VerticalDelta).ToScaledDP());
 			
@@ -228,7 +228,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void OnScrollToRequested(object? sender, ScrollToRequestEventArgs e)
 		{
 			// Start scroll instrumentation for programmatic scrolling
-			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(ItemsView, "Programmatic", 
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(ItemsView, ScrollType.Programmatic, 
 				ScrollX, ScrollY);
 			
 			if (e.Mode == ScrollToMode.Position)
