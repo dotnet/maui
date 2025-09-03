@@ -207,10 +207,11 @@ namespace Microsoft.Maui.ApplicationModel
 						StreamingCaptureMode = StreamingCaptureMode.Audio
 					};
 
-					var mediaCapture = new MediaCapture();
-					await mediaCapture.InitializeAsync(settings);
-					mediaCapture.Dispose();
-					return PermissionStatus.Granted;
+					using (var mediaCapture = new MediaCapture())
+					{
+						await mediaCapture.InitializeAsync(settings);
+						return PermissionStatus.Granted;
+					}
 				}
 				catch (UnauthorizedAccessException)
 				{
