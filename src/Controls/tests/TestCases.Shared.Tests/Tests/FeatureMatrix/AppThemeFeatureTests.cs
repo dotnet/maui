@@ -27,7 +27,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(1)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_VerifyVisualState()
 	{
 		App.WaitForElement("DefaultLightThemeButton");
@@ -36,7 +36,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(2)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_VerifyVisualState()
 	{
 		App.WaitForElement("DefaultDarkThemeButton");
@@ -45,7 +45,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(3)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_CheckBox_VerifyVisualState()
 	{
 		App.WaitForElement("DefaultLightThemeButton");
@@ -60,7 +60,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(4)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_CheckBox_VerifyVisualState()
 	{
 		App.WaitForElement("DarkThemeButton");
@@ -72,7 +72,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(5)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_DatePicker_VerifyVisualState()
 	{
 		App.WaitForElement("LightThemeButton");
@@ -91,7 +91,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(6)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_DatePicker_VerifyVisualState()
 	{
 		App.WaitForElement("DarkThemeButton");
@@ -110,7 +110,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(7)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_RadioButton_VerifyVisualState()
 	{
 		App.WaitForElement("LightThemeButton");
@@ -119,7 +119,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(8)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_RadioButton_VerifyVisualState()
 	{
 		App.WaitForElement("DarkThemeButton");
@@ -132,7 +132,7 @@ public class AppThemeFeatureTests : UITest
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 
 	[Test, Order(9)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_Picker_VerifyVisualState()
 	{
 		App.WaitForElement("LightThemeButton");
@@ -145,7 +145,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(10)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_Picker_VerifyVisualState()
 	{
 		App.WaitForElement("DarkThemeButton");
@@ -159,7 +159,7 @@ public class AppThemeFeatureTests : UITest
 #endif
 
 	[Test, Order(11)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_Slider_VerifyVisualState()
 	{
 		App.WaitForElement("LightThemeButton");
@@ -169,7 +169,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(12)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_Slider_VerifyVisualState()
 	{
 		App.WaitForElement("DarkThemeButton");
@@ -179,7 +179,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(13)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_Switch_VerifyVisualState()
 	{
 		App.WaitForElement("LightThemeButton");
@@ -190,7 +190,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(14)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_Switch_VerifyVisualState()
 	{
 		App.WaitForElement("DarkThemeButton");
@@ -204,7 +204,7 @@ public class AppThemeFeatureTests : UITest
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // Issue Link - https://github.com/dotnet/maui/issues/30837
 
 	[Test, Order(15)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_TimePicker_VerifyVisualState()
 	{
 		App.WaitForElement("LightThemeButton");
@@ -227,7 +227,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(16)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_TimePicker_VerifyVisualState()
 	{
 		App.WaitForElement("DarkThemeButton");
@@ -251,7 +251,7 @@ public class AppThemeFeatureTests : UITest
 #endif
 
 	[Test, Order(17)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_SearchBar_VerifyVisualState()
 	{
 		App.WaitForElement("LightThemeButton");
@@ -261,7 +261,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(18)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_SearchBar_VerifyVisualState()
 	{
 		App.WaitForElement("DarkThemeButton");
@@ -271,7 +271,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(19)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_Editor_VerifyVisualState()
 	{
 		App.WaitForElement("LightThemeButton");
@@ -281,7 +281,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(20)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_Editor_VerifyVisualState()
 	{
 		App.WaitForElement("DarkThemeButton");
@@ -293,7 +293,7 @@ public class AppThemeFeatureTests : UITest
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //Issue Link - https://github.com/dotnet/maui/issues/19997
 
 	[Test, Order(21)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_Entry_VerifyVisualState()
 	{
 		App.WaitForElement("LightThemeButton");
@@ -310,7 +310,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(22)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_Entry_VerifyVisualState()
 	{
 		App.WaitForElement("DarkThemeButton");
@@ -327,7 +327,7 @@ public class AppThemeFeatureTests : UITest
 #endif
 
 	[Test, Order(23)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_EntryAndPlaceholderColor_VerifyVisualState()
 	{
 		App.WaitForElement("LightThemeButton");
@@ -344,7 +344,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(24)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_EntryAndPlaceholderColor_VerifyVisualState()
 	{
 		App.WaitForElement("DarkThemeButton");
@@ -354,7 +354,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(25)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_EditorAndPlaceholderColor_VerifyVisualState()
 	{
 		App.WaitForElement("LightThemeButton");
@@ -371,7 +371,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(26)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_EditorAndPlaceholderColor_VerifyVisualState()
 	{
 		App.WaitForElement("DarkThemeButton");
@@ -381,7 +381,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(27)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_SearchBarAndPlaceholderColor_VerifyVisualState()
 	{
 		App.WaitForElement("LightThemeButton");
@@ -398,7 +398,7 @@ public class AppThemeFeatureTests : UITest
 	}
 
 	[Test, Order(28)]
-	[Category(AppThemeFeatureMatrix)]
+	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_SearchBarAndPlaceholderColor_VerifyVisualState()
 	{
 		App.WaitForElement("DarkThemeButton");
