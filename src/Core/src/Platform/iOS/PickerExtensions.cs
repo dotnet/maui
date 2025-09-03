@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
+				platformPicker.Text = null;
 				platformPicker.UpdatePickerTitle(picker);
 			}
 

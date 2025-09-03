@@ -359,7 +359,7 @@
 		</PropertyGroup>
 		<ItemGroup>
 			<_ProvisionJdkLinuxCommands Include="wget https://packages.microsoft.com/config/ubuntu/`lsb_release -rs`/packages-microsoft-prod.deb -O packages-microsoft-prod.deb" />
-			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)dpkg -i packages-microsoft-prod.deb" />
+			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)dpkg --force-confdef -i packages-microsoft-prod.deb" />
 			<_ProvisionJdkLinuxCommands Include="rm packages-microsoft-prod.deb" />
 			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)apt-get update" />
 			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)apt-get install -y msopenjdk-$(_AndroidJdkMajorVersion)" />

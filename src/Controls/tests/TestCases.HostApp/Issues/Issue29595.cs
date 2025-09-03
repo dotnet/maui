@@ -24,7 +24,7 @@ public class Issue29595 : ContentPage
 			ItemTemplate = GetItemTemplate(),
 			ItemsSource = _items
 		};
-	        
+
 		grid.Add(cv);
 
 		Content = grid;

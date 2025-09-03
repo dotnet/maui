@@ -247,6 +247,68 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Waits for the soft keyboard to be shown on the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing. Default is 15 seconds.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each check. Default is 500ms.</param>
+		/// <returns>true if the keyboard becomes visible within the timeout; otherwise, false.</returns>
+		public static bool WaitForKeyboardToShow(this IApp app, TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
+		{
+			timeout ??= DefaultTimeout;
+			retryFrequency ??= TimeSpan.FromMilliseconds(500);
+
+			DateTime start = DateTime.Now;
+
+			while (true)
+			{
+				if (app.IsKeyboardShown())
+				{
+					return true;
+				}
+
+				long elapsed = DateTime.Now.Subtract(start).Ticks;
+				if (elapsed >= timeout.Value.Ticks)
+				{
+					return false;
+				}
+
+				Thread.Sleep(retryFrequency.Value.Milliseconds);
+			}
+		}
+
+		/// <summary>
+		/// Waits for the soft keyboard to be hidden from the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing. Default is 15 seconds.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each check. Default is 500ms.</param>
+		/// <returns>true if the keyboard becomes hidden within the timeout; otherwise, false.</returns>
+		public static bool WaitForKeyboardToHide(this IApp app, TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
+		{
+			timeout ??= DefaultTimeout;
+			retryFrequency ??= TimeSpan.FromMilliseconds(500);
+
+			DateTime start = DateTime.Now;
+
+			while (true)
+			{
+				if (!app.IsKeyboardShown())
+				{
+					return true;
+				}
+
+				long elapsed = DateTime.Now.Subtract(start).Ticks;
+				if (elapsed >= timeout.Value.Ticks)
+				{
+					return false;
+				}
+
+				Thread.Sleep(retryFrequency.Value);
+			}
+		}
+
+		/// <summary>
 		/// (Android Only) Sends a device key event with meta state.
 		/// </summary>
 		/// <param name="app"></param>
@@ -2351,6 +2413,10 @@ namespace UITest.Appium
 			{
 				app.WaitForElement(AppiumQuery.ByAccessibilityId("MoreButton"));
 			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.WaitForElement("SecondaryToolbarMenuButton");
+			}
 			else
 			{
 				throw new InvalidOperationException($"WaitForMoreButton is not supported on this platform.");
@@ -2371,6 +2437,10 @@ namespace UITest.Appium
 			else if (app is AppiumWindowsApp)
 			{
 				app.Tap(AppiumQuery.ByAccessibilityId("MoreButton"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.Tap("SecondaryToolbarMenuButton");
 			}
 		}
 

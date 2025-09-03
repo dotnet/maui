@@ -1,10 +1,10 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/BlurEffectStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.BlurEffectStyle']/Docs/*" />
+	/// <summary>Enumerates blur effect styles.</summary>
 	public enum BlurEffectStyle
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/BlurEffectStyle.xml" path="//Member[@MemberName='None']/Docs/*" />
+		/// <summary>Indicates no blur.</summary>
 		None,
 		/// <summary>
 		/// Available in iOS 8.0 and later.

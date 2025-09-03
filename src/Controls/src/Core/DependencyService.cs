@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/DependencyService.xml" path="Type[@FullName='Microsoft.Maui.Controls.DependencyService']/Docs/*" />
+	/// <summary>Static class that provides the <see cref="M:Microsoft.Maui.Controls.DependencyService.Get`{T}(Microsoft.Maui.Controls.DependencyFetchTarget)"/> factory method for retrieving platform-specific implementations of the specified type T.</summary>
 	public static class DependencyService
 	{
 		static bool s_initialized;
