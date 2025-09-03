@@ -42,8 +42,6 @@ public class FlyoutPageViewModel : INotifyPropertyChanged
         }
     }
 
-
-
     public ImageSource IconImageSource
     {
         get => _iconImageSource;
@@ -135,8 +133,6 @@ public class FlyoutPageViewModel : INotifyPropertyChanged
             }
         }
     }
-
-
 
     public event PropertyChangedEventHandler PropertyChanged;
 

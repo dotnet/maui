@@ -194,7 +194,6 @@ public class FlyoutPageFeatureTests : UITest
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/26726
 	[Test, Order(8)]
 	[Category(UITestCategories.FlyoutPage)]
-
 	public void VerifyFlyoutPage_IsFlowDirectionRTL()
 	{
 		App.WaitForElement(Options);
@@ -209,7 +208,6 @@ public class FlyoutPageFeatureTests : UITest
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link:  https://github.com/dotnet/maui/issues/31374, https://github.com/dotnet/maui/issues/31372
 	[Test, Order(9)]
 	[Category(UITestCategories.FlyoutPage)]
-
 	public void VerifyFlyoutPage_IsFlowDirectionRTLWithIsPresented()
 	{
 		App.WaitForElement(Options);

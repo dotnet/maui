@@ -181,7 +181,7 @@
                                 Clicked="OnFlyoutLayoutBehaviorButtonClicked"
                                 CommandParameter="SplitOnPortrait"
                                 AutomationId="FlyoutLayoutBehaviorSplitOnPortrait"
-                                Grid.Row="2"
+                                Grid.Row="1"
                                 Grid.Column="1"/>
                 </Grid>
 
