@@ -22,13 +22,13 @@ namespace Maui.Controls.Sample
 		public NavigationPageControlPage()
 		{
 			_viewModel = new NavigationPageViewModel();
-			
+
 			// Subscribe to property changes to update NavigationPage properties
 			_viewModel.PropertyChanged += OnViewModelPropertyChanged;
-			
+
 			// Set initial NavigationPage properties based on Microsoft documentation
 			SetInitialNavigationPageProperties();
-			
+
 			PushAsync(new NavigationPageControlMainPage(_viewModel));
 		}
 
@@ -74,21 +74,21 @@ namespace Maui.Controls.Sample
 		public NavigationPageViewModel ViewModel => _viewModel;
 	}
 
-		public partial class NavigationPageControlMainPage : ContentPage
+	public partial class NavigationPageControlMainPage : ContentPage
 	{
 		private NavigationPageViewModel _viewModel;
 		private int _preNavStackCount;
 		private string _pendingOperation;
-			// Carry context across events
-			private string _pendingDestinationTitle; // predicted destination of current nav op
-			private string _lastPoppedPageTitle;     // page title that was popped (for Pop/PopToRoot)
+		// Carry context across events
+		private string _pendingDestinationTitle; // predicted destination of current nav op
+		private string _lastPoppedPageTitle;     // page title that was popped (for Pop/PopToRoot)
 
 		public NavigationPageControlMainPage(NavigationPageViewModel viewModel)
 		{
 			InitializeComponent();
 			_viewModel = viewModel;
 			BindingContext = _viewModel;
-			
+
 			// Subscribe to property changes to update attached properties
 			_viewModel.PropertyChanged += OnViewModelPropertyChanged;
 
@@ -140,11 +140,11 @@ namespace Maui.Controls.Sample
 				// Update text properties from entries
 				if (!string.IsNullOrEmpty(BackButtonTitleEntry.Text))
 					_viewModel.BackButtonTitle = BackButtonTitleEntry.Text;
-				
+
 				// Update boolean properties from checkboxes
 				_viewModel.HasNavigationBar = HasNavigationBarCheckBox.IsChecked;
 				_viewModel.HasBackButton = HasBackButtonCheckBox.IsChecked;
-				
+
 				UpdateNavigationInfo();
 			}
 			catch (System.Exception ex)
@@ -226,7 +226,7 @@ namespace Maui.Controls.Sample
 			};
 			gradient.GradientStops.Add(new GradientStop { Color = Colors.Purple, Offset = 0.0f });
 			gradient.GradientStops.Add(new GradientStop { Color = Colors.Orange, Offset = 1.0f });
-			
+
 			_viewModel.BarBackground = gradient;
 		}
 
@@ -240,7 +240,7 @@ namespace Maui.Controls.Sample
 			};
 			radialGradient.GradientStops.Add(new GradientStop { Color = Colors.Cyan, Offset = 0.0f });
 			radialGradient.GradientStops.Add(new GradientStop { Color = Colors.Navy, Offset = 1.0f });
-			
+
 			_viewModel.BarBackground = radialGradient;
 		}
 
@@ -354,41 +354,41 @@ namespace Maui.Controls.Sample
 				{
 					NavigationPage.SetBackButtonTitle(currentTop, _viewModel.BackButtonTitle);
 				}
-				
+
 				var stackLayout = new StackLayout
 				{
 					Padding = 20,
 					Spacing = 15,
 					Children =
 					{
-						new Label 
-						{ 
+						new Label
+						{
 							Text = $"Page {pageNumber}",
 							FontSize = 24,
 							FontAttributes = FontAttributes.Bold,
 							HorizontalTextAlignment = TextAlignment.Center,
 							TextColor = Colors.Blue
 						},
-						new Label 
-						{ 
+						new Label
+						{
 							Text = $"NavigationPage Test Page {pageNumber}",
 							FontSize = 16,
 							HorizontalTextAlignment = TextAlignment.Center
 						},
-						new Label 
-						{ 
+						new Label
+						{
 							Text = $"HasNavigationBar: {_viewModel.HasNavigationBar}",
 							FontSize = 14,
 							HorizontalTextAlignment = TextAlignment.Center
 						},
-						new Label 
-						{ 
+						new Label
+						{
 							Text = $"HasBackButton: {_viewModel.HasBackButton}",
 							FontSize = 14,
 							HorizontalTextAlignment = TextAlignment.Center
 						},
-						new Label 
-						{ 
+						new Label
+						{
 							Text = $"BackButtonTitle: {_viewModel.BackButtonTitle}",
 							FontSize = 14,
 							HorizontalTextAlignment = TextAlignment.Center
@@ -403,8 +403,9 @@ namespace Maui.Controls.Sample
 					stackLayout.Children.Add(new Button
 					{
 						Text = $"Push Page {pageNumber + 1}",
-						Command = new Command(async () => {
-							try 
+						Command = new Command(async () =>
+						{
+							try
 							{
 								_pendingOperation = "Push";
 								await PushNextPage();
@@ -438,8 +439,9 @@ namespace Maui.Controls.Sample
 				stackLayout.Children.Add(new Button
 				{
 					Text = "Pop Page",
-					Command = new Command(async () => {
-						try 
+					Command = new Command(async () =>
+					{
+						try
 						{
 							_pendingOperation = "Pop";
 							await Navigation.PopAsync();
@@ -460,8 +462,9 @@ namespace Maui.Controls.Sample
 					stackLayout.Children.Add(new Button
 					{
 						Text = "Pop to Root",
-						Command = new Command(async () => {
-							try 
+						Command = new Command(async () =>
+						{
+							try
 							{
 								_pendingOperation = "PopToRoot";
 								await Navigation.PopToRootAsync();
@@ -487,12 +490,12 @@ namespace Maui.Controls.Sample
 				newPage.NavigatedTo += OnChildPageNavigatedTo;
 				newPage.NavigatedFrom += OnChildPageNavigatedFrom;
 				newPage.NavigatingFrom += OnChildPageNavigatingFrom;
-				
+
 				// Apply NavigationPage attached properties to the new page (do NOT set BackButtonTitle here)
 				NavigationPage.SetHasNavigationBar(newPage, _viewModel.HasNavigationBar);
 				NavigationPage.SetHasBackButton(newPage, _viewModel.HasBackButton);
 				// BackButtonTitle intentionally applied to currentTop above
-				
+
 				// Always set these properties (including null values to clear them)
 				NavigationPage.SetIconColor(newPage, _viewModel.IconColor);
 				NavigationPage.SetTitleIconImageSource(newPage, _viewModel.TitleIconImageSource);
@@ -530,16 +533,16 @@ namespace Maui.Controls.Sample
 					Spacing = 15,
 					Children =
 					{
-						new Label 
-						{ 
+						new Label
+						{
 							Text = $"Page {pageNumber}",
 							FontSize = 24,
 							FontAttributes = FontAttributes.Bold,
 							HorizontalTextAlignment = TextAlignment.Center,
 							TextColor = Colors.Blue
 						},
-						new Label 
-						{ 
+						new Label
+						{
 							Text = $"NavigationPage Test Page {pageNumber}",
 							FontSize = 16,
 							HorizontalTextAlignment = TextAlignment.Center
@@ -548,7 +551,7 @@ namespace Maui.Controls.Sample
 						{
 							Text = "Pop Page",
 							Command = new Command(async () => {
-								try 
+								try
 								{
 									_pendingOperation = "Pop";
 									await Navigation.PopAsync();
@@ -566,7 +569,7 @@ namespace Maui.Controls.Sample
 						{
 							Text = "Pop to Root",
 							Command = new Command(async () => {
-								try 
+								try
 								{
 									_pendingOperation = "PopToRoot";
 									await Navigation.PopToRootAsync();
@@ -650,14 +653,14 @@ namespace Maui.Controls.Sample
 		protected override void OnAppearing()
 		{
 			base.OnAppearing();
-			
+
 			try
 			{
 				// Initialize UI controls with current values
 				BackButtonTitleEntry.Text = _viewModel.BackButtonTitle ?? "";
 				HasNavigationBarCheckBox.IsChecked = _viewModel.HasNavigationBar;
 				HasBackButtonCheckBox.IsChecked = _viewModel.HasBackButton;
-				
+
 				// Apply initial NavigationPage attached properties
 				NavigationPage.SetHasNavigationBar(this, _viewModel.HasNavigationBar);
 				NavigationPage.SetHasBackButton(this, _viewModel.HasBackButton);

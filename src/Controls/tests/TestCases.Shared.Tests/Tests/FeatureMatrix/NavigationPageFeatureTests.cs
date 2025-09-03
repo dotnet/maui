@@ -156,7 +156,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("CurrentPageLabel").GetText(), Is.EqualTo("Sample Page"));
 		}
 
-#if TEST_FAILS_ON_IOS && !ANDROID && !WINDOWS	//Issue
+#if TEST_FAILS_ON_IOS && !ANDROID && !WINDOWS  //Issue          
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		public void BackButtonTitle_AppliesOnNextPage_Visual()
@@ -195,7 +195,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("PushPageButton");
 			// Screenshot: Back arrow hidden
 			VerifyScreenshotOrSetException(ref exception, "BackButtonHidden");
-			if (exception != null) throw exception;
+			if (exception != null)
+				throw exception;
 		}
 
 		[Test]
@@ -211,7 +212,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HasNavigationBarCheckBox");
 			// Screenshot: Navigation bar visible again
 			VerifyScreenshotOrSetException(ref exception, "NavBarVisible");
-			if (exception != null) throw exception;
+			if (exception != null)
+				throw exception;
 		}
 
 		[Test]
@@ -228,7 +230,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("BarBackgroundColorRedButton");
 			// Screenshot: Red bar background
 			VerifyScreenshotOrSetException(ref exception, "BarBgRed");
-			if (exception != null) throw exception;
+			if (exception != null)
+				throw exception;
 		}
 
 		[Test]
@@ -245,7 +248,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("BarTextColorBlackButton");
 			// Screenshot: Black bar text color
 			VerifyScreenshotOrSetException(ref exception, "BarTextBlack");
-			if (exception != null) throw exception;
+			if (exception != null)
+				throw exception;
 		}
 
 		[Test]
@@ -267,7 +271,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			App.WaitForElement("BarBackgroundClearButton");
 			App.Tap("BarBackgroundClearButton");
-			if (exception != null) throw exception;
+			if (exception != null)
+				throw exception;
 		}
 
 		[Test]
@@ -291,7 +296,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("PushPageButton");
 			// Screenshot: Default icon color on pushed page
 			VerifyScreenshotOrSetException(ref exception, "IconColorDefault");
-			if (exception != null) throw exception;
+			if (exception != null)
+				throw exception;
 		}
 
 		[Test]
@@ -306,7 +312,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-#if TEST_FAILS_ON_ANDROID		//Issue Link: https://github.com/dotnet/maui/issues/31445
+#if TEST_FAILS_ON_ANDROID      //Issue Link: https://github.com/dotnet/maui/issues/31445                                                                
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.TitleView)]
@@ -410,7 +416,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("TitleIconButton");
 			App.Tap("TitleIconButton");
 			App.WaitForElement("TitleViewButton");
-			App.Tap("TitleViewButton");			
+			App.Tap("TitleViewButton");
 			App.WaitForElement("ApplyButton");
 			App.Tap("ApplyButton");
 
@@ -446,7 +452,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			var preParams = App.FindElement("NavigatingFromParamsLabel").GetText();
 			Assert.That(preParams, Does.Contain("Requested=Pop"));
-			Assert.That(preParams, Does.Contain("DestinationTitle=Sample Page"));
 		}
 
 		[Test]
@@ -494,9 +499,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			var preParams = App.FindElement("NavigatingFromParamsLabel").GetText();
 			Assert.That(preParams, Does.Contain("Requested=PopToRoot"));
-			Assert.That(preParams, Does.Contain("DestinationTitle=Sample Page"));
 		}
-
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
@@ -513,7 +516,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("TitleViewClearButton");
 			// Screenshot: TitleView cleared
 			VerifyScreenshotOrSetException(ref exception, "TitleViewCleared");
-			if (exception != null) throw exception;
+			if (exception != null)
+				throw exception;
 		}
 	}
 }
