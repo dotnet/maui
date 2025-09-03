@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
-using System;
 
 namespace Microsoft.Maui.Controls
 {
