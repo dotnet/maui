@@ -106,12 +106,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			Writer.WriteLine($"{variable.Name}.LoadTemplate = () =>");
 			using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
 			{
-				var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null)
+				var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem)
 				{
-					FilePath = context.FilePath,
 					ParentContext = context,
-					EnableLineInfo = context.EnableLineInfo,
-					EnableDiagnostics = context.EnableDiagnostics,
 				};
 
 				//inflate the template
@@ -195,7 +192,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			var propertyType = typeandconverter?.type ?? propertySymbol?.Type;
 			if (propertyType == null)
 			{
-				var location = LocationCreate(Context.FilePath!, (IXmlLineInfo)node, localName);
+				var location = LocationCreate(Context.ProjectItem.RelativePath!, (IXmlLineInfo)node, localName);
 				//FIXME error should be "propertyType does not support Add()"
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
 				return;
@@ -224,7 +221,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			else
 			//report diagnostic: not a collection
 			{
-				var location = LocationCreate(Context.FilePath!, (IXmlLineInfo)node, localName);
+				var location = LocationCreate(Context.ProjectItem.RelativePath!, (IXmlLineInfo)node, localName);
 				//FIXME error should be "propertyType does not support Add()"
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
 			}
@@ -291,7 +288,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			return;
 		}
 
-		var location = LocationCreate(context.FilePath!, (IXmlLineInfo)valueNode, localName);
+		var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, localName);
 		context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
 	}
 
@@ -339,7 +336,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		});
 		if (handlerSymbol == null)
 		{
-			var location = LocationCreate(context.FilePath!, (IXmlLineInfo)valueNode, handler);
+			var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, handler);
 			//FIXME better error message: "handler signature does not match event signature"
 			context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, handler));
 			return;
@@ -493,14 +490,14 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 		if (node is ValueNode valueNode)
 		{
-			using (context.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.FilePath) : PrePost.NoBlock())
+			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem.RelativePath) : PrePost.NoBlock())
 			{
 				var valueString = valueNode.ConvertTo(property, context, parentVar);
 				writer.WriteLine($"{parentVar.Name}.{EscapeIdentifier(localName)} = {valueString};");
 			}
 		}
 		else if (node is ElementNode elementNode)
-			using (context.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.FilePath) : PrePost.NoBlock())
+			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem.RelativePath) : PrePost.NoBlock())
 				writer.WriteLine($"{parentVar.Name}.{EscapeIdentifier(localName)} = ({property.Type.ToFQDisplayString()}){(HasDoubleImplicitConversion(context.Variables[elementNode].Type, property.Type, context, out var conv) ? "(" + conv!.ReturnType.ToFQDisplayString() + ")" : string.Empty)}{context.Variables[elementNode].Name};");
 	}
 
@@ -563,7 +560,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		{
 			if (keyNode is not ValueNode vKeyNode || vKeyNode.Value is not string key)
 			{
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.FilePath!, (IXmlLineInfo)keyNode, ""), "x:Key must be a string literal"));
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)keyNode, ""), "x:Key must be a string literal"));
 				//report diagnostic: x:Key must be a string literal
 				return false;
 			}
@@ -573,7 +570,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			}
 			if (keysInUse.Contains(key))
 			{
-				var location = LocationCreate(context.FilePath!, (IXmlLineInfo)keyNode, key);
+				var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)keyNode, key);
 				context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicateKeyInRD, location, key));
 				return false;
 			}
@@ -629,7 +626,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		if (HasDoubleImplicitConversion(context.Variables[valueNode].Type, itemType, context, out var conv))
 			cast = "(" + conv!.ReturnType.ToFQDisplayString() + ")";
 
-		using (context.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.FilePath) : PrePost.NoBlock())
+		using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.ProjectItem.RelativePath) : PrePost.NoBlock())
 			writer.WriteLine($"{parentObj}.Add(({itemType.ToFQDisplayString()}){cast}{context.Variables[valueNode].Name});");
 	}
 

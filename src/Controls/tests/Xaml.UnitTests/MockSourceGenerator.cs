@@ -188,7 +188,7 @@ public static class MockSourceGenerator
 					"build_metadata.additionalfiles.ManifestResourceName" => _additionalFile.ManifestResourceName,
 					"build_metadata.additionalfiles.RelativePath" => _additionalFile.RelativePath,
 					"build_metadata.additionalfiles.Inflator" => "SourceGen",
-					"build_property.targetframework" => _additionalFile.TargetFramework,
+					"build_property.targetFramework" => _additionalFile.TargetFramework,
 					_ => null
 				};
 
