@@ -11,7 +11,7 @@ public class Issue31339 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "[iOS] CarouselViewHandler2 - NSInternalInconsistencyException thrown when setting ItemsSources";
+	public override string Issue => "[iOS] CarouselViewHandler2 NSInternalInconsistencyException thrown when setting ItemsSources";
 
 	[Test]
 	[Category(UITestCategories.CarouselView)]
