@@ -4,19 +4,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class ShadowFeatureTests : UITest
+	public class ShadowFeatureTests : _GalleryUITest
 	{
 		public const string ShadowFeatureMatrix = "Shadow Feature Matrix";
+
+		public override string GalleryPageName => ShadowFeatureMatrix;
 
 		public ShadowFeatureTests(TestDevice device)
 			: base(device)
 		{
-		}
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery(ShadowFeatureMatrix);
 		}
 
 		[Test, Order(1)]

@@ -9,6 +9,8 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		const string ButtonGallery = "Button Gallery";
 
+		public override string GalleryPageName => ButtonGallery;
+
 		public ButtonUITests(TestDevice device)
 			: base(device)
 		{
