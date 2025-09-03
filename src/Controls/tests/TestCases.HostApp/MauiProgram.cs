@@ -67,7 +67,8 @@ namespace Maui.Controls.Sample
 		{
 			Page mainPage = null;
 			OverrideMainPage(ref mainPage);
-			return mainPage ?? new Issue28986();
+			return mainPage ?? new Issue28986_ScrollView();
+			//return mainPage ?? new Issue28986_ContentPage();
 		}
 	}
 
