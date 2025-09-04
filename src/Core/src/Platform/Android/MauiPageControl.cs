@@ -164,17 +164,23 @@ namespace Microsoft.Maui.Platform
 			if (_indicatorView == null)
 				return;
 
-			// Calculate user-friendly 1-based position
-			var pageNumber = position + 1;
-			var totalPages = _indicatorView.GetMaximumVisible();
+			var itemNumber = position + 1;
+			var totalItems = _indicatorView.GetMaximumVisible();
 			var isSelected = position == selectedPosition;
 
 			// Create descriptive content description for TalkBack
 			var contentDescription = isSelected 
-				? $"Page {pageNumber} of {totalPages}, selected"
-				: $"Page {pageNumber} of {totalPages}";
+				? $"Item {itemNumber} of {totalItems}, selected"
+				: $"Item {itemNumber} of {totalItems}";
 
 			imageView.ContentDescription = contentDescription;
+			
+			// Force TalkBack to announce the updated description for the selected item
+			if (isSelected && imageView.IsAccessibilityFocused)
+			{
+				// Send accessibility event to make TalkBack re-announce the updated content
+				imageView.SendAccessibilityEvent(EventTypes.ViewAccessibilityFocused);
+			}
 		}
 
 		AShapeDrawable? GetShape(AColor color)
