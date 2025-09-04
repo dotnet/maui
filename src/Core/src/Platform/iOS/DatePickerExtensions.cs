@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Foundation;
 using UIKit;
 
@@ -94,7 +95,7 @@ public static class DatePickerExtensions
 			}
 			else
 			{
-				dateFormatter.DateStyle = NSDateFormatterStyle.Short;
+				dateFormatter.SetLocalizedDateFormatFromTemplate("yMd"); // Forces 4-digit year
 				var strDate = dateFormatter.StringFor(picker.Date);
 				platformDatePicker.Text = strDate;
 			}
