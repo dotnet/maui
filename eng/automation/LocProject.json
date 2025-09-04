@@ -97,7 +97,7 @@
               "SourceFile": "src\\Controls\\src\\SourceGen\\MauiGResources.resx",
               "LclFile": "loc\\{Lang}\\src\\Controls\\src\\SourceGen\\MauiGResources.resx.lcl",
               "CopyOption": "LangIDOnName",
-              "OutputPath": "src\\Controls\\src\\SourceGen\\"
+              "OutputPath": "src\\Controls\\src\\SourceGen\\xlf\\"
             }
         ],
         "LssFiles": [],
