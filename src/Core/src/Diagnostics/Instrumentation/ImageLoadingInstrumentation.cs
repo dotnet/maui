@@ -5,9 +5,12 @@ using System.Net.Http;
 using System.Threading.Tasks;
 
 #if ANDROID
+using Android.Content.Res;
 using Android.Widget;
 using Android.Graphics.Drawables;
-using AndroidPath = Android.Graphics.Path;
+using Android.Graphics;
+using Java.IO;
+using AApplication = Android.App.Application;
 #elif IOS || MACCATALYST
 using UIKit;
 using CoreGraphics;
@@ -16,6 +19,8 @@ using Foundation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Storage;
+using Windows.Storage.Streams;
+using System.Runtime.InteropServices.WindowsRuntime;
 #endif
 
 namespace Microsoft.Maui.Diagnostics;
@@ -43,44 +48,7 @@ readonly struct ImageLoadingInstrumentation : IDiagnosticInstrumentation
 		_startTime = Stopwatch.GetTimestamp();
 		_state = new ImageLoadingState();
 	}
-
-	/// <summary>
-	/// Records that the image was loaded from cache.
-	/// </summary>
-	public void RecordCacheHit()
-	{
-		_state.WasFromCache = true;
-	}
-
-	/// <summary>
-	/// Records an exception that occurred during loading.
-	/// </summary>
-	/// <param name="exception">The exception that occurred.</param>
-	public void RecordException(Exception exception)
-	{
-		_state.LoadException = exception;
-	}
-
-	/// <summary>
-	/// Records file size information.
-	/// </summary>
-	/// <param name="sizeBytes">The file size in bytes.</param>
-	public void RecordFileSize(long sizeBytes)
-	{
-		_state.FileSizeBytes = sizeBytes;
-	}
-
-	/// <summary>
-	/// Records image dimensions.
-	/// </summary>
-	/// <param name="width">Width in pixels.</param>
-	/// <param name="height">Height in pixels.</param>
-	public void RecordDimensions(int width, int height)
-	{
-		_state.WidthPixels = width;
-		_state.HeightPixels = height;
-	}
-
+	
 	/// <summary>
 	/// Disposes the instrumentation and stops the diagnostic activity.
 	/// </summary>
@@ -102,7 +70,9 @@ readonly struct ImageLoadingInstrumentation : IDiagnosticInstrumentation
 
 		var metrics = diagnostics.GetMetrics<ImageDiagnosticMetrics>();
 		if (metrics is null)
+		{
 			return;
+		}
 
 		// Create extended tag list with comprehensive image loading information
 		var extendedTagList = CreateExtendedTagList(tagList);
@@ -121,25 +91,23 @@ readonly struct ImageLoadingInstrumentation : IDiagnosticInstrumentation
 		// If we haven't captured file size yet, try to estimate it
 		if (_state.FileSizeBytes == 0)
 		{
-			_state.FileSizeBytes = EstimateFileSize();
+			_state.FileSizeBytes = GetFileSize();
 		}
 
 		// Record success or failure metrics
-		if (_state.LoadException == null)
+		if (_state.LoadException is null)
 		{
-			// Success case
+			// Success
 			metrics.RecordImageLoadSuccess(
 				extendedTagList,
 				durationMs,
 				_state.FileSizeBytes,
-				EstimateMemorySize(_state.WidthPixels, _state.HeightPixels),
 				_state.WidthPixels,
-				_state.HeightPixels,
-				_state.WasFromCache);
+				_state.HeightPixels);
 		}
 		else
 		{
-			// Failure case
+			// Failure
 			var errorType = GetErrorType(_state.LoadException);
 			metrics.RecordImageLoadFailure(
 				extendedTagList,
@@ -200,7 +168,7 @@ readonly struct ImageLoadingInstrumentation : IDiagnosticInstrumentation
 	{
 		return exception switch
 		{
-			FileNotFoundException => "FileNotFound",
+			System.IO.FileNotFoundException => "FileNotFound",
 			UnauthorizedAccessException => "UnauthorizedAccess",
 			HttpRequestException => "NetworkError",
 			TaskCanceledException => "Timeout",
@@ -242,7 +210,9 @@ readonly struct ImageLoadingInstrumentation : IDiagnosticInstrumentation
 	static string GetFormatFromPath(string? path)
 	{
 		if (string.IsNullOrEmpty(path))
+		{
 			return "Unknown";
+		}
 
 		var extension = System.IO.Path.GetExtension(path).ToLowerInvariant();
 		return extension switch
@@ -263,7 +233,9 @@ readonly struct ImageLoadingInstrumentation : IDiagnosticInstrumentation
 	static string GetFormatFromUri(Uri? uri)
 	{
 		if (uri is null)
+		{
 			return "Unknown";
+		}
 
 		return GetFormatFromPath(uri.AbsolutePath);
 	}
@@ -271,7 +243,9 @@ readonly struct ImageLoadingInstrumentation : IDiagnosticInstrumentation
 	static string GetImageSizeCategory(int width, int height)
 	{
 		if (width <= 0 || height <= 0)
+		{
 			return "Unknown";
+		}
 
 		var area = (long)width * height;
 		return area switch
@@ -287,7 +261,9 @@ readonly struct ImageLoadingInstrumentation : IDiagnosticInstrumentation
 	static string GetAspectRatioCategory(int width, int height)
 	{
 		if (width <= 0 || height <= 0)
+		{
 			return "Unknown";
+		}
 
 		var ratio = (double)width / height;
 		return ratio switch
@@ -307,26 +283,62 @@ readonly struct ImageLoadingInstrumentation : IDiagnosticInstrumentation
 		return null;
 	}
 
-	long EstimateFileSize()
+	long GetFileSize()
 	{
-		// Try to get file size based on source type
-		if (_imageSource is IFileImageSource fileSource)
+		try
 		{
-			return GetLocalFileSize(fileSource.File);
+			return _imageSource switch
+			{
+				IFileImageSource fileSource => GetLocalFileSize(fileSource.File),
+				IUriImageSource uriSource => GetUriImageSize(uriSource.Uri),
+				IStreamImageSource streamSource => GetStreamImageSize(streamSource),
+				_ => GetPlatformImageSize()
+			};
 		}
-
-		// For other sources, we can't easily determine file size without loading
-		return 0;
+		catch (Exception)
+		{
+			// If any method fails, try to get size from platform view as fallback
+			return GetPlatformImageSize();
+		}
 	}
 
 	static long GetLocalFileSize(string? filePath)
 	{
 		if (string.IsNullOrEmpty(filePath))
+		{
 			return 0;
+		}
 
 		try
 		{
-			var fileInfo = new FileInfo(filePath);
+			// Return immediately if filePath is not valid
+			if (string.IsNullOrEmpty(filePath))
+			{
+				return 0;
+			}
+
+			var normalizedPath = filePath;
+
+			// Remove URI scheme for local files
+			if (filePath!.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
+			{
+				normalizedPath = filePath.Substring(7);
+			}
+
+			// Return if normalized path is not valid
+			if (string.IsNullOrEmpty(normalizedPath))
+			{
+				return 0;
+			}
+
+			// Check if it's an embedded resource
+			if (IsEmbeddedResource(normalizedPath!))
+			{
+				return GetEmbeddedResourceSize(normalizedPath);
+			}
+	
+			// Regular file system file
+			var fileInfo = new FileInfo(normalizedPath);
 			return fileInfo.Exists ? fileInfo.Length : 0;
 		}
 		catch
@@ -335,16 +347,159 @@ readonly struct ImageLoadingInstrumentation : IDiagnosticInstrumentation
 		}
 	}
 
-	static long EstimateMemorySize(int width, int height)
+	static long GetUriImageSize(Uri? uri)
 	{
-		if (width <= 0 || height <= 0)
+		if (uri is null)
+		{
 			return 0;
+		}
 
-		// Estimate memory usage: width * height * 4 bytes per pixel (RGBA)
-		return (long)width * height * 4;
+		try
+		{
+			// Handle different URI schemes
+			return uri.Scheme.ToLowerInvariant() switch
+			{
+				"file" => GetLocalFileSize(uri.LocalPath),
+				"http" or "https" => GetRemoteImageSize(uri),
+				"ms-appx" => GetAppResourceSize(uri),
+				"ms-appdata" => GetAppDataSize(uri),
+				_ => 0
+			};
+		}
+		catch
+		{
+			return 0;
+		}
+	}
+
+	static long GetStreamImageSize(IStreamImageSource streamSource)
+	{
+		try
+		{
+			// If we can get the stream, measure its length
+			var stream = streamSource.GetStreamAsync(System.Threading.CancellationToken.None).Result;
+			if (stream?.CanSeek == true)
+			{
+				var length = stream.Length;
+				stream.Position = 0; // Reset position to not interfere with image loading
+				return length;
+			}
+		}
+		catch
+		{
+			// Stream might not be seekable or accessible
+		}
+		return 0;
+	}
+	
+	long GetPlatformImageSize()
+	{
+		if (_view is IView view && view.Handler is Handlers.IImageHandler handler)
+		{
+			return GetPlatformImageSize(handler);
+		}
+		return 0;
+	}
+
+	static bool IsEmbeddedResource(string? path)
+	{
+		if (string.IsNullOrEmpty(path))
+		{
+			return false;
+		}
+
+		// Check common patterns for embedded resources
+#if NETSTANDARD
+		return false;
+#else
+		return path is not null && path.Contains('.', StringComparison.OrdinalIgnoreCase) && !System.IO.Path.IsPathRooted(path) &&
+		       !path.StartsWith("/", StringComparison.OrdinalIgnoreCase);
+#endif
+	}
+
+	static long GetEmbeddedResourceSize(string? resourcePath)
+	{
+		if (string.IsNullOrEmpty(resourcePath))
+		{
+			return 0;
+		}
+#if ANDROID
+		return GetAndroidAssetSize(resourcePath);
+#elif IOS || MACCATALYST
+		return GetIOSBundleResourceSize(resourcePath);
+#elif WINDOWS
+		return GetWindowsAppResourceSize(resourcePath);
+#else
+		return 0;
+#endif
+	}
+
+	static long GetRemoteImageSize(Uri uri)
+	{
+		try
+		{
+			// For remote images, we could make a HEAD request to get Content-Length
+			// However, this would be async and might impact performance
+			// For now, return 0 and let the platform size detection handle it
+			return 0;
+		}
+		catch
+		{
+			return 0;
+		}
+	}
+
+	static long GetAppResourceSize(Uri uri)
+	{
+#if WINDOWS
+		return GetWindowsAppResourceSize(uri.LocalPath);
+#else
+		return 0;
+#endif
+	}
+
+	static long GetAppDataSize(Uri uri)
+	{
+#if WINDOWS
+		return GetWindowsAppDataSize(uri.LocalPath);
+#else
+		return 0;
+#endif
 	}
 
 #if ANDROID
+	static long GetAndroidAssetSize(string assetPath)
+	{
+		if (string.IsNullOrEmpty(assetPath))
+		{
+			return 0;
+		}
+
+		try
+		{
+			var context = ApplicationModel.Platform.CurrentActivity ?? AApplication.Context;
+			using var inputStream = context.Assets?.Open(assetPath);
+			if (inputStream is null)
+			{
+				return 0;
+			}
+
+			long total = 0;
+			byte[] buffer = new byte[8192];
+			int read;
+			while ((read = inputStream.Read(buffer, 0, buffer.Length)) > 0)
+			{
+				total += read;
+			}
+
+			return total;
+		}
+		catch
+		{
+			return 0;
+		}
+	}
+
 	static (double Width, double Height)? GetPlatformImageDimensions(Handlers.IImageHandler handler)
 	{
 		if (handler.PlatformView is ImageView imageView && 
@@ -355,7 +510,52 @@ readonly struct ImageLoadingInstrumentation : IDiagnosticInstrumentation
 		}
 		return null;
 	}
+
+	static long GetPlatformImageSize(Handlers.IImageHandler handler)
+	{
+		try
+		{
+			if (handler.PlatformView is ImageView imageView && imageView.Drawable is BitmapDrawable bitmapDrawable)
+			{
+				var bitmap = bitmapDrawable.Bitmap;
+				if (bitmap is not null && !bitmap.IsRecycled)
+				{
+					return bitmap.ByteCount;
+				}
+			}
+		}
+		catch
+		{
+			// Ignore errors
+		}
+		return 0;
+	}
+
 #elif IOS || MACCATALYST
+	static long GetIOSBundleResourceSize(string resourcePath)
+	{
+		try
+		{
+			var bundle = NSBundle.MainBundle;
+			var resourceUrl = bundle.GetUrlForResource(Path.GetFileNameWithoutExtension(resourcePath),
+				Path.GetExtension(resourcePath)?.TrimStart('.') ?? string.Empty);
+			
+			var filePath = resourceUrl.Path;
+			
+			if (filePath is not null)
+			{
+				var fileInfo = new FileInfo(filePath);
+				return fileInfo.Exists ? fileInfo.Length : 0;
+			}
+		}
+		catch
+		{
+			// Ignore errors
+		}
+
+		return 0;
+	}
+
 	static (double Width, double Height)? GetPlatformImageDimensions(Handlers.IImageHandler handler)
 	{
 		if (handler.PlatformView is UIKit.UIImageView imageView && 
@@ -366,7 +566,57 @@ readonly struct ImageLoadingInstrumentation : IDiagnosticInstrumentation
 		}
 		return null;
 	}
+
+	static long GetPlatformImageSize(Handlers.IImageHandler handler)
+	{
+		try
+		{
+			if (handler.PlatformView is UIImageView imageView && imageView.Image is not null)
+			{
+				var image = imageView.Image;
+				// Estimate size: width * height * 4 bytes per pixel (RGBA)
+				var pixelCount = (long)(image.Size.Width * image.CurrentScale * image.Size.Height * image.CurrentScale);
+				return pixelCount * 4;
+			}
+		}
+		catch
+		{
+			// Ignore errors
+		}
+		return 0;
+	}
+
 #elif WINDOWS
+	static long GetWindowsAppResourceSize(string resourcePath)
+	{
+		try
+		{
+			var uri = new Uri($"ms-appx:///{resourcePath.TrimStart('/')}");
+			var file = StorageFile.GetFileFromApplicationUriAsync(uri).AsTask().Result;
+			var properties = file.GetBasicPropertiesAsync().AsTask().Result;
+			return (long)properties.Size;
+		}
+		catch
+		{
+			return 0;
+		}
+	}
+
+	static long GetWindowsAppDataSize(string resourcePath)
+	{
+		try
+		{
+			var uri = new Uri($"ms-appdata:///{resourcePath.TrimStart('/')}");
+			var file = StorageFile.GetFileFromApplicationUriAsync(uri).AsTask().Result;
+			var properties = file.GetBasicPropertiesAsync().AsTask().Result;
+			return (long)properties.Size;
+		}
+		catch
+		{
+			return 0;
+		}
+	}
+
 	static (double Width, double Height)? GetPlatformImageDimensions(Handlers.IImageHandler handler)
 	{
 		if (handler.PlatformView is Microsoft.UI.Xaml.Controls.Image image && 
@@ -376,11 +626,66 @@ readonly struct ImageLoadingInstrumentation : IDiagnosticInstrumentation
 		}
 		return null;
 	}
+
+	static long GetPlatformImageSize(Handlers.IImageHandler handler)
+	{
+		try
+		{
+			if (handler.PlatformView is Microsoft.UI.Xaml.Controls.Image image)
+			{
+				return image.Source switch
+				{
+					BitmapImage bitmapImage => GetBitmapImageSize(bitmapImage),
+					WriteableBitmap writeableBitmap => GetWriteableBitmapSize(writeableBitmap),
+					_ => 0
+				};
+			}
+		}
+		catch
+		{
+			// Ignore errors
+		}
+		return 0;
+	}
+
+	static long GetBitmapImageSize(BitmapImage bitmapImage)
+	{
+		try
+		{
+			// Estimate size based on pixel dimensions
+			var pixelCount = (long)bitmapImage.PixelWidth * bitmapImage.PixelHeight;
+			return pixelCount * 4; // 4 bytes per pixel (RGBA)
+		}
+		catch
+		{
+			return 0;
+		}
+	}
+
+	static long GetWriteableBitmapSize(WriteableBitmap writeableBitmap)
+	{
+		try
+		{
+			// WriteableBitmap has a PixelBuffer property
+			return (long)writeableBitmap.PixelBuffer.Length;
+		}
+		catch
+		{
+			return 0;
+		}
+	}
+
 #else
 	static (double Width, double Height)? GetPlatformImageDimensions(Handlers.IImageHandler handler)
 	{
 		// Fallback for other platforms
 		return null;
+	}
+
+	static long GetPlatformImageSize(Handlers.IImageHandler handler)
+	{
+		// Fallback for other platforms
+		return 0;
 	}
 #endif
 }
@@ -390,7 +695,6 @@ readonly struct ImageLoadingInstrumentation : IDiagnosticInstrumentation
 /// </summary>
 internal class ImageLoadingState
 {
-	public bool WasFromCache { get; set; }
 	public Exception? LoadException { get; set; }
 	public long FileSizeBytes { get; set; }
 	public int WidthPixels { get; set; }

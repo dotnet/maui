@@ -20,11 +20,6 @@ internal class ImageDiagnosticMetrics : IDiagnosticMetrics
     public Histogram<long>? ImageFileSize { get; private set; }
     
     /// <summary>
-    /// Gets the histogram metric for the memory size of decoded images in bytes.
-    /// </summary>
-    public Histogram<long>? ImageMemorySize { get; private set; }
-    
-    /// <summary>
     /// Gets the histogram metric for image width in pixels.
     /// </summary>
     public Histogram<int>? ImageWidth { get; private set; }
@@ -43,11 +38,6 @@ internal class ImageDiagnosticMetrics : IDiagnosticMetrics
     /// Gets the counter metric for image load failures.
     /// </summary>
     public Counter<int>? ImageLoadFailures { get; private set; }
-    
-    /// <summary>
-    /// Gets the histogram metric for cache hit rate percentage.
-    /// </summary>
-    public Histogram<double>? ImageCacheHitRate { get; private set; }
 
     /// <inheritdoc/>
     public void Create(Meter meter)
@@ -61,11 +51,6 @@ internal class ImageDiagnosticMetrics : IDiagnosticMetrics
             "maui.image.file_size", 
             "bytes", 
             "Original file size of loaded images");
-            
-        ImageMemorySize = meter.CreateHistogram<long>(
-            "maui.image.memory_size", 
-            "bytes", 
-            "Memory consumed by decoded image in RAM");
             
         ImageWidth = meter.CreateHistogram<int>(
             "maui.image.width", 
@@ -86,34 +71,25 @@ internal class ImageDiagnosticMetrics : IDiagnosticMetrics
             "maui.image.load_failures", 
             "{failures}", 
             "Number of image load failures");
-            
-        ImageCacheHitRate = meter.CreateHistogram<double>(
-            "maui.image.cache_hit_rate", 
-            "percent", 
-            "Percentage of image loads served from cache");
     }
 
     /// <summary>
     /// Records a successful image loading operation with comprehensive metrics.
     /// </summary>
     /// <param name="tagList">The tags associated with the image loading operation.</param>
-    /// <param name="durationMs">The total duration of the image loading operation in milliseconds.</param>
+    /// <param name="duration">The total duration of the image loading operation in milliseconds.</param>
     /// <param name="fileSizeBytes">The original file size of the image in bytes (0 if unknown).</param>
-    /// <param name="memorySizeBytes">The memory consumed by the decoded image in bytes (0 if unknown).</param>
     /// <param name="widthPixels">The width of the image in pixels (0 if unknown).</param>
     /// <param name="heightPixels">The height of the image in pixels (0 if unknown).</param>
-    /// <param name="wasFromCache">Whether the image was loaded from cache.</param>
     public void RecordImageLoadSuccess(
         in TagList tagList, 
-        long durationMs, 
+        long duration, 
         long fileSizeBytes = 0, 
-        long memorySizeBytes = 0,
         int widthPixels = 0,
-        int heightPixels = 0,
-        bool wasFromCache = false)
+        int heightPixels = 0)
     {
         // Always record duration and success count
-        ImageLoadDuration?.Record(durationMs, tagList);
+        ImageLoadDuration?.Record(duration, tagList);
         ImageLoadSuccess?.Add(1, tagList);
 
         // Record file size if available
@@ -121,13 +97,7 @@ internal class ImageDiagnosticMetrics : IDiagnosticMetrics
         {
             ImageFileSize?.Record(fileSizeBytes, tagList);
         }
-
-        // Record memory size if available
-        if (memorySizeBytes > 0)
-        {
-            ImageMemorySize?.Record(memorySizeBytes, tagList);
-        }
-
+        
         // Record dimensions if available
         if (widthPixels > 0)
         {
@@ -138,9 +108,6 @@ internal class ImageDiagnosticMetrics : IDiagnosticMetrics
         {
             ImageHeight?.Record(heightPixels, tagList);
         }
-
-        // Record cache performance
-        ImageCacheHitRate?.Record(wasFromCache ? 100.0 : 0.0, tagList);
     }
     
     /// <summary>
@@ -182,26 +149,5 @@ internal class ImageDiagnosticMetrics : IDiagnosticMetrics
         {
             ImageLoadDuration?.Record(durationMs, extendedTagList);
         }
-    }
-
-    /// <summary>
-    /// Convenience method to record an image load with megabyte file size.
-    /// </summary>
-    /// <param name="tagList">The tags associated with the operation.</param>
-    /// <param name="durationMs">The duration in milliseconds.</param>
-    /// <param name="fileSizeMB">The file size in megabytes.</param>
-    /// <param name="widthPixels">The width in pixels.</param>
-    /// <param name="heightPixels">The height in pixels.</param>
-    /// <param name="wasFromCache">Whether loaded from cache.</param>
-    public void RecordImageLoadSuccessMB(
-        in TagList tagList,
-        long durationMs,
-        double fileSizeMB,
-        int widthPixels,
-        int heightPixels,
-        bool wasFromCache = false)
-    {
-        var fileSizeBytes = (long)(fileSizeMB * 1024 * 1024);
-        RecordImageLoadSuccess(tagList, durationMs, fileSizeBytes, 0, widthPixels, heightPixels, wasFromCache);
     }
 }

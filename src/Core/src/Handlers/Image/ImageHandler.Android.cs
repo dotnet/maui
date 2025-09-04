@@ -3,6 +3,7 @@ using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Diagnostics;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -57,10 +58,11 @@ namespace Microsoft.Maui.Handlers
 
 		public static async Task MapSourceAsync(IImageHandler handler, IImage image)
 		{
+			using var instrumentation = DiagnosticInstrumentation.StartImageLoading(handler.VirtualView);
+			
 			await handler
 				.SourceLoader
 				.UpdateImageSourceAsync();
-
 
 			// This indicates that the image has finished loading
 			// So, now if the attached event fires again then we need to see if Glide has cleared the image out
