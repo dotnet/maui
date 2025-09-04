@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var rootView = CreateRootViewFromContent(handler, window);
-			ViewCompat.SetOnApplyWindowInsetsListener(rootView, new WindowsListener());
+			//ViewCompat.SetOnApplyWindowInsetsListener(rootView, new WindowsListener());
 			handler.PlatformView.SetContentView(rootView);
 		}
 
