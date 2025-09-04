@@ -26,7 +26,7 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
     bool? _scrollViewDescendant;
 
     internal IOnApplyWindowInsetsListener GetWindowInsetsListener() =>
-        new WindowInsetsListener(this, () => _owner.RequestLayout());
+        new WindowInsetsListener(this);
 
     /// <summary>
     /// Forces a re-application of window insets when safe area configuration changes.
@@ -34,12 +34,12 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
     /// </summary>
     internal void InvalidateWindowInsets()
     {
-        if (_lastReceivedInsets is not null)
+        /*if (_lastReceivedInsets is not null)
         {
             // Re-apply the last received insets to trigger OnApplyWindowInsets
             ViewCompat.DispatchApplyWindowInsets(_owner, _lastReceivedInsets);
         }
-        else
+        else*/
         {
             // Request fresh insets from the system
             ViewCompat.RequestApplyInsets(_owner);
@@ -164,10 +164,10 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
     internal void UpdateSafeAreaConfiguration()
     {
         // Clear cached ScrollView descendant check
-        _scrollViewDescendant = null;
+        // _scrollViewDescendant = null;
 
         // Force re-calculation of safe area
-        var oldSafeArea = _safeArea;
+        // var oldSafeArea = _safeArea;
         _safeArea = GetAdjustedSafeAreaInsets();
 
         // Always invalidate insets when configuration changes, regardless of whether
@@ -194,10 +194,9 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
     /// <summary>
     /// WindowInsets listener for ContentViewGroup and LayoutViewGroup.
     /// </summary>
-    public class WindowInsetsListener(SafeAreaHandler handler, Action requestLayout) : Java.Lang.Object, IOnApplyWindowInsetsListener
+    public class WindowInsetsListener(SafeAreaHandler handler) : Java.Lang.Object, IOnApplyWindowInsetsListener
     {
         readonly WeakReference<SafeAreaHandler> _handlerRef = new(handler ?? throw new ArgumentNullException(nameof(handler)));
-        readonly WeakReference<Action> _requestLayoutRef = new(requestLayout ?? throw new ArgumentNullException(nameof(requestLayout)));
 
         public WindowInsetsCompat OnApplyWindowInsets(View v, WindowInsetsCompat insets)
         {
@@ -208,7 +207,7 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
             }
 
             // Get handler and requestLayout from weak references
-            if (!_handlerRef.TryGetTarget(out var handler) || !_requestLayoutRef.TryGetTarget(out var requestLayout))
+            if (!_handlerRef.TryGetTarget(out var handler))
             {
                 // Handler or requestLayout has been garbage collected, return insets unchanged
                 return insets;
@@ -223,40 +222,35 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
 
             handler.UpdateKeyboardState(keyboardInsets, isKeyboardShowing);
 
-            // Request layout if keyboard state changed
-            if (wasKeyboardShowing != isKeyboardShowing)
+            var viewInsets = handler.GetAdjustedSafeAreaInsets();
+            var context = handler._context;
+
+            v.SetPadding((int)context.ToPixels(viewInsets.Left), (int)context.ToPixels(viewInsets.Top), (int)context.ToPixels(viewInsets.Right), (int)context.ToPixels(viewInsets.Bottom));
+
+
+            // This is just a quick hack to demonstrate the idea
+            // in the real implementation you would check each of these insets against the relative SafeAreaRegions
+            // and just specify which range is consumed or not
+            if (viewInsets.Top > 0 || viewInsets.Bottom > 0 || viewInsets.Left > 0 || viewInsets.Right > 0)
             {
-                requestLayout();
+
+                // This is also somewhat of a hack, AFAICT you need to reset the padding on all children that were previouslly consuming the insets
+                // There's probably a more efficient way to do this
+                // One approach here could be for us to just make one global SafeAreaHandler that gets applied to every view
+                // and then that handler would have a tracking list of views so it could know where to dispatch and reset.
+                var descendant = v.FindDescendantView<ViewGroup>((view) => view is ICrossPlatformLayoutBacking && view != v);
+                descendant?.DispatchApplyWindowInsets(WindowInsets.Consumed);
+
+                while (descendant != null)
+                {
+                    descendant = descendant.FindDescendantView<ViewGroup>((view) => view is ICrossPlatformLayoutBacking && view != descendant);
+                    descendant?.DispatchApplyWindowInsets(WindowInsets.Consumed);
+                }
+
+                return WindowInsetsCompat.Consumed;
             }
 
-            requestLayout();
-
-            var crossPlatformLayout = handler._getCrossPlatformLayout();
-
-            // Use RespondsToSafeArea to check if this view should handle safe area
-            if (!handler.RespondsToSafeArea())
-            {
-                // For deeper descendants of ScrollView, consume all insets to prevent double-application
-                return ConsumeAllInsets(insets);
-            }
-
-            if (handler._getCrossPlatformLayout() is ISafeAreaView2 sav2 && HasAnyRegions(sav2))
-            {
-                return ConsumeAllInsets(insets);
-            }
-
-            // This view is not a ScrollView descendant, pass insets through unchanged
             return insets;
-        }
-
-        static WindowInsetsCompat ConsumeAllInsets(WindowInsetsCompat insets)
-        {
-            // Consume all insets to prevent safe area handling for ScrollView descendants
-            return new WindowInsetsCompat.Builder(insets)
-                .SetInsets(WindowInsetsCompat.Type.SystemBars(), AndroidX.Core.Graphics.Insets.None)
-                .SetInsets(WindowInsetsCompat.Type.DisplayCutout(), AndroidX.Core.Graphics.Insets.None)
-                .SetInsets(WindowInsetsCompat.Type.Ime(), AndroidX.Core.Graphics.Insets.None)
-                .Build();
         }
     }
 }

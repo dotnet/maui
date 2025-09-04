@@ -102,15 +102,23 @@ namespace Microsoft.Maui.Platform
 			var deviceIndependentWidth = widthMeasureSpec.ToDouble(_context);
 			var deviceIndependentHeight = heightMeasureSpec.ToDouble(_context);
 
+			// Account for padding in available space
+			var paddingLeft = _context.FromPixels(PaddingLeft);
+			var paddingTop = _context.FromPixels(PaddingTop);
+			var paddingRight = _context.FromPixels(PaddingRight);
+			var paddingBottom = _context.FromPixels(PaddingBottom);
+
+			var availableWidth = Math.Max(0, deviceIndependentWidth - paddingLeft - paddingRight);
+			var availableHeight = Math.Max(0, deviceIndependentHeight - paddingTop - paddingBottom);
+
 			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
 			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
-			// TODO make measure sync with safearea
-			var measure = CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
+			var measure = CrossPlatformMeasure(availableWidth, availableHeight);
 
 			// If the measure spec was exact, we should return the explicit size value, even if the content
 			// measure came out to a different size
-			var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width;
-			var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height;
+			var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width + paddingLeft + paddingRight;
+			var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height + paddingTop + paddingBottom;
 
 			var platformWidth = _context.ToPixels(width);
 			var platformHeight = _context.ToPixels(height);
@@ -134,11 +142,17 @@ namespace Microsoft.Maui.Platform
 
 			var destination = _context.ToCrossPlatformRectInReferenceFrame(l, t, r, b);
 
-			// Apply safe area adjustments if needed
-			if (_safeAreaHandler.RespondsToSafeArea())
-			{
-				destination = _safeAreaHandler.AdjustForSafeArea(destination);
-			}
+			// Account for padding in layout bounds
+			var paddingLeft = _context.FromPixels(PaddingLeft);
+			var paddingTop = _context.FromPixels(PaddingTop);
+			var paddingRight = _context.FromPixels(PaddingRight);
+			var paddingBottom = _context.FromPixels(PaddingBottom);
+
+			destination = new Rectangle(
+				destination.X + paddingLeft,
+				destination.Y + paddingTop,
+				Math.Max(0, destination.Width - paddingLeft - paddingRight),
+				Math.Max(0, destination.Height - paddingTop - paddingBottom));
 
 			CrossPlatformArrange(destination);
 
