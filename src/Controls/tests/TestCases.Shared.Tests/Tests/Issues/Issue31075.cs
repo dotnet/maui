@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "MediaPicker.CapturePhotoAsync / CaptureVideoAsync causes modal page to dismiss unexpectedly";
 
 		[Test]
-		[Category(UITestCategories.MediaPicker)]
-		[Category(UITestCategories.Modal)]
+		[Category(UITestCategories.Navigation)]
+		[Category(UITestCategories.Page)]
 		public void MediaPickerShouldNotDismissModal()
 		{
 			// Open the modal page
@@ -57,8 +57,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.MediaPicker)]
-		[Category(UITestCategories.Modal)]
+		[Category(UITestCategories.Navigation)]
+		[Category(UITestCategories.Page)]
 		public void VideoPickerShouldNotDismissModal()
 		{
 			// Open the modal page
