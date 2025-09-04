@@ -34,7 +34,7 @@ internal class CustomPressGestureRecognizer : UIGestureRecognizer
 	public UIEvent CurrentEvent => _currentEvent;
 
 	[Register("__UIGestureRecognizer")]
-	class Callback : Foundation.NSObject
+	class Callback : Token
 	{
 		Action<UIGestureRecognizer> action;
 
