@@ -7,7 +7,7 @@ public partial class Issue27711 : ContentPage
 	{
 		InitializeComponent();
 	}
-	
+
 	private void switch_Toggled(object sender, ToggledEventArgs e)
 	{
 		CV.FlowDirection = CV.FlowDirection == FlowDirection.LeftToRight ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
