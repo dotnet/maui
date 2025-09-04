@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Controls
 {
@@ -445,8 +446,8 @@ namespace Microsoft.Maui.Controls
 		{
 			// Determine in which direction the label can grow/shrink.
 			var constraint = label.Constraint;
-			var isVerticallySizeable = (constraint & LayoutConstraint.VerticallyFixed) == 0;
-			var isHorizontallySizeable = (constraint & LayoutConstraint.HorizontallyFixed) == 0;
+			var isVerticallySizeable = (constraint & SizeConstraint.VerticallyFixed) == 0;
+			var isHorizontallySizeable = (constraint & SizeConstraint.HorizontallyFixed) == 0;
 			var isSizeable = isVerticallySizeable || isHorizontallySizeable;
 
 			// If the label cannot grow in any direction, then we usually don't need to do anything.
@@ -474,7 +475,7 @@ namespace Microsoft.Maui.Controls
 			// Determine if the label can grow vertically (wrapping means it may grow vertically).
 			var constraint = label.Constraint;
 			var breakMode = label.LineBreakMode;
-			var isHorizontallySizeable = (constraint & LayoutConstraint.HorizontallyFixed) == 0;
+			var isHorizontallySizeable = (constraint & SizeConstraint.HorizontallyFixed) == 0;
 			var isMultiline = breakMode == LineBreakMode.CharacterWrap || breakMode == LineBreakMode.WordWrap;
 			var isSingleLine = !isMultiline;
 
