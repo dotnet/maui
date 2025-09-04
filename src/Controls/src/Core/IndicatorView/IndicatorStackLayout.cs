@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using System;
 
 namespace Microsoft.Maui.Controls
 {
@@ -179,13 +180,14 @@ namespace Microsoft.Maui.Controls
 
 			if (_indicatorView.ItemsSource is IList items)
 			{
-				if (items.Count <= _indicatorView.MaximumVisible)
+				int maxItems = Math.Min(items.Count, _indicatorView.MaximumVisible);
+				if (items.Count <= maxItems)
 				{
 					return items;
 				}
 
-				var filteredItems = new List<object>();
-				for (int index = 0; index < _indicatorView.MaximumVisible; index++)
+				var filteredItems = new List<object>(maxItems);
+				for (int index = 0; index < maxItems; index++)
 				{
 					if (items[index] is object item)
 					{
