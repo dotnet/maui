@@ -8,6 +8,9 @@
             <ResourceDictionary Source="./SharedResourceDictionary.xaml" x:Key="relURI"/>
             <ResourceDictionary Source="/SharedResourceDictionary.xaml" x:Key="absURI"/>
             <ResourceDictionary Source="SharedResourceDictionary.xaml" x:Key="shortURI"/>
+            <ResourceDictionary Source="./AppResources/Colors.rt.xaml" x:Key="Colors.rt" />
+            <ResourceDictionary Source="./AppResources/Colors.sgen.xaml" x:Key="Colors.sgen" />
+            <ResourceDictionary Source="./AppResources/Colors.xc.xaml" x:Key="Colors.xc" />
             <ResourceDictionary Source="./AppResources/Colors.rtxc.xaml" x:Key="Colors" />
             <ResourceDictionary Source="./AppResources/CompiledColors.rtxc.xaml" x:Key="CompiledColors" />
             <ResourceDictionary Source="/AppResources/Colors.rtxc.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests" x:Key="inCurrentAssembly" />

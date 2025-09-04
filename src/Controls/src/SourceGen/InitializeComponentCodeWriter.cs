@@ -68,7 +68,9 @@ static class InitializeComponentCodeWriter
 			if (rootType == null)
 				goto exit;
 
-			var genSwitch = compilation.AssemblyName == "Microsoft.Maui.Controls.Xaml.UnitTests";
+			var generatedDefaultCtor = rootType.Constructors.Any(c => c.Parameters.Length == 0 && c.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, compilation.GetTypeByMetadataName("System.CodeDom.Compiler.GeneratedCodeAttribute"))));
+
+			var genSwitch = compilation.AssemblyName == "Microsoft.Maui.Controls.Xaml.UnitTests" && !generatedDefaultCtor;
 			var xamlInflators = xamlItem.ProjectItem.Inflator;
 
 			var generate = (xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen;

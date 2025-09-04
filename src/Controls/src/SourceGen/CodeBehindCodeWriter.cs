@@ -71,9 +71,9 @@ static class CodeBehindCodeWriter
 		var rootSymbol = compilation.GetTypeByMetadataName($"{rootClrNamespace}.{rootType}");
 		bool alreadyHasXamlCompilationAttribute = rootSymbol?.GetAttributes().Any(a => a.AttributeClass != null && a.AttributeClass.Equals(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute")!, SymbolEqualityComparer.Default)) ?? false;
 
-		var generateInflatorSwitch = compilation.AssemblyName == "Microsoft.Maui.Controls.Xaml.UnitTests";
+		var generateInflatorSwitch = compilation.AssemblyName == "Microsoft.Maui.Controls.Xaml.UnitTests" && !generateDefaultCtor;
 		var xamlInflators = projItem.Inflator;
-
+		
 		//if there's only the XamlC inflator, prevent non-assigned errors
 		if (xamlInflators == XamlInflator.XamlC)
 			sb.AppendLine("#pragma warning disable CS0649");
