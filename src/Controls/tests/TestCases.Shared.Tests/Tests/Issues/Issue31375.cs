@@ -18,7 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("CounterLabel");
 			App.Tap("RefreshButton");
-			Assert.That(App.FindElement("CounterLabel").GetText(), Is.EqualTo("1"));
+			App.Tap("RefreshButton");
+			Assert.That(App.FindElement("CounterLabel").GetText(), Is.EqualTo("2"));
 		}
 	}
 }
