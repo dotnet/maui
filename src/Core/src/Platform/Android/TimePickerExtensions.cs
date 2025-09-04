@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 			mauiTimePicker.Text = time.ToFormattedString(format);
 		}
 
-		// Make it public in Net10
+		// TODO: Make it public in Net10
 		internal static void UpdateTextColor(this MauiTimePicker platformTimePicker, ITimePicker timePicker)
 		{
 			var textColor = timePicker.TextColor;
