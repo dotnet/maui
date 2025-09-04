@@ -1,6 +1,8 @@
 ﻿using System;
 using Android.Content;
 using Android.Graphics.Drawables;
+using Android.Views;
+using Android.Views.Accessibility;
 using Android.Widget;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -61,6 +63,9 @@ namespace Microsoft.Maui.Platform
 				var drawableToUse = index == i ? _currentPageShape : _pageShape;
 				if (drawableToUse != view.Drawable)
 					view.SetImageDrawable(drawableToUse);
+
+				// Update accessibility information
+				UpdateIndicatorAccessibility(view, i, index);
 			}
 		}
 
@@ -88,6 +93,9 @@ namespace Microsoft.Maui.Platform
 					imageView.SetPadding(0, (int)Context.ToPixels(DefaultPadding), 0, (int)Context.ToPixels(DefaultPadding));
 
 				imageView.SetImageDrawable(index == i ? _currentPageShape : _pageShape);
+
+				// Set up accessibility for this indicator
+				SetupIndicatorAccessibility(imageView, i, index);
 
 				imageView.SetOnClickListener(new TEditClickListener(view =>
 				{
@@ -135,6 +143,38 @@ namespace Microsoft.Maui.Platform
 				if (indicatorPositionPaint.Color is Color c)
 					_currentPageShape = GetShape(c.ToPlatform());
 			}
+		}
+
+		void SetupIndicatorAccessibility(ImageView imageView, int position, int selectedPosition)
+		{
+			if (_indicatorView == null)
+				return;
+
+			imageView.ImportantForAccessibility = ImportantForAccessibility.Yes;
+			
+			// Set accessibility delegate to prevent "button" announcement
+			imageView.SetAccessibilityDelegate(new IndicatorAccessibilityDelegate());
+			
+			// Set the accessibility content description
+			UpdateIndicatorAccessibility(imageView, position, selectedPosition);
+		}
+
+		void UpdateIndicatorAccessibility(ImageView imageView, int position, int selectedPosition)
+		{
+			if (_indicatorView == null)
+				return;
+
+			// Calculate user-friendly 1-based position
+			var pageNumber = position + 1;
+			var totalPages = _indicatorView.GetMaximumVisible();
+			var isSelected = position == selectedPosition;
+
+			// Create descriptive content description for TalkBack
+			var contentDescription = isSelected 
+				? $"Page {pageNumber} of {totalPages}, selected"
+				: $"Page {pageNumber} of {totalPages}";
+
+			imageView.ContentDescription = contentDescription;
 		}
 
 		AShapeDrawable? GetShape(AColor color)
@@ -206,6 +246,20 @@ namespace Microsoft.Maui.Platform
 					_command = null;
 				}
 				base.Dispose(disposing);
+			}
+		}
+
+		class IndicatorAccessibilityDelegate : AccessibilityDelegate
+		{
+			public override void OnInitializeAccessibilityNodeInfo(AView? host, AccessibilityNodeInfo? info)
+			{
+				if (host == null || info == null)
+					return;
+					
+				base.OnInitializeAccessibilityNodeInfo(host, info);
+				
+				// Set class name to avoid "button" announcement
+				info.ClassName = "android.view.View";
 			}
 		}
 	}
