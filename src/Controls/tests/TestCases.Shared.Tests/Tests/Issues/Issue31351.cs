@@ -19,9 +19,11 @@ public class Issue31351 : _IssuesUITest
 		App.WaitForElement("Issue31351CollectionView");
 		App.WaitForElement("Issue31351ScrollButton");
 		App.Tap("Issue31351ScrollButton");
-		App.WaitForElement("Item 50");
+		var MidItemRect = App.WaitForElement("Item 50").GetRect();
+		Assert.That(MidItemRect.X, Is.GreaterThanOrEqualTo(0));
 		App.WaitForElement("Issue31351TopScrollButton");
 		App.Tap("Issue31351TopScrollButton");
-		App.WaitForElement("Item 1");
+		var TopItemRect = App.WaitForElement("Item 1").GetRect();
+		Assert.That(TopItemRect.X, Is.GreaterThanOrEqualTo(0));
 	}
 }
