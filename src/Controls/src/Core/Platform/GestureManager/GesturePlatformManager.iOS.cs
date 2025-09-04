@@ -429,6 +429,15 @@ namespace Microsoft.Maui.Controls.Platform
 						button = ButtonsMask.Secondary;
 					}
 
+					// If the gesture is for a press (not a pure hover) ensure the current button matches the recognizer mask.
+					// This prevents a recognizer configured for Secondary from firing on Primary presses.
+					if (pointerGesture is not UIHoverGestureRecognizer)
+					{
+						// Only proceed if the recognizer mask contains the current button.
+						if ((pointerGestureRecognizer.Buttons & button) != button)
+							return;
+					}
+
 					var originPoint = pointerGesture.LocationInView(eventTracker?.PlatformView);
 					var platformPointerArgs = new PlatformPointerEventArgs(pointerGesture.View, pointerGesture);
 
