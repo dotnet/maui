@@ -61,7 +61,7 @@
             Order="Primary"
             Priority="0"
             IconImageSource="{StaticResource IconDelete}"
-            SemanticProperties.Description="Delete" />
+            SemanticProperties.Description="Delete Project" />
     </ContentPage.ToolbarItems>
 
     <Grid>
@@ -161,7 +161,7 @@
                 </ScrollView>
 
                 <Button Text="Save" 
-                    HeightRequest="{OnIdiom 44, Desktop=60}"
+                    MinimumHeightRequest="{OnIdiom 44, Desktop=60}"
                     Command="{Binding SaveCommand}" />
 
                 <Grid HeightRequest="44">
