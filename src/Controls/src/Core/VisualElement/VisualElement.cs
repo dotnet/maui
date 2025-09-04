@@ -1674,10 +1674,28 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
+<<<<<<< HEAD
 				if (!this.HasSelectedVisualState())
                 {
                     VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
                 }
+=======
+				bool isSelected = false;
+				var groups = VisualStateManager.GetVisualStateGroups(this);
+				foreach (var group in groups)
+				{
+					if (group.CurrentState?.Name == VisualStateManager.CommonStates.Selected)
+					{
+						isSelected = true;
+						break;
+					}
+				}
+
+				if (!isSelected)
+				{
+					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
+				}
+>>>>>>> 36cb9fabd4 (Fixed CollectionView selecteditem background lost if collectionview (or parent) IsEnabled changed.)
 			}
 
 			if (IsEnabled)
