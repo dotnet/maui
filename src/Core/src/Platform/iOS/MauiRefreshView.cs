@@ -109,7 +109,14 @@ namespace Microsoft.Maui.Platform
 			// Store the current scroll position from the refresh control parent
 			if (_refreshControlParent is UIScrollView scrollView)
 			{
-				_originalY = scrollView.ContentOffset.Y;
+				if (scrollView.ContentSize.Height <= scrollView.Bounds.Height)
+				{
+					_originalY = 0; // Stay at top
+				}
+				else
+				{
+					_originalY = scrollView.ContentOffset.Y;
+				}
 			}
 		}
 
