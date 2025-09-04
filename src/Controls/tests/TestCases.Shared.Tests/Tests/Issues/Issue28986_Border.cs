@@ -18,14 +18,20 @@ public class Issue28986_Border : _IssuesUITest
 	public void SafeAreaBorderBasicFunctionality()
 	{
 		var borderContent = App.WaitForElement("BorderContent");
-
+		var expectedBorderYPosition = 5.0; // 5 is the border stroke thickness
+		
+#if ANDROID
+// Get the device display density for accurate pixel calculations
+		var displayDensity = App.GetNativeDisplayDensity();
+		expectedBorderYPosition = Math.Ceiling(5 * displayDensity);
+#endif
 		// 1. Ensure SafeAreaEdges is Default
 		var initialSettings = App.FindElement("CurrentSettings").GetText();
 		Assert.That(initialSettings, Does.Contain("Left: Default, Top: Default, Right: Default, Bottom: Default"));
 		var borderWithDefaultSettings = borderContent.GetRect();
 		// Verify that Border starts at Y=5 when SafeAreaEdges is Default
 		// Because the border stroke thickness is 5
-		Assert.That(borderWithDefaultSettings.Y, Is.EqualTo(5), "Border should start at Y=5 when SafeAreaEdges is set to Default");
+		Assert.That(borderWithDefaultSettings.Y, Is.EqualTo(expectedBorderYPosition), "Border should start at Y=5 when SafeAreaEdges is set to Default");
 
 		// 2. Ensure SafeAreaEdges are set to All
 		App.Tap("ResetAllButton");
@@ -41,7 +47,7 @@ public class Issue28986_Border : _IssuesUITest
 		var borderSafeAreaEdgesNone = App.WaitForElement("BorderContent").GetRect();
 		// Verify that Border position is at Y=5 when SafeAreaEdges is None
 		// This is because the border stroke thickness is 5
-		Assert.That(borderSafeAreaEdgesNone.Y, Is.EqualTo(5),
+		Assert.That(borderSafeAreaEdgesNone.Y, Is.EqualTo(expectedBorderYPosition),
 			"Border should be at Y=5 when SafeAreaEdges is set to None (edge-to-edge)");
 	}
 }
