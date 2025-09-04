@@ -2,8 +2,6 @@ using System;
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.View;
-using AndroidX.Core.Widget;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform;
 
@@ -18,12 +16,8 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
     readonly Context _context = context ?? throw new ArgumentNullException(nameof(context));
     readonly View _owner = owner ?? throw new ArgumentNullException(nameof(owner));
     readonly Func<ICrossPlatformLayout?> _getCrossPlatformLayout = getCrossPlatformLayout ?? throw new ArgumentNullException(nameof(getCrossPlatformLayout));
-
-    SafeAreaPadding _safeArea = SafeAreaPadding.Empty;
-    WindowInsetsCompat? _lastReceivedInsets;
     SafeAreaPadding _keyboardInsets = SafeAreaPadding.Empty;
     bool _isKeyboardShowing;
-    bool? _scrollViewDescendant;
 
     internal IOnApplyWindowInsetsListener GetWindowInsetsListener() =>
         new WindowInsetsListener(this);
@@ -34,16 +28,8 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
     /// </summary>
     internal void InvalidateWindowInsets()
     {
-        /*if (_lastReceivedInsets is not null)
-        {
-            // Re-apply the last received insets to trigger OnApplyWindowInsets
-            ViewCompat.DispatchApplyWindowInsets(_owner, _lastReceivedInsets);
-        }
-        else*/
-        {
-            // Request fresh insets from the system
-            ViewCompat.RequestApplyInsets(_owner);
-        }
+        // Request fresh insets from the system
+        ViewCompat.RequestApplyInsets(_owner);
     }
 
     void UpdateKeyboardState(SafeAreaPadding keyboardInsets, bool isKeyboardShowing)
@@ -51,13 +37,6 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
         _keyboardInsets = keyboardInsets;
         _isKeyboardShowing = isKeyboardShowing;
     }
-
-    internal Rect AdjustForSafeArea(Rect bounds)
-    {
-        ValidateSafeArea();
-        return _safeArea.IsEmpty ? bounds : _safeArea.InsetRectF(bounds);
-    }
-
     static ISafeAreaView2? GetSafeAreaView2(object? layout) =>
         layout switch
         {
@@ -73,20 +52,6 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
             IElementHandler { VirtualView: ISafeAreaView virtualSav } => virtualSav,
             _ => null
         };
-
-    internal bool RespondsToSafeArea()
-    {
-        // Cache the ScrollView descendant check for performance
-        if (!_scrollViewDescendant.HasValue)
-        {
-            _scrollViewDescendant = _owner.Parent?.GetParentOfType<NestedScrollView>() is not null;
-        }
-
-        // ScrollView descendants don't respond to safe area
-        return !_scrollViewDescendant.Value;
-    }
-
-
     SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
     {
         var layout = _getCrossPlatformLayout();
@@ -101,14 +66,9 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
         return safeAreaView?.IgnoreSafeArea == false ? SafeAreaRegions.Container : SafeAreaRegions.None;
     }
 
-    SafeAreaPadding GetAdjustedSafeAreaInsets()
+    SafeAreaPadding GetAdjustedSafeAreaInsets(WindowInsetsCompat windowInsets)
     {
-        if (_lastReceivedInsets is null)
-        {
-            return SafeAreaPadding.Empty;
-        }
-
-        var baseSafeArea = _lastReceivedInsets.ToSafeAreaInsets(_context);
+        var baseSafeArea = windowInsets.ToSafeAreaInsets(_context);
         var layout = _getCrossPlatformLayout();
         var safeAreaView2 = GetSafeAreaView2(layout);
 
@@ -150,26 +110,12 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
         return originalSafeArea;
     }
 
-    bool ValidateSafeArea()
-    {
-        var oldSafeArea = _safeArea;
-        _safeArea = GetAdjustedSafeAreaInsets();
-        return oldSafeArea == _safeArea;
-    }
-
     /// <summary>
     /// Updates safe area configuration and triggers window insets re-application if needed.
     /// Call this when safe area edge configuration changes.
     /// </summary>
     internal void UpdateSafeAreaConfiguration()
     {
-        // Clear cached ScrollView descendant check
-        // _scrollViewDescendant = null;
-
-        // Force re-calculation of safe area
-        // var oldSafeArea = _safeArea;
-        _safeArea = GetAdjustedSafeAreaInsets();
-
         // Always invalidate insets when configuration changes, regardless of whether
         // the calculated safe area changed. This ensures proper handling of:
         // - Orientation changes where the same safe area values might apply differently
@@ -194,9 +140,9 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
     /// <summary>
     /// WindowInsets listener for ContentViewGroup and LayoutViewGroup.
     /// </summary>
-    public class WindowInsetsListener(SafeAreaHandler handler) : Java.Lang.Object, IOnApplyWindowInsetsListener
+    public class WindowInsetsListener(SafeAreaHandler safeAreaHandler) : Java.Lang.Object, IOnApplyWindowInsetsListener
     {
-        readonly WeakReference<SafeAreaHandler> _handlerRef = new(handler ?? throw new ArgumentNullException(nameof(handler)));
+        readonly WeakReference<SafeAreaHandler> _handlerRef = new(safeAreaHandler ?? throw new ArgumentNullException(nameof(safeAreaHandler)));
 
         public WindowInsetsCompat OnApplyWindowInsets(View v, WindowInsetsCompat insets)
         {
@@ -213,8 +159,6 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
                 return insets;
             }
 
-            handler._lastReceivedInsets = insets;
-
             // Handle keyboard state changes
             var keyboardInsets = insets.GetKeyboardInsets(handler._context);
             var isKeyboardShowing = !keyboardInsets.IsEmpty;
@@ -222,22 +166,15 @@ internal class SafeAreaHandler(View owner, Context context, Func<ICrossPlatformL
 
             handler.UpdateKeyboardState(keyboardInsets, isKeyboardShowing);
 
-            var viewInsets = handler.GetAdjustedSafeAreaInsets();
+            var viewInsets = handler.GetAdjustedSafeAreaInsets(insets);
             var context = handler._context;
 
             v.SetPadding((int)context.ToPixels(viewInsets.Left), (int)context.ToPixels(viewInsets.Top), (int)context.ToPixels(viewInsets.Right), (int)context.ToPixels(viewInsets.Bottom));
 
 
-            // This is just a quick hack to demonstrate the idea
-            // in the real implementation you would check each of these insets against the relative SafeAreaRegions
-            // and just specify which range is consumed or not
+            // To remove the padding of childelements.
             if (viewInsets.Top > 0 || viewInsets.Bottom > 0 || viewInsets.Left > 0 || viewInsets.Right > 0)
             {
-
-                // This is also somewhat of a hack, AFAICT you need to reset the padding on all children that were previouslly consuming the insets
-                // There's probably a more efficient way to do this
-                // One approach here could be for us to just make one global SafeAreaHandler that gets applied to every view
-                // and then that handler would have a tracking list of views so it could know where to dispatch and reset.
                 var descendant = v.FindDescendantView<ViewGroup>((view) => view is ICrossPlatformLayoutBacking && view != v);
                 descendant?.DispatchApplyWindowInsets(WindowInsets.Consumed);
 
