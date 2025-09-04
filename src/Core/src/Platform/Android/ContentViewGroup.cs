@@ -4,8 +4,10 @@ using Android.Graphics;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
+using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
+using Rectangle = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
@@ -13,10 +15,13 @@ namespace Microsoft.Maui.Platform
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;
+		readonly SafeAreaHandler _safeAreaHandler;
 
 		public ContentViewGroup(Context context) : base(context)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -24,21 +29,43 @@ namespace Microsoft.Maui.Platform
 			var context = Context;
 			ArgumentNullException.ThrowIfNull(context);
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
 		{
 			_context = context;
+			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
+			SetupWindowInsetsHandling();
+		}
+
+		void SetupWindowInsetsHandling()
+		{
+			ViewCompat.SetOnApplyWindowInsetsListener(this, _safeAreaHandler.GetWindowInsetsListener());
+		}
+
+		/// <summary>
+		/// Call this method when safe area configuration changes to trigger OnApplyWindowInsets
+		/// before the next measure and arrange cycle.
+		/// </summary>
+		public void InvalidateSafeArea()
+		{
+			_safeAreaHandler.UpdateSafeAreaConfiguration();
 		}
 
 		public ICrossPlatformLayout? CrossPlatformLayout
@@ -67,15 +94,23 @@ namespace Microsoft.Maui.Platform
 			var deviceIndependentWidth = widthMeasureSpec.ToDouble(_context);
 			var deviceIndependentHeight = heightMeasureSpec.ToDouble(_context);
 
+			// Account for padding in available space
+			var paddingLeft = _context.FromPixels(PaddingLeft);
+			var paddingTop = _context.FromPixels(PaddingTop);
+			var paddingRight = _context.FromPixels(PaddingRight);
+			var paddingBottom = _context.FromPixels(PaddingBottom);
+
+			var availableWidth = Math.Max(0, deviceIndependentWidth - paddingLeft - paddingRight);
+			var availableHeight = Math.Max(0, deviceIndependentHeight - paddingTop - paddingBottom);
+
 			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
 			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
-
-			var measure = CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
+			var measure = CrossPlatformMeasure(availableWidth, availableHeight);
 
 			// If the measure spec was exact, we should return the explicit size value, even if the content
 			// measure came out to a different size
-			var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width;
-			var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height;
+			var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width + paddingLeft + paddingRight;
+			var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height + paddingTop + paddingBottom;
 
 			var platformWidth = _context.ToPixels(width);
 			var platformHeight = _context.ToPixels(height);
@@ -95,6 +130,18 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var destination = _context.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
+
+			// Account for padding in layout bounds
+			var paddingLeft = _context.FromPixels(PaddingLeft);
+			var paddingTop = _context.FromPixels(PaddingTop);
+			var paddingRight = _context.FromPixels(PaddingRight);
+			var paddingBottom = _context.FromPixels(PaddingBottom);
+
+			destination = new Rectangle(
+				destination.X + paddingLeft,
+				destination.Y + paddingTop,
+				Math.Max(0, destination.Width - paddingLeft - paddingRight),
+				Math.Max(0, destination.Height - paddingTop - paddingBottom));
 
 			CrossPlatformArrange(destination);
 		}
