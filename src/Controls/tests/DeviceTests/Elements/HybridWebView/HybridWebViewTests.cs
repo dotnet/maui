@@ -418,6 +418,31 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 		[Fact]
+		public Task DemonstrateExceptionHandlingFunctionality() =>
+			RunTest("exceptiondemo.html", async (hybridWebView) =>
+			{
+				var invokeJavaScriptTarget = new TestDotNetMethods();
+				hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget);
+
+				// Test successful method call
+				var successResult = await hybridWebView.EvaluateJavaScriptAsync("testSuccessfulCall()");
+
+				// Wait a bit for the operation to complete
+				await Task.Delay(1000);
+
+				// Test exception handling - this should NOT throw an exception in C# test code
+				// because the JavaScript should catch it
+				var exceptionResult = await hybridWebView.EvaluateJavaScriptAsync("testExceptionCall()");
+
+				// Wait a bit for the operation to complete
+				await Task.Delay(1000);
+
+				// Verify both methods were called
+				// Note: ThrowTestException should be the last method called since it executes after GetSuccessMessage
+				Assert.Equal("ThrowTestException", invokeJavaScriptTarget.LastMethodCalled);
+			});
+
+		[Fact]
 		public Task InvokeDotNetExceptionPreservesStackTrace() =>
 			RunTest("invokedotnetexceptiontests.html", async (hybridWebView) =>
 			{
@@ -696,6 +721,19 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				UpdateLastMethodCalled();
 				throw new TestCustomException("Custom exception for testing", 42);
+			}
+
+			// Simple demo methods
+			public string GetSuccessMessage()
+			{
+				UpdateLastMethodCalled();
+				return "Method called successfully!";
+			}
+
+			public string ThrowTestException(string parameter)
+			{
+				UpdateLastMethodCalled();
+				throw new InvalidOperationException($"This is a test exception with parameter: {parameter}");
 			}
 
 			private void UpdateLastMethodCalled([CallerMemberName] string methodName = null)

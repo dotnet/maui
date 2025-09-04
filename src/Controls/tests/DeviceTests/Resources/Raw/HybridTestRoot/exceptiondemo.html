@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exception Handling Test</title>
+    <script src="scripts/HybridWebView.js"></script>
+</head>
+<body>
+    <h1>HybridWebView Exception Handling Test</h1>
+    
+    <button id="testSuccess" onclick="testSuccessfulCall()">Test Successful Call</button>
+    <button id="testException" onclick="testExceptionCall()">Test Exception Call</button>
+    
+    <div id="results"></div>
+    
+    <script>
+        async function testSuccessfulCall() {
+            try {
+                const result = await window.HybridWebView.InvokeDotNet('GetSuccessMessage');
+                document.getElementById('results').innerHTML = '<p style="color: green;">Success: ' + result + '</p>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = '<p style="color: red;">Unexpected error: ' + error.message + '</p>';
+            }
+        }
+        
+        async function testExceptionCall() {
+            try {
+                const result = await window.HybridWebView.InvokeDotNet('ThrowTestException', 'test parameter');
+                document.getElementById('results').innerHTML = '<p style="color: red;">ERROR: Should have thrown exception but got: ' + result + '</p>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = 
+                    '<div style="color: orange;">' +
+                    '<p><strong>Exception caught successfully!</strong></p>' +
+                    '<p>Type: ' + (error.dotNetType || 'JavaScript Error') + '</p>' +
+                    '<p>Message: ' + error.message + '</p>' +
+                    '<p>Stack trace available: ' + (error.dotNetStackTrace ? 'Yes' : 'No') + '</p>' +
+                    '</div>';
+            }
+        }
+    </script>
+    
+    <div id="htmlLoaded"></div>
+</body>
+</html>
