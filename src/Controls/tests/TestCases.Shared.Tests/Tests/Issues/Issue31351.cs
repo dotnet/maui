@@ -17,12 +17,11 @@ public class Issue31351 : _IssuesUITest
 	public void CustomCollectionViewShouldScroll()
 	{
 		App.WaitForElement("Issue31351CollectionView");
+		App.WaitForElement("Issue31351ScrollButton");
+		App.Tap("Issue31351ScrollButton");
 		App.WaitForElement("Item 50");
 		App.WaitForElement("Issue31351TopScrollButton");
 		App.Tap("Issue31351TopScrollButton");
 		App.WaitForElement("Item 1");
-		App.WaitForElement("Issue31351ScrollButton");
-		App.Tap("Issue31351ScrollButton");
-		App.WaitForElement("Item 50");
 	}
 }
