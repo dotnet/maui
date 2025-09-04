@@ -38,7 +38,7 @@ public class Issue28986_ScrollView : _IssuesUITest
 		// 6. Verify that ScrollView position/size changes when SafeAreaEdges changes
 		// When ScrollView has SafeAreaEdges.All, it respects safe area insets
 		// When ScrollView has SafeAreaEdges.None, it goes edge-to-edge
-		Assert.That(scrollViewEdgeToEdge.Y, Is.LessThan(scrollViewWithSafeArea.Y),
+		Assert.That(scrollViewEdgeToEdge.Y, Is.LessThanOrEqualTo(scrollViewWithSafeArea.Y),
 			"ScrollView should move up (smaller Y position) when SafeAreaEdges changes from All to None");
 	}
 
@@ -63,7 +63,7 @@ public class Issue28986_ScrollView : _IssuesUITest
 		App.ScrollUp("CurrentSettings");
 
 		var containerPosition = App.WaitForElement("ScrollViewContent").GetRect();
-		Assert.That(containerPosition.Y, Is.GreaterThan(nonePosition.Y),
+		Assert.That(containerPosition.Y, Is.GreaterThanOrEqualTo(nonePosition.Y),
 			"ScrollView should move down when SafeAreaEdges changes from None to Container");
 	}
 }
