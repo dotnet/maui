@@ -189,17 +189,23 @@ namespace Microsoft.Maui.Handlers
 
 				var invokeResultRaw = await InvokeDotNetMethodAsync(invokeTargetType, invokeTarget, invokeData);
 				var invokeResult = CreateInvokeResult(invokeResultRaw);
-				var json = JsonSerializer.Serialize(invokeResult);
+				var json = JsonSerializer.Serialize(invokeResult, HybridWebViewHandlerJsonContext.Default.DotNetInvokeResult);
 				var contentBytes = Encoding.UTF8.GetBytes(json);
 
 				return contentBytes;
 			}
 			catch (Exception ex)
 			{
+				// Log the exception for debugging purposes
 				MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "An error occurred while invoking a .NET method from JavaScript: {ErrorMessage}", ex.Message);
-			}
 
-			return default;
+				// Return error information to JavaScript instead of null
+				var errorResult = CreateInvokeError(ex);
+				var json = JsonSerializer.Serialize(errorResult, HybridWebViewHandlerJsonContext.Default.DotNetInvokeResult);
+				var contentBytes = Encoding.UTF8.GetBytes(json);
+
+				return contentBytes;
+			}
 		}
 
 		private static DotNetInvokeResult CreateInvokeResult(object? result)
@@ -225,6 +231,19 @@ namespace Microsoft.Maui.Handlers
 			return new DotNetInvokeResult()
 			{
 				Result = result,
+			};
+		}
+
+		private static DotNetInvokeResult CreateInvokeError(Exception ex)
+		{
+			return new DotNetInvokeResult()
+			{
+				Error = new DotNetInvokeError()
+				{
+					Type = ex.GetType().Name,
+					Message = ex.Message,
+					StackTrace = ex.StackTrace
+				}
 			};
 		}
 
@@ -305,11 +324,21 @@ namespace Microsoft.Maui.Handlers
 		{
 			public object? Result { get; set; }
 			public bool IsJson { get; set; }
+			public DotNetInvokeError? Error { get; set; }
+		}
+
+		private sealed class DotNetInvokeError
+		{
+			public string? Type { get; set; }
+			public string? Message { get; set; }
+			public string? StackTrace { get; set; }
 		}
 
 		[JsonSourceGenerationOptions()]
 		[JsonSerializable(typeof(JSInvokeMethodData))]
 		[JsonSerializable(typeof(JSInvokeError))]
+		[JsonSerializable(typeof(DotNetInvokeResult))]
+		[JsonSerializable(typeof(DotNetInvokeError))]
 		private partial class HybridWebViewHandlerJsonContext : JsonSerializerContext
 		{
 		}

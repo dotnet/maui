@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="icon" href="data:,">
+    <script src="scripts/HybridWebView.js"></script>
+    <script>
+        window.addEventListener(
+            "HybridWebViewMessageReceived",
+            async function (e) {
+                var messageData = e.detail.message.split('|');
+                var methodToInvoke = messageData[0];
+                var parameter = messageData.length > 1 ? messageData[1] : null;
+                
+                var errorInfo = null;
+                var stackTrace = null;
+
+                try {
+                    // Invoke the .NET method that should throw an exception
+                    var result;
+                    if (parameter) {
+                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke, parameter);
+                    } else {
+                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke);
+                    }
+                    
+                    // If we get here, the exception wasn't thrown properly
+                    errorInfo = "ERROR: Expected exception but method completed successfully with result: " + (result === null ? 'null' : JSON.stringify(result));
+                } catch (error) {
+                    // This is expected - the .NET method should throw an exception
+                    console.log('Caught expected exception from .NET:', error);
+                    
+                    // Store error information for test verification
+                    errorInfo = JSON.stringify({
+                        message: error.message,
+                        dotNetType: error.dotNetType,
+                        dotNetStackTrace: error.dotNetStackTrace
+                    });
+                    
+                    stackTrace = error.dotNetStackTrace;
+                }
+
+                // Store the error info for the test to verify
+                lastErrorInfo = errorInfo;
+                lastErrorStackTrace = stackTrace;
+                
+                SetStatusDone();
+            });
+
+        var lastErrorInfo = null;
+        var lastErrorStackTrace = null;
+
+        function GetLastErrorInfo() {
+            return lastErrorInfo;
+        }
+
+        function GetLastErrorStackTrace() {
+            return lastErrorStackTrace;
+        }
+
+        function SetStatusDone() {
+            document.getElementById('status').innerHTML = "Done!";
+        }
+
+    </script>
+</head>
+<body>
+    <div>
+        Hybrid exception test!
+    </div>
+    <div id="htmlLoaded"></div>
+    <div id="status"></div>
+</body>
+</html>

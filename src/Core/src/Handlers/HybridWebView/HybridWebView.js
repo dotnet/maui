@@ -154,6 +154,25 @@
         if (!response) {
             return null;
         }
+        // Check if the response contains an error
+        if (response.Error) {
+            const error = response.Error;
+            // Log the error to the browser console for debugging
+            console.error('Error invoking .NET method:', error);
+            
+            // Create and throw a JavaScript Error with the .NET exception details
+            const jsError = new Error(error.Message || 'An error occurred while invoking a .NET method');
+            
+            // Add additional information to the error object for debugging
+            if (error.Type) {
+                jsError.dotNetType = error.Type;
+            }
+            if (error.StackTrace) {
+                jsError.dotNetStackTrace = error.StackTrace;
+            }
+            
+            throw jsError;
+        }
         if (response.IsJson) {
             return JSON.parse(response.Result);
         }

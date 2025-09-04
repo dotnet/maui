@@ -392,6 +392,51 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 		[Theory]
+		[ClassData(typeof(InvokeDotNetExceptionTestData))]
+		public Task InvokeDotNetExceptionHandling(string methodName, string expectedExceptionType, string expectedExceptionMessage) =>
+			RunTest("invokedotnetexceptiontests.html", async (hybridWebView) =>
+			{
+				var invokeJavaScriptTarget = new TestDotNetMethods();
+				hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget);
+
+				// Tell JavaScript to invoke the method that throws
+				hybridWebView.SendRawMessage(methodName + (methodName.Contains("ArgumentException", StringComparison.Ordinal) ? "|test_param" : ""));
+
+				// Wait for method invocation to complete (should result in error)
+				await WebViewHelpers.WaitForHtmlStatusSet(hybridWebView);
+
+				// Run some JavaScript to check if the exception was caught and handled properly
+				var errorInfo = await hybridWebView.EvaluateJavaScriptAsync("GetLastErrorInfo()");
+				
+				// Parse the error information
+				Assert.NotNull(errorInfo);
+				Assert.Contains(expectedExceptionType, errorInfo, StringComparison.Ordinal);
+				Assert.Contains(expectedExceptionMessage, errorInfo, StringComparison.Ordinal);
+
+				// Verify the method was called (to ensure we reached the C# method before it threw)
+				Assert.Equal(methodName, invokeJavaScriptTarget.LastMethodCalled);
+			});
+
+		[Fact]
+		public Task InvokeDotNetExceptionPreservesStackTrace() =>
+			RunTest("invokedotnetexceptiontests.html", async (hybridWebView) =>
+			{
+				var invokeJavaScriptTarget = new TestDotNetMethods();
+				hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget);
+
+				// Tell JavaScript to invoke a method that throws an exception
+				hybridWebView.SendRawMessage("Invoke_ThrowsInvalidOperationException");
+
+				// Wait for method invocation to complete (should result in error)
+				await WebViewHelpers.WaitForHtmlStatusSet(hybridWebView);
+
+				// Verify that the .NET stack trace is preserved
+				var stackTrace = await hybridWebView.EvaluateJavaScriptAsync("GetLastErrorStackTrace()");
+				Assert.NotNull(stackTrace);
+				Assert.Contains("Invoke_ThrowsInvalidOperationException", stackTrace, StringComparison.Ordinal);
+			});
+
+		[Theory]
 		[InlineData("")]
 		[InlineData("Async")]
 		public async Task InvokeJavaScriptMethodThatThrowsNumber(string type)
@@ -621,9 +666,52 @@ namespace Microsoft.Maui.DeviceTests
 				UpdateLastMethodCalled();
 			}
 
+			// New test methods for exception handling
+			public void Invoke_ThrowsInvalidOperationException()
+			{
+				UpdateLastMethodCalled();
+				throw new InvalidOperationException("Test invalid operation exception message");
+			}
+
+			public void Invoke_ThrowsArgumentException(string message)
+			{
+				UpdateLastMethodCalled();
+				throw new ArgumentException($"Test argument exception: {message}");
+			}
+
+			public async Task Invoke_ThrowsAsync_InvalidOperationException()
+			{
+				await Task.Delay(10);
+				UpdateLastMethodCalled();
+				throw new InvalidOperationException("Test async invalid operation exception message");
+			}
+
+			public ComputationResult Invoke_ThrowsWithReturnType()
+			{
+				UpdateLastMethodCalled();
+				throw new NotSupportedException("Method with return type that throws exception");
+			}
+
+			public void Invoke_ThrowsCustomException()
+			{
+				UpdateLastMethodCalled();
+				throw new TestCustomException("Custom exception for testing", 42);
+			}
+
 			private void UpdateLastMethodCalled([CallerMemberName] string methodName = null)
 			{
 				LastMethodCalled = methodName;
+			}
+		}
+
+		// Custom exception class for testing
+		private class TestCustomException : Exception
+		{
+			public int ErrorCode { get; }
+
+			public TestCustomException(string message, int errorCode) : base(message)
+			{
+				ErrorCode = errorCode;
 			}
 		}
 
@@ -649,6 +737,24 @@ namespace Microsoft.Maui.DeviceTests
 				yield return new object[] { "Invoke_OneParam_ReturnDictionary", DictionaryResult };
 				yield return new object[] { "Invoke_NullParam_ReturnComplex", ComplexResult };
 				yield return new object[] { "Invoke_ManyParams_NoReturn", null };
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
+		}
+
+		// Test data for exception scenarios
+		private class InvokeDotNetExceptionTestData : IEnumerable<object[]>
+		{
+			public IEnumerator<object[]> GetEnumerator()
+			{
+				yield return new object[] { "Invoke_ThrowsInvalidOperationException", "InvalidOperationException", "Test invalid operation exception message" };
+				yield return new object[] { "Invoke_ThrowsArgumentException", "ArgumentException", "Test argument exception: test_param" };
+				yield return new object[] { "Invoke_ThrowsAsync_InvalidOperationException", "InvalidOperationException", "Test async invalid operation exception message" };
+				yield return new object[] { "Invoke_ThrowsWithReturnType", "NotSupportedException", "Method with return type that throws exception" };
+				yield return new object[] { "Invoke_ThrowsCustomException", "TestCustomException", "Custom exception for testing" };
 			}
 
 			IEnumerator IEnumerable.GetEnumerator()
