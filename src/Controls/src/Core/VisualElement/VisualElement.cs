@@ -1674,11 +1674,21 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				bool isSelected = this.IsElementInSelectedState();
-				string targetState = isSelected ? VisualStateManager.CommonStates.Selected
-												: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
+				bool isSelected = false;
+				var groups = VisualStateManager.GetVisualStateGroups(this);
+				foreach (var group in groups)
+				{
+					if (group.CurrentState?.Name == VisualStateManager.CommonStates.Selected)
+					{
+						isSelected = true;
+						break;
+					}
+				}
 
-				VisualStateManager.GoToState(this, targetState);
+				if (!isSelected)
+				{
+					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
+				}
 			}
 
 			if (IsEnabled)
