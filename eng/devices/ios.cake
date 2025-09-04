@@ -147,6 +147,7 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 		{
 			args
 				.Append("/p:CodesignRequireProvisioningProfile=false")
+				.Append("/p:ValidateXcodeVersion=false")
 				.Append($"/p:RuntimeIdentifier={rid}")
 				.Append("/bl:" + binlog)
 				.Append("/tl");
@@ -245,6 +246,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 		ToolPath = toolPath,
 		ArgumentCustomization = args => args
 			.Append("/p:ExtraDefineConstants=IOSUITEST")
+			.Append("/p:ValidateXcodeVersion=false")
 			.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
 			.Append("/bl:" + binlog)
 	});
@@ -285,6 +287,7 @@ void ExecuteBuildUITestApp(string appProject, string device, string binDir, stri
 		{
 			args
 			.Append("/p:BuildIpa=true")
+			.Append("/p:ValidateXcodeVersion=false")
 			.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
 			.Append($"/p:RuntimeIdentifier={rid}")
 			.Append("/bl:" + binlog)

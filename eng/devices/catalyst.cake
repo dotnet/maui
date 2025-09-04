@@ -79,6 +79,7 @@ void ExecuteBuild(string project, string binDir, string config, string rid, stri
 		},
 		ToolPath = toolPath,
 		ArgumentCustomization = args => args
+			.Append("/p:ValidateXcodeVersion=false")
 			.Append("/p:BuildIpa=true")
 			.Append($"/p:RuntimeIdentifier={rid}")
 			.Append($"/bl:{binlog}")
@@ -145,6 +146,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 		ToolPath = toolPath,
 		ArgumentCustomization = args => args
 			.Append("/p:ExtraDefineConstants=MACUITEST")
+			.Append("/p:ValidateXcodeVersion=false")
 			.Append("/bl:" + binlog)
 	});
 
@@ -167,6 +169,7 @@ void ExecuteBuildUITestApp(string appProject, string binDir, string config, stri
 		Framework = tfm,
 		ToolPath = toolPath,
 		ArgumentCustomization = args => args
+			.Append("/p:ValidateXcodeVersion=false")
 			.Append($"/bl:{binlog}")
 	});
 
