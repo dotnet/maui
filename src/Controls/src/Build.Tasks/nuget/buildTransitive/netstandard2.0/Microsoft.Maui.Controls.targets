@@ -84,6 +84,16 @@
 			Condition="'$(_XFTargetsImported)' == 'true'"/>
 	</Target>
 
+	<Target
+		Name="_ValidateMauiAspireProperty"
+		BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
+		Condition="'$(MauiDisableAspireValidation)' != 'True'">
+		<Warning
+			Code="MA002"
+			Text="The _EnableMauiAspire property should not be set manually. Using Aspire outside the Debug configuration may introduce performance and security risks in production. This property is automatically configured based on build configuration."
+			Condition="'$(_EnableMauiAspire)' != '' and '$(_MauiAspireSetByTargets)' != 'true'"/>
+	</Target>
+
   <Target Name="_MauiXamlComputeInflator">
   	<ItemGroup>
       <!-- Assign the default inflator to MauiXaml that don't have any -->
@@ -280,6 +290,9 @@
       <MauiHybridWebViewSupported Condition="'$(MauiHybridWebViewSupported)' == ''">false</MauiHybridWebViewSupported>
       <!-- FIXME: https://github.com/xamarin/xamarin-macios/issues/22065 -->
       <MobileAggressiveAttributeTrimming Condition="'$(PublishAot)' == 'true' and '$(MobileAggressiveAttributeTrimming)' == ''">false</MobileAggressiveAttributeTrimming>
+      <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == '' and '$(Configuration)' == 'Debug'">true</_EnableMauiAspire>
+      <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == ''">false</_EnableMauiAspire>
+      <_MauiAspireSetByTargets>true</_MauiAspireSetByTargets>
     </PropertyGroup>
     <ItemGroup>
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled"
@@ -317,6 +330,10 @@
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableDiagnostics"
                                       Condition="'$(EnableDiagnostics)' != ''"
                                       Value="$(EnableDiagnostics)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableMauiAspire"
+                                      Condition="'$(_EnableMauiAspire)' != ''"
+                                      Value="$(_EnableMauiAspire)"
                                       Trim="true" />
     </ItemGroup>
   </Target>
