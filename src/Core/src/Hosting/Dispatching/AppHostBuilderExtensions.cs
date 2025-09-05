@@ -52,8 +52,8 @@ namespace Microsoft.Maui.Hosting
 			{
 				var envVarLines = System.IO.File.ReadAllLines(androidEnvVarFilePath);
 
+				var fileEnvironmentVariables = envVarLines
 					.Select(line => line.Split('=', 2))
-					.Where(parts => parts.Length == 2 && !string.IsNullOrEmpty(parts[0]))
 					.ToDictionary(parts => parts[0], parts => parts[1]);
 
 				// Merge file environment variables into the existing environment variables
