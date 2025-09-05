@@ -1,9 +1,12 @@
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class LabelStub : StubBase, ILabel
 	{
+		public FormattedString FormattedText { get; set; }
+		
 		public string Text { get; set; }
 
 		public TextType TextType { get; set; } = TextType.Text;
