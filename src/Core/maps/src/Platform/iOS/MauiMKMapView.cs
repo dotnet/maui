@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Maps.Platform
 		{
 			_handlerRef = new WeakReference<IMapHandler>(handler);
 			OverlayRenderer = GetViewForOverlayDelegate;
+			base.GetViewForAnnotation = GetViewForAnnotation;
 		}
 
 		internal IMapHandler? Handler
