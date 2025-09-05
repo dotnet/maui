@@ -51,6 +51,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			set
 			{
 				base.SelectedViewController = value;
+				// If the selected view controller is the "More" navigation controller, do not update the current page
+				// because it is a special case where the user is navigating to a different set of tabs
+				if (value == MoreNavigationController)
+					return;
+
 				UpdateCurrentPage();
 			}
 		}
