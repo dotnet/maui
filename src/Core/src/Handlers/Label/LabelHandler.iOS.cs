@@ -24,8 +24,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateTextPlainText(label);
 
-			// Any text update requires that we update any attributed string formatting
-			MapFormatting(handler, label);
+			if (!handler.IsConnectingHandler())
+			{
+				// Any text update requires that we update any attributed string formatting
+				MapFormatting(handler, label);
+			}
 		}
 
 		public static void MapTextColor(ILabelHandler handler, ILabel label)
