@@ -6,6 +6,7 @@ using AddressBook;
 using AVFoundation;
 using MediaPlayer;
 using Speech;
+using UserNotifications;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -246,6 +247,47 @@ namespace Microsoft.Maui.ApplicationModel
 				EnsureMainThread();
 
 				return AVPermissions.RequestPermissionAsync(AVAuthorizationMediaType.Audio);
+			}
+		}
+
+		public partial class PostNotifications : BasePlatformPermission
+		{
+			/// <inheritdoc/>
+			#pragma warning disable RS0016 
+			public override Task<PermissionStatus> CheckStatusAsync()
+			{
+				TaskCompletionSource<PermissionStatus> tcs = new();
+
+				UNUserNotificationCenter.Current.GetNotificationSettings((settings) =>
+				{
+					switch (settings.AuthorizationStatus)
+					{
+						case UNAuthorizationStatus.Authorized:
+							tcs.SetResult(PermissionStatus.Granted);
+							break;
+						case UNAuthorizationStatus.Denied:
+							tcs.SetResult(PermissionStatus.Denied);
+							break;
+						default:
+							tcs.SetResult(PermissionStatus.Unknown);
+							break;
+					}
+				});
+
+				return tcs.Task;
+			}
+
+			/// <inheritdoc/>
+			public override async Task<PermissionStatus> RequestAsync()
+			{
+				var (hasPermission, error) = await UNUserNotificationCenter.Current.RequestAuthorizationAsync(UNAuthorizationOptions.Alert | UNAuthorizationOptions.Badge | UNAuthorizationOptions.Sound);
+
+				if(error is not null)
+				{
+					return PermissionStatus.Unknown;
+				}
+
+				return hasPermission ? PermissionStatus.Granted : PermissionStatus.Denied;
 			}
 		}
 
