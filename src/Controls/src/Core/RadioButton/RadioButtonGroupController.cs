@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls
 
 		void ChildAdded(object sender, ElementEventArgs e)
 		{
-			if (string.IsNullOrEmpty(_groupName))
+			if (string.IsNullOrEmpty(_groupName) || _layout == null)
 			{
 				return;
 			}
@@ -135,15 +135,18 @@ namespace Microsoft.Maui.Controls
 
 		void SetSelectedValue(object radioButtonValue)
 		{
+			if(object.Equals(_selectedValue, radioButtonValue))
+			{
+				return;
+			}
+
 			_selectedValue = radioButtonValue;
 
-			if (radioButtonValue != null)
-			{
 #pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 				MessagingCenter.Send<Element, RadioButtonGroupValueChanged>(_layout, RadioButtonGroup.GroupValueChangedMessage,
 					new RadioButtonGroupValueChanged(_groupName, RadioButtonGroup.GetVisualRoot(_layout), radioButtonValue));
 #pragma warning restore CS0618 // Type or member is obsolete
-			}
+
 		}
 
 		void SetGroupName(string groupName)
