@@ -64,7 +64,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new KeyboardScrollingGridGallery(), "Keyboard Scrolling Gallery - Grid with Star Row"),
 			new GalleryPageFactory(() => new KeyboardScrollingNonScrollingPageLargeTitlesGallery(), "Keyboard Scrolling Gallery - NonScrolling Page / Large Titles"),
 			new GalleryPageFactory(() => new KeyboardScrollingNonScrollingPageSmallTitlesGallery(), "Keyboard Scrolling Gallery - NonScrolling Page / Small Titles"),
-		  	new GalleryPageFactory(() => new KeyboardScrollingScrollingPageLargeTitlesGallery(), "Keyboard Scrolling Gallery - Scrolling Page / Large Titles"),
+		  new GalleryPageFactory(() => new KeyboardScrollingScrollingPageLargeTitlesGallery(), "Keyboard Scrolling Gallery - Scrolling Page / Large Titles"),
 			new GalleryPageFactory(() => new KeyboardScrollingScrollingPageSmallTitlesGallery(), "Keyboard Scrolling Gallery - Scrolling Page / Small Titles"),
 			new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
 			new GalleryPageFactory(() => new ListViewCoreGalleryPage(), "ListView Gallery"),
@@ -100,8 +100,10 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new ScrollViewControlPage(), "ScrollView Feature Matrix"),
 			new GalleryPageFactory(() => new GraphicsViewControlPage(), "GraphicsView Feature Matrix"),
 			new GalleryPageFactory(() => new EditorControlPage(), "Editor Feature Matrix"),
+			new GalleryPageFactory(() => new TitleBarControlPage(), "TitleBar Feature Matrix"),
 			new GalleryPageFactory(() => new IndicatorViewControlPage(), "IndicatorView Feature Matrix"),
 		};
+		
 
 		public CorePageView(Page rootPage)
 		{
