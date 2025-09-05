@@ -15,7 +15,7 @@
             Order="Primary"
             Priority="0"
             IconImageSource="{StaticResource IconDelete}"
-            SemanticProperties.Description="Delete" />
+            SemanticProperties.Description="Delete Task" />
     </ContentPage.ToolbarItems>        
 
     <Grid>
@@ -50,7 +50,7 @@
                 </sf:SfTextInputLayout>
 
                 <Button 
-                    HeightRequest="{OnIdiom 44, Desktop=60}"
+                    MinimumHeightRequest="{OnIdiom 44, Desktop=60}"
                     Text="Save"
                     Command="{Binding SaveCommand}"/>
             </VerticalStackLayout>
