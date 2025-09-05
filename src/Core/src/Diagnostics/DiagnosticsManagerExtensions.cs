@@ -14,10 +14,13 @@ internal static class DiagnosticsManagerExtensions
 		{
 			return builder;
 		}
-
+		
+		builder.Services.TryAddSingleton<IMeterFactory>(_ => new DefaultMeterFactory());
+		
 		builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IDiagnosticTagger, ViewDiagnosticTagger>(_ => new ViewDiagnosticTagger()));
 		builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IDiagnosticMetrics, LayoutDiagnosticMetrics>(_ => new LayoutDiagnosticMetrics()));
-
+		builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IDiagnosticMetrics, ScrollingDiagnosticMetrics>(_ => new ScrollingDiagnosticMetrics()));
+		
 		builder.Services.AddSingleton<IDiagnosticsManager>(services => new DiagnosticsManager(
 			services.GetServices<IDiagnosticMetrics>(),
 			services.GetServices<IDiagnosticTagger>(),
@@ -83,5 +86,15 @@ internal static class DiagnosticsManagerExtensions
 		}
 
 		activity?.Dispose();
+	}
+
+	internal sealed class DefaultMeterFactory : IMeterFactory
+	{
+		public Meter Create(MeterOptions options) => new(options.Name, options.Version);
+
+		public void Dispose()
+		{
+			// No cleanup needed for the default implementation
+		}
 	}
 }

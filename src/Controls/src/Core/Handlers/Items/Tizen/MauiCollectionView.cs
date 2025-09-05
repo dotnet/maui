@@ -1,6 +1,7 @@
 ﻿using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Diagnostics;
 using Tizen.UIExtensions.NUI;
 using IMeasurable = Tizen.UIExtensions.Common.IMeasurable;
 using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
@@ -173,7 +174,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsView == null || Adaptor == null)
 				return;
-
+			
+			// Start scroll instrumentation for user gesture
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(ItemsView, ScrollType.UserGesture,
+				(e.HorizontalOffset - e.HorizontalDelta).ToScaledDP(),
+				(e.VerticalOffset - e.VerticalDelta).ToScaledDP());
+			
 			ItemsView.SendScrolled(new ItemsViewScrolledEventArgs
 			{
 				HorizontalDelta = e.HorizontalDelta.ToScaledDP(),
@@ -221,6 +227,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnScrollToRequested(object? sender, ScrollToRequestEventArgs e)
 		{
+			// Start scroll instrumentation for programmatic scrolling
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(ItemsView, ScrollType.Programmatic, 
+				ScrollX, ScrollY);
+			
 			if (e.Mode == ScrollToMode.Position)
 			{
 				ScrollTo(GetIndex(e), (TScrollToPosition)e.ScrollToPosition, e.IsAnimated);
