@@ -90,7 +90,7 @@
 		Condition="'$(MauiDisableAspireValidation)' != 'True'">
 		<Warning
 			Code="MA002"
-			Text="The _EnableMauiAspire property should not be set manually. Using Aspire outside of the Debug configuration might introduce performance and security risks in production. This property is automatically configured based on build configuration."
+			Text="The _EnableMauiAspire property should not be set manually. Using Aspire outside the Debug configuration may introduce performance and security risks in production. This property is automatically configured based on build configuration."
 			Condition="'$(_EnableMauiAspire)' != '' and '$(_MauiAspireSetByTargets)' != 'true'"/>
 	</Target>
 
