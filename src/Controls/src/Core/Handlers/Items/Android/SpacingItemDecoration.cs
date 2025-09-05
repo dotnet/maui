@@ -13,6 +13,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public int VerticalOffset { get; }
 
+		int _span = 1;
+
+		IItemsLayout _itemsLayout;
+
 		public SpacingItemDecoration(Context context, IItemsLayout itemsLayout)
 		{
 			// The original "SpacingItemDecoration" applied spacing based on an item's current span index.
@@ -35,6 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				case GridItemsLayout gridItemsLayout:
 					horizontalOffset = gridItemsLayout.HorizontalItemSpacing / 2.0;
 					verticalOffset = gridItemsLayout.VerticalItemSpacing / 2.0;
+					_span = gridItemsLayout.Span;
 					break;
 				case LinearItemsLayout listItemsLayout:
 					if (listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
@@ -56,16 +61,76 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			HorizontalOffset = (int)context.ToPixels(horizontalOffset);
 			VerticalOffset = (int)context.ToPixels(verticalOffset);
+			_itemsLayout = itemsLayout;
 		}
 
 		public override void GetItemOffsets(ARect outRect, AView view, RecyclerView parent, RecyclerView.State state)
 		{
 			base.GetItemOffsets(outRect, view, parent, state);
-
+			int position = parent.GetChildAdapterPosition(view);
+			int itemCount = state.ItemCount;
 			outRect.Left = HorizontalOffset;
 			outRect.Right = HorizontalOffset;
 			outRect.Bottom = VerticalOffset;
 			outRect.Top = VerticalOffset;
+
+
+			if (_itemsLayout is GridItemsLayout gridItemsLayout)
+			{
+				if (gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+				{
+					int row = position / _span;
+					int totalRows = (int)Math.Ceiling((double)itemCount / _span);
+
+					if (row == 0)
+					{
+						outRect.Top = 0;
+					}
+					else if (row == totalRows - 1)
+					{
+						outRect.Bottom = 0;
+					}
+				}
+				else
+				{
+					int column = position / _span;
+					int totalColumns = (int)Math.Ceiling((double)itemCount / _span);
+
+					if (position < _span)
+					{
+						outRect.Left = 0;
+					}
+					else if (column == totalColumns - 1)
+					{
+						outRect.Right = 0;
+					}
+				}
+			}
+			else if (_itemsLayout is LinearItemsLayout linearItemsLayout)
+			{
+				if (linearItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+				{
+					if (position == 0)
+					{
+						outRect.Top = 0;
+					}
+					else if (position == itemCount - 1)
+					{
+						outRect.Bottom = 0;
+					}
+				}
+				else
+				{
+					if (position == 0)
+					{
+						outRect.Left = 0;
+					}
+					else if (position == itemCount - 1)
+					{
+						outRect.Right = 0;
+					}
+				}
+			}
 		}
 	}
 }
