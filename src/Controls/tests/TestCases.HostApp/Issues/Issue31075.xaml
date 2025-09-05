@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue31075"
+             Title="MediaPicker Modal Test">
+    <StackLayout Padding="20" Spacing="20">
+        <Label Text="Test for MediaPicker modal dismissal issue" 
+               HorizontalOptions="Center" 
+               FontSize="16" />
+        
+        <Label Text="1. Tap 'Open Modal' to open a modal page" />
+        <Label Text="2. Tap 'Test MediaPicker' in the modal" />
+        <Label Text="3. Cancel the camera UI" />
+        <Label Text="4. Verify the modal page is NOT dismissed" />
+        
+        <Button x:Name="OpenModalButton"
+                Text="Open Modal"
+                AutomationId="OpenModalButton"
+                Clicked="OnOpenModalClicked" />
+                
+        <Label x:Name="StatusLabel"
+               Text="Ready to test"
+               AutomationId="StatusLabel"
+               HorizontalOptions="Center" />
+    </StackLayout>
+</ContentPage>

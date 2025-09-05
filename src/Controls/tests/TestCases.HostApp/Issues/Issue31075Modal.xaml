@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue31075Modal"
+             Title="Modal Page">
+    <StackLayout Padding="20" Spacing="20">
+        <Label Text="This is a modal page" 
+               HorizontalOptions="Center" 
+               FontSize="18" 
+               FontAttributes="Bold" />
+        
+        <Label Text="Test MediaPicker without dismissing this modal:" />
+        
+        <Button x:Name="TestMediaPickerButton"
+                Text="Test MediaPicker (Photo)"
+                AutomationId="TestMediaPickerButton"
+                Clicked="OnTestMediaPickerClicked" />
+                
+        <Button x:Name="TestVideoPickerButton"
+                Text="Test MediaPicker (Video)"
+                AutomationId="TestVideoPickerButton"
+                Clicked="OnTestVideoPickerClicked" />
+        
+        <Label x:Name="ResultLabel"
+               Text="No test performed yet"
+               AutomationId="ResultLabel"
+               HorizontalOptions="Center" />
+               
+        <Button x:Name="CloseModalButton"
+                Text="Close Modal"
+                AutomationId="CloseModalButton"
+                Clicked="OnCloseModalClicked" />
+    </StackLayout>
+</ContentPage>
