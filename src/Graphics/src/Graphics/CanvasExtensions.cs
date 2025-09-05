@@ -152,11 +152,48 @@ namespace Microsoft.Maui.Graphics
 			target.DrawPath(path);
 		}
 
+		/// <summary>
+		/// Fills the specified path using the current fill color and the non-zero winding rule.
+		/// </summary>
+		/// <param name="target">The canvas to draw on.</param>
+		/// <param name="path">The path to fill.</param>
+		/// <exception cref="System.ArgumentException">
+		/// Thrown when the path is invalid for fill operations. This can occur when:
+		/// <list type="bullet">
+		/// <item><description>The path is empty or contains no drawable segments</description></item>
+		/// <item><description>The path contains invalid coordinates or operations</description></item>
+		/// <item><description>The path is not properly formed for the underlying graphics implementation</description></item>
+		/// </list>
+		/// </exception>
+		/// <remarks>
+		/// For best results with fill operations, ensure the path represents a closed shape by calling
+		/// <see cref="PathF.Close()"/> or manually connecting the end point back to the start point.
+		/// Unclosed paths may produce unexpected results or exceptions depending on the graphics backend.
+		/// </remarks>
 		public static void FillPath(this ICanvas target, PathF path)
 		{
 			target.FillPath(path, WindingMode.NonZero);
 		}
 
+		/// <summary>
+		/// Fills the specified path using the current fill color and the specified winding rule.
+		/// </summary>
+		/// <param name="target">The canvas to draw on.</param>
+		/// <param name="path">The path to fill.</param>
+		/// <param name="windingMode">The winding rule to use for determining which areas are inside the path.</param>
+		/// <exception cref="System.ArgumentException">
+		/// Thrown when the path is invalid for fill operations. This can occur when:
+		/// <list type="bullet">
+		/// <item><description>The path is empty or contains no drawable segments</description></item>
+		/// <item><description>The path contains invalid coordinates or operations</description></item>
+		/// <item><description>The path is not properly formed for the underlying graphics implementation</description></item>
+		/// </list>
+		/// </exception>
+		/// <remarks>
+		/// For best results with fill operations, ensure the path represents a closed shape by calling
+		/// <see cref="PathF.Close()"/> or manually connecting the end point back to the start point.
+		/// Unclosed paths may produce unexpected results or exceptions depending on the graphics backend.
+		/// </remarks>
 		public static void FillPath(this ICanvas target, PathF path, WindingMode windingMode)
 		{
 			target.FillPath(path, windingMode);

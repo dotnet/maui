@@ -3,20 +3,20 @@ using System;
 namespace Microsoft.Maui.Controls
 {
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls/AccessKeyPlacement.xml" path="Type[@FullName='Microsoft.Maui.Controls.AccessKeyPlacement']/Docs/*" />
+	/// <summary>Enumerates access key placement relative to the control that the access key describes.</summary>
 	public enum AccessKeyPlacement
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/AccessKeyPlacement.xml" path="//Member[@MemberName='Auto']/Docs/*" />
+		/// <summary>Indicates that the default access key placement will be used.</summary>
 		Auto = 0,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/AccessKeyPlacement.xml" path="//Member[@MemberName='Top']/Docs/*" />
+		/// <summary>Indicates that the access key will appear above the top edge of the described element.</summary>
 		Top,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/AccessKeyPlacement.xml" path="//Member[@MemberName='Bottom']/Docs/*" />
+		/// <summary>Indicates that the access key will appear below the lower edge of the described element.</summary>
 		Bottom,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/AccessKeyPlacement.xml" path="//Member[@MemberName='Right']/Docs/*" />
+		/// <summary>Indicates that the access key will appear to the right of the right edge of the described element.</summary>
 		Right,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/AccessKeyPlacement.xml" path="//Member[@MemberName='Left']/Docs/*" />
+		/// <summary>Indicates that the access key will appear to the left of the left edge of the described element.</summary>
 		Left,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/AccessKeyPlacement.xml" path="//Member[@MemberName='Center']/Docs/*" />
+		/// <summary>Indicates that the access key will be overlaid on top of the center of the described element.</summary>
 		Center,
 	}
 }

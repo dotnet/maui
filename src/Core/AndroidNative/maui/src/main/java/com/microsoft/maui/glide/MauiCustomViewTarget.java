@@ -14,7 +14,7 @@ import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.request.target.CustomViewTarget;
 import com.bumptech.glide.request.transition.Transition;
 
-import com.microsoft.maui.R;
+import microsoft.maui.R;
 import com.microsoft.maui.ImageLoaderCallback;
 import com.microsoft.maui.PlatformLogger;
 import com.microsoft.maui.glide.MauiTarget;

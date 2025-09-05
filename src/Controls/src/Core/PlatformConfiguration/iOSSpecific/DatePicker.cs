@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			typeof(DatePicker),
 			default(UpdateMode));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/DatePicker.xml" path="//Member[@MemberName='GetUpdateMode']/Docs/*" />
+		/// <param name="element">The element parameter.</param>
 		public static UpdateMode GetUpdateMode(BindableObject element)
 		{
 			return (UpdateMode)element.GetValue(UpdateModeProperty);
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(UpdateModeProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/DatePicker.xml" path="//Member[@MemberName='UpdateMode']/Docs/*" />
+		/// <param name="config">The config parameter.</param>
 		public static UpdateMode UpdateMode(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetUpdateMode(config.Element);

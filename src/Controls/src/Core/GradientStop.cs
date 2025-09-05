@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls
 			Offset = offset;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/GradientStop.xml" path="//Member[@MemberName='Equals']/Docs/*" />
+		/// <param name="obj">The obj parameter.</param>
 		public override bool Equals(object obj)
 		{
 			if (!(obj is GradientStop dest))

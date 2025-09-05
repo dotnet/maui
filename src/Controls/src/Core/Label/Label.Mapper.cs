@@ -6,7 +6,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Label.xml" path="Type[@FullName='Microsoft.Maui.Controls.Label']/Docs/*" />
+	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that displays text.</summary>
 	public partial class Label
 	{
 		internal static new void RemapForControls()
