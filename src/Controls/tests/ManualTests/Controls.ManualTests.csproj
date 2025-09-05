@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
+    <!-- Uncomment the below line to use the .NET MAUI NuGet packages instead of the complete .NET MAUI source for building this project -->
+    <!-- <UseMaui>true</UseMaui> -->
+    <!-- Uncomment the below line to use the specified .NET MAUI version instead of the version provided by the installed workload -->
+    <!-- <MauiVersion>9.0.100</MauiVersion> -->
     <TargetFrameworks>$(MauiManualTestsPlatforms)</TargetFrameworks>
     <TargetFrameworks Condition=" '$(UseMaui)' != 'true' and '$(IncludePreviousTfms)' == 'true' ">$(TargetFrameworks);$(MauiManualTestsPreviousPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
@@ -68,6 +72,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' == 'true' ">
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
     <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="$(MauiVersion)" />
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
   </ItemGroup>
