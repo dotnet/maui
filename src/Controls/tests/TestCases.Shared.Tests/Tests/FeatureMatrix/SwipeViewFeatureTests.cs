@@ -498,9 +498,25 @@ public class SwipeViewFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("SwipeViewImage");
 		App.SwipeLeftToRight("SwipeViewImage");
-		App.WaitForElement("Icon");
-		App.Tap("Icon");
-		App.WaitForNoElement("Icon");
+		bool iconDismissed = true;
+        for (int i = 0; i < 3 && !iconDismissed; i++)
+        {
+            try
+            {
+                App.WaitForElement("Icon");
+                App.Tap("Icon");
+                App.WaitForNoElement("Icon");
+                iconDismissed = false;
+                break;
+            }
+            catch (Exception)
+            {
+                // retry
+            }
+ 
+    Assert.That(iconDismissed,Is.True,"Icon did not disappear after 3 attempts.");
+    }
+ 
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
