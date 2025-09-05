@@ -38,6 +38,9 @@ namespace Microsoft.Maui.Controls.Internals
 			if (propertyName == null || propertyName == Shell.NavBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.NavBarIsVisibleProperty, element);
 
+			if (propertyName == null || propertyName == Shell.BackButtonBehaviorProperty.PropertyName)
+				BaseShellItem.PropagateFromParent(Shell.BackButtonBehaviorProperty, element);
+
 			foreach (var child in children.ToArray())
 			{
 				if (child is IPropertyPropagationController view)
