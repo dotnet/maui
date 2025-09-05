@@ -14,7 +14,7 @@ using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiStepper : Control
+	public partial class MauiStepper : Control
 	{
 		Button _plus;
 		Button _minus;

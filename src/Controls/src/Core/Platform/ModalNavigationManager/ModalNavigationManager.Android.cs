@@ -415,45 +415,14 @@ namespace Microsoft.Maui.Controls.Platform
 							return;
 						}
 
-						Window? window = activity.GetWindow() as Window;
-						EventHandler? eventHandler = null;
-						eventHandler = OnPopCanceled;
-						if (window is not null)
-						{
-							window.PopCanceled += eventHandler;
-						}
-
-						var preventBackPropagation = false;
-
 						try
 						{
 							IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del =>
 							{
-								preventBackPropagation = del(activity) || preventBackPropagation;
+								del(activity);
 							});
 						}
-						finally
-						{
-							if (window is not null && eventHandler is not null)
-							{
-								window.PopCanceled -= eventHandler;
-							}
-						}
-
-						if (!preventBackPropagation)
-						{
-							customComponentDialog.OnBackPressedDispatcher.OnBackPressed();
-						}
-
-						eventHandler = null;
-						void OnPopCanceled(object? sender, EventArgs e)
-						{
-							preventBackPropagation = true;
-							if (window is not null && eventHandler is not null)
-							{
-								window.PopCanceled -= eventHandler;
-							}
-						}
+						finally { }
 					}
 				}
 			}
