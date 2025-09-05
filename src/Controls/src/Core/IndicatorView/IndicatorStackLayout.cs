@@ -1,6 +1,9 @@
 using System.ComponentModel;
+using System.Collections;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using System;
 
 namespace Microsoft.Maui.Controls
 {
@@ -161,8 +164,41 @@ namespace Microsoft.Maui.Controls
 				}
 			});
 
-			BindableLayout.SetItemsSource(this, _indicatorView.ItemsSource);
+			// Get the filtered items source based on MaximumVisible
+			var itemsSource = GetFilteredItemsSource();
+			BindableLayout.SetItemsSource(this, itemsSource);
+
 			BindableLayout.SetItemTemplate(this, indicatorTemplate);
+		}
+
+		IEnumerable? GetFilteredItemsSource()
+		{
+			if (_indicatorView.ItemsSource is null || _indicatorView.MaximumVisible <= 0)
+			{
+				return null;
+			}
+
+			if (_indicatorView.ItemsSource is IList items)
+			{
+				int maxItems = Math.Min(items.Count, _indicatorView.MaximumVisible);
+				if (items.Count <= maxItems)
+				{
+					return items;
+				}
+
+				var filteredItems = new List<object>(maxItems);
+				for (int index = 0; index < maxItems; index++)
+				{
+					if (items[index] is object item)
+					{
+						filteredItems.Add(item);
+					}
+				}
+
+				return filteredItems;
+			}
+
+			return _indicatorView.ItemsSource;
 		}
 
 		public void Remove()
