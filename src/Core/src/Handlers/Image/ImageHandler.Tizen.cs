@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System.Threading.Tasks;
 using Tizen.UIExtensions.NUI;
+using Microsoft.Maui.Diagnostics;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -34,8 +35,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
-			handler.SourceLoader.UpdateImageSourceAsync();
+		public static async Task MapSourceAsync(IImageHandler handler, IImage image)
+		{
+			using var instrumentation =
+				DiagnosticInstrumentation.StartImageLoading(handler.VirtualView, GetSourceType(image.Source));
+
+			await handler.SourceLoader.UpdateImageSourceAsync();
+		}
 
 		partial class ImageImageSourcePartSetter
 		{
