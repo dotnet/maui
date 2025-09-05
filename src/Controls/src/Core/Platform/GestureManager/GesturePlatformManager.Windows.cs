@@ -667,44 +667,34 @@ namespace Microsoft.Maui.Controls.Platform
 					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
 
 		void OnPgrPointerPressed(object sender, PointerRoutedEventArgs e)
-		{
-			var view = Element as View;
-			if (view != null)
-			{
-				var pointerGestures = ElementGestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
-				var pressedButton = GetPressedButton(sender, e);
-				foreach (var recognizer in pointerGestures)
-				{
-					if (!CheckButtonMask(recognizer, pressedButton))
-						continue;
-					recognizer.SendPointerPressed(view, (relativeTo) => GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e), pressedButton);
-				}
-			}
-
-			if ((_subscriptionFlags & SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed) != 0)
-			{
-				OnPointerPressed(sender, e);
-			}
-		}
+			=> HandlePgrPointerButtonAction(sender, e, true);
 
 		void OnPgrPointerReleased(object sender, PointerRoutedEventArgs e)
+			=> HandlePgrPointerButtonAction(sender, e, false);
+
+		void HandlePgrPointerButtonAction(object sender, PointerRoutedEventArgs e, bool isPressed)
 		{
-			var view = Element as View;
-			if (view != null)
+			if (Element is View view)
 			{
 				var pointerGestures = ElementGestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
-				var releasedButton = GetPressedButton(sender, e);
+				var button = GetPressedButton(sender, e);
 				foreach (var recognizer in pointerGestures)
 				{
-					if (!CheckButtonMask(recognizer, releasedButton))
+					if (!CheckButtonMask(recognizer, button))
 						continue;
-					recognizer.SendPointerReleased(view, (relativeTo) => GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e), releasedButton);
+					if (isPressed)
+						recognizer.SendPointerPressed(view, (relativeTo) => GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e), button);
+					else
+						recognizer.SendPointerReleased(view, (relativeTo) => GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e), button);
 				}
 			}
 
 			if ((_subscriptionFlags & SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed) != 0)
 			{
-				OnPointerReleased(sender, e);
+				if (isPressed)
+					OnPointerPressed(sender, e);
+				else
+					OnPointerReleased(sender, e);
 			}
 		}
 

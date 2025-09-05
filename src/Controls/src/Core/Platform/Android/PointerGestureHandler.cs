@@ -169,6 +169,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool CheckButtonMask(PointerGestureRecognizer recognizer, ButtonsMask currentButton)
 		{
+			// If no buttons specified (enum backing value is 0), default to Primary only
+			if ((int)recognizer.Buttons == 0)
+				return currentButton == ButtonsMask.Primary;
+
 			if (currentButton == ButtonsMask.Secondary)
 			{
 				return (recognizer.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary;

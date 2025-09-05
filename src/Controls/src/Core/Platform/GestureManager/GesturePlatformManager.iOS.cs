@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Threading.Tasks;
 using System.Reflection;
 using System.Runtime.Versioning;
 using CoreGraphics;
@@ -223,7 +224,6 @@ namespace Microsoft.Maui.Controls.Platform
 				return null;
 
 			return new Point((int)result.Value.X, (int)result.Value.Y);
-
 		}
 
 		protected virtual List<UIGestureRecognizer?>? GetPlatformRecognizer(IGestureRecognizer recognizer)
@@ -936,6 +936,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			// Store a reference to the platform delegate so that it is not garbage collected
 			FakeRightClickPointerDelegate? _dontCollectMePlease;
+			bool _disposed;
 
 			public FakeRightClickPointerInteraction(PointerGestureRecognizer pointerGestureRecognizer, GesturePlatformManager gestureManager)
 				: base(new FakeRightClickPointerDelegate(pointerGestureRecognizer, gestureManager))
@@ -944,6 +945,18 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			public PointerGestureRecognizer? PointerGestureRecognizer => _dontCollectMePlease?.PointerGestureRecognizer;
+
+			protected override void Dispose(bool disposing)
+			{
+				if (_disposed)
+					return;
+				if (disposing)
+				{
+					_dontCollectMePlease = null; // release strong reference
+				}
+				_disposed = true;
+				base.Dispose(disposing);
+			}
 
 			class FakeRightClickPointerDelegate : UIContextMenuInteractionDelegate
 			{
@@ -968,16 +981,24 @@ namespace Microsoft.Maui.Controls.Platform
 						// Check if this recognizer should respond to secondary button
 						if ((pointerGestureRecognizer.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
 						{
-							pointerGestureRecognizer.SendPointerPressed(view, 
-								(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(eventTracker)), 
-								null,
-								ButtonsMask.Secondary);
-								
-							// Immediately send pointer released event since context menu is a single click action
-							pointerGestureRecognizer.SendPointerReleased(view, 
-								(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(eventTracker)), 
-								null,
-								ButtonsMask.Secondary);
+								pointerGestureRecognizer.SendPointerPressed(view,
+									(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(eventTracker)),
+									null,
+									ButtonsMask.Secondary);
+
+								// Delay releasing slightly to allow any Pressed handlers to run first
+								Task.Delay(1).ContinueWith(_ =>
+								{
+									if (_gestureManager.Target is GesturePlatformManager gt
+										&& _recognizer.Target is PointerGestureRecognizer pgr2
+										&& gt._handler?.VirtualView is View view2)
+									{
+										view2.Dispatcher?.Dispatch(() => pgr2.SendPointerReleased(view2,
+											(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(gt)),
+											null,
+											ButtonsMask.Secondary));
+									}
+								});
 						}
 					}
 					
