@@ -226,7 +226,7 @@ static class KnownTypeConverters
 			}
 		}
 
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.RectConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.RectConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value));
 
 		return "default";
 	}
@@ -259,7 +259,7 @@ static class KnownTypeConverters
 		}
 
 #pragma warning disable RS0030 // Do not use banned APIs
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 		return "default";
 	}
@@ -278,7 +278,7 @@ static class KnownTypeConverters
 			}
 		}
 
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.PointConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.PointConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value));
 
 		return "default";
 	}
@@ -317,7 +317,7 @@ static class KnownTypeConverters
 			}
 		}
 
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ThicknessConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ThicknessConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value));
 
 		return "default";
 	}
@@ -352,7 +352,7 @@ static class KnownTypeConverters
 			}
 		}
 
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.CornerRadiusConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.CornerRadiusConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value));
 
 		return "default";
 	}
@@ -376,7 +376,7 @@ static class KnownTypeConverters
 			}
 		}
 
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.EasingConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.EasingConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value));
 
 		return "default";
 	}
@@ -396,7 +396,7 @@ static class KnownTypeConverters
 		}
 
 #pragma warning disable RS0030 // Do not use banned APIs
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, value, toType?.ToDisplayString()));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value, value, toType?.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 
 		return "default";
@@ -420,7 +420,7 @@ static class KnownTypeConverters
 				return $"new global::Microsoft.Maui.Layouts.FlexBasis({FormatInvariant(flex)}, false)";
 		}
 
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.FlexBasisConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.FlexBasisConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value));
 
 		return "default";
 	}
@@ -447,7 +447,7 @@ static class KnownTypeConverters
 		}
 
 #pragma warning disable RS0030 // Do not use banned APIs
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 		return "default";
 	}
@@ -471,7 +471,7 @@ static class KnownTypeConverters
 			return ConvertEnum(value, node, toType, context);
 		}
 
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.FlowDirectionConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.FlowDirectionConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value));
 
 		return "default";
 	}
@@ -504,7 +504,7 @@ static class KnownTypeConverters
 			}
 		}
 
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.GridLengthConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.GridLengthConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value));
 
 		return "default";
 	}
@@ -523,7 +523,7 @@ static class KnownTypeConverters
 			return $"new global::Microsoft.Maui.Controls.ColumnDefinitionCollection([{string.Join(", ", columnDefinitions)}])";
 		}
 
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ColumnDefinitionCollectionConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ColumnDefinitionCollectionConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value));
 
 		return "default";
 	}
@@ -544,7 +544,7 @@ static class KnownTypeConverters
 			return $"new global::Microsoft.Maui.Controls.RowDefinitionCollection([{string.Join(", ", rowDefinitions)}])";
 		}
 
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.RowDefinitionCollectionConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.RowDefinitionCollectionConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value));
 
 		return "default";
 	}
@@ -562,7 +562,7 @@ static class KnownTypeConverters
 		}
 
 #pragma warning disable RS0030 // Do not use banned APIs
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 		return "default";
 	}
@@ -578,7 +578,7 @@ static class KnownTypeConverters
 		}
 
 #pragma warning disable RS0030 // Do not use banned APIs
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ListStringConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ListStringConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value));
 #pragma warning restore RS0030 // Do not use banned APIs
 		return "default";
 	}
@@ -614,7 +614,7 @@ static class KnownTypeConverters
 				else
 				{
 #pragma warning disable RS0030 // Do not use banned APIs
-					context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
+					context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 					return "default";
 				}
@@ -623,7 +623,7 @@ static class KnownTypeConverters
 			if (hasX)
 			{
 #pragma warning disable RS0030 // Do not use banned APIs
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 				return "default";
 			}
@@ -632,7 +632,7 @@ static class KnownTypeConverters
 		}
 
 #pragma warning disable RS0030 // Do not use banned APIs
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 
 		return "default";
@@ -650,7 +650,7 @@ static class KnownTypeConverters
 		}
 
 #pragma warning disable RS0030 // Do not use banned APIs
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 		return "default";
 	}
@@ -768,7 +768,7 @@ static class KnownTypeConverters
 			}
 		}
 
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.StrokeShapeConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.StrokeShapeConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value));
 
 		return "default";
 	}
@@ -783,7 +783,7 @@ static class KnownTypeConverters
 			var parts = value.Split('.');
 			if (parts.Length > 2 || (parts.Length == 2 && parts[0] != "LayoutOptions"))
 			{
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.LayoutOptionsConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.LayoutOptionsConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value));
 
 				return "default";
 			}
@@ -809,7 +809,7 @@ static class KnownTypeConverters
 			}
 		}
 
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.LayoutOptionsConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.LayoutOptionsConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value));
 
 		return "default";
 	}
@@ -827,7 +827,7 @@ static class KnownTypeConverters
 		}
 
 #pragma warning disable RS0030 // Do not use banned APIs
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType.ToDisplayString()));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.ProjectItem.RelativePath!, xmlLineInfo, value), value, toType.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 		return "default";
 	}
@@ -898,10 +898,10 @@ static class KnownTypeConverters
 
 		context.Writer.WriteLine($"var {uriVar} = new global::System.Uri(\"{value};assembly={asm.Name}\", global::System.UriKind.RelativeOrAbsolute);");
 
-		var rootTargetPath = context.FilePath!.Replace('\\', '/');
+		var rootTargetPath = context.ProjectItem.RelativePath!.Replace('\\', '/');
 
 		if (asm.GetAttributes(xamlResIdAttr).FirstOrDefault(attr => (string)attr.ConstructorArguments[1].Value! == GetResourcePath(value, rootTargetPath)) is null)
-			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.FilePath!, (IXmlLineInfo)node, value), $"Resource {value} is not a valid resource path."));
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, value), $"Resource {value} is not a valid resource path."));
 
 
 		//is there a type associated with the resource ?

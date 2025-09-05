@@ -299,7 +299,7 @@ internal class KnownMarkups
 				return false;
 			}
 
-			var location = LocationHelpers.LocationCreate(context.FilePath!, (IXmlLineInfo)node, "x:DataType");
+			var location = LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, "x:DataType");
 
 			if (xDataTypeIsInOuterScope)
 			{
@@ -502,7 +502,7 @@ internal class KnownMarkups
 
 		if (keyNode is not ValueNode keyValueNode)
 		{
-			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationHelpers.LocationCreate(context.FilePath!, (IXmlLineInfo)node, ""), "StaticResourceExtension: Key must be a string literal"));
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""), "StaticResourceExtension: Key must be a string literal"));
 			returnType = context.Compilation.ObjectType;
 			value = string.Empty;
 			return false;

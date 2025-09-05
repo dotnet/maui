@@ -3,6 +3,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using NUnit.Framework;
 
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class OnPlatformOptimization : ContentPage
@@ -13,22 +14,47 @@ public partial class OnPlatformOptimization : ContentPage
 	class Tests
 	{
 		[Test]
-		public void OnPlatformExtensionsAreSimplified([Values("net7.0-ios", "net7.0-android")] string targetFramework)
+		public void OnPlatformExtensionsAreSimplified([Values("net7.0-ios", "net7.0-android")] string targetFramework, [Values(XamlInflator.XamlC, XamlInflator.SourceGen)] XamlInflator inflator)
 		{
-			MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, out var hasLoggedErrors, targetFramework);
-			Assert.That(!hasLoggedErrors);
-			Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsOnPlatformExtensionCtor(methodDef, instr)), "This Xaml still generates a new OnPlatformExtension()");
+			if (inflator == XamlInflator.XamlC)
+			{
+				MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, out var hasLoggedErrors, targetFramework);
+				Assert.That(!hasLoggedErrors);
+				Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsOnPlatformExtensionCtor(methodDef, instr)), "This Xaml still generates a new OnPlatformExtension()");
 
-			var expected = targetFramework.EndsWith("-ios") ? "bar" : "foo";
-			Assert.That(methodDef.Body.Instructions.Any(instr => instr.Operand as string == expected), $"Did not find instruction containing '{expected}'");
+				var expected = targetFramework.EndsWith("-ios") ? "bar" : "foo";
+				Assert.That(methodDef.Body.Instructions.Any(instr => instr.Operand as string == expected), $"Did not find instruction containing '{expected}'");
+			}
+			else if (inflator == XamlInflator.SourceGen)
+			{
+				var result = CreateMauiCompilation()
+					.WithAdditionalSource(
+"""
+using System.Linq;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using NUnit.Framework;
+
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class OnPlatformOptimization : ContentPage
+{
+	public OnPlatformOptimization() => InitializeComponent();
+}
+""")
+					.RunMauiSourceGenerator(typeof(OnPlatformOptimization), targetFramework: targetFramework);
+				Assert.That(result.Diagnostics, Is.Empty);
+
+				var generated = result.GeneratedInitializeComponent();
+				Assert.That(generated, Does.Not.Contain("OnPlatformExtension"));
+				var expected = targetFramework.EndsWith("-ios") ? "bar" : "foo";
+				Assert.That(generated, Does.Contain($"SetValue(global::Microsoft.Maui.Controls.Label.TextProperty, \"{expected}\");"));
+			}
 		}
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void ValuesAreSet([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
 		public void ValuesAreSet([Values] XamlInflator inflator)
-#endif
 		{
 			var p = new OnPlatformOptimization(inflator);
 			Assert.AreEqual("ringo", p.label0.Text);

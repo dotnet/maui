@@ -68,7 +68,7 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 		if (expression[expression.Length - 1] != '}')
 		{
 			//FIXME fix location
-			var location = Context.FilePath is not null ? Location.Create(Context.FilePath, new TextSpan(), new LinePositionSpan()) : null;
+			var location = Context.ProjectItem.RelativePath is not null ? Location.Create(Context.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
 			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExpressionNotClosed, location));
 			return null;
 		}
@@ -76,7 +76,7 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 		if (!MarkupExpressionParser.MatchMarkup(out var match, expression, out var len))
 		{
 			//FIXME fix location
-			var location = Context.FilePath is not null ? Location.Create(Context.FilePath, new TextSpan(), new LinePositionSpan()) : null;
+			var location = Context.ProjectItem.RelativePath is not null ? Location.Create(Context.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
 			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location));
 			return null;
 		}
@@ -85,7 +85,7 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 		if (expression.Length == 0)
 		{
 			//FIXME fix location
-			var location = Context.FilePath is not null ? Location.Create(Context.FilePath, new TextSpan(), new LinePositionSpan()) : null;
+			var location = Context.ProjectItem.RelativePath is not null ? Location.Create(Context.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
 			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExpressionNotClosed, location));
 			return null;
 		}
@@ -149,7 +149,7 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 					catch (XamlParseException xpe)
 					{
 						if (contextProvider != null)
-							contextProvider.Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationHelpers.LocationCreate(contextProvider.Context.FilePath!, xmlLineInfo!, match), xpe.Message));
+							contextProvider.Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationHelpers.LocationCreate(contextProvider.Context.ProjectItem.RelativePath!, xmlLineInfo!, match), xpe.Message));
 						else
 							throw;
 					}

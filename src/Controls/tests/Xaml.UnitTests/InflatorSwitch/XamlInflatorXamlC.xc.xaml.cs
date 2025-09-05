@@ -6,7 +6,7 @@ public partial class XamlInflatorXamlC : ContentPage
 {
 	public XamlInflatorXamlC() => InitializeComponent();
 
-	[Test] public void TestRuntimeInflator() => XamlInflatorRuntimeTestsHelpers.TestInflator(typeof(XamlInflatorXamlC), XamlInflator.XamlC, true);
+	[Test] public void TestXamlCInflator() => XamlInflatorTestsHelpers.TestInflator(typeof(XamlInflatorXamlC), XamlInflator.XamlC, true);
 
 	[Test]
 	public void TestInflation()

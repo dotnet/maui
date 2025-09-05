@@ -11,8 +11,7 @@ public class CSWarningIgnore : SourceGenXamlInitializeComponentTestBase
 		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
-<?xaml-comp warning-disable="0168,CS0612"?>
-<?xaml-comp warning-disable="FOOBAR" compile=true?>
+<?xaml-comp compile=true?>
 <ContentPage
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -50,11 +49,9 @@ public partial class TestPage : ContentPage
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-#if _MAUIXAML_SG_NULLABLE_ENABLE
 #nullable enable
-#endif
 
-#pragma warning disable 0168, CS0612, FOOBAR
+#pragma warning disable 0168, CS0612
 
 namespace Test;
 
@@ -64,13 +61,9 @@ public partial class TestPage
 	private partial void InitializeComponent()
 	{
 		var button = new global::Microsoft.Maui.Controls.Button();
-#if _MAUIXAML_SG_SOURCEINFO
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(button!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 4);
-#endif
+		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(button!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 4);
 		var __root = this;
-#if _MAUIXAML_SG_SOURCEINFO
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 4, 2);
-#endif
+		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 3, 2);
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
@@ -92,7 +85,7 @@ public partial class TestPage
 
 """;
 
-		var (result, generated) = RunGenerator(xaml, code);
+		var (result, generated) = RunGenerator(xaml, code, "0168, CS0612");
 		Assert.IsFalse(result.Diagnostics.Any());
 
 		Assert.AreEqual(expected, generated);

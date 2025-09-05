@@ -10,7 +10,7 @@ public partial class XamlInflatorSwitch : ContentPage
 	class Tests
 	{
 		[Test]
-		public void TestRuntimeInflator() => XamlInflatorRuntimeTestsHelpers.TestInflator(typeof(XamlInflatorSwitch), XamlInflator.Runtime, true);
+		public void TestRuntimeInflator() => XamlInflatorTestsHelpers.TestInflator(typeof(XamlInflatorSwitch), XamlInflator.Runtime, true);
 
 		[Test]
 		public void TestInflation()

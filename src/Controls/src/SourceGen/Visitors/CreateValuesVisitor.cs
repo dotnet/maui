@@ -45,7 +45,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		//x:Array
 		if (type.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ArrayExtension"), SymbolEqualityComparer.Default))
 		{
-			//we might want to mive this to a separate method
+			//we might want to move this to a separate method
 			var visitor = new SetPropertiesVisitor(Context);
 			// var children = node.Properties.Values.ToList();
 			// children.AddRange(node.CollectionItems);
@@ -132,7 +132,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				=> c.MatchXArguments(node, Context, out parameters));
 			if (ctor is null)
 #pragma warning disable RS0030 // Do not use banned APIs
-				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.FilePath!, node, type.Name), type.ToDisplayString()));
+				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.ProjectItem.RelativePath!, node, type.Name), type.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 		}
 		//x:FactoryMethod
@@ -145,12 +145,11 @@ class CreateValuesVisitor : IXamlNodeVisitor
 					   m.IsStatic
 					&& m.MatchXArguments(node, Context, out parameters));
 			if (factoryMethod is null)
-				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.FilePath!, node, factoryMehodName!), factoryMehodName));
+				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.ProjectItem.RelativePath!, node, factoryMehodName!), factoryMehodName));
 		}
 
 		if (ctor is null && factoryMethod is null)
 		{
-
 			//TODO we might need an extension method for that and cache the result. it happens eveytime we have a Style
 			ctor = type.InstanceConstructors.FirstOrDefault(c
 				=> c.Parameters.Length > 0
@@ -189,9 +188,59 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 		bool isColor = type.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color"), SymbolEqualityComparer.Default);
 
+		//are there any `required` properties ?
+		var requiredPropAndFields = type.GetMembers()
+									.Where(p => p is IPropertySymbol prop && prop.IsRequired || p is IFieldSymbol field && field.IsRequired)
+									.ToList();
+		List<(string name, ISymbol propOrField, ITypeSymbol propType, string propValue)> requiredPropertiesAndFields = [];
+		if (requiredPropAndFields.Count > 0)
+		{
+			var contentPropertyName = type.GetContentPropertyName(Context);
+			foreach (var req in requiredPropAndFields)
+			{
+				XmlName propXmlName ;
+				INode propNode;
+				if (req.Name == contentPropertyName && node.CollectionItems.Count == 1)
+				{
+					propNode = node.CollectionItems[0];
+					propXmlName = new XmlName("", contentPropertyName);
+				}
+				else if (!node.Properties.TryGetValue(req.Name, out propNode, out propXmlName))
+					Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(Context.ProjectItem.RelativePath!, node, req.Name), $"Required field '{req.Name}' not found in {type}"));
+
+				string propValue = "null";
+				var pType = req is IPropertySymbol prop ? prop.Type : ((IFieldSymbol)req).Type;
+				var pConverter = req.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Equals(Context.Compilation.GetTypeByMetadataName("System.ComponentModel.TypeConverterAttribute")!, SymbolEqualityComparer.Default))?.ConstructorArguments[0].Value as ITypeSymbol;
+
+				var visitor = new SetPropertiesVisitor(Context);
+				var children = node.Properties.Values.ToList();
+				children.AddRange(node.CollectionItems);
+				foreach (var cn in children)
+				{
+					if (cn is not ElementNode en)
+						continue;
+					foreach (var n in en.Properties.Values.ToList())
+						n.Accept(visitor, cn);
+					foreach (var n in en.CollectionItems)
+						n.Accept(visitor, cn);
+				}
+				if (propNode is ValueNode vn)
+					propValue = vn.ConvertTo(pType, pConverter, Context);
+				else if (propNode is ElementNode en)
+				{
+					en.TryProvideValue(Context);
+					propValue = Context.Variables[en].Name;
+				}
+				
+				requiredPropertiesAndFields.Add((req.Name, req, pType, propValue));
+				if (!node.SkipProperties.Contains(new XmlName("", req.Name)))
+					node.SkipProperties.Add(new XmlName("", req.Name));
+			}
+		}
+
 		if (node.CollectionItems.Count == 1
-			&& node.CollectionItems[0] is ValueNode valueNode
-			&& (isColor || type.IsValueType))
+				&& node.CollectionItems[0] is ValueNode valueNode
+				&& (isColor || type.IsValueType))
 		{ //<Color>HotPink</Color>
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
 			var valueString = valueNode.ConvertTo(type, Context);
@@ -202,7 +251,6 @@ class CreateValuesVisitor : IXamlNodeVisitor
 			return;
 		}
 		//TODO we could also check if there's a TypeConverter, but we have no test (so no need?) for it
-
 		else if (node.CollectionItems.Count == 1
 				&& node.CollectionItems[0] is ValueNode valueNode1
 				&& implicitOperator != null)
@@ -226,7 +274,17 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
 
-			Writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])});");
+			if (requiredPropAndFields.Any())
+			{
+				Writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])})");
+				using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
+				{
+					foreach (var (name, propOrField, propType, propValue) in requiredPropertiesAndFields)
+						Writer.WriteLine($"{name} = ({propType.ToFQDisplayString()}){propValue},");
+				}
+			}			
+			else
+				Writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])});");
 			Context.Variables[node] = new LocalVariable(type, variableName);
 			node.RegisterSourceInfo(Context, Writer);
 			return;
