@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 				parent?.Remove(PlatformView);
 			}
 
-			ContainerView ??= new WrapperView()
+			ContainerView ??= OnCreateContainer() ?? new WrapperView()
 			{
 				WidthSpecification = PlatformView.WidthSpecification,
 				HeightSpecification = PlatformView.HeightSpecification
