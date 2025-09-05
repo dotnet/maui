@@ -137,7 +137,7 @@ public class ContentViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_WINDOWS
+#if TEST_FAILS_ON_WINDOWS // related issue link: https://github.com/dotnet/maui/issues/29812
 	[Test]
     public void DefaultContentWithShadow()
     {
