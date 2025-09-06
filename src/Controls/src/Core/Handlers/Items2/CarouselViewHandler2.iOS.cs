@@ -10,12 +10,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	public partial class CarouselViewHandler2
 	{
 
-		public CarouselViewHandler2() : base(Mapper)
+		public CarouselViewHandler2() : base(Mapper, CommandMapper)
 		{
 
 
 		}
-		public CarouselViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper)
+		public CarouselViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper, CommandMapper)
 		{
 
 		}
@@ -29,6 +29,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
 			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem,
 			[Controls.CarouselView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
+		};
+
+		//TODO Make this public in .NET10
+		internal static CommandMapper<CarouselView, CarouselViewHandler2> CommandMapper = new(ViewCommandMapper)
+		{
+			[nameof(Controls.CarouselView.ItemsLayout.PropertyChanged)] = MapItemsLayoutPropertyChanged
 		};
 	}
 
@@ -108,6 +114,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapLoop(CarouselViewHandler2 handler, CarouselView carouselView)
 		{
 			(handler.Controller as CarouselViewController2)?.UpdateLoop();
+		}
+
+		//TODO Make this public in .NET10
+		internal static void MapItemsLayoutPropertyChanged(CarouselViewHandler2 handler, CarouselView view, object args)
+		{
+			handler.UpdateLayout();
 		}
 
 	}

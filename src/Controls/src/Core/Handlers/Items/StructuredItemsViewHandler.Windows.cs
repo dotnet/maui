@@ -16,48 +16,43 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		View _currentHeader;
 		View _currentFooter;
-		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
-		PropertyChangedEventHandler _layoutPropertyChanged;
 
-		~StructuredItemsViewHandler() => _layoutPropertyChangedProxy?.Unsubscribe();
+		//TODO: Remove this in .NET 10
+		~StructuredItemsViewHandler() { }
 
 		protected override IItemsLayout Layout { get => ItemsView?.ItemsLayout; }
 
+		//TODO: Remove this in .NET 10
 		protected override void ConnectHandler(ListViewBase platformView)
 		{
 			base.ConnectHandler(platformView);
-
-			if (Layout is not null)
-			{
-				_layoutPropertyChanged ??= LayoutPropertyChanged;
-				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(Layout, _layoutPropertyChanged);
-			}
-			else if (_layoutPropertyChangedProxy is not null)
-			{
-				_layoutPropertyChangedProxy.Unsubscribe();
-				_layoutPropertyChangedProxy = null;
-			}
 		}
 
+		//TODO: Remove this in .NET 10
 		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			base.DisconnectHandler(platformView);
-
-			if (_layoutPropertyChangedProxy is not null)
-			{
-				_layoutPropertyChangedProxy.Unsubscribe();
-				_layoutPropertyChangedProxy = null;
-			}
 		}
 
-		void LayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void UpdateItemsLayoutProperties(object args)
 		{
+			if (args is not PropertyChangedEventArgs e)
+			{
+				return;
+			}
+
 			if (e.PropertyName == GridItemsLayout.SpanProperty.PropertyName)
+			{
 				UpdateItemsLayoutSpan();
+			}
 			else if (e.PropertyName == GridItemsLayout.HorizontalItemSpacingProperty.PropertyName || e.PropertyName == GridItemsLayout.VerticalItemSpacingProperty.PropertyName)
+			{
 				UpdateItemsLayoutItemSpacing();
+			}
 			else if (e.PropertyName == LinearItemsLayout.ItemSpacingProperty.PropertyName)
+			{
 				UpdateItemsLayoutItemSpacing();
+			}
 		}
 
 		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
@@ -73,6 +68,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static void MapItemsLayout(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
 			handler.UpdateItemsLayout();
+		}
+
+		//TODO Make this public in .NET10
+		internal static void MapItemsLayoutPropertyChanged(StructuredItemsViewHandler<TItemsView> handler, TItemsView view, object args)
+		{
+			handler.UpdateItemsLayoutProperties(args);
 		}
 
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
@@ -298,13 +299,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (Layout is LinearItemsLayout linearItemsLayout)
 			{
-				switch (ListViewBase)
+				switch (linearItemsLayout.Orientation)
 				{
-					case FormsListView formsListView:
-						formsListView.ItemContainerStyle = GetVerticalItemContainerStyle(linearItemsLayout);
+					case ItemsLayoutOrientation.Vertical:
+						ListViewBase.ItemContainerStyle = GetVerticalItemContainerStyle(linearItemsLayout);
 						break;
-					case WListView listView:
-						listView.ItemContainerStyle = GetHorizontalItemContainerStyle(linearItemsLayout);
+					case ItemsLayoutOrientation.Horizontal:
+						ListViewBase.ItemContainerStyle = GetHorizontalItemContainerStyle(linearItemsLayout);
 						break;
 				}
 			}
