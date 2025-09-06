@@ -114,10 +114,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateIsInValidLocation()
 		{
 			var formsCommandBar = _commandBar as FormsCommandBar;
-			if (formsCommandBar != null)
-			{
-				formsCommandBar.IsInValidLocation = ShouldShowToolBar;
-			}
+			formsCommandBar?.IsInValidLocation = ShouldShowToolBar;
 		}
 	}
 }

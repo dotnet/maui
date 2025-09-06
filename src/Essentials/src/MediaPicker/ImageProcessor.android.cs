@@ -44,7 +44,7 @@ internal static partial class ImageProcessor
 
 			// Get EXIF orientation
 			int orientation = GetExifOrientation(bytes);
-			
+
 			// If orientation is normal, return original
 			if (orientation == 1)
 			{
@@ -66,7 +66,7 @@ internal static partial class ImageProcessor
 
 			// Convert the rotated bitmap back to a stream
 			var resultStream = new MemoryStream();
-			bool usePng = !string.IsNullOrEmpty(originalFileName) && 
+			bool usePng = !string.IsNullOrEmpty(originalFileName) &&
 						  Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase);
 
 			var compressResult = await Task.Run(() =>
@@ -124,7 +124,7 @@ internal static partial class ImageProcessor
 
 			var exif = new ExifInterface(tempFileName);
 			int orientation = exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
-			
+
 			// Clean up temp file
 			try
 			{
@@ -267,7 +267,7 @@ internal static partial class ImageProcessor
 			// Deserialize metadata
 			var metadataString = System.Text.Encoding.UTF8.GetString(metadata);
 			var metadataLines = metadataString.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-			
+
 			var metadataDict = new Dictionary<string, string>();
 			foreach (var line in metadataLines)
 			{

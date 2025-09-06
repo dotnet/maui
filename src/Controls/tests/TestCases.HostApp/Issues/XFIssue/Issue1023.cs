@@ -67,8 +67,7 @@ public class LandingPage1023 : ContentPage
 	{
 		base.OnAppearing();
 
-		if (Label != null)
-			Label.Text = "Counter: " + Counter;
+		Label?.Text = "Counter: " + Counter;
 	}
 }
 

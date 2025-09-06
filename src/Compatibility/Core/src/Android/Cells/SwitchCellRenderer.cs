@@ -68,8 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			cell.Enabled = switchCell.IsEnabled;
 			var aSwitch = cell.AccessoryView as ASwitch;
-			if (aSwitch != null)
-				aSwitch.Enabled = switchCell.IsEnabled;
+			aSwitch?.Enabled = switchCell.IsEnabled;
 		}
 
 		void UpdateFlowDirection()

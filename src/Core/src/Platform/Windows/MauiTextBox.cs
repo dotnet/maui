@@ -36,16 +36,10 @@ namespace Microsoft.Maui.Platform
 			var verticalAlignment = GetVerticalTextAlignment(d);
 
 			var scrollViewer = element?.GetDescendantByName<ScrollViewer>(ContentElementName);
-			if (scrollViewer is not null)
-			{
-				scrollViewer.VerticalAlignment = verticalAlignment;
-			}
+			scrollViewer?.VerticalAlignment = verticalAlignment;
 
 			var placeholder = element?.GetDescendantByName<TextBlock>(PlaceholderTextContentPresenterName);
-			if (placeholder is not null)
-			{
-				placeholder.VerticalAlignment = verticalAlignment;
-			}
+			placeholder?.VerticalAlignment = verticalAlignment;
 		}
 
 		public static bool GetIsDeleteButtonEnabled(DependencyObject obj) =>

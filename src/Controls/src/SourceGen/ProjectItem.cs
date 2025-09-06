@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
+
 record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 {
 	public string Configuration
@@ -41,7 +42,7 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 	{
 		get
 		{
-			var xamlinflator = 0;			
+			var xamlinflator = 0;
 			var parts = Options.GetValueOrDefault("build_metadata.additionalfiles.Inflator", "").Split(',');
 			for (int i = 0; i < parts.Length; i++)
 			{

@@ -170,7 +170,7 @@ static class CodeBehindCodeWriter
 			if (namedFields != null && namedFields.Any())
 			{
 				sb.AppendLine($"#if NET5_0_OR_GREATER");
-				foreach ((var fname, _, _) in namedFields)				
+				foreach ((var fname, _, _) in namedFields)
 					sb.AppendLine($"\t\t[global::System.Diagnostics.CodeAnalysis.MemberNotNullAttribute(nameof({EscapeIdentifier(fname)}))]");
 
 				sb.AppendLine($"#endif");

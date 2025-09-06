@@ -133,10 +133,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			Color backgroundColor = Element.BackgroundColor;
 
-			if (Control != null)
-			{
-				Control.Background = backgroundColor.IsDefault() ? null : backgroundColor.ToPlatform();
-			}
+			Control?.Background = backgroundColor.IsDefault() ? null : backgroundColor.ToPlatform();
 
 			base.UpdateBackgroundColor();
 		}
@@ -237,8 +234,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var windowsSwipeItems = GetWindowsSwipeItems(swipeItems);
 
-			if (windowsSwipeItems != null)
-				windowsSwipeItems.Mode = GetSwipeMode(swipeItems.Mode);
+			windowsSwipeItems?.Mode = GetSwipeMode(swipeItems.Mode);
 		}
 
 		void UpdateSwipeBehaviorOnInvoked(SwipeItems swipeItems)
