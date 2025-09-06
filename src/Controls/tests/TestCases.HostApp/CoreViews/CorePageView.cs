@@ -103,7 +103,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new TitleBarControlPage(), "TitleBar Feature Matrix"),
 			new GalleryPageFactory(() => new IndicatorViewControlPage(), "IndicatorView Feature Matrix"),
 		};
-		
+
 
 		public CorePageView(Page rootPage)
 		{
