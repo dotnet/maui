@@ -53,7 +53,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 			if (_isSearchBarChecked != value)
 			{
 				_isSearchBarChecked = value;
-				
+
 			}
 		}
 	}
@@ -171,7 +171,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		{
 			if (_foregroundColor != value)
 			{
-				_foregroundColor = value;		
+				_foregroundColor = value;
 			}
 		}
 	}
@@ -183,7 +183,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		{
 			if (_icon != value)
 			{
-				_icon = value;			
+				_icon = value;
 			}
 		}
 	}
@@ -192,7 +192,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 	public Color Color
 	{
 		get => _color;
-		set { _color = value;  }
+		set { _color = value; }
 	}
 
 	private bool _isRedChecked = false;
@@ -246,7 +246,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		{
 			if (_flowDirection != value)
 			{
-				_flowDirection = value;		
+				_flowDirection = value;
 			}
 		}
 	}
@@ -280,7 +280,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		{
 			if (_leadingContent != value)
 			{
-				_leadingContent = value;		
+				_leadingContent = value;
 			}
 		}
 	}
@@ -292,7 +292,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		{
 			if (_trailingContent != value)
 			{
-				_trailingContent = value;	
+				_trailingContent = value;
 			}
 		}
 	}
@@ -385,7 +385,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		{
 			if (_showIcon != value)
 			{
-				_showIcon = value;			
+				_showIcon = value;
 				Icon = _showIcon ? ImageSource.FromFile("green.png") : null;
 			}
 		}
@@ -399,7 +399,7 @@ public class TitleBarViewModel : INotifyPropertyChanged
 		{
 			if (_showBackgroundColor != value)
 			{
-				_showBackgroundColor = value;				
+				_showBackgroundColor = value;
 				Color = _showBackgroundColor ? Color.FromArgb("#6600ff") : Color.FromArgb("#6600ff");
 				IsOrangeChecked = false;
 				IsRedChecked = false;
