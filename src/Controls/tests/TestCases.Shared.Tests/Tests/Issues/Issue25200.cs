@@ -19,7 +19,7 @@ public class Issue25200 : _IssuesUITest
 
 		// Verify the ActionSheet title is visible
 		App.WaitForElement("Actionsheet is set to hardcoded maxheight and maxwidth");
-		
+
 		// Verify all options are visible
 		App.WaitForElement("Option 1/6");
 		App.WaitForElement("Option 2/6");
@@ -27,7 +27,7 @@ public class Issue25200 : _IssuesUITest
 		App.WaitForElement("Option 4/6");
 		App.WaitForElement("Option 5/6");
 		App.WaitForElement("Option 6/6");
-		
+
 		// Verify Cancel button is visible
 		App.WaitForElement("Cancel");
 
@@ -46,7 +46,7 @@ public class Issue25200 : _IssuesUITest
 
 		// Verify the ActionSheet title is visible
 		App.WaitForElement("This actionsheet has many more options to test if all are visible");
-		
+
 		// Verify some key options are visible
 		App.WaitForElement("First Option");
 		App.WaitForElement("Sixth Option");
@@ -87,7 +87,7 @@ public class Issue25200 : _IssuesUITest
 		App.WaitForElement("Second Option - this is a very long option text that should also wrap properly to multiple lines just like it does on Android platform to ensure cross-platform consistency");
 		App.WaitForElement("Third Option");
 		App.WaitForElement("Fourth Option - another long option to test that multiple long options can all wrap properly without causing display issues or horizontal scrolling like the old Windows implementation");
-		
+
 		// Verify Cancel button is visible
 		App.WaitForElement("Cancel");
 
