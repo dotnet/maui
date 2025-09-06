@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.Issues.Issue28716">
     <Grid RowDefinitions="Auto,100,100,100">
         <Button Text="Add Item"
@@ -8,42 +9,46 @@
                 AutomationId="AddItemButton"
                 HorizontalOptions="Center"
                 VerticalOptions="Center"/>
-        <CollectionView
+        <local:CollectionView2
             ItemsUpdatingScrollMode="KeepLastItemInView"
             ItemsSource="{Binding Items}"
             Grid.Row="1">
-            <CollectionView.ItemsLayout>
+            <local:CollectionView2.ItemsLayout>
                 <LinearItemsLayout Orientation="Horizontal"/>
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
+            </local:CollectionView2.ItemsLayout>
+            <local:CollectionView2.ItemTemplate>
                 <DataTemplate>
                     <Label Text="{Binding . ,StringFormat='{0}cv1'}"/>
                 </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-        <CollectionView
+            </local:CollectionView2.ItemTemplate>
+        </local:CollectionView2>
+        <local:CollectionView2
             ItemsUpdatingScrollMode="KeepLastItemInView"
             FlowDirection="RightToLeft"
             ItemsSource="{Binding Items}"
             Grid.Row="2">
-            <CollectionView.ItemsLayout>
+            <local:CollectionView2.ItemsLayout>
                 <LinearItemsLayout Orientation="Horizontal"/>
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
+            </local:CollectionView2.ItemsLayout>
+            <local:CollectionView2.ItemTemplate>
                 <DataTemplate>
                     <Label Text="{Binding . ,StringFormat='{0}cv2'}"/>
                 </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-        <CollectionView
+            </local:CollectionView2.ItemTemplate>
+        </local:CollectionView2>
+        <local:CollectionView2
             ItemsUpdatingScrollMode="KeepLastItemInView"
+            FlowDirection="RightToLeft"
             ItemsSource="{Binding Items}"
             Grid.Row="3">
-            <CollectionView.ItemTemplate>
+            <local:CollectionView2.ItemsLayout>
+                <LinearItemsLayout Orientation="Horizontal"/>
+            </local:CollectionView2.ItemsLayout>
+            <local:CollectionView2.ItemTemplate>
                 <DataTemplate>
                     <Label Text="{Binding . ,StringFormat='{0}cv3'}"/>
                 </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+            </local:CollectionView2.ItemTemplate>
+        </local:CollectionView2>
     </Grid>
 </ContentPage>
