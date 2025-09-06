@@ -571,7 +571,7 @@ static class NodeSGExtensions
 		{
 			ITypeSymbol? typeSymbol = null;
 			var parent = node.Parent?.Parent as IElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as IElementNode;
-			if ((node.Parent as ElementNode)!.XmlType!.IsOfAnyType( "Setter", "PropertyCondition"))
+			if ((node.Parent as ElementNode)!.XmlType!.IsOfAnyType("Setter", "PropertyCondition"))
 			{
 				if (parent!.XmlType.IsOfAnyType("Trigger", "DataTrigger", "MultiTrigger", "Style"))
 					typeSymbol = GetTargetTypeSymbol(parent, context);
@@ -606,8 +606,8 @@ static class NodeSGExtensions
 			throw new Exception($"Expected VisualStateGroup but found {parent.Parent}");
 
 		//3. if the VSG is in a VSGL, skip that as it could be implicit
-		if (   target.Parent is ListNode
-			|| (target.Parent as IElementNode)!.XmlType!.IsOfAnyType( "VisualStateGroupList"))
+		if (target.Parent is ListNode
+			|| (target.Parent as IElementNode)!.XmlType!.IsOfAnyType("VisualStateGroupList"))
 			target = (IElementNode)target.Parent.Parent;
 		else
 			target = (IElementNode)target.Parent;

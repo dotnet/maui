@@ -25,8 +25,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			added.IsAccelerating = accelerating;
 			added.Next = null;
 
-			if (newest != null)
-				newest.Next = added;
+			newest?.Next = added;
 
 			newest = added;
 
