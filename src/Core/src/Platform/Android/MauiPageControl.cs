@@ -147,8 +147,10 @@ namespace Microsoft.Maui.Platform
 
 		void SetupIndicatorAccessibility(ImageView imageView, int position, int selectedPosition)
 		{
-			if (_indicatorView == null)
+			if (_indicatorView is null)
+			{
 				return;
+			}
 
 			imageView.ImportantForAccessibility = ImportantForAccessibility.Yes;
 			
@@ -161,8 +163,10 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateIndicatorAccessibility(ImageView imageView, int position, int selectedPosition)
 		{
-			if (_indicatorView == null)
+			if (_indicatorView is null)
+			{
 				return;
+			}
 
 			var itemNumber = position + 1;
 			var totalItems = _indicatorView.GetMaximumVisible();
@@ -259,8 +263,10 @@ namespace Microsoft.Maui.Platform
 		{
 			public override void OnInitializeAccessibilityNodeInfo(AView? host, AccessibilityNodeInfo? info)
 			{
-				if (host == null || info == null)
+				if (host is null || info is null)
+				{
 					return;
+				}
 					
 				base.OnInitializeAccessibilityNodeInfo(host, info);
 				
