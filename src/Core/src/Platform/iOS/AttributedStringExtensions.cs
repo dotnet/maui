@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 			mutableAttributedString.AddAttribute
 			(
 				UIStringAttributeKey.ForegroundColor,
-				Foundation.NSObject.FromObject(color.ToPlatform().CGColor),
+				color.ToPlatform(),
 				new NSRange(0, mutableAttributedString.Length)
 			);
 			return mutableAttributedString;

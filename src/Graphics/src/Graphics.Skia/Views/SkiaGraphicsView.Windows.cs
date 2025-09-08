@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Graphics.Skia.Views
 	/// <summary>
 	/// A SkiaSharp-based graphics view for Windows that can render <see cref="IDrawable"/> objects.
 	/// </summary>
-	public class SkiaGraphicsView : SKXamlCanvas
+	public partial class SkiaGraphicsView : SKXamlCanvas
 	{
 		private IDrawable _drawable;
 		private SkiaCanvas _canvas;
