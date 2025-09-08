@@ -51,5 +51,23 @@ namespace Microsoft.Maui.Handlers
 		IShapeView IShapeViewHandler.VirtualView => VirtualView;
 
 		PlatformView IShapeViewHandler.PlatformView => PlatformView;
+
+#if WINDOWS || IOS || MACCATALYST || ANDROID
+		public static void MapBackground(IShapeViewHandler handler, IShapeView shapeView)
+		{
+			// If Fill and Background are not null, will use Fill for the Shape background
+			// and Background for the ShapeView background.
+			if (shapeView.Background is not null && shapeView.Fill is not null)
+			{
+				handler.UpdateValue(nameof(IViewHandler.ContainerView));
+				handler.ToPlatform().UpdateBackground(shapeView);
+			}
+
+			if (shapeView.Background is not null || shapeView.Fill is not null)
+			{
+				handler.PlatformView?.InvalidateShape(shapeView);
+			}
+		}
+#endif
 	}
 }
