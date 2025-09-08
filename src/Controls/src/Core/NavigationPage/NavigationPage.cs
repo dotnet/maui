@@ -869,11 +869,11 @@ namespace Microsoft.Maui.Controls
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						Owner.SendNavigating(previousPage);
 						Owner.PushPage(root);
 					},
 					() =>
 					{
-						Owner.SendNavigating(previousPage);
 						Owner.FireDisappearing(previousPage);
 						Owner.FireAppearing(root);
 					},
