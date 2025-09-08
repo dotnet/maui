@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
@@ -142,6 +143,36 @@ namespace Microsoft.Maui.DeviceTests
 				count = ois.Count;
 				Assert.Equal(3, ois.Count);
 			});
+		}
+
+		[Fact(DisplayName = "CollectionView with SelectionMode None should not have click listeners")]
+		public void SelectionModeNoneDoesNotSetClickListeners()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectionMode = SelectionMode.None
+			};
+
+			var handler = CreateHandler<CollectionViewHandler>(collectionView);
+			var recyclerView = handler.PlatformView;
+			var adapter = recyclerView.GetAdapter();
+			Assert.NotNull(adapter);
+			
+			// Force layout to create view holders
+			recyclerView.Measure(
+				Android.Views.View.MeasureSpec.MakeMeasureSpec(500, Android.Views.MeasureSpecMode.AtMost),
+				Android.Views.View.MeasureSpec.MakeMeasureSpec(500, Android.Views.MeasureSpecMode.AtMost));
+			recyclerView.Layout(0, 0, 500, 500);
+
+			// Check first item's view holder
+			var viewHolder = recyclerView.FindViewHolderForAdapterPosition(0);
+			Assert.NotNull(viewHolder);
+			
+			bool hasClickListeners = viewHolder.ItemView.HasOnClickListeners;
+			Assert.False(hasClickListeners, "Items should not have click listeners when SelectionMode is None");
 		}
 
 		class MockCollectionChangedNotifier : ICollectionChangedNotifier
