@@ -822,7 +822,7 @@ namespace Microsoft.Maui.Controls
 				await Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
-						Owner.SendNavigating(currentPage);
+						Owner.SendNavigating(NavigationType.Pop, currentPage);
 						Owner.FireDisappearing(currentPage);
 						Owner.RemoveFromInnerChildren(currentPage);
 						Owner.CurrentPage = newCurrentPage;
@@ -857,7 +857,7 @@ namespace Microsoft.Maui.Controls
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
-						Owner.SendNavigating(previousPage);
+						Owner.SendNavigating(NavigationType.PopToRoot, previousPage);
 						Owner.FireDisappearing(previousPage);
 						var lastIndex = NavigationStack.Count - 1;
 						while (lastIndex > 0)
