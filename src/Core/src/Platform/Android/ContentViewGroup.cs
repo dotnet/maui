@@ -11,16 +11,14 @@ using Rectangle = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
-	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
+	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IHandleWindowInsets
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;
-		readonly SafeAreaHandler _safeAreaHandler;
 
 		public ContentViewGroup(Context context) : base(context)
 		{
 			_context = context;
-			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
 			SetupWindowInsetsHandling();
 		}
 
@@ -29,43 +27,30 @@ namespace Microsoft.Maui.Platform
 			var context = Context;
 			ArgumentNullException.ThrowIfNull(context);
 			_context = context;
-			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
 			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
 			_context = context;
-			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
 			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
 			_context = context;
-			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
 			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
 		{
 			_context = context;
-			_safeAreaHandler = new SafeAreaHandler(this, context, () => CrossPlatformLayout);
 			SetupWindowInsetsHandling();
 		}
 
 		void SetupWindowInsetsHandling()
 		{
-			ViewCompat.SetOnApplyWindowInsetsListener(this, _safeAreaHandler.GetWindowInsetsListener());
-		}
-
-		/// <summary>
-		/// Call this method when safe area configuration changes to trigger OnApplyWindowInsets
-		/// before the next measure and arrange cycle.
-		/// </summary>
-		public void InvalidateSafeArea()
-		{
-			_safeAreaHandler.UpdateSafeAreaConfiguration();
+			GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(this, _context);
 		}
 
 		public ICrossPlatformLayout? CrossPlatformLayout
@@ -190,5 +175,58 @@ namespace Microsoft.Maui.Platform
 
 			return null;
 		}
+
+		#region IHandleWindowInsets Implementation
+
+		private (int left, int top, int right, int bottom) _originalPadding;
+		private bool _hasStoredOriginalPadding;
+
+
+		/// <summary>
+		/// Updates safe area configuration and triggers window insets re-application if needed.
+		/// Call this when safe area edge configuration changes.
+		/// </summary>
+		internal void InvalidateWindowInsets()
+		{
+			// Reset descendants and request fresh insets to avoid double padding
+			GlobalWindowInsetListenerExtensions.ResetDescendantsAndRequestInsets(this, _context);
+		}
+
+		public WindowInsetsCompat? HandleWindowInsets(View view, WindowInsetsCompat insets)
+		{
+			if (CrossPlatformLayout is null || insets is null)
+			{
+				return insets;
+			}
+
+			if (!_hasStoredOriginalPadding)
+			{
+				_originalPadding = (PaddingLeft, PaddingTop, PaddingRight, PaddingBottom);
+				_hasStoredOriginalPadding = true;
+			}
+
+			var processedInsets = SafeAreaExtension.GetAdjustedSafeAreaInsets(insets, CrossPlatformLayout, _context);
+
+			// Apply all insets to content view group
+			SetPadding((int)_context.ToPixels(processedInsets.Left), (int)_context.ToPixels(processedInsets.Top), (int)_context.ToPixels(processedInsets.Right), (int)_context.ToPixels(processedInsets.Bottom));
+
+			if (processedInsets.Top > 0 || processedInsets.Bottom > 0 || processedInsets.Left > 0 || processedInsets.Right > 0)
+			{
+				// Consume all insets since we handled them
+				return WindowInsetsCompat.Consumed;
+			}
+
+			return insets;
+		}
+
+		public void ResetWindowInsets(View view)
+		{
+			if (_hasStoredOriginalPadding)
+			{
+				SetPadding(_originalPadding.left, _originalPadding.top, _originalPadding.right, _originalPadding.bottom);
+			}
+		}
+
+		#endregion
 	}
 }
