@@ -205,7 +205,7 @@ namespace Microsoft.Maui.Platform
 				_hasStoredOriginalPadding = true;
 			}
 
-			var processedInsets = SafeAreaExtension.GetAdjustedSafeAreaInsets(insets, CrossPlatformLayout, _context);
+			var processedInsets = SafeAreaExtensions.GetAdjustedSafeAreaInsets(insets, CrossPlatformLayout, _context);
 
 			// Apply all insets to content view group
 			SetPadding((int)_context.ToPixels(processedInsets.Left), (int)_context.ToPixels(processedInsets.Top), (int)_context.ToPixels(processedInsets.Right), (int)_context.ToPixels(processedInsets.Bottom));
