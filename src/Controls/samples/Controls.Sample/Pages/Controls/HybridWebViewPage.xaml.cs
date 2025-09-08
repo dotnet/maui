@@ -153,6 +153,21 @@ namespace Maui.Controls.Sample.Pages
 					Value = i,
 				};
 			}
+
+			// Demo method that throws an exception to showcase error handling
+			public void ThrowException()
+			{
+				Debug.WriteLine("ThrowException called - about to throw");
+				throw new InvalidOperationException("This is a test exception thrown from C# code!");
+			}
+
+			// Demo async method that throws an exception
+			public async Task<string> ThrowExceptionAsync()
+			{
+				Debug.WriteLine("ThrowExceptionAsync called - about to throw");
+				await Task.Delay(100);
+				throw new ArgumentException("This is an async test exception thrown from C# code!");
+			}
 		}
 
 		public class SyncReturn
