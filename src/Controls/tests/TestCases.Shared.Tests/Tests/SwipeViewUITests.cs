@@ -8,12 +8,13 @@ namespace Microsoft.Maui.TestCases.Tests
 {
 	public class SwipeViewUITests : CoreGalleryBasePageTest
 	{
-		const string ScrollViewGallery = "SwipeView Gallery";
+		const string SwipeViewGallery = "SwipeView Gallery";
 
 		const string SwipeViewToRightId = "SwipeViewToRightId";
 		const string ResultToRightId = "ResultToRightId";
 		const string SwipeViewToLeftId = "SwipeViewToLeftId";
 		const string ResultToLeftId = "ResultToLeftId";
+		public override string GalleryPageName => SwipeViewGallery;
 
 		public SwipeViewUITests(TestDevice device)
 			: base(device)
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		protected override void NavigateToGallery()
 		{
-			App.NavigateToGallery(ScrollViewGallery);
+			App.NavigateToGallery(SwipeViewGallery);
 		}
 
 		[Test]

@@ -7,6 +7,10 @@ namespace Microsoft.Maui.TestCases.Tests
 	[Category(UITestCategories.Fonts)]
 	public class FontsGalleryTests : CoreGalleryBasePageTest
 	{
+		const string FontsGallery = "Fonts Gallery";
+
+		public override string GalleryPageName => FontsGallery;
+		
 		public FontsGalleryTests(TestDevice device)
 			: base(device)
 		{
@@ -14,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		protected override void NavigateToGallery()
 		{
-			App.NavigateToGallery("Fonts Gallery");
+			App.NavigateToGallery(FontsGallery);
 		}
 
 		[Test]

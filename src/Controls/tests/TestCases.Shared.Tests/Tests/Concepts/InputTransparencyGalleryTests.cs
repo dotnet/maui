@@ -10,6 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		const string ButtonGallery = "Input Transparency Gallery";
 
+		public override string GalleryPageName => ButtonGallery;
+
 		public InputTransparencyGalleryTests(TestDevice device)
 			: base(device)
 		{
