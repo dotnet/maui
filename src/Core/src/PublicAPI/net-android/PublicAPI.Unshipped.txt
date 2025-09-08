@@ -69,6 +69,13 @@ Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyLongPress
 Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyMultiple
 Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyShortcut
 Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyUp
+Microsoft.Maui.Platform.IHandleWindowInsets
+Microsoft.Maui.Platform.IHandleWindowInsets.HandleWindowInsets(Android.Views.View! view, AndroidX.Core.View.WindowInsetsCompat! insets) -> AndroidX.Core.View.WindowInsetsCompat?
+Microsoft.Maui.Platform.IHandleWindowInsets.ResetWindowInsets(Android.Views.View! view) -> void
+Microsoft.Maui.Platform.LayoutViewGroup.HandleWindowInsets(Android.Views.View! view, AndroidX.Core.View.WindowInsetsCompat! insets) -> AndroidX.Core.View.WindowInsetsCompat?
+Microsoft.Maui.Platform.LayoutViewGroup.ResetWindowInsets(Android.Views.View! view) -> void
+Microsoft.Maui.Platform.ContentViewGroup.HandleWindowInsets(Android.Views.View! view, AndroidX.Core.View.WindowInsetsCompat! insets) -> AndroidX.Core.View.WindowInsetsCompat?
+Microsoft.Maui.Platform.ContentViewGroup.ResetWindowInsets(Android.Views.View! view) -> void
 Microsoft.Maui.Platform.MauiHorizontalScrollView
 Microsoft.Maui.Platform.MauiHorizontalScrollView.MauiHorizontalScrollView(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
 Microsoft.Maui.Platform.MauiHorizontalScrollView.MauiHorizontalScrollView(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
@@ -384,3 +391,12 @@ virtual Microsoft.Maui.SwipeViewSwipeStarted.<Clone>$() -> Microsoft.Maui.SwipeV
 virtual Microsoft.Maui.SwipeViewSwipeStarted.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.SwipeViewSwipeStarted.Equals(Microsoft.Maui.SwipeViewSwipeStarted? other) -> bool
 virtual Microsoft.Maui.SwipeViewSwipeStarted.PrintMembers(System.Text.StringBuilder! builder) -> bool
+Microsoft.Maui.Platform.GlobalWindowInsetListener
+Microsoft.Maui.Platform.GlobalWindowInsetListener.GlobalWindowInsetListener() -> void
+Microsoft.Maui.Platform.GlobalWindowInsetListener.OnApplyWindowInsets(Android.Views.View? v, AndroidX.Core.View.WindowInsetsCompat? insets) -> AndroidX.Core.View.WindowInsetsCompat?
+Microsoft.Maui.Platform.GlobalWindowInsetListener.ResetView(Android.Views.View! view) -> void
+Microsoft.Maui.Platform.GlobalWindowInsetListener.ResetAllViews() -> void
+Microsoft.Maui.Platform.GlobalWindowInsetListener.ResetDescendantsOfView(Android.Views.View! parentView) -> void
+override Microsoft.Maui.Platform.GlobalWindowInsetListener.Dispose(bool disposing) -> void
+Microsoft.Maui.MauiAppCompatActivity.GlobalWindowInsetListener.get -> Microsoft.Maui.Platform.GlobalWindowInsetListener!
+override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void
