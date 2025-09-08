@@ -68,12 +68,9 @@ namespace Microsoft.Maui.Platform
 
 			float scale = (float)IndicatorSize / DefaultIndicatorSize;
 			var newTransform = CGAffineTransform.MakeScale(scale, scale);
-			if (Subviews.Length > 0)
+			foreach (var view in Subviews)
 			{
-				foreach (var view in Subviews)
-				{
-					view.Transform = newTransform;
-				}
+				view.Transform = newTransform;
 			}
 		}
 
