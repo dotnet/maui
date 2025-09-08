@@ -1,12 +1,19 @@
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 31372, "IsPresented=true Not Working on Initial Value in FlyoutPage", PlatformAffected.UWP | PlatformAffected.macOS)]
-public class Issue31372 : TestFlyoutPage
+
+public class Issue31372 : NavigationPage
 {
-	protected override void Init()
+	public Issue31372()
 	{
-		FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
-		IsPresented = true;
+		PushAsync(new Issue31372Page());
+	}
+}
+
+public class Issue31372Page : FlyoutPage
+{
+	public Issue31372Page()
+	{
 
 		// Create Flyout Page
 		var flyoutPage = new ContentPage
@@ -46,5 +53,7 @@ public class Issue31372 : TestFlyoutPage
 		// Assign Flyout and Detail
 		Flyout = flyoutPage;
 		Detail = new NavigationPage(detailPage);
+		FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
+		IsPresented = true;
 	}
 }
