@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
@@ -160,7 +159,7 @@ namespace Microsoft.Maui.DeviceTests
 			var recyclerView = handler.PlatformView;
 			var adapter = recyclerView.GetAdapter();
 			Assert.NotNull(adapter);
-			
+
 			// Force layout to create view holders
 			recyclerView.Measure(
 				Android.Views.View.MeasureSpec.MakeMeasureSpec(500, Android.Views.MeasureSpecMode.AtMost),
