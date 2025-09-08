@@ -226,12 +226,6 @@ namespace Microsoft.Maui.Handlers
 				Tag = InsetPanelTag
 			};
 
-			// replace the one that's part of contentviewgroup for now
-			ViewCompat.SetOnApplyWindowInsetsListener(paddingShim, null);
-
-			// Setting this here on the scrollview and that's where we apply insets
-			ViewCompat.SetOnApplyWindowInsetsListener(handler.PlatformView, new WindowsListener());
-
 			handler.PlatformView.RemoveAllViews();
 			paddingShim.AddView(nativeContent);
 			handler.PlatformView.SetContent(paddingShim);
@@ -271,18 +265,5 @@ namespace Microsoft.Maui.Handlers
 
 		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds) =>
 			(VirtualView as ICrossPlatformLayout)?.CrossPlatformArrange(bounds) ?? Size.Zero;
-	}
-
-	internal class WindowsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
-	{
-		public WindowInsetsCompat? OnApplyWindowInsets(View? v, WindowInsetsCompat? insets)
-		{
-			// I'm not sure the best way to apply insets here. Need to test more
-			// 1) if the user has set all safeareaedges to all or container do we just set fitToSystenWindow on scrollview?
-			// 2) do we just apply padding to the scrollview and call that good?
-			// 3) we probably need
-
-			return WindowInsetsCompat.Consumed;
-		}
 	}
 }
