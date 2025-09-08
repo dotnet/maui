@@ -6,6 +6,8 @@ using AndroidX.Core.View;
 using AndroidX.Window.Layout;
 using Google.Android.Material.AppBar;
 using AView = Android.Views.View;
+using AColor = Android.Graphics.Color;
+using Android.Content.Res;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -16,8 +18,38 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(Activity platformView)
 		{
 			base.ConnectHandler(platformView);
-
+			ConfigureTranslucentSystemBars(PlatformView);
 			UpdateVirtualViewFrame(platformView);
+		}
+
+		static void ConfigureTranslucentSystemBars(Activity activity)
+		{
+			var window = activity.Window;
+			if (window == null)
+				return;
+
+			// Enable edge-to-edge by making content draw behind system bars
+			WindowCompat.SetDecorFitsSystemWindows(window, false);
+
+			// Make both status bar and navigation bar translucent
+			if (OperatingSystem.IsAndroidVersionAtLeast(21))
+			{
+				window.SetStatusBarColor(AColor.Transparent);
+				window.SetNavigationBarColor(AColor.Transparent);
+			}
+
+			// Set appropriate system bar appearance for readability
+			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
+			if (windowInsetsController != null)
+			{
+				// Automatically adjust icon/text colors based on app theme
+				var configuration = activity.Resources?.Configuration;
+				var isLightTheme = configuration != null &&
+					(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
+
+				windowInsetsController.AppearanceLightStatusBars = isLightTheme;
+				windowInsetsController.AppearanceLightNavigationBars = isLightTheme;
+			}
 		}
 
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>
@@ -28,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var rootView = CreateRootViewFromContent(handler, window);
-			//ViewCompat.SetOnApplyWindowInsetsListener(rootView, new WindowsListener());
+			rootView?.SetGlobalWindowInsetListener(handler.PlatformView);
 			handler.PlatformView.SetContentView(rootView);
 		}
 
@@ -105,62 +137,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			var frame = activity.GetWindowFrame();
 			VirtualView.FrameChanged(frame);
-		}
-
-		// Temporary workaround:
-		// Android 15 / API 36 removed the prior opt‑out path for edge‑to‑edge
-		// (legacy "edge to edge ignore" + decor fitting). This placeholder exists
-		// so we can keep apps from regressing (content accidentally covered by
-		// system bars) until a proper, unified edge‑to‑edge + system bar inset
-		// configuration API is implemented in MAUI.
-		//
-		// NOTE:
-		// - Keep this minimal.
-		// - Will be replaced by the planned comprehensive window insets solution.
-		// - Do not extend; add new logic to the forthcoming implementation instead.
-		internal class WindowsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
-		{
-			public WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
-			{
-				if (insets == null || v == null)
-					return insets;
-
-				var appBarLayout = v.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
-				var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
-				var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
-
-				var leftInset = Math.Max(systemBars?.Left ?? 0, displayCutout?.Left ?? 0);
-				var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
-				var rightInset = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
-				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
-
-				// Apply top inset only to AppBarLayout to allow content behind it
-				appBarLayout?.SetPadding(0, topInset, 0, 0);
-				
-				// Apply side and bottom insets to root view, but not top
-				v.SetPadding(leftInset, 0, rightInset, bottomInset);
-
-				// Create new insets with only top consumed
-				var newSystemBars = Insets.Of(
-					systemBars?.Left ?? 0,
-					systemBars?.Top ?? 0,
-					systemBars?.Right ?? 0,
-					0
-				) ?? Insets.None;
-
-				// Create new insets with only top consumed
-				var newDisplayCutout = Insets.Of(
-					displayCutout?.Left ?? 0,
-					displayCutout?.Top ?? 0,
-					displayCutout?.Right ?? 0,
-					0
-				) ?? Insets.None;
-				
-				return new WindowInsetsCompat.Builder(insets)
-					?.SetInsets(WindowInsetsCompat.Type.SystemBars(), newSystemBars)
-					?.SetInsets(WindowInsetsCompat.Type.DisplayCutout(), newDisplayCutout)
-					?.Build() ?? insets;
-			}
 		}
 	}
 }

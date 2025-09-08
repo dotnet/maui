@@ -2,45 +2,13 @@ using System;
 using Android.Content;
 using AndroidX.Core.View;
 using ARect = Android.Graphics.Rect;
-using AInsets = AndroidX.Core.Graphics.Insets;
 
 namespace Microsoft.Maui.Platform;
 
 internal readonly record struct SafeAreaPadding(double Left, double Right, double Top, double Bottom)
 {
 	public static SafeAreaPadding Empty { get; } = new(0, 0, 0, 0);
-
 	public bool IsEmpty { get; } = Left == 0 && Right == 0 && Top == 0 && Bottom == 0;
-	public double HorizontalThickness { get; } = Left + Right;
-	public double VerticalThickness { get; } = Top + Bottom;
-
-	public ARect InsetRect(ARect bounds)
-	{
-		if (IsEmpty)
-		{
-			return bounds;
-		}
-
-		return new ARect(
-			(int)(bounds.Left + Left),
-			(int)(bounds.Top + Top),
-			(int)(bounds.Right - Right),
-			(int)(bounds.Bottom - Bottom));
-	}
-
-	public Graphics.Rect InsetRectF(Graphics.Rect bounds)
-	{
-		if (IsEmpty)
-		{
-			return bounds;
-		}
-
-		return new Graphics.Rect(
-			bounds.X + Left,
-			bounds.Y + Top,
-			bounds.Width - HorizontalThickness,
-			bounds.Height - VerticalThickness);
-	}
 }
 
 internal static class WindowInsetsExtensions
