@@ -7,6 +7,8 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls.SourceGen;
 record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 {
+	private readonly AdditionalText _additionalText = AdditionalText;
+	
 	public string Configuration
 		=> Options.GetValueOrDefault("build_property.Configuration", "Debug");
 
@@ -62,9 +64,12 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 	public string? RelativePath
 		=> Options.GetValueOrNull("build_metadata.additionalfiles.RelativePath");
 
+	public string? AbsolutePath
+		=> _additionalText.Path;
+
 	public string? TargetFramework
 		=> Options.GetValueOrNull("build_property.targetFramework");
 
 	public string? TargetPath
-		=> Options.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", AdditionalText.Path);
+		=> Options.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", _additionalText.Path);
 }
