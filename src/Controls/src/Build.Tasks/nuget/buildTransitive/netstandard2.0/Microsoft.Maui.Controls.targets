@@ -273,11 +273,11 @@
       <MauiEnableIVisualAssemblyScanning Condition="'$(MauiEnableIVisualAssemblyScanning)' == ''">false</MauiEnableIVisualAssemblyScanning>
     </PropertyGroup>
     
-    <!-- Validate _EnableMauiAspire usage -->
+    <!-- Validate _EnableMauiAspire usage - warn when user manually sets it in optimized builds where it conflicts with intended behavior -->
     <Warning
       Code="MA002"
       Text="The _EnableMauiAspire property should not be set manually. Using Aspire outside the Debug configuration may introduce performance and security risks in production. This property is automatically configured based on build configuration."
-      Condition="'$(_EnableMauiAspire)' != '' and '$(_MauiAspireSetByTargets)' != 'true' and '$(MauiDisableAspireValidation)' != 'True'"/>
+      Condition="'$(_EnableMauiAspire)' != '' and '$(Optimize)' == 'true' and '$(MauiDisableAspireValidation)' != 'True'"/>
     
     <PropertyGroup Condition="'$(PublishAot)' == 'true' or '$(TrimMode)' == 'full'">
       <MauiShellSearchResultsRendererDisplayMemberNameSupported Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' == ''">false</MauiShellSearchResultsRendererDisplayMemberNameSupported>
@@ -286,15 +286,11 @@
       <MauiEnableXamlCBindingWithSourceCompilation Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' == ''">true</MauiEnableXamlCBindingWithSourceCompilation>
       <MauiHybridWebViewSupported Condition="'$(MauiHybridWebViewSupported)' == ''">false</MauiHybridWebViewSupported>
       <!-- FIXME: https://github.com/xamarin/xamarin-macios/issues/22065 -->
-      
       <MobileAggressiveAttributeTrimming Condition="'$(PublishAot)' == 'true' and '$(MobileAggressiveAttributeTrimming)' == ''">false</MobileAggressiveAttributeTrimming>
       
-      <!-- Set _EnableMauiAspire based on configuration when not already set -->
-      <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == '' and '$(Configuration)' == 'Debug'">true</_EnableMauiAspire>
+      <!-- Set _EnableMauiAspire based on whether optimizations are enabled when not already set -->
+      <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == '' and '$(Optimize)' != 'true'">true</_EnableMauiAspire>
       <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == ''">false</_EnableMauiAspire>
-      
-      <!-- Mark that targets set the value (this will only be true when we're in AOT/Trimming mode) -->
-      <_MauiAspireSetByTargets>true</_MauiAspireSetByTargets>
     </PropertyGroup>
     <ItemGroup>
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled"
