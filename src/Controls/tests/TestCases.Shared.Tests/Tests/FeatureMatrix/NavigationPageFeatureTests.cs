@@ -11,40 +11,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public NavigationPageFeatureTests(TestDevice device) : base(device) { }
 
-		void ResetState()
-		{
-			bool Exists(string id) => App.Query.ById(id).Any();
-
-			// Walk back to root (where ResetButton lives) via PopToRoot or Pop
-			for (int i = 0; i < 5; i++)
-			{
-				if (Exists("ResetButton"))
-					break; // root reached
-
-				if (Exists("PopToRootPageButton"))
-				{
-					App.Tap("PopToRootPageButton");
-					App.WaitForElement("CurrentPageLabel");
-					continue;
-				}
-
-				if (Exists("PopPageButton"))
-				{
-					App.Tap("PopPageButton");
-					App.WaitForElement("CurrentPageLabel");
-					continue;
-				}
-
-				break; // nothing else to do
-			}
-
-			if (Exists("ResetButton"))
-			{
-				App.Tap("ResetButton");
-				App.WaitForElement("BackButtonTitleEntry");
-			}
-		}
-
 		protected override void FixtureSetup()
 		{
 			base.FixtureSetup();
@@ -55,7 +21,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.Navigation)]
 		public void EntryPoints_AreVisible()
 		{
-			//ResetState();
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
 			App.WaitForElement("ApplyButton");
 			App.WaitForElement("PushPageButton");
 			App.WaitForElement("PopToRootButton");
@@ -80,8 +48,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.Navigation)]
 		public void Defaults_AreCorrect_OnLoad()
 		{
-			//ResetState();
-			// Root page should be Sample Page
 			App.WaitForElement("CurrentPageLabel");
 			Assert.That(App.FindElement("CurrentPageLabel").GetText(), Is.EqualTo("Sample Page"));
 			App.WaitForElement("RootPageLabel");
@@ -107,12 +73,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("BackButtonTitleEntry").GetText(), Is.EqualTo("Back"));
 		}
 
-		[Test, Order(10)]
+		[Test, Order(2)]
 		[Category(UITestCategories.Navigation)]
 		public void Events_AreRaised_WithExpectedPages_On_Push_And_Pop()
 		{
-			ResetState();
-			// Push to Page 2
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
 			App.WaitForElement("PushPageButton");
 			App.Tap("PushPageButton");
 			App.WaitForElement("PopPageButton");
@@ -138,12 +105,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(preParams, Does.Contain("Requested=Pop"));
 		}
 
-		[Test]
+		[Test, Order(3)]
 		[Category(UITestCategories.Navigation)]
 		public void PopToRoot_FromPage3_ReturnsToRoot()
 		{
-			ResetState();
-			// Go to Page 3
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
 			App.WaitForElement("PushPageButton");
 			App.Tap("PushPageButton"); // to Page 2
 			App.WaitForElement("PushPage3Button");
@@ -156,29 +124,33 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("CurrentPageLabel").GetText(), Is.EqualTo("Sample Page"));
 		}
 
-#if TEST_FAILS_ON_IOS && !ANDROID && !WINDOWS  //Issue          
-		[Test]
+// #if TEST_FAILS_ON_IOS && !ANDROID && !WINDOWS  //Issue:         
+		[Test,Order(19)]
 		[Category(UITestCategories.Navigation)]
 		public void BackButtonTitle_AppliesOnNextPage_Visual()
 		{
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
 			App.WaitForElement("BackButtonTitleEntry");
 			App.ClearText("BackButtonTitleEntry");
 			App.EnterText("BackButtonTitleEntry", "My Back");
 			App.PressEnter();
 			App.Tap("ApplyButton");
+			App.WaitForElement("PushPageButton");
 			App.Tap("PushPageButton");
 			// Validate visually on page 2 (back button title)
 			VerifyScreenshot();
-			App.WaitForElement("PopToRootPageButton");
-			App.Tap("PopToRootPageButton");
 		}
-#endif
+// #endif
 
-		[Test]
+		[Test, Order(5)]
 		[Category(UITestCategories.Navigation)]
 		public void ToggleHasBackButton_HidesBackArrow_Visual()
 		{
-			ResetState();
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
 			Exception? exception = null;
 			App.WaitForElement("HasBackButtonCheckBox");
 			App.WaitForElement("PushPageButton");
@@ -199,11 +171,16 @@ namespace Microsoft.Maui.TestCases.Tests
 				throw exception;
 		}
 
-		[Test]
+		[Test, Order(6)]
 		[Category(UITestCategories.Navigation)]
 		public void ToggleHasNavigationBar_HidesBar_Visual()
 		{
-			ResetState();
+			App.WaitForElement("PopToRootPageButton");
+			App.Tap("PopToRootPageButton");
+
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
 			Exception? exception = null;
 			App.WaitForElement("HasNavigationBarCheckBox");
 			App.Tap("HasNavigationBarCheckBox");
@@ -216,11 +193,13 @@ namespace Microsoft.Maui.TestCases.Tests
 				throw exception;
 		}
 
-		[Test]
+		[Test, Order(7)]
 		[Category(UITestCategories.Navigation)]
 		public void SetBarBackgroundColor_Visual()
 		{
-			ResetState();
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
 			Exception? exception = null;
 			App.WaitForElement("BarBackgroundColorBlueButton");
 			App.Tap("BarBackgroundColorBlueButton");
@@ -234,11 +213,13 @@ namespace Microsoft.Maui.TestCases.Tests
 				throw exception;
 		}
 
-		[Test]
+		[Test, Order(8)]
 		[Category(UITestCategories.Navigation)]
 		public void SetBarTextColor_Visual()
 		{
-			ResetState();
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
 			Exception? exception = null;
 			App.WaitForElement("BarTextColorWhiteButton");
 			App.Tap("BarTextColorWhiteButton");
@@ -252,12 +233,14 @@ namespace Microsoft.Maui.TestCases.Tests
 				throw exception;
 		}
 
-		[Test]
+		[Test, Order(9)]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Brush)]
 		public void SetBarBackground_Linear_Radial_Clear_Visual()
 		{
-			ResetState();
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
 			Exception? exception = null;
 			App.WaitForElement("BarBackgroundLinearButton");
 			App.Tap("BarBackgroundLinearButton");
@@ -275,11 +258,13 @@ namespace Microsoft.Maui.TestCases.Tests
 				throw exception;
 		}
 
-		[Test]
+		[Test, Order(10)]
 		[Category(UITestCategories.Navigation)]
 		public void SetIconColor_Red_Purple_Default_Visual()
 		{
-			ResetState();
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
 			Exception? exception = null;
 			App.WaitForElement("IconColorRedButton");
 			App.Tap("IconColorRedButton");
@@ -300,12 +285,17 @@ namespace Microsoft.Maui.TestCases.Tests
 				throw exception;
 		}
 
-		[Test]
+		[Test, Order(11)]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.TitleView)]
 		public void TitleIcon_Add_Visual()
 		{
-			ResetState();
+			App.WaitForElement("PopToRootPageButton");
+			App.Tap("PopToRootPageButton");
+
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
 			App.WaitForElement("TitleIconButton");
 			App.Tap("TitleIconButton");
 			// Screenshot: Title icon applied on current page
@@ -313,26 +303,30 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 #if TEST_FAILS_ON_ANDROID      //Issue Link: https://github.com/dotnet/maui/issues/31445                                                                
-		[Test]
+		[Test, Order(12)]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.TitleView)]
 		public void TitleIcon_AddingTwice_DoesNotDuplicate()
 		{
-			// Repro steps for bug: tapping Add Icon multiple times produces multiple icons rendered.
-			ResetState();
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
 			App.WaitForElement("TitleIconButton");
 			App.Tap("TitleIconButton");
+			App.WaitForElement("TitleIconButton");
 			App.Tap("TitleIconButton");
+			App.WaitForElement("TitleIconButton");
 			App.Tap("TitleIconButton");
 			VerifyScreenshot();
 		}
 #endif
 
-		[Test]
+		[Test, Order(13)]
 		[Category(UITestCategories.Navigation)]
 		public void Combine_BarBackgroundColor_TextColor_IconColor_Visual()
 		{
-			ResetState();
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
 			// Set bar background color and text color
 			App.WaitForElement("BarBackgroundColorBlueButton");
 			App.Tap("BarBackgroundColorBlueButton");
@@ -345,16 +339,18 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("PushPageButton");
 			// Screenshot: Combined bar background, text color and icon color on pushed page
 			VerifyScreenshot();
-			// App.WaitForElement("PopPageButton");
-			// App.Tap("PopPageButton");
 		}
 
-		[Test]
+		[Test, Order(14)]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.TitleView)]
 		public void TitleIcon_And_TitleView_Persist_On_Push_Then_Clear()
 		{
-			ResetState();
+			App.WaitForElement("PopToRootPageButton");
+			App.Tap("PopToRootPageButton");
+
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
 			// Add both title icon and custom title view
 			App.WaitForElement("TitleIconButton");
 			App.Tap("TitleIconButton");
@@ -373,11 +369,15 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(15)]
 		[Category(UITestCategories.Navigation)]
 		public void EventParams_Update_On_Push_And_Pop()
 		{
-			ResetState();
+			App.WaitForElement("PopToRootPageButton");
+			App.Tap("PopToRootPageButton");
+
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
 			// Push to Page 2
 			App.WaitForElement("PushPageButton");
 			App.Tap("PushPageButton");
@@ -390,14 +390,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(text, Does.Match("PreviousPageTitle|BeforeCount"));
 		}
 
-		[Test]
-		[Order(100)]
+		[Test, Order(16)]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Brush)]
 		[Category(UITestCategories.TitleView)]
 		public void Combine_AllFeatures_Then_Push_Pop_Verify_AllEventsAndParams()
 		{
-			ResetState();
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
 			// Combine several features
 			App.WaitForElement("BarBackgroundColorBlueButton");
 			App.Tap("BarBackgroundColorBlueButton");
@@ -454,12 +454,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(preParams, Does.Contain("Requested=Pop"));
 		}
 
-		[Test]
-		[Order(110)]
+		[Test, Order(17)]
 		[Category(UITestCategories.Navigation)]
 		public void Combine_AllFeatures_PushToPage3_PopToRoot_Verify_AllEventsAndParams()
 		{
-			ResetState();
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
 			// Ensure some non-defaults are set
 			App.WaitForElement("BarBackgroundColorRedButton");
 			App.Tap("BarBackgroundColorRedButton");
@@ -501,12 +501,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(preParams, Does.Contain("Requested=PopToRoot"));
 		}
 
-		[Test]
+		[Test, Order(18)]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.TitleView)]
 		public void TitleView_Add_Visual()
 		{
-			ResetState();
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
 			Exception? exception = null;
 			App.WaitForElement("TitleViewButton");
 			App.Tap("TitleViewButton");
@@ -521,4 +523,3 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 	}
 }
-
