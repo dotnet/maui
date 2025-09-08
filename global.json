@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "10.0.100-rc.1.25457.102"
+    "dotnet": "10.0.100-rc.2.25457.102"
   },
   "msbuild-sdks": {
     "MSBuild.Sdk.Extras": "3.0.44",
