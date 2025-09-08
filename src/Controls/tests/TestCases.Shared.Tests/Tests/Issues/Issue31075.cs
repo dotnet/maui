@@ -1,3 +1,4 @@
+#if !WINDOWS // On Windows on hosted runners there is no app installed to capture images/videos
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -13,7 +14,6 @@ public class Issue31075 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.Navigation)]
-    [Category(UITestCategories.Page)]
     public void MediaPickerShouldNotDismissModal()
     {
         // Open the modal page
@@ -57,7 +57,6 @@ public class Issue31075 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.Navigation)]
-    [Category(UITestCategories.Page)]
     public void VideoPickerShouldNotDismissModal()
     {
         // Open the modal page
@@ -92,3 +91,4 @@ public class Issue31075 : _IssuesUITest
         App.WaitForElement("OpenModalButton");
     }
 }
+#endif
