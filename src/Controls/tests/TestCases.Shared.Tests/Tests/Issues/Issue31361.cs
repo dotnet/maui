@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_CATALYST || TEST_FAILS_ON_WINDOWS //In Catalyst and Windows, `ScrollDown` isn't functioning correctly with Appium.
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //In Catalyst and Windows, `ScrollDown` isn't functioning correctly with Appium.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
