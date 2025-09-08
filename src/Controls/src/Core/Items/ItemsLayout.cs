@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsLayout.xml" path="//Member[@MemberName='Orientation']/Docs/*" />
 		public ItemsLayoutOrientation Orientation { get; }
 
+		internal ItemsUpdatingScrollMode ItemsUpdatingScrollMode { get; set; }
+
 		protected ItemsLayout([Parameter("Orientation")] ItemsLayoutOrientation orientation)
 		{
 			Orientation = orientation;
