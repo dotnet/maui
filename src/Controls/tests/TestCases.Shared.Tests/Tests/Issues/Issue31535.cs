@@ -8,7 +8,7 @@ public class Issue31535 : _IssuesUITest
 {
     public Issue31535(TestDevice device) : base(device) { }
 
-    public override string Issue => "[iOS] Crash occured on CarouselView2 when deleting last one remaining item with loop as false";
+    public override string Issue => "[iOS] Crash occurred on CarouselView2 when deleting last one remaining item with loop as false";
 
     [Test]
     [Category(UITestCategories.CarouselView)]

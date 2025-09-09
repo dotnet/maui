@@ -2,7 +2,7 @@
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 31535, "[iOS] Crash occured on CarouselView2 when deleting last one remaining item with loop as false", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 31535, "[iOS] Crash occurred on CarouselView2 when deleting last one remaining item with loop as false", PlatformAffected.iOS)]
 public class Issue31535 : ContentPage
 {
     ObservableCollection<string> _items = new();
