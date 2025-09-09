@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public IItemsViewSource GetGroupItemsViewSource(int groupIndex)
 		{
-			return (groupIndex < 0 || groupIndex >= _groups.Count) ? null : _groups[groupIndex];
+			return (uint) groupIndex >= (uint) _groups.Count ? null : _groups[groupIndex];
 		}
 
 		// The ICollectionChangedNotifier methods are called by child observable items sources (i.e., the groups)
