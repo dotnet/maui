@@ -56,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 				var taskCollect = reference.WaitForCollect();
 				try
 				{
-					await AssertEventuallyAsync(taskCollect);
+					await AssertEventuallyAsync(async ()=> await taskCollect);
 				}
 				catch (XunitException)
 				{
@@ -301,11 +301,11 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static async Task AssertEventuallyAsync(this Task<bool> assertion, int timeout = 1000, int interval = 100, string message = "Assertion timed out")
+		public static async Task AssertEventuallyAsync(this Func<Task<bool>> assertion, int timeout = 1000, int interval = 100, string message = "Assertion timed out")
 		{
 			do
 			{
-				if (await assertion)
+				if (await assertion())
 				{
 					return;
 				}
@@ -316,7 +316,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 			while (timeout >= 0);
 
-			if (!await assertion)
+			if (!await assertion())
 			{
 				throw new XunitException(message);
 			}
