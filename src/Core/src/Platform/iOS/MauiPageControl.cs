@@ -107,11 +107,12 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var uiPageControlContentView = Subviews[0];
-			if (uiPageControlContentView.Subviews.Length > 1)
+			if (uiPageControlContentView.Subviews.Length > 0)
 			{
-				// Retrieve the UIPageControl indicator content view from the first index of the content view
-				var uiPageControlIndicatorContentView = uiPageControlContentView.Subviews[1];
-				SetIndicatorShape(uiPageControlIndicatorContentView, IsSquare);
+				foreach (var uiPageControlIndicatorContentView in uiPageControlContentView.Subviews)
+				{
+					SetIndicatorShape(uiPageControlIndicatorContentView, IsSquare);
+				}
 			}
 		}
 
