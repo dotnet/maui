@@ -177,11 +177,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				return;
 			}
-			//Get current visible item index paths to ensure proper refresh of carousel items
+			// Get current visible item index paths to ensure proper refresh of carousel items
+			// Create a defensive copy to avoid issues if ItemsSource changes during execution
 			var indexPaths = CollectionView.IndexPathsForVisibleItems;
 			if (indexPaths?.Length > 0)
 			{
-				CollectionView.ReloadItems(indexPaths);
+				// Create a copy of the array to prevent concurrent modification issues
+				var indexPathsCopy = new NSIndexPath[indexPaths.Length];
+				Array.Copy(indexPaths, indexPathsCopy, indexPaths.Length);
+
+				CollectionView.ReloadItems(indexPathsCopy);
 			}
 		}
 
