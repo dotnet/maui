@@ -168,6 +168,5 @@ public partial class TestPage
 		Assert.IsFalse(result.Diagnostics.Any());
 
 		Assert.AreEqual(expected, generated);
-
 	}
 }
