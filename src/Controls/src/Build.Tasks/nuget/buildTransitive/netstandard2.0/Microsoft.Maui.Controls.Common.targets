@@ -30,5 +30,6 @@
     <CompilerVisibleProperty Include="MauiXamlLineInfo" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="LineInfo" />
     <CompilerVisibleProperty Include="Configuration" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="TreeOrder" />
 	</ItemGroup>
 </Project>

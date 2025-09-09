@@ -3,21 +3,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Benchmark : ContentPage
 {
-	public Benchmark(string inflator)
+	public Benchmark() => InitializeComponent();
+
+	public void MockGenerationXamlC()
 	{
-		switch (inflator)
-		{
-			case "Runtime":
-				InitializeComponentRuntime();
-				break;
-			case "XamlC":
-				InitializeComponentXamlC();
-				break;
-			case "SourceGen":
-				InitializeComponentSourceGen();
-				break;
-			default:
-				throw new NotSupportedException($"no code for {inflator} generated. check the [XamlProcessing] attribute.");
-		}
+		MockCompiler.Compile(typeof(FontSize), out var methodDef, out var hasLoggedErrors);
+	}
+	
+	public void MockSourceGen()
+	{
+		MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Benchmark));
 	}
 }

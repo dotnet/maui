@@ -95,7 +95,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		=> parentNode is ElementNode pnode && pnode.XmlType.Name == "Style";
 
 	public static bool IsVisualStateGroupList(ElementNode node)
-		=> node != null && node.XmlType.Name == "VisualStateGroup" && node.Parent is IListNode;
+		=> node != null && node.XmlType.Name == "VisualStateGroupList" && node.Parent is IListNode;
 
 	static bool IsXNameProperty(ValueNode node, INode parentNode)
 		=> parentNode is ElementNode parentElement && parentElement.Properties.TryGetValue(XmlName.xName, out INode xNameNode) && xNameNode == node;
@@ -113,7 +113,8 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		return new LocalVariable(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.NameScope")!, namescope);
 	}
 
-	public static  ILocalValue CreateNamescope(IndentedTextWriter writer, SourceGenContext context, string? accessor = null)
+	//FIXME retunr a scoped variable
+	public static ILocalValue CreateNamescope(IndentedTextWriter writer, SourceGenContext context, string? accessor = null)
 	{
 		var namescope = NamingHelpers.CreateUniqueVariableName(context, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.INameScope")!);
 		using (PrePost.NewConditional(writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
