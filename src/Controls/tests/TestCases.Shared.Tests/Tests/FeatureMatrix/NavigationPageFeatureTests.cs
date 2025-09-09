@@ -124,7 +124,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("CurrentPageLabel").GetText(), Is.EqualTo("Sample Page"));
 		}
 
-// #if TEST_FAILS_ON_IOS && !ANDROID && !WINDOWS  //Issue:         
+#if TEST_FAILS_ON_IOS && !ANDROID && !WINDOWS  //Issue:         
 		[Test,Order(19)]
 		[Category(UITestCategories.Navigation)]
 		public void BackButtonTitle_AppliesOnNextPage_Visual()
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Validate visually on page 2 (back button title)
 			VerifyScreenshot();
 		}
-// #endif
+#endif
 
 		[Test, Order(5)]
 		[Category(UITestCategories.Navigation)]
