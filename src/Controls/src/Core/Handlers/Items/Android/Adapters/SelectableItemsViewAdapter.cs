@@ -139,7 +139,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					// Selection's not even on, so there's nothing to do here
 					return;
 				case SelectionMode.Single:
+					var previouslySelectedItem = ItemsView.SelectedItem;
 					ItemsView.SelectedItem = ItemsSource.GetItem(adapterPosition);
+					if (previouslySelectedItem == ItemsView.SelectedItem)
+					{
+						ClearPlatformSelection();
+						_currentViewHolders[adapterPosition].IsSelected = true;
+					}
 					return;
 				case SelectionMode.Multiple:
 					var item = ItemsSource.GetItem(adapterPosition);
