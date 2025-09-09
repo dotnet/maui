@@ -5,7 +5,7 @@ using Windows.Foundation;
 
 namespace Microsoft.Maui.Platform
 {
-	internal class WindowRootViewContainer : Panel
+	internal partial class WindowRootViewContainer : Panel
 	{
 		FrameworkElement? _topPage;
 		UIElementCollection? _cachedChildren;
