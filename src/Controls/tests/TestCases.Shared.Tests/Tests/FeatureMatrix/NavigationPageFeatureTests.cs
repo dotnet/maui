@@ -19,7 +19,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(1)]
-		[Category(UITestCategories.Navigation)]
 		public void EntryPoints_AreVisible()
 		{
 			App.WaitForElement("ResetButton");
