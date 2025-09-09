@@ -109,9 +109,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 			return platformView.CanScrollVertically(1) || platformView.CanScrollVertically(-1) ||
-				   platformView.CanScrollHorizontally(1) || platformView.CanScrollHorizontally(-1);
-		}
-
 		internal void RealizeContent(View view, ItemsView itemsView)
 		{
 			Content = CreateHandler(view, itemsView);
