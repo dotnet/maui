@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
+	[Category(UITestCategories.Navigation)]
 	public class NavigationPageFeatureTests : UITest
 	{
 		public const string NavigationPageFeatureMatrix = "NavigationPage Feature Matrix";
@@ -45,7 +46,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(0)]
-		[Category(UITestCategories.Navigation)]
 		public void Defaults_AreCorrect_OnLoad()
 		{
 			App.WaitForElement("CurrentPageLabel");
@@ -74,7 +74,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(2)]
-		[Category(UITestCategories.Navigation)]
 		public void Events_AreRaised_WithExpectedPages_On_Push_And_Pop()
 		{
 			App.WaitForElement("ResetButton");
@@ -106,7 +105,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(3)]
-		[Category(UITestCategories.Navigation)]
 		public void PopToRoot_FromPage3_ReturnsToRoot()
 		{
 			App.WaitForElement("ResetButton");
@@ -124,9 +122,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("CurrentPageLabel").GetText(), Is.EqualTo("Sample Page"));
 		}
 
-#if TEST_FAILS_ON_IOS && !ANDROID && !WINDOWS  //Issue:         
+// BackButtonTitle does not applicable for Android and Windows Platforms
+#if TEST_FAILS_ON_IOS && TESTS_FAIL_ON_MACCATALYST// Issue Link: https://github.com/dotnet/maui/issues/31539
+#if IOS || MACCATALYST
 		[Test,Order(19)]
-		[Category(UITestCategories.Navigation)]
 		public void BackButtonTitle_AppliesOnNextPage_Visual()
 		{
 			App.WaitForElement("ResetButton");
@@ -143,9 +142,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 #endif
+#endif
 
 		[Test, Order(5)]
-		[Category(UITestCategories.Navigation)]
 		public void ToggleHasBackButton_HidesBackArrow_Visual()
 		{
 			App.WaitForElement("ResetButton");
@@ -172,7 +171,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(6)]
-		[Category(UITestCategories.Navigation)]
 		public void ToggleHasNavigationBar_HidesBar_Visual()
 		{
 			App.WaitForElement("PopToRootPageButton");
@@ -194,7 +192,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(7)]
-		[Category(UITestCategories.Navigation)]
 		public void SetBarBackgroundColor_Visual()
 		{
 			App.WaitForElement("ResetButton");
@@ -214,7 +211,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(8)]
-		[Category(UITestCategories.Navigation)]
 		public void SetBarTextColor_Visual()
 		{
 			App.WaitForElement("ResetButton");
@@ -234,8 +230,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(9)]
-		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Brush)]
 		public void SetBarBackground_Linear_Radial_Clear_Visual()
 		{
 			App.WaitForElement("ResetButton");
@@ -259,7 +253,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(10)]
-		[Category(UITestCategories.Navigation)]
 		public void SetIconColor_Red_Purple_Default_Visual()
 		{
 			App.WaitForElement("ResetButton");
@@ -286,8 +279,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(11)]
-		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.TitleView)]
 		public void TitleIcon_Add_Visual()
 		{
 			App.WaitForElement("PopToRootPageButton");
@@ -304,8 +295,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if TEST_FAILS_ON_ANDROID      //Issue Link: https://github.com/dotnet/maui/issues/31445                                                                
 		[Test, Order(12)]
-		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.TitleView)]
 		public void TitleIcon_AddingTwice_DoesNotDuplicate()
 		{
 			App.WaitForElement("ResetButton");
@@ -322,7 +311,6 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 
 		[Test, Order(13)]
-		[Category(UITestCategories.Navigation)]
 		public void Combine_BarBackgroundColor_TextColor_IconColor_Visual()
 		{
 			App.WaitForElement("ResetButton");
@@ -342,8 +330,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(14)]
-		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.TitleView)]
 		public void TitleIcon_And_TitleView_Persist_On_Push_Then_Clear()
 		{
 			App.WaitForElement("PopToRootPageButton");
@@ -370,7 +356,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(15)]
-		[Category(UITestCategories.Navigation)]
 		public void EventParams_Update_On_Push_And_Pop()
 		{
 			App.WaitForElement("PopToRootPageButton");
@@ -391,9 +376,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(16)]
-		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Brush)]
-		[Category(UITestCategories.TitleView)]
 		public void Combine_AllFeatures_Then_Push_Pop_Verify_AllEventsAndParams()
 		{
 			App.WaitForElement("ResetButton");
@@ -455,7 +437,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(17)]
-		[Category(UITestCategories.Navigation)]
 		public void Combine_AllFeatures_PushToPage3_PopToRoot_Verify_AllEventsAndParams()
 		{
 			App.WaitForElement("ResetButton");
@@ -502,8 +483,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(18)]
-		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.TitleView)]
 		public void TitleView_Add_Visual()
 		{
 			App.WaitForElement("ResetButton");
