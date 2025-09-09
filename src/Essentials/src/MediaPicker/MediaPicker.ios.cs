@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Media
 					CompletedHandler = async info =>
 					{
 						GetFileResult(info, tcs, options);
-						await vc.DismissViewControllerAsync(true);
+						await picker.DismissViewControllerAsync(true);
 					}
 				};
 			}
