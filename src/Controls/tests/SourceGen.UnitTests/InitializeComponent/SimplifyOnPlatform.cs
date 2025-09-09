@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.SourceGen.UnitTests.InitializeComponent;
+namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class SimplifyOnPlatform : SourceGenXamlInitializeComponentTestBase
 {

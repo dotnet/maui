@@ -206,7 +206,7 @@ static class KnownTypeConverters
 	const string RoundRectangle = nameof(RoundRectangle);
 	internal static readonly char[] Delimiter = [' '];
 
-	public static string ConvertRect(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertRect(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
@@ -231,7 +231,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	public static string ConvertColor(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertColor(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -264,7 +264,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	public static string ConvertPoint(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertPoint(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
@@ -283,7 +283,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	public static string ConvertThickness(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertThickness(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update ThicknessTypeDesignConverter.IsValid if making changes here
@@ -322,7 +322,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	public static string ConvertCornerRadius(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertCornerRadius(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update CornerRadiusDesignTypeConverter.IsValid if making changes here
@@ -357,7 +357,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	public static string ConvertEasing(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertEasing(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		var easingName = value;
@@ -381,7 +381,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	public static string ConvertEnum(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertEnum(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrWhiteSpace(value) && toType is not null && toType.TypeKind == TypeKind.Enum)
@@ -402,7 +402,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	public static string ConvertFlexBasis(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertFlexBasis(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -425,7 +425,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	public static string ConvertFontSize(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertFontSize(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -452,7 +452,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	public static string ConvertFlowDirection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertFlowDirection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrWhiteSpace(value))
@@ -476,7 +476,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	public static string ConvertGridLength(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertGridLength(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -509,7 +509,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	public static string ConvertColumnDefinitionCollection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertColumnDefinitionCollection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -528,7 +528,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	public static string ConvertRowDefinitionCollection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertRowDefinitionCollection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -549,7 +549,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	public static string ConvertImageSource(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertImageSource(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update ImageSourceDesignTypeConverter.IsValid if making changes here
@@ -567,7 +567,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	public static string ConvertListString(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertListString(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -583,7 +583,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	internal static string ConvertPointCollection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	internal static string ConvertPointCollection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -638,7 +638,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	internal static string ConvertPathGeometry(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	internal static string ConvertPathGeometry(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -655,7 +655,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	internal static string ConvertStrokeShape(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	internal static string ConvertStrokeShape(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -773,7 +773,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	internal static string ConvertLayoutOptions(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	internal static string ConvertLayoutOptions(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -814,7 +814,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	internal static string ConvertConstraint(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	internal static string ConvertConstraint(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update ConstraintDesignTypeConverter.IsValid if making changes here
@@ -832,7 +832,7 @@ static class KnownTypeConverters
 		return "default";
 	}
 
-	public static string ConvertBindableProperty(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertBindableProperty(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var parts = value.Split('.');
 
@@ -854,7 +854,7 @@ static class KnownTypeConverters
 		return "null";
 	}
 
-	public static string ConvertRDSource(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertRDSource(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		if (parentVar == null) //should never happen
 			throw new ArgumentException("parentVar is null");
