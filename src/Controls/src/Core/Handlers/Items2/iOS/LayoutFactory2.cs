@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Handlers.Items;
 using UIKit;
 
@@ -430,6 +432,8 @@ internal static class LayoutFactory2
 		}
 		catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)
 		{
+			var logger = Application.Current?.FindMauiContext()?.Services?.GetService<ILoggerFactory>()?.CreateLogger("Microsoft.Maui.Controls.Handlers.Items2.LayoutFactory2");
+			logger?.LogWarning($"IsIndexPathValid caught exception: {ex.GetType().Name} - {ex.Message}");
 			return false;
 		}
 	}
