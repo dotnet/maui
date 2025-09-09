@@ -1,3 +1,4 @@
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Xml;
 using Microsoft.CodeAnalysis;
@@ -5,11 +6,11 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class ColumnDefinitionCollectionConverter : ISGTypeConverter
+class ColumnDefinitionCollectionConverter : ISGTypeConverter
 {
-	public IEnumerable<string> SupportedTypes => new[] { "ColumnDefinitionCollection", "Microsoft.Maui.Controls.ColumnDefinitionCollection" };
+	public IEnumerable<string> SupportedTypes => ["ColumnDefinitionCollection", "Microsoft.Maui.Controls.ColumnDefinitionCollection"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -20,7 +21,7 @@ internal class ColumnDefinitionCollectionConverter : ISGTypeConverter
 			var columnDefinitions = new List<string>();
 			foreach (var length in lengths)
 			{
-				var gridLength = gridLengthConverter.Convert(length, node, toType, context);
+				var gridLength = gridLengthConverter.Convert(length, node, toType, writer, context);
 				columnDefinitions.Add($"new ColumnDefinition({gridLength})");
 			}
 

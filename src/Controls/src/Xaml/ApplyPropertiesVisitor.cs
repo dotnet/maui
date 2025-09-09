@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					return;
 				if (parentElement.SkipProperties.Contains(propertyName))
 					return;
-				if (propertyName.Equals(XamlParser.McUri, "Ignorable"))
+				if (propertyName.Equals(XmlName.mcIgnorable))
 					return;
 				SetPropertyValue(source, propertyName, value, Context.RootElement, node, Context, node);
 			}
