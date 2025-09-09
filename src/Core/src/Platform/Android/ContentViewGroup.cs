@@ -201,6 +201,13 @@ namespace Microsoft.Maui.Platform
 				return insets;
 			}
 
+			if (IsScrollViewDescendant())
+			{
+				// For ScrollView descendants, consume insets without applying padding
+				// This prevents double application of safe area insets
+				return WindowInsetsCompat.Consumed;
+			}
+
 			if (!_hasStoredOriginalPadding)
 			{
 				_originalPadding = (PaddingLeft, PaddingTop, PaddingRight, PaddingBottom);
@@ -223,6 +230,13 @@ namespace Microsoft.Maui.Platform
 
 		public void ResetWindowInsets(View view)
 		{
+			// Check if this ContentViewGroup is a descendant of a ScrollView
+			if (IsScrollViewDescendant())
+			{
+				// For ScrollView descendants, don't reset padding since we didn't apply any
+				return;
+			}
+
 			if (_hasStoredOriginalPadding)
 			{
 				SetPadding(_originalPadding.left, _originalPadding.top, _originalPadding.right, _originalPadding.bottom);
@@ -230,5 +244,11 @@ namespace Microsoft.Maui.Platform
 		}
 
 		#endregion
+
+		bool IsScrollViewDescendant()
+		{
+			// Check if this ContentViewGroup is a descendant of a ScrollView
+			return this.FindParent(parent => parent is MauiScrollView) is not null;
+		}
 	}
 }
