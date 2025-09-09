@@ -19,15 +19,15 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public ITypeSymbol RootType => rootType;
 	public IDictionary<XmlType, ITypeSymbol> TypeCache => typeCache;
 	public IDictionary<INode, object> Values { get; } = new Dictionary<INode, object>();
-	public IDictionary<INode, LocalVariable> Variables { get; } = new Dictionary<INode, LocalVariable>();
+	public IDictionary<INode, ILocalVariable> Variables { get; } = new Dictionary<INode, ILocalVariable>();
 	public void ReportDiagnostic(Diagnostic diagnostic) => sourceProductionContext.ReportDiagnostic(diagnostic);
-	public IDictionary<INode, LocalVariable> ServiceProviders { get; } = new Dictionary<INode, LocalVariable>();
-	public IDictionary<INode, (LocalVariable namescope, IDictionary<string, LocalVariable> namesInScope)> Scopes = new Dictionary<INode, (LocalVariable, IDictionary<string, LocalVariable>)>();
+	public IDictionary<INode, ILocalVariable> ServiceProviders { get; } = new Dictionary<INode, ILocalVariable>();
+	public IDictionary<INode, (ILocalVariable namescope, IDictionary<string, ILocalVariable> namesInScope)> Scopes = new Dictionary<INode, (ILocalVariable, IDictionary<string, ILocalVariable>)>();
 	public SourceGenContext? ParentContext { get; set; }
 	public ITypeSymbol? BaseType { get; } = baseType;
 	public IDictionary<INode, ITypeSymbol> Types { get; } = new Dictionary<INode, ITypeSymbol>();
-	public IDictionary<LocalVariable, HashSet<string>> KeysInRD { get; } = new Dictionary<LocalVariable, HashSet<string>>();
-	public IDictionary<(LocalVariable, IFieldSymbol?, IPropertySymbol?), LocalVariable> VariablesProperties { get; } = new Dictionary<(LocalVariable, IFieldSymbol?, IPropertySymbol?), LocalVariable>();
+	public IDictionary<ILocalVariable, HashSet<string>> KeysInRD { get; } = new Dictionary<ILocalVariable, HashSet<string>>();
+	public IDictionary<(ILocalVariable, IFieldSymbol?, IPropertySymbol?), ILocalVariable> VariablesProperties { get; } = new Dictionary<(ILocalVariable, IFieldSymbol?, IPropertySymbol?), ILocalVariable>();
 	public IList<string> LocalMethods { get; } = new List<string>();
 	public ProjectItem ProjectItem { get; } = projectItem;
 
