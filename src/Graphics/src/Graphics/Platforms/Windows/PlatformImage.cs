@@ -54,6 +54,11 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
+			if (maxWidth <= 0 || maxHeight <= 0)
+			{
+				return this;
+			}
+			
 			if (Width > maxWidth || Height > maxHeight)
 			{
 				float factorX = maxWidth / Width;

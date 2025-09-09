@@ -8,6 +8,11 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		public static UIImage ScaleImage(this UIImage target, float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
+			if (maxWidth <= 0 || maxHeight <= 0)
+			{
+				return target;
+			}
+
 			if (target.Size.Width > maxWidth || target.Size.Height > maxHeight)
 			{
 				float factorX = maxWidth / (float)target.Size.Width;

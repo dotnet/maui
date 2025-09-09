@@ -437,6 +437,11 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static Bitmap Downsize(this Bitmap target, int maxWidth, int maxHeight, bool dispose = true)
 		{
+			if (maxWidth <= 0 || maxHeight <= 0)
+			{
+				return target;
+			}
+
 			if (target.Width > maxWidth || target.Height > maxHeight)
 			{
 				float factorX = maxWidth / (float)target.Width;
