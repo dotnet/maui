@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateText(this TextBlock platformControl, Label label)
 		{
-			string text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+			string text = TextTransformUtilities.GetTransformedText(label.Text, label.TextTransform);
 
 			switch (label.TextType)
 			{
