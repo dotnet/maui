@@ -16,7 +16,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		WeakReference _retrieveStaticSize;
 		int _previousPixelWidth = -1;
 		int _previousPixelHeight = -1;
-		private RecyclerView _parentRecyclerView;
 
 		Action<Size> ReportMeasure
 		{
@@ -38,12 +37,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			get => _retrieveStaticSize?.Target as Func<Size?>;
 			set => _retrieveStaticSize = new WeakReference(value);
-		}
-
-		protected override void OnAttachedToWindow()
-		{
-			base.OnAttachedToWindow();
-			_parentRecyclerView = FindParentRecyclerView(this);
 		}
 
 		public override bool DispatchTouchEvent(MotionEvent e)
@@ -77,19 +70,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			return base.OnInterceptTouchEvent(ev);
-		}
-		private RecyclerView FindParentRecyclerView(AView view)
-		{
-			IViewParent parent = view.Parent;
-			while (parent != null)
-			{
-				if (parent is RecyclerView recyclerView)
-				{
-					return recyclerView;
-				}
-				parent = parent.Parent;
-			}
-			return null;
 		}
 
 		/// <summary>
@@ -126,6 +106,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				current = current.Parent;
 			}
 			return null;
+		}
+
+			return platformView.CanScrollVertically(1) || platformView.CanScrollVertically(-1) ||
+				   platformView.CanScrollHorizontally(1) || platformView.CanScrollHorizontally(-1);
 		}
 
 		internal void RealizeContent(View view, ItemsView itemsView)
