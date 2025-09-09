@@ -262,6 +262,11 @@ namespace Microsoft.Maui.Controls
 				_lastAppTheme = newTheme;
 
 				OnPropertyChanged(nameof(UserAppTheme));
+#if WINDOWS
+				// Notify platform so it can apply the correct UI theme
+				OnRequestedThemeChangedPlatform(newTheme);
+#endif
+
 				OnParentResourcesChanged([new KeyValuePair<string, object>(AppThemeBinding.AppThemeResource, newTheme)]);
 				_weakEventManager.HandleEvent(this, new AppThemeChangedEventArgs(newTheme), nameof(RequestedThemeChanged));
 			}
@@ -270,6 +275,10 @@ namespace Microsoft.Maui.Controls
 				_themeChangedFiring = false;
 			}
 		}
+
+#if WINDOWS
+		partial void OnRequestedThemeChangedPlatform(AppTheme newTheme);
+#endif
 
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
 

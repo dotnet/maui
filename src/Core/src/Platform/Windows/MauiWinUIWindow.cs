@@ -222,12 +222,12 @@ namespace Microsoft.Maui
 				var titleBar = this.GetAppWindow()?.TitleBar;
 
 				if (titleBar is null)
+				{
 					return;
+				}
 
 				titleBar.ButtonBackgroundColor = Colors.Transparent;
 				titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-				titleBar.ButtonForegroundColor = UI.Xaml.Application.Current.RequestedTheme == UI.Xaml.ApplicationTheme.Dark ?
-					Colors.White : Colors.Black;
 			}
 		}
 
