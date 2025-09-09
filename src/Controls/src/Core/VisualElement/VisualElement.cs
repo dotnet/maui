@@ -1678,21 +1678,10 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				bool isSelected = false;
-				var groups = VisualStateManager.GetVisualStateGroups(this);
-				foreach (var group in groups)
-				{
-					if (group.CurrentState?.Name == VisualStateManager.CommonStates.Selected)
-					{
-						isSelected = true;
-						break;
-					}
-				}
-
-				if (!isSelected)
-				{
-					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
-				}
+				if (!this.HasSelectedVisualState())
+                {
+                    VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
+                }
 			}
 
 			if (IsEnabled)
