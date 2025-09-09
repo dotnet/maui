@@ -144,6 +144,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public IItemsViewSource GetGroupItemsViewSource(int groupIndex)
 		{
+			// uint can only store non-negative whole numbers
 			return (uint) groupIndex >= (uint) _groups.Count ? null : _groups[groupIndex];
 		}
 
