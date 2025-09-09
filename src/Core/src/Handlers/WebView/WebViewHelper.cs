@@ -22,8 +22,11 @@ internal static partial class WebViewHelper
 #endif
 
 		// Escape sequence marker
-		js = Regex.Replace(js, @"\\n", NewlineMarker);
-
+#if NET6_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+		js = js.Replace("\\n", NewlineMarker, StringComparison.Ordinal);
+#else
+		js = js.Replace("\\n", NewlineMarker);
+#endif
 		// Escape backticks if present
 		if (hasBacktick)
 		{
