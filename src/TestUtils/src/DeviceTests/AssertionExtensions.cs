@@ -60,10 +60,13 @@ namespace Microsoft.Maui.DeviceTests
 				catch (XunitException)
 				{
 					var isAlive = await taskCollect;
-					return !isAlive; // If any reference is still alive, return false
+					if (isAlive)
+					{
+						allCollected = false;
+					}
 				}
 			}
-			return true; // All references are collected
+			return allCollected; // Only true if all references are collected
 		}
 
 		public static async Task WaitForGC(params WeakReference[] references)
