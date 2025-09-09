@@ -68,4 +68,7 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 
 	public string? TargetPath
 		=> Options.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", AdditionalText.Path);
+
+	public bool TreeOrder
+		=> Options.GetValueOrDefault("build_metadata.additionalfiles.TreeOrder", false, s => bool.TryParse(s, out var v) && v);
 }
