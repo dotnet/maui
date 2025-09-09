@@ -49,6 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<bool> WaitForCollect(params WeakReference[] references)
 		{
+			bool allCollected = true;
 			foreach (var reference in references)
 			{
 				Assert.NotNull(reference);
