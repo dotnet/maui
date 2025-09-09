@@ -69,9 +69,6 @@ Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyLongPress
 Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyMultiple
 Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyShortcut
 Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyUp
-Microsoft.Maui.Platform.IHandleWindowInsets
-Microsoft.Maui.Platform.IHandleWindowInsets.HandleWindowInsets(Android.Views.View! view, AndroidX.Core.View.WindowInsetsCompat! insets) -> AndroidX.Core.View.WindowInsetsCompat?
-Microsoft.Maui.Platform.IHandleWindowInsets.ResetWindowInsets(Android.Views.View! view) -> void
 Microsoft.Maui.Platform.LayoutViewGroup.HandleWindowInsets(Android.Views.View! view, AndroidX.Core.View.WindowInsetsCompat! insets) -> AndroidX.Core.View.WindowInsetsCompat?
 Microsoft.Maui.Platform.LayoutViewGroup.ResetWindowInsets(Android.Views.View! view) -> void
 Microsoft.Maui.Platform.ContentViewGroup.HandleWindowInsets(Android.Views.View! view, AndroidX.Core.View.WindowInsetsCompat! insets) -> AndroidX.Core.View.WindowInsetsCompat?
@@ -223,6 +220,10 @@ override Microsoft.Maui.MauiAppCompatActivity.OnKeyLongPress(Android.Views.Keyco
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyMultiple(Android.Views.Keycode keyCode, int repeatCount, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyShortcut(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyUp(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
+override Microsoft.Maui.Platform.ContentViewGroup.OnAttachedToWindow() -> void
+override Microsoft.Maui.Platform.ContentViewGroup.OnDetachedFromWindow() -> void
+override Microsoft.Maui.Platform.LayoutViewGroup.OnAttachedToWindow() -> void
+override Microsoft.Maui.Platform.LayoutViewGroup.OnDetachedFromWindow() -> void
 override Microsoft.Maui.Platform.MauiDatePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
 override Microsoft.Maui.Platform.MauiHorizontalScrollView.Draw(Android.Graphics.Canvas? canvas) -> void
 override Microsoft.Maui.Platform.MauiHorizontalScrollView.HorizontalScrollBarEnabled.get -> bool
@@ -396,5 +397,4 @@ Microsoft.Maui.Platform.GlobalWindowInsetListener.ResetView(Android.Views.View! 
 Microsoft.Maui.Platform.GlobalWindowInsetListener.ResetAllViews() -> void
 Microsoft.Maui.Platform.GlobalWindowInsetListener.ResetDescendantsOfView(Android.Views.View! parentView) -> void
 override Microsoft.Maui.Platform.GlobalWindowInsetListener.Dispose(bool disposing) -> void
-Microsoft.Maui.MauiAppCompatActivity.GlobalWindowInsetListener.get -> Microsoft.Maui.Platform.GlobalWindowInsetListener!
 override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void
