@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Platform
     /// <summary>
     /// Interface for views that need to handle their own window insets behavior
     /// </summary>
-    public interface IHandleWindowInsets
+    internal interface IHandleWindowInsets
     {
         /// <summary>
         /// Handles window insets for this view
