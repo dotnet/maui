@@ -869,6 +869,7 @@ namespace Microsoft.Maui.Controls
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						// Move the SendNavigating here so that it's fired prior to the stack being modified
 						Owner.SendNavigating(previousPage);
 						Owner.PushPage(root);
 					},
