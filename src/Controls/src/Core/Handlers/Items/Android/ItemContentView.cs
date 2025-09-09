@@ -3,6 +3,8 @@ using System;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Graphics;
+using AndroidX.Core.Widget;
+using AndroidX.RecyclerView.Widget;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -14,6 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		WeakReference _retrieveStaticSize;
 		int _previousPixelWidth = -1;
 		int _previousPixelHeight = -1;
+		private RecyclerView _parentRecyclerView;
 
 		Action<Size> ReportMeasure
 		{
@@ -35,6 +38,94 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			get => _retrieveStaticSize?.Target as Func<Size?>;
 			set => _retrieveStaticSize = new WeakReference(value);
+		}
+
+		protected override void OnAttachedToWindow()
+		{
+			base.OnAttachedToWindow();
+			_parentRecyclerView = FindParentRecyclerView(this);
+		}
+
+		public override bool DispatchTouchEvent(MotionEvent e)
+		{
+			if (!IsHeaderOrFooterContent())
+			{
+				return base.DispatchTouchEvent(e);
+			}
+
+			bool result = base.DispatchTouchEvent(e);
+
+			if (e.Action == MotionEventActions.Up || e.Action == MotionEventActions.Cancel)
+			{
+				Parent?.RequestDisallowInterceptTouchEvent(false);
+			}
+
+			return result;
+		}
+
+		public override bool OnInterceptTouchEvent(MotionEvent ev)
+		{
+			if (!IsHeaderOrFooterContent())
+			{
+				return base.OnInterceptTouchEvent(ev);
+			}
+
+			if (ev.Action == MotionEventActions.Down)
+			{
+				Parent?.RequestDisallowInterceptTouchEvent(true);
+				return false;
+			}
+
+			return base.OnInterceptTouchEvent(ev);
+		}
+		private RecyclerView FindParentRecyclerView(AView view)
+		{
+			IViewParent parent = view.Parent;
+			while (parent != null)
+			{
+				if (parent is RecyclerView recyclerView)
+				{
+					return recyclerView;
+				}
+				parent = parent.Parent;
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Determines if this ItemContentView is being used for header or footer content
+		/// by checking if the contained View is the same as the ItemsView's Header or Footer
+		/// </summary>
+		private bool IsHeaderOrFooterContent()
+		{
+			if (View == null)
+				return false;
+
+			// Find the parent ItemsView by traversing up the view hierarchy
+			var itemsView = FindParentItemsView();
+			if (itemsView is StructuredItemsView structuredItemsView)
+			{
+				// Check if our View is the same object reference as the header or footer
+				return ReferenceEquals(View, structuredItemsView.Header) ||
+					   ReferenceEquals(View, structuredItemsView.Footer);
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Finds the parent StructuredItemsView by traversing the logical parent chain
+		/// </summary>
+		private StructuredItemsView FindParentItemsView()
+		{
+			var current = View?.Parent;
+			while (current != null)
+			{
+				if (current is StructuredItemsView itemsView)
+					return itemsView;
+				current = current.Parent;
+			}
+			return null;
 		}
 
 		internal void RealizeContent(View view, ItemsView itemsView)
