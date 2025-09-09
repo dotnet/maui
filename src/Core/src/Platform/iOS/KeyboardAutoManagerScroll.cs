@@ -305,34 +305,10 @@ public static class KeyboardAutoManagerScroll
 	// all the fields are updated before calling AdjustPostition()
 	internal static async Task AdjustPositionDebounce()
 	{
-
-		bool hasExternalScrollViewParent = false;
-
-		// Traverse up the view hierarchy and only allow auto-scroll if there is an external UIScrollView
-		// For UITextView, we need to check if it's contained within a UIScrollView and not just its own internal scroll view
-		// For other views, we just need to check if they are contained within a UIScrollView
-		if (View is UITextView uITextView)
+		if (View.FindParent(x => x is MauiView mv
+		&& mv.View is ISafeAreaView2 safeAreaView2
+		&& SafeAreaEdges.IsSoftInput(safeAreaView2.GetSafeAreaRegionsForEdge(3))) is not null)
 		{
-			UIView? currentView = uITextView.Superview;
-			while (currentView is not null)
-			{
-				// Skip the inbuilt UIScrollView of UITextView itself
-				if (currentView is UIScrollView && !(currentView == uITextView))
-				{
-					hasExternalScrollViewParent = true;
-					break;
-				}
-				currentView = currentView.Superview;
-			}
-		}
-		else if (View.GetParentOfType<UIScrollView>() is not null)
-		{
-			hasExternalScrollViewParent = true;
-		}
-
-		if (!hasExternalScrollViewParent)
-		{
-			IsKeyboardAutoScrollHandling = false;
 			return;
 		}
 

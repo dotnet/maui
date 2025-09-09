@@ -301,37 +301,30 @@ namespace Microsoft.Maui.Platform
 						// If keyboard is visible and intersects with window
 						if (!keyboardIntersection.IsEmpty)
 						{
-							// For SafeAreaRegions.SoftInput: Always pad so content doesn't go under the keyboard
-							// Bottom edge is most commonly affected by keyboard
 							var bottomEdgeRegion = safeAreaPage.GetSafeAreaRegionsForEdge(3); // 3 = bottom edge
-							if (SafeAreaEdges.IsSoftInput(bottomEdgeRegion))
+
+							if (SafeAreaEdges.IsSoftInput(bottomEdgeRegion)
+							&& this.FindParent(x => x is MauiView mv && mv.View is ISafeAreaView2 safeAreaView2
+							&& SafeAreaEdges.IsSoftInput(safeAreaView2.GetSafeAreaRegionsForEdge(3))) is null)
 							{
-								// Use the larger of the current bottom safe area or the keyboard height
-								// Get the input control's bottom Y in window coordinates
-								var inputBottomY = 0.0;
-								if (Window is not null)
+								// For SafeAreaRegions.SoftInput: Always pad so content doesn't go under the keyboard
+								// Bottom edge is most commonly affected by keyboard
+								if (SafeAreaEdges.IsSoftInput(bottomEdgeRegion))
 								{
-									var viewFrameInWindow = this.Superview?.ConvertRectToView(this.Frame, Window) ?? this.Frame;
-									inputBottomY = viewFrameInWindow.Y + viewFrameInWindow.Height;
-								}
-								var keyboardTopY = _keyboardFrame.Y;
-								var overlap = inputBottomY > keyboardTopY ? (inputBottomY - keyboardTopY) : 0.0;
-
-								// Prevent multiple nested SoftInput paddings by only applying if parent hasn't already applied it
-								var parentAppliedSoftInput = false;
-								var parent = this.Superview;
-								while (parent is not null)
-								{
-									if (parent is MauiView parentMauiView && parentMauiView._safeArea.Bottom >= overlap && overlap > 0)
+									// Use the larger of the current bottom safe area or the keyboard height
+									// Get the input control's bottom Y in window coordinates
+									var inputBottomY = 0.0;
+									if (Window is not null)
 									{
-										parentAppliedSoftInput = true;
-										break;
+										var viewFrameInWindow = this.Superview?.ConvertRectToView(this.Frame, Window) ?? this.Frame;
+										inputBottomY = viewFrameInWindow.Y + viewFrameInWindow.Height;
 									}
-									parent = parent.Superview;
-								}
+									var keyboardTopY = _keyboardFrame.Y;
+									var overlap = inputBottomY > keyboardTopY ? (inputBottomY - keyboardTopY) : 0.0;
 
-								var adjustedBottom = (!parentAppliedSoftInput && overlap > 0) ? overlap : baseSafeArea.Bottom;
-								baseSafeArea = new SafeAreaPadding(baseSafeArea.Left, baseSafeArea.Right, baseSafeArea.Top, adjustedBottom);
+									var adjustedBottom = (overlap > 0) ? overlap : baseSafeArea.Bottom;
+									baseSafeArea = new SafeAreaPadding(baseSafeArea.Left, baseSafeArea.Right, baseSafeArea.Top, adjustedBottom);
+								}
 							}
 						}
 					}
