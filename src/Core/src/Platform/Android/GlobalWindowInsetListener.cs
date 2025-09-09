@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Platform
 {
     public class GlobalWindowInsetListener : Java.Lang.Object, IOnApplyWindowInsetsListener
     {
-        readonly HashSet<AView> _trackedViews = new();
+        readonly HashSet<AView> _trackedViews = [];
 
         public WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
         {
@@ -21,12 +21,11 @@ namespace Microsoft.Maui.Platform
                 return insets;
             }
 
-            // Track this view
-            TrackView(v);
-
             // Handle custom inset views first
             if (v is IHandleWindowInsets customHandler)
             {
+                // Track this view
+                TrackView(v);
                 return customHandler.HandleWindowInsets(v, insets);
             }
 
@@ -34,7 +33,7 @@ namespace Microsoft.Maui.Platform
             return ApplyDefaultWindowInsets(v, insets);
         }
 
-        WindowInsetsCompat? ApplyDefaultWindowInsets(AView v, WindowInsetsCompat insets)
+        static WindowInsetsCompat? ApplyDefaultWindowInsets(AView v, WindowInsetsCompat insets)
         {
             var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
             var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
@@ -49,7 +48,6 @@ namespace Microsoft.Maui.Platform
             var hasNavigationBar = (appBarLayout?.GetChildAt(0) as MaterialToolbar)?.LayoutParameters?.Height > 0;
             if (appBarLayout is not null)
             {
-                TrackView(appBarLayout);
                 if (hasNavigationBar)
                 {
                     appBarLayout.SetPadding(0, topInset, 0, 0);
@@ -60,31 +58,19 @@ namespace Microsoft.Maui.Platform
                 }
             }
 
-            // Apply side and bottom insets to root view, but not top
-            TrackView(v);
-
-            if (hasNavigationBar)
-            {
-                v.SetPadding(leftInset, 0, rightInset, bottomInset);
-            }
-            else
-            {
-                v.SetPadding(leftInset, 0, rightInset, 0);
-            }
-
             // Create new insets with consumed values
             var newSystemBars = Insets.Of(
                 systemBars?.Left ?? 0,
                 hasNavigationBar ? 0 : systemBars?.Top ?? 0,
                 systemBars?.Right ?? 0,
-                hasNavigationBar ? 0 : systemBars?.Bottom ?? 0
+                systemBars?.Bottom ?? 0
             ) ?? Insets.None;
 
             var newDisplayCutout = Insets.Of(
                 displayCutout?.Left ?? 0,
                 hasNavigationBar ? 0 : displayCutout?.Top ?? 0,
                 displayCutout?.Right ?? 0,
-                hasNavigationBar ? 0 : displayCutout?.Bottom ?? 0
+                displayCutout?.Bottom ?? 0
             ) ?? Insets.None;
 
             return new WindowInsetsCompat.Builder(insets)
@@ -197,6 +183,19 @@ internal static class GlobalWindowInsetListenerExtensions
         {
             ViewCompat.SetOnApplyWindowInsetsListener(view, listener);
         }
+    }
+
+    /// <summary>
+    /// Removes the GlobalWindowInsetListener from the specified view and resets its tracked state.
+    /// This should be called when a view is being detached to ensure proper cleanup.
+    /// </summary>
+    /// <param name="view">The Android view to remove the listener from</param>
+    /// <param name="context">The Android context to get the listener from</param>
+    public static void RemoveGlobalWindowInsetListener(this View view, Context context)
+    {
+        var listener = context.GetGlobalWindowInsetListener();
+        listener?.ResetView(view);
+        ViewCompat.SetOnApplyWindowInsetsListener(view, null);
     }
 
     /// <summary>
