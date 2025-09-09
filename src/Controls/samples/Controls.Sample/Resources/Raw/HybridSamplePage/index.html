@@ -119,6 +119,18 @@
             }
         }
 
+        // JavaScript functions that throw exceptions (for testing C# exception handling of JS calls)
+        function ThrowJavaScriptError() {
+            LogMessage("ThrowJavaScriptError called - about to throw");
+            throw new Error("This is a test error thrown from JavaScript code!");
+        }
+
+        async function ThrowJavaScriptErrorAsync() {
+            LogMessage("ThrowJavaScriptErrorAsync called - about to throw");
+            await new Promise(resolve => setTimeout(resolve, 100));
+            throw new Error("This is an async test error thrown from JavaScript code!");
+        }
+
     </script>
 </head>
 <body>
@@ -144,6 +156,11 @@
         <strong>Exception Handling Tests:</strong>
         <button onclick="InvokeThrowException()">Test C# Exception Handling</button>
         <button onclick="InvokeThrowExceptionAsync()">Test C# Async Exception Handling</button>
+    </div>
+    <div>
+        <strong>JavaScript Exception Tests (called from C#):</strong>
+        <button onclick="ThrowJavaScriptError()">Test JS Exception</button>
+        <button onclick="ThrowJavaScriptErrorAsync()">Test JS Async Exception</button>
     </div>
     <div>
         Log: <textarea readonly id="messageLog" style="width: 80%; height: 10em;"></textarea>
