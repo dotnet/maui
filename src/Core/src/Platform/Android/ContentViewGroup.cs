@@ -19,7 +19,6 @@ namespace Microsoft.Maui.Platform
 		public ContentViewGroup(Context context) : base(context)
 		{
 			_context = context;
-			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -27,30 +26,33 @@ namespace Microsoft.Maui.Platform
 			var context = Context;
 			ArgumentNullException.ThrowIfNull(context);
 			_context = context;
-			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
 			_context = context;
-			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
 			_context = context;
-			SetupWindowInsetsHandling();
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
 		{
 			_context = context;
-			SetupWindowInsetsHandling();
 		}
 
-		void SetupWindowInsetsHandling()
+		protected override void OnAttachedToWindow()
 		{
+			base.OnAttachedToWindow();
 			GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(this, _context);
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			base.OnDetachedFromWindow();
+			GlobalWindowInsetListenerExtensions.RemoveGlobalWindowInsetListener(this, _context);
 		}
 
 		public ICrossPlatformLayout? CrossPlatformLayout
