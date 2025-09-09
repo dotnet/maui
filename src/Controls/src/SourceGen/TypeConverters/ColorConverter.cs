@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class ColorConverter : ISGTypeConverter
+class ColorConverter : ISGTypeConverter
 {
 	private static readonly HashSet<string> KnownNamedColors = new(StringComparer.OrdinalIgnoreCase)
 	{
@@ -46,7 +46,7 @@ internal class ColorConverter : ISGTypeConverter
 
 	public IEnumerable<string> SupportedTypes => new[] { "Color", "Microsoft.Maui.Graphics.Color" };
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))

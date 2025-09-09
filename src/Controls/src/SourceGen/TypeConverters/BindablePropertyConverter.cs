@@ -4,11 +4,11 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class BindablePropertyConverter : ISGTypeConverter
+class BindablePropertyConverter : ISGTypeConverter
 {
-	public IEnumerable<string> SupportedTypes => new[] { "BindableProperty", "Microsoft.Maui.Controls.BindableProperty" };
+	public IEnumerable<string> SupportedTypes => ["BindableProperty", "Microsoft.Maui.Controls.BindableProperty"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var parts = value.Split(['.']);
 

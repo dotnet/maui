@@ -8,11 +8,11 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class FlexBasisConverter : ISGTypeConverter
+class FlexBasisConverter : ISGTypeConverter
 {
-	public IEnumerable<string> SupportedTypes => new[] { "FlexBasis", "Microsoft.Maui.Layouts.FlexBasis" };
+	public IEnumerable<string> SupportedTypes => ["FlexBasis", "Microsoft.Maui.Layouts.FlexBasis"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))

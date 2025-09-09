@@ -1,3 +1,4 @@
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -61,16 +62,16 @@ static class IMethodSymbolExtensions
 		return false;
 
 	}
-	public static IEnumerable<string> ToMethodParameters(this IEnumerable<(INode node, ITypeSymbol type, ITypeSymbol? converter)> parameters, SourceGenContext context)
+	public static IEnumerable<string> ToMethodParameters(this IEnumerable<(INode node, ITypeSymbol type, ITypeSymbol? converter)> parameters, IndentedTextWriter writer, SourceGenContext context)
 	{
 		foreach (var p in parameters)
 		{
 			if (p.node is ValueNode vn)
-				yield return vn.ConvertTo(p.type, p.converter, context);
+				yield return vn.ConvertTo(p.type, p.converter, writer, context);
 			else if (p.node is ElementNode en)
 			{
-				en.TryProvideValue(context);
-				yield return context.Variables[en].Name;
+				en.TryProvideValue(writer, context);
+				yield return context.Variables[en].ValueAccessor;
 			}
 			else
 				yield return "null";
