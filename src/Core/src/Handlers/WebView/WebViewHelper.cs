@@ -7,8 +7,8 @@ internal static partial class WebViewHelper
 {
 	internal static string? EscapeJsString(string js)
 	{
-		if (js == null)
-			return null;
+		if (string.IsNullOrEmpty(js))
+			return js;
 
 #if NET6_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		if (!js.Contains('\'', StringComparison.Ordinal))
