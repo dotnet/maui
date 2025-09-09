@@ -1,0 +1,187 @@
+<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.StateTriggersPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="State Triggers">
+    <views:BasePage.Content>
+        <ScrollView>
+            <VerticalStackLayout Spacing="20" Padding="12">
+                
+                <!-- Adaptive Trigger Example -->
+                <Border Padding="15" Background="LightBlue">
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroupList>
+                            <VisualStateGroup Name="WindowSizeStates">
+                                <VisualState Name="SmallWindow">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="0" MinWindowHeight="0" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="Background" Value="Pink" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState Name="MediumWindow">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="600" MinWindowHeight="400" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="Background" Value="LightGreen" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState Name="LargeWindow">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="1000" MinWindowHeight="600" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="Background" Value="Gold" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateGroupList>
+                    </VisualStateManager.VisualStateGroups>
+                    <VerticalStackLayout>
+                        <Label Text="Adaptive Trigger Example" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="• Small window (0x0+): Pink background" />
+                        <Label Text="• Medium window (600x400+): Light green background" />
+                        <Label Text="• Large window (1000x600+): Gold background" />
+                        <Label Text="Resize the window to see the background color change!" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Device State Trigger Example -->
+                <Border Padding="15" Background="LightCoral">
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroupList>
+                            <VisualStateGroup Name="DeviceStates">
+                                <VisualState Name="AndroidState">
+                                    <VisualState.StateTriggers>
+                                        <DeviceStateTrigger Device="Android" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="Background" Value="LimeGreen" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState Name="iOSState">
+                                    <VisualState.StateTriggers>
+                                        <DeviceStateTrigger Device="iOS" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="Background" Value="DeepSkyBlue" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState Name="MacCatalystState">
+                                    <VisualState.StateTriggers>
+                                        <DeviceStateTrigger Device="MacCatalyst" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="Background" Value="MediumPurple" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState Name="WindowsState">
+                                    <VisualState.StateTriggers>
+                                        <DeviceStateTrigger Device="WinUI" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="Background" Value="Orange" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateGroupList>
+                    </VisualStateManager.VisualStateGroups>
+                    <VerticalStackLayout>
+                        <Label Text="Device State Trigger Example" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="• Android: Lime green background" />
+                        <Label Text="• iOS: Deep sky blue background" />
+                        <Label Text="• MacCatalyst: Medium purple background" />
+                        <Label Text="• Windows: Orange background" />
+                        <Label Text="The background color indicates your current platform!" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Display Rotation Trigger Example -->
+                <Border Padding="15" Background="Lavender">
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroupList>
+                            <VisualStateGroup Name="RotationStates">
+                                <VisualState Name="Rotation0State">
+                                    <VisualState.StateTriggers>
+                                        <DisplayRotationStateTrigger Rotation="Rotation0" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="Background" Value="Red" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState Name="Rotation90State">
+                                    <VisualState.StateTriggers>
+                                        <DisplayRotationStateTrigger Rotation="Rotation90" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="Background" Value="Green" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState Name="Rotation180State">
+                                    <VisualState.StateTriggers>
+                                        <DisplayRotationStateTrigger Rotation="Rotation180" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="Background" Value="Blue" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState Name="Rotation270State">
+                                    <VisualState.StateTriggers>
+                                        <DisplayRotationStateTrigger Rotation="Rotation270" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="Background" Value="Yellow" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateGroupList>
+                    </VisualStateManager.VisualStateGroups>
+                    <VerticalStackLayout>
+                        <Label Text="Display Rotation State Trigger Example" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="• 0° (Portrait up): Red background" />
+                        <Label Text="• 90° (Landscape left): Green background" />
+                        <Label Text="• 180° (Portrait upside down): Blue background" />
+                        <Label Text="• 270° (Landscape right): Yellow background" />
+                        <Label Text="Rotate your device to see the background color change!" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Orientation Trigger Example -->
+                <Border Padding="15" Background="Wheat">
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroupList>
+                            <VisualStateGroup Name="OrientationStates">
+                                <VisualState Name="PortraitState">
+                                    <VisualState.StateTriggers>
+                                        <OrientationStateTrigger Orientation="Portrait" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="Background" Value="CornflowerBlue" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState Name="LandscapeState">
+                                    <VisualState.StateTriggers>
+                                        <OrientationStateTrigger Orientation="Landscape" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="Background" Value="Coral" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateGroupList>
+                    </VisualStateManager.VisualStateGroups>
+                    <VerticalStackLayout>
+                        <Label Text="Orientation State Trigger Example" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="• Portrait: Cornflower blue background" />
+                        <Label Text="• Landscape: Coral background" />
+                        <Label Text="Change device orientation to see the background color change!" />
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </views:BasePage.Content>
+</views:BasePage>
