@@ -33,6 +33,7 @@ using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -278,7 +279,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			// invoke the .NET method
-			var dotnetReturnValue = dotnetMethod.Invoke(jsInvokeTarget, invokeParamValues);
+			var dotnetReturnValue = GetDotNetMethodReturnValue(jsInvokeTarget, dotnetMethod, invokeParamValues);
 
 			if (dotnetReturnValue is null) // null result
 			{
@@ -301,6 +302,29 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			return dotnetReturnValue; // regular result
+		}
+
+		private static object? GetDotNetMethodReturnValue(object jsInvokeTarget, MethodInfo dotnetMethod, object?[]? invokeParamValues)
+		{
+			try
+			{
+				// invoke the .NET method
+				return dotnetMethod.Invoke(jsInvokeTarget, invokeParamValues);
+			}
+			catch (TargetInvocationException tie) // unwrap while preserving original stack trace
+			{
+				if (tie.InnerException is not null)
+				{
+					// Rethrow the underlying exception without losing its original stack trace
+					ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+
+					// unreachable, but required for compiler flow analysis
+					throw;
+				}
+
+				// no inner exception; rethrow the TargetInvocationException itself preserving its stack
+				throw;
+			}
 		}
 
 		private sealed class JSInvokeMethodData

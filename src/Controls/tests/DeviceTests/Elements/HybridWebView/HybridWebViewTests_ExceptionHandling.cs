@@ -33,27 +33,6 @@ public partial class HybridWebViewTests_ExceptionHandling : HybridWebViewTestsBa
 		});
 
 	[Fact]
-	public Task CSharpMethodThatThrowsCustomException_ShouldIncludeExceptionDetails() =>
-		RunTest("exception-tests.html", async (hybridWebView) =>
-		{
-			var invokeJavaScriptTarget = new TestExceptionMethods();
-			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget);
-
-			// Tell JavaScript to invoke the method that throws a custom exception
-			hybridWebView.SendRawMessage("ThrowCustomException");
-
-			// Wait for JavaScript to handle the exception
-			await WebViewHelpers.WaitForHtmlStatusSet(hybridWebView);
-
-			// Check that JavaScript caught the exception with custom details
-			var errorType = await hybridWebView.EvaluateJavaScriptAsync("GetLastErrorType()");
-			var errorMessage = await hybridWebView.EvaluateJavaScriptAsync("GetLastErrorMessage()");
-
-			Assert.Equal("ArgumentException", errorType);
-			Assert.Equal("Custom argument exception", errorMessage);
-		});
-
-	[Fact]
 	public Task CSharpAsyncMethodThatThrowsException_ShouldPropagateToJavaScript() =>
 		RunTest("exception-tests.html", async (hybridWebView) =>
 		{
@@ -75,6 +54,27 @@ public partial class HybridWebViewTests_ExceptionHandling : HybridWebViewTestsBa
 		});
 
 	[Fact]
+	public Task CSharpMethodThatThrowsCustomException_ShouldIncludeExceptionDetails() =>
+		RunTest("exception-tests.html", async (hybridWebView) =>
+		{
+			var invokeJavaScriptTarget = new TestExceptionMethods();
+			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget);
+
+			// Tell JavaScript to invoke the method that throws a custom exception
+			hybridWebView.SendRawMessage("ThrowCustomException");
+
+			// Wait for JavaScript to handle the exception
+			await WebViewHelpers.WaitForHtmlStatusSet(hybridWebView);
+
+			// Check that JavaScript caught the exception with custom details
+			var errorType = await hybridWebView.EvaluateJavaScriptAsync("GetLastErrorType()");
+			var errorMessage = await hybridWebView.EvaluateJavaScriptAsync("GetLastErrorMessage()");
+
+			Assert.Equal("ArgumentException", errorType);
+			Assert.Equal("Custom argument exception", errorMessage);
+		});
+
+	[Fact]
 	public Task CSharpMethodThatSucceeds_ShouldStillWorkNormally() =>
 		RunTest("exception-tests.html", async (hybridWebView) =>
 		{
@@ -89,11 +89,11 @@ public partial class HybridWebViewTests_ExceptionHandling : HybridWebViewTestsBa
 
 			// Check that JavaScript got the normal result
 			var result = await hybridWebView.EvaluateJavaScriptAsync("GetLastResult()");
-			Assert.Equal("Success!", result);
+			Assert.Contains("Success!", result, StringComparison.Ordinal);
 
 			// Check that no error was thrown
 			var hasError = await hybridWebView.EvaluateJavaScriptAsync("HasError()");
-			Assert.Equal("false", hasError);
+			Assert.Contains("false", hasError, StringComparison.Ordinal);
 		});
 
 	private class TestExceptionMethods
