@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.SourceGen.TypeConverters;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -18,9 +19,9 @@ static class NodeSGExtensions
 {
 	public delegate string ConverterDelegate(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null);
 
-	public delegate ILocalValue GetNodeValueDelegate(INode node, ITypeSymbol toType);
+	public delegate bool TryGetNodeValueDelegate(INode node, ITypeSymbol toType, out ILocalValue? value);
 
-	public delegate bool ProvideValueDelegate(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value);
+	public delegate bool ProvideValueDelegate(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, TryGetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value);
 
 	// Lazy converter factory function
 	static ConverterDelegate CreateLazyConverter<T>() where T : ISGTypeConverter, new() =>
@@ -85,8 +86,6 @@ static class NodeSGExtensions
 	{
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, new SetterValueProvider()},
 	};
-
-
 
 	// These markup extensions can provide values early since the input is just a string literal
 	public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownEarlyMarkupExtensions(SourceGenContext context)
@@ -220,12 +219,12 @@ static class NodeSGExtensions
 		return false;
 	}
 
-	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
+	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null, ImmutableArray<Scope>? scopes = null)
 	{
 		var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
 		if (typeandconverter == null)
 			return string.Empty;
-		return valueNode.ConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, writer, context, parentVar);
+		return valueNode.ConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, writer, context, parentVar, scopes);
 	}
 
 	public static string ConvertTo(this ValueNode valueNode, IPropertySymbol property, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
@@ -239,16 +238,16 @@ static class NodeSGExtensions
 		return valueNode.ConvertTo(property.Type, typeConverter, writer, context, parentVar);
 	}
 
-	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
+	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null, ImmutableArray<Scope>? scopes = null)
 	{
 		List<AttributeData> attributes = [.. toType.GetAttributes()];
 
 		var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
 
-		return valueNode.ConvertTo(toType, typeConverter, writer, context, parentVar);
+		return valueNode.ConvertTo(toType, typeConverter, writer, context, parentVar, scopes);
 	}
 
-	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
+	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null, ImmutableArray<Scope>? scopes = null)
 	{
 		var valueString = valueNode.Value as string ?? string.Empty;
 
@@ -263,7 +262,7 @@ static class NodeSGExtensions
 		}
 
 		if (typeConverter is not null)
-			return valueNode.ConvertWithConverter(typeConverter, toType, writer, context, parentVar);
+			return valueNode.ConvertWithConverter(typeConverter, toType, writer, context, parentVar, scopes);
 
 		return ValueForLanguagePrimitive(valueString, toType, context, valueNode);
 	}
@@ -455,7 +454,7 @@ static class NodeSGExtensions
 		return SymbolDisplay.FormatLiteral(valueString, true);
 	}
 
-	public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
+	public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null, ImmutableArray<Scope>? scopes = null)
 	{
 		var valueString = valueNode.Value as string ?? string.Empty;
 		//TODO check if there's a SourceGen version of the converter
@@ -465,7 +464,7 @@ static class NodeSGExtensions
 			var (acceptEmptyServiceProvider, requiredServices) = typeConverter.GetServiceProviderAttributes(context);
 			if (!acceptEmptyServiceProvider)
 			{
-				var serviceProvider = valueNode.GetOrCreateServiceProvider(writer, context, requiredServices);
+				var serviceProvider = valueNode.GetOrCreateServiceProvider(writer, context, requiredServices, scopes);
 				if (targetType.IsReferenceType || targetType.NullableAnnotation == NullableAnnotation.Annotated)
 					return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor}) as {targetType.ToFQDisplayString()}";
 				else
@@ -524,7 +523,7 @@ static class NodeSGExtensions
 	public static bool TryProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context)
 		=> TryProvideValue(node, writer, context, null);
 
-	public static bool TryProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context, GetNodeValueDelegate? getNodeValue)
+	public static bool TryProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context, TryGetNodeValueDelegate? tryGetNodeValue)
 	{
 		if (!context.Variables.TryGetValue(node, out var variable))
 			return false;
@@ -533,7 +532,7 @@ static class NodeSGExtensions
 			return false;
 
 		if (GetKnownLateMarkupExtensions(context).TryGetValue(variable.Type, out var provideValue)
-			&& provideValue.Invoke(node, writer, context, getNodeValue, out var returnType0, out var value))
+			&& provideValue.Invoke(node, writer, context, tryGetNodeValue, out var returnType0, out var value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
 			context.Writer.WriteLine($"var {variableName} = {value};");
@@ -544,7 +543,7 @@ static class NodeSGExtensions
 		}
 
 		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out var valueProvider)
-			&& valueProvider.TryProvideValue(node, writer, context, getNodeValue, out returnType0, out value))
+			&& valueProvider.TryProvideValue(node, writer, context, tryGetNodeValue, out returnType0, out value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
 			context.Writer.WriteLine($"var {variableName} = {value};");
@@ -671,6 +670,64 @@ static class NodeSGExtensions
 		return typeName!.GetTypeSymbol(context);
 	}
 
+	public static bool IsValueProvider(this ElementNode elementNode, SourceGenContext context, out bool acceptEmptyServiceProvider, out ImmutableArray<ITypeSymbol>? requiredServices)
+	{
+		acceptEmptyServiceProvider = true;
+		requiredServices = null;
+		var type = elementNode.XmlType.GetTypeSymbol(context);
+		if (type is null)
+			return false;
+
+		if (KnownMarkups.TryGetValueProvider(type, context.Compilation, out _))
+			return true;
+			
+		if (GetKnownLateMarkupExtensions(context).TryGetValue(type, out _))
+			return true;
+
+		if (GetKnownValueProviders(context).TryGetValue(type, out _))
+			return true;
+
+		if (type.IsValueProvider(context, out _, out _, out acceptEmptyServiceProvider, out requiredServices))
+			return true;
+
+		return false;
+	}
+
 	public static bool RepresentsType(this INode node, string namespaceUri, string name)
 		=> node is ElementNode elementNode && elementNode.XmlType.RepresentsType(namespaceUri, name);
+
+	public static bool HasXName(this INode node, out string? xName)
+	{
+		xName = null;
+		if (node is ElementNode elementNode && elementNode.Properties.TryGetValue(XmlName.xName, out var xNameProp) && xNameProp is ValueNode xnpV && xnpV.Value is string xNameValue)
+		{
+			xName = xNameValue;
+			return true;
+		}
+		return false;
+	}
+
+	public static bool HasPropertiesRequiringParentObject(this ElementNode elementNode, SourceGenContext context, out IList<KeyValuePair<XmlName, INode>> properties)
+	{
+		var props = new List<KeyValuePair<XmlName, INode>>();
+		props.AddRange(elementNode.Properties.Where(p => !DependencyFirstInflator.Skips.Contains(p.Key) && !elementNode.SkipProperties.Contains(p.Key)));
+		if (   elementNode.CollectionItems != null
+			&& elementNode.CollectionItems.Count > 0)
+		{
+			var contentPropertyName = elementNode.XmlType.GetTypeSymbol(context)?.GetContentPropertyName(context);
+			props.AddRange(elementNode.CollectionItems.Select(child => new KeyValuePair<XmlName, INode>(new XmlName(null, contentPropertyName), child)));
+		}
+		properties = [];
+		foreach (var prop in props)
+		{
+			if (prop.Value is ElementNode en
+				&& en.IsValueProvider(context, out var acceptEmptyServiceProvider, out var requiredServices)
+				&& !acceptEmptyServiceProvider
+				&& requiredServices != null
+				&& requiredServices.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IProvideValueTarget")!, SymbolEqualityComparer.Default))
+				properties.Add(prop);
+
+		}
+		return properties.Count > 0;
+	}
 }

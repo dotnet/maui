@@ -1,6 +1,7 @@
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Xml;
 using Microsoft.CodeAnalysis;
@@ -13,12 +14,12 @@ using static LocationHelpers;
 
 static class SetPropertyHelpers
 {
-	public static void SetPropertyValue(IndentedTextWriter writer, ILocalValue parentVar, XmlName propertyName, INode valueNode, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue = null, bool treeOrder = false, IndentedTextWriter? icWriter = null, ILocalValue? inflatorVar = null, bool asCollectionItem = false)
+	public static void SetPropertyValue(IndentedTextWriter writer, ILocalValue parentVar, XmlName propertyName, INode valueNode, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue = null, bool treeOrder = false, IndentedTextWriter? icWriter = null, ILocalValue? inflatorVar = null, bool asCollectionItem = false, ImmutableArray<Scope>? scopes = null)
 	{
-		getNodeValue ??= (node, toType) => context.Variables[node];
+		tryGetNodeValue ??= (node, toType, out localVariable) => context.Variables.TryGetValue(node, out localVariable);
 
 		if (propertyName.Equals(XmlName._CreateContent))
-			return; //already handled
+            propertyName = new XmlName("", "LoadTemplate"); //this way it'll be handled by CanSet()/Set() below			
 			
 		//TODO I believe ContentProperty should be resolved here
 		var localName = propertyName.LocalName;
@@ -38,36 +39,38 @@ static class SetPropertyHelpers
 		}
 
 		//DynamicResource
-		if (!asCollectionItem && CanSetDynamicResource(bpFieldSymbol, valueNode, context, getNodeValue))
+		if (!asCollectionItem && CanSetDynamicResource(bpFieldSymbol, valueNode, context, tryGetNodeValue))
 		{
-			SetDynamicResource(writer, parentVar, bpFieldSymbol!, valueNode, context, getNodeValue);
+			SetDynamicResource(writer, parentVar, bpFieldSymbol!, valueNode, context, tryGetNodeValue);
 			return;
 		}
 
 		//If it's a BP and the value is BindingBase, SetBinding
 		if (!asCollectionItem && CanSetBinding(bpFieldSymbol, valueNode, parentVar.Type, localName, context, out var explicitPropertyNameForBinding))
 		{
-			SetBinding(writer, parentVar, bpFieldSymbol, localName, explicitPropertyNameForBinding, valueNode, context, getNodeValue);
+
+			SetBinding(writer, parentVar, bpFieldSymbol!, localName, explicitPropertyNameForBinding, valueNode, context, tryGetNodeValue);
 			return;
 		}
 
 		//If it's a BP, SetValue
-		if (!asCollectionItem && CanSetValue(bpFieldSymbol, valueNode, parentVar.Type, localName, context, getNodeValue, out var explicitPropertyNameForValue))
+
+		if (!asCollectionItem && CanSetValue(bpFieldSymbol, valueNode, parentVar.Type, localName, context, tryGetNodeValue, out var explicitPropertyNameForValue))
 		{
-			SetValue(writer, parentVar, bpFieldSymbol, localName, explicitPropertyNameForValue, valueNode, context, getNodeValue);
+			SetValue(writer, parentVar, bpFieldSymbol!, localName, explicitPropertyNameForValue,valueNode, context, tryGetNodeValue, scopes);
 			return;
 		}
 
 		//POCO, set the property
 		if (!asCollectionItem && CanSet(parentVar, localName, valueNode, context))
 		{
-			Set(writer, parentVar, localName, valueNode, context, getNodeValue);
+			Set(writer, parentVar, localName, valueNode, context, tryGetNodeValue);
 			return;
 		}
 
-		if (CanAdd(parentVar, localName, bpFieldSymbol, attached, valueNode, context, getNodeValue))
+		if (CanAdd(parentVar, localName, bpFieldSymbol, attached, valueNode, context, tryGetNodeValue))
 		{
-			Add(writer, parentVar, propertyName, valueNode, context, getNodeValue);
+			Add(writer, parentVar, propertyName, valueNode, context, tryGetNodeValue);
 			return;
 		}
 
@@ -75,7 +78,7 @@ static class SetPropertyHelpers
 		context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
 	}
 
-	public static bool CanAddToResourceDictionary(ILocalValue parentVar, ITypeSymbol collectionType, ElementNode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
+	public static bool CanAddToResourceDictionary(ILocalValue parentVar, ITypeSymbol collectionType, ElementNode node, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate tryGetNodeValue)
 	{
 		if (!collectionType.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!, context))
 			return false;
@@ -103,7 +106,9 @@ static class SetPropertyHelpers
 		}
 
 		//is there an Add() overload that takes the type of the element ?
-		var nodeType = getNodeValue(node, context.Compilation.ObjectType).Type;
+		
+		tryGetNodeValue(node, context.Compilation.ObjectType, out var localVariable);
+		var nodeType = localVariable!.Type;
 		if (collectionType.GetAllMethods("Add", context).FirstOrDefault(m => m.Parameters.Length == 1 && m.Parameters[0].Type.Equals(nodeType, SymbolEqualityComparer.Default)) != null)
 			return true;
 		return false;
@@ -122,7 +127,7 @@ static class SetPropertyHelpers
 			return "null";
 	}
 
-	public static void AddToResourceDictionary(IndentedTextWriter writer, ILocalValue parentVar, ElementNode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
+	public static void AddToResourceDictionary(IndentedTextWriter writer, ILocalValue parentVar, ElementNode node, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate tryGetNodeValue)
 	{
 		if (node.Properties.TryGetValue(XmlName.xKey, out var keyNode))
 		{
@@ -130,10 +135,12 @@ static class SetPropertyHelpers
 				context.KeysInRD[parentVar] = [];
 			context.KeysInRD[parentVar].Add((((ValueNode)keyNode).Value as string)!);
 			var key = ((ValueNode)keyNode).Value as string;
-			writer.WriteLine($"{parentVar.ValueAccessor}[\"{key}\"] = {(getNodeValue(node, context.Compilation.ObjectType)).ValueAccessor};");
+			tryGetNodeValue(node, context.Compilation.ObjectType, out var lVar);
+			writer.WriteLine($"{parentVar.ValueAccessor}[\"{key}\"] = {lVar?.ValueAccessor};");
 			return;
 		}
-		writer.WriteLine($"{parentVar.ValueAccessor}.Add({getNodeValue(node, context.Compilation.ObjectType).ValueAccessor});");
+		tryGetNodeValue(node, context.Compilation.ObjectType, out var localVar);
+		writer.WriteLine($"{parentVar.ValueAccessor}.Add({localVar?.ValueAccessor});");
 	}
 
 	static bool CanSet(ILocalValue parentVar, string localName, INode node, SourceGenContext context)
@@ -172,7 +179,7 @@ static class SetPropertyHelpers
 		return false;
 	}
 
-	static bool CanSetDynamicResource(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
+	static bool CanSetDynamicResource(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate tryGetNodeValue)
 	{
 		if (bpFieldSymbol == null)
 			return false;
@@ -186,8 +193,11 @@ static class SetPropertyHelpers
 		return localVar.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!, context);
 	}
 
-	static void SetDynamicResource(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol fieldSymbol, INode valueNode, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
-		=> writer.WriteLine($"((global::Microsoft.Maui.Controls.Internals.IDynamicResourceHandler){parentVar.ValueAccessor}).SetDynamicResource({fieldSymbol.ToFQDisplayString()}, {(getNodeValue(valueNode, context.Compilation.ObjectType)).ValueAccessor}.Key);");
+	static void SetDynamicResource(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol fieldSymbol, INode valueNode, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate tryGetNodeValue)
+	{	
+		tryGetNodeValue(valueNode, context.Compilation.ObjectType, out var localVar);
+		writer.WriteLine($"((global::Microsoft.Maui.Controls.Internals.IDynamicResourceHandler){parentVar.ValueAccessor}).SetDynamicResource({fieldSymbol.ToFQDisplayString()}, {localVar!.ValueAccessor}.Key);");
+	}
 
 	static bool CanConnectEvent(ILocalValue parentVar, string localName, INode valueNode, bool attached, SourceGenContext context)
 		//FIXME check event signature
@@ -232,7 +242,7 @@ static class SetPropertyHelpers
 		}
 	}
 
-	static bool CanSetValue(IFieldSymbol? bpFieldSymbol, INode node, ITypeSymbol parentType, string localName, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue, out string? explicitPropertyName)
+	static bool CanSetValue(IFieldSymbol? bpFieldSymbol, INode node, ITypeSymbol parentType, string localName, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate tryGetNodeValue, out string? explicitPropertyName)
 	{
 		explicitPropertyName = null;
 		
@@ -244,11 +254,11 @@ static class SetPropertyHelpers
 			if (node is not ElementNode en)
 				return false;
 
-			var localVar = getNodeValue(en, context.Compilation.ObjectType);
+			tryGetNodeValue(en, context.Compilation.ObjectType, out var localVar);
 
 			// If it's an attached BP, there's no second chance to handle IMarkupExtensions, so we try here.
 			// Worst case scenario ? InvalidCastException at runtime
-			if (localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
+			if (localVar!.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
 				return true;
 
 			var bpTypeAndConverter = bpFieldSymbol.GetBPTypeAndConverter(context);
@@ -281,7 +291,8 @@ static class SetPropertyHelpers
 		return false;
 	}
 
-	static void SetValue(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol? bpFieldSymbol, string localName, string? explicitPropertyName, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
+
+	static void SetValue(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol bpFieldSymbol, string localName, string? explicitPropertyName, INode node, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate tryGetNodeValue, ImmutableArray<Scope>? scopes = null)
 	{
 		// Determine bindable property name: use BP field symbol if available, otherwise use heuristic
 		var bpName = bpFieldSymbol != null 
@@ -297,7 +308,7 @@ static class SetPropertyHelpers
 			{
 				var valueString = bpFieldSymbol != null 
 					? valueNode.ConvertTo(bpFieldSymbol, writer, context, parentVar)
-					: (property != null ? valueNode.ConvertTo(property, writer, context, parentVar) : getNodeValue(node, context.Compilation.ObjectType).ValueAccessor);
+					: (property != null ? valueNode.ConvertTo(property, writer, context, parentVar) : tryGetNodeValue(node, context.Compilation.ObjectType, out var lvalue) ? lvalue!.ValueAccessor : "default");
 				writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpName}, {valueString});");
 			}
 		}
@@ -305,13 +316,13 @@ static class SetPropertyHelpers
 		{
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
-				var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
+				tryGetNodeValue(elementNode, context.Compilation.ObjectType, out var localVar);
 				var cast = string.Empty;
 				
 				if (bpFieldSymbol != null)
 				{
 					// BP case: check for double implicit conversion first
-					if (HasDoubleImplicitConversion(localVar.Type, pType, context, out var conv))
+					if (HasDoubleImplicitConversion(localVar!.Type, pType, context, out var conv))
 					{
 						cast = "(" + conv!.ReturnType.ToFQDisplayString() + ")";
 					}
@@ -324,12 +335,12 @@ static class SetPropertyHelpers
 						}
 					}
 				}
-				else if (property != null && !context.Compilation.HasImplicitConversion(localVar.Type, property.Type))
+				else if (property != null && !context.Compilation.HasImplicitConversion(localVar!.Type, property.Type))
 				{
 					cast = $"({property.Type.ToFQDisplayString()})";
 				}
 				
-				writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpName}, {cast}{localVar.ValueAccessor});");
+				writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpName}, {cast}{localVar!.ValueAccessor});");
 			}
 		}
 	}
@@ -438,7 +449,8 @@ static class SetPropertyHelpers
 		return false;
 	}
 
-	static void Set(IndentedTextWriter writer, ILocalValue parentVar, string localName, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
+
+	static void Set(IndentedTextWriter writer, ILocalValue parentVar, string localName, INode node, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate tryGetNodeValue)
 	{
 		var property = parentVar.Type.GetAllProperties(localName, context).First();
 
@@ -453,8 +465,8 @@ static class SetPropertyHelpers
 		else if (node is ElementNode elementNode)
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
-				var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
-				string intermediateCast = HasDoubleImplicitConversion(localVar.Type, property.Type, context, out var conv) ? "(" + conv!.ReturnType.ToFQDisplayString() + ")" : string.Empty;
+				tryGetNodeValue(elementNode, context.Compilation.ObjectType, out var localVar);
+				string intermediateCast = HasDoubleImplicitConversion(localVar!.Type, property.Type, context, out var conv) ? "(" + conv!.ReturnType.ToFQDisplayString() + ")" : string.Empty;
 				writer.WriteLine($"{parentVar.ValueAccessor}.{EscapeIdentifier(localName)} = ({property.Type.ToFQDisplayString()}){intermediateCast}{localVar.ValueAccessor};");
 			}
 	}
@@ -479,25 +491,25 @@ static class SetPropertyHelpers
 		return false;
 	}
 
-	static void SetBinding(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol? bpFieldSymbol, string localName, string? explicitPropertyName, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
+	static void SetBinding(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol? bpFieldSymbol, string localName, string? explicitPropertyName, INode node, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate tryGetNodeValue)
 	{
-		var localVariable = getNodeValue((ElementNode)node, context.Compilation.ObjectType);
+		tryGetNodeValue((ElementNode)node, context.Compilation.ObjectType, out var localVariable);
 		
 		if (bpFieldSymbol != null)
 		{
 			// Normal case: we have the BP field symbol
-			writer.WriteLine($"{parentVar.ValueAccessor}.SetBinding({bpFieldSymbol.ToFQDisplayString()}, {localVariable.ValueAccessor});");
+			writer.WriteLine($"{parentVar.ValueAccessor}.SetBinding({bpFieldSymbol.ToFQDisplayString()}, {localVariable!.ValueAccessor});");
 		}
 		else
 		{
 			// Heuristic case: generate SetBinding call using the expected BindableProperty name
 			// Use explicit property name if provided by attribute, otherwise use the default {localName}Property format
 			var bpName = explicitPropertyName ?? $"{localName}Property";
-			writer.WriteLine($"{parentVar.ValueAccessor}.SetBinding({parentVar.Type.ToFQDisplayString()}.{bpName}, {localVariable.ValueAccessor});");
+			writer.WriteLine($"{parentVar.ValueAccessor}.SetBinding({parentVar.Type.ToFQDisplayString()}.{bpName}, {localVariable!.ValueAccessor});");
 		}
 	}
 
-	static bool CanAdd(ILocalValue parentVar, string localName, IFieldSymbol? bpFieldSymbol, bool attached, INode valueNode, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
+	static bool CanAdd(ILocalValue parentVar, string localName, IFieldSymbol? bpFieldSymbol, bool attached, INode valueNode, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate tryGetNodeValue)
 	{
 		//if localname is null, we're adding to the parentVar, not one of it's property
 		if (valueNode is not ElementNode en)
@@ -512,7 +524,7 @@ static class SetPropertyHelpers
 		if (!context.Variables.TryGetValue(en, out var childVar))
 			return false;
 
-		if (CanAddToResourceDictionary(parentVar, localName != null ? propertyType! : parentVar.Type, en, context, getNodeValue))
+		if (CanAddToResourceDictionary(parentVar, localName != null ? propertyType! : parentVar.Type, en, context, tryGetNodeValue))
 			return true;
 
 		//FIXME should be better and test for value type
@@ -523,7 +535,7 @@ static class SetPropertyHelpers
 
 	}
 
-	static void Add(IndentedTextWriter writer, ILocalValue parentVar, XmlName propertyName, INode valueNode, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
+	static void Add(IndentedTextWriter writer, ILocalValue parentVar, XmlName propertyName, INode valueNode, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate tryGetNodeValue)
 	{
 		//if localname is null, we're adding to the parentVar, not one of it's property
 		var localName = propertyName.LocalName;
@@ -539,7 +551,7 @@ static class SetPropertyHelpers
 		else		
 			propertyType = parentVar.Type;
 
-		if (CanAddToResourceDictionary(parentVar, propertyType!, (ElementNode)valueNode, context, getNodeValue))
+		if (CanAddToResourceDictionary(parentVar, propertyType!, (ElementNode)valueNode, context, tryGetNodeValue))
 		{
 			ILocalValue rdAccessor;
 			if (localName != null)
@@ -547,7 +559,7 @@ static class SetPropertyHelpers
 			else
 				rdAccessor = parentVar;
 				
-			AddToResourceDictionary(writer, rdAccessor, (ElementNode)valueNode, context, getNodeValue);
+			AddToResourceDictionary(writer, rdAccessor, (ElementNode)valueNode, context, tryGetNodeValue);
 			return;
 		}
 
@@ -560,7 +572,7 @@ static class SetPropertyHelpers
 		var adder = propertyType!.GetAllMethods("Add", context).First(m => m.Parameters.Length == 1);
 		var receiverType = adder.ReceiverType;
 
-		var parentObj = $"{parentVar.ValueAccessor}.{localName}";
+		var parentObj = localName != null ? $"{parentVar.ValueAccessor}.{localName}" : parentVar.ValueAccessor;
 		if (bpFieldSymbol != null)
 		{
 			var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
@@ -572,11 +584,15 @@ static class SetPropertyHelpers
 
 		//look for intermediate implicit casts
 		string cast = string.Empty;
-		if (HasDoubleImplicitConversion(getNodeValue(valueNode, context.Compilation.ObjectType).Type, itemType, context, out var conv))
+		tryGetNodeValue(valueNode, context.Compilation.ObjectType, out var localVar);
+		if (HasDoubleImplicitConversion(localVar!.Type, itemType, context, out var conv))
 			cast = "(" + conv!.ReturnType.ToFQDisplayString() + ")";
 
 		using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.ProjectItem) : PrePost.NoBlock())
-			writer.WriteLine($"{parentObj}.Add(({itemType.ToFQDisplayString()}){cast}{getNodeValue(valueNode, context.Compilation.ObjectType).ValueAccessor});");
+		{
+			tryGetNodeValue(valueNode, context.Compilation.ObjectType, out localVar);
+			writer.WriteLine($"{parentObj}.Add(({itemType.ToFQDisplayString()}){cast}{localVar!.ValueAccessor});");
+		}
 	}
 
 	static bool IsBindingBaseNode(INode node, SourceGenContext context)

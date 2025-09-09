@@ -18,7 +18,7 @@ public static class SourceGeneratorDriver
 {
 	private static MetadataReference[]? MauiReferences;
 
-	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn, string LineInfo="enable");
+	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn, string LineInfo = "enable", bool TreeOrder = false, bool Dry = false);
 	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, AdditionalFile additionalFile, bool assertNoCompilationErrors = true)
 		where T : IIncrementalGenerator, new()
 		=> RunGenerator<T>(compilation, additionalFiles: [additionalFile], assertNoCompilationErrors);
@@ -182,10 +182,10 @@ public static class SourceGeneratorDriver
 #else
 					"build_property.Configuration" => "Debug",
 #endif
-					"build_property.EnableMauiXamlDiagnostics" => "true",
-					"build_property.MauiXamlLineInfo" => _additionalFile.LineInfo != "default" ?  _additionalFile.LineInfo : null,
+					"build_property.EnableMauiXamlDiagnostics" => _additionalFile.Dry ? "false" : "true",
+					"build_property.MauiXamlLineInfo" => _additionalFile.Dry ?  "disable" : _additionalFile.LineInfo != "default" ?  _additionalFile.LineInfo : null,
 					"build_property.MauiXamlNoWarn" => _additionalFile.NoWarn,
-
+					"build_metadata.additionalfiles.TreeOrder" => _additionalFile.TreeOrder.ToString(),
 					_ => null
 				};
 

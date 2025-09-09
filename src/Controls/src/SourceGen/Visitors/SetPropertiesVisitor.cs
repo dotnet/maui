@@ -82,7 +82,8 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
-		NodeSGExtensions.GetNodeValueDelegate getNodeValue = (node, type) => context.Variables[node];
+		NodeSGExtensions.TryGetNodeValueDelegate tryGetNodeValue = (node, type, out localVar) => context.Variables.TryGetValue(node, out localVar);
+
 		XmlName propertyName = XmlName.Empty;
 
 		//Simplify ListNodes with single elements
@@ -120,7 +121,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		}
 
 		//IMarkupExtension or IValueProvider => ProvideValue()
-		node.TryProvideValue(Writer, context, getNodeValue);
+		node.TryProvideValue(Writer, context, tryGetNodeValue);
 
 		if (propertyName != XmlName.Empty)
 		{
@@ -135,8 +136,8 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			var parentVar = Context.Variables[(ElementNode)parentNode];
 			string? contentProperty;
 
-			if (SetPropertyHelpers.CanAddToResourceDictionary(parentVar, parentVar.Type, node, Context, getNodeValue))
-				SetPropertyHelpers.AddToResourceDictionary(Writer, parentVar, node, Context, getNodeValue);
+			if (SetPropertyHelpers.CanAddToResourceDictionary(parentVar, parentVar.Type, node, Context, tryGetNodeValue))
+				SetPropertyHelpers.AddToResourceDictionary(Writer, parentVar, node, Context, tryGetNodeValue);
 			else if ((contentProperty = parentVar.Type.GetContentPropertyName(context)) != null)
 			{
 				var name = new XmlName(node.NamespaceURI, contentProperty);
@@ -188,9 +189,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			//TODO if we don't need the var, don't create it (this will likely be optimized by the compiler anyway, but...)
 
 
-			if (SetPropertyHelpers.CanAddToResourceDictionary(variable, propertyType, node, Context, getNodeValue))
+			if (SetPropertyHelpers.CanAddToResourceDictionary(variable, propertyType, node, Context, tryGetNodeValue))
 			{
-				SetPropertyHelpers.AddToResourceDictionary(Writer, variable, node, Context, getNodeValue);
+				SetPropertyHelpers.AddToResourceDictionary(Writer, variable, node, Context, tryGetNodeValue);
 				return;
 			}
 

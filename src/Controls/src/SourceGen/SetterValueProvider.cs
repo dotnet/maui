@@ -1,4 +1,5 @@
 using System.CodeDom.Compiler;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Xml;
 using Microsoft.CodeAnalysis;
@@ -7,9 +8,8 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls.SourceGen;
 
 internal class SetterValueProvider : IKnownMarkupValueProvider
+{	public bool CanProvideValue(ElementNode node, SourceGenContext context)
 {
-	public bool CanProvideValue(ElementNode node, SourceGenContext context)
-	{
 		// Can only inline if all properties are simple ValueNodes (no markup extensions)
 		// We need to check both the properties and any collection items
 		
@@ -30,7 +30,7 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 		return true;
 	}
 
-	public bool TryProvideValue(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	public bool TryProvideValue(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!;
 
@@ -56,10 +56,10 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {vn.ConvertTo(bpRef, writer, context)}}}";
 			return true;
 		}
-		else if (getNodeValue != null)
+		else if (tryGetNodeValue != null)
 		{
-			var lvalue = getNodeValue(valueNode, bpRef.Type);
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {lvalue.ValueAccessor}}}";
+			tryGetNodeValue(valueNode, bpRef.Type, out var lvalue);
+			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {lvalue!.ValueAccessor}}}";
 			return true;
 		}
 		else if (context.Variables.TryGetValue(valueNode, out var variable))
@@ -87,4 +87,5 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 
 		return valueNode;
 	}
+
 }

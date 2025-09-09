@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Xml;
 using Microsoft.CodeAnalysis;
-using System.Linq; 
+using System.Linq;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -93,12 +92,12 @@ static class InitializeComponentCodeWriter
 			if (!rootType.Name.StartsWith("__Type"))
 				codeWriter.WriteLine(GeneratedCodeAttribute);
 			codeWriter.WriteLine($"{accessModifier} partial class {rootType.Name}");
+			root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var baseType);
+			var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem);
 			using (newblock())
 			{
 				var methodName = genSwitch ? "InitializeComponentSourceGen" : "InitializeComponent";
 				codeWriter.WriteLine($"private partial void {methodName}()");
-				root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var baseType);
-				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem);
 				using (newblock())
 				{
 					if (xamlItem.ProjectItem.EnableDiagnostics)
@@ -132,15 +131,32 @@ $$"""
 
 """);
 					}
-					Visit(root, sgcontext);
-
-					foreach (var localMethod in sgcontext.LocalMethods)
+				
+					if (!xamlItem.ProjectItem.TreeOrder)
 					{
-						WriteMultiLineString(codeWriter, localMethod);
-						codeWriter.WriteLine();
+						Visit(root, sgcontext);
+
+						foreach (var localMethod in sgcontext.LocalMethods)
+						{
+							WriteMultiLineString(codeWriter, localMethod);
+							codeWriter.WriteLineNoTabs();
+						}
+					}				
+					else
+					{
+						VisitForDependencyOrder(root, sgcontext);
+						DependencyFirstInflator.Inflate(sgcontext, root, codeWriter);
 					}
 				}
 			}
+
+			if (sgcontext.RefStructWriter != null)
+			{
+				codeWriter.WriteLine();
+				codeWriter.Append(sgcontext.RefStructWriter, noTabs: true);
+			}
+
+
 		exit:
 			codeWriter.Flush();
 			return codeWriter.InnerWriter.ToString();
@@ -179,5 +195,15 @@ $$"""
 		// rootnode.Accept(new FillResourceDictionariesVisitor(visitorContext), null);
 		rootnode.Accept(new SetResourcesVisitor(visitorContext), null);
 		rootnode.Accept(new SetPropertiesVisitor(visitorContext, true), null);
+	}
+	
+	static void VisitForDependencyOrder(RootNode rootnode, SourceGenContext visitorContext)
+	{
+		rootnode.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null); //set parents for {StaticResource}
+		rootnode.Accept(new ExpandMarkupsVisitor(visitorContext), null);
+		rootnode.Accept(new PruneIgnoredNodesVisitor(false), null);
+		rootnode.Accept(new SimplifyTypeExtensionVisitor(), null);
+		if (!string.IsNullOrEmpty(visitorContext.ProjectItem.TargetFramework))
+			rootnode.Accept(new SimplifyOnPlatformVisitor(visitorContext.ProjectItem.TargetFramework), null);
 	}
 }

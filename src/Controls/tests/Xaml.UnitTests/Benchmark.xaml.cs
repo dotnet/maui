@@ -1,23 +1,31 @@
 using System;
+using System.IO;
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Benchmark : ContentPage
 {
-	public Benchmark(string inflator)
+	public Benchmark() => InitializeComponent();
+
+	public void MockGenerationXamlC()
 	{
-		switch (inflator)
-		{
-			case "Runtime":
-				InitializeComponentRuntime();
-				break;
-			case "XamlC":
-				InitializeComponentXamlC();
-				break;
-			case "SourceGen":
-				InitializeComponentSourceGen();
-				break;
-			default:
-				throw new NotSupportedException($"no code for {inflator} generated. check the [XamlProcessing] attribute.");
-		}
+		MockCompiler.Compile(typeof(FontSize), out var methodDef, out var hasLoggedErrors);
+	}
+	
+	public void MockSourceGen()
+	{
+		var resourceId = XamlResourceIdAttribute.GetResourceIdForType(typeof(Benchmark));
+		var resourcePath = XamlResourceIdAttribute.GetPathForType(typeof(Benchmark));
+		var resourceStream = typeof(MockSourceGenerator).Assembly.GetManifestResourceStream(resourceId);
+
+		MockSourceGenerator.RunMauiSourceGenerator(CreateMauiCompilation(), new AdditionalXamlFile(resourcePath, new StreamReader(resourceStream!).ReadToEnd()));
+	}
+	public void MockSourceGenLazy()
+	{
+		var resourceId = XamlResourceIdAttribute.GetResourceIdForType(typeof(Benchmark));
+		var resourcePath = XamlResourceIdAttribute.GetPathForType(typeof(Benchmark));
+		var resourceStream = typeof(MockSourceGenerator).Assembly.GetManifestResourceStream(resourceId);
+
+		MockSourceGenerator.RunMauiSourceGenerator(CreateMauiCompilation(), new AdditionalXamlFile(resourcePath, new StreamReader(resourceStream!).ReadToEnd(), LazyOrder: true));
 	}
 }

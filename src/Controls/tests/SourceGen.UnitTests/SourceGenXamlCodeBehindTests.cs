@@ -12,8 +12,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
 
 public class SourceGenXamlCodeBehindTests : SourceGenTestsBase
 {
-	private record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null, string? NoWarn = null)
-		: AdditionalFile(Text: SourceGeneratorDriver.ToAdditionalText(Path, Content), Kind: "Xaml", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName, TargetFramework: TargetFramework, NoWarn: NoWarn);
+	private record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null, string? NoWarn = null, bool TreeOrder = false)
+		: AdditionalFile(Text: SourceGeneratorDriver.ToAdditionalText(Path, Content), Kind: "Xaml", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName, TargetFramework: TargetFramework, NoWarn: NoWarn, TreeOrder: TreeOrder);
 
 	[Fact]
 	public void TestCodeBehindGenerator_BasicXaml()
@@ -729,5 +729,66 @@ internal class InternalButVisible : Label { }
 		Assert.Contains("CounterBtnAndroid", generated, StringComparison.Ordinal);
 		// Should NOT contain iOS button field
 		Assert.DoesNotContain("CounterBtnIOS", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TestCodeBehindGenerator_StyleWithSetterInResourceDictionary()
+	{
+		// Regression test: Style with Setter in ResourceDictionary generates invalid C#
+		// The generated code was producing "(object).ProvideValue()" instead of 
+		// "(object)variableName.ProvideValue()" because the variable name was empty.
+		// 
+		// Uses a ContentPage with x:Class and embedded Style, which ensures the .xsg.cs
+		// file is generated and exercises the DependencyFirstInflator code path.
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Test.TestPage">
+  <ContentPage.Resources>
+    <Style TargetType="Button" x:Key="style">
+      <Setter Property="BackgroundColor" Value="HotPink"/>
+    </Style>
+  </ContentPage.Resources>
+  <Button Style="{StaticResource style}" Text="Test"/>
+</ContentPage>
+""";
+
+		var code =
+"""
+using Microsoft.Maui.Controls;
+
+namespace Test;
+
+public partial class TestPage : ContentPage
+{
+    public TestPage() => InitializeComponent();
+}
+""";
+
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		
+		// TreeOrder = true triggers the DependencyFirstInflator code path which had the bug
+		// Pass assertNoCompilationErrors = false because the generated code uses C# 14 'field' keyword
+		// which isn't available in unit test compilation
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml, TreeOrder: true), assertNoCompilationErrors: false);
+
+		// Check for generator diagnostics (not compilation errors)
+		Assert.False(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error));
+		
+		// Get all generated sources
+		var generatedSources = result.Results.Single().GeneratedSources;
+		
+		// Get the .xsg.cs file
+		var xsgSource = generatedSources.FirstOrDefault(gs => gs.HintName.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase));
+		Assert.NotNull(xsgSource.SourceText);
+		
+		var generatedCode = xsgSource.SourceText.ToString();
+		// This is the key assertion - the bug generates "(object).ProvideValue" which is invalid C#
+		// The correct code should be "(object)variableName.ProvideValue(...)"
+		Assert.DoesNotContain("(object).ProvideValue", generatedCode, StringComparison.Ordinal);
 	}
 }

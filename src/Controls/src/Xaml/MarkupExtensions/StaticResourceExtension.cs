@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Xml;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -20,7 +22,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (serviceProvider.GetService(typeof(IProvideValueTarget)) is not IProvideParentValues valueProvider)
 				throw new ArgumentException(null, nameof(serviceProvider));
 
-			if (!TryGetResource(Key, valueProvider.ParentObjects, out var resource, out var resourceDictionary)
+			if (!TryGetResource(Key, valueProvider.ParentObjects.ToArray(), out var resource, out var resourceDictionary)
 				&& !TryGetApplicationLevelResource(Key, out resource, out resourceDictionary))
 			{
 				var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
@@ -38,17 +40,62 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			Diagnostics.ResourceDictionaryDiagnostics.OnStaticResourceResolved(resourceDictionary, Key, valueProvider.TargetObject, valueProvider.TargetProperty);
 
+// =======
+// 			var lineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
+// 			var resource = GetResource(
+// 				Key,
+// 				valueProvider.ParentObjects.ToArray(),
+// 				valueProvider.TargetObject,
+// 				valueProvider.TargetProperty,
+// 				lineInfo);
+// >>>>>>> d3af29adeb (incremental, dependency first, sourcegen inflator)
 			return CastTo(resource, valueProvider.TargetProperty);
 		}
+
+// #pragma warning disable RS0017
+// 		public static object GetValue(
+// #pragma warning restore RS0017
+// 			string key,
+// 			ReadOnlySpan<object> parentObjects,
+// 			object targetObject,
+// 			PropertyInfo targetProperty,
+// 			IXmlLineInfo xmlLineInfo)
+// 		{
+// 			if (!TryGetResource(key, parentObjects, out var resource, out var resourceDictionary)
+// 				&& !TryGetApplicationLevelResource(key, out resource, out resourceDictionary))
+// 			{
+// 				throw new XamlParseException($"StaticResource not found for key {key}", xmlLineInfo);
+// 			}
+
+// 			Diagnostics.ResourceDictionaryDiagnostics.OnStaticResourceResolved(resourceDictionary, key, targetObject, targetProperty);
+
+// 			return CastTo(resource, targetProperty.PropertyType);
+// 		}
+
+// #pragma warning disable RS0017
+// 		public static object GetValue(
+// #pragma warning disable RS0017
+// 			string key,
+// 			ReadOnlySpan<object> parentObjects,
+// 			object targetObject,
+// 			BindableProperty targetProperty,
+// 			IXmlLineInfo xmlLineInfo)
+// 		{
+// 			var resource = GetResource(key, parentObjects, targetObject, targetProperty, xmlLineInfo);
+// 			return CastTo(resource, targetProperty.ReturnType);
+// 		}
 
 		//used by X.HR.F
 		internal static object CastTo(object value, object targetProperty)
 		{
 			var bp = targetProperty as BindableProperty;
 			var pi = targetProperty as PropertyInfo;
+			return CastTo(value, bp?.ReturnType ?? pi?.PropertyType);
+		}
 
+		static object CastTo(object value, Type propertyType)
+		{
 			Type valueType = value.GetType();
-			var propertyType = bp?.ReturnType ?? pi?.PropertyType;
 			if (propertyType is null || propertyType.IsAssignableFrom(valueType))
 				return value;
 
@@ -60,7 +107,20 @@ namespace Microsoft.Maui.Controls.Xaml
 			return value;
 		}
 
-		static bool TryGetResource(string key, IEnumerable<object> parentObjects, out object resource, out ResourceDictionary resourceDictionary)
+		static object GetResource(string key, ReadOnlySpan<object> parentObjects, object targetObject, object targetProperty, IXmlLineInfo xmlLineInfo)
+		{
+			if (!TryGetResource(key, parentObjects, out var resource, out var resourceDictionary)
+				&& !TryGetApplicationLevelResource(key, out resource, out resourceDictionary))
+			{
+				throw new XamlParseException($"StaticResource not found for key {key}", xmlLineInfo);
+			}
+
+			Diagnostics.ResourceDictionaryDiagnostics.OnStaticResourceResolved(resourceDictionary, key, targetObject, targetProperty);
+
+			return resource;
+		}
+
+		static bool TryGetResource(string key, ReadOnlySpan<object> parentObjects, out object resource, out ResourceDictionary resourceDictionary)
 		{
 			resource = null;
 			resourceDictionary = null;

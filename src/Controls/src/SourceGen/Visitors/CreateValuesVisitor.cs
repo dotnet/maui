@@ -1,6 +1,7 @@
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
@@ -33,7 +34,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		//At this point, all MarkupNodes are expanded to ElementNodes
 	}
 
-	public static void CreateValue(ElementNode node, IndentedTextWriter writer, IDictionary<INode, ILocalValue> variables, Compilation compilation, AssemblyAttributes xmlnsCache, SourceGenContext Context, Func<INode, ITypeSymbol, ILocalValue>? getNodeValue = null)
+	public static void CreateValue(ElementNode node, IndentedTextWriter writer, IDictionary<INode, ILocalValue> variables, Compilation compilation, AssemblyAttributes xmlnsCache, SourceGenContext Context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue = null, ImmutableArray<Scope> scopes = default)
 	{
 		if (!node.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, Context.TypeCache, out var type) || type is null)
 			return;
@@ -125,7 +126,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		if (node.Properties.ContainsKey(XmlName.xArguments) && !node.Properties.ContainsKey(XmlName.xFactoryMethod))
 		{
 			ctor = type.InstanceConstructors.FirstOrDefault(c
-				=> c.MatchXArguments(node, Context, getNodeValue, out parameters));
+				=> c.MatchXArguments(node, Context, tryGetNodeValue, out parameters));
 			if (ctor is null)
 #pragma warning disable RS0030 // Do not use banned APIs
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.ProjectItem.RelativePath!, node, type.Name), type.ToDisplayString()));
@@ -139,7 +140,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 			factoryMethod = type.GetAllMethods(factoryMehodName!, Context).FirstOrDefault(m =>
 					   m.IsStatic
-					&& m.MatchXArguments(node, Context, getNodeValue, out parameters));
+					&& m.MatchXArguments(node, Context, tryGetNodeValue, out parameters));
 			if (factoryMethod is null)
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.ProjectItem.RelativePath!, node, factoryMehodName!), factoryMehodName));
 		}
@@ -262,7 +263,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		else if (factoryMethod != null)
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
-			writer.WriteLine($"var {variableName} = {factoryMethod.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])});");
+			writer.WriteLine($"var {variableName} = {factoryMethod.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context, scopes) ?? [])});");
 			variables[node] = new LocalVariable(factoryMethod.ReturnType, variableName);
 			node.RegisterSourceInfo(Context, writer);
 			return;
@@ -321,7 +322,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 			if (requiredPropAndFields.Any())
 			{
-				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])})");
+				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context, scopes) ?? [])})");
 				using (PrePost.NewBlock(writer, begin: "{", end: "};"))
 				{
 					foreach (var (name, propOrField, propType, propValue) in requiredPropertiesAndFields)
@@ -329,7 +330,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				}
 			}
 			else
-				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])});");
+				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context, scopes) ?? [])});");
 			variables[node] = new LocalVariable(type, variableName);
 			node.RegisterSourceInfo(Context, writer);
 

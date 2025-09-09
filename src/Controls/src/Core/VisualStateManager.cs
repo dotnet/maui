@@ -54,8 +54,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="//Member[@MemberName='GetVisualStateGroups']/Docs/*" />
-		public static IList<VisualStateGroup> GetVisualStateGroups(VisualElement visualElement)
-			=> (IList<VisualStateGroup>)visualElement.GetValue(VisualStateGroupsProperty);
+		public static VisualStateGroupList GetVisualStateGroups(VisualElement visualElement)
+			=> (VisualStateGroupList)visualElement.GetValue(VisualStateGroupsProperty);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="//Member[@MemberName='SetVisualStateGroups']/Docs/*" />
 		public static void SetVisualStateGroups(VisualElement visualElement, VisualStateGroupList value)

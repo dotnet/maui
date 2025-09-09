@@ -17,10 +17,10 @@
   </Docs>
   <Members>
     <Member MemberName="GetVisualStateGroups">
-      <MemberSignature Language="C#" Value="public static System.Collections.Generic.IList&lt;Microsoft.Maui.Controls.VisualStateGroup&gt; GetVisualStateGroups (Microsoft.Maui.Controls.VisualElement visualElement);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Collections.Generic.IList`1&lt;class Microsoft.Maui.Controls.VisualStateGroup&gt; GetVisualStateGroups(class Microsoft.Maui.Controls.VisualElement visualElement) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.VisualStateGroupList GetVisualStateGroups (Microsoft.Maui.Controls.VisualElement visualElement);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.VisualStateGroupList GetVisualStateGroups(class Microsoft.Maui.Controls.VisualElement visualElement) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement)" />
-      <MemberSignature Language="F#" Value="static member GetVisualStateGroups : Microsoft.Maui.Controls.VisualElement -&gt; System.Collections.Generic.IList&lt;Microsoft.Maui.Controls.VisualStateGroup&gt;" Usage="Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups visualElement" />
+      <MemberSignature Language="F#" Value="static member GetVisualStateGroups : Microsoft.Maui.Controls.VisualElement -&gt; Microsoft.Maui.Controls.VisualStateGroupList" Usage="Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups visualElement" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -28,7 +28,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Collections.Generic.IList&lt;Microsoft.Maui.Controls.VisualStateGroup&gt;</ReturnType>
+        <ReturnType>Microsoft.Maui.Controls.VisualStateGroupList</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="visualElement" Type="Microsoft.Maui.Controls.VisualElement" />
