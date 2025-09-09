@@ -88,5 +88,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			return size;
 		}
+
+		public override void PlatformArrange(Rect rect)
+		{
+			(Controller.Layout as CarouselViewLayout)?.UpdateConstraints(rect.Size);
+			base.PlatformArrange(rect);
+		}
 	}
 }
