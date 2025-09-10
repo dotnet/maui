@@ -9,7 +9,7 @@
          Spacing="25">
             <Label Text="1. This test is to check TapGestureRecognizer can trigger the Tapped event when TalkBack is enabled on an Android device or VoiceOver is enabled on iOS device.(https://github.com/dotnet/maui/issues/31483)" />
             <Label Text="2. Click Label 'Click me (Label TapGestureRecognizer)',Talkback/VoiceOver will announce 'Double tap to activate'. " />
-            <Label Text="3. Double click the screen, verify it triages the Tapped event, count increase by 1 " />
+            <Label Text="3. Double click the screen, verify it triggers the Tapped event, count increase by 1 " />
 
             <Label
              Text="TapGestureRecognizer with TalkBack/VoiceOver" 
