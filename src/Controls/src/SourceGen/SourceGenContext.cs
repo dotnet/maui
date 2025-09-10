@@ -9,7 +9,7 @@ using static Microsoft.Maui.Controls.SourceGen.NodeSGExtensions;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyCaches assemblyCaches, IDictionary<XmlType, ITypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType)
+class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyCaches assemblyCaches, IDictionary<XmlType, ITypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem)
 {
 	public SourceProductionContext SourceProductionContext => sourceProductionContext;
 	public IndentedTextWriter Writer => writer;
@@ -21,7 +21,6 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public IDictionary<INode, object> Values { get; } = new Dictionary<INode, object>();
 	public IDictionary<INode, LocalVariable> Variables { get; } = new Dictionary<INode, LocalVariable>();
 	public void ReportDiagnostic(Diagnostic diagnostic) => sourceProductionContext.ReportDiagnostic(diagnostic);
-	public string? FilePath { get; set; }
 	public IDictionary<INode, LocalVariable> ServiceProviders { get; } = new Dictionary<INode, LocalVariable>();
 	public IDictionary<INode, (LocalVariable namescope, IDictionary<string, LocalVariable> namesInScope)> Scopes = new Dictionary<INode, (LocalVariable, IDictionary<string, LocalVariable>)>();
 	public SourceGenContext? ParentContext { get; set; }
@@ -30,6 +29,8 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public IDictionary<LocalVariable, HashSet<string>> KeysInRD { get; } = new Dictionary<LocalVariable, HashSet<string>>();
 	public IDictionary<(LocalVariable, IFieldSymbol?, IPropertySymbol?), LocalVariable> VariablesProperties { get; } = new Dictionary<(LocalVariable, IFieldSymbol?, IPropertySymbol?), LocalVariable>();
 	public IList<string> LocalMethods { get; } = new List<string>();
+	public ProjectItem ProjectItem { get; } = projectItem;
+
 	public void AddLocalMethod(string code)
 	{
 		if (ParentContext != null)

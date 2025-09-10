@@ -26,11 +26,7 @@ static class GeneratorHelpers
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 // </auto-generated>
-//------------------------------------------------------------------------------
-#if _MAUIXAML_SG_NULLABLE_ENABLE
-#nullable enable
-#endif
-";
+//------------------------------------------------------------------------------";
 
 	public static string EscapeIdentifier(string identifier)
 	{
@@ -40,51 +36,16 @@ static class GeneratorHelpers
 			: $"@{identifier}";
 	}
 
-	public static ProjectItem? ComputeProjectItem((AdditionalText, AnalyzerConfigOptionsProvider) tuple, CancellationToken cancellationToken)
+	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken)
 	{
-		var (additionalText, optionsProvider) = tuple;
-		var fileOptions = optionsProvider.GetOptions(additionalText);
-		if (!fileOptions.TryGetValue("build_metadata.additionalfiles.GenKind", out string? kind) || kind is null)
-		{
+		if (cancellationToken.IsCancellationRequested)
 			return null;
-		}
 
-		fileOptions.TryGetValue("build_metadata.additionalfiles.TargetPath", out var targetPath);
-		fileOptions.TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out var manifestResourceName);
-		fileOptions.TryGetValue("build_metadata.additionalfiles.RelativePath", out var relativePath);
-		fileOptions.TryGetValue("build_property.targetframework", out var targetFramework);
-		fileOptions.TryGetValue("build_property.Configuration", out var configuration);
-
-		fileOptions.TryGetValue("build_metadata.additionalfiles.Inflator", out var inflator);
-
-
-		var xamlinflator = 0;
-		if (!string.IsNullOrEmpty(inflator))
-		{
-			var parts = inflator!.Split(',');
-			for (int i = 0; i < parts.Length; i++)
-			{
-				var trimmed = parts[i].Trim();
-				if (!Enum.TryParse<XamlInflator>(trimmed, true, out var xinfl))
-					throw new InvalidOperationException($"Invalid inflator '{trimmed}' for {additionalText.Path}.");
-				xamlinflator |= (int)xinfl;
-			}
-		}
-
-		return new ProjectItem
-		{
-			AdditionalText = additionalText,
-			TargetPath = targetPath,
-			RelativePath = relativePath,
-			ManifestResourceName = manifestResourceName,
-			Kind = kind,
-			Inflator = (XamlInflator)xamlinflator,
-			TargetFramework = targetFramework,
-			Configuration = configuration!,
-		};
+		var projectItem = new ProjectItem(tuple.additionalText, tuple.optionsProvider.GetOptions(tuple.additionalText));
+		return projectItem.Kind == "None" ? null : projectItem;
 	}
 
-	public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyCaches) itemAdnCaches, CancellationToken cancellationToken)
+    public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyCaches) itemAdnCaches, CancellationToken cancellationToken)
 	{
 		var (projectItem, assemblyCaches) = itemAdnCaches;
 		var text = projectItem?.AdditionalText.GetText(cancellationToken);
@@ -142,10 +103,7 @@ static class GeneratorHelpers
 					continue;
 				}
 
-				var rootnode = new SGRootNode(new XmlType(reader.NamespaceURI, reader.Name, XamlParser.GetTypeArguments(reader)), /*typeReference, */(IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition)
-				{
-					DisableWarnings = warningDisableList,
-				};
+				var rootnode = new SGRootNode(new XmlType(reader.NamespaceURI, reader.Name, XamlParser.GetTypeArguments(reader)), /*typeReference, */(IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition);
 				XamlParser.ParseXaml(rootnode, reader);
 
 				return rootnode;

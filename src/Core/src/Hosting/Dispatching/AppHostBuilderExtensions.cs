@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,7 +36,33 @@ namespace Microsoft.Maui.Hosting
 
 		public static MauiAppBuilder ConfigureEnvironmentVariables(this MauiAppBuilder builder)
 		{
+			if (!RuntimeFeature.EnableMauiAspire)
+			{
+				return builder;
+			}
+
 			IDictionary environmentVariables = Environment.GetEnvironmentVariables();
+
+#if ANDROID
+			const string androidEnvVarFilePath = "/data/local/tmp/ide-launchenv.txt";
+
+			// For Android we read the environment variables from a text file that is written to the device/emulator
+			// If the file not exists, we will use the default environment variables which is less stable
+			if (OperatingSystem.IsAndroid() && System.IO.File.Exists(androidEnvVarFilePath))
+			{
+				var envVarLines = System.IO.File.ReadAllLines(androidEnvVarFilePath);
+
+				var fileEnvironmentVariables = envVarLines
+					.Select(line => line.Split('=', 2))
+					.ToDictionary(parts => parts[0], parts => parts[1]);
+
+				// Merge file environment variables into the existing environment variables
+				foreach (var kvp in fileEnvironmentVariables)
+				{
+					environmentVariables[kvp.Key] = kvp.Value;
+				}
+			}
+#endif
 
 			string devTunnelId = environmentVariables["DEVTUNNEL_ID"]?.ToString() ?? string.Empty;
 

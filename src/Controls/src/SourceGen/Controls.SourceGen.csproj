@@ -8,14 +8,7 @@
     <NoWarn>$(NoWarn);NU5128;</NoWarn>
     <IsRoslynComponent>true</IsRoslynComponent>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-    <!-- 
-      _SOURCEGEN_* constants:
-      They should be all turned on, disabling them makes it easier to read the generated code while debugging the generator.
-      - _SOURCEGEN_LINEINFO_ENABLE: Augment the code with #line directives.
-      - _SOURCEGEN_SOURCEINFO_ENABLE: write calls to RegisterSourceInfo (between conditions) for Instrumentation purposes
-    -->
-    <DefineConstants>$(DefineConstants);__SOURCEGEN__;_SOURCEGEN_LINEINFO_ENABLE;_SOURCEGEN_SOURCEINFO_ENABLE</DefineConstants>
-    <!-- <DefineConstants>$(DefineConstants);__SOURCEGEN__</DefineConstants> -->
+    <DefineConstants>$(DefineConstants);__SOURCEGEN__</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -40,6 +33,7 @@
     <Compile Include="..\Xaml\MarkupExpressionParser.cs" Link="MarkupExpressionParser.cs" />
     <Compile Include="..\Xaml\PruneIgnoredNodesVisitor.cs" Link="PruneIgnoredNodesVisitor.cs" />
     <Compile Include="..\Xaml\RemoveDuplicateDesignNodes.cs" Link="RemoveDuplicateDesignNodes.cs" />
+    <Compile Include="..\Xaml\SimplifyOnPlatformVisitor.cs" Link="SimplifyOnPlatformVisitor.cs" />
     <Compile Include="..\Xaml\SimplifyTypeExtensionVisitor.cs" Link="SimplifyTypeExtensionVisitor.cs" />
     <Compile Include="..\Xaml\TypeArgumentsParser.cs" Link="TypeArgumentsParser.cs" />
     <Compile Include="..\Xaml\XamlInflator.cs" Link="XamlInflator.cs" />
@@ -49,6 +43,7 @@
     <Compile Include="..\Xaml\XamlParser.cs" Link="XamlParser.Namespaces.cs" />
     <Compile Include="..\Xaml\XamlParser.Namespaces.cs" Link="XamlParser.Namespaces.cs" />
     <Compile Include="..\Xaml\XmlName.cs" Link="XmlName.cs" />
+    <Compile Include="..\Xaml\XmlType.cs" Link="XmlType.cs" />
     <Compile Include="..\Xaml\XmlnsHelper.cs" Link="XmlnsHelper.cs" />
     <Compile Include="..\Xaml\XmlTypeXamlExtensions.cs" Link="XmlTypeXamlExtensions.cs" />
     <Compile Include="..\..\..\Core\src\Services\Crc64.cs">

@@ -573,7 +573,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 		void UpdateOffscreenPageLimit()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			_viewPager.OffscreenPageLimit = Element.OnThisPlatform().OffscreenPageLimit();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void UpdateSwipePaging()

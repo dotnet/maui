@@ -37,11 +37,7 @@ public partial class Maui24900 : ContentPage
 		}
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void OnPlatformDoesNotThrow([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
 		public void OnPlatformDoesNotThrow([Values] XamlInflator inflator)
-#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.WinUI;
 			Assert.DoesNotThrow(() => new Maui24900(inflator));
