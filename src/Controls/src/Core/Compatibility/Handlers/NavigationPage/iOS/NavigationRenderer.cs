@@ -463,7 +463,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_removeLifecycleEvents = new ActionDisposable(() =>
 			{
 				// This ensures that we don't cause multiple calls to CompletePendingNavigation.
-				// Depending on circumstances (covered by modal page) CompletePendingNavigation 
+				// Depending on circumstances (covered by modal page) CompletePendingNavigation
 				// might get called from the Delegate vs the DidAppear/DidDisappear methods
 				// on the ParentingViewController.
 				parentViewController.Appearing -= appearing;
@@ -1254,7 +1254,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				NavigationRenderer n;
 
 				// We only want to update the frame after the navigation has settled
-				// The frame bounces a bit during navigation and it messes up 
+				// The frame bounces a bit during navigation and it messes up
 				// the animation changing the frame during navigation
 				if (_navigation.TryGetTarget(out n) &&
 					ChildViewControllers.Length > 0 &&
@@ -1577,7 +1577,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			void UpdateIconColor()
 			{
-				if (_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
+				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
 					navigationRenderer.UpdateBarTextColor();
 			}
 
