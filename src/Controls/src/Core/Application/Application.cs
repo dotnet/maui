@@ -580,6 +580,16 @@ namespace Microsoft.Maui.Controls
 			// up to the window before triggering any down stream life cycle
 			// events.
 			window.FinishedAddingWindowToApplication(this);
+
+#if WINDOWS
+			OnWindowAddedPlatform(window);
+#endif
 		}
+
+#if WINDOWS
+
+		// Windows-specific hook implemented in Application.Windows.cs
+		partial void OnWindowAddedPlatform(Window window);
+#endif
 	}
 }
