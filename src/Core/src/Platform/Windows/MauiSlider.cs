@@ -8,7 +8,7 @@ using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiSlider : Slider
+	public partial class MauiSlider : Slider
 	{
 		Thumb _thumb;
 		Style _originalThumbStyle;
