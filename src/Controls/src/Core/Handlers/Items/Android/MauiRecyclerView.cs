@@ -390,7 +390,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var position = DetermineTargetPosition(args);
 
-			if (position == -1)
+			if (position < 0)
 			{
 				return;
 			}
