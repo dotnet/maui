@@ -568,26 +568,20 @@ internal static class LayoutFactory2
 			{
 				if (CollectionView != null)
 				{
-					var numberOfSections = CollectionView.NumberOfSections();
-					for (nint section = 0; section < numberOfSections; section++)
-					{
-						if (CollectionView.NumberOfItemsInSection(section) > 0)
-						{
-							return base.CollectionViewContentSize;
-						}
-					}
-
-					// No items found, but check if we have headers or footers that should still be shown
 					bool hasGlobalHeaders = _headerFooterInfo?.HasHeader == true || _headerFooterInfo?.HasFooter == true;
 					bool hasGroupHeaders = _groupingInfo?.HasHeader == true || _groupingInfo?.HasFooter == true;
 
 					if (hasGlobalHeaders || hasGroupHeaders)
 					{
-						// Return the base content size to allow headers/footers to be displayed
 						return base.CollectionViewContentSize;
 					}
 
-					// No items and no headers/footers found
+					if (CollectionView.NumberOfSections() > 0 &&
+				CollectionView.NumberOfItemsInSection(0) > 0)
+					{
+						return base.CollectionViewContentSize;
+					}
+
 					return CGSize.Empty;
 				}
 
