@@ -10,7 +10,7 @@ public partial class L1_TapGestureRecognizer : ContentPage
 {
     int count = 0;
     public L1_TapGestureRecognizer()
-	{
+    {
 		InitializeComponent();
 	}
 
