@@ -13,4 +13,5 @@ public static class Category
 	public const string CollectionView = nameof(CollectionView);
 	public const string TitleBar = nameof(TitleBar);
 	public const string Performance = nameof(Performance);
+	public const string BugFixes = nameof(BugFixes);
 }
