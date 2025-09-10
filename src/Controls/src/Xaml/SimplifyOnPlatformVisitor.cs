@@ -55,14 +55,14 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 			{
 				if (!node.TryGetPropertyName(parentNode, out XmlName name))
 					return;
-				if (parentNode is IElementNode parentEnode)
+				if (parentNode is ElementNode parentEnode)
 					parentEnode.Properties[name] = targetNode;
 			}
 			else if (node.CollectionItems.Count > 0) // syntax like {OnPlatform foo, iOS=bar}
 			{
 				if (!node.TryGetPropertyName(parentNode, out XmlName name))
 					return;
-				if (parentNode is IElementNode parentEnode)
+				if (parentNode is ElementNode parentEnode)
 					parentEnode.Properties[name] = node.CollectionItems[0];
 			}
 			else //no prop for target and no Default set
@@ -71,7 +71,7 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 					return;
 				//if there's no value for the targetPlatform, ignore the node.
 				//this is slightly different than what OnPlatform does (return default(T))
-				if (parentNode is IElementNode parentEnode)
+				if (parentNode is ElementNode parentEnode)
 					parentEnode.Properties.Remove(name);
 			}
 		}

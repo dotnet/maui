@@ -37,13 +37,13 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 			return;
 		if (Skips.Contains(propertyName))
 			return;
-		if (parentNode is not IElementNode parentElement || parentElement.SkipProperties.Contains(propertyName))
+		if (parentNode is not ElementNode parentElement || parentElement.SkipProperties.Contains(propertyName))
 			return;
 
 		var markupString = markupnode.MarkupString;
-		if (ParseExpression(ref markupString, markupnode.NamespaceResolver, markupnode, markupnode, parentNode) is IElementNode node)
+		if (ParseExpression(ref markupString, markupnode.NamespaceResolver, markupnode, markupnode, parentNode) is ElementNode node)
 		{
-			((IElementNode)parentNode).Properties[propertyName] = node;
+			((ElementNode)parentNode).Properties[propertyName] = node;
 			node.Parent = parentNode;
 		}
 	}
@@ -105,7 +105,7 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 
 	public class MarkupExpansionParser : MarkupExpressionParser, IExpressionParser<INode>
 	{
-		IElementNode? _node;
+		ElementNode? _node;
 		object IExpressionParser.Parse(string match, ref string remaining, IServiceProvider serviceProvider) => Parse(match, ref remaining, serviceProvider);
 
 		public INode Parse(string match, ref string remaining, IServiceProvider serviceProvider)

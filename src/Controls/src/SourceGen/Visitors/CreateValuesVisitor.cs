@@ -307,7 +307,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		node.RegisterSourceInfo(Context, Writer);
 	}
 
-	static bool IsXaml2009LanguagePrimitive(IElementNode node)
+	static bool IsXaml2009LanguagePrimitive(ElementNode node)
 	{
 		// if (node.NamespaceURI == XamlParser.X2009Uri)
 		// {

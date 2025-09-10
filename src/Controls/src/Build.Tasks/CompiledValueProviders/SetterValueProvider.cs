@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Xml;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Xaml;
 using Mono.Cecil;
@@ -11,13 +10,12 @@ namespace Microsoft.Maui.Controls.XamlC
 	{
 		public IEnumerable<Instruction> ProvideValue(VariableDefinitionReference vardefref, ModuleDefinition module, BaseNode node, ILContext context)
 		{
-			INode valueNode = null;
-			if (!((IElementNode)node).Properties.TryGetValue(new XmlName("", "Value"), out valueNode) &&
-				!((IElementNode)node).Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Value"), out valueNode) &&
-				((IElementNode)node).CollectionItems.Count == 1)
-				valueNode = ((IElementNode)node).CollectionItems[0];
+			if (!((ElementNode)node).Properties.TryGetValue(new XmlName("", "Value"), out INode valueNode) &&
+				!((ElementNode)node).Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Value"), out valueNode) &&
+				((ElementNode)node).CollectionItems.Count == 1)
+				valueNode = ((ElementNode)node).CollectionItems[0];
 
-			var bpNode = (ValueNode)((IElementNode)node).Properties[new XmlName("", "Property")];
+			var bpNode = (ValueNode)((ElementNode)node).Properties[new XmlName("", "Property")];
 			var bpRef = new BindablePropertyConverter().GetBindablePropertyFieldReference((string)bpNode.Value, context, module, bpNode);
 
 			if (SetterValueIsCollection(bpRef, module, node, context))
@@ -28,7 +26,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				yield break;
 
 			//if it's an elementNode, there's probably no need to convert it
-			if (valueNode is IElementNode)
+			if (valueNode is ElementNode)
 				yield break;
 
 			var value = (string)((ValueNode)valueNode).Value;
@@ -48,7 +46,7 @@ namespace Microsoft.Maui.Controls.XamlC
 
 		static bool SetterValueIsCollection(FieldReference bindablePropertyReference, ModuleDefinition module, BaseNode node, ILContext context)
 		{
-			var items = (node as IElementNode)?.CollectionItems;
+			var items = (node as ElementNode)?.CollectionItems;
 
 			if (items == null || items.Count <= 0)
 				return false;
@@ -63,7 +61,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			// Is the generic argument assignable from this value?
 			var genericType = generic.GenericArguments[0];
 
-			if (items[0] is not IElementNode firstItem)
+			if (items[0] is not ElementNode firstItem)
 				return false;
 
 			return context.Variables[firstItem].VariableType.InheritsFromOrImplements(context.Cache, genericType);

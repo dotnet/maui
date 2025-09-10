@@ -1,10 +1,5 @@
 using System;
 using System.CodeDom.Compiler;
-using System.Collections.Generic;
-using System.Linq;
-using System.Xml;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.SourceGen;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -23,7 +18,7 @@ class SetResourcesVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 	public void Visit(ValueNode node, INode parentNode)
 	{
-		if (!((IElementNode)parentNode).IsResourceDictionary(Context))
+		if (!((ElementNode)parentNode).IsResourceDictionary(Context))
 			return;
 
 		node.Accept(new SetPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
@@ -35,26 +30,25 @@ class SetResourcesVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
-		XmlName propertyName;
 		//Set ResourcesDictionaries to their parents
-		if (IsResourceDictionary(node) && node.TryGetPropertyName(parentNode, out propertyName))
+		if (IsResourceDictionary(node) && node.TryGetPropertyName(parentNode, out XmlName propertyName))
 		{
 			if (propertyName.LocalName == "Resources"
 				|| propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal))
 			{
-				SetPropertiesVisitor.SetPropertyValue(Writer, Context.Variables[(IElementNode)parentNode], propertyName, node, Context);
+				SetPropertiesVisitor.SetPropertyValue(Writer, Context.Variables[(ElementNode)parentNode], propertyName, node, Context);
 				return;
 			}
 		}
 
 		//Only proceed further if the node is a keyless RD
-		if (parentNode is IElementNode
-			&& ((IElementNode)parentNode).IsResourceDictionary(Context)
-			&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
+		if (parentNode is ElementNode node1
+			&& node1.IsResourceDictionary(Context)
+			&& !node1.Properties.ContainsKey(XmlName.xKey))
 			node.Accept(new SetPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
 		else if (parentNode is ListNode
-			&& ((IElementNode)parentNode.Parent).IsResourceDictionary(Context)
-			&& !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
+			&& ((ElementNode)parentNode.Parent).IsResourceDictionary(Context)
+			&& !((ElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 			node.Accept(new SetPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
 	}
 
@@ -68,16 +62,15 @@ class SetResourcesVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 	public bool SkipChildren(INode node, INode parentNode)
 	{
-		var enode = node as ElementNode;
-		if (enode == null)
+		if (node is not ElementNode enode)
 			return false;
-		if (parentNode is IElementNode
-			&& ((IElementNode)parentNode).IsResourceDictionary(Context)
-			&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
+		if (parentNode is ElementNode node1
+			&& node1.IsResourceDictionary(Context)
+			&& !node1.Properties.ContainsKey(XmlName.xKey))
 			return true;
 		if (parentNode is ListNode
-			&& ((IElementNode)parentNode.Parent).IsResourceDictionary(Context)
-			&& !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
+			&& ((ElementNode)parentNode.Parent).IsResourceDictionary(Context)
+			&& !((ElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 			return true;
 		return false;
 	}

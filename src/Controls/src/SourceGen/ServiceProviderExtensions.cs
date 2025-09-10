@@ -94,7 +94,7 @@ static class ServiceProviderExtensions
 			var n = node.Parent;
 			while (n is not null)
 			{
-				if (n is IElementNode en && currentCtx.Variables.TryGetValue(en, out var parentVariable))
+				if (n is ElementNode en && currentCtx.Variables.TryGetValue(en, out var parentVariable))
 					yield return parentVariable;
 				n = n.Parent;
 			}

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Xml;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Xaml;
@@ -34,8 +33,8 @@ namespace Microsoft.Maui.Controls.XamlC
 			var parts = value.Split('.');
 			if (parts.Length == 1)
 			{
-				var parent = node.Parent?.Parent as IElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as IElementNode;
-				if ((node.Parent as ElementNode)?.XmlType is XmlType xt && xt.IsOfAnyType(nameof(Setter), nameof(PropertyCondition)))				
+				var parent = node.Parent?.Parent as ElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as ElementNode;
+				if (node.Parent is ElementNode { XmlType: XmlType xt } && xt.IsOfAnyType(nameof(Setter), nameof(PropertyCondition)))				
 				{
 					if (parent.XmlType.IsOfAnyType(nameof(Trigger), nameof(DataTrigger), nameof(MultiTrigger), nameof(Style)))
 					{
@@ -46,7 +45,7 @@ namespace Microsoft.Maui.Controls.XamlC
 						typeName = FindTypeNameForVisualState(parent, node, context);
 					}
 				}
-				else if ((node.Parent as ElementNode)?.XmlType is XmlType xt1 && xt1.IsOfAnyType(nameof(Trigger)))
+				else if (node.Parent is ElementNode { XmlType: XmlType xt1 } && xt1.IsOfAnyType(nameof(Trigger)))
 				{
 					typeName = GetTargetTypeName(node.Parent);
 				}
@@ -80,26 +79,26 @@ namespace Microsoft.Maui.Controls.XamlC
 			}
 		}
 
-		static XmlType FindTypeNameForVisualState(IElementNode parent, IXmlLineInfo lineInfo, ILContext context)
+		static XmlType FindTypeNameForVisualState(ElementNode parent, IXmlLineInfo lineInfo, ILContext context)
 		{
 			//1. parent is VisualState, don't check that
 
 			//2. check that the VS is in a VSG
 			// if (!(parent.Parent is IElementNode target) || target.XmlType.NamespaceUri != XamlParser.MauiUri || target.XmlType.Name != nameof(VisualStateGroup))
-			if (!(parent.Parent is IElementNode target) || !target.XmlType.IsOfAnyType(nameof(VisualStateGroup)))
+			if (parent.Parent is not ElementNode target || !target.XmlType.IsOfAnyType(nameof(VisualStateGroup)))
 				throw new XamlParseException($"Expected {nameof(VisualStateGroup)} but found {parent.Parent}", lineInfo);
 
 			//3. if the VSG is in a VSGL, skip that as it could be implicit
 			if (   target.Parent is ListNode
-				|| target.Parent is IElementNode { XmlType: XmlType xt } && xt.IsOfAnyType(nameof(VisualStateGroupList)))
-				target = target.Parent.Parent as IElementNode;
+				|| target.Parent is ElementNode { XmlType: XmlType xt } && xt.IsOfAnyType(nameof(VisualStateGroupList)))
+				target = target.Parent.Parent as ElementNode;
 			else
-				target = target.Parent as IElementNode;
+				target = target.Parent as ElementNode;
 
 			//4. target is now a Setter in a Style, or a VE
 			if (target.XmlType.IsOfAnyType(nameof(Setter)))
 			{
-				var targetType = ((target?.Parent as IElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+				var targetType = ((target?.Parent as ElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
 				return TypeArgumentsParser.ParseSingle(targetType, parent.NamespaceResolver, lineInfo);
 			}
 			else

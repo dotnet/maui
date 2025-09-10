@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					//the root is set to null, and not to rootView, on purpose as we don't want to erase the current Resources of the view
 					RootNode rootNode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), null, (IXmlNamespaceResolver)reader) { LineNumber = ((IXmlLineInfo)reader).LineNumber, LinePosition = ((IXmlLineInfo)reader).LinePosition };
 					XamlParser.ParseXaml(rootNode, reader);
-					var rNode = (IElementNode)rootNode;
+					var rNode = (ElementNode)rootNode;
 					if (!rNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Resources"), out var resources))
 						return null;
 
