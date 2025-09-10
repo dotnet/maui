@@ -66,20 +66,26 @@ namespace Microsoft.Maui
 				// when maximizing a window
 				// https://github.com/microsoft/microsoft-ui-xaml/issues/7343
 				if (_isActivated)
+				{
 					return;
+				}
 
 				_isActivated = true;
 
 				if (_enableResumeEvent)
+				{
 					Services?.InvokeLifecycleEvents<WindowsLifecycle.OnResumed>(del => del(this));
+				}
 				else
+				{
 					_enableResumeEvent = true;
+				}
 			}
 			else if (args.WindowActivationState == UI.Xaml.WindowActivationState.Deactivated &&
 				!_isActivated)
 			{
 				// Don't invoke deactivated event if we're not activated. It's possible we can
-				// recieve this event multiple times if we start a new child process and that 
+				// receive this event multiple times if we start a new child process and that 
 				// process creates a new window
 				return;
 			}
@@ -91,7 +97,7 @@ namespace Microsoft.Maui
 			Services?.InvokeLifecycleEvents<WindowsLifecycle.OnActivated>(del => del(this, args));
 		}
 
-		private void OnClosedPrivate(object sender, UI.Xaml.WindowEventArgs args)
+		void OnClosedPrivate(object sender, UI.Xaml.WindowEventArgs args)
 		{
 			OnClosed(sender, args);
 
@@ -174,7 +180,7 @@ namespace Microsoft.Maui
 						bool hasTitleBar = PlatformMethods.HasStyle(styleChange.StyleNew, PlatformMethods.WindowStyles.WS_CAPTIONANDSYSTEMMENU);
 
 						var rootManager = Window?.Handler?.MauiContext?.GetNavigationRootManager();
-						if (rootManager != null)
+						if (rootManager is not null)
 						{
 							rootManager?.SetTitleBarVisibility(hasTitleBar);
 						}
@@ -189,7 +195,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Default the Window Icon to the icon stored in the .exe, if any.
 		/// 
-		/// The Icon can be overriden by callers by calling SetIcon themselves.
+		/// The Icon can be overridden by callers by calling SetIcon themselves.
 		/// </summary>
 		void SetIcon()
 		{
@@ -210,12 +216,12 @@ namespace Microsoft.Maui
 			}
 		}
 
-		private void _viewSettings_ColorValuesChanged(ViewManagement.UISettings sender, object args)
+		void _viewSettings_ColorValuesChanged(ViewManagement.UISettings sender, object args)
 		{
 			DispatcherQueue.TryEnqueue(SetTileBarButtonColors);
 		}
 
-		private void SetTileBarButtonColors()
+		void SetTileBarButtonColors()
 		{
 			if (AppWindowTitleBar.IsCustomizationSupported())
 			{
