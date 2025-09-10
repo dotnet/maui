@@ -99,16 +99,16 @@ namespace Microsoft.Maui.Controls.Platform
 				const int maxPath = 260;
 				int length = maxPath;
 				var userAgentBuffer = new StringBuilder(length);
-				int hr = ObtainUserAgentString(0, userAgentBuffer, ref length);
+				int result = ObtainUserAgentString(0, userAgentBuffer, ref length);
 
 				// Handle buffer overflow case - ObtainUserAgentString can return a longer string if needed
-				if (hr == unchecked((int)0x80070008)) // E_OUTOFMEMORY
+				if (result == unchecked((int)0x80070008)) // E_OUTOFMEMORY
 				{
 					userAgentBuffer = new StringBuilder(length);
-					hr = ObtainUserAgentString(0, userAgentBuffer, ref length);
+					result = ObtainUserAgentString(0, userAgentBuffer, ref length);
 				}
 
-				if (hr >= 0) // SUCCEEDED(hr)
+				if (result >= 0) // SUCCEEDED(result)
 				{
 					return userAgentBuffer.ToString();
 				}
