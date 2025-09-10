@@ -10,6 +10,7 @@
     <Nullable>enable</Nullable>
     <MauiEnablePlatformUsings>true</MauiEnablePlatformUsings>
     <NoWarn>$(NoWarn);XC0022</NoWarn>
+    <ValidateXcodeVersion>false</ValidateXcodeVersion>
 
     <!-- Display name -->
     <ApplicationTitle>.NET MAUI Embedding</ApplicationTitle>
