@@ -88,13 +88,13 @@ public static class DatePickerExtensions
 
 			if (format.Equals("D", StringComparison.Ordinal) == true)
 			{
-				dateFormatter.DateStyle = NSDateFormatterStyle.Long;
+				dateFormatter.DateFormat = "EEEE, dd MMMM yyyy";
 				var strDate = dateFormatter.StringFor(picker.Date);
 				platformDatePicker.Text = strDate;
 			}
 			else
 			{
-				dateFormatter.DateStyle = NSDateFormatterStyle.Short;
+				dateFormatter.DateFormat = "dd/MM/yyyy";
 				var strDate = dateFormatter.StringFor(picker.Date);
 				platformDatePicker.Text = strDate;
 			}
