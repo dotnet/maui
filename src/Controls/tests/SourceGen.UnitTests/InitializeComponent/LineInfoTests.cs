@@ -29,7 +29,7 @@ public class LineInfoTests : SourceGenXamlInitializeComponentTestBase
 
         var (result, _) = RunGenerator(xaml, string.Empty);
 
-        var generatedCode = result.GeneratedTrees.Single(tree => tree.FilePath.EndsWith("_Test.xaml.xsg.cs")).ToString();
+        var generatedCode = result.GeneratedTrees.Single(tree => Path.GetFileName(tree.FilePath) == "Test.xaml.xsg.cs").ToString();
         var expectedFilePath = Path.Combine(Environment.CurrentDirectory, "Test.xaml");
         Assert.IsTrue(generatedCode.Contains(@$"#line 9 ""{expectedFilePath}""", StringComparison.Ordinal));
     }
