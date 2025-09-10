@@ -94,6 +94,7 @@ public static class SourceGeneratorDriver
 				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Private.CoreLib.dll")),
 				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Runtime.dll")),
 				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.ObjectModel.dll")),
+				MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),						//System.Private.Uri
 				MetadataReference.CreateFromFile(typeof(Color).Assembly.Location),						//Graphics
 				MetadataReference.CreateFromFile(typeof(Button).Assembly.Location),						//Controls
 				MetadataReference.CreateFromFile(typeof(BindingExtension).Assembly.Location),			//Xaml
