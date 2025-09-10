@@ -4,7 +4,6 @@ namespace Maui.Controls.Sample.Issues;
 public class Issue31551 : ContentPage
 {
 	CollectionView _collectionView;
-	Label descriptionLabel;
 	public List<Issue31551AnimalGroup> Animals { get; set; } = new List<Issue31551AnimalGroup>();
 	public Issue31551()
 	{
@@ -17,14 +16,9 @@ public class Issue31551 : ContentPage
 		};
 		scrollButton.Clicked += ScrollButton_Clicked;
 
-		descriptionLabel = new Label
-		{
-			AutomationId = "Issue31551StatusLabel",
-			Text = "Status"
-		};
-
 		_collectionView = new CollectionView
 		{
+			AutomationId = "Issue31551CollectionView",
 			IsGrouped = true,
 			ItemsSource = Animals,
 			GroupHeaderTemplate = new DataTemplate(() =>
@@ -59,14 +53,12 @@ public class Issue31551 : ContentPage
 			RowDefinitions =
 			{
 				new RowDefinition { Height = GridLength.Auto },
-				new RowDefinition { Height = GridLength.Auto },
 				new RowDefinition { Height = GridLength.Star },
 			}
 		};
 
 		grid.Add(scrollButton, 0, 0);
-		grid.Add(descriptionLabel, 0, 1);
-		grid.Add(_collectionView, 0, 2);
+		grid.Add(_collectionView, 0, 1);
 
 		Content = grid;
 	}
@@ -100,15 +92,7 @@ public class Issue31551 : ContentPage
 
 	private void ScrollButton_Clicked(object sender, EventArgs e)
 	{
-		try
-		{
-			_collectionView.ScrollTo(1, -3, ScrollToPosition.Start, true);
-			descriptionLabel.Text = "Success";
-		}
-		catch
-		{
-			descriptionLabel.Text = "Failure";
-		}
+		_collectionView.ScrollTo(1, -3, ScrollToPosition.Start, true);
 	}
 }
 

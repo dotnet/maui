@@ -18,8 +18,7 @@ public class Issue31551 : _IssuesUITest
 	{
 		App.WaitForElement("Issue31551ScrollBtn");
 		App.Tap("Issue31551ScrollBtn");
-		
-		var resultItem = App.WaitForElement("Issue31551StatusLabel").GetText();
-		Assert.That(resultItem, Is.EqualTo("Success"));
+
+		App.WaitForElement("Issue31551CollectionView");
 	}
 }
