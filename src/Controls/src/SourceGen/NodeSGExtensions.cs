@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 using static LocationHelpers;
 static class NodeSGExtensions
 {
-	public delegate string ConverterDelegate(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null);
+	public delegate string ConverterDelegate(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null);
 
 	public delegate bool ProvideValueDelegate(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value);
 
@@ -183,7 +183,7 @@ static class NodeSGExtensions
 		return false;
 	}
 
-	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
 		if (typeandconverter == null)
@@ -191,7 +191,7 @@ static class NodeSGExtensions
 		return valueNode.ConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, context, parentVar);
 	}
 
-	public static string ConvertTo(this ValueNode valueNode, IPropertySymbol property, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertTo(this ValueNode valueNode, IPropertySymbol property, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		List<AttributeData> attributes = [
 			.. property.GetAttributes().ToList(),
@@ -202,7 +202,7 @@ static class NodeSGExtensions
 		return valueNode.ConvertTo(property.Type, typeConverter, context, parentVar);
 	}
 
-	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		List<AttributeData> attributes = [.. toType.GetAttributes()];
 
@@ -211,7 +211,7 @@ static class NodeSGExtensions
 		return valueNode.ConvertTo(toType, typeConverter, context, parentVar);
 	}
 
-	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var valueString = valueNode.Value as string ?? string.Empty;
 
@@ -397,7 +397,7 @@ static class NodeSGExtensions
 		return SymbolDisplay.FormatLiteral(valueString, true);
 	}
 
-	public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var valueString = valueNode.Value as string ?? string.Empty;
 		//TODO check if there's a SourceGen version of the converter
