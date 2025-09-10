@@ -95,7 +95,11 @@ namespace Microsoft.Maui.Controls
 #if WINDOWS
 			if (client.DefaultRequestHeaders.UserAgent.Count == 0)
 			{
-				client.DefaultRequestHeaders.UserAgent.ParseAdd("MauiApp/1.1");
+				var userAgent = Platform.Extensions.GetDefaultWindowsUserAgent();
+				if (!string.IsNullOrEmpty(userAgent))
+				{
+					client.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
+				}
 			}
 #endif
 			var response = await client.GetAsync(uri, cancellationToken).ConfigureAwait(false);
