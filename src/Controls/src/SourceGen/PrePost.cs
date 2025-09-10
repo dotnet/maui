@@ -19,7 +19,10 @@ class PrePost : IDisposable
 	{
 		// Emit #line with an absolute path since relative paths have undefined behavior (https://github.com/dotnet/roslyn/issues/71202#issuecomment-1874649780)
 		static void LineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, ProjectItem? projectItem)
-			=> codeWriter.WriteLineNoTabs($"#line {(iXmlLineInfo.LineNumber != -1 ? iXmlLineInfo.LineNumber : 1)} \"{projectItem?.AbsolutePath}\"");
+		{
+			var lineNumber = iXmlLineInfo.LineNumber != -1 ? iXmlLineInfo.LineNumber : 1;
+			codeWriter.WriteLineNoTabs($"#line {lineNumber} \"{projectItem?.TargetPath}\"");
+		}
 
 		static void LineDefault(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo)
 			=> codeWriter.WriteLineNoTabs("#line default");

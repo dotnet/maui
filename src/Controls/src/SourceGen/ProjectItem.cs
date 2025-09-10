@@ -64,9 +64,6 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 	public string? RelativePath
 		=> Options.GetValueOrNull("build_metadata.additionalfiles.RelativePath");
 
-	public string? AbsolutePath
-		=> _additionalText.Path;
-
 	public string? TargetFramework
 		=> Options.GetValueOrNull("build_property.targetFramework");
 
