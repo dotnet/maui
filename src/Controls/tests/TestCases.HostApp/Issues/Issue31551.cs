@@ -92,7 +92,7 @@ public class Issue31551 : ContentPage
 
 	private void ScrollButton_Clicked(object sender, EventArgs e)
 	{
-		_collectionView.ScrollTo(1, -3, ScrollToPosition.Start, true);
+		_collectionView.ScrollTo(1, 10, ScrollToPosition.Start, true);
 	}
 }
 
