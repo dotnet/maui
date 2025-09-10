@@ -76,7 +76,7 @@
                                 Background="Transparent"
                                 Command="{Binding DeleteCategoryCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManageMetaPageModel}}, x:DataType=pageModels:ManageMetaPageModel}" CommandParameter="{Binding .}"
                                 Grid.Column="3"
-                                SemanticProperties.Description="Delete Category" />
+                                SemanticProperties.Description="{Binding Title, StringFormat='Delete {0} Category'}" />
                         </Grid>
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
@@ -85,7 +85,7 @@
             <Grid ColumnSpacing="{StaticResource LayoutSpacing}" ColumnDefinitions="*,Auto" Margin="0,10">
                 <Button Text="Save" Command="{Binding SaveCategoriesCommand}"
                     SemanticProperties.Description="Save Categories"
-                    HeightRequest="{OnIdiom 44,Desktop=60}" Grid.Column="0" />
+                    MinimumHeightRequest="{OnIdiom 44,Desktop=60}" Grid.Column="0" />
 
                 <Button ImageSource="{StaticResource IconAdd}"
                     Command="{Binding AddCategoryCommand}" Grid.Column="1"
@@ -116,7 +116,7 @@
         
                             <Button 
                                 ImageSource="{StaticResource IconDelete}"
-                                SemanticProperties.Description="Delete Tag"
+                                SemanticProperties.Description="{Binding Title, StringFormat='Delete {0} Tag'}"
                                 Background="Transparent"
                                 Command="{Binding DeleteTagCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManageMetaPageModel}}, x:DataType=pageModels:ManageMetaPageModel}" CommandParameter="{Binding .}"
                                 Grid.Column="3"/>
@@ -128,7 +128,7 @@
             <Grid ColumnSpacing="{StaticResource LayoutSpacing}" ColumnDefinitions="*,Auto" Margin="0,10">
                 <Button Text="Save" Command="{Binding SaveTagsCommand}"
                     SemanticProperties.Description="Save Tags"
-                    HeightRequest="{OnIdiom 44,Desktop=60}" Grid.Column="0" />
+                    MinimumHeightRequest="{OnIdiom 44,Desktop=60}" Grid.Column="0" />
 
                 <Button ImageSource="{StaticResource IconAdd}"
                     Command="{Binding AddTagCommand}" Grid.Column="1"
