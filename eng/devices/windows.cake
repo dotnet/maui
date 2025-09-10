@@ -289,7 +289,7 @@ Task("testOnly")
 			Information($"Waiting 10 seconds for process to finish...");
 			System.Threading.Thread.Sleep(10000);
 
-			var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile).Length;
+			var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile).Length - 1;
 
 			for (int i = 0; i <= testCategoriesToRun; i++)
 			{
