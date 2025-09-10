@@ -42,6 +42,7 @@
 		public const string SearchBar = "SearchBar";
 		public const string Shape = "Shape";
 		public const string Shell = "Shell";
+		public const string Slider = "Slider";
 		public const string SwipeView = "SwipeView";
 		public const string TabbedPage = "TabbedPage";
 		public const string TextInput = "TextInput";

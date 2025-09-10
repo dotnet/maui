@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Issues.Issue20098"
+    xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls">
+    <VerticalStackLayout>
+        <Label AutomationId="label" Text="{Binding Value, Source={x:Reference slider}}"/>
+        <Slider AutomationId="slider" ios:Slider.UpdateOnTap="True" x:Name="slider" Minimum="0" Maximum="100" Value="0"/>
+    </VerticalStackLayout>
+</ContentPage>
