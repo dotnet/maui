@@ -217,6 +217,7 @@ override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnMeasure(int widthMeasu
 *REMOVED*override Microsoft.Maui.Platform.MauiTextView.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiTimePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
 override Microsoft.Maui.Platform.MauiWebChromeClient.OnHideCustomView() -> void
+static Microsoft.Maui.Platform.TimePickerExtensions.UpdateTextColor(this Microsoft.Maui.Platform.MauiTimePicker! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 ~override Microsoft.Maui.Platform.MauiWebChromeClient.OnShowCustomView(Android.Views.View view, Android.Webkit.WebChromeClient.ICustomViewCallback callback) -> void
 override Microsoft.Maui.SafeAreaEdges.Equals(object? obj) -> bool
 override Microsoft.Maui.SafeAreaEdges.GetHashCode() -> int
