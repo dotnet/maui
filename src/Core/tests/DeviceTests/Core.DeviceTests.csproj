@@ -14,6 +14,7 @@
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-android'))">android-arm64;android-x86;android-x64</RuntimeIdentifiers>
     <IsTestProject>true</IsTestProject>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
+    <ValidateXcodeVersion>false</ValidateXcodeVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(CI)' == 'true' or '$(TF_BUILD)' == 'true' ">
