@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 			IValueConverterProvider = defaultValueConverterProvider;
 
-			if (node is IElementNode elementNode)
+			if (node is ElementNode elementNode)
 				Add(typeof(IXamlDataTypeProvider), new XamlDataTypeProvider(elementNode, context));
 		}
 
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 				var context = Context;
 				while (n.Parent != null && context != null)
 				{
-					if (n.Parent is IElementNode)
+					if (n.Parent is ElementNode)
 					{
 						if (context.Values.TryGetValue(n.Parent, out var obj))
 							yield return obj;
@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			while (n != null)
 			{
 				object value;
-				if ((value = (n as IElementNode)?.NameScopeRef.NameScope?.FindByName(name)) != null)
+				if ((value = (n as ElementNode)?.NameScopeRef.NameScope?.FindByName(name)) != null)
 					return value;
 				n = n.Parent;
 			}
@@ -328,22 +328,22 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 #if !NETSTANDARD
 		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #endif
-		internal XamlDataTypeProvider(IElementNode node, HydrationContext context)
+		internal XamlDataTypeProvider(ElementNode node, HydrationContext context)
 		{
 			Context = context;
 
 
-			static IElementNode GetParent(IElementNode node)
+			static ElementNode GetParent(ElementNode node)
 			{
 				return node switch
 				{
-					{ Parent: ListNode { Parent: IElementNode parentNode } } => parentNode,
-					{ Parent: IElementNode parentNode } => parentNode,
+					{ Parent: ListNode { Parent: ElementNode parentNode } } => parentNode,
+					{ Parent: ElementNode parentNode } => parentNode,
 					_ => null,
 				};
 			}
 
-			static bool IsBindingContextBinding(IElementNode node)
+			static bool IsBindingContextBinding(ElementNode node)
 			{
 				if (node.TryGetPropertyName(node.Parent, out XmlName name)
 					&& name.NamespaceURI == ""
@@ -352,10 +352,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 				return false;
 			}
 
-			static bool DoesNotInheritDataType(IElementNode node, HydrationContext context)
+			static bool DoesNotInheritDataType(ElementNode node, HydrationContext context)
 			{
 				if (node.TryGetPropertyName(node.Parent, out XmlName name)
-					&& node.Parent is IElementNode parent
+					&& node.Parent is ElementNode parent
 					&& XamlParser.GetElementType(parent.XmlType,
 												 new XmlLineInfo(((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition),
 												 context.RootElement.GetType().Assembly, true, out var xpe) is Type parentType
@@ -368,14 +368,14 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			}
 
 			INode dataTypeNode = null;
-			IElementNode n = node as IElementNode;
+			ElementNode n = node as ElementNode;
 
 			// Special handling for BindingContext={Binding ...}
 			// The order of checks is:
 			// - x:DataType on the binding itself
 			// - SKIP looking for x:DataType on the parent
 			// - continue looking for x:DataType on the parent's parent...
-			IElementNode skipNode = null;
+			ElementNode skipNode = null;
 			if (IsBindingContextBinding(node))
 			{
 				skipNode = GetParent(node);

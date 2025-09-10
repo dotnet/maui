@@ -20,7 +20,7 @@ static class NodeSGExtensions
 {
 	public delegate string ConverterDelegate(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null);
 
-	public delegate bool ProvideValueDelegate(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value);
+	public delegate bool ProvideValueDelegate(ElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value);
 
 	// Lazy converter factory function
 	static ConverterDelegate CreateLazyConverter<T>() where T : ISGTypeConverter, new() =>
@@ -108,7 +108,7 @@ static class NodeSGExtensions
 	public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
 	{
 		name = default;
-		if (parentNode is not IElementNode parentElement)
+		if (parentNode is not ElementNode parentElement)
 			return false;
 		foreach (var kvp in parentElement.Properties)
 		{
@@ -127,7 +127,7 @@ static class NodeSGExtensions
 		return parentList.CollectionItems.Contains(node);
 	}
 
-	public static bool IsResourceDictionary(this IElementNode node, SourceGenContext context)
+	public static bool IsResourceDictionary(this ElementNode node, SourceGenContext context)
 		=> context.Variables.TryGetValue(node, out var variable) && variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!, context);
 
 	public static bool CanConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context)
@@ -593,7 +593,7 @@ static class NodeSGExtensions
 		if (parts.Length == 1)
 		{
 			ITypeSymbol? typeSymbol = null;
-			var parent = node.Parent?.Parent as IElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as IElementNode;
+			var parent = node.Parent?.Parent as ElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as ElementNode;
 			if ((node.Parent as ElementNode)!.XmlType!.IsOfAnyType( "Setter", "PropertyCondition"))
 			{
 				if (parent!.XmlType.IsOfAnyType("Trigger", "DataTrigger", "MultiTrigger", "Style"))
@@ -620,26 +620,26 @@ static class NodeSGExtensions
 		}
 	}
 
-	static ITypeSymbol? FindTypeSymbolForVisualState(IElementNode parent, SourceGenContext context, IXmlLineInfo lineInfo)
+	static ITypeSymbol? FindTypeSymbolForVisualState(ElementNode parent, SourceGenContext context, IXmlLineInfo lineInfo)
 	{
 		//1. parent is VisualState, don't check that
 
 		//2. check that the VS is in a VSG
-		if (!(parent.Parent is IElementNode target) || !target.XmlType.IsOfAnyType("VisualStateGroup"))
+		if (!(parent.Parent is ElementNode target) || !target.XmlType.IsOfAnyType("VisualStateGroup"))
 			throw new Exception($"Expected VisualStateGroup but found {parent.Parent}");
 
 		//3. if the VSG is in a VSGL, skip that as it could be implicit
 		if (   target.Parent is ListNode
-			|| (target.Parent as IElementNode)!.XmlType!.IsOfAnyType( "VisualStateGroupList"))
-			target = (IElementNode)target.Parent.Parent;
+			|| (target.Parent as ElementNode)!.XmlType!.IsOfAnyType( "VisualStateGroupList"))
+			target = (ElementNode)target.Parent.Parent;
 		else
-			target = (IElementNode)target.Parent;
+			target = (ElementNode)target.Parent;
 
 		XmlType? typeName = null;
 		//4. target is now a Setter in a Style, or a VE
 		if (target.XmlType.IsOfAnyType("Setter"))
 		{
-			var targetType = ((target?.Parent as IElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+			var targetType = ((target?.Parent as ElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
 			typeName = TypeArgumentsParser.ParseSingle(targetType, parent.NamespaceResolver, lineInfo);
 		}
 		else
@@ -649,5 +649,5 @@ static class NodeSGExtensions
 	}
 
 	public static bool RepresentsType(this INode node, string namespaceUri, string name)
-		=> node is IElementNode elementNode && elementNode.XmlType.RepresentsType(namespaceUri, name);
+		=> node is ElementNode elementNode && elementNode.XmlType.RepresentsType(namespaceUri, name);
 }
