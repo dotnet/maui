@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Platform
 				int result = ObtainUserAgentString(0, userAgentBuffer, ref length);
 
 				// Handle buffer overflow case - ObtainUserAgentString can return a longer string if needed
-				if (result == unchecked((int)0x80070008)) // E_OUTOFMEMORY
+				if (result == unchecked((int)0x8007000E)) // E_OUTOFMEMORY
 				{
 					userAgentBuffer = new StringBuilder(length);
 					result = ObtainUserAgentString(0, userAgentBuffer, ref length);
