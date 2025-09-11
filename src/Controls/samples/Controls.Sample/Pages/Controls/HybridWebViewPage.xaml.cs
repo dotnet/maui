@@ -74,6 +74,13 @@ namespace Maui.Controls.Sample.Pages
 			Dispatcher.Dispatch(() => statusText.Text += Environment.NewLine + e.Message);
 		}
 
+		private void TestSourceButton_Clicked(object sender, EventArgs e)
+		{
+			// Test the new Source property by navigating to a hash-based route
+			hwv.Source = "#/test-route";
+			Dispatcher.Dispatch(() => statusText.Text += Environment.NewLine + "Source set to: #/test-route");
+		}
+
 		public class ComputationResult
 		{
 			public double result { get; set; }
