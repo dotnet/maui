@@ -11,16 +11,17 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void UpdateText(this TextView textView, Label label)
 		{
+			string text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
 			switch (label.TextType)
 			{
 				case TextType.Text:
 					if (label.FormattedText != null)
 						textView.TextFormatted = label.ToSpannableString();
 					else
-						textView.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+						textView.Text = text;
 					break;
 				case TextType.Html:
-					textView.UpdateTextHtml(label);
+					textView.UpdateTextHtml(text);
 					break;
 			}
 		}
