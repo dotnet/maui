@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Handlers
 
 				var invokeResultRaw = await InvokeDotNetMethodAsync(invokeTargetType, invokeTarget, invokeData);
 				var invokeResult = CreateInvokeResult(invokeResultRaw);
-				var json = JsonSerializer.Serialize(invokeResult, HybridWebViewHandlerJsonContext.Default.DotNetInvokeResult);
+				var json = JsonSerializer.Serialize(invokeResult);
 				var contentBytes = Encoding.UTF8.GetBytes(json);
 
 				return contentBytes;
