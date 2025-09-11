@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 {
 	using FormsElement = Maui.Controls.Application;
 
-	/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat.Application']/Docs/*" />
+	/// <summary>AppCompat application instance on Android.</summary>
 	public static class Application
 	{
 		/// <summary>Bindable property for <see cref="SendDisappearingEventOnPause"/>.</summary>
@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 			return (bool)element.GetValue(SendDisappearingEventOnPauseProperty);
 		}
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='SetSendDisappearingEventOnPause']/Docs/*" />
+		/// <summary>Sets a Boolean value that controls whether the disappearing event is sent when the application is paused.</summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <param name="value">The new property value to assign.</param>
 		public static void SetSendDisappearingEventOnPause(BindableObject element, bool value)
 		{
 			element.SetValue(SendDisappearingEventOnPauseProperty, value);
@@ -27,7 +29,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 			return GetSendDisappearingEventOnPause(config.Element);
 		}
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='SendDisappearingEventOnPause']/Docs/*" />
+		/// <summary>Sets a Boolean value that controls whether the disappearing event is sent when the application is paused.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value">The new property value to assign.</param>
 		public static IPlatformElementConfiguration<Android, FormsElement> SendDisappearingEventOnPause(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
 			SetSendDisappearingEventOnPause(config.Element, value);
@@ -43,7 +47,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 			return (bool)element.GetValue(SendAppearingEventOnResumeProperty);
 		}
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='SetSendAppearingEventOnResume']/Docs/*" />
+		/// <summary>Sets a Boolean value that controls whether the appearing event is sent when the application resumes.</summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <param name="value">The new property value to assign.</param>
 		public static void SetSendAppearingEventOnResume(BindableObject element, bool value)
 		{
 			element.SetValue(SendAppearingEventOnResumeProperty, value);
@@ -55,7 +61,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 			return GetSendAppearingEventOnResume(config.Element);
 		}
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='SendAppearingEventOnResume']/Docs/*" />
+		/// <summary>Sets a value that controls whether the appearing event is sent when the application resumes.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value">The new property value to assign.</param>
 		public static IPlatformElementConfiguration<Android, FormsElement> SendAppearingEventOnResume(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
 			SetSendAppearingEventOnResume(config.Element, value);
@@ -71,7 +79,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 			return (bool)element.GetValue(ShouldPreserveKeyboardOnResumeProperty);
 		}
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='SetShouldPreserveKeyboardOnResume']/Docs/*" />
+		/// <summary>Sets a Boolean value that controls whether the keyboard state should be preserved when the application resumes.</summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <param name="value">The new property value to assign.</param>
 		public static void SetShouldPreserveKeyboardOnResume(BindableObject element, bool value)
 		{
 			element.SetValue(ShouldPreserveKeyboardOnResumeProperty, value);
@@ -83,7 +93,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 			return GetShouldPreserveKeyboardOnResume(config.Element);
 		}
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='ShouldPreserveKeyboardOnResume']/Docs/*" />
+		/// <summary>Sets a Boolean value that controls whether the keyboard state should be preserved when the application resumes.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value">The new property value to assign.</param>
 		public static IPlatformElementConfiguration<Android, FormsElement> ShouldPreserveKeyboardOnResume(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
 			SetShouldPreserveKeyboardOnResume(config.Element, value);

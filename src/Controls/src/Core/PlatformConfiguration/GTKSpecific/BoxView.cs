@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 {
 	using FormsElement = Maui.Controls.BoxView;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific.BoxView']/Docs/*" />
+	/// <summary>Controls the presence of the corner radius of box views on the GTK platform.</summary>
 	public static class BoxView
 	{
 		/// <summary>Bindable property for attached property <c>HasCornerRadius</c>.</summary>
