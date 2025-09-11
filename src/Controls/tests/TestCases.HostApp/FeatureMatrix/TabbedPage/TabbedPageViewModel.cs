@@ -6,7 +6,7 @@ namespace Maui.Controls.Sample;
 
 public class TabbedPageViewModel : INotifyPropertyChanged
 {
-	private Brush _barBackground = new SolidColorBrush(Colors.Transparent);
+	private Brush _barBackground = new SolidColorBrush(Colors.White);
 	private Color _barTextColor = Colors.Red;
 	private Color _selectedTabColor = Colors.Orange;
 	private Color _unselectedTabColor = Colors.LightGray;
