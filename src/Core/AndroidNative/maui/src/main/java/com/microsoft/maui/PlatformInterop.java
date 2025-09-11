@@ -483,57 +483,6 @@ public class PlatformInterop {
     }
 
     /**
-     * Draws the background and the border (if any).
-     * @param drawable
-     * @param canvas
-     * @param width
-     * @param height
-     * @param clipPath
-     * @param borderPaint
-     */
-    public static void drawMauiDrawablePath(PaintDrawable drawable, Canvas canvas, int width, int height, @NonNull Path clipPath, Paint borderPaint)
-    {
-        Paint paint = drawable.getPaint();
-        if (paint != null) {
-            canvas.drawPath(clipPath, paint);
-        }
-        if (borderPaint != null) {
-            canvas.drawPath(clipPath, borderPaint);
-        }
-    }
-
-    /**
-     * Gets the value of android.R.attr.windowBackground from the given Context
-     * @param context
-     * @return the color or -1 if not found
-     */
-    public static int getWindowBackgroundColor(Context context)
-    {
-        TypedValue value = new TypedValue();
-        if (!context.getTheme().resolveAttribute(android.R.attr.windowBackground, value, true) && isColorType(value)) {
-            return value.data;
-        } else {
-            return -1;
-        }
-    }
-
-    /**
-     * Needed because TypedValue.isColorType() is only API Q+
-     * https://github.com/aosp-mirror/platform_frameworks_base/blob/1d896eeeb8744a1498128d62c09a3aa0a2a29a16/core/java/android/util/TypedValue.java#L266-L268
-     * @param value
-     * @return true if the TypedValue is a Color
-     */
-    private static boolean isColorType(TypedValue value)
-    {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            return value.isColorType();
-        } else {
-            // Implementation from AOSP
-            return (value.type >= TypedValue.TYPE_FIRST_COLOR_INT && value.type <= TypedValue.TYPE_LAST_COLOR_INT);
-        }
-    }
-
-    /**
      * Sets the maxLength of an EditText
      * @param editText
      * @param maxLength
