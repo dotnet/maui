@@ -42,7 +42,20 @@ namespace Maui.Controls.Sample.Issues
 							refreshView.Content = CreateContent();
 						})
 					}, 0, 2 },
-				{ refreshView, 0, 3 }
+				{
+					new Button
+					{
+						Text = "Scroll Up",
+						AutomationId = "ScrollToUpButton",
+						Command = new Command(() =>
+						{
+							if (refreshView.Content is CollectionView collectionView)
+							{
+								collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
+							}
+						})
+					}, 0, 3 },
+				{ refreshView, 0, 4 }
 			};
 
 			refreshView.Command = new Command(() =>
@@ -56,7 +69,8 @@ namespace Maui.Controls.Sample.Issues
 			grid.RowDefinitions[0].Height = GridLength.Auto;
 			grid.RowDefinitions[1].Height = GridLength.Auto;
 			grid.RowDefinitions[2].Height = GridLength.Auto;
-			grid.RowDefinitions[3].Height = GridLength.Star;
+			grid.RowDefinitions[3].Height = GridLength.Auto;
+			grid.RowDefinitions[4].Height = GridLength.Star;
 		}
 
 		View CreateContent()
