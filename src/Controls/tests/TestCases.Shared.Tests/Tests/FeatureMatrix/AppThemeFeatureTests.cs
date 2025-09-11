@@ -301,7 +301,7 @@ public class AppThemeFeatureTests : UITest
 		App.WaitForElement("Entry");
 		App.Tap("Entry");
 		VerifyScreenshotWithPlatformCropping();
-#if !IOS
+#if ANDROID
 		if (App.IsKeyboardShown())
 		{
 			App.DismissKeyboard();
@@ -317,7 +317,7 @@ public class AppThemeFeatureTests : UITest
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("Entry");
 		VerifyScreenshotWithPlatformCropping();
-#if !IOS
+#if ANDROID
 		if (App.IsKeyboardShown())
 		{
 			App.DismissKeyboard();
@@ -334,7 +334,7 @@ public class AppThemeFeatureTests : UITest
 		App.Tap("LightThemeButton");
 		App.WaitForElement("Entry");
 		App.ClearText("Entry");
-#if !IOS
+#if ANDROID
 		if (App.IsKeyboardShown())
 		{
 			App.DismissKeyboard();
@@ -361,13 +361,13 @@ public class AppThemeFeatureTests : UITest
 		App.Tap("LightThemeButton");
 		App.WaitForElement("Editor");
 		App.ClearText("Editor");
-#if !IOS
+#if ANDROID
 		if (App.IsKeyboardShown())
 		{
 			App.DismissKeyboard();
 		}
-		VerifyScreenshotWithPlatformCropping();
 #endif
+		VerifyScreenshotWithPlatformCropping();
 	}
 
 	[Test, Order(26)]
@@ -388,7 +388,7 @@ public class AppThemeFeatureTests : UITest
 		App.Tap("LightThemeButton");
 		App.WaitForElement("SearchBar");
 		App.ClearText("SearchBar");
-#if !IOS
+#if ANDROID
 		if (App.IsKeyboardShown())
 		{
 			App.DismissKeyboard();
