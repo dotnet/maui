@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.TabbedPageOptionsPage"
+             x:DataType="local:TabbedPageViewModel"
+             Title="TabbedPage Options">
+
+        <Grid ColumnSpacing="0"
+              RowSpacing="20"
+              RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+              ColumnDefinitions="0.5*,0.5*"
+              HorizontalOptions="Center"
+              VerticalOptions="Center">
+
+                <!-- BarBackground Brush  -->
+                <Label Grid.Row="0"
+                       Grid.Column="0"
+                       Text="BarBackground Brush: "
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <StackLayout Grid.Row="0"
+                             Grid.Column="2"
+                             Orientation="Horizontal"
+                             Spacing="2">
+                        <Button Text="Gradient"
+                                Clicked="BarBackgroundBrushButton_Clicked"
+                                BackgroundColor="Violet"
+                                TextColor="White"
+                                AutomationId="GradientBarBackgroundButton"/>
+                        <Button Text="Solid"
+                                Clicked="BarBackgroundBrushButton_Clicked"
+                                BackgroundColor="Blue"
+                                TextColor="White"
+                                AutomationId="SolidBarBackgroundButton"/>
+                </StackLayout>
+
+                <!-- BarText Color -->
+                <Label Grid.Row="1"
+                       Grid.Column="0"
+                       Text="BarText Color: "
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <StackLayout Grid.Row="1"
+                             Grid.Column="1"
+                             Orientation="Horizontal"
+                             Spacing="2">
+                        <Button Text="Black"
+                                Clicked="BarTextColorButton_Clicked"
+                                BackgroundColor="Black"
+                                TextColor="White"
+                                AutomationId="BlackBarTextButton"/>
+                        <Button Text="Green"
+                                Clicked="BarTextColorButton_Clicked"
+                                BackgroundColor="Green"
+                                TextColor="White"
+                                AutomationId="GreenBarTextButton"/>
+                </StackLayout>
+
+                <!-- SelectedTab Color -->
+                <Label Grid.Row="2"
+                       Grid.Column="0"
+                       Text="SelectedTab Color: "
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <StackLayout Grid.Row="2"
+                             Grid.Column="1"
+                             Orientation="Horizontal"
+                             Spacing="2">
+                        <Button Text="Orange"
+                                Clicked="SelectedTabColorButton_Clicked"
+                                BackgroundColor="Orange"
+                                TextColor="Black"
+                                AutomationId="OrangeSelectedButton"/>
+                        <Button Text="Purple"
+                                Clicked="SelectedTabColorButton_Clicked"
+                                BackgroundColor="Purple"
+                                TextColor="White"
+                                AutomationId="PurpleSelectedButton"/>
+                </StackLayout>
+
+                <!-- UnselectedTab Color -->
+                <Label Grid.Row="3"
+                       Grid.Column="0"
+                       Text="UnselectedTab Color: "
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <StackLayout Grid.Row="3"
+                             Grid.Column="1"
+                             Orientation="Horizontal"
+                             Spacing="2">
+                        <Button Text="LightGray"
+                                Clicked="UnselectedTabColorButton_Clicked"
+                                BackgroundColor="LightGray"
+                                TextColor="Black"
+                                AutomationId="LightGrayUnselectedButton"/>
+                        <Button Text="DarkGray"
+                                Clicked="UnselectedTabColorButton_Clicked"
+                                BackgroundColor="DarkGray"
+                                TextColor="White"
+                                AutomationId="DarkGrayUnselectedButton"/>
+                </StackLayout>
+
+                <!-- Apply Button -->
+                <Label Grid.Row="4"
+                       Grid.Column="0"
+                       Text="Apply Button: "
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <Button Grid.Row="4"
+                        Grid.Column="1"
+                        AutomationId="ApplyButton"
+                        BackgroundColor="Blue"
+                        Clicked="ApplyButton_Clicked"
+                        HorizontalOptions="Start"
+                        Text="Apply Changes"
+                        TextColor="White"
+                        WidthRequest="150"/>
+
+                <!-- IsEnabled -->
+                <Label Grid.Row="5"
+                       Grid.Column="0"
+                       Text="IsEnabled: "
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <RadioButton Grid.Row="5"
+                             Grid.Column="1"
+                             Content="False"
+                             CheckedChanged="OnIsEnabledChanged"
+                             AutomationId="IsEnabledFalseRadio"/>
+
+                <!-- FlowDirection -->
+                <Label Grid.Row="6"
+                       Grid.Column="0"
+                       Text="FlowDirection: "
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <StackLayout Grid.Row="6"
+                             Grid.Column="1"
+                             Orientation="Horizontal">
+                        <RadioButton Content="LeftToRight"
+                                     CheckedChanged="OnFlowDirectionChanged"
+                                     AutomationId="LeftToRightFlowRadio"/>
+                        <RadioButton Content="RightToLeft"
+                                     CheckedChanged="OnFlowDirectionChanged"
+                                     AutomationId="RightToLeftFlowRadio"/>
+                </StackLayout>
+
+                <!-- ItemsSource -->
+                <Label Grid.Row="7"
+                       Grid.Column="0"
+                       Text="ItemsSource: "
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <StackLayout Grid.Row="7"
+                             Grid.Column="1"
+                             Orientation="Horizontal"
+                             Spacing="2">
+                        <Button Text="SourceOne"
+                                Clicked="ItemsSourceOne_Clicked"
+                                BackgroundColor="LightBlue"
+                                AutomationId="ItemsSourceOneButton"/>
+                        <Button Text="SourceTwo"
+                                Clicked="ItemsSourceTwo_Clicked"
+                                BackgroundColor="LightPink"
+                                AutomationId="ItemsSourceTwoButton"/>
+                </StackLayout>
+
+                <!-- ItemTemplate -->
+                <Label Grid.Row="8"
+                       Grid.Column="0"
+                       Text="ItemTemplate: "
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <StackLayout Grid.Row="8"
+                             Grid.Column="1"
+                             Orientation="Horizontal">
+                        <Button AutomationId="TemplateOneButton"
+                                Text="TemplateOne"
+                                BackgroundColor="Teal"
+                                TextColor="White"
+                                Clicked="OnTemplateOneClicked"/>
+                        <Button AutomationId="TemplateTwoButton"
+                                Text="TemplateTwo"
+                                BackgroundColor="Gold"
+                                TextColor="Black"
+                                Clicked="OnTemplateTwoClicked"/>
+                </StackLayout>
+
+                <!-- SelectedItem -->
+                <Label Grid.Row="9"
+                       Grid.Column="0"
+                       Text="SelectedItem: "
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <StackLayout Grid.Row="9"
+                             Grid.Column="1"
+                             Orientation="Horizontal"
+                             Spacing="2">
+                        <Entry x:Name="selectedItemEntry"
+                               AutomationId="SelectedItemEntry"
+                               Text="1"
+                               Keyboard="Numeric"
+                               WidthRequest="80"/>
+                        <Button Text="Select Tab"
+                                Clicked="SelectItemButton_Clicked"
+                                BackgroundColor="LightGreen"
+                                AutomationId="SelectItemButton"/>
+                </StackLayout>
+        </Grid>
+</ContentPage>
