@@ -48,6 +48,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new AlertsGalleryPage(), "Alerts Gallery"),
 			// Elements
 			new GalleryPageFactory(() => new ActivityIndicatorCoreGalleryPage(), "ActivityIndicator Gallery"),
+			new GalleryPageFactory(() => new BorderControlPage(), "Border Feature Matrix"),
 			new GalleryPageFactory(() => new BoxViewCoreGalleryPage(), "Box Gallery"),
 			new GalleryPageFactory(() => new ButtonControlPage(), "Button Feature Matrix"),
 			new GalleryPageFactory(() => new ButtonCoreGalleryPage(), "Button Gallery"),
