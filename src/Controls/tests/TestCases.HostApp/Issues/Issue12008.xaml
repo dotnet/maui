@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue12008">
+    <ContentPage.BindingContext>
+        <local:Issue12008ViewModel xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"/>
+    </ContentPage.BindingContext>
+
+    <Grid RowDefinitions="Auto,*">
+        <StackLayout Grid.Row="0"
+                     Padding="10">
+            <Label Text="Drag and Drop Test - Empty Groups"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   Margin="0,0,0,10"/>
+            <Label Text="Instructions: Try dragging items between groups, including into empty groups."
+                   FontSize="14"
+                   Margin="0,0,0,10"/>
+            <Button x:Name="btnCreateEmptyGroup"
+                    Text="Create Empty Group"
+                    Clicked="OnCreateEmptyGroupClicked"
+                    AutomationId="CreateEmptyGroupButton"/>
+            <Label x:Name="statusLabel"
+                   Text="Status: Ready"
+                   FontSize="12"
+                   AutomationId="StatusLabel"/>
+        </StackLayout>
+
+        <CollectionView Grid.Row="1"
+                        x:Name="collectionView"
+                        ItemsSource="{Binding GroupedItems}"
+                        IsGrouped="True"
+                        CanReorderItems="True"
+                        CanMixGroups="True"
+                        AutomationId="CollectionView">
+
+            <CollectionView.GroupHeaderTemplate>
+                <DataTemplate>
+                    <Grid BackgroundColor="LightBlue"
+                          Padding="10">
+                        <Label Text="{Binding GroupName}"
+                               FontAttributes="Bold"
+                               FontSize="16"
+                               AutomationId="{Binding GroupName, StringFormat='GroupHeader_{0}'}"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.GroupHeaderTemplate>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10"
+                          BackgroundColor="LightGray"
+                          Margin="2">
+                        <Label Text="{Binding Name}"
+                               FontSize="14"
+                               AutomationId="{Binding Name, StringFormat='Item_{0}'}"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+    </Grid>
+</ContentPage>
