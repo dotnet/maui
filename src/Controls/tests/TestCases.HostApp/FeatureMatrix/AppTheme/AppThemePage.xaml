@@ -80,7 +80,7 @@
                                         IsCursorVisible="False"
                                         IsSpellCheckEnabled="False"
                                         ClearButtonVisibility="WhileEditing"
-                                        Placeholder="Entry Placeholder"
+                                        Placeholder="Entry"
                                         Text="Entry Text"
                                         WidthRequest="100"/>
               </HorizontalStackLayout>
