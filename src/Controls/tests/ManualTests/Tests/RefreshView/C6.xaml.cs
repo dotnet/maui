@@ -14,5 +14,5 @@ public partial class C6 : ContentPage
 		InitializeComponent();
 
 		BindingContext = new MonkeysViewModel();
-    }
+	}
 }

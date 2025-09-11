@@ -20,18 +20,18 @@ public abstract class BaseModel
 	[System.Text.Json.Serialization.JsonPropertyName("deleted")]
 	public bool Deleted { get; set; }
 
-    public override bool Equals(object obj)
-    {
-        var castObj = obj as BaseModel;
+	public override bool Equals(object obj)
+	{
+		var castObj = obj as BaseModel;
 
-        if (castObj == null || string.IsNullOrEmpty(castObj.Id) || string.IsNullOrEmpty(Id))
-            return false;
+		if (castObj == null || string.IsNullOrEmpty(castObj.Id) || string.IsNullOrEmpty(Id))
+			return false;
 
-        return string.Equals(Id, castObj.Id, StringComparison.Ordinal);
-    }
+		return string.Equals(Id, castObj.Id, StringComparison.Ordinal);
+	}
 
-    public override int GetHashCode()
-    {
-        return Id.GetHashCode(StringComparison.Ordinal);
-    }
+	public override int GetHashCode()
+	{
+		return Id.GetHashCode(StringComparison.Ordinal);
+	}
 }

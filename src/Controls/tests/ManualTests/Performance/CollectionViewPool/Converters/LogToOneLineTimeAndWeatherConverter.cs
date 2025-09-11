@@ -44,7 +44,7 @@ namespace PoolMathApp.Xaml
 				var speedSymbol = units == PoolMath.Units.US ? " mph" : " kph";
 
 				var speedVal = log.Weather.Temperature.Value;
-				
+
 				ft.Add("\ue9c4", fontFamily: "Weather");
 
 				ft.Add($" {Math.Abs(speedVal).ToString("0")}{speedSymbol}", fontWeight: Models.FontWeight.Normal);

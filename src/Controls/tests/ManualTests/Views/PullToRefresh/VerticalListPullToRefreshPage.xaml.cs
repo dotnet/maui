@@ -2,12 +2,12 @@
 
 namespace Microsoft.Maui.ManualTests.Views
 {
-    public partial class VerticalListPullToRefreshPage : ContentPage
-    {
-        public VerticalListPullToRefreshPage()
-        {
-            InitializeComponent();
-            BindingContext = new AnimalsViewModel();
-        }
-    }
+	public partial class VerticalListPullToRefreshPage : ContentPage
+	{
+		public VerticalListPullToRefreshPage()
+		{
+			InitializeComponent();
+			BindingContext = new AnimalsViewModel();
+		}
+	}
 }

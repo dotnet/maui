@@ -336,20 +336,20 @@ public class Pool : BaseDocument
 		}
 	}
 
-    public string CalculateShareCode()
-    {
-        if (string.IsNullOrEmpty(Id))
-            return null;
+	public string CalculateShareCode()
+	{
+		if (string.IsNullOrEmpty(Id))
+			return null;
 
-        try
-        {
-            var hashCode = Math.Abs(Id.GetHashCode(StringComparison.Ordinal));
-            return hashCode.ToString();
-        }
-        catch { }
+		try
+		{
+			var hashCode = Math.Abs(Id.GetHashCode(StringComparison.Ordinal));
+			return hashCode.ToString();
+		}
+		catch { }
 
-        return null;
-    }
+		return null;
+	}
 
 	public void GenerateShareCode()
 	{
@@ -421,7 +421,7 @@ public class Pool : BaseDocument
 	//	//if (!SubscriptionService.Instance.IsSubscribed) {
 	//	//    lastCyaValue = CyaEntered ?? 0;
 	//	//} else {
-		
+
 
 	//	if (UseCyaEntered)
 	//		lastCyaValue = CyaEntered ?? 0;

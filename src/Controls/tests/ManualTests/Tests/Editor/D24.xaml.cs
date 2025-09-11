@@ -1,5 +1,5 @@
-using Microsoft.Maui.ManualTests.Categories;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.ManualTests.Categories;
 
 namespace Microsoft.Maui.ManualTests.Tests.RefreshView;
 
@@ -9,8 +9,8 @@ namespace Microsoft.Maui.ManualTests.Tests.RefreshView;
 	category: Category.Editor)]
 public partial class D24 : ContentPage
 {
-    public D24()
-    {
-        InitializeComponent();
-    }
+	public D24()
+	{
+		InitializeComponent();
+	}
 }

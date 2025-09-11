@@ -8,7 +8,7 @@ namespace Microsoft.Maui.ManualTests.Tests.Entry;
 	category: Category.Entry)]
 public partial class E1 : ContentPage
 {
-    public E1()
+	public E1()
 	{
 		InitializeComponent();
 	}

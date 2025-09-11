@@ -11,5 +11,5 @@ public partial class C4 : ContentPage
 	public C4()
 	{
 		InitializeComponent();
-    }
+	}
 }

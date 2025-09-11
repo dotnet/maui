@@ -2,12 +2,12 @@
 
 namespace Microsoft.Maui.ManualTests.Views
 {
-    public partial class HorizontalGridPullToRefreshPage : ContentPage
-    {
-        public HorizontalGridPullToRefreshPage()
-        {
-            InitializeComponent();
-            BindingContext = new AnimalsViewModel();
-        }
-    }
+	public partial class HorizontalGridPullToRefreshPage : ContentPage
+	{
+		public HorizontalGridPullToRefreshPage()
+		{
+			InitializeComponent();
+			BindingContext = new AnimalsViewModel();
+		}
+	}
 }
