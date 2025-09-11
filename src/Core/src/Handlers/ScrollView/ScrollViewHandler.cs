@@ -19,9 +19,9 @@ namespace Microsoft.Maui.Handlers
 		public static IPropertyMapper<IScrollView, IScrollViewHandler> Mapper = new PropertyMapper<IScrollView, IScrollViewHandler>(ViewMapper)
 		{
 			[nameof(IScrollView.Content)] = MapContent,
+			[nameof(IScrollView.Orientation)] = MapOrientation,
 			[nameof(IScrollView.HorizontalScrollBarVisibility)] = MapHorizontalScrollBarVisibility,
 			[nameof(IScrollView.VerticalScrollBarVisibility)] = MapVerticalScrollBarVisibility,
-			[nameof(IScrollView.Orientation)] = MapOrientation,
 #if __IOS__
 			[nameof(IScrollView.IsEnabled)] = MapIsEnabled,
 #endif
