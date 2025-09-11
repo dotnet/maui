@@ -21,7 +21,7 @@ public class Issue30010 : _IssuesUITest
 		App.WaitForElement("TakeScreenshotButton");
 		App.Tap("TakeScreenshotButton");
 
-		Thread.Sleep(500); // Pause briefly to allow the screenshot operation to complete
+		Thread.Sleep(1000); // Pause briefly to allow the screenshot operation to complete
 
 		VerifyScreenshot("Issue30010TakeScreenshotFunctionality");
 	}
