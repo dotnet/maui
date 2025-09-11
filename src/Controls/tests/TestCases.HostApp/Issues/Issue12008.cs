@@ -45,7 +45,7 @@ public partial class Issue12008 : ContentPage
 		btnCreateEmptyGroup = new Button
 		{
 			Text = "Create Empty Group",
-			AutomationId = "CreateEmptyGroupButton"
+			AutomationId = "CreateEmptyGroupButton12008"
 		};
 		btnCreateEmptyGroup.Clicked += OnCreateEmptyGroupClicked;
 
@@ -53,7 +53,7 @@ public partial class Issue12008 : ContentPage
 		{
 			Text = "Status: Ready",
 			FontSize = 12,
-			AutomationId = "StatusLabel"
+			AutomationId = "StatusLabel12008"
 		};
 
 		stackLayout.Children.Add(titleLabel);
@@ -70,7 +70,7 @@ public partial class Issue12008 : ContentPage
 			IsGrouped = true,
 			CanReorderItems = true,
 			CanMixGroups = true,
-			AutomationId = "CollectionView"
+			AutomationId = "CollectionView12008"
 		};
 		collectionView.SetBinding(ItemsView.ItemsSourceProperty, "GroupedItems");
 
@@ -80,7 +80,12 @@ public partial class Issue12008 : ContentPage
 			var headerGrid = new Grid
 			{
 				BackgroundColor = Colors.LightBlue,
-				Padding = 10
+				Padding = 10,
+				ColumnDefinitions = new ColumnDefinitionCollection
+				{
+					new ColumnDefinition { Width = GridLength.Star },
+					new ColumnDefinition { Width = GridLength.Auto }
+				}
 			};
 
 			var headerLabel = new Label
@@ -89,9 +94,19 @@ public partial class Issue12008 : ContentPage
 				FontSize = 16
 			};
 			headerLabel.SetBinding(Label.TextProperty, "GroupName");
-			headerLabel.SetBinding(AutomationIdProperty, new Binding("GroupName", stringFormat: "GroupHeader_{0}"));
+			headerLabel.SetBinding(AutomationIdProperty, new Binding("GroupName", stringFormat: "GroupHeader12008{0}"));
+
+			var countLabel = new Label
+			{
+				FontSize = 12
+			};
+			countLabel.SetBinding(Label.TextProperty, new Binding("Count", stringFormat: "Count: {0}"));
+			countLabel.SetBinding(AutomationIdProperty, new Binding("GroupName", stringFormat: "GroupCount12008{0}"));
 
 			headerGrid.Children.Add(headerLabel);
+			headerGrid.Children.Add(countLabel);
+			Grid.SetColumn(headerLabel, 0);
+			Grid.SetColumn(countLabel, 1);
 			return headerGrid;
 		});
 
@@ -110,7 +125,7 @@ public partial class Issue12008 : ContentPage
 				FontSize = 14
 			};
 			itemLabel.SetBinding(Label.TextProperty, "Name");
-			itemLabel.SetBinding(AutomationIdProperty, new Binding("Name", stringFormat: "Item_{0}"));
+			itemLabel.SetBinding(AutomationIdProperty, new Binding("Name", stringFormat: "Item12008{0}"));
 
 			itemGrid.Children.Add(itemLabel);
 			return itemGrid;
@@ -156,27 +171,27 @@ public class Issue12008ViewModel : INotifyPropertyChanged
 	{
 		GroupedItems = new ObservableCollection<Issue12008Group>
 			{
-				new Issue12008Group("Group A", new List<Issue12008Item>
+				new Issue12008Group("GroupA", new List<Issue12008Item>
 				{
-					new Issue12008Item("Item A1"),
-					new Issue12008Item("Item A2"),
-					new Issue12008Item("Item A3")
+					new Issue12008Item("ItemA1"),
+					new Issue12008Item("ItemA2"),
+					new Issue12008Item("ItemA3")
 				}),
-				new Issue12008Group("Group B", new List<Issue12008Item>
+				new Issue12008Group("GroupB", new List<Issue12008Item>
 				{
-					new Issue12008Item("Item B1"),
-					new Issue12008Item("Item B2")
+					new Issue12008Item("ItemB1"),
+					new Issue12008Item("ItemB2")
 				}),
-				new Issue12008Group("Group C", new List<Issue12008Item>
+				new Issue12008Group("GroupC", new List<Issue12008Item>
 				{
-					new Issue12008Item("Item C1")
+					new Issue12008Item("ItemC1")
 				})
 			};
 	}
 
 	public void CreateEmptyGroup()
 	{
-		var emptyGroup = new Issue12008Group("Empty Group", new List<Issue12008Item>());
+		var emptyGroup = new Issue12008Group("EmptyGroup", new List<Issue12008Item>());
 		GroupedItems.Add(emptyGroup);
 	}
 

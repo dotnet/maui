@@ -14,32 +14,14 @@ public class Issue12008 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
-    public void DragAndDropIntoEmptyGroupShouldWork()
-    {
-
-        App.WaitForElement("CreateEmptyGroupButton");
-        App.Tap("CreateEmptyGroupButton");
-        App.WaitForElement("Empty Group");
-        App.WaitForElement("Item A1");
-        App.WaitForElement("Item A2");
-        App.WaitForElement("Item A3");
-        App.WaitForElement("Group A");
-        App.WaitForElement("Group B");
-        App.WaitForElement("Group C");
-        App.WaitForElement("Empty Group");
-        App.WaitForElement("StatusLabel");
-    }
-
-    [Test]
-    [Category(UITestCategories.CollectionView)]
     public void EmptyGroupCreationShouldWork()
     {
-        App.WaitForElement("CreateEmptyGroupButton");
-        App.Tap("CreateEmptyGroupButton");
+        App.WaitForElement("CreateEmptyGroupButton12008");
+        App.Tap("CreateEmptyGroupButton12008");
 
-        App.WaitForElement("Empty Group");
-        App.WaitForElement("StatusLabel");
-        var statusText = App.WaitForElement("StatusLabel").GetText();
+        App.WaitForElement("GroupHeader12008EmptyGroup");
+        App.WaitForElement("StatusLabel12008");
+        var statusText = App.WaitForElement("StatusLabel12008").GetText();
         Assert.That(statusText, Does.Contain("Empty group created"));
     }
 
@@ -47,16 +29,14 @@ public class Issue12008 : _IssuesUITest
     [Category(UITestCategories.CollectionView)]
     public void DragItemIntoEmptyGroupShouldSucceed()
     {
-        App.WaitForElement("CreateEmptyGroupButton");
-        App.Tap("CreateEmptyGroupButton");
-        App.WaitForElement("Empty Group");
-        App.WaitForElement("Item A1");
-        App.WaitForElement("Empty Group");
-        App.DragAndDrop("Item A1", "Empty Group");
-        App.WaitForElement("Item A1");
-        App.WaitForElement("Empty Group");
-        App.WaitForElement("StatusLabel");
-        var statusText = App.WaitForElement("StatusLabel").GetText();
-        Assert.That(statusText, Does.Contain("Empty group"));
+        App.WaitForElement("CreateEmptyGroupButton12008");
+        App.Tap("CreateEmptyGroupButton12008");
+        App.WaitForElement("GroupHeader12008EmptyGroup");
+        App.WaitForElement("Item12008ItemA1");
+        App.DragAndDrop("Item12008ItemA1", "GroupHeader12008EmptyGroup");
+        App.WaitForElement("GroupCount12008EmptyGroup");
+        var groupCountLabel = App.WaitForElement("GroupCount12008EmptyGroup");
+        var countText = groupCountLabel.GetText();
+        Assert.That(countText, Is.EqualTo("Count: 1"), "Item was not moved into the empty group");
     }
 }
