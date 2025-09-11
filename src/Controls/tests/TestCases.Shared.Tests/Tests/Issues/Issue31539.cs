@@ -1,3 +1,4 @@
+# if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS    // BackButtonTitle is only applicable for iOS and macOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,3 +24,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
