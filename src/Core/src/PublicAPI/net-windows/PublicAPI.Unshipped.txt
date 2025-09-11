@@ -29,6 +29,7 @@ Microsoft.Maui.SwipeViewSwipeStarted.SwipeViewSwipeStarted(Microsoft.Maui.SwipeV
 override Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Equals(object? obj) -> bool
 override Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.GetHashCode() -> int
 override Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ToString() -> string!
+override Microsoft.Maui.Handlers.GraphicsViewHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.LayoutHandlerUpdate.Equals(object? obj) -> bool
 override Microsoft.Maui.Handlers.LayoutHandlerUpdate.GetHashCode() -> int
 override Microsoft.Maui.Handlers.LayoutHandlerUpdate.ToString() -> string!

@@ -2098,7 +2098,6 @@ override Microsoft.Maui.Handlers.FlyoutViewHandler.DisconnectHandler(Microsoft.M
 override Microsoft.Maui.Handlers.GraphicsViewHandler.ConnectHandler(Microsoft.Maui.Platform.PlatformTouchGraphicsView! platformView) -> void
 override Microsoft.Maui.Handlers.GraphicsViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.PlatformTouchGraphicsView!
 override Microsoft.Maui.Handlers.GraphicsViewHandler.DisconnectHandler(Microsoft.Maui.Platform.PlatformTouchGraphicsView! platformView) -> void
-override Microsoft.Maui.Handlers.GraphicsViewHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(Microsoft.UI.Xaml.Controls.WebView2! platformView) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.WebView2!
 override Microsoft.Maui.Handlers.HybridWebViewHandler.DisconnectHandler(Microsoft.UI.Xaml.Controls.WebView2! platformView) -> void
