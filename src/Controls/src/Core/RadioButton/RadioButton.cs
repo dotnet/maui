@@ -59,7 +59,8 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Value"/>.</summary>
 		public static readonly BindableProperty ValueProperty =
 			BindableProperty.Create(nameof(Value), typeof(object), typeof(RadioButton), null,
-			propertyChanged: (b, o, n) => ((RadioButton)b).OnValuePropertyChanged());
+			propertyChanged: (b, o, n) => ((RadioButton)b).OnValuePropertyChanged(),
+			coerceValue: (b,  o) => o ?? b);
 
 		/// <summary>Bindable property for <see cref="IsChecked"/>.</summary>
 		public static readonly BindableProperty IsCheckedProperty = BindableProperty.Create(
@@ -119,7 +120,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='Value']/Docs/*" />
 		public object Value
 		{
-			get => GetValue(ValueProperty) ?? this;	// Weird behaviour occurs if all values are the same (i.e. all null). This ensures a default unique value when not assigned.
+			get => GetValue(ValueProperty);
 			set => SetValue(ValueProperty, value);
 		}
 
