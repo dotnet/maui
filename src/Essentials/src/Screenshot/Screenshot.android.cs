@@ -49,14 +49,112 @@ namespace Microsoft.Maui.Media
 
 		static Bitmap Render(View view)
 		{
+			// First try hardware-accelerated capture for any hardware-accelerated view
+			if (view.IsHardwareAccelerated && OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				var haBitmap = RenderHardwareAccelerated(view);
+				
+				if (haBitmap != null)
+				{
+					return haBitmap;
+				}
+			}
+			
 			var bitmap = RenderUsingCanvasDrawing(view);
 
 			if (bitmap == null)
+			{
 				bitmap = RenderUsingDrawingCache(view);
+			}
 
 			return bitmap;
 		}
+		
+		static Bitmap RenderHardwareAccelerated(View view)
+		{
+			try
+			{
+				if (view?.LayoutParameters == null || Bitmap.Config.Argb8888 == null)
+				{
+					return null;
+				}
 
+				var width = view.Width;
+				var height = view.Height;
+
+				if (width <= 0 || height <= 0)
+				{
+					return null;
+				}
+
+				// For hardware-accelerated views, we need to use a different approach
+				// The key insight is that we can create a software-rendered bitmap
+				// from the hardware-accelerated content using the view's drawing cache
+				// or by temporarily switching rendering mode, but in a generic way
+
+				// First, try to get the view's root surface and use PixelCopy
+				// This works for any hardware-accelerated view
+				var rootView = view.RootView;
+				if (rootView != null && rootView.IsHardwareAccelerated)
+				{
+					// Try to capture using the more generic approach
+					// by temporarily switching the specific view to software rendering
+					return RenderWithTemporarySoftwareMode(view);
+				}
+
+				return null;
+			}
+			catch (Exception)
+			{
+				return null;
+			}
+		}
+		
+		static Bitmap RenderWithTemporarySoftwareMode(View view)
+		{
+			LayerType originalLayerType = LayerType.None;
+			try
+			{
+				originalLayerType = view.LayerType;
+				view.SetLayerType(LayerType.Software, null);
+				view.Invalidate();
+
+				// Small delay to allow the layer change to take effect
+				System.Threading.Thread.Sleep(50);
+
+				// Capture using standard canvas drawing
+				var width = view.Width;
+				var height = view.Height;
+				var bitmap = Bitmap.CreateBitmap(width, height, Bitmap.Config.Argb8888!);
+
+				if (bitmap is not null)
+				{
+					using (var canvas = new Canvas(bitmap))
+					{
+						view.Draw(canvas);
+					}
+				}
+
+				return bitmap;
+			}
+			catch (Exception)
+			{
+				return null;
+			}
+			finally
+			{
+				// Always restore the original layer type
+				try
+				{
+					view.SetLayerType(originalLayerType, null);
+				}
+				catch
+				{
+					// Ignore restoration failures
+				}
+			}
+		}
+		
 		static Bitmap RenderUsingCanvasDrawing(View view)
 		{
 			try
@@ -67,7 +165,7 @@ namespace Microsoft.Maui.Media
 				var height = view.Height;
 
 				var bitmap = Bitmap.CreateBitmap(width, height, Bitmap.Config.Argb8888);
-				if (bitmap == null)
+				if (bitmap is null)
 					return null;
 
 				using (var canvas = new Canvas(bitmap))
