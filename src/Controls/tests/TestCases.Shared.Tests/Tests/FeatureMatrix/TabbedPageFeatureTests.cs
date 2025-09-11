@@ -35,12 +35,11 @@ public class TabbedPageFeatureTests : UITest
 		App.WaitForElement("TAB 3");
 		App.Tap("TAB 3");
 		App.WaitForElement("Tab3Label");
-		VerifyScreenshot();
-		Thread.Sleep(2000);
-		App.WaitForElement("TAB 5");
-		App.Tap("TAB 5");
-		App.WaitForElement("Tab5Label");
-		VerifyScreenshot();
+		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_1");
+		App.WaitForElement("TAB 4");
+		App.Tap("TAB 4");
+		App.WaitForElement("Tab4Label");
+		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_2");
 	}
 #endif
 
@@ -216,10 +215,10 @@ public class TabbedPageFeatureTests : UITest
 		App.WaitForElement("ApplyButton");
 		App.Tap("ApplyButton");
 		App.WaitForElement("Tab1Label");
-		VerifyScreenshot();
+		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_1");
 		App.WaitForElement("TAB 2");
 		App.Tap("TAB 2");
-		VerifyScreenshot();
+		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_2");
 	}
 #endif
 
@@ -302,7 +301,7 @@ public class TabbedPageFeatureTests : UITest
 		App.Tap("SelectItemButton");
 		App.WaitForElement("ApplyButton");
 		App.Tap("ApplyButton");
-		App.WaitForElement("BananaLabel");
+		App.WaitForElement("CherryLabel");
 		VerifyScreenshot();
 	}
 
@@ -333,11 +332,11 @@ public class TabbedPageFeatureTests : UITest
 		App.Tap("Tab1Label");
 		App.WaitForElement("More");
 		App.Tap("More");
-		VerifyScreenshot();
+		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_1");
 		App.WaitForElement("TAB 6");
 		App.Tap("TAB 6");
 		App.WaitForElement("Tab6Label");
-		VerifyScreenshot();
+		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_2");
 	}
 #endif
 
