@@ -1,5 +1,4 @@
 ﻿using Android.Views;
-using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Layouts.LayoutExtensions;
 
