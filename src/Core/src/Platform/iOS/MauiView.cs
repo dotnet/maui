@@ -303,28 +303,25 @@ namespace Microsoft.Maui.Platform
 						{
 							var bottomEdgeRegion = safeAreaPage.GetSafeAreaRegionsForEdge(3); // 3 = bottom edge
 
+							// For SafeAreaRegions.SoftInput: Always pad so content doesn't go under the keyboard
+							// Bottom edge is most commonly affected by keyboard
 							if (SafeAreaEdges.IsSoftInput(bottomEdgeRegion)
 							&& this.FindParent(x => x is MauiView mv && mv.View is ISafeAreaView2 safeAreaView2
 							&& SafeAreaEdges.IsSoftInput(safeAreaView2.GetSafeAreaRegionsForEdge(3))) is null)
 							{
-								// For SafeAreaRegions.SoftInput: Always pad so content doesn't go under the keyboard
-								// Bottom edge is most commonly affected by keyboard
-								if (SafeAreaEdges.IsSoftInput(bottomEdgeRegion))
+								// Use the larger of the current bottom safe area or the keyboard height
+								// Get the input control's bottom Y in window coordinates
+								var inputBottomY = 0.0;
+								if (Window is not null)
 								{
-									// Use the larger of the current bottom safe area or the keyboard height
-									// Get the input control's bottom Y in window coordinates
-									var inputBottomY = 0.0;
-									if (Window is not null)
-									{
-										var viewFrameInWindow = this.Superview?.ConvertRectToView(this.Frame, Window) ?? this.Frame;
-										inputBottomY = viewFrameInWindow.Y + viewFrameInWindow.Height;
-									}
-									var keyboardTopY = _keyboardFrame.Y;
-									var overlap = inputBottomY > keyboardTopY ? (inputBottomY - keyboardTopY) : 0.0;
-
-									var adjustedBottom = (overlap > 0) ? overlap : baseSafeArea.Bottom;
-									baseSafeArea = new SafeAreaPadding(baseSafeArea.Left, baseSafeArea.Right, baseSafeArea.Top, adjustedBottom);
+									var viewFrameInWindow = this.Superview?.ConvertRectToView(this.Frame, Window) ?? this.Frame;
+									inputBottomY = viewFrameInWindow.Y + viewFrameInWindow.Height;
 								}
+								var keyboardTopY = _keyboardFrame.Y;
+								var overlap = inputBottomY > keyboardTopY ? (inputBottomY - keyboardTopY) : 0.0;
+
+								var adjustedBottom = (overlap > 0) ? overlap : baseSafeArea.Bottom;
+								baseSafeArea = new SafeAreaPadding(baseSafeArea.Left, baseSafeArea.Right, baseSafeArea.Top, adjustedBottom);
 							}
 						}
 					}
