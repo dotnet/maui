@@ -190,7 +190,7 @@ Task("buildOnly")
 
 // Helper function to wait for a specific test result file with timeout
 Func<string, string, bool> WaitForCategoryTestResult = (string expectedFile, string categoryName) => {
-	var timeoutInSeconds = 120; // 2 minutes per category
+	var timeoutInSeconds = 480; // 8 minutes per category
 	var waited = 0;
 	
 	Information($"Waiting for test results file: {expectedFile}");
@@ -259,7 +259,9 @@ Task("testOnly")
 	var testResultsPath = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
 	var testResultsFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}";
 
-	if (!string.IsNullOrWhiteSpace(testFilter))
+	// For Controls project tests, each category gets its own result file, so don't append testFilter here
+	// For non-Controls tests, append testFilter to the single result file
+	if (!isControlsProjectTestRun && !string.IsNullOrWhiteSpace(testFilter))
 	{
 		testResultsFile += SanitizeTestResultsFilename($"-{testFilter}");
 	}
