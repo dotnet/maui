@@ -10,12 +10,16 @@
   <attr path="//class[@name='PlatformContentViewGroup']" name="visibility">public</attr>
   <attr path="//class[@name='PlatformViewGroup']" name="visibility">public</attr>
   <attr path="//class[@name='PlatformWrapperView']" name="visibility">public</attr>
+  <attr path="//class[@name='PlatformDrawable']" name="visibility">public</attr>
+  <attr path="//class[@name='PlatformPaintType']" name="visibility">internal</attr>
   <attr path="//class[@name='MauiViewGroup']" name="visibility">public</attr>
   <attr path="//interface[@name='ImageLoaderCallback']" name="visibility">public</attr>
   <!-- Internal methods & constructors -->
   <attr path="//class[@name='PlatformAppCompatTextView']/method" name="visibility">internal</attr>
   <attr path="//class[@name='PlatformAppCompatTextView']/constructor" name="visibility">internal</attr>
   <attr path="//class[@name='PlatformWrapperView']/method[@name='updateShadow']" name="visibility">internal</attr>
+  <attr path="//class[@name='PlatformDrawable']/method" name="visibility">internal</attr>
+  <attr path="//class[@name='PlatformDrawable']/constructor" name="visibility">public</attr>
 
   <remove-node path="//package[@name='com.bumptech.glide']" />
   <remove-node path="//package[@name='com.microsoft.maui.glide']" />
