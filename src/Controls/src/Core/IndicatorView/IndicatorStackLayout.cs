@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using System;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
@@ -178,22 +179,26 @@ namespace Microsoft.Maui.Controls
 				return null;
 			}
 
-			if (_indicatorView.ItemsSource is IList items)
+			if (_indicatorView.ItemsSource is IEnumerable enumerable)
 			{
-				int maxItems = Math.Min(items.Count, _indicatorView.MaximumVisible);
-				if (items.Count <= maxItems)
+				int totalCount = enumerable.Cast<object>().Count();
+				int maxVisible = Math.Min(totalCount, _indicatorView.MaximumVisible);
+				if (totalCount <= maxVisible)
 				{
-					return items;
+					return _indicatorView.ItemsSource;
 				}
 
-				var filteredItems = new List<object>(maxItems);
-				for (int index = 0; index < maxItems; index++)
+				var filteredItems = new List<object>(maxVisible);
+				int count = 0;
+				foreach (var item in enumerable)
 				{
-					if (items[index] is object item)
+					if (count++ >= maxVisible)
 					{
-						filteredItems.Add(item);
+						break;
 					}
-				}
+
+					filteredItems.Add(item);
+				}	
 
 				return filteredItems;
 			}
