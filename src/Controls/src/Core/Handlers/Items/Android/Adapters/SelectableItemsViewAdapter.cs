@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		where TItemsSource : IItemsViewSource
 	{
 		List<SelectableViewHolder> _currentViewHolders = new List<SelectableViewHolder>();
+		HashSet<object> _selectedSet = new HashSet<object>();
 
 		protected internal SelectableItemsViewAdapter(TItemsView selectableItemsView,
 			Func<View, Context, ItemContentView> createView = null) : base(selectableItemsView, createView)
@@ -64,7 +65,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			HashSet<object> selectedSet;
+			_selectedSet.Clear();
+			
 			switch (selectableItemsView.SelectionMode)
 			{
 				case SelectionMode.None:
@@ -79,7 +81,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						return;
 					}
 
-					selectedSet = new HashSet<object> { selectedItem };
+					_selectedSet.Add(selectedItem);
 					break;
 
 				case SelectionMode.Multiple:
@@ -89,7 +91,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						ClearPlatformSelection();
 						return;
 					}
-					selectedSet = new HashSet<object>(selectedItems);
+					
+					_selectedSet.UnionWith(selectedItems);
 					break;
 
 				default:
@@ -102,7 +105,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (holder.BindingAdapterPosition >= 0)
 				{
 					var item = ItemsSource.GetItem(holder.BindingAdapterPosition);
-					bool shouldBeSelected = selectedSet.Contains(item);
+					bool shouldBeSelected = _selectedSet.Contains(item);
 
 					if (holder.IsSelected != shouldBeSelected)
 					{
