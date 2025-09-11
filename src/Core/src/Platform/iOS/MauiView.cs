@@ -305,9 +305,7 @@ namespace Microsoft.Maui.Platform
 
 							// For SafeAreaRegions.SoftInput: Always pad so content doesn't go under the keyboard
 							// Bottom edge is most commonly affected by keyboard
-							if (SafeAreaEdges.IsSoftInput(bottomEdgeRegion)
-							&& this.FindParent(x => x is MauiView mv && mv.View is ISafeAreaView2 safeAreaView2
-							&& SafeAreaEdges.IsSoftInput(safeAreaView2.GetSafeAreaRegionsForEdge(3))) is null)
+							if (SafeAreaEdges.IsSoftInput(bottomEdgeRegion) && !IsSoftInputHandledByParent(this))
 							{
 								// Use the larger of the current bottom safe area or the keyboard height
 								// Get the input control's bottom Y in window coordinates
@@ -347,6 +345,21 @@ namespace Microsoft.Maui.Platform
 
 			return baseSafeArea;
 		}
+
+		/// <summary>
+		/// Checks if any parent view in the hierarchy is a MauiView that implements ISafeAreaView2
+		/// and has SafeAreaEdges.SoftInput set for the bottom edge. This is used to determine if
+		/// keyboard overlap/padding is already being handled by an ancestor, so the current view
+		/// should not apply additional adjustments.
+		/// Returns true if a parent is handling soft input, false otherwise.
+		/// </summary>
+		internal static bool IsSoftInputHandledByParent(UIView view)
+		{
+			return view.FindParent(x => x is MauiView mv
+				&& mv.View is ISafeAreaView2 safeAreaView2
+				&& SafeAreaEdges.IsSoftInput(safeAreaView2.GetSafeAreaRegionsForEdge(3))) is not null;
+		}
+
 
 		/// <summary>
 		/// Checks if the current measure information is still valid for the given constraints.

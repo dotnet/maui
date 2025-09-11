@@ -305,9 +305,10 @@ public static class KeyboardAutoManagerScroll
 	// all the fields are updated before calling AdjustPostition()
 	internal static async Task AdjustPositionDebounce()
 	{
-		if (View.FindParent(x => x is MauiView mv
-		&& mv.View is ISafeAreaView2 safeAreaView2
-		&& SafeAreaEdges.IsSoftInput(safeAreaView2.GetSafeAreaRegionsForEdge(3))) is not null)
+		// If View is inside a MauiView that implements ISafeAreaView2
+		// and has SafeAreaEdges.SoftInput set, do not perform auto-scrolling
+		// since SafeAreaEdges.SoftInput will handle the adjustments
+		if (View is not null && MauiView.IsSoftInputHandledByParent(View))
 		{
 			return;
 		}
