@@ -168,7 +168,9 @@ namespace Microsoft.Maui.Platform
 #if WINDOWS || IOS || ANDROID || TIZEN
 		internal static IWindow GetWindow(this IElement element) =>
 		    (element as IViewWithWindow)?.Window ??
+#if !TIZEN
 			(element as IView)?.GetHostedWindow() ??
+#endif
 			element.Handler?.MauiContext?.GetPlatformWindow()?.GetWindow() ??
 			throw new InvalidOperationException("IWindow not found");
 #endif
