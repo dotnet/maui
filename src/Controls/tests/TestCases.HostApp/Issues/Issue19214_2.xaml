@@ -3,30 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue19214_2"
              Title="Issue19214_2">
-    <Grid RowDefinitions="50, 50, *, 50"
-          Margin="30">
-        <ScrollView Grid.Row="0">
-            <Entry Text="Content before"
-                   AutomationId="EntryBefore"
-                   FontSize="Large"
-                   ReturnType="Next"
-                   BackgroundColor="Aquamarine"/>
-        </ScrollView>
-        <Label x:Name="CursorHeightTracker"
-               Text="0"
-               AutomationId="CursorHeightTracker"
-               FontSize="Large"
-               BackgroundColor="Aquamarine"
-               Grid.Row="1"/>
-        <ScrollView Grid.Row="2">
-            <Editor x:Name="editor"
-                    AutomationId="IssueEditor"
-                    FontSize="Large"
-                    BackgroundColor="Orange"
-                    TextChanged="Editor_TextChanged"/>
-        </ScrollView>
-        <Button Text="Erase"
-                Clicked="Button_Clicked"
-                Grid.Row="3"/>
+    <Grid RowDefinitions="50, 50, *, 50" Margin="30">
+        <Entry Text="Content before" AutomationId="EntryBefore" FontSize="Large" ReturnType="Next" BackgroundColor="Aquamarine" Grid.Row="0" />
+        <Label x:Name="CursorHeightTracker" Text="0" AutomationId="CursorHeightTracker" FontSize="Large" BackgroundColor="Aquamarine" Grid.Row="1" />
+        <Editor x:Name="editor" AutomationId="IssueEditor" FontSize="Large" BackgroundColor="Orange" Grid.Row="2" TextChanged="Editor_TextChanged" />
+        <Button Text="Erase" Clicked="Button_Clicked" Grid.Row="3"/>
     </Grid>
 </ContentPage>

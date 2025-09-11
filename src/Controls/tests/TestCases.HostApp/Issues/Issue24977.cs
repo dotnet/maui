@@ -83,19 +83,9 @@ public class Issue24977_1 : TestContentPage
 		var button = new Button { Text = "Erase" };
 		button.Clicked += (s, e) => editor.Text = string.Empty;
 
-		var scrollView1 = new ScrollView
-		{
-			Content = entry,
-		};
-
-		var scrollView2 = new ScrollView
-		{
-			Content = editor,
-		};
-
-		rootGrid.Add(scrollView1, 0, 0);
+		rootGrid.Add(entry, 0, 0);
 		rootGrid.Add(cursorHeightTracker, 0, 1);
-		rootGrid.Add(scrollView2, 0, 2);
+		rootGrid.Add(editor, 0, 2);
 
 		rootGrid.Add(button, 0, 3);
 
