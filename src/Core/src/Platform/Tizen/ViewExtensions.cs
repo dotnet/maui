@@ -362,11 +362,5 @@ namespace Microsoft.Maui.Platform
 
 			return view.KeyInputFocus;
 		}
-
-		internal static IWindow? GetHostedWindow(this IView? view)
-			=> GetHostedWindow(view?.Handler?.PlatformView as View);
-
-		internal static IWindow? GetHostedWindow(this UIView? view)
-			=> GetHostedWindow(view?.Window);
 	}
 }
