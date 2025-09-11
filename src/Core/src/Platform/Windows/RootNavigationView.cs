@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Platform
 		// We use a container because if we just assign our Flyout to the PaneFooter on the NavigationView 
 		// The measure call passes in PositiveInfinity for the measurements which causes the layout system
 		// to crash. So we use this Panel to facilitate more constrained measuring values
-		class FlyoutPanel : Panel
+		partial class FlyoutPanel : Panel
 		{
 			public Maui.IView? FlyoutView { get; set; }
 

@@ -3,13 +3,15 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
 	using FormsElement = Maui.Controls.Entry;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Entry.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Entry']/Docs/*" />
+	/// <summary>Controls input method editor (IME) options for entry fields on the Android platform.</summary>
 	public static class Entry
 	{
 		/// <summary>Bindable property for <see cref="ImeOptions"/>.</summary>
 		public static readonly BindableProperty ImeOptionsProperty = BindableProperty.Create(nameof(ImeOptions), typeof(ImeFlags), typeof(Entry), ImeFlags.Default);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Entry.xml" path="//Member[@MemberName='GetImeOptions']/Docs/*" />
+		/// <summary>Returns flags that specify input method editor options, such as the kind of action that is sent by the editor.</summary>
+		/// <param name="element">The Android entry for which to get the input method editor options.</param>
+		/// <returns>The flags that specify input method editor options, such as the kind of action that is sent by the editor.</returns>
 		public static ImeFlags GetImeOptions(BindableObject element)
 		{
 			return (ImeFlags)element.GetValue(ImeOptionsProperty);
@@ -21,7 +23,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			element.SetValue(ImeOptionsProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Entry.xml" path="//Member[@MemberName='ImeOptions']/Docs/*" />
+		/// <summary>Returns flags that specify input method editor options, such as the kind of action that is sent by the editor.</summary>
+		/// <param name="config">The platform configuration for the Android entry for which to get the input method editor options.</param>
+		/// <returns>The flags that specify input method editor options, such as the kind of action that is sent by the editor.</returns>
 		public static ImeFlags ImeOptions(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetImeOptions(config.Element);
@@ -35,34 +39,34 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		}
 	}
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImeFlags.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImeFlags']/Docs/*" />
+	/// <summary>Enumerates input method editor (IME) options for entry fields on the Android platform.</summary>
 	public enum ImeFlags
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImeFlags.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>The null IME option, which indicates no options.</summary>
 		Default = 0,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImeFlags.xml" path="//Member[@MemberName='None']/Docs/*" />
+		/// <summary>Indicates no action will be made available.</summary>
 		None = 1,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImeFlags.xml" path="//Member[@MemberName='Go']/Docs/*" />
+		/// <summary>Indicates that the action key will send a <c>go</c> action.</summary>
 		Go = 2,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImeFlags.xml" path="//Member[@MemberName='Search']/Docs/*" />
+		/// <summary>Indicates that the action key will send a <c>search</c> action.</summary>
 		Search = 3,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImeFlags.xml" path="//Member[@MemberName='Send']/Docs/*" />
+		/// <summary>Indicates that the action key will send a <c>send</c> action.</summary>
 		Send = 4,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImeFlags.xml" path="//Member[@MemberName='Next']/Docs/*" />
+		/// <summary>Indicates that the action key will send a <c>next</c> action.</summary>
 		Next = 5,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImeFlags.xml" path="//Member[@MemberName='Done']/Docs/*" />
+		/// <summary>Indicates that the action key will send a <c>done</c> action.</summary>
 		Done = 6,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImeFlags.xml" path="//Member[@MemberName='Previous']/Docs/*" />
+		/// <summary>Indicates that the action key will send a <c>previous</c> action.</summary>
 		Previous = 7,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImeFlags.xml" path="//Member[@MemberName='ImeMaskAction']/Docs/*" />
+		/// <summary>The mask to select action options.</summary>
 		ImeMaskAction = 255,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImeFlags.xml" path="//Member[@MemberName='NoPersonalizedLearning']/Docs/*" />
+		/// <summary>Indicates that the spellchecker will neither learn from the user, nor suggest corrections based on what the user has previously typed.</summary>
 		NoPersonalizedLearning = 16777216,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImeFlags.xml" path="//Member[@MemberName='NoFullscreen']/Docs/*" />
+		/// <summary>Indicates that the editor UI should not go fullscreen.</summary>
 		NoFullscreen = 33554432,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImeFlags.xml" path="//Member[@MemberName='NoExtractUi']/Docs/*" />
+		/// <summary>Indicates that no UI will be shown for extracted text.</summary>
 		NoExtractUi = 268435456,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImeFlags.xml" path="//Member[@MemberName='NoAccessoryAction']/Docs/*" />
+		/// <summary>Indicates that no UI will be displayed for custom actions.</summary>
 		NoAccessoryAction = 536870912,
 	}
 }

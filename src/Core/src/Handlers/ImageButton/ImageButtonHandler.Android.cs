@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.Click -= OnClick;
 			platformView.Touch -= OnTouch;
 			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
+			platformView.LayoutChange -= OnPlatformViewLayoutChange;
 
 			base.DisconnectHandler(platformView);
 
@@ -37,6 +38,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.Touch += OnTouch;
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 
+			platformView.LayoutChange += OnPlatformViewLayoutChange;
 			base.ConnectHandler(platformView);
 		}
 
@@ -71,6 +73,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (VirtualView != null)
 				VirtualView.IsFocused = e.HasFocus;
+		}
+
+		void OnPlatformViewLayoutChange(object? sender, View.LayoutChangeEventArgs e)
+		{
+			if (sender is ShapeableImageView platformView && VirtualView is not null)
+				platformView.UpdateBackground(VirtualView);
 		}
 
 		void OnTouch(object? sender, View.TouchEventArgs e)

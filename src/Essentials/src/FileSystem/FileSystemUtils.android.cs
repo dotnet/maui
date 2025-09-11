@@ -124,9 +124,7 @@ namespace Microsoft.Maui.Storage
 					// This is the internal "external" memory, NOT the SD Card
 					if (storageType.Equals(storageTypePrimary, StringComparison.OrdinalIgnoreCase))
 					{
-#pragma warning disable CS0618 // Type or member is obsolete
 						var root = global::Android.OS.Environment.ExternalStorageDirectory.Path;
-#pragma warning restore CS0618 // Type or member is obsolete
 
 						return Path.Combine(root, uriPath);
 					}
@@ -179,10 +177,8 @@ namespace Microsoft.Maui.Storage
 						contentUri = MediaStore.Video.Media.ExternalContentUri;
 					else if (storageType.Equals(storageTypeAudio, StringComparison.OrdinalIgnoreCase))
 						contentUri = MediaStore.Audio.Media.ExternalContentUri;
-#pragma warning disable CS0618
-					if (contentUri != null && GetDataFilePath(contentUri, $"{MediaStore.MediaColumns.Id}=?", new[] { uriPath }) is string filePath)
+					if (contentUri != null && GetDataFilePath(contentUri, $"{IBaseColumns.Id}=?", new[] { uriPath }) is string filePath)
 						return filePath;
-#pragma warning restore CS0618
 				}
 			}
 
@@ -218,9 +214,7 @@ namespace Microsoft.Maui.Storage
 				return null;
 
 			// resolve or generate a valid destination path
-#pragma warning disable CS0618
-			var filename = GetColumnValue(uri, MediaStore.Files.FileColumns.DisplayName) ?? Guid.NewGuid().ToString("N");
-#pragma warning restore CS0618
+			var filename = GetColumnValue(uri, MediaStore.IMediaColumns.DisplayName) ?? Guid.NewGuid().ToString("N");
 
 			if (!Path.HasExtension(filename) && !string.IsNullOrEmpty(extension))
 				filename = Path.ChangeExtension(filename, extension);
@@ -261,9 +255,10 @@ namespace Microsoft.Maui.Storage
 			if (!string.IsNullOrEmpty(value) && int.TryParse(value, out var flagsInt))
 			{
 				var flags = (DocumentContractFlags)flagsInt;
-#pragma warning disable CA1416 // Introduced in API 24: https://developer.android.com/reference/android/provider/DocumentsContract.Document#FLAG_VIRTUAL_DOCUMENT
-				return flags.HasFlag(DocumentContractFlags.VirtualDocument);
-#pragma warning restore CA1416
+
+				if (OperatingSystem.IsAndroidVersionAtLeast(24))
+					return flags.HasFlag(DocumentContractFlags.VirtualDocument);
+
 			}
 
 			return false;
@@ -307,13 +302,7 @@ namespace Microsoft.Maui.Storage
 
 		static string GetDataFilePath(AndroidUri contentUri, string selection = null, string[] selectionArgs = null)
 		{
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CA1422 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-			const string column = MediaStore.Files.FileColumns.Data;
-#pragma warning restore CA1422 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CS0618 // Type or member is obsolete
+			const string column = MediaStore.IMediaColumns.Data;
 
 			// ask the content provider for the data column, which may contain the actual file path
 			var path = GetColumnValue(contentUri, column, selection, selectionArgs);

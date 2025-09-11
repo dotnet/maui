@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.TimePickerControlMainPage"
+             x:DataType="local:TimePickerViewModel"
+             Title="TimePickerControlPage">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Options"
+                           Clicked="NavigateToOptionsPage_Clicked"
+                           AutomationId="Options"/>
+       </ContentPage.ToolbarItems>
+
+       <Grid RowDefinitions="*,Auto,Auto,Auto"
+             ColumnDefinitions="0.5*,0.5*">
+              <Grid x:Name="TimePickerGrid"
+                    Grid.Row="0"
+                    Grid.ColumnSpan="2"
+                    VerticalOptions="Center">
+                     <TimePicker AutomationId="TimePickerControl"
+                                 CharacterSpacing="{Binding CharacterSpacing}"
+                                 FlowDirection="{Binding FlowDirection}"
+                                 Format="{Binding Format}"
+                                 FontAttributes="{Binding FontAttributes}"
+                                 FontFamily="{Binding FontFamily}"
+                                 FontSize="{Binding FontSize}"
+                                 IsEnabled="{Binding IsEnabled}"
+                                 IsVisible="{Binding IsVisible}"
+                                 Shadow="{Binding Shadow}"
+                                 Time="{Binding Time}"
+                                 TimeSelected="TimePicker_TimeSelected"
+                                 TextColor="{Binding TextColor}"/>
+              </Grid>
+
+              <Label Grid.Row="1"
+                     Grid.Column="0"
+                     HorizontalOptions="Center"
+                     Text="New Time: "/>
+              <Label Grid.Row="1"
+                     Grid.Column="1"
+                     x:Name="NewTimeSelectedLabel"
+                     AutomationId="NewTimeSelectedLabel"/>
+
+              <Label Grid.Row="2"
+                     Grid.Column="0"
+                     HorizontalOptions="Center"
+                     Text="Old Time: "/>
+              <Label Grid.Row="2"
+                     Grid.Column="1"
+                     x:Name="OldTimeSelectedLabel"
+                     AutomationId="OldTimeSelectedLabel"/>
+
+              <Label Grid.Row="3"
+                     Grid.Column="0"
+                     HorizontalOptions="Center"
+                     Text="Culture Format Display:"/>
+              <Label Grid.Row="3"
+                     Grid.Column="1"
+                     x:Name="CultureFormatLabel"
+                     AutomationId="CultureFormatLabel"
+                     Margin="0,0,0,50"/>
+       </Grid>
+</ContentPage>

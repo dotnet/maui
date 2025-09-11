@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='UsePartialCollapse']/Docs/*" />
+		/// <param name="config">The config parameter.</param>
 		public static IPlatformElementConfiguration<Windows, FormsElement> UsePartialCollapse(
 			this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
@@ -58,13 +58,14 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			BindableProperty.CreateAttached("CollapsedPaneWidth", typeof(double),
 				typeof(FlyoutPage), 48d, validateValue: (bindable, value) => (double)value >= 0);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetCollapsedPaneWidth']/Docs/*" />
+		/// <param name="element">The element parameter.</param>
 		public static double GetCollapsedPaneWidth(BindableObject element)
 		{
 			return (double)element.GetValue(CollapsedPaneWidthProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='SetCollapsedPaneWidth']/Docs/*" />
+		/// <param name="element">The element parameter.</param>
+		/// <param name="collapsedPaneWidth">The collapsedPaneWidth parameter.</param>
 		public static void SetCollapsedPaneWidth(BindableObject element, double collapsedPaneWidth)
 		{
 			element.SetValue(CollapsedPaneWidthProperty, collapsedPaneWidth);
