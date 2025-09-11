@@ -213,6 +213,9 @@ namespace Microsoft.Maui.Controls
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<RadioButton>>(() =>
 				new PlatformConfigurationRegistry<RadioButton>(this));
+
+			//initialize Value to prevent null value
+			Value = this;
 		}
 
 		/// <inheritdoc/>
