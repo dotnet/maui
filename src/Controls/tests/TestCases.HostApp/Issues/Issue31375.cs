@@ -48,13 +48,13 @@ public class Issue31375 : ContentPage
 	}
 
 	void Button_Clicked(object sender, EventArgs e)
-    {
-        IsLoading = true;
-    }
+	{
+		IsLoading = true;
+	}
 
-    void AddItems()
-    {
-        IsLoading = false;
-        _textLabel.Text = count++.ToString();
-    }
+	void AddItems()
+	{
+		IsLoading = false;
+		_textLabel.Text = count++.ToString();
+	}
 }
