@@ -55,10 +55,10 @@ internal class RDSourceConverter : ISGTypeConverter
 
 		context.Writer.WriteLine($"var {uriVar} = new global::System.Uri(\"{value};assembly={asm.Name}\", global::System.UriKind.RelativeOrAbsolute);");
 
-		var rootTargetPath = context.FilePath!.Replace('\\', '/');
+		var rootTargetPath = context.ProjectItem.AdditionalText.Path.Replace('\\', '/');
 
 		if (asm.GetAttributes(xamlResIdAttr).FirstOrDefault(attr => (string)attr.ConstructorArguments[1].Value! == GetResourcePath(value, rootTargetPath)) is null)
-			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.FilePath!, (IXmlLineInfo)node, value), $"Resource {value} is not a valid resource path."));
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.ProjectItem.AdditionalText.Path, (IXmlLineInfo)node, value), $"Resource {value} is not a valid resource path."));
 
 		//is there a type associated with the resource ?
 		if (GetTypeForResourcePath(GetResourcePath(value, rootTargetPath), asm) is ITypeSymbol type)

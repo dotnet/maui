@@ -19,7 +19,7 @@ internal static class SourceGenContextExtensions
 	/// <param name="descriptor">The diagnostic descriptor</param>
 	public static void ReportConversionFailed(this SourceGenContext context, IXmlLineInfo xmlLineInfo, string value, DiagnosticDescriptor descriptor)
 	{
-		context.ReportDiagnostic(Diagnostic.Create(descriptor, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+		context.ReportDiagnostic(Diagnostic.Create(descriptor, LocationCreate(context.ProjectItem.AdditionalText.Path, xmlLineInfo, value), value));
 	}
 
 	/// <summary>
@@ -33,7 +33,7 @@ internal static class SourceGenContextExtensions
 	public static void ReportConversionFailed(this SourceGenContext context, IXmlLineInfo xmlLineInfo, string value, ITypeSymbol? toType, DiagnosticDescriptor descriptor)
 	{
 #pragma warning disable RS0030 // Do not use banned APIs
-		context.ReportDiagnostic(Diagnostic.Create(descriptor, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
+		context.ReportDiagnostic(Diagnostic.Create(descriptor, LocationCreate(context.ProjectItem.AdditionalText.Path, xmlLineInfo, value), value, toType?.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 	}
 
@@ -49,7 +49,7 @@ internal static class SourceGenContextExtensions
 	public static void ReportConversionFailed(this SourceGenContext context, IXmlLineInfo xmlLineInfo, string value, string additionalInfo, ITypeSymbol? toType, DiagnosticDescriptor descriptor)
 	{
 #pragma warning disable RS0030 // Do not use banned APIs
-		context.ReportDiagnostic(Diagnostic.Create(descriptor, LocationCreate(context.FilePath!, xmlLineInfo, value), value, additionalInfo, toType?.ToDisplayString()));
+		context.ReportDiagnostic(Diagnostic.Create(descriptor, LocationCreate(context.ProjectItem.AdditionalText.Path, xmlLineInfo, value), value, additionalInfo, toType?.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 	}
 }
