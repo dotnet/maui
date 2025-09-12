@@ -11,7 +11,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	internal struct LayoutCacheKey : IEquatable<LayoutCacheKey>
+	internal readonly struct LayoutCacheKey : IEquatable<LayoutCacheKey>
 	{
 		public readonly bool IsGrouped;
 		public readonly bool HasGroupHeader;
