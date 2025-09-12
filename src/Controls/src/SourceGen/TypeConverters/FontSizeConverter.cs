@@ -29,7 +29,9 @@ internal class FontSizeConverter : ISGTypeConverter
 			if (detectedEnumValue is not null)
 			{
 				var type = parentVar?.Type ?? context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Label")!;
-				return $"global::Microsoft.Maui.Controls.Device.GetNamedSize((global::Microsoft.Maui.Controls.NamedSize){detectedEnumValue.ConstantValue}, typeof({type.ToFQDisplayString()}))";
+				var deviceType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Device")!;
+				var namedSizeType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.NamedSize")!;
+				return $"{deviceType.ToFQDisplayString()}.GetNamedSize(({namedSizeType.ToFQDisplayString()}){detectedEnumValue.ConstantValue}, typeof({type.ToFQDisplayString()}))";
 			}
 		}
 

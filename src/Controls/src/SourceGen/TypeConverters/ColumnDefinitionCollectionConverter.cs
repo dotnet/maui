@@ -24,7 +24,8 @@ internal class ColumnDefinitionCollectionConverter : ISGTypeConverter
 				columnDefinitions.Add($"new ColumnDefinition({gridLength})");
 			}
 
-			return $"new global::Microsoft.Maui.Controls.ColumnDefinitionCollection([{string.Join(", ", columnDefinitions)}])";
+			var columnDefinitionCollectionType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ColumnDefinitionCollection")!;
+			return $"new {columnDefinitionCollectionType.ToFQDisplayString()}([{string.Join(", ", columnDefinitions)}])";
 		}
 
 		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.ColumnDefinitionCollectionConversionFailed);

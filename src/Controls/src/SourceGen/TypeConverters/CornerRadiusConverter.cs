@@ -27,17 +27,26 @@ internal class CornerRadiusConverter : ISGTypeConverter
 					&& double.TryParse(cornerRadius[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double tr)
 					&& double.TryParse(cornerRadius[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double bl)
 					&& double.TryParse(cornerRadius[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double br))
-					return $"new global::Microsoft.Maui.CornerRadius({FormatInvariant(tl)}, {FormatInvariant(tr)}, {FormatInvariant(bl)}, {FormatInvariant(br)})";
+				{
+					var cornerRadiusType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.CornerRadius")!;
+					return $"new {cornerRadiusType.ToFQDisplayString()}({FormatInvariant(tl)}, {FormatInvariant(tr)}, {FormatInvariant(bl)}, {FormatInvariant(br)})";
+				}
 
 				if (cornerRadius.Length > 1
 					&& cornerRadius.Length < 4
 					&& double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
-					return $"new global::Microsoft.Maui.CornerRadius({FormatInvariant(l)})";
+				{
+					var cornerRadiusPartialType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.CornerRadius")!;
+					return $"new {cornerRadiusPartialType.ToFQDisplayString()}({FormatInvariant(l)})";
+				}
 			}
 			else
 			{ //single uniform CornerRadius
 				if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
-					return $"new global::Microsoft.Maui.CornerRadius({FormatInvariant(l)})";
+				{
+					var cornerRadiusSingleType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.CornerRadius")!;
+					return $"new {cornerRadiusSingleType.ToFQDisplayString()}({FormatInvariant(l)})";
+				}
 			}
 		}
 

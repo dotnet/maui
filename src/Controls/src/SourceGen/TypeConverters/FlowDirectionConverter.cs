@@ -18,13 +18,21 @@ internal class FlowDirectionConverter : ISGTypeConverter
 			value = value.Trim();
 
 			if (value.Equals("ltr", StringComparison.OrdinalIgnoreCase))
-				return "global::Microsoft.Maui.FlowDirection.LeftToRight";
+			{
+				var flowDirectionType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.FlowDirection")!;
+				return $"{flowDirectionType.ToFQDisplayString()}.LeftToRight";
+			}
 
 			if (value.Equals("rtl", StringComparison.OrdinalIgnoreCase))
-				return "global::Microsoft.Maui.FlowDirection.RightToLeft";
-
+			{
+				var flowDirectionRtlType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.FlowDirection")!;
+				return $"{flowDirectionRtlType.ToFQDisplayString()}.RightToLeft";
+			}			
 			if (value.Equals("inherit", StringComparison.OrdinalIgnoreCase))
-				return "global::Microsoft.Maui.FlowDirection.MatchParent";
+			{
+				var flowDirectionMatchType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.FlowDirection")!;
+				return $"{flowDirectionMatchType.ToFQDisplayString()}.MatchParent";
+			}
 
 			// Fallback to enum conversion
 			var enumConverter = new EnumConverter();

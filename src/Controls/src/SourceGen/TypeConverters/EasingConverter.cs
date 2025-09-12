@@ -31,7 +31,8 @@ internal class EasingConverter : ISGTypeConverter
 
 			if (KnownEasingNames.Contains(easingName))
 			{
-				return $"global::Microsoft.Maui.Easing.{easingName}";
+				var easingType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Easing")!;
+				return $"{easingType.ToFQDisplayString()}.{easingName}";
 			}
 		}
 

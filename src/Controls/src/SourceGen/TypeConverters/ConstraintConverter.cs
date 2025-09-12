@@ -20,7 +20,10 @@ internal class ConstraintConverter : ISGTypeConverter
 			value = value.Trim();
 
 			if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var size))
-				return $"global::Microsoft.Maui.Controls.Compatibility.Constraint.Constant({FormatInvariant(size)})";
+			{
+				var constraintType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Compatibility.Constraint")!;
+				return $"{constraintType.ToFQDisplayString()}.Constant({FormatInvariant(size)})";
+			}
 		}
 
 		context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);

@@ -18,8 +18,12 @@ internal class ImageSourceConverter : ISGTypeConverter
 		{
 			value = value.Trim();
 
+			var imageSourceType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ImageSource")!;
+			var uriType = context.Compilation.GetTypeByMetadataName("System.Uri")!;
+			
 			return Uri.TryCreate(value, UriKind.Absolute, out Uri uri) && uri.Scheme != "file" ?
-				$"global::Microsoft.Maui.Controls.ImageSource.FromUri(new global::System.Uri(\"{uri}\"))" : $"global::Microsoft.Maui.Controls.ImageSource.FromFile(\"{value}\")";
+				$"{imageSourceType.ToFQDisplayString()}.FromUri(new {uriType.ToFQDisplayString()}(\"{uri}\"))" : 
+				$"{imageSourceType.ToFQDisplayString()}.FromFile(\"{value}\")";
 		}
 
 		context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);

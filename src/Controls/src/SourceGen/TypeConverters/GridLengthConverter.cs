@@ -21,22 +21,28 @@ internal class GridLengthConverter : ISGTypeConverter
 
 			if (value.Equals("*", StringComparison.OrdinalIgnoreCase))
 			{
-				return $"global::Microsoft.Maui.GridLength.Star";
+				var gridLengthType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.GridLength")!;
+				return $"{gridLengthType.ToFQDisplayString()}.Star";
 			}
 			else if (value.EndsWith("*", StringComparison.OrdinalIgnoreCase))
 			{
 				if (double.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out double val))
 				{
-					return $"new global::Microsoft.Maui.GridLength({FormatInvariant(val)}, global::Microsoft.Maui.GridUnitType.Star)";
+					var gridLengthType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.GridLength")!;
+					var gridUnitType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.GridUnitType")!;
+					return $"new {gridLengthType.ToFQDisplayString()}({FormatInvariant(val)}, {gridUnitType.ToFQDisplayString()}.Star)";
 				}
 			}
 			else if (value.Equals("Auto", StringComparison.OrdinalIgnoreCase))
 			{
-				return $"global::Microsoft.Maui.GridLength.Auto";
+				var gridLengthType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.GridLength")!;
+				return $"{gridLengthType.ToFQDisplayString()}.Auto";
 			}
 			else if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double val))
 			{
-				return $"new global::Microsoft.Maui.GridLength({FormatInvariant(val)}, global::Microsoft.Maui.GridUnitType.Absolute)";
+				var gridLengthType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.GridLength")!;
+				var gridUnitType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.GridUnitType")!;
+				return $"new {gridLengthType.ToFQDisplayString()}({FormatInvariant(val)}, {gridUnitType.ToFQDisplayString()}.Absolute)";
 			}
 		}
 

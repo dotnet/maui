@@ -18,7 +18,10 @@ internal class ListStringConverter : ISGTypeConverter
 		{
 			value = value.Trim();
 
-			return $"new global::System.Collections.Generic.List<string> {{ {string.Join(", ", value.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(v => $"\"{v.Trim()}\""))} }}";
+			var listStringType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.List`1")!;
+			var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
+			var constructedListType = listStringType.Construct(stringType);
+			return $"new {constructedListType.ToFQDisplayString()} {{ {string.Join(", ", value.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(v => $"\"{v.Trim()}\""))} }}";
 		}
 
 		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.ListStringConversionFailed);

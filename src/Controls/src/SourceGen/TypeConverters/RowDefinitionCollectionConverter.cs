@@ -24,7 +24,8 @@ internal class RowDefinitionCollectionConverter : ISGTypeConverter
 				rowDefinitions.Add($"new RowDefinition({gridLength})");
 			}
 
-			return $"new global::Microsoft.Maui.Controls.RowDefinitionCollection([{string.Join(", ", rowDefinitions)}])";
+			var rowDefinitionCollectionType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.RowDefinitionCollection")!;
+			return $"new {rowDefinitionCollectionType.ToFQDisplayString()}([{string.Join(", ", rowDefinitions)}])";
 		}
 
 		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.RowDefinitionCollectionConversionFailed);

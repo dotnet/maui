@@ -24,7 +24,8 @@ internal class RectConverter : ISGTypeConverter
 				&& double.TryParse(xywh[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double w)
 				&& double.TryParse(xywh[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double h))
 			{
-				return $"new global::Microsoft.Maui.Graphics.Rect({FormatInvariant(x)}, {FormatInvariant(y)}, {FormatInvariant(w)}, {FormatInvariant(h)})";
+				var rectType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Rect")!;
+				return $"new {rectType.ToFQDisplayString()}({FormatInvariant(x)}, {FormatInvariant(y)}, {FormatInvariant(w)}, {FormatInvariant(h)})";
 			}
 		}
 

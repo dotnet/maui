@@ -54,11 +54,17 @@ internal class ColorConverter : ISGTypeConverter
 			// Any named colors are ok. Surrounding white spaces are ok. Case insensitive.
 			var actualColorName = KnownNamedColors.FirstOrDefault(c => string.Equals(c, value.Trim(), StringComparison.OrdinalIgnoreCase));
 			if (actualColorName is not null)
-				return $"global::Microsoft.Maui.Graphics.Colors.{actualColorName}";
+			{
+				var colorsType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Colors")!;
+				return $"{colorsType.ToFQDisplayString()}.{actualColorName}";
+			}
 
 			// Check for HEX Color string
 			if (RxColorHex.Value.IsMatch(value))
-				return $"global::Microsoft.Maui.Graphics.Color.FromRgba(\"{value}\")";
+			{
+				var colorType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color")!;
+				return $"{colorType.ToFQDisplayString()}.FromRgba(\"{value}\")";
+			}
 
 			var match = RxFuncExpr.Value.Match(value);
 
@@ -69,11 +75,15 @@ internal class ColorConverter : ISGTypeConverter
 			{
 				// ie: argb() needs 4 parameters:
 				if (funcValues.Count == funcName?.Length)
-					return $"global::Microsoft.Maui.Graphics.Color.Parse(\"{value}\")";
+				{
+					var colorType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color")!;
+					return $"{colorType.ToFQDisplayString()}.Parse(\"{value}\")";
+				}
 			}
 
 			// As a last resort, try Color.Parse() for any other valid color formats
-			return $"global::Microsoft.Maui.Graphics.Color.Parse(\"{value}\")";
+			var colorType2 = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color")!;
+			return $"{colorType2.ToFQDisplayString()}.Parse(\"{value}\")";
 		}
 
 		context.ReportConversionFailed(xmlLineInfo, value, toType, Descriptors.ConversionFailed);

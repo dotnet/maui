@@ -17,7 +17,8 @@ internal class PathGeometryConverter : ISGTypeConverter
 			value = value.Trim();
 
 			// TODO: Implement proper path geometry parsing
-			return "new global::Microsoft.Maui.Controls.Shapes.PathGeometry()";
+			var pathGeometryType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.PathGeometry")!;
+			return $"new {pathGeometryType.ToFQDisplayString()}()";
 		}
 
 		context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);

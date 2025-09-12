@@ -21,7 +21,8 @@ internal class PointConverter : ISGTypeConverter
 			if (xy.Length == 2 && double.TryParse(xy[0], NumberStyles.Number, CultureInfo.InvariantCulture, out var x)
 				&& double.TryParse(xy[1], NumberStyles.Number, CultureInfo.InvariantCulture, out var y))
 			{
-				return $"new global::Microsoft.Maui.Graphics.Point({FormatInvariant(x)}, {FormatInvariant(y)})";
+				var pointType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Point")!;
+				return $"new {pointType.ToFQDisplayString()}({FormatInvariant(x)}, {FormatInvariant(y)})";
 			}
 		}
 

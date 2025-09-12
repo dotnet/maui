@@ -25,20 +25,22 @@ internal class LayoutOptionsConverter : ISGTypeConverter
 			}
 
 			value = parts[parts.Length - 1];
+
+			var layoutOptionsType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.LayoutOptions")!;
 			var layoutOptionsMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 			{
-				{ "Start", "global::Microsoft.Maui.Controls.LayoutOptions.Start" },
-				{ "Center", "global::Microsoft.Maui.Controls.LayoutOptions.Center" },
-				{ "End", "global::Microsoft.Maui.Controls.LayoutOptions.End" },
-				{ "Fill", "global::Microsoft.Maui.Controls.LayoutOptions.Fill" },
-                
-                // The following options are obsoleted, but here for now for compatibility
-                { "StartAndExpand", "global::Microsoft.Maui.Controls.LayoutOptions.StartAndExpand" },
-				{ "CenterAndExpand", "global::Microsoft.Maui.Controls.LayoutOptions.CenterAndExpand" },
-				{ "EndAndExpand", "global::Microsoft.Maui.Controls.LayoutOptions.EndAndExpand" },
-				{ "FillAndExpand", "global::Microsoft.Maui.Controls.LayoutOptions.FillAndExpand" }
-			};
+				{ "Start", $"{layoutOptionsType.ToFQDisplayString()}.Start" },
+				{ "Center", $"{layoutOptionsType.ToFQDisplayString()}.Center" },
+				{ "End", $"{layoutOptionsType.ToFQDisplayString()}.End" },
+				{ "Fill", $"{layoutOptionsType.ToFQDisplayString()}.Fill" },
 
+				// The following options are obsoleted, but here for now for compatibility
+				{ "StartAndExpand", $"{layoutOptionsType.ToFQDisplayString()}.StartAndExpand" },
+				{ "CenterAndExpand", $"{layoutOptionsType.ToFQDisplayString()}.CenterAndExpand" },
+				{ "EndAndExpand", $"{layoutOptionsType.ToFQDisplayString()}.EndAndExpand" },
+				{ "FillAndExpand", $"{layoutOptionsType.ToFQDisplayString()}.FillAndExpand" }
+			};			
+		
 			if (layoutOptionsMap.TryGetValue(value, out var layoutOption))
 			{
 				return layoutOption;

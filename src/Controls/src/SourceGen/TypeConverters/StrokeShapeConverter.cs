@@ -30,7 +30,8 @@ internal class StrokeShapeConverter : ISGTypeConverter
 
 			if (value.StartsWith(Ellipse, StringComparison.OrdinalIgnoreCase))
 			{
-				return "new global::Microsoft.Maui.Controls.Shapes.Ellipse()";
+				var ellipseType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Ellipse")!;
+				return $"new {ellipseType.ToFQDisplayString()}()";
 			}
 
 			if (value.StartsWith(Line, StringComparison.OrdinalIgnoreCase))
@@ -38,21 +39,24 @@ internal class StrokeShapeConverter : ISGTypeConverter
 				var parts = value.Split(Delimiter, 2);
 				if (parts.Length != 2)
 				{
-					return "new global::Microsoft.Maui.Controls.Shapes.Line()";
+					var lineType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Line")!;
+					return $"new {lineType.ToFQDisplayString()}()";
 				}
 
 				var coordinates = parts[1].Split([',']);
 				if (coordinates.Length == 2 && double.TryParse(coordinates[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double x1)
 					&& double.TryParse(coordinates[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double y1))
 				{
-					return $"new global::Microsoft.Maui.Controls.Shapes.Line {{ X1 = {FormatInvariant(x1)}, Y1 = {FormatInvariant(y1)} }}";
+					var lineType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Line")!;
+					return $"new {lineType.ToFQDisplayString()} {{ X1 = {FormatInvariant(x1)}, Y1 = {FormatInvariant(y1)} }}";
 				}
 				else if (coordinates.Length == 4 && double.TryParse(coordinates[0], NumberStyles.Number, CultureInfo.InvariantCulture, out x1)
 					&& double.TryParse(coordinates[1], NumberStyles.Number, CultureInfo.InvariantCulture, out y1)
 					&& double.TryParse(coordinates[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double x2)
 					&& double.TryParse(coordinates[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double y2))
 				{
-					return $"new global::Microsoft.Maui.Controls.Shapes.Line {{ X1 = {FormatInvariant(x1)}, Y1 = {FormatInvariant(y1)}, X2 = {FormatInvariant(x2)}, Y2 = {FormatInvariant(y2)} }}";
+					var lineType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Line")!;
+					return $"new {lineType.ToFQDisplayString()} {{ X1 = {FormatInvariant(x1)}, Y1 = {FormatInvariant(y1)}, X2 = {FormatInvariant(x2)}, Y2 = {FormatInvariant(y2)} }}";
 				}
 			}
 
@@ -61,11 +65,13 @@ internal class StrokeShapeConverter : ISGTypeConverter
 				var parts = value.Split(Delimiter, 2);
 				if (parts.Length != 2)
 				{
-					return "new global::Microsoft.Maui.Controls.Shapes.Path()";
+					var pathType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Path")!;
+					return $"new {pathType.ToFQDisplayString()}()";
 				}
 
 				// TODO: Implement proper path geometry conversion
-				return "new global::Microsoft.Maui.Controls.Shapes.Path()";
+				var pathFallbackType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Path")!;
+				return $"new {pathFallbackType.ToFQDisplayString()}()";
 			}
 
 			if (value.StartsWith(Polygon, StringComparison.OrdinalIgnoreCase))
@@ -73,7 +79,8 @@ internal class StrokeShapeConverter : ISGTypeConverter
 				var parts = value.Split(Delimiter, 2);
 				if (parts.Length != 2)
 				{
-					return "new global::Microsoft.Maui.Controls.Shapes.Polygon()";
+					var polygonType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Polygon")!;
+					return $"new {polygonType.ToFQDisplayString()}()";
 				}
 
 				var pointCollectionConverter = new PointCollectionConverter();
@@ -82,10 +89,12 @@ internal class StrokeShapeConverter : ISGTypeConverter
 				// If this happens the ConvertPointCollection method already reported an error, but lets still produce valid code.
 				if (pointCollection.Equals("default", StringComparison.OrdinalIgnoreCase))
 				{
-					return "new global::Microsoft.Maui.Controls.Shapes.Polygon()";
+					var polygonType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Polygon")!;
+					return $"new {polygonType.ToFQDisplayString()}()";
 				}
 
-				return $"new global::Microsoft.Maui.Controls.Shapes.Polygon {{ Points = {pointCollection} }}";
+				var polygonPointsType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Polygon")!;
+				return $"new {polygonPointsType.ToFQDisplayString()} {{ Points = {pointCollection} }}";
 			}
 
 			if (value.StartsWith(Polyline, StringComparison.OrdinalIgnoreCase))
@@ -93,7 +102,8 @@ internal class StrokeShapeConverter : ISGTypeConverter
 				var parts = value.Split(Delimiter, 2);
 				if (parts.Length != 2)
 				{
-					return "new global::Microsoft.Maui.Controls.Shapes.Polyline()";
+					var polylineType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Polyline")!;
+					return $"new {polylineType.ToFQDisplayString()}()";
 				}
 
 				var pointCollectionConverter = new PointCollectionConverter();
@@ -102,22 +112,26 @@ internal class StrokeShapeConverter : ISGTypeConverter
 				// If this happens the ConvertPointCollection method already reported an error, but lets still produce valid code.
 				if (pointCollection.Equals("default", StringComparison.OrdinalIgnoreCase))
 				{
-					return "new global::Microsoft.Maui.Controls.Shapes.Polyline()";
+					var polylineFallbackType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Polyline")!;
+					return $"new {polylineFallbackType.ToFQDisplayString()}()";
 				}
 
-				return $"new global::Microsoft.Maui.Controls.Shapes.Polyline {{ Points = {pointCollection} }}";
+				var polylinePointsType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Polyline")!;
+				return $"new {polylinePointsType.ToFQDisplayString()} {{ Points = {pointCollection} }}";
 			}
 
 			if (value.StartsWith(Rectangle, StringComparison.OrdinalIgnoreCase))
 			{
-				return "new global::Microsoft.Maui.Controls.Shapes.Rectangle()";
+				var rectangleType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Rectangle")!;
+				return $"new {rectangleType.ToFQDisplayString()}()";
 			}
 
 			if (value.StartsWith(RoundRectangle, StringComparison.OrdinalIgnoreCase))
 			{
 				var parts = value.Split(Delimiter, 2);
 
-				var cornerRadius = "new global::Microsoft.Maui.CornerRadius()";
+				var cornerRadiusType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.CornerRadius")!;
+				var cornerRadius = $"new {cornerRadiusType.ToFQDisplayString()}()";
 
 				if (parts.Length > 1)
 				{
@@ -125,7 +139,8 @@ internal class StrokeShapeConverter : ISGTypeConverter
 					cornerRadius = cornerRadiusConverter.Convert(parts[1], node, toType, context);
 				}
 
-				return $"new global::Microsoft.Maui.Controls.Shapes.RoundRectangle {{ CornerRadius = {cornerRadius} }}";
+				var roundRectangleType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.RoundRectangle")!;
+				return $"new {roundRectangleType.ToFQDisplayString()} {{ CornerRadius = {cornerRadius} }}";
 			}
 		}
 

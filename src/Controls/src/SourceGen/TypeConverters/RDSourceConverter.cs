@@ -53,7 +53,9 @@ internal class RDSourceConverter : ISGTypeConverter
 		else
 			asm = context.RootType.ContainingAssembly;
 
-		context.Writer.WriteLine($"var {uriVar} = new global::System.Uri(\"{value};assembly={asm.Name}\", global::System.UriKind.RelativeOrAbsolute);");
+		var uriType = context.Compilation.GetTypeByMetadataName("System.Uri")!;
+		var uriKindType = context.Compilation.GetTypeByMetadataName("System.UriKind")!;
+		context.Writer.WriteLine($"var {uriVar} = new {uriType.ToFQDisplayString()}(\"{value};assembly={asm.Name}\", {uriKindType.ToFQDisplayString()}.RelativeOrAbsolute);");
 
 		var rootTargetPath = context.ProjectItem.RelativePath!.Replace('\\', '/');
 
@@ -66,7 +68,10 @@ internal class RDSourceConverter : ISGTypeConverter
 			context.Writer.WriteLine($"{parentVar.Name}.SetAndCreateSource<{type.ToFQDisplayString()}>({uriVar});");
 		//well, if not, we can still load it
 		else
-			context.Writer.WriteLine($"global::Microsoft.Maui.Controls.Xaml.ResourceDictionaryHelpers.LoadFromSource({parentVar.Name}, {uriVar}, \"{GetResourcePath(value, rootTargetPath)}\", typeof({context.RootType.ToFQDisplayString()}).Assembly, null);");
+		{
+			var resourceDictionaryHelpersType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ResourceDictionaryHelpers")!;
+			context.Writer.WriteLine($"{resourceDictionaryHelpersType.ToFQDisplayString()}.LoadFromSource({parentVar.Name}, {uriVar}, \"{GetResourcePath(value, rootTargetPath)}\", typeof({context.RootType.ToFQDisplayString()}).Assembly, null);");
+		}
 
 		return uriVar;
 	}

@@ -27,21 +27,30 @@ internal class ThicknessConverter : ISGTypeConverter
 					case 2:
 						if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double h)
 							&& double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double v))
-							return $"new global::Microsoft.Maui.Thickness({FormatInvariant(h)}, {FormatInvariant(v)})";
+						{
+							var thicknessType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Thickness")!;
+							return $"new {thicknessType.ToFQDisplayString()}({FormatInvariant(h)}, {FormatInvariant(v)})";
+						}
 						break;
 					case 4:
 						if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double l)
 							&& double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double t)
 							&& double.TryParse(thickness[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double r)
 							&& double.TryParse(thickness[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double b))
-							return $"new global::Microsoft.Maui.Thickness({FormatInvariant(l)}, {FormatInvariant(t)}, {FormatInvariant(r)}, {FormatInvariant(b)})";
+						{
+							var thicknessType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Thickness")!;
+							return $"new {thicknessType.ToFQDisplayString()}({FormatInvariant(l)}, {FormatInvariant(t)}, {FormatInvariant(r)}, {FormatInvariant(b)})";
+						}
 						break;
 				}
 			}
 			else
 			{ //single uniform thickness
 				if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
-					return $"new global::Microsoft.Maui.Thickness({FormatInvariant(l)})";
+				{
+					var thicknessType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Thickness")!;
+					return $"new {thicknessType.ToFQDisplayString()}({FormatInvariant(l)})";
+				}
 			}
 		}
 

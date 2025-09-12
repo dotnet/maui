@@ -53,7 +53,9 @@ internal class PointCollectionConverter : ISGTypeConverter
 				return "default";
 			}
 
-			return $"new global::Microsoft.Maui.Controls.PointCollection(new[] {{ {string.Join(", ", pointCollection)} }})";
+			var pointCollectionType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.PointCollection")!;
+			
+			return $"new {pointCollectionType.ToFQDisplayString()}(new[] {{ {string.Join(", ", pointCollection)} }})";
 		}
 
 		context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);
