@@ -1585,7 +1585,10 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
+				if (!this.HasSelectedVisualState())
+                {
+                    VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
+                }
 			}
 
 			if (IsEnabled)
