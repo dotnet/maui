@@ -123,7 +123,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Foldable", "src\Co
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A9C514B9-1EE2-4A12-8E8A-CE16D87545C3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiBlazorWebView.DeviceTests", "src\BlazorWebView\tests\MauiDeviceTests\MauiBlazorWebView.DeviceTests.csproj", "{5FEA7500-0ACE-4C26-9A7B-2EB3958CBBC6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiBlazorWebView.DeviceTests", "src\BlazorWebView\tests\DeviceTests\MauiBlazorWebView.DeviceTests.csproj", "{5FEA7500-0ACE-4C26-9A7B-2EB3958CBBC6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedSource", "SharedSource", "{4F2926C8-43AB-4328-A735-D9EAD699F81D}"
 	ProjectSection(SolutionItems) = preProject
