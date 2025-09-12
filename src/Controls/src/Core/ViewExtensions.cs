@@ -588,6 +588,11 @@ namespace Microsoft.Maui.Controls
 
 		internal static bool HasSelectedVisualState(this VisualElement element)
         {
+			if (element is null)
+			{
+				return false;	
+			}
+
             var groups = VisualStateManager.GetVisualStateGroups(element);
             foreach (var group in groups)
             {
