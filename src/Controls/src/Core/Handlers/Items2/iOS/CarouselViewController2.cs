@@ -143,6 +143,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 
 		internal bool InitialPositionSet { get; private set; }
+		internal bool ScrollToRequested { get; set; }
 
 		void TearDown(CarouselView carouselView)
 		{
