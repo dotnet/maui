@@ -1,4 +1,6 @@
 ﻿#nullable disable
+using System.ComponentModel;
+
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public interface IMauiRecyclerView<TItemsView> where TItemsView : ItemsView
@@ -23,9 +25,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void UpdateLayoutManager();
 
-		//TODO Make this public in .NET10
-		internal void UpdateItemsLayoutProperties(object args);
-
 		public void UpdateAdapter();
 
 		public void ScrollTo(ScrollToRequestEventArgs args);
@@ -34,4 +33,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void UpdateCanReorderItems();
 	}
+
+	internal interface IMauiRecyclerViewWithUpdates<TItemsView> : IMauiRecyclerView<TItemsView> where TItemsView : ItemsView
+	{
+		void UpdateItemsLayoutProperties(PropertyChangedEventArgs args);
+	}
+	
 }

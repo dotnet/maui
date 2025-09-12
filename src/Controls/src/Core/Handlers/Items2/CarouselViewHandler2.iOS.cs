@@ -116,8 +116,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			(handler.Controller as CarouselViewController2)?.UpdateLoop();
 		}
 
-		//TODO Make this public in .NET10
-		internal static void MapItemsLayoutPropertyChanged(CarouselViewHandler2 handler, CarouselView view, object args)
+		static void MapItemsLayoutPropertyChanged(CarouselViewHandler2 handler, CarouselView view, object args)
 		{
 			handler.UpdateLayout();
 		}

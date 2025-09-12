@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using AndroidX.RecyclerView.Widget;
 
@@ -26,10 +27,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 			=> (handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateAdapter();
 
-		//TODO Make this public in .NET10
-		internal static void MapItemsLayoutPropertyChanged(StructuredItemsViewHandler<TItemsView> handler, TItemsView view, object args)
+		static void MapItemsLayoutPropertyChanged(StructuredItemsViewHandler<TItemsView> handler, TItemsView view, object args)
 		{
-			(handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateItemsLayoutProperties(args);
+			if(args is not PropertyChangedEventArgs propertyChanged)
+			{
+				return;
+			}
+
+			(handler.PlatformView as IMauiRecyclerViewWithUpdates<TItemsView>)?.UpdateItemsLayoutProperties(propertyChanged);
 		}
 	}
 }
