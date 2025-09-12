@@ -68,6 +68,7 @@ parameters:
       vmImage: $(androidTestsVmImage)
       demands:
         - macOS.Name -equals Sequoia
+        - macOS.Architecture -equals x64
   
   - name: androidPoolLinux
     type: object
