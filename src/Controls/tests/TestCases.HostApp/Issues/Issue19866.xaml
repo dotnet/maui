@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19866"
+             Title="Issue 19866">
+    <StackLayout>
+        <Label AutomationId="InstructionsLabel" 
+               Text="Scroll down in the CollectionView below, then tap the iOS status bar to test scroll to top functionality." 
+               Padding="10" />
+        
+        <CollectionView x:Name="TestCollectionView" 
+                        AutomationId="TestCollectionView"
+                        ItemsSource="{Binding Items}"
+                        BackgroundColor="LightGray">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Label Grid.Row="0" Text="{Binding Title}" FontSize="16" FontAttributes="Bold" />
+                        <Label Grid.Row="1" Text="{Binding Description}" FontSize="14" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </StackLayout>
+</ContentPage>
