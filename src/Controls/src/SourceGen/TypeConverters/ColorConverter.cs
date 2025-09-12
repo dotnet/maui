@@ -51,8 +51,9 @@ internal class ColorConverter : ISGTypeConverter
 		if (!string.IsNullOrEmpty(value))
 		{
 			// Any named colors are ok. Surrounding white spaces are ok.
-			if (KnownNamedColors.Contains(value.Trim()))
-				return $"global::Microsoft.Maui.Graphics.Colors.{value.Trim()}";
+			var trimmedValue = value.Trim();
+			if (KnownNamedColors.Contains(trimmedValue))
+				return $"global::Microsoft.Maui.Graphics.Colors.{trimmedValue}";
 
 			// Check for HEX Color string
 			if (RxColorHex.Value.IsMatch(value))
