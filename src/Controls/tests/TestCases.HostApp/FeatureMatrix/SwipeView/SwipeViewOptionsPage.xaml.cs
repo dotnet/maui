@@ -22,7 +22,7 @@ public partial class SwipeViewOptionsPage : ContentPage
 		SetInitialRadioSelections();
 	}
 	public event Action<string, string> SwipeViewOptionsApplied;
- 
+
 	private async void ApplyButton_Clicked(object sender, EventArgs e)
 	{
 		_viewModel.SelectedContentType = _selectedContent;

@@ -59,7 +59,7 @@ public partial class ContentViewOptionsPage : ContentPage
 			}
 		}
 	}
-	
+
 	private void OnHeightRadioCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
 		if (Height150RadioButton.IsChecked)

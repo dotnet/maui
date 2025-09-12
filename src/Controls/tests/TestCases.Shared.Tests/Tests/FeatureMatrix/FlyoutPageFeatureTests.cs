@@ -97,7 +97,7 @@ public class FlyoutPageFeatureTests : UITest
 		Assert.That(flyoutOpened, Is.True, "Flyout did not open after multiple drag attempts");
 		App.Tap("CloseFlyoutButton");
 	}
- 
+
 	[Test, Order(4)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_IsGestureEnabledFalse()
@@ -148,8 +148,8 @@ public class FlyoutPageFeatureTests : UITest
 			}
 			catch (Exception)
 			{
-			// not found yet, will retry
-		    }
+				// not found yet, will retry
+			}
 		}
 		Assert.That(flyoutOpened, Is.True, "Flyout did not open after multiple drag attempts");
 		App.Tap("CloseFlyoutButton");

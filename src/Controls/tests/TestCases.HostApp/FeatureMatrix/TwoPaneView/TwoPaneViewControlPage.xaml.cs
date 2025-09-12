@@ -20,7 +20,7 @@ public partial class TwoPaneViewControlMainPage : ContentPage
 		InitializeComponent();
 		_viewModel = viewModel;
 		BindingContext = _viewModel;
-		
+
 		// Subscribe to TwoPaneView mode changes to update the CurrentModeText
 		MyTwoPaneView.ModeChanged += OnTwoPaneViewModeChanged;
 	}
@@ -28,7 +28,7 @@ public partial class TwoPaneViewControlMainPage : ContentPage
 	protected override void OnAppearing()
 	{
 		base.OnAppearing();
-		
+
 		// Initialize the IsWideMode property with the current TwoPaneView mode
 		_viewModel.IsWideMode = MyTwoPaneView.Mode == Microsoft.Maui.Controls.Foldable.TwoPaneViewMode.Wide;
 	}
@@ -36,7 +36,7 @@ public partial class TwoPaneViewControlMainPage : ContentPage
 	protected override void OnDisappearing()
 	{
 		base.OnDisappearing();
-		
+
 		// Unsubscribe from the event to prevent memory leaks
 		MyTwoPaneView.ModeChanged -= OnTwoPaneViewModeChanged;
 	}

@@ -355,7 +355,7 @@ public class AbsoluteLayoutFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/31496
-    [Test]
+	[Test]
 	[Category(UITestCategories.Layout)]
 	public void VerifyAbsoluteLayout_BackgroundColor()
 	{
@@ -395,5 +395,5 @@ public class AbsoluteLayoutFeatureTests : UITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
-#endif	
+#endif
 }
