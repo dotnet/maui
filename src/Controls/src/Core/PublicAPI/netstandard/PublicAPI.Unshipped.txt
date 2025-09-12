@@ -141,6 +141,9 @@ Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationSty
 Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs
 Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs
+Microsoft.Maui.Controls.PointerEventArgs.Button.get -> Microsoft.Maui.Controls.ButtonsMask
+Microsoft.Maui.Controls.PointerGestureRecognizer.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
+Microsoft.Maui.Controls.PointerGestureRecognizer.Buttons.set -> void
 Microsoft.Maui.Controls.RefreshView.IsRefreshEnabled.get -> bool
 Microsoft.Maui.Controls.RefreshView.IsRefreshEnabled.set -> void
 Microsoft.Maui.Controls.ScrollView.CascadeInputTransparent.get -> bool
@@ -439,6 +442,7 @@ static readonly Microsoft.Maui.Controls.DisplayRotationStateTrigger.RotationProp
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WebView.JavaScriptEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverRectProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverSourceViewProperty -> Microsoft.Maui.Controls.BindableProperty
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~static readonly Microsoft.Maui.Controls.RefreshView.IsRefreshEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ScrollView.CascadeInputTransparentProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ScrollView.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty

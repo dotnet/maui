@@ -129,6 +129,7 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new InvalidOperationException("Context cannot be null here");
 
 			var context = Control.Context;
+			var pointerHandler = InitializePointerHandler();
 			var listener = new InnerGestureListener(
 				new TapGestureHandler(() => View, () =>
 				{
@@ -140,10 +141,12 @@ namespace Microsoft.Maui.Controls.Platform
 				new PanGestureHandler(() => View),
 				new SwipeGestureHandler(() => View),
 				InitializeDragAndDropHandler(),
-				InitializePointerHandler()
+				pointerHandler
 			);
 
-			return new TapAndPanGestureDetector(context, listener);
+			var detector = new TapAndPanGestureDetector(context, listener);
+			detector.SetPointerGestureHandler(pointerHandler);
+			return detector;
 		}
 
 		ScaleGestureDetector InitializeScaleDetector()
