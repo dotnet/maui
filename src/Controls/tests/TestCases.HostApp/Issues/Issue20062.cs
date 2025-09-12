@@ -7,14 +7,10 @@ namespace Maui.Controls.Sample.Issues;
 public class Issue20062 : TestContentPage
 {
 	CollectionView collection;
-	
-	List<string> list = new List<string>();
+	Issue20062ViewModel viewModel;
 	protected override void Init()
 	{
-		  list.Add("a");
-            list.Add("a");
-            list.Add("a");
-            list.Add("a");
+
 		collection = new CollectionView
 		{
 			SelectionMode = SelectionMode.Single,
@@ -43,7 +39,8 @@ public class Issue20062 : TestContentPage
 					HorizontalTextAlignment = TextAlignment.Center,
 					VerticalOptions = LayoutOptions.Center
 				};
-				label.SetBinding(Label.TextProperty, ".");
+				label.SetBinding(Label.TextProperty, "Name");
+				label.SetBinding(Label.AutomationIdProperty, "Id");
 
 				var grid = new Grid
 				{
@@ -89,13 +86,36 @@ public class Issue20062 : TestContentPage
 			Spacing = 25,
 			Children = { collection }
 		};
-		collection.ItemsSource = list;
+		BindingContext = viewModel = new Issue20062ViewModel();
+		collection.ItemsSource = viewModel.Items;
 
 		Content = new ScrollView
 		{
 			Content = layout
 		};
 
+	}
+}
+
+public class Issue20062_Item
+{
+	public string Name { get; set; }
+	public string Id { get; set; }
+} 
+
+public class Issue20062ViewModel
+{
+	public List<Issue20062_Item> Items { get; set; }
+
+	public Issue20062ViewModel()
+	{
+		Items = new List<Issue20062_Item>
+		{
+			new Issue20062_Item { Name = "a", Id = "FirstItem" },
+			new Issue20062_Item { Name = "a", Id = "SecondItem" },
+			new Issue20062_Item { Name = "a", Id = "ThirdItem" },
+			new Issue20062_Item { Name = "a", Id = "FourthItem" }
+		};
 	}
 }
 
