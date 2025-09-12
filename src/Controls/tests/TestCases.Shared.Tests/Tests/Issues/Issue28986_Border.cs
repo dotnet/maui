@@ -19,12 +19,13 @@ public class Issue28986_Border : _IssuesUITest
 	{
 		var borderContent = App.WaitForElement("BorderContent");
 		var expectedBorderYPosition = 5.0; // 5 is the border stroke thickness
-		
-#if ANDROID
-// Get the device display density for accurate pixel calculations
-		var displayDensity = App.GetNativeDisplayDensity();
-		expectedBorderYPosition = Math.Ceiling(5 * displayDensity);
-#endif
+
+
+
+		// Get the device display density for accurate pixel calculations
+		var displayDensity = App.GetDisplayDensity();
+		expectedBorderYPosition = Math.Ceiling(expectedBorderYPosition * displayDensity);
+
 		// 1. Ensure SafeAreaEdges is Default
 		var initialSettings = App.FindElement("CurrentSettings").GetText();
 		Assert.That(initialSettings, Does.Contain("Left: Default, Top: Default, Right: Default, Bottom: Default"));
