@@ -3,7 +3,7 @@ Microsoft.Maui.Platform.IPlatformMeasureInvalidationController
 Microsoft.Maui.Platform.IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow() -> void
 Microsoft.Maui.Platform.IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating = false) -> bool
 virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
-﻿Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter
+Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter
 Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.SafeAreaEdgesTypeConverter() -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
