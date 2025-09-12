@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override int ItemCount => CarouselView.Loop && !(ItemsSource is EmptySource)
 			&& ItemsSource.Count > 0 ? CarouselViewLoopManager.LoopScale : ItemsSource.Count;
 
+		protected override bool IsSelectionEnabled(Android.Views.ViewGroup parent, int viewType) => false;
+
 		public override int GetItemViewType(int position)
 		{
 			int positionInList = GetPositionInList(position);
