@@ -9,7 +9,7 @@ using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
 {
-	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
+	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IPlatformQuickLayout
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;
@@ -56,36 +56,36 @@ namespace Microsoft.Maui.Platform
 			return CrossPlatformLayout?.CrossPlatformArrange(bounds) ?? Graphics.Size.Zero;
 		}
 
-		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
-		{
-			if (CrossPlatformLayout is null)
-			{
-				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-				return;
-			}
-
-			var deviceIndependentWidth = widthMeasureSpec.ToDouble(_context);
-			var deviceIndependentHeight = heightMeasureSpec.ToDouble(_context);
-
-			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
-			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
-
-			var measure = CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
-
-			// If the measure spec was exact, we should return the explicit size value, even if the content
-			// measure came out to a different size
-			var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width;
-			var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height;
-
-			var platformWidth = _context.ToPixels(width);
-			var platformHeight = _context.ToPixels(height);
-
-			// Minimum values win over everything
-			platformWidth = Math.Max(MinimumWidth, platformWidth);
-			platformHeight = Math.Max(MinimumHeight, platformHeight);
-
-			SetMeasuredDimension((int)platformWidth, (int)platformHeight);
-		}
+		// protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		// {
+		// 	if (CrossPlatformLayout is null)
+		// 	{
+		// 		base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+		// 		return;
+		// 	}
+		//
+		// 	var deviceIndependentWidth = widthMeasureSpec.ToDouble(_context);
+		// 	var deviceIndependentHeight = heightMeasureSpec.ToDouble(_context);
+		//
+		// 	var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
+		// 	var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
+		//
+		// 	var measure = CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
+		//
+		// 	// If the measure spec was exact, we should return the explicit size value, even if the content
+		// 	// measure came out to a different size
+		// 	var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width;
+		// 	var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height;
+		//
+		// 	var platformWidth = _context.ToPixels(width);
+		// 	var platformHeight = _context.ToPixels(height);
+		//
+		// 	// Minimum values win over everything
+		// 	platformWidth = Math.Max(MinimumWidth, platformWidth);
+		// 	platformHeight = Math.Max(MinimumHeight, platformHeight);
+		//
+		// 	SetMeasuredDimension((int)platformWidth, (int)platformHeight);
+		// }
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
@@ -142,6 +142,41 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
+		}
+		
+		internal override void DoMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		{
+			var deviceIndependentWidth = widthMeasureSpec.ToDouble(_context);
+			var deviceIndependentHeight = heightMeasureSpec.ToDouble(_context);
+
+			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
+			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
+
+			var measure = CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
+
+			// If the measure spec was exact, we should return the explicit size value, even if the content
+			// measure came out to a different size
+			var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width;
+			var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height;
+
+			var platformWidth = _context.ToPixels(width);
+			var platformHeight = _context.ToPixels(height);
+
+			// Minimum values win over everything
+			platformWidth = Math.Max(MinimumWidth, platformWidth);
+			platformHeight = Math.Max(MinimumHeight, platformHeight);
+
+			SetMeasuredDimension((int)platformWidth, (int)platformHeight);
+		}
+
+		bool IPlatformQuickLayout.NeedsMeasure(int p0, int p1)
+		{
+			return base.NeedsMeasure(p0, p1);
+		}
+
+		void IPlatformQuickLayout.QuickMeasure(int p0, int p1, int p2, int p3)
+		{
+			base.QuickMeasure(p0, p1, p2, p3);
 		}
 	}
 }

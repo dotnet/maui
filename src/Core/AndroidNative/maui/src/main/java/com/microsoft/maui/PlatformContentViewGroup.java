@@ -6,7 +6,7 @@ import android.graphics.Path;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
 
-public abstract class PlatformContentViewGroup extends ViewGroup {
+public abstract class PlatformContentViewGroup extends PlatformViewGroup {
 
     public PlatformContentViewGroup(Context context) {
         super(context);
