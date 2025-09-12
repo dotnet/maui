@@ -88,12 +88,34 @@ namespace Microsoft.Maui
 			}
 
 			// Create a spec to handle the native measure
-			var widthSpec = context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
-			var heightSpec = context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
+			var (widthSpec, widthDp, widthExact) = context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
+			var (heightSpec, heightDp, heightExact) = context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
+			int measuredWidth, measuredHeight;
 
-			var packed = PlatformInterop.MeasureAndGetWidthAndHeight(platformView, widthSpec, heightSpec);
-			var measuredWidth = (int)(packed >> 32);
-			var measuredHeight = (int)(packed & 0xffffffffL);
+			if (platformView is ICrossPlatformLayoutBacking { CrossPlatformLayout: { } crossPlatformLayout } and IPlatformQuickLayout quickLayout &&
+			    quickLayout.NeedsMeasure(widthSpec, heightSpec))
+			{
+				var measure = crossPlatformLayout.CrossPlatformMeasure(widthDp, heightDp);
+				
+				// If the measure spec was exact, we should return the explicit size value, even if the content
+				// measure came out to a different size
+				var measuredWidthDp = widthExact ? widthDp : measure.Width;
+				var measuredHeightDp = heightExact ? heightDp : measure.Height;
+				
+				measuredWidth = (int)context.ToPixels(measuredWidthDp);
+				measuredHeight = (int)context.ToPixels(measuredHeightDp);
+
+				// Minimum values win over everything
+				measuredWidth = Math.Max(platformView.MinimumWidth, measuredWidth);
+				measuredHeight = Math.Max(platformView.MinimumHeight, measuredHeight);
+				quickLayout.QuickMeasure(widthSpec, heightSpec, measuredWidth, measuredHeight);
+			}
+			else
+			{
+				var packed = PlatformInterop.MeasureAndGetWidthAndHeight(platformView, widthSpec, heightSpec);
+				measuredWidth = (int)(packed >> 32);
+				measuredHeight = (int)(packed & 0xffffffffL);
+			}
 
 			// Convert back to xplat sizes for the return value
 			return context.FromPixels(measuredWidth, measuredHeight);

@@ -214,5 +214,10 @@ namespace Microsoft.Maui.Platform
 				clearWrapperView.Invoke();
 			}
 		}
+		
+		internal override void DoMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }
