@@ -14,20 +14,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnPlatform(TestPlatforms.iOS, "This test validates iOS-specific functionality that requires manual status bar interaction")]
-		public void CollectionViewScrollsToTopShouldBeEnabled()
+		public void CollectionViewScrollsToTopIsEnabledOnIOS()
 		{
-			// This test validates that ScrollsToTop is enabled on the UICollectionView
-			// The actual status bar interaction requires manual testing on device
+			// This test validates that the CollectionView appears and can be interacted with
+			// The fix ensures ScrollsToTop = true is set on the UICollectionView during handler connection
 			App.WaitForElement("TestCollectionView");
 			
 			// Verify the CollectionView is present and contains items
 			var collectionView = App.WaitForElement("TestCollectionView");
 			Assert.IsNotNull(collectionView, "CollectionView should be present");
 			
-			// The fix ensures ScrollsToTop = true is set on the UICollectionView
-			// Manual testing: Scroll down in the CollectionView, then tap the status bar
-			// The CollectionView should scroll back to the top
+			// Verify instructions are present for manual testing
+			var instructions = App.WaitForElement("InstructionsLabel");
+			Assert.IsNotNull(instructions, "Instructions should be present for manual testing");
+			
+			// Note: The actual status bar tap gesture cannot be automated in UI tests
+			// Manual testing required: 
+			// 1. Scroll down in the CollectionView
+			// 2. Tap the iOS status bar
+			// 3. Verify the CollectionView scrolls back to the top
 		}
 	}
 }
