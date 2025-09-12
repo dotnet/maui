@@ -208,8 +208,6 @@ namespace Microsoft.Maui.DeviceTests
 				() => label.TextDecorations = newDecorations);
 		}
 
-#if !WINDOWS
-
 		[Fact]
 		[Category(TestCategory.TextFormatting)]
 		public async Task LineHeightAppliedWhenTextAdded()
@@ -296,7 +294,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatLineHeight, values.ViewValue);
 			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
-#endif
 
 		[Fact(DisplayName = "Html Text Initializes Correctly")]
 		public async Task HtmlTextInitializesCorrectly()
