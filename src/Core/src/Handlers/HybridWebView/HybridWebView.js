@@ -154,6 +154,17 @@
         if (!response) {
             return null;
         }
+        // Check if the response indicates an error
+        if (response.IsError) {
+            const error = new Error(response.ErrorMessage || 'Unknown error occurred in .NET method');
+            if (response.ErrorType) {
+                error.dotNetErrorType = response.ErrorType;
+            }
+            if (response.ErrorStackTrace) {
+                error.dotNetStackTrace = response.ErrorStackTrace;
+            }
+            throw error;
+        }
         if (response.IsJson) {
             return JSON.parse(response.Result);
         }
