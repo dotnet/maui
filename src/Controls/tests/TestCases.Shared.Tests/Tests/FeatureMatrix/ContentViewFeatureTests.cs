@@ -139,17 +139,17 @@ public class ContentViewFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS // related issue link: https://github.com/dotnet/maui/issues/29812
 	[Test]
-    public void DefaultContentWithShadow()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("ShadowCheckBox");
-        App.Tap("ShadowCheckBox");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElement("This is Default Page");
-        VerifyScreenshot();
-    }
+	public void DefaultContentWithShadow()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("This is Default Page");
+		VerifyScreenshot();
+	}
 #endif
 
 	[Test]

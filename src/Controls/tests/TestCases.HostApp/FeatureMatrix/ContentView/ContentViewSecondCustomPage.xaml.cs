@@ -1,9 +1,9 @@
-	using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls;
 
-	namespace Maui.Controls.Sample;
+namespace Maui.Controls.Sample;
 
-	public partial class ContentViewSecondCustomPage : ContentView
-	{
+public partial class ContentViewSecondCustomPage : ContentView
+{
 	public static readonly BindableProperty SecondCustomViewDescriptionProperty =
 		BindableProperty.Create(
 			nameof(SecondCustomViewDescription),
