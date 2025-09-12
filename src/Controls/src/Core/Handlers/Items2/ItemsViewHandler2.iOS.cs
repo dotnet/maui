@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	internal readonly struct LayoutCacheKey : IEquatable<LayoutCacheKey>
     {
 	    // Pack 5 boolean fields into a single byte using bit flags
-	    // Used to reduces struct size as much as possible.
+	    // Used to reduce struct size as much as possible.
         [Flags]
         enum LayoutFlags : byte
         {
