@@ -1,4 +1,5 @@
 #nullable disable
+using System.ComponentModel;
 using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Graphics;
@@ -62,12 +63,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		//TODO Make this public in .NET10
-		internal static void MapItemsLayoutPropertyChanged(CarouselViewHandler handler, CarouselView view, object args)
+		static void MapItemsLayoutPropertyChanged(CarouselViewHandler handler, CarouselView view, object args)
 		{
-			if (handler.PlatformView is IMauiRecyclerView<CarouselView> recyclerView)
+			if (handler.PlatformView is IMauiRecyclerViewWithUpdates<CarouselView> recyclerView &&
+			    args is PropertyChangedEventArgs propertyChanged)
 			{
-				recyclerView.UpdateItemsLayoutProperties(args);
+				recyclerView.UpdateItemsLayoutProperties(propertyChanged);
 			}
 		}
 

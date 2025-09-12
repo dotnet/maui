@@ -25,8 +25,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		}
 
-		//TODO Make this public in .NET10
-		internal static void MapItemsLayoutPropertyChanged(StructuredItemsViewHandler<TItemsView> handler, TItemsView view, object args)
+		static void MapItemsLayoutPropertyChanged(StructuredItemsViewHandler<TItemsView> handler, TItemsView view, object args)
 		{
 			
 		}

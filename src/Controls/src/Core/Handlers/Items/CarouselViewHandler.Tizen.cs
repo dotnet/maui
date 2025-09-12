@@ -39,8 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.PlatformView as MauiCarouselView)?.UpdateLayoutManager();
 		}
 
-		//TODO Make this public in .NET10
-		internal static void MapItemsLayoutPropertyChanged(CarouselViewHandler handler, CarouselView view, object args)
+		static void MapItemsLayoutPropertyChanged(CarouselViewHandler handler, CarouselView view, object args)
 		{
 			(handler.PlatformView as MauiCarouselView)?.UpdateLayoutManager();
 		}

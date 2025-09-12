@@ -15,7 +15,7 @@ using AViewCompat = AndroidX.Core.View.ViewCompat;
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 
-	public class MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> : RecyclerView, IMauiRecyclerView<TItemsView>
+	public class MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> : RecyclerView, IMauiRecyclerViewWithUpdates<TItemsView>
 		where TItemsView : ItemsView
 		where TAdapter : ItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsViewSource : IItemsViewSource
@@ -501,25 +501,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		}
 
-		void IMauiRecyclerView<TItemsView>.UpdateItemsLayoutProperties(object args)
+		void IMauiRecyclerViewWithUpdates<TItemsView>.UpdateItemsLayoutProperties(PropertyChangedEventArgs args)
 		{
-			if (args is not PropertyChangedEventArgs propertyChanged)
-			{
-				return;
-			}
 
-			if (propertyChanged.Is(GridItemsLayout.SpanProperty))
+			if (args.Is(GridItemsLayout.SpanProperty))
 			{
 				if (GetLayoutManager() is GridLayoutManager gridLayoutManager)
 				{
 					gridLayoutManager.SpanCount = ((GridItemsLayout)ItemsLayout).Span;
 				}
 			}
-			else if (propertyChanged.IsOneOf(Microsoft.Maui.Controls.ItemsLayout.SnapPointsTypeProperty, Microsoft.Maui.Controls.ItemsLayout.SnapPointsAlignmentProperty))
+			else if (args.IsOneOf(Microsoft.Maui.Controls.ItemsLayout.SnapPointsTypeProperty, Microsoft.Maui.Controls.ItemsLayout.SnapPointsAlignmentProperty))
 			{
 				UpdateSnapBehavior();
 			}
-			else if (propertyChanged.IsOneOf(LinearItemsLayout.ItemSpacingProperty,
+			else if (args.IsOneOf(LinearItemsLayout.ItemSpacingProperty,
 				GridItemsLayout.HorizontalItemSpacingProperty, GridItemsLayout.VerticalItemSpacingProperty))
 			{
 				UpdateItemSpacing();
