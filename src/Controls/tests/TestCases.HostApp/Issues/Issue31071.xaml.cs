@@ -68,7 +68,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		private IEnumerable collectionItems;
+		IEnumerable collectionItems;
 
 		public int CVColumns
 		{
@@ -80,7 +80,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		private int cvColumns = 4;
+		int cvColumns = 4;
 
 		public int CollViewItemsCount
 		{
@@ -92,7 +92,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		private int collViewItemsCount;
+		int collViewItemsCount;
 
 		public double ActionTime
 		{
@@ -104,12 +104,12 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		private double actionTime;
+		double actionTime;
 
 		public double TotalMemory =>
 			GC.GetTotalMemory(false) / 1024.0 / 1024;
 
-		private void OnScrolled(object sender, ItemsViewScrolledEventArgs e) =>
+		void OnScrolled(object sender, ItemsViewScrolledEventArgs e) =>
 			OnPropertyChanged(nameof(TotalMemory));
 	}
 }
