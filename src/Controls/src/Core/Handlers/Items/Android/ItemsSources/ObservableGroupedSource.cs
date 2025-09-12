@@ -145,7 +145,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public IItemsViewSource GetGroupItemsViewSource(int groupIndex)
 		{
 			// uint can only store non-negative whole numbers
-			return (uint) groupIndex >= (uint) _groups.Count ? null : _groups[groupIndex];
+			if ((uint) groupIndex >= (uint) _groups.Count)
+			{
+				System.Diagnostics.Debug.WriteLine($"Invalid Group index: {groupIndex}, Group count: {_groups.Count}");
+				return null;
+			}
+
+			return _groups[groupIndex];
 		}
 
 		// The ICollectionChangedNotifier methods are called by child observable items sources (i.e., the groups)
