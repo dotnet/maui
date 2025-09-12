@@ -143,8 +143,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					ItemsView.SelectedItem = ItemsSource.GetItem(adapterPosition);
 					if (previouslySelectedItem == ItemsView.SelectedItem)
 					{
+						var viewHolderIndex = ItemsSource.HasHeader ? adapterPosition - 1 : adapterPosition;
 						ClearPlatformSelection();
-						_currentViewHolders[adapterPosition].IsSelected = true;
+						_currentViewHolders[viewHolderIndex].IsSelected = true;
 					}
 					return;
 				case SelectionMode.Multiple:
