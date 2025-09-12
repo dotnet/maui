@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.CodeAnalysis;
@@ -50,10 +51,10 @@ internal class ColorConverter : ISGTypeConverter
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
 		{
-			// Any named colors are ok. Surrounding white spaces are ok.
-			var trimmedValue = value.Trim();
-			if (KnownNamedColors.Contains(trimmedValue))
-				return $"global::Microsoft.Maui.Graphics.Colors.{trimmedValue}";
+			// Any named colors are ok. Surrounding white spaces are ok. Case insensitive.
+			var actualColorName = KnownNamedColors.FirstOrDefault(c => string.Equals(c, value.Trim(), StringComparison.OrdinalIgnoreCase));
+			if (actualColorName is not null)
+				return $"global::Microsoft.Maui.Graphics.Colors.{actualColorName}";
 
 			// Check for HEX Color string
 			if (RxColorHex.Value.IsMatch(value))
