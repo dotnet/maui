@@ -63,7 +63,7 @@ internal class ColorConverter : ISGTypeConverter
 			if (RxColorHex.Value.IsMatch(value))
 			{
 				var colorType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color")!;
-				return $"{colorType.ToFQDisplayString()}.FromRgba(\"{value}\")";
+				return $"{colorType.ToFQDisplayString()}.FromArgb(\"{value}\")";
 			}
 
 			var match = RxFuncExpr.Value.Match(value);
