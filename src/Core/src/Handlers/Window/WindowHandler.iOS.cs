@@ -12,10 +12,6 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(UIWindow platformView)
 		{
 			base.ConnectHandler(platformView);
-#if MACCATALYST
-			CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() => 
-			{
-				_frameObserverProxy.Connect(VirtualView, platformView);
 			});
 #else
 			_frameObserverProxy.Connect(VirtualView, platformView);
