@@ -22,6 +22,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override NSIndexPath[] CreateIndexesFrom(int startIndex, int count)
 		{
+			if (!Loop)
+			{
+				return base.CreateIndexesFrom(startIndex, count);
+			}
 			if (ItemCount == 0)
 			{
 				count += 2;
