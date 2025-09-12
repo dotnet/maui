@@ -31,9 +31,10 @@ public partial class SearchBarControlMainPage : ContentPage
 	{
 		SearchBarGrid.Children.Clear();
 
-		var searchBar = new SearchBar
+		var searchBar = new UITestSearchBar
 		{
 			AutomationId = "SearchBar",
+			IsCursorVisible = false
 		};
 		searchBar.SetBinding(SearchBar.CancelButtonColorProperty, nameof(SearchBarViewModel.CancelButtonColor));
 		searchBar.SetBinding(SearchBar.CharacterSpacingProperty, nameof(SearchBarViewModel.CharacterSpacing));
