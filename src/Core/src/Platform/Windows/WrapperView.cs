@@ -167,13 +167,20 @@ namespace Microsoft.Maui.Platform
 
 		partial void ShadowChanged()
 		{
-			if (HasShadow)
+			if (Shadow?.Paint is { })
 			{
-				UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+				if (HasShadow)
+				{
+					UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+				}
+				else
+				{
+					CreateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+				}
 			}
 			else
 			{
-				CreateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+				DisposeShadow();
 			}
 		}
 

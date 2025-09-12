@@ -41,7 +41,10 @@ namespace Microsoft.Maui.Controls
 					// If SendUnloaded caused the unloaded tokens to wire up
 					_loadedUnloadedToken?.Dispose();
 					_loadedUnloadedToken = null;
-					_loadedUnloadedToken = this.OnLoaded(SendLoaded);
+					if (Handler is not null)
+					{
+						_loadedUnloadedToken = this.OnLoaded(SendLoaded);
+					}
 				}
 			}
 			else

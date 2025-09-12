@@ -11,6 +11,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
@@ -1910,6 +1911,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UIImageView _icon;
 			bool _disposed;
 
+			//https://developer.apple.com/documentation/uikit/uiview/2865930-directionallayoutmargins
+			const int SystemMargin = 16;
+
 			public Container(View view, UINavigationBar bar) : base(bar.Bounds)
 			{
 				if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11))
@@ -1938,6 +1942,33 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				ClipsToBounds = true;
+			}
+
+			UIEdgeInsets CalculateUIEdgeInsets()
+			{
+				var type = UIBarButtonSystemItem.FixedSpace;
+				var spacer = new UIBarButtonItem(type, (_, _) => { });
+				spacer.Width = SystemMargin + (OperatingSystem.IsIOSVersionAtLeast(11) ? 8 : -16);
+
+				nfloat screenWidth = UIScreen.MainScreen.Bounds.Size.Width;
+
+				if (!OperatingSystem.IsIOSVersionAtLeast(11) && screenWidth < 375)
+				{
+					// 3.5 and 4 inch
+					spacer.Width += 8;
+				}
+				else if (screenWidth >= 414)
+				{
+					// 5.5 inch
+					spacer.Width -= 4;
+				}
+
+				return new UIEdgeInsets(0, spacer.Width, 0, spacer.Width);
+			}
+
+			public override UIEdgeInsets AlignmentRectInsets
+			{
+				get => CalculateUIEdgeInsets();
 			}
 
 			void OnTitleViewParentSet(object sender, EventArgs e)
@@ -2036,10 +2067,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_icon != null)
 					_icon.Frame = new RectangleF(0, 0, IconWidth, Math.Min(toolbarHeight, IconHeight));
 
-				if (_child?.VirtualView != null)
+				if (_child?.VirtualView is IView view)
 				{
 					Rect layoutBounds = new Rect(IconWidth, 0, Bounds.Width - IconWidth, height);
 
+					if (view.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill ||
+						view.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill)
+					{
+						view.Measure(Bounds.Width, Bounds.Height);
+						layoutBounds = view.ComputeFrame(new Rect(0, 0, Bounds.Width, Bounds.Height));
+					}
 					_child.PlatformArrangeHandler(layoutBounds);
 				}
 				else if (_icon != null && Superview != null)
