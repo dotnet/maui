@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.Android.Enums;
 using OpenQA.Selenium.Appium.Interfaces;
 using OpenQA.Selenium.Appium.iOS;
@@ -2678,44 +2679,53 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Gets the display density (DPI scaling factor) for the current device using native Appium driver capabilities.
-		/// This method provides direct calculation from the device properties for accurate pixel scaling.
+		/// Gets the display density for the current device using the appropriate platform-specific method.
+		/// For Android, uses the Appium getDisplayDensity command for accurate results.
+		/// For iOS and Catalyst, uses the deviceScreenInfo command.
+		/// For other platforms, falls back to driver capabilities.
 		/// </summary>
 		/// <param name="app">The IApp instance representing the application.</param>
-		/// <returns>The display density as a double value (e.g., 1.0 for mdpi, 2.0 for xhdpi, 3.0 for xxhdpi)</returns>
-		public static double GetNativeDisplayDensity(this IApp app)
+		/// <returns>The display density as a double value (e.g., 1.0 for mdpi, 2.0 for xhdpi/Retina, 3.0 for xxhdpi/Retina HD)</returns>
+		public static double GetDisplayDensity(this IApp app)
 		{
-			if (app is not AppiumApp aaa)
+			if (app is not AppiumApp appiumApp)
 			{
-				throw new InvalidOperationException($"GetNativeDisplayDensity is only supported on AppiumApp");
+				throw new InvalidOperationException($"GetDisplayDensity is only supported on AppiumApp");
 			}
 
-			// For Android devices, use direct native capabilities
-			if (app is AppiumAndroidApp androidApp)
+			// Use platform-specific methods for accurate results
+			return app switch
 			{
-				// Method 1: Try to get pixelRatio from driver capabilities
-				try
-				{
-					var capabilities = aaa.Driver.Capabilities;
-					if (capabilities.HasCapability("pixelRatio"))
-					{
-						var pixelRatio = capabilities.GetCapability("pixelRatio");
-						if (pixelRatio != null && double.TryParse(pixelRatio.ToString(), out var ratio))
-						{
-							return ratio;
-						}
-					}
-				}
-				catch
-				{
-					// Continue to next method
-				}
+				AppiumAndroidApp androidApp => GetAndroidDisplayDensity(androidApp),
+				AppiumIOSApp iOSApp => GetIOSDisplayDensity(iOSApp),
+				_ => 1.0 // Fallback for other platforms (Catalyst, Windows)
+			};
+		}
 
-				// Ultimate fallback for Android
-				return 1.0;
+		static double GetAndroidDisplayDensity(AppiumAndroidApp androidApp)
+		{
+			// Use the command executor to call the Android-specific action
+			float? response = (androidApp.Driver as AndroidDriver)?.GetDisplayDensity();
+			if (response is not null)
+			{
+				return (double)response.Value / 160f;
 			}
 
-			// Default fallback for non-Android platforms
+			return 1.0;
+		}
+
+		static double GetIOSDisplayDensity(AppiumIOSApp iOSApp)
+		{
+			var response = (iOSApp.Driver as IOSDriver)?.ExecuteScript("mobile: deviceScreenInfo");
+			if (response is not null && response is IDictionary<string, object> screenInfo)
+			{
+				// Extract the scale factor from the deviceScreenInfo response
+				if (screenInfo.TryGetValue("scale", out var scaleValue))
+				{
+					return Convert.ToDouble(scaleValue);
+				}
+			}
+
 			return 1.0;
 		}
 	}
