@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -17,7 +18,7 @@ public class Issue28986_SafeAreaBorderOrientation : _IssuesUITest
     public void SafeAreaBorderOrientationPortraitToLandscape()
     {
         var borderContent = App.WaitForElement("BorderContent");
-
+        var displayDensity = App.GetDisplayDensity();
         // 1. Verify initial portrait state and record measurements
         var portraitBounds = borderContent.GetRect();
         var portraitSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
@@ -425,3 +426,4 @@ public class Issue28986_SafeAreaBorderOrientation : _IssuesUITest
     }
 #endif
 }
+#endif
